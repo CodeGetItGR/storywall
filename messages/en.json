@@ -2264,6 +2264,7 @@
             "withdrawals": "Withdrawals",
             "accounts": "Accounts",
             "lifecycle": "Lifecycle",
+            "reports": "Reports",
             "bugReports": "Bug reports",
             "errorEvents": "Errors",
             "demoEvents": "Demo events"
@@ -2296,6 +2297,38 @@
             "createBody": "You'll be the host. It becomes this type's demo as soon as it's created.",
             "create": "Create demo event",
             "editContent": "Add content"
+        },
+        "moderation": {
+            "title": "Reports",
+            "tabsLabel": "Report status",
+            "tabs": {
+                "OPEN": "Open",
+                "UNDER_REVIEW": "Under review",
+                "CLOSED": "Closed"
+            },
+            "loading": "Loading reports",
+            "empty": "No reports here.",
+            "count": "{count, plural, one {# case} other {# cases}}",
+            "eventGone": "Event deleted",
+            "outcome": {
+                "DISMISSED": "No action",
+                "ACTION_TAKEN": "Action taken"
+            },
+            "type": "Type",
+            "event": "Event",
+            "reportsCol": "Reports",
+            "reason": "Top reason",
+            "age": "Date",
+            "outcomeCol": "Outcome",
+            "types": {
+                "POST": "Post",
+                "COMMENT": "Comment",
+                "MEMBER": "Member",
+                "STORY": "Story",
+                "MEDIA": "Photo or video",
+                "WISHBOOK_ENTRY": "Wish",
+                "PLAYLIST_SUGGESTION": "Song suggestion"
+            }
         },
         "bugReports": {
             "title": "Bug reports",

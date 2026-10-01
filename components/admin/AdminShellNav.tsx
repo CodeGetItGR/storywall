@@ -22,6 +22,7 @@ const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operat
     billingOps: 'operations',
     withdrawals: 'operations',
     accounts: 'operations',
+    reports: 'operations',
     bugReports: 'operations',
     errorEvents: 'operations',
 };
