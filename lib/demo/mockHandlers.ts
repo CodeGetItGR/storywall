@@ -364,6 +364,13 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
         // --- Media (uploads stay in this browser as object URLs) ---
         ...buildPageHandlers(db, 'media', '/api/events/:eventId/media', 30),
         ...buildDetailHandlers(db, 'media', '/api/medias/:id', { del: true }),
+        http.get(`${API_BASE_URL}/api/events/:eventId/media/summary`, () => {
+            const media = db.list('media');
+            return HttpResponse.json({
+                photoCount: media.filter((m) => m.mediaType === 'IMAGE').length,
+                videoCount: media.filter((m) => m.mediaType === 'VIDEO').length,
+            });
+        }),
         http.post(`${API_BASE_URL}/api/events/:eventId/media`, async ({ request }) => {
             const form = await request.formData();
             return HttpResponse.json(createLocalMedia(form.get('file') as File), { status: 201 });
