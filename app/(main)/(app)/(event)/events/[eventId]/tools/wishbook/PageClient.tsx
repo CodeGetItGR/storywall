@@ -14,6 +14,7 @@ import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { WishbookEntriesSkeleton } from '@/components/wishbook/WishbookSkeletons';
 import { useAppConfig } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useContentAccess } from '@/hooks/useContentAccess';
 import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { usePlanUpgradeHref } from '@/hooks/usePlanUpgradeHref';
 import { useCreateWishbookEntry, useDeleteWishbookEntry, useWishbook, useWishbookExportDownload } from '@/hooks/useWishbook';
@@ -29,6 +30,7 @@ export default function WishbookPage() {
     const event = useActiveEvent();
     const member = useActiveMember();
     const isHost = useIsHost();
+    const contentAccess = useContentAccess();
     const locale = useLocale();
     const isDeleted = isEventDeleted(event);
     const deletionDate = event?.deletionScheduledFor ? formatDate(locale, event.deletionScheduledFor, { dateStyle: 'long' }) : null;
@@ -47,7 +49,8 @@ export default function WishbookPage() {
     const [showSentConfirmation, setShowSentConfirmation] = useState(false);
     const entries = wishbook.data?.pages.flatMap((page) => page.content) ?? [];
     const total = wishbook.data?.pages[0]?.page.totalElements ?? 0;
-    const canWrite = event?.status === 'ACTIVE' && !isHost;
+    // Hosts read the wishbook; only an admin building a demo writes wishes as a host.
+    const canWrite = event?.status === 'ACTIVE' && (!isHost || contentAccess.isDemoBuilder);
     const reportable = Boolean(appConfig?.reportTargetTypes?.includes('WISHBOOK_ENTRY'));
     const reportEntry = reportEntryId ? (entries.find((item) => item.id === reportEntryId) ?? null) : null;
     const wishbookModule = appConfig?.modules.find((module) => module.moduleKey === 'wishbook');
@@ -68,7 +71,9 @@ export default function WishbookPage() {
         const trimmed = message.trim();
         if (!trimmed) return;
         setShowSentConfirmation(false);
-        await createEntry.mutateAsync({ message: trimmed, guestName: member?.displayName ?? undefined });
+        // A demo builder's wish is signed by whoever they post as, which the backend fills in.
+        const guestName = contentAccess.isDemoBuilder ? undefined : (member?.displayName ?? undefined);
+        await createEntry.mutateAsync({ message: trimmed, guestName });
         setMessage('');
         setShowSentConfirmation(true);
     }
@@ -237,7 +242,7 @@ export default function WishbookPage() {
                                             {t('reportEntry')}
                                         </button>
                                     )}
-                                    {entry.canDelete && !isDeleted && (
+                                    {entry.canDelete && !isDeleted && !contentAccess.isLocked(entry.id) && (
                                         <button
                                             type="button"
                                             data-entry-id={entry.id}

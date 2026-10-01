@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { canDeleteContent, canReportContent } from '@/lib/contentPermissions';
+import { canDeleteContent, canReportContent, isContentLocked } from '@/lib/contentPermissions';
 
 describe('canDeleteContent', () => {
     const base = { isMember: true, isAuthor: false, isHost: false, canWrite: true };
@@ -55,5 +55,20 @@ describe('canReportContent', () => {
 
     it('does not offer a report once the event is not writable', () => {
         expect(canReportContent({ ...base, canWrite: false })).toBe(false);
+    });
+});
+
+describe('isContentLocked', () => {
+    it('locks the content that came with the public demo', () => {
+        expect(isContentLocked('demoVisitor', '3f1c2a9e-0000-4000-8000-000000000001')).toBe(true);
+    });
+
+    it('leaves what the visitor added in the public demo open', () => {
+        expect(isContentLocked('demoVisitor', 'demo-post-1727000000000-1')).toBe(false);
+    });
+
+    it('never locks content outside the public demo', () => {
+        expect(isContentLocked('standard', '3f1c2a9e-0000-4000-8000-000000000001')).toBe(false);
+        expect(isContentLocked('demoBuilder', '3f1c2a9e-0000-4000-8000-000000000001')).toBe(false);
     });
 });

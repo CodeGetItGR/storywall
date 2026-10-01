@@ -19,6 +19,7 @@ vi.mock('@/hooks/usePlaylist', () => ({
 vi.mock('@/hooks', () => ({
     useAppConfig: () => ({ data: { reportTargetTypes } }),
 }));
+vi.mock('@/hooks/useContentAccess', () => ({ useContentAccess: () => ({ isDemoBuilder: false, isLocked: () => false }) }));
 vi.mock('@/providers/EventProvider', () => ({
     useActiveEvent: () => ({ id: 'event-1', status: eventStatus }),
     useActiveMember: () => (activeMemberId ? { id: activeMemberId } : null),

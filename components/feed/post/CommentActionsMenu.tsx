@@ -8,6 +8,7 @@ import { ReportTargetModal } from '@/components/reports';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useAppConfig, useDeleteComment } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useContentAccess } from '@/hooks/useContentAccess';
 import type { CommentResponseDto } from '@/lib/api/types';
 import { canDeleteContent, canReportContent } from '@/lib/contentPermissions';
 import { isEventWritable } from '@/lib/eventLifecycle';
@@ -23,6 +24,7 @@ export function CommentActionsMenu({ comment, wrapperClassName }: CommentActions
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
     const isHost = useIsHost();
+    const contentAccess = useContentAccess();
     const { data: appConfig } = useAppConfig();
     const toErrorMessage = useApiErrorMessage();
     const deleteComment = useDeleteComment(activeEvent?.id ?? '', comment.postId);
@@ -32,7 +34,8 @@ export function CommentActionsMenu({ comment, wrapperClassName }: CommentActions
 
     const isMyComment = Boolean(activeMember?.id && comment.authorMemberId === activeMember.id);
     const canWrite = isEventWritable(activeEvent?.status);
-    const canDelete = canDeleteContent({ isMember: Boolean(activeMember), isAuthor: isMyComment, isHost, canWrite });
+    const canDelete =
+        canDeleteContent({ isMember: Boolean(activeMember), isAuthor: isMyComment, isHost, canWrite }) && !contentAccess.isLocked(comment.id);
     const canReport = canReportContent({
         isMember: Boolean(activeMember),
         isAuthor: isMyComment,

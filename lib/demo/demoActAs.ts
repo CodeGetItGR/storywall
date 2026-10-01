@@ -14,10 +14,16 @@ export function setDemoActAsMember(value: DemoActAs | null): void {
 const CONTENT_WRITE_PATH =
     /^\/api\/(?:posts|comments|reactions|stories|medias|post-medias|playlist-suggestions|playlist-votes|rsvps|rsvp-session-responses|wishbook)(?:[/?]|$)|^\/api\/events\/[^/]+\/(?:media|posts|stories|wishbook|playlist-suggestions|rsvps)(?:[/?]|$)/;
 
+// Editing or deleting a post, comment, story, photo, wish or song stays the admin's own: as a host
+// they may change any of it, while the chosen guest may only change what that guest wrote.
+const MODERATED_ITEM_PATH = /^\/api\/(?:posts|comments|stories|medias|wishbook|playlist-suggestions)\/[^/?]+(?:\?|$)/;
+
 export function demoActAsHeaders(method: string | undefined, path: string): Record<string, string> {
     if (!current) return {};
-    if ((method ?? 'GET').toUpperCase() === 'GET') return {};
+    const verb = (method ?? 'GET').toUpperCase();
+    if (verb === 'GET') return {};
     if (!CONTENT_WRITE_PATH.test(path)) return {};
+    if ((verb === 'PATCH' || verb === 'DELETE') && MODERATED_ITEM_PATH.test(path)) return {};
     return { [DEMO_ACT_AS_HEADER]: current.memberId };
 }
 

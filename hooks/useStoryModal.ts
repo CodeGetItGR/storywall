@@ -3,6 +3,7 @@
 import { type SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAppConfig, useDeleteStory, useEventStories, useMarkStoryViewed, useMediaItem, useStory } from '@/hooks';
+import { useContentAccess } from '@/hooks/useContentAccess';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import { ApiError } from '@/lib/api/client';
 import { isModuleNotAvailableError } from '@/lib/api/errors';
@@ -66,6 +67,7 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
     const isHost = useIsHost();
+    const contentAccess = useContentAccess();
 
     const [activeStoryId, setActiveStoryId] = useState<string | null>(storyId);
     const [progress, setProgress] = useState(0);
@@ -123,7 +125,7 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
     const author = activeStory?.author ?? null;
     const canWrite = isEventWritable(activeEvent?.status);
     const canManage = Boolean(activeStory && activeMember && (activeMember.id === activeStory.authorMemberId || isHost));
-    const canDeleteStory = canManage && canWrite;
+    const canDeleteStory = canManage && canWrite && !contentAccess.isLocked(activeStory?.id ?? '');
     const { data: appConfig } = useAppConfig();
     const canReportStory =
         Boolean(activeStory) &&

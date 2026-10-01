@@ -42,6 +42,7 @@ vi.mock('@/lib/eventLifecycle', () => ({
     isEventWritable: () => mocks.writable,
     readableModuleKeys: () => new Set(['gallery']),
 }));
+vi.mock('@/hooks/useContentAccess', () => ({ useContentAccess: () => ({ isDemoBuilder: false, isLocked: () => false }) }));
 vi.mock('@/providers/EventProvider', () => ({ useActiveMember: () => mocks.activeMember }));
 vi.mock('@/providers/MobileChromeProvider', () => ({
     useMobileChrome: () => ({ hideMobileTabBar: vi.fn(), showMobileTabBar: vi.fn() }),

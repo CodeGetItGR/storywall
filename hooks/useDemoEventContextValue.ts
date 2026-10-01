@@ -19,6 +19,7 @@ export function useDemoEventContextValue(session: DemoSession): EventContextValu
             activeMember,
             isHost: true,
             isLoading: false,
+            contentAccessMode: 'demoVisitor',
         };
     }, [event, session]);
 }

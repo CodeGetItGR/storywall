@@ -25,6 +25,21 @@ describe('demoActAsHeaders', () => {
         }
     });
 
+    it('edits and deletes content as the admin, who hosts the event', () => {
+        setDemoActAsMember({ eventId: 'evt', memberId: 'guest-1' });
+        for (const [method, path] of [
+            ['PATCH', '/api/posts/p1'],
+            ['DELETE', '/api/posts/p1'],
+            ['DELETE', '/api/comments/c1'],
+            ['DELETE', '/api/stories/s1'],
+            ['DELETE', '/api/medias/m1'],
+            ['DELETE', '/api/wishbook/w1'],
+            ['DELETE', '/api/playlist-suggestions/ps1'],
+        ]) {
+            expect(demoActAsHeaders(method, path)).toEqual({});
+        }
+    });
+
     it('leaves reads and non-content writes alone', () => {
         setDemoActAsMember({ eventId: 'evt', memberId: 'guest-1' });
         expect(demoActAsHeaders('GET', '/api/events/evt/posts')).toEqual({});

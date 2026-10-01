@@ -7,6 +7,8 @@ let activeMemberId: string | null = 'm1';
 let reportTargetTypes: string[] = ['WISHBOOK_ENTRY'];
 let eventStatus = 'ACTIVE';
 let deletedAt: string | null = null;
+let isDemoBuilder = false;
+const createEntry = vi.fn();
 let entries: Array<{ id: string; authorMemberId: string | null; canDelete: boolean }> = [];
 
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
@@ -37,10 +39,11 @@ vi.mock('@/hooks/useWishbook', () => ({
         error: null,
         hasNextPage: false,
     }),
-    useCreateWishbookEntry: () => ({ isPending: false, mutateAsync: vi.fn(), error: null }),
+    useCreateWishbookEntry: () => ({ isPending: false, mutateAsync: createEntry, error: null }),
     useDeleteWishbookEntry: () => ({ isPending: false, mutateAsync: vi.fn() }),
     useWishbookExportDownload: () => ({ download: vi.fn(), isDownloading: false, error: null }),
 }));
+vi.mock('@/hooks/useContentAccess', () => ({ useContentAccess: () => ({ isDemoBuilder, isLocked: () => false }) }));
 vi.mock('@/providers/EventProvider', () => ({
     useActiveEvent: () => ({ id: 'event-1', status: eventStatus, deletedAt, deletionScheduledFor: null }),
     useActiveMember: () => (activeMemberId ? { id: activeMemberId, displayName: 'Me' } : null),
@@ -58,6 +61,8 @@ beforeEach(() => {
     reportTargetTypes = ['WISHBOOK_ENTRY'];
     eventStatus = 'ACTIVE';
     deletedAt = null;
+    isDemoBuilder = false;
+    createEntry.mockReset();
     entries = [{ id: 'w1', authorMemberId: 'm2', canDelete: true }];
 });
 
@@ -125,5 +130,23 @@ describe('Wishbook entry report', () => {
         rerender(<WishbookPage />);
 
         expect(screen.queryByTestId('report-modal')).toBeNull();
+    });
+});
+
+describe('Wishbook composer for hosts', () => {
+    it('stays hidden from a host', () => {
+        render(<WishbookPage />);
+
+        expect(screen.queryByRole('textbox', { name: 'messageAriaLabel' })).toBeNull();
+    });
+
+    it('lets an admin building a demo write a wish signed by whoever they post as', () => {
+        isDemoBuilder = true;
+        render(<WishbookPage />);
+
+        fireEvent.change(screen.getByRole('textbox', { name: 'messageAriaLabel' }), { target: { value: 'Congrats!' } });
+        fireEvent.click(screen.getByRole('button', { name: 'addToWishbook' }));
+
+        expect(createEntry).toHaveBeenCalledWith({ message: 'Congrats!', guestName: undefined });
     });
 });

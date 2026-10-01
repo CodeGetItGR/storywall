@@ -128,6 +128,7 @@ export const DEMO_ALLOWED_BACKEND_PATHS = ['/api/config', '/api/demo/:eventTypeK
 export const DEMO_BLOCKED_HEADER = 'x-storywall-demo-blocked';
 
 let nextId = 0;
+// Every prefix starts with `demo-`: isLocalDemoContentId tells the visitor's content apart by it.
 function newId(prefix: string): string {
     nextId += 1;
     return `${prefix}-${Date.now()}-${nextId}`;

@@ -7,6 +7,7 @@ import { type ChangeEvent, type MouseEvent, type PointerEvent, useCallback, useE
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
+import { useContentAccess } from '@/hooks/useContentAccess';
 import { useGallerySelection } from '@/hooks/useGallerySelection';
 import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
 import { useDeleteMedia, useEventMedia, useOriginalMedia, useUploadMediaBatch } from '@/hooks/useMedia';
@@ -23,6 +24,7 @@ const MAX_FILES_PER_BATCH = 10;
 export function useGalleryScreen() {
     const { activeEvent, eventId, isHost } = useEventRouteContext();
     const activeMember = useActiveMember();
+    const contentAccess = useContentAccess();
     const t = useTranslations('GalleryPage');
     const toErrorMessage = useApiErrorMessage();
     const router = useRouter();
@@ -73,7 +75,11 @@ export function useGalleryScreen() {
     // gone — only a read-only or deleted event stops it.
     const isUploader = Boolean(activeMember && selectedMedia?.uploaderMemberId === activeMember.id);
     const canDeleteMedia =
-        (isHost || isUploader) && selectedMedia !== null && isEventWritable(activeEvent?.status) && !isDeleted;
+        (isHost || isUploader) &&
+        selectedMedia !== null &&
+        isEventWritable(activeEvent?.status) &&
+        !isDeleted &&
+        !contentAccess.isLocked(selectedMedia.id);
     const canReportMedia =
         selectedMedia !== null &&
         !isDeleted &&

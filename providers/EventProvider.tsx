@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useEvent } from '@/hooks/useEvent';
 import { useMyEvents } from '@/hooks/useMyEvents';
 import type { EventDetailResponseDto, EventMemberResponseDto } from '@/lib/api/types';
+import type { ContentAccessMode } from '@/lib/contentPermissions';
 import { getActiveEventCookie, setActiveEventCookie } from '@/lib/storageKeys';
 
 const EMPTY_MEMBERSHIPS: EventMemberResponseDto[] = [];
@@ -31,13 +32,14 @@ export interface EventContextValue {
     activeMember: EventMemberResponseDto | null;
     isHost: boolean;
     isLoading: boolean;
+    contentAccessMode: ContentAccessMode;
 }
 
 export const EventContext = createContext<EventContextValue | null>(null);
 
 export function EventProvider({ children }: { children: ReactNode }) {
     const pathname = usePathname();
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
     const { data: memberships = EMPTY_MEMBERSHIPS, isLoading: isLoadingMemberships } = useMyEvents();
     const routeEventId = urlEventId(pathname);
 
@@ -83,6 +85,8 @@ export function EventProvider({ children }: { children: ReactNode }) {
     const activeMember = useMemo(() => memberships.find((m) => m.eventId === activeEventId) ?? null, [memberships, activeEventId]);
 
     const isHost = activeMember?.role === 'HOST';
+    // Admins only reach event pages to fill a demo event (useAdminDemoEventAccess).
+    const contentAccessMode: ContentAccessMode = user?.role === 'ADMIN' && isHost ? 'demoBuilder' : 'standard';
     const isLoading = isAuthenticated && (isLoadingMemberships || (Boolean(activeEventId) && isLoadingEvent));
 
     const value: EventContextValue = useMemo(
@@ -93,8 +97,9 @@ export function EventProvider({ children }: { children: ReactNode }) {
             activeMember,
             isHost,
             isLoading,
+            contentAccessMode,
         }),
-        [memberships, routeEventId, activeEvent, activeMember, isHost, isLoading],
+        [memberships, routeEventId, activeEvent, activeMember, isHost, isLoading, contentAccessMode],
     );
 
     return <EventContext.Provider value={value}>{children}</EventContext.Provider>;

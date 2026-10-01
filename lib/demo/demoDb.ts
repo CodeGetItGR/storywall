@@ -70,6 +70,11 @@ export function isLocalMedia(media: Pick<MediaResponseDto, 'mediaUrl'>): boolean
     return media.mediaUrl.startsWith('blob:');
 }
 
+// Everything a visitor adds gets a `demo-` id (mockHandlers' newId); the snapshot's ids never do.
+export function isLocalDemoContentId(id: string): boolean {
+    return id.startsWith('demo-');
+}
+
 export function dropLocalMedia(state: DemoSchema): DemoSchema {
     const localIds = new Set(state.media.filter(isLocalMedia).map((m) => m.id));
     if (localIds.size === 0) return state;

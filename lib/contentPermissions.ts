@@ -2,6 +2,17 @@
 // exempt from reporting: their content is exactly what nobody else in the event can remove,
 // so a report to the platform is the only recourse a guest has against it.
 
+import { isLocalDemoContentId } from '@/lib/demo/demoDb';
+
+// 'demoBuilder': an admin filling a demo event, who may edit and delete everything on it.
+// 'demoVisitor': someone trying the public demo, who may only change what they added themselves.
+export type ContentAccessMode = 'standard' | 'demoBuilder' | 'demoVisitor';
+
+/** A public-demo visitor can't edit or delete content that came with the demo. */
+export function isContentLocked(mode: ContentAccessMode, contentId: string): boolean {
+    return mode === 'demoVisitor' && !isLocalDemoContentId(contentId);
+}
+
 type ContentActionContext = {
     isMember: boolean;
     isAuthor: boolean;

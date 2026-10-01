@@ -18,6 +18,7 @@ import { ReportTargetModal } from '@/components/reports';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useAppConfig, useDeletePost, usePostModal, useUpdatePost } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useContentAccess } from '@/hooks/useContentAccess';
 import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
 import type { PostResponseDto } from '@/lib/api/types';
 import { canDeleteContent, canReportContent } from '@/lib/contentPermissions';
@@ -51,21 +52,23 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const memberAvatarUrl = useMemberAvatarUrl();
     const { data: appConfig } = useAppConfig();
     const isHost = useIsHost();
+    const contentAccess = useContentAccess();
     const toErrorMessage = useApiErrorMessage();
     const deletePost = useDeletePost(post.eventId);
     const updatePost = useUpdatePost(post.eventId);
     const canWrite = isEventWritable(activeEvent?.status);
     const isMyPost = activeMember?.id !== undefined && post.authorMemberId === activeMember.id;
+    const isLocked = contentAccess.isLocked(post.id);
     // Editing stays with the author; a host may remove another member's post but not reword it.
-    const canEditPost = isMyPost && canWrite;
-    const canDeletePost = canDeleteContent({ isMember: Boolean(activeMember), isAuthor: isMyPost, isHost, canWrite });
+    const canEditPost = (isMyPost || contentAccess.isDemoBuilder) && canWrite && !isLocked;
+    const canDeletePost = canDeleteContent({ isMember: Boolean(activeMember), isAuthor: isMyPost, isHost, canWrite }) && !isLocked;
     const canReportPost = canReportContent({
         isMember: Boolean(activeMember),
         isAuthor: isMyPost,
         canWrite,
         targetTypeReportable: Boolean(appConfig?.reportTargetTypes?.includes('POST')),
     });
-    const canTogglePin = isHost && canWrite;
+    const canTogglePin = isHost && canWrite && !isLocked;
     const showHostPostBadge = isHostPost && !isHost;
     const reactionTypes = appConfig?.reactionTypesByEventType[post.eventType ?? activeEvent?.eventType ?? ''] ?? [];
 

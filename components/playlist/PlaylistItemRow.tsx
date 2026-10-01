@@ -10,6 +10,7 @@ import { ReportTargetModal } from '@/components/reports';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useAppConfig } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useContentAccess } from '@/hooks/useContentAccess';
 import { useCreatePlaylistVote, useDeletePlaylistSuggestion, useDeletePlaylistVote, usePlaylistVotes } from '@/hooks/usePlaylist';
 import { isModuleNotAvailableError } from '@/lib/api/errors';
 import type { PlaylistSuggestionResponseDto, PlaylistVoteType } from '@/lib/api/types';
@@ -30,6 +31,7 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
     const isHost = useIsHost();
+    const contentAccess = useContentAccess();
     const eventId = activeEvent?.id ?? '';
     const memberId = activeMember?.id ?? null;
 
@@ -48,7 +50,8 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
     const canWrite = isEventWritable(activeEvent?.status);
     const isBusy = createVote.isPending || deleteVote.isPending || resolvingVote;
     const canVote = Boolean(memberId) && canWrite;
-    const canDeleteSuggestion = Boolean(memberId && canWrite && (isHost || suggestion.authorMemberId === memberId));
+    const canDeleteSuggestion =
+        Boolean(memberId && canWrite && (isHost || suggestion.authorMemberId === memberId)) && !contentAccess.isLocked(suggestion.id);
     const canReportSuggestion = canReportContent({
         isMember: Boolean(memberId),
         isAuthor: suggestion.authorMemberId === memberId,
