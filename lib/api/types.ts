@@ -2635,6 +2635,7 @@ export type AdminAuditAction =
     | 'CONTENT_VIEWED'
     | 'CASE_REVIEW_STARTED'
     | 'CASE_DISMISSED'
+    | 'CASE_RESOLVED'
     | 'CONTENT_REMOVED'
     | 'MEMBER_REMOVED'
     | 'MEMBER_BANNED'
