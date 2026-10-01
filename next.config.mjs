@@ -17,6 +17,25 @@ function resolveAppVersion() {
     }
 }
 
+// Hosts the backend's media URLs are served from, comma-separated — for R2,
+// "<account-id>.r2.cloudflarestorage.com". Each one is allowed bare and with
+// any subdomain, since presigned URLs can put the bucket in the hostname.
+// Read at build time: changing it means a rebuild. A production build without
+// it fails, rather than shipping a site whose every media image 400s.
+function resolveMediaHostPatterns() {
+    const hosts = (process.env.MEDIA_IMAGE_HOSTS ?? '')
+        .split(',')
+        .map((host) => host.trim())
+        .filter(Boolean);
+    if (hosts.length === 0 && process.env.VERCEL_ENV === 'production') {
+        throw new Error('MEDIA_IMAGE_HOSTS is not set; next/image would reject every media URL.');
+    }
+    return hosts.flatMap((host) => [
+        { protocol: 'https', hostname: host },
+        { protocol: 'https', hostname: `**.${host}` },
+    ]);
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     env: {
@@ -31,14 +50,7 @@ const nextConfig = {
                 protocol: 'https',
                 hostname: '**.r2.dev',
             },
-            {
-                protocol: 'https',
-                hostname: '71ade89bbcb4e06fa046d831464581b0.r2.cloudflarestorage.com',
-            },
-            {
-                protocol: 'https',
-                hostname: '**.71ade89bbcb4e06fa046d831464581b0.r2.cloudflarestorage.com',
-            },
+            ...resolveMediaHostPatterns(),
             {
                 protocol: 'https',
                 hostname: 'images.pexels.com',
