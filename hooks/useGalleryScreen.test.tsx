@@ -174,10 +174,10 @@ describe('useGalleryScreen', () => {
             expect(openItem('someone-else').result.current.canReportMedia).toBe(false);
         });
 
-        it('is false when the event is not writable', () => {
+        it('is true when the event is read-only', () => {
             mocks.activeMember = { id: 'me' };
             mocks.writable = false;
-            expect(openItem('someone-else').result.current.canReportMedia).toBe(false);
+            expect(openItem('someone-else').result.current.canReportMedia).toBe(true);
         });
 
         it('is false when config does not list MEDIA', () => {
@@ -223,11 +223,11 @@ describe('useGalleryScreen', () => {
             act(() => result.current.openReport());
             expect(result.current.reportOpen).toBe(true);
 
-            mocks.writable = false;
+            mocks.reportTargetTypes = [];
             rerender();
             expect(result.current.reportOpen).toBe(false);
 
-            mocks.writable = true;
+            mocks.reportTargetTypes = ['MEDIA'];
             rerender();
             expect(result.current.reportOpen).toBe(false);
         });

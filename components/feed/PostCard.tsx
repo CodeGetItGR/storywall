@@ -62,7 +62,6 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const canReportPost = canReportContent({
         isMember: Boolean(activeMember),
         isAuthor: isMyPost,
-        canWrite,
         targetTypeReportable: Boolean(appConfig?.reportTargetTypes?.includes('POST')),
     });
     const canTogglePin = isHost && canWrite;

@@ -76,11 +76,9 @@ export function useGalleryScreen() {
         (isHost || isUploader) && selectedMedia !== null && isEventWritable(activeEvent?.status) && !isDeleted;
     const canReportMedia =
         selectedMedia !== null &&
-        !isDeleted &&
         canReportContent({
             isMember: Boolean(activeMember),
             isAuthor: isUploader,
-            canWrite: isEventWritable(activeEvent?.status),
             targetTypeReportable: Boolean(appConfig?.reportTargetTypes?.includes('MEDIA')),
         });
     // The dialog belongs to the item it was opened for: if the selection moves, the item leaves the list

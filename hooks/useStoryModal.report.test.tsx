@@ -81,17 +81,19 @@ describe('useStoryModal canReportStory', () => {
         expect(mount().result.current.canReportStory).toBe(false);
     });
 
-    it('is false for non-members, read-only events, and when config omits STORY', () => {
+    it('is false for non-members and when config omits STORY', () => {
         activeMemberId = null;
         expect(mount().result.current.canReportStory).toBe(false);
 
         activeMemberId = 'm1';
-        eventStatus = 'ENDED';
-        expect(mount().result.current.canReportStory).toBe(false);
-
-        eventStatus = 'ACTIVE';
         reportTargetTypes = [];
         expect(mount().result.current.canReportStory).toBe(false);
+    });
+
+    it('is true when the event is read-only', () => {
+        activeMemberId = 'm1';
+        eventStatus = 'ENDED';
+        expect(mount().result.current.canReportStory).toBe(true);
     });
 
     it('does nothing when the viewer cannot report', () => {

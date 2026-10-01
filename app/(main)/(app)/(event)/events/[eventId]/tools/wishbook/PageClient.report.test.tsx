@@ -96,24 +96,25 @@ describe('Wishbook entry report', () => {
         expect(screen.queryByRole('button', { name: 'reportEntry' })).toBeNull();
     });
 
-    it('offers no report to non-members or on a read-only event', () => {
+    it('offers no report to non-members', () => {
         activeMemberId = null;
-        const { unmount } = render(<WishbookPage />);
-        expect(screen.queryByRole('button', { name: 'reportEntry' })).toBeNull();
-        unmount();
-
-        activeMemberId = 'm1';
-        eventStatus = 'ENDED';
         render(<WishbookPage />);
         expect(screen.queryByRole('button', { name: 'reportEntry' })).toBeNull();
     });
 
-    it('offers no report on a soft-deleted event, but still lists the entries', () => {
+    it('offers the report when the event is read-only', () => {
+        activeMemberId = 'm1';
+        eventStatus = 'ENDED';
+        render(<WishbookPage />);
+        expect(screen.getAllByRole('button', { name: 'reportEntry' }).length).toBeGreaterThan(0);
+    });
+
+    it('offers the report on a soft-deleted event, and still lists the entries', () => {
         deletedAt = '2026-09-30T12:00:00Z';
         render(<WishbookPage />);
 
         expect(screen.getByText('Best wishes')).toBeTruthy();
-        expect(screen.queryByRole('button', { name: 'reportEntry' })).toBeNull();
+        expect(screen.getAllByRole('button', { name: 'reportEntry' }).length).toBeGreaterThan(0);
     });
 
     it('drops the dialog when the entry it was opened for disappears', async () => {

@@ -90,15 +90,16 @@ describe('PlaylistItemRow report', () => {
         expect(screen.queryByRole('button', { name: 'moreOptions' })).toBeNull();
     });
 
-    it('offers no report to non-members or on a read-only event', () => {
+    it('offers no report to non-members', () => {
         activeMemberId = null;
-        const { unmount } = render(<PlaylistItemRow suggestion={suggestion('m2')} />);
+        render(<PlaylistItemRow suggestion={suggestion('m2')} />);
         expect(screen.queryByRole('button', { name: 'moreOptions' })).toBeNull();
-        unmount();
+    });
 
+    it('offers the report when the event is read-only', () => {
         activeMemberId = 'm1';
         eventStatus = 'ENDED';
         render(<PlaylistItemRow suggestion={suggestion('m2')} />);
-        expect(screen.queryByRole('button', { name: 'moreOptions' })).toBeNull();
+        expect(screen.getByRole('button', { name: 'moreOptions' })).toBeTruthy();
     });
 });

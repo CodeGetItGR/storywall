@@ -20,7 +20,7 @@ import { useCreateWishbookEntry, useDeleteWishbookEntry, useWishbook, useWishboo
 import type { WishbookEntryResponseDto } from '@/lib/api/types';
 import { canReportContent } from '@/lib/contentPermissions';
 import { formatDate } from '@/lib/datetime';
-import { isEventDeleted, isEventWritable } from '@/lib/eventLifecycle';
+import { isEventDeleted } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider';
 
@@ -89,7 +89,6 @@ export default function WishbookPage() {
         return canReportContent({
             isMember: Boolean(member),
             isAuthor: Boolean(member && entry.authorMemberId === member.id),
-            canWrite: isEventWritable(event?.status) && !isDeleted,
             targetTypeReportable: reportable,
         });
     }
