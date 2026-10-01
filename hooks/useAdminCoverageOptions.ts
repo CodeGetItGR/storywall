@@ -4,7 +4,7 @@ import { useInvalidate } from '@refinedev/core';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { adminKeys } from '@/hooks/useAdmin';
-import { appConfigKeys } from '@/hooks/useAppConfig';
+import { invalidatePublicConfig } from '@/hooks/useAppConfig';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { CoverageOptionPatchDto, CoverageOptionRequestDto, CoverageOptionResponseDto } from '@/lib/api/types';
@@ -19,7 +19,7 @@ function useRefreshPlans() {
     return () => {
         void invalidate({ resource: 'plan-tiers', dataProviderName: 'plan-tiers', invalidates: ['list'] });
         void queryClient.invalidateQueries({ queryKey: adminKeys.planTiers('EVENT', true) });
-        void queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+        invalidatePublicConfig(queryClient);
     };
 }
 

@@ -4,7 +4,7 @@ import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
 import { adminKeys } from '@/hooks/useAdmin';
-import { appConfigKeys } from '@/hooks/useAppConfig';
+import { invalidatePublicConfig } from '@/hooks/useAppConfig';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { PlanTierModuleConfigDto, PlanTierModuleConfigPatchDto } from '@/lib/api/types';
@@ -44,7 +44,7 @@ export function useUpdatePlanModuleConfig() {
             api.patch<PlanTierModuleConfigDto>(endpoints.admin.planTiers.moduleConfig(planId, moduleKey), input),
         onSuccess: (_result, { planId }) => {
             queryClient.invalidateQueries({ queryKey: adminKeys.planTierModuleConfigs(planId) });
-            queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+            invalidatePublicConfig(queryClient);
         },
     });
 }

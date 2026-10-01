@@ -1,7 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
+import { type QueryClient, useQuery } from '@tanstack/react-query';
 
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
+import { revalidatePublicConfig } from '@/lib/api/publicConfigActions';
 import type {
     AppBetaFeedbackConfigDto,
     AppConfigResponseDto,
@@ -17,11 +18,27 @@ export const appConfigKeys = {
     all: ['app-config'] as const,
 };
 
+// After an admin edit that changes public config: refetch it here and drop the
+// server-cached copy the landing page renders from.
+export function invalidatePublicConfig(queryClient: QueryClient): void {
+    void queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+    revalidatePublicConfig().catch(() => {
+        // Best-effort — the server copy still expires on its own.
+    });
+}
+
+// The backend sends max-age=60, so a plain fetch could return the browser's
+// stale copy after an admin edit. no-cache revalidates with the ETag instead,
+// which costs a 304 when nothing changed.
+export function fetchAppConfig(): Promise<AppConfigResponseDto> {
+    return api.publicGet<AppConfigResponseDto>(endpoints.config.get, { cache: 'no-cache' });
+}
+
 // GET /api/config — public, read-only, and safe to cache aggressively.
 export function useAppConfig(options: { enabled?: boolean } = {}) {
     return useQuery({
         queryKey: appConfigKeys.all,
-        queryFn: () => api.publicGet<AppConfigResponseDto>(endpoints.config.get),
+        queryFn: fetchAppConfig,
         staleTime: 5 * 60 * 1000,
         gcTime: 30 * 60 * 1000,
         enabled: options.enabled ?? true,

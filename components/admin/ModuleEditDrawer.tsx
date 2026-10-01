@@ -10,7 +10,7 @@ import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { adminKeys } from '@/hooks/useAdmin';
-import { appConfigKeys } from '@/hooks/useAppConfig';
+import { invalidatePublicConfig } from '@/hooks/useAppConfig';
 import { adminErrorMessageKey, checked, emptyToNull } from '@/lib/adminUtils';
 import type { PlatformModulePatchDto, PlatformModuleResponseDto } from '@/lib/api/types';
 
@@ -24,7 +24,7 @@ export function ModuleEditDrawer({ module, onCloseAction }: { module: PlatformMo
         mutationOptions: {
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: adminKeys.platformModules });
-                queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+                invalidatePublicConfig(queryClient);
             },
         },
     });

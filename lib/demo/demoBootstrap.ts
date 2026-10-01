@@ -1,9 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query';
 
-import { appConfigKeys } from '@/hooks/useAppConfig';
-import { api } from '@/lib/api/client';
-import { endpoints } from '@/lib/api/endpoints';
-import type { AppConfigResponseDto } from '@/lib/api/types';
+import { appConfigKeys, fetchAppConfig } from '@/hooks/useAppConfig';
 import { demoStorageKey, swapMediaUrls } from '@/lib/demo/demoDb';
 import { registerDemoEventRoute } from '@/lib/demo/demoRouting';
 import { createDemoSession, type DemoSession } from '@/lib/demo/demoSession';
@@ -23,7 +20,7 @@ async function loadPlanTierName(queryClient: QueryClient, planTier: string): Pro
         // Seeds the demo's own cache, so useAppConfig() inside the demo doesn't fetch it again.
         const config = await queryClient.fetchQuery({
             queryKey: appConfigKeys.all,
-            queryFn: () => api.publicGet<AppConfigResponseDto>(endpoints.config.get),
+            queryFn: fetchAppConfig,
         });
         return config.planTiers.find((tier) => tier.code === planTier)?.name ?? null;
     } catch {
