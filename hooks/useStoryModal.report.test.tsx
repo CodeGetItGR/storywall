@@ -2,12 +2,12 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useStoryModal } from '@/hooks/useStoryModal';
-import type { MediaResponseDto, StoryResponseDto } from '@/lib/api/types';
+import type { EventStatus, MediaResponseDto, StoryResponseDto } from '@/lib/api/types';
 
 let story: StoryResponseDto;
 let activeMemberId: string | null = 'm1';
 let reportTargetTypes: string[] = ['STORY'];
-let eventStatus = 'ACTIVE';
+let eventStatus: EventStatus = 'ACTIVE';
 let mediaType = 'IMAGE';
 
 vi.mock('@/hooks', () => ({
@@ -92,7 +92,7 @@ describe('useStoryModal canReportStory', () => {
 
     it('is true when the event is read-only', () => {
         activeMemberId = 'm1';
-        eventStatus = 'ENDED';
+        eventStatus = 'DRAFT';
         expect(mount().result.current.canReportStory).toBe(true);
     });
 

@@ -1,11 +1,13 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { EventStatus } from '@/lib/api/types';
+
 import WishbookPage from './PageClient';
 
 let activeMemberId: string | null = 'm1';
 let reportTargetTypes: string[] = ['WISHBOOK_ENTRY'];
-let eventStatus = 'ACTIVE';
+let eventStatus: EventStatus = 'ACTIVE';
 let deletedAt: string | null = null;
 let entries: Array<{ id: string; authorMemberId: string | null; canDelete: boolean }> = [];
 
@@ -104,7 +106,7 @@ describe('Wishbook entry report', () => {
 
     it('offers the report when the event is read-only', () => {
         activeMemberId = 'm1';
-        eventStatus = 'ENDED';
+        eventStatus = 'DRAFT';
         render(<WishbookPage />);
         expect(screen.getAllByRole('button', { name: 'reportEntry' }).length).toBeGreaterThan(0);
     });
