@@ -2237,26 +2237,6 @@ export interface AuditLogResponseDto {
     createdAt: string;
 }
 
-export interface ModerationActionRequestDto {
-    eventId: string;
-    moderatorMemberId?: string;
-    targetType: string;
-    targetId: string;
-    actionType: string;
-    reason?: string;
-}
-
-export interface ModerationActionResponseDto {
-    id: string;
-    eventId: string;
-    moderatorMemberId: string | null;
-    targetType: string;
-    targetId: string;
-    actionType: string;
-    reason: string | null;
-    createdAt: string;
-}
-
 export interface ReportRequestDto {
     reporterMemberId?: string;
     eventId: string;
@@ -2643,4 +2623,135 @@ export interface GiftFramingDto {
 // `details` on a 400/3036. 0 means this wrong PIN locked the card.
 export interface GiftPinInvalidDetails {
     attemptsLeft: number;
+}
+
+// --- Admin moderation center (Community Guidelines §18) ---
+// Mirrors dto/moderation/*. JSON nulls are sent, so nullable means `T | null`.
+
+export type ModerationCaseStatus = 'OPEN' | 'UNDER_REVIEW' | 'CLOSED';
+export type ModerationOutcome = 'DISMISSED' | 'ACTION_TAKEN';
+
+export type AdminAuditAction =
+    | 'CONTENT_VIEWED'
+    | 'CASE_REVIEW_STARTED'
+    | 'CASE_DISMISSED'
+    | 'CASE_RESOLVED'
+    | 'CONTENT_REMOVED'
+    | 'MEMBER_REMOVED'
+    | 'MEMBER_BANNED'
+    | 'BAN_LIFTED'
+    | 'ACCOUNT_SUSPENDED'
+    | 'ACCOUNT_CREATED'
+    | 'ACCOUNT_STATUS_CHANGED'
+    | 'ACCOUNT_ROLE_CHANGED'
+    | 'ACCOUNT_EMAIL_CHANGED'
+    | 'ACCOUNT_DELETED';
+
+// GET /api/admin/moderation/cases?status=&page=&size= (Page<ModerationCaseSummaryDto>).
+// decisionId/outcome/decidedAt are set only on CLOSED cases; topReason, firstReportedAt and
+// lastReportedAt are null on CLOSED rows.
+export interface ModerationCaseSummaryDto {
+    targetType: ReportTargetType;
+    targetId: string;
+    eventId: string;
+    eventTitle: string | null;
+    reportCount: number;
+    topReason: ReportReason | null;
+    firstReportedAt: string | null;
+    lastReportedAt: string | null;
+    status: ModerationCaseStatus;
+    decisionId: string | null;
+    outcome: ModerationOutcome | null;
+    decidedAt: string | null;
+}
+
+export interface ModerationReportDto {
+    id: string;
+    reason: ReportReason;
+    description: string | null;
+    status: string;
+    createdAt: string;
+    reporterMemberId: string | null;
+    reporterDisplayName: string | null;
+}
+
+export interface ModerationContentDto {
+    text: string | null;
+    authorMemberId: string | null;
+    authorUserId: string | null;
+    authorDisplayName: string | null;
+    authorIsHost: boolean;
+    media: MediaResponseDto[];
+    createdAt: string;
+}
+
+export interface AllowedActionsDto {
+    removeContent: boolean;
+    removeMember: boolean;
+    banFromEvent: boolean;
+    suspendAccount: boolean;
+}
+
+export interface ModerationDecisionDto {
+    id: string;
+    targetType: ReportTargetType;
+    targetId: string;
+    eventId: string;
+    outcome: ModerationOutcome;
+    contentRemoved: boolean;
+    memberRemoved: boolean;
+    banned: boolean;
+    accountSuspended: boolean;
+    reportCount: number;
+    adminUserId: string;
+    note: string | null;
+    createdAt: string;
+}
+
+export interface EventBanDto {
+    id: string;
+    eventId: string;
+    userId: string;
+    decisionId: string | null;
+    createdAt: string;
+    liftedAt: string | null;
+}
+
+// GET /api/admin/moderation/cases/{targetType}/{targetId}. Audit-logs the read.
+export interface ModerationCaseDetailDto {
+    targetType: ReportTargetType;
+    targetId: string;
+    eventId: string;
+    eventTitle: string | null;
+    status: ModerationCaseStatus;
+    reports: ModerationReportDto[];
+    content: ModerationContentDto | null;
+    allowedActions: AllowedActionsDto;
+    decisions: ModerationDecisionDto[];
+    priorDecisionsAgainstAuthor: ModerationDecisionDto[];
+    bans: EventBanDto[];
+}
+
+// POST .../decision. 400/3039 when an action does not apply to the target type,
+// 409/5106 when already decided, 5107 host removal, 5108 admin suspension.
+export interface ModerationDecisionRequestDto {
+    outcome: ModerationOutcome;
+    removeContent: boolean;
+    removeMember: boolean;
+    banFromEvent: boolean;
+    suspendAccount: boolean;
+    note?: string | null; // max 2000
+}
+
+// GET /api/admin/audit-log?targetId=&adminUserId=&page=&size= (Page, newest first).
+export interface AdminAuditLogResponseDto {
+    id: string;
+    adminUserId: string;
+    action: AdminAuditAction;
+    targetType: string;
+    targetId: string | null;
+    eventId: string | null;
+    details: Record<string, unknown>;
+    ipAddress: string | null;
+    createdAt: string;
 }

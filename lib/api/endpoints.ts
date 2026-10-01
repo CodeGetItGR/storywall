@@ -236,14 +236,18 @@ export const endpoints = {
         create: '/api/post-medias',
     },
 
+    adminModeration: {
+        cases: '/api/admin/moderation/cases',
+        case: (targetType: string, targetId: string) => `/api/admin/moderation/cases/${targetType}/${targetId}`,
+        review: (targetType: string, targetId: string) => `/api/admin/moderation/cases/${targetType}/${targetId}/review`,
+        decision: (targetType: string, targetId: string) => `/api/admin/moderation/cases/${targetType}/${targetId}/decision`,
+        ban: (banId: string) => `/api/admin/moderation/bans/${banId}`,
+        auditLog: '/api/admin/audit-log',
+    },
+
     auditLogs: {
         list: '/api/audit-logs',
         byId: (id: string) => `/api/audit-logs/${id}`,
-    },
-
-    moderationActions: {
-        list: '/api/moderation-actions',
-        byId: (id: string) => `/api/moderation-actions/${id}`,
     },
 
     reports: {

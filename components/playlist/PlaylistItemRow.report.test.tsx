@@ -2,11 +2,11 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PlaylistItemRow } from '@/components/playlist/PlaylistItemRow';
-import type { PlaylistSuggestionResponseDto } from '@/lib/api/types';
+import type { EventStatus, PlaylistSuggestionResponseDto } from '@/lib/api/types';
 
 let activeMemberId: string | null = 'm1';
 let reportTargetTypes: string[] = ['PLAYLIST_SUGGESTION'];
-let eventStatus = 'ACTIVE';
+let eventStatus: EventStatus = 'ACTIVE';
 
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'error' }));
@@ -91,15 +91,16 @@ describe('PlaylistItemRow report', () => {
         expect(screen.queryByRole('button', { name: 'moreOptions' })).toBeNull();
     });
 
-    it('offers no report to non-members or on a read-only event', () => {
+    it('offers no report to non-members', () => {
         activeMemberId = null;
-        const { unmount } = render(<PlaylistItemRow suggestion={suggestion('m2')} />);
-        expect(screen.queryByRole('button', { name: 'moreOptions' })).toBeNull();
-        unmount();
-
-        activeMemberId = 'm1';
-        eventStatus = 'ENDED';
         render(<PlaylistItemRow suggestion={suggestion('m2')} />);
         expect(screen.queryByRole('button', { name: 'moreOptions' })).toBeNull();
+    });
+
+    it('offers the report when the event is read-only', () => {
+        activeMemberId = 'm1';
+        eventStatus = 'DRAFT';
+        render(<PlaylistItemRow suggestion={suggestion('m2')} />);
+        expect(screen.getByRole('button', { name: 'moreOptions' })).toBeTruthy();
     });
 });

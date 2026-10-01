@@ -132,7 +132,6 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
         canReportContent({
             isMember: Boolean(activeMember),
             isAuthor: Boolean(activeStory && activeMember && activeStory.authorMemberId === activeMember.id),
-            canWrite,
             targetTypeReportable: Boolean(appConfig?.reportTargetTypes?.includes('STORY')),
         });
     const canAdvanceStory = Boolean(activeStory && group && storyIndex >= 0);

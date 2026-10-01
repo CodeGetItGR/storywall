@@ -7,6 +7,7 @@ import type { MediaResponseDto } from '@/lib/api/types';
 const mocks = vi.hoisted(() => ({
     media: [] as MediaResponseDto[],
     isHost: false,
+    activeEvent: null as { status: string; deletedAt: string | null } | null,
     activeMember: null as { id: string } | null,
     reportTargetTypes: ['MEDIA'] as string[],
     writable: true,
@@ -17,7 +18,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock('next-intl', () => ({ useTranslations: () => Object.assign((key: string) => key, { has: () => false }) }));
 vi.mock('@/components/routing/EventRouteGate', () => ({
-    useEventRouteContext: () => ({ activeEvent: null, eventId: 'event-1', isHost: mocks.isHost }),
+    useEventRouteContext: () => ({ activeEvent: mocks.activeEvent, eventId: 'event-1', isHost: mocks.isHost }),
 }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'error' }));
 vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: () => ({ data: { media: {}, reportTargetTypes: mocks.reportTargetTypes } }) }));
@@ -38,7 +39,7 @@ vi.mock('@/hooks/useMedia', () => ({
     useUploadMediaBatch: () => ({}),
 }));
 vi.mock('@/lib/eventLifecycle', () => ({
-    isEventDeleted: () => false,
+    isEventDeleted: (event: { deletedAt: string | null } | null) => Boolean(event?.deletedAt),
     isEventWritable: () => mocks.writable,
     readableModuleKeys: () => new Set(['gallery']),
 }));
@@ -57,6 +58,7 @@ describe('useGalleryScreen', () => {
     afterEach(() => {
         cleanup();
         mocks.isHost = false;
+        mocks.activeEvent = null;
         mocks.activeMember = null;
         mocks.reportTargetTypes = ['MEDIA'];
         mocks.writable = true;
@@ -175,10 +177,20 @@ describe('useGalleryScreen', () => {
             expect(openItem('someone-else').result.current.canReportMedia).toBe(false);
         });
 
-        it('is false when the event is not writable', () => {
+        it('is true when the event is read-only', () => {
             mocks.activeMember = { id: 'me' };
             mocks.writable = false;
-            expect(openItem('someone-else').result.current.canReportMedia).toBe(false);
+            expect(openItem('someone-else').result.current.canReportMedia).toBe(true);
+        });
+
+        it('is true on a soft-deleted event, where nothing can be deleted', () => {
+            mocks.activeMember = { id: 'me' };
+            mocks.isHost = true;
+            mocks.activeEvent = { status: 'ACTIVE', deletedAt: '2026-09-30T12:00:00Z' };
+            mocks.writable = false;
+            const { result } = openItem('someone-else');
+            expect(result.current.canReportMedia).toBe(true);
+            expect(result.current.canDeleteMedia).toBe(false);
         });
 
         it('is false when config does not list MEDIA', () => {
@@ -224,11 +236,11 @@ describe('useGalleryScreen', () => {
             act(() => result.current.openReport());
             expect(result.current.reportOpen).toBe(true);
 
-            mocks.writable = false;
+            mocks.reportTargetTypes = [];
             rerender();
             expect(result.current.reportOpen).toBe(false);
 
-            mocks.writable = true;
+            mocks.reportTargetTypes = ['MEDIA'];
             rerender();
             expect(result.current.reportOpen).toBe(false);
         });

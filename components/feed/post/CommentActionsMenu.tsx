@@ -39,7 +39,6 @@ export function CommentActionsMenu({ comment, wrapperClassName }: CommentActions
     const canReport = canReportContent({
         isMember: Boolean(activeMember),
         isAuthor: isMyComment,
-        canWrite,
         targetTypeReportable: Boolean(appConfig?.reportTargetTypes?.includes('COMMENT')),
     });
 

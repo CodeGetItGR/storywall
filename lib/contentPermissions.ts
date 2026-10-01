@@ -28,13 +28,13 @@ export function canDeleteContent({ isMember, isAuthor, isHost, canWrite }: Conte
 /**
  * Anyone in the event except the author, when the platform accepts reports for this target type.
  * Content with no author on record (an anonymous QR upload, or an author who left) is reportable:
- * the report is about the content.
+ * the report is about the content. Not gated on the event being writable: whatever a member can
+ * see — on an ended event, or a host on a deleted one — they can report (DSA Art. 16).
  */
 export function canReportContent({
     isMember,
     isAuthor,
-    canWrite,
     targetTypeReportable,
-}: Omit<ContentActionContext, 'isHost'> & { targetTypeReportable: boolean }): boolean {
-    return isMember && canWrite && !isAuthor && targetTypeReportable;
+}: Pick<ContentActionContext, 'isMember' | 'isAuthor'> & { targetTypeReportable: boolean }): boolean {
+    return isMember && !isAuthor && targetTypeReportable;
 }

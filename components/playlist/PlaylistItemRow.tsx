@@ -55,7 +55,6 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
     const canReportSuggestion = canReportContent({
         isMember: Boolean(memberId),
         isAuthor: suggestion.authorMemberId === memberId,
-        canWrite,
         targetTypeReportable: Boolean(appConfig?.reportTargetTypes?.includes('PLAYLIST_SUGGESTION')),
     });
 

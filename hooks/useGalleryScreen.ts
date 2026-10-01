@@ -82,11 +82,9 @@ export function useGalleryScreen() {
         !contentAccess.isLocked(selectedMedia.id);
     const canReportMedia =
         selectedMedia !== null &&
-        !isDeleted &&
         canReportContent({
             isMember: Boolean(activeMember),
             isAuthor: isUploader,
-            canWrite: isEventWritable(activeEvent?.status),
             targetTypeReportable: Boolean(appConfig?.reportTargetTypes?.includes('MEDIA')),
         });
     // The dialog belongs to the item it was opened for: if the selection moves, the item leaves the list

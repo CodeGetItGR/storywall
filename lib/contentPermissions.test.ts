@@ -27,7 +27,7 @@ describe('canDeleteContent', () => {
 });
 
 describe('canReportContent', () => {
-    const base = { isMember: true, isAuthor: false, canWrite: true, targetTypeReportable: true };
+    const base = { isMember: true, isAuthor: false, targetTypeReportable: true };
 
     it("lets a member report someone else's content, including a host's", () => {
         expect(canReportContent(base)).toBe(true);
@@ -39,13 +39,13 @@ describe('canReportContent', () => {
 
     it('lets a member report content that has no author on record', () => {
         expect(
-            canReportContent({ isMember: true, isAuthor: false, canWrite: true, targetTypeReportable: true }),
+            canReportContent({ isMember: true, isAuthor: false, targetTypeReportable: true }),
         ).toBe(true);
     });
 
     it('never lets the author report their own content', () => {
         expect(
-            canReportContent({ isMember: true, isAuthor: true, canWrite: true, targetTypeReportable: true }),
+            canReportContent({ isMember: true, isAuthor: true, targetTypeReportable: true }),
         ).toBe(false);
     });
 
@@ -53,8 +53,8 @@ describe('canReportContent', () => {
         expect(canReportContent({ ...base, targetTypeReportable: false })).toBe(false);
     });
 
-    it('does not offer a report once the event is not writable', () => {
-        expect(canReportContent({ ...base, canWrite: false })).toBe(false);
+    it('does not depend on the event being writable: content that is visible can be reported', () => {
+        expect(canReportContent(base)).toBe(true);
     });
 });
 

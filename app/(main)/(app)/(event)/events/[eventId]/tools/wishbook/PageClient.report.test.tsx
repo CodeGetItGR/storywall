@@ -1,11 +1,13 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { EventStatus } from '@/lib/api/types';
+
 import WishbookPage from './PageClient';
 
 let activeMemberId: string | null = 'm1';
 let reportTargetTypes: string[] = ['WISHBOOK_ENTRY'];
-let eventStatus = 'ACTIVE';
+let eventStatus: EventStatus = 'ACTIVE';
 let deletedAt: string | null = null;
 let isDemoBuilder = false;
 const createEntry = vi.fn();
@@ -101,24 +103,25 @@ describe('Wishbook entry report', () => {
         expect(screen.queryByRole('button', { name: 'reportEntry' })).toBeNull();
     });
 
-    it('offers no report to non-members or on a read-only event', () => {
+    it('offers no report to non-members', () => {
         activeMemberId = null;
-        const { unmount } = render(<WishbookPage />);
-        expect(screen.queryByRole('button', { name: 'reportEntry' })).toBeNull();
-        unmount();
-
-        activeMemberId = 'm1';
-        eventStatus = 'ENDED';
         render(<WishbookPage />);
         expect(screen.queryByRole('button', { name: 'reportEntry' })).toBeNull();
     });
 
-    it('offers no report on a soft-deleted event, but still lists the entries', () => {
+    it('offers the report when the event is read-only', () => {
+        activeMemberId = 'm1';
+        eventStatus = 'DRAFT';
+        render(<WishbookPage />);
+        expect(screen.getAllByRole('button', { name: 'reportEntry' }).length).toBeGreaterThan(0);
+    });
+
+    it('offers the report on a soft-deleted event, and still lists the entries', () => {
         deletedAt = '2026-09-30T12:00:00Z';
         render(<WishbookPage />);
 
         expect(screen.getByText('Best wishes')).toBeTruthy();
-        expect(screen.queryByRole('button', { name: 'reportEntry' })).toBeNull();
+        expect(screen.getAllByRole('button', { name: 'reportEntry' }).length).toBeGreaterThan(0);
     });
 
     it('drops the dialog when the entry it was opened for disappears', async () => {

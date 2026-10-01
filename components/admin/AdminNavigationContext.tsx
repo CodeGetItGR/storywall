@@ -5,6 +5,7 @@ import {
     Bug,
     CalendarDays,
     ChartNoAxesCombined,
+    Flag,
     Handshake,
     Layers3,
     type LucideIcon,
@@ -41,6 +42,7 @@ export type AdminTab =
     | 'billingOps'
     | 'withdrawals'
     | 'accounts'
+    | 'reports'
     | 'bugReports'
     | 'errorEvents';
 
@@ -72,6 +74,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#assignments': 'assignments',
     '#billing-ops': 'billingOps',
     '#accounts': 'accounts',
+    '#reports': 'reports',
     '#bug-reports': 'bugReports',
     '#errors': 'errorEvents',
 };
@@ -90,6 +93,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     billingOps: '#billing-ops',
     withdrawals: WITHDRAWALS_HASH_ROOT,
     accounts: '#accounts',
+    reports: '#reports',
     bugReports: '#bug-reports',
     errorEvents: '#errors',
 };
@@ -175,6 +179,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'assignments', label: t('assignments'), icon: Layers3 },
             { key: 'billingOps', label: t('billingOps'), icon: Receipt },
             { key: 'withdrawals', label: t('withdrawals'), icon: Undo2 },
+            { key: 'reports', label: t('reports'), icon: Flag },
             { key: 'bugReports', label: t('bugReports'), icon: Bug },
             { key: 'errorEvents', label: t('errorEvents'), icon: OctagonAlert },
         ],

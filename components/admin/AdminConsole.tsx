@@ -12,6 +12,7 @@ import { CollaborationsSection } from '@/components/admin/collaborations/Collabo
 import { CostTrackingPanel } from '@/components/admin/CostTrackingPanel';
 import { DemoEventsSection } from '@/components/admin/demoEvents/DemoEventsSection';
 import { FunnelPanel } from '@/components/admin/funnel/FunnelPanel';
+import { ModerationPanel } from '@/components/admin/moderation/ModerationPanel';
 import { PaidServicesCatalogPanel } from '@/components/admin/PaidServicesCatalogPanel';
 import { PlanAssignmentPanel } from '@/components/admin/PlanAssignmentPanel';
 import { PlansSection } from '@/components/admin/plans/PlansSection';
@@ -34,6 +35,13 @@ export function AdminConsole() {
     if (tab === 'reactionTypes') return <ReactionTypesCatalogPanel />;
     if (tab === 'demoEvents') return <DemoEventsSection />;
     if (tab === 'withdrawals') return <WithdrawalsSection />;
+    if (tab === 'reports') {
+        return (
+            <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
+                <ModerationPanel />
+            </div>
+        );
+    }
     if (tab === 'bugReports' || tab === 'errorEvents') {
         return (
             <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">

@@ -97,6 +97,11 @@ export type ApiErrorMessageKey =
     | 'qrLinkNotAvailable'
     | 'qrSharedLinkHostManaged'
     | 'orderNotManual'
+    | 'moderationDecisionInvalid'
+    | 'eventBanned'
+    | 'moderationCaseClosed'
+    | 'moderationMemberIsHost'
+    | 'moderationTargetProtected'
     | 'orderNotPending'
     | 'planCurrencyMismatch'
     | 'planCurrencyUnsupported'
@@ -244,6 +249,11 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.QR_MEDIA_UPLOAD_DISABLED]: 'qrMediaUploadDisabled',
     [ERROR_CODES.ORDER_NOT_PENDING]: 'orderNotPending',
     [ERROR_CODES.ORDER_NOT_MANUAL]: 'orderNotManual',
+    [ERROR_CODES.MODERATION_DECISION_INVALID]: 'moderationDecisionInvalid',
+    [ERROR_CODES.EVENT_BANNED]: 'eventBanned',
+    [ERROR_CODES.MODERATION_CASE_CLOSED]: 'moderationCaseClosed',
+    [ERROR_CODES.MODERATION_MEMBER_IS_HOST]: 'moderationMemberIsHost',
+    [ERROR_CODES.MODERATION_TARGET_PROTECTED]: 'moderationTargetProtected',
     [ERROR_CODES.PLAN_TIER_CURRENCY_MISMATCH]: 'planCurrencyMismatch',
     [ERROR_CODES.PLAN_TIER_CURRENCY_UNSUPPORTED]: 'planCurrencyUnsupported',
     [ERROR_CODES.PLAN_TIER_IN_USE]: 'planInUse',
