@@ -1,4 +1,5 @@
 import type { EventDetailResponseDto, EventSessionResponseDto, EventTypeConvention } from '@/lib/api/types';
+import { formatDate, formatTimeRange } from '@/lib/datetime';
 import { sortSessions } from '@/lib/eventSessions';
 
 export type SessionLocationRole = 'main' | 'secondary';
@@ -13,8 +14,16 @@ export type SessionLocationViewModel = {
     kind: SessionLocationKind;
     icon: SessionLocationIcon;
     title: string;
+    description: string | null;
+    startAt: string | null;
+    endAt: string | null;
     locationName: string | null;
     mapsUrl: string | null;
+};
+
+export type SessionLocationWhen = {
+    date: string;
+    time: string;
 };
 
 type SemanticLocationKind = Exclude<SessionLocationKind, 'generic'>;
@@ -55,15 +64,43 @@ export function resolveSessionLocation(event: EventDetailResponseDto, role: Sess
     const session = getSessionForRole(event.sessions ?? [], role);
     const kind = resolveLocationKind(event.eventType, role);
 
+    // A session's own location is authoritative. Falling back to the event's
+    // location would show the main session's place on every other session.
+    if (session) {
+        return {
+            kind,
+            icon: LOCATION_ICONS[kind],
+            title: session.title,
+            description: session.description,
+            startAt: session.startAt,
+            endAt: session.endAt,
+            locationName: session.locationName,
+            mapsUrl: session.mapsUrl,
+        };
+    }
+
     return {
         kind,
         icon: LOCATION_ICONS[kind],
-        title: session?.title ?? event.title,
-        locationName: session?.locationName ?? event.location.name ?? event.location.address,
-        mapsUrl: session?.mapsUrl ?? event.location.mapsUrl,
+        title: event.title,
+        description: event.description,
+        startAt: event.schedule.startAt,
+        endAt: event.schedule.endAt,
+        locationName: event.location.name ?? event.location.address,
+        mapsUrl: event.location.mapsUrl,
     };
 }
 
 export function resolveSessionLocationIcon(eventType: EventTypeConvention, role: SessionLocationRole): SessionLocationIcon {
     return LOCATION_ICONS[resolveLocationKind(eventType, role)];
+}
+
+// Null when the session has no start time, so the page can skip the line.
+export function formatSessionLocationWhen(locale: string, startAt: string | null, endAt: string | null): SessionLocationWhen | null {
+    if (!startAt) return null;
+
+    const date = formatDate(locale, startAt, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    if (!date) return null;
+
+    return { date, time: formatTimeRange(locale, startAt, endAt, '') };
 }

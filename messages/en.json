@@ -106,7 +106,6 @@
     },
     "SessionLocationPage": {
         "back": "Back",
-        "map": "Map",
         "locationMissing": "Location not set"
     },
     "FeedScheduleCard": {

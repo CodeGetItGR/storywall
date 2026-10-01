@@ -9,14 +9,15 @@ interface ScheduleMapPreviewProps {
     openLabel: string;
     previewLabel: string;
     unavailableLabel: string;
+    heightClassName?: string;
 }
 
-export function ScheduleMapPreview({ mapsUrl, title, openLabel, previewLabel, unavailableLabel }: ScheduleMapPreviewProps) {
+export function ScheduleMapPreview({ mapsUrl, title, openLabel, previewLabel, unavailableLabel, heightClassName = 'h-44' }: ScheduleMapPreviewProps) {
     const { embedUrl, isResolving } = useMapsEmbedUrl(mapsUrl);
 
     // Loading
     if (isResolving) {
-        return <div className="h-44 animate-pulse rounded-2xl border border-border/70 bg-surface-muted" aria-hidden="true" />;
+        return <div className={cn(heightClassName, 'animate-pulse rounded-2xl border border-border/70 bg-surface-muted')} aria-hidden="true" />;
     }
 
     // Fallback
@@ -44,7 +45,7 @@ export function ScheduleMapPreview({ mapsUrl, title, openLabel, previewLabel, un
             <iframe
                 title={title}
                 src={embedUrl}
-                className="pointer-events-none h-44 w-full"
+                className={cn('pointer-events-none w-full', heightClassName)}
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
             />
