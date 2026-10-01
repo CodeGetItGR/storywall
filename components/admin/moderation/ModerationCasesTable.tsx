@@ -14,11 +14,19 @@ function rowKey(c: ModerationCaseSummaryDto): string {
     return c.decisionId ?? `${c.targetType}:${c.targetId}`;
 }
 
-export function ModerationCasesTable({ cases, onOpenAction }: { cases: ModerationCaseSummaryDto[]; onOpenAction: (c: SelectedCase) => void }) {
+export function ModerationCasesTable({
+    cases,
+    showOutcome,
+    onOpenAction,
+}: {
+    cases: ModerationCaseSummaryDto[];
+    // The CLOSED tab: one row per decision, each with an outcome.
+    showOutcome: boolean;
+    onOpenAction: (c: SelectedCase) => void;
+}) {
     const t = useTranslations('AdminPage.moderation');
     const tReason = useTranslations('Report.reasons');
     const locale = useLocale();
-    const showOutcome = cases.some((c) => c.outcome !== null);
 
     function handleOpen(event: MouseEvent<HTMLButtonElement>) {
         const { targetType, targetId } = event.currentTarget.dataset;
@@ -34,13 +42,15 @@ export function ModerationCasesTable({ cases, onOpenAction }: { cases: Moderatio
                         <th className="px-3 py-3 font-bold">{t('event')}</th>
                         <th className="px-3 py-3 font-bold">{t('reportsCol')}</th>
                         <th className="px-3 py-3 font-bold">{t('reason')}</th>
-                        <th className="px-3 py-3 font-bold">{t('age')}</th>
+                        <th className="px-3 py-3 font-bold">{t('date')}</th>
                         {showOutcome ? <th className="px-5 py-3 font-bold">{t('outcomeCol')}</th> : null}
                     </tr>
                 </thead>
                 <tbody>
                     {cases.map((c) => {
-                        const date = c.lastReportedAt ?? c.decidedAt;
+                        // The queue is ordered by first report, so this shows how long a case has waited.
+                        const date = c.firstReportedAt ?? c.decidedAt;
+                        const typeLabel = t(`types.${c.targetType}`);
                         return (
                             <tr key={rowKey(c)} className="border-b border-border last:border-b-0 hover:bg-canvas/55">
                                 <td className="px-5 py-3.5">
@@ -49,9 +59,10 @@ export function ModerationCasesTable({ cases, onOpenAction }: { cases: Moderatio
                                         data-target-type={c.targetType}
                                         data-target-id={c.targetId}
                                         onClick={handleOpen}
+                                        aria-label={t('openCase', { type: typeLabel, event: c.eventTitle ?? t('eventGone') })}
                                         className="text-left font-semibold text-ink hover:underline"
                                     >
-                                        {t(`types.${c.targetType}`)}
+                                        {typeLabel}
                                     </button>
                                 </td>
                                 <td className="max-w-64 truncate px-3 py-3.5 text-ink-muted">{c.eventTitle ?? t('eventGone')}</td>

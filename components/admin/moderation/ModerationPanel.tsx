@@ -29,7 +29,7 @@ export function ModerationPanel() {
             </header>
 
             {/* Status tabs */}
-            <nav aria-label={t('tabsLabel')} className="flex gap-2">
+            <div role="group" aria-label={t('tabsLabel')} className="flex gap-2">
                 {MODERATION_TABS.map((tab) => (
                     <button
                         key={tab}
@@ -46,7 +46,7 @@ export function ModerationPanel() {
                         {t(`tabs.${tab}`)}
                     </button>
                 ))}
-            </nav>
+            </div>
 
             {/* Case list */}
             <section className="overflow-hidden rounded-xl border border-border bg-card">
@@ -57,7 +57,7 @@ export function ModerationPanel() {
                 {data && data.content.length === 0 ? <p className="px-5 py-14 text-center text-sm text-ink-muted">{t('empty')}</p> : null}
                 {data && data.content.length > 0 ? (
                     <>
-                        <ModerationCasesTable cases={data.content} onOpenAction={panel.openCase} />
+                        <ModerationCasesTable cases={data.content} showOutcome={panel.status === 'CLOSED'} onOpenAction={panel.openCase} />
                         <AdminPagination
                             pageInfo={data.page}
                             page={panel.page}

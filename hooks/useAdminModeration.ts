@@ -47,7 +47,8 @@ export function useAdminModerationCases(status: ModerationCaseStatus, page: numb
     return useQuery({
         queryKey: adminModerationKeys.cases(status, page),
         queryFn: () => api.get<Page<ModerationCaseSummaryDto>>(adminModerationCasesPath(status, page)),
-        placeholderData: (previous) => previous,
+        // Keep the previous page while paging, but never show one tab's rows under another (key[3] is the status).
+        placeholderData: (previous, previousQuery) => (previousQuery?.queryKey[3] === status ? previous : undefined),
     });
 }
 

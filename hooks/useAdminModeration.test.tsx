@@ -12,7 +12,7 @@ import {
     useStartModerationReview,
 } from '@/hooks/useAdminModeration';
 import { ApiError } from '@/lib/api/client';
-import type { ModerationDecisionRequestDto } from '@/lib/api/types';
+import type { ModerationCaseStatus, ModerationDecisionRequestDto } from '@/lib/api/types';
 
 const mocks = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn(), del: vi.fn() }));
 vi.mock('@/lib/api/client', async (importOriginal) => ({
@@ -73,6 +73,29 @@ describe('useAdminModerationCases', () => {
         const { result } = renderHook(() => useAdminModerationCases('UNDER_REVIEW', 1), { wrapper: wrapperFor(makeClient()) });
         await waitFor(() => expect(result.current.isSuccess).toBe(true));
         expect(mocks.get).toHaveBeenCalledWith('/api/admin/moderation/cases?status=UNDER_REVIEW&page=1&size=50');
+    });
+
+    it('keeps the previous page while paging, but never shows one tab under another', async () => {
+        const pageOf = (label: string) => ({ content: [label], page: { size: 50, number: 0, totalElements: 1, totalPages: 2 } });
+        let resolveNext: (value: unknown) => void = () => {};
+        mocks.get.mockResolvedValueOnce(pageOf('open-0'));
+        const { result, rerender } = renderHook(({ status, page }) => useAdminModerationCases(status, page), {
+            wrapper: wrapperFor(makeClient()),
+            initialProps: { status: 'OPEN' as ModerationCaseStatus, page: 0 },
+        });
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+        mocks.get.mockReturnValueOnce(new Promise((resolve) => (resolveNext = resolve)));
+        rerender({ status: 'OPEN', page: 1 });
+        expect(result.current.data?.content).toEqual(['open-0']);
+        expect(result.current.isPlaceholderData).toBe(true);
+        await act(async () => resolveNext(pageOf('open-1')));
+        await waitFor(() => expect(result.current.data?.content).toEqual(['open-1']));
+
+        mocks.get.mockReturnValueOnce(new Promise(() => {}));
+        rerender({ status: 'CLOSED', page: 0 });
+        expect(result.current.data).toBeUndefined();
+        expect(result.current.isLoading).toBe(true);
     });
 });
 

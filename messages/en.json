@@ -2300,6 +2300,7 @@
         },
         "moderation": {
             "title": "Reports",
+            "openCase": "Open {type} report, {event}",
             "tabsLabel": "Report status",
             "tabs": {
                 "OPEN": "Open",
@@ -2318,7 +2319,7 @@
             "event": "Event",
             "reportsCol": "Reports",
             "reason": "Top reason",
-            "age": "Date",
+            "date": "Reported",
             "outcomeCol": "Outcome",
             "types": {
                 "POST": "Post",
