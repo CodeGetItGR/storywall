@@ -1,54 +1,67 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { NextIntlClientProvider } from 'next-intl';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import type { ReactNode } from 'react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import InviteOnboardingBoundary from '@/app/(main)/invite/[token]/InviteOnboardingBoundary';
 import { ApiError } from '@/lib/api/client';
-import type { EventInvitationPreviewDto } from '@/lib/api/types';
-import messages from '@/messages/en.json';
+
+import InviteOnboardingBoundary from './InviteOnboardingBoundary';
 
 const mocks = vi.hoisted(() => ({
-    accept: vi.fn(),
     replace: vi.fn(),
+    accept: vi.fn(),
 }));
 
+vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: mocks.replace }) }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ isAuthenticated: true, isBootstrapping: false }) }));
+vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'error copy' }));
 vi.mock('@/hooks/useEventInvitations', () => ({
     useEventInvitationPreview: () => ({
-        data: {
-            eventTitle: 'Maria & Nikos',
-            eventSubtitle: null,
-            eventDescription: null,
-            coverMedia: null,
-            email: null,
-            expired: false,
-            alreadyUsed: false,
-            gift: null,
-        } as unknown as EventInvitationPreviewDto,
+        data: { inviteToken: 'tok', eventId: 'event-1', eventTitle: 'Party', expired: false, alreadyUsed: false, gift: null },
         isLoading: false,
         error: null,
     }),
     useAcceptEventInvitation: () => ({ mutateAsync: mocks.accept, isPending: false }),
 }));
+vi.mock('@/components/invite/InviteLayout', () => ({ InviteLayout: ({ children }: { children: ReactNode }) => <div>{children}</div> }));
+vi.mock('@/components/invite/InviteOnboardingState', () => ({
+    InviteOnboardingState: ({ terminalState, content }: { terminalState: ReactNode; content: ReactNode }) => <div>{terminalState ?? content}</div>,
+}));
 
-afterEach(() => {
-    cleanup();
-    vi.clearAllMocks();
-});
+describe('InviteOnboardingBoundary accepting as a signed-in user', () => {
+    beforeEach(() => {
+        mocks.replace.mockReset();
+        mocks.accept.mockReset();
+    });
+    afterEach(cleanup);
 
-describe('InviteOnboardingBoundary', () => {
-    it('tells a banned account it cannot join (4014) and stays on the invite', async () => {
-        mocks.accept.mockRejectedValue(new ApiError(403, { errorCode: 4014 }));
-        render(
-            <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
-                <InviteOnboardingBoundary token="tok" />
-            </NextIntlClientProvider>,
-        );
+    it('opens the event once accepted', async () => {
+        mocks.accept.mockResolvedValue({ eventId: 'event-1' });
+        render(<InviteOnboardingBoundary token="tok" />);
 
-        fireEvent.click(screen.getByRole('button', { name: 'I have an account' }));
+        fireEvent.click(screen.getByRole('button', { name: /haveAccount/ }));
 
-        expect(await screen.findByRole('alert')).toHaveTextContent("You can't join this event.");
+        await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith('/events/event-1/feed'));
+    });
+
+    // A member reopening the shared join link: they're already in, so this is not an error.
+    it('opens the event when the caller is already a member (409/5001)', async () => {
+        mocks.accept.mockRejectedValue(new ApiError(409, { status: 409, errorCode: 5001 }));
+        render(<InviteOnboardingBoundary token="tok" />);
+
+        fireEvent.click(screen.getByRole('button', { name: /haveAccount/ }));
+
+        await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith('/events/event-1/feed'));
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+
+    it('shows the reason when the link is full (409/5035)', async () => {
+        mocks.accept.mockRejectedValue(new ApiError(409, { status: 409, errorCode: 5035 }));
+        render(<InviteOnboardingBoundary token="tok" />);
+
+        fireEvent.click(screen.getByRole('button', { name: /haveAccount/ }));
+
+        expect(await screen.findByRole('alert')).toHaveTextContent('error copy');
         expect(mocks.replace).not.toHaveBeenCalled();
     });
 });

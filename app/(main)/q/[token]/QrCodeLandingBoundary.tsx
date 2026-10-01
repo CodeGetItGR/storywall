@@ -8,9 +8,9 @@ import { AnonymousQrMediaUploadForm } from '@/components/invite/AnonymousQrMedia
 import { InviteLayout } from '@/components/invite/InviteLayout';
 import { InviteTerminalState } from '@/components/invite/InviteTerminalState';
 import { QrLandingState } from '@/components/invite/QrLandingState';
+import { useAuth } from '@/hooks/useAuth';
 import { useQrLinkResolution } from '@/hooks/useQrLinks';
-import { getQrTerminalCopyKey } from '@/lib/qrLinks';
-import { routes } from '@/lib/routes';
+import { getQrRedirectPath, getQrTerminalCopyKey } from '@/lib/qrLinks';
 
 const DEFAULT_HERO_IMAGE = '/images/couple-hero.png';
 
@@ -18,6 +18,7 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
     const t = useTranslations('QrCodePage');
     const router = useRouter();
 
+    const { isAuthenticated, isBootstrapping } = useAuth();
     const { data: resolution, isLoading, error } = useQrLinkResolution(token);
     const coverMedia = resolution?.status === 'ACTIVE' ? (resolution.coverMedia ?? null) : null;
 
@@ -25,17 +26,11 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
     const isRedirectingToRegister = resolution?.status === 'ACTIVE' && resolution.targetType === 'EVENT_JOIN';
 
     useEffect(() => {
-        if (resolution?.status !== 'ACTIVE') return;
-
-        if (resolution.targetType === 'INVITATION' && resolution.inviteToken) {
-            router.replace(routes.inviteToken(resolution.inviteToken));
-            return;
-        }
-
-        if (resolution.targetType === 'EVENT_JOIN' && resolution.inviteToken) {
-            router.replace(routes.auth.register({ invite: resolution.inviteToken }));
-        }
-    }, [resolution, router]);
+        // The join link's destination depends on whether the visitor is signed in.
+        if (isBootstrapping) return;
+        const redirectPath = getQrRedirectPath(resolution, isAuthenticated);
+        if (redirectPath) router.replace(redirectPath);
+    }, [isAuthenticated, isBootstrapping, resolution, router]);
 
     function renderTerminalState() {
         if (error || !resolution || resolution.status !== 'ACTIVE') {

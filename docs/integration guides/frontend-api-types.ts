@@ -584,6 +584,9 @@ interface EventInvitationPreviewDto {
   lastName: string | null;
   email: string | null;
   expired: boolean;
+  /** CHANGED 2026-10-01 — true only when the link has no guest places left (active members via it ≥
+   *  maxGuests, where accept returns 5035). A shared link used once but with room is false; it used
+   *  to be true after the first use of any link. */
   alreadyUsed: boolean;
   /** NEW 2026-09-27 — null unless the event is a gift; then the framing for the landing page
    *  ("a surprise from Nikos for Maria & Giorgos"). See fe-guides/gift-mode-fe-integration.md §7. */

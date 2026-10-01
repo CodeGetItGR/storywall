@@ -1651,8 +1651,9 @@ export interface WishbookEntryResponseDto {
 
 // GET /api/event-invitations/{inviteToken}/preview — public, unauthenticated.
 // Powers the per-event invite onboarding page; expired/alreadyUsed are not
-// errors, they're states to render (a used single-use slot doesn't imply the
-// current visitor is the one who used it).
+// errors, they're states to render. alreadyUsed means the link has no guest
+// places left (a shared join link stays false until it is full), and doesn't
+// imply the current visitor is one of those who used it.
 export interface EventInvitationPreviewDto {
     inviteToken: string;
     eventId: string;
