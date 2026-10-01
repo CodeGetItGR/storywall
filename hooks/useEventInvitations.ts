@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { usePresignedUrlRefreshMs } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { eventMemberKeys } from '@/hooks/useEventMembers';
 import { api } from '@/lib/api/client';
@@ -20,6 +21,8 @@ export function useEventInvitationPreview(inviteToken: string | null) {
         queryKey: eventInvitationKeys.preview(inviteToken ?? ''),
         queryFn: () => api.get<EventInvitationPreviewDto>(endpoints.eventInvitations.preview(inviteToken!)),
         enabled: Boolean(inviteToken),
+        // coverMedia is presigned.
+        staleTime: usePresignedUrlRefreshMs(),
     });
 }
 

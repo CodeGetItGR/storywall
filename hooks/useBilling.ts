@@ -47,6 +47,8 @@ export function useEventBilling(eventId: string | null, enabled = true) {
         refetchInterval: (query) => {
             const data = query.state.data;
             if (!enabled) return false;
+            // A failed read (e.g. 403 for a co-host) won't start succeeding on its own.
+            if (query.state.status === 'error') return false;
             const pending = data?.orders.filter((order) => order.status === 'PENDING');
             // No data yet: keep polling. There is a pending order: poll until the
             // order itself is old enough to count as stuck. The order's createdAt

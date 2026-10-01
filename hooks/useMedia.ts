@@ -7,6 +7,7 @@ import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
 import type { MediaBatchUploadResponseDto, MediaResponseDto, MediaUploadContext, OriginalMediaUrlDto } from '@/lib/api/types';
+import { LIVE_CONTENT_STALE_TIME } from '@/lib/queryClient';
 
 export const mediaKeys = {
     list: (eventId: string) => ['events', eventId, 'media'] as const,
@@ -28,6 +29,7 @@ export function useEventMedia(eventId: string | null) {
         initialPageParam: 0,
         getNextPageParam: (lastPage) => (lastPage.page.number + 1 < lastPage.page.totalPages ? lastPage.page.number + 1 : undefined),
         enabled: Boolean(eventId) && isAuthenticated && galleryReadable,
+        staleTime: LIVE_CONTENT_STALE_TIME,
         refetchInterval,
     });
 }
@@ -41,6 +43,7 @@ export function useMediaItem(id: string | null) {
         queryKey: mediaKeys.detail(id ?? ''),
         queryFn: () => api.get<MediaResponseDto>(endpoints.medias.byId(id!)),
         enabled: Boolean(id) && isAuthenticated,
+        staleTime: usePresignedUrlRefreshMs(),
     });
 }
 

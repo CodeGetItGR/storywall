@@ -25,8 +25,6 @@ export function useGiftAccount(eventId: string | null) {
             }
         },
         enabled: Boolean(eventId) && isAuthenticated && wishlistReadable,
-        staleTime: 0,
-        gcTime: 0,
     });
 }
 

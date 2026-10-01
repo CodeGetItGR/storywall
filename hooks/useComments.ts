@@ -10,6 +10,7 @@ import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
 import type { CommentRequestDto, CommentResponseDto, PostResponseDto } from '@/lib/api/types';
 import { postKeys } from '@/lib/postQueries';
+import { LIVE_CONTENT_STALE_TIME } from '@/lib/queryClient';
 
 // NOTE: this key is nested under postKeys.detail's ['posts', id] — React
 // Query's invalidateQueries matches by prefix, so invalidating
@@ -55,6 +56,7 @@ export function usePostComments(postId: string | null) {
         getNextPageParam: (lastPage) => (lastPage.page.number + 1 < lastPage.page.totalPages ? lastPage.page.number + 1 : undefined),
         enabled: Boolean(postId) && isAuthenticated,
         refetchInterval: 60_000,
+        staleTime: LIVE_CONTENT_STALE_TIME,
     });
 }
 

@@ -3,6 +3,7 @@
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
+import { usePresignedUrlRefreshMs } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -20,6 +21,8 @@ export function useMe(): UseQueryResult<UserResponseDto> {
         queryKey: meQueryKey,
         queryFn: () => api.get<UserResponseDto>(endpoints.me.profile),
         enabled: Boolean(user),
+        // profilePictureUrl is presigned.
+        staleTime: usePresignedUrlRefreshMs(),
     });
 
     useEffect(() => {

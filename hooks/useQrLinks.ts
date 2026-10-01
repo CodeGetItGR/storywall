@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { usePresignedUrlRefreshMs } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -19,6 +20,8 @@ export function useQrLinkResolution(token: string | null) {
         queryFn: () => api.publicGet<QrLinkResolutionDto>(endpoints.qrLinks.resolve(token!)),
         enabled: Boolean(token),
         retry: false,
+        // coverMedia is presigned.
+        staleTime: usePresignedUrlRefreshMs(),
     });
 }
 

@@ -10,6 +10,7 @@ import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList, type Page } from '@/lib/api/pagination';
 import type { MediaResponseDto, PostPatchRequestDto, PostRequestDto, PostResponseDto } from '@/lib/api/types';
 import { feedPagePath, postKeys, withFreshFirstPage } from '@/lib/postQueries';
+import { LIVE_CONTENT_STALE_TIME } from '@/lib/queryClient';
 
 export { postKeys, POSTS_PAGE_SIZE } from '@/lib/postQueries';
 
@@ -66,6 +67,7 @@ export function useEventPosts(eventId: string | null) {
         initialPageParam: 0,
         getNextPageParam: (lastPage) => (lastPage.page.number + 1 < lastPage.page.totalPages ? lastPage.page.number + 1 : undefined),
         enabled: Boolean(eventId) && isAuthenticated && postsReadable,
+        staleTime: LIVE_CONTENT_STALE_TIME,
         refetchInterval: 60_000,
     });
 }
@@ -101,6 +103,7 @@ export function usePost(id: string | null) {
         queryKey: postKeys.detail(id ?? ''),
         queryFn: () => api.get<PostResponseDto>(endpoints.posts.byId(id!)),
         enabled: Boolean(id) && isAuthenticated,
+        staleTime: LIVE_CONTENT_STALE_TIME,
     });
 }
 
@@ -115,6 +118,7 @@ export function usePostMedia(postId: string | null) {
             return normalizeList(res).items;
         },
         enabled: Boolean(postId) && isAuthenticated,
+        staleTime: LIVE_CONTENT_STALE_TIME,
     });
 }
 

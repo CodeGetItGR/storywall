@@ -5,6 +5,11 @@ import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
 import type { NotificationResponseDto, NotificationUnreadCountDto } from '@/lib/api/types';
+import { LIVE_CONTENT_STALE_TIME } from '@/lib/queryClient';
+
+// Nothing pushes new notifications and the bell stays mounted, so these keep
+// refreshing when the tab regains focus, unlike the app's other reads.
+const NOTIFICATION_FRESHNESS = { staleTime: LIVE_CONTENT_STALE_TIME, refetchOnWindowFocus: true } as const;
 
 export const notificationKeys = {
     all: ['notifications'] as const,
@@ -25,6 +30,7 @@ export function useNotifications() {
         initialPageParam: 0,
         getNextPageParam: (lastPage) => (lastPage.page.number + 1 < lastPage.page.totalPages ? lastPage.page.number + 1 : undefined),
         enabled: isAuthenticated,
+        ...NOTIFICATION_FRESHNESS,
     });
 }
 
@@ -36,6 +42,7 @@ export function useUnreadNotificationCount() {
         queryKey: notificationKeys.unreadCount,
         queryFn: () => api.get<NotificationUnreadCountDto>(endpoints.notifications.unreadCount),
         enabled: isAuthenticated,
+        ...NOTIFICATION_FRESHNESS,
         select: (data) => data.unreadCount ?? data.count ?? 0,
     });
 }

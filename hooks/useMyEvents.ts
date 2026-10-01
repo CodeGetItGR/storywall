@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { usePresignedUrlRefreshMs } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -22,5 +23,7 @@ export function useMyEvents() {
             return normalizeList(res).items;
         },
         enabled: isAuthenticated,
+        // Each membership's avatarUrl is presigned.
+        staleTime: usePresignedUrlRefreshMs(),
     });
 }
