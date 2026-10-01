@@ -130,6 +130,21 @@ describe('useGiftClaim', () => {
         expect(result.current.error).toBe('api-4009');
     });
 
+    // The ban is checked before the PIN, so no attempt was used and the card stays claimable.
+    it('shows the banned-join message without touching the PIN state (4014)', async () => {
+        mocks.preview.data = preview({ emailBound: false });
+        mocks.result = refuse(new ApiError(403, { errorCode: 4014 }));
+        const { result } = renderHook(() => useGiftClaim('tok'));
+
+        act(() => result.current.handlePinChange(typed('123456')));
+        await act(() => result.current.submit(submitEvent));
+
+        expect(result.current.error).toBe('api-4014');
+        expect(result.current.block).toBeNull();
+        expect(result.current.attemptsLeft).toBeNull();
+        expect(result.current.pin).toBe('123456');
+    });
+
     it('blocks from the preview state', () => {
         mocks.preview.data = preview({ state: 'ALREADY_CLAIMED' });
         expect(renderHook(() => useGiftClaim('tok')).result.current.block).toBe('claimed');
