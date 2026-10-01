@@ -47,12 +47,14 @@ export function toDecisionRequest(draft: DecisionDraft & { outcome: ModerationOu
 export type DecisionSummaryLine = 'dismiss' | 'alreadyRemoved' | 'removeContent' | 'removeMember' | 'banFromEvent' | 'suspendAccount';
 
 // The confirm step lists exactly what the backend will do, in the order it does it.
-export function decisionSummary(request: Required<ModerationDecisionRequestDto>): DecisionSummaryLine[] {
+// "Already removed" is said only when the item really is gone: with the item present, an action
+// with nothing chosen is a 3039 the form never offers, so it has no line.
+export function decisionSummary(request: Required<ModerationDecisionRequestDto>, contentPresent: boolean): DecisionSummaryLine[] {
     if (request.outcome === 'DISMISSED') return ['dismiss'];
     const lines: DecisionSummaryLine[] = [];
     if (request.removeContent) lines.push('removeContent');
     if (request.removeMember) lines.push('removeMember');
     if (request.banFromEvent) lines.push('banFromEvent');
     if (request.suspendAccount) lines.push('suspendAccount');
-    return lines.length > 0 ? lines : ['alreadyRemoved'];
+    return lines.length > 0 || contentPresent ? lines : ['alreadyRemoved'];
 }

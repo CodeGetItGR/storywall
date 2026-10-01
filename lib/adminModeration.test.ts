@@ -34,40 +34,81 @@ describe('toDecisionRequest', () => {
 describe('decisionSummary', () => {
     it('lists exactly the chosen actions in order', () => {
         expect(
-            decisionSummary({
-                outcome: 'ACTION_TAKEN',
-                removeContent: true,
-                removeMember: true,
-                banFromEvent: true,
-                suspendAccount: false,
-                note: null,
-            }),
+            decisionSummary(
+                {
+                    outcome: 'ACTION_TAKEN',
+                    removeContent: true,
+                    removeMember: true,
+                    banFromEvent: true,
+                    suspendAccount: false,
+                    note: null,
+                },
+                true,
+            ),
         ).toEqual(['removeContent', 'removeMember', 'banFromEvent']);
     });
 
     it('is a single dismissal line', () => {
         expect(
-            decisionSummary({
-                outcome: 'DISMISSED',
-                removeContent: false,
-                removeMember: false,
-                banFromEvent: false,
-                suspendAccount: false,
-                note: null,
-            }),
+            decisionSummary(
+                {
+                    outcome: 'DISMISSED',
+                    removeContent: false,
+                    removeMember: false,
+                    banFromEvent: false,
+                    suspendAccount: false,
+                    note: null,
+                },
+                true,
+            ),
         ).toEqual(['dismiss']);
     });
 
     it('says the item is already gone when an action has no actions', () => {
         expect(
-            decisionSummary({
-                outcome: 'ACTION_TAKEN',
-                removeContent: false,
-                removeMember: false,
-                banFromEvent: false,
-                suspendAccount: false,
-                note: null,
-            }),
+            decisionSummary(
+                {
+                    outcome: 'ACTION_TAKEN',
+                    removeContent: false,
+                    removeMember: false,
+                    banFromEvent: false,
+                    suspendAccount: false,
+                    note: null,
+                },
+                false,
+            ),
         ).toEqual(['alreadyRemoved']);
+    });
+
+    it('never says the item is gone while it still exists', () => {
+        expect(
+            decisionSummary(
+                {
+                    outcome: 'ACTION_TAKEN',
+                    removeContent: false,
+                    removeMember: false,
+                    banFromEvent: false,
+                    suspendAccount: false,
+                    note: null,
+                },
+                true,
+            ),
+        ).toEqual([]);
+    });
+
+    it('lists the actions, not the gone line, when the item is gone and an action is chosen', () => {
+        expect(
+            decisionSummary(
+                {
+                    outcome: 'ACTION_TAKEN',
+                    removeContent: false,
+                    removeMember: true,
+                    banFromEvent: false,
+                    suspendAccount: false,
+                    note: null,
+                },
+                false,
+            ),
+        ).toEqual(['removeMember']);
     });
 });

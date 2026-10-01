@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, useState } from 'react';
+import { type ChangeEvent, useEffect, useRef, useState } from 'react';
 
 import { type DecisionDraft, decisionSummary, emptyDecision, toDecisionRequest } from '@/lib/adminModeration';
 import type { AllowedActionsDto, ModerationDecisionRequestDto, ModerationOutcome } from '@/lib/api/types';
@@ -17,12 +17,15 @@ export const DECISION_NOTE_MAX_LENGTH = 2000;
 export function ModerationDecisionForm({
     allowed,
     contentPresent,
+    activeReportCount,
     isSubmitting,
     error,
     onSubmitAction,
 }: {
     allowed: AllowedActionsDto;
     contentPresent: boolean;
+    // Reports still OPEN or UNDER_REVIEW: the ones this decision closes.
+    activeReportCount: number;
     isSubmitting: boolean;
     error: string | null;
     onSubmitAction: (request: Required<ModerationDecisionRequestDto>) => void;
@@ -30,6 +33,24 @@ export function ModerationDecisionForm({
     const t = useTranslations('AdminPage.moderation');
     const [draft, setDraft] = useState<DecisionDraft>(emptyDecision);
     const [confirming, setConfirming] = useState(false);
+    const [seenError, setSeenError] = useState(error);
+    const summaryRef = useRef<HTMLDivElement>(null);
+    const reviewRef = useRef<HTMLButtonElement>(null);
+    const wasConfirming = useRef(false);
+
+    // A refusal invalidates what was confirmed (the case is refetched, actions may narrow):
+    // leave the confirm step so the admin reviews the decision again.
+    if (error !== seenError) {
+        setSeenError(error);
+        if (error) setConfirming(false);
+    }
+
+    // Focus follows the step: into the summary on Review, back to Review on leaving it.
+    useEffect(() => {
+        if (confirming) summaryRef.current?.focus();
+        else if (wasConfirming.current) reviewRef.current?.focus();
+        wasConfirming.current = confirming;
+    }, [confirming]);
 
     const acting = draft.outcome === 'ACTION_TAKEN';
     const visibleActions = ACTIONS.filter((key) => allowed[key] && (key !== 'banFromEvent' || draft.removeMember));
@@ -70,7 +91,7 @@ export function ModerationDecisionForm({
         setConfirming(false);
     }
     function confirm() {
-        if (request) onSubmitAction(request);
+        if (request && canReview && !isSubmitting) onSubmitAction(request);
     }
 
     return (
@@ -80,14 +101,16 @@ export function ModerationDecisionForm({
             </h3>
 
             <fieldset className="space-y-2" disabled={confirming || isSubmitting}>
-                <label className="flex items-center gap-2 text-sm text-ink">
-                    <input type="radio" name="outcome" value="DISMISSED" checked={draft.outcome === 'DISMISSED'} onChange={selectOutcome} />
-                    {t('form.dismiss')}
-                </label>
-                <label className="flex items-center gap-2 text-sm text-ink">
-                    <input type="radio" name="outcome" value="ACTION_TAKEN" checked={acting} onChange={selectOutcome} />
-                    {t('form.takeAction')}
-                </label>
+                <div role="radiogroup" aria-labelledby="moderation-decision-heading" className="space-y-2">
+                    <label className="flex items-center gap-2 text-sm text-ink">
+                        <input type="radio" name="outcome" value="DISMISSED" checked={draft.outcome === 'DISMISSED'} onChange={selectOutcome} />
+                        {t('form.dismiss')}
+                    </label>
+                    <label className="flex items-center gap-2 text-sm text-ink">
+                        <input type="radio" name="outcome" value="ACTION_TAKEN" checked={acting} onChange={selectOutcome} />
+                        {t('form.takeAction')}
+                    </label>
+                </div>
 
                 {acting ? (
                     <div className="space-y-2 pl-6">
@@ -114,12 +137,19 @@ export function ModerationDecisionForm({
             </fieldset>
 
             {confirming && request ? (
-                <div role="group" aria-label={t('summary.title')} className="space-y-3 rounded-lg border border-status-danger-wash p-4">
+                <div
+                    ref={summaryRef}
+                    tabIndex={-1}
+                    role="group"
+                    aria-label={t('summary.title')}
+                    className="space-y-3 rounded-lg border border-status-danger-wash p-4 outline-none"
+                >
                     <p className="text-sm font-semibold text-ink">{t('summary.title')}</p>
                     <ul className="list-disc space-y-1 pl-5 text-sm text-ink">
-                        {decisionSummary(request).map((line) => (
+                        {decisionSummary(request, contentPresent).map((line) => (
                             <li key={line}>{t(`summary.${line}`)}</li>
                         ))}
+                        <li>{t('summary.reports', { count: activeReportCount, outcome: request.outcome })}</li>
                     </ul>
                     <div className="flex gap-2">
                         <button
@@ -133,7 +163,7 @@ export function ModerationDecisionForm({
                         <button
                             type="button"
                             onClick={confirm}
-                            disabled={isSubmitting}
+                            disabled={isSubmitting || !canReview}
                             className="rounded-md bg-status-danger px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-50"
                         >
                             {t('form.confirm')}
@@ -142,6 +172,7 @@ export function ModerationDecisionForm({
                 </div>
             ) : (
                 <button
+                    ref={reviewRef}
                     type="button"
                     onClick={review}
                     disabled={!canReview}

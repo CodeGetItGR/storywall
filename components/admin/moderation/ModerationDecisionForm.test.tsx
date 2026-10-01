@@ -3,7 +3,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ModerationDecisionForm } from '@/components/admin/moderation/ModerationDecisionForm';
 
-vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
+// Values are appended so a test can see what an ICU message was given.
+vi.mock('next-intl', () => ({
+    useTranslations: () => (key: string, values?: Record<string, unknown>) => (values ? `${key} ${JSON.stringify(values)}` : key),
+}));
 
 afterEach(cleanup);
 
@@ -16,6 +19,7 @@ describe('ModerationDecisionForm', () => {
             <ModerationDecisionForm
                 allowed={{ ...noneAllowed, suspendAccount: true }}
                 contentPresent
+                activeReportCount={2}
                 isSubmitting={false}
                 error={null}
                 onSubmitAction={vi.fn()}
@@ -27,7 +31,16 @@ describe('ModerationDecisionForm', () => {
     });
 
     it('offers ban only once remove member is ticked', () => {
-        render(<ModerationDecisionForm allowed={allAllowed} contentPresent isSubmitting={false} error={null} onSubmitAction={vi.fn()} />);
+        render(
+            <ModerationDecisionForm
+                allowed={allAllowed}
+                contentPresent
+                activeReportCount={2}
+                isSubmitting={false}
+                error={null}
+                onSubmitAction={vi.fn()}
+            />,
+        );
         fireEvent.click(screen.getByRole('radio', { name: 'form.takeAction' }));
         expect(screen.queryByRole('checkbox', { name: 'form.banFromEvent' })).toBeNull();
         fireEvent.click(screen.getByRole('checkbox', { name: 'form.removeMember' }));
@@ -36,7 +49,16 @@ describe('ModerationDecisionForm', () => {
 
     it('drops the ban when remove member is unticked', () => {
         const onSubmit = vi.fn();
-        render(<ModerationDecisionForm allowed={allAllowed} contentPresent isSubmitting={false} error={null} onSubmitAction={onSubmit} />);
+        render(
+            <ModerationDecisionForm
+                allowed={allAllowed}
+                contentPresent
+                activeReportCount={2}
+                isSubmitting={false}
+                error={null}
+                onSubmitAction={onSubmit}
+            />,
+        );
         fireEvent.click(screen.getByRole('radio', { name: 'form.takeAction' }));
         fireEvent.click(screen.getByRole('checkbox', { name: 'form.removeMember' }));
         fireEvent.click(screen.getByRole('checkbox', { name: 'form.banFromEvent' }));
@@ -49,7 +71,16 @@ describe('ModerationDecisionForm', () => {
 
     it('confirms with a summary of exactly what will happen, then submits', () => {
         const onSubmit = vi.fn();
-        render(<ModerationDecisionForm allowed={allAllowed} contentPresent isSubmitting={false} error={null} onSubmitAction={onSubmit} />);
+        render(
+            <ModerationDecisionForm
+                allowed={allAllowed}
+                contentPresent
+                activeReportCount={2}
+                isSubmitting={false}
+                error={null}
+                onSubmitAction={onSubmit}
+            />,
+        );
         fireEvent.click(screen.getByRole('radio', { name: 'form.takeAction' }));
         fireEvent.click(screen.getByRole('checkbox', { name: 'form.removeContent' }));
         fireEvent.click(screen.getByRole('button', { name: 'form.review' }));
@@ -64,7 +95,16 @@ describe('ModerationDecisionForm', () => {
 
     it('goes back from the confirm step without submitting', () => {
         const onSubmit = vi.fn();
-        render(<ModerationDecisionForm allowed={allAllowed} contentPresent isSubmitting={false} error={null} onSubmitAction={onSubmit} />);
+        render(
+            <ModerationDecisionForm
+                allowed={allAllowed}
+                contentPresent
+                activeReportCount={2}
+                isSubmitting={false}
+                error={null}
+                onSubmitAction={onSubmit}
+            />,
+        );
         fireEvent.click(screen.getByRole('radio', { name: 'form.dismiss' }));
         fireEvent.click(screen.getByRole('button', { name: 'form.review' }));
         expect(screen.getByText('summary.dismiss')).toBeTruthy();
@@ -74,13 +114,31 @@ describe('ModerationDecisionForm', () => {
     });
 
     it('cannot review an action with nothing ticked while the content exists', () => {
-        render(<ModerationDecisionForm allowed={allAllowed} contentPresent isSubmitting={false} error={null} onSubmitAction={vi.fn()} />);
+        render(
+            <ModerationDecisionForm
+                allowed={allAllowed}
+                contentPresent
+                activeReportCount={2}
+                isSubmitting={false}
+                error={null}
+                onSubmitAction={vi.fn()}
+            />,
+        );
         fireEvent.click(screen.getByRole('radio', { name: 'form.takeAction' }));
         expect((screen.getByRole('button', { name: 'form.review' }) as HTMLButtonElement).disabled).toBe(true);
     });
 
     it('lets an action with nothing ticked close a case whose content is gone', () => {
-        render(<ModerationDecisionForm allowed={noneAllowed} contentPresent={false} isSubmitting={false} error={null} onSubmitAction={vi.fn()} />);
+        render(
+            <ModerationDecisionForm
+                allowed={noneAllowed}
+                contentPresent={false}
+                activeReportCount={2}
+                isSubmitting={false}
+                error={null}
+                onSubmitAction={vi.fn()}
+            />,
+        );
         fireEvent.click(screen.getByRole('radio', { name: 'form.takeAction' }));
         expect((screen.getByRole('button', { name: 'form.review' }) as HTMLButtonElement).disabled).toBe(false);
     });
@@ -88,7 +146,14 @@ describe('ModerationDecisionForm', () => {
     it('never sends an action the server stopped allowing after a refetch', () => {
         const onSubmit = vi.fn();
         const { rerender } = render(
-            <ModerationDecisionForm allowed={allAllowed} contentPresent isSubmitting={false} error={null} onSubmitAction={onSubmit} />,
+            <ModerationDecisionForm
+                allowed={allAllowed}
+                contentPresent
+                activeReportCount={2}
+                isSubmitting={false}
+                error={null}
+                onSubmitAction={onSubmit}
+            />,
         );
         fireEvent.click(screen.getByRole('radio', { name: 'form.takeAction' }));
         fireEvent.click(screen.getByRole('checkbox', { name: 'form.removeContent' }));
@@ -97,6 +162,7 @@ describe('ModerationDecisionForm', () => {
             <ModerationDecisionForm
                 allowed={{ ...allAllowed, suspendAccount: false }}
                 contentPresent
+                activeReportCount={2}
                 isSubmitting={false}
                 error={null}
                 onSubmitAction={onSubmit}
@@ -108,8 +174,96 @@ describe('ModerationDecisionForm', () => {
         expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ removeContent: true, suspendAccount: false }));
     });
 
+    it('leaves the confirm step when a refusal arrives with narrowed actions', () => {
+        const onSubmit = vi.fn();
+        const { rerender } = render(
+            <ModerationDecisionForm
+                allowed={allAllowed}
+                contentPresent
+                activeReportCount={2}
+                isSubmitting={false}
+                error={null}
+                onSubmitAction={onSubmit}
+            />,
+        );
+        fireEvent.click(screen.getByRole('radio', { name: 'form.takeAction' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'form.suspendAccount' }));
+        fireEvent.click(screen.getByRole('button', { name: 'form.review' }));
+        expect(screen.getByRole('button', { name: 'form.confirm' })).toBeTruthy();
+
+        rerender(
+            <ModerationDecisionForm
+                allowed={{ ...allAllowed, suspendAccount: false }}
+                contentPresent
+                activeReportCount={2}
+                isSubmitting={false}
+                error="refused"
+                onSubmitAction={onSubmit}
+            />,
+        );
+        expect(screen.queryByRole('button', { name: 'form.confirm' })).toBeNull();
+        expect((screen.getByRole('button', { name: 'form.review' }) as HTMLButtonElement).disabled).toBe(true);
+    });
+
+    it('says how many reports close and what reporters are told', () => {
+        render(
+            <ModerationDecisionForm
+                allowed={allAllowed}
+                contentPresent
+                activeReportCount={2}
+                isSubmitting={false}
+                error={null}
+                onSubmitAction={vi.fn()}
+            />,
+        );
+        fireEvent.click(screen.getByRole('radio', { name: 'form.dismiss' }));
+        fireEvent.click(screen.getByRole('button', { name: 'form.review' }));
+        expect(screen.getByText('summary.reports {"count":2,"outcome":"DISMISSED"}')).toBeTruthy();
+    });
+
+    it('moves focus into the summary on review and back to Review on back', () => {
+        render(
+            <ModerationDecisionForm
+                allowed={allAllowed}
+                contentPresent
+                activeReportCount={2}
+                isSubmitting={false}
+                error={null}
+                onSubmitAction={vi.fn()}
+            />,
+        );
+        fireEvent.click(screen.getByRole('radio', { name: 'form.dismiss' }));
+        fireEvent.click(screen.getByRole('button', { name: 'form.review' }));
+        expect(document.activeElement).toBe(screen.getByRole('group', { name: 'summary.title' }));
+        fireEvent.click(screen.getByRole('button', { name: 'form.back' }));
+        expect(document.activeElement).toBe(screen.getByRole('button', { name: 'form.review' }));
+    });
+
+    it('labels the outcome choice as a group', () => {
+        render(
+            <ModerationDecisionForm
+                allowed={allAllowed}
+                contentPresent
+                activeReportCount={2}
+                isSubmitting={false}
+                error={null}
+                onSubmitAction={vi.fn()}
+            />,
+        );
+        expect(screen.getByRole('radiogroup', { name: 'form.title' })).toBeTruthy();
+    });
+
     it('shows a refusal', () => {
-        render(<ModerationDecisionForm allowed={allAllowed} contentPresent isSubmitting={false} error="refused" onSubmitAction={vi.fn()} />);
+        render(
+            <ModerationDecisionForm
+                allowed={allAllowed}
+                contentPresent
+                activeReportCount={2}
+                isSubmitting={false}
+                error="refused"
+                onSubmitAction={vi.fn()}
+            />,
+        );
         expect(screen.getByRole('alert').textContent).toBe('refused');
     });
 });

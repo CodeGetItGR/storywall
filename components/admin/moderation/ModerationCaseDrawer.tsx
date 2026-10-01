@@ -14,6 +14,10 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import type { ModerationDecisionRequestDto, ReportTargetType } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
 
+// Reports a decision closes (guide §1); RESOLVED and DISMISSED ones were closed earlier.
+const ACTIVE_REPORT_STATUSES = new Set(['OPEN', 'UNDER_REVIEW']);
+const KNOWN_REPORT_STATUSES = new Set(['OPEN', 'UNDER_REVIEW', 'RESOLVED', 'DISMISSED']);
+
 // One case: the item, every report on it, its history, and the decision form (guide §2.2–§2.5).
 // Mounted per case (keyed by target), so the review claim below runs once per opening.
 export function ModerationCaseDrawer({
@@ -53,6 +57,7 @@ export function ModerationCaseDrawer({
     }
 
     const decideError = decide.error ? toErrorMessage(decide.error) : null;
+    const activeReportCount = detail ? detail.reports.filter((r) => ACTIVE_REPORT_STATUSES.has(r.status)).length : 0;
 
     return (
         <AdminDrawer
@@ -64,11 +69,19 @@ export function ModerationCaseDrawer({
             size="wide"
         >
             {isLoading ? <LoadingState label={t('loading')} className="min-h-48" /> : null}
-            {error ? <p className="text-sm text-status-danger">{toErrorMessage(error)}</p> : null}
+            {error ? (
+                <p role="alert" className="text-sm text-status-danger">
+                    {toErrorMessage(error)}
+                </p>
+            ) : null}
 
             {detail ? (
                 <div className="space-y-7">
-                    {startReview.error ? <p className="text-sm text-status-danger">{toErrorMessage(startReview.error)}</p> : null}
+                    {startReview.error ? (
+                        <p role="alert" className="text-sm text-status-danger">
+                            {toErrorMessage(startReview.error)}
+                        </p>
+                    ) : null}
 
                     {/* Reported item */}
                     <ModerationContentPreview content={detail.content} />
@@ -81,7 +94,18 @@ export function ModerationCaseDrawer({
                         <ul className="space-y-3">
                             {detail.reports.map((r) => (
                                 <li key={r.id} className="rounded-lg border border-border p-3 text-sm">
-                                    <p className="font-semibold text-ink">{tReport(`reasons.${r.reason}`)}</p>
+                                    <p className="flex flex-wrap items-center gap-2">
+                                        <span className="font-semibold text-ink">{tReport(`reasons.${r.reason}`)}</span>
+                                        <span
+                                            className={
+                                                ACTIVE_REPORT_STATUSES.has(r.status)
+                                                    ? 'inline-flex rounded-full bg-status-warn-wash px-2.5 py-0.5 text-[11px] font-bold text-status-warn'
+                                                    : 'inline-flex rounded-full bg-status-neutral-wash px-2.5 py-0.5 text-[11px] font-bold text-status-neutral'
+                                            }
+                                        >
+                                            {KNOWN_REPORT_STATUSES.has(r.status) ? t(`reportStatus.${r.status}`) : r.status}
+                                        </span>
+                                    </p>
                                     {r.description ? <p className="mt-1 break-words whitespace-pre-wrap text-ink">{r.description}</p> : null}
                                     <p className="mt-1 text-xs text-ink-muted">
                                         {r.reporterDisplayName ?? t('reporterGone')} ·{' '}
@@ -100,13 +124,18 @@ export function ModerationCaseDrawer({
                         onLiftBanAction={lift}
                         liftingBanId={liftBan.isPending ? (liftBan.variables?.banId ?? null) : null}
                     />
-                    {liftBan.error ? <p className="text-sm text-status-danger">{toErrorMessage(liftBan.error)}</p> : null}
+                    {liftBan.error ? (
+                        <p role="alert" className="text-sm text-status-danger">
+                            {toErrorMessage(liftBan.error)}
+                        </p>
+                    ) : null}
 
                     {/* Decision. A 5106 refetch closes the case under the form, so its refusal stays visible here. */}
                     {detail.status !== 'CLOSED' ? (
                         <ModerationDecisionForm
                             allowed={detail.allowedActions}
                             contentPresent={detail.content !== null}
+                            activeReportCount={activeReportCount}
                             isSubmitting={decide.isPending}
                             error={decideError}
                             onSubmitAction={submitDecision}

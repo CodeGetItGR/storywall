@@ -8,12 +8,17 @@ import type { ModerationCaseDetailDto } from '@/lib/api/types';
 const hooks = vi.hoisted(() => ({
     detail: null as ModerationCaseDetailDto | null,
     reviewMutate: vi.fn(),
+    reviewError: null as Error | null,
     decideMutate: vi.fn(),
     decideError: null as Error | null,
     liftMutate: vi.fn(),
 }));
 
-vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
+// Values are appended so a test can see what an ICU message was given.
+vi.mock('next-intl', () => ({
+    useTranslations: () => (key: string, values?: Record<string, unknown>) => (values ? `${key} ${JSON.stringify(values)}` : key),
+    useLocale: () => 'en',
+}));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => (error: Error) => error.message }));
 vi.mock('@/components/admin/AdminDrawer', () => ({
     AdminDrawer: ({ title, children }: { title: ReactNode; children: ReactNode }) => (
@@ -25,7 +30,7 @@ vi.mock('@/components/admin/AdminDrawer', () => ({
 }));
 vi.mock('@/hooks/useAdminModeration', () => ({
     useAdminModerationCase: () => ({ data: hooks.detail, error: null, isLoading: false }),
-    useStartModerationReview: () => ({ mutate: hooks.reviewMutate, error: null }),
+    useStartModerationReview: () => ({ mutate: hooks.reviewMutate, error: hooks.reviewError }),
     useDecideModerationCase: () => ({ mutate: hooks.decideMutate, isPending: false, error: hooks.decideError }),
     useLiftEventBan: () => ({ mutate: hooks.liftMutate, isPending: false, variables: undefined, error: null }),
 }));
@@ -74,6 +79,7 @@ function renderDrawer(onCloseAction = vi.fn()) {
 beforeEach(() => {
     hooks.detail = baseDetail;
     hooks.decideError = null;
+    hooks.reviewError = null;
     hooks.reviewMutate.mockReset();
     hooks.decideMutate.mockReset();
     hooks.liftMutate.mockReset();
@@ -134,6 +140,30 @@ describe('ModerationCaseDrawer', () => {
         renderDrawer();
         expect(screen.queryByRole('radio', { name: 'form.takeAction' })).toBeNull();
         expect(screen.getByRole('alert').textContent).toBe('Already decided');
+    });
+
+    it('announces a refused review claim', () => {
+        hooks.reviewError = new Error('Guidelines not accepted');
+        renderDrawer();
+        expect(screen.getByRole('alert').textContent).toBe('Guidelines not accepted');
+    });
+
+    it('tells active reports apart from ones an earlier decision closed', () => {
+        hooks.detail = {
+            ...baseDetail,
+            reports: [
+                { ...baseDetail.reports[0], id: 'r-0', status: 'RESOLVED' },
+                { ...baseDetail.reports[0], id: 'r-1', status: 'OPEN' },
+            ],
+        };
+        renderDrawer();
+        expect(screen.getByText('reportStatus.RESOLVED')).toBeTruthy();
+        expect(screen.getByText('reportStatus.OPEN')).toBeTruthy();
+
+        // Only the active report is closed by this decision.
+        fireEvent.click(screen.getByRole('radio', { name: 'form.dismiss' }));
+        fireEvent.click(screen.getByRole('button', { name: 'form.review' }));
+        expect(screen.getByText('summary.reports {"count":1,"outcome":"DISMISSED"}')).toBeTruthy();
     });
 
     it('says the item is gone when the content is null', () => {

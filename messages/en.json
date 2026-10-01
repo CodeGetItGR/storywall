@@ -2334,9 +2334,9 @@
             "caseTitle": "Report case",
             "reportsHeading": "{count, plural, one {# report} other {# reports}}",
             "reporterGone": "Former member",
-            "contentGone": "This item is no longer available. It was deleted before the review.",
+            "contentGone": "This item is no longer available. It has been deleted.",
             "noAuthor": "No author on record",
-            "hostBadge": "Host",
+            "hostBadge": "Host or co-host",
             "targetId": "Item ID",
             "eventId": "Event ID",
             "authorUserId": "Author account ID",
@@ -2356,12 +2356,13 @@
             },
             "summary": {
                 "title": "This will:",
-                "dismiss": "Close every report on this item with no action",
-                "alreadyRemoved": "Close every report as resolved (the item is already gone)",
+                "dismiss": "Take no action on the item",
+                "alreadyRemoved": "Take no further action: the item is already gone",
                 "removeContent": "Remove the content for everyone",
                 "removeMember": "Remove the author from the event",
                 "banFromEvent": "Stop their account rejoining this event",
-                "suspendAccount": "Suspend their account. They are signed out within 15 minutes"
+                "suspendAccount": "Suspend their account. They are signed out within 15 minutes",
+                "reports": "{outcome, select, DISMISSED {{count, plural, one {Close # report.} other {Close # reports.}} Reporters still in the event with an account will be told no breach of the Community Guidelines was found.} other {{count, plural, one {Close # report.} other {Close # reports.}} Reporters still in the event with an account will be told action was taken under the Community Guidelines.}}"
             },
             "history": {
                 "decisions": "Decisions on this item",
@@ -2377,7 +2378,13 @@
                 }
             },
             "banLifted": "Lifted {date}",
-            "liftBan": "Lift ban"
+            "liftBan": "Lift ban",
+            "reportStatus": {
+                "OPEN": "Open",
+                "UNDER_REVIEW": "Under review",
+                "RESOLVED": "Resolved",
+                "DISMISSED": "Dismissed"
+            }
         },
         "bugReports": {
             "title": "Bug reports",
