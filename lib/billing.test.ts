@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { canExtendCoverage, formatMoney, lastWithdrawalMoment } from './billing';
+import type { OrderSummaryDto } from '@/lib/api/types';
+
+import { canExtendCoverage, formatMoney, isOrderPaidByAnother, lastWithdrawalMoment, paidBillingTotal } from './billing';
 
 describe('lastWithdrawalMoment', () => {
     it('is one second before the window closes', () => {
@@ -27,5 +29,24 @@ describe('canExtendCoverage', () => {
         expect(canExtendCoverage({ ...eligible, eventStatus: 'DRAFT' })).toBe(false);
         expect(canExtendCoverage({ ...eligible, coverageEndsAt: '2026-09-24T12:00:00Z' })).toBe(false);
         expect(canExtendCoverage({ ...eligible, coverageEndsAt: null })).toBe(false);
+    });
+});
+
+describe('gift orders', () => {
+    const order = (overrides: Partial<OrderSummaryDto>) =>
+        ({ status: 'PAID', amountMinor: 1000, paidByCaller: true, ...overrides }) as OrderSummaryDto;
+
+    it('spots an order someone else paid for', () => {
+        expect(isOrderPaidByAnother({ paidByCaller: false, amountMinor: null })).toBe(true);
+        expect(isOrderPaidByAnother({ paidByCaller: true, amountMinor: 1000 })).toBe(false);
+        expect(isOrderPaidByAnother({ paidByCaller: null, amountMinor: 1000 })).toBe(false);
+    });
+
+    it('sums paid orders', () => {
+        expect(paidBillingTotal([order({}), order({ amountMinor: 500 }), order({ status: 'PENDING' })])).toBe(1500);
+    });
+
+    it('has no total when a paid order was a gift', () => {
+        expect(paidBillingTotal([order({}), order({ paidByCaller: false, amountMinor: null })])).toBeNull();
     });
 });

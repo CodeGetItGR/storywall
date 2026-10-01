@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { appConfigKeys } from '@/hooks/useAppConfig';
 import { notificationKeys } from '@/hooks/useNotifications';
@@ -12,7 +12,6 @@ import type {
     CollaborationCodeRequestDto,
     CollaborationCodeResponseDto,
     CollaborationEarningResponseDto,
-    CollaborationEarningsTotalDto,
     CollaboratorPortalTokenResponseDto,
     CollaboratorRequestDto,
     CollaboratorResponseDto,
@@ -22,6 +21,8 @@ import type {
     DiscountCodeResponseDto,
     EventDashboardRowDto,
     EventUsageResponseDto,
+    FunnelCohortDto,
+    FunnelMetricsResponseDto,
     LinkDiscountCodeRequestDto,
     MarkCollaborationEarningsPaidRequestDto,
     ModuleKey,
@@ -63,12 +64,13 @@ export const adminKeys = {
     costTimeline: (weeks: number) => ['admin', 'metrics', 'timeline', weeks] as const,
     costCalendar: (since: string, until: string) => ['admin', 'metrics', 'calendar', since, until] as const,
     costCalendarDayEvents: (date: string, page: number, size: number) => ['admin', 'metrics', 'calendar', date, 'events', page, size] as const,
+    funnel: (since: string | null, until: string | null) => ['admin', 'metrics', 'funnel', since, until] as const,
+    funnelCohorts: (weeks: number) => ['admin', 'metrics', 'funnel', 'cohorts', weeks] as const,
     paidServices: (kind?: PaidServiceKind, includeArchived?: boolean) => ['admin', 'paid-services', kind ?? 'ALL', Boolean(includeArchived)] as const,
     collaborators: ['admin', 'collaborators'] as const,
     collaboratorCodes: (id: string) => ['admin', 'collaborators', id, 'codes'] as const,
     discountCodes: ['admin', 'discount-codes'] as const,
     collaboratorEarnings: (id: string) => ['admin', 'collaborators', id, 'earnings'] as const,
-    collaboratorEarningsTotals: (id: string) => ['admin', 'collaborators', id, 'earnings', 'totals'] as const,
     reactionTypes: (eventTypeKey?: string, includeArchived?: boolean) =>
         ['admin', 'reaction-types', eventTypeKey ?? 'ALL', Boolean(includeArchived)] as const,
 };
@@ -88,7 +90,11 @@ export function useSaveCollaborator() {
             id
                 ? api.patch<CollaboratorResponseDto>(endpoints.admin.collaborators.byId(id), input)
                 : api.post<CollaboratorResponseDto>(endpoints.admin.collaborators.list, input),
-        onSuccess: () => {
+        onSuccess: (saved) => {
+            // Upsert before the refetch so a just-created partner can be selected right away.
+            queryClient.setQueryData<CollaboratorResponseDto[]>(adminKeys.collaborators, (current) =>
+                current ? [...current.filter((item) => item.id !== saved.id), saved] : current,
+            );
             queryClient.invalidateQueries({ queryKey: adminKeys.collaborators });
         },
     });
@@ -170,24 +176,14 @@ export function useCollaboratorEarnings(collaboratorId: string | null) {
     });
 }
 
-export function useCollaboratorEarningsTotals(collaboratorId: string | null) {
-    return useQuery({
-        queryKey: adminKeys.collaboratorEarningsTotals(collaboratorId ?? ''),
-        queryFn: () => api.get<CollaborationEarningsTotalDto[]>(endpoints.admin.collaborators.earningsTotals(collaboratorId!)),
-        enabled: Boolean(collaboratorId),
-    });
-}
-
-export function useMarkCollaborationEarningsPaid(collaboratorId: string | null) {
+export function useMarkCollaborationEarningsPaid() {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: (input: MarkCollaborationEarningsPaidRequestDto) => api.post<void>(endpoints.admin.collaborationEarnings.markPaid, input),
-        onSuccess: () => {
-            if (!collaboratorId) return;
-            queryClient.invalidateQueries({ queryKey: adminKeys.collaboratorEarnings(collaboratorId) });
-            queryClient.invalidateQueries({ queryKey: adminKeys.collaboratorEarningsTotals(collaboratorId) });
-        },
+        // Settled, not success: a 5062 refusal means the ledger on screen is stale.
+        // The collaborators prefix covers the list (rail totals) and every ledger.
+        onSettled: () => queryClient.invalidateQueries({ queryKey: adminKeys.collaborators }),
     });
 }
 
@@ -224,6 +220,24 @@ export function useAdminCostTimeline(weeks: number) {
     return useQuery({
         queryKey: adminKeys.costTimeline(weeks),
         queryFn: () => api.get<PlanTimelineRowDto[]>(endpoints.admin.metrics.timeline(weeks)),
+    });
+}
+
+// GET /api/admin/metrics/funnel - conversion funnel for accounts that signed up in the range.
+export function useAdminFunnel(since: string | null, until: string | null, options: { enabled?: boolean } = {}) {
+    return useQuery({
+        queryKey: adminKeys.funnel(since, until),
+        queryFn: () => api.get<FunnelMetricsResponseDto>(endpoints.admin.metrics.funnel(since, until)),
+        placeholderData: keepPreviousData,
+        enabled: options.enabled ?? true,
+    });
+}
+
+export function useAdminFunnelCohorts(weeks: number) {
+    return useQuery({
+        queryKey: adminKeys.funnelCohorts(weeks),
+        queryFn: () => api.get<FunnelCohortDto[]>(endpoints.admin.metrics.funnelCohorts(weeks)),
+        placeholderData: keepPreviousData,
     });
 }
 

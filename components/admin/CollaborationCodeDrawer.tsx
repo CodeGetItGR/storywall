@@ -77,7 +77,7 @@ export function CollaborationCodeDrawer({
                     />
                 </AdminField>
                 <AdminField label={t('codes.fields.label')} required hint={t('codes.fields.labelHint')}>
-                    <input name="label" required maxLength={140} defaultValue={code?.label} className={adminInputClass()} />
+                    <input name="label" required maxLength={200} defaultValue={code?.label} className={adminInputClass()} />
                 </AdminField>
 
                 {/* Rates */}

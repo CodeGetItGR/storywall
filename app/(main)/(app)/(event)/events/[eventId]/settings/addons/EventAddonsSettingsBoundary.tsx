@@ -69,7 +69,8 @@ export default function EventAddonsSettingsBoundary() {
                 <p className="mt-1 text-sm leading-6 text-ink-muted">{t('subtitle')}</p>
             </section>
 
-            <div className="mt-6 rounded-lg bg-surface-muted/45 p-4">
+            {/* Storage packs */}
+            <div className="mt-8">
                 {data.eventStatus === 'ACTIVE' && storagePacks.length > 0 ? (
                     <StoragePackPurchase eventId={eventId} services={storagePacks} canPurchase={canPurchase} />
                 ) : (

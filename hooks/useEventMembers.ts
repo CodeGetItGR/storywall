@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { usePresignedUrlRefreshMs } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { myEventsKeys } from '@/hooks/useMyEvents';
 import { api } from '@/lib/api/client';
@@ -23,6 +24,8 @@ export function useEventMembers(eventId: string | null) {
             return normalizeList(res).items;
         },
         enabled: Boolean(eventId) && isAuthenticated,
+        // avatarUrl is presigned.
+        staleTime: usePresignedUrlRefreshMs(),
     });
 }
 
@@ -33,6 +36,7 @@ export function useEventMember(id: string | null) {
         queryKey: eventMemberKeys.detail(id ?? ''),
         queryFn: () => api.get<EventMemberResponseDto>(endpoints.eventMembers.byId(id!)),
         enabled: Boolean(id) && isAuthenticated,
+        staleTime: usePresignedUrlRefreshMs(),
     });
 }
 

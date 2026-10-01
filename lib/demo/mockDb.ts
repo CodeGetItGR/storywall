@@ -12,13 +12,13 @@ export interface MockDb<Schema extends Record<string, WithId>> {
     reset(): void;
 }
 
-function loadState<Schema>(storageKey: string, seed: () => Schema): Schema {
+function loadState<Schema>(storageKey: string, seed: () => Schema, hydrate: (stored: Schema) => Schema): Schema {
     if (typeof window === 'undefined') return seed();
 
     try {
         const raw = window.localStorage.getItem(storageKey);
         if (!raw) return seed();
-        return JSON.parse(raw) as Schema;
+        return hydrate(JSON.parse(raw) as Schema);
     } catch {
         console.warn(`[demo] Corrupt data at localStorage key "${storageKey}" — reseeding.`);
         return seed();
@@ -27,14 +27,21 @@ function loadState<Schema>(storageKey: string, seed: () => Schema): Schema {
 
 function saveState<Schema>(storageKey: string, state: Schema): void {
     if (typeof window === 'undefined') return;
-    window.localStorage.setItem(storageKey, JSON.stringify(state));
+    try {
+        window.localStorage.setItem(storageKey, JSON.stringify(state));
+    } catch {
+        // Quota exceeded or storage blocked — the in-memory state keeps working for this visit.
+        console.warn(`[demo] Could not save to localStorage key "${storageKey}".`);
+    }
 }
 
 export function createMockDb<Schema extends Record<string, WithId[]>>(
     storageKey: string,
     seed: () => Schema,
+    // Runs on state restored from localStorage, e.g. to drop records that can't survive a reload.
+    hydrate: (stored: Schema) => Schema = (stored) => stored,
 ): MockDb<{ [K in keyof Schema]: Schema[K][number] }> {
-    let state = loadState(storageKey, seed);
+    let state = loadState(storageKey, seed, hydrate);
 
     function persist() {
         saveState(storageKey, state);

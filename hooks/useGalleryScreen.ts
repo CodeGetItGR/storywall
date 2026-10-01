@@ -7,11 +7,13 @@ import { type ChangeEvent, type MouseEvent, type PointerEvent, useCallback, useE
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
+import { useContentAccess } from '@/hooks/useContentAccess';
 import { useGallerySelection } from '@/hooks/useGallerySelection';
 import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
-import { useEventMedia, useOriginalMedia, useUploadMediaBatch } from '@/hooks/useMedia';
+import { useDeleteMedia, useEventMedia, useOriginalMedia, useUploadMediaBatch } from '@/hooks/useMedia';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
+import { canReportContent } from '@/lib/contentPermissions';
 import { downloadBlob } from '@/lib/download';
 import { isEventDeleted, isEventWritable, readableModuleKeys } from '@/lib/eventLifecycle';
 import { useActiveMember } from '@/providers/EventProvider';
@@ -22,6 +24,7 @@ const MAX_FILES_PER_BATCH = 10;
 export function useGalleryScreen() {
     const { activeEvent, eventId, isHost } = useEventRouteContext();
     const activeMember = useActiveMember();
+    const contentAccess = useContentAccess();
     const t = useTranslations('GalleryPage');
     const toErrorMessage = useApiErrorMessage();
     const router = useRouter();
@@ -29,10 +32,13 @@ export function useGalleryScreen() {
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [uploadNotice, setUploadNotice] = useState<string | null>(null);
     const [selectedMediaId, setSelectedMediaId] = useState<string | null>(null);
+    const [reportMediaId, setReportMediaId] = useState<string | null>(null);
     const [originalError, setOriginalError] = useState<string | null>(null);
     const [selectionDownloadError, setSelectionDownloadError] = useState<string | null>(null);
     const [isDownloadingSelection, setIsDownloadingSelection] = useState(false);
     const [archiveDownloadOpen, setArchiveDownloadOpen] = useState(false);
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
     const pendingAdvanceIndexRef = useRef<number | null>(null);
 
     const { data: mediaPages, isLoading: isLoadingMedia, fetchNextPage, hasNextPage, isFetchingNextPage } = useEventMedia(eventId);
@@ -43,6 +49,7 @@ export function useGalleryScreen() {
     const loadMoreRef = useInfiniteScrollSentinel(hasNextPage, fetchNextPage, media.length);
     const uploadMediaBatch = useUploadMediaBatch();
     const originalMedia = useOriginalMedia();
+    const deleteMedia = useDeleteMedia(eventId ?? '');
     const { data: appConfig } = useAppConfig();
 
     const galleryEnabled = readableModuleKeys(activeEvent).has('gallery');
@@ -63,6 +70,28 @@ export function useGalleryScreen() {
     // Every event keeps photo originals; videos are never re-encoded, so they have no separate original.
     const canDownloadOriginal = isHost && selectedMedia !== null && selectedMedia.mediaType !== 'VIDEO';
     const showArchiveDownload = isHost && galleryEnabled;
+    // A host, or the member who uploaded it (the backend enforces the same rule). Deletes are not
+    // plan-gated on the backend, so a file can still be cleared out after the gallery module is
+    // gone — only a read-only or deleted event stops it.
+    const isUploader = Boolean(activeMember && selectedMedia?.uploaderMemberId === activeMember.id);
+    const canDeleteMedia =
+        (isHost || isUploader) &&
+        selectedMedia !== null &&
+        isEventWritable(activeEvent?.status) &&
+        !isDeleted &&
+        !contentAccess.isLocked(selectedMedia.id);
+    const canReportMedia =
+        selectedMedia !== null &&
+        canReportContent({
+            isMember: Boolean(activeMember),
+            isAuthor: isUploader,
+            targetTypeReportable: Boolean(appConfig?.reportTargetTypes?.includes('MEDIA')),
+        });
+    // The dialog belongs to the item it was opened for: if the selection moves, the item leaves the list
+    // or reporting stops being allowed, it is closed and stays closed.
+    const reportOpen = reportMediaId !== null && reportMediaId === selectedMedia?.id && canReportMedia;
+    // Forget a dialog that can no longer show, so it doesn't come back when its item or permission does.
+    if (reportMediaId !== null && !reportOpen) setReportMediaId(null);
     const canDownloadSelected =
         gallerySelection.selectedCount > 0 &&
         gallerySelection.selectedCount <= maxArchiveSelectedItems &&
@@ -155,6 +184,38 @@ export function useGalleryScreen() {
         }
     }, [canDownloadSelected, eventId, gallerySelection, t, toErrorMessage]);
 
+    const requestDeleteMedia = useCallback(() => {
+        if (!canDeleteMedia) return;
+        setDeleteError(null);
+        setConfirmDeleteOpen(true);
+    }, [canDeleteMedia]);
+
+    const openReport = useCallback(() => {
+        if (!selectedMedia) return;
+        // A page still loading for a pending Next must not move the selection under the dialog.
+        pendingAdvanceIndexRef.current = null;
+        setReportMediaId(selectedMedia.id);
+    }, [selectedMedia]);
+
+    const closeReport = useCallback(() => {
+        setReportMediaId(null);
+    }, []);
+
+    const closeDeleteConfirm = useCallback(() => {
+        setConfirmDeleteOpen(false);
+    }, []);
+
+    const confirmDeleteMedia = useCallback(async () => {
+        if (!selectedMedia) return;
+        try {
+            await deleteMedia.mutateAsync(selectedMedia.id);
+            setConfirmDeleteOpen(false);
+            setSelectedMediaId(null);
+        } catch (error) {
+            setDeleteError(toErrorMessage(error, t('deleteMediaFailed')));
+        }
+    }, [deleteMedia, selectedMedia, t, toErrorMessage]);
+
     const selectedMediaIndex = useMemo(() => (selectedMedia ? media.findIndex((item) => item.id === selectedMedia.id) : -1), [media, selectedMedia]);
     const hasPreviousMedia = selectedMediaIndex > 0;
     const hasNextMedia = selectedMediaIndex !== -1 && (selectedMediaIndex < media.length - 1 || hasNextPage);
@@ -246,6 +307,7 @@ export function useGalleryScreen() {
     const closeMedia = useCallback(() => {
         setSelectedMediaId(null);
         setOriginalError(null);
+        setReportMediaId(null);
     }, []);
 
     useEffect(() => {
@@ -290,6 +352,17 @@ export function useGalleryScreen() {
         originalMedia,
         canDownloadOriginal,
         canDownloadSelected,
+        canDeleteMedia,
+        canReportMedia,
+        reportOpen,
+        openReport,
+        closeReport,
+        confirmDeleteOpen,
+        deleteError,
+        deleteMedia,
+        requestDeleteMedia,
+        closeDeleteConfirm,
+        confirmDeleteMedia,
         maxFiles,
         handleFilesChange,
         handleClearSelection,

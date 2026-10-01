@@ -83,8 +83,19 @@ export function newestBillingOrder(orders: OrderSummaryDto[], kind?: OrderSummar
     return [...scoped].sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime())[0] ?? null;
 }
 
-export function paidBillingTotal(orders: OrderSummaryDto[]): number {
-    return orders.filter((order) => order.status === 'PAID').reduce((sum, order) => sum + (order.amountMinor ?? 0), 0);
+// On a gift event, an order another host paid comes back with no amounts: it
+// reads as "Gift" and can't be withdrawn by the reader (4010). On other events a
+// false paidByCaller (orders with no recorded buyer) hides nothing.
+export function isOrderPaidByAnother(order: Pick<OrderSummaryDto, 'paidByCaller' | 'amountMinor'>): boolean {
+    return order.paidByCaller === false && order.amountMinor === null;
+}
+
+// Null when another host paid one of the orders (a gift event): a partial sum
+// would read as the event's total.
+export function paidBillingTotal(orders: OrderSummaryDto[]): number | null {
+    const paid = orders.filter((order) => order.status === 'PAID');
+    if (paid.some(isOrderPaidByAnother)) return null;
+    return paid.reduce((sum, order) => sum + (order.amountMinor ?? 0), 0);
 }
 
 export function billingCurrency(orders: OrderSummaryDto[], fallback = 'EUR'): string {

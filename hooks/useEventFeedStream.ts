@@ -4,6 +4,7 @@ import { type InfiniteData, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
 import { commentKeys } from '@/hooks/useComments';
+import { refreshFeedFirstPage } from '@/hooks/usePosts';
 import { api, ApiError } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { isModuleNotAvailableError } from '@/lib/api/errors';
@@ -13,6 +14,10 @@ import { postKeys } from '@/lib/postQueries';
 
 const RECONNECT_DELAY_MS = 1_000;
 const MAX_RECONNECT_DELAY_MS = 30_000;
+// Every guest of an event gets the same frame at the same moment. A random
+// delay spreads their fetches over most of the backend's coalescing window
+// (app.feed.sse.coalesce-window-ms, 2 s) instead of all at once.
+const REFRESH_JITTER_MS = 1_500;
 
 // The session is gone, the caller is no longer a member, the event no
 // longer exists, or it no longer has posts — retrying can't change any of
@@ -34,10 +39,20 @@ export function useEventFeedStream(eventId: string | null) {
         let disposed = false;
         let stream: EventSource | null = null;
         let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+        let refreshTimer: ReturnType<typeof setTimeout> | null = null;
         let failedMints = 0;
 
+        // A refresh already waiting will see this change too.
+        function scheduleRefresh() {
+            if (refreshTimer) return;
+            refreshTimer = setTimeout(() => {
+                refreshTimer = null;
+                refresh();
+            }, Math.random() * REFRESH_JITTER_MS);
+        }
+
         function refresh() {
-            void queryClient.invalidateQueries({ queryKey: postKeys.list(eventId!) });
+            void refreshFeedFirstPage(queryClient, eventId!);
             const posts =
                 queryClient.getQueryData<InfiniteData<Page<PostResponseDto>>>(postKeys.list(eventId!))?.pages.flatMap((page) => page.content) ?? [];
             for (const post of posts) void queryClient.invalidateQueries({ queryKey: commentKeys.list(post.id), exact: true });
@@ -55,7 +70,7 @@ export function useEventFeedStream(eventId: string | null) {
                 if (disposed) return;
                 failedMints = 0;
                 stream = new EventSource(api.url(endpoints.events.stream(eventId!, token)));
-                stream.addEventListener('changed', refresh);
+                stream.addEventListener('changed', scheduleRefresh);
                 stream.addEventListener('error', () => {
                     stream?.close();
                     stream = null;
@@ -73,6 +88,7 @@ export function useEventFeedStream(eventId: string | null) {
         return () => {
             disposed = true;
             if (reconnectTimer) clearTimeout(reconnectTimer);
+            if (refreshTimer) clearTimeout(refreshTimer);
             stream?.close();
         };
     }, [eventId, queryClient]);

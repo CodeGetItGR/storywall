@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { adminAccountsPath, eligibleProvisioningPlans } from '@/lib/adminAccountProvisioning';
+import { accountEmailChange, accountEmailChangeErrorKey, adminAccountsPath, eligibleProvisioningPlans } from '@/lib/adminAccountProvisioning';
+import { ApiError } from '@/lib/api/client';
 import type { PlanTierResponseDto } from '@/lib/api/types';
 
 function plan(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto {
@@ -14,6 +15,7 @@ function plan(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto {
         isDefault: false,
         isAssignable: true,
         isPublic: false,
+        isGiftable: true,
         storageBytes: null,
         maxMembers: null,
         priceAmountMinor: null,
@@ -57,5 +59,24 @@ describe('admin account provisioning', () => {
         ];
 
         expect(eligibleProvisioningPlans(plans, 'WEDDING').map(({ id }) => id)).toEqual(['first', 'later']);
+    });
+});
+
+describe('admin email change', () => {
+    it('sends a changed email in lower case', () => {
+        expect(accountEmailChange('old@example.com', ' New@Example.com ')).toEqual({ email: 'new@example.com' });
+    });
+
+    it('sends nothing when empty or unchanged', () => {
+        expect(accountEmailChange('old@example.com', '  ')).toBeNull();
+        expect(accountEmailChange('old@example.com', 'OLD@example.com')).toBeNull();
+        expect(accountEmailChange(null, 'new@example.com')).toEqual({ email: 'new@example.com' });
+    });
+
+    it('names a taken or malformed address', () => {
+        expect(accountEmailChangeErrorKey(new ApiError(409, { errorCode: 5002 }))).toBe('emailTaken');
+        expect(accountEmailChangeErrorKey(new ApiError(400, { errorCode: 3001 }))).toBe('emailInvalid');
+        expect(accountEmailChangeErrorKey(new ApiError(403, {}))).toBeNull();
+        expect(accountEmailChangeErrorKey(new Error('network'))).toBeNull();
     });
 });

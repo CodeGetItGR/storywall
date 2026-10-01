@@ -27,6 +27,7 @@ import { formatDate } from '@/lib/datetime';
 import { selectCoHostInvitations } from '@/lib/eventInvitations';
 import { findPlanByCode } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
+import { useActiveMember } from '@/providers/EventProvider';
 
 import { CoHostManagementList } from './CoHostManagementList';
 import { MemberRow } from './MemberRow';
@@ -62,6 +63,7 @@ export function MembersPanel({
     const tMembers = useTranslations('ManagePage.members');
     const locale = useLocale();
     const { data: appConfig } = useAppConfig();
+    const activeMember = useActiveMember();
     const searchParams = useSearchParams();
     const requestedTab = searchParams.get('section');
     const coHostsAvailable = eventModules.find((module_) => module_.moduleKey === 'co_hosts')?.isAvailable ?? false;
@@ -173,7 +175,7 @@ export function MembersPanel({
                                     member={member}
                                     canModerate={canModerate}
                                     canRemove={canModerate && member.role !== 'HOST'}
-                                    canReport={canReport}
+                                    canReport={canReport && member.id !== activeMember?.id}
                                     joinedLabel={tMembers('joined', { date: formatDate(locale, member.joinedAt, { dateStyle: 'medium' }) })}
                                     roleLabel={member.role === 'HOST' ? tMembers('roleHost') : null}
                                     onReportAction={moderation.requestReport}

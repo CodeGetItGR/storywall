@@ -8,7 +8,7 @@ import { type MouseEvent, useCallback } from 'react';
 import { NOTIFICATION_SEVERITY_STYLES, NotificationSeverityIcon } from '@/components/notifications/NotificationSeverityIcon';
 import { useDeleteNotification, useMarkNotificationRead } from '@/hooks/useNotifications';
 import type { NotificationResponseDto } from '@/lib/api/types';
-import { notificationCtaRoute, notificationSeverity, payloadString } from '@/lib/notifications';
+import { notificationCopyType, notificationCtaRoute, notificationSeverity, payloadString } from '@/lib/notifications';
 import { cn, timeAgoParts } from '@/lib/utils';
 
 export function NotificationRow({ notification }: { notification: NotificationResponseDto }) {
@@ -33,8 +33,9 @@ export function NotificationRow({ notification }: { notification: NotificationRe
         [deleteNotification, notification.id],
     );
 
-    const titleKey = `types.${notification.type}.title`;
-    const bodyKey = `types.${notification.type}.body`;
+    const copyType = notificationCopyType(notification);
+    const titleKey = `types.${copyType}.title`;
+    const bodyKey = `types.${copyType}.body`;
     const title = notification.title ?? (t.has(titleKey) ? t(titleKey) : t('generic.title'));
     const body =
         notification.body ??
@@ -43,6 +44,8 @@ export function NotificationRow({ notification }: { notification: NotificationRe
                   days: payloadString(notification, 'daysRemaining') ?? payloadString(notification, 'daysOverdue') ?? '0',
                   daysUntilFreeze: payloadString(notification, 'daysUntilFreeze') ?? '0',
                   plan: payloadString(notification, 'planTier') ?? '',
+                  over: payloadString(notification, 'overFormatted') ?? '',
+                  dueDate: payloadString(notification, 'dueDate') ?? '',
               })
             : null);
 

@@ -7,15 +7,23 @@ import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { ProvisionEventForm } from '@/components/admin/ProvisionEventForm';
 import { ProvisionEventReview } from '@/components/admin/ProvisionEventReview';
 import { ProvisionEventSuccess } from '@/components/admin/ProvisionEventSuccess';
-import { useProvisionEventForm } from '@/hooks/useProvisionEventForm';
-import type { UserResponseDto } from '@/lib/api/types';
+import { type ProvisionEventOptions, useProvisionEventForm } from '@/hooks/useProvisionEventForm';
+import type { ProvisionHost } from '@/lib/adminAccountProvisioning';
 import { cn } from '@/lib/utils';
 
 const FORM_ID = 'provision-admin-event';
 
-export function EventProvisionDrawer({ host, onCloseAction }: { host: UserResponseDto; onCloseAction: () => void }) {
+type EventProvisionDrawerProps = {
+    host: ProvisionHost;
+    options?: ProvisionEventOptions;
+    // Shows an "Open event" link on the success step (for events the admin hosts).
+    showOpenEvent?: boolean;
+    onCloseAction: () => void;
+};
+
+export function EventProvisionDrawer({ host, options, showOpenEvent = false, onCloseAction }: EventProvisionDrawerProps) {
     const t = useTranslations('AdminPage.accounts.provision');
-    const form = useProvisionEventForm(host);
+    const form = useProvisionEventForm(host, options);
     const hostName = [host.firstName, host.lastName].filter(Boolean).join(' ') || host.email || t('unnamedHost');
 
     function handleBack() {
@@ -77,7 +85,7 @@ export function EventProvisionDrawer({ host, onCloseAction }: { host: UserRespon
             footer={footer}
         >
             {form.step === 'success' ? (
-                <ProvisionEventSuccess form={form} host={host} />
+                <ProvisionEventSuccess form={form} host={host} showOpenEvent={showOpenEvent} />
             ) : (
                 <form id={FORM_ID} onSubmit={form.submit} className="space-y-7">
                     {/* Progress */}

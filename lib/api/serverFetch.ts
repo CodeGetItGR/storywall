@@ -29,6 +29,23 @@ export async function serverGet<T>(path: string, accessToken: string): Promise<T
     return res.json() as Promise<T>;
 }
 
+// Like serverGet, but a 404 resolves to null: for resources that may simply not
+// exist yet (e.g. the business profile), where "none" is a valid cache value.
+export async function serverGetOrNull<T>(path: string, accessToken: string): Promise<T | null> {
+    const locale = await getServerLocale();
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+        headers: { Authorization: `Bearer ${accessToken}`, 'Accept-Language': locale },
+        cache: 'no-store',
+    });
+
+    if (res.status === 404) return null;
+    if (!res.ok) {
+        throw new Error(`Server prefetch failed for ${path} with status ${res.status}`);
+    }
+
+    return res.json() as Promise<T>;
+}
+
 // Whether the event has the module, mirroring useModuleReadable, so a prefetch
 // skips a read the backend would answer with 409 / 5012. The event detail
 // fetch is deduped with the (event) layout's own within one render.

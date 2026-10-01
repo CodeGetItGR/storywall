@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { type BugReportContext, buildBugReportForm, buildBugReportRequest, currentDisplayMode, normalizeLocale } from '@/lib/betaFeedback/bugReport';
+import { type BugReportContext, buildBugReportForm, buildBugReportRequest, currentDisplayMode, findClipboardImage, normalizeLocale } from '@/lib/betaFeedback/bugReport';
 
 const EVENT_ID = '3f2b8c1e-5d4a-4f6b-9a7c-2e1d0b9a8c7f';
 
@@ -96,5 +96,19 @@ describe('currentDisplayMode', () => {
         expect(currentDisplayMode((query) => ({ matches: query === '(display-mode: standalone)' }))).toBe('standalone');
         expect(currentDisplayMode(() => ({ matches: false }))).toBe('browser');
         expect(currentDisplayMode(undefined)).toBe('browser');
+    });
+});
+
+describe('findClipboardImage', () => {
+    const clipboard = (...files: File[]) => ({ files: files as unknown as FileList });
+
+    it('returns the first image', () => {
+        const image = new File(['x'], 'image.png', { type: 'image/png' });
+        expect(findClipboardImage(clipboard(new File(['a'], 'notes.txt', { type: 'text/plain' }), image))).toBe(image);
+    });
+
+    it('returns null for a text-only paste', () => {
+        expect(findClipboardImage(clipboard())).toBeNull();
+        expect(findClipboardImage(null)).toBeNull();
     });
 });

@@ -4,6 +4,7 @@ export type AdminErrorMessageKey =
     | 'planInUse'
     | 'onlyDefault'
     | 'orderNotPending'
+    | 'orderNotManual'
     | 'notFound'
     | 'withdrawalNotHeld'
     | 'keepEventDayNotDue'
@@ -24,6 +25,7 @@ export type AdminErrorMessageKey =
     | 'coverageOptionUnavailable'
     | 'coverageOptionLastInitial'
     | 'coverageOptionDuplicate'
+    | 'demoDesignationInvalid'
     | 'generic';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -54,6 +56,8 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.PLAN_TIER_IN_USE) return 'planInUse';
     if (code === ERROR_CODES.PLAN_TIER_IS_ONLY_DEFAULT) return 'onlyDefault';
     if (code === ERROR_CODES.ORDER_NOT_PENDING) return 'orderNotPending';
+    // Settle-by-hand is for manual-provider orders on dev/staging; a Stripe order is refused.
+    if (code === ERROR_CODES.ORDER_NOT_MANUAL) return 'orderNotManual';
     if (code === ERROR_CODES.RESOURCE_NOT_FOUND) return 'notFound';
     // The common concurrent case: two admins open the withdrawal queue and the
     // second one's decision lands on a request that is no longer HELD.
@@ -77,5 +81,20 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.COVERAGE_OPTION_UNAVAILABLE) return 'coverageOptionUnavailable';
     if (code === ERROR_CODES.COVERAGE_OPTION_LAST_INITIAL) return 'coverageOptionLastInitial';
     if (code === ERROR_CODES.COVERAGE_OPTION_DUPLICATE) return 'coverageOptionDuplicate';
+    if (code === ERROR_CODES.DEMO_DESIGNATION_INVALID) return 'demoDesignationInvalid';
     return 'generic';
+}
+
+export type MetricShare = { key: string; value: number; ratio: number };
+
+/** A metrics group map as rows sorted largest first, each with its share of the group total. */
+export function toMetricShares(values: Record<string, number>): MetricShare[] {
+    const total = Object.values(values).reduce((sum, value) => sum + value, 0);
+    return Object.entries(values)
+        .sort(([leftKey, left], [rightKey, right]) => right - left || leftKey.localeCompare(rightKey))
+        .map(([key, value]) => ({ key, value, ratio: total > 0 ? value / total : 0 }));
+}
+
+export function ratioOf(part: number, whole: number): number {
+    return whole > 0 ? part / whole : 0;
 }

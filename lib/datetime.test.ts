@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { datetimeLocalValueToIso, getScheduleDatetimeLocalBounds } from './datetime';
+import { datetimeLocalValueToIso, eventWindowFromLocalStart, getScheduleDatetimeLocalBounds } from './datetime';
 
 describe('datetimeLocalValueToIso', () => {
     it('converts a datetime-local value to a full ISO-8601 instant with offset', () => {
@@ -37,5 +37,20 @@ describe('getScheduleDatetimeLocalBounds', () => {
         const { startAtMax } = getScheduleDatetimeLocalBounds({ startAt: '', referenceDate });
 
         expect(startAtMax).toBeUndefined();
+    });
+});
+
+describe('eventWindowFromLocalStart', () => {
+    it('ends a day after the start by default', () => {
+        const window = eventWindowFromLocalStart('2026-10-10T18:00');
+        expect(window).not.toBeNull();
+        expect(Date.parse(window!.endAt) - Date.parse(window!.startAt)).toBe(24 * 60 * 60 * 1000);
+        expect(window!.startAt).toBe(new Date('2026-10-10T18:00').toISOString());
+    });
+
+    it('keeps a given length and rejects an empty value', () => {
+        const window = eventWindowFromLocalStart('2026-10-10T18:00', 6 * 60 * 60 * 1000);
+        expect(Date.parse(window!.endAt) - Date.parse(window!.startAt)).toBe(6 * 60 * 60 * 1000);
+        expect(eventWindowFromLocalStart('')).toBeNull();
     });
 });

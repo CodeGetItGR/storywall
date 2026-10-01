@@ -1,13 +1,14 @@
 'use client';
 
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, ExternalLink } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { AdminIdentifier } from '@/components/admin/AdminIdentifier';
 import type { ProvisionEventForm } from '@/hooks/useProvisionEventForm';
-import type { UserResponseDto } from '@/lib/api/types';
+import type { ProvisionHost } from '@/lib/adminAccountProvisioning';
+import { routes } from '@/lib/routes';
 
-export function ProvisionEventSuccess({ form, host }: { form: ProvisionEventForm; host: UserResponseDto }) {
+export function ProvisionEventSuccess({ form, host, showOpenEvent = false }: { form: ProvisionEventForm; host: ProvisionHost; showOpenEvent?: boolean }) {
     const t = useTranslations('AdminPage.accounts.provision');
     if (!form.result) return null;
     const hostName = [host.firstName, host.lastName].filter(Boolean).join(' ') || host.email || t('unnamedHost');
@@ -24,6 +25,17 @@ export function ProvisionEventSuccess({ form, host }: { form: ProvisionEventForm
             <div className="mt-6 w-full max-w-sm border-t border-border pt-5 text-left">
                 <p className="mb-4 text-sm text-ink-muted">{t('successBody', { plan: form.selectedPlan?.name ?? '' })}</p>
                 <AdminIdentifier label={t('eventId')} value={form.result.id} />
+                {showOpenEvent && (
+                    <a
+                        href={routes.events.feed(form.result.id)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-4 inline-flex min-h-10 items-center gap-1.5 rounded-md border border-border px-3.5 text-sm font-semibold text-ink-muted hover:bg-canvas"
+                    >
+                        <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                        {t('openEvent')}
+                    </a>
+                )}
             </div>
         </section>
     );

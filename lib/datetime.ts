@@ -187,3 +187,16 @@ export function formatEventListDate(startAt: string | undefined, locale: string,
 
     return `${weekday}, ${calendarDate} ${atLabel} ${time}`.toUpperCase();
 }
+
+// A start picked in a datetime-local field, with the end the server fills when
+// none is sent (start + 24h). Used when a draft's date is moved after creation.
+export const DEFAULT_EVENT_LENGTH_MS = 24 * 60 * 60 * 1000;
+
+export function eventWindowFromLocalStart(
+    startAtLocal: string,
+    lengthMs: number = DEFAULT_EVENT_LENGTH_MS,
+): { startAt: string; endAt: string } | null {
+    const start = parseDatetimeLocalValue(startAtLocal);
+    if (!start) return null;
+    return { startAt: start.toISOString(), endAt: new Date(start.getTime() + lengthMs).toISOString() };
+}

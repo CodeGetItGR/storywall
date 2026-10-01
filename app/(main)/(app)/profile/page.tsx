@@ -4,14 +4,15 @@ import { headers } from 'next/headers';
 import { ProfileContent } from '@/components/profile/ProfileContent';
 import { appConfigKeys } from '@/hooks/useAppConfig';
 import { endpoints } from '@/lib/api/endpoints';
-import { serverGet, serverPublicConfigGet } from '@/lib/api/serverFetch';
-import type { AppConfigResponseDto, NewsletterStatusResponseDto } from '@/lib/api/types';
+import { serverGet, serverGetOrNull, serverPublicConfigGet } from '@/lib/api/serverFetch';
+import type { AppConfigResponseDto, BusinessProfileResponseDto, NewsletterStatusResponseDto } from '@/lib/api/types';
 import { ACCESS_TOKEN_HEADER } from '@/lib/auth/authCookies';
+import { businessProfileKeys } from '@/lib/businessProfile';
 import { newsletterKeys } from '@/lib/newsletter';
 import { makeQueryClient } from '@/lib/queryClient';
 
-// Prefetches the newsletter status so the profile's newsletter section renders
-// without a loading state. Guests get a 403 here and fall through silently,
+// Prefetches the newsletter status and business profile so those sections
+// render without a loading state. Guests get a 403 here and fall through silently,
 // matching the client, which never asks for them.
 export default async function ProfilePage() {
     const accessToken = (await headers()).get(ACCESS_TOKEN_HEADER);
@@ -27,6 +28,13 @@ export default async function ProfilePage() {
             }
         } catch {
             // Best-effort — the client hooks fetch normally if this fails.
+        }
+        try {
+            // A 404 (no profile yet) seeds null, so the section renders its empty state at once.
+            const businessProfile = await serverGetOrNull<BusinessProfileResponseDto>(endpoints.me.businessProfile, accessToken);
+            queryClient.setQueryData(businessProfileKeys.mine, businessProfile);
+        } catch {
+            // Best-effort, as above.
         }
     }
 

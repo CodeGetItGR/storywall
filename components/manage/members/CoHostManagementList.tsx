@@ -33,6 +33,7 @@ export function CoHostManagementList({ canManage, eventId, hosts, members }: CoH
                         <CoHostManagementRow
                             key={host.id}
                             canManage={canManage}
+                            canTransfer={management.canTransfer}
                             host={host}
                             member={membersById.get(host.memberId)}
                             onRemoveAction={management.requestRemove}

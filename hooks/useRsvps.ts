@@ -22,6 +22,7 @@ import type {
     RsvpSessionResponsRequestDto,
     RsvpSessionResponsResponseDto,
 } from '@/lib/api/types';
+import { LIVE_CONTENT_STALE_TIME } from '@/lib/queryClient';
 
 export const rsvpKeys = {
     list: (eventId: string) => ['events', eventId, 'rsvps'] as const,
@@ -75,6 +76,7 @@ export function useEventRsvps(eventId: string | null) {
             return normalizeList(res).items;
         },
         enabled: Boolean(eventId) && isAuthenticated && rsvpReadable,
+        staleTime: LIVE_CONTENT_STALE_TIME,
     });
 }
 
@@ -89,6 +91,7 @@ export function useRsvpReport(eventId: string | null, reportType: RsvpReportType
         queryKey: rsvpKeys.report(eventId ?? '', reportType, locale),
         queryFn: () => api.get<RsvpReportDto>(endpoints.events.rsvpReport(eventId!, reportType)),
         enabled: Boolean(eventId) && isAuthenticated && rsvpReadable,
+        staleTime: LIVE_CONTENT_STALE_TIME,
     });
 }
 

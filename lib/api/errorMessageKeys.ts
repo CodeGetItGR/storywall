@@ -32,6 +32,7 @@ export type ApiErrorMessageKey =
     | 'duplicateReaction'
     | 'emailAlreadyExists'
     | 'eventDatesIncomplete'
+    | 'eventStartPassed'
     | 'eventStartTooFarAhead'
     | 'eventCreationLocked'
     | 'eventDeleteAlreadyPending'
@@ -59,6 +60,18 @@ export type ApiErrorMessageKey =
     | 'invalidEventType'
     | 'invalidPlanTierScope'
     | 'forbidden'
+    | 'giftAlreadyClaimed'
+    | 'giftCardLocked'
+    | 'giftClaimNotAllowed'
+    | 'giftClaimPinInvalid'
+    | 'giftEventNotActive'
+    | 'giftHandoverPending'
+    | 'giftNotAvailableOnPlan'
+    | 'giftNotPrimaryHost'
+    | 'giftOrderNotYours'
+    | 'giftRecipientProtected'
+    | 'guidelinesAcceptanceRequired'
+    | 'guidelinesVersionMismatch'
     | 'internalError'
     | 'invalidCredentials'
     | 'invalidIban'
@@ -83,6 +96,12 @@ export type ApiErrorMessageKey =
     | 'oauthEmailRequired'
     | 'qrLinkNotAvailable'
     | 'qrSharedLinkHostManaged'
+    | 'orderNotManual'
+    | 'moderationDecisionInvalid'
+    | 'eventBanned'
+    | 'moderationCaseClosed'
+    | 'moderationMemberIsHost'
+    | 'moderationTargetProtected'
     | 'orderNotPending'
     | 'planCurrencyMismatch'
     | 'planCurrencyUnsupported'
@@ -95,6 +114,9 @@ export type ApiErrorMessageKey =
     | 'planNotPurchasable'
     | 'planTierNotAvailableForEventType'
     | 'postMediaLimitExceeded'
+    | 'postPinNotHost'
+    | 'announcementNotHost'
+    | 'storyExpiryOutOfRange'
     | 'eventScheduleLocked'
     | 'paidServiceCurrencyMismatch'
     | 'paidServiceInUse'
@@ -103,6 +125,7 @@ export type ApiErrorMessageKey =
     | 'invalidPaidServiceKind'
     | 'qrLinkNotFound'
     | 'rateLimited'
+    | 'reportOwnContent'
     | 'sessionRsvpNotEnabled'
     | 'reactionTypeInUse'
     | 'reactionTypeLimitExceeded'
@@ -122,6 +145,13 @@ export type ApiErrorMessageKey =
     | 'withdrawalRefused'
     | 'withdrawalNotHeld'
     | 'withdrawalKeepEventDayNotDue'
+    | 'withdrawalOrderKindNotSupported'
+    | 'withdrawalConfirmationInvalid'
+    | 'withdrawalPreviewStale'
+    | 'demoEventLocked'
+    | 'demoActAsRefused'
+    | 'demoDesignationInvalid'
+    | 'demoPersonaAvatarRefused'
     | 'withdrawalNotPrimaryHost'
     | 'oauthEmailUnverified';
 
@@ -155,6 +185,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.DUPLICATE_REACTION]: 'duplicateReaction',
     [ERROR_CODES.EMAIL_ALREADY_EXISTS]: 'emailAlreadyExists',
     [ERROR_CODES.EVENT_DATES_INCOMPLETE]: 'eventDatesIncomplete',
+    [ERROR_CODES.EVENT_START_PASSED]: 'eventStartPassed',
     [ERROR_CODES.EVENT_START_TOO_FAR_AHEAD]: 'eventStartTooFarAhead',
     [ERROR_CODES.EVENT_CREATION_LOCKED]: 'eventCreationLocked',
     [ERROR_CODES.EVENT_DELETE_ALREADY_PENDING]: 'eventDeleteAlreadyPending',
@@ -184,6 +215,18 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.INVALID_EVENT_TYPE]: 'invalidEventType',
     [ERROR_CODES.EVENT_STORAGE_LIMIT_EXCEEDED]: 'storageLimit',
     [ERROR_CODES.FORBIDDEN]: 'forbidden',
+    [ERROR_CODES.GIFT_CLAIM_PIN_INVALID]: 'giftClaimPinInvalid',
+    [ERROR_CODES.GIFT_CLAIM_NOT_ALLOWED]: 'giftClaimNotAllowed',
+    [ERROR_CODES.GIFT_ORDER_NOT_YOURS]: 'giftOrderNotYours',
+    [ERROR_CODES.GIFT_NOT_PRIMARY_HOST]: 'giftNotPrimaryHost',
+    [ERROR_CODES.GIFT_RECIPIENT_PROTECTED]: 'giftRecipientProtected',
+    [ERROR_CODES.GIFT_NOT_AVAILABLE_ON_PLAN]: 'giftNotAvailableOnPlan',
+    [ERROR_CODES.GIFT_ALREADY_CLAIMED]: 'giftAlreadyClaimed',
+    [ERROR_CODES.GIFT_CARD_LOCKED]: 'giftCardLocked',
+    [ERROR_CODES.GIFT_EVENT_NOT_ACTIVE]: 'giftEventNotActive',
+    [ERROR_CODES.GIFT_HANDOVER_PENDING]: 'giftHandoverPending',
+    [ERROR_CODES.GUIDELINES_VERSION_MISMATCH]: 'guidelinesVersionMismatch',
+    [ERROR_CODES.GUIDELINES_ACCEPTANCE_REQUIRED]: 'guidelinesAcceptanceRequired',
     [ERROR_CODES.INTERNAL_ERROR]: 'internalError',
     [ERROR_CODES.INVALID_CREDENTIALS]: 'invalidCredentials',
     [ERROR_CODES.INVALID_IBAN]: 'invalidIban',
@@ -205,6 +248,12 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.MODULE_NOT_AVAILABLE]: 'moduleUnavailable',
     [ERROR_CODES.QR_MEDIA_UPLOAD_DISABLED]: 'qrMediaUploadDisabled',
     [ERROR_CODES.ORDER_NOT_PENDING]: 'orderNotPending',
+    [ERROR_CODES.ORDER_NOT_MANUAL]: 'orderNotManual',
+    [ERROR_CODES.MODERATION_DECISION_INVALID]: 'moderationDecisionInvalid',
+    [ERROR_CODES.EVENT_BANNED]: 'eventBanned',
+    [ERROR_CODES.MODERATION_CASE_CLOSED]: 'moderationCaseClosed',
+    [ERROR_CODES.MODERATION_MEMBER_IS_HOST]: 'moderationMemberIsHost',
+    [ERROR_CODES.MODERATION_TARGET_PROTECTED]: 'moderationTargetProtected',
     [ERROR_CODES.PLAN_TIER_CURRENCY_MISMATCH]: 'planCurrencyMismatch',
     [ERROR_CODES.PLAN_TIER_CURRENCY_UNSUPPORTED]: 'planCurrencyUnsupported',
     [ERROR_CODES.PLAN_TIER_IN_USE]: 'planInUse',
@@ -216,6 +265,9 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.PLAN_TIER_NOT_PURCHASABLE]: 'planNotPurchasable',
     [ERROR_CODES.PLAN_TIER_NOT_AVAILABLE_FOR_EVENT_TYPE]: 'planTierNotAvailableForEventType',
     [ERROR_CODES.POST_MEDIA_LIMIT_EXCEEDED]: 'postMediaLimitExceeded',
+    [ERROR_CODES.POST_PIN_NOT_HOST]: 'postPinNotHost',
+    [ERROR_CODES.ANNOUNCEMENT_NOT_HOST]: 'announcementNotHost',
+    [ERROR_CODES.STORY_EXPIRY_OUT_OF_RANGE]: 'storyExpiryOutOfRange',
     [ERROR_CODES.PAID_SERVICE_CURRENCY_MISMATCH]: 'paidServiceCurrencyMismatch',
     [ERROR_CODES.PAID_SERVICE_IN_USE]: 'paidServiceInUse',
     [ERROR_CODES.PAID_SERVICE_NOT_ON_PLAN]: 'paidServiceNotOnPlan',
@@ -224,6 +276,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.QR_LINK_NOT_AVAILABLE]: 'qrLinkNotAvailable',
     [ERROR_CODES.QR_SHARED_LINK_HOST_MANAGED]: 'qrSharedLinkHostManaged',
     [ERROR_CODES.RATE_LIMITED]: 'rateLimited',
+    [ERROR_CODES.REPORT_OWN_CONTENT]: 'reportOwnContent',
     [ERROR_CODES.SESSION_RSVP_NOT_ENABLED]: 'sessionRsvpNotEnabled',
     [ERROR_CODES.RSVP_NOT_ATTENDING]: 'rsvpNotAttending',
     [ERROR_CODES.BETA_FEEDBACK_DISABLED]: 'betaFeedbackDisabled',
@@ -245,6 +298,13 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.WITHDRAWAL_REFUSED]: 'withdrawalRefused',
     [ERROR_CODES.WITHDRAWAL_NOT_HELD]: 'withdrawalNotHeld',
     [ERROR_CODES.WITHDRAWAL_KEEP_EVENT_DAY_NOT_DUE]: 'withdrawalKeepEventDayNotDue',
+    [ERROR_CODES.WITHDRAWAL_ORDER_KIND_NOT_SUPPORTED]: 'withdrawalOrderKindNotSupported',
+    [ERROR_CODES.WITHDRAWAL_CONFIRMATION_INVALID]: 'withdrawalConfirmationInvalid',
+    [ERROR_CODES.WITHDRAWAL_PREVIEW_STALE]: 'withdrawalPreviewStale',
+    [ERROR_CODES.DEMO_EVENT_LOCKED]: 'demoEventLocked',
+    [ERROR_CODES.DEMO_ACT_AS_REFUSED]: 'demoActAsRefused',
+    [ERROR_CODES.DEMO_DESIGNATION_INVALID]: 'demoDesignationInvalid',
+    [ERROR_CODES.DEMO_PERSONA_AVATAR_REFUSED]: 'demoPersonaAvatarRefused',
 } satisfies Record<KnownApiErrorCode, ApiErrorMessageKey>;
 
 export function getApiErrorMessageKey(code: number | string | undefined): ApiErrorMessageKey | undefined {

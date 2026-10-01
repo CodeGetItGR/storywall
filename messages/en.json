@@ -8,9 +8,37 @@
         "seeUpgradeOptions": "See upgrade options",
         "loading": "Loading…"
     },
+    "DemoActAs": {
+        "postingAs": "Posting as",
+        "host": "You (host)",
+        "addGuest": "Add guest",
+        "addGuestTitle": "Add a guest",
+        "guestName": "Name",
+        "add": "Add",
+        "cancel": "Cancel",
+        "photo": "Photo (optional)",
+        "changePhoto": "Change photo",
+        "removePhoto": "Remove photo",
+        "photoRequired": "Photo",
+        "addPhoto": "Add photo",
+        "uploadPhoto": "Upload photo",
+        "addPhotoFor": "Add photo for {name}",
+        "changePhotoFor": "Change photo for {name}",
+        "photoFailed": "The guest was added, but the photo didn’t upload. Try again."
+    },
     "Demo": {
         "resetDemo": "Reset demo",
-        "exitDemo": "Sign up for real"
+        "exitDemo": "Sign up for real",
+        "banner": "This is a demo. Nothing is saved to StoryWall.",
+        "resetTitle": "Reset the demo?",
+        "resetBody": "Your changes will be removed and the demo will start over.",
+        "resetCancel": "Cancel",
+        "notFoundTitle": "This demo isn’t available.",
+        "notFoundBody": "Try again later.",
+        "rateLimitedTitle": "The demo is busy right now.",
+        "rateLimitedBody": "Try again in a minute.",
+        "failedTitle": "The demo couldn’t start in this browser.",
+        "failedBody": "Try reloading the page, or use a different browser."
     },
     "EventNotFound": {
         "title": "This celebration seems to have wandered off",
@@ -413,6 +441,19 @@
         "newsletter": {
             "label": "Subscribe to the newsletter and get {percent}% off your next event",
             "hint": "We'll send your code after you verify your email."
+        },
+        "business": {
+            "label": "Register as a business",
+            "hint": "Add your company's VAT details to buy as a business."
+        },
+        "guidelines": {
+            "label": "I accept the Community Guidelines",
+            "read": "Read the Community Guidelines",
+            "opensInNewTab": "(opens in a new tab)",
+            "required": "Please accept the Community Guidelines to create your account.",
+            "loading": "The Community Guidelines are still loading. Please try again in a moment.",
+            "unavailable": "The Community Guidelines couldn't be loaded. Refresh the page and try again.",
+            "changed": "The Community Guidelines were just updated. Please review them and tick the box again."
         }
     },
     "WelcomePage": {
@@ -493,7 +534,8 @@
         },
         "defaultHeroImageAlt": "Event cover photo",
         "haveAccount": "I have an account",
-        "createAccount": "Create an account"
+        "createAccount": "Create an account",
+        "gift": "A gift from {giver} for {recipient}."
     },
     "QrCodePage": {
         "fallbackTitle": "You're invited",
@@ -509,7 +551,9 @@
             "success": "Thanks! Your photos are on their way to the gallery.",
             "addMore": "Add more",
             "dropHint": "or drag and drop",
-            "removeFile": "Remove"
+            "removeFile": "Remove",
+            "guidelinesNotice": "By uploading, you agree to the",
+            "guidelinesLink": "Community Guidelines"
         },
         "unknown": {
             "title": "Code not found",
@@ -600,6 +644,39 @@
         "back": "Back",
         "title": "Profile",
         "fallbackName": "Account",
+        "business": {
+            "title": "Business details",
+            "empty": "Add your company's VAT details to buy as a business.",
+            "add": "Add business details",
+            "edit": "Edit",
+            "remove": "Remove",
+            "loading": "Loading business details",
+            "status": {
+                "VALID": "VAT number confirmed. You buy as a business.",
+                "PENDING": "We couldn't check your VAT number yet. We'll keep trying for 3 days and email you if it can't be confirmed. Until then, you buy as a consumer.",
+                "INVALID": "This VAT number isn't registered in VIES. You buy as a consumer. Check the details and save again."
+            },
+            "vat": "VAT {vatNumber}",
+            "fields": {
+                "legalName": "Company name",
+                "countryCode": "Country",
+                "vatNumber": "VAT number",
+                "addressLine1": "Address",
+                "addressLine2": "Address line 2",
+                "city": "City",
+                "postalCode": "Postal code"
+            },
+            "fieldRequired": "Required",
+            "northernIreland": "Northern Ireland",
+            "noWithdrawal": "Business purchases have no right of withdrawal.",
+            "save": "Save",
+            "saving": "Saving…",
+            "cancel": "Cancel",
+            "removeTitle": "Remove business details?",
+            "removeBody": "You'll buy as a consumer from now on.",
+            "removeConfirm": "Remove",
+            "removeCancel": "Keep"
+        },
         "newsletter": {
             "title": "Newsletter",
             "offer": "Subscribe and get {percent}% off your next event.",
@@ -713,6 +790,18 @@
             "WITHDRAWAL_WITHHELD": {
                 "title": "Your withdrawal request was withheld",
                 "body": "Your account has been suspended."
+            },
+            "WITHDRAWAL_REFUNDED_ORDER": {
+                "title": "Your withdrawal was processed",
+                "body": "The purchase was refunded. Your event stays online."
+            },
+            "STORAGE_TRIM_SCHEDULED": {
+                "title": "Your event is over its storage limit",
+                "body": "{over} over the limit. Free up space by {dueDate}, or the newest photos and videos above the limit will be deleted."
+            },
+            "STORAGE_TRIM_WARNING": {
+                "title": "Photos and videos will be deleted soon",
+                "body": "{over} over the limit. Free up space by {dueDate}, or the newest photos and videos above the limit will be deleted."
             }
         }
     },
@@ -772,6 +861,7 @@
         "next": "Next",
         "moreOptions": "More options",
         "deleteStory": "Delete story",
+        "reportStory": "Report story",
         "deleteStoryConfirmTitle": "Delete this story?",
         "deleteStoryConfirmBody": "This story will be removed for everyone and can't be undone.",
         "deleteStoryConfirm": "Delete story",
@@ -794,7 +884,7 @@
             "title": "Event title",
             "startAt": "Starts",
             "timezone": "Timezone",
-            "locationName": "Location (optional)",
+            "locationName": "Location",
             "visibility": "Visibility",
             "locationAddress": "Address",
             "mapsUrl": "Maps link"
@@ -912,6 +1002,11 @@
         "placeholders": {
             "locationAddress": "e.g. 1842 Silverado Trail, Napa, CA 94558",
             "mapsUrl": "https://maps.google.com/..."
+        },
+        "changeDate": "Change date",
+        "gift": {
+            "toggle": "It's a gift",
+            "toggleHint": "Give the event to someone else after you pay."
         }
     },
     "ManagePage": {
@@ -941,7 +1036,7 @@
             "rsvp": "RSVP",
             "members": "Members",
             "billing": "Billing",
-            "withdrawal": "Withdrawal"
+            "gift": "Given as a gift"
         },
         "sectionSwitcher": "Change section",
         "stats": {
@@ -990,6 +1085,12 @@
             "selectedAddons": {
                 "title": "Selected add-ons",
                 "body": "Chosen during event creation. Add-ons can't be changed until after publishing."
+            },
+            "startDate": {
+                "action": "Change date",
+                "title": "Change the event date",
+                "save": "Save",
+                "cancel": "Cancel"
             }
         },
         "draftModules": {
@@ -1328,7 +1429,9 @@
             "renewalTotal": "{amount} paid once.",
             "manageTitle": "Paid add-ons",
             "manageAction": "Manage add-ons",
-            "empty": "No add-ons"
+            "empty": "Need more space for photos and videos? Add it here.",
+            "addStorage": "Add storage",
+            "itemGift": "{name} · Gift"
         },
         "storagePacks": {
             "title": "Add storage",
@@ -1336,10 +1439,11 @@
             "breakdown": "{plan} plan + {extra} purchased = {total} total",
             "unlimited": "This plan already has unlimited storage.",
             "selectorLabel": "Choose a storage allowance",
-            "selected": "Add {size} permanently for {price} once",
+            "once": "one-time",
+            "newTotal": "New total: {total}",
             "buy": "Pay {amount}",
             "retryIn": "Try again in {seconds}s",
-            "finalSale": "The storage allowance is permanent and non-refundable."
+            "paused": "Storage packs are paused while your withdrawal is under review."
         },
         "actions": {
             "renew": "Start subscription",
@@ -1353,7 +1457,7 @@
             "discount": "{label} · {discount}% off"
         },
         "upgrade": {
-            "button": "Upgrade · {amount}",
+            "cta": "Upgrade",
             "buttonAria": "Upgrade to {plan}, {duration}, {amount}",
             "addsMonths": "+{count, plural, one {# month} other {# months}} of coverage",
             "whatChanges": "What changes",
@@ -1501,7 +1605,8 @@
             "upgradeCoverage": "Plan upgrade. Coverage unchanged.",
             "storageCoverage": "Permanent storage increase.",
             "addonAmount": "Includes {amount} for add-ons",
-            "showAll": "Show {count} older orders"
+            "showAll": "Show {count} older orders",
+            "gift": "Gift"
         },
         "panels": {
             "plan": "Plan & add-ons"
@@ -1509,24 +1614,59 @@
         "withdrawalStatus": {
             "HELD": "Under review",
             "REFUNDED": "Refunded",
-            "WITHHELD": "Refused"
+            "WITHHELD": "Refused",
+            "REFUSED": "Refused"
         },
-        "withdrawal": {
+        "orderWithdrawal": {
+            "action": "Withdraw from contract here",
+            "actionHint": "Changed your mind? Get a refund.",
+            "confirm": "Confirm withdrawal",
+            "cancel": "Cancel",
             "loading": "Checking...",
-            "eligible": "You can withdraw for a refund of {amount}.",
-            "eligibleUntil": "You can withdraw until {date} for a refund of {amount}.",
-            "notEligible": "Withdrawal isn't available right now.",
+            "loadError": "We couldn't check this purchase. Try again.",
+            "notEligible": "Withdrawal isn't available for this purchase.",
+            "refund": "Refund: {amount}",
+            "fullRefund": "Full refund",
+            "partialRefund": "Partial refund",
+            "daysUsed": "{used} of {total} days used",
+            "until": "You can withdraw until {date}.",
+            "eventScope": "This permanently takes the event offline and can't be undone. You can still view and download the gallery and wishes until it's deleted.",
+            "upgradeScope": "Any upgrade bought after this one is withdrawn too. Your event stays online.",
+            "orderScope": "Your event stays online.",
+            "instant": "Refunded straight away.",
+            "reviewed": "Because this event's date was changed after payment, your request will be reviewed by a person.",
+            "storageAfter": "Your storage limit goes from {from} to {to}. You hold {usage}.",
+            "storageOver": "{over} will be over the limit. Unless you free space by {date}, the newest photos and videos above it will be deleted. Download the gallery first.",
+            "unlimited": "unlimited",
+            "yourDetails": "Your details",
+            "name": "Name",
+            "email": "Email",
             "reason": "Reason",
             "reasonPlaceholder": "Optional note",
-            "submit": "Request withdrawal",
-            "submitting": "Submitting...",
-            "requestedNoAmount": "Amount will be set once processed.",
-            "confirmBody": "This permanently takes the event offline and can't be undone. You can still view and download the gallery and wishes until it's deleted.",
-            "confirmReviewed": "Because this event's date was changed after payment, your request will be reviewed by a person.",
-            "confirmSubmit": "Yes, withdraw",
-            "confirmCancel": "Cancel",
+            "terms": "Withdrawal terms",
+            "retryIn": "Try again in {seconds}s"
+        },
+        "withdrawalHistory": {
+            "title": "Withdrawals",
+            "wholeEvent": "Whole event",
+            "noAmount": "Amount will be set once processed.",
             "held": "Under review. We'll email you once it's decided.",
-            "refunded": "Refunded. The event has been taken offline."
+            "refundedEvent": "Refunded. The event has been taken offline.",
+            "refundedOrder": "Refunded. Your event stays online.",
+            "keptEventDay": "The event-day share was kept: the event took place on the date you paid for.",
+            "alreadyRefunded": "{kind}: already refunded separately, so nothing more is due for it.",
+            "heldEvent": "The event is closed. Your refund is under review, and we'll email you once it's decided."
+        },
+        "storageTrim": {
+            "title": "Your event is over its storage limit",
+            "body": "Free up space by {date}, or the newest photos and videos above the limit will be deleted."
+        },
+        "purchasesPaused": {
+            "upgrades": "Upgrades are paused while your withdrawal is under review."
+        },
+        "withdrawal": {
+            "excludedTitle": "Not refunded",
+            "excludedBody": "Bought as a business. These go with the event and aren't refunded."
         }
     },
     "EventAddonsSettingsPage": {
@@ -1554,8 +1694,6 @@
         "whatHappens": "What happens after payment",
         "continueToCheckout": "Continue to checkout",
         "openingCheckout": "Opening secure checkout...",
-        "autoDiscountApplied": "{label} · {discount}% off, applied automatically",
-        "autoDiscountAppliedNoLabel": "{discount}% off, applied automatically",
         "extensionEndsAtEstimate": "New end date: {date} (estimate)",
         "coverageEnded": "Coverage for this event has ended. It can no longer be extended.",
         "collaboration": {
@@ -1596,7 +1734,7 @@
             "storage": {
                 "title": "Order preview",
                 "description": "Check the storage pack charge.",
-                "consequence": "The extra storage is added once payment is confirmed. You can withdraw from the pack within 14 days of payment: you are refunded for the time it has left, and the extra storage is removed."
+                "consequence": "The extra storage is added once payment is confirmed."
             }
         },
         "activation": {
@@ -1616,8 +1754,66 @@
             "requestsImmediateStartCaption": "Rather than waiting out the 14-day period first.",
             "acknowledgesWithdrawalTermsLabel": "I understand this affects my right to a full refund",
             "acknowledgesWithdrawalTermsCaption": "Once the service starts, part of the charge may no longer be refundable if you withdraw later.",
-            "stale": "These terms were updated. Review them again and confirm once more."
+            "stale": "These terms were updated. Review them again and confirm once more.",
+            "link": "Read the withdrawal terms"
+        },
+        "businessPurchase": {
+            "title": "Business purchase",
+            "notice": "Business purchase for {legalName} (VAT {vatNumber}). The consumer right of withdrawal does not apply to business purchases. The price includes VAT; no reverse charge is applied.",
+            "pending": "Your VAT number is still being checked, so this purchase is made as a consumer.",
+            "invalid": "Your VAT number couldn't be confirmed, so this purchase is made as a consumer."
         }
+    },
+    "PriceBreakdown": {
+        "items": {
+            "activation": "Activation — {plan}",
+            "eventDay": "Event day — {plan}",
+            "coverage": "Coverage — {monthsText}",
+            "upgradeSetup": "Upgrade to {plan} — setup",
+            "upgradeEventDay": "Upgrade to {plan} — event day",
+            "upgradeCoverage": "Upgrade to {plan} — {monthsText}{added}",
+            "addon": "Add-on — {name}",
+            "storagePack": "Storage pack — {name}",
+            "coverageExtension": "Coverage extension — {monthsText}"
+        },
+        "months": "{months, plural, one {# month} other {# months}}",
+        "rules": {
+            "RETAINED_ONCE_STARTED": "not refundable",
+            "RETAINED_ONCE_PERFORMED": "not refunded once your event starts or the date you paid for passes",
+            "PRO_RATA_BY_TIME": "refunded pro rata for the unused time",
+            "BUSINESS_NO_RIGHT": "business purchase, no right of withdrawal"
+        },
+        "discounts": {
+            "PLAN_PROMOTION": "promotion \"{label}\" −{percent}%",
+            "PLAN_PROMOTION_unnamed": "plan promotion −{percent}%",
+            "CODE": "discount code \"{label}\" −{percent}%",
+            "CODE_unnamed": "discount code −{percent}%"
+        },
+        "discountsIncluded": "Included in the prices above: {discounts}",
+        "total": "Total",
+        "vatIncluded": "Prices include VAT.",
+        "withdrawWithin": "You can withdraw within {days, plural, one {# day} other {# days}} of payment.",
+        "loadError": "We couldn't load the price. Try again."
+    },
+    "WithdrawalTermsPage": {
+        "title": "Right of withdrawal",
+        "version": "Version {version}",
+        "unavailable": "These terms aren't available right now."
+    },
+    "CommunityGuidelinesPage": {
+        "title": "Community Guidelines",
+        "unavailable": "The Community Guidelines couldn't be loaded. Please try again later."
+    },
+    "GuidelinesGate": {
+        "title": "Our Community Guidelines",
+        "body": "To keep using StoryWall, please read and accept our Community Guidelines. They explain what can be shared at an event and how we handle reports.",
+        "read": "Read the Community Guidelines",
+        "opensInNewTab": "(opens in a new tab)",
+        "accept": "I accept",
+        "accepting": "Saving…",
+        "failed": "We couldn't save your acceptance. Please try again.",
+        "changed": "The Community Guidelines were just updated again. Please review the latest version.",
+        "signOut": "Sign out"
     },
     "CheckoutSuccessPage": {
         "eyebrow": "Checkout",
@@ -1833,6 +2029,7 @@
         "hostReadOnly": "As the host, you can view wishes but can't add your own.",
         "exportPdf": "Download as PDF",
         "exportFailed": "Couldn't download the wishbook. Please try again.",
+        "reportEntry": "Report",
         "delete": "Delete",
         "deleteTitle": "Delete this wish?",
         "deleteBody": "This removes the wish from the wishbook.",
@@ -1888,6 +2085,7 @@
         "downvoteThisSong": "Downvote this song",
         "moreOptions": "More options",
         "deleteSuggestion": "Delete suggestion",
+        "report": "Report",
         "confirmDeleteSuggestion": "Confirm delete suggestion",
         "deleteSuggestionConfirmTitle": "Delete this suggestion?",
         "deleteSuggestionConfirmBody": "This song suggestion will be removed for everyone and can't be undone.",
@@ -2054,6 +2252,7 @@
         },
         "tabs": {
             "metrics": "Metrics",
+            "funnel": "Growth",
             "costTracking": "Cost tracking",
             "plans": "Plans",
             "paidServices": "Paid services",
@@ -2064,7 +2263,211 @@
             "billingOps": "Billing ops",
             "withdrawals": "Withdrawals",
             "accounts": "Accounts",
-            "lifecycle": "Lifecycle"
+            "lifecycle": "Lifecycle",
+            "reports": "Reports",
+            "bugReports": "Bug reports",
+            "errorEvents": "Errors",
+            "demoEvents": "Demo events"
+        },
+        "demoEvents": {
+            "title": "Demo events",
+            "loading": "Loading demo events...",
+            "empty": "No event types yet.",
+            "statusSet": "Live",
+            "statusNone": "No demo",
+            "columns": {
+                "eventType": "Event type",
+                "demoEvent": "Demo event",
+                "status": "Status",
+                "designatedAt": "Set on"
+            },
+            "currentTitle": "Current demo",
+            "designatedOn": "Set on {date}",
+            "openDemo": "Open demo",
+            "setTitle": "Set a demo event",
+            "replaceTitle": "Replace the demo event",
+            "eventIdHint": "The event must be live and hosted by an admin.",
+            "set": "Set demo",
+            "replace": "Replace demo",
+            "removeTitle": "Remove demo",
+            "removeBody": "Visitors will no longer be able to open this demo.",
+            "remove": "Remove demo",
+            "removeConfirmTitle": "Remove the {eventType} demo?",
+            "createTitle": "Create a demo event",
+            "createBody": "You'll be the host. It becomes this type's demo as soon as it's created.",
+            "create": "Create demo event",
+            "editContent": "Add content"
+        },
+        "moderation": {
+            "title": "Reports",
+            "openCase": "Open {type} report, {event}",
+            "tabsLabel": "Report status",
+            "tabs": {
+                "OPEN": "Open",
+                "UNDER_REVIEW": "Under review",
+                "CLOSED": "Closed"
+            },
+            "loading": "Loading reports",
+            "empty": "No reports here.",
+            "count": "{count, plural, one {# case} other {# cases}}",
+            "eventGone": "Event deleted",
+            "outcome": {
+                "DISMISSED": "No action",
+                "ACTION_TAKEN": "Action taken"
+            },
+            "type": "Type",
+            "event": "Event",
+            "reportsCol": "Reports",
+            "reason": "Top reason",
+            "date": "Reported",
+            "outcomeCol": "Outcome",
+            "types": {
+                "POST": "Post",
+                "COMMENT": "Comment",
+                "MEMBER": "Member",
+                "STORY": "Story",
+                "MEDIA": "Photo or video",
+                "WISHBOOK_ENTRY": "Wish",
+                "PLAYLIST_SUGGESTION": "Song suggestion"
+            },
+            "close": "Close",
+            "caseTitle": "Report case",
+            "reportsHeading": "{count, plural, one {# report} other {# reports}}",
+            "reporterGone": "Former member",
+            "contentGone": "This item is no longer available. It has been deleted.",
+            "noAuthor": "No author on record",
+            "hostBadge": "Host or co-host",
+            "targetId": "Item ID",
+            "eventId": "Event ID",
+            "authorUserId": "Author account ID",
+            "form": {
+                "title": "Decision",
+                "dismiss": "No action",
+                "takeAction": "Take action",
+                "removeContent": "Remove the content",
+                "removeMember": "Remove the member from the event",
+                "banFromEvent": "Keep them from rejoining this event",
+                "suspendAccount": "Suspend their account",
+                "alreadyRemovedHint": "The item is gone; taking action closes the case as resolved.",
+                "note": "Note (internal, optional)",
+                "review": "Review decision",
+                "back": "Back",
+                "confirm": "Confirm"
+            },
+            "summary": {
+                "title": "This will:",
+                "dismiss": "Take no action on the item",
+                "alreadyRemoved": "Take no further action: the item is already gone",
+                "removeContent": "Remove the content for everyone",
+                "removeMember": "Remove the author from the event",
+                "banFromEvent": "Stop their account rejoining this event",
+                "suspendAccount": "Suspend their account. They are signed out within 15 minutes",
+                "reports": "{outcome, select, DISMISSED {{count, plural, one {Close # report.} other {Close # reports.}} Reporters still in the event with an account will be told no breach of the Community Guidelines was found.} other {{count, plural, one {Close # report.} other {Close # reports.}} Reporters still in the event with an account will be told action was taken under the Community Guidelines.}}"
+            },
+            "history": {
+                "decisions": "Decisions on this item",
+                "prior": "Earlier actions against this author",
+                "bans": "Bans",
+                "banned": "Banned {date}",
+                "actions": {
+                    "contentRemoved": "Content removed",
+                    "memberRemoved": "Member removed",
+                    "banned": "Banned from the event",
+                    "accountSuspended": "Account suspended",
+                    "none": "Closed as resolved (item already gone)"
+                }
+            },
+            "banLifted": "Lifted {date}",
+            "liftBan": "Lift ban",
+            "reportStatus": {
+                "OPEN": "Open",
+                "UNDER_REVIEW": "Under review",
+                "RESOLVED": "Resolved",
+                "DISMISSED": "Dismissed"
+            }
+        },
+        "bugReports": {
+            "title": "Bug reports",
+            "loading": "Loading reports",
+            "empty": "No reports yet.",
+            "count": "{count, plural, one {# report} other {# reports}}",
+            "open": "Open report",
+            "hasScreenshot": "Has a screenshot",
+            "columns": {
+                "received": "Received",
+                "description": "Description",
+                "page": "Page",
+                "reporter": "Reporter",
+                "screenshot": "Screenshot"
+            },
+            "detailTitle": "Bug report",
+            "close": "Close",
+            "description": "Description",
+            "screenshot": "Screenshot",
+            "context": "Context",
+            "facts": {
+                "page": "Page",
+                "reporter": "Reporter",
+                "appVersion": "App version",
+                "locale": "Language",
+                "timeZone": "Time zone",
+                "viewport": "Screen size",
+                "displayMode": "Display mode",
+                "userAgent": "Browser"
+            },
+            "recentErrors": "Failed requests before the report",
+            "noRecentErrors": "None.",
+            "errorColumns": {
+                "at": "Time",
+                "request": "Request",
+                "status": "Status",
+                "code": "Code",
+                "ref": "Ref"
+            },
+            "openError": "Open this error",
+            "reportId": "Report ID",
+            "reporterId": "Reporter ID",
+            "eventId": "Event ID"
+        },
+        "errorEvents": {
+            "title": "Errors",
+            "loading": "Loading errors",
+            "empty": "No errors recorded.",
+            "refNotFound": "No error with this ref.",
+            "count": "{count, plural, one {# error} other {# errors}}",
+            "open": "Open error",
+            "sourceLabel": "Source",
+            "sources": {
+                "ALL": "All",
+                "BACKEND": "Server",
+                "BACKGROUND": "Background",
+                "CLIENT": "App"
+            },
+            "refLabel": "Ref",
+            "refPlaceholder": "Ref, e.g. a1b2c3d4e5f6",
+            "refInvalid": "A ref is 12 characters, 0-9 and a-f.",
+            "clearRef": "Clear ref",
+            "columns": {
+                "lastSeen": "Last seen",
+                "source": "Source",
+                "error": "Error",
+                "count": "Count",
+                "ref": "Ref"
+            },
+            "close": "Close",
+            "message": "Message",
+            "details": "Details",
+            "facts": {
+                "firstSeen": "First seen",
+                "lastSeen": "Last seen",
+                "count": "Times seen",
+                "appVersion": "App version",
+                "request": "Last request",
+                "page": "Last page"
+            },
+            "stackTrace": "Stack trace",
+            "ref": "Ref",
+            "lastUserId": "Last user ID"
         },
         "accounts": {
             "title": "Accounts",
@@ -2142,6 +2545,7 @@
                 "provision": "Provision event"
             },
             "provision": {
+                "openEvent": "Open event",
                 "action": "Provision event",
                 "title": "Provision event",
                 "subtitle": "Create a live event for {host}.",
@@ -2195,6 +2599,16 @@
                 "another": "Provision another",
                 "done": "Done",
                 "unnamedHost": "Unnamed account"
+            },
+            "email": {
+                "title": "Email",
+                "change": "Change email",
+                "label": "New email",
+                "unverifyHint": "The account will need to verify the new email.",
+                "save": "Save email",
+                "cancel": "Cancel",
+                "emailTaken": "Another account already uses this email.",
+                "emailInvalid": "Enter a valid email address."
             }
         },
         "fields": {
@@ -2232,7 +2646,9 @@
             "visibilityLiveHint": "Public and assignable — visible during signup and can be assigned by admins.",
             "visibilityHiddenHint": "Hidden from signup, but admins can still assign it manually.",
             "visibilityArchivedHint": "Not assignable to anyone. Accounts or events already on this plan are unaffected.",
-            "plan": "Plan"
+            "plan": "Plan",
+            "isGiftable": "Can be given as a gift",
+            "isGiftableHint": "Buyers can give events on this plan to someone else."
         },
         "planAvailability": {
             "createTitle": "Event types",
@@ -2478,6 +2894,159 @@
             "confirmEventTitle": "Assign a plan to {event}?",
             "confirmEventBody": "This changes the event plan to {plan} and may alter storage, member, and module limits immediately."
         },
+        "funnel": {
+            "title": "Growth",
+            "loading": "Loading growth metrics...",
+            "refresh": "Refresh",
+            "updatedAt": "Updated {time}",
+            "hours": "{value} h",
+            "days": "{value} days",
+            "range": {
+                "label": "Date range",
+                "ALL": "All time",
+                "LAST_30": "Last 30 days",
+                "LAST_90": "Last 90 days",
+                "THIS_YEAR": "This year",
+                "CUSTOM": "Custom",
+                "from": "From",
+                "to": "To",
+                "invalid": "The end date must be on or after the start date.",
+                "windows": "Account sections count people who signed up in this range and follow them to today. Revenue and Paid events count what was paid in this range."
+            },
+            "window": {
+                "signup": "By signup date",
+                "payment": "By payment date",
+                "none": "Ignores the date range"
+            },
+            "headline": {
+                "title": "Conversion",
+                "paidHost": "Paid hosts",
+                "paidRate": "{percent} of {signedUp} signups",
+                "engagedHost": "Engaged hosts",
+                "repeatPaidHost": "Paid for 2+ events",
+                "adminSettledHost": "Admin-settled hosts",
+                "adminSettledInfo": "An admin settlement looks the same whether it was a bank transfer or a comp."
+            },
+            "steps": {
+                "title": "Funnel",
+                "signedUp": "Signed up",
+                "emailVerified": "Email verified",
+                "createdEvent": "Created an event",
+                "paidHost": "Paid host",
+                "engagedHost": "Engaged host",
+                "ofPrevious": "{percent} of previous",
+                "ofSignups": "{percent} of signups",
+                "engagedHint": "not a subset of paid hosts"
+            },
+            "stuck": {
+                "title": "Where people stall",
+                "unverifiedOver7Days": "Unverified for over 7 days",
+                "verifiedNoEvent": "Verified, no event",
+                "eventNeverPaid": "Event never paid",
+                "abandonedCheckout": "Abandoned checkout",
+                "abandonedCheckoutHint": "Part of Event never paid",
+                "paidNotEngaged": "Paid, not used yet",
+                "note": "Active accounts only. Abandoned checkout is already counted in Event never paid, so don’t add them up."
+            },
+            "activity": {
+                "title": "Activity",
+                "activeLast7Days": "Active in the last 7 days",
+                "activeLast30Days": "Active in the last 30 days",
+                "inactiveOver30Days": "Inactive for over 30 days",
+                "neverRecorded": "Never recorded",
+                "note": "Activity tracking started on 29 Sep 2026. Never recorded means not signed in since then. It isn’t churn and will shrink over the first weeks."
+            },
+            "time": {
+                "title": "Time to convert",
+                "medianHoursToVerify": "Signup to verified",
+                "medianHoursToFirstEvent": "Signup to first event",
+                "medianHoursFirstEventToPaid": "First event to paid",
+                "note": "Medians. First event to paid can be negative for accounts an admin created with an event."
+            },
+            "guest": {
+                "title": "Guest to host",
+                "attendedFirst": "Joined as a guest first",
+                "thenHosted": "Then hosted",
+                "thenPaid": "Then paid",
+                "ofGuests": "{percent} of those guests",
+                "note": "A lower bound: only guests who linked their membership to an account are counted."
+            },
+            "cohorts": {
+                "title": "Weekly cohorts",
+                "weeksLabel": "Weeks",
+                "weeks": "{count} weeks",
+                "modeLabel": "Show as",
+                "count": "Counts",
+                "percent": "% of signups",
+                "weekOf": "Week of {date}",
+                "loading": "Loading cohorts...",
+                "empty": "No weeks yet.",
+                "note": "Grouped by signup week, starting Monday 00:00 UTC. Recent weeks have had less time to convert."
+            },
+            "paidEvents": {
+                "title": "Paid events",
+                "count": "Paid events",
+                "ended": "Ended",
+                "endedWithoutUploads": "Ended with no uploads",
+                "endedWithoutUploadsHint": "Paid but unused · {percent} of ended",
+                "endedWithoutGuests": "Ended with no guests",
+                "medianGuests": "Median guests",
+                "medianUploads": "Median uploads",
+                "medianScope": "Over ended events",
+                "attachTitle": "Add-ons, share of paid events",
+                "withUpgrade": "Upgrade",
+                "withStoragePack": "Storage pack",
+                "withExtension": "Extension"
+            },
+            "revenue": {
+                "title": "Revenue",
+                "empty": "No payments in this range.",
+                "gross": "Gross",
+                "refunded": "Refunded",
+                "net": "Net",
+                "payingAccounts": "Paying accounts",
+                "netPerPayingAccount": "Net per paying account",
+                "byKindTitle": "By kind",
+                "columns": {
+                    "kind": "Kind",
+                    "currency": "Currency",
+                    "orders": "Orders",
+                    "amount": "Amount"
+                },
+                "kinds": {
+                    "ACTIVATION": "Activation",
+                    "UPGRADE": "Upgrade",
+                    "STORAGE_PACK": "Storage pack",
+                    "EXTENSION": "Extension"
+                },
+                "refunds": "Refunds",
+                "adminSettledOrders": "Admin-settled orders",
+                "discountRedemptions": "Discount codes used",
+                "partnerRedemptions": "Partner codes used",
+                "buyerTypes": "Orders by buyer type",
+                "note": "An account that paid in more than one currency is counted in each of those cards.",
+                "buyer": {
+                    "CONSUMER": "Consumer",
+                    "BUSINESS": "Business"
+                }
+            },
+            "accounts": {
+                "title": "Accounts",
+                "byProvider": "Signup method",
+                "providers": {
+                    "LOCAL": "Email and password",
+                    "OAUTH": "OAuth",
+                    "INVITE": "Invite"
+                },
+                "byLocale": "Language",
+                "locales": {
+                    "en": "English",
+                    "el": "Greek"
+                },
+                "suspended": "Suspended",
+                "deleted": "Deleted"
+            }
+        },
         "metrics": {
             "newsletter": {
                 "title": "Newsletter",
@@ -2486,32 +3055,37 @@
                 "unsubscribed": "Unsubscribed",
                 "rewardsIssued": "Discount codes issued"
             },
-            "eyebrow": "Live platform counts",
             "title": "Platform metrics",
-            "subtitle": "Dashboard totals from the admin metrics endpoint. Group keys come from live plan and status data.",
             "loading": "Loading metrics...",
             "refresh": "Refresh",
             "attentionClear": "Nothing is waiting on you. No pending refunds, no unprocessed webhooks.",
             "unprocessedWebhooks": "Provider deliveries never processed",
             "openQueue": "Open",
-            "totalUsers": "Total users",
-            "activeUsers": "Active users",
-            "totalEvents": "Total events",
-            "activeEvents": "Active events",
-            "usersByAccountPlan": "Users by account plan",
-            "eventsByStatus": "Events by status",
-            "eventsByPlanTier": "Events by event plan",
+            "totalUsers": "Total",
+            "activeUsers": "Active",
+            "totalEvents": "Total",
+            "activeEvents": "Active",
+            "usersByAccountPlan": "Account plan",
+            "eventsByStatus": "Status",
+            "eventsByPlanTier": "Event plan",
             "heldWithdrawals": "Withdrawals awaiting review",
             "storage": {
-                "title": "Storage economics",
+                "title": "Storage",
                 "usedBytes": "Active storage used",
                 "pendingPurgeBytes": "Pending purge",
                 "committedBytes": "Committed capacity",
                 "paidUsedBytes": "Paid-event usage",
                 "freeUsedBytes": "Free-event usage",
                 "purchasedExtraBytes": "Purchased extra capacity",
-                "estimatedMonthlyCostMinor": "Estimated monthly storage cost"
-            }
+                "estimatedMonthlyCostMinor": "Estimated monthly storage cost",
+                "usedOfCommitted": "{percent} of {committed} committed",
+                "approx": "≈ {amount}"
+            },
+            "users": "Users",
+            "events": "Events",
+            "activeShare": "{percent} of total",
+            "updatedAt": "Updated {time}",
+            "empty": "No data yet"
         },
         "withdrawals": {
             "title": "Withdrawals",
@@ -2520,6 +3094,19 @@
             "empty": "No withdrawals are awaiting review.",
             "noAmount": "No amount recorded",
             "requestedAt": "Submitted {date}",
+            "columns": {
+                "refund": "Refund",
+                "scope": "Scope",
+                "signals": "Signals",
+                "submitted": "Submitted"
+            },
+            "scope": {
+                "EVENT": "Whole event",
+                "ORDER": "One purchase"
+            },
+            "signalsFired": "{count, plural, one {# triggered} other {# triggered}}",
+            "manualReview": "Manual review",
+            "guidanceToggle": "Guidance",
             "guidance": {
                 "withdrawn": "What is withdrawn",
                 "law": "What the law requires",
@@ -2661,11 +3248,13 @@
             "coverageOptionUnavailable": "This plan has no duration on sale.",
             "coverageOptionLastInitial": "A plan on sale needs at least one duration. Add another before retiring this one.",
             "coverageOptionDuplicate": "This plan already sells that length.",
+            "demoDesignationInvalid": "That event can’t be a demo. It must be live, of this type, hosted by an admin, and every other member must be an admin or a guest without an account.",
             "reactionTypeInUse": "This reaction is already used on posts. Archive it instead.",
             "reactionTypeLimitExceeded": "This event type already has five available reactions.",
             "reactionTypeNotUsable": "That reaction is no longer available. Refresh and choose another.",
             "collaborationEarningNotPayable": "One or more selected earnings are not payable. Refresh the ledger and choose accrued rows.",
-            "methodNotAllowed": "That action is not available here. Refresh and try again."
+            "methodNotAllowed": "That action is not available here. Refresh and try again.",
+            "orderNotManual": "Only manual orders can be settled here. Stripe orders settle through Stripe."
         },
         "reactionTypes": {
             "title": "Reaction catalog",
@@ -2819,29 +3408,12 @@
         },
         "collaborations": {
             "title": "Collaborations",
-            "subtitle": "Manage partners and referral codes.",
-            "loading": "Loading collaborators...",
-            "empty": "No collaborators to show.",
+            "loading": "Loading partners...",
+            "empty": "No partners yet.",
             "search": "Search partners",
             "create": "New partner",
             "edit": "Edit",
-            "manage": "Manage partner",
-            "rowCount": "{shown} of {total} partners",
-            "selectPrompt": "Select a partner.",
-            "columns": {
-                "partner": "Partner",
-                "contact": "Contact",
-                "portal": "Portal",
-                "status": "Status"
-            },
-            "stats": {
-                "total": "Partners",
-                "active": "Active",
-                "suspended": "Suspended",
-                "portalLinks": "Portal links"
-            },
             "status": {
-                "ALL": "All",
                 "ACTIVE": "Active",
                 "SUSPENDED": "Suspended"
             },
@@ -2852,27 +3424,24 @@
                 "notes": "Notes"
             },
             "drawer": {
-                "createTitle": "Create partner",
-                "createSubtitle": "Add a partner record.",
-                "editTitle": "Edit {name}",
-                "editSubtitle": "Update partner details."
+                "createTitle": "New partner",
+                "editTitle": "Edit {name}"
             },
             "portal": {
-                "title": "Portal",
-                "description": "Issue the partner page link and copy it while it is visible.",
-                "issue": "Issue portal link",
-                "issued": "Issued",
-                "notIssued": "Not issued",
-                "confirmTitle": "Issue a portal link?",
-                "confirmBody": "A new link replaces the previous one immediately. The full link is shown once.",
-                "once": "Copy this now. It will not be shown again.",
-                "copy": "Copy portal link",
+                "title": "Portal link",
+                "notIssued": "No portal link yet",
+                "confirmTitle": "Replace the portal link?",
+                "confirmBody": "The current link stops working right away.",
+                "once": "Copy this now. It won't be shown again.",
+                "copy": "Copy link",
                 "copied": "Copied",
-                "issuedAt": "Portal issued {date}"
+                "issuedAt": "Link created {date}",
+                "issued": "Link created",
+                "create": "Create link",
+                "replace": "Replace link"
             },
             "codes": {
                 "title": "Codes",
-                "subtitle": "Codes are printed by partners and cannot be renamed later.",
                 "create": "New code",
                 "createTitle": "Create code",
                 "edit": "Edit code",
@@ -2917,8 +3486,8 @@
                 }
             },
             "linkCode": {
-                "open": "Link discount code",
-                "title": "Link discount code",
+                "open": "Link existing code",
+                "title": "Link existing code",
                 "action": "Link code",
                 "loading": "Loading discount codes...",
                 "code": "Discount code",
@@ -2927,38 +3496,29 @@
             },
             "earnings": {
                 "title": "Earnings",
-                "loadingTotals": "Loading totals...",
-                "emptyTotals": "No totals yet.",
-                "paidBalance": "{paid} paid, {balance} balance",
-                "markPaidTitle": "Mark paid",
                 "payoutReference": "Payout reference",
                 "markPaid": "Mark paid",
-                "ledger": "Ledger",
-                "loading": "Loading ledger...",
-                "empty": "No earnings yet.",
-                "details": "View details",
-                "detailTitle": "Earning details",
-                "amount": "Amount",
-                "entryType": "Entry type",
-                "paidAt": "Paid at",
-                "noReference": "Not paid",
-                "selectAccrued": "Select accrued",
-                "clear": "Clear selection",
-                "on": "on",
+                "loading": "Loading earnings...",
+                "empty": "No earnings to show.",
+                "noReference": "—",
+                "clear": "Clear",
                 "confirmTitle": "Mark earnings paid?",
-                "confirmBody": "This marks {count} rows paid for {amount} with reference {reference}.",
-                "confirmBodyMixed": "This marks {count} rows paid. Check each currency before confirming.",
+                "confirmBody": "{count, plural, one {# row} other {# rows}} · {amount}",
                 "columns": {
-                    "select": "Pay",
                     "date": "Date",
                     "amount": "Amount",
-                    "basis": "Basis",
                     "status": "Status",
-                    "reference": "Payout reference"
+                    "reference": "Reference",
+                    "event": "Event",
+                    "code": "Code",
+                    "commission": "Commission"
                 },
                 "filters": {
-                    "open": "Open",
-                    "all": "All"
+                    "OPEN": "Open",
+                    "ACCRUED": "Accrued",
+                    "PAID": "Paid",
+                    "REVERSED": "Reversed",
+                    "ALL": "All"
                 },
                 "status": {
                     "ACCRUED": "Accrued",
@@ -2966,17 +3526,32 @@
                     "REVERSED": "Reversed"
                 },
                 "entryTypes": {
-                    "ACCRUAL": "Commission",
                     "CLAWBACK": "Reversal"
-                }
+                },
+                "owed": "Owed · {currency}",
+                "paid": "{amount} paid",
+                "basis": "{percent}% of {amount}",
+                "select": "Select {event}, {date}",
+                "selectAll": "Select all accrued rows",
+                "selected": "{count} selected"
             },
             "void": {
-                "title": "Void attribution",
                 "reason": "Reason",
                 "action": "Void attribution",
-                "success": "Attribution voided.",
+                "rowAction": "Void attribution for {event}, {date}",
                 "confirmTitle": "Void this attribution?",
                 "confirmBody": "This unwinds commission only. The host keeps the price already charged."
+            },
+            "noMatches": "No matches.",
+            "suspend": {
+                "action": "Suspend",
+                "title": "Suspend {name}?",
+                "body": "Their partner page and all their codes stop working."
+            },
+            "reactivate": {
+                "action": "Reactivate",
+                "title": "Reactivate {name}?",
+                "body": "Their partner page and active codes work again."
             }
         },
         "discountCodes": {
@@ -3001,7 +3576,7 @@
         "billingOps": {
             "notice": "Settling an order marks it paid with no provider payment behind it and activates the event exactly as a real payment would. On dev and staging this is the only way an event leaves DRAFT.",
             "settleTitle": "Settle an order",
-            "settleSubtitle": "Use for bank transfers, comped events, and payments whose webhook never arrived.",
+            "settleSubtitle": "Manual-provider orders only. This works on dev and staging, not in production.",
             "sweepTitle": "Notification sweep",
             "sweepSubtitle": "Run the quota notification rules now. The backend deduplicates results, so unchanged data usually creates zero new rows.",
             "runSweep": "Run sweep",
@@ -3215,6 +3790,12 @@
         "nextMedia": "Next",
         "downloadOriginal": "Download",
         "originalUnavailable": "The original file is not available.",
+        "deleteMedia": "Delete",
+        "deleteMediaConfirmTitle": "Delete this file?",
+        "deleteMediaConfirmBody": "It will be removed from the event for everyone and can't be undone.",
+        "deleteMediaFailed": "We couldn't delete this file. Please try again.",
+        "reportMedia": "Report",
+        "cancelDelete": "Cancel",
         "archiveSummaryTitle": "Gallery summary",
         "archiveTotalsWithOriginals": "{originals} originals · {display} compressed",
         "archiveTotalsDisplayOnly": "{display} compressed",
@@ -3271,7 +3852,7 @@
         "descriptionHint": "At least 10 characters.",
         "screenshot": "Screenshot",
         "optional": "optional",
-        "addScreenshot": "Add a screenshot (up to {size} MB)",
+        "addScreenshot": "Add or paste a screenshot (up to {size} MB)",
         "removeScreenshot": "Remove screenshot",
         "screenshotPrivacy": "A screenshot may show personal information. Only the team sees it.",
         "imageTooLargeMax": "The image is too large. The limit is {size} MB.",
@@ -3313,6 +3894,7 @@
         "eventNotActive": "This event is not live yet.",
         "eventPurgedNotRenewable": "This event's media has already been purged, so it cannot be renewed. Create a new event to continue.",
         "rateLimited": "Too many requests. Please wait a moment and try again.",
+        "reportOwnContent": "You can't report your own content.",
         "rateLimitedWithWait": "Too many requests. Try again in {seconds}s.",
         "storageLimit": "Storage limit reached for this event.",
         "storageLimitWithPlan": "Storage limit reached on the {plan} plan. Upgrade to add more.",
@@ -3331,6 +3913,7 @@
         "coverageOptionLastInitial": "A plan on sale needs at least one duration. Add another before retiring this one.",
         "coverageEnded": "Coverage for this event has ended.",
         "coverageOptionDuplicate": "This plan already sells that duration.",
+        "demoDesignationInvalid": "That event can’t be a demo. It must be live, of this type, hosted by an admin, and every other member must be an admin or a guest without an account.",
         "purchaseNotPrimaryHost": "Only the event's main host can make purchases.",
         "purchaseWithdrawalOpen": "A withdrawal for this event is under review. Purchases are paused until it is decided.",
         "planCurrencyUnsupported": "This plan is not available in your currency yet.",
@@ -3378,6 +3961,9 @@
         "planInUse": "This plan is assigned to accounts or events, so it cannot be deleted.",
         "planIsOnlyDefault": "Set another default plan before changing this one.",
         "postMediaLimitExceeded": "This post already has the maximum number of photos.",
+        "postPinNotHost": "Only hosts can pin posts.",
+        "announcementNotHost": "Only hosts can post announcements.",
+        "storyExpiryOutOfRange": "A story can last up to 24 hours.",
         "orderNotPending": "This order is no longer pending.",
         "webhookAlreadyProcessed": "This webhook has already been processed.",
         "webhookNotReplayable": "This webhook cannot be replayed.",
@@ -3412,12 +3998,38 @@
         "withdrawalRefused": "This event doesn't currently qualify for a withdrawal.",
         "withdrawalNotHeld": "This request was already decided.",
         "withdrawalKeepEventDayNotDue": "The event date hadn't passed when the host withdrew. Release as calculated instead.",
+        "withdrawalOrderKindNotSupported": "To withdraw the activation, withdraw from the whole event.",
+        "demoEventLocked": "This is a demo event, so it can’t be joined or changed that way.",
+        "demoActAsRefused": "Only admins can post as a demo guest.",
+        "demoPersonaAvatarRefused": "Photos can only be set here for guests without an account on a demo event.",
         "qrSharedLinkHostManaged": "This shared link is managed automatically.",
         "eventSessionMainLocationReadOnly": "This is the event's main session, so its location always matches the event's own.",
         "eventSessionLimitReached": "This event's plan doesn't allow more schedule sessions.",
         "eventCoHostLimitExceeded": "This event's plan doesn't allow more co-hosts.",
         "sessionRsvpNotEnabled": "This session isn't taking RSVPs.",
-        "rsvpNotAttending": "Session answers are only for guests who are coming."
+        "rsvpNotAttending": "Session answers are only for guests who are coming.",
+        "eventStartPassed": "Your event's date has passed. Move it to a future date to pay.",
+        "giftClaimPinInvalid": "That PIN isn't right.",
+        "giftClaimNotAllowed": "This account can't claim this gift.",
+        "giftOrderNotYours": "Another host paid for this, so you can't withdraw it.",
+        "giftNotPrimaryHost": "Only the primary host can set up the gift.",
+        "giftRecipientProtected": "Only the primary host can remove the person who claimed the gift.",
+        "giftNotAvailableOnPlan": "This plan can't be given as a gift.",
+        "giftAlreadyClaimed": "This gift has already been claimed.",
+        "giftCardLocked": "This card is locked. Ask the giver for a new one.",
+        "giftEventNotActive": "This gift isn't ready yet.",
+        "giftHandoverPending": "The gift is being handed over, so ownership can't be transferred yet.",
+        "guidelinesVersionMismatch": "The Community Guidelines have been updated. Please read the current version and accept it.",
+        "guidelinesAcceptanceRequired": "Please accept the Community Guidelines to continue.",
+        "withdrawalConfirmationInvalid": "We couldn't confirm this withdrawal. Check the refund and confirm again.",
+        "withdrawalPreviewStale": "The refund amount has changed. Check it and confirm again.",
+        "orderNotManual": "Only manual orders can be settled by hand.",
+        "hostTransferPaymentInProgress": "A payment on this event is still in progress. Try again in a minute.",
+        "moderationDecisionInvalid": "This action doesn't apply to this item.",
+        "eventBanned": "You can't join this event.",
+        "moderationCaseClosed": "This case has already been decided.",
+        "moderationMemberIsHost": "Hosts can't be removed from their event. Suspend the account instead.",
+        "moderationTargetProtected": "Admin accounts can't be suspended here."
     },
     "LandingPage": {
         "shell": {
@@ -3864,12 +4476,21 @@
             "socialLinks": ["Instagram", "TikTok", "Facebook"],
             "copyright": "© 2026 STORYWALL",
             "legal": ["Privacy Policy", "Terms of Use", "Cookies", "Cookie Settings", "Cancellations & Withdrawal", "Contact"],
+            "communityGuidelines": "Community Guidelines",
             "backToTop": "BACK TO TOP"
         }
     },
     "Report": {
         "title": "Report",
         "body": "Report {name} to the platform team.",
+        "bodyByType": {
+            "POST": "Report this post to the platform team.",
+            "COMMENT": "Report this comment to the platform team.",
+            "STORY": "Report this story to the platform team.",
+            "MEDIA": "Report this photo or video to the platform team.",
+            "WISHBOOK_ENTRY": "Report this wish to the platform team.",
+            "PLAYLIST_SUGGESTION": "Report this song suggestion to the platform team."
+        },
         "reason": "Reason",
         "chooseReason": "Choose a reason",
         "details": "Details",
@@ -3878,12 +4499,17 @@
         "submitting": "Sending…",
         "cancel": "Cancel",
         "failed": "Couldn't send the report. Please try again.",
+        "ownContent": "You can't report your own content. You can delete it instead.",
+        "gone": "This was already removed.",
+        "rateLimited": "You've sent a lot of reports. Please try again later.",
         "reasons": {
             "SPAM": "Spam",
             "HARASSMENT": "Harassment",
             "INAPPROPRIATE_CONTENT": "Inappropriate content",
             "IMPERSONATION": "Impersonation",
-            "OTHER": "Other"
+            "OTHER": "Other",
+            "ILLEGAL_CONTENT": "Illegal content",
+            "COPYRIGHT": "Copyright infringement"
         }
     },
     "PublishQueue": {
@@ -3979,5 +4605,102 @@
             "eventJoinLabel": "Event Invite",
             "mediaUploadLabel": "Gallery Upload"
         }
+    },
+    "GiftMode": {
+        "form": {
+            "recipientLabel": "Who is it for",
+            "recipientLabelPlaceholder": "Anna & Nikos",
+            "giverDisplayName": "From",
+            "giverDisplayNamePlaceholder": "Aunt Maria",
+            "recipientEmail": "Their email (optional)",
+            "recipientEmailHint": "If they sign in with this email, they won't need the PIN."
+        },
+        "manage": {
+            "intro": "Give this event to someone else. They claim it with a card you print.",
+            "setUp": "Set up gift",
+            "editTitle": "Edit gift",
+            "edit": "Edit",
+            "save": "Save",
+            "cancel": "Cancel",
+            "someone": "Someone",
+            "recipient": "For",
+            "giver": "From",
+            "email": "Email",
+            "none": "None",
+            "status": {
+                "NOT_ISSUED": "No card yet.",
+                "ISSUED": "Card ready. Not claimed yet.",
+                "LOCKED": "Card locked after too many wrong PINs. Create a new card.",
+                "CLAIMED": "Claimed by {name}. They become the owner on {date}.",
+                "CLAIMED_SOON": "Claimed by {name}. They become the owner soon.",
+                "COMPLETED": "{name} owns this event now.",
+                "VOID": "This gift was cancelled."
+            },
+            "issue": "Create card",
+            "reissue": "New card",
+            "print": "Print card",
+            "reissueTitle": "Create a new card?",
+            "reissueBody": "The current card and PIN will stop working.",
+            "reissueConfirm": "Create new card",
+            "pinTitle": "Card PIN",
+            "pinBody": "Write it down. You won't see it again.",
+            "pinLabel": "PIN",
+            "done": "Done"
+        },
+        "card": {
+            "title": "Gift card",
+            "back": "Back",
+            "noCard": "There is no card to print.",
+            "scan": "Scan to claim your gift",
+            "pin": "PIN: {pin}",
+            "email": "Or sign in with {email}",
+            "includePin": "Print the PIN on the card",
+            "pinUnavailable": "The PIN is only shown once, so it can't be printed. Create a new card to print it.",
+            "print": "Print"
+        },
+        "claim": {
+            "coverAlt": "Event cover",
+            "heading": "A gift from {giver} for {recipient}.",
+            "emailBound": "Sign in with the email it was sent to, or use the card's PIN.",
+            "signIn": "Sign in to claim",
+            "register": "Create account",
+            "guest": "Guest accounts can't claim gifts. Sign in with a full account.",
+            "unverified": "Confirm your email to claim this gift.",
+            "pinLabel": "PIN",
+            "attemptsLeft": "{count, plural, one {# try left} other {# tries left}}",
+            "wrongPin": "Wrong PIN.",
+            "pinNeeded": "Enter the PIN from the card.",
+            "claim": "Claim gift",
+            "blocked": {
+                "invalid": {
+                    "title": "Gift not found",
+                    "description": "This link doesn't work. Check the card and try again."
+                },
+                "locked": {
+                    "title": "Card locked",
+                    "description": "Too many wrong PINs. Ask the giver for a new card."
+                },
+                "claimed": {
+                    "title": "Already claimed",
+                    "description": "This gift has already been claimed."
+                },
+                "void": {
+                    "title": "Gift cancelled",
+                    "description": "This gift is no longer available."
+                }
+            },
+            "outcome": {
+                "title": "Gift claimed",
+                "completed": "{title} is yours now.",
+                "claimed": "You are a host now. The event becomes yours on {date}.",
+                "claimedSoon": "You are a host now. The event becomes yours soon.",
+                "open": "Go to my events"
+            }
+        }
+    },
+    "ImageDropInput": {
+        "add": "Add or drop a photo",
+        "change": "Click or drop to change",
+        "remove": "Remove photo"
     }
 }

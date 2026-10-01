@@ -85,5 +85,5 @@ export default defineConfig([
      */
     prettierConfig,
 
-    globalIgnores(['.next/**', 'node_modules/**', 'coverage/**', 'dist/**', 'out/**', 'next-env.d.ts', '.worktrees/**', '.claude/**', 'docs/**']),
+    globalIgnores(['.next/**', 'node_modules/**', 'coverage/**', 'dist/**', 'out/**', 'next-env.d.ts', '.worktrees/**', '.claude/**', 'docs/**', 'public/mockServiceWorker.js']),
 ]);

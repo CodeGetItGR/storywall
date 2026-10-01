@@ -1,5 +1,6 @@
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { usePresignedUrlRefreshMs } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { myEventsKeys } from '@/hooks/useMyEvents';
 import { api } from '@/lib/api/client';
@@ -16,11 +17,14 @@ export const eventKeys = {
 // EventResponseDto used by the list and create endpoints.
 export function useEvent(eventId: string | null) {
     const { isAuthenticated } = useAuth();
+    // coverMedia is presigned.
+    const staleTime = usePresignedUrlRefreshMs();
 
     return useQuery({
         queryKey: eventKeys.detail(eventId ?? ''),
         queryFn: () => api.get<EventDetailResponseDto>(endpoints.events.byId(eventId!)),
         enabled: Boolean(eventId) && isAuthenticated,
+        staleTime,
     });
 }
 
@@ -31,12 +35,14 @@ export function useEvent(eventId: string | null) {
 // result[i] corresponds to eventIds[i].
 export function useEventDetails(eventIds: string[]) {
     const { isAuthenticated } = useAuth();
+    const staleTime = usePresignedUrlRefreshMs();
 
     return useQueries({
         queries: eventIds.map((id) => ({
             queryKey: eventKeys.detail(id),
             queryFn: () => api.get<EventDetailResponseDto>(endpoints.events.byId(id)),
             enabled: isAuthenticated,
+            staleTime,
         })),
     });
 }

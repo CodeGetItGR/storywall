@@ -27,6 +27,8 @@ export function EventOverviewStep() {
         selectedPlan: plan,
         selectedOption: option,
         error,
+        startPassed,
+        goToDetails,
         hasDraft,
         checkoutCode,
         appliedCheckoutCode,
@@ -167,7 +169,13 @@ export function EventOverviewStep() {
             {error && (
                 <div className="mt-auto rounded-lg bg-rose-50 px-3 py-2 text-center text-xs text-rose-600">
                     <p>{error}</p>
-                    {hasDraft && <p className="mt-1 font-semibold">{t('paidModules.openSetup')}</p>}
+                    {startPassed ? (
+                        <button type="button" onClick={goToDetails} className="mt-1 font-semibold underline underline-offset-2">
+                            {t('changeDate')}
+                        </button>
+                    ) : (
+                        hasDraft && <p className="mt-1 font-semibold">{t('paidModules.openSetup')}</p>
+                    )}
                 </div>
             )}
         </div>

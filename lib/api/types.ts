@@ -122,6 +122,8 @@ export interface PlanTierResponseDto {
     isDefault: boolean;
     isAssignable: boolean;
     isPublic: boolean;
+    // Added 2026-09-27: whether the plan can be bought as a gift. Also needs co_hosts in moduleKeys.
+    isGiftable: boolean;
     storageBytes: number | null;
     maxMembers: number | null;
     // ACCOUNT scope only. Always null on an EVENT plan, whose prices are its
@@ -333,8 +335,8 @@ export interface AppRateLimitConfigDto {
     windowSeconds: number;
 }
 
-export type ReportTargetType = 'POST' | 'COMMENT' | 'MEMBER';
-export type ReportReason = 'SPAM' | 'HARASSMENT' | 'INAPPROPRIATE_CONTENT' | 'IMPERSONATION' | 'OTHER';
+export type ReportTargetType = 'POST' | 'COMMENT' | 'MEMBER' | 'STORY' | 'MEDIA' | 'WISHBOOK_ENTRY' | 'PLAYLIST_SUGGESTION';
+export type ReportReason = 'SPAM' | 'HARASSMENT' | 'INAPPROPRIATE_CONTENT' | 'IMPERSONATION' | 'ILLEGAL_CONTENT' | 'COPYRIGHT' | 'OTHER';
 
 export interface AppConfigResponseDto {
     featureFlags: PlatformFeatureFlagResponseDto[];
@@ -444,8 +446,14 @@ export interface RegisterRequestDto {
     password: string;
     firstName: string;
     lastName: string;
+    // The Community Guidelines version the user ticked (GET /api/legal/community-guidelines).
+    // Not the current one → 400 3037 GUIDELINES_VERSION_MISMATCH, nothing created.
+    acceptedGuidelinesVersion: string;
     inviteToken?: string;
     subscribeToNewsletter?: boolean;
+    // All-or-nothing: an invalid profile is a 400 and no account is created.
+    // VIES may leave it PENDING, so read GET /api/me/business-profile afterwards.
+    businessProfile?: BusinessProfileRequestDto | null;
 }
 
 export interface LoginRequestDto {
@@ -475,7 +483,9 @@ export interface LogoutRequestDto {
 // mark read, mark all read, and dismiss them.
 // BREAKING 2026-09-18: REFUND_APPROVED/REFUND_REJECTED replaced by the three
 // WITHDRAWAL_* types — nothing emits the old pair any more (billing-fe-guide §10).
-export type BillingNotificationType = 'WITHDRAWAL_REFUNDED' | 'WITHDRAWAL_HELD' | 'WITHDRAWAL_WITHHELD';
+// STORAGE_TRIM_* (2026-09-23): media above a lowered storage limit will be deleted.
+export type BillingNotificationType =
+    'WITHDRAWAL_REFUNDED' | 'WITHDRAWAL_HELD' | 'WITHDRAWAL_WITHHELD' | 'STORAGE_TRIM_SCHEDULED' | 'STORAGE_TRIM_WARNING';
 
 export type NotificationCategory = 'LIMIT' | 'OFFER' | 'TIP' | 'SYSTEM' | 'BILLING' | (string & {});
 export type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
@@ -557,6 +567,10 @@ export interface UserResponseDto {
     // emails, invitation emails) — independent of Accept-Language. See
     // docs/integration guides/backend-localization-fe-integration.md §5. null = none set.
     locale: Locale | null;
+    // True until the user accepts currentGuidelinesVersion; until then every
+    // write is 403 4013. Null only on admin user endpoints, never on /api/me.
+    guidelinesAcceptanceRequired: boolean | null;
+    currentGuidelinesVersion: string | null;
 }
 
 export interface MeUpdateRequestDto {
@@ -568,6 +582,37 @@ export interface MeUpdateRequestDto {
 export interface ChangePasswordRequestDto {
     currentPassword: string;
     newPassword: string;
+}
+
+// --- Business profile (business-buyers-fe-integration.md §2, 2026-09-24) ---
+// Only VALID makes the account a business buyer. PENDING and INVALID buy as a consumer.
+export type ViesStatus = 'PENDING' | 'VALID' | 'INVALID';
+
+// PUT /api/me/business-profile — create or replace; every PUT starts a new VIES check.
+export interface BusinessProfileRequestDto {
+    legalName: string;
+    // VIES code: EL for Greece (not GR), XI for Northern Ireland.
+    countryCode: string;
+    vatNumber: string;
+    addressLine1: string;
+    addressLine2?: string | null;
+    city: string;
+    postalCode: string;
+}
+
+// GET/PUT /api/me/business-profile. GET is 404 when there is none.
+export interface BusinessProfileResponseDto {
+    legalName: string;
+    countryCode: string;
+    vatNumber: string; // without the prefix
+    addressLine1: string;
+    addressLine2: string | null;
+    city: string;
+    postalCode: string;
+    viesStatus: ViesStatus;
+    viesSubmittedAt: string;
+    viesCheckedAt: string | null;
+    business: boolean;
 }
 
 // --- §5 Event domain ---
@@ -692,6 +737,10 @@ export interface EventDetailResponseDto {
 export interface CheckoutResponseDto {
     orderId: string;
     redirectUrl: string;
+    // Added 2026-09-24 (business-buyers-fe-integration.md §1).
+    buyerType: BuyerType;
+    // The order's pinned breakdown: exactly what the payment page charges (2026-09-24).
+    breakdown: PriceBreakdown;
 }
 
 // Shared by activation and upgrade checkout — the consent Directive 2011/83/EU
@@ -699,9 +748,11 @@ export interface CheckoutResponseDto {
 // withdrawal window. Both booleans MUST be sent true; termsVersion comes from
 // AppConfigResponseDto.withdrawal.termsVersion. Added 2026-09-18 — a body is now
 // required on both checkout endpoints, where none was required before.
+// Since 2026-09-24 a VIES-confirmed business buyer may omit both booleans
+// (business-buyers-fe-integration.md §1); a consumer must still send both true.
 export interface WithdrawalConsentDto {
-    requestsImmediateStart: boolean;
-    acknowledgesWithdrawalTerms: boolean;
+    requestsImmediateStart?: boolean;
+    acknowledgesWithdrawalTerms?: boolean;
     termsVersion: string;
 }
 
@@ -728,6 +779,9 @@ export interface CollaborationCodePreviewResponseDto {
     combinedDiscountPercent: number;
     payableAmountMinor: number;
     currency: string;
+    // 2026-09-24: the activation with the code applied (add-ons included on an
+    // existing event), or the upgrade on an upgrade preview.
+    breakdown: PriceBreakdown;
 }
 export interface PartnerPortalTotalDto {
     currency: string;
@@ -757,6 +811,8 @@ export interface CollaboratorResponseDto {
     portalTokenIssued: boolean;
     portalTokenIssuedAt: string | null;
     notes: string | null;
+    // Same rows as GET …/earnings/totals, on list and detail. [] when never earned.
+    earningsTotals: CollaborationEarningsTotalDto[];
 }
 export interface CollaboratorPortalTokenResponseDto {
     token: string;
@@ -810,6 +866,8 @@ export interface LinkDiscountCodeRequestDto {
 export interface CollaborationEarningResponseDto {
     id: string;
     eventId: string;
+    // Null once the event is purged; eventId survives it.
+    eventTitle: string | null;
     orderId: string;
     codeId: string;
     entryType: CollaborationEarningEntryType;
@@ -937,6 +995,8 @@ export interface UpgradeCoverageOptionDto {
     gapAmountMinor: number;
     // What upgrade-checkout will actually charge for this duration.
     payableAmountMinor: number;
+    // What upgrade-checkout would pin for this duration (2026-09-24).
+    breakdown: PriceBreakdown;
 }
 // GET /api/events/{eventId}/upgrade-options — one entry per target plan since
 // 2026-09-23. options is never empty; a plan with no eligible duration is left out.
@@ -980,12 +1040,22 @@ export interface OrderSummaryDto {
     // applied nothing. The event's live end is its own coverageEndsAt, not these.
     coverageStartsAt: string | null;
     coverageEndsAt: string | null;
+    // Added 2026-09-24: hide "Withdraw" on BUSINESS orders.
+    buyerType: BuyerType;
+    // 2026-09-24: pinned when the checkout opened; null on orders from before it.
+    // While PAID, withdrawal.windowClosesAt is filled for a consumer order.
+    breakdown: PriceBreakdown | null;
+    // Added 2026-09-27: whether the host reading this paid for the order. On a gift
+    // event, false means the amounts, splits and breakdown are null: show "Gift"
+    // and no Withdraw. Only null on internal views.
+    paidByCaller: boolean | null;
 }
 export interface EventAddonDto {
     code: string;
     name: string;
-    // What this cost when bought.
-    priceAmountMinor: number;
+    // What this cost when bought. Null on a gift event unless the caller paid
+    // the order that bought it (2026-09-27).
+    priceAmountMinor: number | null;
     billingPeriod: BillingPeriod;
     activatedAt: string;
 }
@@ -1013,6 +1083,9 @@ export interface EventBillingResponseDto {
     orders: OrderSummaryDto[];
     addons: EventAddonDto[];
     discount: DiscountSummaryDto | null;
+    // When the media above the storage limit will be deleted after a withdrawal
+    // or lost chargeback lowered the limit. Null when nothing is scheduled.
+    storageTrimDueAt: string | null;
 }
 
 // --- Withdrawal (billing-fe-guide.md §9) — replaces the old admin-approved refund flow ---
@@ -1022,7 +1095,9 @@ export type WithdrawalStatus = 'REFUSED' | 'HELD' | 'REFUNDED' | 'WITHHELD';
 // flow shipped; treat any status outside the four above as read-only history, never
 // producible by a new request.
 
-export type RefundBasis = 'CONSENTED_PRO_RATA' | 'NO_CONSENT_FULL_REFUND';
+// PRO_RATA_BY_TIME (2026-09-23): a consented storage pack or coverage extension,
+// kept pro rata by time only.
+export type RefundBasis = 'CONSENTED_PRO_RATA' | 'NO_CONSENT_FULL_REFUND' | 'PRO_RATA_BY_TIME';
 
 // EVENT withdraws the whole event and deletes it; ORDER withdraws one order and the event stays.
 export type WithdrawalScope = 'EVENT' | 'ORDER';
@@ -1036,15 +1111,68 @@ export interface WithdrawalRefusal {
 export interface WithdrawalLine {
     orderId: string;
     orderKind: OrderKind;
+    // This order's own window (2026-09-23).
+    windowClosesAt: string | null;
     basis: RefundBasis;
     hostingStart: string | null;
     hostingEnd: string | null;
     usedSeconds: number | null;
     totalSeconds: number | null;
     eventPerformed: boolean;
+    // A reviewer, or the evidence rule, kept the event-day share. Always false on a preview.
+    keepEventDay: boolean;
+    // 0 on a released line whose order had already been refunded another way (a chargeback).
     refundMinor: number;
     providerRefunded: boolean;
     components: Record<string, unknown>; // display-only breakdown; shape not enumerated by the guide
+    // Added 2026-09-24: BUSINESS on a newer business upgrade taken along by a consumer upgrade.
+    buyerType: BuyerType;
+}
+
+// An order an EVENT withdrawal leaves unrefunded because it was bought as a business (2026-09-24).
+export interface WithdrawalExcludedOrderDto {
+    orderId: string;
+    orderKind: OrderKind;
+    amountMinor: number;
+    currency: string;
+    reason: 'BUSINESS_PURCHASE';
+}
+
+// Where an ORDER withdrawal leaves the event's storage (2026-09-23).
+export interface WithdrawalStorageAfterDto {
+    newLimitBytes: number | null; // null = unlimited
+    usageBytes: number;
+    overLimitBytes: number; // 0 when it fits
+    // When the newest media above the new limit would be deleted. Null when nothing is over.
+    trimDueAt: string | null;
+}
+
+// POST /api/events/{eventId}/quote (2026-09-24) — prices an activation or a
+// storage pack before checkout; answers a PriceBreakdown. Read-only.
+export interface QuoteRequestDto {
+    kind: 'ACTIVATION' | 'STORAGE_PACK';
+    // Required for STORAGE_PACK, refused for ACTIVATION.
+    paidServiceCode?: string;
+}
+
+// GET /api/legal/withdrawal-terms(/{version})?locale=en|el — public (2026-09-24).
+export interface WithdrawalTermsDto {
+    version: string;
+    locale: string; // the locale actually served
+    withdrawalInformation: string; // Markdown
+    modelForm: string; // Markdown
+}
+
+// GET /api/legal/community-guidelines[/{version}] — public.
+export interface CommunityGuidelinesDto {
+    version: string;
+    locale: string; // the locale actually served
+    markdown: string;
+}
+
+// POST /api/me/guidelines-acceptance → 204.
+export interface GuidelinesAcceptanceRequestDto {
+    version: string;
 }
 
 // GET /api/events/{eventId}/withdrawal-preview — host. Nothing persisted; safe to
@@ -1062,6 +1190,20 @@ export interface WithdrawalPreviewResponseDto {
     // True when the event's startAt was moved after payment, which forces a HELD
     // outcome. False promises nothing: other, undisclosed reasons can hold a request.
     scheduleMovedAfterPayment: boolean;
+    // Added 2026-09-23. EVENT from /withdrawal-preview, ORDER from /orders/{orderId}/withdrawal-preview.
+    scope: WithdrawalScope;
+    // The order the request would name: the activation (null when none is PAID), or the order in the path.
+    orderId: string | null;
+    // True only for a storage pack or extension in automatic mode: refunded straight away.
+    // False promises nothing, so say nothing about timing.
+    instant: boolean;
+    // ORDER only: where the withdrawal leaves the event's storage. Null otherwise and on a refusal.
+    storageAfter: WithdrawalStorageAfterDto | null;
+    // EVENT only (2026-09-24): business-bought orders this withdrawal leaves unrefunded.
+    excludedOrders: WithdrawalExcludedOrderDto[];
+    // Opaque proof the host saw this preview (2026-09-28). Always present, refusals
+    // included. Send it back on the withdrawal POST; valid for 10 minutes.
+    confirmationToken: string;
 }
 
 // POST /api/events/{eventId}/withdrawals — host. 201 with this shape when the
@@ -1072,6 +1214,9 @@ export interface WithdrawalResponseDto {
     id: string;
     eventId: string;
     scope: WithdrawalScope;
+    // The activation for EVENT, the target for ORDER. Null on an EVENT request
+    // refused for having no PAID activation.
+    orderId: string | null;
     status: WithdrawalStatus;
     reason: string | null;
     createdAt: string;
@@ -1082,10 +1227,15 @@ export interface WithdrawalResponseDto {
     currency: string | null;
     refusals: WithdrawalRefusal[];
     lines: WithdrawalLine[];
+    // As they stood when the request was filed (2026-09-24). Empty otherwise.
+    excludedOrders: WithdrawalExcludedOrderDto[];
 }
 
 export interface WithdrawalRequestDto {
     reason?: string; // max 1000 chars, optional
+    // The confirmationToken of the exact preview the host confirmed (required, 2026-09-28).
+    // 400 5094 when missing or not from this preview; 409 5095 when expired or the refund changed.
+    confirmationToken: string;
 }
 
 // --- Admin withdrawal operations (billing-fe-guide §9/§13) ---
@@ -1124,6 +1274,123 @@ export interface PlatformMetricsResponseDto {
     eventsByPlanTier: Record<string, number>;
     storage: PlatformStorageMetricsDto;
     newsletter: PlatformNewsletterMetricsDto;
+}
+
+/**
+ * GET /api/admin/metrics/funnel?since=&until= — the account conversion funnel. Added 2026-09-29.
+ * Counts only; nothing identifies an account. Both params optional ISO-8601; omit both for all time.
+ * `until` is exclusive.
+ *
+ * Two windows: account sections (funnel, stuck, activity, timeToConvert, guestToHost, accounts)
+ * cover accounts that SIGNED UP in the range, followed to today; paidEvents and revenue cover
+ * orders PAID / refunds DECIDED in the range. An "account" excludes admins and guest users.
+ * See admin-funnel-metrics-fe-integration.md (next to this file in both repos) for each definition.
+ */
+export interface FunnelMetricsResponseDto {
+    since: string | null;
+    until: string | null;
+    generatedAt: string;
+    funnel: {
+        signedUp: number;
+        emailVerified: number;
+        /** Primary host of ≥1 event (drafts and soft-deleted events count). */
+        createdEvent: number;
+        /** THE HEADLINE. Paid via the provider, amount > 0, not refunded, for ≥1 event activation. */
+        paidHost: number;
+        repeatPaidHost: number;
+        /** Hosts an event with ≥1 guest AND ≥1 upload. Shown beside paidHost, not a subset of it. */
+        engagedHost: number;
+        /** Went live only via admin settlement / €0 order (bank transfer and comp look the same). */
+        adminSettledHost: number;
+    };
+    /** ACTIVE accounts only. abandonedCheckout ⊂ eventNeverPaid. */
+    stuck: {
+        unverifiedOver7Days: number;
+        verifiedNoEvent: number;
+        eventNeverPaid: number;
+        abandonedCheckout: number;
+        paidNotEngaged: number;
+    };
+    /** From last_active_at (sign-in / token refresh, 1-day resolution, recorded from 2026-09-29). */
+    activity: {
+        activeLast7Days: number;
+        activeLast30Days: number;
+        inactiveOver30Days: number;
+        /** No sign-in since tracking began — not the same as inactive. */
+        neverRecorded: number;
+    };
+    /** Medians in hours; null when nobody reached the step. firstEventToPaid can be negative. */
+    timeToConvert: {
+        medianHoursToVerify: number | null;
+        medianHoursToFirstEvent: number | null;
+        medianHoursFirstEventToPaid: number | null;
+    };
+    /** Accounts that joined someone else's event as a linked guest before hosting their own. */
+    guestToHost: {
+        attendedFirst: number;
+        thenHosted: number;
+        thenPaid: number;
+    };
+    accounts: {
+        /** Keyed by AuthProvider: LOCAL | OAUTH | INVITE. Missing key = 0. */
+        signedUpByProvider: Record<string, number>;
+        /** Keyed by locale, e.g. 'en', 'el'. */
+        byLocale: Record<string, number>;
+        suspended: number;
+        deleted: number;
+    };
+    /** Events whose provider-paid activation settled in the range. */
+    paidEvents: {
+        count: number;
+        /** endAt has passed — only then is "no uploads" meaningful. */
+        ended: number;
+        endedWithoutUploads: number;
+        endedWithoutGuests: number;
+        /** Over ENDED paid events only (changed 2026-09-29); null when `ended` is 0. */
+        medianGuests: number | null;
+        /** Over ENDED paid events only (changed 2026-09-29); null when `ended` is 0. */
+        medianUploads: number | null;
+        withUpgrade: number;
+        withStoragePack: number;
+        withExtension: number;
+    };
+    revenue: {
+        /** One entry per currency with sales or refunds in the range. */
+        totals: {
+            currency: string;
+            /** Paid orders, later-refunded ones included. */
+            grossMinor: number;
+            /** Refunds decided in the range, partial ones included. */
+            refundedMinor: number;
+            netMinor: number;
+            payingAccounts: number;
+            netPerPayingAccountMinor: number;
+        }[];
+        byKind: {
+            currency: string;
+            /** OrderKind: ACTIVATION | UPGRADE | STORAGE_PACK | EXTENSION */
+            kind: string;
+            orders: number;
+            amountMinor: number;
+        }[];
+        refunds: number;
+        adminSettledOrders: number;
+        /** Keyed by BuyerType: CONSUMER | BUSINESS. */
+        ordersByBuyerType: Record<string, number>;
+        discountRedemptions: number;
+        partnerRedemptions: number;
+    };
+}
+
+/** GET /api/admin/metrics/funnel/cohorts?weeks=12 (1..104). Oldest first, every week present. */
+export interface FunnelCohortDto {
+    /** Monday 00:00 UTC. */
+    weekStart: string;
+    signedUp: number;
+    emailVerified: number;
+    createdEvent: number;
+    paidHost: number;
+    engagedHost: number;
 }
 
 export interface PlatformNewsletterMetricsDto {
@@ -1384,8 +1651,9 @@ export interface WishbookEntryResponseDto {
 
 // GET /api/event-invitations/{inviteToken}/preview — public, unauthenticated.
 // Powers the per-event invite onboarding page; expired/alreadyUsed are not
-// errors, they're states to render (a used single-use slot doesn't imply the
-// current visitor is the one who used it).
+// errors, they're states to render. alreadyUsed means the link has no guest
+// places left (a shared join link stays false until it is full), and doesn't
+// imply the current visitor is one of those who used it.
 export interface EventInvitationPreviewDto {
     inviteToken: string;
     eventId: string;
@@ -1400,6 +1668,9 @@ export interface EventInvitationPreviewDto {
     email: string | null;
     expired: boolean;
     alreadyUsed: boolean;
+    // Added 2026-09-27: null on a normal event. While claimed is false the
+    // honorees may not know yet, so guest-facing copy must not spoil it.
+    gift: GiftFramingDto | null;
 }
 
 export interface EventMemberRequestDto {
@@ -1710,6 +1981,13 @@ export interface MediaArchivePartDto {
     sizeBytes: number;
 }
 
+// GET /api/events/{eventId}/media/summary — hosts only. The manifest's two counts, without
+// planning an archive.
+export interface MediaSummaryDto {
+    photoCount: number;
+    videoCount: number;
+}
+
 export interface MediaArchiveManifestDto {
     variant: MediaArchiveVariant;
     originalsAvailable: boolean;
@@ -1854,6 +2132,8 @@ export interface StoryResponseDto {
     authorMemberId: string | null;
     author: AuthorDto | null;
     mediaId: string;
+    // As GET /api/medias/{mediaId} returns it; null where that endpoint would refuse it.
+    media: MediaResponseDto | null;
     caption: string | null;
     songUrl: string | null;
     expiresAt: string;
@@ -1958,26 +2238,6 @@ export interface AuditLogResponseDto {
     createdAt: string;
 }
 
-export interface ModerationActionRequestDto {
-    eventId: string;
-    moderatorMemberId?: string;
-    targetType: string;
-    targetId: string;
-    actionType: string;
-    reason?: string;
-}
-
-export interface ModerationActionResponseDto {
-    id: string;
-    eventId: string;
-    moderatorMemberId: string | null;
-    targetType: string;
-    targetId: string;
-    actionType: string;
-    reason: string | null;
-    createdAt: string;
-}
-
 export interface ReportRequestDto {
     reporterMemberId?: string;
     eventId: string;
@@ -2059,6 +2319,8 @@ export interface PlanTierRequestDto {
     isDefault: boolean;
     isAssignable: boolean;
     isPublic: boolean;
+    // Omit for true (added 2026-09-27).
+    isGiftable?: boolean;
     storageBytes?: number | null;
     maxMembers?: number | null;
     // ACCOUNT scope only: an EVENT plan is priced by its coverage options, and
@@ -2204,4 +2466,293 @@ export interface ClientErrorRequestDto {
     stack?: string | null;
     pageUrl?: string | null;
     appVersion?: string | null;
+}
+
+// GET /api/bug-reports(/{id}) — admin only, newest first. `recentErrors`
+// holds the stored RecentErrorDto entries with every key present.
+export interface BugReportResponseDto {
+    id: string;
+    description: string;
+    pageUrl: string | null;
+    eventId: string | null;
+    appVersion: string | null;
+    locale: string | null;
+    timeZone: string | null;
+    viewportWidth: number | null;
+    viewportHeight: number | null;
+    displayMode: string | null;
+    recentErrors: Record<string, unknown>[] | null;
+    // null once the reporter's account is deleted.
+    reporterUserId: string | null;
+    reporterRole: PlatformRole;
+    userAgent: string | null;
+    // Presigned GET URL; null when the report has no screenshot.
+    screenshotUrl: string | null;
+    createdAt: string;
+}
+
+export type ErrorEventSource = 'BACKEND' | 'BACKGROUND' | 'CLIENT';
+
+// GET /api/error-events(/{id}) — admin only, newest lastSeenAt first. One row
+// groups every occurrence of the same error; `ref` is what a 500's errorRef holds.
+export interface ErrorEventResponseDto {
+    id: string;
+    ref: string;
+    source: ErrorEventSource;
+    errorType: string;
+    message: string | null;
+    stackTrace: string | null;
+    occurrenceCount: number;
+    firstSeenAt: string;
+    lastSeenAt: string;
+    lastRequestMethod: string | null;
+    lastRequestPath: string | null;
+    lastUserId: string | null;
+    lastAppVersion: string | null;
+    lastPageUrl: string | null;
+}
+
+// Demo events — see docs/integration guides/demo-event-fe-integration.md.
+// GET /api/demo/{eventTypeKey} — public; 404 when the type has no demo; 429 past 30/min per IP.
+export interface DemoSnapshotDto {
+    snapshotAt: string;
+    // Re-fetch before this to refresh media URLs.
+    presignedUrlsValidUntil: string | null;
+    viewerUserId: string;
+    viewerMemberId: string;
+    event: EventDetailResponseDto;
+    members: EventMemberResponseDto[];
+    posts: PostResponseDto[];
+    comments: CommentResponseDto[];
+    reactions: ReactionResponseDto[];
+    // Includes expired stories.
+    stories: StoryResponseDto[];
+    // phone is always null.
+    rsvps: RsvpResponseDto[];
+    media: MediaResponseDto[];
+    playlistSuggestions: PlaylistSuggestionResponseDto[];
+    wishbookEntries: WishbookEntryResponseDto[];
+    // A fixed fake; null when the wishlist module is off.
+    giftAccount: EventGiftAccountResponseDto | null;
+    // token is a "demo-qr-…" placeholder.
+    qrLinks: QrLinkResponseDto[];
+    usage: EventUsageResponseDto;
+}
+
+// GET/PUT /api/admin/demo-events — admin only.
+export interface DemoEventResponseDto {
+    eventTypeKey: string;
+    eventId: string;
+    eventTitle: string;
+    designatedByUserId: string | null;
+    designatedAt: string;
+}
+
+export interface DemoEventDesignationRequestDto {
+    eventId: string;
+}
+
+// Gift mode (2026-09-27): gift-mode-fe-integration.md.
+export type GiftHandoverStatus = 'NOT_ISSUED' | 'ISSUED' | 'LOCKED' | 'CLAIMED' | 'COMPLETED' | 'VOID';
+
+// CLAIMABLE doesn't check the event: the claim can still answer 5092. Treat an
+// unknown state as not claimable.
+export type GiftClaimState = 'CLAIMABLE' | 'LOCKED' | 'ALREADY_CLAIMED' | 'VOID';
+
+// PUT /api/events/{eventId}/gift — primary host only (4011). A full replace:
+// omitting recipientEmail clears it.
+export interface GiftHandoverRequestDto {
+    recipientLabel: string; // required, max 120
+    giverDisplayName: string; // required, max 80
+    recipientEmail?: string; // max 255; this verified address claims without the PIN
+}
+
+// PUT and GET /api/events/{eventId}/gift. Never carries the PIN.
+export interface GiftHandoverResponseDto {
+    status: GiftHandoverStatus;
+    recipientLabel: string;
+    giverDisplayName: string;
+    recipientEmail: string | null;
+    // The live card's claim token; null until a card is issued.
+    token: string | null;
+    cardIssuedAt: string | null;
+    claimedByDisplayName: string | null;
+    claimedAt: string | null;
+    // Only while CLAIMED: when the last withdrawal window closes. Also null while
+    // CLAIMED when the handover is paused (a withdrawal under review, the event
+    // deleted or not ACTIVE).
+    ownershipTransfersAt: string | null;
+    ownershipTransferredAt: string | null;
+}
+
+// POST /api/events/{eventId}/gift/card — the only response with the PIN.
+// Reissuing kills the previous token and PIN.
+export interface GiftCardResponseDto {
+    token: string;
+    pin: string; // 6 digits; show once
+}
+
+export interface GiftClaimRequestDto {
+    pin?: string; // exactly 6 digits
+}
+
+// GET /api/gift-claims/{token} — public. 404 for unknown or superseded tokens and deleted events.
+export interface GiftClaimPreviewDto {
+    eventTitle: string;
+    eventSubtitle: string | null;
+    coverMedia: MediaResponseDto | null;
+    giverDisplayName: string;
+    recipientLabel: string;
+    emailBound: boolean;
+    state: GiftClaimState;
+}
+
+// POST /api/gift-claims/{token}/claim. COMPLETED: the caller owns the event now.
+// CLAIMED: co-host now, owner at ownershipTransfersAt (null while a withdrawal is under review).
+export interface GiftClaimResponseDto {
+    status: 'COMPLETED' | 'CLAIMED';
+    ownershipTransfersAt: string | null;
+}
+
+// EventInvitationPreviewDto.gift.
+export interface GiftFramingDto {
+    giverDisplayName: string;
+    recipientLabel: string;
+    claimed: boolean;
+}
+
+// `details` on a 400/3036. 0 means this wrong PIN locked the card.
+export interface GiftPinInvalidDetails {
+    attemptsLeft: number;
+}
+
+// --- Admin moderation center (Community Guidelines §18) ---
+// Mirrors dto/moderation/*. JSON nulls are sent, so nullable means `T | null`.
+
+export type ModerationCaseStatus = 'OPEN' | 'UNDER_REVIEW' | 'CLOSED';
+export type ModerationOutcome = 'DISMISSED' | 'ACTION_TAKEN';
+
+export type AdminAuditAction =
+    | 'CONTENT_VIEWED'
+    | 'CASE_REVIEW_STARTED'
+    | 'CASE_DISMISSED'
+    | 'CASE_RESOLVED'
+    | 'CONTENT_REMOVED'
+    | 'MEMBER_REMOVED'
+    | 'MEMBER_BANNED'
+    | 'BAN_LIFTED'
+    | 'ACCOUNT_SUSPENDED'
+    | 'ACCOUNT_CREATED'
+    | 'ACCOUNT_STATUS_CHANGED'
+    | 'ACCOUNT_ROLE_CHANGED'
+    | 'ACCOUNT_EMAIL_CHANGED'
+    | 'ACCOUNT_DELETED';
+
+// GET /api/admin/moderation/cases?status=&page=&size= (Page<ModerationCaseSummaryDto>).
+// decisionId/outcome/decidedAt are set only on CLOSED cases; topReason, firstReportedAt and
+// lastReportedAt are null on CLOSED rows.
+export interface ModerationCaseSummaryDto {
+    targetType: ReportTargetType;
+    targetId: string;
+    eventId: string;
+    eventTitle: string | null;
+    reportCount: number;
+    topReason: ReportReason | null;
+    firstReportedAt: string | null;
+    lastReportedAt: string | null;
+    status: ModerationCaseStatus;
+    decisionId: string | null;
+    outcome: ModerationOutcome | null;
+    decidedAt: string | null;
+}
+
+export interface ModerationReportDto {
+    id: string;
+    reason: ReportReason;
+    description: string | null;
+    status: string;
+    createdAt: string;
+    reporterMemberId: string | null;
+    reporterDisplayName: string | null;
+}
+
+export interface ModerationContentDto {
+    text: string | null;
+    authorMemberId: string | null;
+    authorUserId: string | null;
+    authorDisplayName: string | null;
+    authorIsHost: boolean;
+    media: MediaResponseDto[];
+    createdAt: string;
+}
+
+export interface AllowedActionsDto {
+    removeContent: boolean;
+    removeMember: boolean;
+    banFromEvent: boolean;
+    suspendAccount: boolean;
+}
+
+export interface ModerationDecisionDto {
+    id: string;
+    targetType: ReportTargetType;
+    targetId: string;
+    eventId: string;
+    outcome: ModerationOutcome;
+    contentRemoved: boolean;
+    memberRemoved: boolean;
+    banned: boolean;
+    accountSuspended: boolean;
+    reportCount: number;
+    adminUserId: string;
+    note: string | null;
+    createdAt: string;
+}
+
+export interface EventBanDto {
+    id: string;
+    eventId: string;
+    userId: string;
+    decisionId: string | null;
+    createdAt: string;
+    liftedAt: string | null;
+}
+
+// GET /api/admin/moderation/cases/{targetType}/{targetId}. Audit-logs the read.
+export interface ModerationCaseDetailDto {
+    targetType: ReportTargetType;
+    targetId: string;
+    eventId: string;
+    eventTitle: string | null;
+    status: ModerationCaseStatus;
+    reports: ModerationReportDto[];
+    content: ModerationContentDto | null;
+    allowedActions: AllowedActionsDto;
+    decisions: ModerationDecisionDto[];
+    priorDecisionsAgainstAuthor: ModerationDecisionDto[];
+    bans: EventBanDto[];
+}
+
+// POST .../decision. 400/3039 when an action does not apply to the target type,
+// 409/5106 when already decided, 5107 host removal, 5108 admin suspension.
+export interface ModerationDecisionRequestDto {
+    outcome: ModerationOutcome;
+    removeContent: boolean;
+    removeMember: boolean;
+    banFromEvent: boolean;
+    suspendAccount: boolean;
+    note?: string | null; // max 2000
+}
+
+// GET /api/admin/audit-log?targetId=&adminUserId=&page=&size= (Page, newest first).
+export interface AdminAuditLogResponseDto {
+    id: string;
+    adminUserId: string;
+    action: AdminAuditAction;
+    targetType: string;
+    targetId: string | null;
+    eventId: string | null;
+    details: Record<string, unknown>;
+    ipAddress: string | null;
+    createdAt: string;
 }

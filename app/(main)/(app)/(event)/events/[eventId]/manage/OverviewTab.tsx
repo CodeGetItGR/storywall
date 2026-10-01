@@ -85,6 +85,7 @@ export default function OverviewTab({
                 eventTitle={eventTitle}
                 eventType={eventType}
                 startAt={schedule.startAt}
+                endAt={schedule.endAt}
                 projectedCoverage={schedule.projectedCoverage}
                 currentPlan={currentPlan}
                 currentOption={currentOption}

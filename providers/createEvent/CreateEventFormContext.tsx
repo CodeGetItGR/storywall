@@ -3,6 +3,7 @@
 import type React from 'react';
 import { createContext, useContext } from 'react';
 
+import type { CreateEventGift } from '@/hooks/useCreateEventGift';
 import type {
     AppEventTypeResponseDto,
     AppMediaConfigDto,
@@ -70,10 +71,14 @@ export interface CreateEventFormValue {
     mapsUrl: string;
     onMapsUrlChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     canSubmitDetails: boolean;
+    // "Buy as a gift", on plans that can be given.
+    gift: CreateEventGift;
 
     // Overview step
     trimmedTitle: string;
     error: string | null;
+    // The draft's start date has passed (3035): send the host back to details.
+    startPassed: boolean;
     hasDraft: boolean;
     checkoutCode: string;
     appliedCheckoutCode: string | null;

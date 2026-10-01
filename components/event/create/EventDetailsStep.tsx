@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from 'next-intl';
 
 import { EventTimezoneField } from '@/components/event/create/EventTimezoneField';
+import { GiftDetailsFields } from '@/components/giftMode/GiftDetailsFields';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useContentLimits } from '@/hooks/useContentLimits';
 import { useCreateEventFieldLabels } from '@/hooks/useCreateEventFieldLabels';
@@ -36,6 +37,7 @@ export function EventDetailsStep() {
         onLocationAddressChange,
         mapsUrl,
         onMapsUrlChange,
+        gift,
     } = useCreateEventForm();
     const voice = useEventTypeVoice(selectedEventType);
     const labels = useCreateEventFieldLabels(selectedEventType);
@@ -125,6 +127,20 @@ export function EventDetailsStep() {
                         className="rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:ring-2 focus:ring-primary/30"
                     />
                 </FormFieldLabel>
+
+                {/* Gift */}
+                {gift.available && (
+                    <div className="space-y-4 border-t border-border/70 pt-4">
+                        <label className="flex min-h-11 cursor-pointer items-start gap-3">
+                            <input type="checkbox" checked={gift.enabled} onChange={gift.handleToggle} className="mt-0.5 h-4 w-4 accent-primary" />
+                            <span>
+                                <span className="block text-sm font-semibold text-ink">{t('gift.toggle')}</span>
+                                <span className="mt-0.5 block text-xs text-ink-muted">{t('gift.toggleHint')}</span>
+                            </span>
+                        </label>
+                        {gift.enabled && <GiftDetailsFields value={gift.details.value} onChangeAction={gift.details.handleChange} />}
+                    </div>
+                )}
 
                 {/* Creation Hint */}
                 <p className="pt-1 text-xs leading-relaxed text-ink-muted">{t('detailsHint')}</p>

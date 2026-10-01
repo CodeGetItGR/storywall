@@ -7,7 +7,6 @@ import { useCallback } from 'react';
 import { type AdminTab, useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { PlatformQueueCallout } from '@/components/admin/PlatformQueueCallout';
 import { useAdminWithdrawals, useUnprocessedWebhooks } from '@/hooks/useAdmin';
-import { cn } from '@/lib/utils';
 
 export function PlatformNeedsAttention() {
     const t = useTranslations('AdminPage');
@@ -20,39 +19,38 @@ export function PlatformNeedsAttention() {
     const heldWithdrawals = (withdrawalsQuery.data ?? []).length;
     const unprocessedWebhooks = (webhooksQuery.data ?? []).length;
     const loading = withdrawalsQuery.isLoading || webhooksQuery.isLoading;
-    const clear = heldWithdrawals === 0 && unprocessedWebhooks === 0;
 
     if (loading) return null;
 
+    if (heldWithdrawals === 0 && unprocessedWebhooks === 0) {
+        return (
+            <p className="flex items-center gap-2 rounded-xl bg-status-good-wash px-4 py-3 text-sm font-semibold text-status-good">
+                <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+                {t('metrics.attentionClear')}
+            </p>
+        );
+    }
+
     return (
-        <div className={cn('flex flex-wrap gap-3', clear && 'text-sm')}>
-            {clear ? (
-                <p className="inline-flex items-center gap-2 border border-status-good-wash bg-status-good-wash px-4 py-3 text-sm font-semibold text-status-good">
-                    <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-                    {t('metrics.attentionClear')}
-                </p>
-            ) : (
-                <>
-                    {heldWithdrawals > 0 && (
-                        <PlatformQueueCallout
-                            label={t('metrics.heldWithdrawals')}
-                            count={heldWithdrawals}
-                            action={t('metrics.openQueue')}
-                            icon={Undo2}
-                            onOpen={openTab('withdrawals')}
-                        />
-                    )}
-                    {unprocessedWebhooks > 0 && (
-                        <PlatformQueueCallout
-                            label={t('metrics.unprocessedWebhooks')}
-                            count={unprocessedWebhooks}
-                            action={t('metrics.openQueue')}
-                            icon={Receipt}
-                            onOpen={openTab('billingOps')}
-                        />
-                    )}
-                </>
+        <ul className="divide-y divide-status-warn/15 overflow-hidden rounded-xl bg-status-warn-wash">
+            {heldWithdrawals > 0 && (
+                <PlatformQueueCallout
+                    label={t('metrics.heldWithdrawals')}
+                    count={heldWithdrawals}
+                    action={t('metrics.openQueue')}
+                    icon={Undo2}
+                    onOpen={openTab('withdrawals')}
+                />
             )}
-        </div>
+            {unprocessedWebhooks > 0 && (
+                <PlatformQueueCallout
+                    label={t('metrics.unprocessedWebhooks')}
+                    count={unprocessedWebhooks}
+                    action={t('metrics.openQueue')}
+                    icon={Receipt}
+                    onOpen={openTab('billingOps')}
+                />
+            )}
+        </ul>
     );
 }

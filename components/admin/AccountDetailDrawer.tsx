@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { AccountAdminActions } from '@/components/admin/AccountAdminActions';
+import { AccountEmailSection } from '@/components/admin/AccountEmailSection';
 import { AccountStatusPill } from '@/components/admin/AccountStatusPill';
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminIdentifier } from '@/components/admin/AdminIdentifier';
@@ -12,10 +13,12 @@ export function AccountDetailDrawer({
     account,
     onCloseAction,
     onProvisionAction,
+    onAccountChangedAction,
 }: {
     account: UserResponseDto;
     onCloseAction: () => void;
     onProvisionAction: (account: UserResponseDto) => void;
+    onAccountChangedAction: (account: UserResponseDto) => void;
 }) {
     const t = useTranslations('AdminPage.accounts.detail');
     const tAccounts = useTranslations('AdminPage.accounts');
@@ -47,6 +50,9 @@ export function AccountDetailDrawer({
                     <AdminIdentifier label={t('accountId')} value={account.id} />
                 </dl>
             </section>
+
+            {/* Email */}
+            {account.status !== 'DELETED' ? <AccountEmailSection account={account} onChangedAction={onAccountChangedAction} /> : null}
 
             <AccountAdminActions account={account} onCompleteAction={onCloseAction} onProvisionAction={onProvisionAction} />
         </AdminDrawer>

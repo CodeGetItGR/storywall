@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, Download, Loader2, VideoOff, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, Flag, Loader2, Trash2, VideoOff, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { CSSProperties, TouchEvent as ReactTouchEvent } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -18,12 +18,17 @@ const SWIPE_RESISTANCE = 0.35;
 interface GalleryViewerProps {
     media: MediaResponseDto | null;
     canDownloadOriginal: boolean;
+    canDelete: boolean;
+    canReport: boolean;
+    reportOpen: boolean;
     originalError: string | null;
     isDownloadingOriginal: boolean;
     hasPrevious: boolean;
     hasNext: boolean;
     onClose: () => void;
     onDownloadOriginal: () => void;
+    onDelete: () => void;
+    onReport: () => void;
     onPrevious: () => void;
     onNext: () => void;
 }
@@ -31,12 +36,17 @@ interface GalleryViewerProps {
 export function GalleryViewer({
     media,
     canDownloadOriginal,
+    canDelete,
+    canReport,
+    reportOpen,
     originalError,
     isDownloadingOriginal,
     hasPrevious,
     hasNext,
     onClose,
     onDownloadOriginal,
+    onDelete,
+    onReport,
     onPrevious,
     onNext,
 }: GalleryViewerProps) {
@@ -68,16 +78,28 @@ export function GalleryViewer({
     );
 
     const triggerPrevious = useCallback(() => {
-        if (!hasPrevious) return;
+        if (!hasPrevious || reportOpen) return;
         setEnterOffset('-100%');
         onPrevious();
-    }, [hasPrevious, onPrevious]);
+    }, [hasPrevious, onPrevious, reportOpen]);
 
     const triggerNext = useCallback(() => {
-        if (!hasNext) return;
+        if (!hasNext || reportOpen) return;
         setEnterOffset('100%');
         onNext();
-    }, [hasNext, onNext]);
+    }, [hasNext, onNext, reportOpen]);
+
+    // A video must not keep playing behind the report dialog. Resume only what we paused.
+    useEffect(() => {
+        if (!reportOpen) return;
+        const element = containerRef.current?.querySelector('video');
+        if (!element || element.paused) return;
+        element.pause();
+        return () => {
+            // On unmount the element is already detached; starting it would play audio off-page.
+            if (element.isConnected) void element.play()?.catch(() => undefined);
+        };
+    }, [reportOpen]);
 
     useEffect(() => {
         if (!media) return;
@@ -280,16 +302,40 @@ export function GalleryViewer({
                     )}
                 </div>
                 {/* Viewer actions */}
-                {canDownloadOriginal && (
-                    <button
-                        type="button"
-                        onClick={onDownloadOriginal}
-                        disabled={isDownloadingOriginal}
-                        className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink disabled:opacity-50"
-                    >
-                        {isDownloadingOriginal ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                        {t('downloadOriginal')}
-                    </button>
+                {(canDownloadOriginal || canDelete || canReport) && (
+                    <div className="flex items-center gap-2">
+                        {canDownloadOriginal && (
+                            <button
+                                type="button"
+                                onClick={onDownloadOriginal}
+                                disabled={isDownloadingOriginal}
+                                className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink disabled:opacity-50"
+                            >
+                                {isDownloadingOriginal ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                                {t('downloadOriginal')}
+                            </button>
+                        )}
+                        {canReport && (
+                            <button
+                                type="button"
+                                onClick={onReport}
+                                className="inline-flex items-center gap-2 rounded-full bg-black/50 px-4 py-2 text-sm font-semibold text-white"
+                            >
+                                <Flag className="h-4 w-4" aria-hidden="true" />
+                                {t('reportMedia')}
+                            </button>
+                        )}
+                        {canDelete && (
+                            <button
+                                type="button"
+                                onClick={onDelete}
+                                className="inline-flex items-center gap-2 rounded-full bg-black/50 px-4 py-2 text-sm font-semibold text-white"
+                            >
+                                <Trash2 className="h-4 w-4" aria-hidden="true" />
+                                {t('deleteMedia')}
+                            </button>
+                        )}
+                    </div>
                 )}
                 {originalError && <p className="text-xs text-rose-200">{originalError}</p>}
             </div>

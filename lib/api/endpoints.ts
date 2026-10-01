@@ -8,7 +8,10 @@ import type { RsvpReportType } from '@/lib/api/types';
 export const endpoints = {
     betaFeedback: {
         bugReports: '/api/bug-reports',
+        bugReportById: (id: string) => `/api/bug-reports/${id}`,
         clientErrors: '/api/error-events/client',
+        errorEvents: '/api/error-events',
+        errorEventById: (id: string) => `/api/error-events/${id}`,
     },
     config: {
         get: '/api/config',
@@ -39,7 +42,9 @@ export const endpoints = {
         profilePicture: '/api/me/profile-picture',
         changePassword: '/api/me/change-password',
         events: '/api/me/events',
+        guidelinesAcceptance: '/api/me/guidelines-acceptance',
         newsletter: '/api/me/newsletter',
+        businessProfile: '/api/me/business-profile',
     },
 
     newsletter: {
@@ -87,6 +92,7 @@ export const endpoints = {
             `/api/events/${eventId}/rsvps/export?reportType=${encodeURIComponent(reportType)}`,
         media: (eventId: string) => `/api/events/${eventId}/media`,
         mediaBatch: (eventId: string) => `/api/events/${eventId}/media/batch`,
+        mediaSummary: (eventId: string) => `/api/events/${eventId}/media/summary`,
         mediaArchiveManifest: (eventId: string, variant: string = 'DISPLAY') =>
             `/api/events/${eventId}/media/archive/manifest?variant=${encodeURIComponent(variant)}`,
         mediaArchive: (eventId: string, part: number, variant: string = 'DISPLAY') =>
@@ -99,6 +105,9 @@ export const endpoints = {
         billing: (eventId: string) => `/api/events/${eventId}/billing`,
         addons: (eventId: string) => `/api/events/${eventId}/addons`,
         giftAccount: (eventId: string) => `/api/events/${eventId}/gift-account`,
+        // Gift mode: GET/PUT the handover, POST issues (or reissues) its claim card.
+        gift: (eventId: string) => `/api/events/${eventId}/gift`,
+        giftCard: (eventId: string) => `/api/events/${eventId}/gift/card`,
         wishbook: (eventId: string) => `/api/events/${eventId}/wishbook`,
         wishbookCount: (eventId: string) => `/api/events/${eventId}/wishbook/count`,
         wishbookExport: (eventId: string) => `/api/events/${eventId}/wishbook/export`,
@@ -112,6 +121,10 @@ export const endpoints = {
         withdrawalPreview: (eventId: string) => `/api/events/${eventId}/withdrawal-preview`,
         // GET (history) and POST (submit) both hit this same path.
         withdrawals: (eventId: string) => `/api/events/${eventId}/withdrawals`,
+        // One upgrade (with every newer one), storage pack or extension; the event stays.
+        orderWithdrawalPreview: (eventId: string, orderId: string) => `/api/events/${eventId}/orders/${orderId}/withdrawal-preview`,
+        orderWithdrawals: (eventId: string, orderId: string) => `/api/events/${eventId}/orders/${orderId}/withdrawals`,
+        quote: (eventId: string) => `/api/events/${eventId}/quote`,
         deletionRequests: (eventId: string) => `/api/events/${eventId}/deletion-requests`,
         deletionRequestOtp: (eventId: string) => `/api/events/${eventId}/deletion-requests/otp`,
         posts: (eventId: string) => `/api/events/${eventId}/posts`,
@@ -120,6 +133,12 @@ export const endpoints = {
         stories: (eventId: string) => `/api/events/${eventId}/stories`,
         playlistSuggestions: (eventId: string) => `/api/events/${eventId}/playlist-suggestions`,
         playlistSuggestionsLeaderboard: (eventId: string) => `/api/events/${eventId}/playlist-suggestions/leaderboard`,
+    },
+
+    // Public preview; the claim needs a verified, non-guest account.
+    giftClaims: {
+        preview: (token: string) => `/api/gift-claims/${token}`,
+        claim: (token: string) => `/api/gift-claims/${token}/claim`,
     },
 
     eventHosts: {
@@ -153,6 +172,7 @@ export const endpoints = {
         create: '/api/event-members',
         byId: (id: string) => `/api/event-members/${id}`,
         claim: (id: string) => `/api/event-members/${id}/claim`,
+        demoAvatar: (id: string) => `/api/event-members/${id}/demo-avatar`,
     },
 
     eventSessions: {
@@ -216,14 +236,18 @@ export const endpoints = {
         create: '/api/post-medias',
     },
 
+    adminModeration: {
+        cases: '/api/admin/moderation/cases',
+        case: (targetType: string, targetId: string) => `/api/admin/moderation/cases/${targetType}/${targetId}`,
+        review: (targetType: string, targetId: string) => `/api/admin/moderation/cases/${targetType}/${targetId}/review`,
+        decision: (targetType: string, targetId: string) => `/api/admin/moderation/cases/${targetType}/${targetId}/decision`,
+        ban: (banId: string) => `/api/admin/moderation/bans/${banId}`,
+        auditLog: '/api/admin/audit-log',
+    },
+
     auditLogs: {
         list: '/api/audit-logs',
         byId: (id: string) => `/api/audit-logs/${id}`,
-    },
-
-    moderationActions: {
-        list: '/api/moderation-actions',
-        byId: (id: string) => `/api/moderation-actions/${id}`,
     },
 
     reports: {
@@ -251,6 +275,13 @@ export const endpoints = {
                 `/api/admin/metrics/calendar/${encodeURIComponent(date)}/events?page=${encodeURIComponent(String(page))}&size=${encodeURIComponent(String(size))}`,
             timeline: (weeks: number) => `/api/admin/metrics/timeline?weeks=${encodeURIComponent(String(weeks))}`,
             costSummary: '/api/admin/metrics/cost-summary',
+            funnel: (since?: string | null, until?: string | null) => {
+                const params = [since ? `since=${encodeURIComponent(since)}` : null, until ? `until=${encodeURIComponent(until)}` : null].filter(
+                    Boolean,
+                );
+                return `/api/admin/metrics/funnel${params.length ? `?${params.join('&')}` : ''}`;
+            },
+            funnelCohorts: (weeks: number) => `/api/admin/metrics/funnel/cohorts?weeks=${encodeURIComponent(String(weeks))}`,
         },
         orders: {
             settle: (orderId: string) => `/api/admin/orders/${orderId}/settle`,
@@ -296,7 +327,6 @@ export const endpoints = {
             codes: (id: string) => `/api/admin/collaborators/${id}/codes`,
             linkCode: (id: string) => `/api/admin/collaborators/${id}/codes/link`,
             earnings: (id: string) => `/api/admin/collaborators/${id}/earnings`,
-            earningsTotals: (id: string) => `/api/admin/collaborators/${id}/earnings/totals`,
         },
         collaborationCodes: {
             byId: (id: string) => `/api/admin/collaboration-codes/${id}`,
@@ -312,6 +342,10 @@ export const endpoints = {
         platformModules: {
             list: '/api/admin/platform-modules',
             byKey: (moduleKey: string) => `/api/admin/platform-modules/${moduleKey}`,
+        },
+        demoEvents: {
+            list: '/api/admin/demo-events',
+            byType: (eventTypeKey: string) => `/api/admin/demo-events/${encodeURIComponent(eventTypeKey)}`,
         },
         platformEventTypes: {
             list: '/api/admin/platform-event-types',
@@ -330,5 +364,13 @@ export const endpoints = {
 
     checkout: {
         previewCode: '/api/checkout/preview-code',
+    },
+
+    // Public. The current version, or one version; locale falls back to en.
+    legal: {
+        withdrawalTerms: ({ version, locale }: { version?: string | null; locale: string }) =>
+            `/api/legal/withdrawal-terms${version ? `/${encodeURIComponent(version)}` : ''}?locale=${encodeURIComponent(locale)}`,
+        communityGuidelines: ({ version, locale }: { version?: string | null; locale: string }) =>
+            `/api/legal/community-guidelines${version ? `/${encodeURIComponent(version)}` : ''}?locale=${encodeURIComponent(locale)}`,
     },
 } as const;

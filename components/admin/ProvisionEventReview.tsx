@@ -4,10 +4,10 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import type { ProvisionEventForm } from '@/hooks/useProvisionEventForm';
-import type { UserResponseDto } from '@/lib/api/types';
+import type { ProvisionHost } from '@/lib/adminAccountProvisioning';
 import { formatDate } from '@/lib/datetime';
 
-export function ProvisionEventReview({ form, host }: { form: ProvisionEventForm; host: UserResponseDto }) {
+export function ProvisionEventReview({ form, host }: { form: ProvisionEventForm; host: ProvisionHost }) {
     const t = useTranslations('AdminPage.accounts.provision');
     const tAdmin = useTranslations('AdminPage');
     const locale = useLocale();

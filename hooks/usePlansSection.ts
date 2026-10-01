@@ -7,6 +7,7 @@ import { useAdminPaidServices, useAdminPlatformEventTypes, useAdminPlatformModul
 import { formatPlansHash, parsePlansHash, type PlansView } from '@/lib/adminPlansRouting';
 import { type Visibility, visibilityOf } from '@/lib/adminVisibility';
 import type { PlanTierResponseDto } from '@/lib/api/types';
+import { pushPageEntry } from '@/lib/overlayHistory';
 
 export type PlanStatusFilterValue = Visibility | 'ALL';
 
@@ -43,7 +44,8 @@ export function usePlansSection() {
 
     const setView = useCallback((next: PlansView) => {
         setViewState(next);
-        window.history.replaceState(null, '', formatPlansHash(next));
+        const hash = formatPlansHash(next);
+        if (window.location.hash !== hash) pushPageEntry(hash);
     }, []);
 
     const orderedEventTypes = useMemo(

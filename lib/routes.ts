@@ -1,16 +1,16 @@
 import type { RsvpReportType } from '@/lib/api/types';
-import { DEMO_EVENT_ID } from '@/lib/demo/demoConstants';
+import { demoEventBasePath } from '@/lib/demo/demoRouting';
 
 type RouteQueryValue = string | number | boolean | null | undefined;
 
 export type CheckoutIntent = 'upgrade' | 'storage' | 'extension';
 // 'billing' is kept as an alias for the plan section so existing links keep working.
-export type ManageTab = 'billing' | 'coverage' | 'danger' | 'help' | 'members' | 'orders' | 'overview' | 'plan' | 'rsvp' | 'settings';
+export type ManageTab = 'billing' | 'coverage' | 'danger' | 'gift' | 'help' | 'members' | 'orders' | 'overview' | 'plan' | 'rsvp' | 'settings';
 
 // The demo event lives outside the real /events/{eventId} tree (which proxy.ts protects
 // behind a real session) — see docs/superpowers/plans/2026-09-05-demo-event.md, design note 1.
 function eventBasePath(eventId: string): string {
-    return eventId === DEMO_EVENT_ID ? '/demo' : `/events/${eventId}`;
+    return demoEventBasePath(eventId) ?? `/events/${eventId}`;
 }
 
 function withQuery(pathname: string, params: Record<string, RouteQueryValue>): string {
@@ -26,6 +26,7 @@ function withQuery(pathname: string, params: Record<string, RouteQueryValue>): s
 }
 
 export const routes = {
+    landing: '/',
     feed: '/feed',
     eventNotFound: '/event-not-found',
     login: '/login',
@@ -33,7 +34,7 @@ export const routes = {
     verifyEmail: '/verify-email',
     forgotPassword: '/forgot-password',
     resetPassword: '/reset-password',
-    demo: '/demo/feed',
+    demo: '/demo',
     invite: '/invite',
     home: '/home',
     profile: '/profile',
@@ -45,6 +46,8 @@ export const routes = {
         // same way the gallery upload code lives on its own page, linked from a
         // compact pointer instead of an embedded panel.
         invitationsQr: (eventId: string) => `${eventBasePath(eventId)}/manage/qr`,
+        // The printable gift claim card.
+        giftCard: (eventId: string) => `${eventBasePath(eventId)}/manage/gift/card`,
         // `from` records where the report was opened from so Close (useRsvpReportPage)
         // can return there; omitted (manage) is the default and carries no param.
         rsvpReport: (eventId: string, reportType: RsvpReportType, from?: 'tools') =>
@@ -73,7 +76,14 @@ export const routes = {
     },
     admin: '/admin',
     notifications: '/notifications',
+    // Public. No version: the current terms; a paid order links the version it acknowledged.
+    legal: {
+        withdrawalTerms: (version?: string | null) => withQuery('/legal/withdrawal-terms', { version }),
+        communityGuidelines: () => '/legal/community-guidelines',
+    },
     inviteToken: (token: string) => `/invite/${token}`,
+    // Public: where a gift card's QR leads.
+    giftClaim: (token: string) => `/gift/${token}`,
     auth: {
         login: (params: { invite?: string | null; email?: string | null; passwordChanged?: string | null; next?: string | null } = {}) =>
             withQuery('/login', params),

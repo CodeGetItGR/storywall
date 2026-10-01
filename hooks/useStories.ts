@@ -7,6 +7,7 @@ import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
 import type { StoryBatchCreateResponseDto, StoryRequestDto, StoryResponseDto, StoryViewResponseDto } from '@/lib/api/types';
+import { LIVE_CONTENT_STALE_TIME } from '@/lib/queryClient';
 
 export const storyKeys = {
     list: (eventId: string) => ['events', eventId, 'stories'] as const,
@@ -29,6 +30,7 @@ export function useEventStories(eventId: string | null) {
             return normalizeList(res).items;
         },
         enabled: Boolean(eventId) && isAuthenticated && storiesReadable,
+        staleTime: LIVE_CONTENT_STALE_TIME,
         refetchInterval,
     });
 }
@@ -41,6 +43,7 @@ export function useStory(id: string | null) {
         queryKey: storyKeys.detail(id ?? ''),
         queryFn: () => api.get<StoryResponseDto>(endpoints.stories.byId(id!)),
         enabled: Boolean(id) && isAuthenticated,
+        staleTime: LIVE_CONTENT_STALE_TIME,
     });
 }
 
@@ -63,9 +66,10 @@ export function useCreateStoriesBatch() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (input: StoryRequestDto[]) => api.post<StoryBatchCreateResponseDto>(endpoints.stories.batch, input),
-        onSuccess: (result, input) => {
-            const eventId = result.created[0]?.eventId ?? input[0]?.eventId;
+        mutationFn: ({ stories, signal }: { stories: StoryRequestDto[]; signal?: AbortSignal }) =>
+            api.post<StoryBatchCreateResponseDto>(endpoints.stories.batch, stories, { signal }),
+        onSuccess: (result, { stories }) => {
+            const eventId = result.created[0]?.eventId ?? stories[0]?.eventId;
             if (eventId) queryClient.invalidateQueries({ queryKey: storyKeys.list(eventId) });
         },
     });

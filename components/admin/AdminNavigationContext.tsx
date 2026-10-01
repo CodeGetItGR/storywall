@@ -2,35 +2,49 @@
 
 import {
     BarChart3,
+    Bug,
     CalendarDays,
     ChartNoAxesCombined,
+    Flag,
     Handshake,
     Layers3,
     type LucideIcon,
+    MonitorPlay,
+    OctagonAlert,
     PackagePlus,
     Receipt,
     Smile,
     TicketPercent,
+    TrendingUp,
     Undo2,
     Users,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
+import { COLLABORATIONS_HASH_ROOT, isCollaborationsHash } from '@/lib/adminCollaborationsRouting';
+import { DEMO_EVENTS_HASH_ROOT, isDemoEventsHash } from '@/lib/adminDemoEventsRouting';
 import { isPlansHash, PLANS_HASH_ROOT } from '@/lib/adminPlansRouting';
+import { isWithdrawalsHash, WITHDRAWALS_HASH_ROOT } from '@/lib/adminWithdrawalsRouting';
+import { pushPageEntry } from '@/lib/overlayHistory';
 
 export type AdminTab =
     | 'metrics'
+    | 'funnel'
     | 'costTracking'
     | 'plans'
     | 'paidServices'
     | 'discountCodes'
     | 'collaborations'
     | 'reactionTypes'
+    | 'demoEvents'
     | 'assignments'
     | 'billingOps'
     | 'withdrawals'
-    | 'accounts';
+    | 'accounts'
+    | 'reports'
+    | 'bugReports'
+    | 'errorEvents';
 
 export type AdminTabItem = {
     key: AdminTab;
@@ -46,33 +60,42 @@ export type AdminFocus = {
     eventId?: string;
     eventTitle?: string;
     orderId?: string;
+    // A 500's reference, carried from a bug report into the Errors list.
+    errorRef?: string;
 };
 
 const HASH_TO_TAB: Record<string, AdminTab> = {
     '#metrics': 'metrics',
+    '#funnel': 'funnel',
     '#cost-tracking': 'costTracking',
     '#paid-services': 'paidServices',
     '#discount-codes': 'discountCodes',
-    '#collaborations': 'collaborations',
     '#reaction-types': 'reactionTypes',
     '#assignments': 'assignments',
     '#billing-ops': 'billingOps',
-    '#withdrawals': 'withdrawals',
     '#accounts': 'accounts',
+    '#reports': 'reports',
+    '#bug-reports': 'bugReports',
+    '#errors': 'errorEvents',
 };
 
 const TAB_TO_HASH: Record<AdminTab, string> = {
     metrics: '#metrics',
+    funnel: '#funnel',
     costTracking: '#cost-tracking',
     plans: PLANS_HASH_ROOT,
     paidServices: '#paid-services',
     discountCodes: '#discount-codes',
-    collaborations: '#collaborations',
+    collaborations: COLLABORATIONS_HASH_ROOT,
     reactionTypes: '#reaction-types',
+    demoEvents: DEMO_EVENTS_HASH_ROOT,
     assignments: '#assignments',
     billingOps: '#billing-ops',
-    withdrawals: '#withdrawals',
+    withdrawals: WITHDRAWALS_HASH_ROOT,
     accounts: '#accounts',
+    reports: '#reports',
+    bugReports: '#bug-reports',
+    errorEvents: '#errors',
 };
 
 const AdminNavigationContext = createContext<
@@ -87,14 +110,24 @@ const AdminNavigationContext = createContext<
     | undefined
 >(undefined);
 
-// `#plans/...` carries its own sub-route (event type or settings view), parsed
-// by the Plans section itself; legacy `#event-plans`, `#modules`, `#event-types`
-// land there too so old links keep working.
+// `#plans/...` and `#collaborations/...` carry their own sub-route, parsed by
+// the section itself; legacy `#event-plans`, `#modules`, `#event-types` land
+// on Plans too so old links keep working.
 function currentHashTab(): AdminTab {
     if (typeof window === 'undefined') return 'metrics';
     const hash = window.location.hash;
     if (isPlansHash(hash)) return 'plans';
+    if (isCollaborationsHash(hash)) return 'collaborations';
+    if (isDemoEventsHash(hash)) return 'demoEvents';
+    if (isWithdrawalsHash(hash)) return 'withdrawals';
     return HASH_TO_TAB[hash] ?? 'metrics';
+}
+
+// Each section is its own Back step. Re-selecting the section already shown
+// adds no entry, so Back never lands on the same view twice.
+function navigateToHash(hash: string) {
+    if (window.location.hash !== hash) pushPageEntry(hash);
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
 }
 
 export function AdminNavigationProvider({ children }: { children: ReactNode }) {
@@ -120,8 +153,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
     const setTab = useCallback((nextTab: AdminTab) => {
         setFocus(null);
         setTabState(nextTab);
-        window.history.replaceState(null, '', TAB_TO_HASH[nextTab]);
-        window.dispatchEvent(new HashChangeEvent('hashchange'));
+        navigateToHash(TAB_TO_HASH[nextTab]);
     }, []);
 
     // A new object on every call on purpose: handing the same event over twice
@@ -129,23 +161,27 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
     const sendTo = useCallback((nextTab: AdminTab, nextFocus: AdminFocus) => {
         setTabState(nextTab);
         setFocus({ ...nextFocus });
-        window.history.replaceState(null, '', TAB_TO_HASH[nextTab]);
-        window.dispatchEvent(new HashChangeEvent('hashchange'));
+        navigateToHash(TAB_TO_HASH[nextTab]);
     }, []);
 
     const tabs = useMemo<AdminTabItem[]>(
         () => [
             { key: 'metrics', label: t('metrics'), icon: BarChart3 },
+            { key: 'funnel', label: t('funnel'), icon: TrendingUp },
             { key: 'costTracking', label: t('costTracking'), icon: ChartNoAxesCombined },
             { key: 'plans', label: t('plans'), icon: CalendarDays },
             { key: 'paidServices', label: t('paidServices'), icon: PackagePlus },
             { key: 'discountCodes', label: t('discountCodes'), icon: TicketPercent },
             { key: 'collaborations', label: t('collaborations'), icon: Handshake },
             { key: 'reactionTypes', label: t('reactionTypes'), icon: Smile },
+            { key: 'demoEvents', label: t('demoEvents'), icon: MonitorPlay },
             { key: 'accounts', label: t('accounts'), icon: Users },
             { key: 'assignments', label: t('assignments'), icon: Layers3 },
             { key: 'billingOps', label: t('billingOps'), icon: Receipt },
             { key: 'withdrawals', label: t('withdrawals'), icon: Undo2 },
+            { key: 'reports', label: t('reports'), icon: Flag },
+            { key: 'bugReports', label: t('bugReports'), icon: Bug },
+            { key: 'errorEvents', label: t('errorEvents'), icon: OctagonAlert },
         ],
         [t],
     );

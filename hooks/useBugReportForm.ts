@@ -9,7 +9,7 @@ import { useSubmitBugReport } from '@/hooks/useSubmitBugReport';
 import { ApiError } from '@/lib/api/client';
 import { ERROR_CODES, getErrorCode, getFieldErrors, isBetaFeedbackDisabledError } from '@/lib/api/errors';
 import type { AppBetaFeedbackConfigDto } from '@/lib/api/types';
-import { BUG_REPORT_DESCRIPTION_MAX, isDescriptionValid, isScreenshotTooLarge } from '@/lib/betaFeedback/bugReport';
+import { BUG_REPORT_DESCRIPTION_MAX, findClipboardImage, isDescriptionValid, isScreenshotTooLarge } from '@/lib/betaFeedback/bugReport';
 
 type ScreenshotProblem = 'tooLarge' | 'unsupported' | null;
 
@@ -39,17 +39,35 @@ export function useBugReportForm({ config, eventId }: { config: AppBetaFeedbackC
 
     const handleDescriptionChange = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(event.target.value), []);
 
-    const handleScreenshotChange = useCallback(
-        (event: React.ChangeEvent<HTMLInputElement>) => {
-            const file = event.target.files?.[0] ?? null;
-            event.target.value = '';
-            if (!file) return;
+    const selectScreenshot = useCallback(
+        (file: File) => {
             setScreenshot(file);
             if (file.type && !config.screenshotMimeTypes.includes(file.type)) setScreenshotProblem('unsupported');
             else if (isScreenshotTooLarge(file, config.screenshotMaxBytes)) setScreenshotProblem('tooLarge');
             else setScreenshotProblem(null);
         },
         [config.screenshotMaxBytes, config.screenshotMimeTypes],
+    );
+
+    const handleScreenshotChange = useCallback(
+        (event: React.ChangeEvent<HTMLInputElement>) => {
+            const file = event.target.files?.[0] ?? null;
+            event.target.value = '';
+            if (file) selectScreenshot(file);
+        },
+        [selectScreenshot],
+    );
+
+    // A pasted image replaces the current screenshot; pasted text is left alone.
+    const handlePaste = useCallback(
+        (event: React.ClipboardEvent<HTMLFormElement>) => {
+            if (submitMutation.isPending) return;
+            const file = findClipboardImage(event.clipboardData);
+            if (!file) return;
+            event.preventDefault();
+            selectScreenshot(file);
+        },
+        [selectScreenshot, submitMutation.isPending],
     );
 
     const removeScreenshot = useCallback(() => {
@@ -85,6 +103,7 @@ export function useBugReportForm({ config, eventId }: { config: AppBetaFeedbackC
         description,
         descriptionMax: BUG_REPORT_DESCRIPTION_MAX,
         handleDescriptionChange,
+        handlePaste,
         handleScreenshotChange,
         handleSubmit,
         isSent,

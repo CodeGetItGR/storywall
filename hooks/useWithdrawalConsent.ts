@@ -3,7 +3,9 @@
 import { type ChangeEvent, useCallback, useState } from 'react';
 
 import { useAppConfig } from '@/hooks/useAppConfig';
+import { useBusinessProfile } from '@/hooks/useBusinessProfile';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
+import { isCheckoutConsentSatisfied } from '@/lib/businessProfile';
 
 /**
  * State and submit-time error handling for the Directive 2011/83/EU right-of-withdrawal
@@ -27,7 +29,9 @@ export function useWithdrawalConsent() {
         setAcknowledgesWithdrawalTerms(event.target.checked);
     }, []);
 
-    const consentSatisfied = requestsImmediateStart && acknowledgesWithdrawalTerms && Boolean(termsVersion);
+    // A VIES-confirmed business buyer has no withdrawal checkboxes to tick.
+    const { isBusiness } = useBusinessProfile();
+    const consentSatisfied = isCheckoutConsentSatisfied({ isBusiness, requestsImmediateStart, acknowledgesWithdrawalTerms, termsVersion });
 
     // Returns true when the error was the stale-terms case, so the caller knows not to
     // also surface a second, generic error message for the same failure.

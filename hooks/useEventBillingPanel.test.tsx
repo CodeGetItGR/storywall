@@ -2,7 +2,7 @@ import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useEventBillingPanel } from '@/hooks/useEventBillingPanel';
-import type { EventBillingResponseDto, UpgradeOptionResponseDto } from '@/lib/api/types';
+import type { EventBillingResponseDto, PriceBreakdown, UpgradeOptionResponseDto } from '@/lib/api/types';
 
 const mocks = vi.hoisted(() => ({
     useAppConfig: vi.fn(),
@@ -27,13 +27,23 @@ const billingData: EventBillingResponseDto = {
     orders: [],
     addons: [],
     discount: null,
+    storageTrimDueAt: null,
 };
 
 const upgradeOption: UpgradeOptionResponseDto = {
     planTierCode: 'WEDDING_PREMIUM',
     planTierName: 'PREMIUM',
     currency: 'EUR',
-    options: [{ coverageOptionId: 'premium-12', months: 12, monthsAdded: 0, gapAmountMinor: 10_000, payableAmountMinor: 8_000 }],
+    options: [
+        {
+            coverageOptionId: 'premium-12',
+            months: 12,
+            monthsAdded: 0,
+            gapAmountMinor: 10_000,
+            payableAmountMinor: 8_000,
+            breakdown: {} as PriceBreakdown,
+        },
+    ],
     discountPercent: null,
     discountLabel: null,
 };
@@ -69,7 +79,16 @@ describe('useEventBillingPanel', () => {
             ...upgradeOption,
             planTierCode: 'WEDDING_ELITE',
             planTierName: 'ELITE',
-            options: [{ coverageOptionId: 'elite-12', months: 12, monthsAdded: 0, gapAmountMinor: 20_000, payableAmountMinor: 20_000 }],
+            options: [
+                {
+                    coverageOptionId: 'elite-12',
+                    months: 12,
+                    monthsAdded: 0,
+                    gapAmountMinor: 20_000,
+                    payableAmountMinor: 20_000,
+                    breakdown: {} as PriceBreakdown,
+                },
+            ],
         };
         mocks.useUpgradeOptions.mockReturnValue(queryResult([upgradeOption, topOption]));
 

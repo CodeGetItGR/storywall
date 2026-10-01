@@ -1,19 +1,29 @@
 'use client';
 
 import { Menu } from '@base-ui/react/menu';
-import { Loader2, MoreHorizontal, Trash2 } from 'lucide-react';
+import { Flag, Loader2, MoreHorizontal, Trash2 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
 type PlaylistItemActionsMenuProps = {
-    deleteLabel: string;
+    deleteLabel?: string;
+    reportLabel?: string;
     disabled: boolean;
     isDeleting: boolean;
     moreLabel: string;
-    onDeleteAction: () => void;
+    onDeleteAction?: () => void;
+    onReportAction?: () => void;
 };
 
-export function PlaylistItemActionsMenu({ deleteLabel, disabled, isDeleting, moreLabel, onDeleteAction }: PlaylistItemActionsMenuProps) {
+export function PlaylistItemActionsMenu({
+    deleteLabel,
+    reportLabel,
+    disabled,
+    isDeleting,
+    moreLabel,
+    onDeleteAction,
+    onReportAction,
+}: PlaylistItemActionsMenuProps) {
     return (
         <Menu.Root>
             <Menu.Trigger
@@ -30,22 +40,33 @@ export function PlaylistItemActionsMenu({ deleteLabel, disabled, isDeleting, mor
             <Menu.Portal>
                 <Menu.Positioner side="bottom" align="end" sideOffset={6} collisionPadding={12} className="z-50">
                     <Menu.Popup className="motion-popover w-48 rounded-2xl border border-border bg-background p-1 shadow-[0_2px_16px_0_rgba(36,31,26,0.15)] outline-none">
-                        <Menu.Item
-                            onClick={onDeleteAction}
-                            disabled={disabled}
-                            className={cn(
-                                'motion-menu-item flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm font-medium text-destructive outline-none',
-                                'hover:bg-destructive/10',
-                                disabled && 'cursor-not-allowed opacity-60',
-                            )}
-                        >
-                            {isDeleting ? (
-                                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                            ) : (
-                                <Trash2 className="h-4 w-4" aria-hidden="true" />
-                            )}
-                            {deleteLabel}
-                        </Menu.Item>
+                        {reportLabel && onReportAction && (
+                            <Menu.Item
+                                onClick={onReportAction}
+                                className="motion-menu-item flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm font-medium text-ink outline-none hover:bg-surface-muted"
+                            >
+                                <Flag className="h-4 w-4" aria-hidden="true" />
+                                {reportLabel}
+                            </Menu.Item>
+                        )}
+                        {deleteLabel && onDeleteAction && (
+                            <Menu.Item
+                                onClick={onDeleteAction}
+                                disabled={disabled}
+                                className={cn(
+                                    'motion-menu-item flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm font-medium text-destructive outline-none',
+                                    'hover:bg-destructive/10',
+                                    disabled && 'cursor-not-allowed opacity-60',
+                                )}
+                            >
+                                {isDeleting ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                                ) : (
+                                    <Trash2 className="h-4 w-4" aria-hidden="true" />
+                                )}
+                                {deleteLabel}
+                            </Menu.Item>
+                        )}
                     </Menu.Popup>
                 </Menu.Positioner>
             </Menu.Portal>

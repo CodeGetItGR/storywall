@@ -9,9 +9,11 @@ import { GallerySelectionActions } from '@/components/gallery/GallerySelectionAc
 import { GallerySelectionBar } from '@/components/gallery/GallerySelectionBar';
 import { GalleryUploadSection } from '@/components/gallery/GalleryUploadSection';
 import { GalleryViewer } from '@/components/gallery/GalleryViewer';
+import { ReportTargetModal } from '@/components/reports/ReportTargetModal';
 import { ModuleNotice } from '@/components/tools/ModuleNotice';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { Button } from '@/components/ui/button';
+import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useGalleryScreen } from '@/hooks/useGalleryScreen';
 import { formatDate } from '@/lib/datetime';
 import { routes } from '@/lib/routes';
@@ -48,6 +50,17 @@ export function GalleryScreen() {
         uploadMediaBatch,
         originalMedia,
         canDownloadOriginal,
+        canDeleteMedia,
+        canReportMedia,
+        reportOpen,
+        openReport,
+        closeReport,
+        confirmDeleteOpen,
+        deleteError,
+        deleteMedia,
+        requestDeleteMedia,
+        closeDeleteConfirm,
+        confirmDeleteMedia,
         canDownloadSelected,
         maxFiles,
         handleFilesChange,
@@ -181,14 +194,48 @@ export function GalleryScreen() {
             <GalleryViewer
                 media={selectedMedia}
                 canDownloadOriginal={canDownloadOriginal}
+                canDelete={canDeleteMedia}
+                canReport={canReportMedia}
+                reportOpen={reportOpen}
                 originalError={originalError}
                 isDownloadingOriginal={originalMedia.isPending}
                 hasPrevious={hasPreviousMedia}
                 hasNext={hasNextMedia}
                 onClose={closeMedia}
                 onDownloadOriginal={downloadOriginal}
+                onDelete={requestDeleteMedia}
+                onReport={openReport}
                 onPrevious={showPreviousMedia}
                 onNext={showNextMedia}
+            />
+
+            {/* Media report */}
+            {selectedMedia && canReportMedia && (
+                <ReportTargetModal
+                    eventId={selectedMedia.eventId}
+                    targetType="MEDIA"
+                    targetId={selectedMedia.id}
+                    open={reportOpen}
+                    layer="overStory"
+                    onCloseAction={closeReport}
+                />
+            )}
+
+            {/* Media delete confirmation */}
+            <ConfirmActionModal
+                open={confirmDeleteOpen}
+                onCloseAction={closeDeleteConfirm}
+                onConfirmAction={confirmDeleteMedia}
+                title={t('deleteMediaConfirmTitle')}
+                body={
+                    <>
+                        {t('deleteMediaConfirmBody')}
+                        {deleteError && <span className="mt-1 block text-destructive">{deleteError}</span>}
+                    </>
+                }
+                confirmLabel={t('deleteMedia')}
+                cancelLabel={t('cancelDelete')}
+                isConfirming={deleteMedia.isPending}
             />
 
             {/* Archive download */}

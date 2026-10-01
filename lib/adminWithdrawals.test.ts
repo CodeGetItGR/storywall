@@ -102,10 +102,13 @@ describe('getKeepEventDayAvailability', () => {
         hostingEnd: null,
         usedSeconds: null,
         totalSeconds: null,
+        windowClosesAt: null,
         eventPerformed: false,
+        keepEventDay: false,
         refundMinor: 0,
         providerRefunded: false,
         components: {},
+        buyerType: 'CONSUMER',
         ...overrides,
     });
     const row = (activatedStartAt: string | null, lines: WithdrawalLine[] = [line()], usageFacts = true): WithdrawalAdminDto =>

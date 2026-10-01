@@ -1,8 +1,10 @@
+import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { LandingMotionToggle } from '@/components/landing/LandingMotionToggle';
 import { LandingNewsletter } from '@/components/landing/LandingNewsletter';
+import { routes } from '@/lib/routes';
 
 // Every in-page anchor here must match an id rendered by a landing section.
 const EXPLORE_LINKS = [
@@ -20,8 +22,9 @@ const COLUMN_ITEM = 'py-1.5 text-[13px] leading-[1.35] text-white';
 
 export async function LandingFooter() {
     const t = await getTranslations('LandingPage.footer');
-    // Social profiles and legal pages have no destinations yet, so their
-    // labels render as plain text rather than dead links.
+    // Social profiles and most legal pages have no destinations yet, so their labels
+    // render as plain text rather than dead links. The Community Guidelines page
+    // exists and is linked.
     const socialLabels = t.raw('socialLinks') as string[];
     const legalLabels = t.raw('legal') as string[];
 
@@ -81,6 +84,9 @@ export async function LandingFooter() {
             <div className="grid grid-cols-[1fr_auto] items-center gap-4 border-t border-white/16 pt-5.5 text-[9px] font-extrabold tracking-widest text-white/62 min-[761px]:grid-cols-[1fr_auto_1fr] min-[761px]:gap-6.5">
                 <span>{t('copyright')}</span>
                 <div className="col-span-2 row-start-2 flex flex-wrap gap-4.5 min-[761px]:col-span-1 min-[761px]:row-start-1">
+                    <Link className="text-white/62 no-underline hover:text-white" href={routes.legal.communityGuidelines()}>
+                        {t('communityGuidelines')}
+                    </Link>
                     {legalLabels.map((label) => (
                         <span key={label}>{label}</span>
                     ))}

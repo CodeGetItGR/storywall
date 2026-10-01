@@ -14,10 +14,12 @@ export function CollaboratorDrawer({
     open,
     collaborator,
     onCloseAction,
+    onSavedAction,
 }: {
     open: boolean;
     collaborator: CollaboratorResponseDto | null;
     onCloseAction: () => void;
+    onSavedAction?: (collaborator: CollaboratorResponseDto) => void;
 }) {
     const t = useTranslations('AdminPage.collaborations');
     const tAdmin = useTranslations('AdminPage');
@@ -25,23 +27,33 @@ export function CollaboratorDrawer({
 
     async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
-        const input = collaboratorRequestFromFormData(new FormData(event.currentTarget), collaborator ?? undefined);
-        await saveCollaborator.mutateAsync({ id: collaborator?.id, input });
+        const input = collaboratorRequestFromFormData(new FormData(event.currentTarget));
+        try {
+            const saved = await saveCollaborator.mutateAsync({ id: collaborator?.id, input });
+            onSavedAction?.(saved);
+            onCloseAction();
+        } catch {
+            // Shown in the form through saveCollaborator.error.
+        }
+    }
+
+    // Clears a failed save so it doesn't reappear the next time the drawer opens.
+    function handleClose() {
+        saveCollaborator.reset();
         onCloseAction();
     }
 
     return (
         <AdminDrawer
             open={open}
-            onClose={onCloseAction}
+            onClose={handleClose}
             closeLabel={tAdmin('cancel')}
             title={collaborator ? t('drawer.editTitle', { name: collaborator.name }) : t('drawer.createTitle')}
-            subtitle={collaborator ? t('drawer.editSubtitle') : t('drawer.createSubtitle')}
             footer={
                 <div className="ml-auto flex items-center gap-2">
                     <button
                         type="button"
-                        onClick={onCloseAction}
+                        onClick={handleClose}
                         className="min-h-9 rounded-md border border-border px-3.5 text-sm font-semibold text-ink-muted"
                     >
                         {tAdmin('cancel')}
@@ -61,18 +73,17 @@ export function CollaboratorDrawer({
             <form id="collaborator-form" onSubmit={handleSubmit} className="space-y-5">
                 {/* Identity */}
                 <AdminField label={t('fields.name')} required>
-                    <input name="name" required maxLength={140} defaultValue={collaborator?.name} className={adminInputClass()} />
+                    <input name="name" required maxLength={200} defaultValue={collaborator?.name} className={adminInputClass()} />
                 </AdminField>
                 <AdminField label={t('fields.contactEmail')} required>
-                    <input name="contactEmail" required type="email" defaultValue={collaborator?.contactEmail} className={adminInputClass()} />
-                </AdminField>
-
-                {/* Status */}
-                <AdminField label={t('fields.status')} required>
-                    <select name="status" defaultValue={collaborator?.status ?? 'ACTIVE'} className={adminInputClass()}>
-                        <option value="ACTIVE">{t('status.ACTIVE')}</option>
-                        <option value="SUSPENDED">{t('status.SUSPENDED')}</option>
-                    </select>
+                    <input
+                        name="contactEmail"
+                        required
+                        type="email"
+                        maxLength={320}
+                        defaultValue={collaborator?.contactEmail}
+                        className={adminInputClass()}
+                    />
                 </AdminField>
 
                 {/* Notes */}

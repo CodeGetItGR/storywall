@@ -31,7 +31,14 @@ export type UnlockDraft = {
     billingPeriod: 'MONTHLY' | 'ONE_TIME';
 };
 
-export function planPatchFromFormData(plan: PlanTierResponseDto, formData: FormData, visibility: Visibility): PlanTierPatchDto {
+// The form's controls that live in state rather than in FormData.
+export type PlanEditorControls = { visibility: Visibility; isGiftable: boolean };
+
+export function planPatchFromFormData(
+    plan: PlanTierResponseDto,
+    formData: FormData,
+    { visibility, isGiftable }: PlanEditorControls,
+): PlanTierPatchDto {
     const flags = visibilityFlags(visibility);
     return {
         name: String(formData.get('name') ?? '').trim(),
@@ -45,6 +52,8 @@ export function planPatchFromFormData(plan: PlanTierResponseDto, formData: FormD
             ? {
                   storageBytes: storageInputToBytes(formData.get('storageAmount'), formData.get('storageUnit')),
                   maxMembers: numberOrNull(formData.get('maxMembers')),
+                  // Gifting only means anything on an EVENT plan.
+                  isGiftable,
               }
             : { priceAmountMinor: priceInputToMinor(formData.get('price')) }),
         priceCurrency: emptyToNull(formData.get('priceCurrency'))?.toUpperCase() ?? null,
@@ -102,6 +111,7 @@ export function planChangeSummary(plan: PlanTierResponseDto, patch: PlanTierPatc
 
     add(t('fields.isAssignable'), booleanLabel(plan.isAssignable), booleanLabel(Boolean(patch.isAssignable)));
     add(t('fields.isPublic'), booleanLabel(plan.isPublic), booleanLabel(Boolean(patch.isPublic)));
+    if (plan.scope === 'EVENT') add(t('fields.isGiftable'), booleanLabel(plan.isGiftable), booleanLabel(patch.isGiftable ?? plan.isGiftable));
 
     return changes;
 }

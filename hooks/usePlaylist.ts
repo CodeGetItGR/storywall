@@ -12,6 +12,7 @@ import type {
     PlaylistVoteRequestDto,
     PlaylistVoteResponseDto,
 } from '@/lib/api/types';
+import { LIVE_CONTENT_STALE_TIME } from '@/lib/queryClient';
 
 export const playlistKeys = {
     suggestions: (eventId: string) => ['events', eventId, 'playlist-suggestions'] as const,
@@ -31,6 +32,7 @@ export function usePlaylistSuggestions(eventId: string | null) {
             return normalizeList(res).items;
         },
         enabled: Boolean(eventId) && isAuthenticated && playlistReadable,
+        staleTime: LIVE_CONTENT_STALE_TIME,
     });
 }
 
@@ -38,7 +40,8 @@ export function useCreatePlaylistSuggestion() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (input: PlaylistSuggestionRequestDto) => api.post<PlaylistSuggestionResponseDto>(endpoints.playlistSuggestions.create, input),
+        mutationFn: ({ signal, ...input }: PlaylistSuggestionRequestDto & { signal?: AbortSignal }) =>
+            api.post<PlaylistSuggestionResponseDto>(endpoints.playlistSuggestions.create, input, { signal }),
         onSuccess: (suggestion) => {
             queryClient.invalidateQueries({
                 queryKey: playlistKeys.suggestions(suggestion.eventId),
@@ -75,6 +78,7 @@ export function usePlaylistVotes(suggestionId: string | null, enabled = true) {
             return normalizeList(res).items;
         },
         enabled: Boolean(suggestionId) && enabled && isAuthenticated,
+        staleTime: LIVE_CONTENT_STALE_TIME,
     });
 }
 
@@ -88,6 +92,7 @@ export function usePlaylistLeaderboard(eventId: string | null, enabled = true) {
             return api.get<PlaylistSuggestionLeaderboardDto[]>(endpoints.events.playlistSuggestionsLeaderboard(eventId!));
         },
         enabled: Boolean(eventId) && enabled && isAuthenticated && playlistReadable,
+        staleTime: LIVE_CONTENT_STALE_TIME,
     });
 }
 

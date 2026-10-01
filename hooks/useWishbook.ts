@@ -11,6 +11,7 @@ import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
 import type { WishbookEntryRequestDto, WishbookEntryResponseDto } from '@/lib/api/types';
 import { downloadBlob } from '@/lib/download';
+import { LIVE_CONTENT_STALE_TIME } from '@/lib/queryClient';
 
 export const WISHBOOK_PAGE_SIZE = 20;
 export const wishbookKeys = {
@@ -29,6 +30,7 @@ export function useWishbook(eventId: string | null) {
         initialPageParam: 0,
         getNextPageParam: (page) => (page.page.number + 1 < page.page.totalPages ? page.page.number + 1 : undefined),
         enabled: Boolean(eventId) && isAuthenticated && wishbookReadable,
+        staleTime: LIVE_CONTENT_STALE_TIME,
     });
 }
 
@@ -40,6 +42,7 @@ export function useWishbookCount(eventId: string | null) {
         queryKey: wishbookKeys.count(eventId ?? ''),
         queryFn: () => api.get<number>(endpoints.events.wishbookCount(eventId!)),
         enabled: Boolean(eventId) && isAuthenticated && wishbookReadable,
+        staleTime: LIVE_CONTENT_STALE_TIME,
     });
 }
 

@@ -3,6 +3,10 @@
 import { useTranslations } from 'next-intl';
 import type { ChangeEvent } from 'react';
 
+import { BusinessPurchaseNotice } from '@/components/checkout/BusinessPurchaseNotice';
+import { useCheckoutBuyer } from '@/hooks/useBusinessProfile';
+import { routes } from '@/lib/routes';
+
 export function WithdrawalConsentSection({
     bodyKey = 'body',
     requestsImmediateStart,
@@ -22,6 +26,12 @@ export function WithdrawalConsentSection({
     // Canonical copy lives under CheckoutReviewPage — this is the one legal-terms
     // namespace, shared by every surface that requires this consent.
     const t = useTranslations('CheckoutReviewPage');
+    const buyer = useCheckoutBuyer();
+
+    // A VIES-confirmed business buyer has no consumer right of withdrawal.
+    if (buyer.notice === 'business') {
+        return <BusinessPurchaseNotice legalName={buyer.legalName} vatNumber={buyer.vatNumber} staleTerms={staleTerms} />;
+    }
 
     return (
         <section className="rounded-lg border border-border bg-surface-muted/40 p-4" aria-labelledby="withdrawal-terms-title">
@@ -29,6 +39,19 @@ export function WithdrawalConsentSection({
                 {t('withdrawalTerms.title')}
             </h2>
             <p className="mt-1 text-sm leading-relaxed text-ink-muted">{t(`withdrawalTerms.${bodyKey}`)}</p>
+            {/* Terms link */}
+            <a
+                href={routes.legal.withdrawalTerms()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1 inline-flex min-h-8 items-center text-xs font-semibold text-primary-dark underline underline-offset-2"
+            >
+                {t('withdrawalTerms.link')}
+            </a>
+            {/* Unconfirmed business profile */}
+            {(buyer.notice === 'pending' || buyer.notice === 'invalid') && (
+                <p className="mt-2 text-xs font-semibold text-amber-700">{t(`businessPurchase.${buyer.notice}`)}</p>
+            )}
             <label className="mt-3 flex items-start gap-2.5 text-sm">
                 <input
                     type="checkbox"

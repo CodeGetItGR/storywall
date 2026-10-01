@@ -25,7 +25,7 @@ export function MobileTabBar() {
     const searchParams = useSearchParams().toString();
     const { canComposePost, canComposeStory, canComposeSong } = useComposer();
     const { open: accountOpen, openAccount } = useAccountPanel();
-    const { isMobileTabBarHidden } = useMobileChrome();
+    const { isComposerFabHidden, isMobileTabBarHidden } = useMobileChrome();
     const hasOpenOverlay = useHasOpenOverlay();
     const activeEvent = useActiveEvent();
     const isHost = useIsHost();
@@ -172,7 +172,7 @@ export function MobileTabBar() {
             </div>
 
             {/* Compose */}
-            {showComposerFab && <ComposerFab hidden={hasOpenOverlay} />}
+            {showComposerFab && <ComposerFab hidden={hasOpenOverlay || isComposerFabHidden} />}
         </>
     );
 }

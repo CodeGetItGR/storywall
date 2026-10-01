@@ -44,6 +44,43 @@ vi.mock('@/hooks/useBilling', () => {
         useStorageCheckout: () => ({ ...idle, mutateAsync: mocks.storageMutate }),
         useExtensionOptions: () => ({ isLoading: false, error: null, refetch: vi.fn(), data: undefined }),
         useExtensionCheckout: () => idle,
+        useEventQuote: () => ({
+            isLoading: false,
+            error: null,
+            data: {
+                kind: 'STORAGE_PACK',
+                currency: 'EUR',
+                buyerType: 'CONSUMER',
+                coverage: { optionId: 'o', months: 12, monthsAdded: null, endsAt: null, endsAtProjected: false },
+                items: [
+                    {
+                        code: 'STORAGE_PACK',
+                        labelKey: 'billing.item.storagePack',
+                        name: '5 GB',
+                        listMinor: 500,
+                        discountMinor: 0,
+                        priceMinor: 500,
+                        withdrawal: 'PRO_RATA_BY_TIME',
+                        performedAt: null,
+                        months: null,
+                        monthsAdded: null,
+                        paidServiceCode: 'STORAGE_5GB',
+                        planTierCode: null,
+                        storageBytes: 5368709120,
+                    },
+                ],
+                discounts: [],
+                combinedDiscountPercent: 0,
+                discountCapPercent: 30,
+                capApplied: false,
+                listTotalMinor: 500,
+                discountTotalMinor: 0,
+                totalMinor: 500,
+                vat: { included: true, note: 'billing.vat.included' },
+                termsVersion: '2026-09-24',
+                withdrawal: { available: true, windowDays: 14, windowClosesAt: null },
+            },
+        }),
     };
 });
 
@@ -52,6 +89,12 @@ vi.mock('@/hooks/useEvent', () => ({
 }));
 
 vi.mock('@/hooks/useIsPrimaryHost', () => ({ useIsPrimaryHost: () => true }));
+
+// A consumer buyer: no business profile.
+vi.mock('@/hooks/useBusinessProfile', () => ({
+    useBusinessProfile: () => ({ canHaveProfile: true, isBusiness: false, isLoading: false, profile: null }),
+    useCheckoutBuyer: () => ({ notice: null, legalName: '', vatNumber: '' }),
+}));
 
 vi.mock('@/hooks/useResetOnBfcacheRestore', () => ({ useResetOnBfcacheRestore: () => undefined }));
 
@@ -66,6 +109,14 @@ describe('CheckoutReviewBoundary — storage pack', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mocks.storageMutate.mockResolvedValue({ orderId: 'order-1', redirectUrl: 'https://pay.example/1' });
+    });
+
+    it('shows the quoted breakdown with each item rule, the VAT note and the withdrawal window', () => {
+        render(<CheckoutReviewBoundary />);
+
+        expect(screen.getByText('items.storagePack')).toBeInTheDocument();
+        expect(screen.getByText('rules.PRO_RATA_BY_TIME')).toBeInTheDocument();
+        expect(screen.getByText('vatIncluded withdrawWithin')).toBeInTheDocument();
     });
 
     it('asks for withdrawal consent before a storage pack can be bought', () => {

@@ -105,18 +105,46 @@ form for RSVP counts gets built later.
 
 ---
 
-## 11. Withdrawal preview — "schedule moved after payment" flag — OPEN (2026-09-21)
+## 11. Withdrawal preview — "schedule moved after payment" flag — ✅ RESOLVED (2026-09-23)
 
-The billing guide (§ price split, "Changed 2026-09-21") says the host confirmation dialog can warn
-that a withdrawal on a rescheduled event will be reviewed by a person, but the preview response
-does not flag this and `activatedStartAt` is not on the host DTO, so the FE has nothing to
-compare. The guide offers to add a flag on request.
+BE added `scheduleMovedAfterPayment: boolean` (required) to the withdrawal previews. The FE shows
+the "reviewed by a person" line when it is `true` (`components/manage/billing/OrderWithdrawalDetails.tsx`).
 
-**FE side is already wired:** `WithdrawalPreviewResponseDto.scheduleMovedAfterPayment?: boolean`
-(optional) — when the server sends `true`, `WithdrawalPanel` appends the "reviewed by a person"
-line to the confirmation body. Nothing renders until BE publishes the field.
+## 12. Coverage extension item label — OPEN (2026-09-28)
 
-**Ask BE:** add `scheduleMovedAfterPayment: boolean` to `GET /api/events/{id}/withdrawal-preview`.
+`withdrawal-compliance-phase4` adds withdrawal for coverage extensions, but gives no copy for the
+extension line item. The FE uses its own wording for `billing.item.coverageExtension`.
+
+**Ask BE:** what is the exact label text for a coverage extension line item?
+
+## 13. `withdrawal.windowClosesAt` on orders — OPEN (2026-09-28)
+
+The types say `windowClosesAt` is null in quotes and previews, but the guide decides eligibility
+with `now < windowClosesAt`. The FE shows "Withdraw" only when it is set and in the future, and
+falls back to the per-order preview when an order has no breakdown.
+
+**Ask BE:** is `windowClosesAt` always filled on PAID orders in the billing view?
+
+## 14. Withdrawal form name and email — OPEN (2026-09-28)
+
+The phase 4 guide (§6) describes a form with the host's name and email, but the withdraw request
+body has no field for them. The FE shows both read-only in the confirmation step.
+
+**Ask BE:** is showing them read-only enough, or should the request carry them?
+
+## 15. VIES pending window — OPEN (2026-09-28)
+
+The business-buyer copy for a PENDING VAT check says "3 days", hardcoded on the FE.
+
+**Ask BE:** is `app.vies.max-pending-days` exposed anywhere (e.g. app config), so the copy can follow it?
+
+## 16. Beta feedback guide — types path — OPEN (2026-09-28)
+
+`beta-feedback-fe-integration.md` points to `docs/frontend-api-types.ts`; the file is at
+`docs/integration guides/frontend-api-types.ts`. No behavior mismatch was found in local testing
+(bug report 201, client error 204).
+
+**Ask BE:** fix the path in the guide.
 
 ## Extra — module gating — MOOT (2026-09-24)
 
@@ -172,3 +200,57 @@ notifications is disabled by default, so the feed is empty until ops enables it.
 Absent that, the biggest "hook exists, nobody calls it" gap is the co-host management UI (the
 event-modules management UI is moot: modules are plan-owned). Newly available and unwired: the plan/usage screens
 (`GET /api/events/{id}/usage`, `GET /api/me/usage`).
+
+## Demo snapshot (`GET /api/demo/{eventTypeKey}`) — 2026-09-28
+
+1. **ETag vs presigned URLs.** The guide says to re-fetch with `If-None-Match` before
+   `presignedUrlsValidUntil` to get fresh media URLs. If the ETag covers the URLs (and
+   `snapshotAt`), it changes on every request and a 304 never happens. If it doesn't cover them, a
+   304 means "nothing changed" but hands back no new URLs, and the old ones still expire. Which is
+   it? The FE currently treats a 304 as "keep the current URLs" and stops refreshing.
+2. **CORS: expose `ETag`.** The snapshot is fetched cross-origin from the browser. Without
+   `Access-Control-Expose-Headers: ETag`, JS can't read the ETag, so `If-None-Match` is never sent.
+   Local backend doesn't send that header today.
+3. **QR stats and billing aren't in the snapshot.** `GET /qr-links/stats` and `GET /billing` are
+   derived locally (zero scans/uploads; plan name from `/api/config`). Should the snapshot include
+   them?
+4. **Which event types have a demo?** There is no list endpoint that's public, so the FE can only
+   learn about a 404 by opening the demo. A public `GET /api/demo` (keys only) would let the
+   landing page hide the entry point without spending the per-IP budget.
+5. **Wishbook count.** The snapshot caps `wishbookEntries` at 200; `GET /wishbook/count` is
+   computed from that list, so it's wrong for bigger demos. Same for posts (newest 50).
+
+## Admin conversion funnel (`GET /api/admin/metrics/funnel`, `/funnel/cohorts`) — 2026-09-29
+
+1. **`paidEvents` add-on counts.** Is `withUpgrade` (and `withStoragePack`, `withExtension`) "events
+   activated in the range that have that add-on, bought at any time", or "that add-on bought in
+   the range"? The FE shows each as a share of `paidEvents.count`, which is only meaningful for
+   the first reading.
+2. **`paidEvents.medianGuests` / `medianUploads`.** Median over all paid events in the range, or
+   only the ended ones? An upcoming event pulls the median down, so it matters for reading it.
+3. **`revenue.totals[].payingAccounts` across currencies.** An account that paid in EUR and in USD:
+   counted once in each currency's row? The FE shows one card per currency and never adds rows,
+   so a yes is fine, but the admin can't tell from the page.
+4. **`accounts.byLocale` for an account with no locale.** Is it left out, or sent under a key such
+   as `null` or `""`? The FE renders unknown keys as sent, so an empty key would show as a blank
+   row.
+5. **Date ranges are in UTC.** The FE sends `since`/`until` as UTC midnights (`until` exclusive,
+   next day). For an admin in Athens, "30 Sep" therefore ends at 03:00 local time on 1 Oct.
+   Confirm UTC is the intended calendar for these windows (cohort weeks already are).
+6. **Guide path.** The type comments point at `docs/fe-guides/admin-funnel-metrics-fe-integration.md`;
+   in this repo the file lives in `docs/integration guides/`. Nothing to change on the BE, noted so
+   the next sync doesn't look like a missing file.
+
+**Answered by the backend 2026-09-29:**
+
+1. Add-ons: events whose activation was paid in the range and that have the add-on, bought at any
+   time. A refunded add-on doesn't count, an admin-settled one does. Share of paid events is right.
+2. Medians now cover ended paid events only (changed 2026-09-29) and are null when none ended.
+   The UI labels them "Over ended events" and shows "—" when null.
+3. `payingAccounts` is distinct per currency, so an account can appear in several cards. The UI
+   says so when more than one currency is shown and never adds cards together.
+4. `locale` is NOT NULL, defaults to `en`, and only `en`/`el` exist. The UI always lists both.
+5. Send the admin's local midnight with its offset. Done: `until=2026-10-01T00:00:00+03:00` for
+   "up to 30 Sep" in Athens. Cohort weeks stay Monday 00:00 UTC (stated in the chart caption);
+   the 7/30-day activity windows count back from now.
+6. Noted by the backend.

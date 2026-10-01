@@ -5,6 +5,7 @@ import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
 import type { ReactionRequestDto, ReactionResponseDto } from '@/lib/api/types';
+import { LIVE_CONTENT_STALE_TIME } from '@/lib/queryClient';
 
 export const reactionKeys = {
     list: (postId: string) => ['posts', postId, 'reactions'] as const,
@@ -23,6 +24,7 @@ export function usePostReactions(postId: string | null) {
         queryKey: reactionKeys.list(postId ?? ''),
         queryFn: () => fetchPostReactions(postId!),
         enabled: Boolean(postId) && isAuthenticated,
+        staleTime: LIVE_CONTENT_STALE_TIME,
     });
 }
 

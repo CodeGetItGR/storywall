@@ -1,6 +1,7 @@
 import { ApiError } from '@/lib/api/client';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type { EventModuleResponseDto, GalleryModuleConfiguration, QrLinkResolutionDto, QrLinkResponseDto } from '@/lib/api/types';
+import { routes } from '@/lib/routes';
 
 export type QrTerminalCopyKey = 'unknown' | 'revoked' | 'expired' | 'unavailable';
 
@@ -13,6 +14,20 @@ export function getQrTerminalCopyKey(resolution?: QrLinkResolutionDto | null, er
     if (resolution?.status === 'EXPIRED') return 'expired';
     if (resolution?.status === 'TARGET_UNAVAILABLE') return 'unavailable';
     return 'unknown';
+}
+
+// Where a scanned link that leads to an invitation sends the visitor, or null
+// when the QR page renders something itself. The shared join link goes straight
+// to sign-up for a newcomer, but a signed-in visitor goes to the invite page:
+// /register would bounce them to /home and drop the invitation.
+export function getQrRedirectPath(resolution: QrLinkResolutionDto | null | undefined, isAuthenticated: boolean): string | null {
+    if (resolution?.status !== 'ACTIVE' || !resolution.inviteToken) return null;
+
+    if (resolution.targetType === 'INVITATION') return routes.inviteToken(resolution.inviteToken);
+    if (resolution.targetType === 'EVENT_JOIN') {
+        return isAuthenticated ? routes.inviteToken(resolution.inviteToken) : routes.auth.register({ invite: resolution.inviteToken });
+    }
+    return null;
 }
 
 // The event's gallery upload QR code — whichever MEDIA_UPLOAD link hasn't been

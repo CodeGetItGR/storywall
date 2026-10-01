@@ -33,7 +33,7 @@ export function BillingAddonsSection({
                         href={routes.events.settingsAddons(eventId)}
                         className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full bg-surface-muted px-4 text-xs font-semibold text-ink"
                     >
-                        {t('manageAction')}
+                        {t(addons.length > 0 ? 'manageAction' : 'addStorage')}
                     </Link>
                 )
             }
@@ -46,10 +46,13 @@ export function BillingAddonsSection({
                             key={`${addon.code}-${addon.activatedAt}-${index}`}
                             className="rounded-full bg-surface-muted px-2.5 py-1 text-xs font-semibold text-ink"
                         >
-                            {t(addon.billingPeriod === 'ONE_TIME' ? 'itemOnce' : 'item', {
-                                name: addon.name,
-                                price: formatMoney(locale, addon.priceAmountMinor, currency),
-                            })}
+                            {/* On a gift event, an add-on another host paid has no price */}
+                            {addon.priceAmountMinor === null
+                                ? t('itemGift', { name: addon.name })
+                                : t(addon.billingPeriod === 'ONE_TIME' ? 'itemOnce' : 'item', {
+                                      name: addon.name,
+                                      price: formatMoney(locale, addon.priceAmountMinor, currency),
+                                  })}
                         </li>
                     ))}
                 </ul>

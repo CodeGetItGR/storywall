@@ -8,6 +8,7 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { usePreviewCreateEventCode } from '@/hooks/useBilling';
+import { useCreateEventGift } from '@/hooks/useCreateEventGift';
 import { useDurationPicks } from '@/hooks/useDurationPicks';
 import { useCreateEvent, useUpdateEvent } from '@/hooks/useEvent';
 import { useMe } from '@/hooks/useMe';
@@ -20,7 +21,7 @@ import { ERROR_CODES, getErrorCode, getFieldErrors } from '@/lib/api/errors';
 import type { CheckoutResponseDto, CollaborationCodePreviewResponseDto, EventRequestDto, EventTypeConvention } from '@/lib/api/types';
 import { navigateToCheckout } from '@/lib/billing';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
-import { getScheduleDatetimeLocalBounds, isDatetimeLocalAfter, isDatetimeLocalBefore } from '@/lib/datetime';
+import { eventWindowFromLocalStart, getScheduleDatetimeLocalBounds, isDatetimeLocalAfter, isDatetimeLocalBefore } from '@/lib/datetime';
 import { projectCoverage } from '@/lib/eventCoverage';
 import { liveInitialOptions, resolveInitialOption } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
@@ -66,7 +67,9 @@ export function useCreateEventFormController(): CreateEventFormValue {
     const [createdDraftEventId, setCreatedDraftEventId] = useState<string | null>(null);
     // What the draft was created with, so a duration changed afterwards is
     // saved to it before checkout.
-    const [createdDraftSelection, setCreatedDraftSelection] = useState<{ planCode: string; optionId: string } | null>(null);
+    const [createdDraftSelection, setCreatedDraftSelection] = useState<{ planCode: string; optionId: string; startAt: string } | null>(null);
+    // Checkout refused the draft because its start date has passed (3035).
+    const [startPassed, setStartPassed] = useState(false);
     const updateDraft = useUpdateEvent(createdDraftEventId);
     const [checkoutCode, setCheckoutCode] = useState('');
     const [appliedCheckoutCode, setAppliedCheckoutCode] = useState<string | null>(null);
@@ -96,6 +99,8 @@ export function useCreateEventFormController(): CreateEventFormValue {
     const selectedPlan = eventPlans.find((plan) => plan.code === selectedPlanCode) ?? eventPlans[0];
     const selectedCode = selectedPlan?.code ?? selectedPlanCode;
     const selectedOption = selectedPlan ? resolveInitialOption(selectedPlan, durationPicks.picks[selectedPlan.code]) : null;
+    const gift = useCreateEventGift(selectedPlan);
+    const { reset: resetGift, saveToDraft: saveGiftToDraft } = gift;
     const initialSessionTitleKey = getCreateEventCatalogEntry(selectedEventType)?.initialSessionTitleKey;
     const initialSessionTitle = initialSessionTitleKey && t.has(initialSessionTitleKey) ? t(initialSessionTitleKey) : undefined;
     const timezoneOptions = useMemo(() => getSupportedTimezones(), []);
@@ -121,7 +126,9 @@ export function useCreateEventFormController(): CreateEventFormValue {
 
     const canReachPlan = eventTypes.length > 0;
     const canReachDetails = canReachPlan && Boolean(selectedCode && selectedOption);
-    const canSubmitDetails = Boolean(trimmedTitle && startAt && isTimezoneValid && !scheduleError && trimmedLocationName && trimmedLocationAddress);
+    const canSubmitDetails = Boolean(
+        trimmedTitle && startAt && isTimezoneValid && !scheduleError && trimmedLocationName && trimmedLocationAddress && gift.isValid,
+    );
     const canReachOverview = canReachDetails && canSubmitDetails;
     const reachableStep: CreateEventStep = canReachOverview ? 'overview' : canReachDetails ? 'details' : canReachPlan ? 'plan' : 'type';
 
@@ -161,11 +168,12 @@ export function useCreateEventFormController(): CreateEventFormValue {
             setError(null);
             setCreatedDraftEventId(null);
             setCreatedDraftSelection(null);
+            resetGift();
             durationPicks.resetPicks();
             setCheckoutCode('');
             setIsCheckoutPending(false);
         },
-        [durationPicks, eventType],
+        [durationPicks, eventType, resetGift],
     );
 
     const onTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value), []);
@@ -236,6 +244,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
         async (e: React.SubmitEvent<HTMLFormElement>) => {
             e.preventDefault();
             setError(null);
+            setStartPassed(false);
             if (step === 'details') {
                 if (canSubmitDetails) goToStep('overview');
                 return;
@@ -268,7 +277,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
                     const event = await createEvent.mutateAsync(input);
                     eventId = event.id;
                     setCreatedDraftEventId(event.id);
-                    setCreatedDraftSelection({ planCode: selectedCode, optionId: selectedOption.id });
+                    setCreatedDraftSelection({ planCode: selectedCode, optionId: selectedOption.id, startAt });
                 } catch (err) {
                     setIsCheckoutPending(false);
                     if (Object.keys(getFieldErrors(err) ?? {}).length > 0) {
@@ -280,18 +289,35 @@ export function useCreateEventFormController(): CreateEventFormValue {
                 }
             }
 
-            // The draft exists already: a duration picked since then is saved to
-            // it first, because checkout charges the draft's duration.
-            if (createdDraftSelection?.planCode === selectedCode && createdDraftSelection.optionId !== selectedOption.id) {
+            // The draft exists already: a duration or start picked since then is saved
+            // to it first, because checkout charges the draft's duration and dates.
+            const durationChanged = createdDraftSelection?.planCode === selectedCode && createdDraftSelection.optionId !== selectedOption.id;
+            const startChanged = Boolean(createdDraftSelection && createdDraftSelection.startAt !== startAt);
+            if (createdDraftSelection && (durationChanged || startChanged)) {
+                const dates = startChanged ? eventWindowFromLocalStart(startAt) : null;
                 try {
                     setIsCheckoutPending(true);
-                    await updateDraft.mutateAsync({ coverageOptionId: selectedOption.id });
-                    setCreatedDraftSelection({ planCode: selectedCode, optionId: selectedOption.id });
+                    await updateDraft.mutateAsync({ ...(durationChanged ? { coverageOptionId: selectedOption.id } : {}), ...(dates ?? {}) });
+                    setCreatedDraftSelection({
+                        planCode: createdDraftSelection.planCode,
+                        optionId: durationChanged ? selectedOption.id : createdDraftSelection.optionId,
+                        startAt,
+                    });
                 } catch (updateError) {
                     setIsCheckoutPending(false);
                     setError(toErrorMessage(updateError));
                     return;
                 }
+            }
+
+            // A gift is declared on the draft before paying for it.
+            try {
+                setIsCheckoutPending(true);
+                await saveGiftToDraft(eventId);
+            } catch (giftError) {
+                setIsCheckoutPending(false);
+                setError(toErrorMessage(giftError));
+                return;
             }
 
             setIsCheckoutPending(true);
@@ -309,6 +335,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
                 // The duration was retired after it was picked: reload the plans
                 // so the host can choose one that is still on sale.
                 if (getErrorCode(checkoutError) === ERROR_CODES.COVERAGE_OPTION_UNAVAILABLE) void planTiersQuery.refetch();
+                setStartPassed(getErrorCode(checkoutError) === ERROR_CODES.EVENT_START_PASSED);
                 setError(toErrorMessage(checkoutError));
             }
         },
@@ -324,6 +351,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
             isEmailVerified,
             mapsUrl,
             planTiersQuery,
+            saveGiftToDraft,
             selectedCode,
             selectedEventType,
             selectedOption,
@@ -389,6 +417,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
 
         trimmedTitle,
         error,
+        startPassed,
         hasDraft: Boolean(createdDraftEventId),
         checkoutCode,
         appliedCheckoutCode,
@@ -405,7 +434,9 @@ export function useCreateEventFormController(): CreateEventFormValue {
         onRequestsImmediateStartChange: consent.handleRequestsImmediateStartChange,
         onAcknowledgesWithdrawalTermsChange: consent.handleAcknowledgesWithdrawalTermsChange,
 
-        isSubmitPending: createEvent.isPending || updateDraft.isPending || isCheckoutPending,
+        gift,
+
+        isSubmitPending: createEvent.isPending || updateDraft.isPending || gift.isSaving || isCheckoutPending,
         isEmailVerified,
     };
 }

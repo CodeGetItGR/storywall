@@ -16,20 +16,22 @@ export function PlatformQueueCallout({
     onOpen: () => void;
 }) {
     return (
-        <button
-            type="button"
-            onClick={onOpen}
-            className="group flex min-w-0 flex-1 items-center gap-3 border border-status-warn-wash bg-status-warn-wash px-4 py-3 text-left transition hover:opacity-90"
-        >
-            <Icon className="h-5 w-5 shrink-0 text-status-warn" aria-hidden="true" />
-            <span className="min-w-0 flex-1">
-                <span className="block text-lg leading-tight font-bold text-status-warn tabular-nums">{formatCount(count)}</span>
-                <span className="block truncate text-xs font-semibold text-status-warn">{label}</span>
-            </span>
-            <span className="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-status-warn group-hover:underline">
-                {action}
-                <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </span>
-        </button>
+        <li>
+            <button
+                type="button"
+                onClick={onOpen}
+                className="group flex w-full items-center gap-3 px-4 py-3 text-left text-status-warn transition hover:bg-status-warn/5"
+            >
+                <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span className="min-w-0 flex-1 truncate text-sm">
+                    <span className="mr-1.5 font-bold tabular-nums">{formatCount(count)}</span>
+                    <span className="font-semibold">{label}</span>
+                </span>
+                <span className="inline-flex shrink-0 items-center gap-1 text-xs font-bold group-hover:underline">
+                    {action}
+                    <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                </span>
+            </button>
+        </li>
     );
 }

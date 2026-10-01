@@ -80,6 +80,10 @@ export function sortWithdrawalSignals(signals: WithdrawalFraudSignalDto[]): With
     return [...signals].sort((a, b) => Number(b.fired) - Number(a.fired));
 }
 
+export function countFiredSignals(signals: WithdrawalFraudSignalDto[]): number {
+    return signals.filter((signal) => signal.fired).length;
+}
+
 // --- Usage facts ---
 
 // Only the facts no signal already states. Guests, media, prior withdrawals,

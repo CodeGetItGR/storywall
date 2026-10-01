@@ -7,6 +7,7 @@ import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
 import type { MediaBatchUploadResponseDto, MediaResponseDto, MediaUploadContext, OriginalMediaUrlDto } from '@/lib/api/types';
+import { LIVE_CONTENT_STALE_TIME } from '@/lib/queryClient';
 
 export const mediaKeys = {
     list: (eventId: string) => ['events', eventId, 'media'] as const,
@@ -28,6 +29,7 @@ export function useEventMedia(eventId: string | null) {
         initialPageParam: 0,
         getNextPageParam: (lastPage) => (lastPage.page.number + 1 < lastPage.page.totalPages ? lastPage.page.number + 1 : undefined),
         enabled: Boolean(eventId) && isAuthenticated && galleryReadable,
+        staleTime: LIVE_CONTENT_STALE_TIME,
         refetchInterval,
     });
 }
@@ -41,6 +43,7 @@ export function useMediaItem(id: string | null) {
         queryKey: mediaKeys.detail(id ?? ''),
         queryFn: () => api.get<MediaResponseDto>(endpoints.medias.byId(id!)),
         enabled: Boolean(id) && isAuthenticated,
+        staleTime: usePresignedUrlRefreshMs(),
     });
 }
 
@@ -74,6 +77,7 @@ interface UploadMediaBatchInput {
     eventId: string;
     files: File[];
     context?: MediaUploadContext;
+    signal?: AbortSignal;
 }
 
 // POST /api/events/{eventId}/media/batch (multipart/form-data, repeated
@@ -85,11 +89,11 @@ export function useUploadMediaBatch() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ eventId, files, context = 'GALLERY' }: UploadMediaBatchInput) => {
+        mutationFn: ({ eventId, files, context = 'GALLERY', signal }: UploadMediaBatchInput) => {
             const formData = new FormData();
             files.forEach((file) => formData.append('files', file));
             formData.append('context', context);
-            return api.postForm<MediaBatchUploadResponseDto>(endpoints.events.mediaBatch(eventId), formData);
+            return api.postForm<MediaBatchUploadResponseDto>(endpoints.events.mediaBatch(eventId), formData, { signal });
         },
         onSuccess: (result, { eventId }) => {
             if (result.created.length > 0) {
@@ -99,15 +103,16 @@ export function useUploadMediaBatch() {
     });
 }
 
-export async function pollMediaUntilProcessed(id: string): Promise<MediaResponseDto> {
+export async function pollMediaUntilProcessed(id: string, signal?: AbortSignal): Promise<MediaResponseDto> {
     const maxAttempts = 30;
     for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-        const media = await api.get<MediaResponseDto>(endpoints.medias.byId(id));
+        const media = await api.get<MediaResponseDto>(endpoints.medias.byId(id), { signal });
 
         if (media.status !== 'PROCESSING') return media;
         await new Promise((resolve) => window.setTimeout(resolve, 2000));
+        signal?.throwIfAborted();
     }
-    return await api.get<MediaResponseDto>(endpoints.medias.byId(id));
+    return await api.get<MediaResponseDto>(endpoints.medias.byId(id), { signal });
 }
 
 export function useOriginalMedia() {
