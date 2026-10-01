@@ -3935,7 +3935,12 @@
         "withdrawalConfirmationInvalid": "We couldn't confirm this withdrawal. Check the refund and confirm again.",
         "withdrawalPreviewStale": "The refund amount has changed. Check it and confirm again.",
         "orderNotManual": "Only manual orders can be settled by hand.",
-        "hostTransferPaymentInProgress": "A payment on this event is still in progress. Try again in a minute."
+        "hostTransferPaymentInProgress": "A payment on this event is still in progress. Try again in a minute.",
+        "moderationDecisionInvalid": "This action doesn't apply to this item.",
+        "eventBanned": "You can't join this event.",
+        "moderationCaseClosed": "This case has already been decided.",
+        "moderationMemberIsHost": "Hosts can't be removed from their event. Suspend the account instead.",
+        "moderationTargetProtected": "Admin accounts can't be suspended here."
     },
     "LandingPage": {
         "shell": {
