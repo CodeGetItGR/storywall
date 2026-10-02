@@ -12,8 +12,10 @@ import {
     hasOrderFilters,
     isOrderRangeInvalid,
     lastMonthRange,
+    orderActivity,
     parseOrdersHash,
 } from '@/lib/adminOrders';
+import type { AdminOrderDetailDto } from '@/lib/api/types';
 
 describe('adminOrdersPath', () => {
     it('sends only page and size when nothing is filtered', () => {
@@ -114,5 +116,40 @@ describe('businessSnapshotEntries', () => {
             { key: 'legalName', value: 'Acme' },
             { key: 'city', value: 'Athens' },
         ]);
+    });
+});
+
+describe('orderActivity', () => {
+    const base = {
+        summary: { createdAt: '2026-09-01T10:00:00Z', paidAt: '2026-09-01T10:00:00Z' },
+        payment: { disputedAt: null, disputeClosedAt: null },
+        refund: null,
+        settledBy: null,
+        withdrawals: [],
+        commissions: [],
+    };
+
+    it('starts with placed then paid, even at the same instant', () => {
+        const items = orderActivity(base as unknown as AdminOrderDetailDto);
+        expect(items.map((item) => item.kind)).toEqual(['placed', 'paid']);
+    });
+
+    it('merges disputes, refunds, withdrawals and commission oldest first, and names an admin who settled it', () => {
+        const items = orderActivity({
+            ...base,
+            settledBy: { userId: 'a-1', name: null, email: 'ops@example.com' },
+            payment: { disputedAt: '2026-09-05T00:00:00Z', disputeClosedAt: '2026-09-09T00:00:00Z' },
+            refund: { refundedAt: '2026-09-07T00:00:00Z', amountMinor: 100, source: 'WITHDRAWAL', providerRefundId: null },
+            withdrawals: [{ id: 'w-1', createdAt: '2026-09-03T00:00:00Z' }],
+            commissions: [{ id: 'c-1', createdAt: '2026-09-01T10:01:00Z' }],
+        } as unknown as AdminOrderDetailDto);
+
+        expect(items.map((item) => item.kind)).toEqual(['placed', 'paid', 'commission', 'withdrawal', 'disputeOpened', 'refunded', 'disputeClosed']);
+        expect(items[1]).toMatchObject({ kind: 'paid', settledBy: 'ops@example.com' });
+    });
+
+    it('leaves out payment for an order never paid', () => {
+        const items = orderActivity({ ...base, summary: { ...base.summary, paidAt: null } } as unknown as AdminOrderDetailDto);
+        expect(items.map((item) => item.kind)).toEqual(['placed']);
     });
 });

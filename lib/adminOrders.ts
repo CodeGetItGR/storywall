@@ -1,6 +1,15 @@
 import { formatAdminDateTime } from '@/lib/adminWithdrawals';
 import { endpoints } from '@/lib/api/endpoints';
-import type { BuyerType, OrderKind, OrderStatus, PaymentProviderKey } from '@/lib/api/types';
+import type {
+    AdminOrderCommissionDto,
+    AdminOrderDetailDto,
+    AdminOrderWithdrawalDto,
+    BuyerType,
+    OrderKind,
+    OrderStatus,
+    PaymentProviderKey,
+} from '@/lib/api/types';
+import { formatDate } from '@/lib/datetime';
 
 export const ORDERS_HASH_ROOT = '#orders';
 
@@ -163,4 +172,36 @@ export function filterValueFromInput(name: keyof AdminOrderFilters, value: strin
 
 export function formatOptionalDateTime(locale: string, value: string | null): string | null {
     return value ? formatAdminDateTime(locale, value) : null;
+}
+
+export function formatAdminDate(locale: string, value: string): string {
+    return formatDate(locale, value, { dateStyle: 'medium' }) || value;
+}
+
+// What the order bought, by code: the plan, or the storage pack for a pack order.
+export function orderPurchaseCode(order: AdminOrderDetailDto): string | null {
+    return order.coverage.planCode ?? order.coverage.paidServiceCode ?? order.summary.planCode;
+}
+
+export type OrderActivityItem =
+    | { kind: 'placed'; at: string }
+    | { kind: 'paid'; at: string; settledBy: string | null }
+    | { kind: 'disputeOpened'; at: string }
+    | { kind: 'disputeClosed'; at: string }
+    | { kind: 'refunded'; at: string; refund: NonNullable<AdminOrderDetailDto['refund']> }
+    | { kind: 'withdrawal'; at: string; withdrawal: AdminOrderWithdrawalDto }
+    | { kind: 'commission'; at: string; commission: AdminOrderCommissionDto };
+
+// Everything that happened to the order, oldest first. Events at the same instant
+// keep the order they are listed in here (placed before paid).
+export function orderActivity(order: AdminOrderDetailDto): OrderActivityItem[] {
+    const { summary, payment, refund, settledBy } = order;
+    const items: OrderActivityItem[] = [{ kind: 'placed', at: summary.createdAt }];
+    if (summary.paidAt) items.push({ kind: 'paid', at: summary.paidAt, settledBy: settledBy ? (settledBy.name ?? settledBy.email) : null });
+    if (payment.disputedAt) items.push({ kind: 'disputeOpened', at: payment.disputedAt });
+    if (payment.disputeClosedAt) items.push({ kind: 'disputeClosed', at: payment.disputeClosedAt });
+    if (refund) items.push({ kind: 'refunded', at: refund.refundedAt, refund });
+    for (const withdrawal of order.withdrawals) items.push({ kind: 'withdrawal', at: withdrawal.createdAt, withdrawal });
+    for (const commission of order.commissions) items.push({ kind: 'commission', at: commission.createdAt, commission });
+    return items.sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
 }

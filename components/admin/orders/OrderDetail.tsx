@@ -1,55 +1,34 @@
 'use client';
 
-import { useLocale, useTranslations } from 'next-intl';
-
-import { OrderBoughtSection } from '@/components/admin/orders/OrderBoughtSection';
+import { OrderActivitySection } from '@/components/admin/orders/OrderActivitySection';
 import { OrderBuyerSection } from '@/components/admin/orders/OrderBuyerSection';
-import { OrderCommissionSection } from '@/components/admin/orders/OrderCommissionSection';
-import { OrderFlags } from '@/components/admin/orders/OrderFlags';
 import { OrderPaymentSection } from '@/components/admin/orders/OrderPaymentSection';
 import { OrderPriceSection } from '@/components/admin/orders/OrderPriceSection';
 import { OrderRecordSection } from '@/components/admin/orders/OrderRecordSection';
-import { OrderRefundSection } from '@/components/admin/orders/OrderRefundSection';
-import { OrderStatusPill } from '@/components/admin/orders/OrderStatusPill';
-import { OrderWithdrawalsSection } from '@/components/admin/orders/OrderWithdrawalsSection';
-import { formatAdminDateTime } from '@/lib/adminWithdrawals';
+import { OrderSummaryHeader } from '@/components/admin/orders/OrderSummaryHeader';
 import type { AdminOrderDetailDto } from '@/lib/api/types';
-import { formatMoney } from '@/lib/billing';
 
+// The story of the order on the left (price, then what happened); reference facts
+// on the right, always in the same place. Below lg the right column drops underneath.
 export function OrderDetail({ order }: { order: AdminOrderDetailDto }) {
-    const t = useTranslations('AdminPage.orders');
-    const locale = useLocale();
-    const { summary } = order;
-
     return (
-        <div className="max-w-4xl space-y-6">
-            {/* Header */}
-            <header className="space-y-2">
-                <div className="flex flex-wrap items-center gap-3">
-                    <h1 className="font-mono text-2xl font-extrabold tracking-tight text-ink tabular-nums sm:text-3xl">
-                        {formatMoney(locale, summary.amountMinor, summary.currency)}
-                    </h1>
-                    <OrderStatusPill status={summary.status} />
-                    <OrderFlags order={summary} />
-                </div>
-                <p className="text-sm text-ink-muted">
-                    {t(`kind.${summary.kind}`)} · {summary.eventTitle ?? t('untitledEvent')}
-                    {summary.eventPurged && <span className="ml-1.5 text-xs font-bold text-ink-faint">{t('flags.eventDeleted')}</span>}
-                    {' · '}
-                    {t('detail.placed', { date: formatAdminDateTime(locale, summary.createdAt) })}
-                </p>
-            </header>
+        <div className="max-w-6xl space-y-5">
+            {/* Summary */}
+            <OrderSummaryHeader order={order} />
 
-            {/* Sections */}
-            <div>
-                <OrderBuyerSection buyer={order.buyer} />
-                <OrderPriceSection pricing={order.pricing} />
-                <OrderBoughtSection coverage={order.coverage} />
-                <OrderPaymentSection payment={order.payment} />
-                {order.refund && <OrderRefundSection refund={order.refund} currency={summary.currency} />}
-                {order.withdrawals.length > 0 && <OrderWithdrawalsSection withdrawals={order.withdrawals} currency={summary.currency} />}
-                {order.commissions.length > 0 && <OrderCommissionSection commissions={order.commissions} />}
-                <OrderRecordSection order={order} />
+            <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
+                {/* Story */}
+                <div className="space-y-5">
+                    <OrderPriceSection pricing={order.pricing} />
+                    <OrderActivitySection order={order} />
+                </div>
+
+                {/* Reference */}
+                <div className="space-y-5">
+                    <OrderBuyerSection buyer={order.buyer} />
+                    <OrderPaymentSection payment={order.payment} />
+                    <OrderRecordSection order={order} />
+                </div>
             </div>
         </div>
     );

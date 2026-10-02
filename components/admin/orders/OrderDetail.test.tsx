@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -92,6 +92,11 @@ const order: AdminOrderDetailDto = {
     commissions: [],
 };
 
+function activityItems() {
+    const activity = screen.getByRole('heading', { name: 'Activity' }).closest('section');
+    return within(activity as HTMLElement).getAllByRole('listitem');
+}
+
 function renderDetail(detail: AdminOrderDetailDto) {
     render(
         <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
@@ -110,11 +115,22 @@ describe('OrderDetail', () => {
         expect(screen.getByText('Wedding Plus')).toBeInTheDocument();
         expect(screen.getByText('SPRING10')).toBeInTheDocument();
         expect(screen.getByText('No tax added; prices include VAT.')).toBeInTheDocument();
-        expect(screen.getByText('12 months')).toBeInTheDocument();
         expect(screen.getByText('DE')).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Open in Stripe' })).toHaveAttribute('href', 'https://dashboard.stripe.com/payments/pi_1');
         // No fraud facts recorded, so no collapsed block for them.
         expect(screen.queryByText('Fraud signals')).not.toBeInTheDocument();
+    });
+
+    it('sums the order up in the header: event, what was bought and the time it covers', () => {
+        renderDetail({
+            ...order,
+            coverage: { ...order.coverage, coverageStartsAt: '2026-09-28T10:05:00Z', coverageEndsAt: '2027-09-28T10:05:00Z' },
+        });
+
+        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('€49.00');
+        expect(screen.getByText('Maria & Nikos')).toBeInTheDocument();
+        expect(screen.getByText('WEDDING_PLUS')).toBeInTheDocument();
+        expect(screen.getByText('Sep 28, 2026 → Sep 28, 2027')).toBeInTheDocument();
     });
 
     it('shows only the order id; the others are copy-only', () => {
@@ -127,20 +143,23 @@ describe('OrderDetail', () => {
         expect(screen.getAllByRole('button', { name: /^Copy / })).toHaveLength(7);
     });
 
-    it('shows a refund made before amounts were recorded, and links a held withdrawal to its review', () => {
+    it('lists what happened in order, with a refund made before amounts were recorded and a held withdrawal linked to its review', () => {
         renderDetail(order);
 
-        expect(screen.getByText('Not recorded')).toBeInTheDocument();
+        const [placed, paid, withdrawal, refund, ...rest] = activityItems();
+        expect(placed).toHaveTextContent('Order placed');
+        expect(paid).toHaveTextContent('Paid');
+        expect(withdrawal).toHaveTextContent('Withdrawal requested · Whole event');
+        expect(refund).toHaveTextContent('Refunded (amount not recorded)');
+        expect(rest).toHaveLength(0);
         expect(screen.getByText('This order: €20.00')).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Review' })).toHaveAttribute('href', '#withdrawals/w-1');
     });
 
-    it('leaves out sections with nothing in them', () => {
+    it('leaves out what did not happen', () => {
         renderDetail({ ...order, refund: null, withdrawals: [], payment: { ...order.payment, riskLevel: 'normal' } });
 
-        expect(screen.queryByText('Refund')).not.toBeInTheDocument();
-        expect(screen.queryByText('Withdrawals')).not.toBeInTheDocument();
-        expect(screen.queryByText('Commission')).not.toBeInTheDocument();
+        expect(activityItems()).toHaveLength(2);
         expect(screen.getByText('Fraud signals')).toBeInTheDocument();
     });
 });

@@ -15,7 +15,7 @@ export function OrderFactList({ facts }: { facts: OrderFact[] }) {
     if (shown.length === 0) return null;
 
     return (
-        <dl className="grid max-w-3xl gap-x-8 gap-y-1.5 sm:grid-cols-2">
+        <dl className="space-y-1.5">
             {shown.map((fact) => (
                 <div key={fact.key} className="flex min-w-0 items-baseline justify-between gap-4 text-sm">
                     <dt className="shrink-0 text-ink-muted">{fact.label}</dt>

@@ -2323,15 +2323,28 @@
                 "tooLong": "Pick at most 366 days."
             },
             "detail": {
-                "placed": "Placed {date}",
+                "summary": {
+                    "event": "Event",
+                    "purchase": "Purchase",
+                    "coverage": "Coverage"
+                },
+                "activity": {
+                    "placed": "Order placed",
+                    "paid": "Paid",
+                    "settledBy": "Marked paid by {name}",
+                    "disputeOpened": "Dispute opened",
+                    "disputeClosed": "Dispute closed",
+                    "refunded": "Refunded {amount}",
+                    "refundedNotRecorded": "Refunded (amount not recorded)",
+                    "withdrawal": "Withdrawal requested · {scope}",
+                    "commission": "Commission to {name}",
+                    "clawback": "Commission clawed back from {name}"
+                },
                 "sections": {
+                    "activity": "Activity",
                     "buyer": "Buyer",
                     "price": "Price",
-                    "bought": "What it bought",
                     "payment": "Payment",
-                    "refund": "Refund",
-                    "withdrawals": "Withdrawals",
-                    "commission": "Commission",
                     "record": "Record",
                     "fraud": "Fraud signals"
                 },
@@ -2358,13 +2371,7 @@
                     "noTax": "No tax added; prices include VAT."
                 },
                 "bought": {
-                    "plan": "Plan",
-                    "storagePack": "Storage pack",
-                    "length": "Length",
-                    "added": "Added",
-                    "months": "{count, plural, one {# month} other {# months}}",
-                    "starts": "Starts",
-                    "ends": "Ends"
+                    "months": "{count, plural, one {# month} other {# months}}"
                 },
                 "payment": {
                     "provider": "Provider",
@@ -2372,17 +2379,11 @@
                     "sessionId": "Checkout session",
                     "billingCountry": "Billing country",
                     "cardCountry": "Card country",
-                    "disputedAt": "Dispute opened",
-                    "disputeClosedAt": "Dispute closed",
                     "openInStripe": "Open in Stripe",
                     "cardFingerprint": "Card fingerprint",
                     "riskLevel": "Risk level"
                 },
                 "refund": {
-                    "date": "Refunded",
-                    "amount": "Amount",
-                    "notRecorded": "Not recorded",
-                    "source": "Source",
                     "stripeRefund": "Stripe refund"
                 },
                 "withdrawals": {
@@ -2400,15 +2401,13 @@
                     "review": "Review"
                 },
                 "commission": {
-                    "earned": "Earned",
                     "percent": "{percent}%"
                 },
                 "record": {
                     "orderId": "Order ID",
                     "terms": "Terms version",
                     "immediateStart": "Asked to start now",
-                    "acknowledged": "Acknowledged",
-                    "settledBy": "Settled by an admin"
+                    "acknowledged": "Acknowledged"
                 }
             }
         },
