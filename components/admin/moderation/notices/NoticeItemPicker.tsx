@@ -1,12 +1,11 @@
 'use client';
 
-import { useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
-import { type ChangeEvent, useEffect, useState } from 'react';
+import { type ChangeEvent, useEffect, useRef, useState } from 'react';
 
 import { AdminPagination } from '@/components/admin/betaFeedback/AdminPagination';
 import { LoadingState } from '@/components/ui/LoadingState';
-import { clearNoticeBrowse, useNoticeItems } from '@/hooks/useAdminNotices';
+import { useNoticeItems } from '@/hooks/useAdminNotices';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import type { NoticeItemCandidateDto, ReportTargetType } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
@@ -22,8 +21,8 @@ export const NOTICE_ITEM_TYPES: readonly ReportTargetType[] = [
 ];
 
 // Step 2 of attaching (§2.4, §2.5). Page 0 of each type is a logged EVENT_BROWSED, so only the
-// selected type is ever fetched, and the picker's cache is dropped when it unmounts: reopening it is a
-// new, logged browse.
+// selected type is ever fetched. The drawer drops the cache (on Back and on unmount), so reopening
+// the picker is a new, logged browse.
 export function NoticeItemPicker({
     noticeId,
     eventId,
@@ -41,7 +40,6 @@ export function NoticeItemPicker({
     const t = useTranslations('AdminPage.moderation.notices');
     const tTypes = useTranslations('AdminPage.moderation.types');
     const locale = useLocale();
-    const queryClient = useQueryClient();
     const toErrorMessage = useApiErrorMessage();
     const [type, setType] = useState<ReportTargetType>('MEDIA');
     const [page, setPage] = useState(0);
@@ -49,8 +47,21 @@ export function NoticeItemPicker({
     const [confirming, setConfirming] = useState(false);
     const query = useNoticeItems(noticeId, eventId, type, page);
     const data = query.data;
+    const headingRef = useRef<HTMLHeadingElement>(null);
+    const confirmRef = useRef<HTMLDivElement>(null);
+    const attachRef = useRef<HTMLButtonElement>(null);
+    const wasConfirming = useRef(false);
 
-    useEffect(() => () => clearNoticeBrowse(queryClient, noticeId), [queryClient, noticeId]);
+    // Focus follows the step: into the picker on entering, into the confirm group on Attach, and back to
+    // Attach when leaving the confirm (the focused button is destroyed by the swap).
+    useEffect(() => {
+        headingRef.current?.focus();
+    }, []);
+    useEffect(() => {
+        if (confirming) confirmRef.current?.focus();
+        else if (wasConfirming.current) attachRef.current?.focus();
+        wasConfirming.current = confirming;
+    }, [confirming]);
 
     function selectType(event: ChangeEvent<HTMLSelectElement>) {
         setType(event.currentTarget.value as ReportTargetType);
@@ -83,7 +94,12 @@ export function NoticeItemPicker({
 
     return (
         <section aria-labelledby="notice-picker-heading" className="space-y-4">
-            <h3 id="notice-picker-heading" className="text-xs font-bold tracking-wide text-ink-faint uppercase">
+            <h3
+                ref={headingRef}
+                tabIndex={-1}
+                id="notice-picker-heading"
+                className="text-xs font-bold tracking-wide text-ink-faint uppercase outline-none"
+            >
                 {t('picker.heading')}
             </h3>
             <p className="text-xs text-ink-muted">{t('picker.audited')}</p>
@@ -105,7 +121,11 @@ export function NoticeItemPicker({
             </label>
 
             {query.isLoading ? <LoadingState label={t('loading')} className="min-h-24" /> : null}
-            {query.error ? <p className="text-sm text-status-danger">{toErrorMessage(query.error)}</p> : null}
+            {query.error ? (
+                <p role="alert" className="text-sm text-status-danger">
+                    {toErrorMessage(query.error)}
+                </p>
+            ) : null}
             {data && data.content.length === 0 ? <p className="text-sm text-ink-muted">{t('picker.empty')}</p> : null}
             {data && data.content.length > 0 ? (
                 <div className="overflow-hidden rounded-lg border border-border">
@@ -162,7 +182,13 @@ export function NoticeItemPicker({
             ) : null}
 
             {confirming && selected ? (
-                <div role="group" aria-label={t('actions.confirmAttach')} className="space-y-3 rounded-lg border border-status-danger-wash p-4">
+                <div
+                    ref={confirmRef}
+                    tabIndex={-1}
+                    role="group"
+                    aria-label={t('actions.confirmAttach')}
+                    className="space-y-3 rounded-lg border border-status-danger-wash p-4 outline-none"
+                >
                     <p className="text-sm font-semibold text-ink">{t('actions.confirmAttach')}</p>
                     <div className="flex gap-2">
                         <button
@@ -193,6 +219,7 @@ export function NoticeItemPicker({
                         {t('actions.back')}
                     </button>
                     <button
+                        ref={attachRef}
                         type="button"
                         onClick={review}
                         disabled={!selected}

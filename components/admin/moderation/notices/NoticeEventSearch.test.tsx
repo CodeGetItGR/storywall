@@ -34,25 +34,46 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
+const NO_FILTERS = { q: '', hostEmail: '', date: '' };
+
+function renderSearch(props: Partial<Parameters<typeof NoticeEventSearch>[0]> = {}) {
+    const onSearchAction = vi.fn();
+    const onPickAction = vi.fn();
+    render(<NoticeEventSearch noticeId="n-1" applied={NO_FILTERS} onSearchAction={onSearchAction} onPickAction={onPickAction} {...props} />);
+    return { onSearchAction, onPickAction };
+}
+
 describe('NoticeEventSearch', () => {
     it('limits the inputs and uses a date input', () => {
-        render(<NoticeEventSearch noticeId="n-1" onPickAction={vi.fn()} />);
+        renderSearch();
         expect(screen.getByLabelText('search.title').getAttribute('maxlength')).toBe('200');
         expect(screen.getByLabelText('search.hostEmail').getAttribute('maxlength')).toBe('320');
         expect(screen.getByLabelText('search.date').getAttribute('type')).toBe('date');
     });
 
-    it('searches on submit, not on every keystroke', () => {
-        render(<NoticeEventSearch noticeId="n-1" onPickAction={vi.fn()} />);
+    it('reports the filters on submit, not on every keystroke', () => {
+        const { onSearchAction } = renderSearch();
         fireEvent.change(screen.getByLabelText('search.title'), { target: { value: 'Maria' } });
-        expect(hooks.useNoticeEventSearch).toHaveBeenLastCalledWith('n-1', { q: '', hostEmail: '', date: '' }, 0);
+        expect(onSearchAction).not.toHaveBeenCalled();
         fireEvent.click(screen.getByRole('button', { name: 'search.submit' }));
-        expect(hooks.useNoticeEventSearch).toHaveBeenLastCalledWith('n-1', { q: 'Maria', hostEmail: '', date: '' }, 0);
+        expect(onSearchAction).toHaveBeenCalledWith({ q: 'Maria', hostEmail: '', date: '' });
+    });
+
+    it('starts from the filters the drawer kept, so they survive a Back from the picker', () => {
+        renderSearch({ applied: { q: 'Maria', hostEmail: 'host@example.com', date: '2026-09-20' } });
+        expect((screen.getByLabelText('search.title') as HTMLInputElement).value).toBe('Maria');
+        expect((screen.getByLabelText('search.hostEmail') as HTMLInputElement).value).toBe('host@example.com');
+        expect((screen.getByLabelText('search.date') as HTMLInputElement).value).toBe('2026-09-20');
+        expect(hooks.useNoticeEventSearch).toHaveBeenLastCalledWith('n-1', { q: 'Maria', hostEmail: 'host@example.com', date: '2026-09-20' }, 0);
+    });
+
+    it('puts focus on its heading when it appears', () => {
+        renderSearch();
+        expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'search.heading' }));
     });
 
     it('marks a deleted event and picks it by id', () => {
-        const onPick = vi.fn();
-        render(<NoticeEventSearch noticeId="n-1" onPickAction={onPick} />);
+        const { onPickAction: onPick } = renderSearch();
         expect(screen.getByText('search.deleted')).toBeTruthy();
         fireEvent.click(screen.getByRole('button', { name: 'search.chooseEvent {"title":"Maria & Nikos"}' }));
         expect(onPick).toHaveBeenCalledWith('e-1');

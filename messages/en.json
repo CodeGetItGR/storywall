@@ -2435,13 +2435,9 @@
                 },
                 "closeReasons": {
                     "NOT_FOUND": "Couldn't find the content",
-                    "NO_BREACH": "Not illegal, no breach",
+                    "NO_BREACH": "Not illegal, doesn't break the Community Guidelines",
                     "ALREADY_HANDLED": "Already removed or decided",
                     "SPAM": "Spam"
-                },
-                "outcomes": {
-                    "ACTION_TAKEN": "Action taken",
-                    "DISMISSED": "Dismissed"
                 },
                 "pending": "Decision pending",
                 "drawerTitle": "Notice #{reference}",

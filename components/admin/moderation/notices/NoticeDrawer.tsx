@@ -1,5 +1,6 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { type ChangeEvent, type ReactNode, useEffect, useRef, useState } from 'react';
 
@@ -7,12 +8,14 @@ import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { NoticeEventSearch } from '@/components/admin/moderation/notices/NoticeEventSearch';
 import { NoticeItemPicker } from '@/components/admin/moderation/notices/NoticeItemPicker';
 import { LoadingState } from '@/components/ui/LoadingState';
-import { useAdminNotice, useAttachNotice, useCloseNotice } from '@/hooks/useAdminNotices';
+import { clearNoticeBrowse, type NoticeEventFilters, useAdminNotice, useAttachNotice, useCloseNotice } from '@/hooks/useAdminNotices';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { type ContentNoticeDetailDto, NOTICE_CLOSE_REASONS, type NoticeCloseReason, type NoticeItemCandidateDto } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
 
 export const NOTICE_CLOSE_NOTE_MAX_LENGTH = 2000;
+
+const NO_FILTERS: NoticeEventFilters = { q: '', hostEmail: '', date: '' };
 
 type Mode = 'idle' | 'find' | 'close';
 
@@ -36,6 +39,8 @@ export function NoticeDrawer({ id, onCloseAction }: { id: string; onCloseAction:
     const t = useTranslations('AdminPage.moderation.notices');
     const tCategory = useTranslations('ContentNoticeForm.categories');
     const tMod = useTranslations('AdminPage.moderation');
+    const tApiErrors = useTranslations('ApiErrors');
+    const queryClient = useQueryClient();
     const locale = useLocale();
     const toErrorMessage = useApiErrorMessage();
     const { data: notice, error, isLoading } = useAdminNotice(id);
@@ -45,13 +50,23 @@ export function NoticeDrawer({ id, onCloseAction }: { id: string; onCloseAction:
     const [eventId, setEventId] = useState<string | null>(null);
     const [reason, setReason] = useState<NoticeCloseReason | null>(null);
     const [note, setNote] = useState('');
+    const [filters, setFilters] = useState<NoticeEventFilters>(NO_FILTERS);
+    // Set once the notice has been seen as NEW: if it later leaves NEW without one of our own mutations
+    // succeeding, another admin handled it (a 5109 on a browse query refetches the notice).
+    const [wasNew, setWasNew] = useState(false);
+    if (notice?.status === 'NEW' && !wasNew) setWasNew(true);
     const modeRef = useRef<HTMLDivElement>(null);
     const findRef = useRef<HTMLButtonElement>(null);
     const previousMode = useRef<Mode>('idle');
 
+    // Page 0 of each type is a logged browse, so a closed or abandoned picker must not leave cached pages
+    // behind. Unmount only: safe in StrictMode because no browse cache exists yet when it first runs.
+    useEffect(() => () => clearNoticeBrowse(queryClient, id), [queryClient, id]);
+
     // Focus follows the step: into it on entering, back to the action buttons on leaving.
     useEffect(() => {
-        if (mode !== 'idle') modeRef.current?.focus();
+        // The find step focuses its own heading (search, then picker).
+        if (mode === 'close') modeRef.current?.focus();
         else if (previousMode.current !== 'idle') findRef.current?.focus();
         previousMode.current = mode;
     }, [mode]);
@@ -63,11 +78,16 @@ export function NoticeDrawer({ id, onCloseAction }: { id: string; onCloseAction:
         setMode('close');
     }
     function backToIdle() {
+        clearNoticeBrowse(queryClient, id);
         setMode('idle');
         setEventId(null);
     }
     function backToSearch() {
+        clearNoticeBrowse(queryClient, id);
         setEventId(null);
+    }
+    function search(next: NoticeEventFilters) {
+        setFilters(next);
     }
     function pickEvent(next: string) {
         setEventId(next);
@@ -84,17 +104,18 @@ export function NoticeDrawer({ id, onCloseAction }: { id: string; onCloseAction:
     }
     function submitClose() {
         if (!reason || close.isPending) return;
-        close.mutate({ id, reason, note: note.trim() === '' ? null : note }, { onSuccess: onCloseAction });
+        close.mutate({ id, reason, note: note.trim() === '' ? null : note.trim() }, { onSuccess: onCloseAction });
     }
 
     const mutationError = attach.error ?? close.error;
+    const handledElsewhere = wasNew && notice !== undefined && notice.status !== 'NEW' && !attach.isSuccess && !close.isSuccess && !mutationError;
 
     return (
         <AdminDrawer
             open
             onClose={onCloseAction}
             closeLabel={tMod('close')}
-            title={t('drawerTitle', { reference: notice?.reference ?? '' })}
+            title={notice ? t('drawerTitle', { reference: notice.reference }) : t('loading')}
             size="wide"
         >
             {isLoading ? <LoadingState label={t('loading')} className="min-h-48" /> : null}
@@ -170,7 +191,7 @@ export function NoticeDrawer({ id, onCloseAction }: { id: string; onCloseAction:
                                         />
                                     ) : (
                                         <>
-                                            <NoticeEventSearch noticeId={id} onPickAction={pickEvent} />
+                                            <NoticeEventSearch noticeId={id} applied={filters} onSearchAction={search} onPickAction={pickEvent} />
                                             <button
                                                 type="button"
                                                 onClick={backToIdle}
@@ -236,6 +257,11 @@ export function NoticeDrawer({ id, onCloseAction }: { id: string; onCloseAction:
                 </div>
             ) : null}
 
+            {handledElsewhere ? (
+                <p role="alert" className="mt-4 text-sm text-status-danger">
+                    {tApiErrors('noticeAlreadyHandled')}
+                </p>
+            ) : null}
             {mutationError ? (
                 <p role="alert" className="mt-4 text-sm text-status-danger">
                     {toErrorMessage(mutationError)}
@@ -250,13 +276,14 @@ export function NoticeDrawer({ id, onCloseAction }: { id: string; onCloseAction:
 function HandledSection({ notice }: { notice: ContentNoticeDetailDto }) {
     const t = useTranslations('AdminPage.moderation.notices');
     const tTypes = useTranslations('AdminPage.moderation.types');
+    const tOutcome = useTranslations('AdminPage.moderation.outcome');
     if (notice.status === 'ATTACHED') {
         return (
             <dl className="space-y-4 border-t border-border pt-5">
                 <Field label={t('fields.attachedTo')}>
                     {notice.attachment ? tTypes(notice.attachment.targetType) : t('attachmentGone')}
                     {' · '}
-                    {notice.outcome ? t(`outcomes.${notice.outcome}`) : t('pending')}
+                    {notice.outcome ? tOutcome(notice.outcome) : t('pending')}
                 </Field>
             </dl>
         );

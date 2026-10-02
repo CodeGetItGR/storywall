@@ -1,7 +1,7 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
-import { type ChangeEvent, type FormEvent, type MouseEvent, useState } from 'react';
+import { type ChangeEvent, type FormEvent, type MouseEvent, useEffect, useRef, useState } from 'react';
 
 import { AdminPagination } from '@/components/admin/betaFeedback/AdminPagination';
 import { LoadingState } from '@/components/ui/LoadingState';
@@ -12,24 +12,39 @@ import { formatDate } from '@/lib/datetime';
 export const NOTICE_TITLE_MAX_LENGTH = 200;
 export const NOTICE_HOST_EMAIL_MAX_LENGTH = 320;
 
-const EMPTY: NoticeEventFilters = { q: '', hostEmail: '', date: '' };
 const INPUT = 'w-full rounded-md border border-border bg-canvas px-2 py-1.5 text-sm text-ink';
 
 // Step 1 of attaching (§2.3): find the event. Searching shows event metadata only and writes no audit
 // row. It runs on submit, so typing never sends a request.
-export function NoticeEventSearch({ noticeId, onPickAction }: { noticeId: string; onPickAction: (eventId: string) => void }) {
+export function NoticeEventSearch({
+    noticeId,
+    applied,
+    onSearchAction,
+    onPickAction,
+}: {
+    noticeId: string;
+    // Owned by the drawer, so the filters survive a Back from the picker.
+    applied: NoticeEventFilters;
+    onSearchAction: (filters: NoticeEventFilters) => void;
+    onPickAction: (eventId: string) => void;
+}) {
     const t = useTranslations('AdminPage.moderation.notices');
     const locale = useLocale();
     const toErrorMessage = useApiErrorMessage();
-    const [draft, setDraft] = useState<NoticeEventFilters>(EMPTY);
-    const [applied, setApplied] = useState<NoticeEventFilters>(EMPTY);
+    const [draft, setDraft] = useState<NoticeEventFilters>(applied);
+    const headingRef = useRef<HTMLHeadingElement>(null);
     const [page, setPage] = useState(0);
     const query = useNoticeEventSearch(noticeId, applied, page);
     const data = query.data;
 
+    // Entering the step, or coming back to it from the picker, puts focus here.
+    useEffect(() => {
+        headingRef.current?.focus();
+    }, []);
+
     function submit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        setApplied(draft);
+        onSearchAction(draft);
         setPage(0);
     }
     function changeTitle(event: ChangeEvent<HTMLInputElement>) {
@@ -51,7 +66,12 @@ export function NoticeEventSearch({ noticeId, onPickAction }: { noticeId: string
 
     return (
         <section aria-labelledby="notice-search-heading" className="space-y-4">
-            <h3 id="notice-search-heading" className="text-xs font-bold tracking-wide text-ink-faint uppercase">
+            <h3
+                ref={headingRef}
+                tabIndex={-1}
+                id="notice-search-heading"
+                className="text-xs font-bold tracking-wide text-ink-faint uppercase outline-none"
+            >
                 {t('search.heading')}
             </h3>
             <form onSubmit={submit} className="space-y-3">

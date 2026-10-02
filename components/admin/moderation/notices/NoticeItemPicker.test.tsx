@@ -1,9 +1,7 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { NoticeItemPicker } from '@/components/admin/moderation/notices/NoticeItemPicker';
-import { adminNoticeKeys } from '@/hooks/useAdminNotices';
 import type { NoticeItemCandidateDto } from '@/lib/api/types';
 
 const hooks = vi.hoisted(() => ({ useNoticeItems: vi.fn() }));
@@ -13,10 +11,7 @@ vi.mock('next-intl', () => ({
     useLocale: () => 'en',
 }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => (error: Error) => error.message }));
-vi.mock('@/hooks/useAdminNotices', async (importOriginal) => ({
-    ...(await importOriginal<typeof import('@/hooks/useAdminNotices')>()),
-    useNoticeItems: (...args: unknown[]) => hooks.useNoticeItems(...args),
-}));
+vi.mock('@/hooks/useAdminNotices', () => ({ useNoticeItems: (...args: unknown[]) => hooks.useNoticeItems(...args) }));
 
 const item: NoticeItemCandidateDto = {
     targetType: 'MEDIA',
@@ -31,14 +26,11 @@ function result(items: NoticeItemCandidateDto[]) {
     return { data: { content: items, page: { size: 30, number: 0, totalElements: items.length, totalPages: 1 } }, error: null, isLoading: false };
 }
 
-function renderPicker(client = new QueryClient()) {
+function renderPicker() {
     const onAttachAction = vi.fn();
-    const view = render(
-        <QueryClientProvider client={client}>
-            <NoticeItemPicker noticeId="n-1" eventId="e-1" isAttaching={false} onBackAction={vi.fn()} onAttachAction={onAttachAction} />
-        </QueryClientProvider>,
-    );
-    return { ...view, onAttachAction };
+    const onBackAction = vi.fn();
+    render(<NoticeItemPicker noticeId="n-1" eventId="e-1" isAttaching={false} onBackAction={onBackAction} onAttachAction={onAttachAction} />);
+    return { onAttachAction, onBackAction };
 }
 
 beforeEach(() => {
@@ -74,15 +66,27 @@ describe('NoticeItemPicker', () => {
         expect(onAttachAction).toHaveBeenCalledWith(item);
     });
 
-    it('drops the browse cache when it unmounts, so reopening it is a new logged browse', () => {
-        const client = new QueryClient();
-        client.setQueryData(adminNoticeKeys.items('n-1', 'e-1', 'MEDIA', 0), { content: [] });
-        client.setQueryData(adminNoticeKeys.items('n-2', 'e-1', 'MEDIA', 0), { content: [] });
-        const { unmount } = renderPicker(client);
-        expect(client.getQueryData(adminNoticeKeys.items('n-1', 'e-1', 'MEDIA', 0))).toBeDefined();
-        unmount();
-        expect(client.getQueryData(adminNoticeKeys.items('n-1', 'e-1', 'MEDIA', 0))).toBeUndefined();
-        // Another notice's picker cache is not touched.
-        expect(client.getQueryData(adminNoticeKeys.items('n-2', 'e-1', 'MEDIA', 0))).toBeDefined();
+    it('puts focus on its heading when it appears', () => {
+        renderPicker();
+        expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'picker.heading' }));
+    });
+
+    it('moves focus to the confirm group on Attach, and back to Attach on Back', () => {
+        renderPicker();
+        fireEvent.click(screen.getByRole('radio'));
+        fireEvent.click(screen.getByRole('button', { name: 'actions.attach' }));
+        expect(document.activeElement).toBe(screen.getByRole('group', { name: 'actions.confirmAttach' }));
+        fireEvent.click(screen.getByRole('button', { name: 'actions.back' }));
+        expect(document.activeElement).toBe(screen.getByRole('button', { name: 'actions.attach' }));
+    });
+
+    it('announces a failed load', () => {
+        hooks.useNoticeItems.mockReturnValue({
+            data: undefined,
+            error: new Error('Another admin has already handled this notice.'),
+            isLoading: false,
+        });
+        renderPicker();
+        expect(screen.getByRole('alert').textContent).toBe('Another admin has already handled this notice.');
     });
 });

@@ -1,8 +1,10 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { NoticeDrawer } from '@/components/admin/moderation/notices/NoticeDrawer';
+import { adminNoticeKeys } from '@/hooks/useAdminNotices';
 import type { ContentNoticeDetailDto } from '@/lib/api/types';
 
 const hooks = vi.hoisted(() => ({
@@ -27,30 +29,61 @@ vi.mock('@/components/admin/AdminDrawer', () => ({
     ),
 }));
 vi.mock('@/components/admin/moderation/notices/NoticeEventSearch', () => ({
-    NoticeEventSearch: function NoticeEventSearchStub({ onPickAction }: { onPickAction: (id: string) => void }) {
+    NoticeEventSearch: function NoticeEventSearchStub({
+        applied,
+        onSearchAction,
+        onPickAction,
+    }: {
+        applied: { q: string };
+        onSearchAction: (filters: { q: string; hostEmail: string; date: string }) => void;
+        onPickAction: (id: string) => void;
+    }) {
         function pick() {
             onPickAction('e-9');
         }
+        function searchMaria() {
+            onSearchAction({ q: 'Maria', hostEmail: '', date: '' });
+        }
         return (
-            <button type="button" onClick={pick}>
-                pick event
-            </button>
+            <div>
+                <span>applied q={applied.q}</span>
+                <button type="button" onClick={searchMaria}>
+                    search maria
+                </button>
+                <button type="button" onClick={pick}>
+                    pick event
+                </button>
+            </div>
         );
     },
 }));
 vi.mock('@/components/admin/moderation/notices/NoticeItemPicker', () => ({
-    NoticeItemPicker: function NoticeItemPickerStub({ eventId, onAttachAction }: { eventId: string; onAttachAction: (item: unknown) => void }) {
+    NoticeItemPicker: function NoticeItemPickerStub({
+        eventId,
+        onBackAction,
+        onAttachAction,
+    }: {
+        eventId: string;
+        onBackAction: () => void;
+        onAttachAction: (item: unknown) => void;
+    }) {
         function attach() {
             onAttachAction({ targetType: 'POST', targetId: 'p-1' });
         }
         return (
-            <button type="button" onClick={attach}>
-                attach in {eventId}
-            </button>
+            <div>
+                <button type="button" onClick={attach}>
+                    attach in {eventId}
+                </button>
+                <button type="button" onClick={onBackAction}>
+                    picker back
+                </button>
+            </div>
         );
     },
 }));
-vi.mock('@/hooks/useAdminNotices', () => ({
+vi.mock('@/hooks/useAdminNotices', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@/hooks/useAdminNotices')>()),
     useAdminNotice: () => ({ data: hooks.detail, error: null, isLoading: false }),
     useAttachNotice: () => ({ mutate: hooks.attachMutate, isPending: false, error: hooks.attachError }),
     useCloseNotice: () => ({ mutate: hooks.closeMutate, isPending: false, error: hooks.closeError }),
@@ -85,9 +118,16 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
-function renderDrawer(onCloseAction = vi.fn()) {
-    render(<NoticeDrawer id="n-1" onCloseAction={onCloseAction} />);
-    return onCloseAction;
+const seedItems = (client: QueryClient, id: string) => client.setQueryData(adminNoticeKeys.items(id, 'e-9', 'MEDIA', 0), { content: [] });
+const hasItems = (client: QueryClient, id: string) => client.getQueryData(adminNoticeKeys.items(id, 'e-9', 'MEDIA', 0)) !== undefined;
+
+function renderDrawer(onCloseAction = vi.fn(), client = new QueryClient()) {
+    const view = render(
+        <QueryClientProvider client={client}>
+            <NoticeDrawer id="n-1" onCloseAction={onCloseAction} />
+        </QueryClientProvider>,
+    );
+    return Object.assign(onCloseAction, { unmount: view.unmount, rerender: view.rerender });
 }
 
 describe('NoticeDrawer', () => {
@@ -133,6 +173,75 @@ describe('NoticeDrawer', () => {
         expect(onClose).toHaveBeenCalledTimes(1);
     });
 
+    it('sends a non-blank close note trimmed', () => {
+        renderDrawer();
+        fireEvent.click(screen.getByRole('button', { name: 'actions.close' }));
+        fireEvent.click(screen.getByRole('radio', { name: 'closeReasons.SPAM' }));
+        fireEvent.change(screen.getByRole('textbox', { name: 'closeNote' }), { target: { value: '  looked fine  ' } });
+        fireEvent.click(screen.getByRole('button', { name: 'actions.confirmClose' }));
+        expect(hooks.closeMutate).toHaveBeenCalledWith({ id: 'n-1', reason: 'SPAM', note: 'looked fine' }, expect.anything());
+    });
+
+    it('sends a blank close note as null', () => {
+        renderDrawer();
+        fireEvent.click(screen.getByRole('button', { name: 'actions.close' }));
+        fireEvent.click(screen.getByRole('radio', { name: 'closeReasons.SPAM' }));
+        fireEvent.change(screen.getByRole('textbox', { name: 'closeNote' }), { target: { value: '   ' } });
+        fireEvent.click(screen.getByRole('button', { name: 'actions.confirmClose' }));
+        expect(hooks.closeMutate).toHaveBeenCalledWith({ id: 'n-1', reason: 'SPAM', note: null }, expect.anything());
+    });
+
+    it('titles the drawer with the reference, and falls back to the loading label', () => {
+        renderDrawer();
+        expect(screen.getByRole('heading', { name: 'drawerTitle {"reference":"AB12CD34"}' })).toBeTruthy();
+        cleanup();
+        hooks.detail = null;
+        renderDrawer();
+        expect(screen.getByRole('heading', { name: 'loading' })).toBeTruthy();
+    });
+
+    it('drops this notice browse cache when it unmounts, and only this notice', () => {
+        const client = new QueryClient();
+        seedItems(client, 'n-1');
+        seedItems(client, 'n-2');
+        const view = renderDrawer(vi.fn(), client);
+        expect(hasItems(client, 'n-1')).toBe(true);
+        view.unmount();
+        expect(hasItems(client, 'n-1')).toBe(false);
+        expect(hasItems(client, 'n-2')).toBe(true);
+    });
+
+    it('drops the browse cache on Back from the picker, and again on Back from the search', () => {
+        const client = new QueryClient();
+        renderDrawer(vi.fn(), client);
+        fireEvent.click(screen.getByRole('button', { name: 'actions.find' }));
+        fireEvent.click(screen.getByRole('button', { name: 'pick event' }));
+        seedItems(client, 'n-1');
+        fireEvent.click(screen.getByRole('button', { name: 'picker back' }));
+        expect(hasItems(client, 'n-1')).toBe(false);
+        expect(screen.getByRole('button', { name: 'pick event' })).toBeTruthy();
+
+        seedItems(client, 'n-1');
+        fireEvent.click(screen.getByRole('button', { name: 'actions.back' }));
+        expect(hasItems(client, 'n-1')).toBe(false);
+    });
+
+    it('keeps the search filters across a Back from the picker', () => {
+        renderDrawer();
+        fireEvent.click(screen.getByRole('button', { name: 'actions.find' }));
+        fireEvent.click(screen.getByRole('button', { name: 'search maria' }));
+        fireEvent.click(screen.getByRole('button', { name: 'pick event' }));
+        fireEvent.click(screen.getByRole('button', { name: 'picker back' }));
+        expect(screen.getByText('applied q=Maria')).toBeTruthy();
+    });
+
+    it('returns focus to Find when the find step is left', () => {
+        renderDrawer();
+        fireEvent.click(screen.getByRole('button', { name: 'actions.find' }));
+        fireEvent.click(screen.getByRole('button', { name: 'actions.back' }));
+        expect(document.activeElement).toBe(screen.getByRole('button', { name: 'actions.find' }));
+    });
+
     it('caps the close note at 2000 characters', () => {
         renderDrawer();
         fireEvent.click(screen.getByRole('button', { name: 'actions.close' }));
@@ -164,7 +273,7 @@ describe('NoticeDrawer', () => {
     it('shows the outcome, and copes with an attachment lost to a purge', () => {
         hooks.detail = { ...base, status: 'ATTACHED', outcome: 'DISMISSED', attachment: null };
         renderDrawer();
-        expect(screen.getByText('attachmentGone · outcomes.DISMISSED')).toBeTruthy();
+        expect(screen.getByText('attachmentGone · DISMISSED')).toBeTruthy();
     });
 
     it('shows the close reason and note for a CLOSED notice', () => {
@@ -173,6 +282,25 @@ describe('NoticeDrawer', () => {
         expect(screen.getByText('closeReasons.NO_BREACH')).toBeTruthy();
         expect(screen.getByText('Looked fine')).toBeTruthy();
         expect(screen.queryByRole('button', { name: 'actions.find' })).toBeNull();
+    });
+
+    it('says another admin handled it when the notice leaves NEW without our own mutation', () => {
+        const client = new QueryClient();
+        const view = renderDrawer(vi.fn(), client);
+        expect(screen.queryByRole('alert')).toBeNull();
+        hooks.detail = { ...base, status: 'ATTACHED', attachment: null };
+        view.rerender(
+            <QueryClientProvider client={client}>
+                <NoticeDrawer id="n-1" onCloseAction={vi.fn()} />
+            </QueryClientProvider>,
+        );
+        expect(screen.getByRole('alert').textContent).toBe('noticeAlreadyHandled');
+    });
+
+    it('does not say that for a notice that was never NEW', () => {
+        hooks.detail = { ...base, status: 'CLOSED', closeReason: 'SPAM' };
+        renderDrawer();
+        expect(screen.queryByRole('alert')).toBeNull();
     });
 
     it('keeps a 5109 refusal visible once the refetch has moved the notice off NEW', () => {

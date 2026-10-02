@@ -68,7 +68,7 @@ describe('NoticesPanel', () => {
             { ...notice, id: 'n-3', status: 'CLOSED', closeReason: 'SPAM' },
         ]);
         render(<NoticesPanel />);
-        expect(screen.getByText('outcomes.ACTION_TAKEN')).toBeTruthy();
+        expect(screen.getByText('ACTION_TAKEN')).toBeTruthy();
         expect(screen.getByText('closeReasons.SPAM')).toBeTruthy();
     });
 

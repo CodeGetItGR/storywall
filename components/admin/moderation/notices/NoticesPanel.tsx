@@ -18,6 +18,7 @@ const DATE_FORMAT: Intl.DateTimeFormatOptions = { dateStyle: 'medium' };
 export function NoticesPanel() {
     const t = useTranslations('AdminPage.moderation.notices');
     const tCategory = useTranslations('ContentNoticeForm.categories');
+    const tOutcome = useTranslations('AdminPage.moderation.outcome');
     const locale = useLocale();
     const toErrorMessage = useApiErrorMessage();
     const [view, setView] = useState<NoticeListView>('NEW');
@@ -38,7 +39,7 @@ export function NoticesPanel() {
     }
 
     function statusLabel(notice: ContentNoticeSummaryDto): string {
-        if (notice.outcome) return t(`outcomes.${notice.outcome}`);
+        if (notice.outcome) return tOutcome(notice.outcome);
         if (notice.closeReason) return t(`closeReasons.${notice.closeReason}`);
         return t('pending');
     }
