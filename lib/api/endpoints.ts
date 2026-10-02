@@ -292,7 +292,13 @@ export const endpoints = {
             funnelCohorts: (weeks: number) => `/api/admin/metrics/funnel/cohorts?weeks=${encodeURIComponent(String(weeks))}`,
         },
         orders: {
+            list: '/api/admin/orders',
+            byId: (orderId: string) => `/api/admin/orders/${orderId}`,
             settle: (orderId: string) => `/api/admin/orders/${orderId}/settle`,
+        },
+        billing: {
+            accountingExport: (from: string, to: string) =>
+                `/api/admin/billing/accounting-export?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
         },
         webhooks: {
             unprocessed: '/api/admin/webhooks/unprocessed',

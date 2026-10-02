@@ -1,5 +1,6 @@
 'use client';
 
+import { ShoppingBag } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { AccountAdminActions } from '@/components/admin/AccountAdminActions';
@@ -7,6 +8,7 @@ import { AccountEmailSection } from '@/components/admin/AccountEmailSection';
 import { AccountStatusPill } from '@/components/admin/AccountStatusPill';
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminIdentifier } from '@/components/admin/AdminIdentifier';
+import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import type { UserResponseDto } from '@/lib/api/types';
 
 export function AccountDetailDrawer({
@@ -22,7 +24,12 @@ export function AccountDetailDrawer({
 }) {
     const t = useTranslations('AdminPage.accounts.detail');
     const tAccounts = useTranslations('AdminPage.accounts');
+    const { sendTo } = useAdminNavigation();
     const displayName = [account.firstName, account.lastName].filter(Boolean).join(' ') || tAccounts('unnamed');
+
+    function openOrders() {
+        sendTo('orders', { buyerId: account.id, buyerLabel: account.email ?? displayName });
+    }
 
     return (
         <AdminDrawer open onClose={onCloseAction} closeLabel={t('close')} title={displayName} subtitle={account.email ?? tAccounts('noEmail')}>
@@ -49,6 +56,14 @@ export function AccountDetailDrawer({
                     </div>
                     <AdminIdentifier label={t('accountId')} value={account.id} />
                 </dl>
+                <button
+                    type="button"
+                    onClick={openOrders}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-muted hover:text-ink hover:underline"
+                >
+                    <ShoppingBag className="h-3.5 w-3.5" />
+                    {t('orders')}
+                </button>
             </section>
 
             {/* Email */}
