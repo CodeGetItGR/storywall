@@ -93,7 +93,7 @@ export function EventDetailsStep() {
 
                 {/* Location */}
                 <div className="grid gap-3 sm:grid-cols-2">
-                    <FormFieldLabel label={t('fields.locationName')} required>
+                    <FormFieldLabel label={labels.locationName} required>
                         <input
                             type="text"
                             required

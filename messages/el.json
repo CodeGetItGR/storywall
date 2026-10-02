@@ -1021,11 +1021,13 @@
         "fieldLabels": {
             "WEDDING": {
                 "title": "Ονόματα ζευγαριού",
-                "startAt": "Ημερομηνία τελετής"
+                "startAt": "Ημερομηνία τελετής",
+                "locationName": "Τοποθεσία Τελετής"
             },
             "BAPTISM": {
                 "title": "Όνομα παιδιού",
-                "startAt": "Ημερομηνία τελετής"
+                "startAt": "Ημερομηνία τελετής",
+                "locationName": "Τοποθεσία Τελετής"
             },
             "SOCIAL_EVENT": {
                 "title": "Όνομα εκδήλωσης",
@@ -1324,13 +1326,10 @@
             "title": "Λεπτομέρειες εκδήλωσης",
             "subtitle": "Αυτές οι λεπτομέρειες εμφανίζονται στη σελίδα πρόσκλησης και στη ροή της εκδήλωσης.",
             "fields": {
-                "title": "Τίτλος εκδήλωσης",
                 "subtitle": "Υπότιτλος",
                 "description": "Περιγραφή",
-                "locationName": "Τοποθεσία",
                 "locationAddress": "Διεύθυνση",
                 "mapsUrl": "Σύνδεσμος χάρτη",
-                "startAt": "Έναρξη",
                 "endAt": "Λήξη"
             },
             "validation": {
@@ -2805,12 +2804,8 @@
                 "memberLimit": "{value} μέλη",
                 "storageLimit": "{value} αποθήκευση",
                 "detailsSection": "Στοιχεία",
-                "eventName": "Όνομα εκδήλωσης",
-                "startAt": "Έναρξη",
-                "endAt": "Λήξη",
                 "timezone": "Ζώνη ώρας",
                 "locationSection": "Τοποθεσία",
-                "locationName": "Χώρος",
                 "locationAddress": "Διεύθυνση",
                 "mapsUrl": "Σύνδεσμος χάρτη",
                 "visibility": "Ορατότητα",
@@ -2822,9 +2817,7 @@
                 "review": "Έλεγχος",
                 "reviewTitle": "Έλεγχος",
                 "reviewHost": "Διοργανωτής",
-                "reviewEvent": "Εκδήλωση",
                 "reviewType": "Τύπος",
-                "reviewDate": "Έναρξη",
                 "reviewPlan": "Πλάνο",
                 "reviewDuration": "Διάρκεια",
                 "reviewVisibility": "Ορατότητα",

@@ -280,7 +280,7 @@ export function OverviewDraftPanel({
             </div>
 
             {/* Move the date */}
-            <DraftStartDateModal date={startDate} />
+            <DraftStartDateModal date={startDate} eventType={eventType} />
         </div>
     );
 }

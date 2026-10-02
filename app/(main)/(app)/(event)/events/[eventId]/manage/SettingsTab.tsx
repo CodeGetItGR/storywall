@@ -10,6 +10,7 @@ import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useContentLimits } from '@/hooks/useContentLimits';
+import { useCreateEventFieldLabels } from '@/hooks/useCreateEventFieldLabels';
 import { useUpdateEvent } from '@/hooks/useEvent';
 import { useUploadMedia } from '@/hooks/useMedia';
 import { useUploadAccept } from '@/hooks/useUploadAccept';
@@ -47,6 +48,7 @@ export default function SettingsTab({
     const toErrorMessage = useApiErrorMessage();
     const { data: appConfig } = useAppConfig();
     const limits = useContentLimits();
+    const fieldLabels = useCreateEventFieldLabels(event.eventType);
     const uploadAccept = useUploadAccept();
 
     const initial = {
@@ -289,7 +291,7 @@ export default function SettingsTab({
                 </div>
 
                 {/* Basics */}
-                <FormFieldLabel label={t('settings.fields.title')} required labelClassName={labelClass}>
+                <FormFieldLabel label={fieldLabels.title} required labelClassName={labelClass}>
                     <input
                         type="text"
                         required
@@ -319,7 +321,7 @@ export default function SettingsTab({
 
                 {/* Location */}
                 <div className="grid gap-3 sm:grid-cols-2">
-                    <FormFieldLabel label={t('settings.fields.locationName')} required labelClassName={labelClass}>
+                    <FormFieldLabel label={fieldLabels.locationName} required labelClassName={labelClass}>
                         <input
                             type="text"
                             required
@@ -358,7 +360,7 @@ export default function SettingsTab({
 
                 {/* Schedule */}
                 <div className="grid gap-3 sm:grid-cols-2">
-                    <FormFieldLabel label={t('settings.fields.startAt')} required labelClassName={labelClass}>
+                    <FormFieldLabel label={fieldLabels.startAt} required labelClassName={labelClass}>
                         <input
                             type="datetime-local"
                             required

@@ -5,6 +5,8 @@ import type { ChangeEvent, MouseEvent } from 'react';
 
 import { AdminDurationSelect } from '@/components/admin/AdminDurationSelect';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
+import { useCreateEventFieldLabels } from '@/hooks/useCreateEventFieldLabels';
+import { useEventTypeVoice } from '@/hooks/useEventTypeVoice';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import type { ProvisionEventForm as ProvisionEventFormState } from '@/hooks/useProvisionEventForm';
 import type { EventTypeConvention, EventVisibility } from '@/lib/api/types';
@@ -16,6 +18,8 @@ export function ProvisionEventForm({ form }: { form: ProvisionEventFormState }) 
     const tAdmin = useTranslations('AdminPage');
     const localizedText = useLocalizedText();
     const selectedPlan = form.selectedPlan;
+    const fieldLabels = useCreateEventFieldLabels(form.selectedEventType as EventTypeConvention);
+    const voice = useEventTypeVoice(form.selectedEventType || null);
 
     function handleEventTypeChange(event: ChangeEvent<HTMLSelectElement>) {
         form.changeEventType(event.target.value as EventTypeConvention);
@@ -31,10 +35,6 @@ export function ProvisionEventForm({ form }: { form: ProvisionEventFormState }) 
 
     function handleStartChange(event: ChangeEvent<HTMLInputElement>) {
         form.setStartAt(event.target.value);
-    }
-
-    function handleEndChange(event: ChangeEvent<HTMLInputElement>) {
-        form.setEndAt(event.target.value);
     }
 
     function handleTimezoneChange(event: ChangeEvent<HTMLInputElement>) {
@@ -124,39 +124,28 @@ export function ProvisionEventForm({ form }: { form: ProvisionEventFormState }) 
                 <h3 id="provision-event-details" className="text-xs font-bold tracking-wide text-ink-faint uppercase">
                     {t('detailsSection')}
                 </h3>
-                <AdminField label={t('eventName')} required>
+                <AdminField label={fieldLabels.title} required>
                     <input
                         required
                         value={form.title}
+                        placeholder={voice.titlePlaceholder}
                         onChange={handleTitleChange}
                         className={adminInputClass()}
                         aria-invalid={Boolean(form.fieldError('title'))}
                     />
                     {form.fieldError('title') ? <span className="text-xs text-status-danger">{form.fieldError('title')}</span> : null}
                 </AdminField>
-                <div className="grid gap-4 sm:grid-cols-2">
-                    <AdminField label={t('startAt')} required>
-                        <input
-                            required
-                            type="datetime-local"
-                            value={form.startAt}
-                            min={form.startAtMin}
-                            max={form.startAtMax}
-                            onChange={handleStartChange}
-                            className={adminInputClass()}
-                        />
-                    </AdminField>
-                    <AdminField label={t('endAt')} required>
-                        <input
-                            required
-                            type="datetime-local"
-                            value={form.endAt}
-                            min={form.endAtMin}
-                            onChange={handleEndChange}
-                            className={adminInputClass()}
-                        />
-                    </AdminField>
-                </div>
+                <AdminField label={fieldLabels.startAt} required>
+                    <input
+                        required
+                        type="datetime-local"
+                        value={form.startAt}
+                        min={form.startAtMin}
+                        max={form.startAtMax}
+                        onChange={handleStartChange}
+                        className={adminInputClass()}
+                    />
+                </AdminField>
                 {form.scheduleError ? <p className="text-xs text-status-danger">{form.scheduleError}</p> : null}
                 <AdminField label={t('timezone')} required>
                     <input
@@ -182,7 +171,7 @@ export function ProvisionEventForm({ form }: { form: ProvisionEventFormState }) 
                     {t('locationSection')}
                 </h3>
                 <div className="grid gap-4 sm:grid-cols-2">
-                    <AdminField label={t('locationName')} required>
+                    <AdminField label={fieldLabels.locationName} required>
                         <input required value={form.locationName} onChange={handleLocationNameChange} className={adminInputClass()} />
                     </AdminField>
                     <AdminField label={t('locationAddress')} required>
