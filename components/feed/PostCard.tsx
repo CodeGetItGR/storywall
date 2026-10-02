@@ -279,7 +279,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
 
             {/* Comment preview */}
             {post.commentCount > 0 && (
-                <div className="border-t border-border/50 px-4 pt-3 pb-4">
+                <div className="border-t border-border/50 bg-[#f8f8f8] px-4 pt-3 pb-4">
                     <CommentsList comments={post.recentComments} compact />
                     {post.commentCount > post.recentComments.length && (
                         <button
