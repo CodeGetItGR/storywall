@@ -2,6 +2,7 @@
 
 import { ExternalLink, Loader2, Plus } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
+import type { MouseEvent } from 'react';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { AdminIdentifier } from '@/components/admin/AdminIdentifier';
@@ -17,7 +18,7 @@ import { adminErrorMessageKey } from '@/lib/adminUtils';
 import { demoEventTypeSlugFromKey } from '@/lib/demo/demoEventTypes';
 import { routes } from '@/lib/routes';
 
-export function DemoEventDetail({ row }: { row: DemoEventRow }) {
+export function DemoEventDetail({ row, onBackAction }: { row: DemoEventRow; onBackAction: (event: MouseEvent<HTMLAnchorElement>) => void }) {
     const t = useTranslations('AdminPage.demoEvents');
     const tAdmin = useTranslations('AdminPage');
     const format = useFormatter();
@@ -30,7 +31,7 @@ export function DemoEventDetail({ row }: { row: DemoEventRow }) {
         <div className="max-w-3xl space-y-8">
             {/* Header */}
             <header className="space-y-3">
-                <BackButton href={DEMO_EVENTS_HASH_ROOT} label={t('title')} />
+                <BackButton href={DEMO_EVENTS_HASH_ROOT} label={t('title')} onClick={onBackAction} />
                 <div className="flex flex-wrap items-center gap-3">
                     <h1 className="text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">{typeName}</h1>
                     <DemoEventStatusPill hasDemo={Boolean(demo)} />
