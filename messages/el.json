@@ -2547,6 +2547,7 @@
         },
         "identifiers": {
             "copy": "Αντιγραφή: {label}",
+            "copyShort": "Αντιγραφή",
             "copied": "Αντιγράφηκε",
             "eventId": "ID εκδήλωσης",
             "requestId": "ID αιτήματος",

@@ -20,7 +20,7 @@ export function OrderRecordSection({ order }: { order: AdminOrderDetailDto }) {
                 {/* Identifiers */}
                 <div className="grid gap-3 sm:grid-cols-2">
                     <AdminIdentifier label={t('orders.detail.record.orderId')} value={order.summary.id} />
-                    <AdminIdentifier label={t('identifiers.eventId')} value={order.summary.eventId} />
+                    <AdminIdentifier label={t('identifiers.eventId')} value={order.summary.eventId} hideValue />
                 </div>
 
                 {/* Consent and settlement */}

@@ -43,7 +43,7 @@ export function OrderPaymentSection({ payment }: { payment: AdminOrderDetailDto[
                     <div className="grid gap-3 sm:grid-cols-2">
                         {payment.providerPaymentId && (
                             <div className="min-w-0 space-y-1">
-                                <AdminIdentifier label={t('detail.payment.paymentId')} value={payment.providerPaymentId} />
+                                <AdminIdentifier label={t('detail.payment.paymentId')} value={payment.providerPaymentId} hideValue />
                                 {payment.provider === 'STRIPE' && (
                                     <a
                                         href={stripePaymentUrl(payment.providerPaymentId)}
@@ -57,7 +57,9 @@ export function OrderPaymentSection({ payment }: { payment: AdminOrderDetailDto[
                                 )}
                             </div>
                         )}
-                        {payment.providerSessionId && <AdminIdentifier label={t('detail.payment.sessionId')} value={payment.providerSessionId} />}
+                        {payment.providerSessionId && (
+                            <AdminIdentifier label={t('detail.payment.sessionId')} value={payment.providerSessionId} hideValue />
+                        )}
                     </div>
                 )}
 
