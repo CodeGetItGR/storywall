@@ -16,10 +16,7 @@ describe('LandingFooter', () => {
     it('links to the community guidelines', async () => {
         render(await LandingFooter());
 
-        expect(screen.getByRole('link', { name: 'communityGuidelines' })).toHaveAttribute(
-            'href',
-            '/legal/community-guidelines',
-        );
+        expect(screen.getByRole('link', { name: 'communityGuidelines' })).toHaveAttribute('href', '/legal/community-guidelines');
     });
 
     it('links to the public content notice form', async () => {

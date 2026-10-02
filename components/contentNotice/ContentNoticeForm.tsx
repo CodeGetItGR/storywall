@@ -3,6 +3,7 @@
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ChangeEvent, FormEvent } from 'react';
+import { useEffect, useRef } from 'react';
 
 import type { ContentNoticeFieldKey } from '@/hooks/useContentNoticeSubmit';
 import { NOTICE_LIMITS, useContentNoticeSubmit } from '@/hooks/useContentNoticeSubmit';
@@ -15,6 +16,26 @@ type TextFieldKey = 'locationText' | 'link' | 'explanation' | 'notifierName' | '
 const INPUT =
     'w-full rounded-xl border border-border/70 bg-background px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 aria-[invalid=true]:border-red-500';
 const LABEL = 'mb-1.5 block text-sm font-medium text-ink';
+// Form order, which is also the order focus goes to on a field-level error.
+const FIELD_ORDER: readonly ContentNoticeFieldKey[] = [
+    'category',
+    'locationText',
+    'link',
+    'explanation',
+    'notifierName',
+    'notifierEmail',
+    'goodFaith',
+];
+const FIELD_IDS: Record<ContentNoticeFieldKey, string> = {
+    category: 'cn-category',
+    locationText: 'cn-location',
+    link: 'cn-link',
+    explanation: 'cn-explanation',
+    notifierName: 'cn-name',
+    notifierEmail: 'cn-email',
+    goodFaith: 'cn-good-faith',
+};
+
 const HINT = 'mt-1.5 text-xs text-ink-muted';
 const FIELD_ERROR = 'mt-1.5 text-xs text-red-600';
 
@@ -24,6 +45,16 @@ export function ContentNoticeForm() {
     const notice = useContentNoticeSubmit();
     const { draft, fieldErrors, setField } = notice;
     const identityOptional = draft.category === 'CHILD_SEXUAL_ABUSE';
+    const formRef = useRef<HTMLFormElement>(null);
+
+    // After a 400 that mapped errors onto fields, put focus on the first invalid one.
+    useEffect(() => {
+        if (notice.error !== 'fieldErrors') return;
+        const first = FIELD_ORDER.find((key) => fieldErrors[key]);
+        if (!first) return;
+        const target = formRef.current?.querySelector<HTMLElement>(first === 'category' ? 'input[name="category"]' : `#${FIELD_IDS[first]}`);
+        target?.focus();
+    }, [notice.error, fieldErrors]);
 
     function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -55,19 +86,23 @@ export function ContentNoticeForm() {
 
     const fieldError = (key: ContentNoticeFieldKey) =>
         fieldErrors[key] ? (
-            <p id={`cn-${key}-error`} className={FIELD_ERROR}>
+            <p id={`${FIELD_IDS[key]}-error`} className={FIELD_ERROR}>
                 {fieldErrors[key]}
             </p>
         ) : null;
-    const invalid = (key: ContentNoticeFieldKey) => (fieldErrors[key] ? { 'aria-invalid': true, 'aria-describedby': `cn-${key}-error` } : {});
+    // Merges the extra ids (a hint) with the error id, so neither overwrites the other.
+    const describedBy = (key: ContentNoticeFieldKey, ...extra: string[]) => {
+        const ids = [...extra, ...(fieldErrors[key] ? [`${FIELD_IDS[key]}-error`] : [])];
+        return {
+            ...(fieldErrors[key] ? { 'aria-invalid': true } : {}),
+            ...(ids.length ? { 'aria-describedby': ids.join(' ') } : {}),
+        };
+    };
 
     return (
-        <form
-            onSubmit={handleSubmit}
-            className="relative flex flex-col gap-6"
-        >
+        <form ref={formRef} onSubmit={handleSubmit} className="relative flex flex-col gap-6">
             {/* Category */}
-            <fieldset className="flex flex-col gap-2">
+            <fieldset className="flex flex-col gap-2" {...describedBy('category')}>
                 <legend className={LABEL}>{t('fields.category')}</legend>
                 {NOTICE_CATEGORIES.map((category) => (
                     <label key={category} className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-ink">
@@ -93,7 +128,7 @@ export function ContentNoticeForm() {
                 </label>
                 <textarea
                     id="cn-location"
-                name="locationText"
+                    name="locationText"
                     required
                     minLength={NOTICE_LIMITS.location[0]}
                     maxLength={NOTICE_LIMITS.location[1]}
@@ -101,9 +136,11 @@ export function ContentNoticeForm() {
                     value={draft.locationText}
                     onChange={handleText}
                     className={INPUT}
-                    {...invalid('locationText')}
+                    {...describedBy('locationText', 'cn-location-help')}
                 />
-                <p className={HINT}>{t('help.location')}</p>
+                <p id="cn-location-help" className={HINT}>
+                    {t('help.location')}
+                </p>
                 {fieldError('locationText')}
             </div>
 
@@ -114,13 +151,13 @@ export function ContentNoticeForm() {
                 </label>
                 <input
                     id="cn-link"
-                name="link"
+                    name="link"
                     type="url"
                     maxLength={NOTICE_LIMITS.link}
                     value={draft.link}
                     onChange={handleText}
                     className={INPUT}
-                    {...invalid('link')}
+                    {...describedBy('link')}
                 />
                 {fieldError('link')}
             </div>
@@ -132,7 +169,7 @@ export function ContentNoticeForm() {
                 </label>
                 <textarea
                     id="cn-explanation"
-                name="explanation"
+                    name="explanation"
                     required
                     minLength={NOTICE_LIMITS.explanation[0]}
                     maxLength={NOTICE_LIMITS.explanation[1]}
@@ -140,7 +177,7 @@ export function ContentNoticeForm() {
                     value={draft.explanation}
                     onChange={handleText}
                     className={INPUT}
-                    {...invalid('explanation')}
+                    {...describedBy('explanation')}
                 />
                 {fieldError('explanation')}
             </div>
@@ -154,14 +191,14 @@ export function ContentNoticeForm() {
                     </label>
                     <input
                         id="cn-name"
-                    name="notifierName"
+                        name="notifierName"
                         autoComplete="name"
                         maxLength={NOTICE_LIMITS.name}
                         required={!identityOptional}
                         value={draft.notifierName}
                         onChange={handleText}
                         className={INPUT}
-                        {...invalid('notifierName')}
+                        {...describedBy('notifierName')}
                     />
                     {fieldError('notifierName')}
                 </div>
@@ -171,7 +208,7 @@ export function ContentNoticeForm() {
                     </label>
                     <input
                         id="cn-email"
-                    name="notifierEmail"
+                        name="notifierEmail"
                         type="email"
                         autoComplete="email"
                         maxLength={NOTICE_LIMITS.email}
@@ -179,7 +216,7 @@ export function ContentNoticeForm() {
                         value={draft.notifierEmail}
                         onChange={handleText}
                         className={INPUT}
-                        {...invalid('notifierEmail')}
+                        {...describedBy('notifierEmail')}
                     />
                     {fieldError('notifierEmail')}
                 </div>
@@ -189,12 +226,13 @@ export function ContentNoticeForm() {
             <div>
                 <label className="flex cursor-pointer items-start gap-3 text-sm text-ink">
                     <input
+                        id="cn-good-faith"
                         type="checkbox"
                         required
                         checked={draft.goodFaith}
                         onChange={handleGoodFaith}
                         className="mt-0.5 size-4 shrink-0 accent-primary"
-                        {...invalid('goodFaith')}
+                        {...describedBy('goodFaith')}
                     />
                     {t('fields.goodFaith')}
                 </label>
@@ -205,13 +243,7 @@ export function ContentNoticeForm() {
             <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
                 <label>
                     Website
-                    <input
-                        name="website"
-                        tabIndex={-1}
-                        autoComplete="off"
-                        value={draft.website}
-                        onChange={handleText}
-                    />
+                    <input name="website" tabIndex={-1} autoComplete="off" value={draft.website} onChange={handleText} />
                 </label>
             </div>
 
@@ -221,7 +253,7 @@ export function ContentNoticeForm() {
                     type="submit"
                     disabled={!notice.canSubmit || notice.isSubmitting}
                     className={cn(
-                        'bg-gradient-brand inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-full px-6 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60',
+                        'inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-full px-6 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60',
                     )}
                 >
                     {notice.isSubmitting && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}

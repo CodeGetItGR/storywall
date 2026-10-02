@@ -1831,7 +1831,7 @@
         "sentNext": "Quote this number if you write to us about this notice. If you gave an email, we've sent a confirmation there, and we'll write again with our decision.",
         "errors": {
             "invalid": "Some details are missing or invalid. Check the form and try again.",
-            "fieldErrors": "Some details need fixing. See the fields marked below.",
+            "fieldErrors": "Some details need fixing. See the fields marked above.",
             "rateLimited": "We can't take another notice right now. Please try again a little later.",
             "failed": "We couldn't send your notice. Please try again."
         }

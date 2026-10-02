@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ContentNoticeForm } from '@/components/contentNotice/ContentNoticeForm';
@@ -21,16 +21,13 @@ const state = vi.hoisted(() => ({
     canSubmit: false,
     error: null as string | null,
     fieldErrors: {} as ContentNoticeFieldErrors,
+    setField: vi.fn(),
+    submit: vi.fn(),
 }));
 
 vi.mock('@/hooks/useContentNoticeSubmit', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@/hooks/useContentNoticeSubmit')>()),
-    useContentNoticeSubmit: () => ({
-        ...state,
-        setField: vi.fn(),
-        submit: vi.fn(),
-        isSubmitting: false,
-    }),
+    useContentNoticeSubmit: () => ({ ...state, isSubmitting: false }),
 }));
 vi.mock('next-intl', () => ({
     useTranslations: () => (key: string, values?: Record<string, unknown>) => (values ? `${key} ${JSON.stringify(values)}` : key),
@@ -45,6 +42,8 @@ describe('ContentNoticeForm', () => {
         state.canSubmit = false;
         state.error = null;
         state.fieldErrors = {};
+        state.setField.mockReset();
+        state.submit.mockReset();
     });
 
     it('offers the six categories as radios', () => {
@@ -92,5 +91,29 @@ describe('ContentNoticeForm', () => {
         expect(screen.getByLabelText(/fields.email/)).toHaveAttribute('aria-invalid', 'true');
         expect(screen.getByText('must be a valid email')).toBeInTheDocument();
         expect(screen.getByRole('alert')).toHaveTextContent('errors.fieldErrors');
+    });
+
+    it('reports typing and submitting to the hook', () => {
+        const { container } = render(<ContentNoticeForm />);
+        fireEvent.change(container.querySelector('#cn-email')!, { target: { value: 'e@example.com' } });
+        expect(state.setField).toHaveBeenCalledWith('notifierEmail', 'e@example.com');
+        fireEvent.submit(container.querySelector('form')!);
+        expect(state.submit).toHaveBeenCalledTimes(1);
+    });
+
+    it('focuses the first invalid field in form order after a field-level error', () => {
+        state.error = 'fieldErrors';
+        state.fieldErrors = { notifierEmail: 'bad email', link: 'bad link' };
+        const { container } = render(<ContentNoticeForm />);
+        expect(container.querySelector('#cn-link')).toHaveFocus();
+    });
+
+    it('links the location hint and the errors to their fields', () => {
+        state.error = 'fieldErrors';
+        state.fieldErrors = { locationText: 'too short', category: 'pick one' };
+        const { container } = render(<ContentNoticeForm />);
+        expect(container.querySelector('#cn-location')).toHaveAttribute('aria-describedby', 'cn-location-help cn-location-error');
+        expect(container.querySelector('fieldset')).toHaveAttribute('aria-describedby', 'cn-category-error');
+        expect(container.querySelector('fieldset')).toHaveAttribute('aria-invalid', 'true');
     });
 });

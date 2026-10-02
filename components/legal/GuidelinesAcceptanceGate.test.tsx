@@ -51,6 +51,14 @@ describe('GuidelinesAcceptanceGate', () => {
         expect(screen.getByRole('link', { name: 'read opensInNewTab' })).toHaveAttribute('href', '/legal/community-guidelines');
     });
 
+    it('does not block the public content notice form', () => {
+        mocks.me = { guidelinesAcceptanceRequired: true, currentGuidelinesVersion: '2026-09-30' };
+        mocks.pathname = '/report-content';
+        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
+
+        expect(screen.getByText('app')).toBeInTheDocument();
+    });
+
     it('accepts the version /api/me reported', () => {
         mocks.me = { guidelinesAcceptanceRequired: true, currentGuidelinesVersion: '2026-09-30' };
         render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
