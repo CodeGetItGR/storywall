@@ -108,7 +108,15 @@ export function NoticeDrawer({ id, onCloseAction }: { id: string; onCloseAction:
     }
 
     const mutationError = attach.error ?? close.error;
-    const handledElsewhere = wasNew && notice !== undefined && notice.status !== 'NEW' && !attach.isSuccess && !close.isSuccess && !mutationError;
+    const handledElsewhere =
+        wasNew &&
+        notice !== undefined &&
+        notice.status !== 'NEW' &&
+        !attach.isPending &&
+        !close.isPending &&
+        !attach.isSuccess &&
+        !close.isSuccess &&
+        !mutationError;
 
     return (
         <AdminDrawer

@@ -13,6 +13,8 @@ const hooks = vi.hoisted(() => ({
     closeError: null as Error | null,
     attachMutate: vi.fn(),
     attachError: null as Error | null,
+    attachPending: false,
+    closePending: false,
 }));
 
 vi.mock('next-intl', () => ({
@@ -85,8 +87,8 @@ vi.mock('@/components/admin/moderation/notices/NoticeItemPicker', () => ({
 vi.mock('@/hooks/useAdminNotices', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@/hooks/useAdminNotices')>()),
     useAdminNotice: () => ({ data: hooks.detail, error: null, isLoading: false }),
-    useAttachNotice: () => ({ mutate: hooks.attachMutate, isPending: false, error: hooks.attachError }),
-    useCloseNotice: () => ({ mutate: hooks.closeMutate, isPending: false, error: hooks.closeError }),
+    useAttachNotice: () => ({ mutate: hooks.attachMutate, isPending: hooks.attachPending, error: hooks.attachError }),
+    useCloseNotice: () => ({ mutate: hooks.closeMutate, isPending: hooks.closePending, error: hooks.closeError }),
 }));
 
 const base: ContentNoticeDetailDto = {
@@ -113,6 +115,8 @@ beforeEach(() => {
     hooks.detail = base;
     hooks.closeError = null;
     hooks.attachError = null;
+    hooks.attachPending = false;
+    hooks.closePending = false;
     hooks.closeMutate.mockReset();
     hooks.attachMutate.mockReset();
 });
@@ -295,6 +299,21 @@ describe('NoticeDrawer', () => {
             </QueryClientProvider>,
         );
         expect(screen.getByRole('alert').textContent).toBe('noticeAlreadyHandled');
+    });
+
+    it.each(['attach', 'close'] as const)('does not say that while our own %s is still settling', (which) => {
+        const client = new QueryClient();
+        const view = renderDrawer(vi.fn(), client);
+        // The hook has written the new detail into the cache but is still awaiting its list refetches.
+        if (which === 'attach') hooks.attachPending = true;
+        else hooks.closePending = true;
+        hooks.detail = { ...base, status: which === 'attach' ? 'ATTACHED' : 'CLOSED', closeReason: 'SPAM', attachment: null };
+        view.rerender(
+            <QueryClientProvider client={client}>
+                <NoticeDrawer id="n-1" onCloseAction={vi.fn()} />
+            </QueryClientProvider>,
+        );
+        expect(screen.queryByRole('alert')).toBeNull();
     });
 
     it('does not say that for a notice that was never NEW', () => {
