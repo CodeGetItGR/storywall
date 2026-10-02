@@ -50,6 +50,7 @@ const baseDetail: ModerationCaseDetailDto = {
             createdAt: '2026-09-30T10:00:00Z',
             reporterMemberId: 'm-2',
             reporterDisplayName: 'Eleni',
+            noticeReference: null,
         },
     ],
     content: {
@@ -164,6 +165,16 @@ describe('ModerationCaseDrawer', () => {
         fireEvent.click(screen.getByRole('radio', { name: 'form.dismiss' }));
         fireEvent.click(screen.getByRole('button', { name: 'form.review' }));
         expect(screen.getByText('summary.reports {"count":1,"outcome":"DISMISSED"}')).toBeTruthy();
+    });
+
+    it('labels a report that came from a public notice with its reference', () => {
+        hooks.detail = {
+            ...baseDetail,
+            reports: [{ ...baseDetail.reports[0], reporterMemberId: null, reporterDisplayName: null, noticeReference: 'AB12CD34' }],
+        };
+        renderDrawer();
+        expect(screen.getByText(/publicNotice {"reference":"AB12CD34"}/)).toBeTruthy();
+        expect(screen.queryByText(/reporterGone/)).toBeNull();
     });
 
     it('says the item is gone when the content is null', () => {

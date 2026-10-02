@@ -75,6 +75,7 @@ export const routes = {
         checkoutCancelled: (eventId: string) => `${eventBasePath(eventId)}/checkout/cancelled`,
     },
     admin: '/admin',
+    reportContent: '/report-content',
     notifications: '/notifications',
     // Public. No version: the current terms; a paid order links the version it acknowledged.
     legal: {

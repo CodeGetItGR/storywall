@@ -108,8 +108,10 @@ export function ModerationCaseDrawer({
                                     </p>
                                     {r.description ? <p className="mt-1 break-words whitespace-pre-wrap text-ink">{r.description}</p> : null}
                                     <p className="mt-1 text-xs text-ink-muted">
-                                        {r.reporterDisplayName ?? t('reporterGone')} ·{' '}
-                                        {formatDate(locale, r.createdAt, { dateStyle: 'medium', timeStyle: 'short' })}
+                                        {r.noticeReference
+                                            ? t('publicNotice', { reference: r.noticeReference })
+                                            : (r.reporterDisplayName ?? t('reporterGone'))}{' '}
+                                        · {formatDate(locale, r.createdAt, { dateStyle: 'medium', timeStyle: 'short' })}
                                     </p>
                                 </li>
                             ))}

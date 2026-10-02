@@ -183,6 +183,22 @@ describe('useDecideModerationCase', () => {
         expect(isInvalidated(client, caseKey)).toBe(true);
     });
 
+    it('marks the notices lists stale, and leaves the audited notice and picker queries alone', async () => {
+        mocks.post.mockResolvedValue({ id: 'd-1' });
+        const client = makeClient();
+        const listKey = ['admin', 'moderation', 'notices', 'CLOSED', 0];
+        const detailKey = ['admin', 'moderation', 'notice', 'n-1'];
+        const browseKey = ['admin', 'moderation', 'notice-browse', 'n-1', 'items', 'e-1', 'MEDIA', 0];
+        for (const key of [listKey, detailKey, browseKey]) client.setQueryData(key, {});
+        const { result } = renderHook(() => useDecideModerationCase(), { wrapper: wrapperFor(client) });
+
+        await act(() => result.current.mutateAsync({ targetType: 'COMMENT', targetId: 'c-1', request }));
+
+        expect(isInvalidated(client, listKey)).toBe(true);
+        expect(isInvalidated(client, detailKey)).toBe(false);
+        expect(isInvalidated(client, browseKey)).toBe(false);
+    });
+
     it('does not re-read a mounted case after deciding (the drawer closes; a re-read is a logged view)', async () => {
         mocks.get.mockResolvedValue({ targetId: 'c-1' });
         mocks.post.mockResolvedValue({ id: 'd-1' });

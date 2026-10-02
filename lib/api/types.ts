@@ -2646,7 +2646,8 @@ export type AdminAuditAction =
     | 'ACCOUNT_STATUS_CHANGED'
     | 'ACCOUNT_ROLE_CHANGED'
     | 'ACCOUNT_EMAIL_CHANGED'
-    | 'ACCOUNT_DELETED';
+    | 'ACCOUNT_DELETED'
+    | 'NOTICE_VIEWED' | 'NOTICE_ATTACHED' | 'NOTICE_CLOSED' | 'EVENT_BROWSED';
 
 // GET /api/admin/moderation/cases?status=&page=&size= (Page<ModerationCaseSummaryDto>).
 // decisionId/outcome/decidedAt are set only on CLOSED cases; topReason, firstReportedAt and
@@ -2674,6 +2675,7 @@ export interface ModerationReportDto {
     createdAt: string;
     reporterMemberId: string | null;
     reporterDisplayName: string | null;
+    noticeReference: string | null; // set when the report came from a public notice
 }
 
 export interface ModerationContentDto {
@@ -2743,6 +2745,56 @@ export interface ModerationDecisionRequestDto {
     suspendAccount: boolean;
     note?: string | null; // max 2000
 }
+
+// Public content notices (DSA Art. 16). See fe-guides/content-notices-fe-integration.md.
+export type NoticeCategory =
+    | 'PERSONAL_DATA_OR_IMAGE' | 'COPYRIGHT' | 'HARASSMENT_OR_HATE'
+    | 'CHILD_SEXUAL_ABUSE' | 'OTHER_ILLEGAL' | 'GUIDELINES_BREACH';
+export const NOTICE_CATEGORIES: readonly NoticeCategory[] = [
+    'PERSONAL_DATA_OR_IMAGE', 'COPYRIGHT', 'HARASSMENT_OR_HATE', 'CHILD_SEXUAL_ABUSE', 'OTHER_ILLEGAL', 'GUIDELINES_BREACH',
+];
+export type NoticeStatus = 'NEW' | 'ATTACHED' | 'CLOSED';
+export type NoticeCloseReason = 'NOT_FOUND' | 'NO_BREACH' | 'ALREADY_HANDLED' | 'SPAM';
+export const NOTICE_CLOSE_REASONS: readonly NoticeCloseReason[] = ['NOT_FOUND', 'NO_BREACH', 'ALREADY_HANDLED', 'SPAM'];
+// ?status= on the admin list. CLOSED covers ATTACHED and CLOSED notices.
+export type NoticeListView = 'NEW' | 'CLOSED';
+
+// POST /api/content-notices (public, no auth). notifierName and notifierEmail are required unless
+// category is CHILD_SEXUAL_ABUSE. website is the honeypot: always send ''.
+export interface ContentNoticeRequestDto {
+    category: NoticeCategory;
+    locationText: string;           // 10-2000 after trimming
+    link?: string | null;           // http(s), max 2000
+    explanation: string;            // 10-5000 after trimming
+    notifierName?: string | null;   // max 200
+    notifierEmail?: string | null;  // max 320
+    goodFaith: true;
+    website?: string;               // honeypot
+    locale?: string;                // max 10; "el..." -> el, anything else -> en
+}
+export interface ContentNoticeReceiptDto { reference: string }
+export interface ContentNoticeSummaryDto {
+    id: string; reference: string; category: NoticeCategory; locationExcerpt: string; status: NoticeStatus;
+    closeReason: NoticeCloseReason | null; outcome: ModerationOutcome | null; createdAt: string; handledAt: string | null;
+}
+export interface ContentNoticeDetailDto {
+    id: string; reference: string; category: NoticeCategory; locationText: string; link: string | null;
+    explanation: string; notifierName: string | null; notifierEmail: string | null; locale: string;
+    status: NoticeStatus; closeReason: NoticeCloseReason | null; closeNote: string | null;
+    outcome: ModerationOutcome | null; handledByUserId: string | null; handledAt: string | null; createdAt: string;
+    // null unless ATTACHED, and null when the attached event was purged.
+    attachment: { reportId: string; eventId: string; targetType: ReportTargetType; targetId: string } | null;
+}
+export interface NoticeEventCandidateDto {
+    eventId: string; title: string; startAt: string; primaryHostName: string | null;
+    status: EventStatus; deleted: boolean;
+}
+export interface NoticeItemCandidateDto {
+    targetType: ReportTargetType; targetId: string; text: string | null; thumbnailUrl: string | null;
+    authorDisplayName: string | null; createdAt: string;
+}
+export interface NoticeAttachRequestDto { eventId: string; targetType: ReportTargetType; targetId: string }
+export interface NoticeCloseRequestDto { reason: NoticeCloseReason; note?: string | null } // note max 2000
 
 // GET /api/admin/audit-log?targetId=&adminUserId=&page=&size= (Page, newest first).
 export interface AdminAuditLogResponseDto {

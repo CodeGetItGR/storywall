@@ -1799,6 +1799,43 @@
         "version": "Version {version}",
         "unavailable": "These terms aren't available right now."
     },
+    "ContentNoticePage": {
+        "title": "Report content",
+        "intro": "Anyone can use this form, with or without a StoryWall account, to tell us about content that is illegal or breaks our Community Guidelines. A person on the StoryWall team reviews every notice.",
+        "guidelines": "Read the <link>Community Guidelines</link>."
+    },
+    "ContentNoticeForm": {
+        "fields": {
+            "category": "What is the problem?",
+            "location": "Where is the content?",
+            "link": "Link (optional)",
+            "explanation": "Why is it illegal or against the rules?",
+            "name": "Your name",
+            "email": "Your email",
+            "goodFaith": "I believe the information in this notice is accurate and complete."
+        },
+        "help": {
+            "location": "For example: the event's name and date, what the photo or post shows, and who posted it."
+        },
+        "categories": {
+            "PERSONAL_DATA_OR_IMAGE": "My image or personal data without consent",
+            "COPYRIGHT": "Copyright or other rights",
+            "HARASSMENT_OR_HATE": "Harassment, threats or hate",
+            "CHILD_SEXUAL_ABUSE": "Child sexual abuse material",
+            "OTHER_ILLEGAL": "Other illegal content",
+            "GUIDELINES_BREACH": "Breaks the Community Guidelines"
+        },
+        "identityOptional": "For this category you can leave your name and email out. Without an email we can't tell you what we decided.",
+        "submit": "Send notice",
+        "sent": "Thank you. Your reference is #{reference}.",
+        "sentNext": "Quote this number if you write to us about this notice. If you gave an email, we've sent a confirmation there, and we'll write again with our decision.",
+        "errors": {
+            "invalid": "Some details are missing or invalid. Check the form and try again.",
+            "fieldErrors": "Some details need fixing. See the fields marked above.",
+            "rateLimited": "We can't take another notice right now. Please try again a little later.",
+            "failed": "We couldn't send your notice. Please try again."
+        }
+    },
     "CommunityGuidelinesPage": {
         "title": "Community Guidelines",
         "unavailable": "The Community Guidelines couldn't be loaded. Please try again later."
@@ -2304,7 +2341,8 @@
             "tabs": {
                 "OPEN": "Open",
                 "UNDER_REVIEW": "Under review",
-                "CLOSED": "Closed"
+                "CLOSED": "Closed",
+                "NOTICES": "Notices"
             },
             "loading": "Loading reports",
             "empty": "No reports here.",
@@ -2377,6 +2415,84 @@
                 }
             },
             "banLifted": "Lifted {date}",
+            "publicNotice": "Public notice · #{reference}",
+            "notices": {
+                "viewsLabel": "Notice status",
+                "loading": "Loading notices",
+                "openNotice": "Open notice #{reference}",
+                "views": {
+                    "NEW": "New",
+                    "CLOSED": "Closed"
+                },
+                "empty": "No notices here.",
+                "count": "{count, plural, one {# notice} other {# notices}}",
+                "columns": {
+                    "received": "Received",
+                    "category": "Category",
+                    "location": "Where",
+                    "reference": "Reference",
+                    "status": "Status"
+                },
+                "closeReasons": {
+                    "NOT_FOUND": "Couldn't find the content",
+                    "NO_BREACH": "Not illegal, doesn't break the Community Guidelines",
+                    "ALREADY_HANDLED": "Already removed or decided",
+                    "SPAM": "Spam"
+                },
+                "pending": "Decision pending",
+                "statusNew": "New",
+                "drawerTitle": "Notice #{reference}",
+                "fields": {
+                    "category": "Category",
+                    "location": "Where the content is",
+                    "link": "Link",
+                    "explanation": "Explanation",
+                    "name": "Name",
+                    "email": "Email",
+                    "locale": "Language",
+                    "received": "Received",
+                    "handledAt": "Handled",
+                    "attachedTo": "Attached to",
+                    "closeReason": "Closed as",
+                    "closeNote": "Internal note"
+                },
+                "noIdentity": "Sent without a name or email",
+                "attachmentGone": "Item no longer available",
+                "actions": {
+                    "find": "Find the item",
+                    "close": "Close without attaching",
+                    "attach": "Attach",
+                    "confirmAttach": "Attach this notice to the item?",
+                    "confirmAttachButton": "Attach to the item",
+                    "confirmClose": "Close",
+                    "back": "Back"
+                },
+                "closeNote": "Internal note (optional)",
+                "closeEmailsNotifier": "The notifier will be emailed, except for spam.",
+                "search": {
+                    "heading": "Find the event",
+                    "count": "{count, plural, one {# event} other {# events}}",
+                    "title": "Event title",
+                    "hostEmail": "Host email",
+                    "date": "Event date",
+                    "submit": "Search",
+                    "noAudit": "Searching shows event details only. Opening an event's content is logged.",
+                    "deleted": "Deleted",
+                    "choose": "Choose",
+                    "chooseEvent": "Choose {title}",
+                    "primaryHost": "Primary host",
+                    "empty": "No events match."
+                },
+                "picker": {
+                    "heading": "Find the item",
+                    "count": "{count, plural, one {# item} other {# items}}",
+                    "type": "Content type",
+                    "items": "Items",
+                    "audited": "Opening this event's content is written to the audit log with this notice.",
+                    "empty": "Nothing of this type.",
+                    "anonymous": "Guest"
+                }
+            },
             "liftBan": "Lift ban",
             "reportStatus": {
                 "OPEN": "Open",
@@ -4027,6 +4143,7 @@
         "moderationDecisionInvalid": "This action doesn't apply to this item.",
         "eventBanned": "You can't join this event.",
         "moderationCaseClosed": "This case has already been decided.",
+        "noticeAlreadyHandled": "Another admin has already handled this notice.",
         "moderationMemberIsHost": "Hosts can't be removed from their event. Suspend the account instead.",
         "moderationTargetProtected": "Admin accounts can't be suspended here."
     },
@@ -4476,6 +4593,7 @@
             "copyright": "© 2026 STORYWALL",
             "legal": ["Privacy Policy", "Terms of Use", "Cookies", "Cookie Settings", "Cancellations & Withdrawal", "Contact"],
             "communityGuidelines": "Community Guidelines",
+            "reportContent": "Report content",
             "backToTop": "BACK TO TOP"
         }
     },

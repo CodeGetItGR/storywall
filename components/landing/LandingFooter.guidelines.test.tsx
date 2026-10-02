@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { LandingFooter } from '@/components/landing/LandingFooter';
 
@@ -11,12 +11,17 @@ vi.mock('@/components/landing/LandingMotionToggle', () => ({ LandingMotionToggle
 vi.mock('@/components/landing/LandingNewsletter', () => ({ LandingNewsletter: () => null }));
 
 describe('LandingFooter', () => {
+    afterEach(cleanup);
+
     it('links to the community guidelines', async () => {
         render(await LandingFooter());
 
-        expect(screen.getByRole('link', { name: 'communityGuidelines' })).toHaveAttribute(
-            'href',
-            '/legal/community-guidelines',
-        );
+        expect(screen.getByRole('link', { name: 'communityGuidelines' })).toHaveAttribute('href', '/legal/community-guidelines');
+    });
+
+    it('links to the public content notice form', async () => {
+        render(await LandingFooter());
+
+        expect(screen.getByRole('link', { name: 'reportContent' })).toHaveAttribute('href', '/report-content');
     });
 });

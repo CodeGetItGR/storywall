@@ -47,6 +47,8 @@ export const endpoints = {
         businessProfile: '/api/me/business-profile',
     },
 
+    contentNotices: { submit: '/api/content-notices' },
+
     newsletter: {
         subscribe: '/api/newsletter/subscribe',
         confirm: '/api/newsletter/confirm',
@@ -243,6 +245,12 @@ export const endpoints = {
         decision: (targetType: string, targetId: string) => `/api/admin/moderation/cases/${targetType}/${targetId}/decision`,
         ban: (banId: string) => `/api/admin/moderation/bans/${banId}`,
         auditLog: '/api/admin/audit-log',
+        notices: '/api/admin/moderation/notices',
+        notice: (id: string) => `/api/admin/moderation/notices/${id}`,
+        noticeEvents: (id: string) => `/api/admin/moderation/notices/${id}/events`,
+        noticeItems: (id: string, eventId: string) => `/api/admin/moderation/notices/${id}/events/${eventId}/items`,
+        noticeAttach: (id: string) => `/api/admin/moderation/notices/${id}/attach`,
+        noticeClose: (id: string) => `/api/admin/moderation/notices/${id}/close`,
     },
 
     auditLogs: {

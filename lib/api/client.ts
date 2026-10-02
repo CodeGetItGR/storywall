@@ -292,6 +292,9 @@ export const api = {
     url: (path: string) => `${API_BASE_URL}${path}`,
     download: (path: string, options?: RequestInit) => apiFetchResponse(path, { ...options, method: 'GET' }),
     publicGet: <T>(path: string, options?: RequestInit) => rawFetch<T>(path, { ...options, method: 'GET' }),
+    // Public JSON POST: no Authorization header and no refresh-on-401, for endpoints open to anyone.
+    publicPost: <T>(path: string, data?: unknown, options?: RequestInit) =>
+        rawFetch<T>(path, { ...options, method: 'POST', body: data ? JSON.stringify(data) : undefined }),
     publicPostForm: <T>(path: string, formData: FormData, options?: RequestInit) => rawPostForm<T>(path, formData, options),
     post: <T>(path: string, data?: unknown, options?: RequestInit) =>
         apiFetch<T>(path, {
