@@ -8,6 +8,7 @@ import { BetaFeedback } from '@/components/betaFeedback/BetaFeedback';
 import { GuidelinesAcceptanceGate, GuidelinesGateSignOutHold } from '@/components/legal/GuidelinesAcceptanceGate';
 import { useAuth } from '@/hooks/useAuth';
 import { useVisualViewportSync } from '@/hooks/useVisualViewportSync';
+import { refreshEventOn4015 } from '@/lib/eventSuspension';
 import { reopenGuidelinesGateOn4013 } from '@/lib/guidelinesAcceptance';
 import { makeQueryClient } from '@/lib/queryClient';
 import { AppConfigBootstrap } from '@/providers/AppConfigBootstrap';
@@ -41,6 +42,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
     const [queryClient] = useState(makeQueryClient);
     // Browser only (an effect): the API client is shared with server code.
     useEffect(() => reopenGuidelinesGateOn4013(queryClient), [queryClient]);
+    useEffect(() => refreshEventOn4015(queryClient), [queryClient]);
     const chrome = (
         <MobileChromeProvider>
             <ModalProvider>
