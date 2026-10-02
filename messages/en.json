@@ -4027,6 +4027,7 @@
         "moderationDecisionInvalid": "This action doesn't apply to this item.",
         "eventBanned": "You can't join this event.",
         "moderationCaseClosed": "This case has already been decided.",
+        "noticeAlreadyHandled": "Another admin has already handled this notice.",
         "moderationMemberIsHost": "Hosts can't be removed from their event. Suspend the account instead.",
         "moderationTargetProtected": "Admin accounts can't be suspended here."
     },

@@ -100,6 +100,7 @@ export type ApiErrorMessageKey =
     | 'moderationDecisionInvalid'
     | 'eventBanned'
     | 'moderationCaseClosed'
+    | 'noticeAlreadyHandled'
     | 'moderationMemberIsHost'
     | 'moderationTargetProtected'
     | 'orderNotPending'
@@ -252,6 +253,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.MODERATION_DECISION_INVALID]: 'moderationDecisionInvalid',
     [ERROR_CODES.EVENT_BANNED]: 'eventBanned',
     [ERROR_CODES.MODERATION_CASE_CLOSED]: 'moderationCaseClosed',
+    [ERROR_CODES.NOTICE_ALREADY_HANDLED]: 'noticeAlreadyHandled',
     [ERROR_CODES.MODERATION_MEMBER_IS_HOST]: 'moderationMemberIsHost',
     [ERROR_CODES.MODERATION_TARGET_PROTECTED]: 'moderationTargetProtected',
     [ERROR_CODES.PLAN_TIER_CURRENCY_MISMATCH]: 'planCurrencyMismatch',

@@ -50,6 +50,7 @@ const baseDetail: ModerationCaseDetailDto = {
             createdAt: '2026-09-30T10:00:00Z',
             reporterMemberId: 'm-2',
             reporterDisplayName: 'Eleni',
+            noticeReference: null,
         },
     ],
     content: {
