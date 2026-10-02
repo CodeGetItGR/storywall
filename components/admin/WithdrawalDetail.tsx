@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, Layers3, PackageMinus } from 'lucide-react';
+import { ChevronDown, Layers3, PackageMinus, ShoppingBag } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { AdminIdentifier } from '@/components/admin/AdminIdentifier';
@@ -10,6 +10,7 @@ import { WithdrawalGuidanceBlock } from '@/components/admin/WithdrawalGuidanceBl
 import { WithdrawalSignals } from '@/components/admin/WithdrawalSignals';
 import { BackButton } from '@/components/ui/BackButton';
 import { useWithdrawalDetail } from '@/hooks/useWithdrawalDetail';
+import { formatOrdersHash } from '@/lib/adminOrders';
 import { WITHDRAWALS_HASH_ROOT } from '@/lib/adminWithdrawalsRouting';
 import type { WithdrawalAdminDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
@@ -59,6 +60,12 @@ export function WithdrawalDetail({ row, onReleasedAction }: { row: WithdrawalAdm
                     <AdminIdentifier label={t('identifiers.requestId')} value={request.id} />
                 </div>
                 <div className="flex flex-wrap gap-3 text-xs font-semibold text-ink-muted">
+                    {request.orderId && (
+                        <a href={formatOrdersHash(request.orderId)} className="inline-flex items-center gap-1.5 hover:text-ink hover:underline">
+                            <ShoppingBag className="h-3.5 w-3.5" />
+                            {t('withdrawals.openOrder')}
+                        </a>
+                    )}
                     <button type="button" onClick={sendToAssignments} className="inline-flex items-center gap-1.5 hover:text-ink hover:underline">
                         <Layers3 className="h-3.5 w-3.5" />
                         {t('withdrawals.sendToAssignments')}

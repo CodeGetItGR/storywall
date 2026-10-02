@@ -1264,6 +1264,127 @@ export interface WithdrawalReleaseDto {
     note?: string; // max 1000 chars
 }
 
+// --- Admin orders (docs/fe-guides/admin-orders-fe-integration.md, 2026-10-02) ---
+
+export type RefundSource = 'WITHDRAWAL' | 'UNAPPLIED' | 'PROVIDER';
+export type PaymentProviderKey = 'STRIPE' | 'MANUAL';
+// Legacy rows migrated before the withdrawal flow can still carry these.
+export type AdminOrderWithdrawalStatus = WithdrawalStatus | 'PENDING' | 'APPROVED' | 'REJECTED';
+
+// GET /api/admin/orders — admin. Page<AdminOrderSummaryDto>, newest first.
+export interface AdminOrderSummaryDto {
+    id: string;
+    createdAt: string;
+    paidAt: string | null;
+    status: OrderStatus;
+    kind: OrderKind;
+    planCode: string | null;
+    eventId: string; // whether or not the event still exists
+    eventTitle: string | null;
+    eventPurged: boolean;
+    // Null when the account was deleted; a business keeps its legal name.
+    buyerId: string | null;
+    buyerName: string | null;
+    buyerEmail: string | null;
+    buyerType: BuyerType;
+    amountMinor: number;
+    currency: string;
+    provider: PaymentProviderKey;
+    comp: boolean; // settled by an admin, no money taken
+    disputeOpen: boolean;
+    refundedAt: string | null;
+    // Null when not refunded or refunded before 2026-10-02. 0 = reversed, nothing sent back.
+    refundedAmountMinor: number | null;
+    refundSource: RefundSource | null;
+}
+
+export interface CheckoutLine {
+    name: string;
+    description: string | null;
+    amountMinor: number;
+}
+
+export interface AdminOrderWithdrawalDto {
+    id: string;
+    scope: WithdrawalScope;
+    status: AdminOrderWithdrawalStatus;
+    createdAt: string;
+    decidedAt: string | null;
+    reason: string | null;
+    decisionNote: string | null;
+    totalRefundMinor: number | null;
+    // This order's line of the request; null when the request never priced it.
+    line: { basis: RefundBasis; refundMinor: number; providerRefunded: boolean; eventPerformed: boolean } | null;
+}
+
+export interface AdminOrderCommissionDto {
+    id: string;
+    collaboratorName: string;
+    entryType: CollaborationEarningEntryType;
+    amountMinor: number;
+    currency: string;
+    commissionPercent: number | null;
+    status: CollaborationEarningStatus;
+    createdAt: string;
+    paidAt: string | null;
+}
+
+// GET /api/admin/orders/{orderId} — admin, read-only. 404 RESOURCE_NOT_FOUND.
+export interface AdminOrderDetailDto {
+    summary: AdminOrderSummaryDto;
+    buyer: {
+        userId: string | null;
+        name: string | null;
+        email: string | null;
+        buyerType: BuyerType;
+        // Frozen at checkout (legalName, countryCode, vatNumber, addressLine1/2, city, postalCode,
+        // viesStatus, …). Null for a consumer.
+        businessSnapshot: Record<string, string> | null;
+        providerCustomerId: string | null;
+    };
+    pricing: {
+        amountMinor: number;
+        currency: string;
+        addonAmountMinor: number | null;
+        setupAmountMinor: number | null;
+        eventDayAmountMinor: number | null;
+        hostingAmountMinor: number | null;
+        taxAmountMinor: number | null; // null when the provider computed no tax
+        discountLabel: string | null;
+        checkoutDescription: string | null;
+        checkoutFooterMessage: string | null;
+        // Both null on orders older than the breakdown.
+        priceBreakdown: PriceBreakdown | null;
+        checkoutLines: CheckoutLine[] | null;
+    };
+    coverage: {
+        planCode: string | null;
+        paidServiceCode: string | null; // the storage pack bought
+        coverageOptionId: string | null;
+        upgradeFromOptionId: string | null;
+        coverageMonths: number | null;
+        coverageMonthsAdded: number | null;
+        coverageStartsAt: string | null;
+        coverageEndsAt: string | null;
+    };
+    payment: {
+        provider: PaymentProviderKey;
+        providerSessionId: string | null;
+        providerPaymentId: string | null;
+        billingCountry: string | null;
+        cardCountry: string | null;
+        cardFingerprint: string | null;
+        riskLevel: string | null;
+        disputedAt: string | null;
+        disputeClosedAt: string | null;
+    };
+    refund: { refundedAt: string; amountMinor: number | null; source: RefundSource | null; providerRefundId: string | null } | null;
+    consent: { termsVersion: string | null; immediateStartAt: string | null; acknowledgedAt: string | null };
+    settledBy: { userId: string; name: string | null; email: string } | null;
+    withdrawals: AdminOrderWithdrawalDto[]; // oldest first
+    commissions: AdminOrderCommissionDto[]; // oldest first
+}
+
 export interface PlatformMetricsResponseDto {
     totalUsers: number;
     activeUsers: number;
@@ -2647,7 +2768,10 @@ export type AdminAuditAction =
     | 'ACCOUNT_ROLE_CHANGED'
     | 'ACCOUNT_EMAIL_CHANGED'
     | 'ACCOUNT_DELETED'
-    | 'NOTICE_VIEWED' | 'NOTICE_ATTACHED' | 'NOTICE_CLOSED' | 'EVENT_BROWSED';
+    | 'NOTICE_VIEWED'
+    | 'NOTICE_ATTACHED'
+    | 'NOTICE_CLOSED'
+    | 'EVENT_BROWSED';
 
 // GET /api/admin/moderation/cases?status=&page=&size= (Page<ModerationCaseSummaryDto>).
 // decisionId/outcome/decidedAt are set only on CLOSED cases; topReason, firstReportedAt and
@@ -2748,10 +2872,14 @@ export interface ModerationDecisionRequestDto {
 
 // Public content notices (DSA Art. 16). See fe-guides/content-notices-fe-integration.md.
 export type NoticeCategory =
-    | 'PERSONAL_DATA_OR_IMAGE' | 'COPYRIGHT' | 'HARASSMENT_OR_HATE'
-    | 'CHILD_SEXUAL_ABUSE' | 'OTHER_ILLEGAL' | 'GUIDELINES_BREACH';
+    'PERSONAL_DATA_OR_IMAGE' | 'COPYRIGHT' | 'HARASSMENT_OR_HATE' | 'CHILD_SEXUAL_ABUSE' | 'OTHER_ILLEGAL' | 'GUIDELINES_BREACH';
 export const NOTICE_CATEGORIES: readonly NoticeCategory[] = [
-    'PERSONAL_DATA_OR_IMAGE', 'COPYRIGHT', 'HARASSMENT_OR_HATE', 'CHILD_SEXUAL_ABUSE', 'OTHER_ILLEGAL', 'GUIDELINES_BREACH',
+    'PERSONAL_DATA_OR_IMAGE',
+    'COPYRIGHT',
+    'HARASSMENT_OR_HATE',
+    'CHILD_SEXUAL_ABUSE',
+    'OTHER_ILLEGAL',
+    'GUIDELINES_BREACH',
 ];
 export type NoticeStatus = 'NEW' | 'ATTACHED' | 'CLOSED';
 export type NoticeCloseReason = 'NOT_FOUND' | 'NO_BREACH' | 'ALREADY_HANDLED' | 'SPAM';
@@ -2763,38 +2891,74 @@ export type NoticeListView = 'NEW' | 'CLOSED';
 // category is CHILD_SEXUAL_ABUSE. website is the honeypot: always send ''.
 export interface ContentNoticeRequestDto {
     category: NoticeCategory;
-    locationText: string;           // 10-2000 after trimming
-    link?: string | null;           // http(s), max 2000
-    explanation: string;            // 10-5000 after trimming
-    notifierName?: string | null;   // max 200
-    notifierEmail?: string | null;  // max 320
+    locationText: string; // 10-2000 after trimming
+    link?: string | null; // http(s), max 2000
+    explanation: string; // 10-5000 after trimming
+    notifierName?: string | null; // max 200
+    notifierEmail?: string | null; // max 320
     goodFaith: true;
-    website?: string;               // honeypot
-    locale?: string;                // max 10; "el..." -> el, anything else -> en
+    website?: string; // honeypot
+    locale?: string; // max 10; "el..." -> el, anything else -> en
 }
-export interface ContentNoticeReceiptDto { reference: string }
+export interface ContentNoticeReceiptDto {
+    reference: string;
+}
 export interface ContentNoticeSummaryDto {
-    id: string; reference: string; category: NoticeCategory; locationExcerpt: string; status: NoticeStatus;
-    closeReason: NoticeCloseReason | null; outcome: ModerationOutcome | null; createdAt: string; handledAt: string | null;
+    id: string;
+    reference: string;
+    category: NoticeCategory;
+    locationExcerpt: string;
+    status: NoticeStatus;
+    closeReason: NoticeCloseReason | null;
+    outcome: ModerationOutcome | null;
+    createdAt: string;
+    handledAt: string | null;
 }
 export interface ContentNoticeDetailDto {
-    id: string; reference: string; category: NoticeCategory; locationText: string; link: string | null;
-    explanation: string; notifierName: string | null; notifierEmail: string | null; locale: string;
-    status: NoticeStatus; closeReason: NoticeCloseReason | null; closeNote: string | null;
-    outcome: ModerationOutcome | null; handledByUserId: string | null; handledAt: string | null; createdAt: string;
+    id: string;
+    reference: string;
+    category: NoticeCategory;
+    locationText: string;
+    link: string | null;
+    explanation: string;
+    notifierName: string | null;
+    notifierEmail: string | null;
+    locale: string;
+    status: NoticeStatus;
+    closeReason: NoticeCloseReason | null;
+    closeNote: string | null;
+    outcome: ModerationOutcome | null;
+    handledByUserId: string | null;
+    handledAt: string | null;
+    createdAt: string;
     // null unless ATTACHED, and null when the attached event was purged.
     attachment: { reportId: string; eventId: string; targetType: ReportTargetType; targetId: string } | null;
 }
 export interface NoticeEventCandidateDto {
-    eventId: string; title: string; startAt: string; primaryHostName: string | null;
-    status: EventStatus; deleted: boolean;
+    eventId: string;
+    title: string;
+    startAt: string;
+    primaryHostName: string | null;
+    status: EventStatus;
+    deleted: boolean;
 }
 export interface NoticeItemCandidateDto {
-    targetType: ReportTargetType; targetId: string; text: string | null; thumbnailUrl: string | null;
-    authorDisplayName: string | null; createdAt: string;
+    targetType: ReportTargetType;
+    targetId: string;
+    text: string | null;
+    thumbnailUrl: string | null;
+    authorDisplayName: string | null;
+    createdAt: string;
 }
-export interface NoticeAttachRequestDto { eventId: string; targetType: ReportTargetType; targetId: string }
-export interface NoticeCloseRequestDto { reason: NoticeCloseReason; note?: string | null } // note max 2000
+export interface NoticeAttachRequestDto {
+    eventId: string;
+    targetType: ReportTargetType;
+    targetId: string;
+}
+export interface NoticeCloseRequestDto {
+    reason: NoticeCloseReason;
+    note?: string | null;
+} // note max 2000
 
 // GET /api/admin/audit-log?targetId=&adminUserId=&page=&size= (Page, newest first).
 export interface AdminAuditLogResponseDto {

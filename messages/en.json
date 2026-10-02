@@ -2242,6 +2242,177 @@
         }
     },
     "AdminPage": {
+        "orders": {
+            "title": "Orders",
+            "loading": "Loading orders…",
+            "empty": "No orders yet.",
+            "noResults": "No orders match these filters.",
+            "count": "{count, plural, one {# order} other {# orders}}",
+            "rangeInvalid": "The end date is before the start date.",
+            "filters": {
+                "status": "Status",
+                "kind": "Kind",
+                "from": "From",
+                "to": "To",
+                "search": "Search orders",
+                "searchPlaceholder": "Order ID, payment ID, email or event",
+                "more": "More filters",
+                "moreCount": "More filters ({count})",
+                "buyerType": "Buyer",
+                "provider": "Provider",
+                "dispute": "Dispute",
+                "comp": "Comp",
+                "any": "Any",
+                "disputeOpen": "Open",
+                "disputeNone": "None open",
+                "compOnly": "Comp only",
+                "paidOnly": "Paid only",
+                "buyer": "Buyer: {name}",
+                "clearBuyer": "Show all buyers"
+            },
+            "status": {
+                "PAID": "Paid",
+                "PENDING": "Pending",
+                "REFUNDED": "Refunded",
+                "FAILED": "Failed",
+                "CANCELLED": "Cancelled"
+            },
+            "kind": {
+                "ACTIVATION": "Activation",
+                "UPGRADE": "Upgrade",
+                "EXTENSION": "Extension",
+                "STORAGE_PACK": "Storage pack"
+            },
+            "buyerType": {
+                "CONSUMER": "Consumer",
+                "BUSINESS": "Business"
+            },
+            "provider": {
+                "STRIPE": "Stripe",
+                "MANUAL": "Manual"
+            },
+            "refundSource": {
+                "WITHDRAWAL": "Withdrawal",
+                "UNAPPLIED": "Not delivered",
+                "PROVIDER": "Refunded in Stripe"
+            },
+            "flags": {
+                "comp": "Comp",
+                "disputed": "Disputed",
+                "eventDeleted": "Deleted"
+            },
+            "columns": {
+                "date": "Date",
+                "event": "Event",
+                "buyer": "Buyer",
+                "kind": "Kind",
+                "amount": "Amount",
+                "status": "Status"
+            },
+            "deletedAccount": "Deleted account",
+            "untitledEvent": "Untitled event",
+            "openOrder": "Open order for {event}",
+            "refunded": "{amount} refunded",
+            "export": {
+                "action": "Download for accountant",
+                "title": "Payments and refunds",
+                "from": "From",
+                "to": "To",
+                "download": "Download CSV",
+                "missing": "Pick both dates.",
+                "order": "The end date is before the start date.",
+                "tooLong": "Pick at most 366 days."
+            },
+            "detail": {
+                "placed": "Placed {date}",
+                "sections": {
+                    "buyer": "Buyer",
+                    "price": "Price",
+                    "bought": "What it bought",
+                    "payment": "Payment",
+                    "refund": "Refund",
+                    "withdrawals": "Withdrawals",
+                    "commission": "Commission",
+                    "record": "Record",
+                    "fraud": "Fraud signals"
+                },
+                "buyer": {
+                    "email": "Email",
+                    "type": "Type",
+                    "account": "Account ID",
+                    "stripeCustomer": "Stripe customer",
+                    "business": {
+                        "legalName": "Legal name",
+                        "vatNumber": "VAT number",
+                        "countryCode": "Country",
+                        "addressLine1": "Address",
+                        "addressLine2": "Address line 2",
+                        "city": "City",
+                        "postalCode": "Postal code",
+                        "viesStatus": "VIES check",
+                        "viesCheckedAt": "VIES checked"
+                    }
+                },
+                "price": {
+                    "discount": "Discount",
+                    "tax": "Tax",
+                    "noTax": "No tax added; prices include VAT."
+                },
+                "bought": {
+                    "plan": "Plan",
+                    "storagePack": "Storage pack",
+                    "length": "Length",
+                    "added": "Added",
+                    "months": "{count, plural, one {# month} other {# months}}",
+                    "starts": "Starts",
+                    "ends": "Ends"
+                },
+                "payment": {
+                    "provider": "Provider",
+                    "paymentId": "Payment ID",
+                    "sessionId": "Checkout session",
+                    "billingCountry": "Billing country",
+                    "cardCountry": "Card country",
+                    "disputedAt": "Dispute opened",
+                    "disputeClosedAt": "Dispute closed",
+                    "openInStripe": "Open in Stripe",
+                    "cardFingerprint": "Card fingerprint",
+                    "riskLevel": "Risk level"
+                },
+                "refund": {
+                    "date": "Refunded",
+                    "amount": "Amount",
+                    "notRecorded": "Not recorded",
+                    "source": "Source",
+                    "stripeRefund": "Stripe refund"
+                },
+                "withdrawals": {
+                    "status": {
+                        "HELD": "Awaiting review",
+                        "REFUNDED": "Refunded",
+                        "WITHHELD": "Withheld",
+                        "REFUSED": "Refused",
+                        "PENDING": "Pending",
+                        "APPROVED": "Approved",
+                        "REJECTED": "Rejected"
+                    },
+                    "thisOrder": "This order: {amount}",
+                    "notPriced": "This order was not part of the refund.",
+                    "review": "Review"
+                },
+                "commission": {
+                    "earned": "Earned",
+                    "percent": "{percent}%"
+                },
+                "record": {
+                    "orderId": "Order ID",
+                    "terms": "Terms version",
+                    "immediateStart": "Asked to start now",
+                    "acknowledged": "Acknowledged",
+                    "settledBy": "Settled by an admin"
+                }
+            }
+        },
         "checkingAccess": "Checking admin access...",
         "eyebrow": "Platform admin",
         "title": "Plan operations",
@@ -2287,6 +2458,7 @@
             "signOutConfirmBody": "Please confirm before leaving the admin area."
         },
         "tabs": {
+            "orders": "Orders",
             "metrics": "Metrics",
             "funnel": "Growth",
             "costTracking": "Cost tracking",
@@ -2647,6 +2819,7 @@
                 "useExisting": "Use existing account"
             },
             "detail": {
+                "orders": "Orders",
                 "close": "Close account details",
                 "account": "Account",
                 "role": "Role",
@@ -3203,6 +3376,7 @@
             "empty": "No data yet"
         },
         "withdrawals": {
+            "openOrder": "Open order",
             "title": "Withdrawals",
             "subtitle": "These requests were held for a fraud signal or manual review. Decide from the evidence, not the signal alone.",
             "loading": "Loading withdrawals...",
@@ -3715,7 +3889,7 @@
             "confirmSweepTitle": "Run notification sweep?",
             "confirmSweepBody": "This can create visible host notifications for quota warnings, offers, and tips. It cannot send arbitrary messages.",
             "orderIdPlaceholder": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            "orderIdSourceHint": "Copy the order ID from an unprocessed webhook below, or from the refund request for the same event — the console has no order search.",
+            "orderIdSourceHint": "Copy the order ID from the Orders list or an unprocessed webhook below.",
             "orderIdInvalid": "That is not a valid order ID. It should look like 3fa85f64-5717-4562-b3fc-2c963f66afa6."
         },
         "lifecycle": {
