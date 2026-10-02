@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { AdminIdentifier } from '@/components/admin/AdminIdentifier';
-import { AdminSection } from '@/components/admin/AdminSection';
+import { OrderCard } from '@/components/admin/orders/OrderCard';
 import { OrderFactList } from '@/components/admin/orders/OrderFactList';
 import { businessSnapshotEntries } from '@/lib/adminOrders';
 import type { AdminOrderDetailDto } from '@/lib/api/types';
@@ -14,7 +14,7 @@ export function OrderBuyerSection({ buyer }: { buyer: AdminOrderDetailDto['buyer
     const business = buyer.businessSnapshot ? businessSnapshotEntries(buyer.businessSnapshot) : [];
 
     return (
-        <AdminSection title={t('detail.sections.buyer')}>
+        <OrderCard title={t('detail.sections.buyer')}>
             <div className="space-y-4">
                 {/* Name */}
                 <p className="text-base font-semibold text-ink">{buyer.name ?? t('deletedAccount')}</p>
@@ -30,7 +30,7 @@ export function OrderBuyerSection({ buyer }: { buyer: AdminOrderDetailDto['buyer
 
                 {/* Identifiers */}
                 {(buyer.userId || buyer.providerCustomerId) && (
-                    <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="grid grid-cols-2 gap-3">
                         {buyer.userId && <AdminIdentifier label={t('detail.buyer.account')} value={buyer.userId} hideValue />}
                         {buyer.providerCustomerId && (
                             <AdminIdentifier label={t('detail.buyer.stripeCustomer')} value={buyer.providerCustomerId} hideValue />
@@ -38,6 +38,6 @@ export function OrderBuyerSection({ buyer }: { buyer: AdminOrderDetailDto['buyer
                     </div>
                 )}
             </div>
-        </AdminSection>
+        </OrderCard>
     );
 }

@@ -2443,15 +2443,28 @@
                 "tooLong": "Επιλέξτε έως 366 ημέρες."
             },
             "detail": {
-                "placed": "Καταχωρίστηκε {date}",
+                "summary": {
+                    "event": "Εκδήλωση",
+                    "purchase": "Αγορά",
+                    "coverage": "Κάλυψη"
+                },
+                "activity": {
+                    "placed": "Η παραγγελία καταχωρήθηκε",
+                    "paid": "Πληρώθηκε",
+                    "settledBy": "Σημειώθηκε ως πληρωμένη από {name}",
+                    "disputeOpened": "Άνοιγμα αμφισβήτησης",
+                    "disputeClosed": "Κλείσιμο αμφισβήτησης",
+                    "refunded": "Επιστροφή {amount}",
+                    "refundedNotRecorded": "Επιστροφή χρημάτων (το ποσό δεν καταγράφηκε)",
+                    "withdrawal": "Αίτημα απόσυρσης · {scope}",
+                    "commission": "Προμήθεια: {name}",
+                    "clawback": "Αντιστροφή προμήθειας: {name}"
+                },
                 "sections": {
+                    "activity": "Δραστηριότητα",
                     "buyer": "Αγοραστής",
                     "price": "Τιμή",
-                    "bought": "Τι αγοράστηκε",
                     "payment": "Πληρωμή",
-                    "refund": "Επιστροφή χρημάτων",
-                    "withdrawals": "Αποσύρσεις",
-                    "commission": "Προμήθεια",
                     "record": "Αρχείο",
                     "fraud": "Ενδείξεις απάτης"
                 },
@@ -2478,13 +2491,7 @@
                     "noTax": "Δεν προστέθηκε φόρος· οι τιμές περιλαμβάνουν ΦΠΑ."
                 },
                 "bought": {
-                    "plan": "Πλάνο",
-                    "storagePack": "Πακέτο αποθήκευσης",
-                    "length": "Διάρκεια",
-                    "added": "Προστέθηκαν",
-                    "months": "{count, plural, one {# μήνας} other {# μήνες}}",
-                    "starts": "Έναρξη",
-                    "ends": "Λήξη"
+                    "months": "{count, plural, one {# μήνας} other {# μήνες}}"
                 },
                 "payment": {
                     "provider": "Πάροχος",
@@ -2492,17 +2499,11 @@
                     "sessionId": "Συνεδρία πληρωμής",
                     "billingCountry": "Χώρα χρέωσης",
                     "cardCountry": "Χώρα κάρτας",
-                    "disputedAt": "Άνοιγμα αμφισβήτησης",
-                    "disputeClosedAt": "Κλείσιμο αμφισβήτησης",
                     "openInStripe": "Άνοιγμα στο Stripe",
                     "cardFingerprint": "Αποτύπωμα κάρτας",
                     "riskLevel": "Επίπεδο κινδύνου"
                 },
                 "refund": {
-                    "date": "Επιστράφηκε",
-                    "amount": "Ποσό",
-                    "notRecorded": "Δεν καταγράφηκε",
-                    "source": "Προέλευση",
                     "stripeRefund": "Επιστροφή Stripe"
                 },
                 "withdrawals": {
@@ -2520,15 +2521,13 @@
                     "review": "Εξέταση"
                 },
                 "commission": {
-                    "earned": "Κέρδος",
                     "percent": "{percent}%"
                 },
                 "record": {
                     "orderId": "ID παραγγελίας",
                     "terms": "Έκδοση όρων",
                     "immediateStart": "Ζήτησε άμεση έναρξη",
-                    "acknowledged": "Επιβεβαιώθηκε",
-                    "settledBy": "Διακανονίστηκε από διαχειριστή"
+                    "acknowledged": "Επιβεβαιώθηκε"
                 }
             }
         },

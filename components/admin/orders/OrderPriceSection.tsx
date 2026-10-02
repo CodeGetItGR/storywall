@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 
-import { AdminSection } from '@/components/admin/AdminSection';
+import { OrderCard } from '@/components/admin/orders/OrderCard';
 import { PriceBreakdownSummary } from '@/components/checkout/PriceBreakdownSummary';
 import type { AdminOrderDetailDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
@@ -13,8 +13,8 @@ export function OrderPriceSection({ pricing }: { pricing: AdminOrderDetailDto['p
     const locale = useLocale();
 
     return (
-        <AdminSection title={t('sections.price')}>
-            <div className="max-w-xl space-y-3">
+        <OrderCard title={t('sections.price')}>
+            <div className="space-y-3">
                 {/* Items */}
                 {pricing.priceBreakdown ? (
                     <PriceBreakdownSummary breakdown={pricing.priceBreakdown} showTotal={false} />
@@ -55,6 +55,6 @@ export function OrderPriceSection({ pricing }: { pricing: AdminOrderDetailDto['p
                     !pricing.priceBreakdown && <p className="text-xs text-ink-faint">{t('price.noTax')}</p>
                 )}
             </div>
-        </AdminSection>
+        </OrderCard>
     );
 }
