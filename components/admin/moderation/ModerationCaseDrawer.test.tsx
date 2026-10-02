@@ -167,6 +167,16 @@ describe('ModerationCaseDrawer', () => {
         expect(screen.getByText('summary.reports {"count":1,"outcome":"DISMISSED"}')).toBeTruthy();
     });
 
+    it('labels a report that came from a public notice with its reference', () => {
+        hooks.detail = {
+            ...baseDetail,
+            reports: [{ ...baseDetail.reports[0], reporterMemberId: null, reporterDisplayName: null, noticeReference: 'AB12CD34' }],
+        };
+        renderDrawer();
+        expect(screen.getByText(/publicNotice {"reference":"AB12CD34"}/)).toBeTruthy();
+        expect(screen.queryByText(/reporterGone/)).toBeNull();
+    });
+
     it('says the item is gone when the content is null', () => {
         hooks.detail = { ...baseDetail, content: null };
         renderDrawer();

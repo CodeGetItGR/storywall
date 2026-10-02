@@ -43,8 +43,9 @@ function refreshAfterRefusal(queryClient: QueryClient, error: unknown, { targetT
     if (code === ERROR_CODES.MODERATION_CASE_CLOSED) void queryClient.invalidateQueries({ queryKey: adminModerationKeys.lists });
 }
 
-export function useAdminModerationCases(status: ModerationCaseStatus, page: number) {
+export function useAdminModerationCases(status: ModerationCaseStatus, page: number, enabled = true) {
     return useQuery({
+        enabled,
         queryKey: adminModerationKeys.cases(status, page),
         queryFn: () => api.get<Page<ModerationCaseSummaryDto>>(adminModerationCasesPath(status, page)),
         // Keep the previous page while paging, but never show one tab's rows under another (key[3] is the status).
