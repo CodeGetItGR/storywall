@@ -13,7 +13,14 @@ import {
     toDecisionRequest,
 } from '@/lib/adminModeration';
 import type { AllowedActionsDto, GuidelinesRule, ModerationDecisionRequestDto, ModerationOutcome, StatementGround } from '@/lib/api/types';
-import { GUIDELINES_RULES, STATEMENT_EXPLANATION_MAX, STATEMENT_EXPLANATION_MIN, STATEMENT_GROUNDS } from '@/lib/guidelinesRules';
+import {
+    GUIDELINES_RULES,
+    isExplanationValid,
+    STATEMENT_EXPLANATION_MAX,
+    STATEMENT_EXPLANATION_MIN,
+    STATEMENT_GROUNDS,
+    trimLikeBackend,
+} from '@/lib/guidelinesRules';
 
 type ActionKey = 'removeContent' | 'removeMember' | 'banFromEvent' | 'suspendAccount' | 'suspendEvent';
 const ACTIONS: readonly ActionKey[] = ['removeContent', 'removeMember', 'banFromEvent', 'suspendAccount', 'suspendEvent'];
@@ -88,7 +95,8 @@ export function ModerationDecisionForm({
     // ACTION_TAKEN with no action is 3039 while the item exists; once it is gone it closes the case
     // as resolved. Any action needs a complete statement (3039 otherwise).
     const canReview = request !== null && (!acting || (acted ? isStatementComplete(request) : !contentPresent));
-    const explanationLength = draft.explanation.trim().length;
+    const explanationLength = trimLikeBackend(draft.explanation).length;
+    const explanationInvalid = explanationLength > 0 && !isExplanationValid(draft.explanation);
 
     function selectOutcome(event: ChangeEvent<HTMLInputElement>) {
         const outcome = event.currentTarget.value as ModerationOutcome;
@@ -205,6 +213,7 @@ export function ModerationDecisionForm({
                                 onChange={changeExplanation}
                                 maxLength={STATEMENT_EXPLANATION_MAX}
                                 rows={4}
+                                aria-invalid={explanationInvalid}
                                 aria-describedby={draft.ground === 'ILLEGAL_CONTENT' ? `${explanationCountId} ${illegalHintId}` : explanationCountId}
                                 className={FIELD}
                             />

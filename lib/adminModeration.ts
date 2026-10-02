@@ -1,6 +1,6 @@
 import { endpoints } from '@/lib/api/endpoints';
 import type { GuidelinesRule, ModerationCaseStatus, ModerationDecisionRequestDto, ModerationOutcome, StatementGround } from '@/lib/api/types';
-import { isExplanationValid } from '@/lib/guidelinesRules';
+import { isExplanationValid, trimLikeBackend } from '@/lib/guidelinesRules';
 
 // Admin report center (moderation-admin-fe-integration.md, storywall-suspension-fe-integration.md).
 
@@ -63,7 +63,7 @@ export function toDecisionRequest(draft: DecisionDraft & { outcome: ModerationOu
         note: note === '' ? null : note,
     };
     if (!hasAction(request)) return request;
-    const explanation = draft.explanation.trim();
+    const explanation = trimLikeBackend(draft.explanation);
     return { ...request, ground: draft.ground, rule: draft.rule, explanation: explanation === '' ? null : explanation };
 }
 

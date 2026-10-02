@@ -382,7 +382,18 @@ describe('ModerationDecisionForm', () => {
         expect(screen.queryByRole('combobox', { name: 'statement.rule' })).toBeNull();
         fireEvent.click(screen.getByRole('button', { name: 'form.review' }));
         fireEvent.click(screen.getByRole('button', { name: 'form.confirm' }));
-        expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ outcome: 'DISMISSED', ground: null, rule: null, explanation: null }));
+        expect(onSubmit).toHaveBeenCalledWith({
+            outcome: 'DISMISSED',
+            removeContent: false,
+            removeMember: false,
+            banFromEvent: false,
+            suspendAccount: false,
+            suspendEvent: false,
+            ground: null,
+            rule: null,
+            explanation: null,
+            note: null,
+        });
     });
 
     it('reminds the admin to name the legal provision only for the illegal-content ground', () => {
@@ -402,5 +413,26 @@ describe('ModerationDecisionForm', () => {
         expect(screen.queryByText('statement.illegalHint')).toBeNull();
         fireEvent.click(screen.getByRole('radio', { name: 'grounds.ILLEGAL_CONTENT' }));
         expect(screen.getByText('statement.illegalHint')).toBeTruthy();
+    });
+
+    it('marks the explanation invalid once it is started but outside 20-2000 characters', () => {
+        render(
+            <ModerationDecisionForm
+                allowed={allAllowed}
+                contentPresent
+                activeReportCount={2}
+                isSubmitting={false}
+                error={null}
+                onSubmitAction={vi.fn()}
+            />,
+        );
+        fireEvent.click(screen.getByRole('radio', { name: 'form.takeAction' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'form.removeContent' }));
+        const box = screen.getByRole('textbox', { name: 'statement.explanation' });
+        expect(box.getAttribute('aria-invalid')).toBe('false');
+        fireEvent.change(box, { target: { value: 'too short' } });
+        expect(box.getAttribute('aria-invalid')).toBe('true');
+        fireEvent.change(box, { target: { value: 'Insults aimed at one guest, twice.' } });
+        expect(box.getAttribute('aria-invalid')).toBe('false');
     });
 });

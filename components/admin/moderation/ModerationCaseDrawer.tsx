@@ -48,10 +48,26 @@ export function ModerationCaseDrawer({
     const closeSuspension = useCloseEventSuspension();
     // Which suspension action is waiting for its confirm. Closing is permanent, so both ask first.
     const [confirming, setConfirming] = useState<'lift' | 'close' | null>(null);
+    const confirmRef = useRef<HTMLDivElement>(null);
+    const liftButtonRef = useRef<HTMLButtonElement>(null);
+    const closeButtonRef = useRef<HTMLButtonElement>(null);
+    const lastAsked = useRef<'lift' | 'close' | null>(null);
     const suspensionPending = liftSuspension.isPending || closeSuspension.isPending;
     const startReviewMutate = startReview.mutate;
     // A ref, not state: StrictMode's second effect run (and any re-render) must not POST again.
     const reviewRequested = useRef(false);
+
+    // Focus follows the step: into the confirm on asking, back to the button that asked on leaving it.
+    // After a success the button may be gone (the case is re-read); then there is nothing to focus.
+    useEffect(() => {
+        if (confirming) {
+            lastAsked.current = confirming;
+            confirmRef.current?.focus();
+        } else if (lastAsked.current) {
+            (lastAsked.current === 'lift' ? liftButtonRef : closeButtonRef).current?.focus();
+            lastAsked.current = null;
+        }
+    }, [confirming]);
 
     // Opening an OPEN case claims it for review, once. A repeat would be a harmless 204 anyway.
     useEffect(() => {
@@ -79,6 +95,9 @@ export function ModerationCaseDrawer({
     function confirmSuspensionAction() {
         if (!detail || !confirming) return;
         const variables = { eventId: detail.eventId, targetType, targetId };
+        // A refusal from an earlier lift or close must not outlive this attempt.
+        liftSuspension.reset();
+        closeSuspension.reset();
         if (confirming === 'lift') liftSuspension.mutate(variables, { onSuccess: cancelSuspensionAction });
         else closeSuspension.mutate(variables, { onSuccess: cancelSuspensionAction });
     }
@@ -174,7 +193,13 @@ export function ModerationCaseDrawer({
                             </p>
                             {/* A closed StoryWall can't be lifted or closed again: no buttons. */}
                             {detail.eventSuspension.closedAt ? null : confirming ? (
-                                <div className="space-y-2">
+                                <div
+                                    ref={confirmRef}
+                                    tabIndex={-1}
+                                    role="group"
+                                    aria-label={confirming === 'lift' ? t('suspension.lift') : t('suspension.close')}
+                                    className="space-y-2 outline-none"
+                                >
                                     <p className="text-ink">
                                         {confirming === 'lift'
                                             ? t('suspension.liftConfirm')
@@ -209,6 +234,7 @@ export function ModerationCaseDrawer({
                                 <div className="flex flex-wrap gap-2">
                                     <button
                                         type="button"
+                                        ref={liftButtonRef}
                                         onClick={askLift}
                                         className="rounded-md px-3 py-1.5 text-sm font-semibold text-ink-muted transition-colors hover:bg-canvas hover:text-ink"
                                     >
@@ -216,6 +242,7 @@ export function ModerationCaseDrawer({
                                     </button>
                                     <button
                                         type="button"
+                                        ref={closeButtonRef}
                                         onClick={askClose}
                                         className="rounded-md px-3 py-1.5 text-sm font-semibold text-status-danger transition-colors hover:bg-status-danger-wash"
                                     >
