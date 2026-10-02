@@ -7,6 +7,7 @@ import {
     STATEMENT_EXPLANATION_MAX,
     STATEMENT_EXPLANATION_MIN,
     STATEMENT_GROUNDS,
+    trimLikeBackend,
 } from '@/lib/guidelinesRules';
 
 describe('guidelinesRules', () => {
@@ -33,5 +34,11 @@ describe('guidelinesRules', () => {
         expect(isExplanationValid(`  ${'x'.repeat(20)}  `)).toBe(true);
         expect(isExplanationValid('x'.repeat(2000))).toBe(true);
         expect(isExplanationValid('x'.repeat(2001))).toBe(false);
+    });
+
+    it('trims like Java String.trim: everything up to U+0020, nothing above', () => {
+        expect(trimLikeBackend('\u0000\t\n x \r\u001f')).toBe('x');
+        expect(trimLikeBackend('\u00a0x\u00a0')).toBe('\u00a0x\u00a0');
+        expect(trimLikeBackend('a b')).toBe('a b');
     });
 });
