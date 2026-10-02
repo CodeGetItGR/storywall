@@ -64,6 +64,14 @@ describe('useToolsMenuItems', () => {
     });
 });
 
+describe('suspended StoryWall', () => {
+    it('shows no tools and no host menu', () => {
+        mocks.activeEvent = event({ suspended: true });
+        expect(renderHook(() => useToolsMenuItems()).result.current).toEqual([]);
+        expect(renderHook(() => useHostMenuItems()).result.current).toEqual([]);
+    });
+});
+
 describe('useHostMenuItems', () => {
     it('keeps only manage for a deleted event', () => {
         mocks.activeEvent = deletedEvent();

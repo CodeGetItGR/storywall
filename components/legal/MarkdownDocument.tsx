@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 
-import { type MarkdownInline, parseMarkdown } from '@/lib/markdown';
+import { type MarkdownBlock, type MarkdownInline, parseMarkdown } from '@/lib/markdown';
 import { cn } from '@/lib/utils';
 
 const HEADING_CLASS_NAMES = {
@@ -28,6 +28,14 @@ function InlineText({ content }: { content: MarkdownInline[] }) {
     );
 }
 
+// "## 6. Harassment, threats and bullying" gets id="section-6": statement-of-reasons emails and
+// the suspended-StoryWall view link to /legal/community-guidelines#section-N.
+function sectionId(block: Extract<MarkdownBlock, { type: 'heading' }>): string | undefined {
+    if (block.level !== 2) return undefined;
+    const match = /^(\d+)\.\s/.exec(block.content.map((part) => part.text).join(''));
+    return match ? `section-${match[1]}` : undefined;
+}
+
 // Renders the backend's Markdown legal texts as plain React nodes (no raw HTML).
 export function MarkdownDocument({ source, className }: { source: string; className?: string }) {
     const blocks = parseMarkdown(source);
@@ -38,7 +46,7 @@ export function MarkdownDocument({ source, className }: { source: string; classN
                 if (block.type === 'heading') {
                     const Tag = `h${block.level}` as const;
                     return (
-                        <Tag key={index} className={HEADING_CLASS_NAMES[block.level]}>
+                        <Tag key={index} id={sectionId(block)} className={HEADING_CLASS_NAMES[block.level]}>
                             <InlineText content={block.content} />
                         </Tag>
                     );

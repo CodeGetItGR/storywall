@@ -1,19 +1,38 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, useEffect, useRef, useState } from 'react';
+import { type ChangeEvent, useEffect, useId, useRef, useState } from 'react';
 
-import { type DecisionDraft, decisionSummary, emptyDecision, toDecisionRequest } from '@/lib/adminModeration';
-import type { AllowedActionsDto, ModerationDecisionRequestDto, ModerationOutcome } from '@/lib/api/types';
+import {
+    type DecisionDraft,
+    decisionSummary,
+    emptyDecision,
+    hasAction,
+    isStatementComplete,
+    statementRecipients,
+    toDecisionRequest,
+} from '@/lib/adminModeration';
+import type { AllowedActionsDto, GuidelinesRule, ModerationDecisionRequestDto, ModerationOutcome, StatementGround } from '@/lib/api/types';
+import {
+    GUIDELINES_RULES,
+    isExplanationValid,
+    STATEMENT_EXPLANATION_MAX,
+    STATEMENT_EXPLANATION_MIN,
+    STATEMENT_GROUNDS,
+    trimLikeBackend,
+} from '@/lib/guidelinesRules';
 
-type ActionKey = 'removeContent' | 'removeMember' | 'banFromEvent' | 'suspendAccount';
-const ACTIONS: readonly ActionKey[] = ['removeContent', 'removeMember', 'banFromEvent', 'suspendAccount'];
+type ActionKey = 'removeContent' | 'removeMember' | 'banFromEvent' | 'suspendAccount' | 'suspendEvent';
+const ACTIONS: readonly ActionKey[] = ['removeContent', 'removeMember', 'banFromEvent', 'suspendAccount', 'suspendEvent'];
 
 export const DECISION_NOTE_MAX_LENGTH = 2000;
 
-// The admin's decision on a case (guide §2.4, §4). Only server-allowed actions are offered,
-// ban is offered only alongside member removal, and nothing is sent before a confirm step that
-// lists exactly what will happen.
+const FIELD = 'w-full rounded-md border border-border bg-canvas p-2 text-sm';
+
+// The admin's decision on a case (guide §2.4, §4; storywall-suspension guide §3). Only
+// server-allowed actions are offered, ban is offered only alongside member removal, any action
+// needs a statement of reasons (it is emailed to the people affected), and nothing is sent before
+// a confirm step that lists exactly what will happen.
 export function ModerationDecisionForm({
     allowed,
     contentPresent,
@@ -31,12 +50,18 @@ export function ModerationDecisionForm({
     onSubmitAction: (request: Required<ModerationDecisionRequestDto>) => void;
 }) {
     const t = useTranslations('AdminPage.moderation');
+    const tStatement = useTranslations('ModerationStatement');
     const [draft, setDraft] = useState<DecisionDraft>(emptyDecision);
     const [confirming, setConfirming] = useState(false);
     const [seenError, setSeenError] = useState(error);
     const summaryRef = useRef<HTMLDivElement>(null);
     const reviewRef = useRef<HTMLButtonElement>(null);
     const wasConfirming = useRef(false);
+    const groundLabelId = useId();
+    const ruleId = useId();
+    const explanationId = useId();
+    const explanationCountId = useId();
+    const illegalHintId = useId();
 
     // A refusal invalidates what was confirmed (the case is refetched, actions may narrow):
     // leave the confirm step so the admin reviews the decision again.
@@ -63,11 +88,15 @@ export function ModerationDecisionForm({
               removeMember: draft.removeMember && allowed.removeMember,
               banFromEvent: draft.banFromEvent && allowed.banFromEvent,
               suspendAccount: draft.suspendAccount && allowed.suspendAccount,
+              suspendEvent: draft.suspendEvent && allowed.suspendEvent,
           })
         : null;
-    const hasAction = request !== null && (request.removeContent || request.removeMember || request.suspendAccount);
-    // ACTION_TAKEN with no action is 3039 while the item exists; once it is gone it closes the case as resolved.
-    const canReview = request !== null && (!acting || hasAction || !contentPresent);
+    const acted = request !== null && hasAction(request);
+    // ACTION_TAKEN with no action is 3039 while the item exists; once it is gone it closes the case
+    // as resolved. Any action needs a complete statement (3039 otherwise).
+    const canReview = request !== null && (!acting || (acted ? isStatementComplete(request) : !contentPresent));
+    const explanationLength = trimLikeBackend(draft.explanation).length;
+    const explanationInvalid = explanationLength > 0 && !isExplanationValid(draft.explanation);
 
     function selectOutcome(event: ChangeEvent<HTMLInputElement>) {
         const outcome = event.currentTarget.value as ModerationOutcome;
@@ -79,6 +108,18 @@ export function ModerationDecisionForm({
         const checked = event.currentTarget.checked;
         setDraft((d) => ({ ...d, [key]: checked, ...(key === 'removeMember' && !checked ? { banFromEvent: false } : {}) }));
         setConfirming(false);
+    }
+    function selectGround(event: ChangeEvent<HTMLInputElement>) {
+        const ground = event.currentTarget.value as StatementGround;
+        setDraft((d) => ({ ...d, ground }));
+    }
+    function changeRule(event: ChangeEvent<HTMLSelectElement>) {
+        const value = event.currentTarget.value;
+        setDraft((d) => ({ ...d, rule: value === '' ? null : (value as GuidelinesRule) }));
+    }
+    function changeExplanation(event: ChangeEvent<HTMLTextAreaElement>) {
+        const explanation = event.currentTarget.value.slice(0, STATEMENT_EXPLANATION_MAX);
+        setDraft((d) => ({ ...d, explanation }));
     }
     function changeNote(event: ChangeEvent<HTMLTextAreaElement>) {
         const note = event.currentTarget.value.slice(0, DECISION_NOTE_MAX_LENGTH);
@@ -124,15 +165,78 @@ export function ModerationDecisionForm({
                     </div>
                 ) : null}
 
+                {/* Statement of reasons: emailed to everyone the decision acts against */}
+                {acted ? (
+                    <div className="space-y-3 rounded-lg border border-border p-3">
+                        <div className="space-y-1">
+                            <p className="text-sm font-semibold text-ink">{t('statement.title')}</p>
+                            <p className="text-xs text-ink-muted">{t('statement.hint')}</p>
+                        </div>
+
+                        <div className="space-y-1">
+                            <p id={groundLabelId} className="text-sm text-ink">
+                                {t('statement.ground')}
+                            </p>
+                            <div role="radiogroup" aria-labelledby={groundLabelId} className="space-y-1">
+                                {STATEMENT_GROUNDS.map((ground) => (
+                                    <label key={ground} className="flex items-center gap-2 text-sm text-ink">
+                                        <input type="radio" name="ground" value={ground} checked={draft.ground === ground} onChange={selectGround} />
+                                        {tStatement(`grounds.${ground}`)}
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="space-y-1">
+                            <label htmlFor={ruleId} className="block text-sm text-ink">
+                                {t('statement.rule')}
+                            </label>
+                            <select id={ruleId} value={draft.rule ?? ''} onChange={changeRule} className={FIELD}>
+                                <option value="" disabled>
+                                    {t('statement.rulePlaceholder')}
+                                </option>
+                                {GUIDELINES_RULES.map((rule) => (
+                                    <option key={rule} value={rule}>
+                                        {tStatement(`rules.${rule}`)}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="space-y-1">
+                            <label htmlFor={explanationId} className="block text-sm text-ink">
+                                {t('statement.explanation')}
+                            </label>
+                            <textarea
+                                id={explanationId}
+                                value={draft.explanation}
+                                onChange={changeExplanation}
+                                maxLength={STATEMENT_EXPLANATION_MAX}
+                                rows={4}
+                                aria-invalid={explanationInvalid}
+                                aria-describedby={draft.ground === 'ILLEGAL_CONTENT' ? `${explanationCountId} ${illegalHintId}` : explanationCountId}
+                                className={FIELD}
+                            />
+                            <p id={explanationCountId} className="text-xs text-ink-muted">
+                                {t('statement.explanationCount', {
+                                    count: explanationLength,
+                                    min: STATEMENT_EXPLANATION_MIN,
+                                    max: STATEMENT_EXPLANATION_MAX,
+                                })}
+                            </p>
+                            {/* DSA Art. 17(3)(d): a statement on an illegal-content ground must name the legal provision */}
+                            {draft.ground === 'ILLEGAL_CONTENT' ? (
+                                <p id={illegalHintId} className="text-xs text-ink-muted">
+                                    {t('statement.illegalHint')}
+                                </p>
+                            ) : null}
+                        </div>
+                    </div>
+                ) : null}
+
                 <label className="block space-y-1 text-sm text-ink">
                     <span>{t('form.note')}</span>
-                    <textarea
-                        value={draft.note}
-                        onChange={changeNote}
-                        maxLength={DECISION_NOTE_MAX_LENGTH}
-                        rows={3}
-                        className="w-full rounded-md border border-border bg-canvas p-2 text-sm"
-                    />
+                    <textarea value={draft.note} onChange={changeNote} maxLength={DECISION_NOTE_MAX_LENGTH} rows={3} className={FIELD} />
                 </label>
             </fieldset>
 
@@ -148,6 +252,9 @@ export function ModerationDecisionForm({
                     <ul className="list-disc space-y-1 pl-5 text-sm text-ink">
                         {decisionSummary(request, contentPresent).map((line) => (
                             <li key={line}>{t(`summary.${line}`)}</li>
+                        ))}
+                        {statementRecipients(request).map((recipient) => (
+                            <li key={recipient}>{t(recipient === 'author' ? 'summary.emailsAuthor' : 'summary.emailsHosts')}</li>
                         ))}
                         <li>{t('summary.reports', { count: activeReportCount, outcome: request.outcome })}</li>
                     </ul>

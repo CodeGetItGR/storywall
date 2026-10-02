@@ -244,6 +244,8 @@ export const endpoints = {
         review: (targetType: string, targetId: string) => `/api/admin/moderation/cases/${targetType}/${targetId}/review`,
         decision: (targetType: string, targetId: string) => `/api/admin/moderation/cases/${targetType}/${targetId}/decision`,
         ban: (banId: string) => `/api/admin/moderation/bans/${banId}`,
+        eventSuspension: (eventId: string) => `/api/admin/moderation/event-suspensions/${eventId}`,
+        closeEventSuspension: (eventId: string) => `/api/admin/moderation/event-suspensions/${eventId}/close`,
         auditLog: '/api/admin/audit-log',
         notices: '/api/admin/moderation/notices',
         notice: (id: string) => `/api/admin/moderation/notices/${id}`,

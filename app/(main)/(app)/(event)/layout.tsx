@@ -4,6 +4,7 @@ import { type ReactNode } from 'react';
 import { DeletedEventRouteGuard } from '@/components/event/DeletedEventRouteGuard';
 import { DraftEventRouteGuard } from '@/components/event/DraftEventRouteGuard';
 import { EventLifecycleBanner } from '@/components/event/EventLifecycleBanner';
+import { SuspendedEventRouteGuard } from '@/components/event/SuspendedEventRouteGuard';
 import { eventKeys } from '@/hooks/useEvent';
 import { myEventsKeys } from '@/hooks/useMyEvents';
 import { endpoints } from '@/lib/api/endpoints';
@@ -37,12 +38,14 @@ export default async function EventLayout({ children }: { children: ReactNode })
     return (
         <HydrationBoundary state={dehydrate(queryClient)}>
             <div className="min-h-full bg-background">
-                <EventLifecycleBanner />
-                <DraftEventRouteGuard>
-                    <DeletedEventRouteGuard>
-                        <div className="lg:max-w-none">{children}</div>
-                    </DeletedEventRouteGuard>
-                </DraftEventRouteGuard>
+                <SuspendedEventRouteGuard>
+                    <EventLifecycleBanner />
+                    <DraftEventRouteGuard>
+                        <DeletedEventRouteGuard>
+                            <div className="lg:max-w-none">{children}</div>
+                        </DeletedEventRouteGuard>
+                    </DraftEventRouteGuard>
+                </SuspendedEventRouteGuard>
             </div>
         </HydrationBoundary>
     );

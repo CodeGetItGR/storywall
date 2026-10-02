@@ -18,7 +18,7 @@ export function HomeNextEventCard({ items }: { items: EventGridItem[] }) {
     const tEvents = useTranslations('EventsPage');
     const locale = useLocale();
     // A deleted event is never "next" — it has no feed to open.
-    const liveItems = useMemo(() => items.filter((item) => !isEventDeleted(item.event)), [items]);
+    const liveItems = useMemo(() => items.filter((item) => !isEventDeleted(item.event) && !item.event?.suspended), [items]);
     const [next] = useRecentEventItems(liveItems, 1);
 
     if (!next || next.isLoading || !next.event) return null;

@@ -99,6 +99,10 @@ export type ApiErrorMessageKey =
     | 'orderNotManual'
     | 'moderationDecisionInvalid'
     | 'eventBanned'
+    | 'eventSuspended'
+    | 'eventAlreadySuspended'
+    | 'eventNotSuspended'
+    | 'eventAlreadyClosed'
     | 'moderationCaseClosed'
     | 'noticeAlreadyHandled'
     | 'moderationMemberIsHost'
@@ -252,6 +256,10 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.ORDER_NOT_MANUAL]: 'orderNotManual',
     [ERROR_CODES.MODERATION_DECISION_INVALID]: 'moderationDecisionInvalid',
     [ERROR_CODES.EVENT_BANNED]: 'eventBanned',
+    [ERROR_CODES.EVENT_SUSPENDED]: 'eventSuspended',
+    [ERROR_CODES.EVENT_ALREADY_SUSPENDED]: 'eventAlreadySuspended',
+    [ERROR_CODES.EVENT_NOT_SUSPENDED]: 'eventNotSuspended',
+    [ERROR_CODES.EVENT_ALREADY_CLOSED]: 'eventAlreadyClosed',
     [ERROR_CODES.MODERATION_CASE_CLOSED]: 'moderationCaseClosed',
     [ERROR_CODES.NOTICE_ALREADY_HANDLED]: 'noticeAlreadyHandled',
     [ERROR_CODES.MODERATION_MEMBER_IS_HOST]: 'moderationMemberIsHost',
