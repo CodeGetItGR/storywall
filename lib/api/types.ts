@@ -1330,6 +1330,18 @@ export interface AdminOrderCommissionDto {
 }
 
 // GET /api/admin/orders/{orderId} — admin, read-only. 404 RESOURCE_NOT_FOUND.
+// One rate Stripe Tax applied to an order. Only amountMinor is always set.
+export interface AdminOrderTaxLine {
+    amountMinor: number;
+    taxableAmountMinor: number | null;
+    ratePercent: number | null; // e.g. 24 for 24%
+    country: string | null; // ISO alpha-2, upper case
+    jurisdiction: string | null;
+    taxType: string | null; // vat, sales_tax, …
+    taxabilityReason: string | null; // Stripe's code (standard_rated, reverse_charge, …); not a closed set
+    inclusive: boolean | null;
+}
+
 export interface AdminOrderDetailDto {
     summary: AdminOrderSummaryDto;
     buyer: {
@@ -1350,6 +1362,9 @@ export interface AdminOrderDetailDto {
         eventDayAmountMinor: number | null;
         hostingAmountMinor: number | null;
         taxAmountMinor: number | null; // null when the provider computed no tax
+        // Stripe Tax's per-rate breakdown of taxAmountMinor, in order. Empty when no tax was added,
+        // or briefly after payment while it is fetched.
+        taxLines: AdminOrderTaxLine[];
         discountLabel: string | null;
         checkoutDescription: string | null;
         checkoutFooterMessage: string | null;
@@ -1377,6 +1392,8 @@ export interface AdminOrderDetailDto {
         riskLevel: string | null;
         disputedAt: string | null;
         disputeClosedAt: string | null;
+        receiptNumber: string | null; // null until Stripe has emailed the receipt
+        receiptUrl: string | null; // Stripe's hosted receipt: proof of payment, not an invoice
     };
     refund: { refundedAt: string; amountMinor: number | null; source: RefundSource | null; providerRefundId: string | null } | null;
     consent: { termsVersion: string | null; immediateStartAt: string | null; acknowledgedAt: string | null };

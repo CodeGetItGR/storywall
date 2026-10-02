@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from 'next-intl';
 
 import { OrderCard } from '@/components/admin/orders/OrderCard';
+import { OrderTaxLines } from '@/components/admin/orders/OrderTaxLines';
 import { PriceBreakdownSummary } from '@/components/checkout/PriceBreakdownSummary';
 import type { AdminOrderDetailDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
@@ -45,12 +46,15 @@ export function OrderPriceSection({ pricing }: { pricing: AdminOrderDetailDto['p
 
                 {/* Tax (the breakdown already says when prices include VAT) */}
                 {pricing.taxAmountMinor !== null ? (
-                    <p className="flex justify-between gap-6 text-sm">
-                        <span className="text-ink-muted">{t('price.tax')}</span>
-                        <span className="font-mono font-semibold text-ink tabular-nums">
-                            {formatMoney(locale, pricing.taxAmountMinor, pricing.currency)}
-                        </span>
-                    </p>
+                    <div className="space-y-1.5">
+                        <p className="flex justify-between gap-6 text-sm">
+                            <span className="text-ink-muted">{t('price.tax')}</span>
+                            <span className="font-mono font-semibold text-ink tabular-nums">
+                                {formatMoney(locale, pricing.taxAmountMinor, pricing.currency)}
+                            </span>
+                        </p>
+                        {pricing.taxLines.length > 0 && <OrderTaxLines lines={pricing.taxLines} currency={pricing.currency} />}
+                    </div>
                 ) : (
                     !pricing.priceBreakdown && <p className="text-xs text-ink-faint">{t('price.noTax')}</p>
                 )}
