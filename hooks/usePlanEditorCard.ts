@@ -7,7 +7,7 @@ import { useMemo, useState } from 'react';
 
 import { useAdminDrawerFooterSlot } from '@/components/admin/AdminDrawer';
 import type { PlanEditorAnchor } from '@/components/admin/PlanEditorAnchors';
-import { appConfigKeys } from '@/hooks/useAppConfig';
+import { invalidatePublicConfig } from '@/hooks/useAppConfig';
 import { usePlanDurationsEditor } from '@/hooks/usePlanDurationsEditor';
 import { usePlanEditorState } from '@/hooks/usePlanEditorState';
 import { usePlanEditorUnlocks } from '@/hooks/usePlanEditorUnlocks';
@@ -66,7 +66,7 @@ export function usePlanEditorCard({
     );
 
     const invalidateAppConfig = () => {
-        queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+        invalidatePublicConfig(queryClient);
     };
     // Keep the catalog and public config in sync after drawer edits.
     const invalidatePlanTiersList = () => {

@@ -1,5 +1,6 @@
 'use client';
 
+import { useInvalidate } from '@refinedev/core';
 import { useTranslations } from 'next-intl';
 import { type ChangeEvent, useCallback, useMemo, useState } from 'react';
 
@@ -32,6 +33,7 @@ export function usePlanModuleCellDraft({ cell, plan, onSavedAction }: { cell: Ed
     const t = useTranslations('AdminPage');
     const updateConfig = useUpdatePlanModuleConfig();
     const setPlanModules = useSetPlanModules();
+    const invalidate = useInvalidate();
 
     const initialSplit = useMemo(() => splitConfig(cell.moduleKey, cell.config), [cell.config, cell.moduleKey]);
     const [included, setIncluded] = useState(cell.kind === 'included');
@@ -101,9 +103,11 @@ export function usePlanModuleCellDraft({ cell, plan, onSavedAction }: { cell: Ed
             const moduleKeys = pending.includedAfter ? [...plan.moduleKeys, cell.moduleKey] : plan.moduleKeys.filter((key) => key !== cell.moduleKey);
             await setPlanModules.mutateAsync({ planId: plan.id, moduleKeys });
         }
+        // The grid reads plans from Refine's list, not the cache the mutations update.
+        await invalidate({ resource: 'plan-tiers', dataProviderName: 'plan-tiers', invalidates: ['list'] });
         setPending(null);
         onSavedAction();
-    }, [cell.moduleKey, onSavedAction, pending, plan.id, plan.moduleKeys, setPlanModules, updateConfig]);
+    }, [cell.moduleKey, invalidate, onSavedAction, pending, plan.id, plan.moduleKeys, setPlanModules, updateConfig]);
 
     return {
         fields,

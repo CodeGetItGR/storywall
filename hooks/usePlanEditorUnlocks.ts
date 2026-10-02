@@ -7,7 +7,7 @@ import type * as React from 'react';
 import { useCallback, useMemo } from 'react';
 
 import { adminKeys } from '@/hooks/useAdmin';
-import { appConfigKeys } from '@/hooks/useAppConfig';
+import { invalidatePublicConfig } from '@/hooks/useAppConfig';
 import { useLocalizedModuleLabel } from '@/hooks/useLocalizedModuleLabel';
 import type { UnlockDraft } from '@/lib/adminPlanEditor';
 import { codeFromName, defaultCurrency, priceInputToMinor } from '@/lib/adminPlanForm';
@@ -39,7 +39,7 @@ export function usePlanEditorUnlocks({
     // unless we invalidate adminKeys ourselves (same reason useDeletePaidService does it).
     const invalidateAdminPaidServices = () => {
         queryClient.invalidateQueries({ queryKey: adminKeys.all });
-        queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+        invalidatePublicConfig(queryClient);
     };
     const createPaidService = useCreate<PaidServiceResponseDto>({ mutationOptions: { onSuccess: invalidateAdminPaidServices } });
     const updatePaidService = useUpdate<PaidServiceResponseDto>({ mutationOptions: { onSuccess: invalidateAdminPaidServices } });

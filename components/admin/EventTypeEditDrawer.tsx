@@ -10,7 +10,7 @@ import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { adminKeys } from '@/hooks/useAdmin';
-import { appConfigKeys } from '@/hooks/useAppConfig';
+import { invalidatePublicConfig } from '@/hooks/useAppConfig';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { adminErrorMessageKey, checked } from '@/lib/adminUtils';
 import type { PlatformEventTypePatchDto, PlatformEventTypeResponseDto } from '@/lib/api/types';
@@ -26,7 +26,7 @@ export function EventTypeEditDrawer({ eventType, onCloseAction }: { eventType: P
         mutationOptions: {
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: adminKeys.platformEventTypes });
-                queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+                invalidatePublicConfig(queryClient);
             },
         },
     });
