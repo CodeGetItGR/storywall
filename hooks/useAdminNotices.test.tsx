@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { adminModerationKeys } from '@/hooks/useAdminModeration';
 import {
     adminNoticeKeys,
+    clearNoticeBrowse,
     useAdminNotice,
     useAdminNotices,
     useAttachNotice,
@@ -103,13 +104,13 @@ describe('useNoticeEventSearch', () => {
         expect(mocks.get).not.toHaveBeenCalled();
     });
 
-    it('sends only the filled filters, trimmed and capped', async () => {
+    it('sends only the filled filters, trimmed and not truncated', async () => {
         mocks.get.mockResolvedValue(page(20));
         const { result } = renderHook(() => useNoticeEventSearch('n-1', { q: ` ${'a'.repeat(250)} `, hostEmail: '', date: '2026-10-01' }, 1), {
             wrapper: wrapperFor(makeClient()),
         });
         await waitFor(() => expect(result.current.isSuccess).toBe(true));
-        expect(mocks.get).toHaveBeenCalledWith(`/api/admin/moderation/notices/n-1/events?page=1&size=20&q=${'a'.repeat(200)}&date=2026-10-01`);
+        expect(mocks.get).toHaveBeenCalledWith(`/api/admin/moderation/notices/n-1/events?page=1&size=20&q=${'a'.repeat(250)}&date=2026-10-01`);
     });
 });
 
@@ -185,5 +186,52 @@ describe('useCloseNotice', () => {
         });
         expect(isInvalidated(client, adminNoticeKeys.list('NEW', 0))).toBe(true);
         expect(isInvalidated(client, adminNoticeKeys.notice('n-1'))).toBe(true);
+    });
+});
+
+describe('clearNoticeBrowse', () => {
+    it('drops the picker cache for that notice only, so a reopened picker fetches page 0 again', () => {
+        const client = makeClient();
+        client.setQueryData(adminNoticeKeys.items('n-1', 'e-1', 'POST', 0), page(30));
+        client.setQueryData(adminNoticeKeys.events('n-1', noFilters, 0), page(20));
+        client.setQueryData(adminNoticeKeys.items('n-2', 'e-1', 'POST', 0), page(30));
+        client.setQueryData(adminNoticeKeys.notice('n-1'), { id: 'n-1' });
+        clearNoticeBrowse(client, 'n-1');
+        expect(client.getQueryData(adminNoticeKeys.items('n-1', 'e-1', 'POST', 0))).toBeUndefined();
+        expect(client.getQueryData(adminNoticeKeys.events('n-1', noFilters, 0))).toBeUndefined();
+        expect(client.getQueryData(adminNoticeKeys.items('n-2', 'e-1', 'POST', 0))).toBeDefined();
+        expect(client.getQueryData(adminNoticeKeys.notice('n-1'))).toBeDefined();
+    });
+});
+
+describe('5109 from a browse query', () => {
+    // A call cap makes a regression fail the test instead of looping until out of memory.
+    function setup() {
+        const calls = { detail: 0, browse: 0 };
+        mocks.get.mockImplementation((url: string) => {
+            const browse = url.includes('/events');
+            calls[browse ? 'browse' : 'detail']++;
+            if (calls.detail + calls.browse > 20) throw new Error('runaway refetch loop');
+            return browse ? Promise.reject(new ApiError(409, { errorCode: 5109 })) : Promise.resolve({ id: 'n-1' });
+        });
+        return calls;
+    }
+    const settle = () => new Promise((resolve) => setTimeout(resolve, 300));
+
+    it.each([
+        ['events', () => useNoticeEventSearch('n-1', { q: 'x', hostEmail: '', date: '' })],
+        ['items', () => useNoticeItems('n-1', 'e-1', 'POST', 0)],
+    ])('does not loop (%s)', async (_name, useBrowse) => {
+        const calls = setup();
+        renderHook(
+            () => {
+                useAdminNotice('n-1');
+                return useBrowse();
+            },
+            { wrapper: wrapperFor(makeClient()) },
+        );
+        await act(settle);
+        expect(calls.browse).toBe(1);
+        expect(calls.detail).toBeLessThanOrEqual(2);
     });
 });

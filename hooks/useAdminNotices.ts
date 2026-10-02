@@ -22,9 +22,6 @@ import type {
 export const NOTICE_PAGE_SIZE = 50;
 export const NOTICE_EVENTS_PAGE_SIZE = 20;
 export const NOTICE_ITEMS_PAGE_SIZE = 30;
-// Backend caps (§2.3): longer values are a 400.
-const MAX_QUERY_LENGTH = 200;
-const MAX_HOST_EMAIL_LENGTH = 320;
 
 export interface NoticeEventFilters {
     q: string;
@@ -32,6 +29,9 @@ export interface NoticeEventFilters {
     date: string; // yyyy-MM-dd
 }
 
+// Detail (`notice`) and picker (`browse`) are separate trees on purpose. D's adminModerationKeys.all
+// (['admin','moderation']) prefix-matches both, so it must never be invalidated wholesale: that would
+// refetch, and so re-audit (NOTICE_VIEWED, EVENT_BROWSED), every mounted notice query.
 export const adminNoticeKeys = {
     lists: ['admin', 'moderation', 'notices'] as const,
     list: (view: NoticeListView, page: number) => ['admin', 'moderation', 'notices', view, page] as const,
@@ -49,18 +49,32 @@ function search(params: Record<string, string | number>) {
 
 function normalizeFilters(filters: NoticeEventFilters): NoticeEventFilters {
     return {
-        q: filters.q.trim().slice(0, MAX_QUERY_LENGTH),
-        hostEmail: filters.hostEmail.trim().slice(0, MAX_HOST_EMAIL_LENGTH),
+        q: filters.q.trim(),
+        hostEmail: filters.hostEmail.trim(),
         date: filters.date,
     };
 }
 
 // 5109: another admin handled the notice. It has left the NEW list, and the detail is re-read once on
 // purpose (a new NOTICE_VIEWED is correct: the admin is looking at it again, §2.7).
-function refreshAfterRefusal(queryClient: QueryClient, error: unknown, id: string) {
+// Safe to call from a queryFn: it never removes the failing query, which would be rebuilt and loop.
+function invalidateAfterRefusal(queryClient: QueryClient, error: unknown, id: string) {
     if (getErrorCode(error) !== ERROR_CODES.NOTICE_ALREADY_HANDLED) return;
     void queryClient.invalidateQueries({ queryKey: adminNoticeKeys.lists });
     void queryClient.invalidateQueries({ queryKey: adminNoticeKeys.notice(id) });
+}
+
+// Mutations only: also drops the picker cache, which is no longer meaningful.
+function refreshAfterRefusal(queryClient: QueryClient, error: unknown, id: string) {
+    if (getErrorCode(error) !== ERROR_CODES.NOTICE_ALREADY_HANDLED) return;
+    invalidateAfterRefusal(queryClient, error, id);
+    clearNoticeBrowse(queryClient, id);
+}
+
+// Page 0 of each type is cached for 10 minutes so paging back is not a second logged browse. The
+// drawer/picker (Task 14) MUST call this when it unmounts, so reopening it fetches page 0 again: one
+// EVENT_BROWSED per type per opening (§2.4).
+export function clearNoticeBrowse(queryClient: QueryClient, id: string) {
     queryClient.removeQueries({ queryKey: adminNoticeKeys.browse(id) });
 }
 
@@ -92,6 +106,7 @@ export function useAdminNotice(id: string) {
 export function useNoticeEventSearch(id: string, filters: NoticeEventFilters, page = 0) {
     const queryClient = useQueryClient();
     const normalized = normalizeFilters(filters);
+    const enabled = Boolean(normalized.q || normalized.hostEmail || normalized.date);
     return useQuery({
         queryKey: adminNoticeKeys.events(id, normalized, page),
         queryFn: async () => {
@@ -102,12 +117,12 @@ export function useNoticeEventSearch(id: string, filters: NoticeEventFilters, pa
             try {
                 return await api.get<Page<NoticeEventCandidateDto>>(`${endpoints.adminModeration.noticeEvents(id)}?${search(params)}`);
             } catch (error) {
-                refreshAfterRefusal(queryClient, error, id);
+                invalidateAfterRefusal(queryClient, error, id);
                 throw error;
             }
         },
-        enabled: Boolean(normalized.q || normalized.hostEmail || normalized.date),
-        placeholderData: (previous) => previous,
+        enabled,
+        placeholderData: (previous) => (enabled ? previous : undefined),
         retry: false,
     });
 }
@@ -126,7 +141,7 @@ export function useNoticeItems(id: string, eventId: string, type: ReportTargetTy
                     `${endpoints.adminModeration.noticeItems(id, eventId)}?${search({ type, page, size: NOTICE_ITEMS_PAGE_SIZE })}`,
                 );
             } catch (error) {
-                refreshAfterRefusal(queryClient, error, id);
+                invalidateAfterRefusal(queryClient, error, id);
                 throw error;
             }
         },
@@ -155,7 +170,7 @@ export function useAttachNotice() {
             api.post<ContentNoticeDetailDto>(endpoints.adminModeration.noticeAttach(id), { eventId, targetType, targetId }),
         onSuccess: (detail, { id }) => {
             queryClient.setQueryData(adminNoticeKeys.notice(id), detail);
-            queryClient.removeQueries({ queryKey: adminNoticeKeys.browse(id) });
+            clearNoticeBrowse(queryClient, id);
             return Promise.all([
                 queryClient.invalidateQueries({ queryKey: adminNoticeKeys.lists }),
                 queryClient.invalidateQueries({ queryKey: adminModerationKeys.lists }),
@@ -172,7 +187,7 @@ export function useCloseNotice() {
             api.post<ContentNoticeDetailDto>(endpoints.adminModeration.noticeClose(id), { reason, note }),
         onSuccess: (detail, { id }) => {
             queryClient.setQueryData(adminNoticeKeys.notice(id), detail);
-            queryClient.removeQueries({ queryKey: adminNoticeKeys.browse(id) });
+            clearNoticeBrowse(queryClient, id);
             return queryClient.invalidateQueries({ queryKey: adminNoticeKeys.lists });
         },
         onError: (error, { id }) => refreshAfterRefusal(queryClient, error, id),
