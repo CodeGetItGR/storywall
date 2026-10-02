@@ -671,6 +671,8 @@ export interface EventResponseDto {
     deletedAt: string | null;
     deletionScheduledFor: string | null; // ISO-8601; non-null while a deletion request is pending
     status: EventStatus;
+    // Only a host ever receives a suspended event (storywall-suspension-fe-integration.md §2).
+    suspended: boolean;
 }
 
 export interface EventScheduleDto {
@@ -732,6 +734,23 @@ export interface EventDetailResponseDto {
     deletedAt: string | null;
     deletionScheduledFor: string | null; // ISO-8601; non-null while a deletion request is pending
     status: EventStatus;
+    // A host's suspended event: show SuspendedEventView and nothing else. modules, sessions,
+    // rsvpSummary and hosts are degraded while suspended and must not be read.
+    suspended: boolean;
+    suspension: EventSuspensionDto | null;
+}
+
+// Why a StoryWall is suspended. ground, rule and explanation are null if the decision row was deleted.
+export interface EventSuspensionDto {
+    suspendedAt: string;
+    ground: StatementGround | null;
+    rule: GuidelinesRule | null;
+    explanation: string | null; // the admin's words, verbatim; render as plain text
+    reference: string; // the #REF the statement email quoted
+    closedAt: string | null; // set once an admin closed it: it can't come back
+    deletesOn: string | null; // set with closedAt
+    contactEmail: string | null; // where to write to disagree; null = leave the address out
+    primaryHost: boolean; // the caller is the primary host: show the billing-and-withdrawal link
 }
 
 export interface CheckoutResponseDto {
@@ -2788,7 +2807,29 @@ export type AdminAuditAction =
     | 'NOTICE_VIEWED'
     | 'NOTICE_ATTACHED'
     | 'NOTICE_CLOSED'
-    | 'EVENT_BROWSED';
+    | 'EVENT_BROWSED'
+    | 'EVENT_SUSPENDED'
+    | 'EVENT_SUSPENSION_LIFTED'
+    | 'EVENT_CLOSED'
+    | 'STATEMENT_OF_REASONS_SENT';
+
+// The statement of reasons sent with every moderation action (Guidelines §22).
+export type StatementGround = 'ILLEGAL_CONTENT' | 'GUIDELINES_BREACH';
+// One per Guidelines section 3–15, in order; see lib/guidelinesRules.ts.
+export type GuidelinesRule =
+    | 'ILLEGAL_CONTENT'
+    | 'SEXUAL_CONTENT'
+    | 'MINORS'
+    | 'HARASSMENT'
+    | 'HATE_AND_VIOLENCE'
+    | 'IMPERSONATION'
+    | 'PRIVACY'
+    | 'INTELLECTUAL_PROPERTY'
+    | 'SPAM'
+    | 'COMMERCIAL_USE'
+    | 'GIFT_LIST_MISUSE'
+    | 'QR_UPLOAD_MISUSE'
+    | 'MALICIOUS_TECHNICAL_USE';
 
 // GET /api/admin/moderation/cases?status=&page=&size= (Page<ModerationCaseSummaryDto>).
 // decisionId/outcome/decidedAt are set only on CLOSED cases; topReason, firstReportedAt and
@@ -2834,6 +2875,7 @@ export interface AllowedActionsDto {
     removeMember: boolean;
     banFromEvent: boolean;
     suspendAccount: boolean;
+    suspendEvent: boolean; // true while the event exists and isn't suspended, even when the item is gone
 }
 
 export interface ModerationDecisionDto {
@@ -2846,6 +2888,10 @@ export interface ModerationDecisionDto {
     memberRemoved: boolean;
     banned: boolean;
     accountSuspended: boolean;
+    eventSuspended: boolean;
+    ground: StatementGround | null; // null on dismissals and on decisions before 2026-10-02
+    rule: GuidelinesRule | null;
+    explanation: string | null;
     reportCount: number;
     adminUserId: string;
     note: string | null;
@@ -2874,16 +2920,30 @@ export interface ModerationCaseDetailDto {
     decisions: ModerationDecisionDto[];
     priorDecisionsAgainstAuthor: ModerationDecisionDto[];
     bans: EventBanDto[];
+    eventSuspension: ModerationEventSuspensionDto | null; // set while the case's event is suspended
 }
 
-// POST .../decision. 400/3039 when an action does not apply to the target type,
-// 409/5106 when already decided, 5107 host removal, 5108 admin suspension.
+export interface ModerationEventSuspensionDto {
+    decisionId: string;
+    suspendedAt: string;
+    closedAt: string | null; // set once closed: neither lift nor close is offered then
+    deletesOn: string; // closed: the purge date. Not closed: the date a close now would set
+}
+
+// POST .../decision. 400/3039 when an action does not apply to the target type or the statement
+// is missing/partial/out of bounds, 409/5106 when already decided, 5107 host removal, 5108 admin
+// suspension, 5110 StoryWall already suspended.
 export interface ModerationDecisionRequestDto {
     outcome: ModerationOutcome;
     removeContent: boolean;
     removeMember: boolean;
     banFromEvent: boolean;
     suspendAccount: boolean;
+    suspendEvent: boolean;
+    // The statement of reasons: all three with any action, all null otherwise (a dismissal sends null).
+    ground: StatementGround | null;
+    rule: GuidelinesRule | null;
+    explanation: string | null; // 20–2000 characters after trimming
     note?: string | null; // max 2000
 }
 

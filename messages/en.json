@@ -727,6 +727,7 @@
         "yourEvents": "Your events",
         "createEventCta": "Create event",
         "eventUnavailable": "Event unavailable",
+        "suspended": "Suspended",
         "previous": "Previous events",
         "next": "Next events",
         "roleFallback": {
@@ -1835,6 +1836,44 @@
             "failed": "We couldn't send your notice. Please try again."
         }
     },
+    "ModerationStatement": {
+        "grounds": {
+            "ILLEGAL_CONTENT": "Illegal content",
+            "GUIDELINES_BREACH": "Breach of the Community Guidelines"
+        },
+        "rules": {
+            "ILLEGAL_CONTENT": "Illegal content",
+            "SEXUAL_CONTENT": "Sexual and pornographic content",
+            "MINORS": "Protecting minors",
+            "HARASSMENT": "Harassment, threats and bullying",
+            "HATE_AND_VIOLENCE": "Hate and violence",
+            "IMPERSONATION": "Impersonation and deception",
+            "PRIVACY": "Personal data and other people's privacy",
+            "INTELLECTUAL_PROPERTY": "Intellectual property",
+            "SPAM": "Spam and abuse",
+            "COMMERCIAL_USE": "Commercial use and sales",
+            "GIFT_LIST_MISUSE": "Gift List (Wishlist)",
+            "QR_UPLOAD_MISUSE": "Misuse of QR Photo Upload",
+            "MALICIOUS_TECHNICAL_USE": "Malicious technical use"
+        }
+    },
+    "SuspendedEvent": {
+        "title": "This StoryWall is suspended",
+        "body": "We suspended this StoryWall on {date}. Your guests can't see it, and nothing can be added to it.",
+        "ground": "Ground",
+        "rule": "Rule",
+        "explanation": "Our explanation",
+        "readRule": "Read this rule",
+        "humanDecision": "This decision was taken by a person. No automated means were used.",
+        "closedTitle": "This StoryWall has been closed",
+        "closedBody": "We suspended this StoryWall on {date} and have since closed it. It will be deleted for good on {deletesOn}, with everything in it.",
+        "redressWithContact": "If you disagree, write to us at {email} quoting #{reference}. You may also take the matter to the competent courts.",
+        "redressWithoutContact": "If you disagree, contact us quoting #{reference}. You may also take the matter to the competent courts.",
+        "billingLink": "Billing and withdrawal",
+        "billingTitle": "Billing and withdrawal",
+        "billingBack": "Back",
+        "back": "Back to your events"
+    },
     "CommunityGuidelinesPage": {
         "title": "Community Guidelines",
         "unavailable": "The Community Guidelines couldn't be loaded. Please try again later."
@@ -2570,6 +2609,7 @@
                 "removeMember": "Remove the member from the event",
                 "banFromEvent": "Keep them from rejoining this event",
                 "suspendAccount": "Suspend their account",
+                "suspendEvent": "Suspend this StoryWall",
                 "alreadyRemovedHint": "The item is gone; taking action closes the case as resolved.",
                 "note": "Note (internal, optional)",
                 "review": "Review decision",
@@ -2584,6 +2624,9 @@
                 "removeMember": "Remove the author from the event",
                 "banFromEvent": "Stop their account rejoining this event",
                 "suspendAccount": "Suspend their account. They are signed out within 15 minutes",
+                "suspendEvent": "Suspend the StoryWall: hidden from guests, its hosts see only why",
+                "emailsAuthor": "Email the author a statement of reasons, if they have an account",
+                "emailsHosts": "Email every host a statement of reasons",
                 "reports": "{outcome, select, DISMISSED {{count, plural, one {Close # report.} other {Close # reports.}} Reporters still in the event with an account will be told no breach of the Community Guidelines was found.} other {{count, plural, one {Close # report.} other {Close # reports.}} Reporters still in the event with an account will be told action was taken under the Community Guidelines.}}"
             },
             "history": {
@@ -2596,6 +2639,7 @@
                     "memberRemoved": "Member removed",
                     "banned": "Banned from the event",
                     "accountSuspended": "Account suspended",
+                    "eventSuspended": "StoryWall suspended",
                     "none": "Closed as resolved (item already gone)"
                 }
             },
@@ -2677,6 +2721,26 @@
                     "empty": "Nothing of this type.",
                     "anonymous": "Guest"
                 }
+            },
+            "statement": {
+                "title": "Statement of reasons",
+                "hint": "Emailed to everyone this decision acts against. Write it to them, not to other admins.",
+                "ground": "Ground",
+                "rule": "Rule broken",
+                "rulePlaceholder": "Choose a rule",
+                "explanation": "Explanation",
+                "explanationCount": "{count} of {max} characters (at least {min})"
+            },
+            "suspension": {
+                "status": "This StoryWall has been suspended since {date}.",
+                "lift": "Lift StoryWall suspension",
+                "liftConfirm": "Lift the suspension? Guests can use the StoryWall again, and every host is emailed.",
+                "liftConfirmButton": "Lift suspension",
+                "closedStatus": "This StoryWall was closed on {date}. It will be deleted on {deletesOn}.",
+                "close": "Close StoryWall",
+                "closeConfirm": "Close this StoryWall for good? It stays hidden, can't be restored, and is deleted on {deletesOn}. Every host is emailed.",
+                "closeConfirmButton": "Close StoryWall",
+                "cancel": "Cancel"
             },
             "liftBan": "Lift ban",
             "reportStatus": {
@@ -4323,6 +4387,10 @@
         "hostTransferPaymentInProgress": "A payment on this event is still in progress. Try again in a minute.",
         "moderationDecisionInvalid": "This action doesn't apply to this item.",
         "eventBanned": "You can't join this event.",
+        "eventSuspended": "This StoryWall is suspended.",
+        "eventAlreadySuspended": "This StoryWall is already suspended. Reload the case.",
+        "eventNotSuspended": "This StoryWall is no longer suspended.",
+        "eventAlreadyClosed": "This StoryWall has been closed.",
         "moderationCaseClosed": "This case has already been decided.",
         "noticeAlreadyHandled": "Another admin has already handled this notice.",
         "moderationMemberIsHost": "Hosts can't be removed from their event. Suspend the account instead.",

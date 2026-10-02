@@ -56,6 +56,7 @@ export const ERROR_CODES = {
     GIFT_RECIPIENT_PROTECTED: 4012,
     GUIDELINES_ACCEPTANCE_REQUIRED: 4013,
     EVENT_BANNED: 4014,
+    EVENT_SUSPENDED: 4015,
     EVENT_NOT_ACTIVE: 5014,
     EVENT_NOT_DRAFT: 5017,
     ORDER_NOT_PENDING: 5018,
@@ -64,6 +65,9 @@ export const ERROR_CODES = {
     MODERATION_MEMBER_IS_HOST: 5107,
     MODERATION_TARGET_PROTECTED: 5108,
     NOTICE_ALREADY_HANDLED: 5109,
+    EVENT_ALREADY_SUSPENDED: 5110,
+    EVENT_NOT_SUSPENDED: 5111,
+    EVENT_ALREADY_CLOSED: 5112,
     PLAN_TIER_NOT_PURCHASABLE: 5015,
     PLAN_TIER_NOT_PRICED: 5019,
     PLAN_TIER_CURRENCY_UNSUPPORTED: 5021,
@@ -284,4 +288,10 @@ export function isGuidelinesAcceptanceRequiredError(error: unknown): boolean {
 // The version the user accepted is no longer the current one.
 export function isGuidelinesVersionMismatchError(error: unknown): boolean {
     return getErrorCode(error) === ERROR_CODES.GUIDELINES_VERSION_MISMATCH;
+}
+
+// A host's StoryWall was suspended under them: refetch the event and let the suspended view take
+// over (lib/eventSuspension.ts). Never shown as a toast.
+export function isEventSuspendedError(error: unknown): boolean {
+    return getErrorCode(error) === ERROR_CODES.EVENT_SUSPENDED;
 }
