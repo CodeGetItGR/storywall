@@ -28,7 +28,8 @@ export function useToolsMenuItems(): ToolMenuItem[] {
     const giftAccount = useGiftAccount(useRouteEventId());
     const availableModules = readableModuleKeys(activeEvent);
 
-    if (!activeEvent) return [];
+    // A suspended StoryWall shows only the suspended view: no tool menu.
+    if (!activeEvent || activeEvent.suspended) return [];
 
     // A deleted event is download-only: the gallery archive and the wishbook
     // PDF are the only tools that still do anything.
@@ -63,7 +64,8 @@ export function useHostMenuItems(): ToolMenuItem[] {
     const t = useTranslations('MobileTabBar.hostMenu');
     const activeEvent = useActiveEvent();
 
-    if (!activeEvent) return [];
+    // A suspended StoryWall shows only the suspended view: no host menu.
+    if (!activeEvent || activeEvent.suspended) return [];
 
     const galleryQrEnabled = isGalleryQrFeatureEnabled(activeEvent.modules);
     const isDraft = activeEvent.status === 'DRAFT';

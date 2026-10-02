@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 
 import { SuspendedEventBilling } from '@/components/event/SuspendedEventBilling';
 import { SuspendedEventView } from '@/components/event/SuspendedEventView';
-import { useActiveEvent } from '@/providers/EventProvider';
+import { useActiveEvent, useRouteEventId } from '@/providers/EventProvider';
 
 // ?view=billing on any event URL: the primary host's billing-and-withdrawal mode of the suspended view.
 const SUSPENDED_BILLING_VIEW = 'billing';
@@ -15,9 +15,11 @@ const SUSPENDED_BILLING_VIEW = 'billing';
 // closed StoryWall (suspended and soft-deleted) shows this view, not the deleted-event one.
 export function SuspendedEventRouteGuard({ children }: { children: ReactNode }) {
     const activeEvent = useActiveEvent();
+    // Id-less routes (/post/[id], /home) fall back to the last visited event: only a route that names the event may be replaced.
+    const routeEventId = useRouteEventId();
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    if (!activeEvent?.suspended) return children;
+    if (!routeEventId || !activeEvent?.suspended) return children;
 
     // The server decides who may read billing; this only decides what to show. A co-host who types
     // ?view=billing just gets the suspended view.

@@ -4,13 +4,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SuspendedEventRouteGuard } from '@/components/event/SuspendedEventRouteGuard';
 import type { EventDetailResponseDto, EventSuspensionDto } from '@/lib/api/types';
 
-const state = vi.hoisted(() => ({ event: null as Partial<EventDetailResponseDto> | null }));
+const state = vi.hoisted(() => ({ event: null as Partial<EventDetailResponseDto> | null, routeEventId: 'e-1' as string | null }));
 
 vi.mock('next-intl', () => ({
     useTranslations: () => (key: string, values?: Record<string, unknown>) => (values ? `${key} ${JSON.stringify(values)}` : key),
     useLocale: () => 'en',
 }));
-vi.mock('@/providers/EventProvider', () => ({ useActiveEvent: () => state.event }));
+vi.mock('@/providers/EventProvider', () => ({ useActiveEvent: () => state.event, useRouteEventId: () => state.routeEventId }));
 const nav = vi.hoisted(() => ({ search: '' }));
 vi.mock('next/navigation', () => ({
     usePathname: () => '/events/e-1/feed',
@@ -24,6 +24,7 @@ vi.mock('@/app/(main)/(app)/(event)/events/[eventId]/manage/BillingTab', () => (
 afterEach(() => {
     cleanup();
     nav.search = '';
+    state.routeEventId = 'e-1';
 });
 
 const suspension: EventSuspensionDto = {
@@ -88,7 +89,14 @@ describe('SuspendedEventRouteGuard', () => {
         render(<SuspendedEventRouteGuard>page</SuspendedEventRouteGuard>);
         expect(screen.getByRole('heading', { name: 'title' })).toBeTruthy();
         expect(screen.queryByRole('link', { name: 'readRule' })).toBeNull();
-        expect(screen.getByText('redressWithoutContact {"reference":"AB12CD34"}')).toBeTruthy();
+        expect(screen.getByText('redressWithoutContact')).toBeTruthy();
+    });
+
+    it('leaves a route that does not name the event alone, even if the remembered event is suspended', () => {
+        state.routeEventId = null;
+        state.event = suspendedEvent;
+        render(<SuspendedEventRouteGuard>page</SuspendedEventRouteGuard>);
+        expect(screen.getByText('page')).toBeTruthy();
     });
 
     it('says when a closed StoryWall will be deleted', () => {

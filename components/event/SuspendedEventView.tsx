@@ -86,7 +86,7 @@ export function SuspendedEventView({ event, billingHref = null }: { event: Event
                     <p className="break-words">
                         {suspension.contactEmail
                             ? t('redressWithContact', { email: suspension.contactEmail, reference: suspension.reference })
-                            : t('redressWithoutContact', { reference: suspension.reference })}
+                            : t('redressWithoutContact')}
                     </p>
                 ) : null}
             </div>
