@@ -2729,7 +2729,8 @@
                 "rule": "Rule broken",
                 "rulePlaceholder": "Choose a rule",
                 "explanation": "Explanation",
-                "explanationCount": "{count} of {max} characters (at least {min})"
+                "explanationCount": "{count} of {max} characters (at least {min})",
+                "illegalHint": "If the ground is illegal content, name the specific law or legal provision in the explanation. The statement of reasons has to state the legal ground (DSA Art. 17(3)(d))."
             },
             "suspension": {
                 "status": "This StoryWall has been suspended since {date}.",

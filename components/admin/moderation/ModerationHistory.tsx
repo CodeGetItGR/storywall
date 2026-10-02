@@ -6,8 +6,8 @@ import type { MouseEvent } from 'react';
 import type { EventBanDto, ModerationDecisionDto } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
 
-type DecisionAction = 'contentRemoved' | 'memberRemoved' | 'banned' | 'accountSuspended';
-const DECISION_ACTIONS: readonly DecisionAction[] = ['contentRemoved', 'memberRemoved', 'banned', 'accountSuspended'];
+type DecisionAction = 'eventSuspended' | 'contentRemoved' | 'memberRemoved' | 'banned' | 'accountSuspended';
+const DECISION_ACTIONS: readonly DecisionAction[] = ['eventSuspended', 'contentRemoved', 'memberRemoved', 'banned', 'accountSuspended'];
 
 const HEADING = 'text-xs font-bold tracking-wide text-ink-faint uppercase';
 const PILL = 'inline-flex rounded-full bg-status-neutral-wash px-2.5 py-0.5 text-[11px] font-bold text-status-neutral';
@@ -28,6 +28,7 @@ export function ModerationHistory({
     liftingBanId: string | null;
 }) {
     const t = useTranslations('AdminPage.moderation');
+    const tStatement = useTranslations('ModerationStatement');
     const locale = useLocale();
 
     function date(value: string) {
@@ -59,6 +60,13 @@ export function ModerationHistory({
                                                 : t('history.actions.none')}
                                         </p>
                                     ) : null}
+                                    {/* The statement of reasons the people affected were emailed */}
+                                    {d.ground && d.rule ? (
+                                        <p className="text-ink-muted">
+                                            {tStatement(`grounds.${d.ground}`)} · {tStatement(`rules.${d.rule}`)}
+                                        </p>
+                                    ) : null}
+                                    {d.explanation ? <p className="break-words whitespace-pre-wrap text-ink">{d.explanation}</p> : null}
                                     {d.note ? <p className="break-words whitespace-pre-wrap text-ink-muted">{d.note}</p> : null}
                                 </li>
                             );

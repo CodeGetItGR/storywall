@@ -33,6 +33,8 @@ const CASE_STALE_CODES = new Set<unknown>([
     ERROR_CODES.MODERATION_CASE_CLOSED,
     ERROR_CODES.MODERATION_MEMBER_IS_HOST,
     ERROR_CODES.MODERATION_TARGET_PROTECTED,
+    // Another case suspended the StoryWall first: allowedActions.suspendEvent is now false.
+    ERROR_CODES.EVENT_ALREADY_SUSPENDED,
 ]);
 
 // 5106: someone else closed the case, so it has also left its tab.
@@ -111,5 +113,48 @@ export function useLiftEventBan() {
             }
         },
         onSuccess: (_result, { targetType, targetId }) => queryClient.invalidateQueries({ queryKey: adminModerationKeys.case(targetType, targetId) }),
+    });
+}
+
+// 204. 5111 means it was already lifted (by another admin): treated as done. 5112 means another admin
+// closed it: shown as a refusal, and the case is re-read so the drawer shows the closed state. Re-reads
+// only the case, like useLiftEventBan.
+export function useLiftEventSuspension() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ eventId }: CaseTarget & { eventId: string }) => {
+            try {
+                await api.del<void>(endpoints.adminModeration.eventSuspension(eventId));
+            } catch (error) {
+                if (getErrorCode(error) !== ERROR_CODES.EVENT_NOT_SUSPENDED) throw error;
+            }
+        },
+        onSuccess: (_result, { targetType, targetId }) => queryClient.invalidateQueries({ queryKey: adminModerationKeys.case(targetType, targetId) }),
+        onError: (error, { targetType, targetId }) => {
+            if (getErrorCode(error) === ERROR_CODES.EVENT_ALREADY_CLOSED) {
+                void queryClient.invalidateQueries({ queryKey: adminModerationKeys.case(targetType, targetId) });
+            }
+        },
+    });
+}
+
+// 204, no body. 5112 means another admin closed it first: treated as done. 5111 (lifted meanwhile) is
+// shown as a refusal, and the case is re-read so the drawer shows it is no longer suspended.
+export function useCloseEventSuspension() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ eventId }: CaseTarget & { eventId: string }) => {
+            try {
+                await api.post<void>(endpoints.adminModeration.closeEventSuspension(eventId));
+            } catch (error) {
+                if (getErrorCode(error) !== ERROR_CODES.EVENT_ALREADY_CLOSED) throw error;
+            }
+        },
+        onSuccess: (_result, { targetType, targetId }) => queryClient.invalidateQueries({ queryKey: adminModerationKeys.case(targetType, targetId) }),
+        onError: (error, { targetType, targetId }) => {
+            if (getErrorCode(error) === ERROR_CODES.EVENT_NOT_SUSPENDED) {
+                void queryClient.invalidateQueries({ queryKey: adminModerationKeys.case(targetType, targetId) });
+            }
+        },
     });
 }
