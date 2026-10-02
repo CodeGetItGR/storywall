@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { type MouseEvent, useCallback, useEffect, useState } from 'react';
 
 import { useAdminWithdrawals } from '@/hooks/useAdmin';
 import { formatWithdrawalsHash, parseWithdrawalsHash } from '@/lib/adminWithdrawalsRouting';
@@ -29,6 +29,15 @@ export function useWithdrawalsPanel() {
         window.dispatchEvent(new HashChangeEvent('hashchange'));
     }, []);
 
+    // Next's Link sets the hash with pushState, which fires no hashchange.
+    const handleBackClick = useCallback(
+        (event: MouseEvent<HTMLAnchorElement>) => {
+            event.preventDefault();
+            backToList();
+        },
+        [backToList],
+    );
+
     const refresh = useCallback(() => {
         query.refetch();
     }, [query]);
@@ -44,5 +53,6 @@ export function useWithdrawalsPanel() {
         error: query.error,
         refresh,
         backToList,
+        handleBackClick,
     };
 }

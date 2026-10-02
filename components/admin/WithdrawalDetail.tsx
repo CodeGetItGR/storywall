@@ -2,6 +2,7 @@
 
 import { ChevronDown, Layers3, PackageMinus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import type { MouseEvent } from 'react';
 
 import { AdminIdentifier } from '@/components/admin/AdminIdentifier';
 import { WithdrawalDecision } from '@/components/admin/WithdrawalDecision';
@@ -14,7 +15,15 @@ import { WITHDRAWALS_HASH_ROOT } from '@/lib/adminWithdrawalsRouting';
 import type { WithdrawalAdminDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
-export function WithdrawalDetail({ row, onReleasedAction }: { row: WithdrawalAdminDto; onReleasedAction: () => void }) {
+export function WithdrawalDetail({
+    row,
+    onBackAction,
+    onReleasedAction,
+}: {
+    row: WithdrawalAdminDto;
+    onBackAction: (event: MouseEvent<HTMLAnchorElement>) => void;
+    onReleasedAction: () => void;
+}) {
     const t = useTranslations('AdminPage');
     const { request } = row;
     const { held, amount, submittedAt, decidedAt, guidance, sendToAssignments, sendToPaidServices } = useWithdrawalDetail(row);
@@ -23,7 +32,7 @@ export function WithdrawalDetail({ row, onReleasedAction }: { row: WithdrawalAdm
         <div className="max-w-4xl space-y-8">
             {/* Header */}
             <header className="space-y-3">
-                <BackButton href={WITHDRAWALS_HASH_ROOT} label={t('withdrawals.title')} />
+                <BackButton href={WITHDRAWALS_HASH_ROOT} label={t('withdrawals.title')} onClick={onBackAction} />
                 <div className="flex flex-wrap items-center gap-3">
                     <h1 className="font-mono text-2xl font-extrabold tracking-tight text-ink tabular-nums sm:text-3xl">
                         {amount ?? t('withdrawals.noAmount')}
