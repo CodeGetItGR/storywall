@@ -9,7 +9,18 @@ import { cn } from '@/lib/utils';
 // An admin can only act on an id the console itself hands them: there is no
 // database console behind this UI. Wherever a row knows an id another panel
 // needs, it is rendered with this so it can be copied rather than transcribed.
-export function AdminIdentifier({ label, value, className }: { label: string; value: string; className?: string }) {
+// `hideValue` is for ids nobody reads, only pastes elsewhere: just the Copy button.
+export function AdminIdentifier({
+    label,
+    value,
+    hideValue = false,
+    className,
+}: {
+    label: string;
+    value: string;
+    hideValue?: boolean;
+    className?: string;
+}) {
     const t = useTranslations('AdminPage');
     const [copied, setCopied] = useState(false);
 
@@ -22,20 +33,32 @@ export function AdminIdentifier({ label, value, className }: { label: string; va
     return (
         <div className={cn('min-w-0', className)}>
             <p className="text-[10px] font-bold tracking-wide text-ink-faint uppercase">{label}</p>
-            <div className="flex items-center gap-1.5">
-                <code className="min-w-0 truncate font-mono text-xs text-ink-muted" title={value}>
-                    {value}
-                </code>
+            {hideValue ? (
                 <button
                     type="button"
                     onClick={handleCopy}
                     aria-label={copied ? t('identifiers.copied') : t('identifiers.copy', { label })}
-                    title={copied ? t('identifiers.copied') : t('identifiers.copy', { label })}
-                    className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-ink-faint transition hover:bg-surface-muted hover:text-ink"
+                    className="mt-0.5 inline-flex h-6 items-center gap-1.5 rounded text-xs font-semibold text-ink-muted transition hover:text-ink"
                 >
                     {copied ? <Check className="h-3.5 w-3.5 text-status-good" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copied ? t('identifiers.copied') : t('identifiers.copyShort')}
                 </button>
-            </div>
+            ) : (
+                <div className="flex items-center gap-1.5">
+                    <code className="min-w-0 truncate font-mono text-xs text-ink-muted" title={value}>
+                        {value}
+                    </code>
+                    <button
+                        type="button"
+                        onClick={handleCopy}
+                        aria-label={copied ? t('identifiers.copied') : t('identifiers.copy', { label })}
+                        title={copied ? t('identifiers.copied') : t('identifiers.copy', { label })}
+                        className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-ink-faint transition hover:bg-surface-muted hover:text-ink"
+                    >
+                        {copied ? <Check className="h-3.5 w-3.5 text-status-good" /> : <Copy className="h-3.5 w-3.5" />}
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

@@ -117,6 +117,16 @@ describe('OrderDetail', () => {
         expect(screen.queryByText('Fraud signals')).not.toBeInTheDocument();
     });
 
+    it('shows only the order id; the others are copy-only', () => {
+        renderDetail(order);
+
+        expect(screen.getByText('o-1')).toBeInTheDocument();
+        for (const id of ['u-1', 'cus_1', 'pi_1', 'cs_1', 're_1', 'e-1']) {
+            expect(screen.queryByText(id)).not.toBeInTheDocument();
+        }
+        expect(screen.getAllByRole('button', { name: /^Copy / })).toHaveLength(7);
+    });
+
     it('shows a refund made before amounts were recorded, and links a held withdrawal to its review', () => {
         renderDetail(order);
 

@@ -31,7 +31,7 @@ export function OrderRefundSection({ refund, currency }: { refund: NonNullable<A
                 />
 
                 {/* Identifier */}
-                {refund.providerRefundId && <AdminIdentifier label={t('detail.refund.stripeRefund')} value={refund.providerRefundId} />}
+                {refund.providerRefundId && <AdminIdentifier label={t('detail.refund.stripeRefund')} value={refund.providerRefundId} hideValue />}
             </div>
         </AdminSection>
     );

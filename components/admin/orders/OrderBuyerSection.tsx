@@ -31,8 +31,10 @@ export function OrderBuyerSection({ buyer }: { buyer: AdminOrderDetailDto['buyer
                 {/* Identifiers */}
                 {(buyer.userId || buyer.providerCustomerId) && (
                     <div className="grid gap-3 sm:grid-cols-2">
-                        {buyer.userId && <AdminIdentifier label={t('detail.buyer.account')} value={buyer.userId} />}
-                        {buyer.providerCustomerId && <AdminIdentifier label={t('detail.buyer.stripeCustomer')} value={buyer.providerCustomerId} />}
+                        {buyer.userId && <AdminIdentifier label={t('detail.buyer.account')} value={buyer.userId} hideValue />}
+                        {buyer.providerCustomerId && (
+                            <AdminIdentifier label={t('detail.buyer.stripeCustomer')} value={buyer.providerCustomerId} hideValue />
+                        )}
                     </div>
                 )}
             </div>

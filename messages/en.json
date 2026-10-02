@@ -2427,6 +2427,7 @@
         },
         "identifiers": {
             "copy": "Copy {label}",
+            "copyShort": "Copy",
             "copied": "Copied",
             "eventId": "Event ID",
             "requestId": "Request ID",
