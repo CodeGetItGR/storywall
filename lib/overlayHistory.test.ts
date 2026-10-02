@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 type OverlayHistoryModule = typeof import('@/lib/overlayHistory');
 
@@ -69,5 +69,76 @@ describe('overlayHistory', () => {
         expect(window.history.length).toBe(lengthAfterClose);
         await goBack();
         expect(window.location.hash).toBe('#metrics');
+    });
+
+    // Next's app router patches pushState/replaceState: a call whose state
+    // carries its `__NA` marker is treated as its own and not synced into the
+    // router's URL. A later router.refresh() (the language switch) rewrites the
+    // address bar with that URL, so a stale one sends the admin to `#metrics`.
+    describe('with the Next router URL', () => {
+        const nextInternals = { __NA: true, __PRIVATE_NEXTJS_INTERNALS_TREE: { tree: [] } };
+        let originalPush: History['pushState'];
+        let originalReplace: History['replaceState'];
+        let routerUrl: string;
+
+        function patched(original: History['pushState']): History['pushState'] {
+            return (data, unused, url) => {
+                if (data?.__NA) return original(data, unused, url);
+                if (url) {
+                    const next = new URL(url, window.location.href);
+                    routerUrl = `${next.pathname}${next.search}${next.hash}`;
+                }
+                return original({ ...(data ?? {}), ...nextInternals }, unused, url);
+            };
+        }
+
+        // What Next's HistoryUpdater does after router.refresh().
+        function routerRefresh() {
+            originalReplace(nextInternals, '', routerUrl);
+        }
+
+        beforeEach(() => {
+            originalPush = window.history.pushState.bind(window.history);
+            originalReplace = window.history.replaceState.bind(window.history);
+            originalReplace(nextInternals, '', '/admin#metrics');
+            routerUrl = '/admin#metrics';
+            window.history.pushState = patched(originalPush);
+            window.history.replaceState = patched(originalReplace);
+        });
+
+        afterEach(() => {
+            window.history.pushState = originalPush;
+            window.history.replaceState = originalReplace;
+        });
+
+        it.each(['fresh entry', 'leftover overlay entry'])('follows a page entry (%s)', (kind) => {
+            if (kind === 'leftover overlay entry') {
+                overlayHistory.registerOverlayHistory({ id: 'drawer', onClose: vi.fn() }).requestClose();
+            }
+            overlayHistory.pushPageEntry('#withdrawals');
+
+            routerRefresh();
+
+            expect(window.location.hash).toBe('#withdrawals');
+        });
+
+        // A plain <a href="#orders/…"> is handled by the browser alone; Next never hears of it.
+        it('catches up with a hash the browser changed on its own', () => {
+            originalPush(null, '', '#orders/abc');
+
+            overlayHistory.syncRouterWithAddressBar();
+            routerRefresh();
+
+            expect(window.location.hash).toBe('#orders/abc');
+        });
+
+        it('keeps the overlay markers of the current entry when catching up', () => {
+            overlayHistory.registerOverlayHistory({ id: 'drawer', onClose: vi.fn() });
+            const stateBefore = window.history.state;
+
+            overlayHistory.syncRouterWithAddressBar();
+
+            expect(window.history.state).toEqual(stateBefore);
+        });
     });
 });
