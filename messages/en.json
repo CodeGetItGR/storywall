@@ -2368,7 +2368,18 @@
                 "price": {
                     "discount": "Discount",
                     "tax": "Tax",
-                    "noTax": "No tax added; prices include VAT."
+                    "noTax": "No tax added; prices include VAT.",
+                    "taxReason": {
+                        "standard_rated": "Standard rate",
+                        "reduced_rated": "Reduced rate",
+                        "zero_rated": "Zero-rated",
+                        "reverse_charge": "Reverse charge",
+                        "not_collecting": "Not collected",
+                        "not_subject_to_tax": "Not subject to tax",
+                        "customer_exempt": "Customer exempt",
+                        "product_exempt": "Product exempt",
+                        "excluded_territory": "Excluded territory"
+                    }
                 },
                 "bought": {
                     "months": "{count, plural, one {# month} other {# months}}"
@@ -2381,7 +2392,10 @@
                     "cardCountry": "Card country",
                     "openInStripe": "Open in Stripe",
                     "cardFingerprint": "Card fingerprint",
-                    "riskLevel": "Risk level"
+                    "riskLevel": "Risk level",
+                    "receipt": "Stripe receipt",
+                    "receiptNumber": "#{number}",
+                    "viewReceipt": "View"
                 },
                 "refund": {
                     "stripeRefund": "Stripe refund"

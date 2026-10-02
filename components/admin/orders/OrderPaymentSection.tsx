@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, ExternalLink } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { AdminIdentifier } from '@/components/admin/AdminIdentifier';
@@ -21,6 +21,23 @@ export function OrderPaymentSection({ payment }: { payment: AdminOrderDetailDto[
                         { key: 'provider', label: t('detail.payment.provider'), value: t(`provider.${payment.provider}`) },
                         { key: 'billingCountry', label: t('detail.payment.billingCountry'), value: payment.billingCountry, mono: true },
                         { key: 'cardCountry', label: t('detail.payment.cardCountry'), value: payment.cardCountry, mono: true },
+                        {
+                            key: 'receipt',
+                            label: t('detail.payment.receipt'),
+                            value: payment.receiptUrl && (
+                                <a
+                                    href={payment.receiptUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 font-semibold text-primary-dark hover:underline"
+                                >
+                                    {payment.receiptNumber
+                                        ? t('detail.payment.receiptNumber', { number: payment.receiptNumber })
+                                        : t('detail.payment.viewReceipt')}
+                                    <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                                </a>
+                            ),
+                        },
                     ]}
                 />
 

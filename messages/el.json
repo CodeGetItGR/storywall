@@ -2488,7 +2488,18 @@
                 "price": {
                     "discount": "Έκπτωση",
                     "tax": "Φόρος",
-                    "noTax": "Δεν προστέθηκε φόρος· οι τιμές περιλαμβάνουν ΦΠΑ."
+                    "noTax": "Δεν προστέθηκε φόρος· οι τιμές περιλαμβάνουν ΦΠΑ.",
+                    "taxReason": {
+                        "standard_rated": "Κανονικός συντελεστής",
+                        "reduced_rated": "Μειωμένος συντελεστής",
+                        "zero_rated": "Μηδενικός συντελεστής",
+                        "reverse_charge": "Αντίστροφη επιβάρυνση",
+                        "not_collecting": "Δεν εισπράττεται",
+                        "not_subject_to_tax": "Εκτός πεδίου φόρου",
+                        "customer_exempt": "Απαλλαγή πελάτη",
+                        "product_exempt": "Απαλλαγή προϊόντος",
+                        "excluded_territory": "Εξαιρούμενη περιοχή"
+                    }
                 },
                 "bought": {
                     "months": "{count, plural, one {# μήνας} other {# μήνες}}"
@@ -2501,7 +2512,10 @@
                     "cardCountry": "Χώρα κάρτας",
                     "openInStripe": "Άνοιγμα στο Stripe",
                     "cardFingerprint": "Αποτύπωμα κάρτας",
-                    "riskLevel": "Επίπεδο κινδύνου"
+                    "riskLevel": "Επίπεδο κινδύνου",
+                    "receipt": "Απόδειξη Stripe",
+                    "receiptNumber": "#{number}",
+                    "viewReceipt": "Προβολή"
                 },
                 "refund": {
                     "stripeRefund": "Επιστροφή Stripe"

@@ -46,6 +46,7 @@ const order: AdminOrderDetailDto = {
         eventDayAmountMinor: null,
         hostingAmountMinor: null,
         taxAmountMinor: null,
+        taxLines: [],
         discountLabel: 'SPRING10',
         checkoutDescription: null,
         checkoutFooterMessage: null,
@@ -72,6 +73,8 @@ const order: AdminOrderDetailDto = {
         riskLevel: null,
         disputedAt: null,
         disputeClosedAt: null,
+        receiptNumber: null,
+        receiptUrl: null,
     },
     refund: { refundedAt: '2026-09-29T10:00:00Z', amountMinor: null, source: 'WITHDRAWAL', providerRefundId: 're_1' },
     consent: { termsVersion: '2026-09', immediateStartAt: null, acknowledgedAt: null },
@@ -154,6 +157,71 @@ describe('OrderDetail', () => {
         expect(rest).toHaveLength(0);
         expect(screen.getByText('This order: €20.00')).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Review' })).toHaveAttribute('href', '#withdrawals/w-1');
+    });
+
+    it('breaks the tax down by rate, naming the reasons it knows and showing the others as Stripe sent them', () => {
+        renderDetail({
+            ...order,
+            pricing: {
+                ...order.pricing,
+                taxAmountMinor: 948,
+                taxLines: [
+                    {
+                        amountMinor: 948,
+                        taxableAmountMinor: 3952,
+                        ratePercent: 24,
+                        country: 'GR',
+                        jurisdiction: 'Greece',
+                        taxType: 'vat',
+                        taxabilityReason: 'standard_rated',
+                        inclusive: true,
+                    },
+                    {
+                        amountMinor: 0,
+                        taxableAmountMinor: null,
+                        ratePercent: null,
+                        country: 'DE',
+                        jurisdiction: null,
+                        taxType: null,
+                        taxabilityReason: 'some_new_reason',
+                        inclusive: null,
+                    },
+                ],
+            },
+        });
+
+        expect(screen.getByText('€9.48', { selector: 'span.font-semibold' })).toBeInTheDocument();
+        expect(screen.getByText('24% · GR · Standard rate')).toBeInTheDocument();
+        expect(screen.getByText('DE · some_new_reason')).toBeInTheDocument();
+    });
+
+    it('shows the tax total alone while its breakdown has not arrived', () => {
+        renderDetail({ ...order, pricing: { ...order.pricing, taxAmountMinor: 948 } });
+
+        const price = screen.getByRole('heading', { name: 'Price' }).closest('section') as HTMLElement;
+        expect(within(price).getByText('Tax')).toBeInTheDocument();
+        // Only the checkout line; no rate lines under the total.
+        expect(within(price).getAllByRole('listitem')).toHaveLength(1);
+    });
+
+    it("links Stripe's receipt, by number once Stripe has issued one", () => {
+        const receiptUrl = 'https://pay.stripe.com/receipts/r_1';
+        renderDetail({ ...order, payment: { ...order.payment, receiptUrl, receiptNumber: '1234-5678' } });
+
+        const link = screen.getByRole('link', { name: '#1234-5678' });
+        expect(link).toHaveAttribute('href', receiptUrl);
+        expect(link).toHaveAttribute('target', '_blank');
+        expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+        cleanup();
+
+        renderDetail({ ...order, payment: { ...order.payment, receiptUrl, receiptNumber: null } });
+        expect(screen.getByRole('link', { name: 'View' })).toHaveAttribute('href', receiptUrl);
+    });
+
+    it('has no receipt row without a receipt', () => {
+        renderDetail(order);
+
+        expect(screen.queryByText('Stripe receipt')).not.toBeInTheDocument();
     });
 
     it('leaves out what did not happen', () => {
