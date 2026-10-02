@@ -2440,6 +2440,7 @@
                     "SPAM": "Spam"
                 },
                 "pending": "Decision pending",
+                "statusNew": "New",
                 "drawerTitle": "Notice #{reference}",
                 "fields": {
                     "category": "Category",
@@ -2470,6 +2471,7 @@
                 "closeEmailsNotifier": "The notifier will be emailed, except for spam.",
                 "search": {
                     "heading": "Find the event",
+                    "count": "{count, plural, one {# event} other {# events}}",
                     "title": "Event title",
                     "hostEmail": "Host email",
                     "date": "Event date",
@@ -2483,6 +2485,7 @@
                 },
                 "picker": {
                     "heading": "Find the item",
+                    "count": "{count, plural, one {# item} other {# items}}",
                     "type": "Content type",
                     "items": "Items",
                     "audited": "Opening this event's content is written to the audit log with this notice.",

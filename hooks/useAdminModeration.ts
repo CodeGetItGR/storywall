@@ -90,6 +90,10 @@ export function useDecideModerationCase() {
             Promise.all([
                 queryClient.invalidateQueries({ queryKey: adminModerationKeys.lists }),
                 queryClient.invalidateQueries({ queryKey: adminModerationKeys.case(targetType, targetId), refetchType: 'none' }),
+                // A decision records its outcome on the notice the case came from, so the Notices lists are stale.
+                // Only the lists: the notice detail and the picker are audited reads and must not refetch. The key is
+                // inlined (it is adminNoticeKeys.lists) because useAdminNotices imports this file.
+                queryClient.invalidateQueries({ queryKey: ['admin', 'moderation', 'notices'] }),
             ]),
         onError: (error, target) => refreshAfterRefusal(queryClient, error, target),
     });

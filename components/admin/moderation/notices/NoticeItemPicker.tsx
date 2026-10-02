@@ -175,7 +175,7 @@ export function NoticeItemPicker({
                     <AdminPagination
                         pageInfo={data.page}
                         page={page}
-                        summary={t('count', { count: data.page.totalElements })}
+                        summary={t('picker.count', { count: data.page.totalElements })}
                         onPageChangeAction={changePage}
                     />
                 </div>

@@ -41,7 +41,8 @@ export function NoticesPanel() {
     function statusLabel(notice: ContentNoticeSummaryDto): string {
         if (notice.outcome) return tOutcome(notice.outcome);
         if (notice.closeReason) return t(`closeReasons.${notice.closeReason}`);
-        return t('pending');
+        // Untouched notices have no decision to wait for: pending is only an attached case without an outcome.
+        return notice.status === 'NEW' ? t('statusNew') : t('pending');
     }
 
     return (

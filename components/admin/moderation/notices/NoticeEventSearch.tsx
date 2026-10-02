@@ -144,7 +144,7 @@ export function NoticeEventSearch({
                     <AdminPagination
                         pageInfo={data.page}
                         page={page}
-                        summary={t('count', { count: data.page.totalElements })}
+                        summary={t('search.count', { count: data.page.totalElements })}
                         onPageChangeAction={setPage}
                     />
                 </div>

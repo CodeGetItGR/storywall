@@ -58,8 +58,16 @@ describe('NoticesPanel', () => {
         expect(screen.getByText('COPYRIGHT')).toBeTruthy();
         expect(screen.getByText('The photo on the main wall')).toBeTruthy();
         expect(screen.getByText('Sep 30, 2026')).toBeTruthy();
-        expect(screen.getByText('pending')).toBeTruthy();
+        expect(screen.getByText('statusNew')).toBeTruthy();
+        expect(screen.queryByText('pending')).toBeNull();
         expect(document.body.textContent).not.toContain('@');
+    });
+
+    it('says pending only for an attached notice whose case is undecided', () => {
+        mockRows([{ ...notice, status: 'ATTACHED' }]);
+        render(<NoticesPanel />);
+        expect(screen.getByText('pending')).toBeTruthy();
+        expect(screen.queryByText('statusNew')).toBeNull();
     });
 
     it('shows the outcome, else the close reason, for a closed row', () => {

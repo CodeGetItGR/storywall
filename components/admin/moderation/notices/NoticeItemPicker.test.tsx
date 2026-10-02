@@ -66,6 +66,11 @@ describe('NoticeItemPicker', () => {
         expect(onAttachAction).toHaveBeenCalledWith(item);
     });
 
+    it('counts items, not notices', () => {
+        renderPicker();
+        expect(screen.getByText('picker.count {"count":1}')).toBeTruthy();
+    });
+
     it('puts focus on its heading when it appears', () => {
         renderPicker();
         expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'picker.heading' }));

@@ -67,6 +67,11 @@ describe('NoticeEventSearch', () => {
         expect(hooks.useNoticeEventSearch).toHaveBeenLastCalledWith('n-1', { q: 'Maria', hostEmail: 'host@example.com', date: '2026-09-20' }, 0);
     });
 
+    it('counts events, not notices', () => {
+        renderSearch();
+        expect(screen.getByText('search.count {"count":1}')).toBeTruthy();
+    });
+
     it('puts focus on its heading when it appears', () => {
         renderSearch();
         expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'search.heading' }));
