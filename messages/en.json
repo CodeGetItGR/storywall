@@ -1799,6 +1799,43 @@
         "version": "Version {version}",
         "unavailable": "These terms aren't available right now."
     },
+    "ContentNoticePage": {
+        "title": "Report content",
+        "intro": "Anyone can use this form, with or without a StoryWall account, to tell us about content that is illegal or breaks our Community Guidelines. A person on the StoryWall team reviews every notice.",
+        "guidelines": "Read the <link>Community Guidelines</link>."
+    },
+    "ContentNoticeForm": {
+        "fields": {
+            "category": "What is the problem?",
+            "location": "Where is the content?",
+            "link": "Link (optional)",
+            "explanation": "Why is it illegal or against the rules?",
+            "name": "Your name",
+            "email": "Your email",
+            "goodFaith": "I believe the information in this notice is accurate and complete."
+        },
+        "help": {
+            "location": "For example: the event's name and date, what the photo or post shows, and who posted it."
+        },
+        "categories": {
+            "PERSONAL_DATA_OR_IMAGE": "My image or personal data without consent",
+            "COPYRIGHT": "Copyright or other rights",
+            "HARASSMENT_OR_HATE": "Harassment, threats or hate",
+            "CHILD_SEXUAL_ABUSE": "Child sexual abuse material",
+            "OTHER_ILLEGAL": "Other illegal content",
+            "GUIDELINES_BREACH": "Breaks the Community Guidelines"
+        },
+        "identityOptional": "For this category you can leave your name and email out. Without an email we can't tell you what we decided.",
+        "submit": "Send notice",
+        "sent": "Thank you. Your reference is #{reference}.",
+        "sentNext": "Quote this number if you write to us about this notice. If you gave an email, we've sent a confirmation there, and we'll write again with our decision.",
+        "errors": {
+            "invalid": "Some details are missing or invalid. Check the form and try again.",
+            "fieldErrors": "Some details need fixing. See the fields marked below.",
+            "rateLimited": "We can't take another notice right now. Please try again a little later.",
+            "failed": "We couldn't send your notice. Please try again."
+        }
+    },
     "CommunityGuidelinesPage": {
         "title": "Community Guidelines",
         "unavailable": "The Community Guidelines couldn't be loaded. Please try again later."
@@ -4477,6 +4514,7 @@
             "copyright": "© 2026 STORYWALL",
             "legal": ["Privacy Policy", "Terms of Use", "Cookies", "Cookie Settings", "Cancellations & Withdrawal", "Contact"],
             "communityGuidelines": "Community Guidelines",
+            "reportContent": "Report content",
             "backToTop": "BACK TO TOP"
         }
     },
