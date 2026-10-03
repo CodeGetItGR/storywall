@@ -1,3 +1,34 @@
+// Building an Intl formatter costs far more than using one, and many of these
+// run once per row on every render, so each locale and options pair is built
+// once and reused. A formatter that fails to build (an unknown currency) is
+// never cached; the caller sees the same error as before.
+const numberFormats = new Map<string, Intl.NumberFormat>();
+const dateTimeFormats = new Map<string, Intl.DateTimeFormat>();
+
+function formatterKey(locale: string | undefined, options: object | undefined): string {
+    return `${locale ?? ''}|${options ? JSON.stringify(options) : ''}`;
+}
+
+export function numberFormat(locale?: string, options?: Intl.NumberFormatOptions): Intl.NumberFormat {
+    const key = formatterKey(locale, options);
+    let format = numberFormats.get(key);
+    if (!format) {
+        format = new Intl.NumberFormat(locale, options);
+        numberFormats.set(key, format);
+    }
+    return format;
+}
+
+export function dateTimeFormat(locale?: string, options?: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+    const key = formatterKey(locale, options);
+    let format = dateTimeFormats.get(key);
+    if (!format) {
+        format = new Intl.DateTimeFormat(locale, options);
+        dateTimeFormats.set(key, format);
+    }
+    return format;
+}
+
 export function formatBytes(bytes: number): string {
     if (bytes < 1024) return `${bytes} B`;
     const units = ['KB', 'MB', 'GB', 'TB'];
@@ -23,7 +54,7 @@ export function getInitials(value: string): string {
 }
 
 export function formatCount(value: number): string {
-    return new Intl.NumberFormat().format(value);
+    return numberFormat().format(value);
 }
 
 export function formatRecordCounts(result: Record<string, number>): string {
@@ -35,5 +66,5 @@ export function formatRecordCounts(result: Record<string, number>): string {
 /** A 0–1 ratio as a percent. Tiny non-zero shares keep two decimals so they don't read as 0%. */
 export function formatPercent(locale: string, ratio: number): string {
     const digits = ratio > 0 && ratio < 0.01 ? 2 : 0;
-    return new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: digits }).format(ratio);
+    return numberFormat(locale, { style: 'percent', maximumFractionDigits: digits }).format(ratio);
 }

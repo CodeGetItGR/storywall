@@ -2,12 +2,12 @@
 
 import { useEffect, useRef } from 'react';
 
-import { useMobileChrome } from '@/providers/MobileChromeProvider';
+import { useMobileChromeActions } from '@/providers/MobileChromeProvider';
 
 const FEED_SCROLL_HIDE_REASON = 'feed-scroll';
 
 export function useHideMobileTabBarOnScroll() {
-    const { hideMobileTabBar, showMobileTabBar } = useMobileChrome();
+    const { hideMobileTabBar, showMobileTabBar } = useMobileChromeActions();
     const previousScrollTopRef = useRef(0);
 
     useEffect(() => {

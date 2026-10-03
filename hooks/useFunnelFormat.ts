@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
 import { EMPTY_VALUE, formatMedian, formatMinorMoney, formatRate, toHoursDisplay } from '@/lib/adminFunnel';
+import { numberFormat } from '@/lib/format';
 
 // Locale-aware formatters for the Growth dashboard. Every "no value" reads as "—".
 export function useFunnelFormat() {
@@ -12,7 +13,7 @@ export function useFunnelFormat() {
 
     return useMemo(
         () => ({
-            count: (value: number) => new Intl.NumberFormat(locale).format(value),
+            count: (value: number) => numberFormat(locale).format(value),
             rate: (ratio: number | null) => formatRate(locale, ratio),
             hours: (hours: number | null) => {
                 const display = toHoursDisplay(locale, hours);

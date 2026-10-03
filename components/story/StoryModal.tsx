@@ -11,6 +11,7 @@ import { StoryCaptionBar, StoryHeader, StoryProgressBar } from '@/components/sto
 import { StoryVideo } from '@/components/story/StoryVideo';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useStoryModal } from '@/hooks/useStoryModal';
+import { formatTime } from '@/lib/datetime';
 
 type StoryModalProps = {
     open: boolean;
@@ -69,10 +70,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
         );
     }
 
-    const timeStr = new Date(activeStory.createdAt).toLocaleTimeString(locale, {
-        hour: 'numeric',
-        minute: '2-digit',
-    });
+    const timeStr = formatTime(locale, activeStory.createdAt);
     const authorName = author?.displayName ?? t('unknownAuthor');
     const hasMedia = Boolean(media) && !mediaError;
     return (

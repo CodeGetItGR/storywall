@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
@@ -94,8 +94,11 @@ export function usePublishQueueController(): PublishQueueContextValue {
 
     const [jobs, setJobs] = useState<PublishJob[]>([]);
     const jobsRef = useRef<PublishJob[]>([]);
-    jobsRef.current = jobs;
     const runsRef = useRef(new Map<string, JobRun>());
+
+    useEffect(() => {
+        jobsRef.current = jobs;
+    }, [jobs]);
 
     // Aborts synchronously inside setSession/clearSession, before the account
     // change re-renders anything, so no request is sent with the new token.
@@ -116,18 +119,18 @@ export function usePublishQueueController(): PublishQueueContextValue {
         };
     }, []);
 
-    function launch(jobId: string, work: (run: JobRun) => Promise<void>) {
+    const launch = useCallback((jobId: string, work: (run: JobRun) => Promise<void>) => {
         runsRef.current.get(jobId)?.controller.abort();
         const run: JobRun = { controller: new AbortController(), ownerId: getAuthState().userId };
         runsRef.current.set(jobId, run);
         void work(run).finally(() => {
             if (runsRef.current.get(jobId) === run) runsRef.current.delete(jobId);
         });
-    }
+    }, []);
 
-    function updateJob(jobId: string, updater: (job: PublishJob) => PublishJob) {
+    const updateJob = useCallback((jobId: string, updater: (job: PublishJob) => PublishJob) => {
         setJobs((current) => current.map((job) => (job.id === jobId ? updater(job) : job)));
-    }
+    }, []);
 
     function getPostErrorMessage(error: unknown): string {
         if (getErrorCode(error) === ERROR_CODES.EVENT_STORAGE_LIMIT_EXCEEDED) {
@@ -254,13 +257,6 @@ export function usePublishQueueController(): PublishQueueContextValue {
         updateJob(jobId, (current) => ({ ...current, status: 'success', error: undefined }));
     }
 
-    const enqueuePost = useCallback((payload: PostPublishPayload) => {
-        const job: PostPublishJob = { id: nextJobId(), kind: 'post', status: 'pending', createdAt: Date.now(), payload };
-        setJobs((current) => [job, ...current]);
-        launch(job.id, (run) => runPostJob(job.id, payload, run));
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- runPostJob closes over mutation hooks that are stable across renders in practice
-    }, []);
-
     async function runStoryJob(jobId: string, payload: StoryPublishPayload, run: JobRun) {
         let working: PendingStory[] = await Promise.all(
             payload.items.map(async (item) => {
@@ -373,21 +369,6 @@ export function usePublishQueueController(): PublishQueueContextValue {
         }
     }
 
-    const enqueueStory = useCallback((payload: StoryPublishPayload) => {
-        const job: StoryPublishJob = {
-            id: nextJobId(),
-            kind: 'story',
-            status: 'pending',
-            createdAt: Date.now(),
-            payload,
-            postedCount: 0,
-            totalCount: payload.items.length,
-        };
-        setJobs((current) => [job, ...current]);
-        launch(job.id, (run) => runStoryJob(job.id, payload, run));
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- runStoryJob closes over mutation hooks that are stable across renders in practice
-    }, []);
-
     async function runSongJob(jobId: string, payload: SongPublishPayload, run: JobRun) {
         try {
             await createPlaylistSuggestion.mutateAsync({ ...payload, signal: run.controller.signal });
@@ -402,26 +383,69 @@ export function usePublishQueueController(): PublishQueueContextValue {
         updateJob(jobId, (current) => ({ ...current, status: 'success', error: undefined }));
     }
 
-    const enqueueSong = useCallback((payload: SongPublishPayload) => {
-        const job: SongPublishJob = { id: nextJobId(), kind: 'song', status: 'pending', createdAt: Date.now(), payload };
-        setJobs((current) => [job, ...current]);
-        launch(job.id, (run) => runSongJob(job.id, payload, run));
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- runSongJob closes over mutation hooks that are stable across renders in practice
-    }, []);
+    // The queue's callbacks stay stable, so the context doesn't change while a
+    // job runs. Each run starts with the latest mutations, copy and config.
+    const runnersRef = useRef({ runPostJob, runStoryJob, runSongJob });
+    useEffect(() => {
+        runnersRef.current = { runPostJob, runStoryJob, runSongJob };
+    });
 
-    const retryJob = useCallback((jobId: string) => {
-        const job = jobsRef.current.find((candidate) => candidate.id === jobId);
-        if (!job) return;
-        updateJob(jobId, (current) => ({ ...current, status: 'pending', error: undefined }));
-        if (job.kind === 'post') launch(jobId, (run) => runPostJob(jobId, job.payload, run));
-        else if (job.kind === 'song') launch(jobId, (run) => runSongJob(jobId, job.payload, run));
-        else launch(jobId, (run) => runStoryJob(jobId, job.payload, run));
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- runPostJob/runStoryJob/runSongJob close over mutation hooks that are stable across renders in practice
-    }, []);
+    const enqueuePost = useCallback(
+        (payload: PostPublishPayload) => {
+            const job: PostPublishJob = { id: nextJobId(), kind: 'post', status: 'pending', createdAt: Date.now(), payload };
+            setJobs((current) => [job, ...current]);
+            launch(job.id, (run) => runnersRef.current.runPostJob(job.id, payload, run));
+        },
+        [launch],
+    );
+
+    const enqueueStory = useCallback(
+        (payload: StoryPublishPayload) => {
+            const job: StoryPublishJob = {
+                id: nextJobId(),
+                kind: 'story',
+                status: 'pending',
+                createdAt: Date.now(),
+                payload,
+                postedCount: 0,
+                totalCount: payload.items.length,
+            };
+            setJobs((current) => [job, ...current]);
+            launch(job.id, (run) => runnersRef.current.runStoryJob(job.id, payload, run));
+        },
+        [launch],
+    );
+
+    const enqueueSong = useCallback(
+        (payload: SongPublishPayload) => {
+            const job: SongPublishJob = { id: nextJobId(), kind: 'song', status: 'pending', createdAt: Date.now(), payload };
+            setJobs((current) => [job, ...current]);
+            launch(job.id, (run) => runnersRef.current.runSongJob(job.id, payload, run));
+        },
+        [launch],
+    );
+
+    const retryJob = useCallback(
+        (jobId: string) => {
+            const job = jobsRef.current.find((candidate) => candidate.id === jobId);
+            if (!job) return;
+            updateJob(jobId, (current) => ({ ...current, status: 'pending', error: undefined }));
+            const runners = runnersRef.current;
+            if (job.kind === 'post') launch(jobId, (run) => runners.runPostJob(jobId, job.payload, run));
+            else if (job.kind === 'song') launch(jobId, (run) => runners.runSongJob(jobId, job.payload, run));
+            else launch(jobId, (run) => runners.runStoryJob(jobId, job.payload, run));
+        },
+        [launch, updateJob],
+    );
 
     const dismissJob = useCallback((jobId: string) => {
         setJobs((current) => current.filter((job) => job.id !== jobId));
     }, []);
 
-    return { jobs, enqueuePost, enqueueStory, enqueueSong, retryJob, dismissJob };
+    // Memoized by hand: the React Compiler can't compile this hook (it doesn't
+    // support conditionals inside try blocks yet). Only a job change updates the context.
+    return useMemo(
+        () => ({ jobs, enqueuePost, enqueueStory, enqueueSong, retryJob, dismissJob }),
+        [jobs, enqueuePost, enqueueStory, enqueueSong, retryJob, dismissJob],
+    );
 }

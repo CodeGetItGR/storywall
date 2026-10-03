@@ -3,7 +3,7 @@
 import { Camera, ChevronsRight, Images, Loader2, RefreshCw, Send, Sun, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, type MouseEvent, type PointerEvent as ReactPointerEvent, useEffect, useState } from 'react';
+import { type ChangeEvent, type MouseEvent, type PointerEvent as ReactPointerEvent, useEffect, useEffectEvent, useState } from 'react';
 
 import { FilterNameOverlay } from '@/components/composer/FilterNameOverlay';
 import { PostImageFilterPicker } from '@/components/composer/PostImageFilterPicker';
@@ -84,11 +84,15 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
     const activeFilterPreset = STORY_FILTER_PRESETS[currentIndex] ?? STORY_FILTER_PRESETS[0];
     const targetFilterPreset = targetIndex !== null ? STORY_FILTER_PRESETS[targetIndex] : null;
 
-    useEffect(() => {
+    // A swipe applies its filter to the item on screen.
+    const applySwipedFilter = useEffectEvent((index: number) => {
         if (!activeItem) return;
-        const preset = STORY_FILTER_PRESETS[currentIndex];
+        const preset = STORY_FILTER_PRESETS[index];
         if (preset) setFilter(activeItem.key, preset.id);
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to swipes (currentIndex), not to activeItem identity changing for other reasons.
+    });
+
+    useEffect(() => {
+        applySwipedFilter(currentIndex);
     }, [currentIndex]);
 
     useEffect(() => {
@@ -97,11 +101,16 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
         return () => clearTimeout(timeout);
     }, [showFilterSwipeCue]);
 
-    useEffect(() => {
+    // Switching items brings back that item's filter. Only the switch re-syncs,
+    // not every filterId write the swipe effect above causes.
+    const syncFilterIndex = useEffectEvent(() => {
         if (!activeItem) return;
         const index = STORY_FILTER_PRESETS.findIndex((preset) => preset.id === activeItem.filterId);
         if (index >= 0) setFilterIndex(index);
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-sync when the active item itself changes (switching photos), not on every filterId write this same effect's sibling causes.
+    });
+
+    useEffect(() => {
+        syncFilterIndex();
     }, [activeItem?.key]);
 
     const {

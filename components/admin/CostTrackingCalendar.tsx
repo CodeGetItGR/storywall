@@ -7,7 +7,7 @@ import { type MouseEvent } from 'react';
 import { LoadingState } from '@/components/ui/LoadingState';
 import type { CalendarDaySummaryDto, CalendarSummaryResponseDto } from '@/lib/api/types';
 import { calendarLoadTier, calendarMonthDays, utcDateKey } from '@/lib/costTracking';
-import { formatBytes, formatCount } from '@/lib/format';
+import { dateTimeFormat, formatBytes, formatCount } from '@/lib/format';
 
 const LOAD_COLORS = {
     empty: 'bg-canvas text-ink-faint',
@@ -36,8 +36,8 @@ export function CostTrackingCalendar({
     const t = useTranslations('AdminPage.costTracking.calendar');
     const days = calendarMonthDays(month);
     const summaries = new Map(calendar?.days.map((day) => [utcDateKey(day.date), day]));
-    const monthLabel = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(month);
-    const weekdayFormatter = new Intl.DateTimeFormat(locale, { weekday: 'short', timeZone: 'UTC' });
+    const monthLabel = dateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(month);
+    const weekdayFormatter = dateTimeFormat(locale, { weekday: 'short', timeZone: 'UTC' });
 
     function handleMonthChange(event: MouseEvent<HTMLButtonElement>) {
         onChangeMonthAction(Number(event.currentTarget.dataset.offset));
@@ -151,7 +151,7 @@ function CalendarDay({
     const dateKey = utcDateKey(date);
     const eventCount = summary?.eventCount ?? 0;
     const tier = thresholds ? calendarLoadTier(eventCount, thresholds) : 'empty';
-    const dayLabel = new Intl.DateTimeFormat(locale, { day: 'numeric', timeZone: 'UTC' }).format(date);
+    const dayLabel = dateTimeFormat(locale, { day: 'numeric', timeZone: 'UTC' }).format(date);
     const ariaLabel = eventCount === 0 ? t('dayEmpty', { date: dateKey }) : t('openDay', { date: dateKey, count: eventCount });
 
     function handleOpenDay(event: MouseEvent<HTMLButtonElement>) {

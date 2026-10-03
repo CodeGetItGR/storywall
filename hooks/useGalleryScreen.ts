@@ -17,7 +17,7 @@ import { canReportContent } from '@/lib/contentPermissions';
 import { downloadBlob } from '@/lib/download';
 import { isEventDeleted, isEventWritable, readableModuleKeys } from '@/lib/eventLifecycle';
 import { useActiveMember } from '@/providers/EventProvider';
-import { useMobileChrome } from '@/providers/MobileChromeProvider';
+import { useMobileChromeActions } from '@/providers/MobileChromeProvider';
 
 const MAX_FILES_PER_BATCH = 10;
 
@@ -28,7 +28,7 @@ export function useGalleryScreen() {
     const t = useTranslations('GalleryPage');
     const toErrorMessage = useApiErrorMessage();
     const router = useRouter();
-    const { hideMobileTabBar, showMobileTabBar } = useMobileChrome();
+    const { hideMobileTabBar, showMobileTabBar } = useMobileChromeActions();
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [uploadNotice, setUploadNotice] = useState<string | null>(null);
     const [selectedMediaId, setSelectedMediaId] = useState<string | null>(null);

@@ -12,14 +12,19 @@ export interface CountdownParts {
 // the feed header's full countdown and the compact home card variant.
 export function useCountdown(time: number): CountdownParts {
     const [now, setNow] = useState(() => Date.now());
+    const isRunning = now < new Date(time).getTime();
 
+    // Stops once the target passes, so a finished countdown doesn't re-render
+    // every second. A later target (the event moved) starts it again.
     useEffect(() => {
+        if (!isRunning) return;
+
         const interval = setInterval(() => {
             setNow(Date.now());
         }, 1_000);
 
         return () => clearInterval(interval);
-    }, []);
+    }, [isRunning]);
 
     return useMemo(() => {
         const target = new Date(time).getTime();

@@ -3,6 +3,8 @@
 import { Calendar } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { dateTimeFormat } from '@/lib/format';
+
 export function ActivationEventSummary({
     eventTitle,
     eventTypeName,
@@ -14,7 +16,7 @@ export function ActivationEventSummary({
 }) {
     const t = useTranslations('CreateEventPage');
     const locale = useLocale();
-    const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
+    const dateFormatter = dateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
 
     return (
         <section aria-labelledby="activation-event-heading" className="flex items-start gap-3">

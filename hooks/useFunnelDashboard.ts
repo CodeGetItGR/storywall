@@ -6,6 +6,7 @@ import { useCallback } from 'react';
 import { useAdminFunnel } from '@/hooks/useAdmin';
 import { useFunnelCohorts } from '@/hooks/useFunnelCohorts';
 import { useFunnelRange } from '@/hooks/useFunnelRange';
+import { dateTimeFormat } from '@/lib/format';
 
 export function useFunnelDashboard() {
     const locale = useLocale();
@@ -14,9 +15,7 @@ export function useFunnelDashboard() {
     const query = useAdminFunnel(since, until, { enabled: isValid });
     const cohorts = useFunnelCohorts();
 
-    const updatedAt = query.dataUpdatedAt
-        ? new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(query.dataUpdatedAt)
-        : null;
+    const updatedAt = query.dataUpdatedAt ? dateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(query.dataUpdatedAt) : null;
 
     const { refetch } = query;
     const { refetch: refetchCohorts } = cohorts;

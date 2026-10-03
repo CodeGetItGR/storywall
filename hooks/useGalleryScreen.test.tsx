@@ -46,7 +46,7 @@ vi.mock('@/lib/eventLifecycle', () => ({
 vi.mock('@/hooks/useContentAccess', () => ({ useContentAccess: () => ({ isDemoBuilder: false, isLocked: () => false }) }));
 vi.mock('@/providers/EventProvider', () => ({ useActiveMember: () => mocks.activeMember }));
 vi.mock('@/providers/MobileChromeProvider', () => ({
-    useMobileChrome: () => ({ hideMobileTabBar: vi.fn(), showMobileTabBar: vi.fn() }),
+    useMobileChromeActions: () => ({ hideMobileTabBar: vi.fn(), showMobileTabBar: vi.fn() }),
 }));
 vi.mock('@/lib/api/client', () => ({ api: {} }));
 

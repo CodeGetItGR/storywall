@@ -1,6 +1,6 @@
 'use client';
 
-import { type SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type SyntheticEvent, useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 
 import { useAppConfig, useDeleteStory, useEventStories, useMarkStoryViewed, useMediaItem, useStory } from '@/hooks';
 import { useContentAccess } from '@/hooks/useContentAccess';
@@ -251,29 +251,36 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
         [requestClose],
     );
 
+    const { mutate: markStoryViewed } = markViewed;
     useEffect(() => {
         if (!open || !currentStoryId) return;
-        markViewed.mutate(currentStoryId);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentStoryId, open]);
+        markStoryViewed(currentStoryId);
+    }, [currentStoryId, markStoryViewed, open]);
 
+    // Timers read the latest story and group when they fire.
+    const completeTimer = useEffectEvent(() => {
+        handleTimerComplete();
+    });
+
+    // A photo story fills its bar over five seconds.
+    const isPhotoTimerRunning = open && Boolean(currentStoryId) && canAdvanceStory && canRunStoryTimer && !isVideoStory && !reportOpen;
     useEffect(() => {
-        if (!open || !currentStoryId || !canAdvanceStory || !canRunStoryTimer || isVideoStory || reportOpen) return;
+        if (!isPhotoTimerRunning) return;
 
         const interval = setInterval(() => {
-            setProgress((p) => {
-                if (p >= 100) {
-                    clearInterval(interval);
-                    handleTimerComplete();
-                    return 100;
-                }
-                return p + 2;
-            });
+            setProgress((p) => Math.min(100, p + 2));
         }, 100);
 
         return () => clearInterval(interval);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [canAdvanceStory, canRunStoryTimer, currentStoryId, isVideoStory, open, reportOpen]);
+    }, [currentStoryId, isPhotoTimerRunning]);
+
+    // Moves on one tick after the bar fills.
+    useEffect(() => {
+        if (!isPhotoTimerRunning || progress < 100) return;
+
+        const timeout = setTimeout(() => completeTimer(), 100);
+        return () => clearTimeout(timeout);
+    }, [isPhotoTimerRunning, progress]);
 
     useEffect(() => {
         if (!open) return;
@@ -302,9 +309,8 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
     useEffect(() => {
         if (!open || !mediaError) return;
 
-        const timeout = setTimeout(() => handleTimerComplete(), MEDIA_ERROR_DISPLAY_MS);
+        const timeout = setTimeout(() => completeTimer(), MEDIA_ERROR_DISPLAY_MS);
         return () => clearTimeout(timeout);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mediaError, open, reportOpen]);
 
     const storyNotFound = isStoryGone(storyError);

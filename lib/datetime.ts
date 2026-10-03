@@ -1,3 +1,5 @@
+import { dateTimeFormat } from '@/lib/format';
+
 const defaultTimeFormat: Intl.DateTimeFormatOptions = {
     hour: 'numeric',
     minute: '2-digit',
@@ -140,7 +142,7 @@ export function formatDate(locale: string | undefined, value: string | number | 
     const date = parseDate(value);
     if (!date) return '';
 
-    return new Intl.DateTimeFormat(locale, options).format(date);
+    return dateTimeFormat(locale, options).format(date);
 }
 
 export function formatTime(locale: string, value: string | null, options: Intl.DateTimeFormatOptions = defaultTimeFormat): string {

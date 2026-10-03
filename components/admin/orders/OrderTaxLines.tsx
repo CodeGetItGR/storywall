@@ -4,12 +4,13 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import type { AdminOrderTaxLine } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
+import { numberFormat } from '@/lib/format';
 
 // The rates behind the tax total: rate, country and why Stripe taxed it so, one line each.
 export function OrderTaxLines({ lines, currency }: { lines: AdminOrderTaxLine[]; currency: string }) {
     const t = useTranslations('AdminPage.orders.detail.price');
     const locale = useLocale();
-    const percent = new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 4 });
+    const percent = numberFormat(locale, { style: 'percent', maximumFractionDigits: 4 });
 
     return (
         <ul className="space-y-1 border-l-2 border-border pl-3">

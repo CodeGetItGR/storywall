@@ -5,6 +5,7 @@ import { useCallback, useMemo } from 'react';
 
 import { useAdminMetrics } from '@/hooks/useAdmin';
 import { toMetricShares } from '@/lib/adminUtils';
+import { dateTimeFormat } from '@/lib/format';
 
 export function usePlatformMetrics() {
     const locale = useLocale();
@@ -21,9 +22,7 @@ export function usePlatformMetrics() {
         [metrics],
     );
 
-    const updatedAt = query.dataUpdatedAt
-        ? new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(query.dataUpdatedAt)
-        : null;
+    const updatedAt = query.dataUpdatedAt ? dateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(query.dataUpdatedAt) : null;
 
     const { refetch } = query;
     const refresh = useCallback(() => {

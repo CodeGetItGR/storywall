@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 
 import { useBillingDate } from '@/hooks/useEventBillingPanel';
 import type { DiscountSummaryDto, EventScheduleDto, EventUsageResponseDto } from '@/lib/api/types';
-import { formatBytes } from '@/lib/format';
+import { formatBytes, numberFormat } from '@/lib/format';
 
 export type BillingPlanFact = { key: string; label: string; value: string };
 
@@ -40,7 +40,7 @@ export function useBillingPlanFacts(schedule: EventScheduleDto, usage: EventUsag
             facts.push({
                 key: 'members',
                 label: t('compare.members'),
-                value: usage.memberLimit === null ? t('compare.unlimited') : new Intl.NumberFormat(locale).format(usage.memberLimit),
+                value: usage.memberLimit === null ? t('compare.unlimited') : numberFormat(locale).format(usage.memberLimit),
             });
         }
         return facts;
