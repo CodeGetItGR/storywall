@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import type { AppMediaConfigDto, CoverageOptionResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import type {
+    AppMediaConfigDto,
+    CoverageOptionResponseDto,
+    MemberRoleCatalogDto,
+    PlanTierResponseDto,
+    PlatformModuleResponseDto,
+} from '@/lib/api/types';
 import {
     buildLandingPlan,
     formatLandingOptionPrice,
@@ -54,6 +60,7 @@ const MODULES: PlatformModuleResponseDto[] = [
     { id: 'm-wishbook', moduleKey: 'wishbook', name: 'Guestbook', description: null, isEnabled: true, sortOrder: 3 },
     { id: 'm-co-hosts', moduleKey: 'co_hosts', name: 'Co-hosts', description: null, isEnabled: true, sortOrder: 4 },
     { id: 'm-schedule', moduleKey: 'schedule', name: 'Schedule', description: null, isEnabled: true, sortOrder: 5 },
+    { id: 'm-member-roles', moduleKey: 'member_roles', name: 'Member roles', description: null, isEnabled: true, sortOrder: 6 },
 ];
 
 const MEDIA: AppMediaConfigDto = {
@@ -88,7 +95,15 @@ const COPY: LandingPlanCopy = {
     mediaUnlimited: 'Unlimited',
     scheduleSessions: (max) => (max === null ? 'Unlimited schedule sessions' : `Up to ${max} schedule sessions`),
     storageUnlimited: 'Unlimited storage',
+    memberRoles: (count, custom) => `${count} member roles${custom ? ' + your own' : ''}`,
+    memberRolesCustomOnly: 'Custom member roles',
 };
+
+function role(id: string, retired = false): MemberRoleCatalogDto {
+    return { id, eventTypeKey: 'WEDDING', roleKey: id.toUpperCase(), label: { en: id, el: id }, emoji: null, maxHolders: null, sortOrder: 0, retired };
+}
+
+const ROLES = { WEDDING: [role('a'), role('b'), role('c'), role('old', true)] };
 
 const MODULE_NAME = (moduleKey: string) => MODULES.find((module_) => module_.moduleKey === moduleKey)?.name ?? moduleKey;
 
@@ -296,5 +311,43 @@ describe('buildLandingPlan', () => {
         expect(
             buildLandingPlan(makePlan({ initialOptions: [makeOption({ active: false })] }), undefined, MODULES, MEDIA, MODULE_NAME, COPY),
         ).toBeNull();
+    });
+});
+
+describe('buildLandingPlan member roles line', () => {
+    function card(allowCustom: boolean | undefined, catalog: Record<string, MemberRoleCatalogDto[]> = ROLES) {
+        const plan = makePlan({ moduleKeys: ['member_roles'], moduleConfigs: { member_roles: allowCustom === undefined ? {} : { allowCustom } } });
+        return buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY, undefined, catalog);
+    }
+
+    it('counts active roles only', () => {
+        expect(card(false)?.features).toEqual(['3 member roles']);
+    });
+
+    it('adds "your own" when the plan allows custom roles', () => {
+        expect(card(true)?.features).toEqual(['3 member roles + your own']);
+    });
+
+    it('shows the custom-only line when the type has no roles', () => {
+        expect(card(true, {})?.features).toEqual(['Custom member roles']);
+    });
+
+    it('hides the line with no roles and no custom roles', () => {
+        expect(card(undefined, {})?.features).toEqual([]);
+    });
+
+    it('falls back to the module name without moduleConfigs', () => {
+        const plan = makePlan({ moduleKeys: ['member_roles'], moduleConfigs: null });
+        expect(buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY, undefined, ROLES)?.features).toEqual(['Member roles']);
+    });
+
+    it('lists the line on a higher tier that turns on custom roles', () => {
+        const previous = makePlan({ name: 'START', moduleKeys: ['member_roles'], moduleConfigs: { member_roles: { allowCustom: false } } });
+        const plan = makePlan({ name: 'STORY', moduleKeys: ['member_roles'], moduleConfigs: { member_roles: { allowCustom: true } } });
+
+        const result = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY, undefined, ROLES);
+
+        expect(result?.features).toEqual(['Everything in START', '3 member roles + your own']);
+        expect(result?.includedFeatures).toBeUndefined();
     });
 });

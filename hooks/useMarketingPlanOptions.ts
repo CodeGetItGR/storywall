@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 
+import { useMemberRoleCatalog } from '@/hooks/useAppConfig';
 import { usePlanMarketingCopy } from '@/hooks/usePlanMarketingCopy';
 import type { AppMediaConfigDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { buildLandingPlan, type LandingPlan } from '@/lib/landingPricing';
@@ -22,6 +23,7 @@ export function useMarketingPlanOptions({
     media: AppMediaConfigDto | null;
 }): MarketingPlanOption[] {
     const { copy, moduleName } = usePlanMarketingCopy();
+    const memberRoles = useMemberRoleCatalog();
 
     return useMemo(() => {
         if (!media) return [];
@@ -35,8 +37,9 @@ export function useMarketingPlanOptions({
                 moduleName,
                 copy,
                 plans.slice(0, index).flatMap((previousPlan) => previousPlan.moduleKeys),
+                memberRoles,
             );
             return presentation ? [{ config: plan, featured: index === 1, presentation }] : [];
         });
-    }, [copy, media, moduleName, modules, plans]);
+    }, [copy, media, memberRoles, moduleName, modules, plans]);
 }
