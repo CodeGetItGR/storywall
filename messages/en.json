@@ -3700,6 +3700,24 @@
                 "generic": "The change could not be saved. Check the fields and try again."
             }
         },
+        "blockedTerms": {
+            "title": "Blocked words",
+            "caption": "Blocked in custom roles in every language, on top of the built-in lists.",
+            "add": "Add word",
+            "term": "Word",
+            "added": "Added",
+            "empty": "No blocked words yet.",
+            "loading": "Loading words…",
+            "termInvalid": "Enter a word that doesn't start with #.",
+            "termTaken": "This word is already blocked.",
+            "save": "Add",
+            "cancel": "Cancel",
+            "close": "Close",
+            "delete": "Delete {term}",
+            "deleteTitle": "Delete {term}?",
+            "deleteBody": "Custom roles with this word will be allowed again.",
+            "deleteConfirm": "Delete word"
+        },
         "memberRoles": {
             "create": "New role",
             "eventType": "Event type",
