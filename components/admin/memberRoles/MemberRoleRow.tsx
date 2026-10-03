@@ -47,8 +47,6 @@ export function MemberRoleRow({
                 {label}
                 {role.hostOnly && <span className="ml-2 rounded-full bg-canvas px-2 py-0.5 text-[11px] font-bold text-ink-muted">{t('hostOnly')}</span>}
             </td>
-            {/* Key */}
-            <td className="px-3 py-2.5 font-mono text-xs text-ink-muted">{role.roleKey}</td>
             {/* Limit */}
             <td className="px-3 py-2.5">
                 <span className="rounded-full bg-canvas px-2 py-0.5 font-mono text-[11px] font-bold text-ink-muted">
