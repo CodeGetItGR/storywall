@@ -12,6 +12,7 @@ import type {
     AppRsvpConfigDto,
     PlatformFeatureFlagResponseDto,
 } from '@/lib/api/types';
+import type { MemberRoleCatalog } from '@/lib/memberRoles';
 import { presignedUrlRefreshMs } from '@/lib/presignedUrls';
 
 export const appConfigKeys = {
@@ -82,4 +83,12 @@ export function useAppNewsletterConfig(): AppNewsletterConfigDto | null {
 export function useAppBetaFeedbackConfig(): AppBetaFeedbackConfigDto | null {
     const { data } = useAppConfig();
     return data?.betaFeedback?.enabled ? data.betaFeedback : null;
+}
+
+const EMPTY_MEMBER_ROLE_CATALOG: MemberRoleCatalog = {};
+
+// Each event type's member role catalog, retired roles included.
+export function useMemberRoleCatalog(): MemberRoleCatalog {
+    const { data } = useAppConfig();
+    return data?.memberRolesByEventType ?? EMPTY_MEMBER_ROLE_CATALOG;
 }

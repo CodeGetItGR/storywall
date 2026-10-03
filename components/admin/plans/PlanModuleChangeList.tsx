@@ -20,8 +20,8 @@ export function PlanModuleChangeList({ pending }: { pending: PendingCellSave | n
             {rows.map((row) => (
                 <li key={row.key} className="flex flex-wrap items-baseline gap-x-2">
                     <span className="font-semibold text-ink">{row.key}</span>
-                    <span className="font-mono text-xs text-ink-faint line-through">{row.before}</span>
-                    <span className="font-mono text-xs text-ink">{row.after}</span>
+                    <span className="text-xs text-ink-faint line-through">{row.before}</span>
+                    <span className="text-xs text-ink">{row.after}</span>
                 </li>
             ))}
         </ul>

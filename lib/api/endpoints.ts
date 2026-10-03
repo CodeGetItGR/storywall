@@ -336,6 +336,13 @@ export const endpoints = {
             list: '/api/admin/reaction-types',
             byId: (id: string) => `/api/admin/reaction-types/${id}`,
         },
+        memberRoles: {
+            collection: '/api/admin/member-roles',
+            list: (eventTypeKey: string) => `/api/admin/member-roles?eventTypeKey=${encodeURIComponent(eventTypeKey)}`,
+            byId: (id: string) => `/api/admin/member-roles/${id}`,
+            retire: (id: string) => `/api/admin/member-roles/${id}/retire`,
+            unretire: (id: string) => `/api/admin/member-roles/${id}/unretire`,
+        },
         collaborators: {
             list: '/api/admin/collaborators',
             byId: (id: string) => `/api/admin/collaborators/${id}`,

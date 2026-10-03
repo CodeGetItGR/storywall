@@ -1,14 +1,16 @@
 import type { ModuleKey, PlanTierResponseDto } from '@/lib/api/types';
 
-// The only per-plan module config keys the backend documents today. Anything
-// else in `defaultConfig` is still editable through the raw JSON field, so a
-// new key works before it gets a typed input here.
-export type KnownConfigField = { key: string; type: 'number'; min?: number } | { key: string; type: 'boolean' };
+// The per-plan module config keys the backend documents. Each gets a labelled
+// control in the plan grid (AdminPage.plans.grid.cell.fields.<key>); anything
+// else stays editable through the collapsed Advanced JSON field, so a new key
+// works before it gets a control here. `hint` adds fieldHints.<key> under it.
+export type KnownConfigField = { key: string; type: 'number'; min?: number } | { key: string; type: 'boolean'; hint?: boolean };
 
 const KNOWN_CONFIG_FIELDS: Record<string, KnownConfigField[]> = {
     schedule: [{ key: 'maxSections', type: 'number', min: 1 }],
     gallery: [{ key: 'qrUploadEnabled', type: 'boolean' }],
     co_hosts: [{ key: 'maxCoHosts', type: 'number', min: 0 }],
+    member_roles: [{ key: 'allowCustom', type: 'boolean', hint: true }],
 };
 
 export type ConfigObject = Record<string, unknown>;
@@ -115,4 +117,36 @@ export function configChangeSummary(before: ConfigObject, after: ConfigObject, n
         });
     }
     return changes;
+}
+
+// Count fields shown as "Up to N": the ones whose draft holds a value. A blank
+// count means Unlimited (the key is dropped on save).
+export function limitedKeysFromDraft(moduleKey: ModuleKey, draft: Record<string, string>): string[] {
+    return knownConfigFields(moduleKey)
+        .filter((field) => field.type === 'number' && (draft[field.key] ?? '').trim() !== '')
+        .map((field) => field.key);
+}
+
+export type ConfigValueLabels = {
+    field: (key: string) => string;
+    unlimited: string;
+    upTo: (count: number) => string;
+    on: string;
+    off: string;
+    none: string;
+};
+
+// The confirm step's change list in words for known settings
+// ("Co-hosts: Up to 3 → Unlimited"); unknown keys keep the raw key and JSON.
+export function readableConfigChanges(moduleKey: ModuleKey, before: ConfigObject, after: ConfigObject, labels: ConfigValueLabels): ConfigChange[] {
+    const fields = new Map(knownConfigFields(moduleKey).map((field) => [field.key, field]));
+    return configChangeSummary(before, after, labels.none).map((change) => {
+        const field = fields.get(change.key);
+        if (!field) return change;
+        const describe = (value: unknown) => {
+            if (field.type === 'boolean') return value === true ? labels.on : labels.off;
+            return typeof value === 'number' ? labels.upTo(value) : labels.unlimited;
+        };
+        return { key: labels.field(field.key), before: describe(before[field.key]), after: describe(after[field.key]) };
+    });
 }

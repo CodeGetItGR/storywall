@@ -7,6 +7,7 @@ import type {
 } from '@/lib/api/types';
 import { discountedAmountMinor } from '@/lib/billing';
 import { formatBytes } from '@/lib/format';
+import { activeRoleCount, type MemberRoleCatalog } from '@/lib/memberRoles';
 import { mediaEstimate } from '@/lib/planComparison';
 import { configCount, type ConfigObject } from '@/lib/planModuleConfig';
 import { enabledModuleKeys } from '@/lib/planModules';
@@ -52,6 +53,8 @@ export interface LandingPlanCopy {
     guestsUnlimited: string;
     guestsUpTo: (count: number) => string;
     mediaUnlimited: string;
+    memberRoles: (count: number, custom: boolean) => string;
+    memberRolesCustomOnly: string;
     scheduleSessions: (max: number | null) => string;
     storageUnlimited: string;
 }
@@ -112,6 +115,7 @@ function moduleFeatureLabel(
     plan: PlanTierResponseDto,
     moduleName: (moduleKey: string) => string,
     copy: LandingPlanCopy,
+    memberRoles: MemberRoleCatalog,
 ): string | null {
     if (!plan.moduleConfigs) return moduleName(moduleKey);
 
@@ -127,6 +131,14 @@ function moduleFeatureLabel(
         }
         case 'gallery':
             return config?.qrUploadEnabled === true ? copy.galleryWithQrUpload : moduleName(moduleKey);
+        case 'member_roles': {
+            // Plans don't cap roles: the count is the event type's catalog, and
+            // the plan only decides whether members may type their own.
+            const count = activeRoleCount(memberRoles, plan.eventTypeKey);
+            const custom = config?.allowCustom === true;
+            if (count === 0) return custom ? copy.memberRolesCustomOnly : null;
+            return copy.memberRoles(count, custom);
+        }
         default:
             return moduleName(moduleKey);
     }
@@ -147,6 +159,7 @@ export function buildLandingPlan(
     moduleName: (moduleKey: string) => string,
     copy: LandingPlanCopy,
     inheritedModuleKeys?: string[],
+    memberRoles: MemberRoleCatalog = {},
 ): LandingPlan | null {
     const durations = landingDurations(plan);
     const defaultDuration = shortestInitialOption(plan);
@@ -154,7 +167,7 @@ export function buildLandingPlan(
 
     const estimate = mediaEstimate(plan.storageBytes, media);
     const inheritedKeys = [...new Set(inheritedModuleKeys ?? previousPlan?.moduleKeys ?? [])];
-    const labelFor = (moduleKey: string, tier: PlanTierResponseDto) => moduleFeatureLabel(moduleKey, tier, moduleName, copy);
+    const labelFor = (moduleKey: string, tier: PlanTierResponseDto) => moduleFeatureLabel(moduleKey, tier, moduleName, copy, memberRoles);
 
     // A later tier lists the modules it adds, plus inherited ones whose limit
     // or setting changed; unchanged inherited modules go in the rollup.

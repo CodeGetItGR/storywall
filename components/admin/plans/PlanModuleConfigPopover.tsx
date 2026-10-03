@@ -6,8 +6,8 @@ import { useTranslations } from 'next-intl';
 
 import { AdminSwitch } from '@/components/admin/AdminSwitch';
 import { PlanModuleChangeList } from '@/components/admin/plans/PlanModuleChangeList';
+import { PlanModuleConfigAdvanced } from '@/components/admin/plans/PlanModuleConfigAdvanced';
 import { PlanModuleConfigFields } from '@/components/admin/plans/PlanModuleConfigFields';
-import { PlanModuleConfigJsonField } from '@/components/admin/plans/PlanModuleConfigJsonField';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { type EditableCell, usePlanModuleCellDraft } from '@/hooks/usePlanModuleCellDraft';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
@@ -53,15 +53,22 @@ export function PlanModuleConfigPopover({
                                 />
                             </div>
 
-                            {/* Config */}
+                            {/* Settings */}
                             <div className="mt-4 space-y-3">
                                 <PlanModuleConfigFields
                                     fields={draft.fields}
                                     draft={draft.knownDraft}
+                                    limitedKeys={draft.limitedKeys}
                                     errors={draft.fieldErrors}
-                                    onChangeAction={draft.handleKnownChange}
+                                    onLimitModeChangeAction={draft.handleLimitModeChange}
+                                    onLimitValueChangeAction={draft.handleLimitValueChange}
+                                    onSwitchChangeAction={draft.handleSwitchChange}
                                 />
-                                <PlanModuleConfigJsonField value={draft.jsonText} error={draft.jsonError} onChangeAction={draft.handleJsonChange} />
+
+                                {/* Advanced */}
+                                <PlanModuleConfigAdvanced value={draft.jsonText} error={draft.jsonError} onChangeAction={draft.handleJsonChange} />
+
+                                {/* Reset */}
                                 <button
                                     type="button"
                                     onClick={draft.resetToSeed}

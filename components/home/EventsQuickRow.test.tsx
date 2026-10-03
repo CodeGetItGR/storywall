@@ -13,6 +13,7 @@ vi.mock('@/components/home/HomeHorizontalScroller', () => ({
     HomeHorizontalScroller: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 vi.mock('@/components/common/ProtectedImage', () => ({ ProtectedImage: () => null }));
+vi.mock('@/hooks/useMemberRoleLabel', () => ({ useMemberRoleLabel: () => null }));
 
 afterEach(cleanup);
 

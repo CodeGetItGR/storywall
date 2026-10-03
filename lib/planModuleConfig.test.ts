@@ -6,8 +6,10 @@ import {
     configChangeSummary,
     formatConfigValue,
     knownConfigFields,
+    limitedKeysFromDraft,
     mergeConfigDraft,
     parseConfigJson,
+    readableConfigChanges,
     splitConfig,
 } from '@/lib/planModuleConfig';
 
@@ -15,6 +17,7 @@ describe('knownConfigFields', () => {
     it('returns typed fields for documented modules', () => {
         expect(knownConfigFields('schedule')).toEqual([{ key: 'maxSections', type: 'number', min: 1 }]);
         expect(knownConfigFields('gallery')).toEqual([{ key: 'qrUploadEnabled', type: 'boolean' }]);
+        expect(knownConfigFields('member_roles')).toEqual([{ key: 'allowCustom', type: 'boolean', hint: true }]);
     });
 
     it('returns nothing for an unknown module', () => {
@@ -94,5 +97,42 @@ describe('coHostCapacity', () => {
     it('has no cap when the key is absent or the plan is unknown', () => {
         expect(coHostCapacity(hosts, planWith({ co_hosts: {} }))).toEqual({ used: 2, limit: null, isFull: false });
         expect(coHostCapacity(hosts, undefined).limit).toBeNull();
+    });
+});
+
+describe('mergeConfigDraft switches', () => {
+    it('leaves an untouched missing switch out of the config', () => {
+        expect(mergeConfigDraft('member_roles', { allowCustom: '' }, {})).toEqual({});
+    });
+
+    it('writes a touched switch', () => {
+        expect(mergeConfigDraft('member_roles', { allowCustom: 'false' }, {})).toEqual({ allowCustom: false });
+    });
+});
+
+describe('limitedKeysFromDraft', () => {
+    it('lists count fields that hold a value', () => {
+        expect(limitedKeysFromDraft('co_hosts', { maxCoHosts: '0' })).toEqual(['maxCoHosts']);
+        expect(limitedKeysFromDraft('co_hosts', { maxCoHosts: '' })).toEqual([]);
+    });
+});
+
+describe('readableConfigChanges', () => {
+    const labels = {
+        field: (key: string) => `field:${key}`,
+        unlimited: 'Unlimited',
+        upTo: (count: number) => `Up to ${count}`,
+        on: 'On',
+        off: 'Off',
+        none: 'None',
+    };
+
+    it('describes counts and switches in words', () => {
+        expect(readableConfigChanges('co_hosts', { maxCoHosts: 3 }, {}, labels)).toEqual([{ key: 'field:maxCoHosts', before: 'Up to 3', after: 'Unlimited' }]);
+        expect(readableConfigChanges('member_roles', {}, { allowCustom: true }, labels)).toEqual([{ key: 'field:allowCustom', before: 'Off', after: 'On' }]);
+    });
+
+    it('keeps raw keys and JSON for unknown settings', () => {
+        expect(readableConfigChanges('posts', {}, { theme: 'dark' }, labels)).toEqual([{ key: 'theme', before: 'None', after: '"dark"' }]);
     });
 });

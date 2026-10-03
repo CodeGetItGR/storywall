@@ -3030,11 +3030,13 @@
                 "noMatches": "No matches.",
                 "settings": "Settings",
                 "modules": "Modules",
-                "eventTypesSettings": "Event types"
+                "eventTypesSettings": "Event types",
+                "memberRoles": "Member roles"
             },
             "settings": {
                 "modulesTitle": "Modules",
-                "eventTypesTitle": "Event types"
+                "eventTypesTitle": "Event types",
+                "memberRolesTitle": "Member roles"
             },
             "default": "Default",
             "archived": "Archived",
@@ -3185,7 +3187,22 @@
                     "included": "Included",
                     "yes": "Yes",
                     "no": "No",
-                    "noChanges": "No changes yet."
+                    "noChanges": "No changes yet.",
+                    "fields": {
+                        "maxSections": "Schedule sections",
+                        "maxCoHosts": "Co-hosts",
+                        "qrUploadEnabled": "Guest QR upload",
+                        "allowCustom": "Custom roles"
+                    },
+                    "fieldHints": {
+                        "allowCustom": "Members can type their own role."
+                    },
+                    "unlimited": "Unlimited",
+                    "upTo": "Up to",
+                    "upToValue": "Up to {count}",
+                    "on": "On",
+                    "off": "Off",
+                    "advanced": "Advanced"
                 }
             },
             "search": {
@@ -3666,6 +3683,60 @@
                 "generic": "The change could not be saved. Check the fields and try again."
             }
         },
+        "memberRoles": {
+            "create": "New role",
+            "eventType": "Event type",
+            "search": "Search by label or key",
+            "filters": {
+                "ALL": "All",
+                "ACTIVE": "Active",
+                "RETIRED": "Retired"
+            },
+            "columns": {
+                "role": "Role",
+                "key": "Key",
+                "limit": "Limit",
+                "status": "Status",
+                "order": "Order"
+            },
+            "limitMax": "Max {count}",
+            "unlimited": "Unlimited",
+            "status": {
+                "ACTIVE": "Active",
+                "RETIRED": "Retired"
+            },
+            "empty": "No roles for this event type yet.",
+            "noMatches": "No roles match.",
+            "loading": "Loading roles…",
+            "moveUp": "Move {role} up",
+            "moveDown": "Move {role} down",
+            "edit": "Edit {role}",
+            "drawer": {
+                "createTitle": "New role",
+                "close": "Close",
+                "eventType": "Event type",
+                "key": "Key",
+                "keyInvalid": "Use 2 to 50 capital letters, digits or underscores, starting with a letter.",
+                "keyTaken": "A role with this key already exists.",
+                "labelEn": "English label",
+                "labelEl": "Greek label",
+                "labelInvalid": "Enter 1 to 40 characters.",
+                "emoji": "Emoji",
+                "emojiInvalid": "Use up to 16 characters.",
+                "limit": "Limit",
+                "unlimited": "Unlimited",
+                "upTo": "Up to",
+                "limitInvalid": "Enter a whole number of at least 1.",
+                "save": "Save",
+                "cancel": "Cancel",
+                "retire": "Retire",
+                "restore": "Restore",
+                "retireTitle": "Retire {role}?",
+                "retireBody": "Members who have this role keep it. No one new can pick it.",
+                "retireConfirm": "Retire role",
+                "notFound": "This role no longer exists."
+            }
+        },
         "paidServices": {
             "title": "Paid services catalog",
             "subtitle": "Manage one-time add-ons and storage packs. Archive in-use services by making them non-public and non-assignable.",
@@ -4086,6 +4157,10 @@
         "schedule": {
             "name": "Schedule",
             "description": "Plan the event timeline with schedule sections."
+        },
+        "member_roles": {
+            "name": "Member roles",
+            "description": "Guests pick a role, like best man, shown next to their name."
         }
     },
     "Durations": {
@@ -4769,7 +4844,10 @@
             "scheduleSessionsUnlimited": "Unlimited schedule sessions",
             "coHosts": "{count, plural, one {Up to # co-host} other {Up to # co-hosts}}",
             "coHostsUnlimited": "Unlimited co-hosts",
-            "galleryWithQrUpload": "Gallery with QR upload"
+            "galleryWithQrUpload": "Gallery with QR upload",
+            "memberRoles": "{count, plural, one {# member role} other {# member roles}}",
+            "memberRolesWithCustom": "{count, plural, one {# member role + your own} other {# member roles + your own}}",
+            "memberRolesCustomOnly": "Custom member roles"
         },
         "faq": {
             "eyebrow": "FAQ",
