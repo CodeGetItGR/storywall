@@ -24,7 +24,16 @@
         "uploadPhoto": "Upload photo",
         "addPhotoFor": "Add photo for {name}",
         "changePhotoFor": "Change photo for {name}",
-        "photoFailed": "The guest was added, but the photo didn’t upload. Try again."
+        "photoFailed": "The guest was added, but the photo didn’t upload. Try again.",
+        "roleFor": "Role for {name}",
+        "noRole": "No role",
+        "rsvp": "RSVP",
+        "rsvpFor": "RSVP for {name}",
+        "rsvpAttending": "Attending",
+        "rsvpDeclined": "Declined",
+        "rsvpNone": "No response",
+        "save": "Save",
+        "close": "Close"
     },
     "Demo": {
         "resetDemo": "Reset demo",
