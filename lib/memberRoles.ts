@@ -1,5 +1,17 @@
 import type { Locale } from '@/i18n/config';
-import type { MemberRoleCatalogDto, MemberRoleCatalogPatchDto, MemberRoleCatalogRequestDto } from '@/lib/api/types';
+import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
+import type {
+    AuthorDto,
+    EventMemberResponseDto,
+    EventModuleResponseDto,
+    EventStatus,
+    MemberRoleCatalogDto,
+    MemberRoleCatalogPatchDto,
+    MemberRoleCatalogRequestDto,
+    MemberRoleOptionDto,
+    MemberRoleRequestDto,
+} from '@/lib/api/types';
+import { isEventDeleted, isModuleAvailable } from '@/lib/eventLifecycle';
 
 // /api/config memberRolesByEventType: each event type's role catalog,
 // retired roles included (member-roles-fe-integration.md §5.1).
@@ -156,4 +168,160 @@ export function planRoleMove(roles: MemberRoleCatalogDto[], roleId: string, dire
     [orders[index], orders[neighbour]] = [orders[neighbour], orders[index]];
 
     return sorted.flatMap((role, position) => (orders[position] === role.sortOrder ? [] : [{ id: role.id, sortOrder: orders[position] }]));
+}
+
+// ── Member picker (member-roles-fe-integration.md §2) ──
+
+export const OTHER_CHOICE = '__other__';
+// /api/config memberCustomRelationshipRoleMaxLength, used until config loads.
+export const DEFAULT_CUSTOM_ROLE_MAX = 40;
+
+type MemberRoleFields = Pick<EventMemberResponseDto, 'relationshipRole' | 'customRelationshipRole'>;
+export type RoleValue = { roleKey: string | null; customRole: string | null };
+
+// choice is a catalog roleKey, OTHER_CHOICE, or null when nothing is picked.
+export type RolePickerDraft = { choice: string | null; customText: string };
+
+export function memberHasRole(member: MemberRoleFields): boolean {
+    return Boolean(member.relationshipRole || member.customRelationshipRole);
+}
+
+export function draftFromMember(member: MemberRoleFields): RolePickerDraft {
+    if (member.customRelationshipRole) return { choice: OTHER_CHOICE, customText: member.customRelationshipRole };
+    return { choice: member.relationshipRole, customText: '' };
+}
+
+// Mirrors the server's whitespace normalization so the cached copy matches.
+function normalizeCustomRole(text: string): string {
+    return text.replace(/\s+/g, ' ').trim();
+}
+
+export function buildRoleRequest(draft: RolePickerDraft): MemberRoleRequestDto | null {
+    if (draft.choice === null) return null;
+    if (draft.choice !== OTHER_CHOICE) return { roleKey: draft.choice };
+    const customRole = normalizeCustomRole(draft.customText);
+    return customRole ? { customRole } : null;
+}
+
+export function canSaveDraft(draft: RolePickerDraft, member: MemberRoleFields, maxLength: number): boolean {
+    const request = buildRoleRequest(draft);
+    if (!request) return false;
+    if (request.customRole !== undefined) {
+        return request.customRole.length <= maxLength && request.customRole !== member.customRelationshipRole;
+    }
+    return request.roleKey !== member.relationshipRole;
+}
+
+export function roleValueFromRequest(request: MemberRoleRequestDto): RoleValue {
+    return { roleKey: request.roleKey ?? null, customRole: request.customRole ?? null };
+}
+
+export function optionLabel(option: MemberRoleOptionDto, locale: Locale): string {
+    const label = option.label[locale] || option.label.en;
+    return option.emoji ? `${option.emoji} ${label}` : label;
+}
+
+// A full role stays pickable for the member who already holds it.
+export function isOptionDisabled(option: MemberRoleOptionDto, currentRoleKey: string | null): boolean {
+    return !option.available && option.roleKey !== currentRoleKey;
+}
+
+export type RoleErrorKind = 'length' | 'blocked' | 'stale' | 'locked' | 'full' | 'featured' | 'moduleOff' | 'other';
+
+export function roleErrorKind(error: unknown): RoleErrorKind {
+    switch (getErrorCode(error)) {
+        case ERROR_CODES.MEMBER_ROLE_INVALID_REQUEST:
+            return 'length';
+        case ERROR_CODES.MEMBER_ROLE_CUSTOM_BLOCKED:
+            return 'blocked';
+        case ERROR_CODES.MEMBER_ROLE_UNKNOWN:
+        case ERROR_CODES.MEMBER_ROLE_CUSTOM_NOT_ALLOWED:
+            return 'stale';
+        case ERROR_CODES.MEMBER_ROLE_CUSTOM_LOCKED:
+            return 'locked';
+        case ERROR_CODES.MEMBER_ROLE_CAP_REACHED:
+            return 'full';
+        case ERROR_CODES.MEMBER_ROLE_FEATURED_MEMBER:
+            return 'featured';
+        case ERROR_CODES.MODULE_NOT_AVAILABLE:
+            return 'moduleOff';
+        default:
+            return 'other';
+    }
+}
+
+// ── Cache patching (guide §8: PUT/DELETE return 204, the client updates itself) ──
+
+function patchAuthored(item: unknown, memberId: string, role: RoleValue): unknown {
+    if (!item || typeof item !== 'object' || !('author' in item)) return item;
+    const author = (item as { author: AuthorDto | null }).author;
+    if (!author || author.memberId !== memberId) return item;
+    return { ...item, author: { ...author, roleKey: role.roleKey, customRole: role.customRole } };
+}
+
+// Updates the author's role on a post, comment or story, on an array of them,
+// or on an infinite query's pages. Anything else passes through unchanged.
+export function withAuthorRole<T>(data: T, memberId: string, role: RoleValue): T {
+    if (Array.isArray(data)) return data.map((item) => patchAuthored(item, memberId, role)) as T;
+    if (data && typeof data === 'object' && 'pages' in data && Array.isArray((data as { pages: unknown }).pages)) {
+        const infinite = data as unknown as { pages: unknown[] };
+        return {
+            ...infinite,
+            pages: infinite.pages.map((page) => {
+                const content = page && typeof page === 'object' ? (page as { content?: unknown }).content : undefined;
+                return Array.isArray(content) ? { ...(page as object), content: content.map((item) => patchAuthored(item, memberId, role)) } : page;
+            }),
+        } as T;
+    }
+    return patchAuthored(data, memberId, role) as T;
+}
+
+export function withMemberRole<T extends { id: string } & MemberRoleFields>(members: T[], memberId: string, role: RoleValue): T[] {
+    return members.map((member) =>
+        member.id === memberId ? { ...member, relationshipRole: role.roleKey, customRelationshipRole: role.customRole } : member,
+    );
+}
+
+// ── Gating ──
+
+type RoleEvent = {
+    status: EventStatus;
+    deletedAt: string | null;
+    suspended?: boolean;
+    modules: Pick<EventModuleResponseDto, 'moduleKey' | 'isAvailable'>[];
+};
+
+function rolesWritable(event: RoleEvent | null | undefined): event is RoleEvent {
+    if (!event || event.suspended || isEventDeleted(event) || event.status !== 'ACTIVE') return false;
+    return isModuleAvailable(event.modules as EventModuleResponseDto[], 'member_roles');
+}
+
+export function canEditOwnRole(event: RoleEvent | null | undefined, member: Pick<EventMemberResponseDto, 'isFeatured'> | null | undefined): boolean {
+    return rolesWritable(event) && member !== null && member !== undefined && !member.isFeatured;
+}
+
+export function canManageMemberRoles(event: RoleEvent | null | undefined, canModerate: boolean): boolean {
+    return canModerate && rolesWritable(event);
+}
+
+// ── Sheet trigger ──
+
+export const ROLE_SHEET_PARAM = 'sheet';
+export const ROLE_SHEET_VALUE = 'role';
+
+export function withRoleSheetParam(pathname: string, search: string): string {
+    const params = new URLSearchParams(search);
+    params.set(ROLE_SHEET_PARAM, ROLE_SHEET_VALUE);
+    return `${pathname}?${params.toString()}`;
+}
+
+export function withoutRoleSheetParam(pathname: string, search: string): string {
+    const params = new URLSearchParams(search);
+    params.delete(ROLE_SHEET_PARAM);
+    const query = params.toString();
+    return query ? `${pathname}?${query}` : pathname;
+}
+
+export function rolePromptStorageKey(memberId: string): string {
+    return `sw.rolePrompt.${memberId}`;
 }

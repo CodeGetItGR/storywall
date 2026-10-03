@@ -1,19 +1,34 @@
 import { describe, expect, it } from 'vitest';
 
+import { ApiError } from '@/lib/api/client';
 import type { MemberRoleCatalogDto } from '@/lib/api/types';
 import {
     activeRoleCount,
     buildCreatePayload,
     buildPatchPayload,
+    buildRoleRequest,
+    canEditOwnRole,
+    canManageMemberRoles,
+    canSaveDraft,
+    draftFromMember,
     draftFromRole,
     filterRoles,
+    isOptionDisabled,
     isValidRoleKey,
+    memberHasRole,
     memberRoleLabel,
     nextSortOrder,
     normalizeRoleKeyInput,
+    optionLabel,
+    OTHER_CHOICE,
     planRoleMove,
+    roleErrorKind,
     sortRoles,
     validateRoleDraft,
+    withAuthorRole,
+    withMemberRole,
+    withoutRoleSheetParam,
+    withRoleSheetParam,
 } from '@/lib/memberRoles';
 
 function makeRole(overrides: Partial<MemberRoleCatalogDto> = {}): MemberRoleCatalogDto {
@@ -184,5 +199,157 @@ describe('planRoleMove', () => {
             { id: 'b', sortOrder: 2 },
             { id: 'c', sortOrder: 1 },
         ]);
+    });
+});
+
+const NO_ROLE = { relationshipRole: null, customRelationshipRole: null };
+
+describe('draftFromMember', () => {
+    it('starts from the catalog role', () => {
+        expect(draftFromMember({ relationshipRole: 'BEST_MAN', customRelationshipRole: null })).toEqual({ choice: 'BEST_MAN', customText: '' });
+    });
+    it('starts on Other with the custom text', () => {
+        expect(draftFromMember({ relationshipRole: null, customRelationshipRole: 'Uncle' })).toEqual({ choice: OTHER_CHOICE, customText: 'Uncle' });
+    });
+    it('starts empty', () => {
+        expect(draftFromMember(NO_ROLE)).toEqual({ choice: null, customText: '' });
+    });
+});
+
+describe('buildRoleRequest', () => {
+    it('sends the catalog key', () => {
+        expect(buildRoleRequest({ choice: 'BRIDE', customText: 'x' })).toEqual({ roleKey: 'BRIDE' });
+    });
+    it('sends normalized custom text', () => {
+        expect(buildRoleRequest({ choice: OTHER_CHOICE, customText: '  Uncle   from  Melbourne ' })).toEqual({ customRole: 'Uncle from Melbourne' });
+    });
+    it('sends nothing for blank Other or no choice', () => {
+        expect(buildRoleRequest({ choice: OTHER_CHOICE, customText: '   ' })).toBeNull();
+        expect(buildRoleRequest({ choice: null, customText: '' })).toBeNull();
+    });
+});
+
+describe('canSaveDraft', () => {
+    it('needs a change', () => {
+        expect(canSaveDraft({ choice: 'BRIDE', customText: '' }, { relationshipRole: 'BRIDE', customRelationshipRole: null }, 40)).toBe(false);
+        expect(canSaveDraft({ choice: 'GROOM', customText: '' }, { relationshipRole: 'BRIDE', customRelationshipRole: null }, 40)).toBe(true);
+        expect(canSaveDraft({ choice: OTHER_CHOICE, customText: 'Uncle' }, { relationshipRole: null, customRelationshipRole: 'Uncle' }, 40)).toBe(false);
+    });
+    it('rejects custom text over the limit', () => {
+        expect(canSaveDraft({ choice: OTHER_CHOICE, customText: 'x'.repeat(41) }, NO_ROLE, 40)).toBe(false);
+    });
+    it('switching from custom text to a catalog role is a change', () => {
+        expect(canSaveDraft({ choice: 'BRIDE', customText: '' }, { relationshipRole: null, customRelationshipRole: 'Uncle' }, 40)).toBe(true);
+    });
+});
+
+describe('memberHasRole', () => {
+    it('is true for either kind', () => {
+        expect(memberHasRole(NO_ROLE)).toBe(false);
+        expect(memberHasRole({ relationshipRole: 'BRIDE', customRelationshipRole: null })).toBe(true);
+        expect(memberHasRole({ relationshipRole: null, customRelationshipRole: 'x' })).toBe(true);
+    });
+});
+
+const OPTION = { roleKey: 'BEST_MAN', label: { en: 'Best man', el: 'Κουμπάρος' }, emoji: '🥂', maxHolders: 2, holders: 2, available: false };
+
+describe('options', () => {
+    it('labels in the locale with the emoji', () => {
+        expect(optionLabel(OPTION, 'el')).toBe('🥂 Κουμπάρος');
+        expect(optionLabel({ ...OPTION, emoji: null, label: { en: 'Best man', el: '' } }, 'el')).toBe('Best man');
+    });
+    it('disables a full role unless it is the current one', () => {
+        expect(isOptionDisabled(OPTION, null)).toBe(true);
+        expect(isOptionDisabled(OPTION, 'BEST_MAN')).toBe(false);
+        expect(isOptionDisabled({ ...OPTION, available: true }, null)).toBe(false);
+    });
+});
+
+describe('roleErrorKind', () => {
+    const error = (status: number, errorCode: number) => new ApiError(status, { errorCode });
+    it('maps every role code', () => {
+        expect(roleErrorKind(error(400, 3040))).toBe('length');
+        expect(roleErrorKind(error(400, 3042))).toBe('blocked');
+        expect(roleErrorKind(error(400, 3041))).toBe('stale');
+        expect(roleErrorKind(error(403, 4016))).toBe('stale');
+        expect(roleErrorKind(error(403, 4017))).toBe('locked');
+        expect(roleErrorKind(error(409, 5114))).toBe('full');
+        expect(roleErrorKind(error(409, 5113))).toBe('featured');
+        expect(roleErrorKind(error(409, 5012))).toBe('moduleOff');
+        expect(roleErrorKind(error(409, 5014))).toBe('other');
+        expect(roleErrorKind(new Error('x'))).toBe('other');
+    });
+});
+
+const ROLE = { roleKey: 'BRIDE', customRole: null };
+const author = (memberId: string) => ({ memberId, displayName: 'A', nickname: null, role: 'MEMBER' as const, avatarUrl: null, roleKey: null, customRole: null });
+
+describe('withAuthorRole', () => {
+    it('patches a single item', () => {
+        expect(withAuthorRole({ id: 'p1', author: author('m1') }, 'm1', ROLE).author.roleKey).toBe('BRIDE');
+    });
+    it('leaves other authors and authorless items alone', () => {
+        const item = { id: 'p1', author: author('m2') };
+        expect(withAuthorRole(item, 'm1', ROLE)).toBe(item);
+        const media = { id: 'x' };
+        expect(withAuthorRole(media, 'm1', ROLE)).toBe(media);
+    });
+    it('patches arrays and infinite pages', () => {
+        expect(withAuthorRole([{ author: author('m1') }], 'm1', ROLE)[0].author.roleKey).toBe('BRIDE');
+        const infinite = { pages: [{ content: [{ author: author('m1') }, { author: author('m2') }] }], pageParams: [0] };
+        const patched = withAuthorRole(infinite, 'm1', ROLE);
+        expect(patched.pages[0].content[0].author.roleKey).toBe('BRIDE');
+        expect(patched.pages[0].content[1].author.roleKey).toBeNull();
+        expect(patched.pageParams).toEqual([0]);
+    });
+    it('passes undefined through', () => {
+        expect(withAuthorRole(undefined, 'm1', ROLE)).toBeUndefined();
+    });
+});
+
+describe('withMemberRole', () => {
+    it('updates only that member', () => {
+        const members = [
+            { id: 'm1', ...NO_ROLE },
+            { id: 'm2', ...NO_ROLE },
+        ];
+        const result = withMemberRole(members, 'm1', { roleKey: null, customRole: 'Uncle' });
+        expect(result[0]).toEqual({ id: 'm1', relationshipRole: null, customRelationshipRole: 'Uncle' });
+        expect(result[1]).toBe(members[1]);
+    });
+});
+
+const liveEvent = {
+    status: 'ACTIVE' as const,
+    deletedAt: null,
+    suspended: false,
+    modules: [{ moduleKey: 'member_roles', isEnabled: true, isAvailable: true }],
+};
+
+describe('gating', () => {
+    it('lets a non-featured member of a live event with the module edit their role', () => {
+        expect(canEditOwnRole(liveEvent, { isFeatured: false })).toBe(true);
+    });
+    it('blocks featured members, drafts, deleted, suspended and module-off events', () => {
+        expect(canEditOwnRole(liveEvent, { isFeatured: true })).toBe(false);
+        expect(canEditOwnRole({ ...liveEvent, status: 'DRAFT' }, { isFeatured: false })).toBe(false);
+        expect(canEditOwnRole({ ...liveEvent, deletedAt: '2026-01-01T00:00:00Z' }, { isFeatured: false })).toBe(false);
+        expect(canEditOwnRole({ ...liveEvent, suspended: true }, { isFeatured: false })).toBe(false);
+        expect(canEditOwnRole({ ...liveEvent, modules: [] }, { isFeatured: false })).toBe(false);
+        expect(canEditOwnRole(null, { isFeatured: false })).toBe(false);
+        expect(canEditOwnRole(liveEvent, null)).toBe(false);
+    });
+    it('lets moderators of a live event manage roles', () => {
+        expect(canManageMemberRoles(liveEvent, true)).toBe(true);
+        expect(canManageMemberRoles(liveEvent, false)).toBe(false);
+        expect(canManageMemberRoles({ ...liveEvent, modules: [] }, true)).toBe(false);
+    });
+});
+
+describe('role sheet URL', () => {
+    it('adds and removes the trigger, keeping other params', () => {
+        expect(withRoleSheetParam('/events/e1/feed', 'post=p1')).toBe('/events/e1/feed?post=p1&sheet=role');
+        expect(withoutRoleSheetParam('/events/e1/feed', 'post=p1&sheet=role')).toBe('/events/e1/feed?post=p1');
+        expect(withoutRoleSheetParam('/events/e1/feed', 'sheet=role')).toBe('/events/e1/feed');
     });
 });
