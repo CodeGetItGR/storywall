@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 
 import { CoHostInvitationRow, CreateCoHostInvitationForm, ShareLanguageNote } from '@/components/manage/invitations';
+import { MemberRoleSheet } from '@/components/manage/members/MemberRoleSheet';
 import { UsagePanel } from '@/components/plan/UsagePanel';
 import { ReportTargetModal } from '@/components/reports';
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
@@ -15,6 +16,7 @@ import { useAppConfig } from '@/hooks/useAppConfig';
 import { useUpgradeOptions } from '@/hooks/useBilling';
 import { useCoHostCapacity } from '@/hooks/useCoHostCapacity';
 import { useMemberModeration } from '@/hooks/useMemberModeration';
+import { useMemberRoleSheet } from '@/hooks/useMemberRoleSheet';
 import type {
     EventHostResponseDto,
     EventInvitationResponseDto,
@@ -25,9 +27,10 @@ import type {
 } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
 import { selectCoHostInvitations } from '@/lib/eventInvitations';
+import { canManageMemberRoles } from '@/lib/memberRoles';
 import { findPlanByCode } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
-import { useActiveMember } from '@/providers/EventProvider';
+import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
 
 import { CoHostManagementList } from './CoHostManagementList';
 import { MemberRow } from './MemberRow';
@@ -61,6 +64,7 @@ export function MembersPanel({
 }: MembersPanelProps) {
     const t = useTranslations('ManagePage');
     const tMembers = useTranslations('ManagePage.members');
+    const tRoles = useTranslations('MemberRoles');
     const locale = useLocale();
     const { data: appConfig } = useAppConfig();
     const activeMember = useActiveMember();
@@ -71,6 +75,9 @@ export function MembersPanel({
     const [showCreate, setShowCreate] = useState(false);
 
     const moderation = useMemberModeration(eventId, canModerate);
+    const activeEvent = useActiveEvent();
+    const roleSheet = useMemberRoleSheet(members);
+    const canManageRoles = canManageMemberRoles(activeEvent, canModerate);
     const { data: upgradeOptions = [] } = useUpgradeOptions(eventId, isPrimaryHost);
     const handleConfirmRemove = useCallback(() => moderation.confirmRemove(tMembers('removeFailed')), [moderation, tMembers]);
     const canReport = canModerate && Boolean(appConfig?.reportTargetTypes?.includes('MEMBER'));
@@ -178,6 +185,9 @@ export function MembersPanel({
                                     canReport={canReport && member.id !== activeMember?.id}
                                     joinedLabel={tMembers('joined', { date: formatDate(locale, member.joinedAt, { dateStyle: 'medium' }) })}
                                     roleLabel={member.role === 'HOST' ? tMembers('roleHost') : null}
+                                    eventTypeKey={activeEvent?.eventType ?? null}
+                                    editRoleLabel={tRoles('host.edit', { name: member.displayName })}
+                                    onEditRoleAction={canManageRoles && !member.isFeatured ? roleSheet.open : undefined}
                                     onReportAction={moderation.requestReport}
                                     onRemoveAction={moderation.requestRemove}
                                     reportLabel={tMembers('report')}
@@ -261,6 +271,9 @@ export function MembersPanel({
                 cancelLabel={tMembers('cancel')}
                 isConfirming={moderation.isRemoving}
             />
+
+            {/* Role sheet */}
+            {roleSheet.member && <MemberRoleSheet eventId={eventId} member={roleSheet.member} onCloseAction={roleSheet.close} />}
 
             {/* Report member */}
             {moderation.memberToReport && (
