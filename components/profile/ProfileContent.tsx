@@ -1,10 +1,11 @@
 'use client';
 
-import { Camera, CheckCircle2, KeyRound, Loader2, Save } from 'lucide-react';
+import { Camera, CheckCircle2, Loader2, Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { ProfileBusinessSection } from '@/components/profile/ProfileBusinessSection';
 import { ProfileNewsletterSection } from '@/components/profile/ProfileNewsletterSection';
+import { ProfilePasswordSection } from '@/components/profile/ProfilePasswordSection';
 import { ProfilePictureDialog } from '@/components/profile/ProfilePictureDialog';
 import Avatar from '@/components/ui/avatar';
 import { BackButton } from '@/components/ui/BackButton';
@@ -165,114 +166,7 @@ export function ProfileContent() {
                 />
 
                 {/* Password */}
-                {form.canChangePassword && (
-                    <form
-                        onSubmit={form.handlePasswordSubmit}
-                        className="rounded-[1.5rem] bg-card p-4 shadow-[0_18px_48px_rgba(35,28,22,0.08)] sm:p-5"
-                    >
-                        {/* Password header */}
-                        <div className="flex items-center gap-2">
-                            <KeyRound className="h-4 w-4 text-primary" aria-hidden="true" />
-                            <h2 className="text-base font-semibold text-ink">{t('password.title')}</h2>
-                        </div>
-
-                        {/* Password note */}
-                        <p className="mt-2 text-sm text-ink-muted">{t('password.signOutNotice')}</p>
-
-                        {/* Password fields */}
-                        <div className="mt-5 grid gap-4">
-                            <FormFieldLabel label={t('password.current')} required>
-                                <input
-                                    type="password"
-                                    value={form.currentPassword}
-                                    onChange={form.handleCurrentPasswordChange}
-                                    minLength={limits.passwordMinLength}
-                                    maxLength={limits.passwordMaxLength}
-                                    required
-                                    aria-invalid={Boolean(form.passwordFieldErrors.currentPassword)}
-                                    className="min-h-11 rounded-2xl border border-border/70 bg-background px-4 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
-                                />
-                            </FormFieldLabel>
-                            <FormFieldLabel label={t('password.new')} required>
-                                <input
-                                    type="password"
-                                    value={form.newPassword}
-                                    onChange={form.handleNewPasswordChange}
-                                    minLength={limits.passwordMinLength}
-                                    maxLength={limits.passwordMaxLength}
-                                    required
-                                    aria-invalid={Boolean(form.passwordFieldErrors.newPassword)}
-                                    className="min-h-11 rounded-2xl border border-border/70 bg-background px-4 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
-                                />
-                            </FormFieldLabel>
-                            <FormFieldLabel label={t('password.confirm')} required>
-                                <input
-                                    type="password"
-                                    value={form.confirmPassword}
-                                    onChange={form.handleConfirmPasswordChange}
-                                    minLength={limits.passwordMinLength}
-                                    maxLength={limits.passwordMaxLength}
-                                    required
-                                    aria-invalid={Boolean(form.passwordFieldErrors.confirmPassword)}
-                                    className="min-h-11 rounded-2xl border border-border/70 bg-background px-4 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
-                                />
-                            </FormFieldLabel>
-                        </div>
-
-                        {/* Password feedback */}
-                        {(form.passwordFieldErrors.currentPassword ||
-                            form.passwordFieldErrors.newPassword ||
-                            form.passwordFieldErrors.confirmPassword ||
-                            form.passwordError) && (
-                            <div className="mt-4 space-y-2">
-                                {form.passwordFieldErrors.currentPassword === 'invalid' ? (
-                                    <p role="alert" className="text-sm text-red-600">
-                                        {t('password.errors.currentPasswordInvalid')}
-                                    </p>
-                                ) : (
-                                    form.passwordFieldErrors.currentPassword && (
-                                        <p role="alert" className="text-sm text-red-600">
-                                            {form.passwordFieldErrors.currentPassword}
-                                        </p>
-                                    )
-                                )}
-                                {form.passwordFieldErrors.newPassword && (
-                                    <p role="alert" className="text-sm text-red-600">
-                                        {form.passwordFieldErrors.newPassword}
-                                    </p>
-                                )}
-                                {form.passwordFieldErrors.confirmPassword === 'mismatch' && (
-                                    <p role="alert" className="text-sm text-red-600">
-                                        {t('password.errors.confirmMismatch')}
-                                    </p>
-                                )}
-                                {form.passwordError === 'noPassword' ? (
-                                    <p role="alert" className="text-sm text-red-600">
-                                        {t('password.errors.noPassword')}
-                                    </p>
-                                ) : (
-                                    form.passwordError && (
-                                        <p role="alert" className="text-sm text-red-600">
-                                            {form.passwordError}
-                                        </p>
-                                    )
-                                )}
-                            </div>
-                        )}
-
-                        {/* Actions */}
-                        <div className="mt-5 flex justify-end">
-                            <Button type="submit" disabled={form.isSavingPassword || form.passwordMismatch} className="gap-2 rounded-full px-4">
-                                {form.isSavingPassword ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                                ) : (
-                                    <KeyRound className="h-4 w-4" aria-hidden="true" />
-                                )}
-                                {form.isSavingPassword ? t('password.saving') : t('password.submit')}
-                            </Button>
-                        </div>
-                    </form>
-                )}
+                {form.canChangePassword && <ProfilePasswordSection form={form} />}
 
                 {/* Business details */}
                 <ProfileBusinessSection />

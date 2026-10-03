@@ -2,14 +2,14 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { MediaResponseDto } from '@/lib/api/types';
 import { buildFixtureSnapshot } from '@/lib/demo/__fixtures__/demoSnapshot';
-import { createDemoDb, swapMediaUrls } from '@/lib/demo/demoDb';
+import { createDemoDb, demoContentVersion, swapMediaUrls } from '@/lib/demo/demoDb';
 
 describe('demo store', () => {
     beforeEach(() => localStorage.clear());
 
     it('swaps presigned URLs by media id everywhere media is embedded', () => {
         const snapshot = buildFixtureSnapshot();
-        const db = createDemoDb('WEDDING', snapshot);
+        const db = createDemoDb('WEDDING', snapshot, 'v1');
         const fresh = snapshot.media.map((m) => ({
             ...m,
             mediaUrl: m.mediaUrl.replace('old', 'new'),
@@ -25,7 +25,7 @@ describe('demo store', () => {
 
     it('swaps persona picture URLs on members and every author by member id', () => {
         const snapshot = buildFixtureSnapshot();
-        const db = createDemoDb('WEDDING', snapshot);
+        const db = createDemoDb('WEDDING', snapshot, 'v1');
         const hostId = snapshot.members[0].id;
         db.update('posts', 'post-1', (p) => ({ ...p, recentComments: snapshot.comments }));
         const visitor = { ...snapshot.members[0], id: 'demo-member-visitor', avatarUrl: null };
@@ -47,7 +47,7 @@ describe('demo store', () => {
     it('clears a picture the admin removed', () => {
         const snapshot = buildFixtureSnapshot();
         const withPicture = { ...snapshot.members[0], avatarUrl: 'https://storage.test/a?sig=old' };
-        const db = createDemoDb('WEDDING', { ...snapshot, members: [withPicture] });
+        const db = createDemoDb('WEDDING', { ...snapshot, members: [withPicture] }, 'v1');
 
         swapMediaUrls(db, { media: snapshot.media, members: [{ ...withPicture, avatarUrl: null }] });
 
@@ -56,12 +56,12 @@ describe('demo store', () => {
 
     it('keeps the visitor’s changes across reloads but drops uploads that only lived in the page', () => {
         const snapshot = buildFixtureSnapshot();
-        const db = createDemoDb('WEDDING', snapshot);
+        const db = createDemoDb('WEDDING', snapshot, 'v1');
         const upload = { ...snapshot.media[1], id: 'local-1', mediaUrl: 'blob:http://localhost/abc' } as MediaResponseDto;
         db.create('media', upload);
         db.update('posts', 'post-1', (p) => ({ ...p, content: 'Edited', media: [...p.media, upload] }));
 
-        const reloaded = createDemoDb('WEDDING', snapshot);
+        const reloaded = createDemoDb('WEDDING', snapshot, 'v1');
 
         expect(reloaded.get('posts', 'post-1')?.content).toBe('Edited');
         expect(reloaded.get('media', 'local-1')).toBeUndefined();
@@ -70,7 +70,29 @@ describe('demo store', () => {
 
     it('keeps each event type separate', () => {
         const snapshot = buildFixtureSnapshot();
-        createDemoDb('WEDDING', snapshot).update('posts', 'post-1', (p) => ({ ...p, content: 'Edited' }));
-        expect(createDemoDb('BIRTHDAY', snapshot).get('posts', 'post-1')?.content).toBe('Hello');
+        createDemoDb('WEDDING', snapshot, 'v1').update('posts', 'post-1', (p) => ({ ...p, content: 'Edited' }));
+        expect(createDemoDb('BIRTHDAY', snapshot, 'v1').get('posts', 'post-1')?.content).toBe('Hello');
+    });
+
+    it('starts over when the demo content changed since the visitor saved it', () => {
+        const snapshot = buildFixtureSnapshot();
+        createDemoDb('WEDDING', snapshot, 'v1').update('posts', 'post-1', (p) => ({ ...p, content: 'Edited' }));
+        expect(createDemoDb('WEDDING', snapshot, 'v2').get('posts', 'post-1')?.content).toBe('Hello');
+    });
+
+    it('versions the content, not its presigned URLs or build time', () => {
+        const snapshot = buildFixtureSnapshot();
+        const refreshed = {
+            ...snapshot,
+            snapshotAt: '2030-01-01T00:00:00Z',
+            presignedUrlsValidUntil: '2030-01-01T01:00:00Z',
+            media: snapshot.media.map((m) => ({ ...m, mediaUrl: 'https://storage.test/m?sig=new', thumbnailUrl: 'https://storage.test/t?sig=new' })),
+            members: snapshot.members.map((m) => ({ ...m, avatarUrl: 'https://storage.test/a?sig=new' })),
+        };
+        const edited = { ...snapshot, posts: snapshot.posts.map((p) => ({ ...p, content: 'Changed by the admin' })) };
+
+        expect(demoContentVersion(refreshed)).toBe(demoContentVersion(snapshot));
+        expect(demoContentVersion(edited)).not.toBe(demoContentVersion(snapshot));
+        expect(demoContentVersion({ ...snapshot, event: { ...snapshot.event, id: 'another-event' } })).not.toBe(demoContentVersion(snapshot));
     });
 });

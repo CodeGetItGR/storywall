@@ -40,7 +40,7 @@ export type DemoSchema = {
 export type DemoDb = MockDb<{ [K in keyof DemoSchema]: DemoSchema[K][number] }>;
 
 export function demoStorageKey(eventTypeKey: string): string {
-    return `storywall:demo:v2:${eventTypeKey}`;
+    return `storywall:demo:v3:${eventTypeKey}`;
 }
 
 // `snapshot` must already be rebased (see snapshotRebase.ts).
@@ -87,8 +87,33 @@ export function dropLocalMedia(state: DemoSchema): DemoSchema {
     };
 }
 
-export function createDemoDb(eventTypeKey: string, snapshot: DemoSnapshotDto): DemoDb {
-    return createMockDb<DemoSchema>(demoStorageKey(eventTypeKey), () => seedDemoSchema(snapshot), dropLocalMedia);
+// Presigned URLs and the build time change on every snapshot even when nothing else did.
+const VOLATILE_SNAPSHOT_KEYS = new Set(['snapshotAt', 'presignedUrlsValidUntil', 'mediaUrl', 'thumbnailUrl', 'avatarUrl']);
+
+// cyrb53: a short, stable hash, so the saved version stays small.
+function hashString(value: string): string {
+    let h1 = 0xdeadbeef;
+    let h2 = 0x41c6ce57;
+    for (let i = 0; i < value.length; i++) {
+        const ch = value.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+
+// Changes only when the demo's content does: another event, or an admin's edit. Must be taken
+// from the snapshot as received, before rebasing, which moves every timestamp to "now".
+export function demoContentVersion(snapshot: DemoSnapshotDto): string {
+    return hashString(JSON.stringify(snapshot, (key, value: unknown) => (VOLATILE_SNAPSHOT_KEYS.has(key) ? undefined : value)));
+}
+
+// `contentVersion` is demoContentVersion() of the snapshot as received. A visitor's saved demo
+// is kept only while it matches, so an admin's changes reach returning visitors too.
+export function createDemoDb(eventTypeKey: string, snapshot: DemoSnapshotDto, contentVersion: string): DemoDb {
+    return createMockDb<DemoSchema>(demoStorageKey(eventTypeKey), () => seedDemoSchema(snapshot), { version: contentVersion, hydrate: dropLocalMedia });
 }
 
 function withFreshUrls(media: MediaResponseDto, fresh: Map<string, MediaResponseDto>): MediaResponseDto {

@@ -11,6 +11,7 @@ import type {
     PostResponseDto,
     QrLinkStatsDto,
     RsvpResponseDto,
+    UserResponseDto,
 } from '@/lib/api/types';
 import type { DemoSession } from '@/lib/demo/demoSession';
 import { type MockDb } from '@/lib/demo/mockDb';
@@ -171,6 +172,30 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
         return { ...event, modules: db.list('modules'), sessions: event.sessions === null && sessions.length === 0 ? null : sessions };
     }
 
+    // The visitor's own account. Nothing to accept, so the Guidelines gate stays down.
+    function me(): UserResponseDto {
+        const createdAt = currentEvent()?.createdAt ?? nowIso();
+        return {
+            id: session.viewerUserId,
+            email: null,
+            emailVerified: true,
+            firstName: db.get('members', viewerMemberId)?.displayName ?? null,
+            lastName: null,
+            profilePictureUrl: null,
+            authProvider: 'LOCAL',
+            isGuestAccount: false,
+            status: 'ACTIVE',
+            platformRole: 'USER',
+            eventCreationLocked: false,
+            createdAt,
+            updatedAt: createdAt,
+            deletedAt: null,
+            locale: null,
+            guidelinesAcceptanceRequired: false,
+            currentGuidelinesVersion: null,
+        };
+    }
+
     function billing(): EventBillingResponseDto {
         return {
             eventStatus: currentEvent()?.status ?? 'ACTIVE',
@@ -231,6 +256,9 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
         http.get(`${API_BASE_URL}/api/demo/:eventTypeKey`, () => passthrough()),
 
         // --- Me ---
+        http.get(`${API_BASE_URL}/api/me`, () => HttpResponse.json(me())),
+        // A language change saves nothing in the demo.
+        http.patch(`${API_BASE_URL}/api/me`, () => HttpResponse.json(me())),
         http.get(`${API_BASE_URL}/api/me/events`, () => HttpResponse.json(db.list('members').filter((m) => m.id === viewerMemberId))),
 
         // --- Live feed stream: nothing to stream in a local demo. 404 stops the hook's retries. ---

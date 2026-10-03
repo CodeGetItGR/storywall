@@ -39,7 +39,7 @@ beforeAll(async () => {
     const { rebaseSnapshot } = await import('@/lib/demo/snapshotRebase');
 
     blockedHeader = DEMO_BLOCKED_HEADER;
-    const session = createDemoSession('WEDDING', rebaseSnapshot(buildFixtureSnapshot()), 'Free');
+    const session = createDemoSession('WEDDING', rebaseSnapshot(buildFixtureSnapshot()), 'v1', 'Free');
     server = setupServer(...createDemoHandlers(session, 'http://localhost'));
     // Every request starts here; the ones a handler answered locally are removed again.
     const pending = new Map<string, Recorded>();

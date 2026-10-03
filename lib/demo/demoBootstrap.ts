@@ -1,7 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query';
 
 import { appConfigKeys, fetchAppConfig } from '@/hooks/useAppConfig';
-import { demoStorageKey, swapMediaUrls } from '@/lib/demo/demoDb';
+import { demoContentVersion, demoStorageKey, swapMediaUrls } from '@/lib/demo/demoDb';
 import { registerDemoEventRoute } from '@/lib/demo/demoRouting';
 import { createDemoSession, type DemoSession } from '@/lib/demo/demoSession';
 import { createDemoHandlers } from '@/lib/demo/mockHandlers';
@@ -35,9 +35,10 @@ export async function bootstrapDemo(eventTypeKey: string, eventTypeSlug: string,
     if (result.kind === 'not-found' || result.kind === 'rate-limited') return { kind: result.kind };
     if (result.kind !== 'ok') return { kind: 'failed' };
 
+    const contentVersion = demoContentVersion(result.snapshot);
     const snapshot = rebaseSnapshot(result.snapshot);
     const planTierName = await loadPlanTierName(queryClient, snapshot.usage.planTier);
-    const session = createDemoSession(eventTypeKey, snapshot, planTierName);
+    const session = createDemoSession(eventTypeKey, snapshot, contentVersion, planTierName);
     // A restored session keeps the visitor's changes but needs this snapshot's media URLs.
     swapMediaUrls(session.db, snapshot);
 

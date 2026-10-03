@@ -708,7 +708,9 @@
             "chooseAnother": "Choose another"
         },
         "password": {
-            "title": "Change password",
+            "title": "Password",
+            "open": "Change",
+            "cancel": "Cancel",
             "signOutNotice": "You will be signed out on every device after this change.",
             "current": "Current password",
             "new": "New password",
