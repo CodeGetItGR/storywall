@@ -54,6 +54,11 @@ describe('authorFromMember', () => {
         });
     });
 
+    it('carries the member’s role', () => {
+        const member: EventMemberResponseDto = { ...buildFixtureSnapshot().members[0], relationshipRole: 'BEST_MAN', customRelationshipRole: null };
+        expect(authorFromMember(member)).toMatchObject({ roleKey: 'BEST_MAN', customRole: null });
+    });
+
     it('is null without a member', () => {
         expect(authorFromMember(undefined)).toBeNull();
     });
