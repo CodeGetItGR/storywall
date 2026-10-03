@@ -371,6 +371,26 @@ export interface MemberRoleCatalogPatchDto {
     sortOrder?: number;
 }
 
+// GET /api/events/{eventId}/member-roles (member-roles-fe-integration.md §2.1).
+export interface MemberRoleOptionDto {
+    roleKey: string;
+    label: { en: string; el: string };
+    emoji: string | null;
+    maxHolders: number | null;
+    holders: number;
+    available: boolean;
+}
+
+export interface MemberRoleOptionsDto {
+    allowCustom: boolean;
+    // The caller's own custom text is locked.
+    customLocked: boolean;
+    roles: MemberRoleOptionDto[];
+}
+
+// PUT /api/event-members/{id}/role: exactly one field.
+export type MemberRoleRequestDto = { roleKey: string; customRole?: never } | { customRole: string; roleKey?: never };
+
 export interface AppConfigResponseDto {
     featureFlags: PlatformFeatureFlagResponseDto[];
     media: AppMediaConfigDto;
@@ -2244,6 +2264,10 @@ export interface AuthorDto {
     nickname: string | null;
     role: EventRole;
     avatarUrl: string | null;
+    // member-roles-fe-integration.md §3.1. At most one is set; both null when
+    // the member_roles module is off for the event.
+    roleKey: string | null;
+    customRole: string | null;
 }
 
 export interface PostResponseDto {

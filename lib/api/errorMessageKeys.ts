@@ -157,6 +157,13 @@ export type ApiErrorMessageKey =
     | 'demoActAsRefused'
     | 'demoDesignationInvalid'
     | 'demoPersonaAvatarRefused'
+    | 'memberRoleInvalid'
+    | 'memberRoleUnknown'
+    | 'memberRoleCustomBlocked'
+    | 'memberRoleCustomNotAllowed'
+    | 'memberRoleCustomLocked'
+    | 'memberRoleFeaturedMember'
+    | 'memberRoleCapReached'
     | 'withdrawalNotPrimaryHost'
     | 'oauthEmailUnverified';
 
@@ -315,6 +322,13 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.DEMO_ACT_AS_REFUSED]: 'demoActAsRefused',
     [ERROR_CODES.DEMO_DESIGNATION_INVALID]: 'demoDesignationInvalid',
     [ERROR_CODES.DEMO_PERSONA_AVATAR_REFUSED]: 'demoPersonaAvatarRefused',
+    [ERROR_CODES.MEMBER_ROLE_INVALID_REQUEST]: 'memberRoleInvalid',
+    [ERROR_CODES.MEMBER_ROLE_UNKNOWN]: 'memberRoleUnknown',
+    [ERROR_CODES.MEMBER_ROLE_CUSTOM_BLOCKED]: 'memberRoleCustomBlocked',
+    [ERROR_CODES.MEMBER_ROLE_CUSTOM_NOT_ALLOWED]: 'memberRoleCustomNotAllowed',
+    [ERROR_CODES.MEMBER_ROLE_CUSTOM_LOCKED]: 'memberRoleCustomLocked',
+    [ERROR_CODES.MEMBER_ROLE_FEATURED_MEMBER]: 'memberRoleFeaturedMember',
+    [ERROR_CODES.MEMBER_ROLE_CAP_REACHED]: 'memberRoleCapReached',
 } satisfies Record<KnownApiErrorCode, ApiErrorMessageKey>;
 
 export function getApiErrorMessageKey(code: number | string | undefined): ApiErrorMessageKey | undefined {

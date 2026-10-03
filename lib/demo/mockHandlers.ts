@@ -153,7 +153,7 @@ function localMediaUrl(file: File): string {
 // Content a visitor creates as a member shows that member's picture, like its seeded content.
 export function authorFromMember(member: EventMemberResponseDto | undefined): AuthorDto | null {
     if (!member) return null;
-    return { memberId: member.id, displayName: member.displayName, nickname: member.nickname, role: member.role, avatarUrl: member.avatarUrl };
+    return { memberId: member.id, displayName: member.displayName, nickname: member.nickname, role: member.role, avatarUrl: member.avatarUrl, roleKey: null, customRole: null };
 }
 
 // `appOrigin` is this app's own origin, whose /api route handlers also reach the backend.

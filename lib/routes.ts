@@ -66,7 +66,7 @@ export const routes = {
         },
         storySchedule: (eventId: string) => `${eventBasePath(eventId)}/story/schedule`,
         location: (eventId: string, role?: 'main' | 'secondary' | null) => `${eventBasePath(eventId)}/location${role ? `/${role}` : ''}`,
-        feed: (eventId: string, params: { post?: string | null } = {}) => withQuery(`${eventBasePath(eventId)}/feed`, params),
+        feed: (eventId: string, params: { post?: string | null; sheet?: 'role' | null } = {}) => withQuery(`${eventBasePath(eventId)}/feed`, params),
         settingsAddons: (eventId: string) => `${eventBasePath(eventId)}/settings/addons`,
         // code: the plan (upgrade) or paid service (storage); option: the upgrade's or extension's coverage option id.
         checkoutReview: (eventId: string, intent: CheckoutIntent, { code, option }: { code?: string | null; option?: string | null } = {}) =>
