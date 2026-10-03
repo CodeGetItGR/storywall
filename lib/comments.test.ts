@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { CommentResponseDto } from '@/lib/api/types';
-import { groupCommentsIntoThreads } from '@/lib/comments';
+import { groupCommentsIntoThreads, withRecentComment } from '@/lib/comments';
 
 function comment(id: string, parentCommentId: string | null = null): CommentResponseDto {
     return {
@@ -58,5 +58,16 @@ describe('groupCommentsIntoThreads', () => {
         expect(threads.map((t) => t.comment.id)).toEqual(['c0', 'c1']);
         expect(threads[0].replies.map((r) => r.id)).toEqual(['r0', 'r2']);
         expect(threads[1].replies.map((r) => r.id)).toEqual(['r1']);
+    });
+});
+
+describe('withRecentComment', () => {
+    it('adds the comment as the newest and keeps the latest two', () => {
+        expect(withRecentComment([comment('c1'), comment('c2')], comment('c3')).map((c) => c.id)).toEqual(['c2', 'c3']);
+        expect(withRecentComment([], comment('c1')).map((c) => c.id)).toEqual(['c1']);
+    });
+
+    it('does not list the same comment twice', () => {
+        expect(withRecentComment([comment('c1'), comment('c2')], comment('c2')).map((c) => c.id)).toEqual(['c1', 'c2']);
     });
 });

@@ -64,7 +64,7 @@ export function useRoleForm({
     const moduleOff = roleErrorKind(options.error) === 'moduleOff';
     useEffect(() => {
         if (!moduleOff) return;
-        queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
+        queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId), exact: true });
         onDoneAction();
     }, [eventId, moduleOff, onDoneAction, queryClient]);
 

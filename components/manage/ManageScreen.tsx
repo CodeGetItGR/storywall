@@ -1,7 +1,7 @@
 'use client';
 
 import { ChevronDown, LayoutDashboard } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -19,6 +19,7 @@ import { useEventUsage } from '@/hooks/useUsage';
 import { countPendingCoHostInvitations } from '@/lib/eventInvitations';
 import { isEventDeleted, isEventWritable, isModuleAvailable, isPrimaryHost } from '@/lib/eventLifecycle';
 import { type ManageSection, parseManageSection, resolveManageSection, visibleManageSections } from '@/lib/manageSections';
+import { replacePageUrl } from '@/lib/overlayHistory';
 import { routes } from '@/lib/routes';
 import { attendingGuestPeople } from '@/lib/rsvpGuests';
 import { eventStatusBadgeTone } from '@/lib/statusTones';
@@ -37,7 +38,6 @@ import SettingsTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/
 export function ManageScreen() {
     const { activeEvent, eventId, isHost } = useEventRouteContext();
     const t = useTranslations('ManagePage');
-    const router = useRouter();
     const searchParams = useSearchParams();
     const requestedSection = parseManageSection(searchParams.get('tab'));
     const cancelledCheckout = searchParams.get('cancelled') === 'true';
@@ -85,9 +85,10 @@ export function ManageScreen() {
             else nextParams.set('tab', next);
             const query = nextParams.toString();
             const manageRoot = routes.events.manage(eventId);
-            router.replace(query ? `${manageRoot}?${query}` : manageRoot);
+            // Client-only, so a tab switch doesn't wait on a server render.
+            replacePageUrl(query ? `${manageRoot}?${query}` : manageRoot);
         },
-        [eventId, router, searchParams],
+        [eventId, searchParams],
     );
 
     const openSwitcher = useCallback(() => setSwitcherOpen(true), []);
@@ -101,8 +102,8 @@ export function ManageScreen() {
     }, [activeEvent]);
 
     useEffect(() => {
-        if (!isDeleted && requestedSection !== section) router.replace(routes.events.manage(eventId));
-    }, [eventId, isDeleted, requestedSection, router, section]);
+        if (!isDeleted && requestedSection !== section) replacePageUrl(routes.events.manage(eventId));
+    }, [eventId, isDeleted, requestedSection, section]);
 
     // The overview's seats: people coming, counted like the RSVP report (guests
     // only, attending only), so the two never disagree.

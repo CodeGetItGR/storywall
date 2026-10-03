@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '@/hooks/useAuth';
 import { eventKeys } from '@/hooks/useEvent';
@@ -35,16 +35,23 @@ export function useEventSessions(eventId: string | null) {
     });
 }
 
+// The event embeds its sessions, and the RSVP reports count attendance per
+// session, so both refresh with the list. Only the event itself (exact): its
+// other queries — posts, media, members — don't change with the schedule.
+function refreshAfterSessionChange(queryClient: QueryClient, eventId: string) {
+    queryClient.invalidateQueries({ queryKey: eventSessionKeys.list(eventId) });
+    queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId), exact: true });
+    // rsvpKeys.report's prefix, spelled out because useRsvps imports this file.
+    queryClient.invalidateQueries({ queryKey: ['events', eventId, 'rsvps', 'report'] });
+}
+
 // POST /api/event-sessions — HOST of dto.eventId.
 export function useCreateEventSession() {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: (input: EventSessionRequestDto) => api.post<EventSessionResponseDto>(endpoints.eventSessions.create, input),
-        onSuccess: (session) => {
-            queryClient.invalidateQueries({ queryKey: eventSessionKeys.list(session.eventId) });
-            queryClient.invalidateQueries({ queryKey: eventKeys.detail(session.eventId) });
-        },
+        onSuccess: (session) => refreshAfterSessionChange(queryClient, session.eventId),
     });
 }
 
@@ -53,10 +60,7 @@ export function useUpdateEventSession(id: string, eventId: string) {
 
     return useMutation({
         mutationFn: (input: EventSessionPatchDto) => api.patch<EventSessionResponseDto>(endpoints.eventSessions.byId(id), input),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: eventSessionKeys.list(eventId) });
-            queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
-        },
+        onSuccess: () => refreshAfterSessionChange(queryClient, eventId),
     });
 }
 
@@ -65,9 +69,6 @@ export function useDeleteEventSession(eventId: string) {
 
     return useMutation({
         mutationFn: (id: string) => api.del<void>(endpoints.eventSessions.byId(id)),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: eventSessionKeys.list(eventId) });
-            queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
-        },
+        onSuccess: () => refreshAfterSessionChange(queryClient, eventId),
     });
 }

@@ -13,6 +13,7 @@ import type {
     RsvpResponseDto,
     UserResponseDto,
 } from '@/lib/api/types';
+import { RECENT_COMMENTS_SIZE } from '@/lib/comments';
 import type { DemoSession } from '@/lib/demo/demoSession';
 import { type MockDb } from '@/lib/demo/mockDb';
 import { buildDemoRsvpReport } from '@/lib/demo/rsvpReport';
@@ -178,6 +179,18 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
         const sessions = db.list('sessions');
         // Keep the event's own null when it has no sessions and none were added.
         return { ...event, modules: db.list('modules'), sessions: event.sessions === null && sessions.length === 0 ? null : sessions };
+    }
+
+    // The API keeps a post's commentCount and recentComments in step with its
+    // comments. So does the local store, or the next feed read would undo the
+    // visitor's own comment.
+    function syncPostComments(postId: string, countChange: 1 | -1) {
+        const recentComments = db
+            .list('comments')
+            .filter((comment) => comment.postId === postId)
+            .sort((left, right) => left.createdAt.localeCompare(right.createdAt))
+            .slice(-RECENT_COMMENTS_SIZE);
+        db.update('posts', postId, (post) => ({ ...post, commentCount: Math.max(0, post.commentCount + countChange), recentComments }));
     }
 
     // The visitor's own account. Nothing to accept, so the Guidelines gate stays down.
@@ -455,9 +468,10 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
                 ),
             );
         }),
-        buildCreateHandler(db, 'comments', '/api/comments', (body) => {
+        http.post(`${API_BASE_URL}/api/comments`, async ({ request }) => {
+            const body = (await request.json()) as Record<string, unknown>;
             const authorMemberId = typeof body.authorMemberId === 'string' ? body.authorMemberId : null;
-            return {
+            const comment = db.create('comments', {
                 id: newId('demo-comment'),
                 postId: String(body.postId),
                 authorMemberId,
@@ -467,9 +481,17 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
                 createdAt: nowIso(),
                 updatedAt: nowIso(),
                 deletedAt: null,
-            };
+            });
+            syncPostComments(comment.postId, 1);
+            return HttpResponse.json(comment, { status: 201 });
         }),
-        ...buildDetailHandlers(db, 'comments', '/api/comments/:id', { del: true }),
+        ...buildDetailHandlers(db, 'comments', '/api/comments/:id'),
+        http.delete(`${API_BASE_URL}/api/comments/:id`, ({ params }) => {
+            const comment = db.get('comments', params.id as string);
+            db.remove('comments', params.id as string);
+            if (comment) syncPostComments(comment.postId, -1);
+            return new HttpResponse(null, { status: 204 });
+        }),
         http.get(`${API_BASE_URL}/api/posts/:postId/reactions`, ({ params }) =>
             HttpResponse.json(db.list('reactions').filter((r) => r.postId === params.postId)),
         ),

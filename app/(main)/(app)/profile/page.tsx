@@ -1,12 +1,11 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
-import { headers } from 'next/headers';
 
 import { ProfileContent } from '@/components/profile/ProfileContent';
 import { appConfigKeys } from '@/hooks/useAppConfig';
 import { endpoints } from '@/lib/api/endpoints';
 import { serverGet, serverGetOrNull, serverPublicConfigGet } from '@/lib/api/serverFetch';
 import type { AppConfigResponseDto, BusinessProfileResponseDto, NewsletterStatusResponseDto } from '@/lib/api/types';
-import { ACCESS_TOKEN_HEADER } from '@/lib/auth/authCookies';
+import { prefetchAccessToken } from '@/lib/auth/serverEventContext';
 import { businessProfileKeys } from '@/lib/businessProfile';
 import { newsletterKeys } from '@/lib/newsletter';
 import { makeQueryClient } from '@/lib/queryClient';
@@ -15,7 +14,7 @@ import { makeQueryClient } from '@/lib/queryClient';
 // render without a loading state. Guests get a 403 here and fall through silently,
 // matching the client, which never asks for them.
 export default async function ProfilePage() {
-    const accessToken = (await headers()).get(ACCESS_TOKEN_HEADER);
+    const accessToken = await prefetchAccessToken();
     const queryClient = makeQueryClient();
 
     if (accessToken) {

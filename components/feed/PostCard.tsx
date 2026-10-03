@@ -17,7 +17,7 @@ import {
 import { AuthorRoleChip } from '@/components/memberRoles/AuthorRoleChip';
 import { ReportTargetModal } from '@/components/reports';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { useAppConfig, useDeletePost, usePostModal, useUpdatePost } from '@/hooks';
+import { openPostModal, useAppConfig, useDeletePost, useUpdatePost } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useContentAccess } from '@/hooks/useContentAccess';
 import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
@@ -35,7 +35,6 @@ interface PostCardProps {
 
 export function PostCard({ post, showCommentLink = true, isLcpCandidate = false }: PostCardProps) {
     const t = useTranslations('PostCard');
-    const { open: openPostModal } = usePostModal();
     const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(null);
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
     const [deleteError, setDeleteError] = useState<string | null>(null);

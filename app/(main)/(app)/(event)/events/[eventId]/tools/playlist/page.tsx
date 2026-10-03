@@ -1,5 +1,4 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
-import { headers } from 'next/headers';
 
 import { eventModuleKeys } from '@/hooks/useEventModules';
 import { playlistKeys } from '@/hooks/usePlaylist';
@@ -7,8 +6,7 @@ import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
 import { serverGet } from '@/lib/api/serverFetch';
 import type { EventModuleResponseDto, PlaylistSuggestionResponseDto } from '@/lib/api/types';
-import { ACCESS_TOKEN_HEADER } from '@/lib/auth/authCookies';
-import { resolveServerEventDetail } from '@/lib/auth/serverEventContext';
+import { prefetchAccessToken, resolveServerEventDetail } from '@/lib/auth/serverEventContext';
 import { readableModuleKeys } from '@/lib/eventLifecycle';
 import { makeQueryClient } from '@/lib/queryClient';
 
@@ -21,7 +19,7 @@ type PageProps = { params: Promise<{ eventId: string }> };
 // list — both prefetched here so neither shows a loading state.
 export default async function Page({ params }: PageProps) {
     const { eventId } = await params;
-    const accessToken = (await headers()).get(ACCESS_TOKEN_HEADER);
+    const accessToken = await prefetchAccessToken();
     const queryClient = makeQueryClient();
 
     if (accessToken) {

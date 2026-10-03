@@ -2,7 +2,9 @@ import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/rea
 
 import { usePresignedUrlRefreshMs } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
+import { billingKeys, extensionOptionsKeys, quoteKeys, upgradeOptionsKeys } from '@/hooks/useBilling';
 import { myEventsKeys } from '@/hooks/useMyEvents';
+import { usageKeys } from '@/hooks/useUsage';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { EventDetailResponseDto, EventPatchDto, EventRequestDto, EventResponseDto } from '@/lib/api/types';
@@ -70,9 +72,19 @@ export function useUpdateEvent(eventId: string | null) {
     return useMutation({
         mutationFn: (input: EventPatchDto) => api.patch<EventResponseDto>(endpoints.events.byId(eventId!), input),
         onSuccess: (event) => {
-            queryClient.invalidateQueries({ queryKey: eventKeys.detail(event.id) });
+            // Only what the editable fields feed. The event itself is exact, so
+            // its posts, media and members don't refetch. Dates and the draft's
+            // duration move the billing, quote and coverage options; the RSVP
+            // reports print the title and date.
+            queryClient.invalidateQueries({ queryKey: eventKeys.detail(event.id), exact: true });
             queryClient.invalidateQueries({ queryKey: myEventsKeys.all });
-            queryClient.invalidateQueries({ queryKey: ['events', event.id, 'billing'] });
+            queryClient.invalidateQueries({ queryKey: billingKeys.event(event.id) });
+            queryClient.invalidateQueries({ queryKey: quoteKeys.all(event.id) });
+            queryClient.invalidateQueries({ queryKey: usageKeys.event(event.id) });
+            queryClient.invalidateQueries({ queryKey: upgradeOptionsKeys.event(event.id) });
+            queryClient.invalidateQueries({ queryKey: extensionOptionsKeys.event(event.id) });
+            // rsvpKeys.report's prefix, spelled out because useRsvps imports this file.
+            queryClient.invalidateQueries({ queryKey: ['events', event.id, 'rsvps', 'report'] });
         },
     });
 }

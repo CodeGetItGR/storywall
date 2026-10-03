@@ -40,7 +40,7 @@ function refreshAfterRoleError(queryClient: QueryClient, eventId: string, error:
         queryClient.invalidateQueries({ queryKey: myEventsKeys.all });
         queryClient.invalidateQueries({ queryKey: eventMemberKeys.list(eventId) });
     }
-    if (kind === 'moduleOff') queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
+    if (kind === 'moduleOff') queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId), exact: true });
 }
 
 // PUT /api/event-members/{id}/role — the member themselves, or a host.

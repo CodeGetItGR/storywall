@@ -121,6 +121,23 @@ describe('demo network guard', () => {
         expect(left).toEqual([]);
     });
 
+    it("keeps a post's comment count and preview in step with its comments", async () => {
+        type PostRead = { commentCount: number; recentComments: { id: string }[] };
+        const readPost = async () => (await (await send('GET', '/api/posts/post-1')).json()) as PostRead;
+
+        const created = await send('POST', '/api/comments', { postId: 'post-1', authorMemberId: 'mem-host', content: 'Second' });
+        const comment = (await created.json()) as { id: string };
+        const afterCreate = await readPost();
+        expect(afterCreate.commentCount).toBe(2);
+        expect(afterCreate.recentComments.map((item) => item.id)).toEqual(['cmt-1', comment.id]);
+
+        await send('DELETE', `/api/comments/${comment.id}`);
+        const afterDelete = await readPost();
+        expect(afterDelete.commentCount).toBe(1);
+        expect(afterDelete.recentComments.map((item) => item.id)).toEqual(['cmt-1']);
+        expect(left).toEqual([]);
+    });
+
     it('blocks every other backend request instead of letting it through', async () => {
         const attempts: [string, string, string?][] = [
             ['GET', '/api/admin/demo-events'],

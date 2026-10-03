@@ -208,7 +208,8 @@ export function replacePageUrl(url: string) {
     window.history.replaceState(withoutNextRouterMarkers(currentState), '', url);
 }
 
-// A same-page navigation (a hash route) that should be its own Back step.
+// A same-page navigation (a hash route, or a search param like ?post=) that
+// should be its own Back step, made without a server render.
 // A closed overlay leaves its entry behind; while we are still on it at the
 // URL it opened from, it only duplicates the entry below, so it is reused
 // instead of stacking one more dead Back press on top.

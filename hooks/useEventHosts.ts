@@ -1,7 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '@/hooks/useAuth';
 import { eventKeys } from '@/hooks/useEvent';
+import { eventMemberKeys } from '@/hooks/useEventMembers';
 import { myEventsKeys } from '@/hooks/useMyEvents';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -25,6 +26,16 @@ export function useEventHosts(eventId: string | null) {
         },
         enabled: Boolean(eventId) && isAuthenticated,
     });
+}
+
+// The event embeds its hosts, and the member list and your events show who
+// hosts. Only the event itself (exact): its other queries — posts, media,
+// RSVPs — don't change with its hosts.
+function refreshAfterHostChange(queryClient: QueryClient, eventId: string) {
+    queryClient.invalidateQueries({ queryKey: eventHostKeys.list(eventId) });
+    queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId), exact: true });
+    queryClient.invalidateQueries({ queryKey: eventMemberKeys.list(eventId) });
+    queryClient.invalidateQueries({ queryKey: myEventsKeys.all });
 }
 
 // POST /api/event-hosts — HOST of dto.eventId.
@@ -58,11 +69,7 @@ export function useDeleteEventHost(eventId: string) {
 
     return useMutation({
         mutationFn: (id: string) => api.del<void>(endpoints.eventHosts.byId(id)),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: eventHostKeys.list(eventId) });
-            queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
-            queryClient.invalidateQueries({ queryKey: myEventsKeys.all });
-        },
+        onSuccess: () => refreshAfterHostChange(queryClient, eventId),
     });
 }
 
@@ -72,10 +79,6 @@ export function useTransferPrimaryEventHost(eventId: string) {
 
     return useMutation({
         mutationFn: (id: string) => api.post<EventHostResponseDto>(endpoints.events.transferPrimaryHost(eventId, id)),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: eventHostKeys.list(eventId) });
-            queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
-            queryClient.invalidateQueries({ queryKey: myEventsKeys.all });
-        },
+        onSuccess: () => refreshAfterHostChange(queryClient, eventId),
     });
 }

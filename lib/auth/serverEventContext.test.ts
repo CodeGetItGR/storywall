@@ -2,27 +2,85 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
     accessToken: null as string | null,
+    // The browser's Sec-Fetch-Dest; null for a browser that doesn't send it.
+    fetchDest: null as string | null,
     serverGet: vi.fn(),
 }));
 
 vi.mock('next/headers', async () => {
     const { ACCESS_TOKEN_HEADER: header } = await import('@/lib/auth/authCookies');
     return {
-        headers: async () => new Headers(mocks.accessToken ? { [header]: mocks.accessToken } : {}),
+        headers: async () => {
+            const headerList = new Headers(mocks.accessToken ? { [header]: mocks.accessToken } : {});
+            if (mocks.fetchDest) headerList.set('sec-fetch-dest', mocks.fetchDest);
+            return headerList;
+        },
         cookies: async () => ({ get: () => undefined }),
     };
 });
 
 vi.mock('@/lib/api/serverFetch', () => ({ serverGet: mocks.serverGet }));
 
-import { resolveServerEventDetail } from './serverEventContext';
+import { prefetchAccessToken, resolveServerEventContext, resolveServerEventDetail, resolveServerRedirectContext } from './serverEventContext';
 
-describe('resolveServerEventDetail', () => {
-    beforeEach(() => {
-        mocks.accessToken = 'token-1';
-        mocks.serverGet.mockReset();
+const memberships = [{ eventId: 'event-1', role: 'HOST' }];
+
+beforeEach(() => {
+    mocks.accessToken = 'token-1';
+    mocks.fetchDest = 'document';
+    mocks.serverGet.mockReset();
+});
+
+describe('prefetchAccessToken', () => {
+    it('returns the token on a full page load', async () => {
+        await expect(prefetchAccessToken()).resolves.toBe('token-1');
     });
 
+    it('returns the token when the browser sends no Sec-Fetch-Dest', async () => {
+        mocks.fetchDest = null;
+
+        await expect(prefetchAccessToken()).resolves.toBe('token-1');
+    });
+
+    it("returns null for the router's own fetches", async () => {
+        mocks.fetchDest = 'empty';
+
+        await expect(prefetchAccessToken()).resolves.toBeNull();
+    });
+});
+
+describe('resolveServerEventContext', () => {
+    it('resolves the event on a full page load', async () => {
+        mocks.serverGet.mockResolvedValue(memberships);
+
+        await expect(resolveServerEventContext('event-1')).resolves.toMatchObject({ activeEventId: 'event-1', isHost: true });
+    });
+
+    it('skips Spring on an in-app navigation', async () => {
+        mocks.fetchDest = 'empty';
+
+        await expect(resolveServerEventContext('event-1')).resolves.toBeNull();
+        expect(mocks.serverGet).not.toHaveBeenCalled();
+    });
+});
+
+describe('resolveServerRedirectContext', () => {
+    it('still resolves on an in-app navigation', async () => {
+        mocks.fetchDest = 'empty';
+        mocks.serverGet.mockResolvedValue(memberships);
+
+        await expect(resolveServerRedirectContext()).resolves.toMatchObject({ activeEventId: 'event-1' });
+    });
+
+    it('returns null without a session', async () => {
+        mocks.accessToken = null;
+
+        await expect(resolveServerRedirectContext()).resolves.toBeNull();
+        expect(mocks.serverGet).not.toHaveBeenCalled();
+    });
+});
+
+describe('resolveServerEventDetail', () => {
     it("returns the event's detail", async () => {
         const event = { id: 'event-1' };
         mocks.serverGet.mockResolvedValue(event);
@@ -33,6 +91,13 @@ describe('resolveServerEventDetail', () => {
 
     it('returns null without a session', async () => {
         mocks.accessToken = null;
+
+        await expect(resolveServerEventDetail('event-1')).resolves.toBeNull();
+        expect(mocks.serverGet).not.toHaveBeenCalled();
+    });
+
+    it('returns null on an in-app navigation', async () => {
+        mocks.fetchDest = 'empty';
 
         await expect(resolveServerEventDetail('event-1')).resolves.toBeNull();
         expect(mocks.serverGet).not.toHaveBeenCalled();

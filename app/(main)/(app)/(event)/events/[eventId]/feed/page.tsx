@@ -1,11 +1,10 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
-import { headers } from 'next/headers';
 
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
 import { serverGet, serverModuleReadable } from '@/lib/api/serverFetch';
 import type { PostResponseDto } from '@/lib/api/types';
-import { ACCESS_TOKEN_HEADER } from '@/lib/auth/authCookies';
+import { prefetchAccessToken } from '@/lib/auth/serverEventContext';
 import { postKeys, POSTS_PAGE_SIZE } from '@/lib/postQueries';
 import { makeQueryClient } from '@/lib/queryClient';
 
@@ -18,7 +17,7 @@ type PageProps = { params: Promise<{ eventId: string }> };
 // already prefetched one level up by the (event) layout.
 export default async function Page({ params }: PageProps) {
     const { eventId } = await params;
-    const accessToken = (await headers()).get(ACCESS_TOKEN_HEADER);
+    const accessToken = await prefetchAccessToken();
     const queryClient = makeQueryClient();
 
     if (accessToken) {
