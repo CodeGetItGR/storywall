@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useId, useRef } from 'react';
 
 import { DemoAddGuestModal } from '@/components/demo/DemoAddGuestModal';
+import { DemoPersonaDetails } from '@/components/demo/DemoPersonaDetails';
 import Avatar from '@/components/ui/avatar';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useDemoActAs } from '@/hooks/useDemoActAs';
@@ -86,6 +87,9 @@ export function DemoActAsBar({ eventId }: { eventId: string }) {
                     ))}
                 </select>
             </div>
+
+            {/* Guest role and RSVP */}
+            {actAs.selectedGuest && <DemoPersonaDetails eventId={eventId} guest={actAs.selectedGuest} />}
 
             {/* Add guest */}
             <button

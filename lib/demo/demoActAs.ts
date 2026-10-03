@@ -2,12 +2,27 @@
 // guests: the backend reads this header on content writes (demo-event-fe-integration.md §8).
 export const DEMO_ACT_AS_HEADER = 'X-Demo-Act-As-Member';
 
-type DemoActAs = { eventId: string; memberId: string };
+export type DemoActAs = { eventId: string; memberId: string };
 
 let current: DemoActAs | null = null;
+const listeners = new Set<() => void>();
 
 export function setDemoActAsMember(value: DemoActAs | null): void {
+    if (current?.eventId === value?.eventId && current?.memberId === value?.memberId) return;
     current = value;
+    listeners.forEach((listener) => listener());
+}
+
+// For useSyncExternalStore: the UI shows who new content is posted as.
+export function subscribeDemoActAs(listener: () => void): () => void {
+    listeners.add(listener);
+    return () => {
+        listeners.delete(listener);
+    };
+}
+
+export function getDemoActAs(): DemoActAs | null {
+    return current;
 }
 
 // Content writes only. Anything else (member management, event settings…) stays the admin's own.

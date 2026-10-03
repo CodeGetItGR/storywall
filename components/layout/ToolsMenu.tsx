@@ -8,6 +8,7 @@ import type { MouseEvent } from 'react';
 import { useCallback } from 'react';
 
 import { useToolsMenuItems } from '@/hooks/useToolsMenuItems';
+import { openMyRoleSheetFromHref } from '@/lib/myRoleSheetRequests';
 import { cn } from '@/lib/utils';
 
 export function ToolsMenu() {
@@ -19,7 +20,7 @@ export function ToolsMenu() {
     const handleItemClick = useCallback(
         (event: MouseEvent<HTMLElement>) => {
             const href = event.currentTarget.dataset.href;
-            if (href) router.push(href);
+            if (href && !openMyRoleSheetFromHref(href)) router.push(href);
         },
         [router],
     );

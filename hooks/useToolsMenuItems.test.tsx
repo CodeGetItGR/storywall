@@ -5,7 +5,9 @@ import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
 
 const mocks = vi.hoisted(() => ({
     activeEvent: null as Record<string, unknown> | null,
+    activeMember: { id: 'm1', isFeatured: false } as Record<string, unknown> | null,
     isHost: true,
+    accessMode: 'standard',
 }));
 
 vi.mock('next-intl', () => ({
@@ -18,7 +20,9 @@ vi.mock('@/hooks/useGiftAccount', () => ({
 
 vi.mock('@/providers/EventProvider', () => ({
     useActiveEvent: () => mocks.activeEvent,
+    useActiveMember: () => mocks.activeMember,
     useIsHost: () => mocks.isHost,
+    useContentAccessMode: () => mocks.accessMode,
     useRouteEventId: () => 'event-1',
 }));
 
@@ -49,6 +53,8 @@ function deletedEvent() {
 describe('useToolsMenuItems', () => {
     beforeEach(() => {
         mocks.isHost = true;
+        mocks.accessMode = 'standard';
+        mocks.activeMember = { id: 'm1', isFeatured: false };
     });
 
     it('lists every available tool for a live event', () => {
@@ -61,6 +67,36 @@ describe('useToolsMenuItems', () => {
         mocks.activeEvent = deletedEvent();
         const { result } = renderHook(() => useToolsMenuItems());
         expect(result.current.map((item) => item.key)).toEqual(['gallery', 'wishbook']);
+    });
+
+    const withRoles = (overrides: Record<string, unknown> = {}) =>
+        event({
+            modules: [{ moduleKey: 'member_roles', isEnabled: true, isAvailable: true, configuration: {} }],
+            ...overrides,
+        });
+
+    it('hides My role for a demo visitor', () => {
+        mocks.activeEvent = withRoles();
+        mocks.accessMode = 'demoVisitor';
+        const { result } = renderHook(() => useToolsMenuItems());
+        expect(result.current.some((tool) => tool.key === 'myRole')).toBe(false);
+    });
+
+    it('adds My role when the member can set a role', () => {
+        mocks.activeEvent = withRoles();
+        const { result } = renderHook(() => useToolsMenuItems());
+        const item = result.current.find((tool) => tool.key === 'myRole');
+        expect(item?.href).toBe('/events/event-1/feed?sheet=role');
+    });
+
+    it('hides My role for featured members and draft events', () => {
+        mocks.activeEvent = withRoles();
+        mocks.activeMember = { id: 'm1', isFeatured: true };
+        expect(renderHook(() => useToolsMenuItems()).result.current.map((tool) => tool.key)).not.toContain('myRole');
+
+        mocks.activeMember = { id: 'm1', isFeatured: false };
+        mocks.activeEvent = withRoles({ status: 'DRAFT' });
+        expect(renderHook(() => useToolsMenuItems()).result.current.map((tool) => tool.key)).not.toContain('myRole');
     });
 });
 

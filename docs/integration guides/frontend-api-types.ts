@@ -95,6 +95,13 @@ interface RegisterRequestDto {
    */
   inviteToken?: string;
   /**
+   * The Community Guidelines version the user ticked (2026-09-30), from
+   * GET /api/legal/community-guidelines. Required: missing or blank is a generic validation 400,
+   * max 10 chars. A version that is not the one in force is 400 3037 and no account is created.
+   * See fe-guides/community-guidelines-fe-integration.md.
+   */
+  acceptedGuidelinesVersion: string;
+  /**
    * Join the mailing list. Added 2026-09-23. The account's own verification email doubles as the
    * newsletter confirmation, so there is no second email and no extra step in this flow.
    * Ignored (never rejected) while the newsletter is off — see AppNewsletterConfigDto.enabled.
@@ -209,6 +216,11 @@ interface UserResponseDto {
   locale: string | null;        // BCP-47; the account's chosen UI/mail language, null = none set
   eventCreationLocked: boolean; // true = this account may not create events; see UserRequestDto
   createdAt: string; updatedAt: string; deletedAt: string | null;
+  /** True until the account accepts `currentGuidelinesVersion`; until then every write is 403/4013.
+   *  Filled on GET /api/me only: null on the admin user endpoints. */
+  guidelinesAcceptanceRequired: boolean | null;
+  /** The Community Guidelines version in force. Null wherever the field above is. */
+  currentGuidelinesVersion: string | null;
 }
 // GET /api/users now returns Page<UserResponseDto>, not UserResponseDto[].
 // Default 50/page, max 100 (?page=&size=), sorted createdAt desc then id desc (newest first).
@@ -287,20 +299,29 @@ interface SessionResponseDto {
 }
 
 /**
- * Notifications are host-facing and produced solely by the backend quota sweep.
- * There is no request DTO — POST /api/notifications was removed entirely.
+ * Notifications are produced by the backend only (the quota sweep, billing, and since 2026-10-01
+ * moderation decisions). There is no request DTO — POST /api/notifications was removed entirely.
  */
-// NOTE: also missing EVENT_REMINDER, EVENT_SUMMARY, EVENT_AUTO_DELETE_WARNING, BILLING_EXPIRING,
-// BILLING_PAST_DUE, BILLING_PURGE_WARNING, WITHDRAWAL_REFUNDED, WITHDRAWAL_HELD,
-// WITHDRAWAL_WITHHELD — see billing-fe-guide.md §10, which already asked for these to be added.
-// Pre-existing gap, not part of the 2026-08-24 change below. (REFUND_APPROVED/REFUND_REJECTED,
-// formerly listed here, are dead as of 2026-09-18 — nothing emits them any more.)
-// Also missing: STORAGE_TRIM_SCHEDULED, STORAGE_TRIM_WARNING (2026-09-23, withdrawal-compliance-phase2-fe-integration.md §7).
+// Reconciled with the Java enum NotificationType on 2026-10-01. The BILLING_* values an older note
+// listed here don't exist in the enum. REFUND_APPROVED/REFUND_REJECTED and WITHDRAWAL_WITHHELD are
+// still in the enum so old rows read, but nothing emits them any more. The set grows: render an
+// unknown type generically (title + body, no CTA) instead of failing.
 type NotificationType =
   | 'STORAGE_LIMIT_WARNING'
   | 'MEMBER_LIMIT_WARNING'
   | 'UPGRADE_OFFER'
-  | 'HOST_TIP';
+  | 'HOST_TIP'
+  | 'EVENT_REMINDER'
+  | 'EVENT_SUMMARY'
+  | 'REFUND_APPROVED'            // legacy since 2026-09-18
+  | 'REFUND_REJECTED'            // legacy since 2026-09-18
+  | 'WITHDRAWAL_REFUNDED'
+  | 'WITHDRAWAL_HELD'
+  | 'WITHDRAWAL_WITHHELD'        // legacy since 2026-09-23
+  | 'STORAGE_TRIM_SCHEDULED'
+  | 'STORAGE_TRIM_WARNING'
+  | 'EVENT_AUTO_DELETE_WARNING'
+  | 'REPORT_OUTCOME';            // 2026-10-01: to a reporter, category SYSTEM, no CTA. See fe-guides/moderation-admin-fe-integration.md §6
 
 /** OFFER is marketing (gated on consent for email); the rest are transactional. */
 type NotificationCategory = 'LIMIT' | 'OFFER' | 'TIP' | 'SYSTEM';
@@ -434,6 +455,7 @@ interface EventResponseDto {
   // Computed, not stored: deletedAt + app.billing.event-retention-days. Null unless the event is
   // pending deletion. See fe-guides/event-deletion-fe-integration.md.
   deletionScheduledFor: string | null;
+  suspended: boolean;               // added 2026-10-02; non-hosts never receive a suspended event
 }
 
 /** The window a DRAFT would be pinned to if paid for right now. See fe-guides/event-coverage-window-fe-integration.md. */
@@ -511,6 +533,21 @@ interface EventDetailResponseDto {
   rsvpSummary: EventRsvpSummaryDto | null;    // aggregate counts only; null when the rsvp module is off
   createdAt: string; updatedAt: string; deletedAt: string | null;
   deletionScheduledFor: string | null; // same contract as on EventResponseDto
+  suspended: boolean;                  // added 2026-10-02
+  suspension: EventSuspensionDto | null; // non-null only when suspended (only hosts ever see that). See fe-guides/storywall-suspension-fe-integration.md
+}
+
+/** Why a StoryWall is suspended. ground, rule and explanation are null if the decision row was deleted. */
+interface EventSuspensionDto {
+  suspendedAt: string;
+  ground: StatementGround | null;
+  rule: GuidelinesRule | null;
+  explanation: string | null;      // the admin's words to the hosts, verbatim
+  reference: string;               // "AB12CD34": the #REF the statement email quoted
+  closedAt: string | null;         // set once an admin closed the StoryWall; it can't come back then
+  deletesOn: string | null;        // set with closedAt: when it is deleted for good
+  contactEmail: string | null;     // where to write to disagree; null = configured nowhere, leave the sentence out
+  primaryHost: boolean;            // the caller is the primary host: offer the billing-and-withdrawal page
 }
 
 // --- Event Hosts ---
@@ -601,15 +638,15 @@ interface EventMemberRequestDto {
                           // POST /api/events/{id}/hosts or /host-invitations.
   displayName: string;    // required, max 150
   nickname?: string;      // max 100
-  relationshipRole?: string;       // max 50
-  customRelationshipRole?: string; // max 100
+  // relationshipRole / customRelationshipRole REMOVED 2026-10-02 (400 3002 if sent): use PUT /api/event-members/{id}/role
   isFeatured?: boolean;   // optional on the wire — defaults to false server-side
   joinedAt: string;       // required
 }
 interface EventMemberResponseDto {
   id: string; eventId: string; userId: string | null; invitationId: string | null;
   role: EventRole; displayName: string; nickname: string | null;
-  relationshipRole: string | null; customRelationshipRole: string | null;
+  relationshipRole: string | null;       // the catalog roleKey (NOT free text since 2026-10-02); null when the member_roles module is off for the event
+  customRelationshipRole: string | null; // free-text role, max 40; null when none or the module is off
   isFeatured: boolean; joinedAt: string;
   avatarUrl: string | null; // short-lived presigned URL: the account's profile picture (profilePictureKey), or, for a demo event's name-only persona, the picture an admin set (2026-09-29); null otherwise. Do not cache.
   rsvpId: string | null; // NEW 2026-08-26 — this member's own RSVP id, null if not submitted yet; see rsvp-status-fe-integration.md
@@ -617,8 +654,7 @@ interface EventMemberResponseDto {
 }
 interface EventMemberPatchDto { // every field optional — isFeatured is HOST-only even on your own membership
   displayName?: string; nickname?: string;
-  relationshipRole?: string; customRelationshipRole?: string;
-  isFeatured?: boolean;
+  isFeatured?: boolean; // true also clears the member's role (honorees hold no role)
 } // no userId — see POST /api/event-members/{id}/claim for the narrow self-link path instead
 
 // --- Event Modules ---
@@ -821,6 +857,19 @@ interface MediaBatchFailureDto {
  * Rate limits: 30/min on the manifest, 10/hour on the archive itself.
  */
 type MediaArchiveVariant = "DISPLAY" | "ORIGINAL";
+
+/**
+ * GET /api/events/{eventId}/media/summary  -> MediaSummaryDto  (host-only, same checks as the manifest)
+ *
+ * The manifest's two counts, from one count query. For anything that shows the gallery's size on
+ * every page (the host side panel): the manifest reads every row of the gallery to plan the parts.
+ * No rate limit. Added 2026-09-30.
+ */
+interface MediaSummaryDto {
+  photoCount: number;  // non-deleted images
+  videoCount: number;  // non-deleted media that are not images
+}
+
 interface MediaArchiveManifestDto {
   variant: MediaArchiveVariant;      // the variant `parts` was planned for
   originalsAvailable: boolean;       // always true: every plan keeps originals
@@ -879,6 +928,8 @@ interface StreamTokenResponseDto {
 interface AuthorDto {
   memberId: string; displayName: string; nickname: string | null;
   role: EventRole;
+  roleKey: string | null;    // NEW 2026-10-02 — member role catalog key; resolve label/emoji from /api/config memberRolesByEventType. Null when none or the member_roles module is off
+  customRole: string | null; // NEW 2026-10-02 — free-text role, plain text. Never set together with roleKey. Null when none or the module is off
   avatarUrl: string | null; // presigned: the account's profile picture (profilePictureKey), or, for a demo event's name-only persona, the picture an admin set (2026-09-29); null otherwise
 }
 interface PostResponseDto {
@@ -944,11 +995,69 @@ interface ReactionTypeResponseDto {
   id: string; eventTypeKey: string; code: string; name: string; emoji: string;
   sortOrder: number; isAssignable: boolean;
 }
+// ---- Member roles (added 2026-10-02) ----
+// See fe-guides/member-roles-fe-integration.md. Every `| null` field is sent as null, never omitted.
+// PUT/DELETE /api/event-members/{id}/role and DELETE .../role-lock return 204 with no body.
+// Errors: 3040 MEMBER_ROLE_INVALID_REQUEST, 3041 MEMBER_ROLE_UNKNOWN, 3042 MEMBER_ROLE_CUSTOM_BLOCKED,
+// 4016 MEMBER_ROLE_CUSTOM_NOT_ALLOWED, 4017 MEMBER_ROLE_CUSTOM_LOCKED, 4018 MEMBER_ROLE_HOST_ONLY, 5113 MEMBER_ROLE_FEATURED_MEMBER,
+// 5114 MEMBER_ROLE_CAP_REACHED, 5115 MEMBER_ROLE_TEXT_CHANGED (moderation only); plus 5012/5014.
+/** PUT /api/event-members/{id}/role — exactly one of the two. Rate limit 300/h per user, shared with DELETE. */
+interface MemberRoleRequestDto {
+  roleKey?: string;    // max 50
+  customRole?: string; // max 200 on the wire, 1-40 after trimming
+}
+/** GET /api/events/{eventId}/member-roles — any member of the event. */
+interface MemberRoleOptionsDto {
+  allowCustom: boolean;
+  customLocked: boolean;   // the caller's own custom text is locked
+  roles: MemberRoleOptionDto[]; // active (not retired) only, ordered by sortOrder; host-only roles only for hosts/co-hosts
+}
+interface MemberRoleOptionDto {
+  roleKey: string;
+  label: Record<'en' | 'el', string>;
+  emoji: string | null;
+  maxHolders: number | null; // null = unlimited
+  holders: number;
+  available: boolean;        // false when capped and full
+}
+/** Admin catalog row, also the element of /api/config memberRolesByEventType. */
+interface MemberRoleCatalogDto {
+  id: string; eventTypeKey: string; roleKey: string;
+  label: Record<'en' | 'el', string>;
+  emoji: string | null; maxHolders: number | null; sortOrder: number;
+  hostOnly: boolean; // added 2026-10-03: only a host or co-host may give it
+  retired: boolean;
+}
+/** POST /api/admin/member-roles (ADMIN). */
+interface MemberRoleCatalogRequestDto {
+  eventTypeKey: string;
+  roleKey: string;                       // ^[A-Z][A-Z0-9_]{1,49}$, immutable
+  label: Record<'en' | 'el', string>;    // exactly these two keys, each 1-40 after trimming
+  emoji?: string | null;                 // max 16
+  maxHolders?: number | null;            // >= 1
+  sortOrder: number;                     // >= 0
+  hostOnly?: boolean;                    // omitted = false
+}
+/** PATCH /api/admin/member-roles/{id} (ADMIN) — null/omitted = unchanged. */
+interface MemberRoleCatalogPatchDto {
+  label?: Record<'en' | 'el', string>;   // replaces the whole map, exactly en + el
+  emoji?: string;                        // "" clears it; max 16
+  maxHolders?: number;                   // >= 1
+  clearMaxHolders?: boolean;             // true = unlimited; wins over maxHolders
+  sortOrder?: number;                    // >= 0
+  hostOnly?: boolean;
+}
+// Also: GET /api/admin/member-roles?eventTypeKey= (incl. retired), POST .../{id}/retire, POST .../{id}/unretire.
+// Roles are never deleted. allowCustom lives in the plan's member_roles module config, not here.
+/** GET/POST/DELETE /api/admin/blocked-terms (ADMIN) — additions to the vendored word lists. */
+interface BlockedTermDto { id: string; term: string; createdAt: string }
+interface BlockedTermRequestDto { term: string } // max 60; no locale field
+
 // Admin CRUD: GET/POST/PATCH/DELETE /api/admin/reaction-types (hasRole('ADMIN') on every route).
 // GET requires ?eventTypeKey=, optional &includeArchived=. See reaction-types-catalog-fe-integration.md.
 
 interface StoryRequestDto {
-  eventId: string; authorMemberId?: string; mediaId: string; // mediaId required, must already exist
+  eventId: string; authorMemberId?: string; mediaId: string; // mediaId required, a live Media of this eventId
   caption?: string; songUrl?: string;
   expiresAt?: string; // optional — defaults to createdAt + 24h server-side. If sent, must be in the
                       // future and at most 24h ahead, else 400/errorCode 3034 STORY_EXPIRY_OUT_OF_RANGE
@@ -964,6 +1073,9 @@ interface StoryResponseDto {
   id: string; eventId: string; authorMemberId: string | null;
   author: AuthorDto | null; // replaced authorAvatarUrl on 2026-09-15 — see CommentResponseDto
   mediaId: string;
+  // As GET /api/medias/{mediaId} returns it, so the viewer needs no second request. null where that
+  // endpoint would refuse it (a file of another event, or its module isn't readable). Added 2026-09-30.
+  media: MediaResponseDto | null;
   caption: string | null; songUrl: string | null; expiresAt: string;
   createdAt: string; deletedAt: string | null;
   viewedByCurrentUser: boolean; // has the caller viewed this story (any of their memberships)
@@ -982,8 +1094,9 @@ interface StoryViewResponseDto {
  * see media.maxBatchStoryItems in GET /api/config; exceeding returns 400/errorCode 3024
  * TOO_MANY_STORY_ITEMS). Any field-validation failure on ANY item (missing mediaId, caption
  * too long, etc.) rejects the WHOLE batch with 400/errorCode 3001 VALIDATION_FAILED — nothing
- * is created. Only a mediaId that fails to resolve to a live Media row is isolated per item
- * into `failed`; everything else is all-or-nothing, unlike the media batch upload endpoint.
+ * is created. Three problems are isolated per item into `failed`: RESOURCE_NOT_FOUND (mediaId
+ * isn't a live Media of the event; another event's file reads as missing), MEDIA_NOT_READY and
+ * INTERNAL_ERROR. Everything else is all-or-nothing, unlike the media batch upload endpoint.
  */
 interface StoryBatchCreateResponseDto {
   created: StoryResponseDto[];
@@ -1039,14 +1152,8 @@ interface PostMediaResponseDto { id: string; postId: string; mediaId: string; di
 // Audit / Moderation / Reports / Feature Flags (admin-facing)
 // ---------------------------------------------------------------------------
 
-interface AuditLogRequestDto {
-  eventId?: string; actorMemberId?: string;
-  action: string;      // required, max 100
-  entityType: string;  // required, max 50
-  entityId?: string;
-  changes: Record<string, unknown>; // required
-  ipAddress?: string;  // max 100
-}
+// AuditLogRequestDto is gone (2026-10-01): POST and DELETE /api/audit-logs were removed (405).
+// The event history below is read-only.
 interface AuditLogResponseDto {
   id: string; eventId: string | null; actorMemberId: string | null; action: string; entityType: string;
   entityId: string | null; changes: Record<string, unknown>; ipAddress: string | null; createdAt: string;
@@ -1054,27 +1161,12 @@ interface AuditLogResponseDto {
 // GET /api/audit-logs now returns Page<AuditLogResponseDto>, not AuditLogResponseDto[].
 // Default 50/page, max 100 (?page=&size=), sorted createdAt desc then id desc (newest first).
 
-interface ModerationActionRequestDto {
-  eventId: string; // required
-  moderatorMemberId?: string;
-  targetType: string; // required, max 50
-  targetId: string;   // required
-  actionType: string; // required, max 30
-  reason?: string;
-}
-interface ModerationActionResponseDto {
-  id: string; eventId: string; moderatorMemberId: string | null; targetType: string; targetId: string;
-  actionType: string; reason: string | null; createdAt: string;
-}
-// GET /api/moderation-actions now returns Page<ModerationActionResponseDto>, not ModerationActionResponseDto[].
-// Default 50/page, max 100 (?page=&size=), sorted createdAt desc then id desc (newest first).
-
 // targetType and reason are now enum-backed server-side (previously unrestricted strings) —
 // an unrecognized value 400s. The valid sets are also published at GET /api/config as
 // reportTargetTypes / reportReasons (see app-config-fe-integration.md) so the FE doesn't
 // have to hardcode them.
-type ReportTargetType = "POST" | "COMMENT" | "MEMBER";
-type ReportReason = "SPAM" | "HARASSMENT" | "INAPPROPRIATE_CONTENT" | "IMPERSONATION" | "OTHER";
+type ReportTargetType = "POST" | "COMMENT" | "MEMBER" | "STORY" | "MEDIA" | "WISHBOOK_ENTRY" | "PLAYLIST_SUGGESTION"; // last four added 2026-09-30
+type ReportReason = "SPAM" | "HARASSMENT" | "INAPPROPRIATE_CONTENT" | "IMPERSONATION" | "ILLEGAL_CONTENT" | "COPYRIGHT" | "OTHER"; // ILLEGAL_CONTENT, COPYRIGHT added 2026-09-30
 
 interface ReportRequestDto {
   reporterMemberId?: string; // sent but IGNORED server-side — bound to the caller automatically
@@ -1093,8 +1185,301 @@ interface ReportResponseDto {
   reason: ReportReason; description: string | null; status: string | null; reviewedByMemberId: string | null;
   reviewedAt: string | null; resolutionNotes: string | null; createdAt: string; updatedAt: string;
 }
+// POST /api/reports: 400 3038 REPORT_OWN_CONTENT when the target is the caller's own content or
+// their own membership. 404 2001 when the target is missing, deleted or in another event. A repeat
+// while the caller's earlier report on the same target is OPEN/UNDER_REVIEW returns that report
+// (200, same shape) and stores nothing. Rate limit reports.create: 30/hour per caller (429 3010).
+// See fe-guides/report-coverage-fe-integration.md.
+export const REPORT_OWN_CONTENT = 3038;
 // GET /api/reports now returns Page<ReportResponseDto>, not ReportResponseDto[].
 // Default 50/page, max 100 (?page=&size=), sorted createdAt desc then id desc (newest first).
+
+// Since 2026-10-01 DELETE /api/reports/{id} is gone (405): reports are closed only by a moderation
+// decision below. A decision writes its note (max 2000) into resolutionNotes, so that field can be
+// longer than /api/config reportResolutionNotesMaxLength (1000). reviewedByMemberId stays null for
+// decisions: the reviewing admin is recorded by account, and that id is not on this DTO.
+
+// ---- Moderation center & admin audit log (added 2026-10-01, admin only) ----
+// See fe-guides/moderation-admin-fe-integration.md. /api/moderation-actions/** was removed (404).
+// Every response field below is always present; a `| null` field is sent as null, never omitted.
+
+export type ModerationCaseStatus = 'OPEN' | 'UNDER_REVIEW' | 'CLOSED';
+export type ModerationOutcome = 'DISMISSED' | 'ACTION_TAKEN';
+
+/** GET /api/admin/moderation/cases?status=OPEN|UNDER_REVIEW|CLOSED -> Page<ModerationCaseSummaryDto>.
+ *  OPEN/UNDER_REVIEW rows: decisionId, outcome, decidedAt are null.
+ *  CLOSED rows (one per decision): topReason, firstReportedAt, lastReportedAt are null. */
+export interface ModerationCaseSummaryDto {
+  targetType: ReportTargetType;
+  targetId: string;
+  eventId: string;
+  eventTitle: string | null;        // null once the event is purged (CLOSED tab only)
+  reportCount: number;              // active reports (OPEN/UNDER_REVIEW); on CLOSED, how many the decision closed
+  topReason: ReportReason | null;   // most frequent among active reports; ties go to the earlier ReportReason value
+  firstReportedAt: string | null;
+  lastReportedAt: string | null;
+  status: ModerationCaseStatus;
+  decisionId: string | null;
+  outcome: ModerationOutcome | null;
+  decidedAt: string | null;
+}
+
+/** One report in a case. status: 'OPEN' | 'UNDER_REVIEW' | 'RESOLVED' | 'DISMISSED'. */
+export interface ModerationReportDto {
+  id: string;
+  reason: ReportReason;
+  description: string | null;
+  status: string;
+  createdAt: string;
+  reporterMemberId: string | null;    // null once the reporter's membership is deleted
+  reporterDisplayName: string | null;
+  noticeReference: string | null;     // set when the report came from a public notice (added 2026-10-01); null for member reports
+}
+
+/** The reported item as it is now. MEMBER: text = the member's custom role text (null when none), media [], author = the member. */
+export interface ModerationContentDto {
+  text: string | null;              // MEDIA: null. PLAYLIST_SUGGESTION: title, artist, comment, links, one per line
+  authorMemberId: string | null;    // null for anonymous QR uploads
+  authorUserId: string | null;      // null for name-only guests and anonymous uploads
+  authorDisplayName: string | null;
+  authorIsHost: boolean;            // host or co-host of the event
+  media: MediaResponseDto[];        // presigned URLs; POST (in display order), STORY, MEDIA; else []
+  createdAt: string;
+}
+
+/** Server-computed: the decision endpoint refuses anything that is false here. */
+export interface AllowedActionsDto {
+  removeContent: boolean;
+  removeMember: boolean;
+  banFromEvent: boolean;            // only valid together with removeMember
+  suspendAccount: boolean;
+  suspendEvent: boolean;            // the case's event exists and isn't suspended; true even when the item is gone
+}
+
+export type StatementGround = 'ILLEGAL_CONTENT' | 'GUIDELINES_BREACH';
+
+/** One per Guidelines section 3–15, in that order; the FE links to /legal/community-guidelines#section-N. */
+export type GuidelinesRule =
+  | 'ILLEGAL_CONTENT' | 'SEXUAL_CONTENT' | 'MINORS' | 'HARASSMENT' | 'HATE_AND_VIOLENCE' | 'IMPERSONATION'
+  | 'PRIVACY' | 'INTELLECTUAL_PROPERTY' | 'SPAM' | 'COMMERCIAL_USE' | 'GIFT_LIST_MISUSE' | 'QR_UPLOAD_MISUSE'
+  | 'MALICIOUS_TECHNICAL_USE';
+
+export interface ModerationDecisionDto {
+  id: string;
+  targetType: ReportTargetType;
+  targetId: string;
+  eventId: string;
+  outcome: ModerationOutcome;
+  contentRemoved: boolean;
+  memberRemoved: boolean;
+  banned: boolean;
+  accountSuspended: boolean;
+  eventSuspended: boolean;          // added 2026-10-02
+  ground: StatementGround | null;   // null on dismissals, on closings with nothing to act on, and on decisions before 2026-10-02
+  rule: GuidelinesRule | null;
+  explanation: string | null;       // sent to the people affected, verbatim
+  reportCount: number;
+  adminUserId: string;
+  note: string | null;
+  createdAt: string;
+}
+
+export interface EventBanDto {
+  id: string;
+  eventId: string;
+  userId: string;
+  decisionId: string | null;
+  createdAt: string;
+  liftedAt: string | null;          // null while the ban is in force
+}
+
+/** GET /api/admin/moderation/cases/{targetType}/{targetId}. Every call is written to the admin audit log. */
+export interface ModerationCaseDetailDto {
+  targetType: ReportTargetType;
+  targetId: string;
+  eventId: string;
+  eventTitle: string | null;
+  status: ModerationCaseStatus;
+  reports: ModerationReportDto[];                    // every report on the item, any status, oldest first
+  content: ModerationContentDto | null;              // null when the item is already gone
+  allowedActions: AllowedActionsDto;                 // all false when content is null
+  decisions: ModerationDecisionDto[];                // newest first
+  priorDecisionsAgainstAuthor: ModerationDecisionDto[]; // ACTION_TAKEN decisions on other items by the same account, up to 20, newest first
+  bans: EventBanDto[];                               // bans placed by this case's decisions, lifted ones included
+  eventSuspension: ModerationEventSuspensionDto | null; // set while the case's event is suspended (by this or any case)
+}
+
+export interface ModerationEventSuspensionDto {
+  decisionId: string;
+  suspendedAt: string;
+  closedAt: string | null;          // set once closed: then neither lift nor close is offered
+  deletesOn: string;                // closed: when it is purged. Not closed: when it would be if closed now (for the confirm)
+}
+
+/** POST /api/admin/moderation/cases/{targetType}/{targetId}/decision -> ModerationDecisionDto. */
+export interface ModerationDecisionRequestDto {
+  outcome: ModerationOutcome;       // required
+  removeContent?: boolean;          // omitted = false
+  expectedContentText?: string;     // max 200; REQUIRED with removeContent on a MEMBER case (3039 if missing): the case content `text` the admin UI displayed; mismatch => 5115
+  removeMember?: boolean;
+  banFromEvent?: boolean;           // requires removeMember
+  suspendAccount?: boolean;
+  suspendEvent?: boolean;           // added 2026-10-02
+  // The statement of reasons: all three with any action, all null otherwise (3039).
+  ground?: StatementGround | null;
+  rule?: GuidelinesRule | null;
+  explanation?: string | null;      // 20–2000 characters after trimming
+  note?: string | null;             // max 2000; seen only by admins
+}
+
+/** DELETE /api/admin/moderation/event-suspensions/{eventId} -> 204. 404 unknown event, 409 5111 not suspended, 409 5112 closed. */
+/** POST /api/admin/moderation/event-suspensions/{eventId}/close, no body -> 204. 404 unknown event, 409 5111 not suspended, 409 5112 already closed. */
+
+export type AdminAuditAction =
+  | 'CONTENT_VIEWED' | 'CASE_REVIEW_STARTED' | 'CASE_DISMISSED' | 'CASE_RESOLVED' | 'CONTENT_REMOVED'
+  | 'MEMBER_REMOVED' | 'MEMBER_BANNED' | 'BAN_LIFTED' | 'ACCOUNT_SUSPENDED' | 'ACCOUNT_CREATED' | 'ACCOUNT_STATUS_CHANGED'
+  | 'ACCOUNT_ROLE_CHANGED' | 'ACCOUNT_EMAIL_CHANGED' | 'ACCOUNT_DELETED'
+  | 'NOTICE_VIEWED' | 'NOTICE_ATTACHED' | 'NOTICE_CLOSED' | 'EVENT_BROWSED'
+  | 'EVENT_SUSPENDED' | 'EVENT_SUSPENSION_LIFTED' | 'EVENT_CLOSED' | 'STATEMENT_OF_REASONS_SENT';
+
+/** GET /api/admin/audit-log?targetId=&adminUserId=&page=&size= -> Page<AdminAuditLogResponseDto>, newest first. */
+export interface AdminAuditLogResponseDto {
+  id: string;
+  adminUserId: string;
+  action: AdminAuditAction;
+  targetType: string;               // a ReportTargetType value, 'MEMBER' or 'USER'
+  targetId: string | null;
+  eventId: string | null;           // null for Accounts-panel actions
+  details: Record<string, unknown>; // {} when there is nothing to add; ids and enum values only
+  ipAddress: string | null;
+  createdAt: string;
+}
+
+export const MODERATION_DECISION_INVALID = 3039; // 400, also a missing/partial/out-of-range statement of reasons (an unknown ground or rule value is MALFORMED_REQUEST_BODY 3002 instead)
+export const EVENT_BANNED = 4014;                // 403, on every path that joins an account to an event
+export const EVENT_SUSPENDED = 4015;             // 403, a host on anything but GET /api/events/{id} of a suspended StoryWall (the primary host may still use the withdrawal endpoints, GET …/billing and GET …/usage; non-members keep 403 4001)
+export const MODERATION_CASE_CLOSED = 5106;      // 409
+export const MODERATION_MEMBER_IS_HOST = 5107;   // 409
+export const MODERATION_TARGET_PROTECTED = 5108; // 409
+export const NOTICE_ALREADY_HANDLED = 5109;      // 409
+export const EVENT_ALREADY_SUSPENDED = 5110;     // 409
+export const EVENT_NOT_SUSPENDED = 5111;         // 409, lift or close on a StoryWall that isn't suspended
+export const EVENT_ALREADY_CLOSED = 5112;        // 409, close or lift on a closed StoryWall
+export const MEMBER_ROLE_INVALID_REQUEST = 3040;   // 400
+export const MEMBER_ROLE_UNKNOWN = 3041;           // 400
+export const MEMBER_ROLE_CUSTOM_BLOCKED = 3042;    // 400
+export const MEMBER_ROLE_CUSTOM_NOT_ALLOWED = 4016; // 403
+export const MEMBER_ROLE_CUSTOM_LOCKED = 4017;      // 403
+export const MEMBER_ROLE_HOST_ONLY = 4018;          // 403, added 2026-10-03
+export const MEMBER_ROLE_FEATURED_MEMBER = 5113;    // 409
+export const MEMBER_ROLE_CAP_REACHED = 5114;        // 409
+export const MEMBER_ROLE_TEXT_CHANGED = 5115;       // 409, moderation decision only
+
+// ---- Public content notices (added 2026-10-01) ----
+// See fe-guides/content-notices-fe-integration.md. Every `| null` field is sent as null, never omitted.
+
+export type NoticeCategory =
+  | 'PERSONAL_DATA_OR_IMAGE' | 'COPYRIGHT' | 'HARASSMENT_OR_HATE'
+  | 'CHILD_SEXUAL_ABUSE' | 'OTHER_ILLEGAL' | 'GUIDELINES_BREACH';
+export type NoticeStatus = 'NEW' | 'ATTACHED' | 'CLOSED';
+export type NoticeCloseReason = 'NOT_FOUND' | 'NO_BREACH' | 'ALREADY_HANDLED' | 'SPAM';
+/** ?status= on the admin list. CLOSED covers ATTACHED and CLOSED notices. */
+export type NoticeListView = 'NEW' | 'CLOSED';
+
+/** POST /api/content-notices (public, no auth). notifierName and notifierEmail are required unless
+ *  category is CHILD_SEXUAL_ABUSE. `website` is the honeypot: always send "" (a hidden field). */
+export interface ContentNoticeRequestDto {
+  category: NoticeCategory;
+  locationText: string;             // 10-2000 after trimming
+  link?: string | null;             // http(s) URL, max 2000
+  explanation: string;              // 10-5000 after trimming
+  notifierName?: string | null;     // max 200
+  notifierEmail?: string | null;    // valid email, max 320
+  goodFaith: true;                  // must be true
+  website?: string;                 // honeypot, max 2000
+  locale?: string;                  // max 10; "el..." -> el, anything else -> en
+}
+
+/** 202 response. Also returned (with a random reference) when the honeypot was filled. */
+export interface ContentNoticeReceiptDto {
+  reference: string;                // 8 upper-case hex characters, e.g. "AB12CD34"
+}
+
+/** GET /api/admin/moderation/notices?status=NEW|CLOSED -> Page<ContentNoticeSummaryDto>.
+ *  NEW is oldest first; CLOSED is newest first. No notifier name or email. */
+export interface ContentNoticeSummaryDto {
+  id: string;
+  reference: string;
+  category: NoticeCategory;
+  locationExcerpt: string;          // first 120 characters of locationText, plus "…" when longer
+  status: NoticeStatus;
+  closeReason: NoticeCloseReason | null;
+  outcome: ModerationOutcome | null; // set once the attached case is decided
+  createdAt: string;
+  handledAt: string | null;
+}
+
+/** GET /api/admin/moderation/notices/{id}, and the response of attach and close.
+ *  The only DTO that carries the notifier's name and email. */
+export interface ContentNoticeDetailDto {
+  id: string;
+  reference: string;
+  category: NoticeCategory;
+  locationText: string;
+  link: string | null;
+  explanation: string;
+  notifierName: string | null;      // null only for CHILD_SEXUAL_ABUSE sent anonymously
+  notifierEmail: string | null;
+  locale: string;                   // "el" | "en"
+  status: NoticeStatus;
+  closeReason: NoticeCloseReason | null;
+  closeNote: string | null;
+  outcome: ModerationOutcome | null;
+  handledByUserId: string | null;
+  handledAt: string | null;
+  createdAt: string;
+  attachment: {
+    reportId: string;
+    eventId: string;
+    targetType: ReportTargetType;
+    targetId: string;
+  } | null;                         // null unless ATTACHED; also null for an ATTACHED notice whose event was purged (the report goes with the event)
+}
+
+/** GET /api/admin/moderation/notices/{id}/events?q=&hostEmail=&date=YYYY-MM-DD -> Page<NoticeEventCandidateDto>.
+ *  Event metadata only. No criteria at all returns an empty page. */
+export interface NoticeEventCandidateDto {
+  eventId: string;
+  title: string;
+  startAt: string;
+  primaryHostName: string | null;
+  status: EventStatus;
+  deleted: boolean;
+}
+
+/** GET /api/admin/moderation/notices/{id}/events/{eventId}/items?type= -> Page<NoticeItemCandidateDto>. */
+export interface NoticeItemCandidateDto {
+  targetType: ReportTargetType;
+  targetId: string;
+  text: string | null;
+  thumbnailUrl: string | null;
+  authorDisplayName: string | null;
+  createdAt: string;
+}
+
+/** POST /api/admin/moderation/notices/{id}/attach. 404 / 2001 when the item is missing, deleted,
+ *  in another event than eventId, or a comment under a deleted post. */
+export interface NoticeAttachRequestDto {
+  eventId: string;
+  targetType: ReportTargetType;
+  targetId: string;
+}
+
+/** POST /api/admin/moderation/notices/{id}/close. */
+export interface NoticeCloseRequestDto {
+  reason: NoticeCloseReason;
+  note?: string | null;             // max 2000
+}
 
 // ---- Beta feedback (added 2026-09-27). See fe-guides/beta-feedback-fe-integration.md ----
 // Both POST routes are gated by config.betaFeedback.enabled: 409 / 5100 BETA_FEEDBACK_DISABLED when off.
@@ -1235,11 +1620,11 @@ interface PlatformFeatureFlagPatchDto {
 /** Canonical event module keys — see EventModuleRequestDto.moduleKey, now server-validated against
  *  this set. `wishlist` and `wishbook` were added 2026-08-16; prefer sourcing this union from
  *  `eventModuleKeys` at runtime rather than maintaining the literal list by hand. */
-// All ten canonical keys as of V82. `eventModuleKeys` on /api/config carries only the ones
+// All eleven canonical keys as of V136 (`member_roles` added; ten as of V82). `eventModuleKeys` on /api/config carries only the ones
 // currently enabled platform-wide, which is a subset: `named_invites` was switched off in V87 and
 // does not appear there today. Gate on what the config returns, not on this union.
 type ModuleKey = 'posts' | 'rsvp' | 'playlist' | 'stories' | 'gallery' | 'wishlist' | 'wishbook'
-  | 'co_hosts' | 'named_invites' | 'schedule';
+  | 'co_hosts' | 'named_invites' | 'schedule' | 'member_roles';
 
 interface AppMediaConfigDto {
   maxFileSizeBytes: number;
@@ -1280,6 +1665,7 @@ interface AppEventTypeDto {
   accentToken: string;          // a design-token name (rose | sky | amber), not a colour value
   isEnabled: boolean;           // always true in this list — disabled rows are not published
   sortOrder: number;
+  hasDemo: boolean;             // GET /api/demo/{eventTypeKey} would answer 200 right now (added 2026-10-02)
 }
 
 interface AppEventTypeTranslationDto {
@@ -1333,7 +1719,7 @@ interface AppContentLimitsDto {
   rsvpNotesMaxLength: number;
   eventDescriptionMaxLength: number;
   eventSessionDescriptionMaxLength: number;
-  moderationReasonMaxLength: number;
+  moderationReasonMaxLength: number;       // deprecated 2026-10-01: no endpoint reads it (the decision note limit is 2000)
   reportDescriptionMaxLength: number;
   reportResolutionNotesMaxLength: number;
   catalogDescriptionMaxLength: number;
@@ -1347,7 +1733,7 @@ interface AppContentLimitsDto {
   memberDisplayNameMaxLength: number;            // 150
   memberNicknameMaxLength: number;               // 100
   memberRelationshipRoleMaxLength: number;       // 50
-  memberCustomRelationshipRoleMaxLength: number; // 100
+  memberCustomRelationshipRoleMaxLength: number; // 40 (was 100 until 2026-10-02) — bounds PUT /api/event-members/{id}/role customRole
   personNameMaxLength: number;                   // 100 — firstName/lastName: register, /me, invitations, co-host invitations
   emailMaxLength: number;                        // 255 — register, invitations, co-host invitations
   passwordMinLength: number;                     // 8 — register, change, reset
@@ -1777,6 +2163,9 @@ interface AppConfigResponseDto {
   /** Active reaction types, keyed by eventTypeKey, each pre-sorted by sortOrder. Build the
    *  reaction picker from `reactionTypesByEventType[post.eventType]`. Added 2026-08-30. */
   reactionTypesByEventType: Record<string, ReactionTypeResponseDto[]>;
+  /** Every member role incl. RETIRED ones (flagged), keyed by eventTypeKey, ordered by sortOrder. Resolve
+   *  AuthorDto.roleKey here; the picker hides `retired`. Added 2026-10-02. See member-roles-fe-integration.md. */
+  memberRolesByEventType: Record<string, MemberRoleCatalogDto[]>;
   /** Every distinct `@RateLimit` bucket currently in effect. Added 2026-08-23. */
   rateLimits: AppRateLimitConfigDto[];
   /** What `ReportRequestDto.targetType` may be set to. Enum names, not free text — see
@@ -2852,6 +3241,27 @@ export interface WithdrawalTermsDto {
 }
 
 // ---------------------------------------------------------------------------
+// Community Guidelines acceptance (2026-09-30) — see fe-guides/community-guidelines-fe-integration.md
+// Error codes: 3037 GUIDELINES_VERSION_MISMATCH (400; register or POST /api/me/guidelines-acceptance
+// with a version that is not the one in force), 4013 GUIDELINES_ACCEPTANCE_REQUIRED (403; any
+// authenticated write before the current version is accepted).
+// ---------------------------------------------------------------------------
+
+/** GET /api/legal/community-guidelines and /{version}, `?locale=en|el`. Public. 404 for a version
+ *  with no text. An unknown or missing locale falls back to `en`; `locale` says which was served. */
+export interface CommunityGuidelinesDto {
+  version: string;  // "2026-09-30"
+  locale: string;   // "en" | "el"
+  markdown: string;
+}
+
+/** POST /api/me/guidelines-acceptance (USER, GUEST, ADMIN) -> 204. Required, max 10 chars. */
+export interface GuidelinesAcceptanceRequestDto { version: string; }
+
+export const GUIDELINES_VERSION_MISMATCH = 3037;
+export const GUIDELINES_ACCEPTANCE_REQUIRED = 4013;
+
+// ---------------------------------------------------------------------------
 // Collaborations, partner codes and house discount codes
 // Full contract: fe-guides/collaborations-fe-integration.md.
 // ---------------------------------------------------------------------------
@@ -3275,4 +3685,166 @@ export interface DemoEventResponseDto {
 
 export interface DemoEventDesignationRequestDto {
   eventId: string;
+}
+
+// ---- Admin orders (added 2026-10-02; docs/fe-guides/admin-orders-fe-integration.md) ----
+
+export type RefundSource = 'WITHDRAWAL' | 'UNAPPLIED' | 'PROVIDER';
+
+/** One row of GET /api/admin/orders, which returns Page<AdminOrderSummaryDto>. Admin only. */
+export interface AdminOrderSummaryDto {
+  id: string;
+  createdAt: string;
+  paidAt: string | null;
+  status: OrderStatus;
+  kind: OrderKind;
+  planCode: string | null;
+  /** The event, whether or not it still exists. */
+  eventId: string;
+  /** The live title, or the one stamped on the order when the event was purged. */
+  eventTitle: string | null;
+  eventPurged: boolean;
+  /** buyerId, buyerName and buyerEmail are null when the account was deleted (a business keeps its name). */
+  buyerId: string | null;
+  /** A business's legal name, else the account holder's name. */
+  buyerName: string | null;
+  buyerEmail: string | null;
+  buyerType: BuyerType;
+  amountMinor: number;
+  currency: string;
+  provider: 'STRIPE' | 'MANUAL';
+  /** Settled by an admin with no money taken; amountMinor is what it would have cost. */
+  comp: boolean;
+  disputeOpen: boolean;
+  refundedAt: string | null;
+  /** null when not refunded, or refunded before 2026-10-02. 0 means reversed with nothing sent back. */
+  refundedAmountMinor: number | null;
+  refundSource: RefundSource | null;
+}
+
+/** A line the order was charged as at checkout (`CheckoutLine` on the server). */
+export interface CheckoutLine {
+  name: string;
+  description: string | null;
+  amountMinor: number;
+}
+
+/** One rate Stripe Tax applied to an order. Only amountMinor is always set. */
+export interface AdminOrderTaxLine {
+  amountMinor: number;
+  taxableAmountMinor: number | null;
+  /** The nominal rate, e.g. 24.0 for 24%. A JSON number. */
+  ratePercent: number | null;
+  /** ISO 3166-1 alpha-2, upper case. */
+  country: string | null;
+  jurisdiction: string | null;
+  /** Stripe's tax type: vat, sales_tax, ... */
+  taxType: string | null;
+  /** Stripe's code as given: standard_rated, reverse_charge, not_collecting, ... Not a closed set. */
+  taxabilityReason: string | null;
+  inclusive: boolean | null;
+}
+
+/** GET /api/admin/orders/{orderId}. Admin only, read-only. */
+export interface AdminOrderDetailDto {
+  summary: AdminOrderSummaryDto;
+  buyer: {
+    userId: string | null;
+    name: string | null;
+    email: string | null;
+    buyerType: BuyerType;
+    /** Frozen at checkout: legalName, countryCode, vatNumber, addressLine1, addressLine2, city,
+     *  postalCode, viesStatus, viesRequestIdentifier, viesCheckedAt. null for a consumer. */
+    businessSnapshot: Record<string, string> | null;
+    providerCustomerId: string | null;
+  };
+  pricing: {
+    amountMinor: number;
+    currency: string;
+    addonAmountMinor: number | null;
+    setupAmountMinor: number | null;
+    eventDayAmountMinor: number | null;
+    hostingAmountMinor: number | null;
+    /** null when the provider computed no tax (Stripe automatic tax off). */
+    taxAmountMinor: number | null;
+    /** Stripe Tax's per-rate breakdown of taxAmountMinor, in order. Empty when no tax was added, or while
+     *  the breakdown hasn't been fetched yet (it is fetched just after payment). */
+    taxLines: AdminOrderTaxLine[];
+    discountLabel: string | null;
+    checkoutDescription: string | null;
+    checkoutFooterMessage: string | null;
+    /** priceBreakdown and checkoutLines are null on orders older than the breakdown (migration V106). */
+    priceBreakdown: PriceBreakdown | null;
+    checkoutLines: CheckoutLine[] | null;
+  };
+  coverage: {
+    planCode: string | null;
+    /** The storage pack bought, e.g. STORAGE_5GB; null for other kinds. */
+    paidServiceCode: string | null;
+    coverageOptionId: string | null;
+    upgradeFromOptionId: string | null;
+    coverageMonths: number | null;
+    coverageMonthsAdded: number | null;
+    coverageStartsAt: string | null;
+    coverageEndsAt: string | null;
+  };
+  payment: {
+    provider: 'STRIPE' | 'MANUAL';
+    providerSessionId: string | null;
+    providerPaymentId: string | null;
+    billingCountry: string | null;
+    cardCountry: string | null;
+    cardFingerprint: string | null;
+    riskLevel: string | null;
+    disputedAt: string | null;
+    disputeClosedAt: string | null;
+    /** Stripe's receipt number; null until Stripe has emailed the receipt, and for manual orders. */
+    receiptNumber: string | null;
+    /** Stripe's hosted receipt (proof of payment, not an invoice). null for manual orders. */
+    receiptUrl: string | null;
+  };
+  /** null unless the order was refunded. */
+  refund: {
+    refundedAt: string;
+    amountMinor: number | null;
+    source: RefundSource | null;
+    providerRefundId: string | null;
+  } | null;
+  consent: {
+    termsVersion: string | null;
+    immediateStartAt: string | null;
+    acknowledgedAt: string | null;
+  };
+  /** The admin who settled it by hand; null otherwise. */
+  settledBy: { userId: string; name: string | null; email: string } | null;
+  /** Oldest first: filed on this order, priced a line for it, or a whole-event withdrawal on its event. */
+  withdrawals: {
+    id: string;
+    scope: WithdrawalScope;
+    status: RefundRequestStatus;
+    createdAt: string;
+    decidedAt: string | null;
+    reason: string | null;
+    decisionNote: string | null;
+    totalRefundMinor: number | null;
+    /** This order's line of the request; null when the request never priced it. */
+    line: {
+      basis: RefundBasis;
+      refundMinor: number;
+      providerRefunded: boolean;
+      eventPerformed: boolean;
+    } | null;
+  }[];
+  /** Partner commission entries on this order, oldest first. */
+  commissions: {
+    id: string;
+    collaboratorName: string;
+    entryType: EarningEntryType;
+    amountMinor: number;
+    currency: string;
+    commissionPercent: number | null;
+    status: EarningStatus;
+    createdAt: string;
+    paidAt: string | null;
+  }[];
 }

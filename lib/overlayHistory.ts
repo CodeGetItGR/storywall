@@ -201,6 +201,13 @@ export function syncRouterWithAddressBar() {
     window.history.replaceState(withoutNextRouterMarkers(currentState), '', window.location.href);
 }
 
+// Rewrites the current entry's URL on the client only. Next syncs its router
+// to it (usePathname/useSearchParams update) without a server render.
+export function replacePageUrl(url: string) {
+    const currentState = window.history.state && typeof window.history.state === 'object' ? window.history.state : {};
+    window.history.replaceState(withoutNextRouterMarkers(currentState), '', url);
+}
+
 // A same-page navigation (a hash route) that should be its own Back step.
 // A closed overlay leaves its entry behind; while we are still on it at the
 // URL it opened from, it only duplicates the entry below, so it is reused

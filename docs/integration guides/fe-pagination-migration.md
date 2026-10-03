@@ -66,7 +66,6 @@ All of these now return the new shape instead of a raw array or the old `Page` s
 - `GET /api/events/{eventId}/posts`
 - `GET /api/posts/{postId}/comments`
 - `GET /api/audit-logs`
-- `GET /api/moderation-actions`
 - `GET /api/reports`
 - `GET /api/telemetry-events`
 - `GET /api/telemetry-events` (admin)

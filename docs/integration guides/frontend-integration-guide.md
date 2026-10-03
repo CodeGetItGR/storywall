@@ -99,7 +99,7 @@ implemented and tested but had never been written up here. It's the single endpo
   `content`/`totalElements`/`totalPages`/`number`/`size`), not a bare array — currently
   `GET /api/events/{eventId}/posts`, `GET /api/events/{eventId}/wishbook`,
   `GET /api/events/{eventId}/media`, `GET /api/notifications`, `GET /api/users`,
-  `GET /api/audit-logs`, `GET /api/moderation-actions`, `GET /api/reports`,
+  `GET /api/audit-logs`, `GET /api/reports`,
   `GET /api/telemetry-events`, and `GET /api/posts/{postId}/comments` (the last one sorts
   oldest-first — every other paginated endpoint sorts newest-first). Every other list
   endpoint below returns a plain `T[]`. Don't assume one shape across all list endpoints.
@@ -471,6 +471,7 @@ creates one.
 | `MEMBER_LIMIT_WARNING` | `memberCount`, `memberLimit`, `percent`, `planTier` |
 | `UPGRADE_OFFER` | `storagePercent`, `memberPercent`, `planTier` |
 | `HOST_TIP` | `startAt` |
+| `REPORT_OUTCOME` | `eventTitle` (2026-10-01; see [`moderation-admin-fe-integration.md`](moderation-admin-fe-integration.md) §6) |
 
 `percent` is **uncapped** — a value above 100 means the quota is exceeded. Clamp before feeding a
 progress bar.
@@ -604,7 +605,7 @@ There is deliberately no admin endpoint to send an arbitrary notification or ema
 
 ### Admin — list endpoint pagination (2026-08-25) ⚠️ BREAKING
 
-`GET /api/users`, `GET /api/audit-logs`, `GET /api/moderation-actions`, `GET /api/reports`, and
+`GET /api/users`, `GET /api/audit-logs`, `GET /api/reports`, and
 `GET /api/telemetry-events` (all `ROLE_ADMIN`) used to return their entire table in one response;
 each now returns a `Page<T>` instead, 50/page by default (max 100), newest first. Full details,
 example response, and a migration checklist in

@@ -1,8 +1,10 @@
 import { Flag, Trash2 } from 'lucide-react';
-import { useCallback } from 'react';
+import { type ReactNode, useCallback } from 'react';
 
+import { RoleChip } from '@/components/memberRoles/RoleChip';
 import Avatar from '@/components/ui/avatar';
 import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
+import { useMemberRoleLabel } from '@/hooks/useMemberRoleLabel';
 import type { EventMemberResponseDto } from '@/lib/api/types';
 import { avatarColorFromId, initialsFromName } from '@/lib/utils';
 
@@ -10,8 +12,11 @@ type MemberRowProps = {
     canModerate: boolean;
     canRemove: boolean;
     canReport: boolean;
+    editRoleLabel: string;
+    eventTypeKey: string | null;
     joinedLabel: string;
     member: EventMemberResponseDto;
+    onEditRoleAction?: (member: EventMemberResponseDto) => void;
     onRemoveAction: (member: EventMemberResponseDto) => void;
     onReportAction: (member: EventMemberResponseDto) => void;
     removeLabel: string;
@@ -23,8 +28,11 @@ export function MemberRow({
     canModerate,
     canRemove,
     canReport,
+    editRoleLabel,
+    eventTypeKey,
     joinedLabel,
     member,
+    onEditRoleAction,
     onRemoveAction,
     onReportAction,
     removeLabel,
@@ -32,29 +40,37 @@ export function MemberRow({
     roleLabel,
 }: MemberRowProps) {
     const memberAvatarUrl = useMemberAvatarUrl();
+    const memberRole = useMemberRoleLabel(member, eventTypeKey);
+    const handleEditRole = useCallback(() => onEditRoleAction?.(member), [member, onEditRoleAction]);
     const handleReport = useCallback(() => onReportAction(member), [member, onReportAction]);
     const handleRemove = useCallback(() => onRemoveAction(member), [member, onRemoveAction]);
 
     return (
         <li className="flex items-center gap-3 border-b border-border/70 py-3 last:border-b-0">
-            <Avatar
-                src={memberAvatarUrl(member.id, member.avatarUrl)}
-                initials={initialsFromName(member.displayName)}
-                color={avatarColorFromId(member.id)}
-                alt={member.displayName}
-                size="sm"
-            />
-            <div className="min-w-0 flex-1">
-                <p className="flex items-center gap-1.5 truncate text-sm font-semibold text-ink">
-                    <span className="truncate">{member.displayName}</span>
-                    {roleLabel && (
-                        <span className="shrink-0 rounded-full bg-surface-muted px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-ink-faint uppercase">
-                            {roleLabel}
-                        </span>
-                    )}
-                </p>
-                <p className="mt-0.5 text-xs text-ink-faint">{joinedLabel}</p>
-            </div>
+            {/* Identity */}
+            <MemberIdentity onClick={onEditRoleAction ? handleEditRole : undefined} label={editRoleLabel}>
+                <Avatar
+                    src={memberAvatarUrl(member.id, member.avatarUrl)}
+                    initials={initialsFromName(member.displayName)}
+                    color={avatarColorFromId(member.id)}
+                    alt={member.displayName}
+                    size="sm"
+                />
+                <div className="min-w-0 flex-1">
+                    <p className="flex items-center gap-1.5 truncate text-sm font-semibold text-ink">
+                        <span className="truncate">{member.displayName}</span>
+                        {roleLabel && (
+                            <span className="shrink-0 rounded-full bg-surface-muted px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-ink-faint uppercase">
+                                {roleLabel}
+                            </span>
+                        )}
+                        {memberRole && <RoleChip label={memberRole} />}
+                    </p>
+                    <p className="mt-0.5 text-xs text-ink-faint">{joinedLabel}</p>
+                </div>
+            </MemberIdentity>
+
+            {/* Actions */}
             {canModerate && (
                 <div className="flex shrink-0 items-center gap-1">
                     {canReport && (
@@ -80,5 +96,21 @@ export function MemberRow({
                 </div>
             )}
         </li>
+    );
+}
+
+// The avatar + name block: a button when the host can edit this member's role.
+function MemberIdentity({ onClick, label, children }: { onClick?: () => void; label: string; children: ReactNode }) {
+    if (!onClick) return <div className="flex min-w-0 flex-1 items-center gap-3">{children}</div>;
+
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            aria-label={label}
+            className="flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-xl text-left transition-colors hover:bg-surface-muted/60"
+        >
+            {children}
+        </button>
     );
 }

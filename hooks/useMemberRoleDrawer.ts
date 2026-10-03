@@ -69,6 +69,7 @@ export function useMemberRoleDrawer({
         [],
     );
     const handleLimitValueChange = useCallback((maxHolders: string) => setDraft((current) => ({ ...current, maxHolders })), []);
+    const handleHostOnlyChange = useCallback((hostOnly: boolean) => setDraft((current) => ({ ...current, hostOnly })), []);
 
     const handleSubmit = useCallback(
         async (event: React.SubmitEvent<HTMLFormElement>) => {
@@ -122,6 +123,7 @@ export function useMemberRoleDrawer({
         handleFieldChange,
         handleLimitModeChange,
         handleLimitValueChange,
+        handleHostOnlyChange,
         handleSubmit,
         requestRetire,
         cancelRetire,

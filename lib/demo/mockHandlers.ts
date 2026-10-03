@@ -150,10 +150,18 @@ function localMediaUrl(file: File): string {
     return typeof URL.createObjectURL === 'function' ? URL.createObjectURL(file) : `blob:demo/${file.name}`;
 }
 
-// Content a visitor creates as a member shows that member's picture, like its seeded content.
+// Content a visitor creates as a member shows that member's picture and role, like its seeded content.
 export function authorFromMember(member: EventMemberResponseDto | undefined): AuthorDto | null {
     if (!member) return null;
-    return { memberId: member.id, displayName: member.displayName, nickname: member.nickname, role: member.role, avatarUrl: member.avatarUrl };
+    return {
+        memberId: member.id,
+        displayName: member.displayName,
+        nickname: member.nickname,
+        role: member.role,
+        avatarUrl: member.avatarUrl,
+        roleKey: member.relationshipRole ?? null,
+        customRole: member.customRelationshipRole ?? null,
+    };
 }
 
 // `appOrigin` is this app's own origin, whose /api route handlers also reach the backend.

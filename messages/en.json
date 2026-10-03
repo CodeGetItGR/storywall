@@ -24,7 +24,16 @@
         "uploadPhoto": "Upload photo",
         "addPhotoFor": "Add photo for {name}",
         "changePhotoFor": "Change photo for {name}",
-        "photoFailed": "The guest was added, but the photo didn’t upload. Try again."
+        "photoFailed": "The guest was added, but the photo didn’t upload. Try again.",
+        "roleFor": "Role for {name}",
+        "noRole": "No role",
+        "rsvp": "RSVP",
+        "rsvpFor": "RSVP for {name}",
+        "rsvpAttending": "Attending",
+        "rsvpDeclined": "Declined",
+        "rsvpNone": "No response",
+        "save": "Save",
+        "close": "Close"
     },
     "Demo": {
         "resetDemo": "Reset demo",
@@ -257,6 +266,10 @@
             "gifts": {
                 "label": "Gift account",
                 "description": "View the hosts' bank details for a monetary gift"
+            },
+            "myRole": {
+                "label": "My role",
+                "description": "Pick your role at this event"
             }
         }
     },
@@ -3700,6 +3713,7 @@
                 "order": "Order"
             },
             "limitMax": "Max {count}",
+            "hostOnly": "Host only",
             "unlimited": "Unlimited",
             "status": {
                 "ACTIVE": "Active",
@@ -3727,6 +3741,8 @@
                 "unlimited": "Unlimited",
                 "upTo": "Up to",
                 "limitInvalid": "Enter a whole number of at least 1.",
+                "hostOnly": "Host only",
+                "hostOnlyHint": "Only hosts can give this role. Guests don't see it.",
                 "save": "Save",
                 "cancel": "Cancel",
                 "retire": "Retire",
@@ -4440,6 +4456,14 @@
         "demoEventLocked": "This is a demo event, so it can’t be joined or changed that way.",
         "demoActAsRefused": "Only admins can post as a demo guest.",
         "demoPersonaAvatarRefused": "Photos can only be set here for guests without an account on a demo event.",
+        "memberRoleInvalid": "A role must be 1 to 40 characters.",
+        "memberRoleUnknown": "That role isn't available anymore. Pick another.",
+        "memberRoleCustomBlocked": "That role has a word we don't allow.",
+        "memberRoleCustomNotAllowed": "This event doesn't allow custom roles.",
+        "memberRoleCustomLocked": "Your custom role was removed. You can still pick one from the list.",
+        "memberRoleHostOnly": "Only the hosts can give this role.",
+        "memberRoleFeaturedMember": "Featured guests can't have a role.",
+        "memberRoleCapReached": "All places for this role are taken.",
         "qrSharedLinkHostManaged": "This shared link is managed automatically.",
         "eventSessionMainLocationReadOnly": "This is the event's main session, so its location always matches the event's own.",
         "eventSessionLimitReached": "This event's plan doesn't allow more schedule sessions.",
@@ -5149,5 +5173,33 @@
         "add": "Add or drop a photo",
         "change": "Click or drop to change",
         "remove": "Remove photo"
+    },
+    "MemberRoles": {
+        "myRole": "My role",
+        "editMyRole": "Change my role",
+        "close": "Close",
+        "loading": "Loading roles…",
+        "loadFailed": "Couldn't load roles. Try again.",
+        "full": "Full",
+        "other": "Other",
+        "otherPlaceholder": "Type your role",
+        "lockedNote": "Your custom role was removed. You can still pick one from the list.",
+        "hostOnly": "Host only",
+        "setByHosts": "Set by the hosts.",
+        "save": "Save",
+        "clear": "Clear role",
+        "errors": {
+            "length": "A role must be 1 to {max} characters.",
+            "full": "All {count} places for this role are taken."
+        },
+        "host": {
+            "edit": "Edit role for {name}",
+            "unlock": "Unlock custom role",
+            "unlocked": "Custom role unlocked.",
+            "clearTitle": "Clear {name}'s role?",
+            "clearBody": "They can't type a custom role again until you unlock it.",
+            "clearConfirm": "Clear role",
+            "cancel": "Cancel"
+        }
     }
 }

@@ -1,10 +1,11 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
-import { type ReactNode } from 'react';
+import { type ReactNode, Suspense } from 'react';
 
 import { DeletedEventRouteGuard } from '@/components/event/DeletedEventRouteGuard';
 import { DraftEventRouteGuard } from '@/components/event/DraftEventRouteGuard';
 import { EventLifecycleBanner } from '@/components/event/EventLifecycleBanner';
 import { SuspendedEventRouteGuard } from '@/components/event/SuspendedEventRouteGuard';
+import { MyRoleSheetHost } from '@/components/memberRoles/MyRoleSheetHost';
 import { eventKeys } from '@/hooks/useEvent';
 import { myEventsKeys } from '@/hooks/useMyEvents';
 import { endpoints } from '@/lib/api/endpoints';
@@ -43,6 +44,10 @@ export default async function EventLayout({ children }: { children: ReactNode })
                     <DraftEventRouteGuard>
                         <DeletedEventRouteGuard>
                             <div className="lg:max-w-none">{children}</div>
+                            {/* Role sheet */}
+                            <Suspense fallback={null}>
+                                <MyRoleSheetHost />
+                            </Suspense>
                         </DeletedEventRouteGuard>
                     </DraftEventRouteGuard>
                 </SuspendedEventRouteGuard>

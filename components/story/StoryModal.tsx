@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { AuthorRoleChip } from '@/components/memberRoles/AuthorRoleChip';
 import { ReportTargetModal } from '@/components/reports';
 import { StoryCaptionBar, StoryHeader, StoryProgressBar } from '@/components/story';
 import { StoryVideo } from '@/components/story/StoryVideo';
@@ -90,6 +91,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                             authorName={authorName}
                             authorId={activeStory.authorMemberId ?? activeStory.id}
                             avatarUrl={author?.avatarUrl}
+                            roleChip={<AuthorRoleChip author={author} tone="onDark" interactive={false} />}
                             timeStr={timeStr}
                             canManage={canManage}
                             canDelete={canDeleteStory}

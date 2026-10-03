@@ -26,16 +26,20 @@ authentication, so don't reuse this snapshot call's un-authenticated client for 
   - So does pointing the type at a different event.
   - Polling faster than once a minute gains nothing.
 
+**To know which types have a demo without probing this endpoint,** read `hasDemo` on each
+`GET /api/config` → `eventTypes[]` entry (added 2026-10-02). It is `true` exactly when this endpoint
+would answer 200, and a takedown flips it to `false` at once, as above.
+
 **The only backend calls a demo session may make are this one and `GET /api/config`.** Every
 write, and every other read, is served by the local mock from the snapshot.
 
 **Fetch this from the visitor's browser, not from the Next.js server.** The endpoint is
 rate-limited to 30 requests/minute per caller IP (`DemoSnapshotController`). A server-side fetch
 from the FE server means every visitor's request leaves from the same IP, so all of them share one
-bucket and start getting 429s well before 30 concurrent visitors. The only exception is a FE
-server that forwards the original client IP via `X-Forwarded-For` *and* is listed in the backend's
-`app.rate-limit.trusted-proxies` (`RateLimitProperties.trustedProxies`) — otherwise the header is
-ignored and every caller behind it is still counted as one.
+bucket and start getting 429s well before 30 concurrent visitors. The only exception is a FE server
+call that forwards the browser's address with `X-Storywall-Client-Ip` and
+`X-Storywall-Client-Ip-Secret`, as its auth calls do (see `session-refresh-fe-integration.md`).
+Without both headers, every caller behind the FE server is counted as one.
 
 ## 2. Who the visitor is
 
@@ -113,6 +117,13 @@ seeded with — by default the admin's real full name — and their user id appe
 `viewerUserId`, `members[].userId` and `qrLinks[].createdByUserId`. Before designating an event as
 a demo, an admin should either rename their member row (`PATCH /api/event-members/{id}` with
 `displayName`) or host the event from a dedicated persona admin account, not their everyday one.
+
+**Designation makes every admin a co-host** (since 2026-10-01). Every `ACTIVE` admin account that
+isn't already a host gets a host row, so any admin can edit the demo. New member rows are named
+`Demo Host`. An admin who was already a member keeps their name and is promoted to `HOST`. An admin
+removed from the event stays removed, and one banned from it by a moderation decision is skipped. The plan's co-host and member caps and the `co_hosts` module
+don't apply. This only happens at designation: invite anyone made admin later by hand. Expect
+several `Demo Host` entries in `members` and `event.hosts`.
 
 ## 7. Errors the admin may see while building a demo
 

@@ -49,7 +49,14 @@ describe('authorFromMember', () => {
             nickname: member.nickname,
             role: member.role,
             avatarUrl: 'https://storage.test/a?sig=1',
+            roleKey: null,
+            customRole: null,
         });
+    });
+
+    it('carries the member’s role', () => {
+        const member: EventMemberResponseDto = { ...buildFixtureSnapshot().members[0], relationshipRole: 'BEST_MAN', customRelationshipRole: null };
+        expect(authorFromMember(member)).toMatchObject({ roleKey: 'BEST_MAN', customRole: null });
     });
 
     it('is null without a member', () => {

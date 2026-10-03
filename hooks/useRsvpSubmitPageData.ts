@@ -1,17 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 
-import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
-import { useAppConfig, useAppRsvpConfig } from '@/hooks/useAppConfig';
 import { useRsvpAvailability } from '@/hooks/useRsvpAvailability';
-import { setMemberRsvpIdInCaches, useCreateRsvp, useRsvp, useUpdateRsvp } from '@/hooks/useRsvps';
-import { type AttendingStatus, computeHasUnansweredSessions, useRsvpSessionQuestions } from '@/hooks/useRsvpSessionQuestions';
-import { ApiError } from '@/lib/api/client';
-import { isModuleNotAvailableError } from '@/lib/api/errors';
-import type { AttendanceStatus, RsvpPlusOnes } from '@/lib/api/types';
-import { isEventWritable } from '@/lib/eventLifecycle';
+import { useRsvpForm } from '@/hooks/useRsvpForm';
+import { setMemberRsvpIdInCaches } from '@/hooks/useRsvps';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useActiveMember, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 
@@ -23,8 +16,6 @@ export function computeShowConfirmation(submitted: boolean, hasExistingRsvp: boo
 }
 
 export function useRsvpSubmitPageData() {
-    const t = useTranslations('RSVPPage');
-    const toErrorMessage = useApiErrorMessage();
     const router = useRouter();
     const searchParams = useSearchParams();
     const queryClient = useQueryClient();
@@ -36,52 +27,19 @@ export function useRsvpSubmitPageData() {
     const rsvpId = activeMember?.rsvpId ?? null;
     const isHost = useIsHost();
     const isContextLoading = useEventContextLoading();
-    const { data: appConfig } = useAppConfig();
-    const rsvpConfig = useAppRsvpConfig();
-    const minAdultPlusOnes = Math.max(0, (rsvpConfig?.minAdults ?? 1) - 1);
-    const maxAdultPlusOnes = Math.max(minAdultPlusOnes, (rsvpConfig?.maxAdults ?? 5) - 1);
-    const minChildCount = rsvpConfig?.minChildren ?? 0;
-    const maxChildCount = rsvpConfig?.maxChildren ?? 4;
-    const maxMessageLength = appConfig?.contentLimits.rsvpNotesMaxLength ?? 500;
-
-    const presetAttending = searchParams.get('attending');
-
-    const [attending, setAttending] = useState<AttendingStatus | null>(
-        presetAttending === 'attending' || presetAttending === 'not-attending' ? presetAttending : null,
-    );
-    const [message, setMessage] = useState('');
-    const [plusOnes, setPlusOnes] = useState<RsvpPlusOnes>({
-        adultCount: minAdultPlusOnes,
-        childCount: minChildCount,
-    });
-    const [submitted, setSubmitted] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [sessionAnswersError, setSessionAnswersError] = useState<unknown>(null);
-
     const rsvpAvailability = useRsvpAvailability();
 
-    const { data: existingRsvp, error: existingRsvpError } = useRsvp(rsvpAvailability.isAvailable ? (rsvpId ?? null) : null);
-    const isStaleRsvp = existingRsvpError instanceof ApiError && existingRsvpError.status === 404;
-    const effectiveRsvpId = isStaleRsvp ? null : rsvpId;
-    const hasExistingRsvp = Boolean(existingRsvp && effectiveRsvpId);
-    const sessionQuestions = useRsvpSessionQuestions(eventId, activeEvent?.modules);
-    const hasUnansweredSessions = computeHasUnansweredSessions(attending, sessionQuestions.allAnswered);
-    const hydratedRef = useRef(false);
-
-    useEffect(() => {
-        if (!existingRsvp || hydratedRef.current) {
-            return;
-        }
-
-        hydratedRef.current = true;
-
-        setAttending(existingRsvp.attendanceStatus === 'ATTENDING' ? 'attending' : 'not-attending');
-        setPlusOnes({
-            adultCount: Math.max(minAdultPlusOnes, Math.min(maxAdultPlusOnes, existingRsvp.adultCount - 1)),
-            childCount: Math.max(minChildCount, Math.min(maxChildCount, existingRsvp.childCount)),
-        });
-        setMessage((existingRsvp.notes ?? '').slice(0, maxMessageLength));
-    }, [existingRsvp, maxAdultPlusOnes, maxChildCount, maxMessageLength, minAdultPlusOnes, minChildCount]);
+    const presetAttending = searchParams.get('attending');
+    const form = useRsvpForm({
+        eventId,
+        eventStatus: activeEvent?.status,
+        modules: activeEvent?.modules,
+        memberId,
+        rsvpId,
+        isAvailable: rsvpAvailability.isAvailable,
+        initialAttending: presetAttending === 'attending' || presetAttending === 'not-attending' ? presetAttending : null,
+    });
+    const { isStaleRsvp } = form;
 
     useEffect(() => {
         if (!isContextLoading && isHost && eventId) {
@@ -98,19 +56,6 @@ export function useRsvpSubmitPageData() {
         router.refresh();
     }, [eventId, isStaleRsvp, memberId, queryClient, rsvpId, router]);
 
-    const createRsvp = useCreateRsvp(eventId ?? undefined);
-    const updateRsvp = useUpdateRsvp(effectiveRsvpId ?? '', eventId ?? undefined);
-
-    const canSubmitRsvp = rsvpAvailability.isAvailable && isEventWritable(activeEvent?.status);
-    const submitError = createRsvp.error ?? updateRsvp.error;
-    const submitErrorMessage = submitError
-        ? isModuleNotAvailableError(submitError)
-            ? t('moduleUnavailable')
-            : toErrorMessage(submitError, t('submitError'))
-        : sessionAnswersError
-          ? toErrorMessage(sessionAnswersError, t('sessionsSubmitError'))
-          : null;
-
     // Members cannot access the host-only RSVP overview. Sending them there makes the
     // route gate redirect straight back to this form, leaving the Back control stuck.
     const backHref = eventId ? routes.events.feed(eventId) : routes.feed;
@@ -119,120 +64,12 @@ export function useRsvpSubmitPageData() {
         router.push(eventId ? routes.events.feed(eventId) : routes.feed);
     }, [eventId, router]);
 
-    const handleIncrementPlusOnes = useCallback(
-        (type: 'adult' | 'child') => () => {
-            setPlusOnes((currentPlusOnes) => ({
-                adultCount: type === 'adult' ? Math.min(maxAdultPlusOnes, currentPlusOnes.adultCount + 1) : currentPlusOnes.adultCount,
-                childCount: type === 'child' ? Math.min(maxChildCount, currentPlusOnes.childCount + 1) : currentPlusOnes.childCount,
-            }));
-        },
-        [maxAdultPlusOnes, maxChildCount],
-    );
-
-    const handleDecrementPlusOnes = useCallback(
-        (type: 'adult' | 'child') => () => {
-            setPlusOnes((currentPlusOnes) => ({
-                adultCount: type === 'adult' ? Math.max(minAdultPlusOnes, currentPlusOnes.adultCount - 1) : currentPlusOnes.adultCount,
-                childCount: type === 'child' ? Math.max(minChildCount, currentPlusOnes.childCount - 1) : currentPlusOnes.childCount,
-            }));
-        },
-        [minAdultPlusOnes, minChildCount],
-    );
-
-    const handleSubmit = useCallback(
-        async (event: React.SubmitEvent<HTMLFormElement>) => {
-            event.preventDefault();
-
-            if (isSubmitting) {
-                return;
-            }
-
-            if (!attending || !memberId || !canSubmitRsvp || hasUnansweredSessions) {
-                return;
-            }
-
-            const attendanceStatus: AttendanceStatus = attending === 'attending' ? 'ATTENDING' : 'DECLINED';
-            // A decline has no party size of its own — plusOnes may still hold values left
-            // over from switching away from "attending", so they must not leak into the count.
-            const adultCount = attendanceStatus === 'ATTENDING' ? 1 + plusOnes.adultCount : 1;
-            const childCount = attendanceStatus === 'ATTENDING' ? plusOnes.childCount : 0;
-
-            setSessionAnswersError(null);
-            setIsSubmitting(true);
-            try {
-                const rsvp = effectiveRsvpId
-                    ? await updateRsvp.mutateAsync({
-                          attendanceStatus,
-                          adultCount,
-                          childCount,
-                          notes: message || undefined,
-                      })
-                    : await createRsvp.mutateAsync({
-                          eventMemberId: memberId,
-                          attendanceStatus,
-                          adultCount,
-                          childCount,
-                          notes: message || undefined,
-                          submittedAt: new Date().toISOString(),
-                      });
-                // Guests who decline skip the per-session questions.
-                if (attendanceStatus === 'ATTENDING') {
-                    try {
-                        await sessionQuestions.submitAnswers(rsvp.id);
-                    } catch (error) {
-                        setSessionAnswersError(error);
-                        return;
-                    }
-                }
-            } catch {
-                return;
-            } finally {
-                setIsSubmitting(false);
-            }
-
-            setSubmitted(true);
-        },
-        [
-            attending,
-            canSubmitRsvp,
-            createRsvp,
-            effectiveRsvpId,
-            hasUnansweredSessions,
-            isSubmitting,
-            memberId,
-            message,
-            plusOnes.adultCount,
-            plusOnes.childCount,
-            sessionQuestions,
-            updateRsvp,
-        ],
-    );
-
     return {
-        attending,
+        ...form,
         backHref,
-        canSubmitRsvp,
         eventId,
         eventType: activeEvent?.eventType ?? null,
-        hasExistingRsvp,
-        hasUnansweredSessions,
-        isSubmitting,
-        memberId,
-        message,
-        maxMessageLength,
-        onAttend: () => setAttending('attending' as const),
         onBackToWall: handleBackToWall,
-        onDecline: () => setAttending('not-attending' as const),
-        onDecrementPlusOnes: handleDecrementPlusOnes,
-        onIncrementPlusOnes: handleIncrementPlusOnes,
-        onMessageChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => setMessage(event.target.value.slice(0, maxMessageLength)),
-        onSubmit: handleSubmit,
-        plusOnes,
         rsvpAvailability,
-        sessionAnswersError,
-        sessionQuestions: sessionQuestions.questions,
-        onSessionAnswer: sessionQuestions.onAnswer,
-        submitErrorMessage,
-        submitted,
     };
 }

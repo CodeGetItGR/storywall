@@ -86,6 +86,7 @@ export const endpoints = {
         qrLinkStats: (eventId: string) => `/api/events/${eventId}/qr-links/stats`,
         members: (eventId: string) => `/api/events/${eventId}/members`,
         modules: (eventId: string) => `/api/events/${eventId}/modules`,
+        memberRoles: (eventId: string) => `/api/events/${eventId}/member-roles`,
         sessions: (eventId: string) => `/api/events/${eventId}/sessions`,
         rsvps: (eventId: string) => `/api/events/${eventId}/rsvps`,
         rsvpReport: (eventId: string, reportType: RsvpReportType) =>
@@ -175,6 +176,8 @@ export const endpoints = {
         byId: (id: string) => `/api/event-members/${id}`,
         claim: (id: string) => `/api/event-members/${id}/claim`,
         demoAvatar: (id: string) => `/api/event-members/${id}/demo-avatar`,
+        role: (id: string) => `/api/event-members/${id}/role`,
+        roleLock: (id: string) => `/api/event-members/${id}/role-lock`,
     },
 
     eventSessions: {

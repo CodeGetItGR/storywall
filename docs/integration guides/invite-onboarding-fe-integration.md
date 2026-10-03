@@ -225,9 +225,12 @@ GET /api/event-invitations/{inviteToken}/preview
 - `firstName` / `lastName` / `email` are pre-fill values from the invitation, if the host
   set them when creating it — otherwise `null`.
 - `expired: true` / `alreadyUsed: true` are **not** errors — render the page's expired/used
-  state instead of the join options. (`alreadyUsed` just means the invite link's single-use
-  slot was already claimed; it does not necessarily mean the current visitor is the one who
-  claimed it.)
+  state instead of the join options. (`alreadyUsed` means the link has **no guest places
+  left**: active members who joined through it have reached its `maxGuests` — the same point at
+  which `accept` fails with 5035. A shared join link that has been used but still has room is
+  `alreadyUsed: false`. *Changed 2026-10-01:* it used to flip to `true` after the first use of
+  any link, which closed shared QR/join links for every guest after the first. It does not
+  necessarily mean the current visitor is one of those who claimed it.)
 - `coverMediaId` — resolve to a URL the same way the rest of the app resolves event cover
   media (check how `EventResponseDto.coverMediaId` is already handled on other event pages).
 - **404** if the token doesn't exist at all — show a generic "invalid invite" state.

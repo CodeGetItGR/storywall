@@ -5,14 +5,18 @@ import { useTranslations } from 'next-intl';
 import { AddImageButton } from '@/components/composer/AddImageButton';
 import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks';
+import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
+import { usePostingAsMember } from '@/hooks/usePostingAsMember';
 import { initialsFromName } from '@/lib/utils';
 import { useComposer } from '@/providers/ComposerProvider';
-import { useActiveMember } from '@/providers/EventProvider';
 
 export function ComposerCard() {
     const t = useTranslations('ComposerCard');
-    const activeMember = useActiveMember();
+    // Shows who the post will be authored as (a demo persona, for an admin).
+    const { member: activeMember, isPersona } = usePostingAsMember();
     const profile = useAuth();
+    const memberAvatarUrl = useMemberAvatarUrl();
+    const avatarUrl = isPersona ? memberAvatarUrl(activeMember?.id, activeMember?.avatarUrl) : profile.user?.profilePictureUrl;
     const { openPostComposer, openPostImagePicker, canComposePost } = useComposer();
 
     const initials = activeMember ? initialsFromName(activeMember.displayName) : '?';
@@ -25,7 +29,7 @@ export function ComposerCard() {
             <div className="w-full rounded-2xl bg-card/95 p-1">
                 {/* Compose row */}
                 <div className="flex items-center gap-3">
-                    <Avatar src={profile.user?.profilePictureUrl} initials={initials} size="md" alt={activeMember?.displayName} />
+                    <Avatar src={avatarUrl} initials={initials} size="md" alt={activeMember?.displayName} />
                     <button
                         type="button"
                         onClick={openPostComposer}
