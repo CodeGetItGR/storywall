@@ -9,6 +9,7 @@ import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { HomeHorizontalScroller } from '@/components/home/HomeHorizontalScroller';
 import { EventQuickCardSkeleton, EventQuickCardsSkeleton } from '@/components/home/HomeSkeletons';
 import type { EventGridItem } from '@/hooks/useEventGridItems';
+import { useMemberRoleLabel } from '@/hooks/useMemberRoleLabel';
 import { formatDate, formatEventListDate } from '@/lib/datetime';
 import { isEventDeleted } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
@@ -18,10 +19,8 @@ function EventQuickCard({ member, event }: EventGridItem) {
     const tEvents = useTranslations('EventsPage');
     const locale = useLocale();
 
-    const roleLabel =
-        member.customRelationshipRole ??
-        member.relationshipRole ??
-        (member.role === 'HOST' ? tEvents('roleFallback.host') : tEvents('roleFallback.attendee'));
+    const memberRole = useMemberRoleLabel(member, event?.eventType);
+    const roleLabel = memberRole ?? (member.role === 'HOST' ? tEvents('roleFallback.host') : tEvents('roleFallback.attendee'));
     const eventDate = formatEventListDate(event?.schedule.startAt, locale, tEvents('dateAt'));
     // A deleted event opens on its manage page (the only place left to land)
     // and shows its purge date instead of the event date.
