@@ -10,6 +10,7 @@ import { useHasOpenOverlay } from '@/hooks/useOverlayPresence';
 import { usePinchZoomBox } from '@/hooks/usePinchZoomBox';
 import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
 import { isEventDeleted } from '@/lib/eventLifecycle';
+import { openMyRoleSheetFromHref } from '@/lib/myRoleSheetRequests';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 import { useAccountPanel } from '@/providers/AccountPanelProvider';
@@ -79,7 +80,7 @@ export function MobileTabBar() {
 
     function handleDashboardMenuClick(event: MouseEvent<HTMLElement>) {
         const href = event.currentTarget.dataset.href;
-        if (href) router.push(href);
+        if (href && !openMyRoleSheetFromHref(href)) router.push(href);
     }
 
     if (!showEventNavigation) return null;

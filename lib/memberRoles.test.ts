@@ -28,7 +28,6 @@ import {
     withAuthorRole,
     withMemberRole,
     withoutRoleSheetParam,
-    withRoleSheetParam,
 } from '@/lib/memberRoles';
 
 function makeRole(overrides: Partial<MemberRoleCatalogDto> = {}): MemberRoleCatalogDto {
@@ -347,8 +346,7 @@ describe('gating', () => {
 });
 
 describe('role sheet URL', () => {
-    it('adds and removes the trigger, keeping other params', () => {
-        expect(withRoleSheetParam('/events/e1/feed', 'post=p1')).toBe('/events/e1/feed?post=p1&sheet=role');
+    it('removes the trigger, keeping other params', () => {
         expect(withoutRoleSheetParam('/events/e1/feed', 'post=p1&sheet=role')).toBe('/events/e1/feed?post=p1');
         expect(withoutRoleSheetParam('/events/e1/feed', 'sheet=role')).toBe('/events/e1/feed');
     });

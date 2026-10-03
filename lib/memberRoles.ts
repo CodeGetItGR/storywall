@@ -309,12 +309,6 @@ export function canManageMemberRoles(event: RoleEvent | null | undefined, canMod
 export const ROLE_SHEET_PARAM = 'sheet';
 export const ROLE_SHEET_VALUE = 'role' as const;
 
-export function withRoleSheetParam(pathname: string, search: string): string {
-    const params = new URLSearchParams(search);
-    params.set(ROLE_SHEET_PARAM, ROLE_SHEET_VALUE);
-    return `${pathname}?${params.toString()}`;
-}
-
 export function withoutRoleSheetParam(pathname: string, search: string): string {
     const params = new URLSearchParams(search);
     params.delete(ROLE_SHEET_PARAM);
