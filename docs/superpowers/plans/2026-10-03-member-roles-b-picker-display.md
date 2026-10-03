@@ -14,6 +14,8 @@
 
 **Not prefetched server-side:** the picker options (`GET member-roles`) load only when a user opens a sheet, so they are not route-derivable page data; no server prefetch is added.
 
+**Error copy:** Task 1 also gives each new code a generic `ApiErrors.memberRole*` message (codebase convention: every `ERROR_CODES` entry is mapped in `lib/api/errorMessageKeys.ts`). `MemberRoles.errors` only holds the two messages with numbers (`length`, `full`).
+
 **Branch:** `feat/member-roles-b` (already created from `staging`, spec committed).
 
 ---
@@ -803,8 +805,6 @@ const COPY = {
             clear: 'Clear role',
             errors: {
                 length: 'A role must be 1 to {max} characters.',
-                blocked: "That role has a word we don't allow.",
-                stale: "That role isn't available anymore. Pick another.",
                 full: 'All {count} places for this role are taken.',
             },
             host: {
@@ -834,8 +834,6 @@ const COPY = {
             clear: 'Αφαίρεση ρόλου',
             errors: {
                 length: 'Ο ρόλος πρέπει να έχει 1 έως {max} χαρακτήρες.',
-                blocked: 'Ο ρόλος περιέχει λέξη που δεν επιτρέπεται.',
-                stale: 'Αυτός ο ρόλος δεν είναι πια διαθέσιμος. Επιλέξτε άλλον.',
                 full: 'Και οι {count} θέσεις για αυτόν τον ρόλο έχουν πιαστεί.',
             },
             host: {
@@ -1344,8 +1342,9 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import type { MemberRoleOptionDto } from '@/lib/api/types';
 import { roleErrorKind } from '@/lib/memberRoles';
 
-// Role errors as copy (guide §4). 'locked' shows the picker's locked note
-// instead, so it returns null. 5014 and 3010 come from useApiErrorMessage.
+// Role errors as copy (guide §4). Length and cap messages carry numbers;
+// 'locked' shows the picker's locked note instead. Every other code (blocked,
+// stale, 5014, 3010…) has generic ApiErrors copy via useApiErrorMessage.
 export function useRoleErrorMessage() {
     const t = useTranslations('MemberRoles.errors');
     const describe = useApiErrorMessage();
@@ -1355,12 +1354,8 @@ export function useRoleErrorMessage() {
             switch (roleErrorKind(error)) {
                 case 'length':
                     return t('length', { max: context.maxLength });
-                case 'blocked':
-                    return t('blocked');
-                case 'stale':
-                    return t('stale');
                 case 'full':
-                    return context.option?.maxHolders ? t('full', { count: context.option.maxHolders }) : t('stale');
+                    return context.option?.maxHolders ? t('full', { count: context.option.maxHolders }) : describe(error);
                 case 'locked':
                     return null;
                 default:
