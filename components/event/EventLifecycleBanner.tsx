@@ -8,7 +8,7 @@ import { EventLifecycleIcon } from '@/components/event/EventLifecycleIcon';
 import type { EventStatus } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
-import { useActiveEvent, useIsHost } from '@/providers/EventProvider';
+import { useActiveEvent, useIsHost, useRouteEventId } from '@/providers/EventProvider';
 
 function tone(status: Exclude<EventStatus, 'ACTIVE'>) {
     if (status === 'DRAFT') return 'border-sky-200 bg-sky-50 text-sky-900';
@@ -19,10 +19,12 @@ export function EventLifecycleBanner() {
     const t = useTranslations('EventLifecycleBanner');
     const pathname = usePathname();
     const activeEvent = useActiveEvent();
+    // Id-less routes (/post/[id]) fall back to the last visited event, which the page is not about.
+    const routeEventId = useRouteEventId();
     const isHost = useIsHost();
     const status = activeEvent?.status;
 
-    if (!activeEvent || !status || status === 'ACTIVE') return null;
+    if (!routeEventId || !activeEvent || !status || status === 'ACTIVE') return null;
     if (pathname.startsWith(`/events/${activeEvent.id}/checkout/`)) return null;
 
     const actionHref = routes.events.manage(activeEvent.id);
