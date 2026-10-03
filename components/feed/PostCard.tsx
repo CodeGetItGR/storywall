@@ -14,6 +14,7 @@ import {
     PostReactionPicker,
     ReactionSummary,
 } from '@/components/feed/post';
+import { AuthorRoleChip } from '@/components/memberRoles/AuthorRoleChip';
 import { ReportTargetModal } from '@/components/reports';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useAppConfig, useDeletePost, usePostModal, useUpdatePost } from '@/hooks';
@@ -148,6 +149,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                     name={authorName}
                     timeAgo={timeAgo}
                     isHostPost={showHostPostBadge}
+                    roleChip={<AuthorRoleChip author={post.author} />}
                 />
                 <div className="relative flex items-center gap-1">
                     {canTogglePin ? (

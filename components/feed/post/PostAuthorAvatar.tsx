@@ -1,5 +1,6 @@
 import { Star } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import type { ReactNode } from 'react';
 
 import Avatar from '@/components/ui/avatar';
 import { getInitials } from '@/lib/format';
@@ -10,12 +11,14 @@ export function PostAuthorAvatar({
     subtitle,
     timeAgo,
     isHostPost = false,
+    roleChip,
 }: {
     avatarUrl?: string | null;
     name: string;
     subtitle?: string | null;
     timeAgo: { unit: 'now' | 'minutes' | 'hours' | 'days'; value: number };
     isHostPost?: boolean;
+    roleChip?: ReactNode;
 }) {
     const t = useTranslations('PostCard');
 
@@ -35,8 +38,11 @@ export function PostAuthorAvatar({
             )}
 
             {/* Author details */}
-            <div>
-                <p className="text-sm leading-tight font-semibold text-ink">{name}</p>
+            <div className="min-w-0">
+                <p className="flex min-w-0 items-center gap-1.5 text-sm leading-tight font-semibold text-ink">
+                    <span className="truncate">{name}</span>
+                    {roleChip}
+                </p>
                 <div className="flex items-center gap-1.5">
                     {subtitle && <span className="text-xs text-ink-muted capitalize">{subtitle}</span>}
                     {subtitle && <span className="text-xs text-ink-faint">·</span>}

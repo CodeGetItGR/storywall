@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { CommentActionsMenu } from '@/components/feed/post/CommentActionsMenu';
 import { ReplyItem } from '@/components/feed/post/ReplyItem';
+import { AuthorRoleChip } from '@/components/memberRoles/AuthorRoleChip';
 import Avatar from '@/components/ui/avatar';
 import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
 import { authorNameFor, type CommentThread } from '@/lib/comments';
@@ -46,7 +47,10 @@ export function CommentThreadItem({ thread, onReply, isExpanded, onToggleReplies
                     <div className="rounded-2xl rounded-tl-sm bg-surface-muted px-4 py-3">
                         {/* Comment header */}
                         <div className="mb-1 flex items-baseline gap-2">
-                            <span className="min-w-0 flex-1 text-sm leading-tight font-semibold wrap-break-word text-ink">{name}</span>
+                            <span className="flex min-w-0 flex-1 items-center gap-1.5">
+                                <span className="min-w-0 text-sm leading-tight font-semibold wrap-break-word text-ink">{name}</span>
+                                <AuthorRoleChip author={comment.author} />
+                            </span>
                             <span className="shrink-0 text-xs whitespace-nowrap text-ink-faint">
                                 {commentTimeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${commentTimeAgo.unit}`, { count: commentTimeAgo.value })}
                             </span>

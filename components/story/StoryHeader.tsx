@@ -20,6 +20,7 @@ interface StoryHeaderProps {
     canReport: boolean;
     showMenu: boolean;
     leadingVisual?: ReactNode;
+    roleChip?: ReactNode;
     onToggleMenu: () => void;
     onClose: () => void;
     onDeleteRequest: () => void;
@@ -38,6 +39,7 @@ export function StoryHeader({
     canReport,
     showMenu,
     leadingVisual,
+    roleChip,
     onToggleMenu,
     onClose,
     onDeleteRequest,
@@ -64,7 +66,10 @@ export function StoryHeader({
                             />
                         ))}
                     <div>
-                        <p className={cn('text-sm leading-tight font-semibold', isLight ? 'text-ink' : 'text-white')}>{authorName}</p>
+                        <p className={cn('flex items-center gap-1.5 text-sm leading-tight font-semibold', isLight ? 'text-ink' : 'text-white')}>
+                            <span className="truncate">{authorName}</span>
+                            {roleChip}
+                        </p>
                         <p className={cn('text-xs leading-tight', isLight ? 'text-ink-muted' : 'text-white/60')}>{timeStr}</p>
                     </div>
                 </div>

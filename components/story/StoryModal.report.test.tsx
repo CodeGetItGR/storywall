@@ -10,6 +10,7 @@ let canReportStory = true;
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
 vi.mock('@/hooks/useMemberAvatarUrl', () => ({ useMemberAvatarUrl: () => () => null }));
 vi.mock('@/components/common/ProtectedImage', () => ({ ProtectedImage: () => null }));
+vi.mock('@/components/memberRoles/AuthorRoleChip', () => ({ AuthorRoleChip: () => null }));
 vi.mock('@/components/ui/ConfirmActionModal', () => ({
     ConfirmActionModal: ({ layer }: { layer?: string }) => <div data-testid="confirm-modal" data-layer={layer} />,
 }));
