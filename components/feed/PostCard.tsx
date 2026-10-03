@@ -20,6 +20,7 @@ import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { openPostModal, useAppConfig, useDeletePost, useUpdatePost } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useContentAccess } from '@/hooks/useContentAccess';
+import { useCustomRoleReport } from '@/hooks/useCustomRoleReport';
 import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
 import type { PostResponseDto } from '@/lib/api/types';
 import { canDeleteContent, canReportContent } from '@/lib/contentPermissions';
@@ -35,12 +36,14 @@ interface PostCardProps {
 
 export function PostCard({ post, showCommentLink = true, isLcpCandidate = false }: PostCardProps) {
     const t = useTranslations('PostCard');
+    const tRoles = useTranslations('MemberRoles');
     const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(null);
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
     const [deleteError, setDeleteError] = useState<string | null>(null);
     const [editOpen, setEditOpen] = useState(false);
     const [pinError, setPinError] = useState<string | null>(null);
     const [reportOpen, setReportOpen] = useState(false);
+    const [roleReportOpen, setRoleReportOpen] = useState(false);
 
     const authorName = post.author?.displayName ?? t('unknownAuthor');
     const timeAgo = useMemo(() => timeAgoParts(post.createdAt), [post.createdAt]);
@@ -67,6 +70,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
         isAuthor: isMyPost,
         targetTypeReportable: Boolean(appConfig?.reportTargetTypes?.includes('POST')),
     });
+    const canReportRole = useCustomRoleReport(post.author);
     const canTogglePin = isHost && canWrite && !isLocked;
     const showHostPostBadge = isHostPost && !isHost;
     const reactionTypes = appConfig?.reactionTypesByEventType[post.eventType ?? activeEvent?.eventType ?? ''] ?? [];
@@ -101,6 +105,14 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
 
     function handleCloseEdit() {
         setEditOpen(false);
+    }
+
+    function handleOpenRoleReport() {
+        if (canReportRole) setRoleReportOpen(true);
+    }
+
+    function handleCloseRoleReport() {
+        setRoleReportOpen(false);
     }
 
     function handleOpenReport() {
@@ -175,7 +187,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                         )
                     )}
                     {pinError && <p className="absolute top-full right-0 mt-1 w-48 text-right text-xs text-destructive">{pinError}</p>}
-                    {(canEditPost || canDeletePost || canReportPost) && (
+                    {(canEditPost || canDeletePost || canReportPost || canReportRole) && (
                         <PostActionsMenu
                             deleteLabel={canDeletePost ? t('deletePost') : undefined}
                             disabled={deletePost.isPending}
@@ -186,6 +198,8 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                             onEditAction={canEditPost ? handleEditRequest : undefined}
                             reportLabel={t('reportPost')}
                             onReportAction={canReportPost ? handleOpenReport : undefined}
+                            reportRoleLabel={canReportRole ? tRoles('reportRole') : undefined}
+                            onReportRoleAction={canReportRole ? handleOpenRoleReport : undefined}
                         />
                     )}
                 </div>
@@ -334,6 +348,19 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                     targetId={post.id}
                     targetName={authorName}
                     onCloseAction={handleCloseReport}
+                />
+            )}
+
+            {/* Report role */}
+            {roleReportOpen && post.author && (
+                <ReportTargetModal
+                    open
+                    eventId={post.eventId}
+                    targetType="MEMBER"
+                    targetId={post.author.memberId}
+                    targetName={authorName}
+                    variant="role"
+                    onCloseAction={handleCloseRoleReport}
                 />
             )}
         </article>

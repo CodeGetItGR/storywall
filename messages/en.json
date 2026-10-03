@@ -4955,6 +4955,7 @@
     "Report": {
         "title": "Report",
         "body": "Report {name} to the platform team.",
+        "roleBody": "Report {name}'s role to the platform team.",
         "bodyByType": {
             "POST": "Report this post to the platform team.",
             "COMMENT": "Report this comment to the platform team.",
@@ -5187,6 +5188,7 @@
         "lockedNote": "Your custom role was removed. You can still pick one from the list.",
         "hostOnly": "Host only",
         "setByHosts": "Set by the hosts.",
+        "reportRole": "Report role",
         "save": "Save",
         "clear": "Clear role",
         "errors": {
