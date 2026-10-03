@@ -37,14 +37,37 @@ IP-keyed budget on this endpoint is therefore a budget for the *entire user base
 exhausted by a handful of people browsing at once. Per-token, 30/min is generous for any legitimate
 client and still stops a stuck retry loop.
 
-### The same caveat applies to login and register
+### Login and register: the frontend forwards the browser's address (2026-09-30)
 
-`auth.login` (10/min, shared with `oauth/{provider}`) and `auth.register` (5/hour) are still
-IP-keyed, and the frontend calls both server-side too. Under real concurrent sign-in traffic these
-will 429 across users. Not changed here because they're deliberately tight for credential-stuffing
-reasons; if it becomes a problem the fix is for the frontend to forward the browser's IP in
-`X-Forwarded-For` and for Spring to list the frontend's egress range in
-`app.rate-limit.trusted-proxies` — not to raise the limits.
+`auth.login` (10/min) and `auth.register` (5/hour) are IP-keyed,
+and the frontend calls both server-side. Until 2026-09-30 that made them one budget for the whole
+platform: the sixth sign-up in an hour anywhere got a `429`. Refresh and logout were affected too.
+Neither has its own `@RateLimit`, so both also fall under the blanket 300/min default, which is
+keyed the same way.
+
+Later the same day, sign-ups through an invitation with places left got 300/hour instead of 5,
+`oauth/{provider}` got its own 60/min bucket, and `qr.resolve` went to 300/min. That way a venue's
+guests, who share one address, can all join. Nothing changes on the frontend. See
+`docs/venue-signup-rate-limits-2026-09.md`.
+
+The limits stay as tight as they were. What changed is whose address they count. On every call it
+makes on a browser's behalf, the frontend server sends two headers:
+
+| Header | Value |
+|---|---|
+| `X-Storywall-Client-Ip` | The browser's address: the first entry of the incoming `x-forwarded-for`, which Vercel overwrites, so the browser can't choose it. |
+| `X-Storywall-Client-Ip-Secret` | `CLIENT_IP_FORWARDING_SECRET`. The same value is set on the backend. |
+
+Spring uses the forwarded address only when the secret matches, compared in constant time. With a
+wrong secret or a malformed address, Spring logs a warning and counts the request by the address it
+arrived from, as before. An empty secret on either side turns forwarding off.
+
+An IP allowlist (`app.rate-limit.trusted-proxies`) can't do this job, because Vercel's outgoing
+addresses are public and change. **The secret must be a server-side variable, never
+`NEXT_PUBLIC_`.** Anyone who holds it can choose their own rate-limit identity.
+
+Rollout: set the backend variable first. A frontend that sends the secret to a backend without one
+gets a warning logged on every auth call.
 
 ## What the frontend must do (checklist)
 

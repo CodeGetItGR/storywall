@@ -5,7 +5,6 @@ return their entire table in one response:
 
 - `GET /api/users`
 - `GET /api/audit-logs`
-- `GET /api/moderation-actions`
 - `GET /api/reports`
 - `GET /api/telemetry-events`
 

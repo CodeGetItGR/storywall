@@ -107,6 +107,20 @@ response didn't publish:
   `defaultStoryLifetimeHours`.
 - New `eventDeletion` block: the delete-confirmation code's length, lifetime and attempt limit.
 
+**2026-09-30:** `reportTargetTypes` gained `STORY`, `MEDIA`, `WISHBOOK_ENTRY` and
+`PLAYLIST_SUGGESTION`, and `reportReasons` gained `ILLEGAL_CONTENT` and `COPYRIGHT`. Same shape as
+before. `rateLimits` now lists `reports.create` (30 per hour). See
+[`report-coverage-fe-integration.md`](report-coverage-fe-integration.md).
+
+**2026-10-02:** each `eventTypes` entry gained **`hasDemo`**: `true` exactly when
+`GET /api/demo/{eventTypeKey}` would answer 200 for that type right now. Use it to show or hide a
+"try the demo" entry point per type instead of probing the demo endpoint. It is never stale: the
+backend re-checks it on every request, so a demo that is undesignated, deleted, suspended or has its
+type disabled is `false` on the next call. To make that hold end to end, the response's
+`Cache-Control` changed from `max-age=60, must-revalidate, public` to **`no-cache`**, the same as
+`/api/demo/{eventTypeKey}`. Every use revalidates with `If-None-Match`, and an unchanged config
+still costs only a 304. See [`demo-event-fe-integration.md`](demo-event-fe-integration.md).
+
 ## GET /api/config
 
 Public — no `Authorization` header needed, safe to call before login (e.g. to gate the login
@@ -153,9 +167,10 @@ interface AppConfigResponseDto {
   eventDeletion: { codeDigits: number; codeValidMinutes: number; maxCodeAttempts: number }; // added 2026-09-27 — see below
   contentLimits: AppContentLimitsDto;   // added 2026-08-23 — see below
   reactionTypesByEventType: Record<string, ReactionTypeResponseDto[]>; // added 2026-08-30 — see below
+  memberRolesByEventType: Record<string, MemberRoleCatalogDto[]>; // added 2026-10-02, retired roles included — see member-roles-fe-integration.md
   rateLimits: AppRateLimitConfigDto[];  // added 2026-08-23 — see below
-  reportTargetTypes: ('POST' | 'COMMENT' | 'MEMBER')[];                          // added 2026-09-12
-  reportReasons: ('SPAM' | 'HARASSMENT' | 'INAPPROPRIATE_CONTENT' | 'IMPERSONATION' | 'OTHER')[]; // added 2026-09-12
+  reportTargetTypes: ('POST' | 'COMMENT' | 'MEMBER' | 'STORY' | 'MEDIA' | 'WISHBOOK_ENTRY' | 'PLAYLIST_SUGGESTION')[]; // added 2026-09-12, last four 2026-09-30
+  reportReasons: ('SPAM' | 'HARASSMENT' | 'INAPPROPRIATE_CONTENT' | 'IMPERSONATION' | 'ILLEGAL_CONTENT' | 'COPYRIGHT' | 'OTHER')[]; // added 2026-09-12, ILLEGAL_CONTENT/COPYRIGHT 2026-09-30
   defaultRateLimit: number;             // added 2026-08-23
   defaultRateLimitWindowSeconds: number; // added 2026-08-23
 }
@@ -170,6 +185,9 @@ Full type breakdown (`AppMediaConfigDto`, `PlanTierResponseDto`, etc.) is in
 **Fetch once, cache it.** This isn't per-request data — none of it changes except when an
 operator flips a feature flag or a deploy changes a limit. Fetch it once at app boot (or via a
 long-`staleTime` query) and read from that cache everywhere you'd otherwise hardcode a limit.
+The exception is `eventTypes[].hasDemo`: if you gate a demo link on it, refetch where the link is
+shown. The response is `no-cache` with an ETag, so a refetch of an unchanged config is a 304.
+A Next.js server-side fetch with its own `revalidate` window adds that window's lag on top.
 
 ### What to actually do with each field
 
@@ -298,6 +316,7 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
   rows and then just their keys. `eventTypeKeys` is exactly what `EventRequestDto.eventType` may be
   set to right now, so build the type picker from it. Each row carries only what you need before a
   locale is chosen (`icon`, `accentToken`, `sortOrder`); the name and tagline live in `translations`.
+  `hasDemo` says whether the type has a public demo right now (see the 2026-10-02 note above).
 - **`translations`** — locale copy, namespaced by kind. Today the only namespace is `eventTypes`,
   keyed by `eventTypeKey` and covering every entry in `eventTypes`. Each entry holds `name`,
   `tagline` and the ten-key `voice` pack, each of those keyed by locale (`en`, `el`). Look copy up
@@ -312,6 +331,11 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
   pre-sorted by `sortOrder`. Build the reaction picker from
   `reactionTypesByEventType[post.eventType]`, not a hardcoded list. See
   [`reaction-types-catalog-fe-integration.md`](reaction-types-catalog-fe-integration.md).
+- **`memberRolesByEventType`** (added 2026-10-02) — every member role, keyed by `eventTypeKey`,
+  each list pre-sorted by `sortOrder`. Unlike reactions it includes **retired** roles (flagged
+  `retired: true`) so a member who holds one still renders. Resolve `AuthorDto.roleKey` here; the
+  picker hides retired ones. Each role also carries `hostOnly` (added 2026-10-03): only a host or
+  co-host may give it. See [`member-roles-fe-integration.md`](member-roles-fe-integration.md).
 
 ## Module keys are now a closed, server-validated set
 
@@ -326,7 +350,7 @@ just store it. It no longer does.
 now returns **`400`** with `errorCode: 3006` / `errorKey: "INVALID_MODULE_KEY"` for anything
 outside the canonical keys — as of V82 those are
 `posts | rsvp | playlist | stories | gallery | wishlist | wishbook | co_hosts | named_invites |
-schedule`. Note that the canonical set and what `eventModuleKeys` returns are not the same list:
+schedule` (plus `member_roles` since V136). Note that the canonical set and what `eventModuleKeys` returns are not the same list:
 a key an operator has disabled platform-wide is still canonical but is not offered, and
 `named_invites` is in exactly that state today. Validate against `eventModuleKeys`. This only
 affects **creating** a module (`POST /api/event-modules`) — `PATCH` doesn't take `moduleKey` at
@@ -384,9 +408,9 @@ interface AppContentLimitsDto {
   rsvpNotesMaxLength: number;                      // 500
   eventDescriptionMaxLength: number;                // 2000
   eventSessionDescriptionMaxLength: number;         // 1000
-  moderationReasonMaxLength: number;                // 500
+  moderationReasonMaxLength: number;                // 500 — deprecated 2026-10-01, nothing reads it
   reportDescriptionMaxLength: number;               // 1000
-  reportResolutionNotesMaxLength: number;           // 1000
+  reportResolutionNotesMaxLength: number;           // 1000 — moderation decisions write up to 2000 there
   catalogDescriptionMaxLength: number;             // 1000
   // Added 2026-09-27 — see the second table below.
   eventTitleMaxLength: number;                     // 255
@@ -398,7 +422,7 @@ interface AppContentLimitsDto {
   memberDisplayNameMaxLength: number;              // 150
   memberNicknameMaxLength: number;                 // 100
   memberRelationshipRoleMaxLength: number;         // 50
-  memberCustomRelationshipRoleMaxLength: number;   // 100
+  memberCustomRelationshipRoleMaxLength: number;   // 40 (was 100 until 2026-10-02)
   personNameMaxLength: number;                     // 100
   emailMaxLength: number;                          // 255
   passwordMinLength: number;                       // 8
@@ -430,9 +454,9 @@ interface AppContentLimitsDto {
 | `rsvpNotesMaxLength` | `RsvpRequestDto`/`RsvpPatchDto.notes` | `POST`/`PATCH /api/rsvps` |
 | `eventDescriptionMaxLength` | `EventRequestDto`/`EventPatchDto.description` | `POST`/`PATCH /api/events` |
 | `eventSessionDescriptionMaxLength` | `EventSessionRequestDto`/`Patch.description` | `POST`/`PATCH /api/event-sessions` |
-| `moderationReasonMaxLength` | `ModerationActionRequestDto.reason` | `POST /api/moderation-actions` |
+| `moderationReasonMaxLength` | **Deprecated 2026-10-01.** It bounded `ModerationActionRequestDto.reason`; that DTO and `/api/moderation-actions` are gone. Still published so older clients don't break; don't wire it to anything. The moderation decision `note` is limited to 2000 (`ModerationDecisionRequestDto.note`, not published here). | none |
 | `reportDescriptionMaxLength` | `ReportRequestDto.description` | `POST /api/reports` |
-| `reportResolutionNotesMaxLength` | `ReportRequestDto.resolutionNotes` | `PATCH /api/reports/{id}` (admin) |
+| `reportResolutionNotesMaxLength` | `ReportRequestDto.resolutionNotes` | none: no endpoint writes a report's notes from this DTO (there is no `PATCH /api/reports/{id}`). Since 2026-10-01 a moderation decision copies its `note` (up to 2000) into `resolutionNotes`, so `ReportResponseDto.resolutionNotes` can be longer than this value. Don't use it to truncate what you display. See [`moderation-admin-fe-integration.md`](moderation-admin-fe-integration.md). |
 | `catalogDescriptionMaxLength` | `description` on plan tiers, paid services, event types, modules | admin catalog CRUD |
 
 Exceeding a limit returns **`400`** with `errorCode: 3001` / `errorKey: "VALIDATION_FAILED"`, same
@@ -455,7 +479,7 @@ QR label at 100. The bounds did not change, they were only published:
 | `locationNameMaxLength` | `locationName` on event and session |
 | `locationAddressMaxLength` | `EventRequestDto`/`EventPatchDto.locationAddress` |
 | `urlMaxLength` | `mapsUrl` (event, session), `PlaylistSuggestionRequestDto.youtubeUrl`/`spotifyUrl`, `StoryRequestDto.songUrl` |
-| `memberDisplayNameMaxLength`, `memberNicknameMaxLength`, `memberRelationshipRoleMaxLength`, `memberCustomRelationshipRoleMaxLength` | `EventMemberRequestDto`/`EventMemberPatchDto` |
+| `memberDisplayNameMaxLength`, `memberNicknameMaxLength`, `memberRelationshipRoleMaxLength`, `memberCustomRelationshipRoleMaxLength` | `EventMemberRequestDto`/`EventMemberPatchDto` (the two role limits no longer apply to them: the role fields were removed 2026-10-02; the custom one bounds `PUT /api/event-members/{id}/role`) |
 | `personNameMaxLength` | `firstName`/`lastName` on `RegisterRequestDto`, `MeUpdateRequestDto`, `EventInvitationRequestDto`/`Patch`, `CoHostInvitationRequestDto` |
 | `emailMaxLength` | `email` on `RegisterRequestDto`, `EventInvitationRequestDto`/`Patch`, `CoHostInvitationRequestDto` |
 | `passwordMinLength` / `passwordMaxLength` | `RegisterRequestDto.password`, `ChangePasswordRequestDto`/`ResetPasswordRequestDto.newPassword` |

@@ -14,6 +14,16 @@ See §Batch create below.
 role, avatar) on every endpoint below — see
 [`comment-story-author-fe-integration.md`](comment-story-author-fe-integration.md).
 
+**2026-09-30:** every `StoryResponseDto` now carries its **`media`**, exactly as
+`GET /api/medias/{mediaId}` returns it, presigned URLs included. Show a story from its own
+response; there's no second request to make. See `media` under Resource shape.
+
+**2026-09-30:** a story's `mediaId` must be a file of the story's own event. Another event's
+file is refused exactly as a `mediaId` that doesn't exist is: `404 RESOURCE_NOT_FOUND` (2001) on
+`POST /api/stories`, and a `RESOURCE_NOT_FOUND` item in `failed[]` on `POST /api/stories/batch`.
+There's no new error code, and nothing to change if you only send ids of files uploaded to the
+event.
+
 Scope note: comments and reactions are **intentionally not supported** on stories (unlike
 posts) — don't build UI expecting `commentCount`/`reactionCount` on a story. Stories also
 don't carry any per-session grouping — a story belongs to an `Event`, full stop, regardless
@@ -25,7 +35,7 @@ of how many `EventSession` records that event has.
 interface StoryRequestDto {
   eventId: string;
   authorMemberId?: string;
-  mediaId: string;          // required, must already exist
+  mediaId: string;          // required, a live file of this eventId
   caption?: string;
   songUrl?: string;
   expiresAt?: string;       // NEW: now optional — see "Expiry" below
@@ -38,7 +48,13 @@ interface StoryResponseDto extends StoryRequestDto {
   createdAt: string;
   deletedAt: string | null; // see "Known quirk" below — in practice always null
   viewedByCurrentUser: boolean; // NEW — has the caller already viewed this story
+  media: MediaResponseDto | null; // NEW 2026-09-30 — what GET /api/medias/{mediaId} returns
 }
+
+// `media` is null exactly where GET /api/medias/{mediaId} would refuse the file: it belongs
+// to another event, or it was uploaded for a module the caller can't read (a gallery upload
+// shown as a story is still gated on the gallery). Fetching it yourself then fails the same
+// way, so treat null as "this story's media is unavailable" rather than as a cue to fetch.
 
 interface StoryViewResponseDto {
   id: string;
@@ -141,9 +157,15 @@ single-create endpoint.
   even the valid items. This is different from the media batch-upload endpoint, which never
   fails the whole request for a per-file problem — validate client-side before submitting
   (required fields present, caption length) so this path is rare in practice.
-- **A `mediaId` that doesn't resolve to a live `Media` row is isolated per item**, not a
-  whole-batch failure — it lands in `failed[]` and the rest of the batch still succeeds. This
-  is the *only* per-item failure mode; everything else above is all-or-nothing.
+- **Three problems are isolated per item**, not a whole-batch failure — the item lands in
+  `failed[]` and the rest of the batch still succeeds:
+  - `RESOURCE_NOT_FOUND`: the `mediaId` isn't a live `Media` row of the batch's event. Another
+    event's file gets the same code and message as a missing one.
+  - `MEDIA_NOT_READY`: the file's `status` isn't `"READY"` — still processing, or processing
+    failed. See [`video-processing-fe-integration.md`](video-processing-fe-integration.md).
+  - `INTERNAL_ERROR`: an unexpected server error on that one item. Offer a retry.
+
+  Every other check in this list rejects the whole request.
 - Caller must be a member of the shared event — a non-member gets `403`. The `STORIES` module
   must be enabled for the event, same as the single-create endpoint.
 - Shares the `story.write` rate-limit bucket with `POST /api/stories` (20/min per caller as
@@ -310,6 +332,7 @@ to a real soft delete later, it'll be called out as a breaking change here.
       N sequential `POST /api/stories` calls — send a bare `StoryRequestDto[]`, all sharing one
       `eventId`. Read the item cap from `GET /api/config` `media.maxBatchStoryItems` (default 5)
       rather than hardcoding it.
-- [ ] Handle `failed[]` on the batch response for a missing `mediaId` (`RESOURCE_NOT_FOUND`) —
+- [ ] Handle `failed[]` on the batch response for each `errorCode` it can carry
+      (`RESOURCE_NOT_FOUND`, `MEDIA_NOT_READY`, `INTERNAL_ERROR`) —
       but note a validation problem (missing field, caption too long) rejects the *whole* batch
       with `400`/`VALIDATION_FAILED` instead, so validate client-side before submitting.
