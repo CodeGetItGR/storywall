@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { ApiError } from '@/lib/api/client';
-import type { MemberRoleCatalogDto } from '@/lib/api/types';
+import type { AuthorDto, MemberRoleCatalogDto } from '@/lib/api/types';
 import {
     activeRoleCount,
     buildCreatePayload,
@@ -9,6 +9,7 @@ import {
     buildRoleRequest,
     canEditOwnRole,
     canManageMemberRoles,
+    canReportCustomRole,
     canSaveDraft,
     draftFromMember,
     draftFromRole,
@@ -380,5 +381,24 @@ describe('role sheet URL', () => {
     it('removes the trigger, keeping other params', () => {
         expect(withoutRoleSheetParam('/events/e1/feed', 'post=p1&sheet=role')).toBe('/events/e1/feed?post=p1');
         expect(withoutRoleSheetParam('/events/e1/feed', 'sheet=role')).toBe('/events/e1/feed');
+    });
+});
+
+describe('canReportCustomRole', () => {
+    const author = { memberId: 'm2', displayName: 'Eleni', nickname: null, role: 'ATTENDEE', avatarUrl: null, roleKey: null, customRole: 'Θεία' } as AuthorDto;
+    const base = { author, viewerMemberId: 'm1', isDemoVisitor: false, reportTargetTypes: ['POST', 'MEMBER'] };
+
+    it('allows a member to report someone else’s custom role', () => {
+        expect(canReportCustomRole(base)).toBe(true);
+    });
+
+    it('refuses catalog roles, no role, self, demo visitors, non-members and a config without MEMBER', () => {
+        expect(canReportCustomRole({ ...base, author: { ...author, customRole: null, roleKey: 'BEST_MAN' } })).toBe(false);
+        expect(canReportCustomRole({ ...base, author: null })).toBe(false);
+        expect(canReportCustomRole({ ...base, viewerMemberId: 'm2' })).toBe(false);
+        expect(canReportCustomRole({ ...base, isDemoVisitor: true })).toBe(false);
+        expect(canReportCustomRole({ ...base, viewerMemberId: null })).toBe(false);
+        expect(canReportCustomRole({ ...base, reportTargetTypes: ['POST'] })).toBe(false);
+        expect(canReportCustomRole({ ...base, reportTargetTypes: undefined })).toBe(false);
     });
 });
