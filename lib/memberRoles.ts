@@ -72,13 +72,14 @@ function isValidCap(text: string): boolean {
 }
 
 export function draftFromRole(role: MemberRoleCatalogDto | null): MemberRoleDraft {
+    const maxHolders = role?.maxHolders ?? null;
     return {
         roleKey: role?.roleKey ?? '',
         labelEn: role?.label.en ?? '',
         labelEl: role?.label.el ?? '',
         emoji: role?.emoji ?? '',
-        limited: role?.maxHolders != null,
-        maxHolders: role?.maxHolders != null ? String(role.maxHolders) : '',
+        limited: maxHolders !== null,
+        maxHolders: maxHolders !== null ? String(maxHolders) : '',
     };
 }
 
