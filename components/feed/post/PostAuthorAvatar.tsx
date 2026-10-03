@@ -23,7 +23,7 @@ export function PostAuthorAvatar({
     const t = useTranslations('PostCard');
 
     return (
-        <section className="group flex items-center gap-3">
+        <section className="group flex min-w-0 flex-1 items-center gap-3">
             {/* Author marker */}
             {isHostPost ? (
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full p-0.5 bg-gradient-logo" role="img" aria-label={name}>

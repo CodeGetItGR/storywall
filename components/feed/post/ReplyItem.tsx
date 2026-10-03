@@ -43,7 +43,7 @@ export function ReplyItem({ reply, parentCommentId, onReply }: ReplyItemProps) {
                 <div className="rounded-2xl rounded-tl-sm bg-surface-muted px-3 py-2">
                     {/* Reply header */}
                     <div className="mb-0.5 flex items-baseline gap-2">
-                        <span className="flex min-w-0 flex-1 items-center gap-1.5">
+                        <span className="flex min-w-0 flex-1 items-baseline gap-1.5">
                             <span className="min-w-0 text-xs leading-tight font-semibold wrap-break-word text-ink">{name}</span>
                             <AuthorRoleChip author={reply.author} />
                         </span>

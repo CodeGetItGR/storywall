@@ -20,7 +20,7 @@ export function RoleChip({
 
     if (onClick) {
         return (
-            <button type="button" onClick={onClick} aria-label={ariaLabel} title={label} className={cn(className, 'transition-colors hover:text-ink')}>
+            <button type="button" onClick={onClick} aria-label={ariaLabel} title={label} className={cn(className, 'transition-colors hover:text-ink focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none')}>
                 {label}
             </button>
         );

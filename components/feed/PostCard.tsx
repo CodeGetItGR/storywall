@@ -151,7 +151,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                     isHostPost={showHostPostBadge}
                     roleChip={<AuthorRoleChip author={post.author} />}
                 />
-                <div className="relative flex items-center gap-1">
+                <div className="relative flex shrink-0 items-center gap-1">
                     {canTogglePin ? (
                         <button
                             type="button"

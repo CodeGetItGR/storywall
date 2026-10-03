@@ -47,7 +47,7 @@ export function CommentThreadItem({ thread, onReply, isExpanded, onToggleReplies
                     <div className="rounded-2xl rounded-tl-sm bg-surface-muted px-4 py-3">
                         {/* Comment header */}
                         <div className="mb-1 flex items-baseline gap-2">
-                            <span className="flex min-w-0 flex-1 items-center gap-1.5">
+                            <span className="flex min-w-0 flex-1 items-baseline gap-1.5">
                                 <span className="min-w-0 text-sm leading-tight font-semibold wrap-break-word text-ink">{name}</span>
                                 <AuthorRoleChip author={comment.author} />
                             </span>
