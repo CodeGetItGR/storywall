@@ -49,6 +49,8 @@ describe('authorFromMember', () => {
             nickname: member.nickname,
             role: member.role,
             avatarUrl: 'https://storage.test/a?sig=1',
+            roleKey: null,
+            customRole: null,
         });
     });
 
