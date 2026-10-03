@@ -99,6 +99,7 @@ function makeConfig(): AppConfigResponseDto {
         coverage: { maxLeadDays: 548, defaultEventDurationHours: 24 },
         contentLimits: {} as AppConfigResponseDto['contentLimits'],
         reactionTypesByEventType: {},
+        memberRolesByEventType: {},
         rateLimits: [],
         reportTargetTypes: ['POST'],
         reportReasons: ['SPAM'],

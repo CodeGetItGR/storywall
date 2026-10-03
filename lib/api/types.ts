@@ -19,7 +19,7 @@ export type PlatformRole = 'USER' | 'ADMIN' | 'GUEST';
 export type EventTypeConvention = 'WEDDING' | 'BAPTISM' | 'SOCIAL_EVENT' | 'BIRTHDAY' | 'PRIVATE_PARTY' | 'GENDER_REVEAL' | 'BABY_SHOWER';
 // Post.type / Reaction.reactionType are free strings server-side.
 // moduleKey is now a closed set on the backend and should match the config payload.
-export const EVENT_MODULE_KEYS = ['posts', 'rsvp', 'playlist', 'stories', 'gallery', 'wishlist', 'wishbook', 'co_hosts', 'schedule'] as const;
+export const EVENT_MODULE_KEYS = ['posts', 'rsvp', 'playlist', 'stories', 'gallery', 'wishlist', 'wishbook', 'co_hosts', 'schedule', 'member_roles'] as const;
 // Use this (not the raw `ModuleKey` wire type below) whenever code branches on
 // a specific module — it's a closed set and catches typos at compile time.
 // `ModuleKey` stays a plain string because the admin module/plan-tier registry
@@ -338,6 +338,39 @@ export interface AppRateLimitConfigDto {
 export type ReportTargetType = 'POST' | 'COMMENT' | 'MEMBER' | 'STORY' | 'MEDIA' | 'WISHBOOK_ENTRY' | 'PLAYLIST_SUGGESTION';
 export type ReportReason = 'SPAM' | 'HARASSMENT' | 'INAPPROPRIATE_CONTENT' | 'IMPERSONATION' | 'ILLEGAL_CONTENT' | 'COPYRIGHT' | 'OTHER';
 
+// member-roles-fe-integration.md §5.1 and §9. One role in an event type's
+// admin-managed catalog. Retired roles stay listed because members may hold them.
+export interface MemberRoleCatalogDto {
+    id: string;
+    eventTypeKey: string;
+    roleKey: string;
+    label: { en: string; el: string };
+    emoji: string | null;
+    maxHolders: number | null;
+    sortOrder: number;
+    retired: boolean;
+}
+
+// POST /api/admin/member-roles. roleKey and eventTypeKey can't change later.
+export interface MemberRoleCatalogRequestDto {
+    eventTypeKey: string;
+    roleKey: string;
+    label: { en: string; el: string };
+    emoji?: string | null;
+    maxHolders?: number | null;
+    sortOrder: number;
+}
+
+// PATCH /api/admin/member-roles/{id}. Omitted fields stay as they are;
+// emoji "" clears it; clearMaxHolders wins over maxHolders.
+export interface MemberRoleCatalogPatchDto {
+    label?: { en: string; el: string };
+    emoji?: string;
+    maxHolders?: number;
+    clearMaxHolders?: boolean;
+    sortOrder?: number;
+}
+
 export interface AppConfigResponseDto {
     featureFlags: PlatformFeatureFlagResponseDto[];
     media: AppMediaConfigDto;
@@ -354,6 +387,7 @@ export interface AppConfigResponseDto {
     coverage: AppCoverageConfigDto;
     contentLimits: AppContentLimitsDto;
     reactionTypesByEventType: Record<string, ReactionTypeResponseDto[]>;
+    memberRolesByEventType: Record<string, MemberRoleCatalogDto[]>;
     rateLimits: AppRateLimitConfigDto[];
     reportTargetTypes: ReportTargetType[];
     reportReasons: ReportReason[];
@@ -1837,8 +1871,6 @@ export interface EventMemberRequestDto {
     role: EventRole;
     displayName: string;
     nickname?: string;
-    relationshipRole?: string;
-    customRelationshipRole?: string;
     isFeatured?: boolean; // optional on the wire — defaults to false server-side
     joinedAt: string;
 }
@@ -1851,6 +1883,8 @@ export interface EventMemberResponseDto {
     role: EventRole;
     displayName: string;
     nickname: string | null;
+    // A catalog roleKey (resolve with lib/memberRoles.ts) and free text. Both
+    // null when the member_roles module is off. Set only with PUT …/role.
     relationshipRole: string | null;
     customRelationshipRole: string | null;
     isFeatured: boolean;
@@ -1865,8 +1899,6 @@ export interface EventMemberResponseDto {
 export interface EventMemberPatchDto {
     displayName?: string;
     nickname?: string;
-    relationshipRole?: string;
-    customRelationshipRole?: string;
     isFeatured?: boolean;
 }
 
