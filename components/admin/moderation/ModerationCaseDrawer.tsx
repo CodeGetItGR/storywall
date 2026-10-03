@@ -18,7 +18,8 @@ import {
     useStartModerationReview,
 } from '@/hooks/useAdminModeration';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
-import type { ModerationDecisionRequestDto, ReportTargetType } from '@/lib/api/types';
+import type { DecisionRequest } from '@/lib/adminModeration';
+import type { ReportTargetType } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
 
 // Reports a decision closes (guide §1); RESOLVED and DISMISSED ones were closed earlier.
@@ -43,6 +44,7 @@ export function ModerationCaseDrawer({
     const { data: detail, error, isLoading } = useAdminModerationCase(targetType, targetId);
     const startReview = useStartModerationReview();
     const decide = useDecideModerationCase();
+    const isMemberCase = targetType === 'MEMBER';
     const liftBan = useLiftEventBan();
     const liftSuspension = useLiftEventSuspension();
     const closeSuspension = useCloseEventSuspension();
@@ -77,7 +79,7 @@ export function ModerationCaseDrawer({
         }
     }, [detail?.status, startReviewMutate, targetId, targetType]);
 
-    function submitDecision(request: Required<ModerationDecisionRequestDto>) {
+    function submitDecision(request: DecisionRequest) {
         decide.mutate({ targetType, targetId, request }, { onSuccess: onCloseAction });
     }
     function lift(banId: string) {
@@ -130,7 +132,7 @@ export function ModerationCaseDrawer({
                     ) : null}
 
                     {/* Reported item */}
-                    <ModerationContentPreview content={detail.content} />
+                    <ModerationContentPreview content={detail.content} isMemberCase={isMemberCase} />
 
                     {/* Reports */}
                     <section className="space-y-2">
@@ -267,6 +269,8 @@ export function ModerationCaseDrawer({
                             isSubmitting={decide.isPending}
                             error={decideError}
                             onSubmitAction={submitDecision}
+                            isMemberCase={isMemberCase}
+                            expectedContentText={isMemberCase ? (detail.content?.text ?? null) : null}
                         />
                     ) : decideError ? (
                         <p role="alert" className="text-sm text-status-danger">

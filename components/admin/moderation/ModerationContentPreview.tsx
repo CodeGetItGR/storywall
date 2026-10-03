@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import type { ModerationContentDto } from '@/lib/api/types';
 
 // The reported item as it is now (guide §2.2). null: it was deleted before the review.
-export function ModerationContentPreview({ content }: { content: ModerationContentDto | null }) {
+export function ModerationContentPreview({ content, isMemberCase = false }: { content: ModerationContentDto | null; isMemberCase?: boolean }) {
     const t = useTranslations('AdminPage.moderation');
 
     if (!content) return <p className="text-sm text-ink-muted">{t('contentGone')}</p>;
@@ -23,7 +23,16 @@ export function ModerationContentPreview({ content }: { content: ModerationConte
             </p>
 
             {/* Text */}
-            {content.text ? <p className="text-sm leading-6 break-words whitespace-pre-wrap text-ink">{content.text}</p> : null}
+            {content.text ? (
+                <div className="space-y-1.5">
+                    {isMemberCase ? (
+                        <span className="inline-flex rounded-full bg-status-neutral-wash px-2.5 py-0.5 text-[11px] font-bold text-status-neutral">
+                            {t('customRoleLabel')}
+                        </span>
+                    ) : null}
+                    <p className="text-sm leading-6 break-words whitespace-pre-wrap text-ink">{content.text}</p>
+                </div>
+            ) : null}
 
             {/* Media */}
             {content.media.map((m) => {

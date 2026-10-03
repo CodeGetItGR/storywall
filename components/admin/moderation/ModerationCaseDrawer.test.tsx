@@ -154,6 +154,7 @@ describe('ModerationCaseDrawer', () => {
                     rule: 'HARASSMENT',
                     explanation: 'Insults aimed at one guest, twice.',
                     note: null,
+                    expectedContentText: null,
                 },
             },
             expect.anything(),

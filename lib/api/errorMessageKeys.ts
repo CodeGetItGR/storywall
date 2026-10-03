@@ -165,6 +165,7 @@ export type ApiErrorMessageKey =
     | 'memberRoleHostOnly'
     | 'memberRoleFeaturedMember'
     | 'memberRoleCapReached'
+    | 'memberRoleTextChanged'
     | 'withdrawalNotPrimaryHost'
     | 'oauthEmailUnverified';
 
@@ -331,6 +332,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.MEMBER_ROLE_HOST_ONLY]: 'memberRoleHostOnly',
     [ERROR_CODES.MEMBER_ROLE_FEATURED_MEMBER]: 'memberRoleFeaturedMember',
     [ERROR_CODES.MEMBER_ROLE_CAP_REACHED]: 'memberRoleCapReached',
+    [ERROR_CODES.MEMBER_ROLE_TEXT_CHANGED]: 'memberRoleTextChanged',
 } satisfies Record<KnownApiErrorCode, ApiErrorMessageKey>;
 
 export function getApiErrorMessageKey(code: number | string | undefined): ApiErrorMessageKey | undefined {

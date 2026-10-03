@@ -15,6 +15,8 @@ type PostActionsMenuProps = {
     onEditAction?: () => void;
     onReportAction?: () => void;
     reportLabel?: string;
+    onReportRoleAction?: () => void;
+    reportRoleLabel?: string;
 };
 
 export function PostActionsMenu({
@@ -27,6 +29,8 @@ export function PostActionsMenu({
     onEditAction,
     onReportAction,
     reportLabel,
+    onReportRoleAction,
+    reportRoleLabel,
 }: PostActionsMenuProps) {
     return (
         <Menu.Root>
@@ -70,6 +74,20 @@ export function PostActionsMenu({
                             >
                                 <Flag className="h-4 w-4" aria-hidden="true" />
                                 {reportLabel}
+                            </Menu.Item>
+                        )}
+                        {onReportRoleAction && reportRoleLabel && (
+                            <Menu.Item
+                                onClick={onReportRoleAction}
+                                disabled={disabled}
+                                className={cn(
+                                    'motion-menu-item flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm font-medium text-ink outline-none',
+                                    'hover:bg-surface-muted',
+                                    disabled && 'cursor-not-allowed opacity-60',
+                                )}
+                            >
+                                <Flag className="h-4 w-4" aria-hidden="true" />
+                                {reportRoleLabel}
                             </Menu.Item>
                         )}
                         {onDeleteAction && deleteLabel && (

@@ -18,9 +18,11 @@ type ReportTargetModalProps = {
     targetName?: string;
     targetType: ReportTargetType;
     layer?: 'default' | 'overStory';
+    /** 'role': a MEMBER report about the member's custom role text. */
+    variant?: 'role';
 };
 
-export function ReportTargetModal({ eventId, onCloseAction, open, targetId, targetName, targetType, layer }: ReportTargetModalProps) {
+export function ReportTargetModal({ eventId, onCloseAction, open, targetId, targetName, targetType, layer, variant }: ReportTargetModalProps) {
     const t = useTranslations('Report');
     const { data: appConfig } = useAppConfig();
     const { description, error, isSubmitting, reason, reset, setDescription, setReason, submit } = useReportSubmission({
@@ -72,7 +74,11 @@ export function ReportTargetModal({ eventId, onCloseAction, open, targetId, targ
                     <div>
                         <h2 className="text-base font-semibold text-ink">{t('title')}</h2>
                         <p className="mt-1 text-sm text-ink-muted">
-                            {targetType === 'MEMBER' ? t('body', { name: targetName ?? '' }) : t(`bodyByType.${targetType}`)}
+                            {variant === 'role'
+                                ? t('roleBody', { name: targetName ?? '' })
+                                : targetType === 'MEMBER'
+                                  ? t('body', { name: targetName ?? '' })
+                                  : t(`bodyByType.${targetType}`)}
                         </p>
                     </div>
 

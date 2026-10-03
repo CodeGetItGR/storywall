@@ -20,11 +20,13 @@ function renderHeader(overrides: Partial<Parameters<typeof StoryHeader>[0]> = {}
             canManage={false}
             canDelete={false}
             canReport={true}
+            canReportRole={false}
             showMenu={true}
             onToggleMenu={onToggleMenu}
             onClose={vi.fn()}
             onDeleteRequest={onDeleteRequest}
             onReportRequest={onReportRequest}
+            onReportRoleRequest={vi.fn()}
             {...overrides}
         />,
     );

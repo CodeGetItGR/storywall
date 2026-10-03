@@ -104,6 +104,29 @@ describe('ModerationDecisionForm', () => {
         expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ outcome: 'ACTION_TAKEN', removeContent: true, removeMember: false }));
     });
 
+    it('removes the custom role on a member case and sends the text it saw', () => {
+        const onSubmit = vi.fn();
+        render(
+            <ModerationDecisionForm
+                allowed={allAllowed}
+                contentPresent
+                activeReportCount={1}
+                isSubmitting={false}
+                error={null}
+                onSubmitAction={onSubmit}
+                isMemberCase
+                expectedContentText="Θεία"
+            />,
+        );
+        fireEvent.click(screen.getByRole('radio', { name: 'form.takeAction' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'form.removeCustomRole' }));
+        fillStatement();
+        fireEvent.click(screen.getByRole('button', { name: 'form.review' }));
+        expect(screen.getByText('summary.removeCustomRole')).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'form.confirm' }));
+        expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ removeContent: true, expectedContentText: 'Θεία' }));
+    });
+
     it('goes back from the confirm step without submitting', () => {
         const onSubmit = vi.fn();
         render(
@@ -393,6 +416,7 @@ describe('ModerationDecisionForm', () => {
             rule: null,
             explanation: null,
             note: null,
+            expectedContentText: null,
         });
     });
 

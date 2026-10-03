@@ -333,6 +333,24 @@ export function canManageMemberRoles(event: RoleEvent | null | undefined, canMod
     return canModerate && rolesWritable(event);
 }
 
+// Any member may report someone else's custom role text (guide §6.1).
+// Catalog roles are admin-written, so they can't be reported.
+export function canReportCustomRole({
+    author,
+    viewerMemberId,
+    isDemoVisitor,
+    reportTargetTypes,
+}: {
+    author: AuthorDto | null | undefined;
+    viewerMemberId: string | null;
+    isDemoVisitor: boolean;
+    reportTargetTypes: readonly string[] | null | undefined;
+}): boolean {
+    if (!author?.customRole || !viewerMemberId || isDemoVisitor) return false;
+    if (author.memberId === viewerMemberId) return false;
+    return Boolean(reportTargetTypes?.includes('MEMBER'));
+}
+
 // ── Sheet trigger ──
 
 export const ROLE_SHEET_PARAM = 'sheet';

@@ -18,6 +18,7 @@ interface StoryHeaderProps {
     canManage: boolean;
     canDelete: boolean;
     canReport: boolean;
+    canReportRole: boolean;
     showMenu: boolean;
     leadingVisual?: ReactNode;
     roleChip?: ReactNode;
@@ -25,6 +26,7 @@ interface StoryHeaderProps {
     onClose: () => void;
     onDeleteRequest: () => void;
     onReportRequest: () => void;
+    onReportRoleRequest: () => void;
     showAvatar?: boolean;
 }
 
@@ -37,6 +39,7 @@ export function StoryHeader({
     canManage,
     canDelete,
     canReport,
+    canReportRole,
     showMenu,
     leadingVisual,
     roleChip,
@@ -44,6 +47,7 @@ export function StoryHeader({
     onClose,
     onDeleteRequest,
     onReportRequest,
+    onReportRoleRequest,
     showAvatar,
 }: StoryHeaderProps) {
     const t = useTranslations('StoryPage');
@@ -74,7 +78,7 @@ export function StoryHeader({
                     </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                    {(canManage || canReport) && (
+                    {(canManage || canReport || canReportRole) && (
                         <button
                             onClick={onToggleMenu}
                             aria-label={t('moreOptions')}
@@ -100,7 +104,7 @@ export function StoryHeader({
                 </div>
             </div>
 
-            {showMenu && ((canManage && canDelete) || canReport) && (
+            {showMenu && ((canManage && canDelete) || canReport || canReportRole) && (
                 <div className="motion-popover-enter absolute top-16 right-4 z-30 flex flex-col overflow-hidden rounded-xl bg-background shadow-lg">
                     {canReport && (
                         <button
@@ -109,6 +113,15 @@ export function StoryHeader({
                             className="motion-menu-item px-4 py-2.5 text-left text-sm whitespace-nowrap text-ink hover:bg-surface-muted disabled:opacity-50"
                         >
                             {t('reportStory')}
+                        </button>
+                    )}
+                    {canReportRole && (
+                        <button
+                            type="button"
+                            onClick={onReportRoleRequest}
+                            className="motion-menu-item px-4 py-2.5 text-left text-sm whitespace-nowrap text-ink hover:bg-surface-muted disabled:opacity-50"
+                        >
+                            {t('reportRole')}
                         </button>
                     )}
                     {canManage && canDelete && (

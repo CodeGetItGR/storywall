@@ -4,7 +4,9 @@ import { useTranslations } from 'next-intl';
 import { type ChangeEvent, useEffect, useId, useRef, useState } from 'react';
 
 import {
+    actionLabelKey,
     type DecisionDraft,
+    type DecisionRequest,
     decisionSummary,
     emptyDecision,
     hasAction,
@@ -12,7 +14,7 @@ import {
     statementRecipients,
     toDecisionRequest,
 } from '@/lib/adminModeration';
-import type { AllowedActionsDto, GuidelinesRule, ModerationDecisionRequestDto, ModerationOutcome, StatementGround } from '@/lib/api/types';
+import type { AllowedActionsDto, GuidelinesRule, ModerationOutcome, StatementGround } from '@/lib/api/types';
 import {
     GUIDELINES_RULES,
     isExplanationValid,
@@ -40,6 +42,8 @@ export function ModerationDecisionForm({
     isSubmitting,
     error,
     onSubmitAction,
+    isMemberCase = false,
+    expectedContentText = null,
 }: {
     allowed: AllowedActionsDto;
     contentPresent: boolean;
@@ -47,7 +51,10 @@ export function ModerationDecisionForm({
     activeReportCount: number;
     isSubmitting: boolean;
     error: string | null;
-    onSubmitAction: (request: Required<ModerationDecisionRequestDto>) => void;
+    onSubmitAction: (request: DecisionRequest) => void;
+    // A MEMBER case: removing the content removes the custom role, and the text seen is sent along.
+    isMemberCase?: boolean;
+    expectedContentText?: string | null;
 }) {
     const t = useTranslations('AdminPage.moderation');
     const tStatement = useTranslations('ModerationStatement');
@@ -89,7 +96,7 @@ export function ModerationDecisionForm({
               banFromEvent: draft.banFromEvent && allowed.banFromEvent,
               suspendAccount: draft.suspendAccount && allowed.suspendAccount,
               suspendEvent: draft.suspendEvent && allowed.suspendEvent,
-          })
+          }, expectedContentText)
         : null;
     const acted = request !== null && hasAction(request);
     // ACTION_TAKEN with no action is 3039 while the item exists; once it is gone it closes the case
@@ -158,7 +165,7 @@ export function ModerationDecisionForm({
                         {visibleActions.map((key) => (
                             <label key={key} className="flex items-center gap-2 text-sm text-ink">
                                 <input type="checkbox" name={key} checked={draft[key]} onChange={toggleAction} />
-                                {t(`form.${key}`)}
+                                {t(`form.${actionLabelKey(key, isMemberCase)}`)}
                             </label>
                         ))}
                         {!contentPresent ? <p className="text-xs text-ink-muted">{t('form.alreadyRemovedHint')}</p> : null}
@@ -251,7 +258,7 @@ export function ModerationDecisionForm({
                     <p className="text-sm font-semibold text-ink">{t('summary.title')}</p>
                     <ul className="list-disc space-y-1 pl-5 text-sm text-ink">
                         {decisionSummary(request, contentPresent).map((line) => (
-                            <li key={line}>{t(`summary.${line}`)}</li>
+                            <li key={line}>{t(`summary.${actionLabelKey(line, isMemberCase)}`)}</li>
                         ))}
                         {statementRecipients(request).map((recipient) => (
                             <li key={recipient}>{t(recipient === 'author' ? 'summary.emailsAuthor' : 'summary.emailsHosts')}</li>

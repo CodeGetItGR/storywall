@@ -36,7 +36,9 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
         canManage,
         canDeleteStory,
         canReportStory,
+        canReportRole,
         reportOpen,
+        reportTarget,
         isVideoStory,
         isDeleting,
         mediaError,
@@ -48,6 +50,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
         handleCloseDeleteConfirm,
         handleDelete,
         handleReportRequest,
+        handleReportRoleRequest,
         handleCloseReport,
         handleMediaLoaded,
         handleMediaError,
@@ -96,11 +99,13 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                             canManage={canManage}
                             canDelete={canDeleteStory}
                             canReport={canReportStory}
+                            canReportRole={canReportRole}
                             showMenu={showMenu}
                             onToggleMenu={handleToggleMenu}
                             onClose={handleCloseStory}
                             onDeleteRequest={handleDeleteRequest}
                             onReportRequest={handleReportRequest}
+                            onReportRoleRequest={handleReportRoleRequest}
                         />
 
                         {/* Media */}
@@ -185,7 +190,21 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                         eventId={activeStory.eventId}
                         targetType="STORY"
                         targetId={activeStory.id}
-                        open={reportOpen}
+                        open={reportTarget === 'STORY'}
+                        layer="overStory"
+                        onCloseAction={handleCloseReport}
+                    />
+                )}
+
+                {/* Report role */}
+                {canReportRole && author && (
+                    <ReportTargetModal
+                        eventId={activeStory.eventId}
+                        targetType="MEMBER"
+                        targetId={author.memberId}
+                        targetName={authorName}
+                        variant="role"
+                        open={reportTarget === 'ROLE'}
                         layer="overStory"
                         onCloseAction={handleCloseReport}
                     />

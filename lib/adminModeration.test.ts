@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+    actionLabelKey,
     adminModerationCasesPath,
+    type DecisionRequest,
     decisionSummary,
     emptyDecision,
     hasAction,
@@ -9,9 +11,8 @@ import {
     statementRecipients,
     toDecisionRequest,
 } from '@/lib/adminModeration';
-import type { ModerationDecisionRequestDto } from '@/lib/api/types';
 
-const base: Required<ModerationDecisionRequestDto> = {
+const base: DecisionRequest = {
     outcome: 'ACTION_TAKEN',
     removeContent: false,
     removeMember: false,
@@ -22,6 +23,7 @@ const base: Required<ModerationDecisionRequestDto> = {
     rule: null,
     explanation: null,
     note: null,
+    expectedContentText: null,
 };
 const statement = { ground: 'GUIDELINES_BREACH', rule: 'HARASSMENT', explanation: 'Insults aimed at one guest, twice.' } as const;
 
@@ -34,7 +36,7 @@ describe('adminModerationCasesPath', () => {
 describe('toDecisionRequest', () => {
     it('sends no actions and no statement with a dismissal even if some were filled in', () => {
         const draft = { ...emptyDecision, ...statement, outcome: 'DISMISSED' as const, removeContent: true, suspendEvent: true, note: '  ' };
-        expect(toDecisionRequest(draft)).toEqual({ ...base, outcome: 'DISMISSED' });
+        expect(toDecisionRequest(draft, 'Θεία')).toEqual({ ...base, outcome: 'DISMISSED' });
     });
 
     it('drops a ban when the member is not removed', () => {
@@ -60,6 +62,22 @@ describe('toDecisionRequest', () => {
     it('sends no statement when no action is chosen', () => {
         const draft = { ...emptyDecision, ...statement, outcome: 'ACTION_TAKEN' as const };
         expect(toDecisionRequest(draft)).toEqual(base);
+    });
+
+    it('sends the text the admin saw with a removal on a member case', () => {
+        const draft = { ...emptyDecision, ...statement, outcome: 'ACTION_TAKEN' as const, removeContent: true };
+        expect(toDecisionRequest(draft, 'Θεία').expectedContentText).toBe('Θεία');
+    });
+
+    it('sends no expected text without a removal', () => {
+        const draft = { ...emptyDecision, ...statement, outcome: 'ACTION_TAKEN' as const, suspendAccount: true };
+        expect(toDecisionRequest(draft, 'Θεία').expectedContentText).toBeNull();
+    });
+
+    it('picks the custom role label for a removal on a member case', () => {
+        expect(actionLabelKey('removeContent', true)).toBe('removeCustomRole');
+        expect(actionLabelKey('removeContent', false)).toBe('removeContent');
+        expect(actionLabelKey('removeMember', true)).toBe('removeMember');
     });
 
     it('sends a blank explanation as null', () => {

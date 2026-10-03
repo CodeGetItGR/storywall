@@ -4,6 +4,7 @@ import { type SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState 
 
 import { useAppConfig, useDeleteStory, useEventStories, useMarkStoryViewed, useMediaItem, useStory } from '@/hooks';
 import { useContentAccess } from '@/hooks/useContentAccess';
+import { useCustomRoleReport } from '@/hooks/useCustomRoleReport';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import { ApiError } from '@/lib/api/client';
 import { isModuleNotAvailableError } from '@/lib/api/errors';
@@ -44,7 +45,9 @@ export interface StoryModalController {
     canManage: boolean;
     canDeleteStory: boolean;
     canReportStory: boolean;
+    canReportRole: boolean;
     reportOpen: boolean;
+    reportTarget: 'STORY' | 'ROLE' | null;
     isVideoStory: boolean;
     isDeleting: boolean;
     mediaError: boolean;
@@ -56,6 +59,7 @@ export interface StoryModalController {
     handleCloseDeleteConfirm: () => void;
     handleDelete: () => Promise<void>;
     handleReportRequest: () => void;
+    handleReportRoleRequest: () => void;
     handleCloseReport: () => void;
     handleMediaLoaded: () => void;
     handleMediaError: () => void;
@@ -75,7 +79,8 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
     const [mediaError, setMediaError] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [reportOpen, setReportOpen] = useState(false);
+    const [reportTarget, setReportTarget] = useState<'STORY' | 'ROLE' | null>(null);
+    const reportOpen = reportTarget !== null;
     // A video can finish in the instant before the dialog's pause lands; it then advances on close.
     const videoEndedUnderReportRef = useRef(false);
     // The order authors appear in when the viewer opens, frozen so that
@@ -111,7 +116,7 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
         setMediaError(false);
         setShowMenu(false);
         setShowDeleteConfirm(false);
-        setReportOpen(false);
+        setReportTarget(null);
         if (!open) {
             setActiveStoryId(null);
         } else if (storyId !== prevStoryState.storyId || open !== prevStoryState.open) {
@@ -134,6 +139,7 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
             isAuthor: Boolean(activeStory && activeMember && activeStory.authorMemberId === activeMember.id),
             targetTypeReportable: Boolean(appConfig?.reportTargetTypes?.includes('STORY')),
         });
+    const canReportRole = useCustomRoleReport(author);
     const canAdvanceStory = Boolean(activeStory && group && storyIndex >= 0);
 
     function goNext() {
@@ -233,11 +239,18 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
         if (!canReportStory) return;
         setShowMenu(false);
         videoEndedUnderReportRef.current = false;
-        setReportOpen(true);
+        setReportTarget('STORY');
+    }
+
+    function handleReportRoleRequest() {
+        if (!canReportRole) return;
+        setShowMenu(false);
+        videoEndedUnderReportRef.current = false;
+        setReportTarget('ROLE');
     }
 
     function handleCloseReport() {
-        setReportOpen(false);
+        setReportTarget(null);
         if (videoEndedUnderReportRef.current) {
             videoEndedUnderReportRef.current = false;
             goNext();
@@ -324,7 +337,9 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
         canManage,
         canDeleteStory,
         canReportStory,
+        canReportRole,
         reportOpen,
+        reportTarget,
         isVideoStory,
         isDeleting: deleteStory.isPending,
         mediaError,
@@ -336,6 +351,7 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
         handleCloseDeleteConfirm,
         handleDelete,
         handleReportRequest,
+        handleReportRoleRequest,
         handleCloseReport,
         handleMediaLoaded,
         handleMediaError,
