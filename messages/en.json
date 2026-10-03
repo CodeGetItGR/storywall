@@ -37,7 +37,7 @@
     },
     "Demo": {
         "resetDemo": "Reset demo",
-        "exitDemo": "Sign up for real",
+        "exitDemo": "Exit demo",
         "banner": "This is a demo. Nothing is saved to StoryWall.",
         "resetTitle": "Reset the demo?",
         "resetBody": "Your changes will be removed and the demo will start over.",
