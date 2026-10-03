@@ -1,49 +1,40 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-import type { ChangeEvent } from 'react';
-
-import { AdminField, adminInputClass } from '@/components/admin/AdminField';
+import { PlanModuleConfigField } from '@/components/admin/plans/PlanModuleConfigField';
 import type { KnownConfigField } from '@/lib/planModuleConfig';
 
 export function PlanModuleConfigFields({
     fields,
     draft,
+    limitedKeys,
     errors,
-    onChangeAction,
+    onLimitModeChangeAction,
+    onLimitValueChangeAction,
+    onSwitchChangeAction,
 }: {
     fields: KnownConfigField[];
     draft: Record<string, string>;
+    limitedKeys: string[];
     errors: Record<string, string>;
-    onChangeAction: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+    onLimitModeChangeAction: (key: string, limited: boolean) => void;
+    onLimitValueChangeAction: (key: string, value: string) => void;
+    onSwitchChangeAction: (key: string, checked: boolean) => void;
 }) {
-    const t = useTranslations('AdminPage.plans.grid.cell');
-
     if (fields.length === 0) return null;
 
     return (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-3">
             {fields.map((field) => (
-                <AdminField key={field.key} label={field.key} hint={errors[field.key]}>
-                    {field.type === 'boolean' ? (
-                        <select name={field.key} value={draft[field.key] ?? ''} onChange={onChangeAction} className={adminInputClass('font-mono')}>
-                            <option value="">—</option>
-                            <option value="true">{t('yes')}</option>
-                            <option value="false">{t('no')}</option>
-                        </select>
-                    ) : (
-                        <input
-                            name={field.key}
-                            type="number"
-                            min={field.min}
-                            step={1}
-                            value={draft[field.key] ?? ''}
-                            onChange={onChangeAction}
-                            aria-invalid={Boolean(errors[field.key])}
-                            className={adminInputClass('font-mono')}
-                        />
-                    )}
-                </AdminField>
+                <PlanModuleConfigField
+                    key={field.key}
+                    field={field}
+                    value={draft[field.key] ?? ''}
+                    limited={limitedKeys.includes(field.key)}
+                    error={errors[field.key]}
+                    onLimitModeChangeAction={onLimitModeChangeAction}
+                    onLimitValueChangeAction={onLimitValueChangeAction}
+                    onSwitchChangeAction={onSwitchChangeAction}
+                />
             ))}
         </div>
     );
