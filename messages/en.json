@@ -257,6 +257,10 @@
             "gifts": {
                 "label": "Gift account",
                 "description": "View the hosts' bank details for a monetary gift"
+            },
+            "myRole": {
+                "label": "My role",
+                "description": "Pick your role at this event"
             }
         }
     },
@@ -5156,5 +5160,31 @@
         "add": "Add or drop a photo",
         "change": "Click or drop to change",
         "remove": "Remove photo"
+    },
+    "MemberRoles": {
+        "myRole": "My role",
+        "editMyRole": "Change my role",
+        "close": "Close",
+        "loading": "Loading roles…",
+        "loadFailed": "Couldn't load roles. Try again.",
+        "full": "Full",
+        "other": "Other",
+        "otherPlaceholder": "Type your role",
+        "lockedNote": "Your custom role was removed. You can still pick one from the list.",
+        "save": "Save",
+        "clear": "Clear role",
+        "errors": {
+            "length": "A role must be 1 to {max} characters.",
+            "full": "All {count} places for this role are taken."
+        },
+        "host": {
+            "edit": "Edit role for {name}",
+            "unlock": "Unlock custom role",
+            "unlocked": "Custom role unlocked.",
+            "clearTitle": "Clear {name}'s role?",
+            "clearBody": "They can't type a custom role again until you unlock it.",
+            "clearConfirm": "Clear role",
+            "cancel": "Cancel"
+        }
     }
 }
