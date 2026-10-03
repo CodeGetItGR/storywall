@@ -1,23 +1,29 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useState } from 'react';
+import { useLocale } from 'next-intl';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { useAppConfig } from '@/hooks/useAppConfig';
+import { useAppConfig, useMemberRoleCatalog } from '@/hooks/useAppConfig';
 import { eventKeys } from '@/hooks/useEvent';
 import { useClearMemberRole, useSetMemberRole } from '@/hooks/useMemberRoleMutations';
 import { useMemberRoleOptions } from '@/hooks/useMemberRoleOptions';
+import type { Locale } from '@/i18n/config';
 import type { EventMemberResponseDto } from '@/lib/api/types';
 import {
     buildRoleRequest,
     canSaveDraft,
     DEFAULT_CUSTOM_ROLE_MAX,
     draftFromMember,
+    heldHostOnlyRole,
+    hostOnlyRoleKeys,
     memberHasRole,
+    optionLabel,
     OTHER_CHOICE,
     roleErrorKind,
     type RolePickerDraft,
 } from '@/lib/memberRoles';
+import { useActiveEvent } from '@/providers/EventProvider';
 
 // 'self': the member's own sheet (custom text can be locked).
 // 'host': a host editing someone (never locked; clearing custom text asks first).
@@ -40,6 +46,9 @@ export function useRoleForm({
     const queryClient = useQueryClient();
     const setRole = useSetMemberRole(eventId);
     const clearRole = useClearMemberRole(eventId);
+    const catalog = useMemberRoleCatalog();
+    const eventTypeKey = useActiveEvent()?.eventType;
+    const locale = useLocale() as Locale;
 
     const [rawDraft, setDraft] = useState<RolePickerDraft>(() => draftFromMember(member));
     const [error, setError] = useState<unknown>(null);
@@ -59,9 +68,13 @@ export function useRoleForm({
         onDoneAction();
     }, [eventId, moduleOff, onDoneAction, queryClient]);
 
+    // A guest holding a host-only role sees it locked and can only clear it (§1.1).
+    const lockedRole = heldHostOnlyRole({ roleKey: member.relationshipRole, options: options.data?.roles, catalog, eventTypeKey });
+    const hostOnlyKeys = useMemo(() => hostOnlyRoleKeys(catalog, eventTypeKey), [catalog, eventTypeKey]);
+
     const customLocked = mode === 'self' && (Boolean(options.data?.customLocked) || lockedByError);
     const blockedByLock = customLocked && draft.choice === OTHER_CHOICE;
-    const canSave = canSaveDraft(draft, member, maxLength) && !blockedByLock && !setRole.isPending;
+    const canSave = canSaveDraft(draft, member, maxLength) && !blockedByLock && !lockedRole && !setRole.isPending;
     const chosenOption = options.data?.roles.find((option) => option.roleKey === draft.choice) ?? null;
 
     const handleFailure = useCallback(
@@ -127,6 +140,8 @@ export function useRoleForm({
         options: options.data?.roles ?? null,
         allowCustom: Boolean(options.data?.allowCustom),
         customLocked,
+        lockedRoleLabel: lockedRole ? optionLabel(lockedRole, locale) : null,
+        hostOnlyKeys,
         currentRoleKey: member.relationshipRole,
         draft,
         maxLength,

@@ -42,13 +42,14 @@ const ROLE: MemberRoleCatalogDto = {
     emoji: null,
     maxHolders: null,
     sortOrder: 0,
+    hostOnly: false,
     retired: false,
 };
 
 function state(overrides: Record<string, unknown> = {}) {
     drawerState.current = {
         isCreate: false,
-        draft: { roleKey: 'BEST_MAN', labelEn: 'Best man', labelEl: 'Κουμπάρος', emoji: '', limited: false, maxHolders: '' },
+        draft: { roleKey: 'BEST_MAN', labelEn: 'Best man', labelEl: 'Κουμπάρος', emoji: '', limited: false, maxHolders: '', hostOnly: false },
         errors: {},
         failure: null,
         confirmingRetire: false,
@@ -57,6 +58,7 @@ function state(overrides: Record<string, unknown> = {}) {
         handleFieldChange: vi.fn(),
         handleLimitModeChange: vi.fn(),
         handleLimitValueChange: vi.fn(),
+        handleHostOnlyChange: vi.fn(),
         handleSubmit: vi.fn(),
         requestRetire: vi.fn(),
         cancelRetire: vi.fn(),

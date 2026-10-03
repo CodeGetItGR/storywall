@@ -61,6 +61,7 @@ export type MemberRoleDraft = {
     emoji: string;
     limited: boolean;
     maxHolders: string;
+    hostOnly: boolean;
 };
 
 export type MemberRoleDraftErrors = Partial<Record<'roleKey' | 'labelEn' | 'labelEl' | 'emoji' | 'maxHolders', true>>;
@@ -92,6 +93,7 @@ export function draftFromRole(role: MemberRoleCatalogDto | null): MemberRoleDraf
         emoji: role?.emoji ?? '',
         limited: maxHolders !== null,
         maxHolders: maxHolders !== null ? String(maxHolders) : '',
+        hostOnly: role?.hostOnly ?? false,
     };
 }
 
@@ -115,6 +117,7 @@ export function buildCreatePayload(draft: MemberRoleDraft, eventTypeKey: string,
     const emoji = draft.emoji.trim();
     if (emoji) payload.emoji = emoji;
     if (draft.limited) payload.maxHolders = Number(draft.maxHolders.trim());
+    if (draft.hostOnly) payload.hostOnly = true;
     return payload;
 }
 
@@ -131,6 +134,7 @@ export function buildPatchPayload(role: MemberRoleCatalogDto, draft: MemberRoleD
         const maxHolders = Number(draft.maxHolders.trim());
         if (maxHolders !== role.maxHolders) patch.maxHolders = maxHolders;
     }
+    if (draft.hostOnly !== role.hostOnly) patch.hostOnly = draft.hostOnly;
     return patch;
 }
 
@@ -216,9 +220,33 @@ export function roleValueFromRequest(request: MemberRoleRequestDto): RoleValue {
     return { roleKey: request.roleKey ?? null, customRole: request.customRole ?? null };
 }
 
-export function optionLabel(option: MemberRoleOptionDto, locale: Locale): string {
+export function optionLabel(option: Pick<MemberRoleOptionDto, 'label' | 'emoji'>, locale: Locale): string {
     const label = option.label[locale] || option.label.en;
     return option.emoji ? `${option.emoji} ${label}` : label;
+}
+
+// Keys of an event type's host-only roles. Guests never get these in their
+// options, so a match only ever shows up in a host's picker (§1.1).
+export function hostOnlyRoleKeys(catalog: MemberRoleCatalog, eventTypeKey: string | null | undefined): Set<string> {
+    if (!eventTypeKey) return new Set();
+    return new Set((catalog[eventTypeKey] ?? []).filter((role) => role.hostOnly).map((role) => role.roleKey));
+}
+
+// The host-only role a guest holds but can't pick, since their options leave
+// it out (§1.1). Their sheet shows it locked: they can only clear it.
+export function heldHostOnlyRole({
+    roleKey,
+    options,
+    catalog,
+    eventTypeKey,
+}: {
+    roleKey: string | null;
+    options: MemberRoleOptionDto[] | null | undefined;
+    catalog: MemberRoleCatalog;
+    eventTypeKey: string | null | undefined;
+}): MemberRoleCatalogDto | null {
+    if (!roleKey || !eventTypeKey || !options || options.some((option) => option.roleKey === roleKey)) return null;
+    return (catalog[eventTypeKey] ?? []).find((role) => role.roleKey === roleKey && role.hostOnly && !role.retired) ?? null;
 }
 
 // A full role stays pickable for the member who already holds it.
@@ -236,6 +264,7 @@ export function roleErrorKind(error: unknown): RoleErrorKind {
             return 'blocked';
         case ERROR_CODES.MEMBER_ROLE_UNKNOWN:
         case ERROR_CODES.MEMBER_ROLE_CUSTOM_NOT_ALLOWED:
+        case ERROR_CODES.MEMBER_ROLE_HOST_ONLY:
             return 'stale';
         case ERROR_CODES.MEMBER_ROLE_CUSTOM_LOCKED:
             return 'locked';

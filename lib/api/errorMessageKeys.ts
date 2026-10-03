@@ -162,6 +162,7 @@ export type ApiErrorMessageKey =
     | 'memberRoleCustomBlocked'
     | 'memberRoleCustomNotAllowed'
     | 'memberRoleCustomLocked'
+    | 'memberRoleHostOnly'
     | 'memberRoleFeaturedMember'
     | 'memberRoleCapReached'
     | 'withdrawalNotPrimaryHost'
@@ -327,6 +328,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.MEMBER_ROLE_CUSTOM_BLOCKED]: 'memberRoleCustomBlocked',
     [ERROR_CODES.MEMBER_ROLE_CUSTOM_NOT_ALLOWED]: 'memberRoleCustomNotAllowed',
     [ERROR_CODES.MEMBER_ROLE_CUSTOM_LOCKED]: 'memberRoleCustomLocked',
+    [ERROR_CODES.MEMBER_ROLE_HOST_ONLY]: 'memberRoleHostOnly',
     [ERROR_CODES.MEMBER_ROLE_FEATURED_MEMBER]: 'memberRoleFeaturedMember',
     [ERROR_CODES.MEMBER_ROLE_CAP_REACHED]: 'memberRoleCapReached',
 } satisfies Record<KnownApiErrorCode, ApiErrorMessageKey>;

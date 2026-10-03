@@ -33,6 +33,19 @@ function renderList(overrides: Partial<Parameters<typeof RolePickerList>[0]> = {
 }
 
 describe('RolePickerList', () => {
+    it('shows a held host-only role locked, with everything else off', () => {
+        renderList({ lockedRoleLabel: '🤵 Groomsman' });
+        expect(screen.getByRole('radio', { name: /Groomsman/ })).toBeChecked();
+        expect(screen.getByText('setByHosts')).toBeInTheDocument();
+        expect(screen.getByRole('radio', { name: /Bride/ })).toBeDisabled();
+        expect(screen.getByRole('radio', { name: 'other' })).toBeDisabled();
+    });
+
+    it('marks host-only roles', () => {
+        renderList({ hostOnlyKeys: new Set(['BRIDE']) });
+        expect(screen.getByRole('radio', { name: /Bride/ }).closest('label')).toHaveTextContent('hostOnly');
+    });
+
     it('disables a full role and marks it', () => {
         renderList();
         expect(screen.getByRole('radio', { name: /Best man/ })).toBeDisabled();

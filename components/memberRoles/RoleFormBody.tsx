@@ -24,6 +24,8 @@ export function RoleFormBody({ formId, form }: { formId: string; form: RoleForm 
                     options={form.options}
                     allowCustom={form.allowCustom}
                     customLocked={form.customLocked}
+                    lockedRoleLabel={form.lockedRoleLabel}
+                    hostOnlyKeys={form.hostOnlyKeys}
                     currentRoleKey={form.currentRoleKey}
                     draft={form.draft}
                     customMaxLength={form.maxLength}

@@ -3704,6 +3704,7 @@
                 "order": "Order"
             },
             "limitMax": "Max {count}",
+            "hostOnly": "Host only",
             "unlimited": "Unlimited",
             "status": {
                 "ACTIVE": "Active",
@@ -3731,6 +3732,8 @@
                 "unlimited": "Unlimited",
                 "upTo": "Up to",
                 "limitInvalid": "Enter a whole number of at least 1.",
+                "hostOnly": "Host only",
+                "hostOnlyHint": "Only hosts can give this role. Guests don't see it.",
                 "save": "Save",
                 "cancel": "Cancel",
                 "retire": "Retire",
@@ -4449,6 +4452,7 @@
         "memberRoleCustomBlocked": "That role has a word we don't allow.",
         "memberRoleCustomNotAllowed": "This event doesn't allow custom roles.",
         "memberRoleCustomLocked": "Your custom role was removed. You can still pick one from the list.",
+        "memberRoleHostOnly": "Only the hosts can give this role.",
         "memberRoleFeaturedMember": "Featured guests can't have a role.",
         "memberRoleCapReached": "All places for this role are taken.",
         "qrSharedLinkHostManaged": "This shared link is managed automatically.",
@@ -5171,6 +5175,8 @@
         "other": "Other",
         "otherPlaceholder": "Type your role",
         "lockedNote": "Your custom role was removed. You can still pick one from the list.",
+        "hostOnly": "Host only",
+        "setByHosts": "Set by the hosts.",
         "save": "Save",
         "clear": "Clear role",
         "errors": {

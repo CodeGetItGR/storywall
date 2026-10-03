@@ -348,6 +348,8 @@ export interface MemberRoleCatalogDto {
     emoji: string | null;
     maxHolders: number | null;
     sortOrder: number;
+    // Only a host or co-host may give it; guests don't get it in their options (§1.1).
+    hostOnly: boolean;
     retired: boolean;
 }
 
@@ -359,6 +361,7 @@ export interface MemberRoleCatalogRequestDto {
     emoji?: string | null;
     maxHolders?: number | null;
     sortOrder: number;
+    hostOnly?: boolean;
 }
 
 // PATCH /api/admin/member-roles/{id}. Omitted fields stay as they are;
@@ -369,6 +372,7 @@ export interface MemberRoleCatalogPatchDto {
     maxHolders?: number;
     clearMaxHolders?: boolean;
     sortOrder?: number;
+    hostOnly?: boolean;
 }
 
 // GET /api/events/{eventId}/member-roles (member-roles-fe-integration.md §2.1).

@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { AdminLimitControl } from '@/components/admin/AdminLimitControl';
+import { AdminSwitch } from '@/components/admin/AdminSwitch';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useMemberRoleDrawer } from '@/hooks/useMemberRoleDrawer';
 import type { Locale } from '@/i18n/config';
@@ -147,6 +148,16 @@ export function MemberRoleDrawer({
                         onModeChangeAction={form.handleLimitModeChange}
                         onValueChangeAction={form.handleLimitValueChange}
                     />
+
+                    {/* Access */}
+                    <div className="overflow-hidden rounded-md border border-border/70">
+                        <AdminSwitch
+                            label={t('hostOnly')}
+                            description={t('hostOnlyHint')}
+                            checked={form.draft.hostOnly}
+                            onCheckedChangeAction={form.handleHostOnlyChange}
+                        />
+                    </div>
                 </form>
             </AdminDrawer>
 

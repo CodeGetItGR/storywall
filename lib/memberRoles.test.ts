@@ -13,6 +13,8 @@ import {
     draftFromMember,
     draftFromRole,
     filterRoles,
+    heldHostOnlyRole,
+    hostOnlyRoleKeys,
     isOptionDisabled,
     isValidRoleKey,
     memberHasRole,
@@ -39,6 +41,7 @@ function makeRole(overrides: Partial<MemberRoleCatalogDto> = {}): MemberRoleCata
         emoji: null,
         maxHolders: null,
         sortOrder: 0,
+        hostOnly: false,
         retired: false,
         ...overrides,
     };
@@ -104,19 +107,19 @@ describe('role keys', () => {
 
 describe('validateRoleDraft', () => {
     it('flags every bad field on create', () => {
-        const draft = { roleKey: 'x', labelEn: ' ', labelEl: 'a'.repeat(41), emoji: 'e'.repeat(17), limited: true, maxHolders: '0' };
+        const draft = { roleKey: 'x', labelEn: ' ', labelEl: 'a'.repeat(41), emoji: 'e'.repeat(17), limited: true, maxHolders: '0', hostOnly: false };
         expect(validateRoleDraft(draft, true)).toEqual({ roleKey: true, labelEn: true, labelEl: true, emoji: true, maxHolders: true });
     });
 
     it('skips the key on edit and ignores the number when unlimited', () => {
-        const draft = { roleKey: '', labelEn: 'Best man', labelEl: 'Κουμπάρος', emoji: '', limited: false, maxHolders: '' };
+        const draft = { roleKey: '', labelEn: 'Best man', labelEl: 'Κουμπάρος', emoji: '', limited: false, maxHolders: '', hostOnly: false };
         expect(validateRoleDraft(draft, false)).toEqual({});
     });
 });
 
 describe('buildCreatePayload', () => {
     it('trims, omits a blank emoji and an unlimited cap', () => {
-        const draft = { roleKey: 'BEST_MAN', labelEn: ' Best man ', labelEl: 'Κουμπάρος', emoji: ' ', limited: false, maxHolders: '' };
+        const draft = { roleKey: 'BEST_MAN', labelEn: ' Best man ', labelEl: 'Κουμπάρος', emoji: ' ', limited: false, maxHolders: '', hostOnly: false };
         expect(buildCreatePayload(draft, 'WEDDING', 3)).toEqual({
             eventTypeKey: 'WEDDING',
             roleKey: 'BEST_MAN',
@@ -126,8 +129,13 @@ describe('buildCreatePayload', () => {
     });
 
     it('sends emoji and cap when set', () => {
-        const draft = { roleKey: 'BEST_MAN', labelEn: 'Best man', labelEl: 'Κουμπάρος', emoji: '🤵', limited: true, maxHolders: '2' };
+        const draft = { roleKey: 'BEST_MAN', labelEn: 'Best man', labelEl: 'Κουμπάρος', emoji: '🤵', limited: true, maxHolders: '2', hostOnly: false };
         expect(buildCreatePayload(draft, 'WEDDING', 0)).toMatchObject({ emoji: '🤵', maxHolders: 2 });
+    });
+
+    it('sends hostOnly only when on', () => {
+        const draft = { ...draftFromRole(null), roleKey: 'BEST_MAN', labelEn: 'Best man', labelEl: 'Κουμπάρος', hostOnly: true };
+        expect(buildCreatePayload(draft, 'WEDDING', 0)).toMatchObject({ hostOnly: true });
     });
 });
 
@@ -264,6 +272,28 @@ describe('options', () => {
     });
 });
 
+describe('host-only roles', () => {
+    const catalog = { WEDDING: [makeRole({ hostOnly: true }), makeRole({ id: 'r2', roleKey: 'FRIEND' }), makeRole({ id: 'r3', roleKey: 'OLD', hostOnly: true, retired: true })] };
+    const option = { roleKey: 'FRIEND', label: { en: 'Friend', el: 'Φίλος' }, emoji: null, maxHolders: null, holders: 0, available: true };
+
+    it('lists the host-only keys of the event type', () => {
+        expect([...hostOnlyRoleKeys(catalog, 'WEDDING')]).toEqual(['BEST_MAN', 'OLD']);
+        expect(hostOnlyRoleKeys(catalog, null).size).toBe(0);
+    });
+
+    it('finds a held host-only role missing from the options', () => {
+        expect(heldHostOnlyRole({ roleKey: 'BEST_MAN', options: [option], catalog, eventTypeKey: 'WEDDING' })?.roleKey).toBe('BEST_MAN');
+        expect(heldHostOnlyRole({ roleKey: 'FRIEND', options: [option], catalog, eventTypeKey: 'WEDDING' })).toBeNull();
+        expect(heldHostOnlyRole({ roleKey: 'OLD', options: [option], catalog, eventTypeKey: 'WEDDING' })).toBeNull();
+        expect(heldHostOnlyRole({ roleKey: 'BEST_MAN', options: null, catalog, eventTypeKey: 'WEDDING' })).toBeNull();
+    });
+
+    it('patches hostOnly only when it changes', () => {
+        const role = makeRole();
+        expect(buildPatchPayload(role, { ...draftFromRole(role), hostOnly: true })).toEqual({ hostOnly: true });
+    });
+});
+
 describe('roleErrorKind', () => {
     const error = (status: number, errorCode: number) => new ApiError(status, { errorCode });
     it('maps every role code', () => {
@@ -272,6 +302,7 @@ describe('roleErrorKind', () => {
         expect(roleErrorKind(error(400, 3041))).toBe('stale');
         expect(roleErrorKind(error(403, 4016))).toBe('stale');
         expect(roleErrorKind(error(403, 4017))).toBe('locked');
+        expect(roleErrorKind(error(403, 4018))).toBe('stale');
         expect(roleErrorKind(error(409, 5114))).toBe('full');
         expect(roleErrorKind(error(409, 5113))).toBe('featured');
         expect(roleErrorKind(error(409, 5012))).toBe('moduleOff');
