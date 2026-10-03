@@ -17,6 +17,7 @@ export const meQueryKey = ['me'] as const;
 // sees it, not just whichever screen happened to trigger the fetch.
 export function useMe(): UseQueryResult<UserResponseDto> {
     const { user, updateProfile } = useAuth();
+    const userId = user?.userId ?? null;
     const query = useQuery({
         queryKey: meQueryKey,
         queryFn: () => api.get<UserResponseDto>(endpoints.me.profile),
@@ -25,9 +26,12 @@ export function useMe(): UseQueryResult<UserResponseDto> {
         staleTime: usePresignedUrlRefreshMs(),
     });
 
+    // Merged only once someone is signed in, and again when that changes: on a
+    // full page load the server seeds this query (see AppProviders) before the
+    // session it came with is adopted, and adopting it resets emailVerified.
     useEffect(() => {
-        if (query.data) updateProfile(query.data);
-    }, [query.data, updateProfile]);
+        if (query.data && userId) updateProfile(query.data);
+    }, [query.data, updateProfile, userId]);
 
     return query;
 }

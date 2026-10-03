@@ -3,8 +3,9 @@ import { cookies, headers } from 'next/headers';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
 import { serverGet } from '@/lib/api/serverFetch';
-import type { EventDetailResponseDto, EventMemberResponseDto } from '@/lib/api/types';
+import type { EventDetailResponseDto, EventMemberResponseDto, UserResponseDto } from '@/lib/api/types';
 import { ACCESS_TOKEN_HEADER } from '@/lib/auth/authCookies';
+import { accessTokenExpiresInMs, sessionFromProfile, type SessionHandoff } from '@/lib/auth/sessionHandoff';
 import { ACTIVE_EVENT_COOKIE } from '@/lib/storageKeys';
 
 export interface ServerEventContext {
@@ -70,11 +71,37 @@ export async function resolveServerEventContext(eventId?: string): Promise<Serve
     return resolveEventContext(await prefetchAccessToken(), eventId);
 }
 
+// The access token for a redirect stub, which has to resolve on every request,
+// in-app navigations included. It renders nothing, so it costs a navigation no
+// prefetch. Never use it to prefetch: that's prefetchAccessToken.
+export async function redirectAccessToken(): Promise<string | null> {
+    return (await headers()).get(ACCESS_TOKEN_HEADER);
+}
+
 // The same resolution for a bare-path redirect stub, which has no eventId of
-// its own and has to resolve on every request, in-app navigations included.
-// It renders nothing, so it costs a navigation no prefetch.
+// its own (see redirectAccessToken).
 export async function resolveServerRedirectContext(): Promise<ServerEventContext | null> {
-    return resolveEventContext((await headers()).get(ACCESS_TOKEN_HEADER));
+    return resolveEventContext(await redirectAccessToken());
+}
+
+// The signed-in session the browser would otherwise ask for after the page
+// loads, built from /api/me with the token proxy.ts already resolved. Null when
+// prefetchAccessToken is, or when Spring can't answer; the browser then
+// bootstraps through /api/auth/session as before.
+export async function resolveServerSession(): Promise<SessionHandoff | null> {
+    const accessToken = await prefetchAccessToken();
+    if (!accessToken) return null;
+
+    try {
+        const profile = await serverGet<UserResponseDto>(endpoints.me.profile, accessToken);
+        return {
+            session: sessionFromProfile(accessToken, profile),
+            expiresInMs: accessTokenExpiresInMs(accessToken, Date.now()) ?? 0,
+            profile,
+        };
+    } catch {
+        return null;
+    }
 }
 
 // The event's detail, for pages that gate their prefetch on it (plan, status,

@@ -7,7 +7,9 @@ import { type ReactNode, useEffect, useState } from 'react';
 import { BetaFeedback } from '@/components/betaFeedback/BetaFeedback';
 import { GuidelinesAcceptanceGate, GuidelinesGateSignOutHold } from '@/components/legal/GuidelinesAcceptanceGate';
 import { useAuth } from '@/hooks/useAuth';
+import { meQueryKey } from '@/hooks/useMe';
 import { useVisualViewportSync } from '@/hooks/useVisualViewportSync';
+import type { SessionHandoff } from '@/lib/auth/sessionHandoff';
 import { refreshEventOn4015 } from '@/lib/eventSuspension';
 import { reopenGuidelinesGateOn4013 } from '@/lib/guidelinesAcceptance';
 import { makeQueryClient } from '@/lib/queryClient';
@@ -36,10 +38,17 @@ function AccountComposerProvider({ children }: { children: ReactNode }) {
     return <ComposerProvider key={generation}>{children}</ComposerProvider>;
 }
 
-export function AppProviders({ children }: { children: ReactNode }) {
+// handoff: the session the server already holds on a full page load of a
+// signed-in page (see app/(main)/layout.tsx); null everywhere else.
+export function AppProviders({ children, handoff = null }: { children: ReactNode; handoff?: SessionHandoff | null }) {
     const isDemoRoute = usePathname()?.startsWith('/demo') ?? false;
     useVisualViewportSync();
-    const [queryClient] = useState(makeQueryClient);
+    const [queryClient] = useState(() => {
+        const client = makeQueryClient();
+        // The /api/me answer the session was built from, so useMe doesn't fetch it again.
+        if (handoff) client.setQueryData(meQueryKey, handoff.profile);
+        return client;
+    });
     // Browser only (an effect): the API client is shared with server code.
     useEffect(() => reopenGuidelinesGateOn4013(queryClient), [queryClient]);
     useEffect(() => refreshEventOn4015(queryClient), [queryClient]);
@@ -58,7 +67,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
     return (
         <QueryClientProvider client={queryClient}>
             <AppConfigBootstrap />
-            <AuthProvider>
+            <AuthProvider handoff={handoff}>
                 <EventProvider>
                     <DocumentTitleSync />
                     <BetaFeedback />

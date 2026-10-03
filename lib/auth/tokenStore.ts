@@ -23,7 +23,14 @@ interface AuthState {
     // only ever set via updateSessionProfile once /api/me has been fetched.
     // null means "not fetched yet", not "unverified".
     emailVerified: boolean | null;
+    // When the access token expires (ms, this device's clock). lib/api/client.ts
+    // refreshes it a minute before.
+    expiresAt: number | null;
 }
+
+// The access token lives 15 minutes (the integration guide; the API doesn't
+// say). A token straight from sign-in or a refresh has all of it left.
+export const ACCESS_TOKEN_LIFETIME_MS = 15 * 60 * 1000;
 
 let state: AuthState = {
     accessToken: null,
@@ -38,6 +45,7 @@ let state: AuthState = {
     status: null,
     createdAt: null,
     emailVerified: null,
+    expiresAt: null,
 };
 
 type Listener = (state: AuthState) => void;
@@ -67,7 +75,9 @@ export function getAuthState(): AuthState {
     return state;
 }
 
-export function setSession(session: AuthSessionDto) {
+// expiresInMs: what's left of the token's lifetime. Only a token the server
+// handed over on page load (lib/auth/sessionHandoff.ts) can be part-way through it.
+export function setSession(session: AuthSessionDto, expiresInMs = ACCESS_TOKEN_LIFETIME_MS) {
     state = {
         accessToken: session.accessToken,
         userId: session.userId,
@@ -84,6 +94,7 @@ export function setSession(session: AuthSessionDto) {
         // state must never leak onto whoever this session now belongs to.
         // Re-populated once /api/me resolves for the new session.
         emailVerified: null,
+        expiresAt: Date.now() + expiresInMs,
     };
     emit();
 }
@@ -113,6 +124,7 @@ export function clearSession() {
         status: null,
         createdAt: null,
         emailVerified: null,
+        expiresAt: null,
     };
     emit();
 }

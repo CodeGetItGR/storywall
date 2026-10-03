@@ -2,15 +2,14 @@
 
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { use, useEffect } from 'react';
+import { useEffect } from 'react';
 
 import { PostRedirectState } from '@/components/post/PostRedirectState';
 import { usePost } from '@/hooks';
 import { ApiError } from '@/lib/api/client';
 import { routes } from '@/lib/routes';
 
-export default function PostRedirectPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = use(params);
+export default function PostRedirectPage({ id }: { id: string }) {
     const router = useRouter();
     const t = useTranslations('PostModal');
     const { data: post, error } = usePost(id);
