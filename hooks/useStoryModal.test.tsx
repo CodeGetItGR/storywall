@@ -16,6 +16,7 @@ vi.mock('@/hooks', () => ({
 }));
 vi.mock('@/hooks/useOverlayHistory', () => ({ useOverlayHistory: () => ({ requestClose: vi.fn() }) }));
 vi.mock('@/hooks/useContentAccess', () => ({ useContentAccess: () => ({ isDemoBuilder: false, isLocked: () => false }) }));
+vi.mock('@/hooks/useCustomRoleReport', () => ({ useCustomRoleReport: () => false }));
 vi.mock('@/providers/EventProvider', () => ({
     useActiveEvent: () => ({ id: 'event-1', status: 'ACTIVE' }),
     useActiveMember: () => null,

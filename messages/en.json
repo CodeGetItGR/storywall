@@ -877,6 +877,7 @@
         "moreOptions": "More options",
         "deleteStory": "Delete story",
         "reportStory": "Report story",
+        "reportRole": "Report role",
         "deleteStoryConfirmTitle": "Delete this story?",
         "deleteStoryConfirmBody": "This story will be removed for everyone and can't be undone.",
         "deleteStoryConfirm": "Delete story",
