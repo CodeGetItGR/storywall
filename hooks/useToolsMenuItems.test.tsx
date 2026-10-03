@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
     activeEvent: null as Record<string, unknown> | null,
     activeMember: { id: 'm1', isFeatured: false } as Record<string, unknown> | null,
     isHost: true,
+    accessMode: 'standard',
 }));
 
 vi.mock('next-intl', () => ({
@@ -21,6 +22,7 @@ vi.mock('@/providers/EventProvider', () => ({
     useActiveEvent: () => mocks.activeEvent,
     useActiveMember: () => mocks.activeMember,
     useIsHost: () => mocks.isHost,
+    useContentAccessMode: () => mocks.accessMode,
     useRouteEventId: () => 'event-1',
 }));
 
@@ -51,6 +53,7 @@ function deletedEvent() {
 describe('useToolsMenuItems', () => {
     beforeEach(() => {
         mocks.isHost = true;
+        mocks.accessMode = 'standard';
         mocks.activeMember = { id: 'm1', isFeatured: false };
     });
 
@@ -71,6 +74,13 @@ describe('useToolsMenuItems', () => {
             modules: [{ moduleKey: 'member_roles', isEnabled: true, isAvailable: true, configuration: {} }],
             ...overrides,
         });
+
+    it('hides My role for a demo visitor', () => {
+        mocks.activeEvent = withRoles();
+        mocks.accessMode = 'demoVisitor';
+        const { result } = renderHook(() => useToolsMenuItems());
+        expect(result.current.some((tool) => tool.key === 'myRole')).toBe(false);
+    });
 
     it('adds My role when the member can set a role', () => {
         mocks.activeEvent = withRoles();

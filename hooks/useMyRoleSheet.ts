@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRolePromptOnce } from '@/hooks/useRolePromptOnce';
 import { canEditOwnRole, memberHasRole, ROLE_SHEET_PARAM, ROLE_SHEET_VALUE, withoutRoleSheetParam } from '@/lib/memberRoles';
 import { routes } from '@/lib/routes';
-import { useActiveEvent, useActiveMember, useEventContextLoading } from '@/providers/EventProvider';
+import { useActiveEvent, useActiveMember, useContentAccessMode, useEventContextLoading } from '@/providers/EventProvider';
 
 // The member's own role sheet. ?sheet=role is a one-shot trigger: it is
 // replaced away first and the sheet opens only once it's gone, so Back (which
@@ -18,8 +18,9 @@ export function useMyRoleSheet() {
     const activeEvent = useActiveEvent();
     const member = useActiveMember();
     const isLoading = useEventContextLoading();
+    const isDemoVisitor = useContentAccessMode() === 'demoVisitor';
 
-    const enabled = canEditOwnRole(activeEvent, member);
+    const enabled = !isDemoVisitor && canEditOwnRole(activeEvent, member);
     const requested = searchParams.get(ROLE_SHEET_PARAM) === ROLE_SHEET_VALUE;
     const [open, setOpen] = useState(false);
     const [pending, setPending] = useState(false);
@@ -44,7 +45,7 @@ export function useMyRoleSheet() {
     const feedPath = activeEvent ? routes.events.feed(activeEvent.id) : null;
     const noRole = member ? !memberHasRole(member) : false;
     useRolePromptOnce({
-        active: enabled && feedPath !== null && pathname === feedPath && !open && !pending && noRole,
+        active: enabled && feedPath !== null && pathname === feedPath && !open && !pending && !requested && noRole,
         memberId: member?.id ?? null,
         onPromptAction: openSheet,
     });

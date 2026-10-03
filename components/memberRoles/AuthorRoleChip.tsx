@@ -14,7 +14,7 @@ export function AuthorRoleChip({
     interactive = true,
 }: {
     author: AuthorDto | null | undefined;
-    tone?: 'default' | 'onDark';
+    tone?: 'default' | 'onDark' | 'onMuted';
     interactive?: boolean;
 }) {
     const t = useTranslations('MemberRoles');

@@ -2,6 +2,7 @@ import { cn } from '@/lib/utils';
 
 const toneClass = {
     default: 'bg-surface-muted text-ink-muted',
+    onMuted: 'bg-background text-ink-muted',
     onDark: 'bg-white/15 text-white',
 } as const;
 

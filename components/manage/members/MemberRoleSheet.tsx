@@ -9,12 +9,14 @@ import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useMemberRoleUnlock } from '@/hooks/useMemberRoleUnlock';
 import { useRoleForm } from '@/hooks/useRoleForm';
 import type { EventMemberResponseDto } from '@/lib/api/types';
+import { useActiveMember } from '@/providers/EventProvider';
 
 const FORM_ID = 'member-role-form';
 
 export function MemberRoleSheet({ eventId, member, onCloseAction }: { eventId: string; member: EventMemberResponseDto; onCloseAction: () => void }) {
     const t = useTranslations('MemberRoles');
-    const form = useRoleForm({ eventId, member, mode: 'host', onDoneAction: onCloseAction });
+    const isSelf = useActiveMember()?.id === member.id;
+    const form = useRoleForm({ eventId, member, mode: isSelf ? 'self' : 'host', onDoneAction: onCloseAction });
     const unlock = useMemberRoleUnlock(member.id);
 
     return (
@@ -23,7 +25,7 @@ export function MemberRoleSheet({ eventId, member, onCloseAction }: { eventId: s
                 <RoleFormBody formId={FORM_ID} form={form} />
 
                 {/* Unlock */}
-                {form.allowCustom && (
+                {form.allowCustom && !isSelf && (
                     <div className="pt-4">
                         {unlock.done ? (
                             <p className="text-sm text-ink-muted">{t('host.unlocked')}</p>

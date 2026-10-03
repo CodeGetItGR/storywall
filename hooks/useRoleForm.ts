@@ -1,8 +1,10 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useAppConfig } from '@/hooks/useAppConfig';
+import { eventKeys } from '@/hooks/useEvent';
 import { useClearMemberRole, useSetMemberRole } from '@/hooks/useMemberRoleMutations';
 import { useMemberRoleOptions } from '@/hooks/useMemberRoleOptions';
 import type { EventMemberResponseDto } from '@/lib/api/types';
@@ -35,13 +37,27 @@ export function useRoleForm({
     const options = useMemberRoleOptions(eventId, true);
     const { data: appConfig } = useAppConfig();
     const maxLength = appConfig?.contentLimits.memberCustomRelationshipRoleMaxLength ?? DEFAULT_CUSTOM_ROLE_MAX;
+    const queryClient = useQueryClient();
     const setRole = useSetMemberRole(eventId);
     const clearRole = useClearMemberRole(eventId);
 
-    const [draft, setDraft] = useState<RolePickerDraft>(() => draftFromMember(member));
+    const [rawDraft, setDraft] = useState<RolePickerDraft>(() => draftFromMember(member));
     const [error, setError] = useState<unknown>(null);
     const [lockedByError, setLockedByError] = useState(false);
     const [confirmingClear, setConfirmingClear] = useState(false);
+
+    // A role retired since the draft was made (after a refetch) no longer counts as chosen.
+    const draft: RolePickerDraft =
+        options.data && rawDraft.choice !== null && rawDraft.choice !== OTHER_CHOICE && !options.data.roles.some((option) => option.roleKey === rawDraft.choice)
+            ? { ...rawDraft, choice: null }
+            : rawDraft;
+
+    const moduleOff = roleErrorKind(options.error) === 'moduleOff';
+    useEffect(() => {
+        if (!moduleOff) return;
+        queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
+        onDoneAction();
+    }, [eventId, moduleOff, onDoneAction, queryClient]);
 
     const customLocked = mode === 'self' && (Boolean(options.data?.customLocked) || lockedByError);
     const blockedByLock = customLocked && draft.choice === OTHER_CHOICE;

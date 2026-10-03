@@ -45,7 +45,7 @@ export function ReplyItem({ reply, parentCommentId, onReply }: ReplyItemProps) {
                     <div className="mb-0.5 flex items-baseline gap-2">
                         <span className="flex min-w-0 flex-1 items-baseline gap-1.5">
                             <span className="min-w-0 text-xs leading-tight font-semibold wrap-break-word text-ink">{name}</span>
-                            <AuthorRoleChip author={reply.author} />
+                            <AuthorRoleChip author={reply.author} tone="onMuted" />
                         </span>
                         <span className="shrink-0 text-[10px] whitespace-nowrap text-ink-faint">
                             {timeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${timeAgo.unit}`, { count: timeAgo.value })}

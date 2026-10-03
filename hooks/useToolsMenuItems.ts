@@ -5,10 +5,10 @@ import { useTranslations } from 'next-intl';
 
 import { useGiftAccount } from '@/hooks/useGiftAccount';
 import { isEventDeleted, readableModuleKeys } from '@/lib/eventLifecycle';
-import { canEditOwnRole } from '@/lib/memberRoles';
+import { canEditOwnRole, ROLE_SHEET_VALUE } from '@/lib/memberRoles';
 import { isGalleryQrFeatureEnabled } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
-import { useActiveEvent, useActiveMember, useIsHost, useRouteEventId } from '@/providers/EventProvider';
+import { useActiveEvent, useActiveMember, useContentAccessMode, useIsHost, useRouteEventId } from '@/providers/EventProvider';
 
 export interface ToolMenuItem {
     key: string;
@@ -24,6 +24,7 @@ export function useToolsMenuItems(): ToolMenuItem[] {
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
     const isHost = useIsHost();
+    const isDemoVisitor = useContentAccessMode() === 'demoVisitor';
     // Only read the gift account on event routes — id-less pages like /home
     // still show the menu for the remembered event but must not fire
     // event-scoped requests for it.
@@ -43,14 +44,14 @@ export function useToolsMenuItems(): ToolMenuItem[] {
         { key: 'gallery', href: routes.events.tools.gallery(activeEvent.id), icon: Images, moduleKey: 'gallery' },
         { key: 'wishbook', href: routes.events.tools.wishbook(activeEvent.id), icon: BookHeart, moduleKey: 'wishbook' },
         { key: 'gifts', href: routes.events.tools.gifts(activeEvent.id), icon: Gift, moduleKey: 'wishlist' },
-        { key: 'myRole', href: routes.events.feed(activeEvent.id, { sheet: 'role' }), icon: UserRound, moduleKey: 'member_roles' },
+        { key: 'myRole', href: routes.events.feed(activeEvent.id, { sheet: ROLE_SHEET_VALUE }), icon: UserRound, moduleKey: 'member_roles' },
     ];
 
     return toolDefinitions
         .filter((tool) => !tool.moduleKey || availableModules.has(tool.moduleKey))
         .filter((tool) => tool.key !== 'gallery' || isHost)
         .filter((tool) => tool.key !== 'gifts' || isHost || Boolean(giftAccount.data))
-        .filter((tool) => tool.key !== 'myRole' || canEditOwnRole(activeEvent, activeMember))
+        .filter((tool) => tool.key !== 'myRole' || (!isDemoVisitor && canEditOwnRole(activeEvent, activeMember)))
         .filter((tool) => !isDeleted || tool.key === 'gallery' || tool.key === 'wishbook')
         .map((tool) => ({
             key: tool.key,

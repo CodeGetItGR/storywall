@@ -36,6 +36,10 @@ function refreshAfterRoleError(queryClient: QueryClient, eventId: string, error:
     if (kind === 'stale' || kind === 'full' || kind === 'moduleOff') {
         queryClient.invalidateQueries({ queryKey: memberRoleOptionKeys.list(eventId) });
     }
+    if (kind === 'featured') {
+        queryClient.invalidateQueries({ queryKey: myEventsKeys.all });
+        queryClient.invalidateQueries({ queryKey: eventMemberKeys.list(eventId) });
+    }
     if (kind === 'moduleOff') queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
 }
 

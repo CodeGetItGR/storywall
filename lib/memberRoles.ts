@@ -307,7 +307,7 @@ export function canManageMemberRoles(event: RoleEvent | null | undefined, canMod
 // ── Sheet trigger ──
 
 export const ROLE_SHEET_PARAM = 'sheet';
-export const ROLE_SHEET_VALUE = 'role';
+export const ROLE_SHEET_VALUE = 'role' as const;
 
 export function withRoleSheetParam(pathname: string, search: string): string {
     const params = new URLSearchParams(search);

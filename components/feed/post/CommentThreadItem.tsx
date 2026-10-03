@@ -49,7 +49,7 @@ export function CommentThreadItem({ thread, onReply, isExpanded, onToggleReplies
                         <div className="mb-1 flex items-baseline gap-2">
                             <span className="flex min-w-0 flex-1 items-baseline gap-1.5">
                                 <span className="min-w-0 text-sm leading-tight font-semibold wrap-break-word text-ink">{name}</span>
-                                <AuthorRoleChip author={comment.author} />
+                                <AuthorRoleChip author={comment.author} tone="onMuted" />
                             </span>
                             <span className="shrink-0 text-xs whitespace-nowrap text-ink-faint">
                                 {commentTimeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${commentTimeAgo.unit}`, { count: commentTimeAgo.value })}
