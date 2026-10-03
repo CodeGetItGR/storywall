@@ -48,7 +48,8 @@ export function hasAction(request: DecisionRequest): boolean {
 
 // What is sent: a dismissal never carries actions, a ban never outlives the removal it depends on,
 // and the statement of reasons goes with an action and only with one (3039 otherwise).
-export function toDecisionRequest(draft: DecisionDraft & { outcome: ModerationOutcome }): DecisionRequest {
+// expectedContentText: a MEMBER case's custom role text as displayed (null for every other case).
+export function toDecisionRequest(draft: DecisionDraft & { outcome: ModerationOutcome }, expectedContentText: string | null = null): DecisionRequest {
     const acting = draft.outcome === 'ACTION_TAKEN';
     const removeMember = acting && draft.removeMember;
     const note = draft.note.trim();
@@ -63,10 +64,16 @@ export function toDecisionRequest(draft: DecisionDraft & { outcome: ModerationOu
         rule: null,
         explanation: null,
         note: note === '' ? null : note,
+        expectedContentText: acting && draft.removeContent ? expectedContentText : null,
     };
     if (!hasAction(request)) return request;
     const explanation = trimLikeBackend(draft.explanation);
     return { ...request, ground: draft.ground, rule: draft.rule, explanation: explanation === '' ? null : explanation };
+}
+
+// On a member case, removing the content removes the custom role: the copy says so.
+export function actionLabelKey<K extends string>(key: K, isMemberCase: boolean): K | 'removeCustomRole' {
+    return key === 'removeContent' && isMemberCase ? 'removeCustomRole' : key;
 }
 
 // The backend's rule: ground, rule and a 20–2000 character explanation, all three.

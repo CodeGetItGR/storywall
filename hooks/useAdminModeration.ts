@@ -35,6 +35,8 @@ const CASE_STALE_CODES = new Set<unknown>([
     ERROR_CODES.MODERATION_TARGET_PROTECTED,
     // Another case suspended the StoryWall first: allowedActions.suspendEvent is now false.
     ERROR_CODES.EVENT_ALREADY_SUSPENDED,
+    // The custom role text changed since the case was read (member roles §6.2).
+    ERROR_CODES.MEMBER_ROLE_TEXT_CHANGED,
 ]);
 
 // 5106: someone else closed the case, so it has also left its tab.
