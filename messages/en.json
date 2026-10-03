@@ -4464,6 +4464,7 @@
         "memberRoleHostOnly": "Only the hosts can give this role.",
         "memberRoleFeaturedMember": "Featured guests can't have a role.",
         "memberRoleCapReached": "All places for this role are taken.",
+        "memberRoleTextChanged": "The role changed since you opened this case. Check it and decide again.",
         "qrSharedLinkHostManaged": "This shared link is managed automatically.",
         "eventSessionMainLocationReadOnly": "This is the event's main session, so its location always matches the event's own.",
         "eventSessionLimitReached": "This event's plan doesn't allow more schedule sessions.",

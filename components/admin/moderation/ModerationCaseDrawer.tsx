@@ -18,7 +18,8 @@ import {
     useStartModerationReview,
 } from '@/hooks/useAdminModeration';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
-import type { ModerationDecisionRequestDto, ReportTargetType } from '@/lib/api/types';
+import type { DecisionRequest } from '@/lib/adminModeration';
+import type { ReportTargetType } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
 
 // Reports a decision closes (guide §1); RESOLVED and DISMISSED ones were closed earlier.
@@ -77,7 +78,7 @@ export function ModerationCaseDrawer({
         }
     }, [detail?.status, startReviewMutate, targetId, targetType]);
 
-    function submitDecision(request: Required<ModerationDecisionRequestDto>) {
+    function submitDecision(request: DecisionRequest) {
         decide.mutate({ targetType, targetId, request }, { onSuccess: onCloseAction });
     }
     function lift(banId: string) {

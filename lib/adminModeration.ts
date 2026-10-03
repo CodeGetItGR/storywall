@@ -38,7 +38,9 @@ export const emptyDecision: DecisionDraft = {
     note: '',
 };
 
-type DecisionRequest = Required<ModerationDecisionRequestDto>;
+// Every field but the optional expectedContentText, which only MEMBER cases with removeContent send.
+export type DecisionRequest = Required<Omit<ModerationDecisionRequestDto, 'expectedContentText'>> &
+    Pick<ModerationDecisionRequestDto, 'expectedContentText'>;
 
 export function hasAction(request: DecisionRequest): boolean {
     return request.removeContent || request.removeMember || request.suspendAccount || request.suspendEvent;

@@ -346,6 +346,10 @@ export const endpoints = {
             retire: (id: string) => `/api/admin/member-roles/${id}/retire`,
             unretire: (id: string) => `/api/admin/member-roles/${id}/unretire`,
         },
+        blockedTerms: {
+            collection: '/api/admin/blocked-terms',
+            byId: (id: string) => `/api/admin/blocked-terms/${id}`,
+        },
         collaborators: {
             list: '/api/admin/collaborators',
             byId: (id: string) => `/api/admin/collaborators/${id}`,

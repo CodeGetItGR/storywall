@@ -164,6 +164,7 @@ export const ERROR_CODES = {
     MEMBER_ROLE_HOST_ONLY: 4018,
     MEMBER_ROLE_FEATURED_MEMBER: 5113,
     MEMBER_ROLE_CAP_REACHED: 5114,
+    MEMBER_ROLE_TEXT_CHANGED: 5115,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the

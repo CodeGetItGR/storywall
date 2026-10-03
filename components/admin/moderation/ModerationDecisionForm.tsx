@@ -5,6 +5,7 @@ import { type ChangeEvent, useEffect, useId, useRef, useState } from 'react';
 
 import {
     type DecisionDraft,
+    type DecisionRequest,
     decisionSummary,
     emptyDecision,
     hasAction,
@@ -12,7 +13,7 @@ import {
     statementRecipients,
     toDecisionRequest,
 } from '@/lib/adminModeration';
-import type { AllowedActionsDto, GuidelinesRule, ModerationDecisionRequestDto, ModerationOutcome, StatementGround } from '@/lib/api/types';
+import type { AllowedActionsDto, GuidelinesRule, ModerationOutcome, StatementGround } from '@/lib/api/types';
 import {
     GUIDELINES_RULES,
     isExplanationValid,
@@ -47,7 +48,7 @@ export function ModerationDecisionForm({
     activeReportCount: number;
     isSubmitting: boolean;
     error: string | null;
-    onSubmitAction: (request: Required<ModerationDecisionRequestDto>) => void;
+    onSubmitAction: (request: DecisionRequest) => void;
 }) {
     const t = useTranslations('AdminPage.moderation');
     const tStatement = useTranslations('ModerationStatement');

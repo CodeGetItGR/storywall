@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
     adminModerationCasesPath,
+    type DecisionRequest,
     decisionSummary,
     emptyDecision,
     hasAction,
@@ -9,9 +10,8 @@ import {
     statementRecipients,
     toDecisionRequest,
 } from '@/lib/adminModeration';
-import type { ModerationDecisionRequestDto } from '@/lib/api/types';
 
-const base: Required<ModerationDecisionRequestDto> = {
+const base: DecisionRequest = {
     outcome: 'ACTION_TAKEN',
     removeContent: false,
     removeMember: false,

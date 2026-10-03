@@ -364,6 +364,18 @@ export interface MemberRoleCatalogRequestDto {
     hostOnly?: boolean;
 }
 
+// /api/admin/blocked-terms (member-roles-fe-integration.md §10). Extra terms on
+// top of the built-in English and Greek lists; every term applies to every language.
+export interface BlockedTermDto {
+    id: string;
+    term: string;
+    createdAt: string;
+}
+
+export interface BlockedTermRequestDto {
+    term: string; // max 60
+}
+
 // PATCH /api/admin/member-roles/{id}. Omitted fields stay as they are;
 // emoji "" clears it; clearMaxHolders wins over maxHolders.
 export interface MemberRoleCatalogPatchDto {
@@ -3005,6 +3017,9 @@ export interface ModerationDecisionRequestDto {
     rule: GuidelinesRule | null;
     explanation: string | null; // 20–2000 characters after trimming
     note?: string | null; // max 2000
+    // MEMBER cases with removeContent: the content.text the admin saw (member-roles guide §6.2).
+    // A mismatch with the stored text is 409 5115. Ignored for other targets.
+    expectedContentText?: string | null;
 }
 
 // Public content notices (DSA Art. 16). See fe-guides/content-notices-fe-integration.md.
