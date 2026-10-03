@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { api, ApiError } from '@/lib/api/client';
 import type { AuthSessionDto } from '@/lib/api/types';
-import { getAccessToken, setSession } from '@/lib/auth/tokenStore';
+import { clearSession, getAccessToken, setSession, updateSessionProfile } from '@/lib/auth/tokenStore';
 
 describe('api reactive re-authentication', () => {
     beforeEach(() => {
@@ -36,6 +36,54 @@ describe('api reactive re-authentication', () => {
         fetchSequence(new Response(null, { status: 401 }), sessionResponse);
         await expect(api.get('/api/me')).rejects.toMatchObject({ status: 401 });
         expect(getAccessToken()).toBe('stale');
+    });
+});
+
+describe('api proactive refresh', () => {
+    afterEach(() => {
+        clearSession();
+        vi.useRealTimers();
+        vi.unstubAllGlobals();
+    });
+
+    function stubSessionEndpoint() {
+        const fetchMock = vi.fn(async () => new Response(JSON.stringify({ accessToken: 'fresh', userId: 'u1' }), { status: 200 }));
+        vi.stubGlobal('fetch', fetchMock);
+        return fetchMock;
+    }
+
+    it('refreshes a handed-over token a minute before it expires', async () => {
+        vi.useFakeTimers();
+        const fetchMock = stubSessionEndpoint();
+        setSession({ accessToken: 'handed-over', userId: 'u1' } as AuthSessionDto, 5 * 60_000);
+
+        await vi.advanceTimersByTimeAsync(4 * 60_000 - 1);
+        expect(fetchMock).not.toHaveBeenCalled();
+
+        await vi.advanceTimersByTimeAsync(1);
+        expect(fetchMock).toHaveBeenCalledWith('/api/auth/session');
+        expect(getAccessToken()).toBe('fresh');
+    });
+
+    it('refreshes straight away when the token has less than a minute left', async () => {
+        vi.useFakeTimers();
+        const fetchMock = stubSessionEndpoint();
+        setSession({ accessToken: 'handed-over', userId: 'u1' } as AuthSessionDto, 0);
+
+        await vi.advanceTimersByTimeAsync(0);
+        expect(fetchMock).toHaveBeenCalledOnce();
+    });
+
+    it("doesn't push the refresh back when the profile changes", async () => {
+        vi.useFakeTimers();
+        const fetchMock = stubSessionEndpoint();
+        setSession({ accessToken: 'token', userId: 'u1' } as AuthSessionDto);
+
+        await vi.advanceTimersByTimeAsync(10 * 60_000);
+        updateSessionProfile({ firstName: 'Host', lastName: null, profilePictureUrl: null });
+        await vi.advanceTimersByTimeAsync(4 * 60_000);
+
+        expect(fetchMock).toHaveBeenCalledWith('/api/auth/session');
     });
 });
 

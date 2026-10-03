@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { TargetedSection } from '@/components/manage/TargetedSection';
 import type { EventSessionResponseDto } from '@/lib/api/types';
+import { dateTimeFormat } from '@/lib/format';
 import type { ManagedSessionDefinition } from '@/lib/sessionManagement';
 
 interface ManagedSessionSectionProps {
@@ -20,7 +21,7 @@ export function ManagedSessionSection({ definition, session, canWrite, onEdit, o
     const locale = useLocale();
     const Icon = definition.role === 'main' ? Church : Martini;
     const date = session?.startAt
-        ? new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(session.startAt))
+        ? dateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(session.startAt))
         : t('notSet');
 
     function handleAction() {

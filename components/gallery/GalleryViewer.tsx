@@ -64,11 +64,12 @@ export function GalleryViewer({
 
     const isImage = media?.mediaType !== 'VIDEO';
     const zoom = useImageZoomPan(containerRef);
+    const { reset: resetZoom } = zoom;
 
+    // Each photo opens unzoomed.
     useEffect(() => {
-        zoom.reset();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [media?.id]);
+        resetZoom();
+    }, [media?.id, resetZoom]);
 
     useEffect(
         () => () => {

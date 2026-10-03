@@ -1,6 +1,6 @@
 import type { CoverageOptionResponseDto, EventTypeConvention, ModuleKey, PlanScope, PlanTierResponseDto } from '@/lib/api/types';
 import { discountedAmountMinor, isPlanDiscountActive } from '@/lib/billing';
-import { formatBytes } from '@/lib/format';
+import { formatBytes, numberFormat } from '@/lib/format';
 
 export function scopedPlans(plans: PlanTierResponseDto[], scope: PlanScope): PlanTierResponseDto[] {
     return plans.filter((plan) => plan.scope === scope).sort((left, right) => left.sortOrder - right.sortOrder);
@@ -78,7 +78,7 @@ function priceDetails(plan: PlanTierResponseDto, listAmountMinor: number | null)
 
 function formatPlanAmount(plan: PlanTierResponseDto, locale?: string): string | null {
     const price = getPlanPriceDetails(plan);
-    return price ? new Intl.NumberFormat(locale, { style: 'currency', currency: price.currency }).format(price.amountMinor / 100) : null;
+    return price ? numberFormat(locale, { style: 'currency', currency: price.currency }).format(price.amountMinor / 100) : null;
 }
 
 export function formatLimitValue(value: number | null, unit: 'bytes' | 'count'): string | null {

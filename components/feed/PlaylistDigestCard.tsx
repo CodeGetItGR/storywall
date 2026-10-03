@@ -10,6 +10,7 @@ import { LightRay } from '@/components/feed/LightRay';
 import { CommentsList } from '@/components/feed/post/CommentsList';
 import type { PostResponseDto } from '@/lib/api/types';
 import { formatPlaylistDigestContent } from '@/lib/feed/playlistDigest';
+import { dateTimeFormat } from '@/lib/format';
 import { routes } from '@/lib/routes';
 import { timeAgoParts } from '@/lib/utils';
 
@@ -25,9 +26,9 @@ export function PlaylistDigestCard({ post }: PlaylistDigestCardProps) {
     const createdAt = useMemo(() => new Date(post.createdAt), [post.createdAt]);
     const dateParts = useMemo(
         () => ({
-            day: new Intl.DateTimeFormat(locale, { day: '2-digit' }).format(createdAt),
-            month: new Intl.DateTimeFormat(locale, { month: '2-digit' }).format(createdAt),
-            time: new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(createdAt),
+            day: dateTimeFormat(locale, { day: '2-digit' }).format(createdAt),
+            month: dateTimeFormat(locale, { month: '2-digit' }).format(createdAt),
+            time: dateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(createdAt),
         }),
         [createdAt, locale],
     );

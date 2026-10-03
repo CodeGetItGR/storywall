@@ -1,4 +1,4 @@
-import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueries, useQuery, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
 
 import { usePresignedUrlRefreshMs } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
@@ -30,12 +30,24 @@ export function useEvent(eventId: string | null) {
     });
 }
 
+export interface EventDetailState {
+    data: EventDetailResponseDto | undefined;
+    isLoading: boolean;
+}
+
+// Keeps only what the event grids read. TanStack keeps the combined array's
+// identity until one of these values changes, so memos built on it hold
+// between renders (a plain useQueries result is a new array every render).
+function combineEventDetails(results: UseQueryResult<EventDetailResponseDto>[]): EventDetailState[] {
+    return results.map(({ data, isLoading }) => ({ data, isLoading }));
+}
+
 // Batch variant of useEvent, for screens (like the profile/home page) that
 // need title/cover for every event a user belongs to at once. Shares the
 // same eventKeys.detail cache entries as useEvent, so a membership whose
 // feed the user already visited is served from cache. Order-preserving:
 // result[i] corresponds to eventIds[i].
-export function useEventDetails(eventIds: string[]) {
+export function useEventDetails(eventIds: string[]): EventDetailState[] {
     const { isAuthenticated } = useAuth();
     const staleTime = usePresignedUrlRefreshMs();
 
@@ -46,6 +58,7 @@ export function useEventDetails(eventIds: string[]) {
             enabled: isAuthenticated,
             staleTime,
         })),
+        combine: combineEventDetails,
     });
 }
 

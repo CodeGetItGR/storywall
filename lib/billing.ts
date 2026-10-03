@@ -1,4 +1,5 @@
 import type { CheckoutResponseDto, EventStatus, OrderSummaryDto, PlanTierResponseDto } from '@/lib/api/types';
+import { dateTimeFormat, numberFormat } from '@/lib/format';
 
 type PendingCheckout = {
     orderId: string;
@@ -20,7 +21,7 @@ export function formatOptionalMoney(minor: number | null, currency: string | nul
     if (!currency) return value.toFixed(2);
 
     try {
-        return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(value);
+        return numberFormat(locale, { style: 'currency', currency }).format(value);
     } catch {
         return `${value.toFixed(2)} ${currency}`;
     }
@@ -33,7 +34,7 @@ export function lastWithdrawalMoment(windowClosesAt: string): Date {
 }
 
 export function formatBillingDate(locale: string, value: string | null): string | null {
-    return value ? new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(value)) : null;
+    return value ? dateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(value)) : null;
 }
 
 export function checkoutSuccessUrl(origin: string, eventId: string, orderId: string, planTierCode?: string | null): string {

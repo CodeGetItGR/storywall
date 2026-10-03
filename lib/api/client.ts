@@ -133,12 +133,12 @@ async function reauthenticate(): Promise<string | null> {
     }
 }
 
-// The access token is short-lived (~15 min per the integration guide) and we
-// get no expiresIn back from the API, so schedule a proactive refresh a
-// minute before that instead of waiting for a request to hit a 401. This is
-// a backstop on top of the reactive retry in apiFetch — it just avoids every
-// user hitting a guaranteed-failed request once the token goes stale.
-const ACCESS_TOKEN_LIFETIME_MS = 15 * 60 * 1000;
+// The access token is short-lived (see expiresAt in tokenStore.ts), so schedule
+// a proactive refresh a minute before it expires instead of waiting for a
+// request to hit a 401. This is a backstop on top of the reactive retry in
+// apiFetch — it just avoids every user hitting a guaranteed-failed request once
+// the token goes stale. It counts from the expiry, not from the write, so a
+// profile update re-arms the timer without pushing the refresh back.
 const REFRESH_BEFORE_EXPIRY_MS = 60 * 1000;
 
 let proactiveRefreshTimer: ReturnType<typeof setTimeout> | null = null;
@@ -150,11 +150,14 @@ if (typeof window !== 'undefined') {
             proactiveRefreshTimer = null;
         }
 
-        if (!state.accessToken) return;
+        if (!state.accessToken || state.expiresAt === null) return;
 
-        proactiveRefreshTimer = setTimeout(() => {
-            void reauthenticate();
-        }, ACCESS_TOKEN_LIFETIME_MS - REFRESH_BEFORE_EXPIRY_MS);
+        proactiveRefreshTimer = setTimeout(
+            () => {
+                void reauthenticate();
+            },
+            Math.max(0, state.expiresAt - Date.now() - REFRESH_BEFORE_EXPIRY_MS),
+        );
     });
 }
 

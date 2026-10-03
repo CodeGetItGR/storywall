@@ -6,7 +6,7 @@ import type {
     PlatformModuleResponseDto,
 } from '@/lib/api/types';
 import { discountedAmountMinor } from '@/lib/billing';
-import { formatBytes } from '@/lib/format';
+import { formatBytes, numberFormat } from '@/lib/format';
 import { activeRoleCount, type MemberRoleCatalog } from '@/lib/memberRoles';
 import { mediaEstimate } from '@/lib/planComparison';
 import { configCount, type ConfigObject } from '@/lib/planModuleConfig';
@@ -81,7 +81,7 @@ export function formatLandingOptionPrice(plan: PlanTierResponseDto, option: Cove
     const amount = discountedAmountMinor(option.priceAmountMinor, plan) / 100;
     if (plan.priceCurrency === 'EUR' && Number.isInteger(amount)) return `${amount}€`;
 
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency: plan.priceCurrency }).format(amount);
+    return numberFormat(undefined, { style: 'currency', currency: plan.priceCurrency }).format(amount);
 }
 
 // The duration a card shows: the one picked, else the plan's default.

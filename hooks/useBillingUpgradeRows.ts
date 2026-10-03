@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import type { BillingUpgradeTarget } from '@/hooks/useEventBillingPanel';
 import type { PlanTierResponseDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
-import { formatBytes, formatSignedDelta } from '@/lib/format';
+import { formatBytes, formatSignedDelta, numberFormat } from '@/lib/format';
 import { buildPlanUpgradeDiff } from '@/lib/planUpgradeDiff';
 import { routes } from '@/lib/routes';
 import { pickedUpgradeDuration, upgradeDurations } from '@/lib/upgradeOptions';
@@ -57,7 +57,7 @@ export function useBillingUpgradeRows({
     const locale = useLocale();
 
     return useMemo(() => {
-        const numberFormat = new Intl.NumberFormat(locale);
+        const countFormat = numberFormat(locale);
         return targets.flatMap(({ entry, plan }) => {
             const duration = pickedUpgradeDuration(entry, picks[entry.planTierCode]);
             if (!duration) return [];
@@ -75,7 +75,7 @@ export function useBillingUpgradeRows({
                 }
                 if (change.target === null) return t('upgrade.membersUnlimited');
                 const label = t('upgrade.members', { count: change.target });
-                return delta === null ? label : t('upgrade.withDelta', { value: label, delta: formatSignedDelta(delta, numberFormat.format) });
+                return delta === null ? label : t('upgrade.withDelta', { value: label, delta: formatSignedDelta(delta, countFormat.format) });
             });
             if (diff && diff.addedModuleKeys.length > 0) chips.push(t('upgrade.features', { count: diff.addedModuleKeys.length }));
 

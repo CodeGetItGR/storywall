@@ -14,6 +14,7 @@ import type {
     RegisterRequestDto,
     UserResponseDto,
 } from '@/lib/api/types';
+import type { SessionHandoff } from '@/lib/auth/sessionHandoff';
 import { clearSession, getAuthState, getSessionGeneration, setSession, subscribeAuthState, updateSessionProfile } from '@/lib/auth/tokenStore';
 
 const BOOTSTRAP_TIMEOUT_MS = 8000;
@@ -58,18 +59,25 @@ export interface AuthContextValue {
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children, handoff = null }: { children: ReactNode; handoff?: SessionHandoff | null }) {
     const queryClient = useQueryClient();
     const router = useRouter();
     const [authState, setAuthState] = useState(getAuthState());
     const [isBootstrapping, setIsBootstrapping] = useState(true);
     const [isSessionUnavailable, setIsSessionUnavailable] = useState(false);
+    // Only the first render's handoff counts. A later server render of the
+    // layout (router.refresh()) never carries one.
+    const [initialHandoff] = useState(handoff);
 
     useEffect(() => subscribeAuthState(setAuthState), []);
 
-    // The access token is memory-only and doesn't survive a reload. On first
-    // mount, ask the BFF to re-derive one from whatever httpOnly cookie it
-    // holds (refresh token or guest identity) — see app/api/auth/session/route.ts.
+    // The access token is memory-only and doesn't survive a reload. A full
+    // page load of a signed-in page brings the session the server already
+    // holds (see app/(main)/layout.tsx), adopted right after hydration so the
+    // first render still matches the server's bootstrapping one. Otherwise, on
+    // first mount, ask the BFF to re-derive one from whatever httpOnly cookie
+    // it holds (refresh token or guest identity) — see
+    // app/api/auth/session/route.ts.
     //
     // Every consumer of `isBootstrapping` renders a blank placeholder while it
     // is true (see components/layout/AppShell.tsx), so this probe must always
@@ -85,6 +93,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // `isSessionUnavailable` so AppShell can say why, and retries with backoff
     // until Spring gives a real answer.
     useEffect(() => {
+        if (initialHandoff) {
+            setSession(initialHandoff.session, initialHandoff.expiresInMs);
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- Hydration is what the handed-over session waited for; nothing else is pending.
+            setIsBootstrapping(false);
+            return;
+        }
+
         let cancelled = false;
         let controller = new AbortController();
         let timeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -138,7 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             clearTimeout(retryId);
             controller.abort();
         };
-    }, []);
+    }, [initialHandoff]);
 
     // Every cached query is scoped to whoever was signed in when it was
     // fetched, and so is every page the router keeps for back/forward and
