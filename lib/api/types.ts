@@ -2412,6 +2412,14 @@ export interface ReactionResponseDto extends ReactionRequestDto {
     createdAt: string;
 }
 
+// GET /api/posts/{postId}/reactions. Counts only: who reacted is never sent, except the
+// caller's own reaction (or the demo guest's, when acting as one), which the unreact needs.
+export interface PostReactionsResponseDto {
+    reactionCount: number;
+    reactionCounts: Record<string, number>;
+    myReaction: ReactionResponseDto | null;
+}
+
 export interface StoryRequestDto {
     eventId: string;
     authorMemberId?: string;

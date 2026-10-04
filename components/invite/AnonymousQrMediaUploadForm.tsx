@@ -1,17 +1,20 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { ArrowRight, ImagePlus, Loader2, Video, X } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import React, { useCallback, useState } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { AcceptanceCheckboxes } from '@/components/legal/AcceptanceCheckboxes';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { communityGuidelinesQueryKey, useCommunityGuidelinesVersion } from '@/hooks/useCommunityGuidelinesVersion';
 import { useFilePreviews } from '@/hooks/useFilePreviews';
 import { useUploadQrMediaBatch } from '@/hooks/useQrMediaUpload';
+import { termsVersionQueryKey, useTermsVersion } from '@/hooks/useTermsVersion';
 import { useUploadAccept } from '@/hooks/useUploadAccept';
-import { routes } from '@/lib/routes';
+import { isGuidelinesVersionMismatchError, isTermsVersionMismatchError } from '@/lib/api/errors';
 import { cn } from '@/lib/utils';
 
 interface AnonymousQrMediaUploadFormProps {
@@ -23,8 +26,14 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
     const uploadAccept = useUploadAccept();
     const toErrorMessage = useApiErrorMessage();
     const uploadBatch = useUploadQrMediaBatch();
+    const queryClient = useQueryClient();
+    const termsVersion = useTermsVersion();
+    const guidelinesVersion = useCommunityGuidelinesVersion();
 
     const [uploaderName, setUploaderName] = useState('');
+    // No account here, so the 16+ confirmation and the acceptance are asked on every upload (legal todo #3).
+    const [acceptedDocuments, setAcceptedDocuments] = useState(false);
+    const [ageConfirmed, setAgeConfirmed] = useState(false);
     const [files, setFiles] = useState<File[]>([]);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [done, setDone] = useState(false);
@@ -33,6 +42,14 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
 
     const handleUploaderNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setUploaderName(e.target.value);
+    }, []);
+
+    const handleAcceptedChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setAcceptedDocuments(e.target.checked);
+    }, []);
+
+    const handleAgeConfirmedChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setAgeConfirmed(e.target.checked);
     }, []);
 
     const handleFilesChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,11 +83,20 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
 
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
-        if (files.length === 0) return;
+        if (files.length === 0 || !acceptedDocuments || !ageConfirmed) return;
+        if (!termsVersion.data || !guidelinesVersion.data) {
+            setSubmitError(t('anonymousUpload.acceptanceUnavailable'));
+            return;
+        }
 
         setSubmitError(null);
         try {
-            const result = await uploadBatch.mutateAsync({ token, files, uploaderName: uploaderName.trim() || undefined });
+            const result = await uploadBatch.mutateAsync({
+                token,
+                files,
+                uploaderName: uploaderName.trim() || undefined,
+                acceptance: { termsVersion: termsVersion.data, guidelinesVersion: guidelinesVersion.data },
+            });
             // The batch answers 200 whatever happened to each file. Keep the refused ones to try again.
             if (result.failed.length > 0) {
                 const refused = new Set(result.failed.map((failure) => failure.filename));
@@ -85,6 +111,16 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
             setDone(true);
             setFiles([]);
         } catch (err) {
+            // A newer version went live while the page was open: fetch both and make them tick again.
+            if (isTermsVersionMismatchError(err) || isGuidelinesVersionMismatchError(err)) {
+                setAcceptedDocuments(false);
+                await Promise.all([
+                    queryClient.invalidateQueries({ queryKey: termsVersionQueryKey }),
+                    queryClient.invalidateQueries({ queryKey: communityGuidelinesQueryKey }),
+                ]);
+                setSubmitError(t('anonymousUpload.acceptanceChanged'));
+                return;
+            }
             setSubmitError(toErrorMessage(err));
         }
     }
@@ -154,6 +190,14 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
                 )}
             </FormFieldLabel>
 
+            <AcceptanceCheckboxes
+                minimumAge={16}
+                accepted={acceptedDocuments}
+                adultConfirmed={ageConfirmed}
+                onAcceptedChangeAction={handleAcceptedChange}
+                onAdultConfirmedChangeAction={handleAgeConfirmedChange}
+            />
+
             {submitError && (
                 <p role="alert" className="-mt-1 text-center text-xs text-red-500">
                     {submitError}
@@ -162,7 +206,7 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
 
             <button
                 type="submit"
-                disabled={uploadBatch.isPending || files.length === 0}
+                disabled={uploadBatch.isPending || files.length === 0 || !acceptedDocuments || !ageConfirmed}
                 className="flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
                 {uploadBatch.isPending ? (
@@ -174,14 +218,6 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
                     </>
                 )}
             </button>
-
-            <p className="text-center text-xs text-ink-muted">
-                {t('anonymousUpload.guidelinesNotice')}{' '}
-                <Link href={routes.legal.communityGuidelines()} target="_blank" rel="noopener" className="font-semibold text-ink underline">
-                    {t('anonymousUpload.guidelinesLink')}
-                </Link>
-                .
-            </p>
         </form>
     );
 }

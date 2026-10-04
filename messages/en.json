@@ -466,6 +466,7 @@
         "all": "I accept the <terms>Terms of Use</terms> and <guidelines>Community Guidelines</guidelines> and have read the <privacy>Privacy Policy</privacy>",
         "termsOnly": "I accept the <terms>Terms of Use</terms> and have read the <privacy>Privacy Policy</privacy>",
         "adult": "I am 18 or older",
+        "age16": "I am 16 or older",
         "opensInNewTab": "(opens in a new tab)"
     },
     "WelcomePage": {
@@ -565,8 +566,8 @@
             "addMore": "Add more",
             "dropHint": "or drag and drop",
             "removeFile": "Remove",
-            "guidelinesNotice": "By uploading, you agree to the",
-            "guidelinesLink": "Community Guidelines"
+            "acceptanceChanged": "The Terms of Use or Community Guidelines were just updated. Please review them and tick the box again.",
+            "acceptanceUnavailable": "The Terms of Use or Community Guidelines couldn't be loaded. Refresh the page and try again."
         },
         "unknown": {
             "title": "Code not found",
@@ -1995,6 +1996,8 @@
             "deleteConfirm": "This can't be undone.",
             "mapPreview": "Map preview",
             "mapPreviewUnavailable": "Map preview isn't available for this link, but the location still opens in Google Maps.",
+            "showMap": "Show map",
+            "mapConsent": "The map loads from Google Maps, which can see your IP address and set cookies.",
             "openInGoogleMaps": "Open in Google Maps",
             "openMap": "Open map for {title}",
             "emptyTitle": "No sessions yet",
@@ -2184,6 +2187,9 @@
         "previewLabel": "Preview",
         "openSpotify": "Open Spotify",
         "openYouTube": "Open YouTube",
+        "showPreview": "Show preview",
+        "previewConsentSpotify": "The preview loads from Spotify, which can see your IP address and set cookies.",
+        "previewConsentYouTube": "The preview loads from YouTube, which can see your IP address and set cookies.",
         "emptyTitle": "No songs yet",
         "emptyBody": "Be the first to suggest one.",
         "playlistEmpty": "No songs have been suggested yet. Be the first to suggest one.",
@@ -4339,6 +4345,7 @@
         "addonLockedWhileActive": "That entitlement cannot be removed while the event is live.",
         "addonNotActive": "That add-on is not active.",
         "eventNotActive": "This event is not live yet.",
+        "qrUploadAcceptanceRequired": "Confirm you are 16 or older and accept the Terms of Use and Community Guidelines to upload.",
         "rateLimited": "Too many requests. Please wait a moment and try again.",
         "reportOwnContent": "You can't report your own content.",
         "rateLimitedWithWait": "Too many requests. Try again in {seconds}s.",
@@ -4415,6 +4422,7 @@
         "webhookPayloadTooLarge": "That webhook payload is too large to process.",
         "planInUse": "This plan is assigned to accounts or events, so it cannot be deleted.",
         "planIsOnlyDefault": "Set another default plan before changing this one.",
+        "postEditNotAuthor": "Only the person who wrote this post can edit it. Hosts can pin, delete or report it.",
         "postMediaLimitExceeded": "This post already has the maximum number of photos.",
         "postPinNotHost": "Only hosts can pin posts.",
         "announcementNotHost": "Only hosts can post announcements.",

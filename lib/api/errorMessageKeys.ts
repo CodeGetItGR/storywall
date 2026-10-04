@@ -109,6 +109,7 @@ export type ApiErrorMessageKey =
     | 'memberLimit'
     | 'moduleUnavailable'
     | 'qrMediaUploadDisabled'
+    | 'qrUploadAcceptanceRequired'
     | 'oauthTokenInvalid'
     | 'oauthEmailRequired'
     | 'qrLinkNotAvailable'
@@ -137,6 +138,7 @@ export type ApiErrorMessageKey =
     | 'planTierNotAvailableForEventType'
     | 'postMediaLimitExceeded'
     | 'postPinNotHost'
+    | 'postEditNotAuthor'
     | 'announcementNotHost'
     | 'storyExpiryOutOfRange'
     | 'eventScheduleLocked'
@@ -255,6 +257,8 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.ACCOUNT_DELETE_OTP_INVALID]: 'accountDeleteOtpInvalid',
     [ERROR_CODES.ACCOUNT_DELETE_ADMIN]: 'accountDeleteAdmin',
     [ERROR_CODES.ACCOUNT_DELETE_HAS_HOSTED_EVENTS]: 'accountDeleteHasHostedEvents',
+    [ERROR_CODES.QR_UPLOAD_ACCEPTANCE_REQUIRED]: 'qrUploadAcceptanceRequired',
+    [ERROR_CODES.POST_EDIT_NOT_AUTHOR]: 'postEditNotAuthor',
     [ERROR_CODES.EVENT_CO_HOST_LIMIT_EXCEEDED]: 'eventCoHostLimitExceeded',
     [ERROR_CODES.INVALID_EVENT_TYPE]: 'invalidEventType',
     [ERROR_CODES.EVENT_STORAGE_LIMIT_EXCEEDED]: 'storageLimit',

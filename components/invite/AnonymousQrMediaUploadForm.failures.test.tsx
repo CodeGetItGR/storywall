@@ -16,6 +16,27 @@ vi.mock('@/hooks/useFilePreviews', () => ({
 vi.mock('@/components/common/ProtectedImage', () => ({ ProtectedImage: ({ src }: { src: string }) => <span data-preview={src} /> }));
 vi.mock('@/hooks/useQrMediaUpload', () => ({ useUploadQrMediaBatch: () => ({ isPending: false, mutateAsync }) }));
 vi.mock('@/hooks/useUploadAccept', () => ({ useUploadAccept: () => ({ media: 'image/*,video/*' }) }));
+vi.mock('@tanstack/react-query', () => ({ useQueryClient: () => ({ invalidateQueries: vi.fn() }) }));
+vi.mock('@/hooks/useTermsVersion', () => ({ termsVersionQueryKey: ['legal', 'terms'], useTermsVersion: () => ({ data: '2026-10-04' }) }));
+vi.mock('@/hooks/useCommunityGuidelinesVersion', () => ({
+    communityGuidelinesQueryKey: ['legal', 'community-guidelines'],
+    useCommunityGuidelinesVersion: () => ({ data: '2026-09-30' }),
+}));
+// The checkbox copy and links are covered by AcceptanceCheckboxes.test.
+vi.mock('@/components/legal/AcceptanceCheckboxes', () => ({
+    AcceptanceCheckboxes: (props: {
+        minimumAge?: number;
+        accepted: boolean;
+        adultConfirmed: boolean;
+        onAcceptedChangeAction: () => void;
+        onAdultConfirmedChangeAction: () => void;
+    }) => (
+        <>
+            <input type="checkbox" aria-label="documents" checked={props.accepted} onChange={props.onAcceptedChangeAction} />
+            <input type="checkbox" aria-label={`age ${props.minimumAge}`} checked={props.adultConfirmed} onChange={props.onAdultConfirmedChangeAction} />
+        </>
+    ),
+}));
 
 function file(name: string) {
     return new File(['x'], name, { type: 'image/jpeg' });
@@ -23,6 +44,8 @@ function file(name: string) {
 
 function chooseAndSubmit(container: HTMLElement, files: File[]) {
     fireEvent.change(container.querySelector('input[type="file"]')!, { target: { files } });
+    fireEvent.click(screen.getByRole('checkbox', { name: 'documents' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'age 16' }));
     fireEvent.submit(container.querySelector('form')!);
 }
 
@@ -34,7 +57,9 @@ function result(created: string[], failed: [string, string][]): MediaBatchUpload
 }
 
 describe('AnonymousQrMediaUploadForm per-file failures', () => {
-    beforeEach(() => mutateAsync.mockReset());
+    beforeEach(() => {
+        mutateAsync.mockReset();
+    });
     afterEach(cleanup);
 
     it('thanks the uploader when every file was taken', async () => {
