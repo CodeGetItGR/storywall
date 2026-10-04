@@ -1,14 +1,17 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useClearDemoPersonaAvatar, useSetDemoPersonaAvatar } from '@/hooks/useDemoPersonaAvatar';
 import { useDisclosure } from '@/hooks/useDisclosure';
 import { useCreateEventMember, useEventMembers } from '@/hooks/useEventMembers';
 import { readStoredDemoActAs, setDemoActAsMember, storeDemoActAs } from '@/lib/demo/demoActAs';
+import { postKeys } from '@/lib/postQueries';
 
 // Who the admin posts as on a demo event: themselves, or one of the event's account-less guests.
 export function useDemoActAs(eventId: string) {
+    const queryClient = useQueryClient();
     const members = useEventMembers(eventId);
     const createMember = useCreateEventMember();
     const setAvatar = useSetDemoPersonaAvatar(eventId);
@@ -25,8 +28,11 @@ export function useDemoActAs(eventId: string) {
 
     useEffect(() => {
         setDemoActAsMember(selectedId ? { eventId, memberId: selectedId } : null);
+        // Posts carry myReactionType for whoever is acted as: refetch them as the new persona.
+        void queryClient.invalidateQueries({ queryKey: postKeys.list(eventId) });
+        void queryClient.invalidateQueries({ queryKey: ['posts'] });
         return () => setDemoActAsMember(null);
-    }, [eventId, selectedId]);
+    }, [eventId, queryClient, selectedId]);
 
     const select = useCallback(
         (memberId: string | null) => {

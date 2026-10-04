@@ -40,9 +40,19 @@ describe('demoActAsHeaders', () => {
         }
     });
 
+    it('reads posts as the chosen guest, so each guest sees their own reaction', () => {
+        setDemoActAsMember({ eventId: 'evt', memberId: 'guest-1' });
+        for (const path of ['/api/events/evt/posts', '/api/events/evt/posts?page=1&size=20', '/api/posts/p1']) {
+            expect(demoActAsHeaders('GET', path)).toEqual({ [DEMO_ACT_AS_HEADER]: 'guest-1' });
+            expect(demoActAsHeaders(undefined, path)).toEqual({ [DEMO_ACT_AS_HEADER]: 'guest-1' });
+        }
+    });
+
     it('leaves reads and non-content writes alone', () => {
         setDemoActAsMember({ eventId: 'evt', memberId: 'guest-1' });
-        expect(demoActAsHeaders('GET', '/api/events/evt/posts')).toEqual({});
+        expect(demoActAsHeaders('GET', '/api/posts/p1/comments')).toEqual({});
+        expect(demoActAsHeaders('GET', '/api/posts/p1/reactions')).toEqual({});
+        expect(demoActAsHeaders('GET', '/api/events/evt/stories')).toEqual({});
         expect(demoActAsHeaders(undefined, '/api/posts')).toEqual({});
         expect(demoActAsHeaders('POST', '/api/event-members')).toEqual({});
         expect(demoActAsHeaders('PATCH', '/api/events/evt')).toEqual({});
