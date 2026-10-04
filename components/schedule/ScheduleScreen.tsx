@@ -64,8 +64,23 @@ export function ScheduleScreen() {
         setEditorOpen(true);
     }
 
+    async function restoreMainSession(definition: ManagedSessionDefinition) {
+        if (!eventId || createSession.isPending) return;
+        setDeleteError(null);
+        try {
+            // Dates and location come from the event, so there is nothing to fill in.
+            await createSession.mutateAsync({ eventId, title: tCreateEvent(definition.defaultTitleKey), displayOrder: 0, isMain: true });
+        } catch (error) {
+            setDeleteError(toErrorMessage(error));
+        }
+    }
+
     function openCreateManagedEditor(definition: ManagedSessionDefinition) {
         if (!canAddSession || !definition.canCreate) return;
+        if (definition.role === 'main') {
+            void restoreMainSession(definition);
+            return;
+        }
         const secondarySessionTitleKey = activeEvent ? getCreateEventCatalogEntry(activeEvent.eventType)?.secondarySessionTitleKey : undefined;
         setDeleteError(null);
         setEditingSessionId(null);

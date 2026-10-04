@@ -57,6 +57,8 @@ export type ApiErrorMessageKey =
     | 'eventSessionMainLocationReadOnly'
     | 'eventSessionSecondaryAlreadyAssigned'
     | 'eventSessionLimitReached'
+    | 'eventSessionMainNotDeletable'
+    | 'eventSessionMainAlreadyExists'
     | 'eventCoHostLimitExceeded'
     | 'invalidEventType'
     | 'invalidPlanTierScope'
@@ -231,6 +233,8 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.EVENT_SESSION_MAIN_LOCATION_READ_ONLY]: 'eventSessionMainLocationReadOnly',
     [ERROR_CODES.EVENT_SESSION_SECONDARY_ALREADY_ASSIGNED]: 'eventSessionSecondaryAlreadyAssigned',
     [ERROR_CODES.EVENT_SESSION_LIMIT_REACHED]: 'eventSessionLimitReached',
+    [ERROR_CODES.EVENT_SESSION_MAIN_NOT_DELETABLE]: 'eventSessionMainNotDeletable',
+    [ERROR_CODES.EVENT_SESSION_MAIN_ALREADY_EXISTS]: 'eventSessionMainAlreadyExists',
     [ERROR_CODES.EVENT_CO_HOST_LIMIT_EXCEEDED]: 'eventCoHostLimitExceeded',
     [ERROR_CODES.INVALID_EVENT_TYPE]: 'invalidEventType',
     [ERROR_CODES.EVENT_STORAGE_LIMIT_EXCEEDED]: 'storageLimit',

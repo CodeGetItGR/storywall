@@ -77,7 +77,7 @@ export function ManagedSessionSection({ definition, session, canWrite, onEdit, o
                     </div>
                 </dl>
             ) : (
-                <p className="mt-4 text-sm text-ink-muted">{definition.canCreate ? t('missing') : t('mainMissing')}</p>
+                <p className="mt-4 text-sm text-ink-muted">{definition.role === 'main' ? t('mainMissing') : t('missing')}</p>
             )}
         </TargetedSection>
     );

@@ -2064,6 +2064,7 @@ export interface EventSessionRequestDto {
     displayOrder: number;
     isSecondary?: boolean; // defaults to false; at most one non-deleted session per event
     rsvpEnabled?: boolean; // defaults to false; guests may answer for this session only when true
+    isMain?: boolean; // restores a missing main session; its dates and location come from the event (5123 if one exists)
 }
 
 export interface EventSessionResponseDto {
