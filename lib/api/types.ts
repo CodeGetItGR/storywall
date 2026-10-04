@@ -2088,7 +2088,9 @@ export interface EventSessionPatchDto {
     title?: string;
     description?: string | null;
     startAt?: string | null;
+    // null/omitted = unchanged; clearEndAt: true removes the end time (wins over endAt).
     endAt?: string | null;
+    clearEndAt?: boolean;
     locationName?: string;
     mapsUrl?: string | null;
     displayOrder?: number;
