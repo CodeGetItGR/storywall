@@ -15,11 +15,16 @@ export const AUTH_COOKIES = {
     refreshToken: 'storywall_rt',
 } as const;
 
-// Server Components can't read/refresh cookies themselves (that's restricted
-// to Route Handlers/Server Actions), so middleware.ts does the refresh-and-
-// rotate work up front and hands the result down as a plain request header —
-// see app/(app)/(event)/layout.tsx, which reads this to prefetch server-side.
+// Server Components can read cookies but not write them (that's restricted to
+// Route Handlers/Server Actions), so a token they refreshed couldn't be kept.
+// proxy.ts does the refresh up front and hands the result down as a plain
+// request header, which pages read to prefetch server-side.
 export const ACCESS_TOKEN_HEADER = 'x-storywall-access-token';
+
+// Set by proxy.ts alongside ACCESS_TOKEN_HEADER when it refreshed for this
+// request: Spring has just confirmed the session, so the page needn't ask
+// again (see resolveServerSession).
+export const SESSION_REFRESHED_HEADER = 'x-storywall-session-refreshed';
 
 export const ACCESS_TOKEN_MAX_AGE_SECONDS = 15 * 60;
 
