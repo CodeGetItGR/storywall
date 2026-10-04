@@ -9,7 +9,7 @@ Architecture overview for engineers working on the backend. For product concepts
 - **Spring Boot** (Java), layered `controller → service → repository` per domain area.
 - **PostgreSQL** via Spring Data JPA, migrations managed with **Flyway**.
 - **Cloudflare R2** (S3-compatible) for media storage, accessed via the AWS S3 SDK, URLs
-  presigned with a short TTL (default 15 min) rather than served directly.
+  presigned with a short TTL (default 60 min) rather than served directly.
 - **JWT** auth (`io.jsonwebtoken`), stateless — access + refresh tokens.
 - **Stripe** as the primary payment provider, with a `MANUAL` provider as a no-op fallback for
   environments without billing wired up (`app.billing.provider`).
