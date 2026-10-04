@@ -1636,11 +1636,6 @@
             "CANCELLED": "Ακυρώθηκε",
             "REFUNDED": "Επιστράφηκε"
         },
-        "subscriptionStatus": {
-            "ACTIVE": "Ενεργή",
-            "PAST_DUE": "Εκπρόθεσμη",
-            "CANCELLED": "Ακυρωμένη"
-        },
         "withdrawalStatus": {
             "HELD": "Υπό εξέταση",
             "REFUNDED": "Επιστράφηκε",
@@ -1699,25 +1694,6 @@
         },
         "facts": {
             "totalPaid": "Σύνολο πληρωμών"
-        },
-        "subscription": {
-            "title": "Συνδρομή",
-            "status": "Κατάσταση",
-            "currentPeriodEnd": "Καλύπτει έως",
-            "none": "Χωρίς συνδρομή",
-            "renewalHint": "Η κάλυψη λήγει σύντομα.",
-            "notRenewing": "Δεν ανανεώνεται",
-            "ended": "Ολοκληρώθηκε",
-            "liveUntil": "Ενεργό έως",
-            "renewsOn": "Ανανεώνεται αυτόματα στις {date}.",
-            "willNotRenew": "Ενεργή έως τις {date}.",
-            "pastDue": "Η τελευταία πληρωμή απέτυχε. Ενημερώστε την κάρτα σας.",
-            "cancel": "Διακοπή συνδρομής",
-            "cancelConfirmTitle": "Διακοπή συνδρομής;",
-            "cancelConfirmBody": "Θα παραμείνει ενεργή έως τις {date}, χωρίς επιστροφή χρημάτων.",
-            "cancelConfirmYes": "Διακοπή",
-            "cancelConfirmNo": "Διατήρηση",
-            "noResume": "Για να συνεχίσει μετά, ξεκινήστε νέα συνδρομή."
         },
         "withdrawal": {
             "excludedTitle": "Χωρίς επιστροφή",

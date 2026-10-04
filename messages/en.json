@@ -1515,35 +1515,11 @@
             "CANCELLED": "Cancelled",
             "REFUNDED": "Refunded"
         },
-        "subscriptionStatus": {
-            "ACTIVE": "Active",
-            "PAST_DUE": "Past due",
-            "CANCELLED": "Cancelled"
-        },
         "summary": {
             "DRAFT": "Not published yet. You'll pay to activate once the event dates are set."
         },
         "facts": {
             "totalPaid": "Total paid"
-        },
-        "subscription": {
-            "title": "Subscription",
-            "status": "Status",
-            "currentPeriodEnd": "Renews through",
-            "none": "No subscription",
-            "renewalHint": "Coverage ends soon.",
-            "notRenewing": "Not renewing",
-            "ended": "Ended",
-            "liveUntil": "Live until",
-            "renewsOn": "Renews automatically on {date}.",
-            "willNotRenew": "Live until {date}.",
-            "pastDue": "The last payment failed. Update your card.",
-            "cancel": "Cancel subscription",
-            "cancelConfirmTitle": "Cancel subscription?",
-            "cancelConfirmBody": "Stays live until {date}, no refund.",
-            "cancelConfirmYes": "Cancel",
-            "cancelConfirmNo": "Keep",
-            "noResume": "To continue after that, start a new subscription."
         },
         "extension": {
             "title": "Extend coverage",
