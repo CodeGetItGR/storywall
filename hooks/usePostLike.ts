@@ -2,11 +2,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { appConfigKeys, useAppConfig } from '@/hooks/useAppConfig';
+import { usePostingAsMember } from '@/hooks/usePostingAsMember';
 import { patchPostInCaches } from '@/hooks/usePosts';
 import { fetchPostReactions, reactionKeys, useCreateReaction, useDeleteReaction } from '@/hooks/useReactions';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type { EventTypeConvention, PostResponseDto } from '@/lib/api/types';
-import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
+import { useActiveEvent } from '@/providers/EventProvider';
 
 // Reaction ids created this session, so unliking right after liking never
 // needs to re-fetch the reactor list to find what to delete. Keyed by
@@ -21,7 +22,8 @@ export function usePostLike(post: PostResponseDto) {
     const queryClient = useQueryClient();
     const { data: appConfig } = useAppConfig();
     const activeEvent = useActiveEvent();
-    const activeMember = useActiveMember();
+    // On a demo event an admin reacts as the chosen guest, and post.myReactionType is that guest's.
+    const { member: activeMember } = usePostingAsMember();
     const createReaction = useCreateReaction();
     const deleteReaction = useDeleteReaction(post.id);
     // Assumes at most one mounted instance of a given post's like button is interactive at a time —

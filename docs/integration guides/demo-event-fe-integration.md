@@ -145,6 +145,13 @@ host. A 403 on an event the admin doesn't host is still correct: the host check 
 - `PUT /api/admin/demo-events/{eventTypeKey}` body `{ "eventId": "…" }` → `DemoEventResponseDto`
 - `DELETE /api/admin/demo-events/{eventTypeKey}` → 204
 - Any content endpoint + header `X-Demo-Act-As-Member: <name-only member id>` → authored as that guest.
+- `GET /api/events/{eventId}/posts` and `GET /api/posts/{id}` + the same header → each post's
+  `myReactionType` is that guest's reaction, not the admin's. Each guest has its own reaction per
+  post, so send the header on these reads while a guest is selected, and refetch them when the
+  selection changes. The feed's ETag includes the guest, so a cached page is never revalidated for
+  another one. The header is checked as on writes (an unusable one is 403, 5102), but reads leave
+  no `DEMO_ACT_AS` audit row. Removing a guest's reaction is `DELETE /api/reactions/{id}` as the
+  admin: hosts may remove any reaction. Other reads ignore the header.
 - `POST /api/event-members/{id}/demo-avatar`, multipart `file` → `EventMemberResponseDto` with the
   new `avatarUrl`. Sets a persona's picture, replacing any earlier one. Same image formats, limits
   and rejection codes as `/api/me/profile-picture`.

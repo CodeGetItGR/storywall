@@ -18,6 +18,13 @@ const mocks = vi.hoisted(() => ({
     resetClearAvatar: vi.fn(),
     setAvatar: { isPending: false, error: null, variables: undefined } as AvatarMutationState,
     clearAvatar: { isPending: false, error: null, variables: undefined } as AvatarMutationState,
+    invalidateQueries: vi.fn(),
+}));
+
+// Stable across renders, like the real client.
+const queryClient = { invalidateQueries: mocks.invalidateQueries };
+vi.mock('@tanstack/react-query', () => ({
+    useQueryClient: () => queryClient,
 }));
 
 vi.mock('@/hooks/useEventMembers', () => ({
@@ -157,5 +164,27 @@ describe('useDemoActAs', () => {
 
         expect(result.current.photoError).toEqual(new Error('refused'));
         expect(result.current.isSavingPhoto).toBe(true);
+    });
+
+    it('refetches posts when the persona changes, since myReactionType is per persona', () => {
+        mocks.members = [guest('g1'), guest('g2')];
+        const { result } = renderHook(() => useDemoActAs(EVENT_ID));
+        mocks.invalidateQueries.mockClear();
+
+        act(() => result.current.handleSelectChange({ target: { value: 'g2' } } as ChangeEvent<HTMLSelectElement>));
+
+        expect(mocks.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['events', EVENT_ID, 'posts'] });
+        expect(mocks.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['posts'] });
+    });
+
+    it('does not refetch posts on a re-render that keeps the persona', () => {
+        mocks.members = [guest('g1')];
+        mocks.storedId = 'g1';
+        const { rerender } = renderHook(() => useDemoActAs(EVENT_ID));
+        mocks.invalidateQueries.mockClear();
+
+        rerender();
+
+        expect(mocks.invalidateQueries).not.toHaveBeenCalled();
     });
 });
