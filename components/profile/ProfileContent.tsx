@@ -4,6 +4,8 @@ import { Camera, CheckCircle2, Loader2, Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { ProfileBusinessSection } from '@/components/profile/ProfileBusinessSection';
+import { ProfileDataSection } from '@/components/profile/ProfileDataSection';
+import { ProfileDeleteAccountSection } from '@/components/profile/ProfileDeleteAccountSection';
 import { ProfileNewsletterSection } from '@/components/profile/ProfileNewsletterSection';
 import { ProfilePasswordSection } from '@/components/profile/ProfilePasswordSection';
 import { ProfilePictureDialog } from '@/components/profile/ProfilePictureDialog';
@@ -173,6 +175,12 @@ export function ProfileContent() {
 
                 {/* Newsletter */}
                 <ProfileNewsletterSection />
+
+                {/* Your data */}
+                <ProfileDataSection />
+
+                {/* Delete account */}
+                <ProfileDeleteAccountSection />
             </div>
         </main>
     );

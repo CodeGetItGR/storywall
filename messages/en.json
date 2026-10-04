@@ -405,6 +405,7 @@
         "changed": "The Terms of Use or Community Guidelines were just updated. Please review them and tick the box again."
     },
     "LoginPage": {
+        "accountDeleted": "Your account was deleted and you've been signed out.",
         "title": "Welcome back",
         "subtitle": "Sign in to join the celebration.",
         "passwordChanged": "Your password was changed. Sign in again.",
@@ -650,6 +651,38 @@
         "showPreview": "Show {name} preview"
     },
     "ProfilePage": {
+            "dataExport": {
+                "title": "Your data",
+                "body": "Download a copy of everything StoryWall holds about you — your profile, your activity in events and your purchases — as a JSON file. Photos and videos aren't in it; download those from each event's gallery.",
+                "download": "Download my data",
+                "downloading": "Preparing…",
+                "failed": "We couldn't prepare your data. Try again."
+            },
+            "deleteAccount": {
+                "title": "Delete account",
+                "body": "Your account closes immediately and you're signed out everywhere. Within 30 days your name, email and photo are erased. What you posted in other people's events stays there as \"Deleted user\". Events where you're the main host must be deleted or handed to a co-host first.",
+                "adminBody": "Admin accounts can't be deleted here. Ask another admin to remove your admin role first.",
+                "action": "Delete my account",
+                "confirmTitle": "Delete your account?",
+                "confirmBody": "We'll email you a code to confirm. Once confirmed, you can't undo this yourself.",
+                "blocked": "You're the main host of these events. Delete each one, or make a co-host the main host, then try again:",
+                "confirmAction": "Delete account",
+                "cancel": "Cancel",
+                "otp": {
+                    "send": "Send code",
+                    "sending": "Sending…",
+                    "verifyBody": "Enter the {digits}-digit code sent to your email.",
+                    "label": "Confirmation code",
+                    "resend": "Send a new code",
+                    "resendIn": "Send a new code in {seconds}s",
+                    "errors": {
+                        "invalid": "Incorrect code.",
+                        "notRequested": "Request a new code to continue.",
+                        "expired": "That code has expired. Request a new one.",
+                        "tooManyAttempts": "Too many incorrect attempts. Request a new code."
+                    }
+                }
+            },
         "back": "Back",
         "title": "Profile",
         "fallbackName": "Account",
@@ -4272,6 +4305,12 @@
         "sent": "Thanks, the team will look at it."
     },
     "ApiErrors": {
+        "accountDeleteAdmin": "Admin accounts can't be deleted. Ask another admin to remove your admin role first.",
+        "accountDeleteHasHostedEvents": "Delete the events you host, or hand them to a co-host, before deleting your account.",
+        "accountDeleteOtpExpired": "The confirmation code has expired.",
+        "accountDeleteOtpInvalid": "The confirmation code is incorrect.",
+        "accountDeleteOtpNotRequested": "Request a new confirmation code.",
+        "accountDeleteOtpTooManyAttempts": "Too many incorrect confirmation code attempts.",
         "errorRef": "Ref: {ref}",
         "betaFeedbackDisabled": "Reporting problems is turned off.",
         "generic": "Something went wrong. Please try again.",

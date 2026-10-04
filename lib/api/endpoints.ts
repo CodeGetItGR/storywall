@@ -46,6 +46,9 @@ export const endpoints = {
         termsAcceptance: '/api/me/terms-acceptance',
         newsletter: '/api/me/newsletter',
         businessProfile: '/api/me/business-profile',
+        dataExport: '/api/me/data-export',
+        deletionRequestOtp: '/api/me/deletion-requests/otp',
+        deletionRequests: '/api/me/deletion-requests',
     },
 
     contentNotices: { submit: '/api/content-notices' },

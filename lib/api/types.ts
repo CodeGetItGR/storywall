@@ -1848,6 +1848,17 @@ export interface EventDeletionRequestDto {
     otpCode: string;
 }
 
+// gdpr-self-service-fe-integration.md — POST /api/me/deletion-requests.
+export interface AccountDeletionConfirmRequestDto {
+    otpCode: string;
+}
+
+// One entry of details.events on 409 ACCOUNT_DELETE_HAS_HOSTED_EVENTS (5124).
+export interface AccountDeletionBlockingEvent {
+    eventId: string;
+    title: string;
+}
+
 export interface CoHostInviteRequestDto {
     userId: string;
 }
@@ -2088,7 +2099,9 @@ export interface EventSessionPatchDto {
     title?: string;
     description?: string | null;
     startAt?: string | null;
+    // null/omitted = unchanged; clearEndAt: true removes the end time (wins over endAt).
     endAt?: string | null;
+    clearEndAt?: boolean;
     locationName?: string;
     mapsUrl?: string | null;
     displayOrder?: number;

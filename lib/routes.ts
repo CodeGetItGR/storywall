@@ -91,8 +91,15 @@ export const routes = {
     // Public: where a gift card's QR leads.
     giftClaim: (token: string) => `/gift/${token}`,
     auth: {
-        login: (params: { invite?: string | null; email?: string | null; passwordChanged?: string | null; next?: string | null } = {}) =>
-            withQuery('/login', params),
+        login: (
+            params: {
+                invite?: string | null;
+                email?: string | null;
+                passwordChanged?: string | null;
+                accountDeleted?: string | null;
+                next?: string | null;
+            } = {},
+        ) => withQuery('/login', params),
         register: (params: { invite?: string | null; email?: string | null; next?: string | null } = {}) => withQuery('/register', params),
     },
 } as const;
