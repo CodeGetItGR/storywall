@@ -7,7 +7,6 @@ import {
     ChartNoAxesCombined,
     Flag,
     Handshake,
-    Layers3,
     type LucideIcon,
     MonitorPlay,
     OctagonAlert,
@@ -40,7 +39,6 @@ export type AdminTab =
     | 'collaborations'
     | 'reactionTypes'
     | 'demoEvents'
-    | 'assignments'
     | 'billingOps'
     | 'orders'
     | 'withdrawals'
@@ -77,7 +75,6 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#paid-services': 'paidServices',
     '#discount-codes': 'discountCodes',
     '#reaction-types': 'reactionTypes',
-    '#assignments': 'assignments',
     '#billing-ops': 'billingOps',
     '#accounts': 'accounts',
     '#reports': 'reports',
@@ -95,7 +92,6 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     collaborations: COLLABORATIONS_HASH_ROOT,
     reactionTypes: '#reaction-types',
     demoEvents: DEMO_EVENTS_HASH_ROOT,
-    assignments: '#assignments',
     billingOps: '#billing-ops',
     orders: ORDERS_HASH_ROOT,
     withdrawals: WITHDRAWALS_HASH_ROOT,
@@ -184,7 +180,6 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'reactionTypes', label: t('reactionTypes'), icon: Smile },
             { key: 'demoEvents', label: t('demoEvents'), icon: MonitorPlay },
             { key: 'accounts', label: t('accounts'), icon: Users },
-            { key: 'assignments', label: t('assignments'), icon: Layers3 },
             { key: 'orders', label: t('orders'), icon: ShoppingBag },
             { key: 'billingOps', label: t('billingOps'), icon: Receipt },
             { key: 'withdrawals', label: t('withdrawals'), icon: Undo2 },

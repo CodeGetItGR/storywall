@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, Layers3, PackageMinus, ShoppingBag } from 'lucide-react';
+import { ChevronDown, PackageMinus, ShoppingBag } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
@@ -27,7 +27,7 @@ export function WithdrawalDetail({
 }) {
     const t = useTranslations('AdminPage');
     const { request } = row;
-    const { held, amount, submittedAt, decidedAt, guidance, sendToAssignments, sendToPaidServices } = useWithdrawalDetail(row);
+    const { held, amount, submittedAt, decidedAt, guidance, sendToPaidServices } = useWithdrawalDetail(row);
 
     return (
         <div className="max-w-4xl space-y-8">
@@ -75,10 +75,6 @@ export function WithdrawalDetail({
                             {t('withdrawals.openOrder')}
                         </a>
                     )}
-                    <button type="button" onClick={sendToAssignments} className="inline-flex items-center gap-1.5 hover:text-ink hover:underline">
-                        <Layers3 className="h-3.5 w-3.5" />
-                        {t('withdrawals.sendToAssignments')}
-                    </button>
                     <button type="button" onClick={sendToPaidServices} className="inline-flex items-center gap-1.5 hover:text-ink hover:underline">
                         <PackageMinus className="h-3.5 w-3.5" />
                         {t('withdrawals.sendToPaidServices')}
