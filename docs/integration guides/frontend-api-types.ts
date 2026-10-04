@@ -101,6 +101,11 @@ interface RegisterRequestDto {
    * See fe-guides/community-guidelines-fe-integration.md.
    */
   acceptedGuidelinesVersion: string;
+  /** The Terms of Use version the user ticked, from GET /api/legal/documents/terms. Required, max 10
+   *  chars; a stale version is 400 3043. See fe-guides/terms-acceptance-fe-integration.md. */
+  acceptedTermsVersion: string;
+  /** The 18+ confirmation. Must be true: missing or false is a 400 3001 naming this field. */
+  adultConfirmed: true;
   /**
    * Join the mailing list. Added 2026-09-23. The account's own verification email doubles as the
    * newsletter confirmation, so there is no second email and no extra step in this flow.
@@ -160,6 +165,12 @@ interface OAuthLoginRequestDto {
   idToken: string;
   /** Same best-effort invite redemption as on RegisterRequestDto. */
   inviteToken?: string;
+  /** The three fields below are read only when this sign-in would create a new account. Without all
+   *  of them (and adultConfirmed === true) that is 400 3044 and nothing is created; resend the same
+   *  idToken with them. Stale versions are 3043 / 3037. Max 10 chars each. */
+  acceptedTermsVersion?: string;
+  acceptedGuidelinesVersion?: string;
+  adultConfirmed?: boolean;
 }
 
 /** POST /api/auth/verify-email — 204. */
@@ -221,6 +232,11 @@ interface UserResponseDto {
   guidelinesAcceptanceRequired: boolean | null;
   /** The Community Guidelines version in force. Null wherever the field above is. */
   currentGuidelinesVersion: string | null;
+  /** True until the account has accepted the required Terms version and confirmed being 18+; until
+   *  then every write is 403/4020. Filled on GET /api/me only: null on the admin user endpoints. */
+  termsAcceptanceRequired: boolean | null;
+  /** The Terms version to show and send back. Null wherever the field above is. */
+  currentTermsVersion: string | null;
 }
 // GET /api/users now returns Page<UserResponseDto>, not UserResponseDto[].
 // Default 50/page, max 100 (?page=&size=), sorted createdAt desc then id desc (newest first).
@@ -438,6 +454,10 @@ interface EventRequestDto {
                                    // startAt/endAt (displayOrder 0) in the same transaction; see
                                    // fe-guides/event-creation-initial-session-fe-integration.md
 }
+// POST /api/events: 409 EVENT_DRAFT_LIMIT_REACHED (5116, added 2026-10-04) when the caller is
+// already the main host of 5 unpaid, undeleted drafts. Paying for one or deleting one frees a place.
+// Admin provisioning (createForHost) is not counted or capped.
+export const EVENT_DRAFT_LIMIT_REACHED = 5116; // 409
 
 /** Returned by GET /api/events (list) and POST /api/events — flat summary shape. */
 interface EventResponseDto {
@@ -787,6 +807,11 @@ interface RsvpReportRowDto {
  * `context` form field — `'GALLERY' | 'STORY' | 'POST' | 'COVER'` (default `'GALLERY'` if omitted). Since
  * 2026-09-24 the upload needs the context's module (GALLERY→gallery, STORY→stories, POST→posts; else 5012).
  * COVER (2026-09-25) needs no module and works on a DRAFT, but only a host may send it (else 403).
+ * Since 2026-10-04 a COVER is an image only (400 UNSUPPORTED_MEDIA_FORMAT 3012 otherwise), at most
+ * 10 MB (`media.image.cover-max-bytes`; 413 MEDIA_FILE_TOO_LARGE 3013 over it), sent to the single
+ * upload only (`/media/batch` with `context: 'COVER'` is 400 VALIDATION_FAILED 3001), and refused
+ * with 404 RESOURCE_NOT_FOUND 2001 on a soft-deleted event. On a DRAFT, a new cover soft-deletes the
+ * earlier covers the event is not showing, so upload the cover you will save, then save it.
  * New rows store the context as `metadata.uploadContext`; rows uploaded before 2026-09-24 have none and
  * count as GALLERY, so type it optional. Reading a file needs its module too (a COVER file never does)
  * — see plan-owned-modules-fe-integration.md §4. A video
@@ -816,7 +841,10 @@ interface MediaResponseDto {
 // on the very first response after upload — thumbnail extraction and re-encoding happen
 // asynchronously — then flips to 'READY' (both mediaUrl and thumbnailUrl now playable/viewable)
 // or 'FAILED' (permanently, if terminal — e.g. a story video over the duration cap; transient
-// failures are retried automatically server-side, invisible to the FE). Poll
+// failures are retried automatically server-side, invisible to the FE). Since 2026-10-04 a gallery
+// or post video is capped too, per event type (PlatformEventTypeResponseDto.videoMaxDurationSeconds,
+// 300 s by default): longer is a terminal 'FAILED' with metadata.processingError
+// "VIDEO_DURATION_EXCEEDED". A transcode that outruns its time limit is terminal "TRANSCODE_TIMEOUT". Poll
 // GET /api/medias/{id} (or re-fetch the gallery page) until status leaves 'PROCESSING'. See
 // [`video-processing-fe-integration.md`](fe-guides/video-processing-fe-integration.md).
 
@@ -917,6 +945,12 @@ interface PostPatchDto {
  * It exists because EventSource cannot set an Authorization header and this API sends no cookies,
  * so the token travels as a query parameter instead. Fetch one per connection, not once per
  * session. See fe-guides/posts-feed-push-and-etag-fe-integration.md.
+ *
+ * Caps (2026-10-04). Minting is rate limited (30 a minute per user, 429 RATE_LIMITED 3010 with
+ * Retry-After). A member holds at most 3 streams per event: a 4th replaces their oldest, which is
+ * first sent an `evicted` event — on it, close that EventSource and do not reconnect, or the tabs
+ * replace each other in turn. An event holds at most 2000 streams and an instance 5000; past
+ * either, both the mint and the stream answer 429 with Retry-After 60. Keep honouring Retry-After.
  */
 interface StreamTokenResponseDto {
   token: string;
@@ -2005,14 +2039,16 @@ export interface PlatformEventTypeResponseDto {
   voice: Record<string, Record<string, string>>;   // field name -> locale -> copy
   isEnabled: boolean;
   sortOrder: number;
+  videoMaxDurationSeconds: number; // added 2026-10-04 (V138) — longest gallery/post video, default 300
 }
 
-/** PATCH /api/admin/platform-event-types/{eventTypeKey}. Only these two are editable: the copy
+/** PATCH /api/admin/platform-event-types/{eventTypeKey}. Only these are editable: the copy
  *  (name/tagline/icon/accentToken/voice) is synced from code, and the key itself cannot be
  *  renamed. */
 export interface PlatformEventTypePatchDto {
   isEnabled?: boolean;
   sortOrder?: number;
+  videoMaxDurationSeconds?: number; // 10..7200, else 400 VALIDATION_FAILED 3001. Applies to videos processed after the change
 }
 
 export type ModuleApplicability = 'UNSUPPORTED' | 'DEFAULT_ON'; // DEFAULT_OFF removed 2026-09-24 (V109)
@@ -2558,10 +2594,14 @@ export interface QrLinkResolutionDto {
 
 // ---------------------------------------------------------------------------
 // Wishlist — the `wishlist` module's one resource, added 2026-08-16
-// /api/events/{eventId}/gift-account: GET any member, PUT/DELETE host only
+// /api/events/{eventId}/gift-account: GET any member, PUT/DELETE the main host only — since
+// 2026-10-04 a co-host gets 403 GIFT_ACCOUNT_NOT_PRIMARY_HOST (4019). Guests send money to this
+// account, so only the host who paid for the event may point it somewhere.
 // ---------------------------------------------------------------------------
 
 /** PUT body. Upsert — there is at most one per event, so no create-vs-update distinction. */
+export const GIFT_ACCOUNT_NOT_PRIMARY_HOST = 4019; // 403
+
 export interface EventGiftAccountRequestDto {
   /** Accepted with or without spaces. Max 42 as typed (a 400 with errors.iban beyond that), and
    *  max 34 once normalised — over that, or bad mod-97 check digits, is 400 / 5045 INVALID_IBAN. */
@@ -3260,6 +3300,26 @@ export interface GuidelinesAcceptanceRequestDto { version: string; }
 
 export const GUIDELINES_VERSION_MISMATCH = 3037;
 export const GUIDELINES_ACCEPTANCE_REQUIRED = 4013;
+
+// ---------------------------------------------------------------------------
+// Terms of Use acceptance and 18+ confirmation (2026-10-04) — see fe-guides/terms-acceptance-fe-integration.md
+// Error codes: 3043 TERMS_VERSION_MISMATCH (400), 3044 SIGNUP_ACCEPTANCE_REQUIRED (400; first OAuth
+// sign-in without the acceptance fields, details: SignupAcceptanceRequiredDetails), 4020
+// TERMS_ACCEPTANCE_REQUIRED (403; any authenticated write before the Terms are accepted).
+// ---------------------------------------------------------------------------
+
+/** POST /api/me/terms-acceptance (USER, GUEST, ADMIN) -> 204. Idempotent; stale version is 3043. */
+export interface TermsAcceptanceRequestDto { version: string; adultConfirmed: true; }
+
+/** `details` of a 3044 response. */
+export interface SignupAcceptanceRequiredDetails {
+  currentTermsVersion: string;
+  currentGuidelinesVersion: string;
+}
+
+export const TERMS_VERSION_MISMATCH = 3043;
+export const SIGNUP_ACCEPTANCE_REQUIRED = 3044;
+export const TERMS_ACCEPTANCE_REQUIRED = 4020;
 
 // ---------------------------------------------------------------------------
 // Collaborations, partner codes and house discount codes

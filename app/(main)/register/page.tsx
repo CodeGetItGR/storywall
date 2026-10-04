@@ -10,9 +10,9 @@ import React, { ChangeEvent, useCallback, useState } from 'react';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { OAuthButtons } from '@/components/auth/OAuthButtons';
 import { RegisterBusinessSection } from '@/components/auth/RegisterBusinessSection';
-import { RegisterGuidelinesCheckbox } from '@/components/auth/RegisterGuidelinesCheckbox';
 import { RegisterNewsletterCheckbox } from '@/components/auth/RegisterNewsletterCheckbox';
 import { AuthLoadingState } from '@/components/layout/AuthLoadingState';
+import { AcceptanceCheckboxes } from '@/components/legal/AcceptanceCheckboxes';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppNewsletterConfig } from '@/hooks/useAppConfig';
@@ -22,9 +22,14 @@ import { communityGuidelinesQueryKey, useCommunityGuidelinesVersion } from '@/ho
 import { useContentLimits } from '@/hooks/useContentLimits';
 import { useNavigateAfterSignIn } from '@/hooks/useNavigateAfterSignIn';
 import { useRegisterBusinessProfile } from '@/hooks/useRegisterBusinessProfile';
-import { isGuidelinesVersionMismatchError } from '@/lib/api/errors';
+import { termsVersionQueryKey, useTermsVersion } from '@/hooks/useTermsVersion';
+import { isGuidelinesVersionMismatchError, isTermsVersionMismatchError } from '@/lib/api/errors';
 import { AUTH_RETURN_PATH_PARAM, getPostRegisterRedirectPath, getSafeReturnPath } from '@/lib/auth/returnPath';
 import { routes } from '@/lib/routes';
+
+function isVersionMismatchError(err: unknown): boolean {
+    return isGuidelinesVersionMismatchError(err) || isTermsVersionMismatchError(err);
+}
 
 export default function RegisterPage() {
     const t = useTranslations('RegisterPage');
@@ -40,6 +45,7 @@ export default function RegisterPage() {
     const newsletterConfig = useAppNewsletterConfig();
     const business = useRegisterBusinessProfile();
     const guidelinesVersion = useCommunityGuidelinesVersion();
+    const termsVersion = useTermsVersion();
     const queryClient = useQueryClient();
 
     const [showPw, setShowPw] = useState(false);
@@ -48,20 +54,36 @@ export default function RegisterPage() {
     const [lastName, setLastName] = useState(searchParams.get('lastName') ?? '');
     const [password, setPassword] = useState('');
     const [subscribeToNewsletter, setSubscribeToNewsletter] = useState(false);
-    const [acceptedGuidelines, setAcceptedGuidelines] = useState(false);
+    const [acceptedDocuments, setAcceptedDocuments] = useState(false);
+    const [adultConfirmed, setAdultConfirmed] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Still loading (or retrying) is not the same as failed: only a settled error asks for a refresh.
+    const versionsMissingMessage = guidelinesVersion.isError || termsVersion.isError ? t('acceptance.unavailable') : t('acceptance.loading');
+    // Google's button can't be disabled, so the OAuth buttons only appear once a sign-up through them
+    // would carry everything the backend needs to create the account.
+    const canUseOAuth = acceptedDocuments && adultConfirmed && Boolean(guidelinesVersion.data && termsVersion.data);
+
+    // A newer version went live while the page was open: fetch both and make them tick again.
+    const resetAfterVersionChange = useCallback(async () => {
+        setAcceptedDocuments(false);
+        await Promise.all([
+            queryClient.invalidateQueries({ queryKey: communityGuidelinesQueryKey }),
+            queryClient.invalidateQueries({ queryKey: termsVersionQueryKey }),
+        ]);
+        setError(t('acceptance.changed'));
+    }, [queryClient, t]);
 
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
         setError(null);
-        if (!acceptedGuidelines) {
-            setError(t('guidelines.required'));
+        if (!acceptedDocuments || !adultConfirmed) {
+            setError(t('acceptance.required'));
             return;
         }
-        if (!guidelinesVersion.data) {
-            // Still loading (or retrying) is not the same as failed: only a settled error asks for a refresh.
-            setError(guidelinesVersion.isError ? t('guidelines.unavailable') : t('guidelines.loading'));
+        if (!guidelinesVersion.data || !termsVersion.data) {
+            setError(versionsMissingMessage);
             return;
         }
         const businessProfile = business.prepareRequest();
@@ -78,14 +100,13 @@ export default function RegisterPage() {
                 subscribeToNewsletter: newsletterConfig ? subscribeToNewsletter : undefined,
                 businessProfile: businessProfile ?? undefined,
                 acceptedGuidelinesVersion: guidelinesVersion.data,
+                acceptedTermsVersion: termsVersion.data,
+                adultConfirmed: true,
             });
             navigateAfterSignIn(getPostRegisterRedirectPath(auth.role, Boolean(inviteToken)));
         } catch (err) {
-            if (isGuidelinesVersionMismatchError(err)) {
-                // A newer version went live while the form was open: fetch it and make them tick again.
-                setAcceptedGuidelines(false);
-                await queryClient.invalidateQueries({ queryKey: communityGuidelinesQueryKey });
-                setError(t('guidelines.changed'));
+            if (isVersionMismatchError(err)) {
+                await resetAfterVersionChange();
             } else if (!business.handleSignupError(err)) {
                 setError(toErrorMessage(err));
             }
@@ -97,17 +118,24 @@ export default function RegisterPage() {
     const handleOAuthSignIn = useCallback(
         async (provider: 'GOOGLE' | 'APPLE', idToken: string) => {
             setError(null);
-            const auth = await oauth(provider, { idToken, inviteToken: inviteToken ?? undefined });
+            const auth = await oauth(provider, {
+                idToken,
+                inviteToken: inviteToken ?? undefined,
+                acceptedGuidelinesVersion: guidelinesVersion.data,
+                acceptedTermsVersion: termsVersion.data,
+                adultConfirmed: true,
+            });
             navigateAfterSignIn(getPostRegisterRedirectPath(auth.role, Boolean(inviteToken)));
         },
-        [inviteToken, oauth, navigateAfterSignIn],
+        [inviteToken, oauth, navigateAfterSignIn, guidelinesVersion.data, termsVersion.data],
     );
 
     const handleOAuthError = useCallback(
         (err: unknown) => {
-            setError(toErrorMessage(err));
+            if (isVersionMismatchError(err)) void resetAfterVersionChange();
+            else setError(toErrorMessage(err));
         },
-        [toErrorMessage],
+        [resetAfterVersionChange, toErrorMessage],
     );
 
     const onEmailChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -130,8 +158,12 @@ export default function RegisterPage() {
         setSubscribeToNewsletter(e.target.checked);
     }, []);
 
-    const onAcceptedGuidelinesChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        setAcceptedGuidelines(e.target.checked);
+    const onAcceptedDocumentsChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+        setAcceptedDocuments(e.target.checked);
+    }, []);
+
+    const onAdultConfirmedChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+        setAdultConfirmed(e.target.checked);
     }, []);
 
     const onTogglePasswordVisibility = useCallback(() => {
@@ -229,8 +261,13 @@ export default function RegisterPage() {
                 {/* Business */}
                 <RegisterBusinessSection business={business} />
 
-                {/* Community Guidelines */}
-                <RegisterGuidelinesCheckbox checked={acceptedGuidelines} onChangeAction={onAcceptedGuidelinesChange} />
+                {/* Terms, Community Guidelines, 18+ */}
+                <AcceptanceCheckboxes
+                    accepted={acceptedDocuments}
+                    adultConfirmed={adultConfirmed}
+                    onAcceptedChangeAction={onAcceptedDocumentsChange}
+                    onAdultConfirmedChangeAction={onAdultConfirmedChange}
+                />
 
                 {error && (
                     <p role="alert" className="-mt-1 text-center text-xs text-red-500">
@@ -259,7 +296,13 @@ export default function RegisterPage() {
                 {t('orContinueWith')}
                 <span className="h-px flex-1 bg-surface-muted" />
             </div>
-            <OAuthButtons onSignIn={handleOAuthSignIn} onError={handleOAuthError} />
+            {canUseOAuth ? (
+                <OAuthButtons onSignIn={handleOAuthSignIn} onError={handleOAuthError} />
+            ) : (
+                <p className="text-center text-xs text-ink-muted">
+                    {acceptedDocuments && adultConfirmed ? versionsMissingMessage : t('acceptance.oauthHint')}
+                </p>
+            )}
 
             <p className="mt-6 text-center text-xs text-ink-muted">
                 {t('haveAccount')}{' '}

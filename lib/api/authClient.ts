@@ -6,7 +6,7 @@
 
 import { ApiError } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
-import type { AuthSessionDto, RegisterRequestDto } from '@/lib/api/types';
+import type { AuthSessionDto, OAuthLoginRequestDto, RegisterRequestDto } from '@/lib/api/types';
 
 async function parseBody(res: Response): Promise<unknown> {
     const text = await res.text();
@@ -35,7 +35,7 @@ export const authClient = {
     login: (input: { email: string; password: string; inviteToken?: string }) =>
         authRequest<AuthSessionDto>(endpoints.auth.login, { method: 'POST', body: JSON.stringify(input) }),
 
-    oauth: (provider: 'GOOGLE' | 'APPLE', input: { idToken: string; inviteToken?: string }) =>
+    oauth: (provider: 'GOOGLE' | 'APPLE', input: OAuthLoginRequestDto) =>
         authRequest<AuthSessionDto>(endpoints.auth.oauth(provider), { method: 'POST', body: JSON.stringify(input) }),
 
     // Bootstrap/reactive-refresh: 401 means there's no re-derivable session

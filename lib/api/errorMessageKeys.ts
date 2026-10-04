@@ -74,6 +74,9 @@ export type ApiErrorMessageKey =
     | 'giftRecipientProtected'
     | 'guidelinesAcceptanceRequired'
     | 'guidelinesVersionMismatch'
+    | 'signupAcceptanceRequired'
+    | 'termsAcceptanceRequired'
+    | 'termsVersionMismatch'
     | 'internalError'
     | 'invalidCredentials'
     | 'invalidIban'
@@ -245,6 +248,9 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.GIFT_HANDOVER_PENDING]: 'giftHandoverPending',
     [ERROR_CODES.GUIDELINES_VERSION_MISMATCH]: 'guidelinesVersionMismatch',
     [ERROR_CODES.GUIDELINES_ACCEPTANCE_REQUIRED]: 'guidelinesAcceptanceRequired',
+    [ERROR_CODES.TERMS_VERSION_MISMATCH]: 'termsVersionMismatch',
+    [ERROR_CODES.SIGNUP_ACCEPTANCE_REQUIRED]: 'signupAcceptanceRequired',
+    [ERROR_CODES.TERMS_ACCEPTANCE_REQUIRED]: 'termsAcceptanceRequired',
     [ERROR_CODES.INTERNAL_ERROR]: 'internalError',
     [ERROR_CODES.INVALID_CREDENTIALS]: 'invalidCredentials',
     [ERROR_CODES.INVALID_IBAN]: 'invalidIban',

@@ -214,6 +214,8 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
             locale: null,
             guidelinesAcceptanceRequired: false,
             currentGuidelinesVersion: null,
+            termsAcceptanceRequired: false,
+            currentTermsVersion: null,
         };
     }
 
