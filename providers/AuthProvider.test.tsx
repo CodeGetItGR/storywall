@@ -100,6 +100,8 @@ describe('AuthProvider', () => {
                 firstName: 'Host',
                 lastName: 'Test',
                 acceptedGuidelinesVersion: '2026-09-30',
+                acceptedTermsVersion: '2026-10-04',
+                adultConfirmed: true,
             }),
         );
 

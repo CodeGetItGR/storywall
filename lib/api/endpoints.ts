@@ -43,6 +43,7 @@ export const endpoints = {
         changePassword: '/api/me/change-password',
         events: '/api/me/events',
         guidelinesAcceptance: '/api/me/guidelines-acceptance',
+        termsAcceptance: '/api/me/terms-acceptance',
         newsletter: '/api/me/newsletter',
         businessProfile: '/api/me/business-profile',
     },
