@@ -31,6 +31,7 @@ export default function LoginPage() {
     const searchParams = useSearchParams();
     const inviteToken = searchParams.get('invite');
     const passwordChanged = searchParams.get('passwordChanged') === '1';
+    const accountDeleted = searchParams.get('accountDeleted') === '1';
     const returnPath = getSafeReturnPath(searchParams.get(AUTH_RETURN_PATH_PARAM));
 
     const { login, oauth } = useAuth();
@@ -129,6 +130,7 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 {/* Status */}
                 {passwordChanged && <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{t('passwordChanged')}</p>}
+                {accountDeleted && <p className="rounded-2xl bg-surface-muted px-4 py-3 text-sm text-ink">{t('accountDeleted')}</p>}
 
                 {/* Email */}
                 <FormFieldLabel label={t('fields.email')} required>
