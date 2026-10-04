@@ -14,13 +14,14 @@ import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useGiftAccount } from '@/hooks/useGiftAccount';
 import { useGiftAccountEditor } from '@/hooks/useGiftAccountEditor';
+import { useIsPrimaryHost } from '@/hooks/useIsPrimaryHost';
 import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { usePlanUpgradeHref } from '@/hooks/usePlanUpgradeHref';
 import { routes } from '@/lib/routes';
 
 export function GiftAccountPage() {
     const t = useTranslations('GiftsPage');
-    const { eventId, isHost } = useEventRouteContext();
+    const { eventId } = useEventRouteContext();
     const account = useGiftAccount(eventId);
     const editor = useGiftAccountEditor(eventId);
     const wishlistReadable = useModuleReadable(eventId, 'wishlist');
@@ -28,7 +29,9 @@ export function GiftAccountPage() {
 
     // Only a finished fetch decides between details, setup and the empty state.
     const isLoaded = account.isSuccess;
-    const canEdit = isHost;
+    // The account is where guests send money, so only the main host may set or
+    // change it (the server answers 4019 otherwise). Co-hosts see it as guests do.
+    const canEdit = useIsPrimaryHost();
 
     if (!wishlistReadable) {
         return (

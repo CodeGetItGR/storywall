@@ -36,6 +36,10 @@ function resolveMediaHostPatterns() {
     ]);
 }
 
+// The Pexels photos lib/landingMedia.ts shows, and no others: adding one there
+// means adding its id here, or next/image refuses it.
+const LANDING_PEXELS_PHOTO_IDS = ['33635247', '9215433', '9901279', '15141416', '3419643'];
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     env: {
@@ -45,16 +49,16 @@ const nextConfig = {
         ignoreBuildErrors: true,
     },
     images: {
+        // Every pattern here is a source our image optimizer will fetch and resize,
+        // billed to us, for anyone who asks. No wildcard a stranger can host under:
+        // "**.r2.dev" let any R2 bucket in the world through.
         remotePatterns: [
-            {
-                protocol: 'https',
-                hostname: '**.r2.dev',
-            },
             ...resolveMediaHostPatterns(),
-            {
+            ...LANDING_PEXELS_PHOTO_IDS.map((id) => ({
                 protocol: 'https',
                 hostname: 'images.pexels.com',
-            },
+                pathname: `/photos/${id}/**`,
+            })),
         ],
         formats: ['image/webp'],
         minimumCacheTTL: 2678400,

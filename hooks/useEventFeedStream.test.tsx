@@ -163,6 +163,26 @@ describe('useEventFeedStream', () => {
         expect(apiPost).toHaveBeenCalledTimes(2);
     });
 
+    // The backend replaces a member's oldest stream when they open one too many.
+    // Reconnecting would replace the next one, and so on round every tab.
+    it('stops for good when the server replaces this stream with a newer one', async () => {
+        apiPost.mockResolvedValue({ token: 't1' });
+        renderHook(() => useEventFeedStream('event-1'), { wrapper });
+        await flush();
+
+        act(() => {
+            FakeEventSource.instances[0].emit('evicted');
+            FakeEventSource.instances[0].emit('error');
+        });
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(60_000);
+        });
+
+        expect(FakeEventSource.instances[0].closed).toBe(true);
+        expect(apiPost).toHaveBeenCalledTimes(1);
+        expect(FakeEventSource.instances).toHaveLength(1);
+    });
+
     it('closes the stream and cancels pending reconnects on unmount', async () => {
         apiPost.mockResolvedValue({ token: 't1' });
         const { unmount } = renderHook(() => useEventFeedStream('event-1'), { wrapper });

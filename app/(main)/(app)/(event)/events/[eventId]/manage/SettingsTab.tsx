@@ -132,7 +132,15 @@ export default function SettingsTab({
         coverObjectUrlRef.current = nextPreviewUrl;
         setCoverPreview(nextPreviewUrl);
         setSaved(false);
-        uploadMedia.mutate({ eventId: event.id, file, context: 'COVER' }, { onSuccess: (media) => setPendingCoverMediaId(media.id) });
+        uploadMedia.mutate(
+            { eventId: event.id, file, context: 'COVER' },
+            {
+                onSuccess: (media) => setPendingCoverMediaId(media.id),
+                // A refused photo (too large, not an image) must not stay on screen
+                // looking like the cover that saving would set.
+                onError: handleRemovePendingCover,
+            },
+        );
     }
 
     function handleRemovePendingCover() {
@@ -287,6 +295,7 @@ export default function SettingsTab({
                             disabled={disabled || !canUploadCover}
                             aria-label={t('settings.coverPhoto.upload')}
                         />
+                        {uploadMedia.isError && <p className="mt-1.5 text-xs text-rose-500">{toErrorMessage(uploadMedia.error)}</p>}
                     </TargetedSection>
                 </div>
 
