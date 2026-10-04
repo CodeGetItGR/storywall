@@ -1,7 +1,7 @@
 # System design
 
 Architecture overview for engineers working on the backend. For product concepts see
-[`product.md`](product.md); for API contracts see
+[`product.md`](../../product.md); for API contracts see
 [`frontend-integration-guide.md`](frontend-integration-guide.md).
 
 ## 1. Stack
@@ -10,8 +10,7 @@ Architecture overview for engineers working on the backend. For product concepts
 - **PostgreSQL** via Spring Data JPA, migrations managed with **Flyway**.
 - **Cloudflare R2** (S3-compatible) for media storage, accessed via the AWS S3 SDK, URLs
   presigned with a short TTL (default 15 min) rather than served directly.
-- **JWT** auth (`io.jsonwebtoken`), stateless — access + refresh tokens, plus a separate
-  guest-token flow.
+- **JWT** auth (`io.jsonwebtoken`), stateless — access + refresh tokens.
 - **Stripe** as the primary payment provider, with a `MANUAL` provider as a no-op fallback for
   environments without billing wired up (`app.billing.provider`).
 - **MapStruct** for entity↔DTO mapping.
@@ -61,22 +60,21 @@ HTTP request
 ```
 
 Controllers do not talk to repositories directly. Authorization has two layers: **who you
-are** (role — `ROLE_USER`, `ROLE_ADMIN`, guest) enforced declaratively via
+are** (role — `ROLE_USER`, `ROLE_ADMIN`) enforced declaratively via
 `@PreAuthorize`/Security config, and **what you own** (e.g. "are you a host of _this_ event")
 enforced imperatively inside services, since that requires loading the resource.
 
 ## 4. Auth model
 
-Three identities, one token scheme:
+Two identities, one token scheme:
 
-- **Registered user** — email+password, full `/api/auth/register` → `/api/auth/login` flow,
-  refresh tokens persisted server-side (revocable on logout).
-- **Guest** — `/api/auth/guest-login` against an invite token; idempotent per token; issues an
-  access token scoped to that one event, no refresh token (guests re-run guest-login instead
-  of refreshing).
+- **Registered user** — email+password (`/api/auth/register` → `/api/auth/login`) or social
+  login, refresh tokens persisted server-side (revocable on logout). Guests are registered users
+  too: they join by attaching an invite token to register/login/social login. There is no
+  account-less guest login (`/api/auth/guest-login` was removed on 2026-09-04).
 - **Admin** — a `ROLE_ADMIN` registered user; no separate auth path, just a role check.
 
-`ScopeChecker` + service-level ownership checks are what actually stop a guest of event A from
+`ScopeChecker` + service-level ownership checks are what actually stop a member of event A from
 touching event B's resources — the JWT alone only proves _who_, not _what they can reach_.
 
 ## 5. Media pipeline
@@ -87,7 +85,8 @@ touching event B's resources — the JWT alone only proves _who_, not _what they
 3. Every read path returns a **presigned GET URL**, not a permanent one — expires per
    `r2.presigned-url-ttl-minutes`. Clients must not cache these beyond the session; re-fetch
    the parent resource for a fresh URL.
-4. Deletion is soft (`deletedAt`) first; actual byte destruction happens later via
+4. Anonymous gallery uploads through a `MEDIA_UPLOAD` QR code need no account and no token.
+5. Deletion is soft (`deletedAt`) first; actual byte destruction happens later via
    `MediaPurgeService`, driven by the billing sweep's retention window
    (`app.billing.media-retention-days`), not immediately on delete.
 
@@ -106,29 +105,30 @@ Key pieces:
   inbound provider event is recorded (`ProviderWebhookEvent`) before processing, so replay
   (`WebhookReplayService`) and idempotency are possible if a handler failed partway.
 - **`BillingSweepJob`** — the scheduled reconciler. Settles orders whose webhook never
-  arrived, then walks `EventCoverageService`'s notion of "is this event currently paid for"
-  and drives the freeze → purge lifecycle (`EventLifecycleService`,
-  `MediaDestroyTransaction`). Off by default; enabling it is a deliberate, environment-by-
-  environment decision because it's the only thing in the codebase that destroys data as a
+  arrived, soft-deletes events whose `coverageEndsAt` has passed, and purges soft-deleted
+  events and media once their retention period is over. Each step is isolated, so one failing
+  step does not stop the rest. It is the only thing in the codebase that destroys data as a
   matter of course.
-- **`RefundService`** — refund eligibility is a hard gate (unused event, inside the refund
-  window), not a judgment call left to an admin UI.
+- **Withdrawals** — fully automated: the server computes what is owed per item and either
+  refunds it at once or holds it for an admin when a fraud signal fires. Withdrawing from the
+  activation soft-deletes the event. There is no admin-approved refund request any more.
 
-Two subscription axes are modeled separately and never merged: `EventSubscription` (event's
-plan, storage/member quota) vs. the user's own plan tier (active-event cap). See
-[`product.md`](product.md) §4 for the product-level explanation.
+Every purchase is one-time; there are no subscriptions, dunning, freeze or purge-for-non-payment.
+Plans are per event (storage, guest cap, modules). Account plans still exist but grant nothing,
+so there is no cap on how many events a user can host. See
+[`product.md`](../../product.md) §4 for the product-level explanation.
 
 ## 7. Notifications & scheduled jobs
 
 All scheduled work lives behind `SchedulingConfig` (`@EnableScheduling`) and is individually
 flag-gated in `application.properties`:
 
-| Job                | Flag                          | Purpose                                                                                                                                                                                                  |
-| ------------------ | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Notification sweep | `NOTIFICATIONS_SWEEP_ENABLED` | Evaluates `NotificationRule`s (storage/member/event-cap thresholds, upgrade offers, pre-event tips) hourly, writes `Notification` rows. Rule set lives in `service/notification/` as one class per rule. |
-| Playlist digest    | shares the sweep flag         | Rolls up new song suggestions into one feed post per event per run.                                                                                                                                      |
-| Billing sweep      | `BILLING_SWEEP_ENABLED`       | Reconciliation, dunning, freeze, purge — see §6.                                                                                                                                                         |
-| Mail dispatch      | `APP_MAIL_ENABLED`            | Sends queued notification emails via Brevo SMTP; with it off, emails are logged, not sent, and nothing else changes.                                                                                     |
+| Job                | Flag                          | Purpose                                                                                                                                                                                                                  |
+| ------------------ | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Notification sweep | `NOTIFICATIONS_SWEEP_ENABLED` | Evaluates `NotificationRule`s (storage/member thresholds, coverage-ending warnings, upgrade offers, pre-event tips) hourly, writes `Notification` rows. Rule set lives in `service/notification/` as one class per rule. |
+| Playlist digest    | shares the sweep flag         | Rolls up new song suggestions into one feed post per event per run.                                                                                                                                                      |
+| Billing sweep      | shares the sweep flag         | Order reconciliation, coverage-end deletion, purge — see §6.                                                                                                                                                             |
+| Mail dispatch      | `APP_MAIL_ENABLED`            | Sends queued notification emails via Brevo SMTP; with it off, emails are logged, not sent, and nothing else changes.                                                                                                     |
 
 A host is only ever told about a given threshold crossing once — dismissing a notification
 doesn't reset it, crossing a _further_ threshold produces a new one. This is enforced at
@@ -139,7 +139,7 @@ write-time in the rule, not filtered client-side.
 In-memory, per-instance token counters via a `RateLimit` interceptor/annotation
 (`service/ratelimit/`). A global default (`app.rate-limit.default-limit`,
 `...default-window-seconds`) applies to any endpoint without its own `@RateLimit`; auth,
-checkout, refund, and admin money endpoints declare tighter limits inline. Explicitly a brake
+checkout, withdrawal, and admin money endpoints declare tighter limits inline. Explicitly a brake
 on runaway clients, not a distributed edge defence — N instances mean N independent windows.
 
 ## 9. Deployment
@@ -156,7 +156,7 @@ on runaway clients, not a distributed edge defence — N instances mean N indepe
 
 - Full endpoint list and DTO shapes: [`frontend-integration-guide.md`](frontend-integration-guide.md)
   and [`frontend-api-types.ts`](frontend-api-types.ts)
-- Billing specifics: [`billing-payments-fe-integration.md`](billing-payments-fe-integration.md),
-  [`billing-hardening-2026-08.md`](billing-hardening-2026-08.md)
+- Billing specifics: [`billing-fe-guide.md`](billing-fe-guide.md),
+  [`billing-review-fixes-2026-09.md`](billing-review-fixes-2026-09.md)
 - Knowledge graph (community/dependency structure) for deep dives: `graphify-out/` — run
   `graphify query "<question>"` rather than grepping source cold.
