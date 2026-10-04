@@ -4,22 +4,36 @@ const mocks = vi.hoisted(() => ({
     accessToken: null as string | null,
     // The browser's Sec-Fetch-Dest; null for a browser that doesn't send it.
     fetchDest: null as string | null,
+    // Whether proxy.ts refreshed the session for this request.
+    proxyRefreshed: false,
+    refreshToken: null as string | null,
     serverGet: vi.fn(),
+    refresh: vi.fn(),
 }));
 
 vi.mock('next/headers', async () => {
-    const { ACCESS_TOKEN_HEADER: header } = await import('@/lib/auth/authCookies');
+    const { ACCESS_TOKEN_HEADER, AUTH_COOKIES, SESSION_REFRESHED_HEADER } = await import('@/lib/auth/authCookies');
     return {
         headers: async () => {
-            const headerList = new Headers(mocks.accessToken ? { [header]: mocks.accessToken } : {});
+            const headerList = new Headers({ 'x-forwarded-for': '203.0.113.7' });
+            if (mocks.accessToken) headerList.set(ACCESS_TOKEN_HEADER, mocks.accessToken);
             if (mocks.fetchDest) headerList.set('sec-fetch-dest', mocks.fetchDest);
+            if (mocks.proxyRefreshed) headerList.set(SESSION_REFRESHED_HEADER, '1');
             return headerList;
         },
-        cookies: async () => ({ get: () => undefined }),
+        cookies: async () => ({
+            get: (name: string) => (name === AUTH_COOKIES.refreshToken && mocks.refreshToken ? { value: mocks.refreshToken } : undefined),
+        }),
     };
 });
 
 vi.mock('@/lib/api/serverFetch', () => ({ serverGet: mocks.serverGet }));
+vi.mock('@/lib/auth/springAuth', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('@/lib/auth/springAuth')>();
+    return { ...actual, springAuth: { ...actual.springAuth, refresh: mocks.refresh } };
+});
+
+import { SpringAuthError } from '@/lib/auth/springAuth';
 
 import {
     prefetchAccessToken,
@@ -35,7 +49,10 @@ const memberships = [{ eventId: 'event-1', role: 'HOST' }];
 beforeEach(() => {
     mocks.accessToken = 'token-1';
     mocks.fetchDest = 'document';
+    mocks.proxyRefreshed = false;
+    mocks.refreshToken = 'refresh-1';
     mocks.serverGet.mockReset();
+    mocks.refresh.mockReset().mockResolvedValue({ accessToken: 'token-2' });
 });
 
 describe('prefetchAccessToken', () => {
@@ -146,11 +163,77 @@ describe('resolveServerSession', () => {
         expect(handoff?.expiresInMs).toBe(0);
     });
 
+    it('checks with Spring that the session is still alive', async () => {
+        mocks.serverGet.mockResolvedValue(profile);
+
+        await resolveServerSession();
+
+        expect(mocks.refresh).toHaveBeenCalledWith('refresh-1', 'en', '203.0.113.7');
+    });
+
+    it('checks the session alongside /api/me, not after it', async () => {
+        let resolveProfile: (value: unknown) => void = () => {};
+        mocks.serverGet.mockReturnValue(
+            new Promise((resolve) => {
+                resolveProfile = resolve;
+            }),
+        );
+
+        const handoff = resolveServerSession();
+        await vi.waitFor(() => expect(mocks.refresh).toHaveBeenCalled());
+        resolveProfile(profile);
+
+        await expect(handoff).resolves.not.toBeNull();
+    });
+
+    it("hands over the cookie's token, not the one the check gets back", async () => {
+        mocks.serverGet.mockResolvedValue(profile);
+
+        const handoff = await resolveServerSession();
+
+        expect(handoff?.session.accessToken).toBe('token-1');
+    });
+
+    it('returns null once the session has ended, e.g. after a sign-in on another device', async () => {
+        mocks.serverGet.mockResolvedValue(profile);
+        mocks.refresh.mockRejectedValue(new SpringAuthError(401, null));
+
+        await expect(resolveServerSession()).resolves.toBeNull();
+    });
+
+    it('returns null without a refresh cookie', async () => {
+        mocks.serverGet.mockResolvedValue(profile);
+        mocks.refreshToken = null;
+
+        await expect(resolveServerSession()).resolves.toBeNull();
+        expect(mocks.refresh).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        ['rate limited', new SpringAuthError(429, null)],
+        ['down', new SpringAuthError(503, null)],
+        ['unreachable', new TypeError('fetch failed')],
+    ])("keeps the session when Spring can't confirm it (%s)", async (_label, error) => {
+        mocks.serverGet.mockResolvedValue(profile);
+        mocks.refresh.mockRejectedValue(error);
+
+        await expect(resolveServerSession()).resolves.not.toBeNull();
+    });
+
+    it('skips the check when proxy.ts has just refreshed the session', async () => {
+        mocks.serverGet.mockResolvedValue(profile);
+        mocks.proxyRefreshed = true;
+
+        await expect(resolveServerSession()).resolves.not.toBeNull();
+        expect(mocks.refresh).not.toHaveBeenCalled();
+    });
+
     it('returns null on an in-app navigation', async () => {
         mocks.fetchDest = 'empty';
 
         await expect(resolveServerSession()).resolves.toBeNull();
         expect(mocks.serverGet).not.toHaveBeenCalled();
+        expect(mocks.refresh).not.toHaveBeenCalled();
     });
 
     it('returns null without a session', async () => {
@@ -158,6 +241,7 @@ describe('resolveServerSession', () => {
 
         await expect(resolveServerSession()).resolves.toBeNull();
         expect(mocks.serverGet).not.toHaveBeenCalled();
+        expect(mocks.refresh).not.toHaveBeenCalled();
     });
 
     it("returns null when Spring can't answer", async () => {

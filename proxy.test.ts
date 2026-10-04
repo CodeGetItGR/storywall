@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { localeCookieName } from '@/i18n/config';
 import { PUBLIC_LOCALE_HEADER } from '@/i18n/publicMessages';
-import { AUTH_COOKIES, REFRESH_TOKEN_MAX_AGE_SECONDS } from '@/lib/auth/authCookies';
+import { AUTH_COOKIES, REFRESH_TOKEN_MAX_AGE_SECONDS, SESSION_REFRESHED_HEADER } from '@/lib/auth/authCookies';
 import { SpringAuthError } from '@/lib/auth/springAuth';
 
 import { proxy } from './proxy';
@@ -40,6 +40,20 @@ describe('proxy', () => {
         expect(refresh).toHaveBeenCalledTimes(1);
         expect(res.headers.get('x-middleware-request-x-storywall-access-token')).toBe('at-2');
         expect(res.cookies.get(AUTH_COOKIES.accessToken)?.value).toBe('at-2');
+    });
+
+    it('tells the page when it has just refreshed', async () => {
+        refresh.mockResolvedValue({ accessToken: 'at-2', refreshToken: 'rt' });
+        const res = await proxy(request({ refreshToken: 'rt' }));
+        expect(res.headers.get(`x-middleware-request-${SESSION_REFRESHED_HEADER}`)).toBe('1');
+    });
+
+    it('does not when it reused the access-token cookie, whatever the browser sent', async () => {
+        const req = new NextRequest('http://localhost/feed', { headers: { [SESSION_REFRESHED_HEADER]: '1' } });
+        req.cookies.set(AUTH_COOKIES.accessToken, 'at-1');
+        req.cookies.set(AUTH_COOKIES.refreshToken, 'rt');
+        const res = await proxy(req);
+        expect(res.headers.get(`x-middleware-request-${SESSION_REFRESHED_HEADER}`)).toBeNull();
     });
 
     it('keeps the refresh cookie after the browser closes', async () => {

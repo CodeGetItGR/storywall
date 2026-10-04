@@ -14,7 +14,7 @@ export function generateMetadata(): Promise<Metadata> {
 
 // A full page load of a signed-in page hands the browser the session the
 // server already holds, so the app doesn't ask for a new token before showing
-// the page. Null on public pages and in-app navigations.
+// the page. Null on public pages, in-app navigations and ended sessions.
 export default async function MainLayout({ children }: Readonly<{ children: ReactNode }>) {
     const handoff = await resolveServerSession();
 
