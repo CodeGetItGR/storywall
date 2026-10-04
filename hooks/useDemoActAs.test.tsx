@@ -166,7 +166,7 @@ describe('useDemoActAs', () => {
         expect(result.current.isSavingPhoto).toBe(true);
     });
 
-    it('refetches posts when the persona changes, since myReactionType is per persona', () => {
+    it('refetches posts, songs and stories when the persona changes, since what is "mine" is per persona', () => {
         mocks.members = [guest('g1'), guest('g2')];
         const { result } = renderHook(() => useDemoActAs(EVENT_ID));
         mocks.invalidateQueries.mockClear();
@@ -175,6 +175,9 @@ describe('useDemoActAs', () => {
 
         expect(mocks.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['events', EVENT_ID, 'posts'] });
         expect(mocks.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['posts'] });
+        expect(mocks.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['events', EVENT_ID, 'playlist-suggestions'] });
+        expect(mocks.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['events', EVENT_ID, 'stories'] });
+        expect(mocks.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['stories'] });
     });
 
     it('does not refetch posts on a re-render that keeps the persona', () => {
