@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { MediaResponseDto } from '@/lib/api/types';
 import { buildFixtureSnapshot } from '@/lib/demo/__fixtures__/demoSnapshot';
-import { createDemoDb, demoContentVersion, swapMediaUrls } from '@/lib/demo/demoDb';
+import { createDemoDb, demoContentVersion, keepStoriesLive, swapMediaUrls } from '@/lib/demo/demoDb';
+import { groupStoriesByAuthor } from '@/lib/stories';
 
 describe('demo store', () => {
     beforeEach(() => localStorage.clear());
@@ -66,6 +67,61 @@ describe('demo store', () => {
         expect(reloaded.get('posts', 'post-1')?.content).toBe('Edited');
         expect(reloaded.get('media', 'local-1')).toBeUndefined();
         expect(reloaded.get('posts', 'post-1')?.media.map((m) => m.id)).toEqual(['med-1']);
+    });
+
+    describe('keepStoriesLive', () => {
+        const HOUR = 3_600_000;
+        const now = new Date('2026-04-20T12:00:00.000Z');
+        const at = (hoursAgo: number) => new Date(now.getTime() - hoursAgo * HOUR).toISOString();
+
+        function dbWithStories(stories: { id: string; hoursAgo: number }[]) {
+            const snapshot = buildFixtureSnapshot();
+            const template = snapshot.stories[0];
+            const db = createDemoDb('WEDDING', {
+                ...snapshot,
+                stories: stories.map(({ id, hoursAgo }) => ({
+                    ...template,
+                    id,
+                    createdAt: at(hoursAgo),
+                    expiresAt: at(hoursAgo - 24),
+                })),
+            }, 'v1');
+            return db;
+        }
+
+        it('brings back stories posted more than a day ago, oldest still first', () => {
+            // Posted 3 days, 30 hours and 2 hours before now: the first two have expired.
+            const db = dbWithStories([{ id: 's-old', hoursAgo: 72 }, { id: 's-mid', hoursAgo: 30 }, { id: 's-new', hoursAgo: 2 }]);
+
+            keepStoriesLive(db, now);
+
+            const stories = db.list('stories');
+            expect(groupStoriesByAuthor(stories, { now })[0].stories.map((s) => s.id)).toEqual(['s-old', 's-mid', 's-new']);
+            for (const story of stories) {
+                expect(Date.parse(story.createdAt)).toBeLessThanOrEqual(now.getTime());
+                expect(Date.parse(story.createdAt)).toBeGreaterThanOrEqual(now.getTime() - 12 * HOUR);
+                expect(Date.parse(story.expiresAt) - Date.parse(story.createdAt)).toBe(24 * HOUR);
+            }
+        });
+
+        it('keeps them live on a saved demo the visitor reopens days later', () => {
+            dbWithStories([{ id: 's-1', hoursAgo: 1 }]);
+            const reopened = createDemoDb('WEDDING', buildFixtureSnapshot(), 'v1');
+            const later = new Date(now.getTime() + 5 * 24 * HOUR);
+
+            keepStoriesLive(reopened, later);
+
+            expect(groupStoriesByAuthor(reopened.list('stories'), { now: later })).toHaveLength(1);
+        });
+
+        it('leaves recent stories where they are', () => {
+            const db = dbWithStories([{ id: 's-a', hoursAgo: 5 }, { id: 's-b', hoursAgo: 1 }]);
+
+            keepStoriesLive(db, now);
+
+            expect(db.get('stories', 's-a')?.createdAt).toBe(at(5));
+            expect(db.get('stories', 's-b')?.expiresAt).toBe(at(-23));
+        });
     });
 
     it('keeps each event type separate', () => {
