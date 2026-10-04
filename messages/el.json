@@ -1864,7 +1864,6 @@
     },
     "WithdrawalTermsPage": {
         "title": "Δικαίωμα υπαναχώρησης",
-        "version": "Έκδοση {version}",
         "unavailable": "Οι όροι δεν είναι διαθέσιμοι αυτή τη στιγμή."
     },
     "ContentNoticePage": {
@@ -1945,6 +1944,18 @@
     "CommunityGuidelinesPage": {
         "title": "Κανόνες Κοινότητας",
         "unavailable": "Δεν ήταν δυνατή η φόρτωση των Κανόνων Κοινότητας. Δοκιμάστε ξανά αργότερα."
+    },
+    "LegalPages": {
+        "nav": "Νομικές σελίδες",
+        "home": "Αρχική σελίδα StoryWall",
+        "terms": "Όροι Χρήσης",
+        "privacy": "Πολιτική Απορρήτου",
+        "cookies": "Πολιτική Cookies",
+        "withdrawal": "Υπαναχώρηση",
+        "communityGuidelines": "Κανόνες Κοινότητας",
+        "reportContent": "Αναφορά περιεχομένου",
+        "contact": "Επικοινωνία",
+        "unavailable": "Η σελίδα δεν είναι διαθέσιμη αυτή τη στιγμή. Δοκιμάστε ξανά αργότερα."
     },
     "GuidelinesGate": {
         "title": "Οι Κανόνες Κοινότητάς μας",
@@ -4999,7 +5010,13 @@
             "social": "SOCIAL",
             "socialLinks": ["Instagram", "TikTok", "Facebook"],
             "copyright": "© 2026 STORYWALL",
-            "legal": ["Πολιτική Απορρήτου", "Όροι Χρήσης", "Cookies", "Ρυθμίσεις Cookies", "Ακυρώσεις & Υπαναχώρηση", "Επικοινωνία"],
+            "legalLinks": {
+                "privacy": "Πολιτική Απορρήτου",
+                "terms": "Όροι Χρήσης",
+                "cookies": "Cookies",
+                "withdrawal": "Ακυρώσεις & Υπαναχώρηση",
+                "contact": "Επικοινωνία"
+            },
             "communityGuidelines": "Κανόνες Κοινότητας",
             "reportContent": "Αναφορά περιεχομένου",
             "backToTop": "BACK TO TOP"

@@ -402,5 +402,7 @@ export const endpoints = {
             `/api/legal/withdrawal-terms${version ? `/${encodeURIComponent(version)}` : ''}?locale=${encodeURIComponent(locale)}`,
         communityGuidelines: ({ version, locale }: { version?: string | null; locale: string }) =>
             `/api/legal/community-guidelines${version ? `/${encodeURIComponent(version)}` : ''}?locale=${encodeURIComponent(locale)}`,
+        document: ({ document, version, locale }: { document: string; version?: string | null; locale: string }) =>
+            `/api/legal/documents/${encodeURIComponent(document)}${version ? `/${encodeURIComponent(version)}` : ''}?locale=${encodeURIComponent(locale)}`,
     },
 } as const;

@@ -1743,7 +1743,6 @@
     },
     "WithdrawalTermsPage": {
         "title": "Right of withdrawal",
-        "version": "Version {version}",
         "unavailable": "These terms aren't available right now."
     },
     "ContentNoticePage": {
@@ -1824,6 +1823,18 @@
     "CommunityGuidelinesPage": {
         "title": "Community Guidelines",
         "unavailable": "The Community Guidelines couldn't be loaded. Please try again later."
+    },
+    "LegalPages": {
+        "nav": "Legal pages",
+        "home": "StoryWall home",
+        "terms": "Terms of Use",
+        "privacy": "Privacy Policy",
+        "cookies": "Cookie Policy",
+        "withdrawal": "Withdrawal",
+        "communityGuidelines": "Community Guidelines",
+        "reportContent": "Report content",
+        "contact": "Contact",
+        "unavailable": "This page isn't available right now. Please try again later."
     },
     "GuidelinesGate": {
         "title": "Our Community Guidelines",
@@ -4863,7 +4874,13 @@
             "social": "SOCIAL",
             "socialLinks": ["Instagram", "TikTok", "Facebook"],
             "copyright": "© 2026 STORYWALL",
-            "legal": ["Privacy Policy", "Terms of Use", "Cookies", "Cookie Settings", "Cancellations & Withdrawal", "Contact"],
+            "legalLinks": {
+                "privacy": "Privacy Policy",
+                "terms": "Terms of Use",
+                "cookies": "Cookies",
+                "withdrawal": "Cancellations & Withdrawal",
+                "contact": "Contact"
+            },
             "communityGuidelines": "Community Guidelines",
             "reportContent": "Report content",
             "backToTop": "BACK TO TOP"

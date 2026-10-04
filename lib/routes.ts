@@ -81,7 +81,12 @@ export const routes = {
     legal: {
         withdrawalTerms: (version?: string | null) => withQuery('/legal/withdrawal-terms', { version }),
         communityGuidelines: () => '/legal/community-guidelines',
+        terms: () => '/legal/terms',
+        privacy: () => '/legal/privacy',
+        cookies: () => '/legal/cookies',
     },
+    // Public.
+    contact: '/contact',
     inviteToken: (token: string) => `/invite/${token}`,
     // Public: where a gift card's QR leads.
     giftClaim: (token: string) => `/gift/${token}`,

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { LegalPageShell } from '@/components/legal/LegalPageShell';
 import { MarkdownDocument } from '@/components/legal/MarkdownDocument';
 import { getServerLocale } from '@/i18n/serverLocale';
 import { endpoints } from '@/lib/api/endpoints';
@@ -32,14 +33,11 @@ export default async function WithdrawalTermsPage({ searchParams }: PageProps) {
     const terms = await loadTerms(typeof version === 'string' && version ? version : null);
 
     return (
-        <main className="mx-auto w-full max-w-3xl px-4 pt-8 pb-16">
+        <LegalPageShell current="withdrawal">
             {terms ? (
                 <>
-                    {/* Version */}
-                    <p className="text-xs font-semibold text-ink-faint">{t('version', { version: terms.version })}</p>
-
                     {/* Withdrawal information */}
-                    <MarkdownDocument source={terms.withdrawalInformation} className="mt-3" />
+                    <MarkdownDocument source={terms.withdrawalInformation} />
 
                     {/* Model form */}
                     <MarkdownDocument source={terms.modelForm} className="mt-10 border-t border-border/70 pt-8" />
@@ -48,6 +46,6 @@ export default async function WithdrawalTermsPage({ searchParams }: PageProps) {
                 /* Unavailable */
                 <p className="text-sm text-ink-muted">{t('unavailable')}</p>
             )}
-        </main>
+        </LegalPageShell>
     );
 }
