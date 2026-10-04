@@ -11,6 +11,12 @@ import type { QrLinkResponseDto } from '@/lib/api/types';
 
 import { ShareLanguageNote } from './ShareLanguageNote';
 
+const HTML_ESCAPES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+
+function escapeHtml(text: string): string {
+    return text.replace(/[&<>"']/g, (char) => HTML_ESCAPES[char]);
+}
+
 // The QR artwork + copy/download/print/share actions, shared between the
 // manage-page preview modal and the dedicated gallery QR page.
 export function QrCodeCard({ qrLink, size = 240 }: { qrLink: QrLinkResponseDto; size?: number }) {
@@ -49,10 +55,12 @@ export function QrCodeCard({ qrLink, size = 240 }: { qrLink: QrLinkResponseDto; 
         if (!popup) return;
 
         const serialized = new XMLSerializer().serializeToString(svg);
+        // The popup shares this page's origin, and the label is whatever the host
+        // typed: written unescaped, markup in it would run here with their session.
         popup.document.write(`
             <html>
               <head>
-                <title>${qrLink.labelKey ? tGlobal(qrLink.labelKey) : qrLink.label || 'Storywall QR'}</title>
+                <title>${escapeHtml(qrLink.labelKey ? tGlobal(qrLink.labelKey) : qrLink.label || 'Storywall QR')}</title>
                 <style>
                   body { font-family: Arial, sans-serif; margin: 0; padding: 32px; text-align: center; color: #241f1a; }
                   .label { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
@@ -62,10 +70,10 @@ export function QrCodeCard({ qrLink, size = 240 }: { qrLink: QrLinkResponseDto; 
                 </style>
               </head>
               <body>
-                <div class="label">${qrLink.labelKey ? tGlobal(qrLink.labelKey) : qrLink.label || 'Storywall'}</div>
+                <div class="label">${escapeHtml(qrLink.labelKey ? tGlobal(qrLink.labelKey) : qrLink.label || 'Storywall')}</div>
                 <div class="hint">Scan to open Storywall</div>
                 ${serialized}
-                <div class="url">${qrLink.publicUrl}</div>
+                <div class="url">${escapeHtml(qrLink.publicUrl)}</div>
               </body>
             </html>
         `);

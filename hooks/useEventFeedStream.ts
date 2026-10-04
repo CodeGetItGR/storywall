@@ -37,6 +37,7 @@ export function useEventFeedStream(eventId: string | null) {
         if (!eventId) return;
 
         let disposed = false;
+        let evicted = false;
         let stream: EventSource | null = null;
         let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
         let refreshTimer: ReturnType<typeof setTimeout> | null = null;
@@ -59,7 +60,7 @@ export function useEventFeedStream(eventId: string | null) {
         }
 
         function scheduleReconnect(delayMs = RECONNECT_DELAY_MS) {
-            if (disposed) return;
+            if (disposed || evicted) return;
             if (reconnectTimer) clearTimeout(reconnectTimer);
             reconnectTimer = setTimeout(() => void open(), delayMs);
         }
@@ -71,6 +72,15 @@ export function useEventFeedStream(eventId: string | null) {
                 failedMints = 0;
                 stream = new EventSource(api.url(endpoints.events.stream(eventId!, token)));
                 stream.addEventListener('changed', scheduleRefresh);
+                // The member opened too many streams on this event (other tabs,
+                // other devices) and the server dropped this one, the oldest.
+                // Reconnecting would only drop the next oldest, so this tab stops
+                // being pushed to and falls back to the feed's one-minute poll.
+                stream.addEventListener('evicted', () => {
+                    evicted = true;
+                    stream?.close();
+                    stream = null;
+                });
                 stream.addEventListener('error', () => {
                     stream?.close();
                     stream = null;

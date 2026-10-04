@@ -35,6 +35,7 @@ export type ApiErrorMessageKey =
     | 'eventStartPassed'
     | 'eventStartTooFarAhead'
     | 'eventCreationLocked'
+    | 'eventDraftLimitReached'
     | 'eventDeleteAlreadyPending'
     | 'eventDeleteNotPrimaryHost'
     | 'eventDeleteOtpExpired'
@@ -68,6 +69,7 @@ export type ApiErrorMessageKey =
     | 'giftHandoverPending'
     | 'giftNotAvailableOnPlan'
     | 'giftNotPrimaryHost'
+    | 'giftAccountNotPrimaryHost'
     | 'giftOrderNotYours'
     | 'giftRecipientProtected'
     | 'guidelinesAcceptanceRequired'
@@ -202,6 +204,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.EVENT_START_PASSED]: 'eventStartPassed',
     [ERROR_CODES.EVENT_START_TOO_FAR_AHEAD]: 'eventStartTooFarAhead',
     [ERROR_CODES.EVENT_CREATION_LOCKED]: 'eventCreationLocked',
+    [ERROR_CODES.EVENT_DRAFT_LIMIT_REACHED]: 'eventDraftLimitReached',
     [ERROR_CODES.EVENT_DELETE_ALREADY_PENDING]: 'eventDeleteAlreadyPending',
     [ERROR_CODES.EVENT_DELETE_NOT_PRIMARY_HOST]: 'eventDeleteNotPrimaryHost',
     [ERROR_CODES.EVENT_DELETE_OTP_EXPIRED]: 'eventDeleteOtpExpired',
@@ -233,6 +236,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.GIFT_CLAIM_NOT_ALLOWED]: 'giftClaimNotAllowed',
     [ERROR_CODES.GIFT_ORDER_NOT_YOURS]: 'giftOrderNotYours',
     [ERROR_CODES.GIFT_NOT_PRIMARY_HOST]: 'giftNotPrimaryHost',
+    [ERROR_CODES.GIFT_ACCOUNT_NOT_PRIMARY_HOST]: 'giftAccountNotPrimaryHost',
     [ERROR_CODES.GIFT_RECIPIENT_PROTECTED]: 'giftRecipientProtected',
     [ERROR_CODES.GIFT_NOT_AVAILABLE_ON_PLAN]: 'giftNotAvailableOnPlan',
     [ERROR_CODES.GIFT_ALREADY_CLAIMED]: 'giftAlreadyClaimed',
