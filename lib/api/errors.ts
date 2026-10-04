@@ -1,5 +1,5 @@
 import { ApiError } from '@/lib/api/client';
-import type { QuotaExceededDetails } from '@/lib/api/types';
+import type { QuotaExceededDetails, SignupAcceptanceRequiredDetails } from '@/lib/api/types';
 
 // Numeric errorCode registry from the integration guide §2. Switch on
 // errorCode, never on `detail` (detail is human copy and may change).
@@ -48,6 +48,8 @@ export const ERROR_CODES = {
     GUIDELINES_VERSION_MISMATCH: 3037,
     REPORT_OWN_CONTENT: 3038,
     MODERATION_DECISION_INVALID: 3039,
+    TERMS_VERSION_MISMATCH: 3043,
+    SIGNUP_ACCEPTANCE_REQUIRED: 3044,
     POST_PIN_NOT_HOST: 4007,
     ANNOUNCEMENT_NOT_HOST: 4008,
     GIFT_CLAIM_NOT_ALLOWED: 4009,
@@ -58,6 +60,7 @@ export const ERROR_CODES = {
     GUIDELINES_ACCEPTANCE_REQUIRED: 4013,
     EVENT_BANNED: 4014,
     EVENT_SUSPENDED: 4015,
+    TERMS_ACCEPTANCE_REQUIRED: 4020,
     EVENT_NOT_ACTIVE: 5014,
     EVENT_NOT_DRAFT: 5017,
     ORDER_NOT_PENDING: 5018,
@@ -135,6 +138,14 @@ export const ERROR_CODES = {
     WITHDRAWAL_NOT_HELD: 5074,
     EVENT_CREATION_LOCKED: 5075,
     EVENT_DRAFT_LIMIT_REACHED: 5116,
+    EVENT_SESSION_MAIN_NOT_DELETABLE: 5122,
+    EVENT_SESSION_MAIN_ALREADY_EXISTS: 5123,
+    ACCOUNT_DELETE_OTP_NOT_REQUESTED: 3047,
+    ACCOUNT_DELETE_OTP_EXPIRED: 3048,
+    ACCOUNT_DELETE_OTP_TOO_MANY_ATTEMPTS: 3049,
+    ACCOUNT_DELETE_OTP_INVALID: 3050,
+    ACCOUNT_DELETE_ADMIN: 4021,
+    ACCOUNT_DELETE_HAS_HOSTED_EVENTS: 5124,
     DISCOUNT_NOT_APPLICABLE_TO_UPGRADE: 5076,
     PURCHASE_NOT_PRIMARY_HOST: 4006,
     COVERAGE_OPTION_INVALID: 5077,
@@ -305,6 +316,33 @@ export function isGuidelinesAcceptanceRequiredError(error: unknown): boolean {
 // The version the user accepted is no longer the current one.
 export function isGuidelinesVersionMismatchError(error: unknown): boolean {
     return getErrorCode(error) === ERROR_CODES.GUIDELINES_VERSION_MISMATCH;
+}
+
+// The caller hasn't accepted the Terms of Use in force (or confirmed being 18+);
+// every write is refused until they do. Reopens the acceptance gate, like 4013.
+export function isTermsAcceptanceRequiredError(error: unknown): boolean {
+    return getErrorCode(error) === ERROR_CODES.TERMS_ACCEPTANCE_REQUIRED;
+}
+
+// The Terms version the user accepted is no longer the current one.
+export function isTermsVersionMismatchError(error: unknown): boolean {
+    return getErrorCode(error) === ERROR_CODES.TERMS_VERSION_MISMATCH;
+}
+
+// A first Google/Apple sign-in would create an account, but the request carried no
+// acceptance. Nothing was created: ask, then resend the same ID token with the fields.
+export function isSignupAcceptanceRequiredError(error: unknown): boolean {
+    return getErrorCode(error) === ERROR_CODES.SIGNUP_ACCEPTANCE_REQUIRED;
+}
+
+// The versions in force, carried by a 3044.
+export function getSignupAcceptanceRequiredDetails(error: unknown): SignupAcceptanceRequiredDetails | null {
+    if (!isSignupAcceptanceRequiredError(error) || !(error instanceof ApiError)) return null;
+    const details = error.problem?.details;
+    if (typeof details !== 'object' || details === null) return null;
+    const { currentTermsVersion, currentGuidelinesVersion } = details as Record<string, unknown>;
+    if (typeof currentTermsVersion !== 'string' || typeof currentGuidelinesVersion !== 'string') return null;
+    return { currentTermsVersion, currentGuidelinesVersion };
 }
 
 // A host's StoryWall was suspended under them: refetch the event and let the suspended view take

@@ -17,7 +17,8 @@ const MAIN_SESSION: ManagedSessionDefinition = {
     sectionId: 'ceremony-session',
     titleKey: 'ceremony',
     defaultTitleKey: 'initialSessions.WEDDING.title',
-    canCreate: false,
+    // Only restores a missing one: the backend refuses a second (5123) and never deletes it (5122).
+    canCreate: true,
     matches: (session) => session.isMain,
 };
 

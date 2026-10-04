@@ -186,7 +186,11 @@ export function ScheduleEditorForm({
                 if (trimmedTitle !== initialTitle.trim()) payload.title = trimmedTitle;
                 if (trimmedDescription !== initialDescription.trim()) payload.description = trimmedDescription || null;
                 if (!datesDisabled && startAt !== initialStartAt) payload.startAt = startAt ? new Date(startAt).toISOString() : null;
-                if (!isMainSession && endAt !== initialEndAt) payload.endAt = endAt ? new Date(endAt).toISOString() : null;
+                if (!isMainSession && endAt !== initialEndAt) {
+                    // The BE reads a null endAt as "unchanged", so emptying the field needs the explicit flag.
+                    if (endAt) payload.endAt = new Date(endAt).toISOString();
+                    else payload.clearEndAt = true;
+                }
                 if (trimmedLocationName !== initialLocationName.trim()) payload.locationName = trimmedLocationName;
                 if (trimmedMapsUrl !== initialMapsUrl.trim()) payload.mapsUrl = trimmedMapsUrl || null;
                 if (rsvpEnabled !== initialRsvpEnabled) payload.rsvpEnabled = rsvpEnabled;

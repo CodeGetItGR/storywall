@@ -6,6 +6,12 @@ export type KnownApiErrorCode = ValueOf<typeof ERROR_CODES> | ValueOf<typeof AUT
 
 export type ApiErrorMessageKey =
     | 'accessDenied'
+    | 'accountDeleteAdmin'
+    | 'accountDeleteHasHostedEvents'
+    | 'accountDeleteOtpExpired'
+    | 'accountDeleteOtpInvalid'
+    | 'accountDeleteOtpNotRequested'
+    | 'accountDeleteOtpTooManyAttempts'
     | 'accountNotActive'
     | 'accountPlansDisabled'
     | 'addonAlreadyActive'
@@ -59,6 +65,8 @@ export type ApiErrorMessageKey =
     | 'eventSessionMainLocationReadOnly'
     | 'eventSessionSecondaryAlreadyAssigned'
     | 'eventSessionLimitReached'
+    | 'eventSessionMainNotDeletable'
+    | 'eventSessionMainAlreadyExists'
     | 'eventCoHostLimitExceeded'
     | 'invalidEventType'
     | 'invalidPlanTierScope'
@@ -76,6 +84,9 @@ export type ApiErrorMessageKey =
     | 'giftRecipientProtected'
     | 'guidelinesAcceptanceRequired'
     | 'guidelinesVersionMismatch'
+    | 'signupAcceptanceRequired'
+    | 'termsAcceptanceRequired'
+    | 'termsVersionMismatch'
     | 'internalError'
     | 'invalidCredentials'
     | 'invalidIban'
@@ -236,6 +247,14 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.EVENT_SESSION_MAIN_LOCATION_READ_ONLY]: 'eventSessionMainLocationReadOnly',
     [ERROR_CODES.EVENT_SESSION_SECONDARY_ALREADY_ASSIGNED]: 'eventSessionSecondaryAlreadyAssigned',
     [ERROR_CODES.EVENT_SESSION_LIMIT_REACHED]: 'eventSessionLimitReached',
+    [ERROR_CODES.EVENT_SESSION_MAIN_NOT_DELETABLE]: 'eventSessionMainNotDeletable',
+    [ERROR_CODES.EVENT_SESSION_MAIN_ALREADY_EXISTS]: 'eventSessionMainAlreadyExists',
+    [ERROR_CODES.ACCOUNT_DELETE_OTP_NOT_REQUESTED]: 'accountDeleteOtpNotRequested',
+    [ERROR_CODES.ACCOUNT_DELETE_OTP_EXPIRED]: 'accountDeleteOtpExpired',
+    [ERROR_CODES.ACCOUNT_DELETE_OTP_TOO_MANY_ATTEMPTS]: 'accountDeleteOtpTooManyAttempts',
+    [ERROR_CODES.ACCOUNT_DELETE_OTP_INVALID]: 'accountDeleteOtpInvalid',
+    [ERROR_CODES.ACCOUNT_DELETE_ADMIN]: 'accountDeleteAdmin',
+    [ERROR_CODES.ACCOUNT_DELETE_HAS_HOSTED_EVENTS]: 'accountDeleteHasHostedEvents',
     [ERROR_CODES.EVENT_CO_HOST_LIMIT_EXCEEDED]: 'eventCoHostLimitExceeded',
     [ERROR_CODES.INVALID_EVENT_TYPE]: 'invalidEventType',
     [ERROR_CODES.EVENT_STORAGE_LIMIT_EXCEEDED]: 'storageLimit',
@@ -253,6 +272,9 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.GIFT_HANDOVER_PENDING]: 'giftHandoverPending',
     [ERROR_CODES.GUIDELINES_VERSION_MISMATCH]: 'guidelinesVersionMismatch',
     [ERROR_CODES.GUIDELINES_ACCEPTANCE_REQUIRED]: 'guidelinesAcceptanceRequired',
+    [ERROR_CODES.TERMS_VERSION_MISMATCH]: 'termsVersionMismatch',
+    [ERROR_CODES.SIGNUP_ACCEPTANCE_REQUIRED]: 'signupAcceptanceRequired',
+    [ERROR_CODES.TERMS_ACCEPTANCE_REQUIRED]: 'termsAcceptanceRequired',
     [ERROR_CODES.INTERNAL_ERROR]: 'internalError',
     [ERROR_CODES.INVALID_CREDENTIALS]: 'invalidCredentials',
     [ERROR_CODES.INVALID_IBAN]: 'invalidIban',

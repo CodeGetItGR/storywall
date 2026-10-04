@@ -4,7 +4,7 @@
 
 import type { Locale } from '@/i18n/config';
 import { endpoints } from '@/lib/api/endpoints';
-import type { AuthResponseDto, RegisterRequestDto } from '@/lib/api/types';
+import type { AuthResponseDto, OAuthLoginRequestDto, RegisterRequestDto } from '@/lib/api/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 
@@ -74,7 +74,7 @@ export const springAuth = {
         springAuthFetch(endpoints.auth.register, input, locale, clientIp),
     login: (input: { email: string; password: string; inviteToken?: string }, locale: Locale, clientIp: string | null) =>
         springAuthFetch(endpoints.auth.login, input, locale, clientIp),
-    oauth: (provider: 'GOOGLE' | 'APPLE', input: { idToken: string; inviteToken?: string }, locale: Locale, clientIp: string | null) =>
+    oauth: (provider: 'GOOGLE' | 'APPLE', input: OAuthLoginRequestDto, locale: Locale, clientIp: string | null) =>
         springAuthFetch(endpoints.auth.oauth(provider), input, locale, clientIp),
     refresh: (refreshToken: string, locale: Locale, clientIp: string | null) =>
         springAuthFetch(endpoints.auth.refresh, { refreshToken }, locale, clientIp),

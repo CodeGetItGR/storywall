@@ -530,6 +530,11 @@ export interface RegisterRequestDto {
     // The Community Guidelines version the user ticked (GET /api/legal/community-guidelines).
     // Not the current one → 400 3037 GUIDELINES_VERSION_MISMATCH, nothing created.
     acceptedGuidelinesVersion: string;
+    // The Terms of Use version the user ticked (GET /api/legal/documents/terms).
+    // Not the current one → 400 3043 TERMS_VERSION_MISMATCH, nothing created.
+    acceptedTermsVersion: string;
+    // The 18+ confirmation (Terms §3). Must be true.
+    adultConfirmed: true;
     inviteToken?: string;
     subscribeToNewsletter?: boolean;
     // All-or-nothing: an invalid profile is a 400 and no account is created.
@@ -548,6 +553,18 @@ export type OAuthProviderName = 'GOOGLE' | 'APPLE';
 export interface OAuthLoginRequestDto {
     idToken: string;
     inviteToken?: string;
+    // Read only when the token would create a new account. Missing any of them
+    // then → 400 3044 SIGNUP_ACCEPTANCE_REQUIRED (details: SignupAcceptanceRequiredDetails),
+    // nothing created: resend the same idToken with them. Stale → 3043 / 3037.
+    acceptedTermsVersion?: string;
+    acceptedGuidelinesVersion?: string;
+    adultConfirmed?: boolean;
+}
+
+// `details` of a 3044 response.
+export interface SignupAcceptanceRequiredDetails {
+    currentTermsVersion: string;
+    currentGuidelinesVersion: string;
 }
 
 export interface RefreshRequestDto {
@@ -652,6 +669,10 @@ export interface UserResponseDto {
     // write is 403 4013. Null only on admin user endpoints, never on /api/me.
     guidelinesAcceptanceRequired: boolean | null;
     currentGuidelinesVersion: string | null;
+    // True until the user accepts currentTermsVersion (or a later one) and has
+    // confirmed being 18+; until then every write is 403 4020. Same nulls as above.
+    termsAcceptanceRequired: boolean | null;
+    currentTermsVersion: string | null;
 }
 
 export interface MeUpdateRequestDto {
@@ -1287,6 +1308,12 @@ export interface GuidelinesAcceptanceRequestDto {
     version: string;
 }
 
+// POST /api/me/terms-acceptance → 204. Stale version → 3043.
+export interface TermsAcceptanceRequestDto {
+    version: string;
+    adultConfirmed: true;
+}
+
 // GET /api/events/{eventId}/withdrawal-preview — host. Nothing persisted; safe to
 // call/poll any time the withdrawal screen is open.
 export interface WithdrawalPreviewResponseDto {
@@ -1824,6 +1851,17 @@ export interface EventDeletionRequestDto {
     otpCode: string;
 }
 
+// gdpr-self-service-fe-integration.md — POST /api/me/deletion-requests.
+export interface AccountDeletionConfirmRequestDto {
+    otpCode: string;
+}
+
+// One entry of details.events on 409 ACCOUNT_DELETE_HAS_HOSTED_EVENTS (5124).
+export interface AccountDeletionBlockingEvent {
+    eventId: string;
+    title: string;
+}
+
 export interface CoHostInviteRequestDto {
     userId: string;
 }
@@ -2041,6 +2079,7 @@ export interface EventSessionRequestDto {
     displayOrder: number;
     isSecondary?: boolean; // defaults to false; at most one non-deleted session per event
     rsvpEnabled?: boolean; // defaults to false; guests may answer for this session only when true
+    isMain?: boolean; // restores a missing main session; its dates and location come from the event (5123 if one exists)
 }
 
 export interface EventSessionResponseDto {
@@ -2064,7 +2103,9 @@ export interface EventSessionPatchDto {
     title?: string;
     description?: string | null;
     startAt?: string | null;
+    // null/omitted = unchanged; clearEndAt: true removes the end time (wins over endAt).
     endAt?: string | null;
+    clearEndAt?: boolean;
     locationName?: string;
     mapsUrl?: string | null;
     displayOrder?: number;
