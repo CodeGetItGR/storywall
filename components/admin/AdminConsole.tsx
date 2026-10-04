@@ -15,7 +15,6 @@ import { FunnelPanel } from '@/components/admin/funnel/FunnelPanel';
 import { ModerationPanel } from '@/components/admin/moderation/ModerationPanel';
 import { OrdersSection } from '@/components/admin/orders/OrdersSection';
 import { PaidServicesCatalogPanel } from '@/components/admin/PaidServicesCatalogPanel';
-import { PlanAssignmentPanel } from '@/components/admin/PlanAssignmentPanel';
 import { PlansSection } from '@/components/admin/plans/PlansSection';
 import { PlatformMetricsPanel } from '@/components/admin/PlatformMetricsPanel';
 import { ReactionTypesCatalogPanel } from '@/components/admin/ReactionTypesCatalogPanel';
@@ -69,7 +68,6 @@ export function AdminConsole() {
 
             <main className="min-w-0">
                 {tab === 'costTracking' && <CostTrackingPanel />}
-                {tab === 'assignments' && <PlanAssignmentPanel />}
                 {tab === 'billingOps' && <BillingOpsPanel />}
             </main>
         </div>

@@ -2455,7 +2455,6 @@
             "metrics": "Metrics",
             "modules": "Modules",
             "eventTypes": "Event types",
-            "assignments": "Assignments",
             "billingOps": "Billing ops",
             "costTracking": "Cost tracking",
             "lifecycle": "Lifecycle",
@@ -2472,7 +2471,6 @@
             "discountCodes": "Discount codes",
             "collaborations": "Collaborations",
             "reactionTypes": "Reactions",
-            "assignments": "Assignments",
             "billingOps": "Billing ops",
             "withdrawals": "Withdrawals",
             "accounts": "Accounts",
@@ -3213,18 +3211,6 @@
             "confirmTitle": "Save {eventType}?",
             "confirmBody": "This updates the platform event type registry. Disabling a type removes it from the event-creation picker after config refresh."
         },
-        "assignments": {
-            "eventTitle": "Assign event plan",
-            "eventSubtitle": "Move one event onto a different event plan. Account-plan assignment is disabled by the backend, so only events can be reassigned here.",
-            "eventId": "Event UUID",
-            "assignEvent": "Assign event plan",
-            "duration": "Duration",
-            "durationDefault": "Same length if available",
-            "freshEventUsage": "Fresh event usage",
-            "noAssignablePlans": "No event plan is ready to assign. Make a plan assignable and add a duration to it.",
-            "confirmEventTitle": "Assign a plan to {event}?",
-            "confirmEventBody": "This changes the event plan to {plan} and may alter storage, member, and module limits immediately."
-        },
         "funnel": {
             "title": "Growth",
             "loading": "Loading growth metrics...",
@@ -3458,7 +3444,6 @@
                 "postsEverCreated": "Posts",
                 "wishesCollected": "Wishes"
             },
-            "sendToAssignments": "Change event plan",
             "sendToPaidServices": "Remove entitlement",
             "refundMode": {
                 "title": "Refund",

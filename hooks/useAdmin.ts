@@ -1,8 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { appConfigKeys, invalidatePublicConfig } from '@/hooks/useAppConfig';
+import { invalidatePublicConfig } from '@/hooks/useAppConfig';
 import { notificationKeys } from '@/hooks/useNotifications';
-import { usageKeys } from '@/hooks/useUsage';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
@@ -20,7 +19,6 @@ import type {
     DiscountCodeRequestDto,
     DiscountCodeResponseDto,
     EventDashboardRowDto,
-    EventUsageResponseDto,
     FunnelCohortDto,
     FunnelMetricsResponseDto,
     LinkDiscountCodeRequestDto,
@@ -29,7 +27,6 @@ import type {
     NotificationSweepResponseDto,
     PaidServiceKind,
     PaidServiceResponseDto,
-    PlanAssignmentRequestDto,
     PlanScope,
     PlanTierDuplicateRequestDto,
     PlanTierPatchDto,
@@ -528,23 +525,6 @@ export function useUpdatePlatformEventType() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: adminKeys.platformEventTypes });
             invalidatePublicConfig(queryClient);
-        },
-    });
-}
-
-// There is no account-plan assignment hook: PATCH /api/admin/users/{id}/plan-tier
-// always answers 409 ACCOUNT_PLANS_DISABLED, so the console does not offer it.
-export function useAssignEventPlanTier() {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: ({ eventId, input }: { eventId: string; input: PlanAssignmentRequestDto }) =>
-            api.patch<EventUsageResponseDto>(endpoints.admin.events.planTier(eventId), input),
-        onSuccess: (usage) => {
-            queryClient.invalidateQueries({ queryKey: usageKeys.event(usage.eventId) });
-            queryClient.setQueryData(usageKeys.event(usage.eventId), usage);
-            queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
-            queryClient.invalidateQueries({ queryKey: adminKeys.metrics });
         },
     });
 }

@@ -21,7 +21,6 @@ export function useWithdrawalDetail(row: WithdrawalAdminDto) {
         return { refund, background: decision ? [...background, decision] : background };
     }, [row.recommendation]);
 
-    const sendToAssignments = useCallback(() => sendTo('assignments', { eventId: request.eventId }), [request.eventId, sendTo]);
     const sendToPaidServices = useCallback(() => sendTo('paidServices', { eventId: request.eventId }), [request.eventId, sendTo]);
 
     return {
@@ -30,7 +29,6 @@ export function useWithdrawalDetail(row: WithdrawalAdminDto) {
         submittedAt: formatAdminDateTime(locale, request.createdAt),
         decidedAt: request.decidedAt ? formatAdminDateTime(locale, request.decidedAt) : null,
         guidance,
-        sendToAssignments,
         sendToPaidServices,
     };
 }
