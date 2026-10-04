@@ -1856,7 +1856,17 @@
         "accepting": "Saving…",
         "failed": "We couldn't save your acceptance. Please try again.",
         "changed": "The Community Guidelines were just updated again. Please review the latest version.",
-        "signOut": "Sign out"
+        "signOut": "Sign out",
+        "terms": {
+            "title": "Our updated Terms of Use",
+            "body": "To keep using StoryWall, please read and accept our Terms of Use and confirm you are 18 or older. The Privacy Policy explains how we handle your data.",
+            "changed": "The Terms of Use were just updated again. Please review the latest version and tick the box again."
+        },
+        "combined": {
+            "title": "Our Terms and Community Guidelines",
+            "body": "To keep using StoryWall, please read and accept our Terms of Use and Community Guidelines and confirm you are 18 or older. The Privacy Policy explains how we handle your data.",
+            "changed": "The Terms of Use or Community Guidelines were just updated again. Please review the latest versions and tick the box again."
+        }
     },
     "CheckoutSuccessPage": {
         "eyebrow": "Checkout",

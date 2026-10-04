@@ -2,7 +2,7 @@ import { QueryClient } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { api } from '@/lib/api/client';
-import { reopenGuidelinesGateOn4013 } from '@/lib/guidelinesAcceptance';
+import { reopenAcceptanceGate } from '@/lib/guidelinesAcceptance';
 
 function respondWith(status: number, body: unknown) {
     vi.stubGlobal(
@@ -12,7 +12,7 @@ function respondWith(status: number, body: unknown) {
 }
 
 // Direct api.* calls, the way hooks/useProfileForm saves, not through React Query.
-describe('reopenGuidelinesGateOn4013', () => {
+describe('reopenAcceptanceGate', () => {
     let client: QueryClient;
     let invalidate: ReturnType<typeof vi.spyOn>;
     let unsubscribe: () => void;
@@ -20,7 +20,7 @@ describe('reopenGuidelinesGateOn4013', () => {
     beforeEach(() => {
         client = new QueryClient();
         invalidate = vi.spyOn(client, 'invalidateQueries');
-        unsubscribe = reopenGuidelinesGateOn4013(client);
+        unsubscribe = reopenAcceptanceGate(client);
     });
 
     afterEach(() => {
@@ -28,8 +28,11 @@ describe('reopenGuidelinesGateOn4013', () => {
         vi.unstubAllGlobals();
     });
 
-    it('refetches me when a write is refused with 4013, so the gate reopens', async () => {
-        respondWith(403, { status: 403, errorCode: 4013 });
+    it.each([
+        ['the Community Guidelines', 4013],
+        ['the Terms of Use', 4020],
+    ])('refetches me when a write is refused for %s (%i), so the gate reopens', async (_, errorCode) => {
+        respondWith(403, { status: 403, errorCode });
 
         await expect(api.patch('/api/me', { firstName: 'Ada' })).rejects.toMatchObject({ status: 403 });
 

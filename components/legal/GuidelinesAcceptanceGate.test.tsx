@@ -5,16 +5,25 @@ import { GuidelinesAcceptanceGate, GuidelinesGateSignOutHold } from '@/component
 import { ApiError } from '@/lib/api/client';
 
 const mocks = vi.hoisted(() => ({
-    me: undefined as { guidelinesAcceptanceRequired: boolean | null; currentGuidelinesVersion: string | null } | undefined,
+    me: undefined as
+        | {
+              guidelinesAcceptanceRequired: boolean | null;
+              currentGuidelinesVersion: string | null;
+              termsAcceptanceRequired?: boolean | null;
+              currentTermsVersion?: string | null;
+          }
+        | undefined,
     mutate: vi.fn(),
     isPending: false,
     error: null as unknown,
+    termsMutate: vi.fn(),
+    termsError: null as unknown,
     pathname: '/home',
     logout: vi.fn(),
     replace: vi.fn(),
 }));
 
-vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
+vi.mock('next-intl', () => ({ useTranslations: () => Object.assign((key: string) => key, { rich: (key: string) => key }) }));
 vi.mock('next/navigation', () => ({
     usePathname: () => mocks.pathname,
     useRouter: () => ({ replace: mocks.replace }),
@@ -22,7 +31,10 @@ vi.mock('next/navigation', () => ({
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ logout: mocks.logout }) }));
 vi.mock('@/hooks/useMe', () => ({ useMe: () => ({ data: mocks.me }) }));
 vi.mock('@/hooks/useAcceptGuidelines', () => ({
-    useAcceptGuidelines: () => ({ mutate: mocks.mutate, isPending: mocks.isPending, error: mocks.error }),
+    useAcceptGuidelines: () => ({ mutateAsync: mocks.mutate, isPending: mocks.isPending, error: mocks.error }),
+}));
+vi.mock('@/hooks/useAcceptTerms', () => ({
+    useAcceptTerms: () => ({ mutateAsync: mocks.termsMutate, isPending: false, error: mocks.termsError }),
 }));
 
 describe('GuidelinesAcceptanceGate', () => {
@@ -30,8 +42,10 @@ describe('GuidelinesAcceptanceGate', () => {
         cleanup();
         mocks.me = undefined;
         mocks.error = null;
+        mocks.termsError = null;
         mocks.pathname = '/home';
         mocks.mutate.mockReset();
+        mocks.termsMutate.mockReset();
         mocks.logout.mockReset();
         mocks.replace.mockReset();
     });
@@ -186,5 +200,144 @@ describe('GuidelinesAcceptanceGate', () => {
 
         expect(screen.queryByText('app')).not.toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'signOut' })).toBeInTheDocument();
+    });
+});
+
+describe('GuidelinesAcceptanceGate and the Terms of Use', () => {
+    const termsOnly = {
+        guidelinesAcceptanceRequired: false,
+        currentGuidelinesVersion: '2026-09-30',
+        termsAcceptanceRequired: true,
+        currentTermsVersion: '2026-10-04',
+    };
+    const both = { ...termsOnly, guidelinesAcceptanceRequired: true };
+
+    afterEach(() => {
+        cleanup();
+        mocks.me = undefined;
+        mocks.error = null;
+        mocks.termsError = null;
+        mocks.pathname = '/home';
+        mocks.mutate.mockReset();
+        mocks.termsMutate.mockReset();
+    });
+
+    function tickBoth() {
+        fireEvent.click(screen.getByLabelText(/^(termsOnly|all)$/));
+        fireEvent.click(screen.getByLabelText('adult'));
+    }
+
+    it('shows the app when the Terms are accepted', () => {
+        mocks.me = { ...termsOnly, termsAcceptanceRequired: false };
+        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
+
+        expect(screen.getByText('app')).toBeInTheDocument();
+    });
+
+    it('asks for the Terms and the 18+ confirmation, and accepts only once both are ticked', async () => {
+        mocks.me = termsOnly;
+        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
+
+        expect(screen.queryByText('app')).not.toBeInTheDocument();
+        expect(screen.getByRole('heading')).toHaveTextContent('terms.title');
+        // Terms and Privacy only: the Guidelines are not owed.
+        expect(screen.getByLabelText('termsOnly')).toBeInTheDocument();
+        const accept = screen.getByRole('button', { name: 'accept' });
+        expect(accept).toBeDisabled();
+        fireEvent.click(screen.getByLabelText('termsOnly'));
+        expect(accept).toBeDisabled();
+        fireEvent.click(screen.getByLabelText('adult'));
+        expect(accept).toBeEnabled();
+
+        fireEvent.click(accept);
+
+        await waitFor(() => expect(mocks.termsMutate).toHaveBeenCalledWith('2026-10-04'));
+        expect(mocks.mutate).not.toHaveBeenCalled();
+    });
+
+    it('asks for a re-read when the Terms changed under the user', () => {
+        mocks.me = termsOnly;
+        mocks.termsError = new ApiError(400, { errorCode: 3043 });
+        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
+
+        expect(screen.getByRole('alert')).toHaveTextContent('terms.changed');
+    });
+
+    it('says any other failure failed', () => {
+        mocks.me = termsOnly;
+        mocks.termsError = new ApiError(500, { errorCode: 9001 });
+        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
+
+        expect(screen.getByRole('alert')).toHaveTextContent('failed');
+    });
+
+    it('asks for both on one screen and posts the Guidelines, then the Terms', async () => {
+        mocks.me = both;
+        const order: string[] = [];
+        mocks.mutate.mockImplementation(async () => order.push('guidelines'));
+        mocks.termsMutate.mockImplementation(async () => order.push('terms'));
+        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
+
+        expect(screen.getByRole('heading')).toHaveTextContent('combined.title');
+        expect(screen.getByLabelText('all')).toBeInTheDocument();
+        tickBoth();
+        fireEvent.click(screen.getByRole('button', { name: 'accept' }));
+
+        await waitFor(() => expect(order).toEqual(['guidelines', 'terms']));
+        expect(mocks.mutate).toHaveBeenCalledWith('2026-09-30');
+        expect(mocks.termsMutate).toHaveBeenCalledWith('2026-10-04');
+    });
+
+    it('does not post the Terms when the Guidelines fail', async () => {
+        mocks.me = both;
+        mocks.mutate.mockRejectedValue(new ApiError(500, { errorCode: 9001 }));
+        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
+
+        tickBoth();
+        fireEvent.click(screen.getByRole('button', { name: 'accept' }));
+
+        await waitFor(() => expect(mocks.mutate).toHaveBeenCalledTimes(1));
+        expect(mocks.termsMutate).not.toHaveBeenCalled();
+    });
+
+    // The Guidelines went through and the Terms did not: /api/me now owes only the Terms.
+    it('retries only what is still owed', async () => {
+        mocks.me = both;
+        mocks.termsMutate.mockRejectedValueOnce(new ApiError(500, { errorCode: 9001 }));
+        const { rerender } = render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
+        tickBoth();
+        fireEvent.click(screen.getByRole('button', { name: 'accept' }));
+        await waitFor(() => expect(mocks.termsMutate).toHaveBeenCalledTimes(1));
+
+        mocks.me = termsOnly;
+        mocks.termsError = new ApiError(500, { errorCode: 9001 });
+        rerender(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>);
+        expect(screen.getByRole('alert')).toHaveTextContent('failed');
+        // The boxes stay ticked across the switch to the Terms-only screen.
+        fireEvent.click(screen.getByRole('button', { name: 'accept' }));
+
+        await waitFor(() => expect(mocks.termsMutate).toHaveBeenCalledTimes(2));
+        expect(mocks.mutate).toHaveBeenCalledTimes(1);
+    });
+
+    // A newer version needs a fresh tick of the documents box.
+    it('unticks the documents box when the version changed', async () => {
+        mocks.me = termsOnly;
+        mocks.termsMutate.mockRejectedValue(new ApiError(400, { errorCode: 3043 }));
+        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
+
+        tickBoth();
+        fireEvent.click(screen.getByRole('button', { name: 'accept' }));
+
+        await waitFor(() => expect(screen.getByLabelText('termsOnly')).not.toBeChecked());
+        expect(screen.getByLabelText('adult')).toBeChecked();
+    });
+
+    it('leaves the Terms page readable while acceptance is required', () => {
+        mocks.me = termsOnly;
+        mocks.pathname = '/legal/terms';
+        render(<GuidelinesAcceptanceGate>terms</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
+
+        expect(screen.getByText('terms')).toBeInTheDocument();
     });
 });

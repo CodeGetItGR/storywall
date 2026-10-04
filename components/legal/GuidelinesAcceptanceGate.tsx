@@ -4,13 +4,22 @@ import { Loader2, ScrollText } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { createContext, type Dispatch, type ReactNode, type SetStateAction, useCallback, useContext, useState } from 'react';
+import { type ChangeEvent, createContext, type Dispatch, type ReactNode, type SetStateAction, useCallback, useContext, useState } from 'react';
 
+import { AcceptanceCheckboxes } from '@/components/legal/AcceptanceCheckboxes';
 import { useAcceptGuidelines } from '@/hooks/useAcceptGuidelines';
+import { useAcceptTerms } from '@/hooks/useAcceptTerms';
 import { useAuth } from '@/hooks/useAuth';
 import { useGuidelinesAcceptanceBlocking } from '@/hooks/useGuidelinesAcceptanceBlocking';
-import { isGuidelinesVersionMismatchError } from '@/lib/api/errors';
+import { isGuidelinesVersionMismatchError, isTermsVersionMismatchError } from '@/lib/api/errors';
 import { routes } from '@/lib/routes';
+
+// GuidelinesGate keys per screen: the Guidelines alone, the Terms alone, or both.
+const VARIANT_COPY = {
+    guidelines: { title: 'title', body: 'body', changed: 'changed' },
+    terms: { title: 'terms.title', body: 'terms.body', changed: 'terms.changed' },
+    combined: { title: 'combined.title', body: 'combined.body', changed: 'combined.changed' },
+} as const;
 
 type SignOutHold = { signingOutFrom: string | null; setSigningOutFrom: Dispatch<SetStateAction<string | null>> };
 const SignOutHoldContext = createContext<SignOutHold | null>(null);
@@ -37,24 +46,52 @@ function useSignOutHold(): SignOutHold {
 // so the publish queue (in memory only) survives the gate opening and closing.
 // Signed out, useMe never runs and this renders children.
 //
-// Blocks the signed-in app once /api/me reports the Community Guidelines in force
-// aren't accepted. Until then (loading, or /api/me failed) the app renders: holding
-// every page load behind /api/me would cost every user a wait for a rare case, and
-// the backend refuses writes (4013) regardless, which reopens this screen.
+// Blocks the signed-in app once /api/me reports the Community Guidelines or the
+// Terms of Use in force aren't accepted (the Terms also need the 18+ confirmation).
+// Until then (loading, or /api/me failed) the app renders: holding every page load
+// behind /api/me would cost every user a wait for a rare case, and the backend
+// refuses writes (4013 / 4020) regardless, which reopens this screen.
+//
+// Both owed at once is one screen that posts the Guidelines, then the Terms. If the
+// second fails, /api/me has already dropped the first, so a retry posts only what
+// is still owed.
 export function GuidelinesAcceptanceGate({ children }: { children: ReactNode }) {
     const t = useTranslations('GuidelinesGate');
     const pathname = usePathname();
     const router = useRouter();
     const { logout } = useAuth();
-    const { isBlocking, version } = useGuidelinesAcceptanceBlocking();
-    const accept = useAcceptGuidelines();
-    const { mutate } = accept;
+    const { isBlocking, guidelinesVersion, termsVersion } = useGuidelinesAcceptanceBlocking();
+    const acceptGuidelines = useAcceptGuidelines();
+    const acceptTerms = useAcceptTerms();
+    const { mutateAsync: postGuidelines } = acceptGuidelines;
+    const { mutateAsync: postTerms } = acceptTerms;
     const { signingOutFrom, setSigningOutFrom } = useSignOutHold();
     const isSigningOut = signingOutFrom !== null;
+    const [accepted, setAccepted] = useState(false);
+    const [adultConfirmed, setAdultConfirmed] = useState(false);
 
-    const handleAccept = useCallback(() => {
-        if (version) mutate(version);
-    }, [mutate, version]);
+    const variant = termsVersion ? (guidelinesVersion ? 'combined' : 'terms') : 'guidelines';
+    const copy = VARIANT_COPY[variant];
+    // The Terms come with the acceptance and 18+ boxes; the Guidelines alone with one button.
+    const needsBoxes = variant !== 'guidelines';
+
+    const handleAccept = useCallback(async () => {
+        try {
+            if (guidelinesVersion) await postGuidelines(guidelinesVersion);
+            if (termsVersion) await postTerms(termsVersion);
+        } catch (err) {
+            // The mutation's error is shown below; a newer version needs a fresh tick.
+            if (isGuidelinesVersionMismatchError(err) || isTermsVersionMismatchError(err)) setAccepted(false);
+        }
+    }, [guidelinesVersion, postGuidelines, postTerms, termsVersion]);
+
+    const onAcceptedChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+        setAccepted(e.target.checked);
+    }, []);
+
+    const onAdultConfirmedChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+        setAdultConfirmed(e.target.checked);
+    }, []);
 
     // Wrong account, or not willing to accept: logout is exempt from 4013.
     const handleSignOut = useCallback(async () => {
@@ -68,7 +105,10 @@ export function GuidelinesAcceptanceGate({ children }: { children: ReactNode }) 
 
     if (!isBlocking && !isSigningOut) return <>{children}</>;
 
-    const errorMessage = accept.error ? (isGuidelinesVersionMismatchError(accept.error) ? t('changed') : t('failed')) : null;
+    const acceptError = acceptGuidelines.error ?? acceptTerms.error;
+    const isVersionChanged = isGuidelinesVersionMismatchError(acceptError) || isTermsVersionMismatchError(acceptError);
+    const errorMessage = acceptError ? (isVersionChanged ? t(copy.changed) : t('failed')) : null;
+    const isPending = acceptGuidelines.isPending || acceptTerms.isPending;
 
     return (
         <main className="flex h-full overflow-y-auto bg-background px-4 py-16">
@@ -79,15 +119,30 @@ export function GuidelinesAcceptanceGate({ children }: { children: ReactNode }) 
                         <ScrollText className="h-5 w-5" aria-hidden="true" />
                     </div>
                     <div>
-                        <h1 className="text-base font-semibold text-ink">{t('title')}</h1>
-                        <p className="mt-1 text-sm leading-relaxed text-ink-muted">{t('body')}</p>
+                        <h1 className="text-base font-semibold text-ink">{t(copy.title)}</h1>
+                        <p className="mt-1 text-sm leading-relaxed text-ink-muted">{t(copy.body)}</p>
                     </div>
                 </div>
 
-                {/* Read */}
-                <Link href={routes.legal.communityGuidelines()} target="_blank" rel="noopener" className="text-sm font-semibold text-ink underline">
-                    {t('read')} <span className="sr-only">{t('opensInNewTab')}</span>
-                </Link>
+                {/* Read; for the Terms, the boxes' labels link each document */}
+                {needsBoxes ? (
+                    <AcceptanceCheckboxes
+                        documents={variant === 'combined' ? 'all' : 'terms'}
+                        accepted={accepted}
+                        adultConfirmed={adultConfirmed}
+                        onAcceptedChangeAction={onAcceptedChange}
+                        onAdultConfirmedChangeAction={onAdultConfirmedChange}
+                    />
+                ) : (
+                    <Link
+                        href={routes.legal.communityGuidelines()}
+                        target="_blank"
+                        rel="noopener"
+                        className="text-sm font-semibold text-ink underline"
+                    >
+                        {t('read')} <span className="sr-only">{t('opensInNewTab')}</span>
+                    </Link>
+                )}
 
                 {errorMessage && (
                     <p role="alert" className="text-xs text-destructive">
@@ -99,11 +154,11 @@ export function GuidelinesAcceptanceGate({ children }: { children: ReactNode }) 
                 <button
                     type="button"
                     onClick={handleAccept}
-                    disabled={accept.isPending}
+                    disabled={isPending || (needsBoxes && (!accepted || !adultConfirmed))}
                     className="flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                    {accept.isPending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
-                    {accept.isPending ? t('accepting') : t('accept')}
+                    {isPending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+                    {isPending ? t('accepting') : t('accept')}
                 </button>
 
                 {/* Sign out */}
