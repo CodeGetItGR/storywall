@@ -397,6 +397,13 @@
     "OAuthButtons": {
         "continueWithApple": "Continue with Apple"
     },
+    "OAuthSignupAcceptance": {
+        "title": "Create your StoryWall account",
+        "body": "There's no StoryWall account for this sign-in yet. To create one, accept the documents below and confirm your age.",
+        "confirm": "Create account",
+        "cancel": "Cancel",
+        "changed": "The Terms of Use or Community Guidelines were just updated. Please review them and tick the box again."
+    },
     "LoginPage": {
         "title": "Welcome back",
         "subtitle": "Sign in to join the celebration.",
@@ -445,15 +452,19 @@
             "label": "Register as a business",
             "hint": "Add your company's VAT details to buy as a business."
         },
-        "guidelines": {
-            "label": "I accept the Community Guidelines",
-            "read": "Read the Community Guidelines",
-            "opensInNewTab": "(opens in a new tab)",
-            "required": "Please accept the Community Guidelines to create your account.",
-            "loading": "The Community Guidelines are still loading. Please try again in a moment.",
-            "unavailable": "The Community Guidelines couldn't be loaded. Refresh the page and try again.",
-            "changed": "The Community Guidelines were just updated. Please review them and tick the box again."
+        "acceptance": {
+            "required": "Please accept the Terms of Use and Community Guidelines and confirm you are 18 or older to create your account.",
+            "loading": "The Terms of Use and Community Guidelines are still loading. Please try again in a moment.",
+            "unavailable": "The Terms of Use or Community Guidelines couldn't be loaded. Refresh the page and try again.",
+            "changed": "The Terms of Use or Community Guidelines were just updated. Please review them and tick the box again.",
+            "oauthHint": "Tick both boxes above to sign up with Google or Apple."
         }
+    },
+    "AcceptanceCheckboxes": {
+        "all": "I accept the <terms>Terms of Use</terms> and <guidelines>Community Guidelines</guidelines> and have read the <privacy>Privacy Policy</privacy>",
+        "termsOnly": "I accept the <terms>Terms of Use</terms> and have read the <privacy>Privacy Policy</privacy>",
+        "adult": "I am 18 or older",
+        "opensInNewTab": "(opens in a new tab)"
     },
     "WelcomePage": {
         "title": "Let's get started",
