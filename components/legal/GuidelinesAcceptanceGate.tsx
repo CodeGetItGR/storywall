@@ -79,6 +79,9 @@ export function GuidelinesAcceptanceGate({ children }: { children: ReactNode }) 
         try {
             if (guidelinesVersion) await postGuidelines(guidelinesVersion);
             if (termsVersion) await postTerms(termsVersion);
+            // The gate stays mounted once it closes: a later version must not find the boxes ticked.
+            setAccepted(false);
+            setAdultConfirmed(false);
         } catch (err) {
             // The mutation's error is shown below; a newer version needs a fresh tick.
             if (isGuidelinesVersionMismatchError(err) || isTermsVersionMismatchError(err)) setAccepted(false);

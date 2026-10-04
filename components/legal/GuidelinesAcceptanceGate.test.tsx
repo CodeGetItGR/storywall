@@ -333,6 +333,26 @@ describe('GuidelinesAcceptanceGate and the Terms of Use', () => {
         expect(screen.getByLabelText('adult')).toBeChecked();
     });
 
+    // The gate stays mounted after it closes; a Terms update later in the session reopens it.
+    it('does not reopen with the boxes already ticked', async () => {
+        mocks.me = termsOnly;
+        mocks.termsMutate.mockResolvedValue(undefined);
+        const { rerender } = render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
+        tickBoth();
+        fireEvent.click(screen.getByRole('button', { name: 'accept' }));
+        await waitFor(() => expect(mocks.termsMutate).toHaveBeenCalledWith('2026-10-04'));
+
+        mocks.me = { ...termsOnly, termsAcceptanceRequired: false };
+        rerender(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>);
+        expect(screen.getByText('app')).toBeInTheDocument();
+
+        mocks.me = { ...termsOnly, currentTermsVersion: '2026-11-01' };
+        rerender(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>);
+        expect(screen.getByLabelText('termsOnly')).not.toBeChecked();
+        expect(screen.getByLabelText('adult')).not.toBeChecked();
+        expect(screen.getByRole('button', { name: 'accept' })).toBeDisabled();
+    });
+
     it('leaves the Terms page readable while acceptance is required', () => {
         mocks.me = termsOnly;
         mocks.pathname = '/legal/terms';
