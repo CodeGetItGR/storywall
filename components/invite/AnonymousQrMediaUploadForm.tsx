@@ -70,7 +70,18 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
 
         setSubmitError(null);
         try {
-            await uploadBatch.mutateAsync({ token, files, uploaderName: uploaderName.trim() || undefined });
+            const result = await uploadBatch.mutateAsync({ token, files, uploaderName: uploaderName.trim() || undefined });
+            // The batch answers 200 whatever happened to each file. Keep the refused ones to try again.
+            if (result.failed.length > 0) {
+                const refused = new Set(result.failed.map((failure) => failure.filename));
+                setFiles((prev) => prev.filter((file) => refused.has(file.name)));
+                setSubmitError(
+                    result.failed.some((failure) => failure.errorCode === 'RATE_LIMITED')
+                        ? t('anonymousUpload.rateLimited')
+                        : t('anonymousUpload.someFailed', { count: result.failed.length }),
+                );
+                return;
+            }
             setDone(true);
             setFiles([]);
         } catch (err) {

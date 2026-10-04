@@ -78,7 +78,7 @@ export function PostMediaCarousel({ media, initialIndex, onIndexChange, alt, cla
                                     <VideoOff className="h-7 w-7" aria-hidden="true" />
                                     <p>{t('videoFailed')}</p>
                                 </div>
-                            ) : item.mediaType === 'VIDEO' ? (
+                            ) : !item.mediaUrl ? null : item.mediaType === 'VIDEO' ? (
                                 <PresignedVideo
                                     src={item.mediaUrl}
                                     controls

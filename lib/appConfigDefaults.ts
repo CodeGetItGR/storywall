@@ -29,7 +29,7 @@ export const DEFAULT_CONTENT_LIMITS: AppContentLimitsDto = {
     personNameMaxLength: 100,
     emailMaxLength: 255,
     passwordMinLength: 8,
-    passwordMaxLength: 100,
+    passwordMaxLength: 72,
     qrLabelMaxLength: 100,
     giftAccountHolderMaxLength: 140,
     giftBankNameMaxLength: 140,

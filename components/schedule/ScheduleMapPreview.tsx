@@ -47,7 +47,7 @@ export function ScheduleMapPreview({ mapsUrl, title, openLabel, previewLabel, un
                 src={embedUrl}
                 className={cn('pointer-events-none w-full', heightClassName)}
                 loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
+                referrerPolicy="strict-origin-when-cross-origin"
             />
 
             <div className="absolute inset-0 bg-linear-to-t from-ink/20 via-transparent to-transparent opacity-80 transition-opacity group-hover:opacity-60" />

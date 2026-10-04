@@ -17,6 +17,8 @@ export type ApiErrorMessageKey =
     | 'checkoutAmountBelowMinimum'
     | 'checkoutSessionUnresolved'
     | 'coHostInviteNotYours'
+    | 'coHostInvitationAlreadyPending'
+    | 'coHostInvitationsPendingLimit'
     | 'collaborationAlreadyRedeemed'
     | 'collaborationCodeNotValid'
     | 'collaborationEarningNotPayable'
@@ -88,6 +90,8 @@ export type ApiErrorMessageKey =
     | 'mediaArchiveSelectionEmpty'
     | 'mediaArchiveSelectionTooLarge'
     | 'mediaArchiveSelectionInvalid'
+    | 'mediaArchiveDownloadsInProgress'
+    | 'mediaArchiveDailyLimitReached'
     | 'mediaImageTooManyPixels'
     | 'mediaProcessingBusy'
     | 'methodNotAllowed'
@@ -138,6 +142,7 @@ export type ApiErrorMessageKey =
     | 'reactionTypeLimitExceeded'
     | 'reactionTypeNotUsable'
     | 'resourceNotFound'
+    | 'resourceBusy'
     | 'rsvpNotAttending'
     | 'storageLimit'
     | 'storageUploadFailed'
@@ -151,6 +156,7 @@ export type ApiErrorMessageKey =
     | 'withdrawalTermsVersionStale'
     | 'withdrawalRefused'
     | 'withdrawalNotHeld'
+    | 'withdrawalOrderDisputed'
     | 'withdrawalKeepEventDayNotDue'
     | 'withdrawalOrderKindNotSupported'
     | 'withdrawalConfirmationInvalid'
@@ -186,6 +192,8 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.CHECKOUT_AMOUNT_BELOW_MINIMUM]: 'checkoutAmountBelowMinimum',
     [ERROR_CODES.CHECKOUT_SESSION_UNRESOLVED]: 'checkoutSessionUnresolved',
     [ERROR_CODES.CO_HOST_INVITE_NOT_YOURS]: 'coHostInviteNotYours',
+    [ERROR_CODES.CO_HOST_INVITATION_ALREADY_PENDING]: 'coHostInvitationAlreadyPending',
+    [ERROR_CODES.CO_HOST_INVITATIONS_PENDING_LIMIT]: 'coHostInvitationsPendingLimit',
     [ERROR_CODES.COLLABORATION_ALREADY_REDEEMED]: 'collaborationAlreadyRedeemed',
     [ERROR_CODES.COLLABORATION_CODE_NOT_VALID]: 'collaborationCodeNotValid',
     [ERROR_CODES.COLLABORATION_EARNING_NOT_PAYABLE]: 'collaborationEarningNotPayable',
@@ -259,6 +267,8 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.MEDIA_ARCHIVE_SELECTION_EMPTY]: 'mediaArchiveSelectionEmpty',
     [ERROR_CODES.MEDIA_ARCHIVE_SELECTION_TOO_LARGE]: 'mediaArchiveSelectionTooLarge',
     [ERROR_CODES.MEDIA_ARCHIVE_SELECTION_INVALID]: 'mediaArchiveSelectionInvalid',
+    [ERROR_CODES.MEDIA_ARCHIVE_DOWNLOADS_IN_PROGRESS]: 'mediaArchiveDownloadsInProgress',
+    [ERROR_CODES.MEDIA_ARCHIVE_DAILY_LIMIT_REACHED]: 'mediaArchiveDailyLimitReached',
     [ERROR_CODES.MEDIA_IMAGE_TOO_MANY_PIXELS]: 'mediaImageTooManyPixels',
     [ERROR_CODES.MEDIA_PROCESSING_BUSY]: 'mediaProcessingBusy',
     [ERROR_CODES.METHOD_NOT_ALLOWED]: 'methodNotAllowed',
@@ -308,6 +318,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.REACTION_TYPE_LIMIT_EXCEEDED]: 'reactionTypeLimitExceeded',
     [ERROR_CODES.REACTION_TYPE_NOT_USABLE]: 'reactionTypeNotUsable',
     [ERROR_CODES.RESOURCE_NOT_FOUND]: 'resourceNotFound',
+    [ERROR_CODES.RESOURCE_BUSY]: 'resourceBusy',
     [ERROR_CODES.STORAGE_UPLOAD_FAILED]: 'storageUploadFailed',
     [ERROR_CODES.REQUEST_TOO_LARGE]: 'requestTooLarge',
     [ERROR_CODES.UNSUPPORTED_MEDIA_FORMAT]: 'unsupportedMediaFormat',
@@ -320,6 +331,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.WITHDRAWAL_TERMS_VERSION_STALE]: 'withdrawalTermsVersionStale',
     [ERROR_CODES.WITHDRAWAL_REFUSED]: 'withdrawalRefused',
     [ERROR_CODES.WITHDRAWAL_NOT_HELD]: 'withdrawalNotHeld',
+    [ERROR_CODES.WITHDRAWAL_ORDER_DISPUTED]: 'withdrawalOrderDisputed',
     [ERROR_CODES.WITHDRAWAL_KEEP_EVENT_DAY_NOT_DUE]: 'withdrawalKeepEventDayNotDue',
     [ERROR_CODES.WITHDRAWAL_ORDER_KIND_NOT_SUPPORTED]: 'withdrawalOrderKindNotSupported',
     [ERROR_CODES.WITHDRAWAL_CONFIRMATION_INVALID]: 'withdrawalConfirmationInvalid',
