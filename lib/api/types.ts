@@ -19,7 +19,18 @@ export type PlatformRole = 'USER' | 'ADMIN' | 'GUEST';
 export type EventTypeConvention = 'WEDDING' | 'BAPTISM' | 'SOCIAL_EVENT' | 'BIRTHDAY' | 'PRIVATE_PARTY' | 'GENDER_REVEAL' | 'BABY_SHOWER';
 // Post.type / Reaction.reactionType are free strings server-side.
 // moduleKey is now a closed set on the backend and should match the config payload.
-export const EVENT_MODULE_KEYS = ['posts', 'rsvp', 'playlist', 'stories', 'gallery', 'wishlist', 'wishbook', 'co_hosts', 'schedule', 'member_roles'] as const;
+export const EVENT_MODULE_KEYS = [
+    'posts',
+    'rsvp',
+    'playlist',
+    'stories',
+    'gallery',
+    'wishlist',
+    'wishbook',
+    'co_hosts',
+    'schedule',
+    'member_roles',
+] as const;
 // Use this (not the raw `ModuleKey` wire type below) whenever code branches on
 // a specific module — it's a closed set and catches typos at compile time.
 // `ModuleKey` stays a plain string because the admin module/plan-tier registry
@@ -1254,6 +1265,16 @@ export interface WithdrawalTermsDto {
 
 // GET /api/legal/community-guidelines[/{version}] — public.
 export interface CommunityGuidelinesDto {
+    version: string;
+    locale: string; // the locale actually served
+    markdown: string;
+}
+
+// GET /api/legal/documents/{document}[/{version}]: the Terms of Use, Privacy Policy, Cookie Policy or Contact page.
+export type LegalDocumentSlug = 'terms' | 'privacy' | 'cookies' | 'contact';
+
+export interface LegalDocumentDto {
+    document: LegalDocumentSlug;
     version: string;
     locale: string; // the locale actually served
     markdown: string;

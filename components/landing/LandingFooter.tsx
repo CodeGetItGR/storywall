@@ -17,16 +17,22 @@ const EXPLORE_LINKS = [
 
 const TOP_HREF = '#top-preview';
 
+const LEGAL_LINKS = [
+    { key: 'privacy', href: routes.legal.privacy() },
+    { key: 'terms', href: routes.legal.terms() },
+    { key: 'cookies', href: routes.legal.cookies() },
+    { key: 'withdrawal', href: routes.legal.withdrawalTerms() },
+    { key: 'contact', href: routes.contact },
+] as const;
+
 const COLUMN_HEADING = 'mb-5.5 text-[9px] font-black tracking-[0.16em] text-white/48';
 const COLUMN_ITEM = 'py-1.5 text-[13px] leading-[1.35] text-white';
 
 export async function LandingFooter() {
     const t = await getTranslations('LandingPage.footer');
-    // Social profiles and most legal pages have no destinations yet, so their labels
-    // render as plain text rather than dead links. The Community Guidelines page
-    // exists and is linked.
+    // Social profiles have no destinations yet, so their labels render as plain
+    // text rather than dead links.
     const socialLabels = t.raw('socialLinks') as string[];
-    const legalLabels = t.raw('legal') as string[];
 
     return (
         <footer className="overflow-hidden bg-[#262626] px-5 pt-14.5 pb-6 text-white min-[761px]:px-[5vw] min-[761px]:pt-18.5">
@@ -90,8 +96,10 @@ export async function LandingFooter() {
                     <Link className="text-white/62 no-underline hover:text-white" href={routes.reportContent}>
                         {t('reportContent')}
                     </Link>
-                    {legalLabels.map((label) => (
-                        <span key={label}>{label}</span>
+                    {LEGAL_LINKS.map(({ key, href }) => (
+                        <Link key={key} className="text-white/62 no-underline hover:text-white" href={href}>
+                            {t(`legalLinks.${key}`)}
+                        </Link>
                     ))}
                 </div>
                 <a className="justify-self-end text-white no-underline max-[760px]:col-start-2 max-[760px]:row-start-1" href={TOP_HREF}>

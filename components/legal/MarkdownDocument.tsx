@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Fragment } from 'react';
 
 import { type MarkdownBlock, type MarkdownInline, parseMarkdown } from '@/lib/markdown';
@@ -12,18 +13,37 @@ const HEADING_CLASS_NAMES = {
     6: 'text-sm font-semibold text-ink',
 } as const;
 
+const LINK_CLASS_NAME = 'font-semibold break-words text-ink underline underline-offset-2 hover:text-primary';
+
+function InlinePart({ part }: { part: MarkdownInline }) {
+    const text = part.bold ? <strong className="font-semibold text-ink">{part.text}</strong> : part.text;
+    if (!part.href) return text;
+    if (part.href.startsWith('/')) {
+        return (
+            <Link href={part.href} className={LINK_CLASS_NAME}>
+                {text}
+            </Link>
+        );
+    }
+    return (
+        <a
+            href={part.href}
+            className={LINK_CLASS_NAME}
+            {...(part.href.startsWith('https://') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+        >
+            {text}
+        </a>
+    );
+}
+
 function InlineText({ content }: { content: MarkdownInline[] }) {
     return (
         <>
-            {content.map((part, index) =>
-                part.bold ? (
-                    <strong key={index} className="font-semibold text-ink">
-                        {part.text}
-                    </strong>
-                ) : (
-                    <Fragment key={index}>{part.text}</Fragment>
-                ),
-            )}
+            {content.map((part, index) => (
+                <Fragment key={index}>
+                    <InlinePart part={part} />
+                </Fragment>
+            ))}
         </>
     );
 }

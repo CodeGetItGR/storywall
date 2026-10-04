@@ -24,4 +24,14 @@ describe('LandingFooter', () => {
 
         expect(screen.getByRole('link', { name: 'reportContent' })).toHaveAttribute('href', '/report-content');
     });
+
+    it('links every legal page', async () => {
+        render(await LandingFooter());
+
+        expect(screen.getByRole('link', { name: 'legalLinks.privacy' })).toHaveAttribute('href', '/legal/privacy');
+        expect(screen.getByRole('link', { name: 'legalLinks.terms' })).toHaveAttribute('href', '/legal/terms');
+        expect(screen.getByRole('link', { name: 'legalLinks.cookies' })).toHaveAttribute('href', '/legal/cookies');
+        expect(screen.getByRole('link', { name: 'legalLinks.withdrawal' })).toHaveAttribute('href', '/legal/withdrawal-terms');
+        expect(screen.getByRole('link', { name: 'legalLinks.contact' })).toHaveAttribute('href', '/contact');
+    });
 });
