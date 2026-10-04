@@ -11,7 +11,7 @@ import { meQueryKey } from '@/hooks/useMe';
 import { useVisualViewportSync } from '@/hooks/useVisualViewportSync';
 import type { SessionHandoff } from '@/lib/auth/sessionHandoff';
 import { refreshEventOn4015 } from '@/lib/eventSuspension';
-import { reopenGuidelinesGateOn4013 } from '@/lib/guidelinesAcceptance';
+import { reopenAcceptanceGate } from '@/lib/guidelinesAcceptance';
 import { makeQueryClient } from '@/lib/queryClient';
 import { AppConfigBootstrap } from '@/providers/AppConfigBootstrap';
 import { AuthProvider } from '@/providers/AuthProvider';
@@ -50,7 +50,7 @@ export function AppProviders({ children, handoff = null }: { children: ReactNode
         return client;
     });
     // Browser only (an effect): the API client is shared with server code.
-    useEffect(() => reopenGuidelinesGateOn4013(queryClient), [queryClient]);
+    useEffect(() => reopenAcceptanceGate(queryClient), [queryClient]);
     useEffect(() => refreshEventOn4015(queryClient), [queryClient]);
     const chrome = (
         <MobileChromeProvider>

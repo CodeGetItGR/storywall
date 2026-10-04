@@ -44,6 +44,8 @@ export function ScheduleEditSessionRow({
     const location = session?.locationName || t('notSet');
     const canCreate = canWrite && canAddSession && Boolean(definition?.canCreate && !session);
     const canEdit = canWrite && Boolean(session);
+    // The backend refuses to delete the main session (5122): nothing else would bring it back.
+    const canDelete = canEdit && !session?.isMain;
 
     function handleCreate() {
         if (definition) onCreateManagedSession(definition);
@@ -70,7 +72,7 @@ export function ScheduleEditSessionRow({
                     </span>
                     <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-ink">{title}</p>
-                        {!session && <p className="mt-0.5 text-xs text-ink-muted">{definition?.canCreate ? t('missing') : t('mainMissing')}</p>}
+                        {!session && <p className="mt-0.5 text-xs text-ink-muted">{definition?.role === 'main' ? t('mainMissing') : t('missing')}</p>}
                     </div>
                 </div>
                 <div className="hidden min-w-0 items-center gap-1.5 text-xs text-ink-muted sm:flex">
@@ -102,15 +104,17 @@ export function ScheduleEditSessionRow({
                             >
                                 <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                             </button>
-                            <button
-                                type="button"
-                                onClick={handleDelete}
-                                disabled={deleteDisabled}
-                                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border/70 text-ink-muted transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-50"
-                                aria-label={t('deleteNamed', { title })}
-                            >
-                                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                            </button>
+                            {canDelete && (
+                                <button
+                                    type="button"
+                                    onClick={handleDelete}
+                                    disabled={deleteDisabled}
+                                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border/70 text-ink-muted transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-50"
+                                    aria-label={t('deleteNamed', { title })}
+                                >
+                                    <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                                </button>
+                            )}
                         </>
                     )}
                 </div>

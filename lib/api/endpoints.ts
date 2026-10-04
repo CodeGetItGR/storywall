@@ -43,6 +43,7 @@ export const endpoints = {
         changePassword: '/api/me/change-password',
         events: '/api/me/events',
         guidelinesAcceptance: '/api/me/guidelines-acceptance',
+        termsAcceptance: '/api/me/terms-acceptance',
         newsletter: '/api/me/newsletter',
         businessProfile: '/api/me/business-profile',
     },
@@ -402,5 +403,7 @@ export const endpoints = {
             `/api/legal/withdrawal-terms${version ? `/${encodeURIComponent(version)}` : ''}?locale=${encodeURIComponent(locale)}`,
         communityGuidelines: ({ version, locale }: { version?: string | null; locale: string }) =>
             `/api/legal/community-guidelines${version ? `/${encodeURIComponent(version)}` : ''}?locale=${encodeURIComponent(locale)}`,
+        document: ({ document, version, locale }: { document: string; version?: string | null; locale: string }) =>
+            `/api/legal/documents/${encodeURIComponent(document)}${version ? `/${encodeURIComponent(version)}` : ''}?locale=${encodeURIComponent(locale)}`,
     },
 } as const;

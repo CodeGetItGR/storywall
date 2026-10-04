@@ -25,7 +25,7 @@ export function getDemoActAs(): DemoActAs | null {
     return current;
 }
 
-// Content writes only. Anything else (member management, event settings…) stays the admin's own.
+// Content writes, plus the personal reads below. Anything else (member management, event settings…) stays the admin's own.
 const CONTENT_WRITE_PATH =
     /^\/api\/(?:posts|comments|reactions|stories|medias|post-medias|playlist-suggestions|playlist-votes|rsvps|rsvp-session-responses|wishbook)(?:[/?]|$)|^\/api\/events\/[^/]+\/(?:media|posts|stories|wishbook|playlist-suggestions|rsvps)(?:[/?]|$)/;
 
@@ -33,10 +33,15 @@ const CONTENT_WRITE_PATH =
 // they may change any of it, while the chosen guest may only change what that guest wrote.
 const MODERATED_ITEM_PATH = /^\/api\/(?:posts|comments|stories|medias|wishbook|playlist-suggestions)\/[^/?]+(?:\?|$)/;
 
+// Post, song and story reads too: myReactionType, myVote and viewedByCurrentUser are then the
+// chosen guest's (the lists and single items only — demo-event-fe-integration.md §8).
+const PERSONAL_READ_PATH =
+    /^\/api\/events\/[^/]+\/(?:posts|playlist-suggestions|stories)(?:\?|$)|^\/api\/(?:posts|playlist-suggestions|stories)\/[^/?]+(?:\?|$)/;
+
 export function demoActAsHeaders(method: string | undefined, path: string): Record<string, string> {
     if (!current) return {};
     const verb = (method ?? 'GET').toUpperCase();
-    if (verb === 'GET') return {};
+    if (verb === 'GET') return PERSONAL_READ_PATH.test(path) ? { [DEMO_ACT_AS_HEADER]: current.memberId } : {};
     if (!CONTENT_WRITE_PATH.test(path)) return {};
     if ((verb === 'PATCH' || verb === 'DELETE') && MODERATED_ITEM_PATH.test(path)) return {};
     return { [DEMO_ACT_AS_HEADER]: current.memberId };

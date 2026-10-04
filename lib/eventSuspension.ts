@@ -7,7 +7,7 @@ import { isEventSuspendedError } from '@/lib/api/errors';
 // A request refused with 4015 means a StoryWall this host is in was suspended. Refetching the
 // event details flips `suspended`, and SuspendedEventRouteGuard shows the suspended view.
 // Only ['events', id]: billing, hosts and other ['events', id, …] queries would just 4015 again.
-// Listens at the API client, like reopenGuidelinesGateOn4013. Returns the unsubscribe.
+// Listens at the API client, like reopenAcceptanceGate. Returns the unsubscribe.
 export function refreshEventOn4015(client: QueryClient): () => void {
     return subscribeApiErrors((error) => {
         if (isEventSuspendedError(error)) {

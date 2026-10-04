@@ -22,3 +22,16 @@ describe('MarkdownDocument', () => {
         expect(screen.getByRole('heading', { level: 1 }).id).toBe('');
     });
 });
+
+describe('MarkdownDocument links', () => {
+    it('renders same-site links and email addresses as links', () => {
+        render(<MarkdownDocument source={'See the [Privacy Policy](/legal/privacy) or write to help@storywall.gr.'} />);
+        expect(screen.getByRole('link', { name: 'Privacy Policy' })).toHaveAttribute('href', '/legal/privacy');
+        expect(screen.getByRole('link', { name: 'help@storywall.gr' })).toHaveAttribute('href', 'mailto:help@storywall.gr');
+    });
+
+    it('opens external links in a new tab', () => {
+        render(<MarkdownDocument source={'Visit [the Authority](https://www.dpa.gr).'} />);
+        expect(screen.getByRole('link', { name: 'the Authority' })).toHaveAttribute('target', '_blank');
+    });
+});

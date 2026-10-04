@@ -397,6 +397,13 @@
     "OAuthButtons": {
         "continueWithApple": "Continue with Apple"
     },
+    "OAuthSignupAcceptance": {
+        "title": "Create your StoryWall account",
+        "body": "There's no StoryWall account for this sign-in yet. To create one, accept the documents below and confirm your age.",
+        "confirm": "Create account",
+        "cancel": "Cancel",
+        "changed": "The Terms of Use or Community Guidelines were just updated. Please review them and tick the box again."
+    },
     "LoginPage": {
         "title": "Welcome back",
         "subtitle": "Sign in to join the celebration.",
@@ -445,15 +452,19 @@
             "label": "Register as a business",
             "hint": "Add your company's VAT details to buy as a business."
         },
-        "guidelines": {
-            "label": "I accept the Community Guidelines",
-            "read": "Read the Community Guidelines",
-            "opensInNewTab": "(opens in a new tab)",
-            "required": "Please accept the Community Guidelines to create your account.",
-            "loading": "The Community Guidelines are still loading. Please try again in a moment.",
-            "unavailable": "The Community Guidelines couldn't be loaded. Refresh the page and try again.",
-            "changed": "The Community Guidelines were just updated. Please review them and tick the box again."
+        "acceptance": {
+            "required": "Please accept the Terms of Use and Community Guidelines and confirm you are 18 or older to create your account.",
+            "loading": "The Terms of Use and Community Guidelines are still loading. Please try again in a moment.",
+            "unavailable": "The Terms of Use or Community Guidelines couldn't be loaded. Refresh the page and try again.",
+            "changed": "The Terms of Use or Community Guidelines were just updated. Please review them and tick the box again.",
+            "oauthHint": "Tick both boxes above to sign up with Google or Apple."
         }
+    },
+    "AcceptanceCheckboxes": {
+        "all": "I accept the <terms>Terms of Use</terms> and <guidelines>Community Guidelines</guidelines> and have read the <privacy>Privacy Policy</privacy>",
+        "termsOnly": "I accept the <terms>Terms of Use</terms> and have read the <privacy>Privacy Policy</privacy>",
+        "adult": "I am 18 or older",
+        "opensInNewTab": "(opens in a new tab)"
     },
     "WelcomePage": {
         "title": "Let's get started",
@@ -1743,7 +1754,6 @@
     },
     "WithdrawalTermsPage": {
         "title": "Right of withdrawal",
-        "version": "Version {version}",
         "unavailable": "These terms aren't available right now."
     },
     "ContentNoticePage": {
@@ -1825,6 +1835,18 @@
         "title": "Community Guidelines",
         "unavailable": "The Community Guidelines couldn't be loaded. Please try again later."
     },
+    "LegalPages": {
+        "nav": "Legal pages",
+        "home": "StoryWall home",
+        "terms": "Terms of Use",
+        "privacy": "Privacy Policy",
+        "cookies": "Cookie Policy",
+        "withdrawal": "Withdrawal",
+        "communityGuidelines": "Community Guidelines",
+        "reportContent": "Report content",
+        "contact": "Contact",
+        "unavailable": "This page isn't available right now. Please try again later."
+    },
     "GuidelinesGate": {
         "title": "Our Community Guidelines",
         "body": "To keep using StoryWall, please read and accept our Community Guidelines. They explain what can be shared at an event and how we handle reports.",
@@ -1834,7 +1856,17 @@
         "accepting": "Saving…",
         "failed": "We couldn't save your acceptance. Please try again.",
         "changed": "The Community Guidelines were just updated again. Please review the latest version.",
-        "signOut": "Sign out"
+        "signOut": "Sign out",
+        "terms": {
+            "title": "Our updated Terms of Use",
+            "body": "To keep using StoryWall, please read and accept our Terms of Use and confirm you are 18 or older. The Privacy Policy explains how we handle your data.",
+            "changed": "The Terms of Use were just updated again. Please review the latest version and tick the box again."
+        },
+        "combined": {
+            "title": "Our Terms and Community Guidelines",
+            "body": "To keep using StoryWall, please read and accept our Terms of Use and Community Guidelines and confirm you are 18 or older. The Privacy Policy explains how we handle your data.",
+            "changed": "The Terms of Use or Community Guidelines were just updated again. Please review the latest versions and tick the box again."
+        }
     },
     "CheckoutSuccessPage": {
         "eyebrow": "Checkout",
@@ -1950,7 +1982,7 @@
                 "location": "Location",
                 "notSet": "Not set",
                 "missing": "No venue session has been added yet.",
-                "mainMissing": "The ceremony session is unavailable for this event.",
+                "mainMissing": "No ceremony session yet. Add it to show it on the schedule.",
                 "untitled": "Untitled",
                 "editNamed": "Edit {title}",
                 "addNamed": "Add {title}",
@@ -4384,6 +4416,8 @@
         "qrSharedLinkHostManaged": "This shared link is managed automatically.",
         "eventSessionMainLocationReadOnly": "This is the event's main session, so its location always matches the event's own.",
         "eventSessionLimitReached": "This event's plan doesn't allow more schedule sessions.",
+        "eventSessionMainNotDeletable": "The ceremony session can't be deleted. Rename it instead.",
+        "eventSessionMainAlreadyExists": "This event already has a ceremony session.",
         "eventCoHostLimitExceeded": "This event's plan doesn't allow more co-hosts.",
         "sessionRsvpNotEnabled": "This session isn't taking RSVPs.",
         "rsvpNotAttending": "Session answers are only for guests who are coming.",
@@ -4401,6 +4435,9 @@
         "giftHandoverPending": "The gift is being handed over, so ownership can't be transferred yet.",
         "guidelinesVersionMismatch": "The Community Guidelines have been updated. Please read the current version and accept it.",
         "guidelinesAcceptanceRequired": "Please accept the Community Guidelines to continue.",
+        "termsVersionMismatch": "The Terms of Use have been updated. Please read the current version and accept it.",
+        "signupAcceptanceRequired": "Please accept the Terms of Use and Community Guidelines and confirm you are 18 or older to create your account.",
+        "termsAcceptanceRequired": "Please accept the Terms of Use to continue.",
         "withdrawalConfirmationInvalid": "We couldn't confirm this withdrawal. Check the refund and confirm again.",
         "withdrawalPreviewStale": "The refund amount has changed. Check it and confirm again.",
         "orderNotManual": "Only manual orders can be settled by hand.",
@@ -4863,7 +4900,13 @@
             "social": "SOCIAL",
             "socialLinks": ["Instagram", "TikTok", "Facebook"],
             "copyright": "© 2026 STORYWALL",
-            "legal": ["Privacy Policy", "Terms of Use", "Cookies", "Cookie Settings", "Cancellations & Withdrawal", "Contact"],
+            "legalLinks": {
+                "privacy": "Privacy Policy",
+                "terms": "Terms of Use",
+                "cookies": "Cookies",
+                "withdrawal": "Cancellations & Withdrawal",
+                "contact": "Contact"
+            },
             "communityGuidelines": "Community Guidelines",
             "reportContent": "Report content",
             "backToTop": "BACK TO TOP"

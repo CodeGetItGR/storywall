@@ -25,6 +25,9 @@ vi.mock('@/providers/EventProvider', () => ({
     useActiveMember: () => (activeMemberId ? { id: activeMemberId } : null),
     useIsHost: () => false,
 }));
+vi.mock('@/hooks/usePostingAsMember', () => ({
+    usePostingAsMember: () => ({ member: activeMemberId ? { id: activeMemberId } : null, isPersona: false }),
+}));
 vi.mock('@/components/reports', () => ({
     ReportTargetModal: ({ open, targetType, targetId }: { open: boolean; targetType: string; targetId: string }) =>
         open ? <div data-testid="report-modal" data-target-type={targetType} data-target-id={targetId} /> : null,

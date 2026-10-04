@@ -10,6 +10,7 @@ import type {
     AccountStatus,
     AuthProvider as AuthProviderName,
     AuthSessionDto,
+    OAuthLoginRequestDto,
     PlatformRole,
     RegisterRequestDto,
     UserResponseDto,
@@ -52,7 +53,7 @@ export interface AuthContextValue {
     isSessionUnavailable: boolean;
     register: (input: RegisterRequestDto) => Promise<AuthSessionDto>;
     login: (input: { email: string; password: string; inviteToken?: string }) => Promise<AuthSessionDto>;
-    oauth: (provider: 'GOOGLE' | 'APPLE', input: { idToken: string; inviteToken?: string }) => Promise<AuthSessionDto>;
+    oauth: (provider: 'GOOGLE' | 'APPLE', input: OAuthLoginRequestDto) => Promise<AuthSessionDto>;
     logout: () => Promise<void>;
     updateProfile: (profile: Pick<UserResponseDto, 'firstName' | 'lastName' | 'profilePictureUrl' | 'emailVerified'>) => void;
 }
@@ -190,7 +191,7 @@ export function AuthProvider({ children, handoff = null }: { children: ReactNode
     );
 
     const oauth = useCallback(
-        async (provider: 'GOOGLE' | 'APPLE', input: { idToken: string; inviteToken?: string }) => {
+        async (provider: 'GOOGLE' | 'APPLE', input: OAuthLoginRequestDto) => {
             const session = await authClient.oauth(provider, input);
             resetSessionCaches();
             setSession(session);

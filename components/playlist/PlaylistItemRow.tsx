@@ -12,6 +12,7 @@ import { useAppConfig } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useContentAccess } from '@/hooks/useContentAccess';
 import { useCreatePlaylistVote, useDeletePlaylistSuggestion, useDeletePlaylistVote, usePlaylistVotes } from '@/hooks/usePlaylist';
+import { usePostingAsMember } from '@/hooks/usePostingAsMember';
 import { isModuleNotAvailableError } from '@/lib/api/errors';
 import type { PlaylistSuggestionResponseDto, PlaylistVoteType } from '@/lib/api/types';
 import { canReportContent } from '@/lib/contentPermissions';
@@ -34,6 +35,8 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
     const contentAccess = useContentAccess();
     const eventId = activeEvent?.id ?? '';
     const memberId = activeMember?.id ?? null;
+    // On a demo event an admin votes as the chosen guest, and suggestion.myVote is that guest's.
+    const voterId = usePostingAsMember().member?.id ?? null;
 
     const currentVotesQuery = usePlaylistVotes(suggestion.id, false);
     const createVote = useCreatePlaylistVote(eventId);
@@ -66,12 +69,12 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
     const openYouTubeLabel = t('openYouTube');
 
     async function clearCurrentVote() {
-        if (!memberId) return;
+        if (!voterId) return;
 
         setResolvingVote(true);
         try {
             const res = await currentVotesQuery.refetch();
-            const currentVote = res.data?.find((vote) => vote.memberId === memberId);
+            const currentVote = res.data?.find((vote) => vote.memberId === voterId);
             if (!currentVote) return;
 
             await deleteVote.mutateAsync(currentVote.id);

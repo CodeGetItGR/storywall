@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { LegalPageShell } from '@/components/legal/LegalPageShell';
 import { MarkdownDocument } from '@/components/legal/MarkdownDocument';
 import { getServerLocale } from '@/i18n/serverLocale';
 import { endpoints } from '@/lib/api/endpoints';
@@ -32,7 +33,7 @@ export default async function CommunityGuidelinesPage({ searchParams }: PageProp
     const guidelines = await loadGuidelines(typeof version === 'string' && version ? version : null);
 
     return (
-        <main className="mx-auto w-full max-w-3xl px-4 pt-8 pb-16">
+        <LegalPageShell current="communityGuidelines">
             {guidelines ? (
                 /* Guidelines */
                 <MarkdownDocument source={guidelines.markdown} />
@@ -40,6 +41,6 @@ export default async function CommunityGuidelinesPage({ searchParams }: PageProp
                 /* Unavailable */
                 <p className="text-sm text-ink-muted">{t('unavailable')}</p>
             )}
-        </main>
+        </LegalPageShell>
     );
 }

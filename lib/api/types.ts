@@ -19,7 +19,18 @@ export type PlatformRole = 'USER' | 'ADMIN' | 'GUEST';
 export type EventTypeConvention = 'WEDDING' | 'BAPTISM' | 'SOCIAL_EVENT' | 'BIRTHDAY' | 'PRIVATE_PARTY' | 'GENDER_REVEAL' | 'BABY_SHOWER';
 // Post.type / Reaction.reactionType are free strings server-side.
 // moduleKey is now a closed set on the backend and should match the config payload.
-export const EVENT_MODULE_KEYS = ['posts', 'rsvp', 'playlist', 'stories', 'gallery', 'wishlist', 'wishbook', 'co_hosts', 'schedule', 'member_roles'] as const;
+export const EVENT_MODULE_KEYS = [
+    'posts',
+    'rsvp',
+    'playlist',
+    'stories',
+    'gallery',
+    'wishlist',
+    'wishbook',
+    'co_hosts',
+    'schedule',
+    'member_roles',
+] as const;
 // Use this (not the raw `ModuleKey` wire type below) whenever code branches on
 // a specific module — it's a closed set and catches typos at compile time.
 // `ModuleKey` stays a plain string because the admin module/plan-tier registry
@@ -519,6 +530,11 @@ export interface RegisterRequestDto {
     // The Community Guidelines version the user ticked (GET /api/legal/community-guidelines).
     // Not the current one → 400 3037 GUIDELINES_VERSION_MISMATCH, nothing created.
     acceptedGuidelinesVersion: string;
+    // The Terms of Use version the user ticked (GET /api/legal/documents/terms).
+    // Not the current one → 400 3043 TERMS_VERSION_MISMATCH, nothing created.
+    acceptedTermsVersion: string;
+    // The 18+ confirmation (Terms §3). Must be true.
+    adultConfirmed: true;
     inviteToken?: string;
     subscribeToNewsletter?: boolean;
     // All-or-nothing: an invalid profile is a 400 and no account is created.
@@ -537,6 +553,18 @@ export type OAuthProviderName = 'GOOGLE' | 'APPLE';
 export interface OAuthLoginRequestDto {
     idToken: string;
     inviteToken?: string;
+    // Read only when the token would create a new account. Missing any of them
+    // then → 400 3044 SIGNUP_ACCEPTANCE_REQUIRED (details: SignupAcceptanceRequiredDetails),
+    // nothing created: resend the same idToken with them. Stale → 3043 / 3037.
+    acceptedTermsVersion?: string;
+    acceptedGuidelinesVersion?: string;
+    adultConfirmed?: boolean;
+}
+
+// `details` of a 3044 response.
+export interface SignupAcceptanceRequiredDetails {
+    currentTermsVersion: string;
+    currentGuidelinesVersion: string;
 }
 
 export interface RefreshRequestDto {
@@ -641,6 +669,10 @@ export interface UserResponseDto {
     // write is 403 4013. Null only on admin user endpoints, never on /api/me.
     guidelinesAcceptanceRequired: boolean | null;
     currentGuidelinesVersion: string | null;
+    // True until the user accepts currentTermsVersion (or a later one) and has
+    // confirmed being 18+; until then every write is 403 4020. Same nulls as above.
+    termsAcceptanceRequired: boolean | null;
+    currentTermsVersion: string | null;
 }
 
 export interface MeUpdateRequestDto {
@@ -1259,9 +1291,25 @@ export interface CommunityGuidelinesDto {
     markdown: string;
 }
 
+// GET /api/legal/documents/{document}[/{version}]: the Terms of Use, Privacy Policy, Cookie Policy or Contact page.
+export type LegalDocumentSlug = 'terms' | 'privacy' | 'cookies' | 'contact';
+
+export interface LegalDocumentDto {
+    document: LegalDocumentSlug;
+    version: string;
+    locale: string; // the locale actually served
+    markdown: string;
+}
+
 // POST /api/me/guidelines-acceptance → 204.
 export interface GuidelinesAcceptanceRequestDto {
     version: string;
+}
+
+// POST /api/me/terms-acceptance → 204. Stale version → 3043.
+export interface TermsAcceptanceRequestDto {
+    version: string;
+    adultConfirmed: true;
 }
 
 // GET /api/events/{eventId}/withdrawal-preview — host. Nothing persisted; safe to
@@ -2016,6 +2064,7 @@ export interface EventSessionRequestDto {
     displayOrder: number;
     isSecondary?: boolean; // defaults to false; at most one non-deleted session per event
     rsvpEnabled?: boolean; // defaults to false; guests may answer for this session only when true
+    isMain?: boolean; // restores a missing main session; its dates and location come from the event (5123 if one exists)
 }
 
 export interface EventSessionResponseDto {
