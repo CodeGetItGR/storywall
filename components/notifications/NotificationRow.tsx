@@ -41,9 +41,6 @@ export function NotificationRow({ notification }: { notification: NotificationRe
         notification.body ??
         (t.has(bodyKey)
             ? t(bodyKey, {
-                  days: payloadString(notification, 'daysRemaining') ?? payloadString(notification, 'daysOverdue') ?? '0',
-                  daysUntilFreeze: payloadString(notification, 'daysUntilFreeze') ?? '0',
-                  plan: payloadString(notification, 'planTier') ?? '',
                   over: payloadString(notification, 'overFormatted') ?? '',
                   dueDate: payloadString(notification, 'dueDate') ?? '',
               })

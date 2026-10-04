@@ -219,10 +219,10 @@ export function ManageScreen() {
                     <span
                         className={cn(
                             'shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold whitespace-nowrap',
-                            eventStatusBadgeTone[activeEvent.status] ?? eventStatusBadgeTone.ACTIVE,
+                            eventStatusBadgeTone[activeEvent.status],
                         )}
                     >
-                        {t.has(`status.${activeEvent.status}`) ? t(`status.${activeEvent.status}`) : t('hostView')}
+                        {t(`status.${activeEvent.status}`)}
                     </span>
                 </div>
 
