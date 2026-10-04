@@ -1,7 +1,8 @@
 # Legal documents: cross-check and pre-release list (2026-10-04)
 
 The five legal drafts (Terms of Use, Privacy Policy, Cookie Policy, Cancellations & Withdrawal,
-Contact) were checked against the backend (`guestwall-be`) and this frontend. Corrected versions are
+Contact) were checked against the backend (`guestwall-be`) and this frontend. The remaining work is listed in
+[2026-10-04-legal-release-todo.md](2026-10-04-legal-release-todo.md). Corrected versions are
 published as version `2026-10-04`, in Greek and English, and linked from the site.
 
 ## What shipped in this change
@@ -41,10 +42,9 @@ published as version `2026-10-04`, in Greek and English, and linked from the sit
 5. **Account deletion.** There is no self-service account deletion (`/api/me` has no delete). Only an
    admin can delete or set `status=DELETED`. The drafts described a two-option deletion. The texts now
    say "email us" with a `[pending]` marker. GDPR erasure requests are manual until this exists.
-6. **Marketing emails without consent (bug).** `users.marketing_emails_enabled` defaults to `true`
-   and no endpoint lets a user change it, so every host gets `UPGRADE_OFFER` emails (the only
-   `OFFER` category) with no opt-in and no opt-out. Default it to `false` or tie it to the newsletter
-   opt-in, and add an unsubscribe link and a profile toggle. The texts assume this is fixed.
+6. ~~**Marketing emails without consent (bug).**~~ Fixed: `UPGRADE_OFFER` emails now go only to
+   accounts with a confirmed newsletter subscription and include its unsubscribe link. The
+   `users.marketing_emails_enabled` column is dropped (`V139`).
 7. **Third-party embeds load without consent.** Spotify and YouTube previews on song suggestions
    (`components/playlist/PlaylistItemRow.tsx`) and the Google Maps embed on a schedule item's venue
    page (`components/schedule/ScheduleMapPreview.tsx`) load automatically and can set third-party
