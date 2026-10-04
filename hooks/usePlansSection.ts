@@ -4,6 +4,7 @@ import { useList } from '@refinedev/core';
 import { type ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useAdminPaidServices, useAdminPlatformEventTypes, useAdminPlatformModules } from '@/hooks/useAdmin';
+import { usePlanTierMove } from '@/hooks/useAdminReorder';
 import { formatPlansHash, parsePlansHash, type PlansView } from '@/lib/adminPlansRouting';
 import { type Visibility, visibilityOf } from '@/lib/adminVisibility';
 import type { PlanTierResponseDto } from '@/lib/api/types';
@@ -80,6 +81,10 @@ export function usePlansSection() {
         [needle, plansForType, statusFilter],
     );
 
+    const move = usePlanTierMove(plansForType);
+    // Arrows move a plan within all of its event type's plans, so they only work while nothing is hidden.
+    const canReorder = !needle && statusFilter === 'ALL' && !move.isPending;
+
     const statusCounts = useMemo(() => {
         const counts: Record<PlanStatusFilterValue, number> = { ALL: plansForType.length, LIVE: 0, HIDDEN: 0, ARCHIVED: 0 };
         for (const plan of plansForType) counts[visibilityOf(plan)] += 1;
@@ -120,6 +125,9 @@ export function usePlansSection() {
         statusFilter,
         setStatusFilter,
         statusCounts,
+        canReorder,
+        movePlan: move.move,
+        moveError: move.error,
         search,
         handleSearchChange,
         selectEventType,

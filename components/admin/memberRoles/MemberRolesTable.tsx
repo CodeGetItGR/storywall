@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { MemberRoleRow } from '@/components/admin/memberRoles/MemberRoleRow';
 import type { MemberRoleCatalogDto } from '@/lib/api/types';
+import type { MoveDirection } from '@/lib/sortOrder';
 
 export function MemberRolesTable({
     roles,
@@ -15,7 +16,7 @@ export function MemberRolesTable({
     roles: MemberRoleCatalogDto[];
     hasAnyRoles: boolean;
     canReorder: boolean;
-    onMoveAction: (roleId: string, direction: 'up' | 'down') => void;
+    onMoveAction: (roleId: string, direction: MoveDirection) => void;
     onEditAction: (roleId: string) => void;
 }) {
     const t = useTranslations('AdminPage.memberRoles');

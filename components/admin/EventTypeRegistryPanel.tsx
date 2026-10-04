@@ -5,11 +5,14 @@ import { Pencil } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback, useMemo, useState } from 'react';
 
+import { AdminOrderArrows } from '@/components/admin/AdminOrderArrows';
 import { EventTypeEditDrawer } from '@/components/admin/EventTypeEditDrawer';
 import { LoadingState } from '@/components/ui/LoadingState';
+import { usePlatformEventTypeMove } from '@/hooks/useAdminReorder';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { PlatformEventTypeResponseDto } from '@/lib/api/types';
+import { bySortOrder } from '@/lib/sortOrder';
 import { cn } from '@/lib/utils';
 
 export function EventTypeRegistryPanel() {
@@ -21,7 +24,8 @@ export function EventTypeRegistryPanel() {
         pagination: { mode: 'off' },
     });
     const [selectedEventType, setSelectedEventType] = useState<PlatformEventTypeResponseDto | null>(null);
-    const eventTypes = useMemo(() => [...eventTypesResult.data].sort((left, right) => left.sortOrder - right.sortOrder), [eventTypesResult.data]);
+    const eventTypes = useMemo(() => [...eventTypesResult.data].sort(bySortOrder), [eventTypesResult.data]);
+    const move = usePlatformEventTypeMove(eventTypes);
 
     function closeEditor() {
         setSelectedEventType(null);
@@ -47,6 +51,7 @@ export function EventTypeRegistryPanel() {
                 {eventTypesQuery.error && (
                     <p className="px-4 py-6 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(eventTypesQuery.error)}`)}</p>
                 )}
+                {move.error && <p className="px-4 pt-3 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(move.error)}`)}</p>}
                 {!eventTypesQuery.isLoading && !eventTypesQuery.error && eventTypes.length === 0 && (
                     <p className="px-4 py-6 text-sm text-ink-muted">{t('eventTypes.empty')}</p>
                 )}
@@ -58,11 +63,12 @@ export function EventTypeRegistryPanel() {
                                 <tr className="border-b border-border text-left text-[11px] font-bold tracking-wide text-ink-faint uppercase">
                                     <th className="px-4 py-2.5 font-bold">{t('fields.name')}</th>
                                     <th className="px-3 py-2.5 font-bold">{t('eventTypes.enabled')}</th>
+                                    <th className="px-3 py-2.5 font-bold">{t('order.column')}</th>
                                     <th className="px-3 py-2.5" />
                                 </tr>
                             </thead>
                             <tbody>
-                                {eventTypes.map((eventType) => (
+                                {eventTypes.map((eventType, index) => (
                                     <tr key={eventType.eventTypeKey} className="border-b border-border last:border-b-0 hover:bg-canvas/60">
                                         <td className="max-w-96 px-4 py-2.5">
                                             <p className="truncate font-semibold text-ink">{localizedText(eventType.name)}</p>
@@ -86,6 +92,16 @@ export function EventTypeRegistryPanel() {
                                                 />
                                                 {eventType.isEnabled ? t('eventTypes.enabled') : t('eventTypes.disabled')}
                                             </span>
+                                        </td>
+                                        <td className="px-3 py-2.5">
+                                            <AdminOrderArrows
+                                                id={eventType.eventTypeKey}
+                                                name={localizedText(eventType.name)}
+                                                isFirst={index === 0}
+                                                isLast={index === eventTypes.length - 1}
+                                                disabled={move.isPending}
+                                                onMoveAction={move.move}
+                                            />
                                         </td>
                                         <td className="px-3 py-2.5 text-right">
                                             <button

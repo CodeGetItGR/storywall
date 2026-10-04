@@ -4,6 +4,7 @@ import type * as React from 'react';
 import { useMemo, useState } from 'react';
 
 import { useCreateCoverageOption, useUpdateCoverageOption } from '@/hooks/useAdminCoverageOptions';
+import { useCoverageOptionMove } from '@/hooks/useAdminReorder';
 import {
     type DurationDraft,
     durationDraftFromOption,
@@ -15,6 +16,7 @@ import {
     sortDurationsForAdmin,
 } from '@/lib/adminPlanDurations';
 import type { PlanTierResponseDto } from '@/lib/api/types';
+import { nextSortOrder } from '@/lib/sortOrder';
 
 // The plan editor's Durations section: read-only rows, and one duration open for
 // editing at a time. Each change is its own request, separate from the plan's Save.
@@ -24,8 +26,11 @@ export function usePlanDurationsEditor(plan: PlanTierResponseDto) {
     const [draft, setDraft] = useState<DurationDraft | null>(null);
 
     const options = useMemo(() => sortDurationsForAdmin(plan.initialOptions), [plan.initialOptions]);
+    // Only live durations are on sale, so only they have an order to change.
+    const liveOptions = useMemo(() => options.filter((option) => option.active), [options]);
+    const move = useCoverageOptionMove(plan.id, liveOptions);
     const editingOption = draft?.optionId ? (options.find((option) => option.id === draft.optionId) ?? null) : null;
-    const isPending = createOption.isPending || updateOption.isPending;
+    const isPending = createOption.isPending || updateOption.isPending || move.isPending;
     const hasChanges =
         draft !== null && (draft.optionId === null || Object.keys(editingOption ? durationPatchFromDraft(editingOption, draft) : {}).length > 0);
     const canSave = draft !== null && isDurationDraftValid(draft) && hasChanges && !isPending;
@@ -37,7 +42,7 @@ export function usePlanDurationsEditor(plan: PlanTierResponseDto) {
 
     function openNew() {
         resetErrors();
-        setDraft(newDurationDraft(plan.initialOptions));
+        setDraft(newDurationDraft());
     }
 
     function openEdit(event: React.MouseEvent<HTMLButtonElement>) {
@@ -71,7 +76,7 @@ export function usePlanDurationsEditor(plan: PlanTierResponseDto) {
                         kind: 'INITIAL',
                         months: parseDurationMonths(draft.months) ?? 0,
                         priceAmountMinor: parseDurationPrice(draft.price) ?? 0,
-                        sortOrder: Number(draft.sortOrder),
+                        sortOrder: nextSortOrder(plan.initialOptions),
                     },
                 },
                 { onSuccess },
@@ -112,7 +117,9 @@ export function usePlanDurationsEditor(plan: PlanTierResponseDto) {
         editingOption,
         canSave,
         isSaving: isPending,
-        error: createOption.error ?? updateOption.error,
+        liveOptions,
+        move: move.move,
+        error: createOption.error ?? updateOption.error ?? move.error,
         openNew,
         openEdit,
         close,

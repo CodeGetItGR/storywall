@@ -2227,6 +2227,12 @@
         }
     },
     "AdminPage": {
+        "order": {
+            "column": "Order",
+            "moveUp": "Move {name} up",
+            "moveDown": "Move {name} down",
+            "pickKind": "Pick one kind to change the order."
+        },
         "orders": {
             "title": "Orders",
             "loading": "Loading orders…",
@@ -2924,7 +2930,6 @@
         "fields": {
             "code": "Code",
             "name": "Name",
-            "sort": "Sort",
             "description": "Description",
             "storage": "Storage",
             "unit": "Unit",
@@ -3094,7 +3099,6 @@
                 "monthsHint": "1 to 120. Can't be changed later.",
                 "price": "Price",
                 "priceIn": "Price ({currency})",
-                "sortOrder": "Order",
                 "retire": "Retire",
                 "reactivate": "Put back on sale",
                 "save": "Save duration",
@@ -3615,7 +3619,6 @@
             "fields": {
                 "emoji": "Emoji",
                 "name": "Name",
-                "sortOrder": "Sort order",
                 "code": "Code",
                 "availability": "Availability",
                 "available": "Available",
@@ -3675,8 +3678,6 @@
             "empty": "No roles for this event type yet.",
             "noMatches": "No roles match.",
             "loading": "Loading roles…",
-            "moveUp": "Move {role} up",
-            "moveDown": "Move {role} down",
             "edit": "Edit {role}",
             "drawer": {
                 "createTitle": "New role",
@@ -3760,7 +3761,6 @@
                 "kind": "Kind",
                 "name": "Name",
                 "description": "Description",
-                "sortOrder": "Sort order",
                 "price": "Price",
                 "priceHint": "Charged once, in whole currency units.",
                 "priceHintUnlock": "Charged once, in whole currency units.",

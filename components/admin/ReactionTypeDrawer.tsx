@@ -13,6 +13,7 @@ import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { invalidatePublicConfig } from '@/hooks/useAppConfig';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { EventTypeConvention, ReactionTypeRequestDto, ReactionTypeResponseDto } from '@/lib/api/types';
+import { nextSortOrder } from '@/lib/sortOrder';
 
 function codeFromReactionName(name: string, takenCodes: string[]): string {
     const base = name
@@ -38,16 +39,21 @@ function inputFromForm(
     formData: FormData,
     eventTypeKey: EventTypeConvention,
     availability: ReactionTypeAvailability,
-    takenCodes: string[],
+    reactionTypes: ReactionTypeResponseDto[],
     reactionType?: ReactionTypeResponseDto,
 ): ReactionTypeRequestDto {
     const name = String(formData.get('name') ?? '').trim();
     return {
         eventTypeKey,
-        code: reactionType?.code ?? codeFromReactionName(name, takenCodes),
+        code:
+            reactionType?.code ??
+            codeFromReactionName(
+                name,
+                reactionTypes.map((item) => item.code),
+            ),
         name,
         emoji: String(formData.get('emoji') ?? '').trim(),
-        sortOrder: Number(formData.get('sortOrder') ?? 0),
+        sortOrder: reactionType?.sortOrder ?? nextSortOrder(reactionTypes),
         isAssignable: availability === 'AVAILABLE',
     };
 }
@@ -90,16 +96,10 @@ export function ReactionTypeDrawer({
 
     async function submit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
-        const input = inputFromForm(
-            new FormData(event.currentTarget),
-            eventTypeKey,
-            availability,
-            reactionTypes.map((item) => item.code),
-            reactionType ?? undefined,
-        );
+        const input = inputFromForm(new FormData(event.currentTarget), eventTypeKey, availability, reactionTypes, reactionType ?? undefined);
 
         if (reactionType) {
-            const { code: _code, eventTypeKey: _eventTypeKey, ...patch } = input;
+            const { code: _code, eventTypeKey: _eventTypeKey, sortOrder: _sortOrder, ...patch } = input;
             await updateReactionType({ resource: 'reaction-types', id: reactionType.id, values: patch, dataProviderName: 'reaction-types' });
         } else {
             await createReactionType({ resource: 'reaction-types', values: input, dataProviderName: 'reaction-types' });
@@ -181,18 +181,6 @@ export function ReactionTypeDrawer({
                             <input name="name" required maxLength={30} defaultValue={reactionType?.name} className={adminInputClass()} />
                         </AdminField>
                     </div>
-
-                    {/* Ordering */}
-                    <AdminField label={t('fields.sortOrder')} required>
-                        <input
-                            name="sortOrder"
-                            type="number"
-                            required
-                            min={0}
-                            defaultValue={reactionType?.sortOrder ?? reactionTypes.length}
-                            className={adminInputClass()}
-                        />
-                    </AdminField>
 
                     {reactionType && (
                         <div className="rounded-lg bg-canvas px-3 py-2">

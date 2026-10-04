@@ -7,18 +7,22 @@ import React, { type ChangeEvent, useCallback, useMemo, useState } from 'react';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
+import { AdminOrderArrows } from '@/components/admin/AdminOrderArrows';
 import { AdminSection } from '@/components/admin/AdminSection';
 import { AdminStatTile } from '@/components/admin/AdminStatTile';
 import { PaidServiceDrawer, type Visibility, visibilityOf } from '@/components/admin/PaidServiceDrawer';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useAdminPlanTiers, useRemoveEventAddon } from '@/hooks/useAdmin';
+import { usePaidServiceMove } from '@/hooks/useAdminReorder';
 import { adminErrorMessageKey, isUuid } from '@/lib/adminUtils';
 import type { PaidServiceKind, PaidServiceResponseDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
+import { bySortOrder } from '@/lib/sortOrder';
 import { cn } from '@/lib/utils';
 
-const KIND_FILTERS: Array<PaidServiceKind | 'ALL'> = ['ALL', 'STORAGE_PACK', 'RECURRING_ADDON', 'MODULE_UNLOCK'];
+const KINDS: PaidServiceKind[] = ['STORAGE_PACK', 'RECURRING_ADDON', 'MODULE_UNLOCK'];
+const KIND_FILTERS: Array<PaidServiceKind | 'ALL'> = ['ALL', ...KINDS];
 const STATUS_FILTERS: Array<Visibility | 'ALL'> = ['ALL', 'LIVE', 'HIDDEN', 'ARCHIVED'];
 
 const STATUS_DOT: Record<Visibility, string> = {
@@ -61,7 +65,11 @@ export function PaidServicesCatalogPanel() {
     const eventPlans = useAdminPlanTiers('EVENT', true);
     const removeAddon = useRemoveEventAddon();
 
-    const allServices = servicesResult.data;
+    // Each kind has its own order, so the list groups by kind first.
+    const allServices = useMemo(
+        () => [...servicesResult.data].sort((left, right) => KINDS.indexOf(left.kind) - KINDS.indexOf(right.kind) || bySortOrder(left, right)),
+        [servicesResult.data],
+    );
 
     const stats = useMemo(() => {
         let live = 0;
@@ -89,6 +97,11 @@ export function PaidServicesCatalogPanel() {
             );
         });
     }, [allServices, kindFilter, statusFilter, search]);
+
+    const servicesOfKind = useMemo(() => allServices.filter((service) => service.kind === kindFilter), [allServices, kindFilter]);
+    const move = usePaidServiceMove(servicesOfKind);
+    // Arrows move a service among the whole of one kind, so they need one kind picked and nothing else hidden.
+    const canReorder = kindFilter !== 'ALL' && statusFilter === 'ALL' && !search.trim() && !move.isPending;
 
     // Adjusting during render rather than in an effect: the prefilled id has to be
     // on screen the moment the panel opens, not one paint later.
@@ -239,6 +252,7 @@ export function PaidServicesCatalogPanel() {
                 {servicesQuery.error && (
                     <p className="px-4 py-6 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(servicesQuery.error)}`)}</p>
                 )}
+                {move.error && <p className="px-4 pt-3 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(move.error)}`)}</p>}
                 {!servicesQuery.isLoading && !servicesQuery.error && visibleServices.length === 0 && (
                     <p className="px-4 py-6 text-sm text-ink-muted">{t('empty')}</p>
                 )}
@@ -253,11 +267,12 @@ export function PaidServicesCatalogPanel() {
                                     <th className="px-3 py-2.5 font-bold">{t('columns.price')}</th>
                                     <th className="px-3 py-2.5 font-bold">{t('columns.plans')}</th>
                                     <th className="px-3 py-2.5 font-bold">{t('columns.status')}</th>
+                                    <th className="px-3 py-2.5 font-bold">{tAdmin('order.column')}</th>
                                     <th className="px-3 py-2.5" />
                                 </tr>
                             </thead>
                             <tbody>
-                                {visibleServices.map((service) => {
+                                {visibleServices.map((service, index) => {
                                     const status = visibilityOf(service);
                                     const planNames =
                                         service.planTierIds.length === 0
@@ -289,6 +304,17 @@ export function PaidServicesCatalogPanel() {
                                                     <span className={cn('h-1.5 w-1.5 rounded-full', STATUS_DOT[status])} />
                                                     {t(`status.${status}`)}
                                                 </span>
+                                            </td>
+                                            <td className="px-3 py-2.5">
+                                                <AdminOrderArrows
+                                                    id={service.id}
+                                                    name={service.name}
+                                                    isFirst={index === 0}
+                                                    isLast={index === visibleServices.length - 1}
+                                                    disabled={!canReorder}
+                                                    disabledHint={kindFilter === 'ALL' ? tAdmin('order.pickKind') : undefined}
+                                                    onMoveAction={move.move}
+                                                />
                                             </td>
                                             <td className="px-3 py-2.5 text-right">
                                                 <button

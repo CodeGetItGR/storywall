@@ -35,11 +35,20 @@ export function PlanEditorDurationsSection({ id, editor }: { id: string; editor:
             {/* Duration rows */}
             {editor.options.length > 0 && (
                 <div className="divide-y divide-border/70 overflow-hidden rounded-lg border border-border">
-                    {editor.options.map((option) =>
+                    {editor.options.map((option, index) =>
                         draft?.optionId === option.id ? (
                             <PlanDurationEditor key={option.id} draft={draft} option={option} inset {...editorProps} />
                         ) : (
-                            <PlanDurationRow key={option.id} option={option} currency={editor.currency} onEditAction={editor.openEdit} />
+                            <PlanDurationRow
+                                key={option.id}
+                                option={option}
+                                currency={editor.currency}
+                                isFirst={index === 0}
+                                isLast={index === editor.liveOptions.length - 1}
+                                canReorder={!editor.isSaving}
+                                onMoveAction={editor.move}
+                                onEditAction={editor.openEdit}
+                            />
                         ),
                     )}
                 </div>

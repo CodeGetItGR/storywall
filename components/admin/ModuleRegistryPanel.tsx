@@ -5,10 +5,13 @@ import { Pencil } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback, useMemo, useState } from 'react';
 
+import { AdminOrderArrows } from '@/components/admin/AdminOrderArrows';
 import { ModuleEditDrawer } from '@/components/admin/ModuleEditDrawer';
 import { LoadingState } from '@/components/ui/LoadingState';
+import { usePlatformModuleMove } from '@/hooks/useAdminReorder';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { PlatformModuleResponseDto } from '@/lib/api/types';
+import { bySortOrder } from '@/lib/sortOrder';
 import { cn } from '@/lib/utils';
 
 export function ModuleRegistryPanel() {
@@ -19,7 +22,8 @@ export function ModuleRegistryPanel() {
         pagination: { mode: 'off' },
     });
     const [selectedModule, setSelectedModule] = useState<PlatformModuleResponseDto | null>(null);
-    const modules = useMemo(() => [...modulesResult.data].sort((left, right) => left.sortOrder - right.sortOrder), [modulesResult.data]);
+    const modules = useMemo(() => [...modulesResult.data].sort(bySortOrder), [modulesResult.data]);
+    const move = usePlatformModuleMove(modules);
 
     function closeEditor() {
         setSelectedModule(null);
@@ -45,6 +49,7 @@ export function ModuleRegistryPanel() {
                 {modulesQuery.error && (
                     <p className="px-4 py-6 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(modulesQuery.error)}`)}</p>
                 )}
+                {move.error && <p className="px-4 pt-3 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(move.error)}`)}</p>}
                 {!modulesQuery.isLoading && !modulesQuery.error && modules.length === 0 && (
                     <p className="px-4 py-6 text-sm text-ink-muted">{t('modules.empty')}</p>
                 )}
@@ -56,11 +61,12 @@ export function ModuleRegistryPanel() {
                                 <tr className="border-b border-border text-left text-[11px] font-bold tracking-wide text-ink-faint uppercase">
                                     <th className="px-4 py-2.5 font-bold">{t('fields.name')}</th>
                                     <th className="px-3 py-2.5 font-bold">{t('modules.enabled')}</th>
+                                    <th className="px-3 py-2.5 font-bold">{t('order.column')}</th>
                                     <th className="px-3 py-2.5" />
                                 </tr>
                             </thead>
                             <tbody>
-                                {modules.map((module) => (
+                                {modules.map((module, index) => (
                                     <tr key={module.moduleKey} className="border-b border-border last:border-b-0 hover:bg-canvas/60">
                                         <td className="max-w-96 px-4 py-2.5">
                                             <p className="truncate font-semibold text-ink">{module.name}</p>
@@ -83,6 +89,16 @@ export function ModuleRegistryPanel() {
                                                 />
                                                 {module.isEnabled ? t('modules.enabled') : t('modules.disabled')}
                                             </span>
+                                        </td>
+                                        <td className="px-3 py-2.5">
+                                            <AdminOrderArrows
+                                                id={module.moduleKey}
+                                                name={module.name}
+                                                isFirst={index === 0}
+                                                isLast={index === modules.length - 1}
+                                                disabled={move.isPending}
+                                                onMoveAction={move.move}
+                                            />
                                         </td>
                                         <td className="px-3 py-2.5 text-right">
                                             <button

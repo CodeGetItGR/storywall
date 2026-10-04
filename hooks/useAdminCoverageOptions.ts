@@ -12,7 +12,7 @@ import type { CoverageOptionPatchDto, CoverageOptionRequestDto, CoverageOptionRe
 // A plan's durations are read off the plan itself (admin plan responses carry
 // every option, retired ones included), so a change refreshes the plan list
 // rather than a coverage-options query of its own.
-function useRefreshPlans() {
+export function useRefreshPlans() {
     const queryClient = useQueryClient();
     const invalidate = useInvalidate();
 
