@@ -1,7 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query';
 
 import { appConfigKeys, fetchAppConfig } from '@/hooks/useAppConfig';
-import { demoContentVersion, demoStorageKey, swapMediaUrls } from '@/lib/demo/demoDb';
+import { demoContentVersion, demoStorageKey, keepStoriesLive, swapMediaUrls } from '@/lib/demo/demoDb';
 import { registerDemoEventRoute } from '@/lib/demo/demoRouting';
 import { createDemoSession, type DemoSession } from '@/lib/demo/demoSession';
 import { createDemoHandlers } from '@/lib/demo/mockHandlers';
@@ -41,6 +41,7 @@ export async function bootstrapDemo(eventTypeKey: string, eventTypeSlug: string,
     const session = createDemoSession(eventTypeKey, snapshot, contentVersion, planTierName);
     // A restored session keeps the visitor's changes but needs this snapshot's media URLs.
     swapMediaUrls(session.db, snapshot);
+    keepStoriesLive(session.db);
 
     registerDemoEventRoute(session.eventId, eventTypeSlug);
     try {

@@ -166,3 +166,29 @@ export function swapMediaUrls(db: DemoDb, fresh: Pick<DemoSnapshotDto, 'media' |
         if (hasStaleAvatar(story, avatars)) db.update('stories', story.id, (st) => withFreshAvatar(st, avatars));
     }
 }
+
+const HOUR_MS = 3_600_000;
+// Every demo story is squeezed into this much of the recent past, so each stays live for at
+// least another 12 hours of the visit.
+const DEMO_STORY_WINDOW_MS = 12 * HOUR_MS;
+const STORY_LIFETIME_MS = 24 * HOUR_MS;
+
+// A demo is timeless, but stories expire a day after they're posted, and the tray hides expired
+// ones. Rebasing alone can't help: a story the admin posted more than a day before the snapshot
+// was already expired at snapshotAt, and a saved demo keeps the times it was first seeded with.
+// So on every load, if the oldest story is older than the window, every story's age is scaled
+// down to fit it, keeping their order, and each one expires a day after its new createdAt.
+export function keepStoriesLive(db: DemoDb, now: Date = new Date()): void {
+    const stories = db.list('stories');
+    const nowMs = now.getTime();
+    const ages = new Map(stories.map((s) => [s.id, Math.max(0, nowMs - Date.parse(s.createdAt))]));
+    const oldest = Math.max(0, ...ages.values());
+    const scale = oldest > DEMO_STORY_WINDOW_MS ? DEMO_STORY_WINDOW_MS / oldest : 1;
+
+    for (const story of stories) {
+        const createdAtMs = nowMs - Math.round((ages.get(story.id) ?? 0) * scale);
+        const createdAt = new Date(createdAtMs).toISOString();
+        if (scale === 1 && Date.parse(story.expiresAt) > nowMs) continue;
+        db.update('stories', story.id, (s) => ({ ...s, createdAt, expiresAt: new Date(createdAtMs + STORY_LIFETIME_MS).toISOString() }));
+    }
+}
