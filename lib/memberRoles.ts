@@ -142,10 +142,6 @@ export function sortRoles(roles: MemberRoleCatalogDto[]): MemberRoleCatalogDto[]
     return [...roles].sort((left, right) => left.sortOrder - right.sortOrder || left.roleKey.localeCompare(right.roleKey));
 }
 
-export function nextSortOrder(roles: MemberRoleCatalogDto[]): number {
-    return roles.length === 0 ? 0 : Math.max(...roles.map((role) => role.sortOrder)) + 1;
-}
-
 export function filterRoles(roles: MemberRoleCatalogDto[], search: string, status: RoleStatusFilter, locale: Locale): MemberRoleCatalogDto[] {
     const needle = search.trim().toLocaleLowerCase(locale);
     return roles.filter((role) => {
@@ -154,24 +150,6 @@ export function filterRoles(roles: MemberRoleCatalogDto[], search: string, statu
         if (!needle) return true;
         return [role.roleKey, role.label.en, role.label.el].some((text) => text.toLocaleLowerCase(locale).includes(needle));
     });
-}
-
-export type SortOrderUpdate = { id: string; sortOrder: number };
-
-// The PATCHes that move one role a step up or down. Swaps sortOrder with the
-// neighbour; if any two roles tie, renumbers the list 0..n-1 first so the swap
-// actually changes the order. Returns only the roles whose value changes.
-export function planRoleMove(roles: MemberRoleCatalogDto[], roleId: string, direction: 'up' | 'down'): SortOrderUpdate[] {
-    const sorted = sortRoles(roles);
-    const index = sorted.findIndex((role) => role.id === roleId);
-    const neighbour = direction === 'up' ? index - 1 : index + 1;
-    if (index < 0 || neighbour < 0 || neighbour >= sorted.length) return [];
-
-    const hasTies = new Set(sorted.map((role) => role.sortOrder)).size !== sorted.length;
-    const orders = sorted.map((role, position) => (hasTies ? position : role.sortOrder));
-    [orders[index], orders[neighbour]] = [orders[neighbour], orders[index]];
-
-    return sorted.flatMap((role, position) => (orders[position] === role.sortOrder ? [] : [{ id: role.id, sortOrder: orders[position] }]));
 }
 
 // ── Member picker (member-roles-fe-integration.md §2) ──

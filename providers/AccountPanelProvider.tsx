@@ -2,6 +2,7 @@
 
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 
 interface AccountPanelContextValue {
@@ -29,14 +30,7 @@ export function AccountPanelProvider({ children }: { children: ReactNode }) {
         return () => document.removeEventListener('keydown', handleKeyDown);
     }, [open, requestClose]);
 
-    useEffect(() => {
-        if (!open) return;
-        const previousOverflow = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
-        return () => {
-            document.body.style.overflow = previousOverflow;
-        };
-    }, [open]);
+    useBodyScrollLock(open);
 
     return <AccountPanelContext.Provider value={{ open, openAccount, closeAccount: requestClose }}>{children}</AccountPanelContext.Provider>;
 }

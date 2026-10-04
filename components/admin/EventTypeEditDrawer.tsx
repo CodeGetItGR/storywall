@@ -7,7 +7,6 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
-import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { adminKeys } from '@/hooks/useAdmin';
 import { invalidatePublicConfig } from '@/hooks/useAppConfig';
@@ -42,7 +41,6 @@ export function EventTypeEditDrawer({ eventType, onCloseAction }: { eventType: P
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
         setPendingInput({
-            sortOrder: Number(formData.get('sortOrder') ?? eventType?.sortOrder ?? 0),
             isEnabled: checked(formData, 'isEnabled'),
         });
     }
@@ -92,12 +90,6 @@ export function EventTypeEditDrawer({ eventType, onCloseAction }: { eventType: P
                         <div className="space-y-1 rounded-lg border border-border bg-canvas/60 px-3.5 py-3">
                             <p className="text-sm font-semibold text-ink">{localizedText(eventType.name)}</p>
                             <p className="text-xs leading-snug text-ink-faint">{localizedText(eventType.tagline)}</p>
-                        </div>
-
-                        <div className="w-28">
-                            <AdminField label={t('fields.sort')} optional>
-                                <input name="sortOrder" type="number" min={0} defaultValue={eventType.sortOrder} className={adminInputClass()} />
-                            </AdminField>
                         </div>
 
                         <label className="inline-flex items-center gap-2 border-y border-border py-3 text-sm font-semibold text-ink-muted">

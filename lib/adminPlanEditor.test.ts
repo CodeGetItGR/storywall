@@ -38,7 +38,6 @@ function plan(overrides: Partial<PlanTierResponseDto> = {}): PlanTierResponseDto
 function form() {
     const data = new FormData();
     data.set('name', 'Basic');
-    data.set('sortOrder', '0');
     return data;
 }
 

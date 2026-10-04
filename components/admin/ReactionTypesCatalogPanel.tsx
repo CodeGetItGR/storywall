@@ -6,12 +6,15 @@ import { useLocale, useTranslations } from 'next-intl';
 import React, { type ChangeEvent, useCallback, useMemo, useState } from 'react';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
+import { AdminOrderArrows } from '@/components/admin/AdminOrderArrows';
 import { ReactionTypeDrawer } from '@/components/admin/ReactionTypeDrawer';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useAdminPlatformEventTypes } from '@/hooks/useAdmin';
+import { useReactionTypeMove } from '@/hooks/useAdminReorder';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { EventTypeConvention, PlatformEventTypeResponseDto, ReactionTypeResponseDto } from '@/lib/api/types';
 import { resolveLocalizedText } from '@/lib/localizedText';
+import { bySortOrder } from '@/lib/sortOrder';
 import { cn } from '@/lib/utils';
 
 const STATUS_FILTERS = ['ALL', 'AVAILABLE', 'ARCHIVED'] as const;
@@ -53,7 +56,7 @@ export function ReactionTypesCatalogPanel() {
         queryOptions: { enabled: Boolean(effectiveEventTypeKey) },
     });
 
-    const reactionTypes = result.data;
+    const reactionTypes = useMemo(() => [...result.data].sort(bySortOrder), [result.data]);
     const activeCount = reactionTypes.filter((reactionType) => reactionType.isAssignable).length;
     const canCreateActive = activeCount < 5;
 
@@ -65,6 +68,10 @@ export function ReactionTypesCatalogPanel() {
             return reactionType.name.toLowerCase().includes(needle) || reactionType.code.toLowerCase().includes(needle);
         });
     }, [reactionTypes, search, statusFilter]);
+
+    const move = useReactionTypeMove(reactionTypes);
+    // Arrows move a row within the full list, so they only work while nothing is hidden.
+    const canReorder = !search.trim() && statusFilter === 'ALL' && !move.isPending;
 
     function handleEventTypeChange(event: ChangeEvent<HTMLSelectElement>) {
         setSelectedEventTypeKey(event.target.value as EventTypeConvention);
@@ -170,6 +177,7 @@ export function ReactionTypesCatalogPanel() {
                         {t(`errors.${adminErrorMessageKey(eventTypesQuery.error ?? query.error)}`)}
                     </p>
                 )}
+                {move.error && <p className="px-4 pt-3 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(move.error)}`)}</p>}
                 {!query.isLoading && !query.error && visibleReactionTypes.length === 0 && (
                     <p className="px-4 py-6 text-sm text-ink-muted">{t('empty')}</p>
                 )}
@@ -187,7 +195,7 @@ export function ReactionTypesCatalogPanel() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {visibleReactionTypes.map((reactionType) => {
+                                {visibleReactionTypes.map((reactionType, index) => {
                                     const status = statusOf(reactionType);
                                     return (
                                         <tr key={reactionType.id} className="border-b border-border last:border-b-0 hover:bg-canvas/60">
@@ -200,7 +208,16 @@ export function ReactionTypesCatalogPanel() {
                                                 </div>
                                             </td>
                                             <td className="px-3 py-2.5 font-mono text-[12px] text-ink-muted">{reactionType.code}</td>
-                                            <td className="px-3 py-2.5 font-mono text-ink">{reactionType.sortOrder}</td>
+                                            <td className="px-3 py-2.5">
+                                                <AdminOrderArrows
+                                                    id={reactionType.id}
+                                                    name={reactionType.name}
+                                                    isFirst={index === 0}
+                                                    isLast={index === visibleReactionTypes.length - 1}
+                                                    disabled={!canReorder}
+                                                    onMoveAction={move.move}
+                                                />
+                                            </td>
                                             <td className="px-3 py-2.5">
                                                 <span
                                                     className={cn('inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold', STATUS_PILL[status])}

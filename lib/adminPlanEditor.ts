@@ -44,7 +44,6 @@ export function planPatchFromFormData(
     return {
         name: String(formData.get('name') ?? '').trim(),
         description: emptyToNull(formData.get('description')),
-        sortOrder: Number(formData.get('sortOrder') ?? plan.sortOrder),
         isPublic: flags.isPublic,
         isAssignable: flags.isAssignable,
         // An EVENT plan is priced by its durations, so it never sends a price of
@@ -84,7 +83,6 @@ export function planChangeSummary(plan: PlanTierResponseDto, patch: PlanTierPatc
 
     add(t('fields.name'), plan.name, patch.name ?? '');
     add(t('fields.description'), textLabel(plan.description), textLabel(patch.description));
-    add(t('fields.sort'), String(plan.sortOrder), String(patch.sortOrder ?? plan.sortOrder));
 
     if (plan.scope === 'EVENT') {
         add(t('fields.storage'), storageLabel(plan.storageBytes), storageLabel(patch.storageBytes ?? null));

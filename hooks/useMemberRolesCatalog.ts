@@ -7,14 +7,18 @@ import { useAdminPlatformEventTypes } from '@/hooks/useAdmin';
 import { useAdminMemberRoles, useMoveMemberRole } from '@/hooks/useAdminMemberRoles';
 import type { Locale } from '@/i18n/config';
 import type { MemberRoleCatalogDto } from '@/lib/api/types';
-import { filterRoles, nextSortOrder, planRoleMove, type RoleStatusFilter, sortRoles } from '@/lib/memberRoles';
+import { filterRoles, type RoleStatusFilter, sortRoles } from '@/lib/memberRoles';
+import { nextSortOrder } from '@/lib/sortOrder';
 
 export type MemberRoleDrawerState = { open: false } | { open: true; role: MemberRoleCatalogDto | null };
 
 export function useMemberRolesCatalog() {
     const locale = useLocale() as Locale;
     const eventTypesQuery = useAdminPlatformEventTypes();
-    const eventTypes = useMemo(() => [...(eventTypesQuery.data ?? [])].sort((left, right) => left.sortOrder - right.sortOrder), [eventTypesQuery.data]);
+    const eventTypes = useMemo(
+        () => [...(eventTypesQuery.data ?? [])].sort((left, right) => left.sortOrder - right.sortOrder),
+        [eventTypesQuery.data],
+    );
     const [selectedKey, setSelectedKey] = useState<string | null>(null);
     const eventTypeKey = selectedKey ?? eventTypes[0]?.eventTypeKey ?? null;
 
@@ -24,7 +28,7 @@ export function useMemberRolesCatalog() {
     const [status, setStatus] = useState<RoleStatusFilter>('ALL');
     const visibleRoles = useMemo(() => filterRoles(roles, search, status, locale), [locale, roles, search, status]);
 
-    const move = useMoveMemberRole();
+    const move = useMoveMemberRole(roles);
     // Arrows move a role within the full list, so they only work while nothing is hidden.
     const canReorder = !search.trim() && status === 'ALL' && !move.isPending;
     const [drawer, setDrawer] = useState<MemberRoleDrawerState>({ open: false });
@@ -43,13 +47,6 @@ export function useMemberRolesCatalog() {
         [roles],
     );
     const closeDrawer = useCallback(() => setDrawer({ open: false }), []);
-    const moveRole = useCallback(
-        (roleId: string, direction: 'up' | 'down') => {
-            const updates = planRoleMove(roles, roleId, direction);
-            if (updates.length > 0) move.mutate(updates);
-        },
-        [move, roles],
-    );
 
     return {
         eventTypes,
@@ -70,6 +67,6 @@ export function useMemberRolesCatalog() {
         openCreate,
         openEdit,
         closeDrawer,
-        moveRole,
+        moveRole: move.move,
     };
 }

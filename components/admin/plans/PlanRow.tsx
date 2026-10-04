@@ -4,10 +4,12 @@ import { CopyPlus, Pencil } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
+import { AdminOrderArrows } from '@/components/admin/AdminOrderArrows';
 import { PlanSharedGroupChip } from '@/components/admin/plans/PlanSharedGroupChip';
 import { type Visibility, visibilityOf } from '@/lib/adminVisibility';
 import type { PlanTierResponseDto, PlatformEventTypeResponseDto } from '@/lib/api/types';
 import { formatLimitValue, formatPlanMoney, liveInitialOptions } from '@/lib/planTiers';
+import type { MoveDirection } from '@/lib/sortOrder';
 import { cn } from '@/lib/utils';
 
 const STATUS_DOT: Record<Visibility, string> = { LIVE: 'bg-status-good', HIDDEN: 'bg-status-warn', ARCHIVED: 'bg-status-neutral' };
@@ -26,6 +28,10 @@ export function PlanRow({
     onEditClickAction,
     onDuplicateClickAction,
     onSelectEventTypeAction,
+    isFirst,
+    isLast,
+    canReorder,
+    onMoveAction,
 }: {
     plan: PlanTierResponseDto;
     allPlans: PlanTierResponseDto[];
@@ -33,6 +39,10 @@ export function PlanRow({
     onEditClickAction: (event: MouseEvent<HTMLButtonElement>) => void;
     onDuplicateClickAction: (event: MouseEvent<HTMLButtonElement>) => void;
     onSelectEventTypeAction: (key: string) => void;
+    isFirst: boolean;
+    isLast: boolean;
+    canReorder: boolean;
+    onMoveAction: (planId: string, direction: MoveDirection) => void;
 }) {
     const t = useTranslations('AdminPage');
     const locale = useLocale();
@@ -75,6 +85,16 @@ export function PlanRow({
             </td>
             <td className="px-2.5 py-2">
                 <PlanSharedGroupChip plan={plan} allPlans={allPlans} eventTypes={eventTypes} onSelectEventTypeAction={onSelectEventTypeAction} />
+            </td>
+            <td className="px-2.5 py-2">
+                <AdminOrderArrows
+                    id={plan.id}
+                    name={plan.name}
+                    isFirst={isFirst}
+                    isLast={isLast}
+                    disabled={!canReorder}
+                    onMoveAction={onMoveAction}
+                />
             </td>
             <td className="px-2.5 py-2 text-right">
                 <div className="flex items-center justify-end gap-0.5">

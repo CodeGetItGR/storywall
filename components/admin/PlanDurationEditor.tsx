@@ -46,7 +46,7 @@ export function PlanDurationEditor({
             </p>
 
             {/* Fields */}
-            <div className="mt-3 grid grid-cols-3 gap-3">
+            <div className="mt-3 grid grid-cols-2 gap-3">
                 {!option && (
                     <AdminField label={t('plans.durations.months')} required hint={t('plans.durations.monthsHint')}>
                         <input
@@ -71,17 +71,6 @@ export function PlanDurationEditor({
                         value={draft.price}
                         onChange={onChangeAction}
                         autoFocus={Boolean(option)}
-                        className={adminInputClass('font-mono')}
-                    />
-                </AdminField>
-                <AdminField label={t('plans.durations.sortOrder')} required>
-                    <input
-                        data-field="sortOrder"
-                        type="number"
-                        min={0}
-                        step={1}
-                        value={draft.sortOrder}
-                        onChange={onChangeAction}
                         className={adminInputClass('font-mono')}
                     />
                 </AdminField>

@@ -11,6 +11,7 @@ import { PlanModuleGrid } from '@/components/admin/plans/PlanModuleGrid';
 import { PlanStatusFilter } from '@/components/admin/plans/PlanStatusFilter';
 import { useEventTypePlansPane } from '@/hooks/useEventTypePlansPane';
 import type { PlansSectionState } from '@/hooks/usePlansSection';
+import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { PlatformEventTypeResponseDto } from '@/lib/api/types';
 
 export function EventTypePlansPane({ eventType, section }: { eventType: PlatformEventTypeResponseDto; section: PlansSectionState }) {
@@ -34,6 +35,9 @@ export function EventTypePlansPane({ eventType, section }: { eventType: Platform
                 <div className="flex flex-wrap items-center gap-3 border-b border-border p-3">
                     <PlanStatusFilter value={section.statusFilter} counts={section.statusCounts} onChangeAction={section.setStatusFilter} />
                 </div>
+                {section.moveError && (
+                    <p className="px-4 pt-3 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(section.moveError)}`)}</p>
+                )}
                 <EventTypePlansTable
                     plans={section.visiblePlans}
                     allPlans={section.allPlans}
@@ -41,6 +45,8 @@ export function EventTypePlansPane({ eventType, section }: { eventType: Platform
                     onEditClickAction={pane.handleEditClick}
                     onDuplicateClickAction={pane.handleDuplicateClick}
                     onSelectEventTypeAction={section.selectEventType}
+                    canReorder={section.canReorder}
+                    onMoveAction={section.movePlan}
                 />
             </section>
 

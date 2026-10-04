@@ -31,6 +31,7 @@ import type {
     PlatformEventTypeResponseDto,
     PlatformModuleResponseDto,
 } from '@/lib/api/types';
+import { nextSortOrder } from '@/lib/sortOrder';
 
 const BILLING_PERIODS: BillingPeriod[] = ['ONE_TIME'];
 
@@ -353,7 +354,6 @@ function PlanCreateNewForm({
     const [visibility, setVisibility] = useState<Visibility>('LIVE');
     const [isGiftable, setIsGiftable] = useState(true);
     const [createdPlanId, setCreatedPlanId] = useState<string | null>(null);
-    const nextSortOrder = useMemo(() => Math.max(-1, ...plans.map((plan) => plan.sortOrder)) + 1, [plans]);
     const assignments = usePlanCreateAssignments(eventTypes, modules, initialEventTypeKey);
     const durations = usePlanCreateDurations();
     const isEvent = scope === 'EVENT';
@@ -406,7 +406,7 @@ function PlanCreateNewForm({
             scope,
             name: String(formData.get('name') ?? '').trim(),
             description: emptyToNull(formData.get('description')),
-            sortOrder: Number(formData.get('sortOrder') ?? 0),
+            sortOrder: nextSortOrder(plans),
             isDefault: checked(formData, 'isDefault'),
             isAssignable: flags.isAssignable,
             isPublic: flags.isPublic,
@@ -483,7 +483,7 @@ function PlanCreateNewForm({
                         <AdminField label={t('fields.name')} required className="col-span-2">
                             <input required name="name" maxLength={100} value={name} onChange={handleNameChange} className={adminInputClass()} />
                         </AdminField>
-                        <AdminField label={t('fields.code')} required hint={t('fields.codeHint')}>
+                        <AdminField label={t('fields.code')} required hint={t('fields.codeHint')} className="col-span-2">
                             <input
                                 required
                                 name="code"
@@ -494,17 +494,6 @@ function PlanCreateNewForm({
                                 onChange={handleCodeChange}
                                 spellCheck={false}
                                 className={adminInputClass('font-mono')}
-                            />
-                        </AdminField>
-                        <AdminField label={t('fields.sort')} required>
-                            <input
-                                required
-                                name="sortOrder"
-                                type="number"
-                                min={0}
-                                value={nextSortOrder}
-                                readOnly
-                                className={adminInputClass('max-w-24')}
                             />
                         </AdminField>
                         <AdminField label={t('fields.description')} optional className="col-span-2">

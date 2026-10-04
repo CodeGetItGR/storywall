@@ -27,6 +27,8 @@ export function DesktopNavRail() {
     const { user: authUser } = useAuth();
     const { expanded, handleMouseEnter, handleMouseLeave, togglePinned } = useDesktopAccountSidebar();
     const activeEvent = useActiveEvent();
+    // Events and profile need a real session; in the demo they would dead-end on the login page.
+    const isDemoRoute = pathname?.startsWith('/demo') ?? false;
     const isDraft = activeEvent?.status === 'DRAFT';
     const showEventActions = Boolean(activeEvent) && isEventRoute(pathname);
     const accountName = [authUser?.firstName, authUser?.lastName].filter(Boolean).join(' ') || authUser?.firstName || tAccount('fallbackName');
@@ -63,21 +65,32 @@ export function DesktopNavRail() {
             {/* Identity */}
             <div className={cn('border-white/18 transition-[padding,border-color]', expanded ? 'border-b pb-6' : 'border-b-0 pb-0')}>
                 <div className={cn('flex items-center', expanded ? 'gap-4' : 'justify-center')}>
-                    <Link href={routes.profile} aria-label={tAccount('editProfile')} className="group relative shrink-0 rounded-full">
+                    {isDemoRoute ? (
                         <Avatar
                             src={authUser?.profilePictureUrl}
                             initials={getInitials(accountName)}
                             color="rgba(255, 255, 255, 0.14)"
                             size={expanded ? 'xl' : 'sm'}
                             alt={accountName}
-                            className={cn('ring-2 ring-white/40 transition-shadow duration-700 ease-out')}
+                            className="shrink-0 ring-2 ring-white/40 transition-shadow duration-700 ease-out"
                         />
-                        {expanded && (
-                            <span className="shadow-soft absolute right-0 bottom-0 flex h-6 w-6 items-center justify-center rounded-full bg-white text-primary ring-2 ring-primary transition-transform group-hover:scale-105 group-focus-visible:scale-105">
-                                <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
-                            </span>
-                        )}
-                    </Link>
+                    ) : (
+                        <Link href={routes.profile} aria-label={tAccount('editProfile')} className="group relative shrink-0 rounded-full">
+                            <Avatar
+                                src={authUser?.profilePictureUrl}
+                                initials={getInitials(accountName)}
+                                color="rgba(255, 255, 255, 0.14)"
+                                size={expanded ? 'xl' : 'sm'}
+                                alt={accountName}
+                                className={cn('ring-2 ring-white/40 transition-shadow duration-700 ease-out')}
+                            />
+                            {expanded && (
+                                <span className="shadow-soft absolute right-0 bottom-0 flex h-6 w-6 items-center justify-center rounded-full bg-white text-primary ring-2 ring-primary transition-transform group-hover:scale-105 group-focus-visible:scale-105">
+                                    <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                                </span>
+                            )}
+                        </Link>
+                    )}
                     <div className={cn('min-w-0 transition-opacity', expanded ? 'opacity-100' : 'sr-only opacity-0')}>
                         <p className="truncate text-lg font-bold">{accountName}</p>
                         {authUser?.email && <p className="truncate text-sm text-white/70">{authUser.email}</p>}
@@ -97,7 +110,15 @@ export function DesktopNavRail() {
                     <DesktopAccountNavLink href={homeHref} icon={HomeIcon} label={t('items.home')} active={homeActive} expanded={expanded} />
                 )}
 
-                <DesktopAccountNavLink href={routes.home} icon={CalendarDays} label={tAccount('events')} active={eventsActive} expanded={expanded} />
+                {!isDemoRoute && (
+                    <DesktopAccountNavLink
+                        href={routes.home}
+                        icon={CalendarDays}
+                        label={tAccount('events')}
+                        active={eventsActive}
+                        expanded={expanded}
+                    />
+                )}
             </div>
 
             {/* Footer */}

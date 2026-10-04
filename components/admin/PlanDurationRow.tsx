@@ -4,17 +4,27 @@ import { Pencil } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { MouseEventHandler } from 'react';
 
+import { AdminOrderArrows } from '@/components/admin/AdminOrderArrows';
 import type { CoverageOptionResponseDto } from '@/lib/api/types';
 import { formatOptionalMoney } from '@/lib/billing';
+import type { MoveDirection } from '@/lib/sortOrder';
 import { cn } from '@/lib/utils';
 
 export function PlanDurationRow({
     option,
     currency,
+    isFirst,
+    isLast,
+    canReorder,
+    onMoveAction,
     onEditAction,
 }: {
     option: CoverageOptionResponseDto;
     currency: string | null;
+    isFirst: boolean;
+    isLast: boolean;
+    canReorder: boolean;
+    onMoveAction: (optionId: string, direction: MoveDirection) => void;
     onEditAction: MouseEventHandler<HTMLButtonElement>;
 }) {
     const t = useTranslations('AdminPage');
@@ -40,13 +50,30 @@ export function PlanDurationRow({
                 {option.active ? t('plans.durations.live') : t('plans.durations.retired')}
             </span>
 
+            {/* Order */}
+            {option.active && (
+                <div className="ml-auto">
+                    <AdminOrderArrows
+                        id={option.id}
+                        name={monthsLabel}
+                        isFirst={isFirst}
+                        isLast={isLast}
+                        disabled={!canReorder}
+                        onMoveAction={onMoveAction}
+                    />
+                </div>
+            )}
+
             {/* Edit */}
             <button
                 type="button"
                 data-option-id={option.id}
                 onClick={onEditAction}
                 aria-label={t('plans.durations.edit', { duration: monthsLabel })}
-                className="ml-auto inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-canvas hover:text-ink"
+                className={cn(
+                    'inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-canvas hover:text-ink',
+                    !option.active && 'ml-auto',
+                )}
             >
                 <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
             </button>

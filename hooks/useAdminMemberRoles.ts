@@ -4,13 +4,15 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
 import { invalidatePublicConfig } from '@/hooks/useAppConfig';
+import { useSortOrderMove } from '@/hooks/useSortOrderMove';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { MemberRoleCatalogDto, MemberRoleCatalogPatchDto, MemberRoleCatalogRequestDto } from '@/lib/api/types';
-import type { SortOrderUpdate } from '@/lib/memberRoles';
 
 // Admin role catalog (member-roles-fe-integration.md §9). Every write also
 // refreshes /api/config, which carries the catalog to plan cards and labels.
+
+const roleIdOf = (role: MemberRoleCatalogDto) => role.id;
 
 export const adminMemberRoleKeys = {
     all: ['admin', 'member-roles'] as const,
@@ -59,16 +61,11 @@ export function useSetMemberRoleRetired() {
     });
 }
 
-// One move is two PATCHes (more after a renumber), sent in order. The list
-// refetches either way, so a half-applied move shows as it really is.
-export function useMoveMemberRole() {
-    const refresh = useRefreshMemberRoles();
-    return useMutation({
-        mutationFn: async (updates: SortOrderUpdate[]) => {
-            for (const update of updates) {
-                await api.patch<MemberRoleCatalogDto>(endpoints.admin.memberRoles.byId(update.id), { sortOrder: update.sortOrder });
-            }
-        },
-        onSettled: refresh,
+export function useMoveMemberRole(roles: MemberRoleCatalogDto[]) {
+    return useSortOrderMove({
+        items: roles,
+        idOf: roleIdOf,
+        patch: ({ id, sortOrder }) => api.patch<MemberRoleCatalogDto>(endpoints.admin.memberRoles.byId(id), { sortOrder }),
+        refresh: useRefreshMemberRoles(),
     });
 }

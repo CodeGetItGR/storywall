@@ -47,9 +47,6 @@ export function PlanEditorDetailsSection({
                 <AdminField label={t('fields.description')} optional className="col-span-2">
                     <input name="description" defaultValue={plan.description ?? ''} className={adminInputClass()} />
                 </AdminField>
-                <AdminField label={t('fields.sort')} optional>
-                    <input name="sortOrder" type="number" min={0} defaultValue={plan.sortOrder} className={adminInputClass('max-w-24')} />
-                </AdminField>
             </div>
 
             {/* Read-only identifiers */}

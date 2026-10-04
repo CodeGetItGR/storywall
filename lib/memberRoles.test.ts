@@ -20,11 +20,9 @@ import {
     isValidRoleKey,
     memberHasRole,
     memberRoleLabel,
-    nextSortOrder,
     normalizeRoleKeyInput,
     optionLabel,
     OTHER_CHOICE,
-    planRoleMove,
     roleErrorKind,
     sortRoles,
     validateRoleDraft,
@@ -159,12 +157,10 @@ describe('buildPatchPayload', () => {
     });
 });
 
-describe('sortRoles and nextSortOrder', () => {
-    it('sorts by sortOrder then key, and puts new roles last', () => {
+describe('sortRoles', () => {
+    it('sorts by sortOrder then key', () => {
         const roles = [makeRole({ id: 'b', roleKey: 'B', sortOrder: 1 }), makeRole({ id: 'a', roleKey: 'A', sortOrder: 1 }), makeRole({ id: 'c', sortOrder: 0 })];
         expect(sortRoles(roles).map((role) => role.id)).toEqual(['c', 'a', 'b']);
-        expect(nextSortOrder(roles)).toBe(2);
-        expect(nextSortOrder([])).toBe(0);
     });
 });
 
@@ -179,34 +175,6 @@ describe('filterRoles', () => {
     it('matches either label or the key, ignoring case', () => {
         expect(filterRoles(roles, 'κουμπ', 'ALL', 'en').map((role) => role.id)).toEqual(['r1']);
         expect(filterRoles(roles, 'old', 'ALL', 'en').map((role) => role.id)).toEqual(['r2']);
-    });
-});
-
-describe('planRoleMove', () => {
-    const roles = [makeRole({ id: 'a', sortOrder: 0 }), makeRole({ id: 'b', sortOrder: 5 }), makeRole({ id: 'c', sortOrder: 9 })];
-
-    it('swaps sortOrder with the neighbour', () => {
-        expect(planRoleMove(roles, 'b', 'up')).toEqual([
-            { id: 'a', sortOrder: 5 },
-            { id: 'b', sortOrder: 0 },
-        ]);
-    });
-
-    it('does nothing at the ends', () => {
-        expect(planRoleMove(roles, 'a', 'up')).toEqual([]);
-        expect(planRoleMove(roles, 'c', 'down')).toEqual([]);
-    });
-
-    it('renumbers first when two roles share a sortOrder', () => {
-        const tied = [
-            makeRole({ id: 'a', roleKey: 'A', sortOrder: 0 }),
-            makeRole({ id: 'b', roleKey: 'B', sortOrder: 0 }),
-            makeRole({ id: 'c', roleKey: 'C', sortOrder: 0 }),
-        ];
-        expect(planRoleMove(tied, 'c', 'up')).toEqual([
-            { id: 'b', sortOrder: 2 },
-            { id: 'c', sortOrder: 1 },
-        ]);
     });
 });
 

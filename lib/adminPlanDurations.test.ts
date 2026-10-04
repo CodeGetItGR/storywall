@@ -44,10 +44,10 @@ describe('admin plan durations', () => {
         expect(sorted.map(({ id }) => id)).toEqual(['first-shorter', 'first', 'second', 'retired']);
     });
 
-    it('puts a new duration after the existing ones and needs its length', () => {
-        const draft = newDurationDraft([option({ sortOrder: 4 })]);
+    it('needs a new duration length', () => {
+        const draft = newDurationDraft();
 
-        expect(draft).toEqual({ optionId: null, months: '', price: '', sortOrder: '5' });
+        expect(draft).toEqual({ optionId: null, months: '', price: '' });
         expect(isDurationDraftValid({ ...draft, price: '49' })).toBe(false);
         expect(isDurationDraftValid({ ...draft, months: '6', price: '49' })).toBe(true);
     });
@@ -58,6 +58,5 @@ describe('admin plan durations', () => {
 
         expect(durationPatchFromDraft(existing, draft)).toEqual({});
         expect(durationPatchFromDraft(existing, { ...draft, price: '59' })).toEqual({ priceAmountMinor: 5_900 });
-        expect(durationPatchFromDraft(existing, { ...draft, sortOrder: '2' })).toEqual({ sortOrder: 2 });
     });
 });

@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { PresignedVideo } from '@/components/common/PresignedVideo';
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 import { useImageZoomPan } from '@/hooks/useImageZoomPan';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import type { MediaResponseDto } from '@/lib/api/types';
@@ -52,6 +53,7 @@ export function GalleryViewer({
 }: GalleryViewerProps) {
     const t = useTranslations('GalleryPage');
     const { requestClose } = useOverlayHistory(media !== null, onClose);
+    useBodyScrollLock(media !== null);
 
     const [dragX, setDragX] = useState(0);
     const [dragTransitionEnabled, setDragTransitionEnabled] = useState(false);
