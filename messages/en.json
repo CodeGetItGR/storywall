@@ -386,18 +386,6 @@
             "hostBody": "Guests cannot post until the event is activated. Finish setup and publish from the host dashboard.",
             "guestBody": "The host is still setting up this event. Posting will open once it is published.",
             "action": "Open dashboard"
-        },
-        "FROZEN": {
-            "title": "This event is read-only",
-            "hostBody": "Coverage has ended. Start a subscription to unlock new posts, stories, and uploads.",
-            "guestBody": "The event is still available to view, but new posts and uploads are paused.",
-            "action": "Manage billing"
-        },
-        "PURGED": {
-            "title": "Media retention has ended",
-            "hostBody": "Stored media may have been permanently deleted. Renewing can reactivate the event, but deleted files cannot be restored.",
-            "guestBody": "The event is available in a limited state because its media retention period has ended.",
-            "action": "Manage billing"
         }
     },
     "RsvpPrompt": {
@@ -552,7 +540,6 @@
         "fallbackTitle": "You're invited",
         "defaultHeroImageAlt": "Event cover photo",
         "mediaUploadEyebrow": "Share your photos",
-        "frozenNotice": "This event is currently read-only. You can still join and view the wall, but new uploads are paused.",
         "anonymousUpload": {
             "nameLabel": "Your name",
             "namePlaceholder": "How should we credit your photos?",
@@ -781,18 +768,6 @@
             "title": "You have a new update"
         },
         "types": {
-            "BILLING_EXPIRING": {
-                "title": "Your event coverage is ending soon",
-                "body": "{days} days left on your {plan} plan. Renew to keep the photos online."
-            },
-            "BILLING_PAST_DUE": {
-                "title": "Your event coverage has lapsed",
-                "body": "Overdue by {days} days. The event becomes read-only in {daysUntilFreeze} days."
-            },
-            "BILLING_PURGE_WARNING": {
-                "title": "The media on this event will be deleted",
-                "body": "{days} days left before the photos are permanently removed. This cannot be undone."
-            },
             "WITHDRAWAL_REFUNDED": {
                 "title": "Your withdrawal was processed",
                 "body": "The event has been taken offline and the refund was issued."
@@ -1035,12 +1010,9 @@
         },
         "title": "Host Dashboard",
         "backToTools": "Back",
-        "hostView": "Host View",
         "status": {
             "DRAFT": "Draft",
-            "ACTIVE": "Live",
-            "FROZEN": "Frozen",
-            "PURGED": "Purged"
+            "ACTIVE": "Live"
         },
         "openDashboard": "Open dashboard",
         "rsvpOverview": "RSVP overview",
@@ -1549,26 +1521,10 @@
             "CANCELLED": "Cancelled"
         },
         "summary": {
-            "DRAFT": "Not published yet. You'll pay to activate once the event dates are set.",
-            "ACTIVE_UNLIMITED": "Paid and active.",
-            "FROZEN": "Coverage ended on {date}. The event is read-only until you renew.",
-            "PURGED": "Storage window passed. Renewing reactivates the event, but deleted media can't be restored."
+            "DRAFT": "Not published yet. You'll pay to activate once the event dates are set."
         },
         "facts": {
             "totalPaid": "Total paid"
-        },
-        "timeline": {
-            "title": "Coverage timeline",
-            "unlimited": "Unlimited coverage",
-            "paidThrough": {
-                "label": "Paid through"
-            },
-            "freezesAt": {
-                "label": "Freezes"
-            },
-            "purgesAt": {
-                "label": "Purges"
-            }
         },
         "subscription": {
             "title": "Subscription",
@@ -4075,29 +4031,10 @@
             "orderIdInvalid": "That is not a valid order ID. It should look like 3fa85f64-5717-4562-b3fc-2c963f66afa6."
         },
         "lifecycle": {
-            "title": "Event lifecycle",
-            "subtitle": "Freeze and purge both act on the event named below. Enter it once, then choose the action.",
             "resolvedEvent": "Acting on: {title}",
             "idSourceHint": "Copy the event ID from a refund request, or ask the host for the link to their event — the console has no event search.",
             "idInvalid": "That is not a valid event ID. It should look like 3fa85f64-5717-4562-b3fc-2c963f66afa6.",
-            "purgeUnverified": "This ID did not come from a console row, so nothing here confirms which event it is. Check it before purging.",
-            "freezeTitle": "Freeze event",
-            "freezeSubtitle": "Makes the event read-only. Guests can still view it; nobody can post.",
-            "eventIdField": "Event ID",
-            "freeze": "Freeze",
-            "freezeSuccess": "Event {eventId} is now frozen.",
-            "purgeTitle": "Purge event media",
-            "purgeWarning": "This permanently deletes every file stored for the event. It cannot be undone.",
-            "purgeConfirmField": "Type the event ID again to confirm",
-            "purgeConfirmPlaceholder": "Repeat the event ID",
-            "purge": "Purge media",
-            "purgeSuccess": "All media for {eventId} was deleted.",
-            "purgePartial": "Some files for {eventId} could not be deleted. The event stays frozen — run purge again.",
-            "eventIdPlaceholder": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            "freezeConfirmTitle": "Freeze {event}?",
-            "freezeConfirmBody": "The event will become read-only while lifecycle handling runs. Hosts and guests will not be able to make changes.",
-            "purgeConfirmTitle": "Permanently purge {event}?",
-            "purgeConfirmBody": "This deletes event data and files wherever possible. Do not continue unless the final checks are complete."
+            "eventIdPlaceholder": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
         }
     },
     "FeedQuickAccessBar": {
@@ -4238,7 +4175,6 @@
         "selectionDownloadFailed": "We couldn't download those files. Please try again.",
         "moduleUnavailable": "Gallery is not available on this event's current plan.",
         "deletedReadOnly": "Read-only. This event will be deleted on {date}.",
-        "eventFrozen": "This event is read-only. Existing photos and videos are still available, but new uploads are paused.",
         "uploadTitle": "Upload media",
         "uploadHint": "Choose up to {count} files at a time.",
         "chooseFiles": "Choose files",
@@ -4365,9 +4301,7 @@
         "paidServiceNotOnPlan": "That service is not available on this event's plan.",
         "addonLockedWhileActive": "That entitlement cannot be removed while the event is live.",
         "addonNotActive": "That add-on is not active.",
-        "eventFrozen": "This event is frozen. Renew it to make changes again.",
         "eventNotActive": "This event is not live yet.",
-        "eventPurgedNotRenewable": "This event's media has already been purged, so it cannot be renewed. Create a new event to continue.",
         "rateLimited": "Too many requests. Please wait a moment and try again.",
         "reportOwnContent": "You can't report your own content.",
         "rateLimitedWithWait": "Too many requests. Try again in {seconds}s.",
@@ -4445,7 +4379,6 @@
         "accountPlansDisabled": "Account plan changes are currently disabled.",
         "invitationExhausted": "This invite link is full. Ask the host to raise its guest limit or send a new link.",
         "internalError": "Something went wrong on our side. Please try again.",
-        "renewalAlreadyCovered": "This event is already paid up, so there's nothing to renew yet.",
         "eventScheduleLocked": "This event's schedule can no longer be changed.",
         "eventModuleCompositionLocked": "Event modules can't be added, removed, or toggled after the event is created.",
         "eventVisibilityNotSupported": "Public events aren't supported yet. This event must stay private.",
