@@ -42,6 +42,12 @@ describe('createMockDb', () => {
         expect(db.list('widgets')).toEqual([]);
     });
 
+    it('drops saved state from a different version', () => {
+        createMockDb('test:db', seed, { version: 'a' }).create('widgets', { id: 'w2', eventId: 'e1', label: 'added' });
+        expect(createMockDb('test:db', seed, { version: 'a' }).list('widgets').map((w) => w.id)).toEqual(['w1', 'w2']);
+        expect(createMockDb('test:db', seed, { version: 'b' }).list('widgets').map((w) => w.id)).toEqual(['w1']);
+    });
+
     it('falls back to the seed if localStorage holds corrupt JSON', () => {
         localStorage.setItem('test:db', '{not json');
         const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});

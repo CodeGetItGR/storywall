@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { type CSSProperties, useEffect, useState } from 'react';
 import { PiMusicNotesPlusDuotone } from 'react-icons/pi';
 
+import { usePinchZoomBox } from '@/hooks/usePinchZoomBox';
 import { cn } from '@/lib/utils';
 import { useComposer } from '@/providers/ComposerProvider';
 import { useMobileChrome } from '@/providers/MobileChromeProvider';
@@ -14,9 +15,12 @@ import { useMobileChrome } from '@/providers/MobileChromeProvider';
 // feed column's right edge (viewport width minus the 80px nav rail and 300px
 // right context panel, halved) instead of the raw viewport corner. z-46 sits
 // above the tab bar (z-40) and the compose backdrop (z-45) but under every
-// modal (z-50).
+// modal (z-50). The layer carries that z-index and keeps the button at its
+// normal size during a pinch zoom (see usePinchZoomBox).
+const composerFabLayerClassName = 'pointer-events-none fixed inset-0 z-46';
+
 const composerFabClassName =
-    'motion-fab group fixed right-4 bottom-20 z-46 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md will-change-transform max-lg:translate-y-[var(--composer-lower-y)] lg:right-[calc(50vw-210px)] lg:bottom-6';
+    'motion-fab group pointer-events-auto absolute right-4 bottom-20 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md will-change-transform max-lg:translate-y-[var(--composer-lower-y)] lg:right-[calc(50vw-210px)] lg:bottom-6';
 
 const composerMenuItemClassName =
     'motion-menu-item flex min-h-14 cursor-pointer items-center justify-between rounded-[1.45rem] border border-[#efc0dc] bg-background px-5 text-sm font-medium text-ink shadow-[0_6px_18px_rgba(36,31,26,0.08)] outline-none hover:-translate-y-0.5 hover:border-[#f0b47f]';
@@ -32,6 +36,7 @@ export function ComposerFab({ hidden }: ComposerFabProps) {
     const t = useTranslations('MobileTabBar');
     const { openPostComposer, openSongComposer, openStoryCapture, canComposePost, canComposeStory, canComposeSong } = useComposer();
     const { isMobileTabBarHidden } = useMobileChrome();
+    const pinchZoomBox = usePinchZoomBox();
 
     // The button stays mounted while hidden so it can animate out, so its menu
     // has to be closed explicitly rather than by unmounting.
@@ -57,28 +62,32 @@ export function ComposerFab({ hidden }: ComposerFabProps) {
     return (
         <Menu.Root open={menuOpen} onOpenChange={setMenuOpen}>
             {/* Compose */}
-            <Menu.Trigger
-                aria-label={t('compose')}
-                inert={hidden}
-                data-hidden={hidden || undefined}
-                className={cn(composerFabClassName, menuOpen && 'invisible')}
-                style={buttonStyle}
-            >
-                <span className="flex h-full w-full items-center justify-center transition-transform duration-150 ease-out group-hover:scale-105 group-active:scale-95">
-                    <Plus
-                        className="h-6 w-6 text-white transition-transform duration-200 ease-out group-data-popup-open:rotate-45"
-                        strokeWidth={2.5}
-                    />
-                </span>
-            </Menu.Trigger>
+            <div className={composerFabLayerClassName} style={pinchZoomBox}>
+                <Menu.Trigger
+                    aria-label={t('compose')}
+                    inert={hidden}
+                    data-hidden={hidden || undefined}
+                    className={cn(composerFabClassName, menuOpen && 'invisible')}
+                    style={buttonStyle}
+                >
+                    <span className="flex h-full w-full items-center justify-center transition-transform duration-150 ease-out group-hover:scale-105 group-active:scale-95">
+                        <Plus
+                            className="h-6 w-6 text-white transition-transform duration-200 ease-out group-data-popup-open:rotate-45"
+                            strokeWidth={2.5}
+                        />
+                    </span>
+                </Menu.Trigger>
+            </div>
             <Menu.Portal>
                 <Menu.Backdrop className="motion-menu-backdrop fixed inset-0 z-45 bg-black/10 opacity-100 backdrop-blur-[2px]" />
                 {/* Compose close control */}
-                <button type="button" aria-label={t('compose')} onClick={handleMenuClose} className={composerFabClassName} style={buttonStyle}>
-                    <span className="flex h-full w-full items-center justify-center transition-transform duration-150 ease-out group-hover:scale-105 group-active:scale-95">
-                        <Plus className="h-6 w-6 rotate-45 text-white" strokeWidth={2.5} />
-                    </span>
-                </button>
+                <div className={composerFabLayerClassName} style={pinchZoomBox}>
+                    <button type="button" aria-label={t('compose')} onClick={handleMenuClose} className={composerFabClassName} style={buttonStyle}>
+                        <span className="flex h-full w-full items-center justify-center transition-transform duration-150 ease-out group-hover:scale-105 group-active:scale-95">
+                            <Plus className="h-6 w-6 rotate-45 text-white" strokeWidth={2.5} />
+                        </span>
+                    </button>
+                </div>
                 <Menu.Positioner side="top" align="end" sideOffset={8} className="z-50">
                     <Menu.Popup className="motion-popover flex w-46 flex-col gap-2 border-0 bg-transparent p-0 shadow-none outline-none">
                         {canComposePost && (

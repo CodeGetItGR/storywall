@@ -37,8 +37,13 @@ export function isDeletedEventRouteAllowed(pathname: string, eventId: string): b
 // (writes are closed), but reads still work — so a deleted event's gallery
 // and wishbook are reachable when the host had the module enabled, not when
 // it is "available". See soft-deleted-events-fe-integration.md §2–3.
-export function readableModuleKeys(event: { deletedAt: string | null; modules: EventModuleResponseDto[] } | null | undefined): Set<ModuleKey> {
-    if (!event) return new Set();
+// A suspended StoryWall has no readable module at all (the backend refuses
+// every module read with 4015), and that includes a closed one, which is also
+// deleted and so would otherwise fall back to isEnabled.
+export function readableModuleKeys(
+    event: { deletedAt: string | null; suspended?: boolean; modules: EventModuleResponseDto[] } | null | undefined,
+): Set<ModuleKey> {
+    if (!event || event.suspended) return new Set();
     const deleted = isEventDeleted(event);
     return new Set(event.modules.filter((module) => (deleted ? module.isEnabled : module.isAvailable)).map((module) => module.moduleKey));
 }

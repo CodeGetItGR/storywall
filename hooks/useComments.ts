@@ -4,11 +4,12 @@ import { type InfiniteData, useInfiniteQuery, useMutation, useQueryClient } from
 import { useRef } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
-import { patchPostInCaches } from '@/hooks/usePosts';
+import { patchPostInCaches, refreshPostInCaches } from '@/hooks/usePosts';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
 import type { CommentRequestDto, CommentResponseDto, PostResponseDto } from '@/lib/api/types';
+import { withRecentComment } from '@/lib/comments';
 import { postKeys } from '@/lib/postQueries';
 import { LIVE_CONTENT_STALE_TIME } from '@/lib/queryClient';
 
@@ -79,18 +80,17 @@ export function useCreateComment(eventId: string) {
     return useMutation({
         mutationFn: (input: CommentRequestDto) => api.post<CommentResponseDto>(endpoints.comments.create, input),
         onSuccess: (comment) => {
-            // Bump the post's cached commentCount immediately instead of
-            // invalidating postKeys.detail — an invalidation there would
-            // prefix-match commentKeys.list (see the comment on that key
-            // above) and refetch the comment list right out from under the
-            // pending-comment merge.
-            const previousPost = queryClient.getQueryData<PostResponseDto>(postKeys.detail(comment.postId));
-            if (previousPost) {
-                patchPostInCaches(queryClient, eventId, comment.postId, { commentCount: previousPost.commentCount + 1 });
-            } else {
-                queryClient.invalidateQueries({ queryKey: postKeys.detail(comment.postId), exact: true });
-            }
-            queryClient.invalidateQueries({ queryKey: postKeys.list(eventId) });
+            // Patch the post's commentCount and preview in place instead of
+            // refetching. Invalidating postKeys.detail would prefix-match
+            // commentKeys.list (see the comment on that key above) and refetch
+            // the comment list right out from under the pending-comment merge;
+            // invalidating the feed would refetch every page loaded. The open
+            // post's copy is the base for both, so the two always agree.
+            const openPost = queryClient.getQueryData<PostResponseDto>(postKeys.detail(comment.postId));
+            patchPostInCaches(queryClient, eventId, comment.postId, (post) => {
+                const base = openPost ?? post;
+                return { commentCount: base.commentCount + 1, recentComments: withRecentComment(base.recentComments, comment) };
+            });
         },
     });
 }
@@ -101,15 +101,19 @@ export function useDeleteComment(eventId: string, postId: string) {
 
     return useMutation({
         mutationFn: (id: string) => api.del<void>(endpoints.comments.byId(id)),
-        onSuccess: () => {
-            const previousPost = queryClient.getQueryData<PostResponseDto>(postKeys.detail(postId));
-            if (previousPost) {
-                patchPostInCaches(queryClient, eventId, postId, { commentCount: Math.max(0, previousPost.commentCount - 1) });
-            } else {
-                queryClient.invalidateQueries({ queryKey: postKeys.detail(postId), exact: true });
-            }
+        onSuccess: (_data, id) => {
+            const openPost = queryClient.getQueryData<PostResponseDto>(postKeys.detail(postId));
+            patchPostInCaches(queryClient, eventId, postId, (post) => {
+                const base = openPost ?? post;
+                return {
+                    commentCount: Math.max(0, base.commentCount - 1),
+                    recentComments: base.recentComments.filter((recent) => recent.id !== id),
+                };
+            });
             queryClient.invalidateQueries({ queryKey: commentKeys.list(postId) });
-            queryClient.invalidateQueries({ queryKey: postKeys.list(eventId) });
+            // The comment that now moves into the preview is only on the
+            // server, so this one post is refetched, not the whole feed.
+            void refreshPostInCaches(queryClient, eventId, postId);
         },
     });
 }

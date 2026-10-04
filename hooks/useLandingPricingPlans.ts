@@ -35,6 +35,7 @@ export function useLandingPricingPlans(): { categories: LandingPricingCategories
                     moduleName,
                     copy,
                     plans.slice(0, index).flatMap((previousPlan) => previousPlan.moduleKeys),
+                    data.memberRolesByEventType,
                 ),
             )
             .filter((plan): plan is LandingPlan => plan !== null);

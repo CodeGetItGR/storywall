@@ -5,15 +5,17 @@ import { useTranslations } from 'next-intl';
 
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { Modal } from '@/components/ui/modal';
+import { useCreateEventFieldLabels } from '@/hooks/useCreateEventFieldLabels';
 import type { DraftStartDate } from '@/hooks/useDraftStartDate';
+import type { EventTypeConvention } from '@/lib/api/types';
 
 const inputClass =
     'w-full rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink outline-none transition focus:ring-2 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60';
 
 // Moves a draft's start date (its end moves with it).
-export function DraftStartDateModal({ date }: { date: DraftStartDate }) {
+export function DraftStartDateModal({ date, eventType }: { date: DraftStartDate; eventType: EventTypeConvention }) {
     const t = useTranslations('ManagePage.draft.startDate');
-    const tCreate = useTranslations('CreateEventPage');
+    const labels = useCreateEventFieldLabels(eventType);
 
     return (
         <Modal open={date.isOpen} onClose={date.close} size="sm" closeLabel={t('cancel')}>
@@ -23,7 +25,7 @@ export function DraftStartDateModal({ date }: { date: DraftStartDate }) {
                     <h2 className="pr-8 text-base font-semibold text-ink">{t('title')}</h2>
 
                     {/* Date */}
-                    <FormFieldLabel label={tCreate('fields.startAt')} required>
+                    <FormFieldLabel label={labels.startAt} required>
                         <input
                             type="datetime-local"
                             value={date.value}

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 
+import { dateTimeFormat } from '@/lib/format';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
@@ -14,7 +15,7 @@ export function RsvpPrompt({ eventId, deadline, className }: { eventId: string; 
     const router = useRouter();
 
     const formattedDeadline = deadline
-        ? new Intl.DateTimeFormat(locale, {
+        ? dateTimeFormat(locale, {
               day: 'numeric',
               month: 'long',
               year: 'numeric',

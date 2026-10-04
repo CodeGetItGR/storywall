@@ -13,8 +13,8 @@ export interface DemoSession {
     db: DemoDb;
 }
 
-// `snapshot` must already be rebased (see snapshotRebase.ts).
-export function createDemoSession(eventTypeKey: string, snapshot: DemoSnapshotDto, planTierName: string | null): DemoSession {
+// `snapshot` must already be rebased (see snapshotRebase.ts); `contentVersion` is taken before that.
+export function createDemoSession(eventTypeKey: string, snapshot: DemoSnapshotDto, contentVersion: string, planTierName: string | null): DemoSession {
     return {
         eventTypeKey,
         eventId: snapshot.event.id,
@@ -22,6 +22,6 @@ export function createDemoSession(eventTypeKey: string, snapshot: DemoSnapshotDt
         viewerMemberId: snapshot.viewerMemberId,
         usage: snapshot.usage,
         planTierName: planTierName ?? snapshot.usage.planTier,
-        db: createDemoDb(eventTypeKey, snapshot),
+        db: createDemoDb(eventTypeKey, snapshot, contentVersion),
     };
 }

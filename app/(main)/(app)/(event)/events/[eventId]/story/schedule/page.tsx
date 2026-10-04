@@ -1,12 +1,11 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
-import { headers } from 'next/headers';
 
 import { eventSessionKeys } from '@/hooks/useEventSessions';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
 import { serverGet, serverModuleReadable } from '@/lib/api/serverFetch';
 import type { EventSessionResponseDto } from '@/lib/api/types';
-import { ACCESS_TOKEN_HEADER } from '@/lib/auth/authCookies';
+import { prefetchAccessToken } from '@/lib/auth/serverEventContext';
 import { makeQueryClient } from '@/lib/queryClient';
 
 import ScheduleStoryPage from './PageClient';
@@ -17,7 +16,7 @@ type PageProps = { params: Promise<{ eventId: string }> };
 // here so it skips its loading state.
 export default async function Page({ params }: PageProps) {
     const { eventId } = await params;
-    const accessToken = (await headers()).get(ACCESS_TOKEN_HEADER);
+    const accessToken = await prefetchAccessToken();
     const queryClient = makeQueryClient();
 
     if (accessToken) {

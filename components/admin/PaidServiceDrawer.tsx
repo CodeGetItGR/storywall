@@ -11,7 +11,7 @@ import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { VisibilitySegmentedControl } from '@/components/admin/VisibilitySegmentedControl';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useAdminPlatformModules } from '@/hooks/useAdmin';
-import { appConfigKeys } from '@/hooks/useAppConfig';
+import { invalidatePublicConfig } from '@/hooks/useAppConfig';
 import { codeFromName, priceInputToMinor, priceMinorToInput, STORAGE_UNITS, storageBytesToInput, storageInputToBytes } from '@/lib/adminPlanForm';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import { type Visibility, visibilityFlags, visibilityOf } from '@/lib/adminVisibility';
@@ -65,7 +65,7 @@ export function PaidServiceDrawer({
     const tAdmin = useTranslations('AdminPage');
     const queryClient = useQueryClient();
     const invalidateAppConfig = () => {
-        queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+        invalidatePublicConfig(queryClient);
     };
 
     const { mutateAsync: createService, mutation: createMutation } = useCreate<PaidServiceResponseDto>({

@@ -40,7 +40,7 @@ export type DemoSchema = {
 export type DemoDb = MockDb<{ [K in keyof DemoSchema]: DemoSchema[K][number] }>;
 
 export function demoStorageKey(eventTypeKey: string): string {
-    return `storywall:demo:v2:${eventTypeKey}`;
+    return `storywall:demo:v3:${eventTypeKey}`;
 }
 
 // `snapshot` must already be rebased (see snapshotRebase.ts).
@@ -87,8 +87,33 @@ export function dropLocalMedia(state: DemoSchema): DemoSchema {
     };
 }
 
-export function createDemoDb(eventTypeKey: string, snapshot: DemoSnapshotDto): DemoDb {
-    return createMockDb<DemoSchema>(demoStorageKey(eventTypeKey), () => seedDemoSchema(snapshot), dropLocalMedia);
+// Presigned URLs and the build time change on every snapshot even when nothing else did.
+const VOLATILE_SNAPSHOT_KEYS = new Set(['snapshotAt', 'presignedUrlsValidUntil', 'mediaUrl', 'thumbnailUrl', 'avatarUrl']);
+
+// cyrb53: a short, stable hash, so the saved version stays small.
+function hashString(value: string): string {
+    let h1 = 0xdeadbeef;
+    let h2 = 0x41c6ce57;
+    for (let i = 0; i < value.length; i++) {
+        const ch = value.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+
+// Changes only when the demo's content does: another event, or an admin's edit. Must be taken
+// from the snapshot as received, before rebasing, which moves every timestamp to "now".
+export function demoContentVersion(snapshot: DemoSnapshotDto): string {
+    return hashString(JSON.stringify(snapshot, (key, value: unknown) => (VOLATILE_SNAPSHOT_KEYS.has(key) ? undefined : value)));
+}
+
+// `contentVersion` is demoContentVersion() of the snapshot as received. A visitor's saved demo
+// is kept only while it matches, so an admin's changes reach returning visitors too.
+export function createDemoDb(eventTypeKey: string, snapshot: DemoSnapshotDto, contentVersion: string): DemoDb {
+    return createMockDb<DemoSchema>(demoStorageKey(eventTypeKey), () => seedDemoSchema(snapshot), { version: contentVersion, hydrate: dropLocalMedia });
 }
 
 function withFreshUrls(media: MediaResponseDto, fresh: Map<string, MediaResponseDto>): MediaResponseDto {
@@ -139,5 +164,31 @@ export function swapMediaUrls(db: DemoDb, fresh: Pick<DemoSnapshotDto, 'media' |
     }
     for (const story of db.list('stories')) {
         if (hasStaleAvatar(story, avatars)) db.update('stories', story.id, (st) => withFreshAvatar(st, avatars));
+    }
+}
+
+const HOUR_MS = 3_600_000;
+// Every demo story is squeezed into this much of the recent past, so each stays live for at
+// least another 12 hours of the visit.
+const DEMO_STORY_WINDOW_MS = 12 * HOUR_MS;
+const STORY_LIFETIME_MS = 24 * HOUR_MS;
+
+// A demo is timeless, but stories expire a day after they're posted, and the tray hides expired
+// ones. Rebasing alone can't help: a story the admin posted more than a day before the snapshot
+// was already expired at snapshotAt, and a saved demo keeps the times it was first seeded with.
+// So on every load, if the oldest story is older than the window, every story's age is scaled
+// down to fit it, keeping their order, and each one expires a day after its new createdAt.
+export function keepStoriesLive(db: DemoDb, now: Date = new Date()): void {
+    const stories = db.list('stories');
+    const nowMs = now.getTime();
+    const ages = new Map(stories.map((s) => [s.id, Math.max(0, nowMs - Date.parse(s.createdAt))]));
+    const oldest = Math.max(0, ...ages.values());
+    const scale = oldest > DEMO_STORY_WINDOW_MS ? DEMO_STORY_WINDOW_MS / oldest : 1;
+
+    for (const story of stories) {
+        const createdAtMs = nowMs - Math.round((ages.get(story.id) ?? 0) * scale);
+        const createdAt = new Date(createdAtMs).toISOString();
+        if (scale === 1 && Date.parse(story.expiresAt) > nowMs) continue;
+        db.update('stories', story.id, (s) => ({ ...s, createdAt, expiresAt: new Date(createdAtMs + STORY_LIFETIME_MS).toISOString() }));
     }
 }

@@ -1,9 +1,10 @@
 'use client';
 
-import { type SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type SyntheticEvent, useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 
 import { useAppConfig, useDeleteStory, useEventStories, useMarkStoryViewed, useMediaItem, useStory } from '@/hooks';
 import { useContentAccess } from '@/hooks/useContentAccess';
+import { useCustomRoleReport } from '@/hooks/useCustomRoleReport';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import { ApiError } from '@/lib/api/client';
 import { isModuleNotAvailableError } from '@/lib/api/errors';
@@ -44,7 +45,9 @@ export interface StoryModalController {
     canManage: boolean;
     canDeleteStory: boolean;
     canReportStory: boolean;
+    canReportRole: boolean;
     reportOpen: boolean;
+    reportTarget: 'STORY' | 'ROLE' | null;
     isVideoStory: boolean;
     isDeleting: boolean;
     mediaError: boolean;
@@ -56,6 +59,7 @@ export interface StoryModalController {
     handleCloseDeleteConfirm: () => void;
     handleDelete: () => Promise<void>;
     handleReportRequest: () => void;
+    handleReportRoleRequest: () => void;
     handleCloseReport: () => void;
     handleMediaLoaded: () => void;
     handleMediaError: () => void;
@@ -75,7 +79,8 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
     const [mediaError, setMediaError] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [reportOpen, setReportOpen] = useState(false);
+    const [reportTarget, setReportTarget] = useState<'STORY' | 'ROLE' | null>(null);
+    const reportOpen = reportTarget !== null;
     // A video can finish in the instant before the dialog's pause lands; it then advances on close.
     const videoEndedUnderReportRef = useRef(false);
     // The order authors appear in when the viewer opens, frozen so that
@@ -111,7 +116,7 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
         setMediaError(false);
         setShowMenu(false);
         setShowDeleteConfirm(false);
-        setReportOpen(false);
+        setReportTarget(null);
         if (!open) {
             setActiveStoryId(null);
         } else if (storyId !== prevStoryState.storyId || open !== prevStoryState.open) {
@@ -134,6 +139,7 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
             isAuthor: Boolean(activeStory && activeMember && activeStory.authorMemberId === activeMember.id),
             targetTypeReportable: Boolean(appConfig?.reportTargetTypes?.includes('STORY')),
         });
+    const canReportRole = useCustomRoleReport(author);
     const canAdvanceStory = Boolean(activeStory && group && storyIndex >= 0);
 
     function goNext() {
@@ -233,11 +239,18 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
         if (!canReportStory) return;
         setShowMenu(false);
         videoEndedUnderReportRef.current = false;
-        setReportOpen(true);
+        setReportTarget('STORY');
+    }
+
+    function handleReportRoleRequest() {
+        if (!canReportRole) return;
+        setShowMenu(false);
+        videoEndedUnderReportRef.current = false;
+        setReportTarget('ROLE');
     }
 
     function handleCloseReport() {
-        setReportOpen(false);
+        setReportTarget(null);
         if (videoEndedUnderReportRef.current) {
             videoEndedUnderReportRef.current = false;
             goNext();
@@ -251,29 +264,36 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
         [requestClose],
     );
 
+    const { mutate: markStoryViewed } = markViewed;
     useEffect(() => {
         if (!open || !currentStoryId) return;
-        markViewed.mutate(currentStoryId);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentStoryId, open]);
+        markStoryViewed(currentStoryId);
+    }, [currentStoryId, markStoryViewed, open]);
 
+    // Timers read the latest story and group when they fire.
+    const completeTimer = useEffectEvent(() => {
+        handleTimerComplete();
+    });
+
+    // A photo story fills its bar over five seconds.
+    const isPhotoTimerRunning = open && Boolean(currentStoryId) && canAdvanceStory && canRunStoryTimer && !isVideoStory && !reportOpen;
     useEffect(() => {
-        if (!open || !currentStoryId || !canAdvanceStory || !canRunStoryTimer || isVideoStory || reportOpen) return;
+        if (!isPhotoTimerRunning) return;
 
         const interval = setInterval(() => {
-            setProgress((p) => {
-                if (p >= 100) {
-                    clearInterval(interval);
-                    handleTimerComplete();
-                    return 100;
-                }
-                return p + 2;
-            });
+            setProgress((p) => Math.min(100, p + 2));
         }, 100);
 
         return () => clearInterval(interval);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [canAdvanceStory, canRunStoryTimer, currentStoryId, isVideoStory, open, reportOpen]);
+    }, [currentStoryId, isPhotoTimerRunning]);
+
+    // Moves on one tick after the bar fills.
+    useEffect(() => {
+        if (!isPhotoTimerRunning || progress < 100) return;
+
+        const timeout = setTimeout(() => completeTimer(), 100);
+        return () => clearTimeout(timeout);
+    }, [isPhotoTimerRunning, progress]);
 
     useEffect(() => {
         if (!open) return;
@@ -302,9 +322,8 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
     useEffect(() => {
         if (!open || !mediaError) return;
 
-        const timeout = setTimeout(() => handleTimerComplete(), MEDIA_ERROR_DISPLAY_MS);
+        const timeout = setTimeout(() => completeTimer(), MEDIA_ERROR_DISPLAY_MS);
         return () => clearTimeout(timeout);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mediaError, open, reportOpen]);
 
     const storyNotFound = isStoryGone(storyError);
@@ -324,7 +343,9 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
         canManage,
         canDeleteStory,
         canReportStory,
+        canReportRole,
         reportOpen,
+        reportTarget,
         isVideoStory,
         isDeleting: deleteStory.isPending,
         mediaError,
@@ -336,6 +357,7 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
         handleCloseDeleteConfirm,
         handleDelete,
         handleReportRequest,
+        handleReportRoleRequest,
         handleCloseReport,
         handleMediaLoaded,
         handleMediaError,

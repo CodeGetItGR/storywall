@@ -9,6 +9,7 @@ import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useAppConfig, useDeleteComment } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useContentAccess } from '@/hooks/useContentAccess';
+import { useCustomRoleReport } from '@/hooks/useCustomRoleReport';
 import type { CommentResponseDto } from '@/lib/api/types';
 import { canDeleteContent, canReportContent } from '@/lib/contentPermissions';
 import { isEventWritable } from '@/lib/eventLifecycle';
@@ -31,6 +32,9 @@ export function CommentActionsMenu({ comment, wrapperClassName }: CommentActions
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
     const [deleteError, setDeleteError] = useState<string | null>(null);
     const [reportOpen, setReportOpen] = useState(false);
+    const [roleReportOpen, setRoleReportOpen] = useState(false);
+    const tRoles = useTranslations('MemberRoles');
+    const canReportRole = useCustomRoleReport(comment.author);
 
     const isMyComment = Boolean(activeMember?.id && comment.authorMemberId === activeMember.id);
     const canWrite = isEventWritable(activeEvent?.status);
@@ -42,7 +46,7 @@ export function CommentActionsMenu({ comment, wrapperClassName }: CommentActions
         targetTypeReportable: Boolean(appConfig?.reportTargetTypes?.includes('COMMENT')),
     });
 
-    if (!activeEvent || (!canDelete && !canReport)) return null;
+    if (!activeEvent || (!canDelete && !canReport && !canReportRole)) return null;
 
     function handleDeleteRequest() {
         setDeleteError(null);
@@ -59,6 +63,14 @@ export function CommentActionsMenu({ comment, wrapperClassName }: CommentActions
 
     function handleCloseReport() {
         setReportOpen(false);
+    }
+
+    function handleOpenRoleReport() {
+        setRoleReportOpen(true);
+    }
+
+    function handleCloseRoleReport() {
+        setRoleReportOpen(false);
     }
 
     async function handleConfirmDelete() {
@@ -83,6 +95,8 @@ export function CommentActionsMenu({ comment, wrapperClassName }: CommentActions
                         onDeleteAction={canDelete ? handleDeleteRequest : undefined}
                         onReportAction={canReport ? handleOpenReport : undefined}
                         reportLabel={canReport ? t('reportComment') : undefined}
+                        onReportRoleAction={canReportRole ? handleOpenRoleReport : undefined}
+                        reportRoleLabel={canReportRole ? tRoles('reportRole') : undefined}
                     />
                 </div>
             ) : (
@@ -94,6 +108,8 @@ export function CommentActionsMenu({ comment, wrapperClassName }: CommentActions
                     onDeleteAction={canDelete ? handleDeleteRequest : undefined}
                     onReportAction={canReport ? handleOpenReport : undefined}
                     reportLabel={canReport ? t('reportComment') : undefined}
+                    onReportRoleAction={canReportRole ? handleOpenRoleReport : undefined}
+                    reportRoleLabel={canReportRole ? tRoles('reportRole') : undefined}
                 />
             )}
 
@@ -123,6 +139,19 @@ export function CommentActionsMenu({ comment, wrapperClassName }: CommentActions
                     targetId={comment.id}
                     targetName={comment.author?.displayName ?? t('unknownAuthor')}
                     onCloseAction={handleCloseReport}
+                />
+            )}
+
+            {/* Report role */}
+            {roleReportOpen && comment.author && (
+                <ReportTargetModal
+                    open
+                    eventId={activeEvent.id}
+                    targetType="MEMBER"
+                    targetId={comment.author.memberId}
+                    targetName={comment.author.displayName}
+                    variant="role"
+                    onCloseAction={handleCloseRoleReport}
                 />
             )}
         </>

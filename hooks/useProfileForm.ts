@@ -57,6 +57,7 @@ export function useProfileForm() {
     const [passwordFieldErrors, setPasswordFieldErrors] = useState<PasswordFieldErrors>({});
     const [isSavingProfile, setIsSavingProfile] = useState(false);
     const [isSavingPassword, setIsSavingPassword] = useState(false);
+    const [isPasswordOpen, setIsPasswordOpen] = useState(false);
 
     const firstName = profileDirty.firstName ? profileDraft.firstName : sourceFirstName;
     const lastName = profileDirty.lastName ? profileDraft.lastName : sourceLastName;
@@ -89,6 +90,19 @@ export function useProfileForm() {
 
     function handleConfirmPasswordChange(event: ChangeEvent<HTMLInputElement>) {
         setConfirmPassword(event.target.value);
+    }
+
+    function openPasswordForm() {
+        setIsPasswordOpen(true);
+    }
+
+    function closePasswordForm() {
+        setIsPasswordOpen(false);
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setPasswordError(null);
+        setPasswordFieldErrors({});
     }
 
     async function handlePersonalInfoSubmit(event: SubmitEvent<HTMLFormElement>) {
@@ -162,6 +176,7 @@ export function useProfileForm() {
     return {
         accountName,
         canChangePassword,
+        closePasswordForm,
         confirmPassword,
         currentPassword,
         firstName,
@@ -174,10 +189,12 @@ export function useProfileForm() {
         handlePasswordSubmit,
         handlePersonalInfoSubmit,
         hasProfileChanges,
+        isPasswordOpen,
         isSavingPassword,
         isSavingProfile,
         lastName,
         newPassword,
+        openPasswordForm,
         passwordError,
         passwordFieldErrors,
         passwordMismatch,

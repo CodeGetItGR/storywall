@@ -10,8 +10,17 @@ vi.mock('next-intl', () => ({
 
 afterEach(cleanup);
 
-const allAllowed = { removeContent: true, removeMember: true, banFromEvent: true, suspendAccount: true };
-const noneAllowed = { removeContent: false, removeMember: false, banFromEvent: false, suspendAccount: false };
+const allAllowed = { removeContent: true, removeMember: true, banFromEvent: true, suspendAccount: true, suspendEvent: true };
+const noneAllowed = { removeContent: false, removeMember: false, banFromEvent: false, suspendAccount: false, suspendEvent: false };
+
+// The mock t returns the key, whatever the namespace: ground radios are named grounds.*, rule options rules.*.
+function fillStatement() {
+    fireEvent.click(screen.getByRole('radio', { name: 'grounds.GUIDELINES_BREACH' }));
+    fireEvent.change(screen.getByRole('combobox', { name: 'statement.rule' }), { target: { value: 'HARASSMENT' } });
+    fireEvent.change(screen.getByRole('textbox', { name: 'statement.explanation' }), {
+        target: { value: 'Insults aimed at one guest, twice.' },
+    });
+}
 
 describe('ModerationDecisionForm', () => {
     it('shows only the actions the server allows', () => {
@@ -64,6 +73,7 @@ describe('ModerationDecisionForm', () => {
         fireEvent.click(screen.getByRole('checkbox', { name: 'form.banFromEvent' }));
         fireEvent.click(screen.getByRole('checkbox', { name: 'form.removeMember' }));
         fireEvent.click(screen.getByRole('checkbox', { name: 'form.suspendAccount' }));
+        fillStatement();
         fireEvent.click(screen.getByRole('button', { name: 'form.review' }));
         fireEvent.click(screen.getByRole('button', { name: 'form.confirm' }));
         expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ removeMember: false, banFromEvent: false, suspendAccount: true }));
@@ -83,6 +93,7 @@ describe('ModerationDecisionForm', () => {
         );
         fireEvent.click(screen.getByRole('radio', { name: 'form.takeAction' }));
         fireEvent.click(screen.getByRole('checkbox', { name: 'form.removeContent' }));
+        fillStatement();
         fireEvent.click(screen.getByRole('button', { name: 'form.review' }));
 
         expect(screen.getByText('summary.removeContent')).toBeTruthy();
@@ -91,6 +102,29 @@ describe('ModerationDecisionForm', () => {
 
         fireEvent.click(screen.getByRole('button', { name: 'form.confirm' }));
         expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ outcome: 'ACTION_TAKEN', removeContent: true, removeMember: false }));
+    });
+
+    it('removes the custom role on a member case and sends the text it saw', () => {
+        const onSubmit = vi.fn();
+        render(
+            <ModerationDecisionForm
+                allowed={allAllowed}
+                contentPresent
+                activeReportCount={1}
+                isSubmitting={false}
+                error={null}
+                onSubmitAction={onSubmit}
+                isMemberCase
+                expectedContentText="Θεία"
+            />,
+        );
+        fireEvent.click(screen.getByRole('radio', { name: 'form.takeAction' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'form.removeCustomRole' }));
+        fillStatement();
+        fireEvent.click(screen.getByRole('button', { name: 'form.review' }));
+        expect(screen.getByText('summary.removeCustomRole')).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'form.confirm' }));
+        expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ removeContent: true, expectedContentText: 'Θεία' }));
     });
 
     it('goes back from the confirm step without submitting', () => {
@@ -158,6 +192,7 @@ describe('ModerationDecisionForm', () => {
         fireEvent.click(screen.getByRole('radio', { name: 'form.takeAction' }));
         fireEvent.click(screen.getByRole('checkbox', { name: 'form.removeContent' }));
         fireEvent.click(screen.getByRole('checkbox', { name: 'form.suspendAccount' }));
+        fillStatement();
         rerender(
             <ModerationDecisionForm
                 allowed={{ ...allAllowed, suspendAccount: false }}
@@ -188,6 +223,7 @@ describe('ModerationDecisionForm', () => {
         );
         fireEvent.click(screen.getByRole('radio', { name: 'form.takeAction' }));
         fireEvent.click(screen.getByRole('checkbox', { name: 'form.suspendAccount' }));
+        fillStatement();
         fireEvent.click(screen.getByRole('button', { name: 'form.review' }));
         expect(screen.getByRole('button', { name: 'form.confirm' })).toBeTruthy();
 
@@ -265,5 +301,162 @@ describe('ModerationDecisionForm', () => {
             />,
         );
         expect(screen.getByRole('alert').textContent).toBe('refused');
+    });
+
+    it('asks for a statement once an action is ticked, and only then', () => {
+        render(
+            <ModerationDecisionForm
+                allowed={allAllowed}
+                contentPresent
+                activeReportCount={2}
+                isSubmitting={false}
+                error={null}
+                onSubmitAction={vi.fn()}
+            />,
+        );
+        fireEvent.click(screen.getByRole('radio', { name: 'form.takeAction' }));
+        expect(screen.queryByRole('combobox', { name: 'statement.rule' })).toBeNull();
+        fireEvent.click(screen.getByRole('checkbox', { name: 'form.removeContent' }));
+        expect(screen.getByRole('combobox', { name: 'statement.rule' })).toBeTruthy();
+        expect((screen.getByRole('button', { name: 'form.review' }) as HTMLButtonElement).disabled).toBe(true);
+        fillStatement();
+        expect((screen.getByRole('button', { name: 'form.review' }) as HTMLButtonElement).disabled).toBe(false);
+    });
+
+    it('keeps Review disabled while the explanation is under 20 characters after trimming', () => {
+        render(
+            <ModerationDecisionForm
+                allowed={allAllowed}
+                contentPresent
+                activeReportCount={2}
+                isSubmitting={false}
+                error={null}
+                onSubmitAction={vi.fn()}
+            />,
+        );
+        fireEvent.click(screen.getByRole('radio', { name: 'form.takeAction' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'form.removeContent' }));
+        fillStatement();
+        fireEvent.change(screen.getByRole('textbox', { name: 'statement.explanation' }), { target: { value: `   ${'x'.repeat(19)}   ` } });
+        expect((screen.getByRole('button', { name: 'form.review' }) as HTMLButtonElement).disabled).toBe(true);
+        expect(screen.getByText('statement.explanationCount {"count":19,"min":20,"max":2000}')).toBeTruthy();
+    });
+
+    it('suspends the StoryWall with a statement and says the hosts are emailed', () => {
+        const onSubmit = vi.fn();
+        render(
+            <ModerationDecisionForm
+                allowed={allAllowed}
+                contentPresent
+                activeReportCount={1}
+                isSubmitting={false}
+                error={null}
+                onSubmitAction={onSubmit}
+            />,
+        );
+        fireEvent.click(screen.getByRole('radio', { name: 'form.takeAction' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'form.suspendEvent' }));
+        fillStatement();
+        fireEvent.click(screen.getByRole('button', { name: 'form.review' }));
+        expect(screen.getByText('summary.suspendEvent')).toBeTruthy();
+        expect(screen.getByText('summary.emailsHosts')).toBeTruthy();
+        expect(screen.queryByText('summary.emailsAuthor')).toBeNull();
+        fireEvent.click(screen.getByRole('button', { name: 'form.confirm' }));
+        expect(onSubmit).toHaveBeenCalledWith(
+            expect.objectContaining({
+                outcome: 'ACTION_TAKEN',
+                suspendEvent: true,
+                removeContent: false,
+                ground: 'GUIDELINES_BREACH',
+                rule: 'HARASSMENT',
+                explanation: 'Insults aimed at one guest, twice.',
+            }),
+        );
+    });
+
+    it('does not offer the suspension when the server does not allow it', () => {
+        render(
+            <ModerationDecisionForm
+                allowed={{ ...allAllowed, suspendEvent: false }}
+                contentPresent
+                activeReportCount={2}
+                isSubmitting={false}
+                error={null}
+                onSubmitAction={vi.fn()}
+            />,
+        );
+        fireEvent.click(screen.getByRole('radio', { name: 'form.takeAction' }));
+        expect(screen.queryByRole('checkbox', { name: 'form.suspendEvent' })).toBeNull();
+    });
+
+    it('sends a dismissal with no statement', () => {
+        const onSubmit = vi.fn();
+        render(
+            <ModerationDecisionForm
+                allowed={allAllowed}
+                contentPresent
+                activeReportCount={2}
+                isSubmitting={false}
+                error={null}
+                onSubmitAction={onSubmit}
+            />,
+        );
+        fireEvent.click(screen.getByRole('radio', { name: 'form.dismiss' }));
+        expect(screen.queryByRole('combobox', { name: 'statement.rule' })).toBeNull();
+        fireEvent.click(screen.getByRole('button', { name: 'form.review' }));
+        fireEvent.click(screen.getByRole('button', { name: 'form.confirm' }));
+        expect(onSubmit).toHaveBeenCalledWith({
+            outcome: 'DISMISSED',
+            removeContent: false,
+            removeMember: false,
+            banFromEvent: false,
+            suspendAccount: false,
+            suspendEvent: false,
+            ground: null,
+            rule: null,
+            explanation: null,
+            note: null,
+            expectedContentText: null,
+        });
+    });
+
+    it('reminds the admin to name the legal provision only for the illegal-content ground', () => {
+        render(
+            <ModerationDecisionForm
+                allowed={allAllowed}
+                contentPresent
+                activeReportCount={2}
+                isSubmitting={false}
+                error={null}
+                onSubmitAction={vi.fn()}
+            />,
+        );
+        fireEvent.click(screen.getByRole('radio', { name: 'form.takeAction' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'form.removeContent' }));
+        fillStatement();
+        expect(screen.queryByText('statement.illegalHint')).toBeNull();
+        fireEvent.click(screen.getByRole('radio', { name: 'grounds.ILLEGAL_CONTENT' }));
+        expect(screen.getByText('statement.illegalHint')).toBeTruthy();
+    });
+
+    it('marks the explanation invalid once it is started but outside 20-2000 characters', () => {
+        render(
+            <ModerationDecisionForm
+                allowed={allAllowed}
+                contentPresent
+                activeReportCount={2}
+                isSubmitting={false}
+                error={null}
+                onSubmitAction={vi.fn()}
+            />,
+        );
+        fireEvent.click(screen.getByRole('radio', { name: 'form.takeAction' }));
+        fireEvent.click(screen.getByRole('checkbox', { name: 'form.removeContent' }));
+        const box = screen.getByRole('textbox', { name: 'statement.explanation' });
+        expect(box.getAttribute('aria-invalid')).toBe('false');
+        fireEvent.change(box, { target: { value: 'too short' } });
+        expect(box.getAttribute('aria-invalid')).toBe('true');
+        fireEvent.change(box, { target: { value: 'Insults aimed at one guest, twice.' } });
+        expect(box.getAttribute('aria-invalid')).toBe('false');
     });
 });

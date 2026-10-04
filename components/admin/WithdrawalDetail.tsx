@@ -1,7 +1,8 @@
 'use client';
 
-import { ChevronDown, Layers3, PackageMinus } from 'lucide-react';
+import { ChevronDown, Layers3, PackageMinus, ShoppingBag } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import type { MouseEvent } from 'react';
 
 import { AdminIdentifier } from '@/components/admin/AdminIdentifier';
 import { WithdrawalDecision } from '@/components/admin/WithdrawalDecision';
@@ -10,11 +11,20 @@ import { WithdrawalGuidanceBlock } from '@/components/admin/WithdrawalGuidanceBl
 import { WithdrawalSignals } from '@/components/admin/WithdrawalSignals';
 import { BackButton } from '@/components/ui/BackButton';
 import { useWithdrawalDetail } from '@/hooks/useWithdrawalDetail';
+import { formatOrdersHash } from '@/lib/adminOrders';
 import { WITHDRAWALS_HASH_ROOT } from '@/lib/adminWithdrawalsRouting';
 import type { WithdrawalAdminDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
-export function WithdrawalDetail({ row, onReleasedAction }: { row: WithdrawalAdminDto; onReleasedAction: () => void }) {
+export function WithdrawalDetail({
+    row,
+    onBackAction,
+    onReleasedAction,
+}: {
+    row: WithdrawalAdminDto;
+    onBackAction: (event: MouseEvent<HTMLAnchorElement>) => void;
+    onReleasedAction: () => void;
+}) {
     const t = useTranslations('AdminPage');
     const { request } = row;
     const { held, amount, submittedAt, decidedAt, guidance, sendToAssignments, sendToPaidServices } = useWithdrawalDetail(row);
@@ -23,7 +33,7 @@ export function WithdrawalDetail({ row, onReleasedAction }: { row: WithdrawalAdm
         <div className="max-w-4xl space-y-8">
             {/* Header */}
             <header className="space-y-3">
-                <BackButton href={WITHDRAWALS_HASH_ROOT} label={t('withdrawals.title')} />
+                <BackButton href={WITHDRAWALS_HASH_ROOT} label={t('withdrawals.title')} onClick={onBackAction} />
                 <div className="flex flex-wrap items-center gap-3">
                     <h1 className="font-mono text-2xl font-extrabold tracking-tight text-ink tabular-nums sm:text-3xl">
                         {amount ?? t('withdrawals.noAmount')}
@@ -59,6 +69,12 @@ export function WithdrawalDetail({ row, onReleasedAction }: { row: WithdrawalAdm
                     <AdminIdentifier label={t('identifiers.requestId')} value={request.id} />
                 </div>
                 <div className="flex flex-wrap gap-3 text-xs font-semibold text-ink-muted">
+                    {request.orderId && (
+                        <a href={formatOrdersHash(request.orderId)} className="inline-flex items-center gap-1.5 hover:text-ink hover:underline">
+                            <ShoppingBag className="h-3.5 w-3.5" />
+                            {t('withdrawals.openOrder')}
+                        </a>
+                    )}
                     <button type="button" onClick={sendToAssignments} className="inline-flex items-center gap-1.5 hover:text-ink hover:underline">
                         <Layers3 className="h-3.5 w-3.5" />
                         {t('withdrawals.sendToAssignments')}

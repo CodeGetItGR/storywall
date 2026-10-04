@@ -47,6 +47,11 @@ describe('readableModuleKeys', () => {
         expect([...readableModuleKeys({ deletedAt: '2026-09-22T10:00:00Z', modules })]).toEqual(['gallery', 'rsvp']);
     });
 
+    it('is empty for a suspended event, closed or not', () => {
+        expect(readableModuleKeys({ deletedAt: null, suspended: true, modules }).size).toBe(0);
+        expect(readableModuleKeys({ deletedAt: '2026-10-02T10:00:00Z', suspended: true, modules }).size).toBe(0);
+    });
+
     it('is empty without an event', () => {
         expect(readableModuleKeys(null).size).toBe(0);
     });

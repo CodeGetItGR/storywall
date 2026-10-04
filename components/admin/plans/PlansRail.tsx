@@ -20,6 +20,7 @@ export function PlansRail({
     onSelectEventTypeAction,
     onOpenSettingsModulesAction,
     onOpenSettingsEventTypesAction,
+    onOpenSettingsMemberRolesAction,
 }: {
     view: PlansView;
     selectedEventTypeKey: string | null;
@@ -29,6 +30,7 @@ export function PlansRail({
     onSelectEventTypeAction: (key: string) => void;
     onOpenSettingsModulesAction: () => void;
     onOpenSettingsEventTypesAction: () => void;
+    onOpenSettingsMemberRolesAction: () => void;
 }) {
     const t = useTranslations('AdminPage.plans');
     const localizedText = useLocalizedText();
@@ -69,6 +71,9 @@ export function PlansRail({
                     </AdminRailItem>
                     <AdminRailItem active={view.view === 'settingsEventTypes'} onClick={onOpenSettingsEventTypesAction}>
                         {t('rail.eventTypesSettings')}
+                    </AdminRailItem>
+                    <AdminRailItem active={view.view === 'settingsMemberRoles'} onClick={onOpenSettingsMemberRolesAction}>
+                        {t('rail.memberRoles')}
                     </AdminRailItem>
                 </div>
             </nav>

@@ -1,6 +1,6 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { DEMO_ACT_AS_HEADER, demoActAsHeaders, setDemoActAsMember } from '@/lib/demo/demoActAs';
+import { DEMO_ACT_AS_HEADER, demoActAsHeaders, getDemoActAs, setDemoActAsMember, subscribeDemoActAs } from '@/lib/demo/demoActAs';
 
 describe('demoActAsHeaders', () => {
     afterEach(() => setDemoActAsMember(null));
@@ -47,5 +47,23 @@ describe('demoActAsHeaders', () => {
         expect(demoActAsHeaders('POST', '/api/event-members')).toEqual({});
         expect(demoActAsHeaders('PATCH', '/api/events/evt')).toEqual({});
         expect(demoActAsHeaders('POST', '/api/events/evt/modules')).toEqual({});
+    });
+});
+
+describe('subscribeDemoActAs', () => {
+    afterEach(() => setDemoActAsMember(null));
+
+    it('notifies on a change of persona only', () => {
+        const listener = vi.fn();
+        const unsubscribe = subscribeDemoActAs(listener);
+
+        setDemoActAsMember({ eventId: 'e1', memberId: 'm1' });
+        setDemoActAsMember({ eventId: 'e1', memberId: 'm1' });
+        expect(getDemoActAs()).toEqual({ eventId: 'e1', memberId: 'm1' });
+        setDemoActAsMember(null);
+        unsubscribe();
+        setDemoActAsMember({ eventId: 'e1', memberId: 'm2' });
+
+        expect(listener).toHaveBeenCalledTimes(2);
     });
 });

@@ -48,7 +48,7 @@ export async function serverGetOrNull<T>(path: string, accessToken: string): Pro
 
 // Whether the event has the module, mirroring useModuleReadable, so a prefetch
 // skips a read the backend would answer with 409 / 5012. The event detail
-// fetch is deduped with the (event) layout's own within one render.
+// fetch is deduped with events/[eventId]/layout.tsx's own within one render.
 export async function serverModuleReadable(eventId: string, moduleKey: ModuleKeyConvention, accessToken: string): Promise<boolean> {
     const event = await serverGet<EventDetailResponseDto>(endpoints.events.byId(eventId), accessToken);
     return readableModuleKeys(event).has(moduleKey);

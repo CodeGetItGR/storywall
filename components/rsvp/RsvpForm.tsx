@@ -30,6 +30,7 @@ interface RsvpFormProps {
     submitDisabled: boolean;
     submitError: string | null;
     submitLabel: string;
+    heading?: string;
 }
 
 export function RsvpForm({
@@ -50,6 +51,7 @@ export function RsvpForm({
     submitDisabled,
     submitError,
     submitLabel,
+    heading,
 }: RsvpFormProps) {
     const t = useTranslations('RSVPPage');
     const tCommon = useTranslations('Common');
@@ -57,7 +59,7 @@ export function RsvpForm({
 
     return (
         <div className="mb-6 p-3">
-            <h2 className="mb-4 text-base font-bold text-ink">{t('yourRsvp')}</h2>
+            <h2 className="mb-4 text-base font-bold text-ink">{heading ?? t('yourRsvp')}</h2>
             <form onSubmit={onSubmit} className="flex flex-col gap-4">
                 <div>
                     <p className="mb-2 text-xs font-semibold tracking-wide text-ink-muted uppercase">

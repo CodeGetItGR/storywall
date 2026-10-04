@@ -3,8 +3,9 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { AuthSessionDto } from '@/lib/api/types';
-import { clearSession } from '@/lib/auth/tokenStore';
+import type { AuthSessionDto, UserResponseDto } from '@/lib/api/types';
+import type { SessionHandoff } from '@/lib/auth/sessionHandoff';
+import { clearSession, getAccessToken } from '@/lib/auth/tokenStore';
 import { AuthProvider, useAuth } from '@/providers/AuthProvider';
 
 const mocks = vi.hoisted(() => ({
@@ -35,14 +36,30 @@ const session: AuthSessionDto = {
     createdAt: '2026-09-01T00:00:00Z',
 };
 
-async function renderAuth() {
+function renderAuthHook(handoff?: SessionHandoff) {
     const queryClient = new QueryClient();
+    // Read on every render, so a test can change it between renders.
+    const props = { handoff };
     const wrapper = ({ children }: { children: ReactNode }) => (
         <QueryClientProvider client={queryClient}>
-            <AuthProvider>{children}</AuthProvider>
+            <AuthProvider handoff={props.handoff}>{children}</AuthProvider>
         </QueryClientProvider>
     );
-    const hook = renderHook(() => useAuth(), { wrapper });
+    // Every render's bootstrapping flag, first render included.
+    const bootstrapping: boolean[] = [];
+    const hook = renderHook(
+        () => {
+            const auth = useAuth();
+            bootstrapping.push(auth.isBootstrapping);
+            return auth;
+        },
+        { wrapper },
+    );
+    return { ...hook, bootstrapping, props };
+}
+
+async function renderAuth(handoff?: SessionHandoff) {
+    const hook = renderAuthHook(handoff);
     await waitFor(() => expect(hook.result.current.isBootstrapping).toBe(false));
     return hook;
 }
@@ -76,7 +93,15 @@ describe('AuthProvider', () => {
     it("drops the router's cached pages on register", async () => {
         const { result } = await renderAuth();
 
-        await act(() => result.current.register({ email: 'host@example.test', password: 'test-password', firstName: 'Host', lastName: 'Test', acceptedGuidelinesVersion: '2026-09-30' }));
+        await act(() =>
+            result.current.register({
+                email: 'host@example.test',
+                password: 'test-password',
+                firstName: 'Host',
+                lastName: 'Test',
+                acceptedGuidelinesVersion: '2026-09-30',
+            }),
+        );
 
         expect(mocks.refresh).toHaveBeenCalledOnce();
     });
@@ -95,5 +120,38 @@ describe('AuthProvider', () => {
         await act(() => result.current.logout());
 
         expect(mocks.refresh).toHaveBeenCalledOnce();
+    });
+
+    describe('with the session the server handed over', () => {
+        const handoff: SessionHandoff = {
+            session: { ...session, accessToken: 'server-token' },
+            expiresInMs: 10 * 60_000,
+            profile: {} as UserResponseDto,
+        };
+
+        it('starts signed in without asking for a new token', async () => {
+            const { result } = await renderAuth(handoff);
+
+            expect(result.current.user?.userId).toBe('user-1');
+            expect(getAccessToken()).toBe('server-token');
+            expect(mocks.authClient.session).not.toHaveBeenCalled();
+            expect(mocks.refresh).not.toHaveBeenCalled();
+        });
+
+        it('renders the first time as bootstrapping, like the server did', async () => {
+            const { bootstrapping } = await renderAuth(handoff);
+
+            expect(bootstrapping[0]).toBe(true);
+        });
+
+        it('ignores a handoff that arrives after the first render', async () => {
+            const { result, rerender, props } = await renderAuth();
+
+            props.handoff = handoff;
+            rerender();
+
+            expect(result.current.isBootstrapping).toBe(false);
+            expect(getAccessToken()).toBe('token-1');
+        });
     });
 });

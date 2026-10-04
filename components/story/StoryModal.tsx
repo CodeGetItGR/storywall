@@ -5,11 +5,13 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { AuthorRoleChip } from '@/components/memberRoles/AuthorRoleChip';
 import { ReportTargetModal } from '@/components/reports';
 import { StoryCaptionBar, StoryHeader, StoryProgressBar } from '@/components/story';
 import { StoryVideo } from '@/components/story/StoryVideo';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useStoryModal } from '@/hooks/useStoryModal';
+import { formatTime } from '@/lib/datetime';
 
 type StoryModalProps = {
     open: boolean;
@@ -35,7 +37,9 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
         canManage,
         canDeleteStory,
         canReportStory,
+        canReportRole,
         reportOpen,
+        reportTarget,
         isVideoStory,
         isDeleting,
         mediaError,
@@ -47,6 +51,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
         handleCloseDeleteConfirm,
         handleDelete,
         handleReportRequest,
+        handleReportRoleRequest,
         handleCloseReport,
         handleMediaLoaded,
         handleMediaError,
@@ -68,10 +73,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
         );
     }
 
-    const timeStr = new Date(activeStory.createdAt).toLocaleTimeString(locale, {
-        hour: 'numeric',
-        minute: '2-digit',
-    });
+    const timeStr = formatTime(locale, activeStory.createdAt);
     const authorName = author?.displayName ?? t('unknownAuthor');
     const hasMedia = Boolean(media) && !mediaError;
     return (
@@ -90,15 +92,18 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                             authorName={authorName}
                             authorId={activeStory.authorMemberId ?? activeStory.id}
                             avatarUrl={author?.avatarUrl}
+                            roleChip={<AuthorRoleChip author={author} tone="onDark" interactive={false} />}
                             timeStr={timeStr}
                             canManage={canManage}
                             canDelete={canDeleteStory}
                             canReport={canReportStory}
+                            canReportRole={canReportRole}
                             showMenu={showMenu}
                             onToggleMenu={handleToggleMenu}
                             onClose={handleCloseStory}
                             onDeleteRequest={handleDeleteRequest}
                             onReportRequest={handleReportRequest}
+                            onReportRoleRequest={handleReportRoleRequest}
                         />
 
                         {/* Media */}
@@ -183,7 +188,21 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                         eventId={activeStory.eventId}
                         targetType="STORY"
                         targetId={activeStory.id}
-                        open={reportOpen}
+                        open={reportTarget === 'STORY'}
+                        layer="overStory"
+                        onCloseAction={handleCloseReport}
+                    />
+                )}
+
+                {/* Report role */}
+                {canReportRole && author && (
+                    <ReportTargetModal
+                        eventId={activeStory.eventId}
+                        targetType="MEMBER"
+                        targetId={author.memberId}
+                        targetName={authorName}
+                        variant="role"
+                        open={reportTarget === 'ROLE'}
                         layer="overStory"
                         onCloseAction={handleCloseReport}
                     />

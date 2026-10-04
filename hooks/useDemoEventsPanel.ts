@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { type MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useAdminPlatformEventTypes } from '@/hooks/useAdmin';
 import { useAdminDemoEvents } from '@/hooks/useAdminDemoEvents';
-import { parseDemoEventsHash } from '@/lib/adminDemoEventsRouting';
+import { DEMO_EVENTS_HASH_ROOT, parseDemoEventsHash } from '@/lib/adminDemoEventsRouting';
 import type { DemoEventResponseDto, PlatformEventTypeResponseDto } from '@/lib/api/types';
+import { pushPageEntry } from '@/lib/overlayHistory';
 
 export type DemoEventRow = {
     eventType: PlatformEventTypeResponseDto;
@@ -30,6 +31,13 @@ export function useDemoEventsPanel() {
         return () => window.removeEventListener('hashchange', syncFromHash);
     }, []);
 
+    // Next's Link sets the hash with pushState, which fires no hashchange.
+    const backToList = useCallback((event: MouseEvent<HTMLAnchorElement>) => {
+        event.preventDefault();
+        pushPageEntry(DEMO_EVENTS_HASH_ROOT);
+        window.dispatchEvent(new HashChangeEvent('hashchange'));
+    }, []);
+
     const rows = useMemo<DemoEventRow[]>(() => {
         const demos = new Map((demoEventsQuery.data ?? []).map((demo) => [demo.eventTypeKey, demo]));
         return [...(eventTypesQuery.data ?? [])]
@@ -43,5 +51,6 @@ export function useDemoEventsPanel() {
         selectedRow: rows.find((row) => row.eventType.eventTypeKey === selectedKey) ?? null,
         isLoading: eventTypesQuery.isLoading || demoEventsQuery.isLoading,
         error: eventTypesQuery.error ?? demoEventsQuery.error,
+        backToList,
     };
 }

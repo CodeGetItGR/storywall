@@ -9,6 +9,7 @@ import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 type CreateEventFieldLabels = {
     title: string;
     startAt: string;
+    locationName: string;
 };
 
 export function useCreateEventFieldLabels(eventType: EventTypeConvention): CreateEventFieldLabels {
@@ -17,10 +18,13 @@ export function useCreateEventFieldLabels(eventType: EventTypeConvention): Creat
     return useMemo(() => {
         const catalogEntry = getCreateEventCatalogEntry(eventType);
         const startAtLabelKey = catalogEntry?.startAtLabelKey ?? `fieldLabels.${eventType}.startAt`;
+        const typeLabel = (field: string, fallbackKey: string) =>
+            t.has(`fieldLabels.${eventType}.${field}`) ? t(`fieldLabels.${eventType}.${field}`) : t(fallbackKey);
 
         return {
-            title: t.has(`fieldLabels.${eventType}.title`) ? t(`fieldLabels.${eventType}.title`) : t('fields.title'),
+            title: typeLabel('title', 'fields.title'),
             startAt: t.has(startAtLabelKey) ? t(startAtLabelKey) : t('fields.startAt'),
+            locationName: typeLabel('locationName', 'fields.locationName'),
         };
     }, [eventType, t]);
 }

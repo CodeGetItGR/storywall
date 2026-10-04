@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getVisualViewportMetrics } from '@/lib/visualViewport';
+import { getPinchZoomBox, getVisualViewportMetrics } from '@/lib/visualViewport';
 
 describe('getVisualViewportMetrics', () => {
     it('keeps the bottom inset at zero when no typing control is focused', () => {
@@ -23,5 +23,19 @@ describe('getVisualViewportMetrics', () => {
 
     it('ignores small browser chrome changes', () => {
         expect(getVisualViewportMetrics(800, { height: 750, offsetTop: 0 }, true).bottomInset).toBe(0);
+    });
+});
+
+describe('getPinchZoomBox', () => {
+    it('is null when the page is not zoomed', () => {
+        expect(getPinchZoomBox({ scale: 1, width: 390, height: 800, offsetLeft: 0, offsetTop: 0 })).toBeNull();
+    });
+
+    it('covers the visible area at its unzoomed size', () => {
+        expect(getPinchZoomBox({ scale: 2, width: 195, height: 400, offsetLeft: 50, offsetTop: 120 })).toEqual({
+            width: 390,
+            height: 800,
+            transform: 'translate(50px, 120px) scale(0.5)',
+        });
     });
 });

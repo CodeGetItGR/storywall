@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { adminKeys } from '@/hooks/useAdmin';
-import { appConfigKeys } from '@/hooks/useAppConfig';
+import { invalidatePublicConfig } from '@/hooks/useAppConfig';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { EventTypeModulePatchDto, EventTypeModuleResponseDto } from '@/lib/api/types';
@@ -25,7 +25,7 @@ export function useUpdateEventTypeModule() {
             api.patch<EventTypeModuleResponseDto>(endpoints.admin.eventTypes.module(eventTypeKey, moduleKey), input),
         onSuccess: (_result, { eventTypeKey }) => {
             queryClient.invalidateQueries({ queryKey: adminKeys.eventTypeModules(eventTypeKey) });
-            queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+            invalidatePublicConfig(queryClient);
         },
     });
 }

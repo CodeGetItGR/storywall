@@ -9,25 +9,26 @@ import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { HomeNextEventCountdown } from '@/components/home/HomeNextEventCountdown';
 import type { EventGridItem } from '@/hooks/useEventGridItems';
 import { useRecentEventItems } from '@/hooks/useEventGridItems';
+import { useMemberRoleLabel } from '@/hooks/useMemberRoleLabel';
 import { formatEventListDate } from '@/lib/datetime';
 import { isEventDeleted } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
+
+const NO_ROLE = { relationshipRole: null, customRelationshipRole: null };
 
 export function HomeNextEventCard({ items }: { items: EventGridItem[] }) {
     const t = useTranslations('HomePage');
     const tEvents = useTranslations('EventsPage');
     const locale = useLocale();
     // A deleted event is never "next" — it has no feed to open.
-    const liveItems = useMemo(() => items.filter((item) => !isEventDeleted(item.event)), [items]);
+    const liveItems = useMemo(() => items.filter((item) => !isEventDeleted(item.event) && !item.event?.suspended), [items]);
     const [next] = useRecentEventItems(liveItems, 1);
+    const memberRole = useMemberRoleLabel(next?.member ?? NO_ROLE, next?.event?.eventType);
 
     if (!next || next.isLoading || !next.event) return null;
 
     const { event, member } = next;
-    const roleLabel =
-        member.customRelationshipRole ??
-        member.relationshipRole ??
-        (member.role === 'HOST' ? tEvents('roleFallback.host') : tEvents('roleFallback.attendee'));
+    const roleLabel = memberRole ?? (member.role === 'HOST' ? tEvents('roleFallback.host') : tEvents('roleFallback.attendee'));
     const dateLabel = formatEventListDate(event.schedule.startAt, locale, tEvents('dateAt')) ?? roleLabel;
 
     return (

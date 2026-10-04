@@ -18,12 +18,15 @@ interface StoryHeaderProps {
     canManage: boolean;
     canDelete: boolean;
     canReport: boolean;
+    canReportRole: boolean;
     showMenu: boolean;
     leadingVisual?: ReactNode;
+    roleChip?: ReactNode;
     onToggleMenu: () => void;
     onClose: () => void;
     onDeleteRequest: () => void;
     onReportRequest: () => void;
+    onReportRoleRequest: () => void;
     showAvatar?: boolean;
 }
 
@@ -36,12 +39,15 @@ export function StoryHeader({
     canManage,
     canDelete,
     canReport,
+    canReportRole,
     showMenu,
     leadingVisual,
+    roleChip,
     onToggleMenu,
     onClose,
     onDeleteRequest,
     onReportRequest,
+    onReportRoleRequest,
     showAvatar,
 }: StoryHeaderProps) {
     const t = useTranslations('StoryPage');
@@ -50,8 +56,8 @@ export function StoryHeader({
 
     return (
         <>
-            <div className="absolute top-6 right-0 left-0 z-20 flex items-center justify-between px-4 pt-2">
-                <div className="flex items-center gap-2.5">
+            <div className="absolute top-6 right-0 left-0 z-20 flex items-center justify-between gap-2 px-4 pt-2">
+                <div className="flex min-w-0 flex-1 items-center gap-2.5">
                     {showAvatar &&
                         (leadingVisual ?? (
                             <Avatar
@@ -63,13 +69,16 @@ export function StoryHeader({
                                 className={cn('border-2', isLight ? 'border-black/10' : 'border-white/60')}
                             />
                         ))}
-                    <div>
-                        <p className={cn('text-sm leading-tight font-semibold', isLight ? 'text-ink' : 'text-white')}>{authorName}</p>
+                    <div className="min-w-0">
+                        <p className={cn('flex items-center gap-1.5 text-sm leading-tight font-semibold', isLight ? 'text-ink' : 'text-white')}>
+                            <span className="truncate">{authorName}</span>
+                            {roleChip}
+                        </p>
                         <p className={cn('text-xs leading-tight', isLight ? 'text-ink-muted' : 'text-white/60')}>{timeStr}</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    {(canManage || canReport) && (
+                <div className="flex shrink-0 items-center gap-2">
+                    {(canManage || canReport || canReportRole) && (
                         <button
                             onClick={onToggleMenu}
                             aria-label={t('moreOptions')}
@@ -95,7 +104,7 @@ export function StoryHeader({
                 </div>
             </div>
 
-            {showMenu && ((canManage && canDelete) || canReport) && (
+            {showMenu && ((canManage && canDelete) || canReport || canReportRole) && (
                 <div className="motion-popover-enter absolute top-16 right-4 z-30 flex flex-col overflow-hidden rounded-xl bg-background shadow-lg">
                     {canReport && (
                         <button
@@ -104,6 +113,15 @@ export function StoryHeader({
                             className="motion-menu-item px-4 py-2.5 text-left text-sm whitespace-nowrap text-ink hover:bg-surface-muted disabled:opacity-50"
                         >
                             {t('reportStory')}
+                        </button>
+                    )}
+                    {canReportRole && (
+                        <button
+                            type="button"
+                            onClick={onReportRoleRequest}
+                            className="motion-menu-item px-4 py-2.5 text-left text-sm whitespace-nowrap text-ink hover:bg-surface-muted disabled:opacity-50"
+                        >
+                            {t('reportRole')}
                         </button>
                     )}
                     {canManage && canDelete && (

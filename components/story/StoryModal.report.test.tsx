@@ -10,6 +10,7 @@ let canReportStory = true;
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
 vi.mock('@/hooks/useMemberAvatarUrl', () => ({ useMemberAvatarUrl: () => () => null }));
 vi.mock('@/components/common/ProtectedImage', () => ({ ProtectedImage: () => null }));
+vi.mock('@/components/memberRoles/AuthorRoleChip', () => ({ AuthorRoleChip: () => null }));
 vi.mock('@/components/ui/ConfirmActionModal', () => ({
     ConfirmActionModal: ({ layer }: { layer?: string }) => <div data-testid="confirm-modal" data-layer={layer} />,
 }));
@@ -58,7 +59,9 @@ vi.mock('@/hooks/useStoryModal', () => ({
             canManage: false,
             canDeleteStory: false,
             canReportStory,
+            canReportRole: false,
             reportOpen: true,
+            reportTarget: 'STORY',
             isVideoStory: false,
             isDeleting: false,
             mediaError: false,
@@ -70,6 +73,7 @@ vi.mock('@/hooks/useStoryModal', () => ({
             handleCloseDeleteConfirm: noop,
             handleDelete: noop,
             handleReportRequest: noop,
+            handleReportRoleRequest: noop,
             handleCloseReport: noop,
             handleMediaLoaded: noop,
             handleMediaError: noop,

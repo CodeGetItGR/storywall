@@ -22,6 +22,7 @@ import type { WishbookEntryResponseDto } from '@/lib/api/types';
 import { canReportContent } from '@/lib/contentPermissions';
 import { formatDate } from '@/lib/datetime';
 import { isEventDeleted } from '@/lib/eventLifecycle';
+import { dateTimeFormat } from '@/lib/format';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider';
 
@@ -225,9 +226,7 @@ export default function WishbookPage() {
                                 <div className="min-w-0">
                                     <p className="text-sm font-semibold text-ink">{entry.guestName}</p>
                                     <time className="text-xs text-ink-faint">
-                                        {new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(
-                                            new Date(entry.createdAt),
-                                        )}
+                                        {dateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(entry.createdAt))}
                                     </time>
                                 </div>
                                 <div className="flex shrink-0 items-center gap-1">

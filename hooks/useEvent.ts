@@ -1,8 +1,10 @@
-import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueries, useQuery, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
 
 import { usePresignedUrlRefreshMs } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
+import { billingKeys, extensionOptionsKeys, quoteKeys, upgradeOptionsKeys } from '@/hooks/useBilling';
 import { myEventsKeys } from '@/hooks/useMyEvents';
+import { usageKeys } from '@/hooks/useUsage';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { EventDetailResponseDto, EventPatchDto, EventRequestDto, EventResponseDto } from '@/lib/api/types';
@@ -28,12 +30,24 @@ export function useEvent(eventId: string | null) {
     });
 }
 
+export interface EventDetailState {
+    data: EventDetailResponseDto | undefined;
+    isLoading: boolean;
+}
+
+// Keeps only what the event grids read. TanStack keeps the combined array's
+// identity until one of these values changes, so memos built on it hold
+// between renders (a plain useQueries result is a new array every render).
+function combineEventDetails(results: UseQueryResult<EventDetailResponseDto>[]): EventDetailState[] {
+    return results.map(({ data, isLoading }) => ({ data, isLoading }));
+}
+
 // Batch variant of useEvent, for screens (like the profile/home page) that
 // need title/cover for every event a user belongs to at once. Shares the
 // same eventKeys.detail cache entries as useEvent, so a membership whose
 // feed the user already visited is served from cache. Order-preserving:
 // result[i] corresponds to eventIds[i].
-export function useEventDetails(eventIds: string[]) {
+export function useEventDetails(eventIds: string[]): EventDetailState[] {
     const { isAuthenticated } = useAuth();
     const staleTime = usePresignedUrlRefreshMs();
 
@@ -44,6 +58,7 @@ export function useEventDetails(eventIds: string[]) {
             enabled: isAuthenticated,
             staleTime,
         })),
+        combine: combineEventDetails,
     });
 }
 
@@ -70,9 +85,19 @@ export function useUpdateEvent(eventId: string | null) {
     return useMutation({
         mutationFn: (input: EventPatchDto) => api.patch<EventResponseDto>(endpoints.events.byId(eventId!), input),
         onSuccess: (event) => {
-            queryClient.invalidateQueries({ queryKey: eventKeys.detail(event.id) });
+            // Only what the editable fields feed. The event itself is exact, so
+            // its posts, media and members don't refetch. Dates and the draft's
+            // duration move the billing, quote and coverage options; the RSVP
+            // reports print the title and date.
+            queryClient.invalidateQueries({ queryKey: eventKeys.detail(event.id), exact: true });
             queryClient.invalidateQueries({ queryKey: myEventsKeys.all });
-            queryClient.invalidateQueries({ queryKey: ['events', event.id, 'billing'] });
+            queryClient.invalidateQueries({ queryKey: billingKeys.event(event.id) });
+            queryClient.invalidateQueries({ queryKey: quoteKeys.all(event.id) });
+            queryClient.invalidateQueries({ queryKey: usageKeys.event(event.id) });
+            queryClient.invalidateQueries({ queryKey: upgradeOptionsKeys.event(event.id) });
+            queryClient.invalidateQueries({ queryKey: extensionOptionsKeys.event(event.id) });
+            // rsvpKeys.report's prefix, spelled out because useRsvps imports this file.
+            queryClient.invalidateQueries({ queryKey: ['events', event.id, 'rsvps', 'report'] });
         },
     });
 }

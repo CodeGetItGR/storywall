@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { appConfigKeys } from '@/hooks/useAppConfig';
+import { appConfigKeys, invalidatePublicConfig } from '@/hooks/useAppConfig';
 import { notificationKeys } from '@/hooks/useNotifications';
 import { usageKeys } from '@/hooks/useUsage';
 import { api } from '@/lib/api/client';
@@ -364,7 +364,7 @@ export function useCreatePlanTier() {
         mutationFn: (input: PlanTierRequestDto) => api.post<PlanTierResponseDto>(endpoints.admin.planTiers.list, input),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: adminKeys.all });
-            queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+            invalidatePublicConfig(queryClient);
         },
     });
 }
@@ -381,7 +381,7 @@ export function useDuplicatePlanTier() {
             api.post<PlanTierResponseDto[]>(endpoints.admin.planTiers.duplicate(planId), { clones }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: adminKeys.planTiers('EVENT', true) });
-            queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+            invalidatePublicConfig(queryClient);
         },
     });
 }
@@ -408,7 +408,7 @@ export function useSetPlanModules() {
             queryClient.setQueryData<PlanTierResponseDto[]>(plansKey, (plans = []) =>
                 plans.map((plan) => (plan.id === updatedPlan.id ? updatedPlan : plan)),
             );
-            queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+            invalidatePublicConfig(queryClient);
         },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: plansKey });
@@ -424,7 +424,7 @@ export function useUpdatePlanTier() {
             api.patch<PlanTierResponseDto>(endpoints.admin.planTiers.byId(id), input),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: adminKeys.all });
-            queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+            invalidatePublicConfig(queryClient);
         },
     });
 }
@@ -436,7 +436,7 @@ export function useDeletePlanTier() {
         mutationFn: (id: string) => api.del<void>(endpoints.admin.planTiers.byId(id)),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: adminKeys.all });
-            queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+            invalidatePublicConfig(queryClient);
         },
     });
 }
@@ -476,7 +476,7 @@ export function useDeletePaidService() {
         mutationFn: (id: string) => api.del<void>(endpoints.admin.paidServices.byId(id)),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: adminKeys.all });
-            queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+            invalidatePublicConfig(queryClient);
         },
     });
 }
@@ -507,7 +507,7 @@ export function useUpdatePlatformModule() {
             api.patch<PlatformModuleResponseDto>(endpoints.admin.platformModules.byKey(moduleKey), input),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: adminKeys.platformModules });
-            queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+            invalidatePublicConfig(queryClient);
         },
     });
 }
@@ -527,7 +527,7 @@ export function useUpdatePlatformEventType() {
             api.patch<PlatformEventTypeResponseDto>(endpoints.admin.platformEventTypes.byKey(eventTypeKey), input),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: adminKeys.platformEventTypes });
-            queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+            invalidatePublicConfig(queryClient);
         },
     });
 }

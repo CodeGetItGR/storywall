@@ -16,10 +16,18 @@ export { postKeys, POSTS_PAGE_SIZE } from '@/lib/postQueries';
 
 // Applies a partial update to a post wherever it's currently cached — the
 // single-post query and, if a page of it is loaded, the event's feed list.
-// Used for optimistic updates (likes) where waiting on a refetch would feel
-// laggy; other mutations in this file just invalidate instead.
-export function patchPostInCaches(queryClient: QueryClient, eventId: string, postId: string, patch: Partial<PostResponseDto>) {
-    queryClient.setQueryData<PostResponseDto>(postKeys.detail(postId), (old) => (old ? { ...old, ...patch } : old));
+// A function patch is applied to each cached copy. Used for optimistic
+// updates (likes, comment counts) where waiting on a refetch would feel
+// laggy, and so a change to one post never refetches the whole feed.
+export function patchPostInCaches(
+    queryClient: QueryClient,
+    eventId: string,
+    postId: string,
+    patch: Partial<PostResponseDto> | ((post: PostResponseDto) => Partial<PostResponseDto>),
+) {
+    const apply = (post: PostResponseDto): PostResponseDto => ({ ...post, ...(typeof patch === 'function' ? patch(post) : patch) });
+
+    queryClient.setQueryData<PostResponseDto>(postKeys.detail(postId), (old) => (old ? apply(old) : old));
 
     queryClient.setQueryData<InfiniteData<Page<PostResponseDto>>>(postKeys.list(eventId), (old) => {
         if (!old) return old;
@@ -27,10 +35,22 @@ export function patchPostInCaches(queryClient: QueryClient, eventId: string, pos
             ...old,
             pages: old.pages.map((page) => ({
                 ...page,
-                content: page.content.map((post) => (post.id === postId ? { ...post, ...patch } : post)),
+                content: page.content.map((post) => (post.id === postId ? apply(post) : post)),
             })),
         };
     });
+}
+
+// Refetches one post into every cached copy, for a change the cache can't
+// work out by itself. Best-effort, like refreshFeedFirstPage: on a failure
+// the feed's refetchInterval catches up.
+export async function refreshPostInCaches(queryClient: QueryClient, eventId: string, postId: string) {
+    try {
+        const post = await api.get<PostResponseDto>(endpoints.posts.byId(postId));
+        patchPostInCaches(queryClient, eventId, postId, post);
+    } catch {
+        // See above.
+    }
 }
 
 // GET /api/events/{eventId}/posts — any authenticated principal (not
@@ -130,8 +150,9 @@ export function useCreatePost() {
     return useMutation({
         mutationFn: ({ signal, ...input }: PostRequestDto & { signal?: AbortSignal }) =>
             api.post<PostResponseDto>(endpoints.posts.create, input, { signal }),
+        // A new post lands on the first page, so only that page is refetched.
         onSuccess: (post) => {
-            queryClient.invalidateQueries({ queryKey: postKeys.list(post.eventId) });
+            void refreshFeedFirstPage(queryClient, post.eventId);
         },
     });
 }
@@ -155,8 +176,13 @@ export function useDeletePost(eventId: string) {
 
     return useMutation({
         mutationFn: (id: string) => api.del<void>(endpoints.posts.byId(id)),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: postKeys.list(eventId) });
+        // Dropped from the cached feed at once instead of refetching every page.
+        // The pages after it are offsets that moved by one; like a post someone
+        // else deletes, they catch up on the feed's refetchInterval.
+        onSuccess: (_data, id) => {
+            queryClient.setQueryData<InfiniteData<Page<PostResponseDto>>>(postKeys.list(eventId), (old) =>
+                old ? { ...old, pages: old.pages.map((page) => ({ ...page, content: page.content.filter((post) => post.id !== id) })) } : old,
+            );
         },
     });
 }

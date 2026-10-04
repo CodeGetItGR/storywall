@@ -30,3 +30,22 @@ export function getVisualViewportMetrics(
         centerY: Math.round(viewport.offsetTop + viewport.height / 2),
     };
 }
+
+// Below this the page counts as unzoomed; browsers report 1 with float noise.
+const PINCH_ZOOM_MIN_SCALE = 1.01;
+
+// Fixed elements are laid out against the layout viewport, so a pinch zoom
+// magnifies them with the page. This box covers the visible part of the page
+// at its unzoomed screen size: pin chrome to its edges to keep it full size.
+// Null when the page isn't pinch-zoomed.
+export function getPinchZoomBox(
+    viewport: Pick<VisualViewport, 'scale' | 'width' | 'height' | 'offsetLeft' | 'offsetTop'>,
+): { width: number; height: number; transform: string } | null {
+    if (viewport.scale < PINCH_ZOOM_MIN_SCALE) return null;
+
+    return {
+        width: viewport.width * viewport.scale,
+        height: viewport.height * viewport.scale,
+        transform: `translate(${viewport.offsetLeft}px, ${viewport.offsetTop}px) scale(${1 / viewport.scale})`,
+    };
+}

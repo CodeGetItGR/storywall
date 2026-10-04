@@ -10,6 +10,7 @@ import {
     AUTH_COOKIES,
     baseCookieOptions,
     REFRESH_TOKEN_MAX_AGE_SECONDS,
+    SESSION_REFRESHED_HEADER,
 } from '@/lib/auth/authCookies';
 import { AUTH_RETURN_PATH_PARAM } from '@/lib/auth/returnPath';
 import { clientIpFrom, springAuth, SpringAuthError } from '@/lib/auth/springAuth';
@@ -140,6 +141,9 @@ export async function proxy(request: NextRequest) {
 
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set(ACCESS_TOKEN_HEADER, session.accessToken);
+    // Only this proxy says it refreshed, never the browser.
+    requestHeaders.delete(SESSION_REFRESHED_HEADER);
+    if (session.cookies.length > 0) requestHeaders.set(SESSION_REFRESHED_HEADER, '1');
     const response = NextResponse.next({ request: { headers: requestHeaders } });
 
     for (const cookie of session.cookies) {

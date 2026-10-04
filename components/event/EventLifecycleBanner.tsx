@@ -1,28 +1,23 @@
 'use client';
 
+import { Clock3 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
-import { EventLifecycleIcon } from '@/components/event/EventLifecycleIcon';
-import type { EventStatus } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
-import { cn } from '@/lib/utils';
-import { useActiveEvent, useIsHost } from '@/providers/EventProvider';
-
-function tone(status: Exclude<EventStatus, 'ACTIVE'>) {
-    if (status === 'DRAFT') return 'border-sky-200 bg-sky-50 text-sky-900';
-    return 'border-sky-200 bg-sky-50 text-sky-900';
-}
+import { useActiveEvent, useIsHost, useRouteEventId } from '@/providers/EventProvider';
 
 export function EventLifecycleBanner() {
     const t = useTranslations('EventLifecycleBanner');
     const pathname = usePathname();
     const activeEvent = useActiveEvent();
+    // Id-less routes (/post/[id]) fall back to the last visited event, which the page is not about.
+    const routeEventId = useRouteEventId();
     const isHost = useIsHost();
     const status = activeEvent?.status;
 
-    if (!activeEvent || !status || status === 'ACTIVE') return null;
+    if (!routeEventId || !activeEvent || !status || status === 'ACTIVE') return null;
     if (pathname.startsWith(`/events/${activeEvent.id}/checkout/`)) return null;
 
     const actionHref = routes.events.manage(activeEvent.id);
@@ -33,15 +28,10 @@ export function EventLifecycleBanner() {
 
     return (
         <div className="px-3 pt-3 sm:px-4">
-            <div
-                className={cn(
-                    'mx-auto flex max-w-5xl flex-col gap-3 rounded-lg border px-3 py-3 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-4',
-                    tone(status),
-                )}
-            >
+            <div className="mx-auto flex max-w-5xl flex-col gap-3 rounded-lg border border-sky-200 bg-sky-50 px-3 py-3 text-sm text-sky-900 sm:flex-row sm:items-center sm:justify-between sm:px-4">
                 <div className="flex min-w-0 gap-2">
                     <span className="mt-0.5 shrink-0">
-                        <EventLifecycleIcon status={status} />
+                        <Clock3 className="h-4 w-4" aria-hidden="true" />
                     </span>
                     <div className="min-w-0">
                         <p className="font-semibold">{t(`${status}.title`)}</p>

@@ -3,7 +3,7 @@
 import useEmblaCarousel from 'embla-carousel-react';
 import { ChevronLeft, ChevronRight, Loader2, VideoOff } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useState } from 'react';
 
 import { PresignedVideo } from '@/components/common/PresignedVideo';
 import { PostMediaImageSlide } from '@/components/feed/post/PostMediaImageSlide';
@@ -25,15 +25,21 @@ export function PostMediaCarousel({ media, initialIndex, onIndexChange, alt, cla
     const [canScrollPrev, setCanScrollPrev] = useState(false);
     const [canScrollNext, setCanScrollNext] = useState(false);
 
+    // Reads the latest onIndexChange without resubscribing Embla on every parent render.
+    const syncSelection = useEffectEvent(() => {
+        if (!emblaApi) return;
+        const index = emblaApi.selectedScrollSnap();
+        setCurrentIndex(index);
+        setCanScrollPrev(emblaApi.canScrollPrev());
+        setCanScrollNext(emblaApi.canScrollNext());
+        onIndexChange(index);
+    });
+
     useEffect(() => {
         if (!emblaApi) return;
 
         function handleSelect() {
-            const index = emblaApi!.selectedScrollSnap();
-            setCurrentIndex(index);
-            setCanScrollPrev(emblaApi!.canScrollPrev());
-            setCanScrollNext(emblaApi!.canScrollNext());
-            onIndexChange(index);
+            syncSelection();
         }
 
         handleSelect();
@@ -44,7 +50,6 @@ export function PostMediaCarousel({ media, initialIndex, onIndexChange, alt, cla
             emblaApi.off('select', handleSelect);
             emblaApi.off('reInit', handleSelect);
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- The carousel only needs the current callback when selection changes; resubscribing on each parent render would tear down Embla listeners unnecessarily.
     }, [emblaApi]);
 
     const hasMultiple = media.length > 1;

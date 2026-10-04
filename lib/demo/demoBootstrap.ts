@@ -1,10 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query';
 
-import { appConfigKeys } from '@/hooks/useAppConfig';
-import { api } from '@/lib/api/client';
-import { endpoints } from '@/lib/api/endpoints';
-import type { AppConfigResponseDto } from '@/lib/api/types';
-import { demoStorageKey, swapMediaUrls } from '@/lib/demo/demoDb';
+import { appConfigKeys, fetchAppConfig } from '@/hooks/useAppConfig';
+import { demoContentVersion, demoStorageKey, keepStoriesLive, swapMediaUrls } from '@/lib/demo/demoDb';
 import { registerDemoEventRoute } from '@/lib/demo/demoRouting';
 import { createDemoSession, type DemoSession } from '@/lib/demo/demoSession';
 import { createDemoHandlers } from '@/lib/demo/mockHandlers';
@@ -23,7 +20,7 @@ async function loadPlanTierName(queryClient: QueryClient, planTier: string): Pro
         // Seeds the demo's own cache, so useAppConfig() inside the demo doesn't fetch it again.
         const config = await queryClient.fetchQuery({
             queryKey: appConfigKeys.all,
-            queryFn: () => api.publicGet<AppConfigResponseDto>(endpoints.config.get),
+            queryFn: fetchAppConfig,
         });
         return config.planTiers.find((tier) => tier.code === planTier)?.name ?? null;
     } catch {
@@ -38,11 +35,13 @@ export async function bootstrapDemo(eventTypeKey: string, eventTypeSlug: string,
     if (result.kind === 'not-found' || result.kind === 'rate-limited') return { kind: result.kind };
     if (result.kind !== 'ok') return { kind: 'failed' };
 
+    const contentVersion = demoContentVersion(result.snapshot);
     const snapshot = rebaseSnapshot(result.snapshot);
     const planTierName = await loadPlanTierName(queryClient, snapshot.usage.planTier);
-    const session = createDemoSession(eventTypeKey, snapshot, planTierName);
+    const session = createDemoSession(eventTypeKey, snapshot, contentVersion, planTierName);
     // A restored session keeps the visitor's changes but needs this snapshot's media URLs.
     swapMediaUrls(session.db, snapshot);
+    keepStoriesLive(session.db);
 
     registerDemoEventRoute(session.eventId, eventTypeSlug);
     try {

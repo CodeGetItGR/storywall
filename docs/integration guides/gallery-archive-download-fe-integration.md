@@ -9,6 +9,10 @@ guide). This adds three endpoints on top of those, doesn't change any of them.
 (e.g. a multi-select "download these 12 photos" UI) as one zip, instead of the whole gallery split
 into server-planned parts.
 
+**2026-09-30:** Added §8, `GET /api/events/{eventId}/media/summary`, the photo and video counts
+alone. Use it for a counts card instead of the manifest, which reads every media row to plan zip
+parts.
+
 Related docs:
 - [`billing-fe-guide.md`](billing-fe-guide.md) §7a — "keep originals", which every plan includes
   since the add-on was retired (2026-09-23)
@@ -220,3 +224,23 @@ small selections to dodge the part-based rate limit; it's the same bucket either
 | `MEDIA_ARCHIVE_SELECTION_INVALID` (3023) | 400 | One or more `mediaIds` don't resolve to a live item of this event — wrong event, already deleted, or never existed | Reachable without a client bug: an item can be deleted between the grid being rendered and the download being triggered. Drop the missing ids from your selection state and let the host retry |
 
 `ORIGINALS_ADDON_NOT_ACTIVE` and the plain `403`/`404` cases behave exactly as in §4.
+
+## 8. Counts only: the media summary
+
+```http
+GET /api/events/{eventId}/media/summary
+Authorization: Bearer {accessToken}
+
+200 OK
+{ "photoCount": 412, "videoCount": 18 }
+```
+
+The manifest's `photoCount` and `videoCount`, the same live-media-only figures, without planning
+an archive. Use it for anything that only shows counts, such as a summary card beside the host's
+pages. The manifest is for the download flow: it reads every media row of the event to size the
+parts, and a counts card that reloads after every upload shouldn't pay for that.
+
+Same checks as the manifest: host-only (`403` otherwise), `404` if the event doesn't exist, and
+`409` `MODULE_NOT_AVAILABLE` (5012) when the gallery can't be read. No rate limit.
+
+TypeScript shape: `MediaSummaryDto` in [`frontend-api-types.ts`](../frontend-api-types.ts).

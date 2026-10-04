@@ -1,4 +1,5 @@
 import type { FunnelCohortDto, FunnelMetricsResponseDto } from '@/lib/api/types';
+import { numberFormat } from '@/lib/format';
 
 export const FUNNEL_RANGE_PRESETS = ['ALL', 'LAST_30', 'LAST_90', 'THIS_YEAR', 'CUSTOM'] as const;
 export type FunnelRangePreset = (typeof FUNNEL_RANGE_PRESETS)[number];
@@ -63,7 +64,7 @@ export const EMPTY_VALUE = '—';
 export function formatRate(locale: string, ratio: number | null): string {
     if (ratio === null || !Number.isFinite(ratio)) return EMPTY_VALUE;
     const digits = ratio !== 0 && Math.abs(ratio) < 0.01 ? 2 : ratio !== 0 && Math.abs(ratio) < 0.1 ? 1 : 0;
-    return new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: digits }).format(ratio);
+    return numberFormat(locale, { style: 'percent', maximumFractionDigits: digits }).format(ratio);
 }
 
 export type HoursDisplay = { unit: 'hours' | 'days'; value: string } | null;
@@ -71,19 +72,19 @@ export type HoursDisplay = { unit: 'hours' | 'days'; value: string } | null;
 /** Below 48 hours reads as hours, otherwise days, one decimal. Negative values keep their sign. */
 export function toHoursDisplay(locale: string, hours: number | null): HoursDisplay {
     if (hours === null || !Number.isFinite(hours)) return null;
-    const format = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    const format = numberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
     return Math.abs(hours) < 48 ? { unit: 'hours', value: format.format(hours) } : { unit: 'days', value: format.format(hours / 24) };
 }
 
 export function formatMedian(locale: string, value: number | null): string {
     if (value === null || !Number.isFinite(value)) return EMPTY_VALUE;
-    return new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(value);
+    return numberFormat(locale, { maximumFractionDigits: 1 }).format(value);
 }
 
 /** Minor units in their own currency, using that currency's decimals (e.g. 0 for JPY). */
 export function formatMinorMoney(locale: string, minor: number, currency: string): string {
     try {
-        const format = new Intl.NumberFormat(locale, { style: 'currency', currency });
+        const format = numberFormat(locale, { style: 'currency', currency });
         const digits = format.resolvedOptions().maximumFractionDigits ?? 2;
         return format.format(minor / 10 ** digits);
     } catch {

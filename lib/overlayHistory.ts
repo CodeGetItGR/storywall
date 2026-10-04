@@ -180,7 +180,36 @@ export function registerOverlayHistory(layer: OverlayLayer): OverlayHistoryRegis
     return { requestClose, remove };
 }
 
-// A same-page navigation (a hash route) that should be its own Back step.
+// Next's patched pushState/replaceState skips syncing its router URL when the
+// state carries these markers (it takes the call for its own), and copies them
+// back itself. Left in, the router keeps the old URL and the next
+// router.refresh() — e.g. a language switch — writes it back over the hash.
+function withoutNextRouterMarkers(state: object): Record<string, unknown> {
+    const {
+        __NA: _appRouterMarker,
+        __PRIVATE_NEXTJS_INTERNALS_TREE: _routerTree,
+        ...rest
+    } = state as Record<string, unknown>;
+    return rest;
+}
+
+// Hands the address bar's URL to the Next router. A plain <a href="#…"> or a
+// hand-edited hash changes the URL behind the router's back; call this before
+// a router.refresh() so the refresh doesn't put the old URL back.
+export function syncRouterWithAddressBar() {
+    const currentState = window.history.state && typeof window.history.state === 'object' ? window.history.state : {};
+    window.history.replaceState(withoutNextRouterMarkers(currentState), '', window.location.href);
+}
+
+// Rewrites the current entry's URL on the client only. Next syncs its router
+// to it (usePathname/useSearchParams update) without a server render.
+export function replacePageUrl(url: string) {
+    const currentState = window.history.state && typeof window.history.state === 'object' ? window.history.state : {};
+    window.history.replaceState(withoutNextRouterMarkers(currentState), '', url);
+}
+
+// A same-page navigation (a hash route, or a search param like ?post=) that
+// should be its own Back step, made without a server render.
 // A closed overlay leaves its entry behind; while we are still on it at the
 // URL it opened from, it only duplicates the entry below, so it is reused
 // instead of stacking one more dead Back press on top.
@@ -191,7 +220,7 @@ export function pushPageEntry(url: string) {
         [OVERLAY_ANCHOR_KEY]: _anchor,
         [OVERLAY_BASE_KEY]: base,
         ...pageState
-    } = currentState as Record<string, unknown>;
+    } = withoutNextRouterMarkers(currentState);
     const isLeftoverOverlayEntry =
         activeLayers.length === 0 && Array.isArray(stack) && stack.length === 0 && base === window.location.href;
 

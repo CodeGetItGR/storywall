@@ -11,6 +11,7 @@ import { getPublicLandingPath, isPublicLandingPath } from '@/i18n/publicLocale';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { MeUpdateRequestDto } from '@/lib/api/types';
+import { syncRouterWithAddressBar } from '@/lib/overlayHistory';
 import { cn } from '@/lib/utils';
 
 type LanguageSwitcherVariant = 'auth' | 'default' | 'sidebar';
@@ -45,6 +46,9 @@ export function LanguageSwitcher({ className, variant = 'default' }: { className
                 return;
             }
 
+            // The refresh rewrites the address bar with the router's URL; make
+            // sure it holds the current hash (e.g. an admin `#orders/<id>`).
+            syncRouterWithAddressBar();
             startTransition(async () => {
                 await setLocale(next);
                 if (variant === 'auth') {

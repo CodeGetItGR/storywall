@@ -14,6 +14,7 @@ describe('parsePlansHash', () => {
     it('reads the settings views', () => {
         expect(parsePlansHash('#plans/settings/modules')).toEqual({ view: 'settingsModules', key: null });
         expect(parsePlansHash('#plans/settings/event-types')).toEqual({ view: 'settingsEventTypes', key: null });
+        expect(parsePlansHash('#plans/settings/member-roles')).toEqual({ view: 'settingsMemberRoles', key: null });
     });
 
     it('maps legacy hashes', () => {
@@ -33,6 +34,7 @@ describe('formatPlansHash', () => {
         expect(formatPlansHash({ view: 'eventType', key: 'BAPTISM' })).toBe('#plans/BAPTISM');
         expect(formatPlansHash({ view: 'settingsModules', key: null })).toBe('#plans/settings/modules');
         expect(formatPlansHash({ view: 'settingsEventTypes', key: null })).toBe('#plans/settings/event-types');
+        expect(formatPlansHash({ view: 'settingsMemberRoles', key: null })).toBe('#plans/settings/member-roles');
     });
 });
 

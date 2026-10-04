@@ -30,7 +30,6 @@ export function FeedPageContent() {
     useHideMobileTabBarOnScroll();
     const { currentMemberRsvpId, event, eventId, isFetchingNextPage, isHost, loadMoreRef, loadingMoreLabel, moduleFlags, posts } = useFeedPage();
     const gifts = useGiftAccount(eventId);
-    console.log('gifts', gifts.data);
     const [storyId, setStoryId] = useState<string | null>(null);
     const [pageLoaded, setPageLoaded] = useState(false);
     const shouldShowRSVP = moduleFlags.rsvp && !isHost && currentMemberRsvpId === null;

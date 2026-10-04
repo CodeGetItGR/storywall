@@ -53,9 +53,11 @@ export const ERROR_CODES = {
     GIFT_CLAIM_NOT_ALLOWED: 4009,
     GIFT_ORDER_NOT_YOURS: 4010,
     GIFT_NOT_PRIMARY_HOST: 4011,
+    GIFT_ACCOUNT_NOT_PRIMARY_HOST: 4019,
     GIFT_RECIPIENT_PROTECTED: 4012,
     GUIDELINES_ACCEPTANCE_REQUIRED: 4013,
     EVENT_BANNED: 4014,
+    EVENT_SUSPENDED: 4015,
     EVENT_NOT_ACTIVE: 5014,
     EVENT_NOT_DRAFT: 5017,
     ORDER_NOT_PENDING: 5018,
@@ -63,6 +65,10 @@ export const ERROR_CODES = {
     MODERATION_CASE_CLOSED: 5106,
     MODERATION_MEMBER_IS_HOST: 5107,
     MODERATION_TARGET_PROTECTED: 5108,
+    NOTICE_ALREADY_HANDLED: 5109,
+    EVENT_ALREADY_SUSPENDED: 5110,
+    EVENT_NOT_SUSPENDED: 5111,
+    EVENT_ALREADY_CLOSED: 5112,
     PLAN_TIER_NOT_PURCHASABLE: 5015,
     PLAN_TIER_NOT_PRICED: 5019,
     PLAN_TIER_CURRENCY_UNSUPPORTED: 5021,
@@ -126,6 +132,7 @@ export const ERROR_CODES = {
     WITHDRAWAL_REFUSED: 5073,
     WITHDRAWAL_NOT_HELD: 5074,
     EVENT_CREATION_LOCKED: 5075,
+    EVENT_DRAFT_LIMIT_REACHED: 5116,
     DISCOUNT_NOT_APPLICABLE_TO_UPGRADE: 5076,
     PURCHASE_NOT_PRIMARY_HOST: 4006,
     COVERAGE_OPTION_INVALID: 5077,
@@ -151,6 +158,15 @@ export const ERROR_CODES = {
     WITHDRAWAL_CONFIRMATION_INVALID: 5094,
     WITHDRAWAL_PREVIEW_STALE: 5095,
     BETA_FEEDBACK_DISABLED: 5100,
+    MEMBER_ROLE_INVALID_REQUEST: 3040,
+    MEMBER_ROLE_UNKNOWN: 3041,
+    MEMBER_ROLE_CUSTOM_BLOCKED: 3042,
+    MEMBER_ROLE_CUSTOM_NOT_ALLOWED: 4016,
+    MEMBER_ROLE_CUSTOM_LOCKED: 4017,
+    MEMBER_ROLE_HOST_ONLY: 4018,
+    MEMBER_ROLE_FEATURED_MEMBER: 5113,
+    MEMBER_ROLE_CAP_REACHED: 5114,
+    MEMBER_ROLE_TEXT_CHANGED: 5115,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the
@@ -283,4 +299,10 @@ export function isGuidelinesAcceptanceRequiredError(error: unknown): boolean {
 // The version the user accepted is no longer the current one.
 export function isGuidelinesVersionMismatchError(error: unknown): boolean {
     return getErrorCode(error) === ERROR_CODES.GUIDELINES_VERSION_MISMATCH;
+}
+
+// A host's StoryWall was suspended under them: refetch the event and let the suspended view take
+// over (lib/eventSuspension.ts). Never shown as a toast.
+export function isEventSuspendedError(error: unknown): boolean {
+    return getErrorCode(error) === ERROR_CODES.EVENT_SUSPENDED;
 }

@@ -20,6 +20,7 @@ vi.mock('@/hooks', () => ({
 }));
 vi.mock('@/hooks/useOverlayHistory', () => ({ useOverlayHistory: () => ({ requestClose: vi.fn() }) }));
 vi.mock('@/hooks/useContentAccess', () => ({ useContentAccess: () => ({ isDemoBuilder: false, isLocked: () => false }) }));
+vi.mock('@/hooks/useCustomRoleReport', () => ({ useCustomRoleReport: () => false }));
 vi.mock('@/providers/EventProvider', () => ({
     useActiveEvent: () => ({ id: 'event-1', status: eventStatus }),
     useActiveMember: () => (activeMemberId ? { id: activeMemberId } : null),
@@ -132,6 +133,29 @@ describe('useStoryModal report dialog and the story timer', () => {
             vi.advanceTimersByTime(300);
         });
         expect(result.current.progress).toBeGreaterThan(before);
+    });
+
+    it('fills a photo story over five seconds, then moves on once', () => {
+        vi.useFakeTimers();
+        const { result } = mount();
+        act(() => result.current.handleMediaLoaded());
+
+        act(() => {
+            vi.advanceTimersByTime(5000);
+        });
+        expect(result.current.progress).toBe(100);
+        expect(onCloseAction).not.toHaveBeenCalled();
+
+        // a single-story group closes the viewer
+        act(() => {
+            vi.advanceTimersByTime(100);
+        });
+        expect(onCloseAction).toHaveBeenCalledTimes(1);
+
+        act(() => {
+            vi.advanceTimersByTime(1000);
+        });
+        expect(onCloseAction).toHaveBeenCalledTimes(1);
     });
 
     it('closes the options menu when the report dialog opens', () => {

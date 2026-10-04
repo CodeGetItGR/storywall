@@ -87,6 +87,9 @@ export async function LandingFooter() {
                     <Link className="text-white/62 no-underline hover:text-white" href={routes.legal.communityGuidelines()}>
                         {t('communityGuidelines')}
                     </Link>
+                    <Link className="text-white/62 no-underline hover:text-white" href={routes.reportContent}>
+                        {t('reportContent')}
+                    </Link>
                     {legalLabels.map((label) => (
                         <span key={label}>{label}</span>
                     ))}

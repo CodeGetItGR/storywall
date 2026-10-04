@@ -27,7 +27,9 @@ export function DemoEventsSection() {
             {Boolean(panel.error) && <p className="py-6 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(panel.error)}`)}</p>}
 
             {/* Content */}
-            {ready && panel.selectedRow && <DemoEventDetail key={panel.selectedRow.eventType.eventTypeKey} row={panel.selectedRow} />}
+            {ready && panel.selectedRow && (
+                <DemoEventDetail key={panel.selectedRow.eventType.eventTypeKey} row={panel.selectedRow} onBackAction={panel.backToList} />
+            )}
             {ready && panel.selectedKey && !panel.selectedRow && <p className="py-6 text-sm text-ink-muted">{t('errors.notFound')}</p>}
             {ready && !panel.selectedKey && panel.rows.length === 0 && <p className="py-6 text-sm text-ink-muted">{t('demoEvents.empty')}</p>}
             {ready && !panel.selectedKey && panel.rows.length > 0 && <DemoEventsTable rows={panel.rows} />}

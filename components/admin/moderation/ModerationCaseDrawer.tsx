@@ -1,7 +1,7 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminIdentifier } from '@/components/admin/AdminIdentifier';
@@ -9,9 +9,17 @@ import { ModerationContentPreview } from '@/components/admin/moderation/Moderati
 import { ModerationDecisionForm } from '@/components/admin/moderation/ModerationDecisionForm';
 import { ModerationHistory } from '@/components/admin/moderation/ModerationHistory';
 import { LoadingState } from '@/components/ui/LoadingState';
-import { useAdminModerationCase, useDecideModerationCase, useLiftEventBan, useStartModerationReview } from '@/hooks/useAdminModeration';
+import {
+    useAdminModerationCase,
+    useCloseEventSuspension,
+    useDecideModerationCase,
+    useLiftEventBan,
+    useLiftEventSuspension,
+    useStartModerationReview,
+} from '@/hooks/useAdminModeration';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
-import type { ModerationDecisionRequestDto, ReportTargetType } from '@/lib/api/types';
+import type { DecisionRequest } from '@/lib/adminModeration';
+import type { ReportTargetType } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
 
 // Reports a decision closes (guide §1); RESOLVED and DISMISSED ones were closed earlier.
@@ -36,10 +44,32 @@ export function ModerationCaseDrawer({
     const { data: detail, error, isLoading } = useAdminModerationCase(targetType, targetId);
     const startReview = useStartModerationReview();
     const decide = useDecideModerationCase();
+    const isMemberCase = targetType === 'MEMBER';
     const liftBan = useLiftEventBan();
+    const liftSuspension = useLiftEventSuspension();
+    const closeSuspension = useCloseEventSuspension();
+    // Which suspension action is waiting for its confirm. Closing is permanent, so both ask first.
+    const [confirming, setConfirming] = useState<'lift' | 'close' | null>(null);
+    const confirmRef = useRef<HTMLDivElement>(null);
+    const liftButtonRef = useRef<HTMLButtonElement>(null);
+    const closeButtonRef = useRef<HTMLButtonElement>(null);
+    const lastAsked = useRef<'lift' | 'close' | null>(null);
+    const suspensionPending = liftSuspension.isPending || closeSuspension.isPending;
     const startReviewMutate = startReview.mutate;
     // A ref, not state: StrictMode's second effect run (and any re-render) must not POST again.
     const reviewRequested = useRef(false);
+
+    // Focus follows the step: into the confirm on asking, back to the button that asked on leaving it.
+    // After a success the button may be gone (the case is re-read); then there is nothing to focus.
+    useEffect(() => {
+        if (confirming) {
+            lastAsked.current = confirming;
+            confirmRef.current?.focus();
+        } else if (lastAsked.current) {
+            (lastAsked.current === 'lift' ? liftButtonRef : closeButtonRef).current?.focus();
+            lastAsked.current = null;
+        }
+    }, [confirming]);
 
     // Opening an OPEN case claims it for review, once. A repeat would be a harmless 204 anyway.
     useEffect(() => {
@@ -49,11 +79,29 @@ export function ModerationCaseDrawer({
         }
     }, [detail?.status, startReviewMutate, targetId, targetType]);
 
-    function submitDecision(request: Required<ModerationDecisionRequestDto>) {
+    function submitDecision(request: DecisionRequest) {
         decide.mutate({ targetType, targetId, request }, { onSuccess: onCloseAction });
     }
     function lift(banId: string) {
         liftBan.mutate({ banId, targetType, targetId });
+    }
+    function askLift() {
+        setConfirming('lift');
+    }
+    function askClose() {
+        setConfirming('close');
+    }
+    function cancelSuspensionAction() {
+        setConfirming(null);
+    }
+    function confirmSuspensionAction() {
+        if (!detail || !confirming) return;
+        const variables = { eventId: detail.eventId, targetType, targetId };
+        // A refusal from an earlier lift or close must not outlive this attempt.
+        liftSuspension.reset();
+        closeSuspension.reset();
+        if (confirming === 'lift') liftSuspension.mutate(variables, { onSuccess: cancelSuspensionAction });
+        else closeSuspension.mutate(variables, { onSuccess: cancelSuspensionAction });
     }
 
     const decideError = decide.error ? toErrorMessage(decide.error) : null;
@@ -84,7 +132,7 @@ export function ModerationCaseDrawer({
                     ) : null}
 
                     {/* Reported item */}
-                    <ModerationContentPreview content={detail.content} />
+                    <ModerationContentPreview content={detail.content} isMemberCase={isMemberCase} />
 
                     {/* Reports */}
                     <section className="space-y-2">
@@ -108,8 +156,10 @@ export function ModerationCaseDrawer({
                                     </p>
                                     {r.description ? <p className="mt-1 break-words whitespace-pre-wrap text-ink">{r.description}</p> : null}
                                     <p className="mt-1 text-xs text-ink-muted">
-                                        {r.reporterDisplayName ?? t('reporterGone')} ·{' '}
-                                        {formatDate(locale, r.createdAt, { dateStyle: 'medium', timeStyle: 'short' })}
+                                        {r.noticeReference
+                                            ? t('publicNotice', { reference: r.noticeReference })
+                                            : (r.reporterDisplayName ?? t('reporterGone'))}{' '}
+                                        · {formatDate(locale, r.createdAt, { dateStyle: 'medium', timeStyle: 'short' })}
                                     </p>
                                 </li>
                             ))}
@@ -130,6 +180,86 @@ export function ModerationCaseDrawer({
                         </p>
                     ) : null}
 
+                    {/* StoryWall suspension, set by this case or another */}
+                    {detail.eventSuspension ? (
+                        <section className="space-y-2 rounded-lg border border-status-danger-wash p-3 text-sm">
+                            <p className="text-ink">
+                                {detail.eventSuspension.closedAt
+                                    ? t('suspension.closedStatus', {
+                                          date: formatDate(locale, detail.eventSuspension.closedAt, { dateStyle: 'medium', timeStyle: 'short' }),
+                                          deletesOn: formatDate(locale, detail.eventSuspension.deletesOn, { dateStyle: 'medium' }),
+                                      })
+                                    : t('suspension.status', {
+                                          date: formatDate(locale, detail.eventSuspension.suspendedAt, { dateStyle: 'medium', timeStyle: 'short' }),
+                                      })}
+                            </p>
+                            {/* A closed StoryWall can't be lifted or closed again: no buttons. */}
+                            {detail.eventSuspension.closedAt ? null : confirming ? (
+                                <div
+                                    ref={confirmRef}
+                                    tabIndex={-1}
+                                    role="group"
+                                    aria-label={confirming === 'lift' ? t('suspension.lift') : t('suspension.close')}
+                                    className="space-y-2 outline-none"
+                                >
+                                    <p className="text-ink">
+                                        {confirming === 'lift'
+                                            ? t('suspension.liftConfirm')
+                                            : t('suspension.closeConfirm', {
+                                                  deletesOn: formatDate(locale, detail.eventSuspension.deletesOn, { dateStyle: 'medium' }),
+                                              })}
+                                    </p>
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={cancelSuspensionAction}
+                                            disabled={suspensionPending}
+                                            className="rounded-md px-3 py-1.5 text-sm font-semibold text-ink-muted hover:bg-canvas disabled:opacity-50"
+                                        >
+                                            {t('suspension.cancel')}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={confirmSuspensionAction}
+                                            disabled={suspensionPending}
+                                            className={
+                                                confirming === 'close'
+                                                    ? 'rounded-md bg-status-danger px-3 py-1.5 text-sm font-semibold text-canvas disabled:opacity-50'
+                                                    : 'rounded-md bg-ink px-3 py-1.5 text-sm font-semibold text-canvas disabled:opacity-50'
+                                            }
+                                        >
+                                            {confirming === 'lift' ? t('suspension.liftConfirmButton') : t('suspension.closeConfirmButton')}
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex flex-wrap gap-2">
+                                    <button
+                                        type="button"
+                                        ref={liftButtonRef}
+                                        onClick={askLift}
+                                        className="rounded-md px-3 py-1.5 text-sm font-semibold text-ink-muted transition-colors hover:bg-canvas hover:text-ink"
+                                    >
+                                        {t('suspension.lift')}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        ref={closeButtonRef}
+                                        onClick={askClose}
+                                        className="rounded-md px-3 py-1.5 text-sm font-semibold text-status-danger transition-colors hover:bg-status-danger-wash"
+                                    >
+                                        {t('suspension.close')}
+                                    </button>
+                                </div>
+                            )}
+                        </section>
+                    ) : null}
+                    {liftSuspension.error || closeSuspension.error ? (
+                        <p role="alert" className="text-sm text-status-danger">
+                            {toErrorMessage(liftSuspension.error ?? closeSuspension.error)}
+                        </p>
+                    ) : null}
+
                     {/* Decision. A 5106 refetch closes the case under the form, so its refusal stays visible here. */}
                     {detail.status !== 'CLOSED' ? (
                         <ModerationDecisionForm
@@ -139,6 +269,8 @@ export function ModerationCaseDrawer({
                             isSubmitting={decide.isPending}
                             error={decideError}
                             onSubmitAction={submitDecision}
+                            isMemberCase={isMemberCase}
+                            expectedContentText={isMemberCase ? (detail.content?.text ?? null) : null}
                         />
                     ) : decideError ? (
                         <p role="alert" className="text-sm text-status-danger">

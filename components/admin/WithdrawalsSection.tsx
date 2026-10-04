@@ -41,7 +41,12 @@ export function WithdrawalsSection() {
 
             {/* Content */}
             {ready && panel.selectedRow && (
-                <WithdrawalDetail key={panel.selectedRow.request.id} row={panel.selectedRow} onReleasedAction={panel.backToList} />
+                <WithdrawalDetail
+                    key={panel.selectedRow.request.id}
+                    row={panel.selectedRow}
+                    onBackAction={panel.handleBackClick}
+                    onReleasedAction={panel.backToList}
+                />
             )}
             {ready && panel.selectedId && !panel.selectedRow && <p className="py-6 text-sm text-ink-muted">{t('errors.notFound')}</p>}
             {ready && !panel.selectedId && panel.rows.length === 0 && <p className="py-6 text-sm text-ink-muted">{t('withdrawals.empty')}</p>}

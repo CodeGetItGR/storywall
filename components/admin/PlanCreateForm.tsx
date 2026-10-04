@@ -14,7 +14,7 @@ import { PlanCreateAssignments } from '@/components/admin/PlanCreateAssignments'
 import { PlanCreateDurations } from '@/components/admin/PlanCreateDurations';
 import { VisibilitySegmentedControl } from '@/components/admin/VisibilitySegmentedControl';
 import { useDuplicatePlanTier } from '@/hooks/useAdmin';
-import { appConfigKeys } from '@/hooks/useAppConfig';
+import { invalidatePublicConfig } from '@/hooks/useAppConfig';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { usePlanCreateAssignments } from '@/hooks/usePlanCreateAssignments';
 import { usePlanCreateDurations } from '@/hooks/usePlanCreateDurations';
@@ -167,7 +167,7 @@ function PlanDuplicateForm({
             })),
         });
         invalidate({ resource: 'plan-tiers', dataProviderName: 'plan-tiers', invalidates: ['list'] });
-        queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+        invalidatePublicConfig(queryClient);
         resetForm();
         onCreatedAction(sourcePlan.name);
     }
@@ -337,7 +337,7 @@ function PlanCreateNewForm({
     const queryClient = useQueryClient();
     const invalidate = useInvalidate();
     const onMutationSuccess = () => {
-        queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+        invalidatePublicConfig(queryClient);
         invalidate({ resource: 'plan-tiers', dataProviderName: 'plan-tiers', invalidates: ['list'] });
     };
     const { mutateAsync: createPlan, mutation: createMutation } = useCreate<PlanTierResponseDto>({

@@ -7,8 +7,10 @@ import type { MouseEvent } from 'react';
 
 import { ComposerFab, type ContextNavItem, ContextNavSlot, isFeedRoute, isPathActive, TabLink } from '@/components/layout/mobile-tab-bar';
 import { useHasOpenOverlay } from '@/hooks/useOverlayPresence';
+import { usePinchZoomBox } from '@/hooks/usePinchZoomBox';
 import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
 import { isEventDeleted } from '@/lib/eventLifecycle';
+import { openMyRoleSheetFromHref } from '@/lib/myRoleSheetRequests';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 import { useAccountPanel } from '@/providers/AccountPanelProvider';
@@ -27,6 +29,7 @@ export function MobileTabBar() {
     const { open: accountOpen, openAccount } = useAccountPanel();
     const { isComposerFabHidden, isMobileTabBarHidden } = useMobileChrome();
     const hasOpenOverlay = useHasOpenOverlay();
+    const pinchZoomBox = usePinchZoomBox();
     const activeEvent = useActiveEvent();
     const isHost = useIsHost();
     const isLoading = useEventContextLoading();
@@ -77,7 +80,7 @@ export function MobileTabBar() {
 
     function handleDashboardMenuClick(event: MouseEvent<HTMLElement>) {
         const href = event.currentTarget.dataset.href;
-        if (href) router.push(href);
+        if (href && !openMyRoleSheetFromHref(href)) router.push(href);
     }
 
     if (!showEventNavigation) return null;
@@ -88,87 +91,89 @@ export function MobileTabBar() {
     return (
         <>
             {/* Navigation */}
-            <div className="fixed bottom-0 left-1/2 z-40 w-full max-w-lg -translate-x-1/2 lg:hidden">
-                <nav
-                    aria-label={t('eventNavigation')}
-                    aria-hidden={isMobileTabBarHidden}
-                    className={cn(
-                        'overflow-hiddenborder grid h-16 min-w-0 rounded-t-xl border-b-0 border-border shadow-[0_-4px_18px_rgba(36,31,26,0.08)] backdrop-blur transition-[opacity,transform,box-shadow] duration-300 ease-out',
-                        isMobileTabBarHidden ? 'pointer-events-none translate-y-4 opacity-0 shadow-none' : 'translate-y-0 opacity-100',
-                    )}
-                    style={{
-                        backgroundImage:
-                            'linear-gradient(to top, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.92) 58%, rgba(255,255,255,0.72) 100%)',
-                        gridTemplateColumns: `repeat(${railColumnCount}, minmax(0, 1fr))`,
-                    }}
-                >
-                    {/* Home */}
-                    <div className="flex h-full items-center justify-center">
-                        <TabLink
-                            href={homeHref}
-                            icon={homeTabItem.icon}
-                            label={t(`items.${homeTabItem.key}`)}
-                            active={homeActive}
-                            onClick={handleHomeClick}
-                        />
-                    </div>
-
-                    {/* Music */}
-                    {playlistAvailable && activeEvent && (
+            <div className="pointer-events-none fixed inset-0 z-40 lg:hidden" style={pinchZoomBox}>
+                <div className="pointer-events-auto absolute bottom-0 left-1/2 w-full max-w-lg -translate-x-1/2">
+                    <nav
+                        aria-label={t('eventNavigation')}
+                        aria-hidden={isMobileTabBarHidden}
+                        className={cn(
+                            'overflow-hidden border grid h-16 min-w-0 rounded-t-xl border-b-0 border-border shadow-[0_-4px_18px_rgba(36,31,26,0.08)] backdrop-blur transition-[opacity,transform,box-shadow] duration-300 ease-out',
+                            isMobileTabBarHidden ? 'pointer-events-none translate-y-4 opacity-0 shadow-none' : 'translate-y-0 opacity-100',
+                        )}
+                        style={{
+                            backgroundImage:
+                                'linear-gradient(to top, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.92) 58%, rgba(255,255,255,0.72) 100%)',
+                            gridTemplateColumns: `repeat(${railColumnCount}, minmax(0, 1fr))`,
+                        }}
+                    >
+                        {/* Home */}
                         <div className="flex h-full items-center justify-center">
                             <TabLink
-                                href={routes.events.tools.playlist(activeEvent.id)}
-                                icon="/icons/music.svg"
-                                label={t('items.playlist')}
-                                active={playlistActive}
+                                href={homeHref}
+                                icon={homeTabItem.icon}
+                                label={t(`items.${homeTabItem.key}`)}
+                                active={homeActive}
+                                onClick={handleHomeClick}
                             />
                         </div>
-                    )}
 
-                    {/* RSVP */}
-                    {rsvpTabAvailable && (
+                        {/* Music */}
+                        {playlistAvailable && activeEvent && (
+                            <div className="flex h-full items-center justify-center">
+                                <TabLink
+                                    href={routes.events.tools.playlist(activeEvent.id)}
+                                    icon="/icons/music.svg"
+                                    label={t('items.playlist')}
+                                    active={playlistActive}
+                                />
+                            </div>
+                        )}
+
+                        {/* RSVP */}
+                        {rsvpTabAvailable && (
+                            <div className="flex h-full items-center justify-center">
+                                <TabLink href={rsvpHref} icon="/icons/rsvp.png" label={t('items.rsvp')} active={rsvpActive} />
+                            </div>
+                        )}
+
+                        {/* Event menu */}
+                        {contextItems.length > 0 && (
+                            <div className="flex h-full items-center justify-center">
+                                <ContextNavSlot
+                                    active={contextActive}
+                                    forceMenu
+                                    TriggerIcon={ContextTriggerIcon}
+                                    items={contextItems}
+                                    menuLabel={contextMenuLabel}
+                                    pathname={pathname}
+                                    searchParams={searchParams}
+                                    onItemClick={handleDashboardMenuClick}
+                                />
+                            </div>
+                        )}
+
+                        {/* Account menu */}
                         <div className="flex h-full items-center justify-center">
-                            <TabLink href={rsvpHref} icon="/icons/rsvp.png" label={t('items.rsvp')} active={rsvpActive} />
-                        </div>
-                    )}
-
-                    {/* Event menu */}
-                    {contextItems.length > 0 && (
-                        <div className="flex h-full items-center justify-center">
-                            <ContextNavSlot
-                                active={contextActive}
-                                forceMenu
-                                TriggerIcon={ContextTriggerIcon}
-                                items={contextItems}
-                                menuLabel={contextMenuLabel}
-                                pathname={pathname}
-                                searchParams={searchParams}
-                                onItemClick={handleDashboardMenuClick}
-                            />
-                        </div>
-                    )}
-
-                    {/* Account menu */}
-                    <div className="flex h-full items-center justify-center">
-                        <button
-                            type="button"
-                            onClick={openAccount}
-                            aria-label={t('openAccount')}
-                            aria-haspopup="dialog"
-                            aria-expanded={accountOpen}
-                            className="flex h-full w-full items-center justify-center transition-colors hover:bg-surface-muted"
-                        >
-                            <span
-                                className={cn(
-                                    'flex h-10 w-10 items-center justify-center transition-all duration-200',
-                                    accountActive ? 'scale-105 opacity-100' : 'scale-100 opacity-50',
-                                )}
+                            <button
+                                type="button"
+                                onClick={openAccount}
+                                aria-label={t('openAccount')}
+                                aria-haspopup="dialog"
+                                aria-expanded={accountOpen}
+                                className="flex h-full w-full items-center justify-center transition-colors hover:bg-surface-muted"
                             >
-                                <MenuIcon className="h-5.5 w-5.5 text-ink transition-all duration-200" aria-hidden="true" />
-                            </span>
-                        </button>
-                    </div>
-                </nav>
+                                <span
+                                    className={cn(
+                                        'flex h-10 w-10 items-center justify-center transition-all duration-200',
+                                        accountActive ? 'scale-105 opacity-100' : 'scale-100 opacity-50',
+                                    )}
+                                >
+                                    <MenuIcon className="h-5.5 w-5.5 text-ink transition-all duration-200" aria-hidden="true" />
+                                </span>
+                            </button>
+                        </div>
+                    </nav>
+                </div>
             </div>
 
             {/* Compose */}

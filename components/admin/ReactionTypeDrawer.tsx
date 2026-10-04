@@ -10,7 +10,7 @@ import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { type ReactionTypeAvailability, ReactionTypeAvailabilityControl } from '@/components/admin/ReactionTypeAvailabilityControl';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { appConfigKeys } from '@/hooks/useAppConfig';
+import { invalidatePublicConfig } from '@/hooks/useAppConfig';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { EventTypeConvention, ReactionTypeRequestDto, ReactionTypeResponseDto } from '@/lib/api/types';
 
@@ -75,7 +75,7 @@ export function ReactionTypeDrawer({
     const invalidateCatalogs = () => {
         invalidate({ resource: 'reaction-types', dataProviderName: 'reaction-types', invalidates: ['list', 'many', 'detail'] });
         queryClient.invalidateQueries({ queryKey: ['admin', 'reaction-types'] });
-        queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+        invalidatePublicConfig(queryClient);
     };
     const { mutateAsync: createReactionType, mutation: createMutation } = useCreate<ReactionTypeResponseDto>({
         dataProviderName: 'reaction-types',

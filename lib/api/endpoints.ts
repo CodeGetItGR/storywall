@@ -47,6 +47,8 @@ export const endpoints = {
         businessProfile: '/api/me/business-profile',
     },
 
+    contentNotices: { submit: '/api/content-notices' },
+
     newsletter: {
         subscribe: '/api/newsletter/subscribe',
         confirm: '/api/newsletter/confirm',
@@ -84,6 +86,7 @@ export const endpoints = {
         qrLinkStats: (eventId: string) => `/api/events/${eventId}/qr-links/stats`,
         members: (eventId: string) => `/api/events/${eventId}/members`,
         modules: (eventId: string) => `/api/events/${eventId}/modules`,
+        memberRoles: (eventId: string) => `/api/events/${eventId}/member-roles`,
         sessions: (eventId: string) => `/api/events/${eventId}/sessions`,
         rsvps: (eventId: string) => `/api/events/${eventId}/rsvps`,
         rsvpReport: (eventId: string, reportType: RsvpReportType) =>
@@ -173,6 +176,8 @@ export const endpoints = {
         byId: (id: string) => `/api/event-members/${id}`,
         claim: (id: string) => `/api/event-members/${id}/claim`,
         demoAvatar: (id: string) => `/api/event-members/${id}/demo-avatar`,
+        role: (id: string) => `/api/event-members/${id}/role`,
+        roleLock: (id: string) => `/api/event-members/${id}/role-lock`,
     },
 
     eventSessions: {
@@ -242,7 +247,15 @@ export const endpoints = {
         review: (targetType: string, targetId: string) => `/api/admin/moderation/cases/${targetType}/${targetId}/review`,
         decision: (targetType: string, targetId: string) => `/api/admin/moderation/cases/${targetType}/${targetId}/decision`,
         ban: (banId: string) => `/api/admin/moderation/bans/${banId}`,
+        eventSuspension: (eventId: string) => `/api/admin/moderation/event-suspensions/${eventId}`,
+        closeEventSuspension: (eventId: string) => `/api/admin/moderation/event-suspensions/${eventId}/close`,
         auditLog: '/api/admin/audit-log',
+        notices: '/api/admin/moderation/notices',
+        notice: (id: string) => `/api/admin/moderation/notices/${id}`,
+        noticeEvents: (id: string) => `/api/admin/moderation/notices/${id}/events`,
+        noticeItems: (id: string, eventId: string) => `/api/admin/moderation/notices/${id}/events/${eventId}/items`,
+        noticeAttach: (id: string) => `/api/admin/moderation/notices/${id}/attach`,
+        noticeClose: (id: string) => `/api/admin/moderation/notices/${id}/close`,
     },
 
     auditLogs: {
@@ -284,7 +297,13 @@ export const endpoints = {
             funnelCohorts: (weeks: number) => `/api/admin/metrics/funnel/cohorts?weeks=${encodeURIComponent(String(weeks))}`,
         },
         orders: {
+            list: '/api/admin/orders',
+            byId: (orderId: string) => `/api/admin/orders/${orderId}`,
             settle: (orderId: string) => `/api/admin/orders/${orderId}/settle`,
+        },
+        billing: {
+            accountingExport: (from: string, to: string) =>
+                `/api/admin/billing/accounting-export?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
         },
         webhooks: {
             unprocessed: '/api/admin/webhooks/unprocessed',
@@ -319,6 +338,17 @@ export const endpoints = {
         reactionTypes: {
             list: '/api/admin/reaction-types',
             byId: (id: string) => `/api/admin/reaction-types/${id}`,
+        },
+        memberRoles: {
+            collection: '/api/admin/member-roles',
+            list: (eventTypeKey: string) => `/api/admin/member-roles?eventTypeKey=${encodeURIComponent(eventTypeKey)}`,
+            byId: (id: string) => `/api/admin/member-roles/${id}`,
+            retire: (id: string) => `/api/admin/member-roles/${id}/retire`,
+            unretire: (id: string) => `/api/admin/member-roles/${id}/unretire`,
+        },
+        blockedTerms: {
+            collection: '/api/admin/blocked-terms',
+            byId: (id: string) => `/api/admin/blocked-terms/${id}`,
         },
         collaborators: {
             list: '/api/admin/collaborators',

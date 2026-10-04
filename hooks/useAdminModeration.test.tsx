@@ -7,8 +7,10 @@ import {
     adminModerationKeys,
     useAdminModerationCase,
     useAdminModerationCases,
+    useCloseEventSuspension,
     useDecideModerationCase,
     useLiftEventBan,
+    useLiftEventSuspension,
     useStartModerationReview,
 } from '@/hooks/useAdminModeration';
 import { ApiError } from '@/lib/api/client';
@@ -32,6 +34,10 @@ const request: ModerationDecisionRequestDto = {
     removeMember: false,
     banFromEvent: false,
     suspendAccount: false,
+    suspendEvent: false,
+    ground: null,
+    rule: null,
+    explanation: null,
     note: null,
 };
 
@@ -183,6 +189,22 @@ describe('useDecideModerationCase', () => {
         expect(isInvalidated(client, caseKey)).toBe(true);
     });
 
+    it('marks the notices lists stale, and leaves the audited notice and picker queries alone', async () => {
+        mocks.post.mockResolvedValue({ id: 'd-1' });
+        const client = makeClient();
+        const listKey = ['admin', 'moderation', 'notices', 'CLOSED', 0];
+        const detailKey = ['admin', 'moderation', 'notice', 'n-1'];
+        const browseKey = ['admin', 'moderation', 'notice-browse', 'n-1', 'items', 'e-1', 'MEDIA', 0];
+        for (const key of [listKey, detailKey, browseKey]) client.setQueryData(key, {});
+        const { result } = renderHook(() => useDecideModerationCase(), { wrapper: wrapperFor(client) });
+
+        await act(() => result.current.mutateAsync({ targetType: 'COMMENT', targetId: 'c-1', request }));
+
+        expect(isInvalidated(client, listKey)).toBe(true);
+        expect(isInvalidated(client, detailKey)).toBe(false);
+        expect(isInvalidated(client, browseKey)).toBe(false);
+    });
+
     it('does not re-read a mounted case after deciding (the drawer closes; a re-read is a logged view)', async () => {
         mocks.get.mockResolvedValue({ targetId: 'c-1' });
         mocks.post.mockResolvedValue({ id: 'd-1' });
@@ -211,7 +233,7 @@ describe('useDecideModerationCase', () => {
         expect(isInvalidated(client, caseKey)).toBe(true);
     });
 
-    it.each([3039, 5107, 5108])('re-reads only the case after a refusal (%i)', async (errorCode) => {
+    it.each([3039, 5107, 5108, 5110])('re-reads only the case after a refusal (%i)', async (errorCode) => {
         mocks.post.mockRejectedValue(new ApiError(errorCode === 3039 ? 400 : 409, { errorCode }));
         const client = makeClient();
         seed(client);
@@ -269,5 +291,93 @@ describe('useLiftEventBan', () => {
         await expect(act(() => result.current.mutateAsync({ banId: 'b-1', targetType: 'COMMENT', targetId: 'c-1' }))).rejects.toBeInstanceOf(
             ApiError,
         );
+    });
+});
+describe('useLiftEventSuspension', () => {
+    it('lifts the suspension and re-reads only the case', async () => {
+        mocks.del.mockResolvedValue(null);
+        const client = makeClient();
+        seed(client);
+        const { result } = renderHook(() => useLiftEventSuspension(), { wrapper: wrapperFor(client) });
+
+        await act(() => result.current.mutateAsync({ eventId: 'e-1', targetType: 'COMMENT', targetId: 'c-1' }));
+
+        expect(mocks.del).toHaveBeenCalledWith('/api/admin/moderation/event-suspensions/e-1');
+        expect(isInvalidated(client, caseKey)).toBe(true);
+        expect(isInvalidated(client, openKey)).toBe(false);
+    });
+
+    it('treats 5111 as already lifted', async () => {
+        mocks.del.mockRejectedValue(new ApiError(409, { errorCode: 5111 }));
+        const client = makeClient();
+        seed(client);
+        const { result } = renderHook(() => useLiftEventSuspension(), { wrapper: wrapperFor(client) });
+
+        await act(() => result.current.mutateAsync({ eventId: 'e-1', targetType: 'COMMENT', targetId: 'c-1' }));
+
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+        expect(isInvalidated(client, caseKey)).toBe(true);
+    });
+
+    it('still fails on other errors', async () => {
+        mocks.del.mockRejectedValue(new ApiError(404, { errorCode: 2001 }));
+        const { result } = renderHook(() => useLiftEventSuspension(), { wrapper: wrapperFor(makeClient()) });
+
+        await expect(act(() => result.current.mutateAsync({ eventId: 'e-1', targetType: 'COMMENT', targetId: 'c-1' }))).rejects.toBeInstanceOf(
+            ApiError,
+        );
+    });
+
+    it('fails on 5112: another admin closed it, which is not a lift', async () => {
+        mocks.del.mockRejectedValue(new ApiError(409, { errorCode: 5112 }));
+        const client = makeClient();
+        seed(client);
+        const { result } = renderHook(() => useLiftEventSuspension(), { wrapper: wrapperFor(client) });
+
+        await expect(act(() => result.current.mutateAsync({ eventId: 'e-1', targetType: 'COMMENT', targetId: 'c-1' }))).rejects.toBeInstanceOf(
+            ApiError,
+        );
+        expect(isInvalidated(client, caseKey)).toBe(true);
+        expect(isInvalidated(client, openKey)).toBe(false);
+    });
+});
+
+describe('useCloseEventSuspension', () => {
+    it('closes the StoryWall and re-reads only the case', async () => {
+        mocks.post.mockResolvedValue(null);
+        const client = makeClient();
+        seed(client);
+        const { result } = renderHook(() => useCloseEventSuspension(), { wrapper: wrapperFor(client) });
+
+        await act(() => result.current.mutateAsync({ eventId: 'e-1', targetType: 'COMMENT', targetId: 'c-1' }));
+
+        expect(mocks.post).toHaveBeenCalledWith('/api/admin/moderation/event-suspensions/e-1/close');
+        expect(isInvalidated(client, caseKey)).toBe(true);
+        expect(isInvalidated(client, openKey)).toBe(false);
+    });
+
+    it('treats 5112 as already closed', async () => {
+        mocks.post.mockRejectedValue(new ApiError(409, { errorCode: 5112 }));
+        const client = makeClient();
+        seed(client);
+        const { result } = renderHook(() => useCloseEventSuspension(), { wrapper: wrapperFor(client) });
+
+        await act(() => result.current.mutateAsync({ eventId: 'e-1', targetType: 'COMMENT', targetId: 'c-1' }));
+
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+        expect(isInvalidated(client, caseKey)).toBe(true);
+    });
+
+    it('fails on 5111: lifted meanwhile, so nothing was closed', async () => {
+        mocks.post.mockRejectedValue(new ApiError(409, { errorCode: 5111 }));
+        const client = makeClient();
+        seed(client);
+        const { result } = renderHook(() => useCloseEventSuspension(), { wrapper: wrapperFor(client) });
+
+        await expect(act(() => result.current.mutateAsync({ eventId: 'e-1', targetType: 'COMMENT', targetId: 'c-1' }))).rejects.toBeInstanceOf(
+            ApiError,
+        );
+        expect(isInvalidated(client, caseKey)).toBe(true);
+        expect(isInvalidated(client, openKey)).toBe(false);
     });
 });

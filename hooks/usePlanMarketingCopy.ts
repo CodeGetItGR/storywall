@@ -21,6 +21,8 @@ export function usePlanMarketingCopy() {
             guestsUnlimited: t('guestsUnlimited'),
             guestsUpTo: (count) => t('guestsUpTo', { count }),
             mediaUnlimited: t('mediaUnlimited'),
+            memberRoles: (count, custom) => t(custom ? 'memberRolesWithCustom' : 'memberRoles', { count }),
+            memberRolesCustomOnly: t('memberRolesCustomOnly'),
             scheduleSessions: (max) => (max === null ? t('scheduleSessionsUnlimited') : t('scheduleSessions', { count: max })),
             storageUnlimited: t('storageUnlimited'),
         }),

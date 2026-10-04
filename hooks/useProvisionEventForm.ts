@@ -11,7 +11,7 @@ import { eligibleProvisioningPlans, type ProvisionHost } from '@/lib/adminAccoun
 import { getFieldErrors } from '@/lib/api/errors';
 import type { EventResponseDto, EventTypeConvention, EventVisibility } from '@/lib/api/types';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
-import { datetimeLocalValueToIso, getScheduleDatetimeLocalBounds, isDatetimeLocalAfter, isDatetimeLocalBefore } from '@/lib/datetime';
+import { datetimeLocalValueToIso, getScheduleDatetimeLocalBounds, isDatetimeLocalBefore } from '@/lib/datetime';
 import { getCurrentTimezone, getSupportedTimezones } from '@/lib/timezones';
 
 export type ProvisionEventStep = 'event' | 'review' | 'success';
@@ -36,7 +36,6 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
     const [planTierCode, setPlanTierCode] = useState('');
     const [title, setTitle] = useState('');
     const [startAt, setStartAt] = useState('');
-    const [endAt, setEndAt] = useState('');
     const [timezone, setTimezone] = useState(getCurrentTimezone);
     const [locationName, setLocationName] = useState('');
     const [locationAddress, setLocationAddress] = useState('');
@@ -54,13 +53,11 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
     const duration = useAdminDurationPick(selectedPlan, { preselectShortest: true });
     const timezoneOptions = useMemo(() => getSupportedTimezones(), []);
     const isTimezoneValid = timezoneOptions.includes(timezone);
-    const { startAtMin, startAtMax, endAtMin } = getScheduleDatetimeLocalBounds({ startAt, endAt });
+    const { startAtMin, startAtMax } = getScheduleDatetimeLocalBounds({ startAt, endAt: '' });
     const scheduleError =
         startAt && isDatetimeLocalBefore(startAt, startAtMin)
             ? tCreate('validation.startInPast')
-            : startAt && endAt && !isDatetimeLocalAfter(endAt, startAt)
-              ? tCreate('validation.endBeforeStart')
-              : null;
+            : null;
     const timezoneError = timezone && !isTimezoneValid ? tCreate('validation.invalidTimezone') : null;
     const fieldErrors = getFieldErrors(provisionEvent.error) ?? {};
     const canReview = Boolean(
@@ -68,7 +65,6 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
         selectedPlan &&
         title.trim() &&
         startAt &&
-        endAt &&
         isTimezoneValid &&
         !scheduleError &&
         locationName.trim() &&
@@ -95,8 +91,7 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
         if (step !== 'review' || !canReview || !selectedEventType || !selectedPlan) return;
 
         const startAtIso = datetimeLocalValueToIso(startAt);
-        const endAtIso = datetimeLocalValueToIso(endAt);
-        if (!startAtIso || !endAtIso) return;
+        if (!startAtIso) return;
 
         const initialSessionTitleKey = getCreateEventCatalogEntry(selectedEventType)?.initialSessionTitleKey;
         const initialSessionTitle = initialSessionTitleKey && tCreate.has(initialSessionTitleKey) ? tCreate(initialSessionTitleKey) : undefined;
@@ -111,7 +106,6 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
                     coverageOptionId: duration.optionId || undefined,
                     visibility,
                     startAt: startAtIso,
-                    endAt: endAtIso,
                     timezone,
                     locationName: locationName.trim(),
                     locationAddress: locationAddress.trim(),
@@ -132,7 +126,6 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
         setStep('event');
         setTitle('');
         setStartAt('');
-        setEndAt('');
         setLocationName('');
         setLocationAddress('');
         setMapsUrl('');
@@ -157,8 +150,6 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
         setTitle,
         startAt,
         setStartAt,
-        endAt,
-        setEndAt,
         timezone,
         setTimezone,
         timezoneOptions,
@@ -173,7 +164,6 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
         setVisibility,
         startAtMin,
         startAtMax,
-        endAtMin,
         scheduleError,
         fieldErrors,
         fieldError,

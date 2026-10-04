@@ -3,6 +3,7 @@ import { emptyToNull, numberOrNull } from '@/lib/adminUtils';
 import type { Visibility } from '@/lib/adminVisibility';
 import { visibilityFlags } from '@/lib/adminVisibility';
 import type { BillingPeriod, PlanTierPatchDto, PlanTierResponseDto } from '@/lib/api/types';
+import { numberFormat } from '@/lib/format';
 import { formatLimitValue } from '@/lib/planTiers';
 
 export type PlanEditorTranslate = (key: string) => string;
@@ -74,7 +75,7 @@ export function planChangeSummary(plan: PlanTierResponseDto, patch: PlanTierPatc
     const countLabel = (value: number | null) => (value === null ? unlimited : value.toLocaleString());
     const moneyLabel = (amountMinor: number | null, currency: string | null) => {
         if (amountMinor === null || !currency) return t('plans.noPrice');
-        return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amountMinor / 100);
+        return numberFormat(undefined, { style: 'currency', currency }).format(amountMinor / 100);
     };
     const storageLabel = (value: number | null) => formatLimitValue(value, 'bytes') ?? unlimited;
     const add = (label: string, before: string, after: string) => {

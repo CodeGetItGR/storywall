@@ -14,6 +14,7 @@ vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: () => ({ data: { reportTa
 vi.mock('@/hooks/useBilling', () => ({ useUpgradeOptions: () => ({ data: [] }) }));
 vi.mock('@/hooks/useCoHostCapacity', () => ({ useCoHostCapacity: () => ({ isFull: false, used: 0, limit: null, percent: 0, valueLabel: '', fullNotice: null }) }));
 vi.mock('@/hooks/useMemberAvatarUrl', () => ({ useMemberAvatarUrl: () => () => null }));
+vi.mock('@/hooks/useMemberRoleLabel', () => ({ useMemberRoleLabel: () => null }));
 vi.mock('@/hooks/useMemberModeration', () => ({
     useMemberModeration: () => ({
         memberToRemove: null,
@@ -29,6 +30,7 @@ vi.mock('@/hooks/useMemberModeration', () => ({
 }));
 vi.mock('@/providers/EventProvider', () => ({
     useActiveMember: () => (activeMemberId ? { id: activeMemberId } : null),
+    useActiveEvent: () => null,
 }));
 vi.mock('@/components/manage/invitations', () => ({
     CoHostInvitationRow: () => null,

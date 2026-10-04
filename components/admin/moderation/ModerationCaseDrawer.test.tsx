@@ -12,6 +12,11 @@ const hooks = vi.hoisted(() => ({
     decideMutate: vi.fn(),
     decideError: null as Error | null,
     liftMutate: vi.fn(),
+    liftSuspensionMutate: vi.fn(),
+    closeSuspensionMutate: vi.fn(),
+    suspensionPending: false,
+    liftSuspensionError: null as Error | null,
+    closeSuspensionError: null as Error | null,
 }));
 
 // Values are appended so a test can see what an ICU message was given.
@@ -33,6 +38,18 @@ vi.mock('@/hooks/useAdminModeration', () => ({
     useStartModerationReview: () => ({ mutate: hooks.reviewMutate, error: hooks.reviewError }),
     useDecideModerationCase: () => ({ mutate: hooks.decideMutate, isPending: false, error: hooks.decideError }),
     useLiftEventBan: () => ({ mutate: hooks.liftMutate, isPending: false, variables: undefined, error: null }),
+    useLiftEventSuspension: () => ({
+        mutate: hooks.liftSuspensionMutate,
+        reset: vi.fn(),
+        isPending: hooks.suspensionPending,
+        error: hooks.liftSuspensionError,
+    }),
+    useCloseEventSuspension: () => ({
+        mutate: hooks.closeSuspensionMutate,
+        reset: vi.fn(),
+        isPending: hooks.suspensionPending,
+        error: hooks.closeSuspensionError,
+    }),
 }));
 
 const baseDetail: ModerationCaseDetailDto = {
@@ -50,6 +67,7 @@ const baseDetail: ModerationCaseDetailDto = {
             createdAt: '2026-09-30T10:00:00Z',
             reporterMemberId: 'm-2',
             reporterDisplayName: 'Eleni',
+            noticeReference: null,
         },
     ],
     content: {
@@ -61,10 +79,11 @@ const baseDetail: ModerationCaseDetailDto = {
         media: [],
         createdAt: '2026-09-29T10:00:00Z',
     },
-    allowedActions: { removeContent: true, removeMember: true, banFromEvent: true, suspendAccount: true },
+    allowedActions: { removeContent: true, removeMember: true, banFromEvent: true, suspendAccount: true, suspendEvent: true },
     decisions: [],
     priorDecisionsAgainstAuthor: [],
     bans: [],
+    eventSuspension: null,
 };
 
 function renderDrawer(onCloseAction = vi.fn()) {
@@ -83,6 +102,11 @@ beforeEach(() => {
     hooks.reviewMutate.mockReset();
     hooks.decideMutate.mockReset();
     hooks.liftMutate.mockReset();
+    hooks.liftSuspensionMutate.mockReset();
+    hooks.closeSuspensionMutate.mockReset();
+    hooks.suspensionPending = false;
+    hooks.liftSuspensionError = null;
+    hooks.closeSuspensionError = null;
 });
 
 afterEach(cleanup);
@@ -108,6 +132,11 @@ describe('ModerationCaseDrawer', () => {
         const onClose = renderDrawer();
         fireEvent.click(screen.getByRole('radio', { name: 'form.takeAction' }));
         fireEvent.click(screen.getByRole('checkbox', { name: 'form.removeContent' }));
+        fireEvent.click(screen.getByRole('radio', { name: 'grounds.GUIDELINES_BREACH' }));
+        fireEvent.change(screen.getByRole('combobox', { name: 'statement.rule' }), { target: { value: 'HARASSMENT' } });
+        fireEvent.change(screen.getByRole('textbox', { name: 'statement.explanation' }), {
+            target: { value: 'Insults aimed at one guest, twice.' },
+        });
         fireEvent.click(screen.getByRole('button', { name: 'form.review' }));
         fireEvent.click(screen.getByRole('button', { name: 'form.confirm' }));
         expect(hooks.decideMutate).toHaveBeenCalledWith(
@@ -120,7 +149,12 @@ describe('ModerationCaseDrawer', () => {
                     removeMember: false,
                     banFromEvent: false,
                     suspendAccount: false,
+                    suspendEvent: false,
+                    ground: 'GUIDELINES_BREACH',
+                    rule: 'HARASSMENT',
+                    explanation: 'Insults aimed at one guest, twice.',
                     note: null,
+                    expectedContentText: null,
                 },
             },
             expect.anything(),
@@ -166,6 +200,16 @@ describe('ModerationCaseDrawer', () => {
         expect(screen.getByText('summary.reports {"count":1,"outcome":"DISMISSED"}')).toBeTruthy();
     });
 
+    it('labels a report that came from a public notice with its reference', () => {
+        hooks.detail = {
+            ...baseDetail,
+            reports: [{ ...baseDetail.reports[0], reporterMemberId: null, reporterDisplayName: null, noticeReference: 'AB12CD34' }],
+        };
+        renderDrawer();
+        expect(screen.getByText(/publicNotice {"reference":"AB12CD34"}/)).toBeTruthy();
+        expect(screen.queryByText(/reporterGone/)).toBeNull();
+    });
+
     it('says the item is gone when the content is null', () => {
         hooks.detail = { ...baseDetail, content: null };
         renderDrawer();
@@ -180,5 +224,156 @@ describe('ModerationCaseDrawer', () => {
         renderDrawer();
         fireEvent.click(screen.getByRole('button', { name: 'liftBan' }));
         expect(hooks.liftMutate).toHaveBeenCalledWith({ banId: 'b-1', targetType: 'COMMENT', targetId: 'c-1' });
+    });
+
+    it('shows the statement of an earlier decision', () => {
+        hooks.detail = {
+            ...baseDetail,
+            status: 'CLOSED',
+            decisions: [
+                {
+                    id: 'd-1',
+                    targetType: 'COMMENT',
+                    targetId: 'c-1',
+                    eventId: 'e-1',
+                    outcome: 'ACTION_TAKEN',
+                    contentRemoved: true,
+                    memberRemoved: false,
+                    banned: false,
+                    accountSuspended: false,
+                    eventSuspended: true,
+                    ground: 'GUIDELINES_BREACH',
+                    rule: 'HARASSMENT',
+                    explanation: 'Insults aimed at one guest, twice.',
+                    reportCount: 1,
+                    adminUserId: 'a-1',
+                    note: null,
+                    createdAt: '2026-10-01T10:00:00Z',
+                },
+            ],
+        };
+        renderDrawer();
+        expect(screen.getByText('history.actions.eventSuspended · history.actions.contentRemoved')).toBeTruthy();
+        expect(screen.getByText('grounds.GUIDELINES_BREACH · rules.HARASSMENT')).toBeTruthy();
+        expect(screen.getByText('Insults aimed at one guest, twice.')).toBeTruthy();
+    });
+
+    it('lifts a suspension only after a confirm', () => {
+        hooks.detail = {
+            ...baseDetail,
+            eventSuspension: { decisionId: 'd-1', suspendedAt: '2026-10-01T10:00:00Z', closedAt: null, deletesOn: '2026-11-01T10:00:00Z' },
+        };
+        renderDrawer();
+        expect(screen.getByText(/^suspension\.status/)).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'suspension.lift' }));
+        expect(hooks.liftSuspensionMutate).not.toHaveBeenCalled();
+        expect(screen.getByText('suspension.liftConfirm')).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'suspension.liftConfirmButton' }));
+        expect(hooks.liftSuspensionMutate).toHaveBeenCalledWith({ eventId: 'e-1', targetType: 'COMMENT', targetId: 'c-1' }, expect.anything());
+    });
+
+    it('can back out of lifting a suspension', () => {
+        hooks.detail = {
+            ...baseDetail,
+            eventSuspension: { decisionId: 'd-1', suspendedAt: '2026-10-01T10:00:00Z', closedAt: null, deletesOn: '2026-11-01T10:00:00Z' },
+        };
+        renderDrawer();
+        fireEvent.click(screen.getByRole('button', { name: 'suspension.lift' }));
+        fireEvent.click(screen.getByRole('button', { name: 'suspension.cancel' }));
+        expect(screen.getByRole('button', { name: 'suspension.lift' })).toBeTruthy();
+        expect(hooks.liftSuspensionMutate).not.toHaveBeenCalled();
+    });
+
+    it('offers no lift when the event is not suspended', () => {
+        renderDrawer();
+        expect(screen.queryByRole('button', { name: 'suspension.lift' })).toBeNull();
+        expect(screen.queryByRole('button', { name: 'suspension.close' })).toBeNull();
+    });
+
+    it('closes a StoryWall only after a confirm that names the deletion date', () => {
+        hooks.detail = {
+            ...baseDetail,
+            eventSuspension: { decisionId: 'd-1', suspendedAt: '2026-10-01T10:00:00Z', closedAt: null, deletesOn: '2026-11-01T10:00:00Z' },
+        };
+        renderDrawer();
+        fireEvent.click(screen.getByRole('button', { name: 'suspension.close' }));
+        expect(hooks.closeSuspensionMutate).not.toHaveBeenCalled();
+        // The mocked t() prints its values after the key: the confirm must carry deletesOn.
+        expect(screen.getByText(/^suspension\.closeConfirm \{.*deletesOn/)).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'suspension.closeConfirmButton' }));
+        expect(hooks.closeSuspensionMutate).toHaveBeenCalledWith({ eventId: 'e-1', targetType: 'COMMENT', targetId: 'c-1' }, expect.anything());
+        expect(hooks.liftSuspensionMutate).not.toHaveBeenCalled();
+    });
+
+    it('offers neither lift nor close once the StoryWall is closed', () => {
+        hooks.detail = {
+            ...baseDetail,
+            eventSuspension: {
+                decisionId: 'd-1',
+                suspendedAt: '2026-10-01T10:00:00Z',
+                closedAt: '2026-10-02T10:00:00Z',
+                deletesOn: '2026-11-01T10:00:00Z',
+            },
+        };
+        renderDrawer();
+        expect(screen.getByText(/^suspension\.closedStatus \{.*deletesOn/)).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'suspension.lift' })).toBeNull();
+        expect(screen.queryByRole('button', { name: 'suspension.close' })).toBeNull();
+    });
+
+    it('moves focus into the confirm, and back to the button on cancel', () => {
+        hooks.detail = {
+            ...baseDetail,
+            eventSuspension: { decisionId: 'd-1', suspendedAt: '2026-10-01T10:00:00Z', closedAt: null, deletesOn: '2026-11-01T10:00:00Z' },
+        };
+        renderDrawer();
+        fireEvent.click(screen.getByRole('button', { name: 'suspension.close' }));
+        expect(document.activeElement).toBe(screen.getByRole('group', { name: 'suspension.close' }));
+        fireEvent.click(screen.getByRole('button', { name: 'suspension.cancel' }));
+        expect(document.activeElement).toBe(screen.getByRole('button', { name: 'suspension.close' }));
+    });
+
+    it('returns focus to the lift button after a successful lift', () => {
+        hooks.liftSuspensionMutate.mockImplementation((_vars: unknown, options: { onSuccess: () => void }) => options.onSuccess());
+        hooks.detail = {
+            ...baseDetail,
+            eventSuspension: { decisionId: 'd-1', suspendedAt: '2026-10-01T10:00:00Z', closedAt: null, deletesOn: '2026-11-01T10:00:00Z' },
+        };
+        renderDrawer();
+        fireEvent.click(screen.getByRole('button', { name: 'suspension.lift' }));
+        fireEvent.click(screen.getByRole('button', { name: 'suspension.liftConfirmButton' }));
+        expect(document.activeElement).toBe(screen.getByRole('button', { name: 'suspension.lift' }));
+    });
+
+    it('disables Confirm and Cancel while the suspension action is pending', () => {
+        hooks.detail = {
+            ...baseDetail,
+            eventSuspension: { decisionId: 'd-1', suspendedAt: '2026-10-01T10:00:00Z', closedAt: null, deletesOn: '2026-11-01T10:00:00Z' },
+        };
+        hooks.suspensionPending = true;
+        renderDrawer();
+        fireEvent.click(screen.getByRole('button', { name: 'suspension.close' }));
+        expect((screen.getByRole('button', { name: 'suspension.closeConfirmButton' }) as HTMLButtonElement).disabled).toBe(true);
+        expect((screen.getByRole('button', { name: 'suspension.cancel' }) as HTMLButtonElement).disabled).toBe(true);
+    });
+
+    it('shows the refusal when a lift hits 5112', () => {
+        hooks.liftSuspensionError = new Error('This StoryWall has been closed.');
+        hooks.detail = {
+            ...baseDetail,
+            eventSuspension: { decisionId: 'd-1', suspendedAt: '2026-10-01T10:00:00Z', closedAt: null, deletesOn: '2026-11-01T10:00:00Z' },
+        };
+        renderDrawer();
+        expect(screen.getByRole('alert').textContent).toBe('This StoryWall has been closed.');
+    });
+
+    it('shows the refusal when a close hits 5111', () => {
+        hooks.closeSuspensionError = new Error('This StoryWall is no longer suspended.');
+        hooks.detail = {
+            ...baseDetail,
+            eventSuspension: { decisionId: 'd-1', suspendedAt: '2026-10-01T10:00:00Z', closedAt: null, deletesOn: '2026-11-01T10:00:00Z' },
+        };
+        renderDrawer();
+        expect(screen.getByRole('alert').textContent).toBe('This StoryWall is no longer suspended.');
     });
 });

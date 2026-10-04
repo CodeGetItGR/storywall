@@ -58,6 +58,9 @@ exposed.
 While `deletedAt` is set and until the purge, **any host (primary or co-)** can read the event and
 everything in it. Guests and plain attendees get `404 RESOURCE_NOT_FOUND` on the event and every
 sub-resource, exactly as if it never existed.
+(Enforced on every member-gated sub-resource since 2026-10-02; before that only
+`GET /api/events/{id}` answered 404 and the sub-resources still served a guest. Their own deletes
+answer 404 too.)
 
 | call | host gets |
 |---|---|

@@ -1,5 +1,4 @@
 import { dehydrate, HydrationBoundary, type QueryClient } from '@tanstack/react-query';
-import { headers } from 'next/headers';
 
 import { eventSessionKeys } from '@/hooks/useEventSessions';
 import { usageKeys } from '@/hooks/useUsage';
@@ -7,8 +6,7 @@ import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
 import { serverGet, serverModuleReadable } from '@/lib/api/serverFetch';
 import type { EventSessionResponseDto, EventUsageResponseDto } from '@/lib/api/types';
-import { ACCESS_TOKEN_HEADER } from '@/lib/auth/authCookies';
-import { resolveServerEventContext } from '@/lib/auth/serverEventContext';
+import { prefetchAccessToken, resolveServerEventContext } from '@/lib/auth/serverEventContext';
 import { makeQueryClient } from '@/lib/queryClient';
 
 import SchedulePage from './PageClient';
@@ -42,7 +40,7 @@ async function prefetchHostUsage(queryClient: QueryClient, eventId: string) {
 // immediately instead of its loading state, plus the host's session cap.
 export default async function Page({ params }: PageProps) {
     const { eventId } = await params;
-    const accessToken = (await headers()).get(ACCESS_TOKEN_HEADER);
+    const accessToken = await prefetchAccessToken();
     const queryClient = makeQueryClient();
 
     if (accessToken) {

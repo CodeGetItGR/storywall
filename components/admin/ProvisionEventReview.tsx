@@ -2,9 +2,11 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 
+import { useCreateEventFieldLabels } from '@/hooks/useCreateEventFieldLabels';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import type { ProvisionEventForm } from '@/hooks/useProvisionEventForm';
 import type { ProvisionHost } from '@/lib/adminAccountProvisioning';
+import type { EventTypeConvention } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
 
 export function ProvisionEventReview({ form, host }: { form: ProvisionEventForm; host: ProvisionHost }) {
@@ -12,14 +14,15 @@ export function ProvisionEventReview({ form, host }: { form: ProvisionEventForm;
     const tAdmin = useTranslations('AdminPage');
     const locale = useLocale();
     const localizedText = useLocalizedText();
+    const fieldLabels = useCreateEventFieldLabels(form.selectedEventType as EventTypeConvention);
     const eventType = form.eventTypes.find((item) => item.eventTypeKey === form.selectedEventType);
     const hostName = [host.firstName, host.lastName].filter(Boolean).join(' ') || host.email || t('unnamedHost');
 
     const rows = [
         [t('reviewHost'), hostName],
-        [t('reviewEvent'), form.title.trim()],
+        [fieldLabels.title, form.title.trim()],
         [t('reviewType'), eventType ? localizedText(eventType.name, eventType.eventTypeKey) : form.selectedEventType],
-        [t('reviewDate'), formatDate(locale, form.startAt, { dateStyle: 'medium', timeStyle: 'short' })],
+        [fieldLabels.startAt, formatDate(locale, form.startAt, { dateStyle: 'medium', timeStyle: 'short' })],
         [t('reviewPlan'), form.selectedPlan?.name ?? ''],
         [t('reviewDuration'), form.duration.selectedOption ? tAdmin('plans.columns.months', { count: form.duration.selectedOption.months }) : ''],
         [t('reviewVisibility'), t(`visibilityOption.${form.visibility}`)],

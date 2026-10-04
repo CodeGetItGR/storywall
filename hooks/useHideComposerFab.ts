@@ -2,10 +2,10 @@
 
 import { useEffect } from 'react';
 
-import { useMobileChrome } from '@/providers/MobileChromeProvider';
+import { useMobileChromeActions } from '@/providers/MobileChromeProvider';
 
 export function useHideComposerFab(reason: string) {
-    const { hideComposerFab, showComposerFab } = useMobileChrome();
+    const { hideComposerFab, showComposerFab } = useMobileChromeActions();
 
     useEffect(() => {
         hideComposerFab(reason);

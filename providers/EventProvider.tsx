@@ -129,6 +129,11 @@ export function useMyMemberships(): EventMemberResponseDto[] {
     return useEventContext().memberships;
 }
 
+// Safe outside a provider: falls back to 'standard'.
+export function useContentAccessMode(): ContentAccessMode {
+    return useContext(EventContext)?.contentAccessMode ?? 'standard';
+}
+
 export function useIsHost(): boolean {
     return useEventContext().isHost;
 }

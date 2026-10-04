@@ -8,10 +8,10 @@ import Avatar from '@/components/ui/avatar';
 import { useEventStories } from '@/hooks';
 import { useEventSessions } from '@/hooks/useEventSessions';
 import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
+import { usePostingAsMember } from '@/hooks/usePostingAsMember';
 import { groupStoriesByAuthor } from '@/lib/stories';
 import { avatarColorFromId, initialsFromName } from '@/lib/utils';
 import { useComposer } from '@/providers/ComposerProvider';
-import { useActiveMember } from '@/providers/EventProvider';
 
 import { ScheduleStoryAvatar } from './ScheduleStoryAvatar';
 import { StoryAvatar } from './StoryAvatar';
@@ -24,7 +24,8 @@ interface StoriesRowProps {
 export function StoriesRow({ eventId, onOpenStoryAction }: StoriesRowProps) {
     const t = useTranslations('StoriesRow');
     const tAvatar = useTranslations('StoryAvatar');
-    const activeMember = useActiveMember();
+    // The "your story" slot follows who new stories are posted as (a demo persona, for an admin).
+    const { member: activeMember } = usePostingAsMember();
     const memberAvatarUrl = useMemberAvatarUrl();
     const { data: stories = [] } = useEventStories(eventId);
     const { data: sessions = [], isLoading: isLoadingSessions } = useEventSessions(eventId);

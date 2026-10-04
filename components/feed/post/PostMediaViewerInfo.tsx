@@ -7,7 +7,7 @@ import { useMemo, useState } from 'react';
 import { PostAuthorAvatar } from '@/components/feed/post/PostAuthorAvatar';
 import { PostReactionPicker } from '@/components/feed/post/PostReactionPicker';
 import { ReactionSummary } from '@/components/feed/post/ReactionSummary';
-import { useAppConfig, usePostModal } from '@/hooks';
+import { openPostModal, useAppConfig } from '@/hooks';
 import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
 import type { PostResponseDto } from '@/lib/api/types';
 import { isEventWritable } from '@/lib/eventLifecycle';
@@ -38,7 +38,6 @@ function PostMediaCaption({ content }: { content: string }) {
 
 export function PostMediaViewerInfo({ post }: PostMediaViewerInfoProps) {
     const t = useTranslations('PostCard');
-    const { open: openPostModal } = usePostModal();
     const activeEvent = useActiveEvent();
     const memberAvatarUrl = useMemberAvatarUrl();
     const { data: appConfig } = useAppConfig();

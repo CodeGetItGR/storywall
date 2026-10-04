@@ -35,6 +35,7 @@ export type ApiErrorMessageKey =
     | 'eventStartPassed'
     | 'eventStartTooFarAhead'
     | 'eventCreationLocked'
+    | 'eventDraftLimitReached'
     | 'eventDeleteAlreadyPending'
     | 'eventDeleteNotPrimaryHost'
     | 'eventDeleteOtpExpired'
@@ -68,6 +69,7 @@ export type ApiErrorMessageKey =
     | 'giftHandoverPending'
     | 'giftNotAvailableOnPlan'
     | 'giftNotPrimaryHost'
+    | 'giftAccountNotPrimaryHost'
     | 'giftOrderNotYours'
     | 'giftRecipientProtected'
     | 'guidelinesAcceptanceRequired'
@@ -99,7 +101,12 @@ export type ApiErrorMessageKey =
     | 'orderNotManual'
     | 'moderationDecisionInvalid'
     | 'eventBanned'
+    | 'eventSuspended'
+    | 'eventAlreadySuspended'
+    | 'eventNotSuspended'
+    | 'eventAlreadyClosed'
     | 'moderationCaseClosed'
+    | 'noticeAlreadyHandled'
     | 'moderationMemberIsHost'
     | 'moderationTargetProtected'
     | 'orderNotPending'
@@ -152,6 +159,15 @@ export type ApiErrorMessageKey =
     | 'demoActAsRefused'
     | 'demoDesignationInvalid'
     | 'demoPersonaAvatarRefused'
+    | 'memberRoleInvalid'
+    | 'memberRoleUnknown'
+    | 'memberRoleCustomBlocked'
+    | 'memberRoleCustomNotAllowed'
+    | 'memberRoleCustomLocked'
+    | 'memberRoleHostOnly'
+    | 'memberRoleFeaturedMember'
+    | 'memberRoleCapReached'
+    | 'memberRoleTextChanged'
     | 'withdrawalNotPrimaryHost'
     | 'oauthEmailUnverified';
 
@@ -188,6 +204,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.EVENT_START_PASSED]: 'eventStartPassed',
     [ERROR_CODES.EVENT_START_TOO_FAR_AHEAD]: 'eventStartTooFarAhead',
     [ERROR_CODES.EVENT_CREATION_LOCKED]: 'eventCreationLocked',
+    [ERROR_CODES.EVENT_DRAFT_LIMIT_REACHED]: 'eventDraftLimitReached',
     [ERROR_CODES.EVENT_DELETE_ALREADY_PENDING]: 'eventDeleteAlreadyPending',
     [ERROR_CODES.EVENT_DELETE_NOT_PRIMARY_HOST]: 'eventDeleteNotPrimaryHost',
     [ERROR_CODES.EVENT_DELETE_OTP_EXPIRED]: 'eventDeleteOtpExpired',
@@ -219,6 +236,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.GIFT_CLAIM_NOT_ALLOWED]: 'giftClaimNotAllowed',
     [ERROR_CODES.GIFT_ORDER_NOT_YOURS]: 'giftOrderNotYours',
     [ERROR_CODES.GIFT_NOT_PRIMARY_HOST]: 'giftNotPrimaryHost',
+    [ERROR_CODES.GIFT_ACCOUNT_NOT_PRIMARY_HOST]: 'giftAccountNotPrimaryHost',
     [ERROR_CODES.GIFT_RECIPIENT_PROTECTED]: 'giftRecipientProtected',
     [ERROR_CODES.GIFT_NOT_AVAILABLE_ON_PLAN]: 'giftNotAvailableOnPlan',
     [ERROR_CODES.GIFT_ALREADY_CLAIMED]: 'giftAlreadyClaimed',
@@ -251,7 +269,12 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.ORDER_NOT_MANUAL]: 'orderNotManual',
     [ERROR_CODES.MODERATION_DECISION_INVALID]: 'moderationDecisionInvalid',
     [ERROR_CODES.EVENT_BANNED]: 'eventBanned',
+    [ERROR_CODES.EVENT_SUSPENDED]: 'eventSuspended',
+    [ERROR_CODES.EVENT_ALREADY_SUSPENDED]: 'eventAlreadySuspended',
+    [ERROR_CODES.EVENT_NOT_SUSPENDED]: 'eventNotSuspended',
+    [ERROR_CODES.EVENT_ALREADY_CLOSED]: 'eventAlreadyClosed',
     [ERROR_CODES.MODERATION_CASE_CLOSED]: 'moderationCaseClosed',
+    [ERROR_CODES.NOTICE_ALREADY_HANDLED]: 'noticeAlreadyHandled',
     [ERROR_CODES.MODERATION_MEMBER_IS_HOST]: 'moderationMemberIsHost',
     [ERROR_CODES.MODERATION_TARGET_PROTECTED]: 'moderationTargetProtected',
     [ERROR_CODES.PLAN_TIER_CURRENCY_MISMATCH]: 'planCurrencyMismatch',
@@ -305,6 +328,15 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.DEMO_ACT_AS_REFUSED]: 'demoActAsRefused',
     [ERROR_CODES.DEMO_DESIGNATION_INVALID]: 'demoDesignationInvalid',
     [ERROR_CODES.DEMO_PERSONA_AVATAR_REFUSED]: 'demoPersonaAvatarRefused',
+    [ERROR_CODES.MEMBER_ROLE_INVALID_REQUEST]: 'memberRoleInvalid',
+    [ERROR_CODES.MEMBER_ROLE_UNKNOWN]: 'memberRoleUnknown',
+    [ERROR_CODES.MEMBER_ROLE_CUSTOM_BLOCKED]: 'memberRoleCustomBlocked',
+    [ERROR_CODES.MEMBER_ROLE_CUSTOM_NOT_ALLOWED]: 'memberRoleCustomNotAllowed',
+    [ERROR_CODES.MEMBER_ROLE_CUSTOM_LOCKED]: 'memberRoleCustomLocked',
+    [ERROR_CODES.MEMBER_ROLE_HOST_ONLY]: 'memberRoleHostOnly',
+    [ERROR_CODES.MEMBER_ROLE_FEATURED_MEMBER]: 'memberRoleFeaturedMember',
+    [ERROR_CODES.MEMBER_ROLE_CAP_REACHED]: 'memberRoleCapReached',
+    [ERROR_CODES.MEMBER_ROLE_TEXT_CHANGED]: 'memberRoleTextChanged',
 } satisfies Record<KnownApiErrorCode, ApiErrorMessageKey>;
 
 export function getApiErrorMessageKey(code: number | string | undefined): ApiErrorMessageKey | undefined {

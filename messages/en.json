@@ -24,11 +24,20 @@
         "uploadPhoto": "Upload photo",
         "addPhotoFor": "Add photo for {name}",
         "changePhotoFor": "Change photo for {name}",
-        "photoFailed": "The guest was added, but the photo didn’t upload. Try again."
+        "photoFailed": "The guest was added, but the photo didn’t upload. Try again.",
+        "roleFor": "Role for {name}",
+        "noRole": "No role",
+        "rsvp": "RSVP",
+        "rsvpFor": "RSVP for {name}",
+        "rsvpAttending": "Attending",
+        "rsvpDeclined": "Declined",
+        "rsvpNone": "No response",
+        "save": "Save",
+        "close": "Close"
     },
     "Demo": {
         "resetDemo": "Reset demo",
-        "exitDemo": "Sign up for real",
+        "exitDemo": "Exit demo",
         "banner": "This is a demo. Nothing is saved to StoryWall.",
         "resetTitle": "Reset the demo?",
         "resetBody": "Your changes will be removed and the demo will start over.",
@@ -179,7 +188,6 @@
         "newPost": "New Post",
         "items": {
             "home": "Home",
-            "tools": "Tools",
             "manage": "Manage",
             "notifications": "Notifications",
             "admin": "Admin",
@@ -257,6 +265,10 @@
             "gifts": {
                 "label": "Gift account",
                 "description": "View the hosts' bank details for a monetary gift"
+            },
+            "myRole": {
+                "label": "My role",
+                "description": "Pick your role at this event"
             }
         }
     },
@@ -374,18 +386,6 @@
             "hostBody": "Guests cannot post until the event is activated. Finish setup and publish from the host dashboard.",
             "guestBody": "The host is still setting up this event. Posting will open once it is published.",
             "action": "Open dashboard"
-        },
-        "FROZEN": {
-            "title": "This event is read-only",
-            "hostBody": "Coverage has ended. Start a subscription to unlock new posts, stories, and uploads.",
-            "guestBody": "The event is still available to view, but new posts and uploads are paused.",
-            "action": "Manage billing"
-        },
-        "PURGED": {
-            "title": "Media retention has ended",
-            "hostBody": "Stored media may have been permanently deleted. Renewing can reactivate the event, but deleted files cannot be restored.",
-            "guestBody": "The event is available in a limited state because its media retention period has ended.",
-            "action": "Manage billing"
         }
     },
     "RsvpPrompt": {
@@ -540,7 +540,6 @@
         "fallbackTitle": "You're invited",
         "defaultHeroImageAlt": "Event cover photo",
         "mediaUploadEyebrow": "Share your photos",
-        "frozenNotice": "This event is currently read-only. You can still join and view the wall, but new uploads are paused.",
         "anonymousUpload": {
             "nameLabel": "Your name",
             "namePlaceholder": "How should we credit your photos?",
@@ -708,7 +707,9 @@
             "chooseAnother": "Choose another"
         },
         "password": {
-            "title": "Change password",
+            "title": "Password",
+            "open": "Change",
+            "cancel": "Cancel",
             "signOutNotice": "You will be signed out on every device after this change.",
             "current": "Current password",
             "new": "New password",
@@ -727,6 +728,7 @@
         "yourEvents": "Your events",
         "createEventCta": "Create event",
         "eventUnavailable": "Event unavailable",
+        "suspended": "Suspended",
         "previous": "Previous events",
         "next": "Next events",
         "roleFallback": {
@@ -766,18 +768,6 @@
             "title": "You have a new update"
         },
         "types": {
-            "BILLING_EXPIRING": {
-                "title": "Your event coverage is ending soon",
-                "body": "{days} days left on your {plan} plan. Renew to keep the photos online."
-            },
-            "BILLING_PAST_DUE": {
-                "title": "Your event coverage has lapsed",
-                "body": "Overdue by {days} days. The event becomes read-only in {daysUntilFreeze} days."
-            },
-            "BILLING_PURGE_WARNING": {
-                "title": "The media on this event will be deleted",
-                "body": "{days} days left before the photos are permanently removed. This cannot be undone."
-            },
             "WITHDRAWAL_REFUNDED": {
                 "title": "Your withdrawal was processed",
                 "body": "The event has been taken offline and the refund was issued."
@@ -861,6 +851,7 @@
         "moreOptions": "More options",
         "deleteStory": "Delete story",
         "reportStory": "Report story",
+        "reportRole": "Report role",
         "deleteStoryConfirmTitle": "Delete this story?",
         "deleteStoryConfirmBody": "This story will be removed for everyone and can't be undone.",
         "deleteStoryConfirm": "Delete story",
@@ -897,11 +888,13 @@
         "fieldLabels": {
             "WEDDING": {
                 "title": "Couple's names",
-                "startAt": "Ceremony date"
+                "startAt": "Ceremony date",
+                "locationName": "Ceremony location"
             },
             "BAPTISM": {
                 "title": "Child's name",
-                "startAt": "Ceremony date"
+                "startAt": "Ceremony date",
+                "locationName": "Ceremony location"
             },
             "SOCIAL_EVENT": {
                 "title": "Event name",
@@ -1017,12 +1010,9 @@
         },
         "title": "Host Dashboard",
         "backToTools": "Back",
-        "hostView": "Host View",
         "status": {
             "DRAFT": "Draft",
-            "ACTIVE": "Live",
-            "FROZEN": "Frozen",
-            "PURGED": "Purged"
+            "ACTIVE": "Live"
         },
         "openDashboard": "Open dashboard",
         "rsvpOverview": "RSVP overview",
@@ -1256,13 +1246,10 @@
             "title": "Event details",
             "subtitle": "These details show up on your invite page and event feed.",
             "fields": {
-                "title": "Event title",
                 "subtitle": "Subtitle",
                 "description": "Description",
-                "locationName": "Location",
                 "locationAddress": "Address",
                 "mapsUrl": "Maps link",
-                "startAt": "Starts",
                 "endAt": "Ends"
             },
             "validation": {
@@ -1528,51 +1515,11 @@
             "CANCELLED": "Cancelled",
             "REFUNDED": "Refunded"
         },
-        "subscriptionStatus": {
-            "ACTIVE": "Active",
-            "PAST_DUE": "Past due",
-            "CANCELLED": "Cancelled"
-        },
         "summary": {
-            "DRAFT": "Not published yet. You'll pay to activate once the event dates are set.",
-            "ACTIVE_UNLIMITED": "Paid and active.",
-            "FROZEN": "Coverage ended on {date}. The event is read-only until you renew.",
-            "PURGED": "Storage window passed. Renewing reactivates the event, but deleted media can't be restored."
+            "DRAFT": "Not published yet. You'll pay to activate once the event dates are set."
         },
         "facts": {
             "totalPaid": "Total paid"
-        },
-        "timeline": {
-            "title": "Coverage timeline",
-            "unlimited": "Unlimited coverage",
-            "paidThrough": {
-                "label": "Paid through"
-            },
-            "freezesAt": {
-                "label": "Freezes"
-            },
-            "purgesAt": {
-                "label": "Purges"
-            }
-        },
-        "subscription": {
-            "title": "Subscription",
-            "status": "Status",
-            "currentPeriodEnd": "Renews through",
-            "none": "No subscription",
-            "renewalHint": "Coverage ends soon.",
-            "notRenewing": "Not renewing",
-            "ended": "Ended",
-            "liveUntil": "Live until",
-            "renewsOn": "Renews automatically on {date}.",
-            "willNotRenew": "Live until {date}.",
-            "pastDue": "The last payment failed. Update your card.",
-            "cancel": "Cancel subscription",
-            "cancelConfirmTitle": "Cancel subscription?",
-            "cancelConfirmBody": "Stays live until {date}, no refund.",
-            "cancelConfirmYes": "Cancel",
-            "cancelConfirmNo": "Keep",
-            "noResume": "To continue after that, start a new subscription."
         },
         "extension": {
             "title": "Extend coverage",
@@ -1798,6 +1745,81 @@
         "title": "Right of withdrawal",
         "version": "Version {version}",
         "unavailable": "These terms aren't available right now."
+    },
+    "ContentNoticePage": {
+        "title": "Report content",
+        "intro": "Anyone can use this form, with or without a StoryWall account, to tell us about content that is illegal or breaks our Community Guidelines. A person on the StoryWall team reviews every notice.",
+        "guidelines": "Read the <link>Community Guidelines</link>."
+    },
+    "ContentNoticeForm": {
+        "fields": {
+            "category": "What is the problem?",
+            "location": "Where is the content?",
+            "link": "Link (optional)",
+            "explanation": "Why is it illegal or against the rules?",
+            "name": "Your name",
+            "email": "Your email",
+            "goodFaith": "I believe the information in this notice is accurate and complete."
+        },
+        "help": {
+            "location": "For example: the event's name and date, what the photo or post shows, and who posted it."
+        },
+        "categories": {
+            "PERSONAL_DATA_OR_IMAGE": "My image or personal data without consent",
+            "COPYRIGHT": "Copyright or other rights",
+            "HARASSMENT_OR_HATE": "Harassment, threats or hate",
+            "CHILD_SEXUAL_ABUSE": "Child sexual abuse material",
+            "OTHER_ILLEGAL": "Other illegal content",
+            "GUIDELINES_BREACH": "Breaks the Community Guidelines"
+        },
+        "identityOptional": "For this category you can leave your name and email out. Without an email we can't tell you what we decided.",
+        "submit": "Send notice",
+        "sent": "Thank you. Your reference is #{reference}.",
+        "sentNext": "Quote this number if you write to us about this notice. If you gave an email, we've sent a confirmation there, and we'll write again with our decision.",
+        "errors": {
+            "invalid": "Some details are missing or invalid. Check the form and try again.",
+            "fieldErrors": "Some details need fixing. See the fields marked above.",
+            "rateLimited": "We can't take another notice right now. Please try again a little later.",
+            "failed": "We couldn't send your notice. Please try again."
+        }
+    },
+    "ModerationStatement": {
+        "grounds": {
+            "ILLEGAL_CONTENT": "Illegal content",
+            "GUIDELINES_BREACH": "Breach of the Community Guidelines"
+        },
+        "rules": {
+            "ILLEGAL_CONTENT": "Illegal content",
+            "SEXUAL_CONTENT": "Sexual and pornographic content",
+            "MINORS": "Protecting minors",
+            "HARASSMENT": "Harassment, threats and bullying",
+            "HATE_AND_VIOLENCE": "Hate and violence",
+            "IMPERSONATION": "Impersonation and deception",
+            "PRIVACY": "Personal data and other people's privacy",
+            "INTELLECTUAL_PROPERTY": "Intellectual property",
+            "SPAM": "Spam and abuse",
+            "COMMERCIAL_USE": "Commercial use and sales",
+            "GIFT_LIST_MISUSE": "Gift List (Wishlist)",
+            "QR_UPLOAD_MISUSE": "Misuse of QR Photo Upload",
+            "MALICIOUS_TECHNICAL_USE": "Malicious technical use"
+        }
+    },
+    "SuspendedEvent": {
+        "title": "This StoryWall is suspended",
+        "body": "We suspended this StoryWall on {date}. Your guests can't see it, and nothing can be added to it.",
+        "ground": "Ground",
+        "rule": "Rule",
+        "explanation": "Our explanation",
+        "readRule": "Read this rule",
+        "humanDecision": "This decision was taken by a person. No automated means were used.",
+        "closedTitle": "This StoryWall has been closed",
+        "closedBody": "We suspended this StoryWall on {date} and have since closed it. It will be deleted for good on {deletesOn}, with everything in it.",
+        "redressWithContact": "If you disagree with this decision, write to us at {email} quoting #{reference}. You may also turn to a certified out-of-court dispute settlement body, or to the courts.",
+        "redressWithoutContact": "If you disagree with this decision, you may turn to a certified out-of-court dispute settlement body, or to the courts.",
+        "billingLink": "Billing and withdrawal",
+        "billingTitle": "Billing and withdrawal",
+        "billingBack": "Back",
+        "back": "Back to your events"
     },
     "CommunityGuidelinesPage": {
         "title": "Community Guidelines",
@@ -2205,6 +2227,190 @@
         }
     },
     "AdminPage": {
+        "orders": {
+            "title": "Orders",
+            "loading": "Loading orders…",
+            "empty": "No orders yet.",
+            "noResults": "No orders match these filters.",
+            "count": "{count, plural, one {# order} other {# orders}}",
+            "rangeInvalid": "The end date is before the start date.",
+            "filters": {
+                "status": "Status",
+                "kind": "Kind",
+                "from": "From",
+                "to": "To",
+                "search": "Search orders",
+                "searchPlaceholder": "Order ID, payment ID, email or event",
+                "more": "More filters",
+                "moreCount": "More filters ({count})",
+                "buyerType": "Buyer",
+                "provider": "Provider",
+                "dispute": "Dispute",
+                "comp": "Comp",
+                "any": "Any",
+                "disputeOpen": "Open",
+                "disputeNone": "None open",
+                "compOnly": "Comp only",
+                "paidOnly": "Paid only",
+                "buyer": "Buyer: {name}",
+                "clearBuyer": "Show all buyers"
+            },
+            "status": {
+                "PAID": "Paid",
+                "PENDING": "Pending",
+                "REFUNDED": "Refunded",
+                "FAILED": "Failed",
+                "CANCELLED": "Cancelled"
+            },
+            "kind": {
+                "ACTIVATION": "Activation",
+                "UPGRADE": "Upgrade",
+                "EXTENSION": "Extension",
+                "STORAGE_PACK": "Storage pack"
+            },
+            "buyerType": {
+                "CONSUMER": "Consumer",
+                "BUSINESS": "Business"
+            },
+            "provider": {
+                "STRIPE": "Stripe",
+                "MANUAL": "Manual"
+            },
+            "refundSource": {
+                "WITHDRAWAL": "Withdrawal",
+                "UNAPPLIED": "Not delivered",
+                "PROVIDER": "Refunded in Stripe"
+            },
+            "flags": {
+                "comp": "Comp",
+                "disputed": "Disputed",
+                "eventDeleted": "Deleted"
+            },
+            "columns": {
+                "date": "Date",
+                "event": "Event",
+                "buyer": "Buyer",
+                "kind": "Kind",
+                "amount": "Amount",
+                "status": "Status"
+            },
+            "deletedAccount": "Deleted account",
+            "untitledEvent": "Untitled event",
+            "openOrder": "Open order for {event}",
+            "refunded": "{amount} refunded",
+            "export": {
+                "action": "Download for accountant",
+                "title": "Payments and refunds",
+                "from": "From",
+                "to": "To",
+                "download": "Download CSV",
+                "missing": "Pick both dates.",
+                "order": "The end date is before the start date.",
+                "tooLong": "Pick at most 366 days."
+            },
+            "detail": {
+                "summary": {
+                    "event": "Event",
+                    "purchase": "Purchase",
+                    "coverage": "Coverage"
+                },
+                "activity": {
+                    "placed": "Order placed",
+                    "paid": "Paid",
+                    "settledBy": "Marked paid by {name}",
+                    "disputeOpened": "Dispute opened",
+                    "disputeClosed": "Dispute closed",
+                    "refunded": "Refunded {amount}",
+                    "refundedNotRecorded": "Refunded (amount not recorded)",
+                    "withdrawal": "Withdrawal requested · {scope}",
+                    "commission": "Commission to {name}",
+                    "clawback": "Commission clawed back from {name}"
+                },
+                "sections": {
+                    "activity": "Activity",
+                    "buyer": "Buyer",
+                    "price": "Price",
+                    "payment": "Payment",
+                    "record": "Record",
+                    "fraud": "Fraud signals"
+                },
+                "buyer": {
+                    "email": "Email",
+                    "type": "Type",
+                    "account": "Account ID",
+                    "stripeCustomer": "Stripe customer",
+                    "business": {
+                        "legalName": "Legal name",
+                        "vatNumber": "VAT number",
+                        "countryCode": "Country",
+                        "addressLine1": "Address",
+                        "addressLine2": "Address line 2",
+                        "city": "City",
+                        "postalCode": "Postal code",
+                        "viesStatus": "VIES check",
+                        "viesCheckedAt": "VIES checked"
+                    }
+                },
+                "price": {
+                    "discount": "Discount",
+                    "tax": "Tax",
+                    "noTax": "No tax added; prices include VAT.",
+                    "taxReason": {
+                        "standard_rated": "Standard rate",
+                        "reduced_rated": "Reduced rate",
+                        "zero_rated": "Zero-rated",
+                        "reverse_charge": "Reverse charge",
+                        "not_collecting": "Not collected",
+                        "not_subject_to_tax": "Not subject to tax",
+                        "customer_exempt": "Customer exempt",
+                        "product_exempt": "Product exempt",
+                        "excluded_territory": "Excluded territory"
+                    }
+                },
+                "bought": {
+                    "months": "{count, plural, one {# month} other {# months}}"
+                },
+                "payment": {
+                    "provider": "Provider",
+                    "paymentId": "Payment ID",
+                    "sessionId": "Checkout session",
+                    "billingCountry": "Billing country",
+                    "cardCountry": "Card country",
+                    "openInStripe": "Open in Stripe",
+                    "cardFingerprint": "Card fingerprint",
+                    "riskLevel": "Risk level",
+                    "receipt": "Stripe receipt",
+                    "receiptNumber": "#{number}",
+                    "viewReceipt": "View"
+                },
+                "refund": {
+                    "stripeRefund": "Stripe refund"
+                },
+                "withdrawals": {
+                    "status": {
+                        "HELD": "Awaiting review",
+                        "REFUNDED": "Refunded",
+                        "WITHHELD": "Withheld",
+                        "REFUSED": "Refused",
+                        "PENDING": "Pending",
+                        "APPROVED": "Approved",
+                        "REJECTED": "Rejected"
+                    },
+                    "thisOrder": "This order: {amount}",
+                    "notPriced": "This order was not part of the refund.",
+                    "review": "Review"
+                },
+                "commission": {
+                    "percent": "{percent}%"
+                },
+                "record": {
+                    "orderId": "Order ID",
+                    "terms": "Terms version",
+                    "immediateStart": "Asked to start now",
+                    "acknowledged": "Acknowledged"
+                }
+            }
+        },
         "checkingAccess": "Checking admin access...",
         "eyebrow": "Platform admin",
         "title": "Plan operations",
@@ -2220,6 +2426,7 @@
         },
         "identifiers": {
             "copy": "Copy {label}",
+            "copyShort": "Copy",
             "copied": "Copied",
             "eventId": "Event ID",
             "requestId": "Request ID",
@@ -2250,6 +2457,7 @@
             "signOutConfirmBody": "Please confirm before leaving the admin area."
         },
         "tabs": {
+            "orders": "Orders",
             "metrics": "Metrics",
             "funnel": "Growth",
             "costTracking": "Cost tracking",
@@ -2304,7 +2512,8 @@
             "tabs": {
                 "OPEN": "Open",
                 "UNDER_REVIEW": "Under review",
-                "CLOSED": "Closed"
+                "CLOSED": "Closed",
+                "NOTICES": "Notices"
             },
             "loading": "Loading reports",
             "empty": "No reports here.",
@@ -2333,6 +2542,7 @@
             "caseTitle": "Report case",
             "reportsHeading": "{count, plural, one {# report} other {# reports}}",
             "reporterGone": "Former member",
+            "customRoleLabel": "Custom role",
             "contentGone": "This item is no longer available. It has been deleted.",
             "noAuthor": "No author on record",
             "hostBadge": "Host or co-host",
@@ -2343,10 +2553,12 @@
                 "title": "Decision",
                 "dismiss": "No action",
                 "takeAction": "Take action",
+                "removeCustomRole": "Remove the custom role",
                 "removeContent": "Remove the content",
                 "removeMember": "Remove the member from the event",
                 "banFromEvent": "Keep them from rejoining this event",
                 "suspendAccount": "Suspend their account",
+                "suspendEvent": "Suspend this StoryWall",
                 "alreadyRemovedHint": "The item is gone; taking action closes the case as resolved.",
                 "note": "Note (internal, optional)",
                 "review": "Review decision",
@@ -2357,10 +2569,14 @@
                 "title": "This will:",
                 "dismiss": "Take no action on the item",
                 "alreadyRemoved": "Take no further action: the item is already gone",
+                "removeCustomRole": "Remove the member's custom role",
                 "removeContent": "Remove the content for everyone",
                 "removeMember": "Remove the author from the event",
                 "banFromEvent": "Stop their account rejoining this event",
                 "suspendAccount": "Suspend their account. They are signed out within 15 minutes",
+                "suspendEvent": "Suspend the StoryWall: hidden from guests, its hosts see only why",
+                "emailsAuthor": "Email the author a statement of reasons, if they have an account",
+                "emailsHosts": "Email every host a statement of reasons",
                 "reports": "{outcome, select, DISMISSED {{count, plural, one {Close # report.} other {Close # reports.}} Reporters still in the event with an account will be told no breach of the Community Guidelines was found.} other {{count, plural, one {Close # report.} other {Close # reports.}} Reporters still in the event with an account will be told action was taken under the Community Guidelines.}}"
             },
             "history": {
@@ -2373,10 +2589,110 @@
                     "memberRemoved": "Member removed",
                     "banned": "Banned from the event",
                     "accountSuspended": "Account suspended",
+                    "eventSuspended": "StoryWall suspended",
                     "none": "Closed as resolved (item already gone)"
                 }
             },
             "banLifted": "Lifted {date}",
+            "publicNotice": "Public notice · #{reference}",
+            "notices": {
+                "viewsLabel": "Notice status",
+                "loading": "Loading notices",
+                "openNotice": "Open notice #{reference}",
+                "views": {
+                    "NEW": "New",
+                    "CLOSED": "Closed"
+                },
+                "empty": "No notices here.",
+                "count": "{count, plural, one {# notice} other {# notices}}",
+                "columns": {
+                    "received": "Received",
+                    "category": "Category",
+                    "location": "Where",
+                    "reference": "Reference",
+                    "status": "Status"
+                },
+                "closeReasons": {
+                    "NOT_FOUND": "Couldn't find the content",
+                    "NO_BREACH": "Not illegal, doesn't break the Community Guidelines",
+                    "ALREADY_HANDLED": "Already removed or decided",
+                    "SPAM": "Spam"
+                },
+                "pending": "Decision pending",
+                "statusNew": "New",
+                "drawerTitle": "Notice #{reference}",
+                "fields": {
+                    "category": "Category",
+                    "location": "Where the content is",
+                    "link": "Link",
+                    "explanation": "Explanation",
+                    "name": "Name",
+                    "email": "Email",
+                    "locale": "Language",
+                    "received": "Received",
+                    "handledAt": "Handled",
+                    "attachedTo": "Attached to",
+                    "closeReason": "Closed as",
+                    "closeNote": "Internal note"
+                },
+                "noIdentity": "Sent without a name or email",
+                "attachmentGone": "Item no longer available",
+                "actions": {
+                    "find": "Find the item",
+                    "close": "Close without attaching",
+                    "attach": "Attach",
+                    "confirmAttach": "Attach this notice to the item?",
+                    "confirmAttachButton": "Attach to the item",
+                    "confirmClose": "Close",
+                    "back": "Back"
+                },
+                "closeNote": "Internal note (optional)",
+                "closeEmailsNotifier": "The notifier will be emailed, except for spam.",
+                "search": {
+                    "heading": "Find the event",
+                    "count": "{count, plural, one {# event} other {# events}}",
+                    "title": "Event title",
+                    "hostEmail": "Host email",
+                    "date": "Event date",
+                    "submit": "Search",
+                    "noAudit": "Searching shows event details only. Opening an event's content is logged.",
+                    "deleted": "Deleted",
+                    "choose": "Choose",
+                    "chooseEvent": "Choose {title}",
+                    "primaryHost": "Primary host",
+                    "empty": "No events match."
+                },
+                "picker": {
+                    "heading": "Find the item",
+                    "count": "{count, plural, one {# item} other {# items}}",
+                    "type": "Content type",
+                    "items": "Items",
+                    "audited": "Opening this event's content is written to the audit log with this notice.",
+                    "empty": "Nothing of this type.",
+                    "anonymous": "Guest"
+                }
+            },
+            "statement": {
+                "title": "Statement of reasons",
+                "hint": "Emailed to everyone this decision acts against. Write it to them, not to other admins.",
+                "ground": "Ground",
+                "rule": "Rule broken",
+                "rulePlaceholder": "Choose a rule",
+                "explanation": "Explanation",
+                "explanationCount": "{count} of {max} characters (at least {min})",
+                "illegalHint": "If the ground is illegal content, name the specific law or legal provision in the explanation. The statement of reasons has to state the legal ground (DSA Art. 17(3)(d))."
+            },
+            "suspension": {
+                "status": "This StoryWall has been suspended since {date}.",
+                "lift": "Lift StoryWall suspension",
+                "liftConfirm": "Lift the suspension? Guests can use the StoryWall again, and every host is emailed.",
+                "liftConfirmButton": "Lift suspension",
+                "closedStatus": "This StoryWall was closed on {date}. It will be deleted on {deletesOn}.",
+                "close": "Close StoryWall",
+                "closeConfirm": "Close this StoryWall for good? It stays hidden, can't be restored, and is deleted on {deletesOn}. Every host is emailed.",
+                "closeConfirmButton": "Close StoryWall",
+                "cancel": "Cancel"
+            },
             "liftBan": "Lift ban",
             "reportStatus": {
                 "OPEN": "Open",
@@ -2531,6 +2847,7 @@
                 "useExisting": "Use existing account"
             },
             "detail": {
+                "orders": "Orders",
                 "close": "Close account details",
                 "account": "Account",
                 "role": "Role",
@@ -2563,12 +2880,8 @@
                 "memberLimit": "{value} members",
                 "storageLimit": "{value} storage",
                 "detailsSection": "Details",
-                "eventName": "Event name",
-                "startAt": "Starts",
-                "endAt": "Ends",
                 "timezone": "Timezone",
                 "locationSection": "Location",
-                "locationName": "Venue",
                 "locationAddress": "Address",
                 "mapsUrl": "Map link",
                 "visibility": "Visibility",
@@ -2580,9 +2893,7 @@
                 "review": "Review",
                 "reviewTitle": "Review",
                 "reviewHost": "Host",
-                "reviewEvent": "Event",
                 "reviewType": "Type",
-                "reviewDate": "Starts",
                 "reviewPlan": "Plan",
                 "reviewDuration": "Duration",
                 "reviewVisibility": "Visibility",
@@ -2667,11 +2978,13 @@
                 "noMatches": "No matches.",
                 "settings": "Settings",
                 "modules": "Modules",
-                "eventTypesSettings": "Event types"
+                "eventTypesSettings": "Event types",
+                "memberRoles": "Member roles"
             },
             "settings": {
                 "modulesTitle": "Modules",
-                "eventTypesTitle": "Event types"
+                "eventTypesTitle": "Event types",
+                "memberRolesTitle": "Member roles"
             },
             "default": "Default",
             "archived": "Archived",
@@ -2822,7 +3135,22 @@
                     "included": "Included",
                     "yes": "Yes",
                     "no": "No",
-                    "noChanges": "No changes yet."
+                    "noChanges": "No changes yet.",
+                    "fields": {
+                        "maxSections": "Schedule sections",
+                        "maxCoHosts": "Co-hosts",
+                        "qrUploadEnabled": "Guest QR upload",
+                        "allowCustom": "Custom roles"
+                    },
+                    "fieldHints": {
+                        "allowCustom": "Members can type their own role."
+                    },
+                    "unlimited": "Unlimited",
+                    "upTo": "Up to",
+                    "upToValue": "Up to {count}",
+                    "on": "On",
+                    "off": "Off",
+                    "advanced": "Advanced"
                 }
             },
             "search": {
@@ -3087,6 +3415,7 @@
             "empty": "No data yet"
         },
         "withdrawals": {
+            "openOrder": "Open order",
             "title": "Withdrawals",
             "subtitle": "These requests were held for a fraud signal or manual review. Decide from the evidence, not the signal alone.",
             "loading": "Loading withdrawals...",
@@ -3300,6 +3629,81 @@
                 "reactionTypeNotUsable": "This reaction is archived. Refresh and choose another.",
                 "notFound": "The reaction was not found.",
                 "generic": "The change could not be saved. Check the fields and try again."
+            }
+        },
+        "blockedTerms": {
+            "title": "Blocked words",
+            "caption": "Blocked in custom roles in every language, on top of the built-in lists.",
+            "add": "Add word",
+            "term": "Word",
+            "added": "Added",
+            "empty": "No blocked words yet.",
+            "loading": "Loading words…",
+            "termInvalid": "Enter a word that doesn't start with #.",
+            "termTaken": "This word is already blocked.",
+            "save": "Add",
+            "cancel": "Cancel",
+            "close": "Close",
+            "delete": "Delete {term}",
+            "deleteTitle": "Delete {term}?",
+            "deleteBody": "Custom roles with this word will be allowed again.",
+            "deleteConfirm": "Delete word"
+        },
+        "memberRoles": {
+            "create": "New role",
+            "eventType": "Event type",
+            "search": "Search by label or key",
+            "filters": {
+                "ALL": "All",
+                "ACTIVE": "Active",
+                "RETIRED": "Retired"
+            },
+            "columns": {
+                "role": "Role",
+                "key": "Key",
+                "limit": "Limit",
+                "status": "Status",
+                "order": "Order"
+            },
+            "limitMax": "Max {count}",
+            "hostOnly": "Host only",
+            "unlimited": "Unlimited",
+            "status": {
+                "ACTIVE": "Active",
+                "RETIRED": "Retired"
+            },
+            "empty": "No roles for this event type yet.",
+            "noMatches": "No roles match.",
+            "loading": "Loading roles…",
+            "moveUp": "Move {role} up",
+            "moveDown": "Move {role} down",
+            "edit": "Edit {role}",
+            "drawer": {
+                "createTitle": "New role",
+                "close": "Close",
+                "eventType": "Event type",
+                "key": "Key",
+                "keyInvalid": "Use 2 to 50 capital letters, digits or underscores, starting with a letter.",
+                "keyTaken": "A role with this key already exists.",
+                "labelEn": "English label",
+                "labelEl": "Greek label",
+                "labelInvalid": "Enter 1 to 40 characters.",
+                "emoji": "Emoji",
+                "emojiInvalid": "Use up to 16 characters.",
+                "limit": "Limit",
+                "unlimited": "Unlimited",
+                "upTo": "Up to",
+                "limitInvalid": "Enter a whole number of at least 1.",
+                "hostOnly": "Host only",
+                "hostOnlyHint": "Only hosts can give this role. Guests don't see it.",
+                "save": "Save",
+                "cancel": "Cancel",
+                "retire": "Retire",
+                "restore": "Restore",
+                "retireTitle": "Retire {role}?",
+                "retireBody": "Members who have this role keep it. No one new can pick it.",
+                "retireConfirm": "Retire role",
+                "notFound": "This role no longer exists."
             }
         },
         "paidServices": {
@@ -3599,33 +4003,14 @@
             "confirmSweepTitle": "Run notification sweep?",
             "confirmSweepBody": "This can create visible host notifications for quota warnings, offers, and tips. It cannot send arbitrary messages.",
             "orderIdPlaceholder": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            "orderIdSourceHint": "Copy the order ID from an unprocessed webhook below, or from the refund request for the same event — the console has no order search.",
+            "orderIdSourceHint": "Copy the order ID from the Orders list or an unprocessed webhook below.",
             "orderIdInvalid": "That is not a valid order ID. It should look like 3fa85f64-5717-4562-b3fc-2c963f66afa6."
         },
         "lifecycle": {
-            "title": "Event lifecycle",
-            "subtitle": "Freeze and purge both act on the event named below. Enter it once, then choose the action.",
             "resolvedEvent": "Acting on: {title}",
             "idSourceHint": "Copy the event ID from a refund request, or ask the host for the link to their event — the console has no event search.",
             "idInvalid": "That is not a valid event ID. It should look like 3fa85f64-5717-4562-b3fc-2c963f66afa6.",
-            "purgeUnverified": "This ID did not come from a console row, so nothing here confirms which event it is. Check it before purging.",
-            "freezeTitle": "Freeze event",
-            "freezeSubtitle": "Makes the event read-only. Guests can still view it; nobody can post.",
-            "eventIdField": "Event ID",
-            "freeze": "Freeze",
-            "freezeSuccess": "Event {eventId} is now frozen.",
-            "purgeTitle": "Purge event media",
-            "purgeWarning": "This permanently deletes every file stored for the event. It cannot be undone.",
-            "purgeConfirmField": "Type the event ID again to confirm",
-            "purgeConfirmPlaceholder": "Repeat the event ID",
-            "purge": "Purge media",
-            "purgeSuccess": "All media for {eventId} was deleted.",
-            "purgePartial": "Some files for {eventId} could not be deleted. The event stays frozen — run purge again.",
-            "eventIdPlaceholder": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            "freezeConfirmTitle": "Freeze {event}?",
-            "freezeConfirmBody": "The event will become read-only while lifecycle handling runs. Hosts and guests will not be able to make changes.",
-            "purgeConfirmTitle": "Permanently purge {event}?",
-            "purgeConfirmBody": "This deletes event data and files wherever possible. Do not continue unless the final checks are complete."
+            "eventIdPlaceholder": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
         }
     },
     "FeedQuickAccessBar": {
@@ -3722,6 +4107,10 @@
         "schedule": {
             "name": "Schedule",
             "description": "Plan the event timeline with schedule sections."
+        },
+        "member_roles": {
+            "name": "Member roles",
+            "description": "Guests pick a role, like best man, shown next to their name."
         }
     },
     "Durations": {
@@ -3762,7 +4151,6 @@
         "selectionDownloadFailed": "We couldn't download those files. Please try again.",
         "moduleUnavailable": "Gallery is not available on this event's current plan.",
         "deletedReadOnly": "Read-only. This event will be deleted on {date}.",
-        "eventFrozen": "This event is read-only. Existing photos and videos are still available, but new uploads are paused.",
         "uploadTitle": "Upload media",
         "uploadHint": "Choose up to {count} files at a time.",
         "chooseFiles": "Choose files",
@@ -3889,9 +4277,7 @@
         "paidServiceNotOnPlan": "That service is not available on this event's plan.",
         "addonLockedWhileActive": "That entitlement cannot be removed while the event is live.",
         "addonNotActive": "That add-on is not active.",
-        "eventFrozen": "This event is frozen. Renew it to make changes again.",
         "eventNotActive": "This event is not live yet.",
-        "eventPurgedNotRenewable": "This event's media has already been purged, so it cannot be renewed. Create a new event to continue.",
         "rateLimited": "Too many requests. Please wait a moment and try again.",
         "reportOwnContent": "You can't report your own content.",
         "rateLimitedWithWait": "Too many requests. Try again in {seconds}s.",
@@ -3903,6 +4289,7 @@
         "eventDatesIncomplete": "Add a start date to the event before paying.",
         "eventStartTooFarAhead": "An event can't be scheduled more than 18 months ahead.",
         "eventCreationLocked": "An admin has limited event creation for this account.",
+        "eventDraftLimitReached": "You have too many events waiting to be published. Publish or delete one to start another.",
         "eventNotDraft": "This event has already been published.",
         "planNotPurchasable": "This plan cannot be bought directly. Contact us to switch to it.",
         "planTierNotAvailableForEventType": "This plan is not available for the selected event type. Choose a different plan or event type.",
@@ -3969,7 +4356,6 @@
         "accountPlansDisabled": "Account plan changes are currently disabled.",
         "invitationExhausted": "This invite link is full. Ask the host to raise its guest limit or send a new link.",
         "internalError": "Something went wrong on our side. Please try again.",
-        "renewalAlreadyCovered": "This event is already paid up, so there's nothing to renew yet.",
         "eventScheduleLocked": "This event's schedule can no longer be changed.",
         "eventModuleCompositionLocked": "Event modules can't be added, removed, or toggled after the event is created.",
         "eventVisibilityNotSupported": "Public events aren't supported yet. This event must stay private.",
@@ -4001,6 +4387,15 @@
         "demoEventLocked": "This is a demo event, so it can’t be joined or changed that way.",
         "demoActAsRefused": "Only admins can post as a demo guest.",
         "demoPersonaAvatarRefused": "Photos can only be set here for guests without an account on a demo event.",
+        "memberRoleInvalid": "A role must be 1 to 40 characters.",
+        "memberRoleUnknown": "That role isn't available anymore. Pick another.",
+        "memberRoleCustomBlocked": "That role has a word we don't allow.",
+        "memberRoleCustomNotAllowed": "This event doesn't allow custom roles.",
+        "memberRoleCustomLocked": "Your custom role was removed. You can still pick one from the list.",
+        "memberRoleHostOnly": "Only the hosts can give this role.",
+        "memberRoleFeaturedMember": "Featured guests can't have a role.",
+        "memberRoleCapReached": "All places for this role are taken.",
+        "memberRoleTextChanged": "The role changed since you opened this case. Check it and decide again.",
         "qrSharedLinkHostManaged": "This shared link is managed automatically.",
         "eventSessionMainLocationReadOnly": "This is the event's main session, so its location always matches the event's own.",
         "eventSessionLimitReached": "This event's plan doesn't allow more schedule sessions.",
@@ -4012,6 +4407,7 @@
         "giftClaimNotAllowed": "This account can't claim this gift.",
         "giftOrderNotYours": "Another host paid for this, so you can't withdraw it.",
         "giftNotPrimaryHost": "Only the primary host can set up the gift.",
+        "giftAccountNotPrimaryHost": "Only the main host can change the gift account.",
         "giftRecipientProtected": "Only the primary host can remove the person who claimed the gift.",
         "giftNotAvailableOnPlan": "This plan can't be given as a gift.",
         "giftAlreadyClaimed": "This gift has already been claimed.",
@@ -4026,7 +4422,12 @@
         "hostTransferPaymentInProgress": "A payment on this event is still in progress. Try again in a minute.",
         "moderationDecisionInvalid": "This action doesn't apply to this item.",
         "eventBanned": "You can't join this event.",
+        "eventSuspended": "This StoryWall is suspended.",
+        "eventAlreadySuspended": "This StoryWall is already suspended. The case has been updated.",
+        "eventNotSuspended": "This StoryWall is no longer suspended.",
+        "eventAlreadyClosed": "This StoryWall has been closed.",
         "moderationCaseClosed": "This case has already been decided.",
+        "noticeAlreadyHandled": "Another admin has already handled this notice.",
         "moderationMemberIsHost": "Hosts can't be removed from their event. Suspend the account instead.",
         "moderationTargetProtected": "Admin accounts can't be suspended here."
     },
@@ -4400,7 +4801,10 @@
             "scheduleSessionsUnlimited": "Unlimited schedule sessions",
             "coHosts": "{count, plural, one {Up to # co-host} other {Up to # co-hosts}}",
             "coHostsUnlimited": "Unlimited co-hosts",
-            "galleryWithQrUpload": "Gallery with QR upload"
+            "galleryWithQrUpload": "Gallery with QR upload",
+            "memberRoles": "{count, plural, one {# member role} other {# member roles}}",
+            "memberRolesWithCustom": "{count, plural, one {# member role + your own} other {# member roles + your own}}",
+            "memberRolesCustomOnly": "Custom member roles"
         },
         "faq": {
             "eyebrow": "FAQ",
@@ -4476,12 +4880,14 @@
             "copyright": "© 2026 STORYWALL",
             "legal": ["Privacy Policy", "Terms of Use", "Cookies", "Cookie Settings", "Cancellations & Withdrawal", "Contact"],
             "communityGuidelines": "Community Guidelines",
+            "reportContent": "Report content",
             "backToTop": "BACK TO TOP"
         }
     },
     "Report": {
         "title": "Report",
         "body": "Report {name} to the platform team.",
+        "roleBody": "Report {name}'s role to the platform team.",
         "bodyByType": {
             "POST": "Report this post to the platform team.",
             "COMMENT": "Report this comment to the platform team.",
@@ -4701,5 +5107,34 @@
         "add": "Add or drop a photo",
         "change": "Click or drop to change",
         "remove": "Remove photo"
+    },
+    "MemberRoles": {
+        "myRole": "My role",
+        "editMyRole": "Change my role",
+        "close": "Close",
+        "loading": "Loading roles…",
+        "loadFailed": "Couldn't load roles. Try again.",
+        "full": "Full",
+        "other": "Other",
+        "otherPlaceholder": "Type your role",
+        "lockedNote": "Your custom role was removed. You can still pick one from the list.",
+        "hostOnly": "Host only",
+        "setByHosts": "Set by the hosts.",
+        "reportRole": "Report role",
+        "save": "Save",
+        "clear": "Clear role",
+        "errors": {
+            "length": "A role must be 1 to {max} characters.",
+            "full": "All {count} places for this role are taken."
+        },
+        "host": {
+            "edit": "Edit role for {name}",
+            "unlock": "Unlock custom role",
+            "unlocked": "Custom role unlocked.",
+            "clearTitle": "Clear {name}'s role?",
+            "clearBody": "They can't type a custom role again until you unlock it.",
+            "clearConfirm": "Clear role",
+            "cancel": "Cancel"
+        }
     }
 }

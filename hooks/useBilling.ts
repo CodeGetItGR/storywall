@@ -97,7 +97,9 @@ export function useCheckout(eventId: string) {
         mutationFn: (input: CheckoutRequestDto) => api.post<CheckoutResponseDto>(endpoints.events.checkout(eventId), input),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
-            queryClient.invalidateQueries({ queryKey: ['events', eventId] });
+            // Only the event itself (exact): without it, every query under
+            // ['events', id] — posts, media, members — would refetch too.
+            queryClient.invalidateQueries({ queryKey: ['events', eventId], exact: true });
         },
     });
 }
@@ -175,7 +177,8 @@ export function useEventWithdrawals(eventId: string | null, enabled = true) {
 }
 
 export const quoteKeys = {
-    event: (eventId: string, request: QuoteRequestDto) => ['events', eventId, 'quote', request.kind, request.paidServiceCode ?? null] as const,
+    all: (eventId: string) => ['events', eventId, 'quote'] as const,
+    event:(eventId: string, request: QuoteRequestDto) => ['events', eventId, 'quote', request.kind, request.paidServiceCode ?? null] as const,
 };
 
 // POST /api/events/{id}/quote — read-only pricing of an activation or a storage

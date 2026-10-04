@@ -33,6 +33,10 @@ const CASE_STALE_CODES = new Set<unknown>([
     ERROR_CODES.MODERATION_CASE_CLOSED,
     ERROR_CODES.MODERATION_MEMBER_IS_HOST,
     ERROR_CODES.MODERATION_TARGET_PROTECTED,
+    // Another case suspended the StoryWall first: allowedActions.suspendEvent is now false.
+    ERROR_CODES.EVENT_ALREADY_SUSPENDED,
+    // The custom role text changed since the case was read (member roles §6.2).
+    ERROR_CODES.MEMBER_ROLE_TEXT_CHANGED,
 ]);
 
 // 5106: someone else closed the case, so it has also left its tab.
@@ -43,8 +47,9 @@ function refreshAfterRefusal(queryClient: QueryClient, error: unknown, { targetT
     if (code === ERROR_CODES.MODERATION_CASE_CLOSED) void queryClient.invalidateQueries({ queryKey: adminModerationKeys.lists });
 }
 
-export function useAdminModerationCases(status: ModerationCaseStatus, page: number) {
+export function useAdminModerationCases(status: ModerationCaseStatus, page: number, enabled = true) {
     return useQuery({
+        enabled,
         queryKey: adminModerationKeys.cases(status, page),
         queryFn: () => api.get<Page<ModerationCaseSummaryDto>>(adminModerationCasesPath(status, page)),
         // Keep the previous page while paging, but never show one tab's rows under another (key[3] is the status).
@@ -89,6 +94,10 @@ export function useDecideModerationCase() {
             Promise.all([
                 queryClient.invalidateQueries({ queryKey: adminModerationKeys.lists }),
                 queryClient.invalidateQueries({ queryKey: adminModerationKeys.case(targetType, targetId), refetchType: 'none' }),
+                // A decision records its outcome on the notice the case came from, so the Notices lists are stale.
+                // Only the lists: the notice detail and the picker are audited reads and must not refetch. The key is
+                // inlined (it is adminNoticeKeys.lists) because useAdminNotices imports this file.
+                queryClient.invalidateQueries({ queryKey: ['admin', 'moderation', 'notices'] }),
             ]),
         onError: (error, target) => refreshAfterRefusal(queryClient, error, target),
     });
@@ -106,5 +115,48 @@ export function useLiftEventBan() {
             }
         },
         onSuccess: (_result, { targetType, targetId }) => queryClient.invalidateQueries({ queryKey: adminModerationKeys.case(targetType, targetId) }),
+    });
+}
+
+// 204. 5111 means it was already lifted (by another admin): treated as done. 5112 means another admin
+// closed it: shown as a refusal, and the case is re-read so the drawer shows the closed state. Re-reads
+// only the case, like useLiftEventBan.
+export function useLiftEventSuspension() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ eventId }: CaseTarget & { eventId: string }) => {
+            try {
+                await api.del<void>(endpoints.adminModeration.eventSuspension(eventId));
+            } catch (error) {
+                if (getErrorCode(error) !== ERROR_CODES.EVENT_NOT_SUSPENDED) throw error;
+            }
+        },
+        onSuccess: (_result, { targetType, targetId }) => queryClient.invalidateQueries({ queryKey: adminModerationKeys.case(targetType, targetId) }),
+        onError: (error, { targetType, targetId }) => {
+            if (getErrorCode(error) === ERROR_CODES.EVENT_ALREADY_CLOSED) {
+                void queryClient.invalidateQueries({ queryKey: adminModerationKeys.case(targetType, targetId) });
+            }
+        },
+    });
+}
+
+// 204, no body. 5112 means another admin closed it first: treated as done. 5111 (lifted meanwhile) is
+// shown as a refusal, and the case is re-read so the drawer shows it is no longer suspended.
+export function useCloseEventSuspension() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ eventId }: CaseTarget & { eventId: string }) => {
+            try {
+                await api.post<void>(endpoints.adminModeration.closeEventSuspension(eventId));
+            } catch (error) {
+                if (getErrorCode(error) !== ERROR_CODES.EVENT_ALREADY_CLOSED) throw error;
+            }
+        },
+        onSuccess: (_result, { targetType, targetId }) => queryClient.invalidateQueries({ queryKey: adminModerationKeys.case(targetType, targetId) }),
+        onError: (error, { targetType, targetId }) => {
+            if (getErrorCode(error) === ERROR_CODES.EVENT_NOT_SUSPENDED) {
+                void queryClient.invalidateQueries({ queryKey: adminModerationKeys.case(targetType, targetId) });
+            }
+        },
     });
 }

@@ -8,11 +8,10 @@ const mocks = vi.hoisted(() => ({
     serverGet: vi.fn(),
 }));
 
-vi.mock('next/headers', async () => {
-    const { ACCESS_TOKEN_HEADER: header } = await import('@/lib/auth/authCookies');
-    return { headers: async () => new Headers(mocks.accessToken ? { [header]: mocks.accessToken } : {}) };
-});
-vi.mock('@/lib/auth/serverEventContext', () => ({ resolveServerEventDetail: mocks.resolveServerEventDetail }));
+vi.mock('@/lib/auth/serverEventContext', () => ({
+    prefetchAccessToken: async () => mocks.accessToken,
+    resolveServerEventDetail: mocks.resolveServerEventDetail,
+}));
 vi.mock('@/lib/api/serverFetch', () => ({ serverGet: mocks.serverGet }));
 vi.mock('./PageClient', () => ({ default: () => null }));
 

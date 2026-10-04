@@ -222,8 +222,8 @@ export function OverviewDraftPanel({
                     />
                 )}
 
-                {/* Gift account */}
-                {wishlistAvailable && (
+                {/* Gift account: like buying, only the main host may set it (4019 otherwise) */}
+                {wishlistAvailable && canPurchase && (
                     <TargetedSection id={GIFT_ACCOUNT_SECTION_ID} className="border-t border-border/70 pt-5">
                         <GiftAccountSetup eventId={eventId} className="" />
                     </TargetedSection>
@@ -280,7 +280,7 @@ export function OverviewDraftPanel({
             </div>
 
             {/* Move the date */}
-            <DraftStartDateModal date={startDate} />
+            <DraftStartDateModal date={startDate} eventType={eventType} />
         </div>
     );
 }

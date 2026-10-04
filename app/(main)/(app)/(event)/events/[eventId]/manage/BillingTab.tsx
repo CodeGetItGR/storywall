@@ -22,18 +22,22 @@ export default function BillingTab({
     schedule,
     canPurchase,
     isDeleted = false,
+    withdrawalOnly = false,
 }: {
     eventId: string;
     schedule: EventScheduleDto;
     // Only the event's main host can buy anything for it.
     canPurchase: boolean;
     isDeleted?: boolean;
+    // A suspended StoryWall's billing page (SuspendedEventBilling): plan, payments and withdrawal
+    // only. Nothing can be bought, and the server refuses every purchase read (4015).
+    withdrawalOnly?: boolean;
 }) {
     const tBilling = useTranslations('EventPlanSettingsPage');
     const tCommon = useTranslations('Common');
     const tPageError = useTranslations('PageErrorState.billing');
     const tPageErrorCommon = useTranslations('PageErrorState');
-    const panel = useEventBillingPanel(eventId, { isDeleted, canPurchase });
+    const panel = useEventBillingPanel(eventId, { isDeleted, canPurchase: canPurchase && !withdrawalOnly });
     const withdrawals = useBillingWithdrawals(eventId, panel.data?.orders, {
         canWithdraw: canPurchase && !isDeleted,
         canSeeHistory: canPurchase || isDeleted,
@@ -73,19 +77,23 @@ export default function BillingTab({
             <BillingPlanSummary data={data} schedule={schedule} usage={panel.usage} />
 
             {/* Upgrade */}
-            {withdrawals.purchaseBlocks.upgradeBlocked && panel.upgradeTargets.length > 0 && (
-                <p className="text-xs text-ink-muted">{tBilling('purchasesPaused.upgrades')}</p>
+            {!withdrawalOnly && (
+                <>
+                    {withdrawals.purchaseBlocks.upgradeBlocked && panel.upgradeTargets.length > 0 && (
+                        <p className="text-xs text-ink-muted">{tBilling('purchasesPaused.upgrades')}</p>
+                    )}
+                    <BillingUpgradeSection
+                        eventId={eventId}
+                        targets={withdrawals.purchaseBlocks.upgradeBlocked ? [] : panel.upgradeTargets}
+                        currentPlan={panel.currentPlan}
+                        extraStorageBytes={panel.usage?.extraStorageBytes ?? 0}
+                        modules={panel.platformModules}
+                    />
+                </>
             )}
-            <BillingUpgradeSection
-                eventId={eventId}
-                targets={withdrawals.purchaseBlocks.upgradeBlocked ? [] : panel.upgradeTargets}
-                currentPlan={panel.currentPlan}
-                extraStorageBytes={panel.usage?.extraStorageBytes ?? 0}
-                modules={panel.platformModules}
-            />
 
             {/* Extend coverage */}
-            {!isDeleted && (
+            {!isDeleted && !withdrawalOnly && (
                 <BillingExtensionSection
                     eventId={eventId}
                     eventStatus={data.eventStatus}
@@ -95,7 +103,9 @@ export default function BillingTab({
             )}
 
             {/* Add-ons */}
-            <BillingAddonsSection eventId={eventId} addons={data.addons} currency={insights.orderCurrency} canManage={derived.canManageAddons} />
+            {!withdrawalOnly && (
+                <BillingAddonsSection eventId={eventId} addons={data.addons} currency={insights.orderCurrency} canManage={derived.canManageAddons} />
+            )}
 
             {/* Payments */}
             <Section title={tBilling('orders.title')} divider>

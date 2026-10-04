@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { pollMediaUntilProcessed, useDeleteMedia, useUploadMedia } from '@/hooks/useMedia';
@@ -104,15 +104,15 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
         itemsRef.current = items;
     }, [items]);
 
-    useEffect(
-        () => () =>
-            itemsRef.current.forEach((item) => {
-                URL.revokeObjectURL(item.previewUrl);
-                if (item.mediaId) deleteMedia.mutate(item.mediaId);
-            }),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [],
-    );
+    // On unmount, drops the local previews and the uploads that were never posted.
+    const discardDrafts = useEffectEvent(() => {
+        itemsRef.current.forEach((item) => {
+            URL.revokeObjectURL(item.previewUrl);
+            if (item.mediaId) deleteMedia.mutate(item.mediaId);
+        });
+    });
+
+    useEffect(() => () => discardDrafts(), []);
 
     const reset = useCallback(() => {
         itemsRef.current.forEach((item) => URL.revokeObjectURL(item.previewUrl));

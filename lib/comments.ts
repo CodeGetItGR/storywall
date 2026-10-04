@@ -4,6 +4,14 @@ export function authorNameFor(comment: CommentResponseDto, unknownAuthorLabel: s
     return comment.author?.displayName ?? unknownAuthorLabel;
 }
 
+// PostResponseDto.recentComments: the thread's latest comments, oldest-first.
+export const RECENT_COMMENTS_SIZE = 2;
+
+// A feed row's preview with a just-posted comment added as the newest.
+export function withRecentComment(recentComments: CommentResponseDto[], comment: CommentResponseDto): CommentResponseDto[] {
+    return [...recentComments.filter((recent) => recent.id !== comment.id), comment].slice(-RECENT_COMMENTS_SIZE);
+}
+
 export interface CommentThread {
     comment: CommentResponseDto;
     replies: CommentResponseDto[];

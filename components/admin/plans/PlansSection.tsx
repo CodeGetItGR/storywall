@@ -6,6 +6,7 @@ import { EventTypePlansPane } from '@/components/admin/plans/EventTypePlansPane'
 import { PlansPaneEmpty } from '@/components/admin/plans/PlansPaneEmpty';
 import { PlansRail } from '@/components/admin/plans/PlansRail';
 import { PlansSettingsEventTypes } from '@/components/admin/plans/PlansSettingsEventTypes';
+import { PlansSettingsMemberRoles } from '@/components/admin/plans/PlansSettingsMemberRoles';
 import { PlansSettingsModules } from '@/components/admin/plans/PlansSettingsModules';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { usePlansSection } from '@/hooks/usePlansSection';
@@ -35,11 +36,13 @@ export function PlansSection() {
                     onSelectEventTypeAction={section.selectEventType}
                     onOpenSettingsModulesAction={section.openSettingsModules}
                     onOpenSettingsEventTypesAction={section.openSettingsEventTypes}
+                    onOpenSettingsMemberRolesAction={section.openSettingsMemberRoles}
                 />
 
                 {/* Pane */}
                 {section.view.view === 'settingsModules' && <PlansSettingsModules />}
                 {section.view.view === 'settingsEventTypes' && <PlansSettingsEventTypes />}
+                {section.view.view === 'settingsMemberRoles' && <PlansSettingsMemberRoles />}
                 {showingEventType && section.isLoading && <LoadingState label={t('plans.loading')} className="justify-start py-6" />}
                 {showingEventType && section.error && (
                     <p className="py-6 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(section.error)}`)}</p>

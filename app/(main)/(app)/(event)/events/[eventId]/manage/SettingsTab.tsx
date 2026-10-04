@@ -10,6 +10,7 @@ import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useContentLimits } from '@/hooks/useContentLimits';
+import { useCreateEventFieldLabels } from '@/hooks/useCreateEventFieldLabels';
 import { useUpdateEvent } from '@/hooks/useEvent';
 import { useUploadMedia } from '@/hooks/useMedia';
 import { useUploadAccept } from '@/hooks/useUploadAccept';
@@ -47,6 +48,7 @@ export default function SettingsTab({
     const toErrorMessage = useApiErrorMessage();
     const { data: appConfig } = useAppConfig();
     const limits = useContentLimits();
+    const fieldLabels = useCreateEventFieldLabels(event.eventType);
     const uploadAccept = useUploadAccept();
 
     const initial = {
@@ -130,7 +132,15 @@ export default function SettingsTab({
         coverObjectUrlRef.current = nextPreviewUrl;
         setCoverPreview(nextPreviewUrl);
         setSaved(false);
-        uploadMedia.mutate({ eventId: event.id, file, context: 'COVER' }, { onSuccess: (media) => setPendingCoverMediaId(media.id) });
+        uploadMedia.mutate(
+            { eventId: event.id, file, context: 'COVER' },
+            {
+                onSuccess: (media) => setPendingCoverMediaId(media.id),
+                // A refused photo (too large, not an image) must not stay on screen
+                // looking like the cover that saving would set.
+                onError: handleRemovePendingCover,
+            },
+        );
     }
 
     function handleRemovePendingCover() {
@@ -285,11 +295,12 @@ export default function SettingsTab({
                             disabled={disabled || !canUploadCover}
                             aria-label={t('settings.coverPhoto.upload')}
                         />
+                        {uploadMedia.isError && <p className="mt-1.5 text-xs text-rose-500">{toErrorMessage(uploadMedia.error)}</p>}
                     </TargetedSection>
                 </div>
 
                 {/* Basics */}
-                <FormFieldLabel label={t('settings.fields.title')} required labelClassName={labelClass}>
+                <FormFieldLabel label={fieldLabels.title} required labelClassName={labelClass}>
                     <input
                         type="text"
                         required
@@ -319,7 +330,7 @@ export default function SettingsTab({
 
                 {/* Location */}
                 <div className="grid gap-3 sm:grid-cols-2">
-                    <FormFieldLabel label={t('settings.fields.locationName')} required labelClassName={labelClass}>
+                    <FormFieldLabel label={fieldLabels.locationName} required labelClassName={labelClass}>
                         <input
                             type="text"
                             required
@@ -358,7 +369,7 @@ export default function SettingsTab({
 
                 {/* Schedule */}
                 <div className="grid gap-3 sm:grid-cols-2">
-                    <FormFieldLabel label={t('settings.fields.startAt')} required labelClassName={labelClass}>
+                    <FormFieldLabel label={fieldLabels.startAt} required labelClassName={labelClass}>
                         <input
                             type="datetime-local"
                             required

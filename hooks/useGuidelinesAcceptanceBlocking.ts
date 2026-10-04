@@ -7,8 +7,19 @@ import { useMe } from '@/hooks/useMe';
 // Pages that stay reachable while the gate is up. /legal/ holds the guidelines
 // themselves (the gate's Read link opens them in a new tab). The auth pages and
 // newsletter token links are exempt from 4013 server-side, and gating them would
-// only trap a signed-in user who landed there. Keep this list short.
-const UNGATED_PREFIXES = ['/legal/', '/login', '/register', '/verify-email', '/forgot-password', '/reset-password', '/newsletter/'];
+// only trap a signed-in user who landed there. /report-content is the public content
+// notice form: POST /api/content-notices is exempt from 4013 so that a user who has
+// not accepted the current Guidelines can still report. Keep this list short.
+const UNGATED_PREFIXES = [
+    '/legal/',
+    '/login',
+    '/register',
+    '/verify-email',
+    '/forgot-password',
+    '/reset-password',
+    '/newsletter/',
+    '/report-content',
+];
 
 function isUngatedPath(pathname: string | null): boolean {
     if (!pathname) return false;
