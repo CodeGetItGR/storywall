@@ -8,6 +8,8 @@ interface GallerySelectionBarProps {
     selectedCount: number;
     mediaCount: number;
     canDownloadSelected: boolean;
+    /** Why the download is disabled, when the reason isn't obvious. */
+    downloadHint?: string | null;
     isDownloadingSelection: boolean;
     onSelectAll: () => void;
     onDownloadSelected: () => void;
@@ -20,6 +22,7 @@ export function GallerySelectionBar({
     selectedCount,
     mediaCount,
     canDownloadSelected,
+    downloadHint,
     isDownloadingSelection,
     onSelectAll,
     onDownloadSelected,
@@ -98,6 +101,7 @@ export function GallerySelectionBar({
                         </button>
                     </div>
                 </div>
+                {downloadHint && <p role="status" className="mt-2 text-center text-xs text-ink-muted lg:hidden">{downloadHint}</p>}
             </div>
         </div>
     );

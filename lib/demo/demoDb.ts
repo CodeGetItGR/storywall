@@ -67,7 +67,7 @@ export function seedDemoSchema(snapshot: DemoSnapshotDto): DemoSchema {
 // Media the visitor adds is only an object URL, which dies with the page — drop it (and
 // whatever shows it) when restoring a saved demo, instead of rendering broken images.
 export function isLocalMedia(media: Pick<MediaResponseDto, 'mediaUrl'>): boolean {
-    return media.mediaUrl.startsWith('blob:');
+    return media.mediaUrl?.startsWith('blob:') ?? false;
 }
 
 // Everything a visitor adds gets a `demo-` id (mockHandlers' newId); the snapshot's ids never do.
@@ -113,7 +113,10 @@ export function demoContentVersion(snapshot: DemoSnapshotDto): string {
 // `contentVersion` is demoContentVersion() of the snapshot as received. A visitor's saved demo
 // is kept only while it matches, so an admin's changes reach returning visitors too.
 export function createDemoDb(eventTypeKey: string, snapshot: DemoSnapshotDto, contentVersion: string): DemoDb {
-    return createMockDb<DemoSchema>(demoStorageKey(eventTypeKey), () => seedDemoSchema(snapshot), { version: contentVersion, hydrate: dropLocalMedia });
+    return createMockDb<DemoSchema>(demoStorageKey(eventTypeKey), () => seedDemoSchema(snapshot), {
+        version: contentVersion,
+        hydrate: dropLocalMedia,
+    });
 }
 
 function withFreshUrls(media: MediaResponseDto, fresh: Map<string, MediaResponseDto>): MediaResponseDto {

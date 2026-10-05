@@ -11,7 +11,7 @@ import { useCreatePost } from '@/hooks/usePosts';
 import { useCreateStoriesBatch } from '@/hooks/useStories';
 import type { PendingStory } from '@/hooks/useStoryComposerController';
 import { ERROR_CODES, getErrorCode, getQuotaExceededDetails, isModuleNotAvailableError } from '@/lib/api/errors';
-import type { MediaBatchUploadResponseDto, MediaResponseDto } from '@/lib/api/types';
+import type { MediaBatchUploadResponseDto, MediaResponseDto, StoryBatchFailureDto } from '@/lib/api/types';
 import { getAuthState, subscribeAuthState } from '@/lib/auth/tokenStore';
 import { findNextPlan } from '@/lib/planTiers';
 import { bakeStoryFilter, STORY_FILTER_PRESETS } from '@/lib/story/storyFilters';
@@ -63,7 +63,7 @@ function mapBatchUploads(items: PendingStory[], result: MediaBatchUploadResponse
         return {
             ...item,
             mediaId: media.id,
-            remoteUrl: media.mediaUrl,
+            remoteUrl: media.mediaUrl ?? undefined,
             status: media.status === 'PROCESSING' ? 'processing' : 'uploaded',
             error: undefined,
         };
@@ -76,7 +76,7 @@ async function waitForStoryVideos(items: PendingStory[], signal: AbortSignal): P
             if (!item.mediaId || !item.file.type.startsWith('video/') || item.status === 'failed') return item;
             const media: MediaResponseDto = await pollMediaUntilProcessed(item.mediaId, signal);
             if (media.status === 'FAILED') return { ...item, status: 'failed' as const, error: undefined };
-            return { ...item, status: 'uploaded' as const, remoteUrl: media.mediaUrl, error: undefined };
+            return { ...item, status: 'uploaded' as const, remoteUrl: media.mediaUrl ?? undefined, error: undefined };
         }),
     );
 }
@@ -132,6 +132,17 @@ export function usePublishQueueController(): PublishQueueContextValue {
         setJobs((current) => current.map((job) => (job.id === jobId ? updater(job) : job)));
     }, []);
 
+    function busyReporter(jobId: string) {
+        return (busy: boolean) => updateJob(jobId, (current) => ({ ...current, busy }));
+    }
+
+    // The story limits come back per item with a code; say which one stopped it.
+    function storyFailureMessage(failure: StoryBatchFailureDto): string {
+        if (failure.errorCode === 'STORY_LIVE_LIMIT_REACHED') return tStory('liveLimitReached');
+        if (failure.errorCode === 'STORY_MEDIA_ALREADY_LIVE') return tStory('mediaAlreadyLive');
+        return failure.message;
+    }
+
     function getPostErrorMessage(error: unknown): string {
         if (getErrorCode(error) === ERROR_CODES.EVENT_STORAGE_LIMIT_EXCEEDED) {
             const details = getQuotaExceededDetails(error);
@@ -168,7 +179,7 @@ export function usePublishQueueController(): PublishQueueContextValue {
                 }),
             );
             if (isStopped(run)) return null;
-            result = await uploadBatch.mutateAsync({ eventId, files, context: 'POST', signal: run.controller.signal });
+            result = await uploadBatch.mutateAsync({ eventId, files, context: 'POST', signal: run.controller.signal, onBusy: busyReporter(jobId) });
         } catch (error) {
             if (isStopped(run)) return null;
             updateJob(jobId, (current) => ({ ...current, status: 'error', error: getPostErrorMessage(error) }));
@@ -279,6 +290,7 @@ export function usePublishQueueController(): PublishQueueContextValue {
                     files: toUpload.map((item) => item.file),
                     context: 'STORY',
                     signal: run.controller.signal,
+                    onBusy: busyReporter(jobId),
                 });
                 working = mapBatchUploads(working, result);
             } catch (cause) {
@@ -336,7 +348,10 @@ export function usePublishQueueController(): PublishQueueContextValue {
                 signal: run.controller.signal,
             });
             if (isStopped(run)) return;
-            const failedByMediaId = new Map(result.failed.map((failure) => [failure.mediaId, failure.message]));
+            const failedByMediaId = new Map(result.failed.map((failure) => [failure.mediaId, storyFailureMessage(failure)]));
+            const limitFailure = result.failed.find(
+                (failure) => failure.errorCode === 'STORY_LIVE_LIMIT_REACHED' || failure.errorCode === 'STORY_MEDIA_ALREADY_LIVE',
+            );
             const successfulMediaIds = new Set(result.created.map((story) => story.mediaId));
             const remaining = working
                 .filter((item) => !item.mediaId || !successfulMediaIds.has(item.mediaId))
@@ -354,6 +369,7 @@ export function usePublishQueueController(): PublishQueueContextValue {
                 ...(current as StoryPublishJob),
                 status: 'error',
                 error: tStory('partialSuccess', { posted: result.created.length, failed: remaining.length }),
+                failureReason: limitFailure ? storyFailureMessage(limitFailure) : undefined,
                 postedCount: (current as StoryPublishJob).postedCount + result.created.length,
                 payload: { ...(current as StoryPublishJob).payload, items: remaining },
             }));
@@ -429,7 +445,7 @@ export function usePublishQueueController(): PublishQueueContextValue {
         (jobId: string) => {
             const job = jobsRef.current.find((candidate) => candidate.id === jobId);
             if (!job) return;
-            updateJob(jobId, (current) => ({ ...current, status: 'pending', error: undefined }));
+            updateJob(jobId, (current) => ({ ...current, status: 'pending', error: undefined, busy: false, failureReason: undefined }));
             const runners = runnersRef.current;
             if (job.kind === 'post') launch(jobId, (run) => runners.runPostJob(jobId, job.payload, run));
             else if (job.kind === 'song') launch(jobId, (run) => runners.runSongJob(jobId, job.payload, run));

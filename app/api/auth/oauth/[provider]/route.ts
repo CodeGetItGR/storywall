@@ -5,10 +5,13 @@ import { localeCookieName } from '@/i18n/config';
 import { resolveLocale } from '@/i18n/resolveLocale';
 import { restoreAccountLocale } from '@/lib/auth/accountLocale';
 import { ACCESS_TOKEN_MAX_AGE_SECONDS, AUTH_COOKIES, baseCookieOptions, REFRESH_TOKEN_MAX_AGE_SECONDS } from '@/lib/auth/authCookies';
-import { authErrorResponse, toSessionDto } from '@/lib/auth/authRouteHelpers';
+import { authErrorResponse, rejectCrossSiteRequest, rejectNonJsonBody, toSessionDto } from '@/lib/auth/authRouteHelpers';
 import { clientIpFrom, springAuth } from '@/lib/auth/springAuth';
 
 export async function POST(request: Request, { params }: { params: Promise<{ provider: string }> }) {
+    const rejection = rejectCrossSiteRequest(request) ?? rejectNonJsonBody(request);
+    if (rejection) return rejection;
+
     const { provider } = await params;
     if (provider !== 'GOOGLE' && provider !== 'APPLE') {
         return NextResponse.json(null, { status: 400 });

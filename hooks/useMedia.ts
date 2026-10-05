@@ -1,13 +1,16 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { usePresignedUrlRefreshMs } from '@/hooks/useAppConfig';
+import { useAppConfig, usePresignedUrlRefreshMs } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { useModuleReadable } from '@/hooks/useModuleReadable';
+import { uploadInBatches } from '@/lib/api/batchUpload';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
 import type { MediaBatchUploadResponseDto, MediaResponseDto, MediaUploadContext, OriginalMediaUrlDto } from '@/lib/api/types';
+import { sendUploadWithBusyRetry } from '@/lib/api/uploadRetry';
 import { LIVE_CONTENT_STALE_TIME } from '@/lib/queryClient';
+import { getUploadLimits } from '@/lib/uploadLimits';
 
 export const mediaKeys = {
     list: (eventId: string) => ['events', eventId, 'media'] as const,
@@ -51,21 +54,24 @@ interface UploadMediaInput {
     eventId: string;
     file: File;
     context?: MediaUploadContext;
+    // true while a busy server's advised wait runs before the upload is resent.
+    onBusy?: (busy: boolean) => void;
 }
 
 // POST /api/events/{eventId}/media (multipart/form-data) — streams straight
 // through this backend to R2, no separate presigned-upload-URL step. The
 // uploader is always the caller's own membership, not a form field. Large
 // uploads go through the app server, so plan progress/timeout UX around that.
+// A busy server (503 + Retry-After) gets the upload resent after its wait.
 export function useUploadMedia() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ eventId, file, context = 'GALLERY' }: UploadMediaInput) => {
+        mutationFn: ({ eventId, file, context = 'GALLERY', onBusy }: UploadMediaInput) => {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('context', context);
-            return api.postForm<MediaResponseDto>(endpoints.events.media(eventId), formData);
+            return sendUploadWithBusyRetry(() => api.postForm<MediaResponseDto>(endpoints.events.media(eventId), formData), { onBusy });
         },
         onSuccess: (media) => {
             queryClient.invalidateQueries({ queryKey: mediaKeys.list(media.eventId) });
@@ -78,6 +84,8 @@ interface UploadMediaBatchInput {
     files: File[];
     context?: MediaUploadContext;
     signal?: AbortSignal;
+    // true while a busy server's advised wait runs before a request is resent.
+    onBusy?: (busy: boolean) => void;
 }
 
 // POST /api/events/{eventId}/media/batch (multipart/form-data, repeated
@@ -85,16 +93,26 @@ interface UploadMediaBatchInput {
 // 200 — per-file
 // outcomes are in the response body's `created`/`failed`, not the HTTP
 // status, so check those rather than treating a 200 as "all succeeded".
+// Files are split into as many requests as the request size and file-count
+// limits need (see uploadInBatches); the outcome reads like one batch.
 export function useUploadMediaBatch() {
     const queryClient = useQueryClient();
+    const { data: appConfig } = useAppConfig();
+    const limits = getUploadLimits(appConfig?.media);
 
     return useMutation({
-        mutationFn: ({ eventId, files, context = 'GALLERY', signal }: UploadMediaBatchInput) => {
-            const formData = new FormData();
-            files.forEach((file) => formData.append('files', file));
-            formData.append('context', context);
-            return api.postForm<MediaBatchUploadResponseDto>(endpoints.events.mediaBatch(eventId), formData, { signal });
-        },
+        mutationFn: ({ eventId, files, context = 'GALLERY', signal, onBusy }: UploadMediaBatchInput) =>
+            uploadInBatches(
+                files,
+                limits,
+                (batch) => {
+                    const formData = new FormData();
+                    batch.forEach((file) => formData.append('files', file));
+                    formData.append('context', context);
+                    return api.postForm<MediaBatchUploadResponseDto>(endpoints.events.mediaBatch(eventId), formData, { signal });
+                },
+                { signal, onBusy },
+            ),
         onSuccess: (result, { eventId }) => {
             if (result.created.length > 0) {
                 queryClient.invalidateQueries({ queryKey: mediaKeys.list(eventId) });

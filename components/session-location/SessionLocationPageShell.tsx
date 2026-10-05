@@ -66,6 +66,8 @@ export function SessionLocationPageShell({ eventId, location }: SessionLocationP
                         openLabel={tSchedule('openInGoogleMaps')}
                         previewLabel={tSchedule('mapPreview')}
                         unavailableLabel={tSchedule('mapPreviewUnavailable')}
+                        showLabel={tSchedule('showMap')}
+                        consentLabel={tSchedule('mapConsent')}
                         heightClassName="h-80"
                     />
                 </section>

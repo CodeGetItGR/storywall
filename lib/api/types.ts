@@ -825,7 +825,9 @@ export interface EventDetailResponseDto {
     visibility: EventVisibility;
     schedule: EventScheduleDto;
     location: EventLocationDto;
-    coverMedia: MediaResponseDto | null; // resolved, with a fresh presigned mediaUrl
+    // Resolved, with a fresh presigned mediaUrl.
+    // Only for drawing it: uploaderMemberId, anonymousUploaderName, originalFilename and storageKey come back null, metadata {}.
+    coverMedia: MediaResponseDto | null;
     brandingSettings: Record<string, unknown>;
     hosts: EventHostResponseDto[]; // only the primary host when co_hosts is off
     modules: EventModuleResponseDto[];
@@ -1805,6 +1807,7 @@ export interface QrLinkResolutionDto {
     eventSubtitle?: string | null;
     coverMediaId?: string | null;
     // Read the cover from here: the scanner isn't a member, so GET /api/medias/{id} refuses them.
+    // Only for drawing it: uploaderMemberId, anonymousUploaderName, originalFilename and storageKey come back null, metadata {}.
     coverMedia?: MediaResponseDto | null;
     eventStatus?: EventStatus;
     inviteToken?: string;
@@ -1948,6 +1951,7 @@ export interface EventInvitationPreviewDto {
     eventDescription: string | null;
     coverMediaId: string | null;
     // Read the cover from here: the visitor isn't a member, so GET /api/medias/{id} refuses them.
+    // Only for drawing it: uploaderMemberId, anonymousUploaderName, originalFilename and storageKey come back null, metadata {}.
     coverMedia: MediaResponseDto | null;
     firstName: string | null;
     lastName: string | null;
@@ -2229,7 +2233,8 @@ export interface MediaResponseDto {
     uploaderMemberId: string | null;
     anonymousUploaderName: string | null;
     storageKey: string;
-    mediaUrl: string;
+    // null while a video is PROCESSING or FAILED: there is no playable file yet.
+    mediaUrl: string | null;
     status: MediaStatus;
     thumbnailUrl: string | null;
     originalFilename: string;
@@ -2248,6 +2253,8 @@ export interface MediaResponseDto {
 // those as GALLERY.
 export interface MediaMetadata {
     uploadContext?: MediaUploadContext;
+    // On a FAILED video: why. See lib/videoFailure.ts for the reasons with their own copy.
+    processingError?: string;
     [key: string]: unknown;
 }
 
@@ -2405,6 +2412,14 @@ export interface ReactionRequestDto {
 export interface ReactionResponseDto extends ReactionRequestDto {
     id: string;
     createdAt: string;
+}
+
+// GET /api/posts/{postId}/reactions. Counts only: who reacted is never sent, except the
+// caller's own reaction (or the demo guest's, when acting as one), which the unreact needs.
+export interface PostReactionsResponseDto {
+    reactionCount: number;
+    reactionCounts: Record<string, number>;
+    myReaction: ReactionResponseDto | null;
 }
 
 export interface StoryRequestDto {
@@ -2891,6 +2906,7 @@ export interface GiftClaimRequestDto {
 export interface GiftClaimPreviewDto {
     eventTitle: string;
     eventSubtitle: string | null;
+    // Only for drawing it: uploaderMemberId, anonymousUploaderName, originalFilename and storageKey come back null, metadata {}.
     coverMedia: MediaResponseDto | null;
     giverDisplayName: string;
     recipientLabel: string;

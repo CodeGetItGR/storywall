@@ -10,6 +10,7 @@ import { meQueryKey } from '@/hooks/useMe';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { UserResponseDto } from '@/lib/api/types';
+import { sendUploadWithBusyRetry } from '@/lib/api/uploadRetry';
 
 // Picking a file only opens a preview; nothing is uploaded until confirm().
 export function useProfilePictureUpload() {
@@ -32,7 +33,8 @@ export function useProfilePictureUpload() {
         mutationFn: (selected: File) => {
             const formData = new FormData();
             formData.append('file', selected);
-            return api.postForm<UserResponseDto>(endpoints.me.profilePicture, formData);
+            // A busy server's refusal is resent after its wait, behind the same spinner.
+            return sendUploadWithBusyRetry(() => api.postForm<UserResponseDto>(endpoints.me.profilePicture, formData));
         },
         onSuccess: async (updated) => {
             // The profile screen reads the picture from the /api/me cache, so it

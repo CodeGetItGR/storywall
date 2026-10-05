@@ -46,6 +46,8 @@ export function ScheduleSessionCard({ session, className }: ScheduleSessionCardP
                         openLabel={t('host.openInGoogleMaps')}
                         previewLabel={t('host.mapPreview')}
                         unavailableLabel={t('host.mapPreviewUnavailable')}
+                        showLabel={t('host.showMap')}
+                        consentLabel={t('host.mapConsent')}
                     />
                 </div>
             )}

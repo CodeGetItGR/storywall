@@ -59,4 +59,11 @@ describe('AcceptanceCheckboxes', () => {
         expect(screen.getByRole('link', { name: 'Privacy Policy (opens in a new tab)' })).toBeInTheDocument();
         expect(screen.queryByRole('link', { name: /Community Guidelines/ })).not.toBeInTheDocument();
     });
+
+    it('asks for 16 or older when minimumAge is 16 (a QR-link upload)', () => {
+        renderBoxes({ minimumAge: 16 });
+
+        expect(screen.getByText('I am 16 or older')).toBeTruthy();
+        expect(screen.queryByText('I am 18 or older')).toBeNull();
+    });
 });

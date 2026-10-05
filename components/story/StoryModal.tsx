@@ -107,7 +107,8 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                         />
 
                         {/* Media */}
-                        {media &&
+                        {/* No mediaUrl yet: nothing to show, and the load timeout reports it like any missing media. */}
+                        {media?.mediaUrl &&
                             !mediaError &&
                             (isVideoStory ? (
                                 <StoryVideo

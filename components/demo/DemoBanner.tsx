@@ -12,14 +12,13 @@ export function DemoBanner({ onResetAction }: { onResetAction: () => void }) {
     const locale = useLocale() as Locale;
 
     return (
-        <div role="status" className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 bg-surface-muted px-4 py-2">
+        <header className="flex items-center gap-2 bg-surface-muted px-2 py-1">
             {/* Exit */}
-            <BackButton href={getPublicLandingPath(locale)} label={t('exitDemo')} className="flex-none" />
-            {/* Notice */}
-            <p className="order-last basis-full pb-1 text-xs font-semibold text-ink sm:order-none sm:min-w-0 sm:flex-1 sm:basis-auto sm:pb-0">
-                {t('banner')}
-            </p>
+            <BackButton href={getPublicLandingPath(locale)} label={t('exitDemo')} variant="icon" className="hover:bg-background" />
+            {/* Title */}
+            <p className="min-w-0 flex-1 truncate text-center text-sm font-semibold text-ink">{t('title')}</p>
+            {/* Reset */}
             <ResetDemoButton onResetAction={onResetAction} />
-        </div>
+        </header>
     );
 }

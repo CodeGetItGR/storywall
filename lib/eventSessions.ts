@@ -1,13 +1,14 @@
 import type { EventSessionResponseDto } from '@/lib/api/types';
 
+// Chronological by start time; sessions without one go last. displayOrder only
+// breaks ties, since it records creation order rather than when things happen.
 export function sortSessions(sessions: EventSessionResponseDto[]): EventSessionResponseDto[] {
     return [...sessions].sort((a, b) => {
-        if (a.displayOrder !== b.displayOrder) return a.displayOrder - b.displayOrder;
-
         const aStart = a.startAt ? new Date(a.startAt).getTime() : Number.MAX_SAFE_INTEGER;
         const bStart = b.startAt ? new Date(b.startAt).getTime() : Number.MAX_SAFE_INTEGER;
+        if (aStart !== bStart) return aStart - bStart;
 
-        return aStart - bStart;
+        return a.displayOrder - b.displayOrder;
     });
 }
 
