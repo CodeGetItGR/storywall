@@ -120,6 +120,7 @@ export function ManageScreen() {
                     <ManageOverviewSkeleton />
                 ) : (
                     <OverviewTab
+                        event={activeEvent}
                         memberCount={members.length}
                         daysToGo={daysToGo}
                         pendingCoHostInvitationCount={countPendingCoHostInvitations(invitations)}

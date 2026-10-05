@@ -2,6 +2,7 @@
 
 import { AlertTriangle, CalendarClock, Clock3, Loader2, LockKeyhole, Receipt } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import type { ReactNode } from 'react';
 
 import { ActivationDisclosures } from '@/components/checkout/ActivationDisclosures';
 import { ActivationEventSummary } from '@/components/checkout/ActivationEventSummary';
@@ -49,6 +50,7 @@ export function OverviewDraftPanel({
     activationTotal,
     wishlistAvailable,
     cancelledCheckout,
+    themeSection,
 }: {
     eventId: string;
     eventTitle: string;
@@ -69,6 +71,8 @@ export function OverviewDraftPanel({
     activationTotal: number | null;
     wishlistAvailable: boolean;
     cancelledCheckout: boolean;
+    // The theme picker. It saves on its own and renders nothing when the plan has no themes.
+    themeSection?: ReactNode;
 }) {
     const t = useTranslations('ManagePage');
     const tCommon = useTranslations('Common');
@@ -134,6 +138,9 @@ export function OverviewDraftPanel({
                 <div className="border-t border-border/70 pt-5">
                     <ActivationEventSummary eventTitle={eventTitle} eventTypeName={eventTypeCopy(eventType).name} startAt={startAt} />
                 </div>
+
+                {/* Theme */}
+                {themeSection}
 
                 {/* Pricing */}
                 <section aria-labelledby="draft-pricing-heading" className="border-t border-border/70 pt-5">
