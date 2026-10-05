@@ -28,7 +28,7 @@ const liveEvent = {
     modules: [{ moduleKey: 'rsvp', isAvailable: true, isEnabled: true }],
 };
 
-const themedEvent = { ...liveEvent, modules: [...liveEvent.modules, { moduleKey: 'theme', isAvailable: true, isEnabled: true }] };
+const themedEvent = { ...liveEvent, modules: [...liveEvent.modules, { moduleKey: 'theme', isAvailable: false, isEnabled: true }] };
 
 function visit(searchParams: { tab?: string; section?: string } = {}) {
     return Page({ params: Promise.resolve({ eventId: 'e1' }), searchParams: Promise.resolve(searchParams) });
@@ -137,6 +137,14 @@ describe('ManagePage (server)', () => {
     });
 
     it("skips the theme presets when the plan doesn't include themes", async () => {
+        await visit({ tab: 'settings' });
+
+        expect(mocks.serverGet).not.toHaveBeenCalledWith('/api/events/e1/theme-presets', 'token-1');
+    });
+
+    it('skips the theme presets when the theme row is present but not enabled', async () => {
+        mocks.resolveServerEventDetail.mockResolvedValue({ ...themedEvent, modules: [{ moduleKey: 'theme', isAvailable: true, isEnabled: false }] });
+
         await visit({ tab: 'settings' });
 
         expect(mocks.serverGet).not.toHaveBeenCalledWith('/api/events/e1/theme-presets', 'token-1');

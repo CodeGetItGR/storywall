@@ -20,7 +20,8 @@ import type {
     ThemePresetDto,
 } from '@/lib/api/types';
 import { resolveServerEventContext, resolveServerEventDetail } from '@/lib/auth/serverEventContext';
-import { isEventDeleted, isEventEnded, isModuleAvailable } from '@/lib/eventLifecycle';
+import { isEventDeleted, isModuleAvailable } from '@/lib/eventLifecycle';
+import { canPickTheme } from '@/lib/eventTheme';
 import { makeQueryClient } from '@/lib/queryClient';
 import { resolveRsvpSubTab } from '@/lib/rsvpReport';
 
@@ -58,7 +59,7 @@ export default async function Page({ params, searchParams }: PageProps) {
             // The theme picker, only where ThemePicker would ask for it: a draft's overview
             // (every ?tab= resolves to it) or an active event's settings tab. An ended event
             // answers 5144; the catch leaves that to the client, which renders nothing.
-            const wantsThemePresets = isModuleAvailable(event.modules, 'theme') && !isEventEnded(event) && (isDraft || tab === 'settings');
+            const wantsThemePresets = canPickTheme(event) && (isDraft || tab === 'settings');
             const [usage, gift, lists, themePresets] = await Promise.all([
                 serverGet<EventUsageResponseDto>(endpoints.events.usage(eventId), accessToken).catch(() => null),
                 isDraft ? undefined : serverGetOrNull<GiftHandoverResponseDto>(endpoints.events.gift(eventId), accessToken).catch(() => undefined),

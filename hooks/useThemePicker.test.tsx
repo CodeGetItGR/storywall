@@ -27,10 +27,13 @@ vi.mock('@/hooks/useEventTheme', () => ({
     useSetEventTheme: () => ({ mutate: mocks.mutate, ...mocks.mutation }),
 }));
 
-function eventWith(themeAvailable: boolean, presetKey: string | null = 'dino-mint', endAt: string | null = '2999-01-01T00:00:00Z') {
+function eventWith(themeEnabled: boolean, presetKey: string | null = 'dino-mint', endAt: string | null = '2999-01-01T00:00:00Z') {
     return {
         id: 'e1',
-        modules: [{ moduleKey: 'theme', isAvailable: themeAvailable, isEnabled: true }],
+        // isAvailable stays false: the backend sets it so for every non-ACTIVE event (a draft).
+        modules: [{ moduleKey: 'theme', isAvailable: false, isEnabled: themeEnabled }],
+        deletedAt: null,
+        suspended: false,
         schedule: { endAt },
         theme: presetKey ? { presetKey, backgroundColor: '#BFE6E2', illustrationUrl: 'https://media.example/dino.webp' } : null,
     } as unknown as EventDetailResponseDto;
@@ -44,7 +47,7 @@ beforeEach(() => {
 });
 
 describe('useThemePicker', () => {
-    it("is hidden and fetches nothing when the plan doesn't include themes", () => {
+    it('is hidden and fetches nothing when the theme module row is missing or not enabled', () => {
         const { result } = renderHook(() => useThemePicker(eventWith(false), true));
         expect(result.current.available).toBe(false);
         expect(mocks.presetsArg).toBeNull();

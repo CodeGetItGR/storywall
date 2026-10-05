@@ -28,7 +28,7 @@ export function useEventThemePresets(eventId: string | null) {
 
 // PUT /api/events/{eventId}/theme — null clears it. The reply is just
 // { theme }, so it is merged into the cached event detail and every page
-// repaints at once. /api/me/events rows carry no theme, so nothing else refetches.
+// repaints at once. No other cached query carries a theme (the only /api/events call here is create; /api/me/events rows have none), so nothing else needs invalidating.
 // A refusal means the picker's data is stale: 5143 (the preset was archived or
 // is no longer offered) refetches the presets; 5144 (event ended) and 5012
 // (module gone) also refetch the event, and the picker goes quiet.
