@@ -111,10 +111,10 @@ describe('ManagePage (server)', () => {
         expect(mocks.serverGet).not.toHaveBeenCalled();
     });
 
-    it('seeds the theme presets when the settings tab opens on a plan with themes', async () => {
+    it('seeds the theme presets when the theme tab opens on a plan with themes', async () => {
         mocks.resolveServerEventDetail.mockResolvedValue(themedEvent);
 
-        const element = await visit({ tab: 'settings' });
+        const element = await visit({ tab: 'theme' });
 
         expect(mocks.serverGet).toHaveBeenCalledWith('/api/events/e1/theme-presets', 'token-1');
         expect(seededKeys(element)).toEqual(expect.arrayContaining([['events', 'e1', 'theme-presets']]));
@@ -123,7 +123,7 @@ describe('ManagePage (server)', () => {
     it('skips the theme presets once the event has ended (the server answers 5144)', async () => {
         mocks.resolveServerEventDetail.mockResolvedValue({ ...themedEvent, schedule: { endAt: '2020-01-01T00:00:00Z' } });
 
-        await visit({ tab: 'settings' });
+        await visit({ tab: 'theme' });
 
         expect(mocks.serverGet).not.toHaveBeenCalledWith('/api/events/e1/theme-presets', 'token-1');
     });
@@ -132,12 +132,13 @@ describe('ManagePage (server)', () => {
         mocks.resolveServerEventDetail.mockResolvedValue(themedEvent);
 
         await visit();
+        await visit({ tab: 'settings' });
 
         expect(mocks.serverGet).not.toHaveBeenCalledWith('/api/events/e1/theme-presets', 'token-1');
     });
 
     it("skips the theme presets when the plan doesn't include themes", async () => {
-        await visit({ tab: 'settings' });
+        await visit({ tab: 'theme' });
 
         expect(mocks.serverGet).not.toHaveBeenCalledWith('/api/events/e1/theme-presets', 'token-1');
     });
@@ -145,7 +146,7 @@ describe('ManagePage (server)', () => {
     it('skips the theme presets when the theme row is present but not enabled', async () => {
         mocks.resolveServerEventDetail.mockResolvedValue({ ...themedEvent, modules: [{ moduleKey: 'theme', isAvailable: true, isEnabled: false }] });
 
-        await visit({ tab: 'settings' });
+        await visit({ tab: 'theme' });
 
         expect(mocks.serverGet).not.toHaveBeenCalledWith('/api/events/e1/theme-presets', 'token-1');
     });
@@ -168,7 +169,7 @@ describe('ManagePage (server)', () => {
             path.endsWith('/theme-presets') ? Promise.reject(new Error('Server prefetch failed')) : Promise.resolve([]),
         );
 
-        expect(seededKeys(await visit({ tab: 'settings' }))).toEqual(expect.arrayContaining([['events', 'e1', 'usage']]));
+        expect(seededKeys(await visit({ tab: 'theme' }))).toEqual(expect.arrayContaining([['events', 'e1', 'usage']]));
     });
 
     it("prefetches nothing when Spring can't return the event", async () => {

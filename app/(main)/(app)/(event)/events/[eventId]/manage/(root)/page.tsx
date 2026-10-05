@@ -57,9 +57,9 @@ export default async function Page({ params, searchParams }: PageProps) {
             // a failed guest list must not discard usage, or the reverse.
             // The gift decides whether the "Given as a gift" section shows (null: not a gift).
             // The theme picker, only where ThemePicker would ask for it: a draft's overview
-            // (every ?tab= resolves to it) or an active event's settings tab. An ended event
+            // (every ?tab= resolves to it) or an active event's theme tab. An ended event
             // answers 5144; the catch leaves that to the client, which renders nothing.
-            const wantsThemePresets = canPickTheme(event) && (isDraft || tab === 'settings');
+            const wantsThemePresets = canPickTheme(event) && (isDraft || tab === 'theme');
             const [usage, gift, lists, themePresets] = await Promise.all([
                 serverGet<EventUsageResponseDto>(endpoints.events.usage(eventId), accessToken).catch(() => null),
                 isDraft ? undefined : serverGetOrNull<GiftHandoverResponseDto>(endpoints.events.gift(eventId), accessToken).catch(() => undefined),

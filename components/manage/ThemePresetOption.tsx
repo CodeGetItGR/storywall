@@ -64,7 +64,7 @@ export function ThemePresetOption({
             onClick={handleClick}
             onFocus={handleFocus}
             className={cn(
-                'flex min-w-0 flex-col gap-1.5 rounded-2xl p-1.5 text-left transition aria-disabled:cursor-not-allowed',
+                'flex min-w-0 flex-col gap-2.5 rounded-2xl bg-surface p-2.5 pb-3 text-left transition aria-disabled:cursor-not-allowed',
                 selected ? 'ring-2 ring-primary' : 'ring-1 ring-border hover:ring-primary/40',
                 disabled && !selected && 'opacity-60',
             )}
@@ -80,7 +80,7 @@ export function ThemePresetOption({
                         alt=""
                         fill
                         className="object-contain"
-                        sizes="160px"
+                        sizes="(min-width: 640px) 240px, 50vw"
                         loading="lazy"
                         onError={handleImageError}
                     />
@@ -91,13 +91,13 @@ export function ThemePresetOption({
                     </span>
                 )}
                 {selected && !saving && (
-                    <span className="absolute top-1.5 right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white">
-                        <Check className="h-3 w-3" aria-hidden="true" />
+                    <span className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white">
+                        <Check className="h-3.5 w-3.5" aria-hidden="true" />
                     </span>
                 )}
             </span>
             {/* Label */}
-            <span className="truncate px-1 text-xs font-semibold text-ink">{label}</span>
+            <span className="truncate px-1 text-sm font-semibold text-ink">{label}</span>
         </button>
     );
 }

@@ -1076,7 +1076,8 @@
             "rsvp": "RSVP",
             "members": "Members",
             "billing": "Billing",
-            "gift": "Given as a gift"
+            "gift": "Given as a gift",
+            "theme": "Theme"
         },
         "sectionSwitcher": "Change section",
         "stats": {
@@ -1327,6 +1328,7 @@
             },
             "theme": {
                 "label": "Theme",
+                "hint": "An illustration and background colour for the pages your guests see. Changes apply right away.",
                 "none": "No theme",
                 "loading": "Loading themes…",
                 "current": "Current theme",

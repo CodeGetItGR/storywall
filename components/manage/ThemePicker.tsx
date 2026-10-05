@@ -22,7 +22,16 @@ type Option = {
     selected: boolean;
 };
 
-export function ThemePicker({ event, canWrite }: { event: EventDetailResponseDto; canWrite: boolean }) {
+// `showHeading` is off in the Theme section, whose section title already names it.
+export function ThemePicker({
+    event,
+    canWrite,
+    showHeading = true,
+}: {
+    event: EventDetailResponseDto;
+    canWrite: boolean;
+    showHeading?: boolean;
+}) {
     const t = useTranslations('ManagePage.settings.theme');
     const toErrorMessage = useApiErrorMessage();
     const localizedText = useLocalizedText();
@@ -79,17 +88,18 @@ export function ThemePicker({ event, canWrite }: { event: EventDetailResponseDto
     return (
         <section className="mb-6">
             {/* Heading */}
-            <h2 id={headingId} className="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+            <h2 id={headingId} className={showHeading ? 'text-xs font-semibold tracking-wide text-ink-muted uppercase' : 'sr-only'}>
                 {t('label')}
             </h2>
+            <p className="mt-1 text-sm text-ink-muted">{t('hint')}</p>
 
             {/* Loading / error */}
-            {picker.isLoading && <LoadingState label={t('loading')} className="mt-2 justify-start" />}
-            {picker.loadError && <p className="mt-2 text-xs text-rose-500">{toErrorMessage(picker.loadError)}</p>}
+            {picker.isLoading && <LoadingState label={t('loading')} className="mt-4 justify-start" />}
+            {picker.loadError && <p className="mt-4 text-xs text-rose-500">{toErrorMessage(picker.loadError)}</p>}
 
             {/* Options */}
             {!picker.isLoading && !picker.loadError && (
-                <div role="radiogroup" aria-labelledby={headingId} onKeyDown={handleKeyDown} className="mt-1.5 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                <div role="radiogroup" aria-labelledby={headingId} onKeyDown={handleKeyDown} className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
                     {options.map((option) => (
                         <ThemePresetOption
                             key={option.id}
@@ -114,7 +124,7 @@ export function ThemePicker({ event, canWrite }: { event: EventDetailResponseDto
                 {status}
             </p>
             {picker.saveError && (
-                <p role="alert" className="mt-1.5 text-xs text-rose-500">
+                <p role="alert" className="mt-3 text-xs text-rose-500">
                     {toErrorMessage(picker.saveError)}
                 </p>
             )}

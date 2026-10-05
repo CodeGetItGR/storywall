@@ -4,27 +4,31 @@
  * table, in this exact order. Co-host invitations live inside the Members
  * section; QR/share links have their own dedicated page linked from there.
  */
-export type ManageSection = 'overview' | 'settings' | 'rsvp' | 'members' | 'gift' | 'billing' | 'help' | 'danger';
+export type ManageSection = 'overview' | 'settings' | 'theme' | 'rsvp' | 'members' | 'gift' | 'billing' | 'help' | 'danger';
 
-export const manageSections: ManageSection[] = ['overview', 'settings', 'rsvp', 'members', 'gift', 'billing', 'help', 'danger'];
+export const manageSections: ManageSection[] = ['overview', 'settings', 'theme', 'rsvp', 'members', 'gift', 'billing', 'help', 'danger'];
 
 export function parseManageSection(value: string | null): ManageSection {
     return manageSections.find((section) => section === value) ?? 'overview';
 }
 
 // Danger is primary-host only; RSVP exists only when the event's plan includes it;
-// the gift section only on a gift event, or for a primary host whose plan can be given.
+// the gift section only on a gift event, or for a primary host whose plan can be given;
+// the theme section only while the event can pick a theme (canPickTheme).
 export function visibleManageSections({
     canDelete,
     rsvpAvailable,
     giftAvailable = false,
+    themeAvailable = false,
 }: {
     canDelete: boolean;
     rsvpAvailable: boolean;
     giftAvailable?: boolean;
+    themeAvailable?: boolean;
 }): ManageSection[] {
     return manageSections.filter(
-        (section) => (section !== 'danger' || canDelete) && (section !== 'rsvp' || rsvpAvailable) && (section !== 'gift' || giftAvailable),
+        (section) => (section !== 'danger' || canDelete) && (section !== 'rsvp' || rsvpAvailable) && (section !== 'gift' || giftAvailable) &&
+            (section !== 'theme' || themeAvailable),
     );
 }
 

@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DeletedEventManageScreen } from '@/components/manage/DeletedEventManageScreen';
 import { ManageSectionNav, sectionIcons } from '@/components/manage/ManageSectionNav';
 import { ManageMembersSkeleton, ManageOverviewSkeleton, ManageRsvpSkeleton } from '@/components/manage/ManageSkeletons';
+import { ThemePicker } from '@/components/manage/ThemePicker';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { Modal } from '@/components/ui/modal';
 import { useAppConfig } from '@/hooks/useAppConfig';
@@ -18,6 +19,7 @@ import { useEventRsvps } from '@/hooks/useRsvps';
 import { useEventUsage } from '@/hooks/useUsage';
 import { countPendingCoHostInvitations } from '@/lib/eventInvitations';
 import { isEventDeleted, isEventWritable, isModuleAvailable, isPrimaryHost } from '@/lib/eventLifecycle';
+import { canPickTheme } from '@/lib/eventTheme';
 import { type ManageSection, parseManageSection, resolveManageSection, visibleManageSections } from '@/lib/manageSections';
 import { replacePageUrl } from '@/lib/overlayHistory';
 import { routes } from '@/lib/routes';
@@ -52,7 +54,12 @@ export function ManageScreen() {
         eventModules: activeEvent.modules,
         planTiers: appConfig?.planTiers ?? [],
     });
-    const visibleSections = visibleManageSections({ canDelete, rsvpAvailable, giftAvailable: giftSection.available });
+    const visibleSections = visibleManageSections({
+        canDelete,
+        rsvpAvailable,
+        giftAvailable: giftSection.available,
+        themeAvailable: canPickTheme(activeEvent),
+    });
     const section = resolveManageSection(requestedSection, {
         isDraft,
         visibleSections,
@@ -174,6 +181,8 @@ export function ManageScreen() {
                 ))}
 
             {section === 'settings' && <SettingsTab event={activeEvent} canWrite={canEditDetails} canUploadCover={canWrite} />}
+
+            {section === 'theme' && <ThemePicker event={activeEvent} canWrite={canEditDetails} showHeading={false} />}
 
             {section === 'help' && (
                 <HelpTab

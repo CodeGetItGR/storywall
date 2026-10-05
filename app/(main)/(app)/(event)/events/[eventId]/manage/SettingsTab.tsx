@@ -6,7 +6,6 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { TargetedSection } from '@/components/manage/TargetedSection';
-import { ThemePicker } from '@/components/manage/ThemePicker';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
@@ -240,9 +239,6 @@ export default function SettingsTab({
             {!canWrite && (
                 <p className="mb-5 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('settings.readOnly')}</p>
             )}
-
-            {/* Theme — applies on pick, outside the form's Save */}
-            <ThemePicker event={event} canWrite={canWrite} />
 
             <form id={settingsFormId} onSubmit={handleSubmit} className="flex flex-col gap-4 pb-20 lg:pb-0">
                 {/* Cover photo */}
