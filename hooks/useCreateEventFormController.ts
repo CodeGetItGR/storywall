@@ -11,6 +11,7 @@ import { usePreviewCreateEventCode } from '@/hooks/useBilling';
 import { useCreateEventGift } from '@/hooks/useCreateEventGift';
 import { useDurationPicks } from '@/hooks/useDurationPicks';
 import { useCreateEvent, useUpdateEvent } from '@/hooks/useEvent';
+import { useThemePresetsForType } from '@/hooks/useEventTheme';
 import { useMe } from '@/hooks/useMe';
 import { usePlanTiersForEventType } from '@/hooks/usePlanTiersForEventType';
 import { useResetOnBfcacheRestore } from '@/hooks/useResetOnBfcacheRestore';
@@ -18,9 +19,16 @@ import { useWithdrawalConsent } from '@/hooks/useWithdrawalConsent';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { ERROR_CODES, getErrorCode, getFieldErrors } from '@/lib/api/errors';
-import type { CheckoutResponseDto, CollaborationCodePreviewResponseDto, EventRequestDto, EventTypeConvention } from '@/lib/api/types';
+import type {
+    CheckoutResponseDto,
+    CollaborationCodePreviewResponseDto,
+    EventRequestDto,
+    EventThemeRequestDto,
+    EventTypeConvention,
+} from '@/lib/api/types';
 import { navigateToCheckout } from '@/lib/billing';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
+import { CREATE_EVENT_STEPS, effectiveThemePresetId, isThemeStepAvailable, parseCreateEventStep, visibleCreateEventSteps } from '@/lib/createEventSteps';
 import { eventWindowFromLocalStart, getScheduleDatetimeLocalBounds, isDatetimeLocalAfter, isDatetimeLocalBefore } from '@/lib/datetime';
 import { projectCoverage } from '@/lib/eventCoverage';
 import { liveInitialOptions, resolveInitialOption } from '@/lib/planTiers';
@@ -29,11 +37,6 @@ import { getCurrentTimezone, getSupportedTimezones } from '@/lib/timezones';
 import type { CreateEventFormValue, CreateEventStep } from '@/providers/createEvent/CreateEventFormContext';
 
 export const CREATE_EVENT_FORM_ID = 'create-event-form';
-const CREATE_EVENT_STEPS: CreateEventStep[] = ['type', 'plan', 'details', 'overview'];
-
-function parseCreateEventStep(value: string | null): CreateEventStep {
-    return CREATE_EVENT_STEPS.find((step) => step === value) ?? 'type';
-}
 
 export function useCreateEventFormController(): CreateEventFormValue {
     const t = useTranslations('CreateEventPage');
@@ -64,10 +67,16 @@ export function useCreateEventFormController(): CreateEventFormValue {
     const [mapsUrl, setMapsUrl] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [selectedPlanCode, setSelectedPlanCode] = useState('');
+    const [themePresetId, setThemePresetId] = useState<string | null>(null);
     const [createdDraftEventId, setCreatedDraftEventId] = useState<string | null>(null);
     // What the draft was created with, so a duration changed afterwards is
     // saved to it before checkout.
-    const [createdDraftSelection, setCreatedDraftSelection] = useState<{ planCode: string; optionId: string; startAt: string } | null>(null);
+    const [createdDraftSelection, setCreatedDraftSelection] = useState<{
+        planCode: string;
+        optionId: string;
+        startAt: string;
+        themePresetId: string | null;
+    } | null>(null);
     // Checkout refused the draft because its start date has passed (3035).
     const [startPassed, setStartPassed] = useState(false);
     const updateDraft = useUpdateEvent(createdDraftEventId);
@@ -100,6 +109,12 @@ export function useCreateEventFormController(): CreateEventFormValue {
     const selectedCode = selectedPlan?.code ?? selectedPlanCode;
     const selectedOption = selectedPlan ? resolveInitialOption(selectedPlan, durationPicks.picks[selectedPlan.code]) : null;
     const gift = useCreateEventGift(selectedPlan);
+    const planHasTheme = selectedPlan?.moduleKeys.includes('theme') ?? false;
+    const themePresetsQuery = useThemePresetsForType(planHasTheme ? selectedEventType : null);
+    const themePresets = planHasTheme ? themePresetsQuery.data : undefined;
+    const themeStepAvailable = isThemeStepAvailable({ planHasTheme, isLoading: themePresetsQuery.isLoading, presets: themePresets });
+    const selectedThemePresetId = effectiveThemePresetId(themePresetId, themePresets);
+    const steps = visibleCreateEventSteps(themeStepAvailable);
     const { reset: resetGift, saveToDraft: saveGiftToDraft } = gift;
     const initialSessionTitleKey = getCreateEventCatalogEntry(selectedEventType)?.initialSessionTitleKey;
     const initialSessionTitle = initialSessionTitleKey && t.has(initialSessionTitleKey) ? t(initialSessionTitleKey) : undefined;
@@ -142,6 +157,8 @@ export function useCreateEventFormController(): CreateEventFormValue {
     const goToType = useCallback(() => goToStep('type'), [goToStep]);
     const goToPlan = useCallback(() => goToStep('plan'), [goToStep]);
     const goToDetails = useCallback(() => goToStep('details'), [goToStep]);
+    const goToTheme = useCallback(() => goToStep('theme'), [goToStep]);
+    const goToOverview = useCallback(() => goToStep('overview'), [goToStep]);
 
     useEffect(() => {
         if (step === 'type') {
@@ -150,15 +167,20 @@ export function useCreateEventFormController(): CreateEventFormValue {
     }, [refetchAppConfig, step]);
 
     useEffect(() => {
-        if (CREATE_EVENT_STEPS.indexOf(step) <= CREATE_EVENT_STEPS.indexOf(reachableStep)) return;
-        router.replace(routes.events.new({ step: reachableStep }));
-    }, [reachableStep, router, step]);
+        if (CREATE_EVENT_STEPS.indexOf(step) > CREATE_EVENT_STEPS.indexOf(reachableStep)) {
+            router.replace(routes.events.new({ step: reachableStep }));
+        } else if (step === 'theme' && !themeStepAvailable) {
+            // Nothing to pick for this plan or type, or the list failed: skip ahead.
+            router.replace(routes.events.new({ step: 'overview' }));
+        }
+    }, [reachableStep, router, step, themeStepAvailable]);
 
     const onSelectEventType = useCallback(
         (type: EventTypeConvention) => {
             if (type === eventType) return;
             setEventType(type);
             setSelectedPlanCode('');
+            setThemePresetId(null);
             setTitle('');
             setStartAt('');
             setTimezone(getCurrentTimezone());
@@ -182,6 +204,10 @@ export function useCreateEventFormController(): CreateEventFormValue {
     const onLocationNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setLocationName(e.target.value), []);
     const onLocationAddressChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setLocationAddress(e.target.value), []);
     const onMapsUrlChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setMapsUrl(e.target.value), []);
+    const onSelectThemePreset = useCallback((presetId: string | null) => {
+        setThemePresetId(presetId);
+        setError(null);
+    }, []);
 
     // A code preview prices one plan at one duration, so it goes stale when
     // either changes. The typed code stays so the host can apply it again.
@@ -246,7 +272,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
             setError(null);
             setStartPassed(false);
             if (step === 'details') {
-                if (canSubmitDetails) goToStep('overview');
+                if (canSubmitDetails) goToStep(themeStepAvailable ? 'theme' : 'overview');
                 return;
             }
             if (step !== 'overview') return;
@@ -270,6 +296,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
                     mapsUrl: mapsUrl.trim() || undefined,
                     brandingSettings: {},
                     initialSessionTitle,
+                    themePresetId: selectedThemePresetId ?? undefined,
                 };
 
                 try {
@@ -277,11 +304,19 @@ export function useCreateEventFormController(): CreateEventFormValue {
                     const event = await createEvent.mutateAsync(input);
                     eventId = event.id;
                     setCreatedDraftEventId(event.id);
-                    setCreatedDraftSelection({ planCode: selectedCode, optionId: selectedOption.id, startAt });
+                    setCreatedDraftSelection({ planCode: selectedCode, optionId: selectedOption.id, startAt, themePresetId: selectedThemePresetId });
                 } catch (err) {
                     setIsCheckoutPending(false);
                     if (Object.keys(getFieldErrors(err) ?? {}).length > 0) {
                         goToStep('details');
+                        return;
+                    }
+                    // The picked theme was archived or withdrawn since the list loaded: back to the step with a fresh list.
+                    if (getErrorCode(err) === ERROR_CODES.THEME_PRESET_NOT_SELECTABLE) {
+                        setThemePresetId(null);
+                        void themePresetsQuery.refetch();
+                        setError(toErrorMessage(err));
+                        goToStep('theme');
                         return;
                     }
                     setError(toErrorMessage(err));
@@ -299,13 +334,27 @@ export function useCreateEventFormController(): CreateEventFormValue {
                     setIsCheckoutPending(true);
                     await updateDraft.mutateAsync({ ...(durationChanged ? { coverageOptionId: selectedOption.id } : {}), ...(dates ?? {}) });
                     setCreatedDraftSelection({
-                        planCode: createdDraftSelection.planCode,
+                        ...createdDraftSelection,
                         optionId: durationChanged ? selectedOption.id : createdDraftSelection.optionId,
                         startAt,
                     });
                 } catch (updateError) {
                     setIsCheckoutPending(false);
                     setError(toErrorMessage(updateError));
+                    return;
+                }
+            }
+
+            // A theme picked or cleared after the draft was created is saved to it too.
+            if (createdDraftSelection && createdDraftSelection.themePresetId !== selectedThemePresetId) {
+                try {
+                    setIsCheckoutPending(true);
+                    const body: EventThemeRequestDto = { presetId: selectedThemePresetId };
+                    await api.put(endpoints.events.theme(eventId), body);
+                    setCreatedDraftSelection({ ...createdDraftSelection, themePresetId: selectedThemePresetId });
+                } catch (themeError) {
+                    setIsCheckoutPending(false);
+                    setError(toErrorMessage(themeError));
                     return;
                 }
             }
@@ -353,6 +402,9 @@ export function useCreateEventFormController(): CreateEventFormValue {
             planTiersQuery,
             saveGiftToDraft,
             selectedCode,
+            selectedThemePresetId,
+            themePresetsQuery,
+            themeStepAvailable,
             selectedEventType,
             selectedOption,
             step,
@@ -374,6 +426,9 @@ export function useCreateEventFormController(): CreateEventFormValue {
         goToType,
         goToPlan,
         goToDetails,
+        goToTheme,
+        goToOverview,
+        steps,
 
         eventTypes,
         selectedEventType,
@@ -433,6 +488,13 @@ export function useCreateEventFormController(): CreateEventFormValue {
         consentSatisfied: consent.consentSatisfied,
         onRequestsImmediateStartChange: consent.handleRequestsImmediateStartChange,
         onAcknowledgesWithdrawalTermsChange: consent.handleAcknowledgesWithdrawalTermsChange,
+
+        themeStepAvailable,
+        themePresets: themePresets ?? [],
+        isThemePresetsLoading: planHasTheme && themePresetsQuery.isLoading,
+        themePresetsError: themePresetsQuery.error,
+        selectedThemePresetId,
+        onSelectThemePreset,
 
         gift,
 

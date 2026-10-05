@@ -33,7 +33,7 @@ export function ComposerCard() {
                     <button
                         type="button"
                         onClick={openPostComposer}
-                        className="flex min-w-0 flex-1 items-center rounded-[1.4rem] bg-surface-muted px-4 py-2.5 text-left text-sm text-ink-faint transition-colors hover:text-ink-muted"
+                        className="flex min-w-0 flex-1 items-center rounded-[1.4rem] bg-event-muted px-4 py-2.5 text-left text-sm text-ink-faint transition-colors hover:text-ink-muted"
                         aria-label={t('captionPlaceholder')}
                     >
                         <span className="truncate">{t('captionPlaceholder')}</span>

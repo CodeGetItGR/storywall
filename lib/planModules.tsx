@@ -1,4 +1,4 @@
-import { BookHeart, CalendarCheck, Gift, HelpCircle, Images, MessageSquareText, Music, Tags } from 'lucide-react';
+import { BookHeart, CalendarCheck, Gift, HelpCircle, Images, MessageSquareText, Music, Palette, Tags } from 'lucide-react';
 import type { ComponentType } from 'react';
 
 import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
@@ -13,6 +13,7 @@ const moduleIcons: Record<string, ComponentType<{ className?: string }>> = {
     wishlist: Gift,
     wishbook: BookHeart,
     member_roles: Tags,
+    theme: Palette,
 };
 
 const moduleFallbacks: Record<string, { name: string; description: string }> = {
@@ -47,6 +48,10 @@ const moduleFallbacks: Record<string, { name: string; description: string }> = {
     member_roles: {
         name: 'Member roles',
         description: 'Guests pick a role, like best man, shown next to their name.',
+    },
+    theme: {
+        name: 'Theme',
+        description: 'An illustration and background colour for the event.',
     },
 };
 

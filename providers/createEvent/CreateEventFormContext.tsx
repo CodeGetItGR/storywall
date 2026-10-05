@@ -13,9 +13,10 @@ import type {
     PlanTierResponseDto,
     PlatformModuleResponseDto,
     ProjectedCoverageDto,
+    ThemePresetDto,
 } from '@/lib/api/types';
 
-export type CreateEventStep = 'type' | 'plan' | 'details' | 'overview';
+export type CreateEventStep = 'type' | 'plan' | 'details' | 'theme' | 'overview';
 
 export interface CreateEventFormValue {
     formId: string;
@@ -25,6 +26,10 @@ export interface CreateEventFormValue {
     goToType: () => void;
     goToPlan: () => void;
     goToDetails: () => void;
+    goToTheme: () => void;
+    goToOverview: () => void;
+    // The steps shown for the current type and plan (the theme step only when there is one to pick).
+    steps: CreateEventStep[];
 
     // Type step
     eventTypes: AppEventTypeResponseDto[];
@@ -71,6 +76,15 @@ export interface CreateEventFormValue {
     mapsUrl: string;
     onMapsUrlChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     canSubmitDetails: boolean;
+    // Theme step: shown when the plan lists `theme` and the type has presets.
+    themeStepAvailable: boolean;
+    themePresets: ThemePresetDto[];
+    isThemePresetsLoading: boolean;
+    themePresetsError: unknown;
+    // Null for "No theme".
+    selectedThemePresetId: string | null;
+    onSelectThemePreset: (presetId: string | null) => void;
+
     // "Buy as a gift", on plans that can be given.
     gift: CreateEventGift;
 

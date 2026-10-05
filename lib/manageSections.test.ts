@@ -4,7 +4,7 @@ import { manageSections, parseManageSection, resolveManageSection, visibleManage
 
 describe('manageSections', () => {
     it('lists sections in the host dashboard nav order', () => {
-        expect(manageSections).toEqual(['overview', 'settings', 'rsvp', 'members', 'gift', 'billing', 'help', 'danger']);
+        expect(manageSections).toEqual(['overview', 'settings', 'theme', 'rsvp', 'members', 'gift', 'billing', 'help', 'danger']);
     });
 
     it('parseManageSection resolves "help"', () => {
@@ -44,6 +44,18 @@ describe('manageSections', () => {
             'settings',
             'members',
             'gift',
+            'billing',
+            'help',
+        ]);
+    });
+
+    it('visibleManageSections shows the theme section only when the event can pick a theme', () => {
+        expect(visibleManageSections({ canDelete: false, rsvpAvailable: false })).not.toContain('theme');
+        expect(visibleManageSections({ canDelete: false, rsvpAvailable: false, themeAvailable: true })).toEqual([
+            'overview',
+            'settings',
+            'theme',
+            'members',
             'billing',
             'help',
         ]);

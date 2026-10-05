@@ -4,10 +4,12 @@ import { HostContextSections } from '@/components/layout/right-context-panel/Hos
 import { CoverageStatusStrip } from '@/components/manage/CoverageStatusStrip';
 import { ManageDraftOverviewSkeleton } from '@/components/manage/ManageSkeletons';
 import { OverviewDraftPanel } from '@/components/manage/OverviewDraftPanel';
+import { ThemePicker } from '@/components/manage/ThemePicker';
 import { MetricStrip } from '@/components/ui/MetricStrip';
 import { useEventOverviewPlan } from '@/hooks/useEventOverviewPlan';
 import { useRightContextPanel } from '@/hooks/useRightContextPanel';
 import type {
+    EventDetailResponseDto,
     EventModuleResponseDto,
     EventScheduleDto,
     EventStatus,
@@ -19,6 +21,7 @@ import type {
 } from '@/lib/api/types';
 
 export default function OverviewTab({
+    event,
     memberCount,
     daysToGo,
     pendingCoHostInvitationCount,
@@ -36,6 +39,8 @@ export default function OverviewTab({
     cancelledCheckout,
     canPurchase,
 }: {
+    // Only for the draft's theme picker; everything else reads the narrower props below.
+    event: EventDetailResponseDto;
     memberCount: number;
     daysToGo: number;
     pendingCoHostInvitationCount: number;
@@ -98,6 +103,8 @@ export default function OverviewTab({
                 activationTotal={currentPlan?.priceCurrency ? activationTotal : null}
                 wishlistAvailable={wishlistAvailable}
                 cancelledCheckout={cancelledCheckout}
+                // A draft has no settings tab, so its theme is picked here. Hosts may edit a draft.
+                themeSection={<ThemePicker event={event} canWrite />}
             />
         );
     }

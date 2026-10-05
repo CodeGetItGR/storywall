@@ -23,50 +23,48 @@ export function ScheduleStoryContent({ sessions, locale }: ScheduleStoryContentP
     const unscheduledSessions = groupedSessions.unscheduled ?? [];
 
     return (
-        <div className="absolute inset-0 bg-surface-muted">
+        <div className="px-5 pt-4 pb-10 text-ink">
             {/* Schedule Content */}
-            <div className="h-full overflow-y-auto px-5 pt-24 pb-10 text-ink">
-                <div className="flex flex-col gap-6">
-                    {datedKeys.map((date) => (
-                        <section key={date}>
-                            {/* Date Header */}
-                            <div className="mb-3 flex items-center gap-3">
-                                <div className="flex h-11 w-11 flex-col items-center justify-center rounded-full bg-background text-center shadow-[0_10px_24px_rgba(36,31,26,0.1)]">
-                                    <span className="text-[10px] leading-none font-semibold text-amber-700 uppercase">
-                                        {formatDate(locale, `${date}T00:00:00`, { month: 'short' })}
-                                    </span>
-                                    <span className="text-base leading-none font-bold text-[#1b2232]">
-                                        {formatDate(locale, `${date}T00:00:00`, { day: 'numeric' })}
-                                    </span>
-                                </div>
-                                <p className="text-sm font-bold text-ink">{formatDate(locale, `${date}T00:00:00`, { weekday: 'long' })}</p>
+            <div className="flex flex-col gap-6">
+                {datedKeys.map((date) => (
+                    <section key={date}>
+                        {/* Date Header */}
+                        <div className="mb-3 flex items-center gap-3">
+                            <div className="flex h-11 w-11 flex-col items-center justify-center rounded-full bg-background text-center shadow-[0_10px_24px_rgba(36,31,26,0.1)]">
+                                <span className="text-[10px] leading-none font-semibold text-amber-700 uppercase">
+                                    {formatDate(locale, `${date}T00:00:00`, { month: 'short' })}
+                                </span>
+                                <span className="text-base leading-none font-bold text-[#1b2232]">
+                                    {formatDate(locale, `${date}T00:00:00`, { day: 'numeric' })}
+                                </span>
                             </div>
+                            <p className="text-sm font-bold text-ink">{formatDate(locale, `${date}T00:00:00`, { weekday: 'long' })}</p>
+                        </div>
 
-                            {/* Session List */}
-                            <div className="flex flex-col">
-                                {groupedSessions[date].map((session) => (
-                                    <ScheduleStorySession key={session.id} session={session} locale={locale} />
-                                ))}
-                            </div>
-                        </section>
-                    ))}
+                        {/* Session List */}
+                        <div className="flex flex-col">
+                            {groupedSessions[date].map((session) => (
+                                <ScheduleStorySession key={session.id} session={session} locale={locale} />
+                            ))}
+                        </div>
+                    </section>
+                ))}
 
-                    {unscheduledSessions.length > 0 && (
-                        <section>
-                            {/* Unscheduled Header */}
-                            <div className="mb-3 flex items-center gap-2">
-                                <Clock className="h-4 w-4 text-ink-muted" aria-hidden="true" />
-                                <p className="text-sm font-bold text-ink">{t('unscheduled')}</p>
-                            </div>
-                            {/* Unscheduled Sessions */}
-                            <div className="flex flex-col border-t border-border">
-                                {unscheduledSessions.map((session) => (
-                                    <ScheduleStorySession key={session.id} session={session} locale={locale} />
-                                ))}
-                            </div>
-                        </section>
-                    )}
-                </div>
+                {unscheduledSessions.length > 0 && (
+                    <section>
+                        {/* Unscheduled Header */}
+                        <div className="mb-3 flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-ink-muted" aria-hidden="true" />
+                            <p className="text-sm font-bold text-ink">{t('unscheduled')}</p>
+                        </div>
+                        {/* Unscheduled Sessions */}
+                        <div className="flex flex-col border-t border-border">
+                            {unscheduledSessions.map((session) => (
+                                <ScheduleStorySession key={session.id} session={session} locale={locale} />
+                            ))}
+                        </div>
+                    </section>
+                )}
             </div>
         </div>
     );

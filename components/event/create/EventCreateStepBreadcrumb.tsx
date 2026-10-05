@@ -6,16 +6,15 @@ import { Fragment } from 'react';
 
 import { type CreateEventStep, useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 
-const STEPS: CreateEventStep[] = ['type', 'plan', 'details', 'overview'];
-
 export function EventCreateStepBreadcrumb() {
     const t = useTranslations('CreateEventPage');
-    const { step, goToType, goToPlan, goToDetails } = useCreateEventForm();
-    const currentIndex = STEPS.indexOf(step);
+    const { step, steps, goToType, goToPlan, goToDetails, goToTheme } = useCreateEventForm();
+    const currentIndex = steps.indexOf(step);
     const goTo: Partial<Record<CreateEventStep, () => void>> = {
         type: goToType,
         plan: goToPlan,
         details: goToDetails,
+        theme: goToTheme,
     };
 
     return (
@@ -23,7 +22,7 @@ export function EventCreateStepBreadcrumb() {
             aria-label={t('steps.navigationLabel')}
             className="flex w-auto items-center justify-between gap-1 overflow-x-auto pb-1 text-sm font-semibold"
         >
-            {STEPS.map((item, index) => {
+            {steps.map((item, index) => {
                 const isCurrent = item === step;
                 const isPast = index < currentIndex;
 

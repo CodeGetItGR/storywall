@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DeletedEventManageScreen } from '@/components/manage/DeletedEventManageScreen';
 import { ManageSectionNav, sectionIcons } from '@/components/manage/ManageSectionNav';
 import { ManageMembersSkeleton, ManageOverviewSkeleton, ManageRsvpSkeleton } from '@/components/manage/ManageSkeletons';
+import { ThemePicker } from '@/components/manage/ThemePicker';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { Modal } from '@/components/ui/modal';
 import { useAppConfig } from '@/hooks/useAppConfig';
@@ -18,6 +19,7 @@ import { useEventRsvps } from '@/hooks/useRsvps';
 import { useEventUsage } from '@/hooks/useUsage';
 import { countPendingCoHostInvitations } from '@/lib/eventInvitations';
 import { isEventDeleted, isEventWritable, isModuleAvailable, isPrimaryHost } from '@/lib/eventLifecycle';
+import { canPickTheme } from '@/lib/eventTheme';
 import { type ManageSection, parseManageSection, resolveManageSection, visibleManageSections } from '@/lib/manageSections';
 import { replacePageUrl } from '@/lib/overlayHistory';
 import { routes } from '@/lib/routes';
@@ -52,7 +54,12 @@ export function ManageScreen() {
         eventModules: activeEvent.modules,
         planTiers: appConfig?.planTiers ?? [],
     });
-    const visibleSections = visibleManageSections({ canDelete, rsvpAvailable, giftAvailable: giftSection.available });
+    const visibleSections = visibleManageSections({
+        canDelete,
+        rsvpAvailable,
+        giftAvailable: giftSection.available,
+        themeAvailable: canPickTheme(activeEvent),
+    });
     const section = resolveManageSection(requestedSection, {
         isDraft,
         visibleSections,
@@ -120,6 +127,7 @@ export function ManageScreen() {
                     <ManageOverviewSkeleton />
                 ) : (
                     <OverviewTab
+                        event={activeEvent}
                         memberCount={members.length}
                         daysToGo={daysToGo}
                         pendingCoHostInvitationCount={countPendingCoHostInvitations(invitations)}
@@ -174,6 +182,8 @@ export function ManageScreen() {
 
             {section === 'settings' && <SettingsTab event={activeEvent} canWrite={canEditDetails} canUploadCover={canWrite} />}
 
+            {section === 'theme' && <ThemePicker event={activeEvent} canWrite={canEditDetails} showHeading={false} />}
+
             {section === 'help' && (
                 <HelpTab
                     eventId={eventId}
@@ -207,7 +217,7 @@ export function ManageScreen() {
     return (
         <div className="mx-auto w-full max-w-6xl pb-10">
             {/* Header */}
-            <div className="sticky top-0 z-20 border-b border-border/60 bg-background/95 backdrop-blur lg:static lg:bg-transparent lg:backdrop-blur-none">
+            <div className="sticky top-0 z-20 border-b border-border/60 bg-event/95 backdrop-blur lg:static lg:bg-transparent lg:backdrop-blur-none">
                 <div className="flex items-start justify-between gap-3 px-4 pt-4 pb-3 lg:px-6 lg:pt-6 lg:pb-5">
                     <div className="min-w-0">
                         <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-ink-faint uppercase">

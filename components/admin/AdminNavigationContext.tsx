@@ -11,6 +11,7 @@ import {
     MonitorPlay,
     OctagonAlert,
     PackagePlus,
+    Palette,
     Receipt,
     ShoppingBag,
     Smile,
@@ -38,6 +39,7 @@ export type AdminTab =
     | 'discountCodes'
     | 'collaborations'
     | 'reactionTypes'
+    | 'themePresets'
     | 'demoEvents'
     | 'billingOps'
     | 'orders'
@@ -75,6 +77,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#paid-services': 'paidServices',
     '#discount-codes': 'discountCodes',
     '#reaction-types': 'reactionTypes',
+    '#theme-presets': 'themePresets',
     '#billing-ops': 'billingOps',
     '#accounts': 'accounts',
     '#reports': 'reports',
@@ -91,6 +94,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     discountCodes: '#discount-codes',
     collaborations: COLLABORATIONS_HASH_ROOT,
     reactionTypes: '#reaction-types',
+    themePresets: '#theme-presets',
     demoEvents: DEMO_EVENTS_HASH_ROOT,
     billingOps: '#billing-ops',
     orders: ORDERS_HASH_ROOT,
@@ -178,6 +182,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'discountCodes', label: t('discountCodes'), icon: TicketPercent },
             { key: 'collaborations', label: t('collaborations'), icon: Handshake },
             { key: 'reactionTypes', label: t('reactionTypes'), icon: Smile },
+            { key: 'themePresets', label: t('themePresets'), icon: Palette },
             { key: 'demoEvents', label: t('demoEvents'), icon: MonitorPlay },
             { key: 'accounts', label: t('accounts'), icon: Users },
             { key: 'orders', label: t('orders'), icon: ShoppingBag },

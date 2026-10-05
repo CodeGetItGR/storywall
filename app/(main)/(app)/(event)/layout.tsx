@@ -4,6 +4,7 @@ import { type ReactNode, Suspense } from 'react';
 import { DeletedEventRouteGuard } from '@/components/event/DeletedEventRouteGuard';
 import { DraftEventRouteGuard } from '@/components/event/DraftEventRouteGuard';
 import { EventLifecycleBanner } from '@/components/event/EventLifecycleBanner';
+import { EventThemeScope } from '@/components/event/EventThemeScope';
 import { SuspendedEventRouteGuard } from '@/components/event/SuspendedEventRouteGuard';
 import { MyRoleSheetHost } from '@/components/memberRoles/MyRoleSheetHost';
 import { myEventsKeys } from '@/hooks/useMyEvents';
@@ -22,7 +23,7 @@ export default async function EventLayout({ children }: { children: ReactNode })
 
     return (
         <HydrationBoundary state={dehydrate(queryClient)}>
-            <div className="min-h-full bg-background">
+            <EventThemeScope>
                 <SuspendedEventRouteGuard>
                     <EventLifecycleBanner />
                     <DraftEventRouteGuard>
@@ -35,7 +36,7 @@ export default async function EventLayout({ children }: { children: ReactNode })
                         </DeletedEventRouteGuard>
                     </DraftEventRouteGuard>
                 </SuspendedEventRouteGuard>
-            </div>
+            </EventThemeScope>
         </HydrationBoundary>
     );
 }

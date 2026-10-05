@@ -1,9 +1,10 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Banner } from '@/components/feed/Banner';
 import { ComposerCard } from '@/components/feed/ComposerCard';
@@ -19,6 +20,7 @@ import { RsvpPrompt } from '@/components/feed/RsvpPrompt';
 import { StoriesRow } from '@/components/feed/StoriesRow';
 import { StoryModal } from '@/components/story/StoryModal';
 import { useGiftAccount, useHideMobileTabBarOnScroll } from '@/hooks';
+import { eventKeys } from '@/hooks/useEvent';
 import { coverPhotoSettingsHref } from '@/lib/manageSectionTargets';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
@@ -30,6 +32,9 @@ export function FeedPageContent() {
     useHideMobileTabBarOnScroll();
     const { currentMemberRsvpId, event, eventId, isFetchingNextPage, isHost, loadMoreRef, loadingMoreLabel, moduleFlags, posts } = useFeedPage();
     const gifts = useGiftAccount(eventId);
+    const queryClient = useQueryClient();
+    // An admin replacing a preset's art can leave the event's illustration URL dead; refetch once per URL.
+    const refetchedIllustration = useRef<string | null>(null);
     const [storyId, setStoryId] = useState<string | null>(null);
     const [pageLoaded, setPageLoaded] = useState(false);
     const shouldShowRSVP = moduleFlags.rsvp && !isHost && currentMemberRsvpId === null;
@@ -45,6 +50,13 @@ export function FeedPageContent() {
         window.addEventListener('load', markLoaded, { once: true });
         return () => window.removeEventListener('load', markLoaded);
     }, []);
+
+    function handleIllustrationError() {
+        const url = event.theme?.illustrationUrl ?? null;
+        if (!url || refetchedIllustration.current === url) return;
+        refetchedIllustration.current = url;
+        void queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
+    }
 
     function openStoryModal(nextStoryId: string) {
         setStoryId(nextStoryId);
@@ -62,6 +74,8 @@ export function FeedPageContent() {
             <section className={'mt-3'}>
                 <Banner
                     image={event.coverMedia?.mediaUrl ?? null}
+                    illustrationUrl={event.theme?.illustrationUrl ?? null}
+                    onIllustrationError={handleIllustrationError}
                     title={event.title}
                     glowVisible={pageLoaded}
                     fallbackActionHref={isHost ? coverPhotoSettingsHref(eventId) : undefined}
@@ -94,7 +108,7 @@ export function FeedPageContent() {
 
             {/* Stories */}
             {moduleFlags.stories && (
-                <section id="stories" className={cn('top-0 bg-background/90 backdrop-blur-sm')}>
+                <section id="stories" className={cn('top-0 bg-event/90 backdrop-blur-sm')}>
                     <StoriesRow eventId={eventId} onOpenStoryAction={openStoryModal} />
                 </section>
             )}
@@ -113,7 +127,7 @@ export function FeedPageContent() {
                 {moduleFlags.posts && (
                     <div
                         className={cn('flex flex-col px-0 pb-24 lg:pb-10', {
-                            'lg:mt-4': (!moduleFlags.stories || !event.description) && !shouldShowRSVP,
+                            'mt-4': (!moduleFlags.stories || !event.description) && !shouldShowRSVP,
                         })}
                     >
                         <ComposerCard />

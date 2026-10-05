@@ -9,6 +9,7 @@ import { EventCreateFooter } from '@/components/event/create/EventCreateFooter';
 import { EventCreateStepBreadcrumb } from '@/components/event/create/EventCreateStepBreadcrumb';
 import { EventDetailsStep } from '@/components/event/create/EventDetailsStep';
 import { EventOverviewStep } from '@/components/event/create/EventOverviewStep';
+import { EventThemeStep } from '@/components/event/create/EventThemeStep';
 import { EventTypeStep } from '@/components/event/create/EventTypeStep';
 import { EventPlanSelector } from '@/components/plan/EventPlanSelector';
 import { BackButton } from '@/components/ui/BackButton';
@@ -92,6 +93,7 @@ function CreateEventFormBody() {
                             {step === 'type' && t('steps.typeSubtitle')}
                             {step === 'plan' && t('steps.planSubtitle')}
                             {step === 'details' && t('subtitle')}
+                            {step === 'theme' && t('steps.themeSubtitle')}
                             {step === 'overview' && t('steps.overviewSubtitle')}
                         </h2>
 
@@ -111,6 +113,8 @@ function CreateEventFormBody() {
                         )}
 
                         {step === 'details' && <EventDetailsStep />}
+
+                        {step === 'theme' && <EventThemeStep />}
 
                         {step === 'overview' && <EventOverviewStep />}
                     </form>

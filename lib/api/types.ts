@@ -30,6 +30,7 @@ export const EVENT_MODULE_KEYS = [
     'co_hosts',
     'schedule',
     'member_roles',
+    'theme',
 ] as const;
 // Use this (not the raw `ModuleKey` wire type below) whenever code branches on
 // a specific module — it's a closed set and catches typos at compile time.
@@ -741,11 +742,23 @@ export interface EventRequestDto {
     brandingSettings: Record<string, unknown>; // required — send {} if none
     rsvpDeadline?: string;
     initialSessionTitle?: string;
+    // Added 2026-10-05: a preset from GET /api/theme-presets?eventType=. Applied in the create
+    // transaction; 409 5012 (plan lacks theme) or 5143 (not selectable) and no event is created.
+    themePresetId?: string | null;
 }
 
 export interface AdminProvisionEventRequestDto {
     hostUserId: string;
     event: EventRequestDto;
+}
+
+// The event's look (event-theme-customization, 2026-10-05). Null when the event has
+// no preset, or when the theme module isn't readable for it (kill switch, plan,
+// event type) — then the app shows the default look. illustrationUrl is presigned.
+export interface EventThemeDto {
+    presetKey: string;
+    backgroundColor: string; // #RRGGBB, upper-case
+    illustrationUrl: string;
 }
 
 // Returned by GET /api/events (list) and POST /api/events — flat summary shape.
@@ -767,6 +780,7 @@ export interface EventResponseDto {
     mapsUrl: string | null;
     coverMediaId: string | null;
     brandingSettings: Record<string, unknown>;
+    theme: EventThemeDto | null;
     rsvpDeadline: string | null;
     createdAt: string;
     updatedAt: string;
@@ -829,6 +843,8 @@ export interface EventDetailResponseDto {
     // Only for drawing it: uploaderMemberId, anonymousUploaderName, originalFilename and storageKey come back null, metadata {}.
     coverMedia: MediaResponseDto | null;
     brandingSettings: Record<string, unknown>;
+    // Replaces the cover banner on the event home; the cover still feeds share previews and cards.
+    theme: EventThemeDto | null;
     hosts: EventHostResponseDto[]; // only the primary host when co_hosts is off
     modules: EventModuleResponseDto[];
     sessions: EventSessionResponseDto[] | null; // null when schedule is off
@@ -1809,6 +1825,8 @@ export interface QrLinkResolutionDto {
     // Read the cover from here: the scanner isn't a member, so GET /api/medias/{id} refuses them.
     // Only for drawing it: uploaderMemberId, anonymousUploaderName, originalFilename and storageKey come back null, metadata {}.
     coverMedia?: MediaResponseDto | null;
+    // The event's theme, null for the default look. Its illustration takes the cover's place, as on the feed banner.
+    theme?: EventThemeDto | null;
     eventStatus?: EventStatus;
     inviteToken?: string;
     requiresAuth?: boolean;
@@ -1953,6 +1971,8 @@ export interface EventInvitationPreviewDto {
     // Read the cover from here: the visitor isn't a member, so GET /api/medias/{id} refuses them.
     // Only for drawing it: uploaderMemberId, anonymousUploaderName, originalFilename and storageKey come back null, metadata {}.
     coverMedia: MediaResponseDto | null;
+    // The event's theme, null for the default look. Its illustration takes the cover's place, as on the feed banner.
+    theme: EventThemeDto | null;
     firstName: string | null;
     lastName: string | null;
     email: string | null;
@@ -3201,4 +3221,55 @@ export interface AdminAuditLogResponseDto {
     details: Record<string, unknown>;
     ipAddress: string | null;
     createdAt: string;
+}
+
+// GET /api/events/{eventId}/theme-presets — what a host may pick for this event:
+// not archived, illustrated, offered for its event type. Already in display order
+// (the server sorts; there is no sortOrder on this shape).
+export interface ThemePresetDto {
+    id: string;
+    key: string;
+    name: LocalizedText; // { el, en }
+    backgroundColor: string; // #RRGGBB
+    illustrationUrl: string;
+}
+
+// PUT /api/events/{eventId}/theme — null (or omitted) clears the theme.
+export interface EventThemeRequestDto {
+    presetId: string | null;
+}
+
+// PUT /api/events/{eventId}/theme reply — NOT the event detail.
+export interface EventThemeResponseDto {
+    theme: EventThemeDto | null;
+}
+
+// /api/admin/theme-presets — the whole catalog, archived and unillustrated included.
+export interface AdminThemePresetDto {
+    id: string;
+    key: string; // immutable after create
+    name: LocalizedText;
+    backgroundColor: string;
+    illustrationUrl: string | null; // null until uploaded; such a preset isn't offered to hosts
+    eventTypes: EventTypeConvention[];
+    sortOrder: number;
+    archived: boolean;
+}
+
+// POST /api/admin/theme-presets
+export interface AdminThemePresetRequestDto {
+    key: string;
+    name: LocalizedText;
+    backgroundColor: string;
+    eventTypes: EventTypeConvention[];
+    sortOrder: number;
+}
+
+// PATCH /api/admin/theme-presets/{id}. Omitted fields stay as they are; sending `key` is rejected (3002).
+export interface AdminThemePresetPatchDto {
+    name?: LocalizedText;
+    backgroundColor?: string;
+    eventTypes?: EventTypeConvention[];
+    sortOrder?: number;
+    archived?: boolean;
 }
