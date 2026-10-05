@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { EventDetailResponseDto } from '@/lib/api/types';
-import { canPickTheme, eventThemeStyle, isHexColor } from '@/lib/eventTheme';
+import { canPickTheme, eventThemeStyle, isHexColor, isThemedEventPage } from '@/lib/eventTheme';
 
 describe('isHexColor', () => {
     it('accepts #RRGGBB in either case', () => {
@@ -20,7 +20,10 @@ describe('isHexColor', () => {
 
 describe('eventThemeStyle', () => {
     it('sets --event-bg for a #RRGGBB colour', () => {
-        expect(eventThemeStyle('#BFE6E2')).toEqual({ '--event-bg': '#BFE6E2' });
+        expect(eventThemeStyle('#BFE6E2')).toEqual({
+            '--event-bg': '#BFE6E2',
+            '--surface-muted': 'color-mix(in oklab, #BFE6E2 15%, #ffffff)',
+        });
     });
 
     it('is undefined without a colour, so the default background shows', () => {
@@ -31,6 +34,42 @@ describe('eventThemeStyle', () => {
 
     it('ignores a value that is not #RRGGBB', () => {
         expect(eventThemeStyle('url(https://example.com/x.png)')).toBeUndefined();
+    });
+});
+
+describe('isThemedEventPage', () => {
+    it('themes the guest-facing event pages', () => {
+        for (const path of [
+            '/events/e1/feed',
+            '/events/e1/location/main',
+            '/events/e1/story/schedule',
+            '/events/e1/tools/gallery',
+            '/events/e1/tools/gifts',
+            '/events/e1/tools/playlist',
+            '/events/e1/tools/quiz',
+            '/events/e1/tools/schedule',
+            '/events/e1/tools/wishbook',
+            '/events/e1/tools/rsvp/submit',
+        ]) {
+            expect(isThemedEventPage(path), path).toBe(true);
+        }
+    });
+
+    it("leaves the host's working pages plain", () => {
+        for (const path of [
+            '/events/e1/manage',
+            '/events/e1/manage/qr',
+            '/events/e1/manage/gift/card',
+            '/events/e1/checkout/review',
+            '/events/e1/settings/plan',
+            '/events/e1/tools/gallery/qr',
+            '/events/e1/tools/rsvp',
+            '/events/e1/feedback',
+            '/post/p1',
+            '/home',
+        ]) {
+            expect(isThemedEventPage(path), path).toBe(false);
+        }
     });
 });
 

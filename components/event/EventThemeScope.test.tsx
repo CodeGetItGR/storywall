@@ -7,7 +7,10 @@ import type { EventDetailResponseDto } from '@/lib/api/types';
 const state = vi.hoisted(() => ({
     event: null as Partial<EventDetailResponseDto> | null,
     routeEventId: 'e-1' as string | null,
+    pathname: '/events/e-1/feed',
 }));
+
+vi.mock('next/navigation', () => ({ usePathname: () => state.pathname }));
 
 vi.mock('@/providers/EventProvider', () => ({
     useActiveEvent: () => state.event,
@@ -32,6 +35,7 @@ afterEach(() => {
     cleanup();
     state.event = null;
     state.routeEventId = 'e-1';
+    state.pathname = '/events/e-1/feed';
 });
 
 describe('EventThemeScope', () => {
@@ -50,6 +54,12 @@ describe('EventThemeScope', () => {
     it('ignores the remembered event on a route that does not name it', () => {
         state.event = themedEvent;
         state.routeEventId = null;
+        expect(renderScope().style.getPropertyValue('--event-bg')).toBe('');
+    });
+
+    it("stays plain on the host's working pages", () => {
+        state.event = themedEvent;
+        state.pathname = '/events/e-1/manage/qr';
         expect(renderScope().style.getPropertyValue('--event-bg')).toBe('');
     });
 

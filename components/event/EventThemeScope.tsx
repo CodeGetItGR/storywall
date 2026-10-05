@@ -1,17 +1,20 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 
-import { eventThemeStyle } from '@/lib/eventTheme';
+import { eventThemeStyle, isThemedEventPage } from '@/lib/eventTheme';
 import { useActiveEvent, useRouteEventId } from '@/providers/EventProvider';
 
-// The event app's root surface. Puts the event's theme colour in --event-bg for
-// every `bg-event` surface below it; without a theme they keep today's background.
+// The event app's root surface. On the guest-facing pages it puts the event's theme colour
+// in --event-bg for every `bg-event` surface below it; elsewhere, or without a theme,
+// they keep today's background.
 export function EventThemeScope({ children }: { children: ReactNode }) {
     const activeEvent = useActiveEvent();
     // Id-less routes (/post/[id]) fall back to the last visited event, which the page is not about.
     const routeEventId = useRouteEventId();
-    const theme = routeEventId && activeEvent?.id === routeEventId ? activeEvent.theme : null;
+    const pathname = usePathname();
+    const theme = routeEventId && activeEvent?.id === routeEventId && isThemedEventPage(pathname) ? activeEvent.theme : null;
 
     return (
         // Fills the shell's content area: its wrapper is a grid, so min-h-full is not needed here. On mobile
