@@ -96,6 +96,11 @@ export function useGalleryScreen() {
         gallerySelection.selectedCount <= maxArchiveSelectedItems &&
         selectedArchiveSize <= maxArchivePartBytes &&
         !isDownloadingSelection;
+    // The selection downloads as one archive part, so it shares the part's size cap.
+    const selectionTooLargeHint =
+        gallerySelection.selectedCount > 0 && selectedArchiveSize > maxArchivePartBytes
+            ? t('selectionTooLarge', { size: formatBytes(maxArchivePartBytes) })
+            : null;
 
     const handleFilesChange = useCallback(
         (event: ChangeEvent<HTMLInputElement>) => {
@@ -353,6 +358,7 @@ export function useGalleryScreen() {
         originalMedia,
         canDownloadOriginal,
         canDownloadSelected,
+        selectionTooLargeHint,
         canDeleteMedia,
         canReportMedia,
         reportOpen,

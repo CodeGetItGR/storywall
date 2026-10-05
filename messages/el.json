@@ -4564,6 +4564,7 @@
         "top": "Πάνω",
         "photosSelected": "{count} επιλεγμένες",
         "downloadSelected": "Λήψη {count}",
+        "selectionTooLarge": "Η λήψη επιλεγμένων αρχείων περιορίζεται στα {size}. Επιλέξτε λιγότερα ή κατεβάστε ολόκληρη τη συλλογή.",
         "download": "Λήψη",
         "selectMedia": "Επιλογή {filename}",
         "unselectMedia": "Αφαίρεση επιλογής {filename}",
@@ -5244,5 +5245,11 @@
             "clearConfirm": "Αφαίρεση ρόλου",
             "cancel": "Ακύρωση"
         }
+    },
+    "VideoFailure": {
+        "VIDEO_DURATION_EXCEEDED": "Είναι μεγαλύτερο από όσο επιτρέπει η εκδήλωση. Κόψτε το και ανεβάστε το ξανά.",
+        "STORY_DURATION_EXCEEDED": "Είναι πολύ μεγάλο για story. Κόψτε το και δοκιμάστε ξανά.",
+        "VIDEO_RESOLUTION_EXCEEDED": "Η ανάλυσή του ξεπερνά το 8K. Εξαγάγετέ το σε 4K ή χαμηλότερα και ανεβάστε το ξανά.",
+        "TRANSCODE_TIMEOUT": "Η επεξεργασία του κράτησε πολύ. Δοκιμάστε ένα συντομότερο ή μικρότερο βίντεο."
     }
 }

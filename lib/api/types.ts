@@ -2253,6 +2253,8 @@ export interface MediaResponseDto {
 // those as GALLERY.
 export interface MediaMetadata {
     uploadContext?: MediaUploadContext;
+    // On a FAILED video: why. See lib/videoFailure.ts for the reasons with their own copy.
+    processingError?: string;
     [key: string]: unknown;
 }
 

@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { PresignedVideo } from '@/components/common/PresignedVideo';
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { VideoFailureDetail } from '@/components/common/VideoFailureDetail';
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 import { useImageZoomPan } from '@/hooks/useImageZoomPan';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
@@ -289,6 +290,7 @@ export function GalleryViewer({
                         <div className="flex h-full w-full flex-col items-center justify-center gap-3 px-8 text-center text-sm font-semibold text-white/75">
                             <VideoOff className="h-7 w-7" aria-hidden="true" />
                             <p>{t('videoFailed')}</p>
+                            <VideoFailureDetail metadata={media.metadata} />
                         </div>
                     ) : !media.mediaUrl ? null : media.mediaType === 'VIDEO' ? (
                         <PresignedVideo src={media.mediaUrl} controls playsInline className="h-full w-full object-contain" />

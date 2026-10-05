@@ -4209,6 +4209,7 @@
         "top": "Top",
         "photosSelected": "{count} selected",
         "downloadSelected": "Download {count}",
+        "selectionTooLarge": "A download of selected items is limited to {size}. Select fewer, or download the whole gallery.",
         "download": "Download",
         "selectMedia": "Select {filename}",
         "unselectMedia": "Unselect {filename}",
@@ -5235,5 +5236,11 @@
             "clearConfirm": "Clear role",
             "cancel": "Cancel"
         }
+    },
+    "VideoFailure": {
+        "VIDEO_DURATION_EXCEEDED": "It's longer than this event allows. Trim it and upload it again.",
+        "STORY_DURATION_EXCEEDED": "It's too long for a story. Trim it and try again.",
+        "VIDEO_RESOLUTION_EXCEEDED": "Its resolution is above 8K. Export it at 4K or lower and upload it again.",
+        "TRANSCODE_TIMEOUT": "It took too long to process. Try a shorter or smaller video."
     }
 }

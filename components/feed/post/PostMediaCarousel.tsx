@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useEffectEvent, useState } from 'react';
 
 import { PresignedVideo } from '@/components/common/PresignedVideo';
+import { VideoFailureDetail } from '@/components/common/VideoFailureDetail';
 import { PostMediaImageSlide } from '@/components/feed/post/PostMediaImageSlide';
 import type { MediaResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
@@ -77,6 +78,7 @@ export function PostMediaCarousel({ media, initialIndex, onIndexChange, alt, cla
                                 <div className="flex h-full w-full flex-col items-center justify-center gap-3 px-8 text-center text-sm font-semibold text-white/75">
                                     <VideoOff className="h-7 w-7" aria-hidden="true" />
                                     <p>{t('videoFailed')}</p>
+                                    <VideoFailureDetail metadata={item.metadata} />
                                 </div>
                             ) : !item.mediaUrl ? null : item.mediaType === 'VIDEO' ? (
                                 <PresignedVideo

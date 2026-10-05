@@ -5,9 +5,11 @@ import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
 
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { pollMediaUntilProcessed, useDeleteMedia, useUploadMedia } from '@/hooks/useMedia';
+import type { MediaMetadata } from '@/lib/api/types';
 import { formatBytes } from '@/lib/format';
 import { STORY_FILTER_PRESETS } from '@/lib/story/storyFilters';
 import { getUploadLimits } from '@/lib/uploadLimits';
+import { videoFailureReason } from '@/lib/videoFailure';
 import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
 import { usePublishQueue } from '@/providers/publishQueue/PublishQueueContext';
 
@@ -78,6 +80,11 @@ function getVideoDurationSeconds(file: File): Promise<number | null> {
 
 export function useStoryComposerController(canCompose: boolean): StoryComposerController {
     const t = useTranslations('StoryComposer');
+    const tVideoFailure = useTranslations('VideoFailure');
+    const videoFailureMessage = (metadata: MediaMetadata) => {
+        const reason = videoFailureReason(metadata);
+        return reason ? tVideoFailure(reason) : t('processingFailed');
+    };
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
     const { data: appConfig } = useAppConfig();
@@ -215,7 +222,7 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
                                                           ...existing,
                                                           remoteUrl: processed.mediaUrl ?? undefined,
                                                           status: processed.status === 'FAILED' ? 'failed' : 'uploaded',
-                                                          error: processed.status === 'FAILED' ? t('processingFailed') : existing.error,
+                                                          error: processed.status === 'FAILED' ? videoFailureMessage(processed.metadata) : existing.error,
                                                       }
                                                     : existing,
                                             ),
