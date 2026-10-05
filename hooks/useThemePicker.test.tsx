@@ -1,6 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ApiError } from '@/lib/api/client';
 import { useThemePicker } from '@/hooks/useThemePicker';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 
@@ -15,12 +16,13 @@ const mocks = vi.hoisted(() => ({
     },
     mutate: (() => undefined) as (presetId: string | null) => void,
     mutation: { isPending: false, variables: undefined as string | null | undefined, error: null as unknown },
+    presetsError: null as unknown,
 }));
 
 vi.mock('@/hooks/useEventTheme', () => ({
     useEventThemePresets: (eventId: string | null) => {
         mocks.presetsArg = eventId;
-        return { data: eventId ? [mocks.preset] : undefined, isLoading: false, error: null };
+        return { data: eventId ? [mocks.preset] : undefined, isLoading: false, error: mocks.presetsError };
     },
     useSetEventTheme: () => ({ mutate: mocks.mutate, ...mocks.mutation }),
 }));
@@ -35,6 +37,7 @@ function eventWith(themeAvailable: boolean, presetKey: string | null = 'dino-min
 
 beforeEach(() => {
     mocks.presetsArg = undefined;
+    mocks.presetsError = null;
     mocks.mutate = vi.fn();
     mocks.mutation = { isPending: false, variables: undefined, error: null };
 });
@@ -81,5 +84,19 @@ describe('useThemePicker', () => {
         expect(result.current.savingPresetId).toBe('p1');
         act(() => result.current.select(null));
         expect(mocks.mutate).not.toHaveBeenCalled();
+    });
+
+    it.each([5144, 5012])('goes quiet, with no error, when the presets answer %i (event ended / module gone)', (errorCode) => {
+        mocks.presetsError = new ApiError(409, { errorCode });
+        const { result } = renderHook(() => useThemePicker(eventWith(true), true));
+        expect(result.current.available).toBe(false);
+        expect(result.current.loadError).toBeNull();
+    });
+
+    it('still surfaces other preset load errors', () => {
+        mocks.presetsError = new ApiError(500, { errorCode: 5004 });
+        const { result } = renderHook(() => useThemePicker(eventWith(true), true));
+        expect(result.current.available).toBe(true);
+        expect(result.current.loadError).toBe(mocks.presetsError);
     });
 });

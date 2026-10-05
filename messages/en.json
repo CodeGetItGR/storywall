@@ -1325,6 +1325,11 @@
                 "uploadBusy": "The server is busy. Retrying shortly…",
                 "formats": "JPEG, PNG, HEIC up to 10 MB"
             },
+            "theme": {
+                "label": "Theme",
+                "none": "No theme",
+                "loading": "Loading themes…"
+            },
             "save": "Save changes",
             "saved": "Saved",
             "readOnly": "This event is read-only. Event details and cover photo changes are paused until the event is active again.",

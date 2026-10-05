@@ -3,8 +3,13 @@
 import { useCallback } from 'react';
 
 import { useEventThemePresets, useSetEventTheme } from '@/hooks/useEventTheme';
+import { getErrorCode } from '@/lib/api/errors';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { isModuleAvailable } from '@/lib/eventLifecycle';
+
+// GET theme-presets answers 5144 once the event has ended and 5012 when the
+// plan has no theme module. Neither is a failure worth showing: the picker just isn't offered.
+const PICKER_UNAVAILABLE_CODES: ReadonlyArray<number | string | undefined> = [5144, 5012];
 
 // The host's theme choice in event settings. Only while the plan includes the
 // theme module. A pick applies at once with its own PUT, separate from the
@@ -15,6 +20,7 @@ export function useThemePicker(event: EventDetailResponseDto, canWrite: boolean)
     const presets = useEventThemePresets(available ? event.id : null);
     const setTheme = useSetEventTheme(event.id);
     const { mutate, isPending } = setTheme;
+    const quiet = PICKER_UNAVAILABLE_CODES.includes(getErrorCode(presets.error));
 
     const select = useCallback(
         (presetId: string | null) => {
@@ -25,10 +31,10 @@ export function useThemePicker(event: EventDetailResponseDto, canWrite: boolean)
     );
 
     return {
-        available,
+        available: available && !quiet,
         presets: presets.data ?? [],
         isLoading: presets.isLoading,
-        loadError: presets.error,
+        loadError: quiet ? null : presets.error,
         selectedKey: event.theme?.presetKey ?? null,
         isSaving: isPending,
         // Meaningful only while isSaving: the preset id being saved, or null for "No theme".
