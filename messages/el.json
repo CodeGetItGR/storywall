@@ -4655,6 +4655,7 @@
         },
         "hero": {
             "homeLabel": "StoryWall — Αρχική",
+            "accountHomeLabel": "Αρχική",
             "navLabel": "Κύρια πλοήγηση",
             "mobileNavLabel": "Μενού κινητού",
             "openMenu": "Άνοιγμα μενού",

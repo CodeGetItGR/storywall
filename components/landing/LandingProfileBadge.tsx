@@ -10,13 +10,14 @@ import { routes } from '@/lib/routes';
 
 export function LandingProfileBadge() {
     const t = useTranslations('AccountDrawer');
+    const tHero = useTranslations('LandingPage.hero');
     const { user } = useAuth();
     const accountName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.firstName || t('fallbackName');
 
     return (
         <Link
-            href={routes.profile}
-            aria-label={t('editProfile')}
+            href={routes.home}
+            aria-label={tHero('accountHomeLabel')}
             className="inline-flex items-center gap-2 text-xs font-bold whitespace-nowrap text-[#151313] transition-opacity hover:opacity-60"
         >
             <Avatar src={user?.profilePictureUrl} initials={getInitials(accountName)} size="sm" alt="" />

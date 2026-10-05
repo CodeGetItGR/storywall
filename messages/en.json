@@ -4526,6 +4526,7 @@
         },
         "hero": {
             "homeLabel": "StoryWall — Home",
+            "accountHomeLabel": "Home",
             "navLabel": "Main navigation",
             "mobileNavLabel": "Mobile menu",
             "openMenu": "Open menu",
