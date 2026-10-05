@@ -55,6 +55,9 @@ const nextConfig = {
         return securityHeaderRules(process.env);
     },
     images: {
+        // Set to "1" on a deployment to turn the optimizer off app-wide (e.g. staging, to avoid
+        // optimizer-quota spend). Read at build time, so a change needs a redeploy.
+        unoptimized: process.env.DISABLE_IMAGE_OPTIMIZATION === '1',
         // Every pattern here is a source our image optimizer will fetch and resize,
         // billed to us, for anyone who asks. No wildcard a stranger can host under:
         // "**.r2.dev" let any R2 bucket in the world through.

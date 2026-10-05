@@ -14,10 +14,7 @@ const protectedImageStyle: CSSProperties & { WebkitUserDrag: 'none' } = {
     WebkitUserDrag: 'none',
 };
 
-// Staging runs on a metered image-optimization plan, so every image skips Next's optimizer there to avoid burning quota.
-const skipRemoteOptimization = process.env.NEXT_PUBLIC_APP_ENV === 'staging';
-
-export function ProtectedImage({ className, draggable, onContextMenu, style, unoptimized, ...props }: ImageProps) {
+export function ProtectedImage({ className, draggable, onContextMenu, style, ...props }: ImageProps) {
     const { alt, ...imageProps } = props;
 
     function handleContextMenu(event: MouseEvent<HTMLImageElement>) {
@@ -29,7 +26,6 @@ export function ProtectedImage({ className, draggable, onContextMenu, style, uno
         <Image
             {...imageProps}
             alt={alt}
-            unoptimized={unoptimized ?? skipRemoteOptimization}
             draggable={draggable ?? false}
             onContextMenu={handleContextMenu}
             className={cn('select-none', className)}
