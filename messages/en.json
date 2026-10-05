@@ -4175,6 +4175,10 @@
         "member_roles": {
             "name": "Member roles",
             "description": "Guests pick a role, like best man, shown next to their name."
+        },
+        "theme": {
+            "name": "Theme",
+            "description": "An illustration and background colour for the event."
         }
     },
     "Durations": {
