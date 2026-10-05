@@ -19,6 +19,7 @@ export function ThemePresetOption({
     saving,
     disabled,
     tabbable,
+    size = 'default',
     onSelectAction,
     onFocusAction,
 }: {
@@ -32,6 +33,7 @@ export function ThemePresetOption({
     saving: boolean;
     disabled: boolean;
     tabbable: boolean;
+    size?: 'default' | 'large';
     onSelectAction: (presetId: string | null) => void;
     onFocusAction: (optionId: string) => void;
 }) {
@@ -64,14 +66,15 @@ export function ThemePresetOption({
             onClick={handleClick}
             onFocus={handleFocus}
             className={cn(
-                'flex min-w-0 flex-col gap-2.5 rounded-2xl bg-surface p-2.5 pb-3 text-left transition aria-disabled:cursor-not-allowed',
+                'bg-surface flex min-w-0 flex-col gap-2.5 p-2.5 pb-3 text-left transition aria-disabled:cursor-not-allowed',
+                size === 'large' ? 'rounded-xl' : 'rounded-2xl',
                 selected ? 'ring-2 ring-primary' : 'ring-1 ring-border hover:ring-primary/40',
                 disabled && !selected && 'opacity-60',
             )}
         >
             {/* Swatch */}
             <span
-                className="relative block aspect-4/3 overflow-hidden rounded-xl bg-surface-muted"
+                className={cn('relative block aspect-4/3 overflow-hidden bg-surface-muted', size === 'large' ? 'rounded-lg' : 'rounded-xl')}
                 style={backgroundColor && isHexColor(backgroundColor) ? { backgroundColor } : undefined}
             >
                 {illustrationUrl && failedUrl !== illustrationUrl && (
@@ -80,7 +83,7 @@ export function ThemePresetOption({
                         alt=""
                         fill
                         className="object-contain"
-                        sizes="(min-width: 640px) 240px, 50vw"
+                        sizes={size === 'large' ? '(min-width: 640px) 320px, 50vw' : '(min-width: 640px) 240px, 50vw'}
                         loading="lazy"
                         onError={handleImageError}
                     />

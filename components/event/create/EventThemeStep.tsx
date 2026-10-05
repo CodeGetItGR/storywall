@@ -43,7 +43,7 @@ export function EventThemeStep() {
                 <p className="mt-4 text-xs text-rose-500">{toErrorMessage(themePresetsError)}</p>
             )}
             {!isThemePresetsLoading && !themePresetsError && (
-                <ThemePresetRadioGroup options={options} labelledBy={headingId} disabled={false} onSelectAction={onSelectThemePreset} />
+                <ThemePresetRadioGroup options={options} labelledBy={headingId} disabled={false} size="large" onSelectAction={onSelectThemePreset} />
             )}
 
             {error && (

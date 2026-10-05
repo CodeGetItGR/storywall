@@ -3,6 +3,7 @@
 import { type KeyboardEvent, useState } from 'react';
 
 import { ThemePresetOption } from '@/components/manage/ThemePresetOption';
+import { cn } from '@/lib/utils';
 
 const NEXT_KEYS = ['ArrowRight', 'ArrowDown'];
 const PREVIOUS_KEYS = ['ArrowLeft', 'ArrowUp'];
@@ -24,6 +25,7 @@ export function ThemePresetRadioGroup({
     labelledBy,
     disabled,
     savingPresetId,
+    size = 'default',
     onSelectAction,
 }: {
     options: ThemeRadioOption[];
@@ -31,6 +33,8 @@ export function ThemePresetRadioGroup({
     disabled: boolean;
     // The preset id being saved (null for "No theme"), or undefined when nothing is saving.
     savingPresetId?: string | null;
+    // `large`: two cards per row with bigger art, for the narrow event-creation column.
+    size?: 'default' | 'large';
     onSelectAction: (presetId: string | null) => void;
 }) {
     // The option last focused; the tab stop follows it.
@@ -54,7 +58,12 @@ export function ThemePresetRadioGroup({
     }
 
     return (
-        <div role="radiogroup" aria-labelledby={labelledBy} onKeyDown={handleKeyDown} className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+        <div
+            role="radiogroup"
+            aria-labelledby={labelledBy}
+            onKeyDown={handleKeyDown}
+            className={cn('mt-4 grid grid-cols-2 gap-4', size === 'default' && 'sm:grid-cols-3 xl:grid-cols-4')}
+        >
             {options.map((option) => (
                 <ThemePresetOption
                     key={option.id}
@@ -67,6 +76,7 @@ export function ThemePresetRadioGroup({
                     saving={option.presetId !== undefined && savingPresetId !== undefined && savingPresetId === option.presetId}
                     disabled={disabled}
                     tabbable={option.id === tabbableId}
+                    size={size}
                     onSelectAction={onSelectAction}
                     onFocusAction={setFocusedId}
                 />
