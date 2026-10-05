@@ -23,6 +23,7 @@ describe('eventThemeStyle', () => {
         expect(eventThemeStyle('#BFE6E2')).toEqual({
             '--event-bg': '#BFE6E2',
             '--surface-muted': 'color-mix(in oklab, #BFE6E2 15%, #ffffff)',
+            '--orangish': '#ffffff',
         });
     });
 

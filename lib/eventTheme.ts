@@ -22,11 +22,16 @@ export function isThemedEventPage(pathname: string): boolean {
 
 // The theme colour as the --event-bg custom property that `bg-event` surfaces read, and
 // the muted fill (pills, chips) turned near-white so it reads on the colour; a hint of
-// the theme keeps those pills visible inside white cards. Undefined keeps the default
+// the theme keeps those pills visible inside white cards. The guest RSVP prompt's warm
+// fill (--orangish) goes plain white so it stands out as a card. Undefined keeps the default
 // look: no theme, or a value that isn't #RRGGBB.
 export function eventThemeStyle(backgroundColor: string | null | undefined): CSSProperties | undefined {
     if (!backgroundColor || !isHexColor(backgroundColor)) return undefined;
-    return { '--event-bg': backgroundColor, '--surface-muted': `color-mix(in oklab, ${backgroundColor} 15%, #ffffff)` } as CSSProperties;
+    return {
+        '--event-bg': backgroundColor,
+        '--surface-muted': `color-mix(in oklab, ${backgroundColor} 15%, #ffffff)`,
+        '--orangish': '#ffffff',
+    } as CSSProperties;
 }
 
 // Whether the host is offered the theme picker. Gated on the theme module's row being
