@@ -77,7 +77,9 @@ export function ThemePresetRow({
             </td>
             {/* Status */}
             <td className="px-3 py-2.5">
-                <span className={cn('rounded-full px-2 py-0.5 text-[11px] font-bold', STATUS_PILL[status])}>{t(`status.${status}`)}</span>
+                <span className={cn('rounded-full px-2 py-0.5 text-[11px] font-bold whitespace-nowrap', STATUS_PILL[status])}>
+                    {t(`status.${status}`)}
+                </span>
             </td>
             {/* Order */}
             <td className="px-3 py-2.5">
