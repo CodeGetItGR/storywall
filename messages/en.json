@@ -998,6 +998,7 @@
         "continueToPlan": "Continue to plan",
         "continueToDetails": "Continue to details",
         "continueToOverview": "Continue to overview",
+        "continueToTheme": "Continue to theme",
         "backToPlans": "Back to plans",
         "selectedPlan": "Selected plan: {plan}",
         "planSelected": "SELECTED",
@@ -1010,9 +1011,11 @@
             "plan": "Plan",
             "details": "Details",
             "overview": "Overview",
+            "theme": "Theme",
             "typeSubtitle": "What are we celebrating? 🎉",
             "planSubtitle": "Choose the event plan your guests will experience.",
-            "overviewSubtitle": "Review the event details and every charge before continuing to payment."
+            "overviewSubtitle": "Review the event details and every charge before continuing to payment.",
+            "themeSubtitle": "Give your event its own look. You can change it later."
         },
         "payment": {
             "noCharge": "No charge"

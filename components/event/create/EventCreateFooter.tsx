@@ -19,6 +19,9 @@ export function EventCreateFooter() {
         goToType,
         goToDetails,
         goToPlan,
+        goToTheme,
+        goToOverview,
+        themeStepAvailable,
     } = useCreateEventForm();
 
     return (
@@ -72,6 +75,25 @@ export function EventCreateFooter() {
                             disabled={!canSubmitDetails}
                             className="min-h-11 flex-2 rounded-full text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                         >
+                            {themeStepAvailable ? t('continueToTheme') : t('continueToOverview')}
+                        </button>
+                    </div>
+                )}
+
+                {step === 'theme' && (
+                    <div className="flex gap-3">
+                        <button
+                            type="button"
+                            onClick={goToDetails}
+                            className="min-h-11 flex-1 rounded-full border border-border text-sm font-semibold text-ink"
+                        >
+                            {t('actions.back')}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={goToOverview}
+                            className="min-h-11 flex-2 rounded-full text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
+                        >
                             {t('continueToOverview')}
                         </button>
                     </div>
@@ -81,7 +103,7 @@ export function EventCreateFooter() {
                     <div className="flex gap-3">
                         <button
                             type="button"
-                            onClick={goToDetails}
+                            onClick={themeStepAvailable ? goToTheme : goToDetails}
                             disabled={isSubmitPending}
                             className="min-h-11 flex-1 rounded-full border border-border text-sm font-semibold text-ink"
                         >

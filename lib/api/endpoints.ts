@@ -21,6 +21,11 @@ export const endpoints = {
         byEventType: (eventType: string) => `/api/plan-tiers?eventType=${encodeURIComponent(eventType)}`,
     },
 
+    // The creation form's theme step, before the event exists.
+    themePresets: {
+        byEventType: (eventType: string) => `/api/theme-presets?eventType=${encodeURIComponent(eventType)}`,
+    },
+
     auth: {
         register: '/api/auth/register',
         login: '/api/auth/login',

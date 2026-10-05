@@ -742,6 +742,9 @@ export interface EventRequestDto {
     brandingSettings: Record<string, unknown>; // required — send {} if none
     rsvpDeadline?: string;
     initialSessionTitle?: string;
+    // Added 2026-10-05: a preset from GET /api/theme-presets?eventType=. Applied in the create
+    // transaction; 409 5012 (plan lacks theme) or 5143 (not selectable) and no event is created.
+    themePresetId?: string | null;
 }
 
 export interface AdminProvisionEventRequestDto {

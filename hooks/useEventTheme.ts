@@ -11,7 +11,21 @@ import type { EventDetailResponseDto, EventThemeRequestDto, EventThemeResponseDt
 
 export const eventThemeKeys = {
     presets: (eventId: string) => ['events', eventId, 'theme-presets'] as const,
+    presetsForType: (eventType: string) => ['theme-presets', eventType] as const,
 };
+
+// GET /api/theme-presets?eventType= — the creation form's theme step, before the
+// event exists. Empty for a type without themes; callers pass null when the chosen
+// plan doesn't list the theme module. Already in display order; don't re-sort.
+export function useThemePresetsForType(eventType: string | null) {
+    const { isAuthenticated } = useAuth();
+
+    return useQuery({
+        queryKey: eventThemeKeys.presetsForType(eventType ?? ''),
+        queryFn: () => api.get<ThemePresetDto[]>(endpoints.themePresets.byEventType(eventType!)),
+        enabled: Boolean(eventType) && isAuthenticated,
+    });
+}
 
 // GET /api/events/{eventId}/theme-presets — host only, and only while the
 // event's plan includes the theme module (callers pass null otherwise).
