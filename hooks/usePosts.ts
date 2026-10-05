@@ -101,8 +101,13 @@ export function useEventPosts(eventId: string | null) {
 // A failure is left alone rather than retried by invalidating the whole list:
 // under load that would multiply the requests this exists to save. The next
 // change, or the interval, tries again.
+//
+// Waits for a load already in flight first (most often the next page, as the
+// reader scrolls). Invalidating would cancel it and throw that page away, and
+// patching the first page under it would be overwritten when it lands.
 export async function refreshFeedFirstPage(queryClient: QueryClient, eventId: string) {
     const key = postKeys.list(eventId);
+    await feedFetchSettled(queryClient, key);
     const cached = queryClient.getQueryData<InfiniteData<Page<PostResponseDto>>>(key);
     if (!cached || cached.pages.length <= 1) {
         await queryClient.invalidateQueries({ queryKey: key });
@@ -114,6 +119,20 @@ export async function refreshFeedFirstPage(queryClient: QueryClient, eventId: st
     } catch {
         // See above.
     }
+}
+
+function feedFetchSettled(queryClient: QueryClient, key: ReturnType<typeof postKeys.list>): Promise<void> {
+    const cache = queryClient.getQueryCache();
+    const query = cache.find({ queryKey: key, exact: true });
+    if (query?.state.fetchStatus !== 'fetching') return Promise.resolve();
+    return new Promise((resolve) => {
+        const unsubscribe = cache.subscribe((event) => {
+            if (event.query === query && (event.type === 'removed' || query.state.fetchStatus !== 'fetching')) {
+                unsubscribe();
+                resolve();
+            }
+        });
+    });
 }
 
 export function usePost(id: string | null) {

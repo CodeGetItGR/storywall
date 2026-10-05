@@ -2,7 +2,7 @@
 
 import { Check, ImagePlus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import type { MouseEvent, PointerEvent, RefObject } from 'react';
+import type { MouseEvent, PointerEvent, RefCallback } from 'react';
 import { useCallback } from 'react';
 
 import { MediaThumbnail } from '@/components/common/MediaThumbnail';
@@ -17,7 +17,7 @@ interface GalleryMediaGridProps {
     items: MediaResponseDto[];
     selectedIds: Set<string>;
     selectionMode: boolean;
-    loadMoreRef: RefObject<HTMLDivElement | null>;
+    loadMoreRef: RefCallback<HTMLDivElement>;
     onMediaClick: (id: string) => void;
     onMediaPointerDown: (event: PointerEvent<HTMLButtonElement>, id: string) => void;
     onMediaPointerEnd: () => void;
