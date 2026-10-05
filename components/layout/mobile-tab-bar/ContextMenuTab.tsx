@@ -7,7 +7,7 @@ import { usePrefetchRoutes } from '@/hooks/usePrefetchRoutes';
 import { cn } from '@/lib/utils';
 
 import type { ContextNavItem } from './types';
-import { isPathActive } from './utils';
+import { mostSpecificActiveHref } from './utils';
 
 interface ContextMenuTabProps {
     active: boolean;
@@ -23,6 +23,11 @@ export function ContextMenuTab({ active, TriggerIcon = MenuIcon, items, label, p
     const [open, setOpen] = useState(false);
     useRegisterOverlayPresence(open);
     const prefetchItems = usePrefetchRoutes(items.map((item) => item.href));
+    const activeHref = mostSpecificActiveHref(
+        pathname,
+        items.map((item) => item.href),
+        searchParams,
+    );
 
     function handleOpenChange(nextOpen: boolean) {
         setOpen(nextOpen);
@@ -69,7 +74,7 @@ export function ContextMenuTab({ active, TriggerIcon = MenuIcon, items, label, p
                     <Menu.Popup className="motion-popover w-64 rounded-2xl border border-border bg-background p-1 shadow-[0_2px_16px_0_rgba(36,31,26,0.15)] outline-none">
                         {items.map((item) => {
                             const Icon = item.icon;
-                            const itemActive = isPathActive(pathname, item.href, searchParams);
+                            const itemActive = item.href === activeHref;
 
                             return (
                                 <Menu.Item

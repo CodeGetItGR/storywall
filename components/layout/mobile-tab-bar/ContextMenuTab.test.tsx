@@ -37,4 +37,26 @@ describe('ContextMenuTab', () => {
         expect(await screen.findByText('Gallery')).toBeInTheDocument();
         expect(mocks.prefetch.mock.calls).toEqual([['/events/e1/manage'], ['/events/e1/tools/gallery']]);
     });
+
+    it('marks only the most specific matching item active', async () => {
+        const nested = [
+            { key: 'manage', href: '/events/e1/manage', icon: Settings, label: 'Manage' },
+            { key: 'invitationsQr', href: '/events/e1/manage/qr', icon: Image, label: 'Share links' },
+        ];
+        render(
+            <ContextMenuTab
+                active
+                items={nested}
+                label="Event menu"
+                pathname="/events/e1/manage/qr"
+                searchParams=""
+                onItemClick={mocks.onItemClick}
+            />,
+        );
+
+        await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Event menu' })));
+
+        expect((await screen.findByText('Share links')).closest('[role="menuitem"]')).toHaveClass('bg-surface-muted');
+        expect(screen.getByText('Manage').closest('[role="menuitem"]')).not.toHaveClass('bg-surface-muted');
+    });
 });
