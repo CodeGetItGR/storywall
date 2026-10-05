@@ -37,6 +37,8 @@
     /* The event's theme colour inside EventThemeScope (set as --event-bg);
        the normal page background everywhere else. */
     --color-event: var(--event-bg, var(--background));
+    /* Inset fills (the composer's pill): the theme colour on a themed event, else the usual muted surface. */
+    --color-event-muted: var(--event-bg, var(--surface-muted));
 
     /* ── Brand extras ── */
     --color-canvas: var(--canvas);
