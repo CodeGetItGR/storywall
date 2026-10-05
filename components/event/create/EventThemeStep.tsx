@@ -13,6 +13,7 @@ import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormConte
 // the create request (or a PUT /theme when the draft already exists).
 export function EventThemeStep() {
     const t = useTranslations('ManagePage.settings.theme');
+    const tSteps = useTranslations('CreateEventPage.steps');
     const toErrorMessage = useApiErrorMessage();
     const localizedText = useLocalizedText();
     const headingId = useId();
@@ -35,7 +36,7 @@ export function EventThemeStep() {
             <h3 id={headingId} className="sr-only">
                 {t('label')}
             </h3>
-            <p className="text-sm text-ink-muted">{t('hint')}</p>
+            <p className="text-sm text-ink-muted">{tSteps('themeHint')}</p>
 
             {isThemePresetsLoading && <LoadingState label={t('loading')} className="mt-4 justify-start" />}
             {!isThemePresetsLoading && Boolean(themePresetsError) && (

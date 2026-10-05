@@ -1015,7 +1015,8 @@
             "typeSubtitle": "What are we celebrating? 🎉",
             "planSubtitle": "Choose the event plan your guests will experience.",
             "overviewSubtitle": "Review the event details and every charge before continuing to payment.",
-            "themeSubtitle": "Give your event its own look. You can change it later."
+            "themeSubtitle": "Give your event its own look. You can change it later.",
+            "themeHint": "An illustration and background colour for the pages your guests see."
         },
         "payment": {
             "noCharge": "No charge"
