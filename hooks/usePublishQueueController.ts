@@ -63,7 +63,7 @@ function mapBatchUploads(items: PendingStory[], result: MediaBatchUploadResponse
         return {
             ...item,
             mediaId: media.id,
-            remoteUrl: media.mediaUrl,
+            remoteUrl: media.mediaUrl ?? undefined,
             status: media.status === 'PROCESSING' ? 'processing' : 'uploaded',
             error: undefined,
         };
@@ -76,7 +76,7 @@ async function waitForStoryVideos(items: PendingStory[], signal: AbortSignal): P
             if (!item.mediaId || !item.file.type.startsWith('video/') || item.status === 'failed') return item;
             const media: MediaResponseDto = await pollMediaUntilProcessed(item.mediaId, signal);
             if (media.status === 'FAILED') return { ...item, status: 'failed' as const, error: undefined };
-            return { ...item, status: 'uploaded' as const, remoteUrl: media.mediaUrl, error: undefined };
+            return { ...item, status: 'uploaded' as const, remoteUrl: media.mediaUrl ?? undefined, error: undefined };
         }),
     );
 }

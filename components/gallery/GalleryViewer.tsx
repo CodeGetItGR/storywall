@@ -290,7 +290,7 @@ export function GalleryViewer({
                             <VideoOff className="h-7 w-7" aria-hidden="true" />
                             <p>{t('videoFailed')}</p>
                         </div>
-                    ) : media.mediaType === 'VIDEO' ? (
+                    ) : !media.mediaUrl ? null : media.mediaType === 'VIDEO' ? (
                         <PresignedVideo src={media.mediaUrl} controls playsInline className="h-full w-full object-contain" />
                     ) : (
                         <div

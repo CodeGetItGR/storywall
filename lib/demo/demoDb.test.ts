@@ -13,7 +13,7 @@ describe('demo store', () => {
         const db = createDemoDb('WEDDING', snapshot, 'v1');
         const fresh = snapshot.media.map((m) => ({
             ...m,
-            mediaUrl: m.mediaUrl.replace('old', 'new'),
+            mediaUrl: m.mediaUrl!.replace('old', 'new'),
             thumbnailUrl: 'https://storage.test/t?sig=new',
         }));
 
@@ -77,21 +77,29 @@ describe('demo store', () => {
         function dbWithStories(stories: { id: string; hoursAgo: number }[]) {
             const snapshot = buildFixtureSnapshot();
             const template = snapshot.stories[0];
-            const db = createDemoDb('WEDDING', {
-                ...snapshot,
-                stories: stories.map(({ id, hoursAgo }) => ({
-                    ...template,
-                    id,
-                    createdAt: at(hoursAgo),
-                    expiresAt: at(hoursAgo - 24),
-                })),
-            }, 'v1');
+            const db = createDemoDb(
+                'WEDDING',
+                {
+                    ...snapshot,
+                    stories: stories.map(({ id, hoursAgo }) => ({
+                        ...template,
+                        id,
+                        createdAt: at(hoursAgo),
+                        expiresAt: at(hoursAgo - 24),
+                    })),
+                },
+                'v1',
+            );
             return db;
         }
 
         it('brings back stories posted more than a day ago, oldest still first', () => {
             // Posted 3 days, 30 hours and 2 hours before now: the first two have expired.
-            const db = dbWithStories([{ id: 's-old', hoursAgo: 72 }, { id: 's-mid', hoursAgo: 30 }, { id: 's-new', hoursAgo: 2 }]);
+            const db = dbWithStories([
+                { id: 's-old', hoursAgo: 72 },
+                { id: 's-mid', hoursAgo: 30 },
+                { id: 's-new', hoursAgo: 2 },
+            ]);
 
             keepStoriesLive(db, now);
 
@@ -115,7 +123,10 @@ describe('demo store', () => {
         });
 
         it('leaves recent stories where they are', () => {
-            const db = dbWithStories([{ id: 's-a', hoursAgo: 5 }, { id: 's-b', hoursAgo: 1 }]);
+            const db = dbWithStories([
+                { id: 's-a', hoursAgo: 5 },
+                { id: 's-b', hoursAgo: 1 },
+            ]);
 
             keepStoriesLive(db, now);
 

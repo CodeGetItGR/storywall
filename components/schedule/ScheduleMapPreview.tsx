@@ -1,5 +1,8 @@
 'use client';
 
+import { MapPin } from 'lucide-react';
+import { useCallback, useState } from 'react';
+
 import { useMapsEmbedUrl } from '@/hooks/useMapsEmbedUrl';
 import { cn } from '@/lib/utils';
 
@@ -9,10 +12,60 @@ interface ScheduleMapPreviewProps {
     openLabel: string;
     previewLabel: string;
     unavailableLabel: string;
+    showLabel: string;
+    consentLabel: string;
     heightClassName?: string;
 }
 
-export function ScheduleMapPreview({ mapsUrl, title, openLabel, previewLabel, unavailableLabel, heightClassName = 'h-44' }: ScheduleMapPreviewProps) {
+// The Google map loads only after the viewer asks for it (Cookie Policy §7, Privacy §37):
+// until then nothing is requested from Google, and the link still opens Maps directly.
+export function ScheduleMapPreview({ showLabel, consentLabel, ...props }: ScheduleMapPreviewProps) {
+    const [isShown, setIsShown] = useState(false);
+    const show = useCallback(() => setIsShown(true), []);
+
+    if (!isShown) {
+        return (
+            <div
+                className={cn(
+                    props.heightClassName ?? 'h-44',
+                    'flex flex-col items-center justify-center gap-3 rounded-2xl border border-border/70 bg-surface-muted px-4 text-center',
+                )}
+            >
+                <MapPin className="h-5 w-5 text-ink-faint" aria-hidden="true" />
+                <p className="max-w-[18rem] text-xs leading-relaxed text-ink-muted">{consentLabel}</p>
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                    <button
+                        type="button"
+                        onClick={show}
+                        className="rounded-full bg-background px-3 py-1 text-[11px] font-semibold text-ink shadow-sm transition-colors hover:bg-background/80 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none"
+                    >
+                        {showLabel}
+                    </button>
+                    <a
+                        href={props.mapsUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={props.title}
+                        className="rounded-full px-3 py-1 text-[11px] font-semibold text-ink-muted underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none"
+                    >
+                        {props.openLabel}
+                    </a>
+                </div>
+            </div>
+        );
+    }
+
+    return <ScheduleMapEmbed {...props} />;
+}
+
+function ScheduleMapEmbed({
+    mapsUrl,
+    title,
+    openLabel,
+    previewLabel,
+    unavailableLabel,
+    heightClassName = 'h-44',
+}: Omit<ScheduleMapPreviewProps, 'showLabel' | 'consentLabel'>) {
     const { embedUrl, isResolving } = useMapsEmbedUrl(mapsUrl);
 
     // Loading
@@ -47,7 +100,7 @@ export function ScheduleMapPreview({ mapsUrl, title, openLabel, previewLabel, un
                 src={embedUrl}
                 className={cn('pointer-events-none w-full', heightClassName)}
                 loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
+                referrerPolicy="strict-origin-when-cross-origin"
             />
 
             <div className="absolute inset-0 bg-linear-to-t from-ink/20 via-transparent to-transparent opacity-80 transition-opacity group-hover:opacity-60" />

@@ -113,7 +113,7 @@ export function usePostLike(post: PostResponseDto) {
                     queryKey: reactionKeys.list(post.id),
                     queryFn: () => fetchPostReactions(post.id),
                 });
-                reactionId = reactions.find((r) => r.memberId === activeMember.id)?.id;
+                reactionId = reactions.myReaction?.id;
             }
             if (!reactionId) throw new Error('Could not resolve reaction id to remove');
 

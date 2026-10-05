@@ -4,9 +4,15 @@ import { NextResponse } from 'next/server';
 import { localeCookieName } from '@/i18n/config';
 import { resolveLocale } from '@/i18n/resolveLocale';
 import { AUTH_COOKIES } from '@/lib/auth/authCookies';
+import { rejectCrossSiteRequest } from '@/lib/auth/authRouteHelpers';
 import { clientIpFrom, springAuth } from '@/lib/auth/springAuth';
 
-export async function POST() {
+// No body, so only the origin check: it keeps another site from signing the
+// visitor out.
+export async function POST(request: Request) {
+    const rejection = rejectCrossSiteRequest(request);
+    if (rejection) return rejection;
+
     const cookieStore = await cookies();
     const refreshToken = cookieStore.get(AUTH_COOKIES.refreshToken)?.value;
 

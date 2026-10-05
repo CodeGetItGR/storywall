@@ -2,7 +2,7 @@
 
 import { Award, ThumbsDown, ThumbsUp } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { SpotifyMark, YouTubeMark } from '@/components/playlist/MusicServiceMarks';
 import { PlaylistItemActionsMenu } from '@/components/playlist/PlaylistItemActionsMenu';
@@ -47,6 +47,9 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
     const [reportOpen, setReportOpen] = useState(false);
     const [resolvingVote, setResolvingVote] = useState(false);
     const [voteError, setVoteError] = useState<string | null>(null);
+    // The Spotify/YouTube player loads only once asked for (Cookie Policy §7, Privacy §37).
+    const [isPreviewShown, setIsPreviewShown] = useState(false);
+    const showPreview = useCallback(() => setIsPreviewShown(true), []);
 
     const upvoteActive = suggestion.myVote === 'UPVOTE';
     const downvoteActive = suggestion.myVote === 'DOWNVOTE';
@@ -252,15 +255,30 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
                 {previewEmbedUrl && (
                     /* Preview */
                     <div className="border-t border-border/60 bg-linear-to-b from-background to-surface-muted/40 p-4 sm:p-5">
-                        <div className="overflow-hidden rounded-[1.25rem] border border-border bg-background shadow-[0_12px_30px_rgba(35,28,22,0.06)]">
-                            <iframe
-                                title={suggestion.title}
-                                src={previewEmbedUrl}
-                                className="h-60 w-full"
-                                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                                loading="lazy"
-                            />
-                        </div>
+                        {isPreviewShown ? (
+                            <div className="overflow-hidden rounded-[1.25rem] border border-border bg-background shadow-[0_12px_30px_rgba(35,28,22,0.06)]">
+                                <iframe
+                                    title={suggestion.title}
+                                    src={previewEmbedUrl}
+                                    className="h-60 w-full"
+                                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                                    loading="lazy"
+                                />
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center gap-3 rounded-[1.25rem] border border-border bg-background px-4 py-5 text-center">
+                                <p className="max-w-[20rem] text-xs leading-relaxed text-ink-muted">
+                                    {previewSource === 'spotify' ? t('previewConsentSpotify') : t('previewConsentYouTube')}
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={showPreview}
+                                    className="rounded-full border border-border bg-surface-muted px-3 py-1 text-xs font-semibold text-ink transition-colors hover:bg-surface-muted/70 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none"
+                                >
+                                    {t('showPreview')}
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

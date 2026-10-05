@@ -200,7 +200,7 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
                                         ? {
                                               ...existing,
                                               mediaId: media.id,
-                                              remoteUrl: media.mediaUrl,
+                                              remoteUrl: media.mediaUrl ?? undefined,
                                               status: media.status === 'PROCESSING' ? 'processing' : 'uploaded',
                                           }
                                         : existing,
@@ -214,7 +214,7 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
                                                 existing.key === item.key
                                                     ? {
                                                           ...existing,
-                                                          remoteUrl: processed.mediaUrl,
+                                                          remoteUrl: processed.mediaUrl ?? undefined,
                                                           status: processed.status === 'FAILED' ? 'failed' : 'uploaded',
                                                           error: processed.status === 'FAILED' ? t('processingFailed') : existing.error,
                                                       }

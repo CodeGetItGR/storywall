@@ -494,9 +494,16 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
             if (comment) syncPostComments(comment.postId, -1);
             return new HttpResponse(null, { status: 204 });
         }),
-        http.get(`${API_BASE_URL}/api/posts/:postId/reactions`, ({ params }) =>
-            HttpResponse.json(db.list('reactions').filter((r) => r.postId === params.postId)),
-        ),
+        http.get(`${API_BASE_URL}/api/posts/:postId/reactions`, ({ params }) => {
+            const reactions = db.list('reactions').filter((r) => r.postId === params.postId);
+            const reactionCounts: Record<string, number> = {};
+            for (const r of reactions) reactionCounts[r.reactionType] = (reactionCounts[r.reactionType] ?? 0) + 1;
+            return HttpResponse.json({
+                reactionCount: reactions.length,
+                reactionCounts,
+                myReaction: reactions.find((r) => r.memberId === viewerMemberId) ?? null,
+            });
+        }),
         buildCreateHandler(db, 'reactions', '/api/reactions', (body) => ({
             id: newId('demo-reaction'),
             postId: String(body.postId),

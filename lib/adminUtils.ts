@@ -8,6 +8,7 @@ export type AdminErrorMessageKey =
     | 'notFound'
     | 'withdrawalNotHeld'
     | 'keepEventDayNotDue'
+    | 'withdrawalOrderDisputed'
     | 'eventNotActive'
     | 'webhookAlreadyProcessed'
     | 'webhookNotReplayable'
@@ -64,6 +65,7 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     // "Something went wrong" hides exactly that.
     if (code === ERROR_CODES.WITHDRAWAL_NOT_HELD) return 'withdrawalNotHeld';
     if (code === ERROR_CODES.WITHDRAWAL_KEEP_EVENT_DAY_NOT_DUE) return 'keepEventDayNotDue';
+    if (code === ERROR_CODES.WITHDRAWAL_ORDER_DISPUTED) return 'withdrawalOrderDisputed';
     if (code === ERROR_CODES.EVENT_NOT_ACTIVE) return 'eventNotActive';
     if (code === ERROR_CODES.WEBHOOK_ALREADY_PROCESSED) return 'webhookAlreadyProcessed';
     if (code === ERROR_CODES.WEBHOOK_NOT_REPLAYABLE) return 'webhookNotReplayable';

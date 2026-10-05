@@ -36,9 +36,19 @@ export function useApiErrorMessage() {
                 }
             }
 
+            // The gallery download limits are 429s with copy of their own: the daily one can
+            // ask for a wait of hours, which the generic "try again in {seconds}s" would print.
+            if (getErrorCode(error) === ERROR_CODES.MEDIA_ARCHIVE_DOWNLOADS_IN_PROGRESS) return t('mediaArchiveDownloadsInProgress');
+            if (getErrorCode(error) === ERROR_CODES.MEDIA_ARCHIVE_DAILY_LIMIT_REACHED) {
+                const seconds = getRetryAfterSeconds(error);
+                return seconds ? t('mediaArchiveDailyLimitReachedWithWait', { hours: Math.ceil(seconds / 3600) }) : t('mediaArchiveDailyLimitReached');
+            }
+
             if (isRateLimitedError(error)) {
                 const seconds = getRetryAfterSeconds(error);
-                return seconds ? t('rateLimitedWithWait', { seconds }) : t('rateLimited');
+                if (!seconds) return t('rateLimited');
+                // An hourly upload budget can ask for most of an hour, which reads badly in seconds.
+                return seconds > 90 ? t('rateLimitedWithWaitMinutes', { minutes: Math.ceil(seconds / 60) }) : t('rateLimitedWithWait', { seconds });
             }
 
             const quotaCode = getErrorCode(error);

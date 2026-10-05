@@ -35,6 +35,7 @@ export function ModerationContentPreview({ content, isMemberCase = false }: { co
             ) : null}
 
             {/* Media */}
+            {/* Admins are always sent a mediaUrl; the type is shared with members, who see null while a video processes. */}
             {content.media.map((m) => {
                 if (m.mediaType === 'VIDEO') {
                     return (
@@ -42,19 +43,19 @@ export function ModerationContentPreview({ content, isMemberCase = false }: { co
                             key={m.id}
                             controls
                             preload="metadata"
-                            src={m.mediaUrl}
+                            src={m.mediaUrl ?? undefined}
                             className="max-h-96 w-full rounded-lg border border-border bg-canvas"
                         />
                     );
                 }
                 if (m.mediaType === 'AUDIO') {
-                    return <audio key={m.id} controls preload="metadata" src={m.mediaUrl} className="w-full" />;
+                    return <audio key={m.id} controls preload="metadata" src={m.mediaUrl ?? undefined} className="w-full" />;
                 }
                 if (m.mediaType === 'DOCUMENT') {
                     return (
                         <a
                             key={m.id}
-                            href={m.mediaUrl}
+                            href={m.mediaUrl ?? undefined}
                             target="_blank"
                             rel="noreferrer"
                             className="block text-sm font-semibold break-all text-ink underline"
@@ -64,11 +65,11 @@ export function ModerationContentPreview({ content, isMemberCase = false }: { co
                     );
                 }
                 return (
-                    <a key={m.id} href={m.mediaUrl} target="_blank" rel="noreferrer" className="block">
+                    <a key={m.id} href={m.mediaUrl ?? undefined} target="_blank" rel="noreferrer" className="block">
                         {/* Presigned, short-lived URL: next/image would cache it past expiry. */}
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                            src={m.thumbnailUrl ?? m.mediaUrl}
+                            src={m.thumbnailUrl ?? m.mediaUrl ?? undefined}
                             alt={m.originalFilename}
                             className="max-h-96 w-full rounded-lg border border-border bg-canvas object-contain"
                         />

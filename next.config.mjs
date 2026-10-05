@@ -2,6 +2,8 @@ import { execSync } from 'node:child_process';
 
 import createNextIntlPlugin from 'next-intl/plugin';
 
+import { securityHeaderRules } from './lib/security/securityHeaders.mjs';
+
 const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
 // The build's commit, sent as appVersion on bug and crash reports. Vercel
@@ -47,6 +49,10 @@ const nextConfig = {
     },
     typescript: {
         ignoreBuildErrors: true,
+    },
+    poweredByHeader: false,
+    async headers() {
+        return securityHeaderRules(process.env);
     },
     images: {
         // Every pattern here is a source our image optimizer will fetch and resize,

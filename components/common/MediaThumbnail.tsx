@@ -10,7 +10,8 @@ import type { MediaStatus, MediaTypeConvention } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
 interface MediaThumbnailProps extends Omit<ImageProps, 'src'> {
-    src: string;
+    // null while a video is PROCESSING or FAILED, which show a placeholder instead.
+    src: string | null;
     mediaType: MediaTypeConvention;
     status?: MediaStatus;
     thumbnailUrl?: string | null;
@@ -55,7 +56,7 @@ export function MediaThumbnail({ src, mediaType, status = 'READY', thumbnailUrl,
     }
 
     if (mediaType !== 'VIDEO') {
-        return <ProtectedImage src={src} alt={alt} fill={fill} className={className} {...imageProps} />;
+        return src ? <ProtectedImage src={src} alt={alt} fill={fill} className={className} {...imageProps} /> : null;
     }
 
     if (thumbnailUrl) {
@@ -74,7 +75,7 @@ export function MediaThumbnail({ src, mediaType, status = 'READY', thumbnailUrl,
     return (
         <>
             <video
-                src={src}
+                src={src ?? undefined}
                 muted
                 playsInline
                 preload="metadata"
