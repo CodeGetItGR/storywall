@@ -92,6 +92,7 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
                     <InviteLayout
                         coverImageSrc={coverMedia?.mediaUrl ?? DEFAULT_HERO_IMAGE}
                         coverImageAlt={t('defaultHeroImageAlt')}
+                        theme={activePreview.theme}
                         eventTitle={activePreview.eventTitle}
                         eventSubtitle={activePreview.eventSubtitle}
                     >

@@ -1822,6 +1822,8 @@ export interface QrLinkResolutionDto {
     // Read the cover from here: the scanner isn't a member, so GET /api/medias/{id} refuses them.
     // Only for drawing it: uploaderMemberId, anonymousUploaderName, originalFilename and storageKey come back null, metadata {}.
     coverMedia?: MediaResponseDto | null;
+    // The event's theme, null for the default look. Its illustration takes the cover's place, as on the feed banner.
+    theme?: EventThemeDto | null;
     eventStatus?: EventStatus;
     inviteToken?: string;
     requiresAuth?: boolean;
@@ -1966,6 +1968,8 @@ export interface EventInvitationPreviewDto {
     // Read the cover from here: the visitor isn't a member, so GET /api/medias/{id} refuses them.
     // Only for drawing it: uploaderMemberId, anonymousUploaderName, originalFilename and storageKey come back null, metadata {}.
     coverMedia: MediaResponseDto | null;
+    // The event's theme, null for the default look. Its illustration takes the cover's place, as on the feed banner.
+    theme: EventThemeDto | null;
     firstName: string | null;
     lastName: string | null;
     email: string | null;

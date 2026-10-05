@@ -58,6 +58,7 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
                     <InviteLayout
                         coverImageSrc={coverMedia?.mediaUrl ?? DEFAULT_HERO_IMAGE}
                         coverImageAlt={t('defaultHeroImageAlt')}
+                        theme={resolution.theme}
                         eventTitle={resolution.eventTitle ?? t('fallbackTitle')}
                         eventSubtitle={resolution.eventSubtitle}
                     >
