@@ -62,6 +62,7 @@ export function FeedPageContent() {
             <section className={'mt-3'}>
                 <Banner
                     image={event.coverMedia?.mediaUrl ?? null}
+                    illustrationUrl={event.theme?.illustrationUrl ?? null}
                     title={event.title}
                     glowVisible={pageLoaded}
                     fallbackActionHref={isHost ? coverPhotoSettingsHref(eventId) : undefined}
@@ -94,7 +95,7 @@ export function FeedPageContent() {
 
             {/* Stories */}
             {moduleFlags.stories && (
-                <section id="stories" className={cn('top-0 bg-background/90 backdrop-blur-sm')}>
+                <section id="stories" className={cn('top-0 bg-event/90 backdrop-blur-sm')}>
                     <StoriesRow eventId={eventId} onOpenStoryAction={openStoryModal} />
                 </section>
             )}

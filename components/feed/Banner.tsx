@@ -6,6 +6,7 @@ import { BannerOverlay } from '@/components/feed/BannerOverlay';
 
 export function Banner({
     image,
+    illustrationUrl = null,
     title,
     actions,
     glowVisible,
@@ -13,6 +14,8 @@ export function Banner({
     fallbackActionLabel,
 }: {
     image: string | null;
+    // A theme's illustration. Takes the cover's place, and so also the "add cover photo" prompt's.
+    illustrationUrl?: string | null;
     title: string;
     actions?: ReactNode;
     glowVisible: boolean;
@@ -24,7 +27,19 @@ export function Banner({
             {/* Banner */}
             <div className="relative isolate overflow-hidden rounded-[1.5rem]">
                 <div className="relative aspect-16/11 w-full">
-                    {image ? (
+                    {illustrationUrl ? (
+                        // Theme illustration: transparent artwork on the event's colour
+                        <div className="absolute inset-0 bg-event">
+                            <ProtectedImage
+                                src={illustrationUrl}
+                                alt=""
+                                fill
+                                className="object-contain"
+                                preload
+                                sizes="(max-width: 1024px) 100vw, 800px"
+                            />
+                        </div>
+                    ) : image ? (
                         <ProtectedImage src={image} alt={title} fill className="object-cover" preload sizes="(max-width: 1024px) 100vw, 800px" />
                     ) : (
                         <BannerFallback actionHref={fallbackActionHref} actionLabel={fallbackActionLabel} />
