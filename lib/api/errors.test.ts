@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { ApiError } from '@/lib/api/client';
-import { getSignupAcceptanceRequiredDetails } from '@/lib/api/errors';
+import { getBusyRetryAfterSeconds, getErrorCodeName, getSignupAcceptanceRequiredDetails, ignoreConcurrentModification } from '@/lib/api/errors';
 
 describe('getSignupAcceptanceRequiredDetails', () => {
     it('reads both versions off a 3044', () => {
@@ -27,5 +27,36 @@ describe('getSignupAcceptanceRequiredDetails', () => {
 
         expect(getSignupAcceptanceRequiredDetails(error)).toBeNull();
         expect(getSignupAcceptanceRequiredDetails(new Error('x'))).toBeNull();
+    });
+});
+
+describe('ignoreConcurrentModification', () => {
+    it('treats a 5128 on a delete as done', async () => {
+        await expect(ignoreConcurrentModification(Promise.reject(new ApiError(409, { errorCode: 5128 })))).resolves.toBeUndefined();
+    });
+
+    it('passes any other failure on', async () => {
+        const error = new ApiError(403, { errorCode: 4001 });
+        await expect(ignoreConcurrentModification(Promise.reject(error))).rejects.toBe(error);
+    });
+});
+
+describe('getErrorCodeName', () => {
+    it('names a numeric code the way batch responses do', () => {
+        expect(getErrorCodeName(new ApiError(409, { errorCode: 5008 }))).toBe('EVENT_STORAGE_LIMIT_EXCEEDED');
+        expect(getErrorCodeName(new ApiError(409, { errorCode: 5141 }))).toBe('STORY_LIVE_LIMIT_REACHED');
+        expect(getErrorCodeName(new Error('x'))).toBeUndefined();
+    });
+});
+
+describe('getBusyRetryAfterSeconds', () => {
+    it('reads the wait of a 503, from the body or the header', () => {
+        expect(getBusyRetryAfterSeconds(new ApiError(503, { errorCode: 5119, retryAfterSeconds: 5 }))).toBe(5);
+        expect(getBusyRetryAfterSeconds(new ApiError(503, null, undefined, '7'))).toBe(7);
+    });
+
+    it('is undefined for anything else', () => {
+        expect(getBusyRetryAfterSeconds(new ApiError(429, { errorCode: 3010, retryAfterSeconds: 5 }))).toBeUndefined();
+        expect(getBusyRetryAfterSeconds(new ApiError(503, null))).toBeUndefined();
     });
 });

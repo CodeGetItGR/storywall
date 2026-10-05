@@ -31,9 +31,12 @@ export class ApiError extends Error {
         this.problem = isProblemDetail(body) ? body : undefined;
         // The ProblemDetail carries the wait, but a 429 from an edge/proxy may
         // arrive with no body at all — fall back to the Retry-After header,
-        // which the guide guarantees is identical when both are present.
+        // which the guide guarantees is identical when both are present. A 503
+        // (server busy: 5119, or 3017 on an upload) carries the same advice.
         this.retryAfterSeconds =
-            status === 429 ? ((this.problem?.retryAfterSeconds as number | undefined) ?? parseRetryAfter(retryAfterHeader)) : undefined;
+            status === 429 || status === 503
+                ? ((this.problem?.retryAfterSeconds as number | undefined) ?? parseRetryAfter(retryAfterHeader))
+                : undefined;
     }
 }
 

@@ -28,6 +28,7 @@ export type ApiErrorMessageKey =
     | 'collaborationAlreadyRedeemed'
     | 'collaborationCodeNotValid'
     | 'collaborationEarningNotPayable'
+    | 'concurrentModification'
     | 'conflict'
     | 'coverageEnded'
     | 'coverageOptionDuplicate'
@@ -141,6 +142,8 @@ export type ApiErrorMessageKey =
     | 'postEditNotAuthor'
     | 'announcementNotHost'
     | 'storyExpiryOutOfRange'
+    | 'storyLiveLimitReached'
+    | 'storyMediaAlreadyLive'
     | 'eventScheduleLocked'
     | 'paidServiceCurrencyMismatch'
     | 'paidServiceInUse'
@@ -211,6 +214,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.COLLABORATION_CODE_NOT_VALID]: 'collaborationCodeNotValid',
     [ERROR_CODES.COLLABORATION_EARNING_NOT_PAYABLE]: 'collaborationEarningNotPayable',
     [ERROR_CODES.CONFLICT]: 'conflict',
+    [ERROR_CODES.CONCURRENT_MODIFICATION]: 'concurrentModification',
     [ERROR_CODES.COVERAGE_ENDED]: 'coverageEnded',
     [ERROR_CODES.COVERAGE_OPTION_DUPLICATE]: 'coverageOptionDuplicate',
     [ERROR_CODES.COVERAGE_OPTION_INVALID]: 'coverageOptionInvalid',
@@ -327,6 +331,8 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.POST_PIN_NOT_HOST]: 'postPinNotHost',
     [ERROR_CODES.ANNOUNCEMENT_NOT_HOST]: 'announcementNotHost',
     [ERROR_CODES.STORY_EXPIRY_OUT_OF_RANGE]: 'storyExpiryOutOfRange',
+    [ERROR_CODES.STORY_LIVE_LIMIT_REACHED]: 'storyLiveLimitReached',
+    [ERROR_CODES.STORY_MEDIA_ALREADY_LIVE]: 'storyMediaAlreadyLive',
     [ERROR_CODES.PAID_SERVICE_CURRENCY_MISMATCH]: 'paidServiceCurrencyMismatch',
     [ERROR_CODES.PAID_SERVICE_IN_USE]: 'paidServiceInUse',
     [ERROR_CODES.PAID_SERVICE_NOT_ON_PLAN]: 'paidServiceNotOnPlan',

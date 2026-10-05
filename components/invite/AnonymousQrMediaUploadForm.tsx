@@ -9,12 +9,15 @@ import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { AcceptanceCheckboxes } from '@/components/legal/AcceptanceCheckboxes';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useAppConfig } from '@/hooks/useAppConfig';
 import { communityGuidelinesQueryKey, useCommunityGuidelinesVersion } from '@/hooks/useCommunityGuidelinesVersion';
 import { useFilePreviews } from '@/hooks/useFilePreviews';
 import { useUploadQrMediaBatch } from '@/hooks/useQrMediaUpload';
 import { termsVersionQueryKey, useTermsVersion } from '@/hooks/useTermsVersion';
 import { useUploadAccept } from '@/hooks/useUploadAccept';
 import { isGuidelinesVersionMismatchError, isTermsVersionMismatchError } from '@/lib/api/errors';
+import { formatBytes } from '@/lib/format';
+import { getUploadLimits } from '@/lib/uploadLimits';
 import { cn } from '@/lib/utils';
 
 interface AnonymousQrMediaUploadFormProps {
@@ -29,6 +32,8 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
     const queryClient = useQueryClient();
     const termsVersion = useTermsVersion();
     const guidelinesVersion = useCommunityGuidelinesVersion();
+    const { data: appConfig } = useAppConfig();
+    const { imageBytes, videoBytes } = getUploadLimits(appConfig?.media);
 
     const [uploaderName, setUploaderName] = useState('');
     // No account here, so the 16+ confirmation and the acceptance are asked on every upload (legal todo #3).
@@ -38,6 +43,7 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [done, setDone] = useState(false);
     const [isDragActive, setIsDragActive] = useState(false);
+    const [isBusy, setIsBusy] = useState(false);
     const previews = useFilePreviews(files);
 
     const handleUploaderNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,11 +58,27 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
         setAgeConfirmed(e.target.checked);
     }, []);
 
-    const handleFilesChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        const added = e.target.files ? Array.from(e.target.files) : [];
-        setFiles((prev) => [...prev, ...added]);
-        e.target.value = '';
-    }, []);
+    // A file over its own cap is refused here rather than sent to be refused.
+    const addFiles = useCallback(
+        (added: File[]) => {
+            const isTooLarge = (file: File) => file.size > (file.type.startsWith('video/') ? videoBytes : imageBytes);
+            setSubmitError(
+                added.some(isTooLarge)
+                    ? t('anonymousUpload.filesTooLarge', { imageSize: formatBytes(imageBytes), videoSize: formatBytes(videoBytes) })
+                    : null,
+            );
+            setFiles((prev) => [...prev, ...added.filter((file) => !isTooLarge(file))]);
+        },
+        [imageBytes, videoBytes, t],
+    );
+
+    const handleFilesChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            addFiles(e.target.files ? Array.from(e.target.files) : []);
+            e.target.value = '';
+        },
+        [addFiles],
+    );
 
     const handleDragOver = useCallback((e: React.DragEvent<HTMLLabelElement>) => {
         e.preventDefault();
@@ -68,11 +90,14 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
         setIsDragActive(false);
     }, []);
 
-    const handleDrop = useCallback((e: React.DragEvent<HTMLLabelElement>) => {
-        e.preventDefault();
-        setIsDragActive(false);
-        setFiles((prev) => [...prev, ...Array.from(e.dataTransfer.files)]);
-    }, []);
+    const handleDrop = useCallback(
+        (e: React.DragEvent<HTMLLabelElement>) => {
+            e.preventDefault();
+            setIsDragActive(false);
+            addFiles(Array.from(e.dataTransfer.files));
+        },
+        [addFiles],
+    );
 
     const handleRemoveFileClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
         const target = (e.target as HTMLElement).closest<HTMLElement>('[data-remove-index]');
@@ -96,6 +121,7 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
                 files,
                 uploaderName: uploaderName.trim() || undefined,
                 acceptance: { termsVersion: termsVersion.data, guidelinesVersion: guidelinesVersion.data },
+                onBusy: setIsBusy,
             });
             // The batch answers 200 whatever happened to each file. Keep the refused ones to try again.
             if (result.failed.length > 0) {
@@ -198,10 +224,17 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
                 onAdultConfirmedChangeAction={handleAgeConfirmedChange}
             />
 
-            {submitError && (
-                <p role="alert" className="-mt-1 text-center text-xs text-red-500">
-                    {submitError}
+            {/* Status */}
+            {isBusy ? (
+                <p role="status" className="-mt-1 text-center text-xs text-ink-muted">
+                    {t('anonymousUpload.uploadBusy')}
                 </p>
+            ) : (
+                submitError && (
+                    <p role="alert" className="-mt-1 text-center text-xs text-red-500">
+                        {submitError}
+                    </p>
+                )
             )}
 
             <button

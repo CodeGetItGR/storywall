@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { patchPostInCaches, refreshPostInCaches } from '@/hooks/usePosts';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
+import { ignoreConcurrentModification } from '@/lib/api/errors';
 import type { Page } from '@/lib/api/pagination';
 import type { CommentRequestDto, CommentResponseDto, PostResponseDto } from '@/lib/api/types';
 import { withRecentComment } from '@/lib/comments';
@@ -95,12 +96,14 @@ export function useCreateComment(eventId: string) {
     });
 }
 
-// DELETE /api/comments/{id} — author or HOST.
+// DELETE /api/comments/{id} — author or HOST. A 5128 means another request
+// (a second tap, another device) got to the same comment at the same moment:
+// handled like a success, and the refetch below shows what's really there.
 export function useDeleteComment(eventId: string, postId: string) {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (id: string) => api.del<void>(endpoints.comments.byId(id)),
+        mutationFn: (id: string) => ignoreConcurrentModification(api.del<void>(endpoints.comments.byId(id))),
         onSuccess: (_data, id) => {
             const openPost = queryClient.getQueryData<PostResponseDto>(postKeys.detail(postId));
             patchPostInCaches(queryClient, eventId, postId, (post) => {

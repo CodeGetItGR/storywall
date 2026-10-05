@@ -303,8 +303,7 @@
         "genericSubmitFailed": "Something went wrong. Please try again.",
         "retry": "Retry",
         "maxImagesReached": "You can add up to {count} items",
-        "fileTooLarge": "{filename} is too large",
-        "requestTooLarge": "The selected files exceed the {size} upload limit",
+        "fileTooLarge": "{filename} is too large. Photos can be up to {imageSize} and videos up to {videoSize}.",
         "cancel": "Cancel",
         "post": "Post",
         "posting": "Posting…",
@@ -349,7 +348,9 @@
         "post": "Post {count, plural, one {story} other {stories}}",
         "posting": "Posting…",
         "maxItems": "You can add up to {count} stories.",
-        "filesTooLarge": "Choose fewer or smaller files.",
+        "filesTooLarge": "Photos can be up to {imageSize} and videos up to {videoSize}.",
+        "liveLimitReached": "You have reached the story limit. Older stories expire after 24 hours, or delete one to post another.",
+        "mediaAlreadyLive": "This photo or video is already in one of your stories.",
         "uploadFailed": "Couldn't upload these stories. Try again.",
         "postFailed": "Couldn't post these stories. Try again.",
         "partialSuccess": "{posted} posted. {failed} still need attention.",
@@ -567,7 +568,9 @@
             "dropHint": "or drag and drop",
             "removeFile": "Remove",
             "acceptanceChanged": "The Terms of Use or Community Guidelines were just updated. Please review them and tick the box again.",
-            "acceptanceUnavailable": "The Terms of Use or Community Guidelines couldn't be loaded. Refresh the page and try again."
+            "acceptanceUnavailable": "The Terms of Use or Community Guidelines couldn't be loaded. Refresh the page and try again.",
+            "filesTooLarge": "Photos can be up to {imageSize} and videos up to {videoSize}. Larger files were left out.",
+            "uploadBusy": "The server is busy. Your upload will retry shortly…"
         },
         "unknown": {
             "title": "Code not found",
@@ -1319,6 +1322,7 @@
                 "change": "Change photo",
                 "remove": "Remove",
                 "uploading": "Uploading…",
+                "uploadBusy": "The server is busy. Retrying shortly…",
                 "formats": "JPEG, PNG, HEIC up to 10 MB"
             },
             "save": "Save changes",
@@ -4232,6 +4236,8 @@
             "RATE_LIMITED": "{filename} wasn't sent: you've uploaded a lot in the last hour. Try it again later."
         },
         "selectionLimited": "Only supported photos and videos are accepted, with at most {count} per upload.",
+        "filesTooLarge": "Photos can be up to {imageSize} and videos up to {videoSize}. Larger files were left out.",
+        "uploadBusy": "The server is busy. Your upload will retry shortly…",
         "viewerLabel": "Media viewer",
         "closeViewer": "Close media viewer",
         "previousMedia": "Previous",
@@ -4355,7 +4361,7 @@
         "mediaArchiveDailyLimitReachedWithWait": "This gallery has been downloaded as much as it can be for today. Try again in {hours, plural, one {about an hour} other {about # hours}}.",
         "coHostInvitationAlreadyPending": "That address already has a co-host invitation waiting. Revoke it to send a new one.",
         "coHostInvitationsPendingLimit": "This event has as many co-host invitations waiting as it can hold. Revoke one, or wait for one to be accepted or expire.",
-        "resourceBusy": "Someone else is changing this right now. Try again in a moment.",
+        "resourceBusy": "The server is busy right now. Try again in a moment.",
         "withdrawalOrderDisputed": "One of this withdrawal's payments is under an open card dispute.",
         "storageLimit": "Storage limit reached for this event.",
         "storageLimitWithPlan": "Storage limit reached on the {plan} plan. Upgrade to add more.",
@@ -4413,6 +4419,7 @@
         "accessDenied": "You don't have permission to do that.",
         "forbidden": "You don't have permission to do that.",
         "conflict": "That change conflicts with the latest saved version. Refresh and try again.",
+        "concurrentModification": "This was just changed somewhere else. Refresh and try again.",
         "emailAlreadyExists": "An account with this email already exists.",
         "duplicateMembership": "You're already a member of this event.",
         "duplicateMediaIdInRequest": "Remove duplicate photos and try again.",
@@ -4427,6 +4434,8 @@
         "postPinNotHost": "Only hosts can pin posts.",
         "announcementNotHost": "Only hosts can post announcements.",
         "storyExpiryOutOfRange": "A story can last up to 24 hours.",
+        "storyLiveLimitReached": "You have reached the story limit. Older stories expire after 24 hours, or delete one to post another.",
+        "storyMediaAlreadyLive": "This photo or video is already in one of your stories.",
         "orderNotPending": "This order is no longer pending.",
         "webhookAlreadyProcessed": "This webhook has already been processed.",
         "webhookNotReplayable": "This webhook cannot be replayed.",
@@ -5017,7 +5026,8 @@
         "songAdded": "Song added",
         "songFailed": "Couldn't add the song. Try again.",
         "retry": "Retry",
-        "dismiss": "Dismiss"
+        "dismiss": "Dismiss",
+        "uploadBusy": "The server is busy. Retrying shortly…"
     },
     "EmailVerificationBanner": {
         "message": "Confirm your email address to create an event.",
