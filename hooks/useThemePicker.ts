@@ -3,13 +3,13 @@
 import { useCallback } from 'react';
 
 import { useEventThemePresets, useSetEventTheme } from '@/hooks/useEventTheme';
-import { getErrorCode } from '@/lib/api/errors';
+import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { isModuleAvailable } from '@/lib/eventLifecycle';
 
 // GET theme-presets answers 5144 once the event has ended and 5012 when the
 // plan has no theme module. Neither is a failure worth showing: the picker just isn't offered.
-const PICKER_UNAVAILABLE_CODES: ReadonlyArray<number | string | undefined> = [5144, 5012];
+const PICKER_UNAVAILABLE_CODES: ReadonlyArray<number | string | undefined> = [ERROR_CODES.EVENT_ENDED, ERROR_CODES.MODULE_NOT_AVAILABLE];
 
 // The host's theme choice in event settings. Only while the plan includes the
 // theme module. A pick applies at once with its own PUT, separate from the

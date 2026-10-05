@@ -51,21 +51,17 @@ describe('useApiErrorMessage', () => {
         const spent = new ApiError(429, { errorCode: 3046, retryAfterSeconds: 3 * 3600 + 5 });
         const spentSoon = new ApiError(429, { errorCode: 3046, retryAfterSeconds: 600 });
 
-        expect(describeIn('en', spent)).toBe(
-            'This gallery has been downloaded as much as it can be for today. Try again in about 4 hours.',
-        );
-        expect(describeIn('en', spentSoon)).toBe(
-            'This gallery has been downloaded as much as it can be for today. Try again in about an hour.',
-        );
-        expect(describeIn('el', spent)).toBe(
-            'Η συλλογή έχει κατέβει όσο επιτρέπεται για σήμερα. Δοκιμάστε ξανά σε περίπου 4 ώρες.',
-        );
+        expect(describeIn('en', spent)).toBe('This gallery has been downloaded as much as it can be for today. Try again in about 4 hours.');
+        expect(describeIn('en', spentSoon)).toBe('This gallery has been downloaded as much as it can be for today. Try again in about an hour.');
+        expect(describeIn('el', spent)).toBe('Η συλλογή έχει κατέβει όσο επιτρέπεται για σήμερα. Δοκιμάστε ξανά σε περίπου 4 ώρες.');
     });
 
     it.each([
         [5117, 'That address already has a co-host invitation waiting. Revoke it to send a new one.'],
         [5119, 'The server is busy right now. Try again in a moment.'],
         [5128, 'This was just changed somewhere else. Refresh and try again.'],
+        [5143, 'This theme is no longer available — pick another.'],
+        [5144, "This event has ended, so its theme can't be changed."],
         [5141, 'You have reached the story limit. Older stories expire after 24 hours, or delete one to post another.'],
     ])('maps %i to its own copy', (errorCode, message) => {
         expect(describeIn('en', new ApiError(409, { errorCode }))).toBe(message);

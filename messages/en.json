@@ -4446,6 +4446,8 @@
         "storyExpiryOutOfRange": "A story can last up to 24 hours.",
         "storyLiveLimitReached": "You have reached the story limit. Older stories expire after 24 hours, or delete one to post another.",
         "storyMediaAlreadyLive": "This photo or video is already in one of your stories.",
+        "themePresetNotSelectable": "This theme is no longer available — pick another.",
+        "eventEnded": "This event has ended, so its theme can't be changed.",
         "orderNotPending": "This order is no longer pending.",
         "webhookAlreadyProcessed": "This webhook has already been processed.",
         "webhookNotReplayable": "This webhook cannot be replayed.",

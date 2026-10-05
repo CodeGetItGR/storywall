@@ -189,6 +189,8 @@ export const ERROR_CODES = {
     CONCURRENT_MODIFICATION: 5128,
     STORY_LIVE_LIMIT_REACHED: 5141,
     STORY_MEDIA_ALREADY_LIVE: 5142,
+    THEME_PRESET_NOT_SELECTABLE: 5143,
+    EVENT_ENDED: 5144,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the
