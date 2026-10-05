@@ -127,7 +127,7 @@ export function FeedPageContent() {
                 {moduleFlags.posts && (
                     <div
                         className={cn('flex flex-col px-0 pb-24 lg:pb-10', {
-                            'lg:mt-4': (!moduleFlags.stories || !event.description) && !shouldShowRSVP,
+                            'mt-4': (!moduleFlags.stories || !event.description) && !shouldShowRSVP,
                         })}
                     >
                         <ComposerCard />
