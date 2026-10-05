@@ -22,6 +22,8 @@ import Page from './page';
 const hostContext = { accessToken: 'token-1', memberships: [], activeEventId: 'e1', isHost: true };
 const liveEvent = { id: 'e1', status: 'ACTIVE', deletedAt: null, modules: [{ moduleKey: 'rsvp', isAvailable: true, isEnabled: true }] };
 
+const themedEvent = { ...liveEvent, modules: [...liveEvent.modules, { moduleKey: 'theme', isAvailable: true, isEnabled: true }] };
+
 function visit(searchParams: { tab?: string; section?: string } = {}) {
     return Page({ params: Promise.resolve({ eventId: 'e1' }), searchParams: Promise.resolve(searchParams) });
 }
@@ -101,6 +103,50 @@ describe('ManagePage (server)', () => {
 
         expect(seededKeys(await visit())).toEqual([]);
         expect(mocks.serverGet).not.toHaveBeenCalled();
+    });
+
+    it('seeds the theme presets when the settings tab opens on a plan with themes', async () => {
+        mocks.resolveServerEventDetail.mockResolvedValue(themedEvent);
+
+        const element = await visit({ tab: 'settings' });
+
+        expect(mocks.serverGet).toHaveBeenCalledWith('/api/events/e1/theme-presets', 'token-1');
+        expect(seededKeys(element)).toEqual(expect.arrayContaining([['events', 'e1', 'theme-presets']]));
+    });
+
+    it('skips the theme presets on other tabs', async () => {
+        mocks.resolveServerEventDetail.mockResolvedValue(themedEvent);
+
+        await visit();
+
+        expect(mocks.serverGet).not.toHaveBeenCalledWith('/api/events/e1/theme-presets', 'token-1');
+    });
+
+    it("skips the theme presets when the plan doesn't include themes", async () => {
+        await visit({ tab: 'settings' });
+
+        expect(mocks.serverGet).not.toHaveBeenCalledWith('/api/events/e1/theme-presets', 'token-1');
+    });
+
+    it("seeds the theme presets for a draft's overview, whatever the tab", async () => {
+        mocks.resolveServerEventDetail.mockResolvedValue({ ...themedEvent, status: 'DRAFT' });
+
+        const element = await visit({ tab: 'members' });
+
+        expect(mocks.serverGet).toHaveBeenCalledWith('/api/events/e1/theme-presets', 'token-1');
+        expect(seededKeys(element)).toEqual([
+            ['events', 'e1', 'usage'],
+            ['events', 'e1', 'theme-presets'],
+        ]);
+    });
+
+    it('still seeds the rest when the theme presets fail', async () => {
+        mocks.resolveServerEventDetail.mockResolvedValue(themedEvent);
+        mocks.serverGet.mockImplementation((path: string) =>
+            path.endsWith('/theme-presets') ? Promise.reject(new Error('Server prefetch failed')) : Promise.resolve([]),
+        );
+
+        expect(seededKeys(await visit({ tab: 'settings' }))).toEqual(expect.arrayContaining([['events', 'e1', 'usage']]));
     });
 
     it("prefetches nothing when Spring can't return the event", async () => {
