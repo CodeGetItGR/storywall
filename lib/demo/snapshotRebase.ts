@@ -21,15 +21,46 @@ function shiftValue(value: unknown, offsetMs: number): unknown {
     return value;
 }
 
+function shiftByDays<T extends string | null>(value: T, days: number): T {
+    if (!value) return value;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    // Calendar days in local time, so a daylight-saving change in between keeps the clock time.
+    date.setDate(date.getDate() + days);
+    return date.toISOString() as T;
+}
+
+function localDayNumber(date: Date): number {
+    return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86_400_000;
+}
+
 // Moves every timestamp in the snapshot by (now - snapshotAt), so a post made "2 hours before
 // the snapshot" reads as 2 hours ago for the visitor, and stories are as fresh as they were.
+// The event's schedule and sessions move by whole days instead, so a session the host set for
+// 17:30 still shows 17:30.
 export function rebaseSnapshot(snapshot: DemoSnapshotDto, now: Date = new Date()): DemoSnapshotDto {
     const anchor = Date.parse(snapshot.snapshotAt);
     if (Number.isNaN(anchor)) return snapshot;
     const offsetMs = now.getTime() - anchor;
+    const offsetDays = localDayNumber(now) - localDayNumber(new Date(anchor));
 
     const rebased = Object.fromEntries(
         Object.entries(snapshot).map(([key, value]) => [key, ABSOLUTE_KEYS.has(key) ? value : shiftValue(value, offsetMs)]),
-    );
-    return rebased as unknown as DemoSnapshotDto;
+    ) as unknown as DemoSnapshotDto;
+
+    const { schedule, sessions } = snapshot.event;
+    rebased.event.schedule = {
+        ...rebased.event.schedule,
+        startAt: shiftByDays(schedule.startAt, offsetDays),
+        endAt: shiftByDays(schedule.endAt, offsetDays),
+        rsvpDeadline: shiftByDays(schedule.rsvpDeadline, offsetDays),
+    };
+    if (sessions && rebased.event.sessions) {
+        rebased.event.sessions = rebased.event.sessions.map((session, index) => ({
+            ...session,
+            startAt: shiftByDays(sessions[index].startAt, offsetDays),
+            endAt: shiftByDays(sessions[index].endAt, offsetDays),
+        }));
+    }
+    return rebased;
 }
