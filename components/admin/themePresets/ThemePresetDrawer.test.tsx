@@ -122,8 +122,15 @@ describe('ThemePresetDrawer', () => {
 
         state({ contrastRatio: 3.6, errors: { backgroundContrast: true } });
         renderDrawer();
-        expect(screen.getByText('contrastLow')).toBeInTheDocument();
+        expect(screen.queryByText('contrastLow')).toBeNull();
         expect(screen.getByRole('alert')).toHaveTextContent('backgroundContrastInvalid');
+        cleanup();
+
+        // Before a blocked save the live hint is the only message.
+        state({ contrastRatio: 3.6 });
+        renderDrawer();
+        expect(screen.getByText('contrastLow')).toBeInTheDocument();
+        expect(screen.queryByRole('alert')).toBeNull();
     });
 
     it('shows the server message when it rejects the draft', () => {

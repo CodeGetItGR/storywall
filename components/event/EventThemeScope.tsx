@@ -15,9 +15,9 @@ export function EventThemeScope({ children }: { children: ReactNode }) {
 
     return (
         // Fills the shell's content area: its wrapper is a grid, so min-h-full is not needed here. On mobile
-        // the shell's main reserves pb-20 for the tab bar in its own white; pulling the scope over that
-        // strip (-mb-20 pb-20) lets the theme colour reach the bottom of the viewport.
-        <div className="-mb-20 bg-event pb-20 lg:mb-0 lg:pb-0" style={eventThemeStyle(theme?.backgroundColor)}>
+        // the shell's main reserves --tab-bar-h for the tab bar in its own white; pulling the scope over that
+        // strip (-mb-(--tab-bar-h) pb-(--tab-bar-h)) lets the theme colour reach the bottom of the viewport.
+        <div className="-mb-(--tab-bar-h) bg-event pb-(--tab-bar-h) lg:mb-0 lg:pb-0" style={eventThemeStyle(theme?.backgroundColor)}>
             {children}
         </div>
     );

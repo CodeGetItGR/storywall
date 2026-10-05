@@ -2,7 +2,7 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { useLocale } from 'next-intl';
-import { type ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { type ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { adminThemePresetKeys, useCreateThemePreset, usePatchThemePreset, useUploadThemePresetIllustration } from '@/hooks/useAdminThemePresets';
 import {
@@ -57,6 +57,8 @@ export function useThemePresetDrawer({
     const [file, setFile] = useState<File | null>(null);
     const [fileError, setFileError] = useState<'type' | 'size' | null>(null);
     const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
+    // Set synchronously: a fast double click submits twice before isSaving re-renders.
+    const submitting = useRef(false);
 
     // Revokes the previous preview whenever it's replaced, and the last one on unmount.
     useEffect(() => {
@@ -65,7 +67,7 @@ export function useThemePresetDrawer({
         };
     }, [filePreviewUrl]);
 
-    const errors = useMemo(() => validateThemePresetDraft(draft, isCreate), [draft, isCreate]);
+    const errors = useMemo(() => validateThemePresetDraft(draft, isCreate, saved?.backgroundColor), [draft, isCreate, saved]);
 
     const handleFieldChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.currentTarget;
@@ -98,7 +100,8 @@ export function useThemePresetDrawer({
             event.preventDefault();
             setSubmitted(true);
             setFailure(null);
-            if (Object.keys(errors).length > 0) return;
+            if (Object.keys(errors).length > 0 || submitting.current) return;
+            submitting.current = true;
 
             let current = saved;
             try {
@@ -121,6 +124,8 @@ export function useThemePresetDrawer({
                 const classified = classifyError(error, current === null);
                 if (classified.kind === 'notFound') void queryClient.invalidateQueries({ queryKey: adminThemePresetKeys.all });
                 setFailure(classified);
+            } finally {
+                submitting.current = false;
             }
         },
         [create, draft, errors, file, onDoneAction, patch, queryClient, saved, sortOrder, upload],

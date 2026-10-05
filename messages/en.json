@@ -1328,7 +1328,10 @@
             "theme": {
                 "label": "Theme",
                 "none": "No theme",
-                "loading": "Loading themes…"
+                "loading": "Loading themes…",
+                "current": "Current theme",
+                "saving": "Saving theme…",
+                "saved": "Theme saved"
             },
             "save": "Save changes",
             "saved": "Saved",
@@ -4510,7 +4513,7 @@
         "storyLiveLimitReached": "You have reached the story limit. Older stories expire after 24 hours, or delete one to post another.",
         "storyMediaAlreadyLive": "This photo or video is already in one of your stories.",
         "themePresetNotSelectable": "This theme is no longer available — pick another.",
-        "eventEnded": "This event has ended, so its theme can't be changed.",
+        "eventEnded": "This event has ended.",
         "orderNotPending": "This order is no longer pending.",
         "webhookAlreadyProcessed": "This webhook has already been processed.",
         "webhookNotReplayable": "This webhook cannot be replayed.",

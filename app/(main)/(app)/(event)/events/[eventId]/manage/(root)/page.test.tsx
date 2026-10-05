@@ -20,7 +20,13 @@ vi.mock('../PageClient', () => ({ default: () => null }));
 import Page from './page';
 
 const hostContext = { accessToken: 'token-1', memberships: [], activeEventId: 'e1', isHost: true };
-const liveEvent = { id: 'e1', status: 'ACTIVE', deletedAt: null, modules: [{ moduleKey: 'rsvp', isAvailable: true, isEnabled: true }] };
+const liveEvent = {
+    id: 'e1',
+    status: 'ACTIVE',
+    deletedAt: null,
+    schedule: { endAt: '2999-01-01T00:00:00Z' },
+    modules: [{ moduleKey: 'rsvp', isAvailable: true, isEnabled: true }],
+};
 
 const themedEvent = { ...liveEvent, modules: [...liveEvent.modules, { moduleKey: 'theme', isAvailable: true, isEnabled: true }] };
 
@@ -112,6 +118,14 @@ describe('ManagePage (server)', () => {
 
         expect(mocks.serverGet).toHaveBeenCalledWith('/api/events/e1/theme-presets', 'token-1');
         expect(seededKeys(element)).toEqual(expect.arrayContaining([['events', 'e1', 'theme-presets']]));
+    });
+
+    it('skips the theme presets once the event has ended (the server answers 5144)', async () => {
+        mocks.resolveServerEventDetail.mockResolvedValue({ ...themedEvent, schedule: { endAt: '2020-01-01T00:00:00Z' } });
+
+        await visit({ tab: 'settings' });
+
+        expect(mocks.serverGet).not.toHaveBeenCalledWith('/api/events/e1/theme-presets', 'token-1');
     });
 
     it('skips the theme presets on other tabs', async () => {

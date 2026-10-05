@@ -62,6 +62,13 @@ describe('validateThemePresetDraft', () => {
         expect(validateThemePresetDraft({ ...VALID_DRAFT, backgroundColor: 'nope' }, true)).toEqual({ backgroundColor: true });
     });
 
+    it('skips the contrast check for the colour the preset already has (the server only re-checks a sent colour)', () => {
+        const dark = { ...VALID_DRAFT, backgroundColor: '#241f1a' };
+        expect(validateThemePresetDraft(dark, false, '#241F1A')).toEqual({});
+        expect(validateThemePresetDraft(dark, false, '#FFFFFF')).toEqual({ backgroundContrast: true });
+        expect(validateThemePresetDraft(dark, true, null)).toEqual({ backgroundContrast: true });
+    });
+
     it('does not validate the key once created', () => {
         expect(validateThemePresetDraft({ ...VALID_DRAFT, key: '' }, false)).toEqual({});
     });

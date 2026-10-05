@@ -33,8 +33,9 @@ export function ThemePresetDrawer({
     const keyHint = form.failure?.kind === 'keyTaken' ? t('keyTaken') : form.errors.key ? t('keyInvalid') : undefined;
     // Floored, so a colour just under the minimum never reads as passing.
     const contrast = form.contrastRatio === null ? null : (Math.floor(form.contrastRatio * 100) / 100).toFixed(2);
+    // One contrast message at a time: once a save is blocked, the alert below replaces the live hint.
     const contrastHint =
-        contrast === null
+        contrast === null || form.errors.backgroundContrast
             ? undefined
             : form.contrastRatio !== null && form.contrastRatio < MIN_INK_CONTRAST
               ? t('contrastLow', { ratio: contrast, min: MIN_INK_CONTRAST })

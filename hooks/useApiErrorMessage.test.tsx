@@ -61,7 +61,7 @@ describe('useApiErrorMessage', () => {
         [5119, 'The server is busy right now. Try again in a moment.'],
         [5128, 'This was just changed somewhere else. Refresh and try again.'],
         [5143, 'This theme is no longer available — pick another.'],
-        [5144, "This event has ended, so its theme can't be changed."],
+        [5144, 'This event has ended.'],
         [5141, 'You have reached the story limit. Older stories expire after 24 hours, or delete one to post another.'],
     ])('maps %i to its own copy', (errorCode, message) => {
         expect(describeIn('en', new ApiError(409, { errorCode }))).toBe(message);

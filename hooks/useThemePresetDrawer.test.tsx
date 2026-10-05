@@ -157,7 +157,45 @@ describe('useThemePresetDrawer', () => {
     });
 });
 
+describe('useThemePresetDrawer double submit', () => {
+    it('sends one create when the form is submitted twice before the first settles', async () => {
+        let finish: (preset: AdminThemePresetDto) => void = () => undefined;
+        mocks.create.mockReturnValue(new Promise((resolve) => (finish = resolve)));
+        const { result } = renderDrawer();
+        fillValidDraft(result);
+
+        await act(async () => {
+            const first = result.current.handleSubmit(submitEvent());
+            const second = result.current.handleSubmit(submitEvent());
+            finish({ ...PRESET, illustrationUrl: null });
+            await Promise.all([first, second]);
+        });
+
+        expect(mocks.create).toHaveBeenCalledTimes(1);
+    });
+});
+
 describe('useThemePresetDrawer contrast', () => {
+    it('saves a preset whose own colour is too dark for the ink text, as long as the colour is untouched', async () => {
+        const dark = { ...PRESET, backgroundColor: '#1A1A1A' };
+        mocks.patch.mockResolvedValue({ ...dark, archived: true });
+        const { result } = renderDrawer(dark);
+        act(() => result.current.handleAvailabilityChange('ARCHIVED'));
+        await act(() => result.current.handleSubmit(submitEvent()));
+
+        expect(result.current.errors).toEqual({});
+        expect(mocks.patch).toHaveBeenCalledWith({ id: 'p1', input: { archived: true } });
+    });
+
+    it('still blocks a changed colour that is too dark', async () => {
+        const { result } = renderDrawer(PRESET);
+        act(() => result.current.handleFieldChange(field('backgroundColor', '#1A1A1A')));
+        await act(() => result.current.handleSubmit(submitEvent()));
+
+        expect(mocks.patch).not.toHaveBeenCalled();
+        expect(result.current.errors).toEqual({ backgroundContrast: true });
+    });
+
     it('blocks save and reports the ratio when the colour is too dark for the ink text', async () => {
         const { result } = renderDrawer();
         fillValidDraft(result);

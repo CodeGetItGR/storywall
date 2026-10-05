@@ -50,18 +50,24 @@ describe('ThemePicker', () => {
         expect(screen.queryByText('label')).toBeNull();
     });
 
-    it('offers "No theme" and every preset, with the current one pressed', () => {
+    it('is a radio group named by its heading', () => {
         state();
         renderPicker();
-        expect(screen.getByRole('button', { name: 'none' })).toHaveAttribute('aria-pressed', 'false');
-        expect(screen.getByRole('button', { name: 'Dino' })).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getByRole('radiogroup', { name: 'label' })).toBeInTheDocument();
+    });
+
+    it('offers "No theme" and every preset, with the current one checked', () => {
+        state();
+        renderPicker();
+        expect(screen.getByRole('radio', { name: 'none' })).toHaveAttribute('aria-checked', 'false');
+        expect(screen.getByRole('radio', { name: 'Dino' })).toHaveAttribute('aria-checked', 'true');
     });
 
     it('saves the picked preset', () => {
         const select = vi.fn();
         state({ select });
         renderPicker();
-        fireEvent.click(screen.getByRole('button', { name: 'Dino' }));
+        fireEvent.click(screen.getByRole('radio', { name: 'Dino' }));
         expect(select).toHaveBeenCalledWith('p1');
     });
 
@@ -69,20 +75,101 @@ describe('ThemePicker', () => {
         const select = vi.fn();
         state({ select });
         renderPicker();
-        fireEvent.click(screen.getByRole('button', { name: 'none' }));
+        fireEvent.click(screen.getByRole('radio', { name: 'none' }));
         expect(select).toHaveBeenCalledWith(null);
     });
 
-    it('disables every option while read-only or saving', () => {
-        state({ disabled: true });
+    it('marks every option aria-disabled, never disabled (focus must stay), and ignores clicks while read-only or saving', () => {
+        const select = vi.fn();
+        state({ disabled: true, select });
         renderPicker();
-        for (const button of screen.getAllByRole('button')) expect(button).toBeDisabled();
+        for (const radio of screen.getAllByRole('radio')) {
+            expect(radio).toHaveAttribute('aria-disabled', 'true');
+            expect(radio).not.toBeDisabled();
+            fireEvent.click(radio);
+        }
+        expect(select).not.toHaveBeenCalled();
     });
 
-    it('shows a failed save', () => {
+    it('keeps only the checked option in the tab order', () => {
+        state();
+        renderPicker();
+        expect(screen.getByRole('radio', { name: 'Dino' })).toHaveAttribute('tabindex', '0');
+        expect(screen.getByRole('radio', { name: 'none' })).toHaveAttribute('tabindex', '-1');
+    });
+
+    it('falls back to the first option for the tab order when none is checked', () => {
+        state({ selectedKey: 'gone' });
+        renderPicker();
+        expect(screen.getByRole('radio', { name: 'none' })).toHaveAttribute('tabindex', '0');
+    });
+
+    it('moves focus with the arrow keys, Home and End, wrapping around', () => {
+        state({ presets: [PRESET, { ...PRESET, id: 'p2', key: 'fox', name: { en: 'Fox', el: 'Αλεπού' } }], selectedKey: null });
+        renderPicker();
+        const none = screen.getByRole('radio', { name: 'none' });
+        const dino = screen.getByRole('radio', { name: 'Dino' });
+        const fox = screen.getByRole('radio', { name: 'Fox' });
+        none.focus();
+
+        fireEvent.keyDown(none, { key: 'ArrowRight' });
+        expect(dino).toHaveFocus();
+        expect(dino).toHaveAttribute('tabindex', '0');
+        expect(none).toHaveAttribute('tabindex', '-1');
+        fireEvent.keyDown(dino, { key: 'ArrowDown' });
+        expect(fox).toHaveFocus();
+        fireEvent.keyDown(fox, { key: 'ArrowRight' });
+        expect(none).toHaveFocus();
+        fireEvent.keyDown(none, { key: 'ArrowLeft' });
+        expect(fox).toHaveFocus();
+        fireEvent.keyDown(fox, { key: 'ArrowUp' });
+        expect(dino).toHaveFocus();
+        fireEvent.keyDown(dino, { key: 'End' });
+        expect(fox).toHaveFocus();
+        fireEvent.keyDown(fox, { key: 'Home' });
+        expect(none).toHaveFocus();
+    });
+
+    it('keeps focus on an option while a save is running', () => {
+        state({ isSaving: true, disabled: true, savingPresetId: 'p1' });
+        renderPicker();
+        const dino = screen.getByRole('radio', { name: 'Dino' });
+        dino.focus();
+        expect(dino).toHaveFocus();
+    });
+
+    it('shows the applied theme as a leading, checked, non-interactive option when it is no longer offered', () => {
+        const select = vi.fn();
+        state({
+            select,
+            selectedKey: 'retired',
+            staleTheme: { presetKey: 'retired', backgroundColor: '#FFD6E0', illustrationUrl: 'https://media.example/retired.webp' },
+        });
+        renderPicker();
+        const radios = screen.getAllByRole('radio');
+        expect(radios[0]).toHaveAccessibleName('none');
+        const current = screen.getByRole('radio', { name: 'current' });
+        expect(radios[1]).toBe(current);
+        expect(current).toHaveAttribute('aria-checked', 'true');
+        expect(current).toHaveAttribute('aria-disabled', 'true');
+        fireEvent.click(current);
+        expect(select).not.toHaveBeenCalled();
+        expect(screen.getAllByTestId('art')[0]).toHaveAttribute('src', 'https://media.example/retired.webp');
+    });
+
+    it('announces saving and saved in a polite status region', () => {
+        state({ isSaving: true });
+        const { rerender } = render(<ThemePicker event={{ id: 'e1' } as EventDetailResponseDto} canWrite />);
+        expect(screen.getByRole('status')).toHaveTextContent('saving');
+        state({ isSaved: true });
+        rerender(<ThemePicker event={{ id: 'e1' } as EventDetailResponseDto} canWrite />);
+        expect(screen.getByRole('status')).toHaveTextContent('saved');
+    });
+
+    it('announces a failed save as an alert', () => {
         state({ saveError: new Error('x') });
         renderPicker();
-        expect(screen.getByText('Could not save.')).toBeInTheDocument();
+        expect(screen.getByRole('alert')).toHaveTextContent('Could not save.');
     });
 
     it('falls back to the colour swatch when a preset image fails to load', () => {
@@ -90,6 +177,16 @@ describe('ThemePicker', () => {
         renderPicker();
         fireEvent.error(screen.getByTestId('art'));
         expect(screen.queryByTestId('art')).toBeNull();
-        expect(screen.getByRole('button', { name: 'Dino' })).toBeInTheDocument();
+        expect(screen.getByRole('radio', { name: 'Dino' })).toBeInTheDocument();
+    });
+
+    it('tries a preset image again when its url changes', () => {
+        state();
+        const { rerender } = render(<ThemePicker event={{ id: 'e1' } as EventDetailResponseDto} canWrite />);
+        fireEvent.error(screen.getByTestId('art'));
+        expect(screen.queryByTestId('art')).toBeNull();
+        state({ presets: [{ ...PRESET, illustrationUrl: 'https://media.example/dino-v2.webp' }] });
+        rerender(<ThemePicker event={{ id: 'e1' } as EventDetailResponseDto} canWrite />);
+        expect(screen.getByTestId('art')).toHaveAttribute('src', 'https://media.example/dino-v2.webp');
     });
 });

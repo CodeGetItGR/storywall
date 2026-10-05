@@ -69,13 +69,18 @@ function isValidName(value: string): boolean {
     return trimmed.length > 0 && trimmed.length <= THEME_PRESET_NAME_MAX;
 }
 
-export function validateThemePresetDraft(draft: ThemePresetDraft, isCreate: boolean): ThemePresetDraftErrors {
+// savedColor: the colour the preset already has. The server re-checks contrast only when a PATCH sends
+// backgroundColor, and buildThemePresetPatchPayload sends it only when changed, so an untouched colour
+// (even one saved before the rule) must not block saving other fields.
+export function validateThemePresetDraft(draft: ThemePresetDraft, isCreate: boolean, savedColor?: string | null): ThemePresetDraftErrors {
     const errors: ThemePresetDraftErrors = {};
     if (isCreate && !THEME_PRESET_KEY_PATTERN.test(draft.key)) errors.key = true;
     if (!isValidName(draft.nameEn)) errors.nameEn = true;
     if (!isValidName(draft.nameEl)) errors.nameEl = true;
     if (!isHexColor(draft.backgroundColor)) errors.backgroundColor = true;
-    else if (inkContrastRatio(draft.backgroundColor) < MIN_INK_CONTRAST) errors.backgroundContrast = true;
+    else if (draft.backgroundColor.toUpperCase() !== savedColor?.toUpperCase() && inkContrastRatio(draft.backgroundColor) < MIN_INK_CONTRAST) {
+        errors.backgroundContrast = true;
+    }
     if (draft.eventTypes.length === 0) errors.eventTypes = true;
     return errors;
 }

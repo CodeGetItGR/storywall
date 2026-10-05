@@ -7,7 +7,10 @@ import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { isHexColor } from '@/lib/eventTheme';
 import { cn } from '@/lib/utils';
 
+// One radio of the theme picker. "Disabled" is aria-disabled with a no-op click, never the
+// disabled attribute: that would drop focus to the body the moment a save starts.
 export function ThemePresetOption({
+    optionId,
     presetId,
     label,
     backgroundColor,
@@ -15,36 +18,53 @@ export function ThemePresetOption({
     selected,
     saving,
     disabled,
+    tabbable,
     onSelectAction,
+    onFocusAction,
 }: {
-    presetId: string | null;
+    optionId: string;
+    // Null for "No theme"; undefined for the applied theme, which can't be picked again.
+    presetId: string | null | undefined;
     label: string;
     backgroundColor: string | null;
     illustrationUrl: string | null;
     selected: boolean;
     saving: boolean;
     disabled: boolean;
+    tabbable: boolean;
     onSelectAction: (presetId: string | null) => void;
+    onFocusAction: (optionId: string) => void;
 }) {
     // An illustration that 404s (art replaced by an admin) leaves the colour swatch.
-    const [imageFailed, setImageFailed] = useState(false);
+    // Keyed by URL, so a new URL (art replaced, presigned refresh) gets another try.
+    const [failedUrl, setFailedUrl] = useState<string | null>(null);
+    const inert = disabled || presetId === undefined;
 
     function handleClick() {
+        if (inert) return;
         onSelectAction(presetId);
     }
 
+    function handleFocus() {
+        onFocusAction(optionId);
+    }
+
     function handleImageError() {
-        setImageFailed(true);
+        setFailedUrl(illustrationUrl);
     }
 
     return (
         <button
             type="button"
+            role="radio"
+            aria-checked={selected}
+            aria-disabled={inert}
+            data-option-id={optionId}
+            tabIndex={tabbable ? 0 : -1}
             onClick={handleClick}
-            disabled={disabled}
-            aria-pressed={selected}
+            onFocus={handleFocus}
             className={cn(
-                'flex min-w-0 flex-col gap-1.5 rounded-2xl p-1.5 text-left transition disabled:cursor-not-allowed',
+                'flex min-w-0 flex-col gap-1.5 rounded-2xl p-1.5 text-left transition aria-disabled:cursor-not-allowed',
                 selected ? 'ring-2 ring-primary' : 'ring-1 ring-border hover:ring-primary/40',
                 disabled && !selected && 'opacity-60',
             )}
@@ -54,7 +74,7 @@ export function ThemePresetOption({
                 className="relative block aspect-4/3 overflow-hidden rounded-xl bg-surface-muted"
                 style={backgroundColor && isHexColor(backgroundColor) ? { backgroundColor } : undefined}
             >
-                {illustrationUrl && !imageFailed && (
+                {illustrationUrl && failedUrl !== illustrationUrl && (
                     <ProtectedImage
                         src={illustrationUrl}
                         alt=""

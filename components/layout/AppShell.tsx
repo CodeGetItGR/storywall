@@ -39,7 +39,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     const shellContent = (
         <div className="desktop-account-shell flex h-full min-h-0 overflow-hidden bg-background">
             <DesktopNavRail />
-            <main className="desktop-account-page h-full min-w-0 flex-1 overflow-y-auto overscroll-contain bg-background pb-20 lg:ml-20 lg:pb-0">
+            <main className="desktop-account-page h-full min-w-0 flex-1 overflow-y-auto overscroll-contain bg-background pb-(--tab-bar-h) lg:ml-20 lg:pb-0">
                 {/* Demo authoring (admins on a demo event only) */}
                 {adminAccess.isAdminAllowed && adminAccess.eventId && <DemoActAsBar key={adminAccess.eventId} eventId={adminAccess.eventId} />}
                 {/* A grid, so a lone child (the event theme scope) stretches to the full min-height */}

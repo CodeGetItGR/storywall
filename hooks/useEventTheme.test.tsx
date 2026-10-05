@@ -5,8 +5,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { eventKeys } from '@/hooks/useEvent';
 import { eventThemeKeys, useEventThemePresets, useSetEventTheme } from '@/hooks/useEventTheme';
-import { myEventsKeys } from '@/hooks/useMyEvents';
+import { ApiError } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
+import { ERROR_CODES } from '@/lib/api/errors';
 
 const apiGet = vi.fn();
 const apiPut = vi.fn();
@@ -88,13 +89,48 @@ describe('useSetEventTheme', () => {
         expect(client.getQueryData(eventKeys.detail('e1'))).toEqual({ id: 'e1', theme: null });
     });
 
-    it('invalidates the event lists that carry the theme', async () => {
+    it('does not refetch /api/me/events, whose rows carry no theme', async () => {
         const invalidate = vi.spyOn(client, 'invalidateQueries');
         apiPut.mockResolvedValue({ theme: THEME });
         const { result } = renderHook(() => useSetEventTheme('e1'), { wrapper: wrapperFor(client) });
 
         await act(() => result.current.mutateAsync('p1'));
 
-        expect(invalidate).toHaveBeenCalledWith({ queryKey: myEventsKeys.all });
+        expect(invalidate).not.toHaveBeenCalled();
+    });
+
+    it('refetches the presets when the picked one is no longer selectable (5143)', async () => {
+        const invalidate = vi.spyOn(client, 'invalidateQueries');
+        apiPut.mockRejectedValue(new ApiError(409, { errorCode: ERROR_CODES.THEME_PRESET_NOT_SELECTABLE }));
+        const { result } = renderHook(() => useSetEventTheme('e1'), { wrapper: wrapperFor(client) });
+
+        await act(() => result.current.mutateAsync('p1').catch(() => undefined));
+
+        expect(invalidate).toHaveBeenCalledTimes(1);
+        expect(invalidate).toHaveBeenCalledWith({ queryKey: eventThemeKeys.presets('e1') });
+    });
+
+    it.each([ERROR_CODES.EVENT_ENDED, ERROR_CODES.MODULE_NOT_AVAILABLE])(
+        'refetches the event and presets on %s so the picker goes quiet',
+        async (code) => {
+            const invalidate = vi.spyOn(client, 'invalidateQueries');
+            apiPut.mockRejectedValue(new ApiError(409, { errorCode: code }));
+            const { result } = renderHook(() => useSetEventTheme('e1'), { wrapper: wrapperFor(client) });
+
+            await act(() => result.current.mutateAsync('p1').catch(() => undefined));
+
+            expect(invalidate).toHaveBeenCalledWith({ queryKey: eventKeys.detail('e1') });
+            expect(invalidate).toHaveBeenCalledWith({ queryKey: eventThemeKeys.presets('e1') });
+        },
+    );
+
+    it('leaves the cache alone for other failures', async () => {
+        const invalidate = vi.spyOn(client, 'invalidateQueries');
+        apiPut.mockRejectedValue(new ApiError(500, { errorCode: 1000 }));
+        const { result } = renderHook(() => useSetEventTheme('e1'), { wrapper: wrapperFor(client) });
+
+        await act(() => result.current.mutateAsync('p1').catch(() => undefined));
+
+        expect(invalidate).not.toHaveBeenCalled();
     });
 });
