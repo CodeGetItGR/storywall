@@ -207,7 +207,7 @@ export function ManageScreen() {
     return (
         <div className="mx-auto w-full max-w-6xl pb-10">
             {/* Header */}
-            <div className="sticky top-0 z-20 border-b border-border/60 bg-background/95 backdrop-blur lg:static lg:bg-transparent lg:backdrop-blur-none">
+            <div className="sticky top-0 z-20 border-b border-border/60 bg-event/95 backdrop-blur lg:static lg:bg-transparent lg:backdrop-blur-none">
                 <div className="flex items-start justify-between gap-3 px-4 pt-4 pb-3 lg:px-6 lg:pt-6 lg:pb-5">
                     <div className="min-w-0">
                         <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-ink-faint uppercase">
