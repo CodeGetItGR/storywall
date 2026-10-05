@@ -38,9 +38,9 @@
     "Demo": {
         "resetDemo": "Reset demo",
         "exitDemo": "Exit demo",
-        "banner": "This is a demo. Nothing is saved to StoryWall.",
+        "title": "Demo",
         "resetTitle": "Reset the demo?",
-        "resetBody": "Your changes will be removed and the demo will start over.",
+        "resetBody": "Nothing in the demo is saved. Your changes will be removed and the demo will start over.",
         "resetCancel": "Cancel",
         "notFoundTitle": "This demo isn’t available.",
         "notFoundBody": "Try again later.",

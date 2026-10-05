@@ -34,9 +34,10 @@ export function FeedPageBoundary({ eventId }: { eventId: string }) {
     const postsReadable = useModuleReadable(eventId, 'posts');
     const rsvpReadable = useModuleReadable(eventId, 'rsvp');
     useEventFeedStream(postsReadable ? eventId : null);
-    const { data: postPages, fetchNextPage, hasNextPage, isFetchingNextPage } = useEventPosts(eventId);
+    const { data: postPages, fetchNextPage, hasNextPage, isFetching: isFetchingPosts, isFetchingNextPage } = useEventPosts(eventId);
     const posts = useMemo(() => uniqueById(postPages?.pages.flatMap((page) => page.content) ?? []), [postPages?.pages]);
-    const loadMoreRef = useInfiniteScrollSentinel(hasNextPage, fetchNextPage, posts.length);
+    // Waits out a feed refresh instead of cancelling it, and checks again once it lands.
+    const loadMoreRef = useInfiniteScrollSentinel(hasNextPage, fetchNextPage, posts.length, isFetchingPosts);
 
     useEffect(() => {
         if (!isLoading && (!event || (error instanceof ApiError && error.status === 404))) {

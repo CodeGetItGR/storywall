@@ -15,10 +15,11 @@ export function ResetDemoButton({ onResetAction }: { onResetAction: () => void }
             <button
                 type="button"
                 onClick={confirm.toggle}
-                className="inline-flex min-h-9 flex-none items-center gap-1.5 rounded-full border border-border px-3 text-xs font-semibold text-ink-muted transition-colors hover:bg-surface-muted"
+                aria-label={t('resetDemo')}
+                title={t('resetDemo')}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-background"
             >
-                <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
-                {t('resetDemo')}
+                <RotateCcw className="h-5 w-5" aria-hidden="true" />
             </button>
             <ConfirmActionModal
                 open={confirm.open}

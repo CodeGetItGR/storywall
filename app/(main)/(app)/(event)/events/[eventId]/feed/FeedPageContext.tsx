@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, type ReactNode, type RefObject, useContext } from 'react';
+import { createContext, type ReactNode, type RefCallback, useContext } from 'react';
 
 import type { EventDetailResponseDto, ModuleKeyConvention, PostResponseDto } from '@/lib/api/types';
 
@@ -10,7 +10,7 @@ type FeedPageContextValue = {
     currentMemberRsvpId: string | null;
     isFetchingNextPage: boolean;
     isHost: boolean;
-    loadMoreRef: RefObject<HTMLDivElement | null>;
+    loadMoreRef: RefCallback<HTMLDivElement>;
     loadingMoreLabel: string;
     moduleFlags: Record<ModuleKeyConvention, boolean>;
     posts: PostResponseDto[];
