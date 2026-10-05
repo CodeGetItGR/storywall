@@ -90,6 +90,8 @@ export const endpoints = {
         qrLinkStats: (eventId: string) => `/api/events/${eventId}/qr-links/stats`,
         members: (eventId: string) => `/api/events/${eventId}/members`,
         modules: (eventId: string) => `/api/events/${eventId}/modules`,
+        themePresets: (eventId: string) => `/api/events/${eventId}/theme-presets`,
+        theme: (eventId: string) => `/api/events/${eventId}/theme`,
         memberRoles: (eventId: string) => `/api/events/${eventId}/member-roles`,
         sessions: (eventId: string) => `/api/events/${eventId}/sessions`,
         rsvps: (eventId: string) => `/api/events/${eventId}/rsvps`,
@@ -342,6 +344,11 @@ export const endpoints = {
         reactionTypes: {
             list: '/api/admin/reaction-types',
             byId: (id: string) => `/api/admin/reaction-types/${id}`,
+        },
+        themePresets: {
+            list: '/api/admin/theme-presets',
+            byId: (id: string) => `/api/admin/theme-presets/${id}`,
+            illustration: (id: string) => `/api/admin/theme-presets/${id}/illustration`,
         },
         memberRoles: {
             collection: '/api/admin/member-roles',
