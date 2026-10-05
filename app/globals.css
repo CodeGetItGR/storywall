@@ -34,6 +34,9 @@
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
     --color-orangish: var(--orangish);
+    /* The event's theme colour inside EventThemeScope (set as --event-bg);
+       the normal page background everywhere else. */
+    --color-event: var(--event-bg, var(--background));
 
     /* ── Brand extras ── */
     --color-canvas: var(--canvas);
@@ -112,6 +115,10 @@
     --visual-viewport-offset-top: 0px;
     --visual-viewport-bottom-inset: 0px;
     --visual-viewport-center-y: 50dvh;
+
+    /* Room the app shell reserves under its content for the mobile tab bar; the
+       event theme scope pulls back over the same strip to paint it. */
+    --tab-bar-h: 5rem;
 
     /* Canvas / surfaces */
     --background: #ffffff;

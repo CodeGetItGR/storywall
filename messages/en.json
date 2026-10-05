@@ -1325,6 +1325,14 @@
                 "uploadBusy": "The server is busy. Retrying shortly…",
                 "formats": "JPEG, PNG, HEIC up to 10 MB"
             },
+            "theme": {
+                "label": "Theme",
+                "none": "No theme",
+                "loading": "Loading themes…",
+                "current": "Current theme",
+                "saving": "Saving theme…",
+                "saved": "Theme saved"
+            },
             "save": "Save changes",
             "saved": "Saved",
             "readOnly": "This event is read-only. Event details and cover photo changes are paused until the event is active again.",
@@ -2549,6 +2557,7 @@
             "discountCodes": "Discount codes",
             "collaborations": "Collaborations",
             "reactionTypes": "Reactions",
+            "themePresets": "Themes",
             "billingOps": "Billing ops",
             "withdrawals": "Withdrawals",
             "accounts": "Accounts",
@@ -3771,6 +3780,68 @@
                 "notFound": "This role no longer exists."
             }
         },
+        "themePresets": {
+            "title": "Themes",
+            "subtitle": "Illustration and colour presets hosts can pick for their event.",
+            "create": "New theme",
+            "search": "Search by name or key",
+            "loading": "Loading themes…",
+            "empty": "No themes yet.",
+            "noMatches": "No themes match.",
+            "edit": "Edit {name}",
+            "filters": {
+                "ALL": "All",
+                "OFFERED": "Offered",
+                "NEEDS_ILLUSTRATION": "Needs illustration",
+                "ARCHIVED": "Archived"
+            },
+            "status": {
+                "OFFERED": "Offered",
+                "NEEDS_ILLUSTRATION": "Needs illustration",
+                "ARCHIVED": "Archived"
+            },
+            "columns": {
+                "theme": "Theme",
+                "eventTypes": "Event types",
+                "status": "Status",
+                "order": "Order"
+            },
+            "drawer": {
+                "createTitle": "New theme",
+                "close": "Close",
+                "cancel": "Cancel",
+                "save": "Save",
+                "key": "Key",
+                "keyInvalid": "Use 2 to 63 lower-case letters, digits or hyphens, starting with a letter or digit.",
+                "keyTaken": "A theme with this key already exists.",
+                "nameEn": "English name",
+                "nameEl": "Greek name",
+                "nameInvalid": "Enter 1 to 80 characters.",
+                "backgroundColor": "Background colour",
+                "contrastOk": "Contrast {ratio}:1",
+                "contrastLow": "Contrast {ratio}:1. Needs at least {min}:1 against the text, so pick a lighter colour.",
+                "backgroundContrastInvalid": "This colour is too dark for the app's text. Pick a lighter one.",
+                "backgroundColorInvalid": "Use a colour like #BFE6E2.",
+                "eventTypes": "Event types",
+                "eventTypesInvalid": "Pick at least one event type.",
+                "illustration": "Illustration",
+                "illustrationHint": "PNG or WebP, up to 5 MB.",
+                "illustrationChoose": "Choose file",
+                "illustrationPending": "Uploads when you save.",
+                "illustrationType": "Use a PNG or WebP image.",
+                "illustrationSize": "Use an image up to 5 MB.",
+                "availability": "Availability",
+                "offered": "Offered",
+                "archived": "Archived",
+                "offeredHint": "Hosts of the selected event types can pick it.",
+                "archivedHint": "Events already using it keep it. No one new can pick it.",
+                "notFound": "This theme no longer exists."
+            },
+            "preview": {
+                "label": "Preview",
+                "sampleTitle": "Event title"
+            }
+        },
         "paidServices": {
             "title": "Paid services catalog",
             "subtitle": "Manage one-time add-ons and storage packs. Archive in-use services by making them non-public and non-assignable.",
@@ -4175,6 +4246,10 @@
         "member_roles": {
             "name": "Member roles",
             "description": "Guests pick a role, like best man, shown next to their name."
+        },
+        "theme": {
+            "name": "Theme",
+            "description": "An illustration and background colour for the event."
         }
     },
     "Durations": {
@@ -4437,6 +4512,8 @@
         "storyExpiryOutOfRange": "A story can last up to 24 hours.",
         "storyLiveLimitReached": "You have reached the story limit. Older stories expire after 24 hours, or delete one to post another.",
         "storyMediaAlreadyLive": "This photo or video is already in one of your stories.",
+        "themePresetNotSelectable": "This theme is no longer available — pick another.",
+        "eventEnded": "This event has ended.",
         "orderNotPending": "This order is no longer pending.",
         "webhookAlreadyProcessed": "This webhook has already been processed.",
         "webhookNotReplayable": "This webhook cannot be replayed.",

@@ -12,7 +12,7 @@ export function FeedPageSkeleton() {
         <div className="mx-auto flex w-full flex-col lg:max-w-[42rem]" role="status" aria-label={t('loading')}>
             {/* Keeps the compose button away until the feed is ready */}
             <HideComposerFab />
-            <div className="sticky top-0 z-20 flex w-full items-center justify-between gap-4 bg-background/90 px-4 py-5 backdrop-blur-sm">
+            <div className="sticky top-0 z-20 flex w-full items-center justify-between gap-4 bg-event/90 px-4 py-5 backdrop-blur-sm">
                 <Skeleton className="h-8 w-[8.5rem] rounded-full sm:h-12 sm:w-44" />
                 <Skeleton className="h-8 w-24 rounded-full" />
             </div>
@@ -26,7 +26,7 @@ export function FeedPageSkeleton() {
                 <Skeleton className="h-3 w-36 rounded-full" />
             </section>
 
-            <section className="mt-3 border-b border-border bg-background/90 px-4 py-4 backdrop-blur-sm">
+            <section className="mt-3 border-b border-border bg-event/90 px-4 py-4 backdrop-blur-sm">
                 <div className="flex items-start gap-4 overflow-hidden">
                     {Array.from({ length: 6 }).map((_, index) => (
                         <StorySkeleton key={index} />

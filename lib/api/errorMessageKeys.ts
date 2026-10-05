@@ -144,6 +144,8 @@ export type ApiErrorMessageKey =
     | 'storyExpiryOutOfRange'
     | 'storyLiveLimitReached'
     | 'storyMediaAlreadyLive'
+    | 'themePresetNotSelectable'
+    | 'eventEnded'
     | 'eventScheduleLocked'
     | 'paidServiceCurrencyMismatch'
     | 'paidServiceInUse'
@@ -333,6 +335,8 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.STORY_EXPIRY_OUT_OF_RANGE]: 'storyExpiryOutOfRange',
     [ERROR_CODES.STORY_LIVE_LIMIT_REACHED]: 'storyLiveLimitReached',
     [ERROR_CODES.STORY_MEDIA_ALREADY_LIVE]: 'storyMediaAlreadyLive',
+    [ERROR_CODES.THEME_PRESET_NOT_SELECTABLE]: 'themePresetNotSelectable',
+    [ERROR_CODES.EVENT_ENDED]: 'eventEnded',
     [ERROR_CODES.PAID_SERVICE_CURRENCY_MISMATCH]: 'paidServiceCurrencyMismatch',
     [ERROR_CODES.PAID_SERVICE_IN_USE]: 'paidServiceInUse',
     [ERROR_CODES.PAID_SERVICE_NOT_ON_PLAN]: 'paidServiceNotOnPlan',

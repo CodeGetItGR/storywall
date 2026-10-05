@@ -2,6 +2,7 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
 import { eventInvitationKeys } from '@/hooks/useEventInvitations';
 import { eventMemberKeys } from '@/hooks/useEventMembers';
+import { eventThemeKeys } from '@/hooks/useEventTheme';
 import { giftKeys } from '@/hooks/useGift';
 import { rsvpKeys } from '@/hooks/useRsvps';
 import { usageKeys } from '@/hooks/useUsage';
@@ -16,9 +17,11 @@ import type {
     GiftHandoverResponseDto,
     RsvpReportDto,
     RsvpResponseDto,
+    ThemePresetDto,
 } from '@/lib/api/types';
 import { resolveServerEventContext, resolveServerEventDetail } from '@/lib/auth/serverEventContext';
 import { isEventDeleted, isModuleAvailable } from '@/lib/eventLifecycle';
+import { canPickTheme } from '@/lib/eventTheme';
 import { makeQueryClient } from '@/lib/queryClient';
 import { resolveRsvpSubTab } from '@/lib/rsvpReport';
 
@@ -53,7 +56,11 @@ export default async function Page({ params, searchParams }: PageProps) {
             // Usage and the guest lists load together, and each seeds on its own:
             // a failed guest list must not discard usage, or the reverse.
             // The gift decides whether the "Given as a gift" section shows (null: not a gift).
-            const [usage, gift, lists] = await Promise.all([
+            // The theme picker, only where ThemePicker would ask for it: a draft's overview
+            // (every ?tab= resolves to it) or an active event's settings tab. An ended event
+            // answers 5144; the catch leaves that to the client, which renders nothing.
+            const wantsThemePresets = canPickTheme(event) && (isDraft || tab === 'settings');
+            const [usage, gift, lists, themePresets] = await Promise.all([
                 serverGet<EventUsageResponseDto>(endpoints.events.usage(eventId), accessToken).catch(() => null),
                 isDraft ? undefined : serverGetOrNull<GiftHandoverResponseDto>(endpoints.events.gift(eventId), accessToken).catch(() => undefined),
                 isDraft
@@ -68,9 +75,11 @@ export default async function Page({ params, searchParams }: PageProps) {
                                 serverGet<RsvpReportDto>(endpoints.events.rsvpReport(eventId, 'STATISTICS'), accessToken).catch(() => null)
                               : null,
                       ]).catch(() => null),
+                wantsThemePresets ? serverGet<ThemePresetDto[]>(endpoints.events.themePresets(eventId), accessToken).catch(() => null) : null,
             ]);
 
             if (usage) queryClient.setQueryData(usageKeys.event(eventId), usage);
+            if (themePresets) queryClient.setQueryData(eventThemeKeys.presets(eventId), themePresets);
             if (gift !== undefined) queryClient.setQueryData(giftKeys.event(eventId), gift);
             if (lists) {
                 const [members, rsvps, invitations, rsvpReport] = lists;

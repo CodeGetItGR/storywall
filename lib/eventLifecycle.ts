@@ -54,3 +54,13 @@ export function readableModuleKeys(
 export function isModuleAvailable(modules: EventModuleResponseDto[] | null | undefined, moduleKey: ModuleKey): boolean {
     return modules?.some((module) => module.moduleKey === moduleKey && module.isAvailable) ?? false;
 }
+
+// The event's schedule end is in the past. Some endpoints (the theme presets and
+// the theme PUT) refuse an ended event with 5144, so callers use this to not ask.
+// No end, or one that doesn't parse, never counts as ended.
+export function isEventEnded(event: { schedule: { endAt: string | null } }, now: number = Date.now()): boolean {
+    const endAt = event.schedule.endAt;
+    if (!endAt) return false;
+    const end = Date.parse(endAt);
+    return Number.isFinite(end) && end < now;
+}

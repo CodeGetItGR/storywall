@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { EventModuleResponseDto } from '@/lib/api/types';
-import { isDeletedEventRouteAllowed, isEventDeleted, isModuleAvailable, readableModuleKeys } from '@/lib/eventLifecycle';
+import { isDeletedEventRouteAllowed, isEventDeleted, isEventEnded, isModuleAvailable, readableModuleKeys } from '@/lib/eventLifecycle';
 
 describe('isEventDeleted', () => {
     it('is true only when deletedAt is set', () => {
@@ -68,5 +68,19 @@ describe('isModuleAvailable', () => {
         expect(isModuleAvailable(modules, 'rsvp')).toBe(false);
         expect(isModuleAvailable(modules, 'wishbook')).toBe(false);
         expect(isModuleAvailable(undefined, 'rsvp')).toBe(false);
+    });
+});
+
+describe('isEventEnded', () => {
+    const now = Date.parse('2026-10-05T12:00:00Z');
+
+    it('is true once the schedule end is in the past', () => {
+        expect(isEventEnded({ schedule: { endAt: '2026-10-05T11:59:59Z' } }, now)).toBe(true);
+        expect(isEventEnded({ schedule: { endAt: '2026-10-05T12:00:01Z' } }, now)).toBe(false);
+    });
+
+    it('is false without an end, or an unreadable one', () => {
+        expect(isEventEnded({ schedule: { endAt: null } }, now)).toBe(false);
+        expect(isEventEnded({ schedule: { endAt: 'nope' } }, now)).toBe(false);
     });
 });
