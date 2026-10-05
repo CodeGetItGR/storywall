@@ -21,12 +21,40 @@ describe('rebaseSnapshot', () => {
         expect(rebased.posts[0].createdAt).toBe('2026-04-20T10:00:00.000Z');
     });
 
-    it('shifts nested timestamps (comments, embedded media, event schedule, cover media)', () => {
+    it('shifts nested timestamps (comments, embedded media, cover media)', () => {
         expect(rebased.comments[0].createdAt).toBe('2026-04-20T11:00:00.000Z');
         expect(rebased.posts[0].media[0].createdAt).toBe('2026-04-20T10:00:00.000Z');
-        expect(rebased.event.schedule.startAt).toBe('2026-05-04T15:00:00.000Z');
         expect(rebased.event.coverMedia?.createdAt).toBe('2026-04-20T10:00:00.000Z');
         expect(rebased.members[0].joinedAt).toBe('2026-04-11T09:00:00.000Z');
+    });
+
+    it('moves the schedule and sessions by whole days, keeping their clock time', () => {
+        const withSessions = buildFixtureSnapshot();
+        withSessions.event.sessions = [
+            { ...({} as NonNullable<typeof withSessions.event.sessions>[number]), id: 's1', startAt: '2026-01-24T15:30:00Z', endAt: '2026-01-24T16:30:00Z' },
+        ];
+        // 100 days, 7 hours and 23 minutes after snapshotAt.
+        const later = new Date('2026-04-20T19:23:00.000Z');
+        const result = rebaseSnapshot(withSessions, later);
+
+        function clock(iso: string | null) {
+            const date = new Date(iso!);
+            return [date.getHours(), date.getMinutes()];
+        }
+        function dayGap(from: string, to: string) {
+            const a = new Date(from);
+            const b = new Date(to);
+            return (Date.UTC(b.getFullYear(), b.getMonth(), b.getDate()) - Date.UTC(a.getFullYear(), a.getMonth(), a.getDate())) / 86_400_000;
+        }
+
+        const original = withSessions.event;
+        const session = result.event.sessions![0];
+        expect(clock(result.event.schedule.startAt)).toEqual(clock(original.schedule.startAt));
+        expect(clock(result.event.schedule.rsvpDeadline)).toEqual(clock(original.schedule.rsvpDeadline));
+        expect(clock(session.startAt)).toEqual(clock(original.sessions![0].startAt));
+        expect(clock(session.endAt)).toEqual(clock(original.sessions![0].endAt));
+        expect(dayGap(withSessions.snapshotAt, later.toISOString())).toBe(dayGap(original.sessions![0].startAt!, session.startAt!));
+        expect(result.event.schedule.endAt).toBeNull();
     });
 
     it('makes a story that was live at snapshot time live now', () => {
