@@ -33,6 +33,10 @@ interface PublishJobCommon {
     id: string;
     status: PublishJobStatus;
     error?: string;
+    // A busy server asked for a wait; the upload is resent after it.
+    busy?: boolean;
+    // Why it failed, when that's more useful than the generic failure line.
+    failureReason?: string;
     createdAt: number;
 }
 

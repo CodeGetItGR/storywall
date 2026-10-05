@@ -64,7 +64,9 @@ describe('useApiErrorMessage', () => {
 
     it.each([
         [5117, 'That address already has a co-host invitation waiting. Revoke it to send a new one.'],
-        [5119, 'Someone else is changing this right now. Try again in a moment.'],
+        [5119, 'The server is busy right now. Try again in a moment.'],
+        [5128, 'This was just changed somewhere else. Refresh and try again.'],
+        [5141, 'You have reached the story limit. Older stories expire after 24 hours, or delete one to post another.'],
     ])('maps %i to its own copy', (errorCode, message) => {
         expect(describeIn('en', new ApiError(409, { errorCode }))).toBe(message);
     });

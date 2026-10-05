@@ -7,6 +7,7 @@ import { useAppConfig } from '@/hooks/useAppConfig';
 import { type StoryComposerController, useStoryComposerController } from '@/hooks/useStoryComposerController';
 import type { EventModuleResponseDto } from '@/lib/api/types';
 import { isEventWritable } from '@/lib/eventLifecycle';
+import { getUploadLimits } from '@/lib/uploadLimits';
 import { initialsFromName } from '@/lib/utils';
 import type { ComposerContextValue } from '@/providers/composer/ComposerContext';
 import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
@@ -128,9 +129,9 @@ export function useComposerController(): ComposerController {
     const maxBatchUploadFiles = appConfig?.media.maxBatchUploadFiles ?? 10;
     const maxImages = Math.min(maxMediaPerPost, maxBatchUploadFiles);
     const maxCaptionLength = appConfig?.contentLimits.postContentMaxLength ?? 500;
-    const maxImageBytes = appConfig?.media.maxImageBytes ?? 25 * 1024 * 1024;
-    const maxVideoBytes = appConfig?.media.maxVideoBytes ?? 200 * 1024 * 1024;
-    const maxRequestSizeBytes = appConfig?.media.maxRequestSizeBytes ?? 260 * 1024 * 1024;
+    // The files are sent in as many requests as the request size cap needs, so
+    // only each file's own cap limits what can be added.
+    const { imageBytes: maxImageBytes, videoBytes: maxVideoBytes } = getUploadLimits(appConfig?.media);
     const canSubmit = (caption.trim().length > 0 || images.length > 0) && caption.length <= maxCaptionLength && canComposePost;
 
     const openPostComposer = useCallback(() => {
@@ -177,9 +178,6 @@ export function useComposerController(): ComposerController {
         const room = maxImages - images.length;
         const accepted: File[] = [];
         const oversizeNames: string[] = [];
-        const existingBytes = images.reduce((sum, img) => sum + img.file.size, 0);
-        let acceptedBytes = 0;
-        let requestTooLarge = false;
 
         for (const file of incoming) {
             if (accepted.length >= room) break;
@@ -188,19 +186,18 @@ export function useComposerController(): ComposerController {
                 oversizeNames.push(file.name);
                 continue;
             }
-            if (existingBytes + acceptedBytes + file.size > maxRequestSizeBytes) {
-                requestTooLarge = true;
-                continue;
-            }
             accepted.push(file);
-            acceptedBytes += file.size;
         }
 
         if (incoming.length > room) setCountError(t('maxImagesReached', { count: maxImages }));
         if (oversizeNames.length > 0) {
-            setSizeError(t('fileTooLarge', { filename: oversizeNames.join(', ') }));
-        } else if (requestTooLarge) {
-            setSizeError(t('requestTooLarge', { size: formatBytes(maxRequestSizeBytes) }));
+            setSizeError(
+                t('fileTooLarge', {
+                    filename: oversizeNames.join(', '),
+                    imageSize: formatBytes(maxImageBytes),
+                    videoSize: formatBytes(maxVideoBytes),
+                }),
+            );
         }
 
         if (accepted.length > 0) {

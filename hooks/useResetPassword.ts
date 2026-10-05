@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { api } from '@/lib/api/client';
@@ -21,6 +21,9 @@ export function useResetPassword() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
+    // The link is single-use, so a second submit after the first went through is
+    // answered "invalid link". One request at a time, and none after success.
+    const inFlightRef = useRef(false);
 
     const updatePassword = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         setPassword(event.target.value);
@@ -37,7 +40,7 @@ export function useResetPassword() {
     const submit = useCallback(
         async (event: React.SubmitEvent<HTMLFormElement>) => {
             event.preventDefault();
-            if (!token) return;
+            if (!token || inFlightRef.current) return;
 
             if (password !== confirmation) {
                 setError(t('passwordMismatch'));
@@ -46,14 +49,16 @@ export function useResetPassword() {
 
             setError(null);
             setIsSubmitting(true);
+            inFlightRef.current = true;
 
             try {
                 await api.post<void>(endpoints.auth.resetPassword, { token, newPassword: password });
+                // Stays submitting (button disabled) until the login page replaces this one.
                 router.replace(routes.auth.login({ passwordChanged: '1' }));
             } catch (requestError) {
-                setError(getErrorCode(requestError) === ERROR_CODES.VALIDATION_FAILED ? t('invalidLink') : toErrorMessage(requestError));
-            } finally {
+                inFlightRef.current = false;
                 setIsSubmitting(false);
+                setError(getErrorCode(requestError) === ERROR_CODES.VALIDATION_FAILED ? t('invalidLink') : toErrorMessage(requestError));
             }
         },
         [confirmation, password, router, t, toErrorMessage, token],

@@ -71,6 +71,7 @@ export default function SettingsTab({
 
     const [coverPreview, setCoverPreview] = useState<string | null>(event.coverMedia?.mediaUrl ?? null);
     const [pendingCoverMediaId, setPendingCoverMediaId] = useState<string | null>(null);
+    const [isCoverBusy, setIsCoverBusy] = useState(false);
     const [savedValues, setSavedValues] = useState(initial);
     const [saved, setSaved] = useState(false);
     const fileRef = useRef<HTMLInputElement>(null);
@@ -133,7 +134,7 @@ export default function SettingsTab({
         setCoverPreview(nextPreviewUrl);
         setSaved(false);
         uploadMedia.mutate(
-            { eventId: event.id, file, context: 'COVER' },
+            { eventId: event.id, file, context: 'COVER', onBusy: setIsCoverBusy },
             {
                 onSuccess: (media) => setPendingCoverMediaId(media.id),
                 // A refused photo (too large, not an image) must not stay on screen
@@ -295,6 +296,7 @@ export default function SettingsTab({
                             disabled={disabled || !canUploadCover}
                             aria-label={t('settings.coverPhoto.upload')}
                         />
+                        {isCoverBusy && <p className="mt-1.5 text-xs text-ink-muted">{t('settings.coverPhoto.uploadBusy')}</p>}
                         {uploadMedia.isError && <p className="mt-1.5 text-xs text-rose-500">{toErrorMessage(uploadMedia.error)}</p>}
                     </TargetedSection>
                 </div>

@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
+import { ignoreConcurrentModification } from '@/lib/api/errors';
 import type { PostReactionsResponseDto, ReactionRequestDto, ReactionResponseDto } from '@/lib/api/types';
 import { LIVE_CONTENT_STALE_TIME } from '@/lib/queryClient';
 
@@ -40,12 +41,14 @@ export function useCreateReaction() {
     });
 }
 
-// DELETE /api/reactions/{id} — reactor or HOST.
+// DELETE /api/reactions/{id} — reactor or HOST. A 5128 (the same reaction
+// removed or changed by another request at that moment) counts as done; the
+// counts are refetched either way.
 export function useDeleteReaction(postId: string) {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (id: string) => api.del<void>(endpoints.reactions.byId(id)),
+        mutationFn: (id: string) => ignoreConcurrentModification(api.del<void>(endpoints.reactions.byId(id))),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: reactionKeys.list(postId) });
         },

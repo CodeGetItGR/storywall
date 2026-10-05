@@ -15,6 +15,7 @@ vi.mock('@/hooks/useFilePreviews', () => ({
 }));
 vi.mock('@/components/common/ProtectedImage', () => ({ ProtectedImage: ({ src }: { src: string }) => <span data-preview={src} /> }));
 vi.mock('@/hooks/useQrMediaUpload', () => ({ useUploadQrMediaBatch: () => ({ isPending: false, mutateAsync }) }));
+vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: () => ({ data: undefined }) }));
 vi.mock('@/hooks/useUploadAccept', () => ({ useUploadAccept: () => ({ media: 'image/*,video/*' }) }));
 vi.mock('@tanstack/react-query', () => ({ useQueryClient: () => ({ invalidateQueries: vi.fn() }) }));
 vi.mock('@/hooks/useTermsVersion', () => ({ termsVersionQueryKey: ['legal', 'terms'], useTermsVersion: () => ({ data: '2026-10-04' }) }));
@@ -92,5 +93,18 @@ describe('AnonymousQrMediaUploadForm per-file failures', () => {
 
         expect(await screen.findByRole('alert')).toHaveTextContent('anonymousUpload.someFailed:{"count":2}');
         expect(container.querySelectorAll('[data-preview]')).toHaveLength(2);
+    });
+
+    it('leaves out a file over its size cap before anything is sent', () => {
+        const { container } = render(<AnonymousQrMediaUploadForm token="t" />);
+        const huge = file('huge.jpg');
+        Object.defineProperty(huge, 'size', { value: 1024 * 1024 * 1024 });
+
+        fireEvent.change(container.querySelector('input[type="file"]')!, { target: { files: [huge, file('ok.jpg')] } });
+
+        expect(screen.getByRole('alert')).toHaveTextContent('anonymousUpload.filesTooLarge');
+        expect(container.querySelectorAll('[data-preview]')).toHaveLength(1);
+        expect(container.querySelector('[data-preview]')).toHaveAttribute('data-preview', 'blob:ok.jpg');
+        expect(mutateAsync).not.toHaveBeenCalled();
     });
 });

@@ -12,6 +12,8 @@ interface GallerySelectionActionsProps {
     selectedCount: number;
     mediaCount: number;
     canDownloadSelected: boolean;
+    /** Why the download is disabled, when the reason isn't obvious. */
+    downloadHint?: string | null;
     onSelectAll: () => void;
     onDownloadSelected: () => void;
     onExitSelection: () => void;
@@ -21,6 +23,7 @@ export function GallerySelectionActions({
     selectedCount,
     mediaCount,
     canDownloadSelected,
+    downloadHint,
     onSelectAll,
     onDownloadSelected,
     onExitSelection,
@@ -31,7 +34,7 @@ export function GallerySelectionActions({
     const renderActions = (floating: boolean) => (
         <div
             className={cn(
-                'mx-auto flex w-full max-w-3xl items-center justify-between gap-2 rounded-2xl',
+                'mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-2 rounded-2xl',
                 floating && 'border border-border/70 bg-background/96 px-3 py-2.5 shadow-[0_10px_28px_rgba(36,31,26,0.12)] backdrop-blur',
             )}
         >
@@ -66,6 +69,7 @@ export function GallerySelectionActions({
             >
                 {t('selectAll')}
             </Button>
+            {downloadHint && <p role="status" className="w-full text-center text-xs text-ink-muted">{downloadHint}</p>}
         </div>
     );
 

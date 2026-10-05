@@ -186,6 +186,9 @@ export const ERROR_CODES = {
     CO_HOST_INVITATIONS_PENDING_LIMIT: 5118,
     RESOURCE_BUSY: 5119,
     WITHDRAWAL_ORDER_DISPUTED: 5120,
+    CONCURRENT_MODIFICATION: 5128,
+    STORY_LIVE_LIMIT_REACHED: 5141,
+    STORY_MEDIA_ALREADY_LIVE: 5142,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the
@@ -200,6 +203,14 @@ export function getErrorCode(error: unknown): number | string | undefined {
         return error.problem?.errorCode;
     }
     return undefined;
+}
+
+// The backend's ErrorCode name for an error's numeric code (the keys above are
+// those names), as batch responses carry it in `failed[].errorCode`.
+export function getErrorCodeName(error: unknown): string | undefined {
+    const code = getErrorCode(error);
+    if (typeof code !== 'number') return undefined;
+    return (Object.keys(ERROR_CODES) as (keyof typeof ERROR_CODES)[]).find((name) => ERROR_CODES[name] === code);
 }
 
 export function getFieldErrors(error: unknown): Record<string, string> | undefined {
@@ -292,6 +303,29 @@ export function getRetryAfterSeconds(error: unknown): number | undefined {
     if (error instanceof ApiError && error.status === 429) {
         return error.retryAfterSeconds ?? undefined;
     }
+    return undefined;
+}
+
+// Another request changed or removed the same row at the same moment (5128),
+// e.g. the second tap of a double-tapped delete.
+export function isConcurrentModificationError(error: unknown): boolean {
+    return getErrorCode(error) === ERROR_CODES.CONCURRENT_MODIFICATION;
+}
+
+// For a delete: another request removed (or changed) the same row at the same
+// moment, so there is nothing left for this one to do. Callers refetch after.
+export async function ignoreConcurrentModification(request: Promise<void>): Promise<void> {
+    try {
+        await request;
+    } catch (error) {
+        if (!isConcurrentModificationError(error)) throw error;
+    }
+}
+
+// The server was too busy to take the request (503) and said when to try again.
+// Seconds, or undefined when this isn't one.
+export function getBusyRetryAfterSeconds(error: unknown): number | undefined {
+    if (error instanceof ApiError && error.status === 503) return error.retryAfterSeconds;
     return undefined;
 }
 

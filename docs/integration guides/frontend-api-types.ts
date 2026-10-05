@@ -519,6 +519,66 @@ interface EventDeletionRequestDto {
   otpCode: string;   // exactly 6 digits — anything else is a 400 before the code is even checked
 }
 
+// ---------------------------------------------------------------------------
+// Self-service data export & account deletion (2026-10-05, gdpr-self-service-fe-integration.md)
+// ---------------------------------------------------------------------------
+
+// POST /api/me/deletion-requests. Request the code first: POST /api/me/deletion-requests/otp.
+interface AccountDeletionConfirmRequestDto {
+  otpCode: string;   // exactly 6 digits
+}
+
+// `details` of 409 ACCOUNT_DELETE_HAS_HOSTED_EVENTS (5124).
+interface AccountDeletionBlockedDetails {
+  events: { eventId: string; title: string }[];
+}
+
+// GET /api/me/data-export — downloaded as a file, not rendered. Enum-valued fields are their names.
+interface UserDataExportDto {
+  exportedAt: string;
+  profile: {
+    id: string; email: string; firstName: string | null; lastName: string | null; locale: string;
+    authProvider: string; linkedSignInProviders: string[]; platformRole: string; status: string;
+    emailVerifiedAt: string | null; adultConfirmedAt: string | null; createdAt: string; lastActiveAt: string | null;
+  };
+  businessProfile: {
+    legalName: string; countryCode: string; vatNumber: string; city: string | null; postalCode: string | null;
+    viesStatus: string; viesName: string | null; viesAddress: string | null;
+  } | null;
+  termsAcceptances: { version: string; acceptedAt: string }[];
+  guidelinesAcceptances: { version: string; acceptedAt: string }[];
+  newsletter: NewsletterSubscriptionExportDto | null;
+  sessions: { createdAt: string; expiresAt: string; revokedAt: string | null; ipAddress: string | null; userAgent: string | null }[];
+  notifications: { type: string; title: string | null; body: string | null; titleKey: string | null; bodyKey: string | null; createdAt: string; readAt: string | null }[];
+  orders: {
+    orderId: string; eventId: string | null; eventTitle: string | null; kind: string; status: string;
+    amountMinor: number | null; addonAmountMinor: number | null; taxAmountMinor: number | null; currency: string;
+    buyerType: string | null; receiptNumber: string | null; createdAt: string; paidAt: string | null;
+    refundedAt: string | null; refundedAmountMinor: number | null;
+  }[];
+  withdrawals: { withdrawalId: string; orderId: string | null; scope: string; status: string; reason: string | null; totalRefundMinor: number | null; createdAt: string; decidedAt: string | null }[];
+  discountRedemptions: { redemptionId: string; code: string; discountPercent: number; status: string; eventId: string | null; redeemedAt: string }[];
+  eventMemberships: {
+    eventId: string; eventTitle: string; role: string; displayName: string; nickname: string | null;
+    relationshipRole: string | null; customRelationshipRole: string | null; joinedAt: string | null; removedAt: string | null;
+    posts: { postId: string; type: string; content: string | null; createdAt: string; deletedAt: string | null }[];
+    comments: { commentId: string; postId: string; parentCommentId: string | null; content: string; createdAt: string; deletedAt: string | null }[];
+    reactions: { postId: string; reactionType: string; createdAt: string }[];
+    stories: { storyId: string; mediaId: string | null; caption: string | null; songUrl: string | null; createdAt: string; expiresAt: string; deletedAt: string | null }[];
+    storiesViewed: string[];
+    wishbookEntries: { entryId: string; guestName: string | null; message: string; createdAt: string; deletedAt: string | null }[];
+    playlistSuggestions: { suggestionId: string; title: string; artist: string | null; youtubeUrl: string | null; spotifyUrl: string | null; comment: string | null; createdAt: string; deletedAt: string | null }[];
+    playlistVotes: { suggestionId: string; voteType: string; createdAt: string }[];
+    rsvp: {
+      attendanceStatus: string; phone: string | null; adultCount: number | null; childCount: number | null;
+      notes: string | null; submittedAt: string | null;
+      sessions: { sessionId: string; sessionTitle: string; attending: boolean | null }[];
+    } | null;
+    media: { mediaId: string; mediaType: string; mimeType: string; originalFilename: string | null; fileSize: number | null; width: number | null; height: number | null; durationSeconds: number | null; createdAt: string; deletedAt: string | null }[];
+    qrLinksCreated: { qrLinkId: string; targetType: string; label: string | null; createdAt: string; revokedAt: string | null }[];
+  }[];
+}
+
 // --- GET /api/events/{id} detail response (grouped/enriched — added 2026-07-30) ---
 
 interface EventScheduleDto {
@@ -711,7 +771,12 @@ interface EventSessionRequestDto {
   displayOrder: number;   // required
   isSecondary?: boolean;  // NEW — see event-session-secondary-flag-fe-integration.md. Defaults to false; at most one per event.
   rsvpEnabled?: boolean;  // NEW 2026-09-24 — guests may answer per session only when true. Defaults to false. See plan-owned-modules-fe-integration.md §7.
+  isMain?: boolean;       // NEW 2026-10-04 — restores a missing main session; startAt/endAt/locationName/mapsUrl are taken from the event, not this body.
+                          // 409 EVENT_SESSION_MAIN_ALREADY_EXISTS (5123) if the event has one; 400 VALIDATION_FAILED with isSecondary: true.
 }
+// DELETE /api/event-sessions/{id}: 409 EVENT_SESSION_MAIN_NOT_DELETABLE (5122, added 2026-10-04) for the main session.
+export const EVENT_SESSION_MAIN_NOT_DELETABLE = 5122; // 409
+export const EVENT_SESSION_MAIN_ALREADY_EXISTS = 5123; // 409
 interface EventSessionResponseDto {
   id: string; eventId: string; title: string; description: string | null;
   startAt: string | null; endAt: string | null; locationName: string | null; mapsUrl: string | null;
@@ -723,6 +788,7 @@ interface EventSessionResponseDto {
 }
 interface EventSessionPatchDto { // every field optional
   title?: string; description?: string; startAt?: string; endAt?: string;
+  clearEndAt?: boolean; // NEW 2026-10-04 — true removes endAt (null endAt = unchanged); wins over endAt; 409 5055 EVENT_SESSION_MAIN_DATES_READ_ONLY on the main session
   locationName?: string; mapsUrl?: string; displayOrder?: number;
   isSecondary?: boolean; // NEW — see event-session-secondary-flag-fe-integration.md
   rsvpEnabled?: boolean; // NEW 2026-09-24
@@ -825,26 +891,36 @@ interface RsvpReportRowDto {
 interface MediaResponseDto {
   id: string; eventId: string; uploaderMemberId: string | null;
   anonymousUploaderName: string | null; // free-text attribution an anonymous scanner typed in, max 100; null for every member upload
-  storageKey: string;
-  mediaUrl: string; // presigned, time-limited R2 GET URL — re-fetch on expiry, don't cache long-term
+  storageKey: string | null; // null only on an embedded coverMedia (2026-10-04, see below)
+  // Presigned, time-limited R2 GET URL — re-fetch on expiry, don't cache long-term. Since 2026-10-04
+  // null for a video that isn't READY (PROCESSING or FAILED): there is no playable file to hand out.
+  mediaUrl: string | null;
   status: 'PROCESSING' | 'READY' | 'FAILED'; // added 2026-08-30 — see § Async video processing
   thumbnailUrl: string | null; // added 2026-08-30 — presigned poster-frame URL; null for images and non-READY videos
-  originalFilename: string; mimeType: string; mediaType: string; // mediaType free text: IMAGE | VIDEO | AUDIO | DOCUMENT by convention
+  originalFilename: string | null; // null only on an embedded coverMedia
+  mimeType: string; mediaType: string; // mediaType free text: IMAGE | VIDEO | AUDIO | DOCUMENT by convention
   fileSize: number; width: number | null; height: number | null; durationSeconds: number | null;
   metadata: Record<string, unknown>;
   createdAt: string; deletedAt: string | null;
 }
+// An embedded `coverMedia` (EventResponseDto, the invitation preview, the QR landing, the gift-claim
+// preview) is for drawing the cover only, since 2026-10-04: uploaderMemberId, anonymousUploaderName,
+// originalFilename and storageKey are null and metadata is {}. Three of those responses are
+// unauthenticated, read by whoever holds a forwarded link.
 // GET /api/events/{eventId}/media now returns Page<MediaResponseDto>, not MediaResponseDto[].
 // Default 30/page, max 100 (?page=&size=), sorted createdAt desc then id desc (newest first).
 //
 // `status` (added 2026-08-30): images are always 'READY' immediately. A video is 'PROCESSING'
 // on the very first response after upload — thumbnail extraction and re-encoding happen
-// asynchronously — then flips to 'READY' (both mediaUrl and thumbnailUrl now playable/viewable)
+// asynchronously — then flips to 'READY' (both mediaUrl and thumbnailUrl now playable/viewable;
+// both are null until then, mediaUrl since 2026-10-04)
 // or 'FAILED' (permanently, if terminal — e.g. a story video over the duration cap; transient
 // failures are retried automatically server-side, invisible to the FE). Since 2026-10-04 a gallery
 // or post video is capped too, per event type (PlatformEventTypeResponseDto.videoMaxDurationSeconds,
 // 300 s by default): longer is a terminal 'FAILED' with metadata.processingError
-// "VIDEO_DURATION_EXCEEDED". A transcode that outruns its time limit is terminal "TRANSCODE_TIMEOUT". Poll
+// "VIDEO_DURATION_EXCEEDED". A transcode that outruns its time limit is terminal "TRANSCODE_TIMEOUT".
+// Since 2026-10-05 a source above 8K (a side over 8192 px, or more than 7680x4320) is terminal
+// "VIDEO_RESOLUTION_EXCEEDED". Poll
 // GET /api/medias/{id} (or re-fetch the gallery page) until status leaves 'PROCESSING'. See
 // [`video-processing-fe-integration.md`](fe-guides/video-processing-fe-integration.md).
 
@@ -933,7 +1009,9 @@ interface PostRequestDto {
 /** PATCH /api/posts/{id} — author or host. Omitted fields are left unchanged; there is no way to
  *  change a post's media or type after creation. */
 interface PostPatchDto {
-  content?: string;   // max TextLimits.POST_CONTENT_MAX — read the real bound off /api/config
+  content?: string;   // max TextLimits.POST_CONTENT_MAX — read the real bound off /api/config.
+                      // Changing it is author-only since 2026-10-05: 403/errorCode 4022 POST_EDIT_NOT_AUTHOR
+                      // for a host (except on a demo event). Sending the current text back is not a change.
   isPinned?: boolean; // changing it is host-only, author included: 403/errorCode 4007 POST_PIN_NOT_HOST.
                       // Sending the post's current value back is not a change and is allowed.
 }
@@ -1007,6 +1085,15 @@ interface CommentResponseDto {
 
 interface ReactionRequestDto { postId: string; memberId: string; reactionType: string; } // all required, reactionType max 20
 interface ReactionResponseDto { id: string; postId: string; memberId: string; reactionType: string; createdAt: string; }
+/** GET /api/posts/{postId}/reactions — event member. Since 2026-10-05 (was ReactionResponseDto[]):
+ *  counts and the caller's own reaction only, never who else reacted, hosts included. An admin
+ *  acting as a demo guest gets that guest's reaction. GET /api/reactions/{id} answers 404 for any
+ *  reaction but the caller's own. */
+interface PostReactionsResponseDto {
+  reactionCount: number;
+  reactionCounts: Record<string, number>; // by reaction type code; codes with no reactions omitted
+  myReaction: ReactionResponseDto | null; // the id DELETE /api/reactions/{id} needs
+}
 // POST /api/reactions is an upsert as of 2026-08-30: DB unique constraint on (postId, memberId) —
 // a member has exactly one reaction per post. Reacting again with the same type is a no-op
 // (returns the existing reaction, same id); a different type switches it in place (same id,
@@ -1179,6 +1266,8 @@ interface PlaylistSuggestionLeaderboardDto {
 
 interface PostMediaRequestDto { postId: string; mediaId: string; displayOrder: number; } // all required
 interface PostMediaResponseDto { id: string; postId: string; mediaId: string; displayOrder: number; createdAt: string; }
+// POST /api/post-medias and DELETE /api/post-medias/{id} are author-only since 2026-10-05 (were author
+// or host): 403/errorCode 4022 POST_EDIT_NOT_AUTHOR. On a demo event its (admin) hosts still may.
 // Capped at 10 media items per post (shared with PostRequestDto.mediaIds) — attaching an 11th
 // returns 409/errorCode 5007 POST_MEDIA_LIMIT_EXCEEDED. mediaId must belong to the post's event (404 otherwise).
 
@@ -1408,6 +1497,38 @@ export const MEMBER_ROLE_HOST_ONLY = 4018;          // 403, added 2026-10-03
 export const MEMBER_ROLE_FEATURED_MEMBER = 5113;    // 409
 export const MEMBER_ROLE_CAP_REACHED = 5114;        // 409
 export const MEMBER_ROLE_TEXT_CHANGED = 5115;       // 409, moderation decision only
+
+// ---- Launch-week limits (added 2026-10-04) ----
+// See docs/launch-week-fixes-2026-10-04.md.
+export const MEDIA_ARCHIVE_DOWNLOADS_IN_PROGRESS = 3045; // 429, two gallery downloads already streaming for this caller; Retry-After 60
+export const MEDIA_ARCHIVE_DAILY_LIMIT_REACHED = 3046;   // 429, the event's daily download allowance is spent; Retry-After = when it renews (can be hours)
+export const CO_HOST_INVITATION_ALREADY_PENDING = 5117;  // 409, that address has a co-host invitation waiting; revoke it to send another
+export const CO_HOST_INVITATIONS_PENDING_LIMIT = 5118;   // 409, the event has 10 co-host invitations waiting
+export const RESOURCE_BUSY = 5119;                       // 503 + Retry-After, a row lock wasn't granted in time, no DB connection came free (Retry-After 5), or a statement timed out; retry the same request after Retry-After
+export const WITHDRAWAL_ORDER_DISPUTED = 5120;           // 409, admin release refused while an order is under an open card dispute
+
+// ---- Concurrency review (added 2026-10-05) ----
+// See docs/concurrency-resource-review-2026-10-05.md (A9).
+export const CONCURRENT_MODIFICATION = 5128;             // 409, another request changed or removed the same row at the same moment (e.g. a double-tapped delete); refresh, then retry if still needed
+export const STORY_LIVE_LIMIT_REACHED = 5141;            // 409 on POST /api/stories, or per item in the batch's failed[]: 30 unexpired stories per member per event (demo events exempt); one expiring or deleted makes room (B8)
+export const STORY_MEDIA_ALREADY_LIVE = 5142;            // 409, or per item in the batch's failed[]: the caller already has a live story made from this mediaId, including earlier in the same batch (B8)
+// - 503 MEDIA_PROCESSING_BUSY (3017) + Retry-After on ANY upload, before the body is read: 96 uploads in flight (Retry-After 10), temp disk low (60), or the video strip lane / decode slots busy (5). The body carries retryAfterSeconds (Retry-After isn't CORS-exposed). Retry after the advised wait (B7, D1, D3). In a batch's failed[] the item has errorCode "MEDIA_PROCESSING_BUSY" and no wait; resend that file.
+// - Upload ceilings are 100 MB per request and per video (was 260 / 200): split batches by /api/config maxRequestSizeBytes (G1).
+// - GET stories returns at most the newest 300 (B8).
+// Existing codes that can now arrive in more places:
+// - 409 CHECKOUT_SESSION_UNRESOLVED (5031) from any checkout start, when the order changed while its
+//   payment page was being opened. Retrying is safe.
+// - 409 QR_SHARED_LINK_HOST_MANAGED (5068) from PATCH/DELETE /api/event-invitations/{id} on the
+//   invitation behind a join QR code (a printed code would otherwise resolve to nothing).
+// - 413 REQUEST_TOO_LARGE (3005) for any non-upload body over 1 MB; 415 MALFORMED_REQUEST_BODY (3002)
+//   for a multipart body sent anywhere but the upload routes.
+// - 400 VALIDATION_FAILED for brandingSettings or QR link metadata over 4096 bytes of JSON.
+// - 429 RATE_LIMITED (3010) from POST /api/auth/login after 10 failed sign-ins to one address in
+//   15 minutes (even with the right password), and from POST /api/auth/forgot-password past the
+//   hourly per-address limit. Neither depends on whether the account exists.
+// - RATE_LIMITED as a per-file `errorCode` in a batch upload's `failed[]`: a guest past 500 files or
+//   5 GB an hour, or an event's QR uploads past 2000 files or 20 GB an hour. Hosts aren't budgeted.
+//   The single-file upload routes answer 429 RATE_LIMITED for the same budgets.
 
 // ---- Public content notices (added 2026-10-01) ----
 // See fe-guides/content-notices-fe-integration.md. Every `| null` field is sent as null, never omitted.
@@ -1771,7 +1892,7 @@ interface AppContentLimitsDto {
   personNameMaxLength: number;                   // 100 — firstName/lastName: register, /me, invitations, co-host invitations
   emailMaxLength: number;                        // 255 — register, invitations, co-host invitations
   passwordMinLength: number;                     // 8 — register, change, reset
-  passwordMaxLength: number;                     // 100
+  passwordMaxLength: number;                     // 72 (was 100 until 2026-10-04); also at most 72 UTF-8 bytes, 400 VALIDATION_FAILED past either
   qrLabelMaxLength: number;                      // 100
   giftAccountHolderMaxLength: number;            // 140
   giftBankNameMaxLength: number;                 // 140
@@ -3320,6 +3441,18 @@ export interface SignupAcceptanceRequiredDetails {
 export const TERMS_VERSION_MISMATCH = 3043;
 export const SIGNUP_ACCEPTANCE_REQUIRED = 3044;
 export const TERMS_ACCEPTANCE_REQUIRED = 4020;
+
+// ---------------------------------------------------------------------------
+// QR-link upload acceptance (2026-10-05) — see fe-guides/legal-release-items-2026-10-05-fe-integration.md
+// POST /api/qr/{token}/media and /media/batch now take three more multipart fields, all required:
+//   ageConfirmed=true, acceptedTermsVersion, acceptedGuidelinesVersion (the versions in force, from
+//   GET /api/legal/documents/terms and GET /api/legal/community-guidelines). Missing: 400 3051.
+//   Stale: 3043 / 3037.
+// Post edits are author-only: 4022 POST_EDIT_NOT_AUTHOR (PATCH content, POST/DELETE /api/post-medias).
+// ---------------------------------------------------------------------------
+
+export const QR_UPLOAD_ACCEPTANCE_REQUIRED = 3051;
+export const POST_EDIT_NOT_AUTHOR = 4022;
 
 // ---------------------------------------------------------------------------
 // Collaborations, partner codes and house discount codes

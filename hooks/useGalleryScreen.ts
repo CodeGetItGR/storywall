@@ -16,10 +16,10 @@ import { endpoints } from '@/lib/api/endpoints';
 import { canReportContent } from '@/lib/contentPermissions';
 import { downloadBlob } from '@/lib/download';
 import { isEventDeleted, isEventWritable, readableModuleKeys } from '@/lib/eventLifecycle';
+import { formatBytes } from '@/lib/format';
+import { getUploadLimits } from '@/lib/uploadLimits';
 import { useActiveMember } from '@/providers/EventProvider';
 import { useMobileChromeActions } from '@/providers/MobileChromeProvider';
-
-const MAX_FILES_PER_BATCH = 10;
 
 export function useGalleryScreen() {
     const { activeEvent, eventId, isHost } = useEventRouteContext();
@@ -31,6 +31,7 @@ export function useGalleryScreen() {
     const { hideMobileTabBar, showMobileTabBar } = useMobileChromeActions();
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [uploadNotice, setUploadNotice] = useState<string | null>(null);
+    const [isUploadBusy, setIsUploadBusy] = useState(false);
     const [selectedMediaId, setSelectedMediaId] = useState<string | null>(null);
     const [reportMediaId, setReportMediaId] = useState<string | null>(null);
     const [originalError, setOriginalError] = useState<string | null>(null);
@@ -57,16 +58,14 @@ export function useGalleryScreen() {
     const canUpload = Boolean(eventId && activeMember && galleryEnabled && isEventWritable(activeEvent?.status) && !isDeleted);
     const selectedSize = useMemo(() => selectedFiles.reduce((sum, file) => sum + file.size, 0), [selectedFiles]);
     const maxArchiveSelectedItems = appConfig?.media.maxArchiveSelectedItems ?? 100;
-    const maxArchivePartBytes = appConfig?.media.maxArchivePartBytes ?? 2 * 1024 * 1024 * 1024;
+    const maxArchivePartBytes = appConfig?.media.maxArchivePartBytes ?? 300 * 1024 * 1024;
     const gallerySelection = useGallerySelection(media, 450, maxArchiveSelectedItems);
     const selectedArchiveSize = useMemo(
         () => gallerySelection.selectedItems.reduce((sum, item) => sum + item.fileSize, 0),
         [gallerySelection.selectedItems],
     );
 
-    const maxFiles = appConfig?.media.maxBatchUploadFiles ?? MAX_FILES_PER_BATCH;
-    const maxImageBytes = appConfig?.media.maxImageBytes ?? 25 * 1024 * 1024;
-    const maxVideoBytes = appConfig?.media.maxVideoBytes ?? 200 * 1024 * 1024;
+    const { filesPerRequest: maxFiles, imageBytes: maxImageBytes, videoBytes: maxVideoBytes } = getUploadLimits(appConfig?.media);
     // Every event keeps photo originals; videos are never re-encoded, so they have no separate original.
     const canDownloadOriginal = isHost && selectedMedia !== null && selectedMedia.mediaType !== 'VIDEO';
     const showArchiveDownload = isHost && galleryEnabled;
@@ -97,19 +96,25 @@ export function useGalleryScreen() {
         gallerySelection.selectedCount <= maxArchiveSelectedItems &&
         selectedArchiveSize <= maxArchivePartBytes &&
         !isDownloadingSelection;
+    // The selection downloads as one archive part, so it shares the part's size cap.
+    const selectionTooLargeHint =
+        gallerySelection.selectedCount > 0 && selectedArchiveSize > maxArchivePartBytes
+            ? t('selectionTooLarge', { size: formatBytes(maxArchivePartBytes) })
+            : null;
 
     const handleFilesChange = useCallback(
         (event: ChangeEvent<HTMLInputElement>) => {
             setUploadNotice(null);
-            const files = Array.from(event.target.files ?? [])
-                .filter((file) => {
-                    if (file.type.startsWith('image/')) return file.size <= maxImageBytes;
-                    if (file.type.startsWith('video/')) return file.size <= maxVideoBytes;
-                    return false;
-                })
+            const picked = Array.from(event.target.files ?? []);
+            const isTooLarge = (file: File) =>
+                (file.type.startsWith('image/') && file.size > maxImageBytes) || (file.type.startsWith('video/') && file.size > maxVideoBytes);
+            const files = picked
+                .filter((file) => (file.type.startsWith('image/') || file.type.startsWith('video/')) && !isTooLarge(file))
                 .slice(0, maxFiles);
             setSelectedFiles(files);
-            if (files.length < (event.target.files?.length ?? 0)) {
+            if (picked.some(isTooLarge)) {
+                setUploadNotice(t('filesTooLarge', { imageSize: formatBytes(maxImageBytes), videoSize: formatBytes(maxVideoBytes) }));
+            } else if (files.length < picked.length) {
                 setUploadNotice(t('selectionLimited', { count: maxFiles }));
             }
             event.target.value = '';
@@ -131,6 +136,7 @@ export function useGalleryScreen() {
             result = await uploadMediaBatch.mutateAsync({
                 eventId,
                 files: selectedFiles,
+                onBusy: setIsUploadBusy,
             });
         } catch (error) {
             setUploadNotice(toErrorMessage(error, t('uploadFailed')));
@@ -333,7 +339,7 @@ export function useGalleryScreen() {
         showGalleryActions: isHost && galleryEnabled,
         selectedFiles,
         selectedSize,
-        uploadNotice,
+        uploadNotice: isUploadBusy ? t('uploadBusy') : uploadNotice,
         selectedMedia,
         originalError,
         selectionDownloadError,
@@ -352,6 +358,7 @@ export function useGalleryScreen() {
         originalMedia,
         canDownloadOriginal,
         canDownloadSelected,
+        selectionTooLargeHint,
         canDeleteMedia,
         canReportMedia,
         reportOpen,

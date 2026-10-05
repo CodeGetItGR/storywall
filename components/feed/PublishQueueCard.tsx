@@ -14,7 +14,7 @@ function getJobLabels(job: PublishJob, t: ReturnType<typeof useTranslations<'Pub
     return {
         pending: t('postingStory', { count: job.totalCount }),
         success: t('storyPosted', { count: job.postedCount || job.totalCount }),
-        error: t('storyPostFailed', { failed: job.payload.items.length, total: job.totalCount }),
+        error: job.failureReason ?? t('storyPostFailed', { failed: job.payload.items.length, total: job.totalCount }),
     };
 }
 
@@ -48,7 +48,7 @@ export function PublishQueueCard({ job, onRetry, onDismiss }: PublishQueueCardPr
             {job.status === 'pending' && (
                 <>
                     <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-primary/30 border-t-primary" aria-hidden="true" />
-                    <span className="min-w-0 flex-1 truncate text-ink">{labels.pending}</span>
+                    <span className="min-w-0 flex-1 truncate text-ink">{job.busy ? t('uploadBusy') : labels.pending}</span>
                 </>
             )}
             {job.status === 'success' && (

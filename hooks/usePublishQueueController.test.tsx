@@ -195,6 +195,33 @@ describe('usePublishQueueController — story jobs', () => {
         expect(job.payload.items).toHaveLength(1);
         expect(job.payload.items[0].key).toBe('story-2');
     });
+
+    it('says why when the story limit stopped an item', async () => {
+        apiPostForm.mockResolvedValue({
+            created: [{ id: 'media-1', originalFilename: 'clip.jpg', mediaUrl: 'https://x/clip.jpg', status: 'READY' }],
+            failed: [],
+        });
+        apiPost.mockResolvedValue({
+            created: [],
+            failed: [{ mediaId: 'media-1', errorCode: 'STORY_LIVE_LIMIT_REACHED', message: 'limit' }],
+        });
+
+        const { result } = renderHook(() => usePublishQueueController(), { wrapper });
+
+        act(() => {
+            result.current.enqueueStory({ eventId: 'event-1', authorMemberId: 'member-1', items: [makeStoryItem()] });
+        });
+
+        await waitFor(() => expect(result.current.jobs[0].status).toBe('error'));
+        const job = result.current.jobs[0];
+        if (job.kind !== 'story') throw new Error('expected story job');
+        expect(job.failureReason).toContain('liveLimitReached');
+        expect(job.payload.items[0].error).toContain('liveLimitReached');
+
+        // A retry starts without the old reason.
+        act(() => result.current.retryJob(job.id));
+        expect(result.current.jobs[0].failureReason).toBeUndefined();
+    });
 });
 
 describe('usePublishQueueController — song jobs', () => {
@@ -323,9 +350,7 @@ describe('usePublishQueueController — account changes', () => {
     it('does not surface the aborted upload as an error', async () => {
         apiPostForm.mockImplementation(
             (_path: string, _form: FormData, options: RequestInit) =>
-                new Promise((_resolve, reject) =>
-                    options.signal?.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError'))),
-                ),
+                new Promise((_resolve, reject) => options.signal?.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')))),
         );
 
         const { result } = renderHook(() => usePublishQueueController(), { wrapper });

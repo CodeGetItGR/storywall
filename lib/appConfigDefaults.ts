@@ -1,4 +1,4 @@
-import type { AppBetaFeedbackConfigDto, AppContentLimitsDto, AppEventDeletionConfigDto } from '@/lib/api/types';
+import type { AppBetaFeedbackConfigDto, AppContentLimitsDto, AppEventDeletionConfigDto, AppMediaConfigDto } from '@/lib/api/types';
 
 // Fallbacks for GET /api/config values, used until the config loads and by
 // the demo seed. They mirror the server's current values; the config wins.
@@ -47,6 +47,19 @@ export const DEFAULT_CONTENT_LIMITS: AppContentLimitsDto = {
 };
 
 export const DEFAULT_ACCEPTED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/quicktime', 'video/webm'];
+
+// Upload size and count limits (see lib/uploadLimits.ts).
+export const DEFAULT_UPLOAD_LIMITS: Pick<
+    AppMediaConfigDto,
+    'maxFileSizeBytes' | 'maxRequestSizeBytes' | 'maxImageBytes' | 'maxVideoBytes' | 'maxStoryVideoBytes' | 'maxBatchUploadFiles'
+> = {
+    maxFileSizeBytes: 100 * 1024 * 1024,
+    maxRequestSizeBytes: 100 * 1024 * 1024,
+    maxImageBytes: 25 * 1024 * 1024,
+    maxVideoBytes: 100 * 1024 * 1024,
+    maxStoryVideoBytes: 50 * 1024 * 1024,
+    maxBatchUploadFiles: 10,
+};
 
 export const DEFAULT_PROFILE_PICTURE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 

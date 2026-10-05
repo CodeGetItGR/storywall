@@ -5,7 +5,11 @@ import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
 
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { pollMediaUntilProcessed, useDeleteMedia, useUploadMedia } from '@/hooks/useMedia';
+import type { MediaMetadata } from '@/lib/api/types';
+import { formatBytes } from '@/lib/format';
 import { STORY_FILTER_PRESETS } from '@/lib/story/storyFilters';
+import { getUploadLimits } from '@/lib/uploadLimits';
+import { videoFailureReason } from '@/lib/videoFailure';
 import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
 import { usePublishQueue } from '@/providers/publishQueue/PublishQueueContext';
 
@@ -76,6 +80,11 @@ function getVideoDurationSeconds(file: File): Promise<number | null> {
 
 export function useStoryComposerController(canCompose: boolean): StoryComposerController {
     const t = useTranslations('StoryComposer');
+    const tVideoFailure = useTranslations('VideoFailure');
+    const videoFailureMessage = (metadata: MediaMetadata) => {
+        const reason = videoFailureReason(metadata);
+        return reason ? tVideoFailure(reason) : t('processingFailed');
+    };
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
     const { data: appConfig } = useAppConfig();
@@ -93,10 +102,10 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
 
     const maxItems = Math.min(appConfig?.media.maxBatchStoryItems ?? 5, appConfig?.media.maxBatchUploadFiles ?? 10);
     const maxCaptionLength = appConfig?.contentLimits.storyCaptionMaxLength ?? 300;
-    const maxImageBytes = appConfig?.media.maxImageBytes ?? 25 * 1024 * 1024;
-    const maxStoryVideoBytes = appConfig?.media.maxStoryVideoBytes ?? 50 * 1024 * 1024;
+    // Uploads are split into as many requests as the request size cap needs, so
+    // only each file's own cap limits what can be added.
+    const { imageBytes: maxImageBytes, storyVideoBytes: maxStoryVideoBytes } = getUploadLimits(appConfig?.media);
     const maxStoryVideoDurationSeconds = appConfig?.media.maxStoryVideoDurationSeconds ?? 60;
-    const maxRequestSizeBytes = appConfig?.media.maxRequestSizeBytes ?? 260 * 1024 * 1024;
     const isBusy = uploadSingle.isPending;
     const activeItem = items.find((item) => item.key === activeKey) ?? items[0] ?? null;
 
@@ -143,8 +152,6 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
         setError(null);
 
         const room = maxItems - items.length;
-        const currentBytes = items.reduce((total, item) => total + (item.mediaId ? 0 : item.file.size), 0);
-        let acceptedBytes = 0;
         const accepted: File[] = [];
         let rejectedForSize = false;
         let rejectedForDuration = false;
@@ -152,7 +159,7 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
         for (const file of Array.from(fileList).slice(0, Math.max(room, 0))) {
             const isVideo = file.type.startsWith('video/');
             const fileLimit = isVideo ? maxStoryVideoBytes : maxImageBytes;
-            if (file.size > fileLimit || currentBytes + acceptedBytes + file.size > maxRequestSizeBytes) {
+            if (file.size > fileLimit) {
                 rejectedForSize = true;
                 continue;
             }
@@ -164,12 +171,11 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
                 }
             }
             accepted.push(file);
-            acceptedBytes += file.size;
         }
 
         if (fileList.length > room) setError(t('maxItems', { count: maxItems }));
         else if (rejectedForDuration) setError(t('videoTooLong', { seconds: maxStoryVideoDurationSeconds }));
-        else if (rejectedForSize) setError(t('filesTooLarge'));
+        else if (rejectedForSize) setError(t('filesTooLarge', { imageSize: formatBytes(maxImageBytes), videoSize: formatBytes(maxStoryVideoBytes) }));
 
         if (accepted.length === 0) return;
         const next = accepted.map((file) => ({
@@ -216,7 +222,7 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
                                                           ...existing,
                                                           remoteUrl: processed.mediaUrl ?? undefined,
                                                           status: processed.status === 'FAILED' ? 'failed' : 'uploaded',
-                                                          error: processed.status === 'FAILED' ? t('processingFailed') : existing.error,
+                                                          error: processed.status === 'FAILED' ? videoFailureMessage(processed.metadata) : existing.error,
                                                       }
                                                     : existing,
                                             ),

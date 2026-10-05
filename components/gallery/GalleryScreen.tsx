@@ -62,6 +62,7 @@ export function GalleryScreen() {
         closeDeleteConfirm,
         confirmDeleteMedia,
         canDownloadSelected,
+        selectionTooLargeHint,
         maxFiles,
         handleFilesChange,
         handleClearSelection,
@@ -121,6 +122,7 @@ export function GalleryScreen() {
                                 selectedCount={gallerySelection.selectedCount}
                                 mediaCount={media.length}
                                 canDownloadSelected={canDownloadSelected}
+                                downloadHint={selectionTooLargeHint}
                                 onSelectAll={gallerySelection.selectAll}
                                 onDownloadSelected={downloadSelectedMedia}
                                 onExitSelection={exitSelectionMode}
@@ -164,6 +166,7 @@ export function GalleryScreen() {
                     selectedCount={gallerySelection.selectedCount}
                     mediaCount={media.length}
                     canDownloadSelected={canDownloadSelected}
+                    downloadHint={selectionTooLargeHint}
                     isDownloadingSelection={isDownloadingSelection}
                     onSelectAll={gallerySelection.selectAll}
                     onDownloadSelected={downloadSelectedMedia}
