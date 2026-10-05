@@ -42,7 +42,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             <main className="desktop-account-page h-full min-w-0 flex-1 overflow-y-auto overscroll-contain bg-background pb-20 lg:ml-20 lg:pb-0">
                 {/* Demo authoring (admins on a demo event only) */}
                 {adminAccess.isAdminAllowed && adminAccess.eventId && <DemoActAsBar key={adminAccess.eventId} eventId={adminAccess.eventId} />}
-                <div className="min-h-full lg:max-w-none">{children}</div>
+                {/* A grid, so a lone child (the event theme scope) stretches to the full min-height */}
+                <div className="grid min-h-full grid-cols-1 lg:max-w-none">{children}</div>
             </main>
             <MobileTabBar />
         </div>
