@@ -17,6 +17,7 @@ import { canReportContent } from '@/lib/contentPermissions';
 import { downloadBlob } from '@/lib/download';
 import { isEventDeleted, isEventWritable, readableModuleKeys } from '@/lib/eventLifecycle';
 import { formatBytes } from '@/lib/format';
+import { isMemberArchiveEnabled } from '@/lib/qrLinks';
 import { getUploadLimits } from '@/lib/uploadLimits';
 import { useActiveMember } from '@/providers/EventProvider';
 import { useMobileChromeActions } from '@/providers/MobileChromeProvider';
@@ -38,6 +39,7 @@ export function useGalleryScreen() {
     const [selectionDownloadError, setSelectionDownloadError] = useState<string | null>(null);
     const [isDownloadingSelection, setIsDownloadingSelection] = useState(false);
     const [archiveDownloadOpen, setArchiveDownloadOpen] = useState(false);
+    const [memberArchiveOpen, setMemberArchiveOpen] = useState(false);
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
     const [deleteError, setDeleteError] = useState<string | null>(null);
     const pendingAdvanceIndexRef = useRef<number | null>(null);
@@ -69,6 +71,9 @@ export function useGalleryScreen() {
     // Every event keeps photo originals; videos are never re-encoded, so they have no separate original.
     const canDownloadOriginal = isHost && selectedMedia !== null && selectedMedia.mediaType !== 'VIDEO';
     const showArchiveDownload = isHost && galleryEnabled;
+    // Guests of an event whose plan offers it get the prebuilt archive instead; the live download
+    // above stays host-only (the backend 403s it for anyone else).
+    const showMemberArchive = !isHost && galleryEnabled && isMemberArchiveEnabled(activeEvent?.modules);
     // A host, or the member who uploaded it (the backend enforces the same rule). Deletes are not
     // plan-gated on the backend, so a file can still be cleared out after the gallery module is
     // gone — only a read-only or deleted event stops it.
@@ -300,6 +305,14 @@ export function useGalleryScreen() {
         setArchiveDownloadOpen(false);
     }, []);
 
+    const openMemberArchive = useCallback(() => {
+        setMemberArchiveOpen(true);
+    }, []);
+
+    const closeMemberArchive = useCallback(() => {
+        setMemberArchiveOpen(false);
+    }, []);
+
     const enterSelectionMode = useCallback(() => {
         gallerySelection.enterSelectionMode();
         setSelectionDownloadError(null);
@@ -336,6 +349,7 @@ export function useGalleryScreen() {
         galleryEnabled,
         canUpload,
         showArchiveDownload,
+        showMemberArchive,
         showGalleryActions: isHost && galleryEnabled,
         selectedFiles,
         selectedSize,
@@ -345,6 +359,7 @@ export function useGalleryScreen() {
         selectionDownloadError,
         isDownloadingSelection,
         archiveDownloadOpen,
+        memberArchiveOpen,
         media,
         isLoadingMedia,
         loadMoreRef,
@@ -383,6 +398,8 @@ export function useGalleryScreen() {
         handleScrollToTop,
         openArchiveDownload,
         closeArchiveDownload,
+        openMemberArchive,
+        closeMemberArchive,
         enterSelectionMode,
         exitSelectionMode,
         closeMedia,

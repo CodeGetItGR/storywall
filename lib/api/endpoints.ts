@@ -115,6 +115,7 @@ export const endpoints = {
             `/api/events/${eventId}/media/archive/selected?variant=${encodeURIComponent(variant)}&mediaIds=${mediaIds
                 .map((id) => encodeURIComponent(id))
                 .join(',')}`,
+        memberArchive: (eventId: string) => `/api/events/${eventId}/media/member-archive`,
         usage: (eventId: string) => `/api/events/${eventId}/usage`,
         billing: (eventId: string) => `/api/events/${eventId}/billing`,
         addons: (eventId: string) => `/api/events/${eventId}/addons`,

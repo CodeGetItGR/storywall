@@ -16,7 +16,10 @@ import {
 describe('knownConfigFields', () => {
     it('returns typed fields for documented modules', () => {
         expect(knownConfigFields('schedule')).toEqual([{ key: 'maxSections', type: 'number', min: 1 }]);
-        expect(knownConfigFields('gallery')).toEqual([{ key: 'qrUploadEnabled', type: 'boolean' }]);
+        expect(knownConfigFields('gallery')).toEqual([
+            { key: 'qrUploadEnabled', type: 'boolean' },
+            { key: 'memberArchiveAfterEnd', type: 'boolean', hint: true },
+        ]);
         expect(knownConfigFields('member_roles')).toEqual([{ key: 'allowCustom', type: 'boolean', hint: true }]);
     });
 

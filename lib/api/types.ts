@@ -16,7 +16,7 @@ export type PlatformRole = 'USER' | 'ADMIN' | 'GUEST';
 // INVALID_EVENT_TYPE. Not every key is necessarily offered right now: which
 // ones are currently enabled comes from GET /api/config's eventTypeKeys, not
 // this type — build pickers from that, not from this union directly.
-export type EventTypeConvention = 'WEDDING' | 'BAPTISM' | 'SOCIAL_EVENT' | 'BIRTHDAY' | 'PRIVATE_PARTY' | 'GENDER_REVEAL' | 'BABY_SHOWER';
+export type EventTypeConvention = 'WEDDING' | 'BAPTISM' | 'SOCIAL_EVENT' | 'BIRTHDAY' | 'PRIVATE_PARTY' | 'GENDER_REVEAL' | 'BABY_SHOWER' | 'REUNION';
 // Post.type / Reaction.reactionType are free strings server-side.
 // moduleKey is now a closed set on the backend and should match the config payload.
 export const EVENT_MODULE_KEYS = [
@@ -2047,6 +2047,25 @@ export interface EventModuleResponseDto {
 // See event-type-feature-toggles-quotas-fe-integration.md §2.
 export interface GalleryModuleConfiguration {
     qrUploadEnabled: boolean;
+    // Every member can download the prebuilt archive after the event (REUNION). Absent means off.
+    memberArchiveAfterEnd?: boolean;
+}
+
+// GET /api/events/{eventId}/media/member-archive. availableFrom is null unless NOT_YET; parts is
+// empty unless READY. Part urls are presigned and expire: fetch again for each download.
+export type MemberArchiveAvailability = 'NOT_YET' | 'PREPARING' | 'READY' | 'UNAVAILABLE';
+
+export interface MemberArchivePartDto {
+    part: number;
+    totalParts: number;
+    bytes: number;
+    url: string;
+}
+
+export interface MemberArchiveResponseDto {
+    status: MemberArchiveAvailability;
+    availableFrom: string | null;
+    parts: MemberArchivePartDto[];
 }
 
 // GET /api/event-types/{eventTypeKey}/modules — the event type's own module

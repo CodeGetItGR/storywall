@@ -61,3 +61,13 @@ export function isGalleryQrFeatureEnabled(modules: EventModuleResponseDto[] | un
     const configuration = galleryModule.configuration as GalleryModuleConfiguration | null;
     return configuration?.qrUploadEnabled === true;
 }
+
+// Whether this event's members (not only hosts) get the gallery's prebuilt archive after it ends.
+// The backend decides access; this only decides whether to offer it.
+export function isMemberArchiveEnabled(modules: EventModuleResponseDto[] | undefined): boolean {
+    const galleryModule = modules?.find((module_) => module_.moduleKey === 'gallery');
+    if (!galleryModule?.isAvailable) return false;
+
+    const configuration = galleryModule.configuration as GalleryModuleConfiguration | null;
+    return configuration?.memberArchiveAfterEnd === true;
+}

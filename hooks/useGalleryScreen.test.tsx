@@ -7,7 +7,7 @@ import type { MediaResponseDto } from '@/lib/api/types';
 const mocks = vi.hoisted(() => ({
     media: [] as MediaResponseDto[],
     isHost: false,
-    activeEvent: null as { status: string; deletedAt: string | null } | null,
+    activeEvent: null as { status: string; deletedAt: string | null; modules?: unknown[] } | null,
     activeMember: null as { id: string } | null,
     reportTargetTypes: ['MEDIA'] as string[],
     writable: true,
@@ -253,6 +253,52 @@ describe('useGalleryScreen', () => {
             expect(result.current.reportOpen).toBe(true);
             act(() => result.current.closeReport());
             expect(result.current.reportOpen).toBe(false);
+        });
+    });
+
+    describe('member archive entry', () => {
+        const withArchive = {
+            status: 'ACTIVE',
+            deletedAt: null,
+            modules: [{ moduleKey: 'gallery', isAvailable: true, configuration: { qrUploadEnabled: true, memberArchiveAfterEnd: true } }],
+        };
+
+        it('is offered to a guest when the gallery has the setting', () => {
+            mocks.activeEvent = withArchive;
+            const { result } = renderHook(() => useGalleryScreen());
+
+            expect(result.current.showMemberArchive).toBe(true);
+            expect(result.current.showArchiveDownload).toBe(false);
+            expect(result.current.showGalleryActions).toBe(false);
+        });
+
+        it('is not offered to a host, who keeps the live download', () => {
+            mocks.isHost = true;
+            mocks.activeEvent = withArchive;
+            const { result } = renderHook(() => useGalleryScreen());
+
+            expect(result.current.showMemberArchive).toBe(false);
+            expect(result.current.showArchiveDownload).toBe(true);
+        });
+
+        it('is not offered without the setting', () => {
+            mocks.activeEvent = {
+                ...withArchive,
+                modules: [{ moduleKey: 'gallery', isAvailable: true, configuration: { qrUploadEnabled: true } }],
+            };
+            const { result } = renderHook(() => useGalleryScreen());
+
+            expect(result.current.showMemberArchive).toBe(false);
+        });
+
+        it('opens and closes the member modal', () => {
+            mocks.activeEvent = withArchive;
+            const { result } = renderHook(() => useGalleryScreen());
+
+            act(() => result.current.openMemberArchive());
+            expect(result.current.memberArchiveOpen).toBe(true);
+            act(() => result.current.closeMemberArchive());
+            expect(result.current.memberArchiveOpen).toBe(false);
         });
     });
 });

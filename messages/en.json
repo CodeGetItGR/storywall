@@ -843,6 +843,10 @@
             "STORAGE_TRIM_WARNING": {
                 "title": "Photos and videos will be deleted soon",
                 "body": "{over} over the limit. Free up space by {dueDate}, or the newest photos and videos above the limit will be deleted."
+            },
+            "MEMBER_ARCHIVE_READY": {
+                "title": "The gallery is ready to download",
+                "body": "Every photo and video from the event, in one download. Open the gallery to get it."
             }
         }
     },
@@ -3237,10 +3241,12 @@
                         "maxSections": "Schedule sections",
                         "maxCoHosts": "Co-hosts",
                         "qrUploadEnabled": "Guest QR upload",
+                        "memberArchiveAfterEnd": "Member gallery download",
                         "allowCustom": "Custom roles"
                     },
                     "fieldHints": {
-                        "allowCustom": "Members can type their own role."
+                        "allowCustom": "Members can type their own role.",
+                        "memberArchiveAfterEnd": "Every member can download the whole gallery a day after the event. Each build costs egress."
                     },
                     "unlimited": "Unlimited",
                     "upTo": "Up to",
@@ -4368,6 +4374,14 @@
         "downloadGalleryTitle": "Download gallery",
         "downloadGallerySubtitle": "Choose a version and download the archive parts one by one.",
         "closeDownloadGallery": "Close download gallery",
+        "memberArchiveSubtitle": "Every photo and video from the event, in display quality.",
+        "memberArchiveNotYet": "The download opens on {date}, a day after the event ends.",
+        "memberArchivePreparing": "We're putting the download together. Check back in a little while.",
+        "memberArchiveCheckAgain": "Check again",
+        "memberArchiveEmpty": "The gallery has no photos or videos.",
+        "memberArchiveUnavailable": "The download isn't available for this event.",
+        "memberArchiveChanged": "The gallery changed since this opened, so the download is being rebuilt. Try again later.",
+        "memberArchiveUploadNote": "After the event, every member can download the whole gallery, including what you upload here.",
         "selectPhotos": "Select",
         "selectAll": "Select all",
         "cancelSelection": "Cancel",
@@ -4596,6 +4610,7 @@
         "planInUse": "This plan is assigned to accounts or events, so it cannot be deleted.",
         "planIsOnlyDefault": "Set another default plan before changing this one.",
         "postEditNotAuthor": "Only the person who wrote this post can edit it. Hosts can pin, delete or report it.",
+        "memberArchiveNotEnabled": "Members of this event can't download the whole gallery.",
         "postMediaLimitExceeded": "This post already has the maximum number of photos.",
         "postPinNotHost": "Only hosts can pin posts.",
         "announcementNotHost": "Only hosts can post announcements.",
