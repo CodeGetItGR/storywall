@@ -42,6 +42,7 @@ const CTA_ROUTES: Record<NotificationCtaTarget, (params: Record<string, string>)
   EVENT_GALLERY: (p) => `/events/${p.eventId}/gallery`,
   EVENT_GUESTS: (p) => `/events/${p.eventId}/guests`,
   EVENT_COVERAGE_EXTEND: (p) => `/events/${p.eventId}/settings/plan?extend=1`,
+  EVENT_WISHBOOK: (p) => `/events/${p.eventId}/tools/wishbook`,
 };
 
 function resolveCta(n: NotificationResponseDto): string | null {
@@ -52,7 +53,7 @@ function resolveCta(n: NotificationResponseDto): string | null {
 ```
 
 The `else` branch matters as much as the happy path: `ctaTarget` is a closed set today
-(`EVENT_PLAN_SETTINGS`, `EVENT_GALLERY`, `EVENT_GUESTS`, `EVENT_COVERAGE_EXTEND`), but it is expected to grow as new
+(`EVENT_PLAN_SETTINGS`, `EVENT_GALLERY`, `EVENT_GUESTS`, `EVENT_COVERAGE_EXTEND`, `EVENT_WISHBOOK`), but it is expected to grow as new
 notification types ship. A target this app doesn't recognize yet should degrade to "no CTA shown",
 not a broken link or a thrown error.
 
@@ -64,6 +65,7 @@ not a broken link or a thrown error.
 | `EVENT_GALLERY` | `eventId` | `/events/{eventId}/gallery` |
 | `EVENT_GUESTS` | `eventId` | `/events/{eventId}/guests` |
 | `EVENT_COVERAGE_EXTEND` | `eventId` | `/events/{eventId}/settings/plan?extend=1`: the plan screen with the extension picker open (added 2026-09-24) |
+| `EVENT_WISHBOOK` | `eventId` | `/events/{eventId}/tools/wishbook`: the host's wishbook page, where the book is downloaded (added 2026-10-06; see `wishbook-book-fe-integration.md` §7) |
 
 These happen to match the old literal `ctaRoute` values exactly, so if your router already has
 routes at those paths, wiring `CTA_ROUTES` above to point at them is a drop-in replacement — the
