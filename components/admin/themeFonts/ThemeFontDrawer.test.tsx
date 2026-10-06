@@ -265,3 +265,11 @@ describe('ThemeFontDrawer TTF and OTF', () => {
         expect(screen.getByRole('alert')).toHaveTextContent('Try again later.');
     });
 });
+
+describe('ThemeFontDrawer pending file check', () => {
+    it('keeps Save disabled while a picked file is being checked', () => {
+        state({ isCheckingFile: true });
+        renderDrawer();
+        expect(screen.getByRole('button', { name: 'save' })).toBeDisabled();
+    });
+});

@@ -118,6 +118,9 @@ export function useThemeFontDrawer({ font, onDoneAction }: { font: AdminThemeFon
     const [failure, setFailure] = useState<ThemeFontDrawerError | null>(null);
     const [file, setFile] = useState<File | null>(null);
     const [fileError, setFileError] = useState<'type' | 'size' | null>(null);
+    // A pick whose bytes are still being read: Save waits, so it never uploads the file this replaces.
+    const [checkingFile, setCheckingFile] = useState(false);
+    const checking = useRef(false);
     // Each pick is numbered: a check that finishes after a later pick doesn't overwrite it.
     const pickCount = useRef(0);
     // Set synchronously: a fast double click submits twice before isSaving re-renders.
@@ -162,8 +165,13 @@ export function useThemeFontDrawer({ font, onDoneAction }: { font: AdminThemeFon
         event.currentTarget.value = '';
         if (!next) return;
         const pick = ++pickCount.current;
+        checking.current = true;
+        setCheckingFile(true);
+        setFile(null);
         const problem = await fontFileError(next);
         if (pick !== pickCount.current || !mounted.current) return;
+        checking.current = false;
+        setCheckingFile(false);
         setFileError(problem);
         // A refused pick also drops the earlier one, so Save never uploads a file the admin replaced.
         setFile(problem ? null : next);
@@ -174,7 +182,7 @@ export function useThemeFontDrawer({ font, onDoneAction }: { font: AdminThemeFon
             event.preventDefault();
             setSubmitted(true);
             setFailure(null);
-            if (Object.keys(errors).length > 0 || submitting.current) return;
+            if (Object.keys(errors).length > 0 || submitting.current || checking.current) return;
             submitting.current = true;
 
             let current = saved;
@@ -219,6 +227,7 @@ export function useThemeFontDrawer({ font, onDoneAction }: { font: AdminThemeFon
         failure,
         fileError,
         hasPendingFile: file !== null,
+        isCheckingFile: checkingFile,
         pendingFileName: file?.name ?? null,
         // This drawer created the font but its file didn't go up: saving again only uploads.
         createdWithoutFile: font === null && saved !== null && file !== null && failure !== null,

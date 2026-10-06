@@ -52,7 +52,13 @@ const WOFF2_MAGIC = 'wOF2';
 const SFNT_MAGICS: ReadonlySet<string> = new Set(['\x00\x01\x00\x00', 'true', 'OTTO']);
 
 export async function fontFileError(file: File): Promise<'type' | 'size' | null> {
-    const magic = String.fromCharCode(...new Uint8Array(await file.slice(0, 4).arrayBuffer()));
+    let magic: string;
+    try {
+        magic = String.fromCharCode(...new Uint8Array(await file.slice(0, 4).arrayBuffer()));
+    } catch {
+        // NotReadableError: the file changed or went away since it was picked.
+        return 'type';
+    }
     if (magic === WOFF2_MAGIC) return file.size > THEME_FONT_MAX_BYTES ? 'size' : null;
     if (SFNT_MAGICS.has(magic)) return file.size > THEME_FONT_SOURCE_MAX_BYTES ? 'size' : null;
     return 'type';

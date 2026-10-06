@@ -421,3 +421,44 @@ describe('useThemeFontDrawer TTF and OTF', () => {
         expect(result.current.failure).toEqual({ kind: 'other', error });
     });
 });
+
+describe('useThemeFontDrawer pending file check', () => {
+    it('does not upload an earlier pick while a later one is still being checked', async () => {
+        mocks.upload.mockResolvedValue(FONT);
+        const { result } = renderDrawer(FONT);
+        await act(() => result.current.handleFileChange(fileChange(woff2('a.woff2'))));
+        expect(result.current.pendingFileName).toBe('a.woff2');
+
+        const second = slowFile('b.woff2');
+        let check: Promise<void> = Promise.resolve();
+        act(() => {
+            check = result.current.handleFileChange(fileChange(second.file));
+        });
+        expect(result.current.isCheckingFile).toBe(true);
+        expect(result.current.hasPendingFile).toBe(false);
+
+        await act(() => result.current.handleSubmit(submitEvent()));
+        expect(mocks.upload).not.toHaveBeenCalled();
+        expect(mocks.patch).not.toHaveBeenCalled();
+
+        second.release();
+        await act(() => check);
+        expect(result.current.isCheckingFile).toBe(false);
+        expect(result.current.pendingFileName).toBe('b.woff2');
+    });
+
+    it('updates nothing when the drawer unmounts during a check', async () => {
+        const consoleError = vi.spyOn(console, 'error');
+        const { result, unmount } = renderDrawer(FONT);
+        const pick = slowFile('a.woff2');
+        let check: Promise<void> = Promise.resolve();
+        act(() => {
+            check = result.current.handleFileChange(fileChange(pick.file));
+        });
+        unmount();
+        pick.release();
+        await expect(check).resolves.toBeUndefined();
+        expect(result.current.pendingFileName).toBeNull();
+        expect(consoleError).not.toHaveBeenCalled();
+    });
+});

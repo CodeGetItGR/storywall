@@ -63,6 +63,25 @@ describe('fontFileError', () => {
         await expect(fontFileError(new File(['wO'], 'a.woff2'))).resolves.toBe('type');
     });
 
+    it('refuses an empty file', async () => {
+        await expect(fontFileError(new File([], 'a.ttf'))).resolves.toBe('type');
+    });
+
+    it('refuses a file whose bytes cannot be read', async () => {
+        const file = fontFile('OTTO', 4, 'a.otf');
+        Object.defineProperty(file, 'slice', {
+            value: () => ({ arrayBuffer: () => Promise.reject(new DOMException('gone', 'NotReadableError')) }),
+        });
+        await expect(fontFileError(file)).resolves.toBe('type');
+    });
+
+    it.each([
+        ['true', 'true'],
+        ['00 01 00 00', [0x00, 0x01, 0x00, 0x00]],
+    ])('refuses a TrueType file (%s) over 2 MB', async (_label, magic) => {
+        await expect(fontFileError(fontFile(magic, THEME_FONT_SOURCE_MAX_BYTES + 1, 'a.ttf'))).resolves.toBe('size');
+    });
+
     it('caps WOFF2 at 500 KB', async () => {
         await expect(fontFileError(fontFile('wOF2', THEME_FONT_MAX_BYTES))).resolves.toBeNull();
         await expect(fontFileError(fontFile('wOF2', THEME_FONT_MAX_BYTES + 1))).resolves.toBe('size');

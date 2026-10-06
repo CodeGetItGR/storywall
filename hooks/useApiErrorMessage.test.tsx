@@ -61,7 +61,7 @@ describe('useApiErrorMessage', () => {
         [5119, 'The server is busy right now. Try again in a moment.'],
         [5128, 'This was just changed somewhere else. Refresh and try again.'],
         [5143, 'This theme is no longer available — pick another.'],
-        [3052, "This file isn't a WOFF2, TTF or OTF font, or it's damaged. Upload one font per file."],
+        [3052, "This file isn't a WOFF2, TTF or OTF font, or it's damaged. Choose another file with a single font."],
         [3053, 'This font file is too large. Choose a smaller one, for example a version with only Greek and Latin letters.'],
         [3054, "This font can't write every Greek and Latin letter that event titles need. Choose a font that covers both."],
         [3055, 'The title colour is too close to the background colour. Choose a darker or lighter one.'],
