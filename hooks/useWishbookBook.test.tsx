@@ -3,8 +3,8 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { bookRefetchInterval, useRequestWishbookBook, useSetWishHighlighted, useWishbookBook, wishbookBookKeys } from '@/hooks/useWishbookBook';
 import { wishbookKeys } from '@/hooks/useWishbook';
+import { bookRefetchInterval, useRequestWishbookBook, useSetWishHighlighted, useWishbookBook, wishbookBookKeys } from '@/hooks/useWishbookBook';
 import { ApiError } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 
