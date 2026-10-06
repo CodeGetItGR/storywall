@@ -1,6 +1,5 @@
 'use client';
 
-import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo } from 'react';
 
@@ -10,18 +9,20 @@ import { BackButton } from '@/components/ui/BackButton';
 import { PageErrorState } from '@/components/ui/PageErrorState';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventBilling } from '@/hooks/useBilling';
-import { useIsPrimaryHost } from '@/hooks/useIsPrimaryHost';
+import { usePurchaseBlock } from '@/hooks/usePurchaseBlock';
 import { scopedPlans } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
+import { useRouteEventId } from '@/providers/EventProvider';
 
 export default function EventAddonsSettingsBoundary() {
-    const { eventId } = useParams<{ eventId: string }>();
+    // From the event context, not the URL: the demo serves this page under /demo/{type}.
+    const eventId = useRouteEventId() ?? '';
     const t = useTranslations('EventAddonsSettingsPage');
     const tBilling = useTranslations('EventPlanSettingsPage');
     const tPageError = useTranslations('PageErrorState.billing');
     const appConfig = useAppConfig();
     const billing = useEventBilling(eventId, true);
-    const canPurchase = useIsPrimaryHost();
+    const purchaseBlock = usePurchaseBlock();
     const data = billing.data;
     const retry = useCallback(() => {
         void appConfig.refetch();
@@ -72,7 +73,7 @@ export default function EventAddonsSettingsBoundary() {
             {/* Storage packs */}
             <div className="mt-8">
                 {data.eventStatus === 'ACTIVE' && storagePacks.length > 0 ? (
-                    <StoragePackPurchase eventId={eventId} services={storagePacks} canPurchase={canPurchase} />
+                    <StoragePackPurchase eventId={eventId} services={storagePacks} purchaseBlock={purchaseBlock} />
                 ) : (
                     <div>
                         <h2 className="text-sm font-bold text-ink">{tBilling('storagePacks.title')}</h2>
