@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { wishbookKeys } from '@/hooks/useWishbook';
 import {
     bookRefetchInterval,
+    useFreshBook,
     useRequestWishbookBook,
     useSetWishHighlighted,
     useWishbookBook,
@@ -214,5 +215,63 @@ describe('useWishbookBook', () => {
         expect(starredIds()).toEqual(['w2']);
         expect(invalidate).toHaveBeenCalledTimes(1);
         expect(invalidate).toHaveBeenCalledWith({ queryKey: wishbookKeys.list('e1'), exact: true });
+    });
+
+    describe('a fresh read before a download', () => {
+        const ready = { status: 'READY', requestedAt: '2026-10-06T10:00:00Z', pageCount: 12, entryCount: 30, downloadUrl: 'https://old' };
+
+        it('returns the book and refreshes the cache with it', async () => {
+            client.setQueryData(wishbookBookKeys.book('e1'), ready);
+            apiGet.mockResolvedValue({ ...ready, downloadUrl: 'https://fresh' });
+            const { result } = renderHook(() => useFreshBook('e1'), { wrapper: wrapperFor(client) });
+            const book = await act(() => result.current());
+            expect(book.downloadUrl).toBe('https://fresh');
+            expect(client.getQueryData(wishbookBookKeys.book('e1'))).toEqual({ ...ready, downloadUrl: 'https://fresh' });
+        });
+
+        it('leaves the cache alone while a build request is in flight', async () => {
+            client.setQueryData(wishbookBookKeys.book('e1'), ready);
+            apiPost.mockReturnValue(new Promise(() => undefined));
+            const request = renderHook(() => useRequestWishbookBook('e1'), { wrapper: wrapperFor(client) });
+            await act(async () => {
+                void request.result.current.mutateAsync();
+            });
+            apiGet.mockResolvedValue({ ...ready, pageCount: 99 });
+            const fresh = renderHook(() => useFreshBook('e1'), { wrapper: wrapperFor(client) });
+            await act(() => fresh.result.current());
+            expect(client.getQueryData(wishbookBookKeys.book('e1'))).toEqual(ready);
+        });
+
+        it('does not let an older build replace a newer one in the cache', async () => {
+            const newer = { status: 'QUEUED', requestedAt: '2026-10-06T11:00:00Z', pageCount: null, entryCount: null, downloadUrl: null };
+            client.setQueryData(wishbookBookKeys.book('e1'), newer);
+            apiGet.mockResolvedValue(ready);
+            const { result } = renderHook(() => useFreshBook('e1'), { wrapper: wrapperFor(client) });
+            await act(() => result.current());
+            expect(client.getQueryData(wishbookBookKeys.book('e1'))).toEqual(newer);
+        });
+    });
+
+    it.each([
+        [409, 5148],
+        [503, 5149],
+    ])('a refused build request (%i, %i) is not sent again and starts no polling', async (status, errorCode) => {
+        vi.useFakeTimers();
+        try {
+            apiGet.mockRejectedValue(new ApiError(404, { errorCode: 2001 }));
+            apiPost.mockRejectedValue(new ApiError(status, { errorCode }));
+            const book = renderHook(() => useWishbookBook('e1', true), { wrapper: wrapperFor(client) });
+            const request = renderHook(() => useRequestWishbookBook('e1'), { wrapper: wrapperFor(client) });
+            await vi.advanceTimersByTimeAsync(0);
+            await act(async () => {
+                await request.result.current.mutateAsync().catch(() => undefined);
+            });
+            await vi.advanceTimersByTimeAsync(60_000);
+            expect(apiPost).toHaveBeenCalledTimes(1);
+            expect(apiGet).toHaveBeenCalledTimes(1);
+            expect(book.result.current.data).toBeNull();
+        } finally {
+            vi.useRealTimers();
+        }
     });
 });

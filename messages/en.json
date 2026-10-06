@@ -2159,6 +2159,7 @@
         "bookTexts": {
             "title": "The book's text",
             "hint": "Leave a field empty to use the suggested text shown.",
+            "tooManyLines": "Use at most {max} lines. Blank lines between paragraphs count too.",
             "subtitle": "Subtitle (cover)",
             "dedication": "Dedication",
             "closingTitle": "Closing title",
@@ -2168,7 +2169,6 @@
             "cancel": "Cancel"
         },
         "star": "Star for the book",
-        "unstar": "Remove star",
         "reportEntry": "Report",
         "delete": "Delete",
         "deleteTitle": "Delete this wish?",

@@ -55,7 +55,7 @@ These now return `409 / 5012 MODULE_NOT_AVAILABLE` when the event doesn't have t
 | `stories` | `GET /api/events/{eventId}/stories`, `GET /api/stories/{id}`, `GET /api/stories/{id}/views` |
 | `playlist` | `GET /api/events/{eventId}/playlist-suggestions`, `…/leaderboard`, `GET /api/playlist-suggestions/{id}`, `GET /api/playlist-suggestions/{suggestionId}/votes`, `GET /api/playlist-votes/{id}` |
 | `rsvp` | `GET /api/events/{eventId}/rsvps`, `…/rsvps/report`, `…/rsvps/export`, `GET /api/rsvps/{id}`, `GET /api/rsvps/{rsvpId}/session-responses`, `GET /api/rsvp-session-responses/{id}` |
-| `wishbook` | `GET /api/events/{eventId}/wishbook`, `…/wishbook/count`, `…/wishbook/export` |
+| `wishbook` | `GET /api/events/{eventId}/wishbook`, `…/wishbook/count`, `…/wishbook/book`, `…/wishbook/book-texts` |
 | `wishlist` | `GET /api/events/{eventId}/gift-account` (the `5012` comes before any `404` for a missing account) |
 | `schedule` | `GET /api/events/{eventId}/sessions`, `GET /api/event-sessions/{id}` |
 | `gallery` | `GET /api/events/{eventId}/media`, `GET /api/events/{eventId}/media/archive/manifest`, `…/media/archive`, `…/media/archive/selected` |

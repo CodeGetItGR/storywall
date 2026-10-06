@@ -26,7 +26,7 @@ import { formatDate } from '@/lib/datetime';
 import { isEventDeleted } from '@/lib/eventLifecycle';
 import { dateTimeFormat } from '@/lib/format';
 import { routes } from '@/lib/routes';
-import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider';
+import { useActiveEvent, useActiveMember, useContentAccessMode, useIsHost } from '@/providers/EventProvider';
 
 export default function WishbookPage() {
     const t = useTranslations('WishbookPage');
@@ -34,6 +34,8 @@ export default function WishbookPage() {
     const member = useActiveMember();
     const isHost = useIsHost();
     const contentAccess = useContentAccess();
+    // The public demo runs on a local mock backend: there is no renderer there to build a book.
+    const isDemoVisitor = useContentAccessMode() === 'demoVisitor';
     const locale = useLocale();
     const isDeleted = isEventDeleted(event);
     const deletionDate = event?.deletionScheduledFor ? formatDate(locale, event.deletionScheduledFor, { dateStyle: 'long' }) : null;
@@ -188,7 +190,7 @@ export default function WishbookPage() {
             ) : null}
 
             {/* Keepsake book */}
-            {isHost && total > 0 && <WishbookBookPanel eventId={eventId} canEditTexts={!isDeleted} />}
+            {isHost && !isDemoVisitor && total > 0 && <WishbookBookPanel eventId={eventId} canEditTexts={!isDeleted} />}
 
             {/* Entries */}
             <section className="mt-8" hidden={!isHost}>
@@ -226,7 +228,7 @@ export default function WishbookPage() {
                                             type="button"
                                             data-entry-id={entry.id}
                                             onClick={toggleStar}
-                                            aria-label={entry.highlighted ? t('unstar') : t('star')}
+                                            aria-label={t('star')}
                                             aria-pressed={entry.highlighted}
                                             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-faint hover:bg-amber-50 hover:text-amber-600"
                                         >

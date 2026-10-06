@@ -45,9 +45,12 @@ export function useWishbookBook(eventId: string, isHost: boolean) {
     });
 }
 
+const requestMutationKey = (eventId: string) => ['wishbook-book-request', eventId] as const;
+
 export function useRequestWishbookBook(eventId: string) {
     const queryClient = useQueryClient();
     return useMutation({
+        mutationKey: requestMutationKey(eventId),
         mutationFn: () => api.post<WishbookBookDto>(endpoints.events.wishbookBook(eventId)),
         // A poll still in flight would land after the POST and overwrite the new build with the old one.
         onMutate: () => queryClient.cancelQueries({ queryKey: wishbookBookKeys.book(eventId), exact: true }),
@@ -55,13 +58,19 @@ export function useRequestWishbookBook(eventId: string) {
     });
 }
 
-// The presigned URL expires: ask for a fresh one at click time.
-export function useFreshBookDownloadUrl(eventId: string) {
+// The presigned URL expires: read the book again at click time and use the downloadUrl of that answer.
+// The cache is only refreshed when the answer cannot be stale against it: not while a build request is in
+// flight (its POST answer is newer), and not when the cache already holds a later build.
+export function useFreshBook(eventId: string) {
     const queryClient = useQueryClient();
     return async () => {
         const book = await api.get<WishbookBookDto>(endpoints.events.wishbookBook(eventId));
-        queryClient.setQueryData(wishbookBookKeys.book(eventId), book);
-        return book.downloadUrl;
+        const key = wishbookBookKeys.book(eventId);
+        const cached = queryClient.getQueryData<WishbookBookDto | null>(key);
+        const requesting = queryClient.isMutating({ mutationKey: requestMutationKey(eventId) }) > 0;
+        const older = cached !== null && cached !== undefined && Date.parse(book.requestedAt) < Date.parse(cached.requestedAt);
+        if (!requesting && !older) queryClient.setQueryData(key, book);
+        return book;
     };
 }
 

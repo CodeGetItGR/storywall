@@ -11,6 +11,7 @@ let eventStatus: EventStatus = 'ACTIVE';
 let deletedAt: string | null = null;
 let isDemoBuilder = false;
 let isHost = true;
+let accessMode: 'standard' | 'demoBuilder' | 'demoVisitor' = 'standard';
 const createEntry = vi.fn();
 const setHighlighted = vi.fn();
 let entries: Array<{ id: string; authorMemberId: string | null; canDelete: boolean; highlighted?: boolean | null }> = [];
@@ -56,6 +57,7 @@ vi.mock('@/providers/EventProvider', () => ({
     useActiveEvent: () => ({ id: 'event-1', status: eventStatus, deletedAt, deletionScheduledFor: null }),
     useActiveMember: () => (activeMemberId ? { id: activeMemberId, displayName: 'Me' } : null),
     useIsHost: () => isHost,
+    useContentAccessMode: () => accessMode,
 }));
 vi.mock('@/components/reports', () => ({
     ReportTargetModal: ({ open, targetType, targetId, eventId }: { open: boolean; targetType: string; targetId: string; eventId: string }) =>
@@ -71,6 +73,7 @@ beforeEach(() => {
     deletedAt = null;
     isDemoBuilder = false;
     isHost = true;
+    accessMode = 'standard';
     createEntry.mockReset();
     setHighlighted.mockReset();
     entries = [{ id: 'w1', authorMemberId: 'm2', canDelete: true }];
@@ -180,6 +183,18 @@ describe('Wishbook book', () => {
         expect(screen.queryByTestId('book-panel')).toBeNull();
     });
 
+    it('shows no book panel in the public demo, where nothing can be built', () => {
+        accessMode = 'demoVisitor';
+        render(<WishbookPage />);
+        expect(screen.queryByTestId('book-panel')).toBeNull();
+    });
+
+    it('keeps the book panel for an admin building a demo event', () => {
+        accessMode = 'demoBuilder';
+        render(<WishbookPage />);
+        expect(screen.getByTestId('book-panel')).toBeTruthy();
+    });
+
     it('stars a wish', () => {
         render(<WishbookPage />);
         const star = screen.getByRole('button', { name: 'star' });
@@ -191,7 +206,7 @@ describe('Wishbook book', () => {
     it('removes the star from a starred wish', () => {
         entries = [{ id: 'w1', authorMemberId: 'm2', canDelete: true, highlighted: true }];
         render(<WishbookPage />);
-        const star = screen.getByRole('button', { name: 'unstar' });
+        const star = screen.getByRole('button', { name: 'star' });
         expect(star.getAttribute('aria-pressed')).toBe('true');
         fireEvent.click(star);
         expect(setHighlighted).toHaveBeenCalledWith({ entryId: 'w1', highlighted: false });
@@ -201,7 +216,6 @@ describe('Wishbook book', () => {
         entries = [{ id: 'w1', authorMemberId: 'm2', canDelete: true, highlighted }];
         render(<WishbookPage />);
         expect(screen.queryByRole('button', { name: 'star' })).toBeNull();
-        expect(screen.queryByRole('button', { name: 'unstar' })).toBeNull();
     });
 
     it('hides stars on a deleted event but keeps the panel, with its texts frozen', () => {

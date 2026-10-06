@@ -5,8 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
-import { useFreshBookDownloadUrl, useRequestWishbookBook, useWishbookBook } from '@/hooks/useWishbookBook';
-import { downloadUrl } from '@/lib/download';
+import { useFreshBook, useRequestWishbookBook, useWishbookBook } from '@/hooks/useWishbookBook';
 
 import { WishbookBookTextsModal } from './WishbookBookTextsModal';
 
@@ -21,13 +20,19 @@ export function WishbookBookPanel({ eventId, canEditTexts }: { eventId: string; 
     const toErrorMessage = useApiErrorMessage();
     const book = useWishbookBook(eventId, true);
     const request = useRequestWishbookBook(eventId);
-    const freshUrl = useFreshBookDownloadUrl(eventId);
+    const freshBook = useFreshBook(eventId);
     const [textsOpen, setTextsOpen] = useState(false);
     const [downloading, setDownloading] = useState(false);
-    const [downloadError, setDownloadError] = useState<string | null>(null);
+    // The build the failed download belonged to. The message only shows while that build is still the one on screen,
+    // so it goes away by itself when the status moves on.
+    const [downloadErrorFor, setDownloadErrorFor] = useState<string | null>(null);
 
     const status = book.data?.status ?? null;
-    const building = status === 'QUEUED' || status === 'RUNNING' || request.isPending;
+    const buildKey = `${status}|${book.data?.requestedAt}`;
+    const downloadError = downloadErrorFor === buildKey;
+    // A failed read stops the polling, so a cached QUEUED/RUNNING no longer means "building": show the error instead.
+    const readFailed = book.isError;
+    const building = !readFailed && (status === 'QUEUED' || status === 'RUNNING' || request.isPending);
     // Nothing went wrong when a wish was removed since the book was made: it gets its own line and a plain "create" button.
     // Every other failure code means "try again" and shares one generic line.
     const contentChanged = status === 'FAILED' && book.data?.failureCode === 'CONTENT_CHANGED';
@@ -36,17 +41,22 @@ export function WishbookBookPanel({ eventId, canEditTexts }: { eventId: string; 
         request.mutate();
     }
     async function download() {
-        setDownloadError(null);
+        setDownloadErrorFor(null);
         setDownloading(true);
         try {
-            const url = await freshUrl();
-            if (url) downloadUrl(url, '');
-            else setDownloadError(t('book.downloadFailed'));
+            const fresh = await freshBook();
+            // Navigate rather than click a created anchor: the latter is blocked on mobile Safari after an await.
+            if (fresh.status === 'READY' && fresh.downloadUrl) window.location.assign(fresh.downloadUrl);
+            // Any other status is already on screen through the cache (a rebuild started, or the book was taken down).
+            else if (fresh.status === 'READY') setDownloadErrorFor(buildKey);
         } catch {
-            setDownloadError(t('book.downloadFailed'));
+            setDownloadErrorFor(buildKey);
         } finally {
             setDownloading(false);
         }
+    }
+    function refetchBook() {
+        void book.refetch();
     }
     function openTexts() {
         setTextsOpen(true);
@@ -66,25 +76,40 @@ export function WishbookBookPanel({ eventId, canEditTexts }: { eventId: string; 
                     <p className="mt-1 text-xs leading-5 text-ink-muted">{t('book.body')}</p>
 
                     {/* Status */}
-                    {building ? (
-                        <p className="mt-3 inline-flex items-center gap-2 text-xs text-ink-muted">
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-                            {t('book.building')}
-                        </p>
-                    ) : status === 'READY' && book.data ? (
-                        <p className="mt-3 text-xs text-ink-muted">
-                            {t('book.ready', { pages: book.data.pageCount ?? 0, wishes: book.data.entryCount ?? 0 })}
-                        </p>
-                    ) : status === 'FAILED' ? (
-                        <p className="mt-3 text-xs text-rose-600">{contentChanged ? t('book.contentChanged') : t('book.failed')}</p>
-                    ) : null}
+                    <div role="status" aria-live="polite">
+                        {readFailed ? (
+                            <div className="mt-3 flex flex-wrap items-center gap-2">
+                                <p className="text-xs text-rose-600">{toErrorMessage(book.error)}</p>
+                                <button type="button" onClick={refetchBook} disabled={book.isFetching} className={secondaryButton}>
+                                    {t('book.retry')}
+                                </button>
+                            </div>
+                        ) : building ? (
+                            <p className="mt-3 inline-flex items-center gap-2 text-xs text-ink-muted">
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                                {t('book.building')}
+                            </p>
+                        ) : status === 'READY' && book.data ? (
+                            <p className="mt-3 text-xs text-ink-muted">
+                                {t('book.ready', { pages: book.data.pageCount ?? 0, wishes: book.data.entryCount ?? 0 })}
+                            </p>
+                        ) : status === 'FAILED' ? (
+                            <p className="mt-3 text-xs text-rose-600">{contentChanged ? t('book.contentChanged') : t('book.failed')}</p>
+                        ) : null}
+                    </div>
 
                     {/* Actions */}
-                    {!building && (
+                    {!building && !readFailed && (
                         <div className="mt-4 flex flex-wrap items-center gap-2">
                             {status === 'READY' ? (
                                 <>
-                                    <button type="button" onClick={download} disabled={downloading} className={primaryButton}>
+                                    <button
+                                        type="button"
+                                        onClick={download}
+                                        disabled={downloading || request.isPending}
+                                        aria-busy={downloading}
+                                        className={primaryButton}
+                                    >
                                         {downloading ? (
                                             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                                         ) : (
@@ -92,13 +117,13 @@ export function WishbookBookPanel({ eventId, canEditTexts }: { eventId: string; 
                                         )}
                                         {t('book.download')}
                                     </button>
-                                    <button type="button" onClick={create} className={secondaryButton}>
+                                    <button type="button" onClick={create} disabled={downloading} className={secondaryButton}>
                                         <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
                                         {t('book.rebuild')}
                                     </button>
                                 </>
                             ) : (
-                                <button type="button" onClick={create} className={primaryButton}>
+                                <button type="button" onClick={create} disabled={downloading} className={primaryButton}>
                                     {status === 'FAILED' && !contentChanged ? t('book.retry') : t('book.create')}
                                 </button>
                             )}
@@ -110,8 +135,16 @@ export function WishbookBookPanel({ eventId, canEditTexts }: { eventId: string; 
                             )}
                         </div>
                     )}
-                    {request.error && <p className="mt-2 text-xs text-rose-600">{toErrorMessage(request.error)}</p>}
-                    {downloadError && <p className="mt-2 text-xs text-rose-600">{downloadError}</p>}
+                    {request.error && (
+                        <p role="alert" className="mt-2 text-xs text-rose-600">
+                            {toErrorMessage(request.error)}
+                        </p>
+                    )}
+                    {downloadError && (
+                        <p role="alert" className="mt-2 text-xs text-rose-600">
+                            {t('book.downloadFailed')}
+                        </p>
+                    )}
                 </div>
             </div>
             {canEditTexts && textsOpen && <WishbookBookTextsModal eventId={eventId} onCloseAction={closeTexts} />}
