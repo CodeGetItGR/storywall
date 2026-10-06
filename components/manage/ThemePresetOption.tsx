@@ -4,6 +4,7 @@ import { Check, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { contrastRatio } from '@/lib/adminThemePresets';
 import type { EventThemeFontDto } from '@/lib/api/types';
 import { eventThemeStyle, isHexColor, themeFontScopeProps } from '@/lib/eventTheme';
 import { cn } from '@/lib/utils';
@@ -47,9 +48,12 @@ export function ThemePresetOption({
     const [failedUrl, setFailedUrl] = useState<string | null>(null);
     const inert = disabled || presetId === undefined;
     const themeStyle = eventThemeStyle(backgroundColor, { titleColor, headingFont });
-    // The title colour's contrast was checked against the preset background only, not the white
-    // card: the label wears it on a strip of that background (the style is set only for a valid one).
-    const titleOnBackground = themeStyle !== undefined && titleColor !== null && isHexColor(titleColor);
+    // The title colour's contrast was checked against the preset background only, not the white card,
+    // so a card with one puts its label on a strip of that background (themeStyle is set only for a
+    // valid one). The backend guarantees 3:1, the large-text bar; this ~14px label needs 4.5:1, so
+    // below that the strip keeps ink, which the backend guarantees reads on the background.
+    const hasStrip = themeStyle !== undefined && titleColor !== null && isHexColor(titleColor);
+    const titleOnBackground = hasStrip && contrastRatio(titleColor, backgroundColor!) >= 4.5;
 
     function handleClick() {
         if (inert) return;
@@ -112,8 +116,20 @@ export function ThemePresetOption({
                 )}
             </span>
             {/* Label, in the preset's heading font and title colour */}
-            <span {...themeFontScopeProps(headingFont)} style={themeStyle} className={cn('min-w-0', titleOnBackground && 'rounded-md bg-event')}>
-                <span className={cn('event-heading block truncate px-1 text-sm font-semibold', titleOnBackground ? 'text-event-title' : 'text-ink')}>
+            {/* An unusable background means no theme at all, font included (EventThemeScope's rule) */}
+            <span
+                {...themeFontScopeProps(themeStyle ? headingFont : null)}
+                style={themeStyle}
+                className={cn('min-w-0', hasStrip && 'rounded-md bg-event px-2 py-1')}
+            >
+                {/* leading-normal leaves room for script fonts and Greek accents under truncate */}
+                <span
+                    className={cn(
+                        'event-heading block truncate text-sm leading-normal font-semibold',
+                        !hasStrip && 'px-1',
+                        titleOnBackground ? 'text-event-title' : 'text-ink',
+                    )}
+                >
                     {label}
                 </span>
             </span>

@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ThemePicker } from '@/components/manage/ThemePicker';
@@ -143,9 +143,15 @@ describe('ThemePicker', () => {
         state({
             select,
             selectedKey: 'retired',
-            staleTheme: { presetKey: 'retired', backgroundColor: '#FFD6E0', illustrationUrl: 'https://media.example/retired.webp' },
+            staleTheme: {
+                presetKey: 'retired',
+                backgroundColor: '#FFD6E0',
+                illustrationUrl: 'https://media.example/retired.webp',
+                titleColor: '#7A2E3B',
+                headingFont: { key: 'great-vibes', fallback: 'serif', url: '/api/theme-fonts/great-vibes/1.woff2' },
+            },
         });
-        renderPicker();
+        const { container } = render(<ThemePicker event={{ id: 'e1' } as EventDetailResponseDto} canWrite />);
         const radios = screen.getAllByRole('radio');
         expect(radios[0]).toHaveAccessibleName('none');
         const current = screen.getByRole('radio', { name: 'current' });
@@ -155,6 +161,11 @@ describe('ThemePicker', () => {
         fireEvent.click(current);
         expect(select).not.toHaveBeenCalled();
         expect(screen.getAllByTestId('art')[0]).toHaveAttribute('src', 'https://media.example/retired.webp');
+        // Its title colour and font come through to the card.
+        const scope = within(current).getByText('current').parentElement as HTMLElement;
+        expect(scope).toHaveAttribute('data-theme-font');
+        expect(scope.style.getPropertyValue('--event-title')).toBe('#7A2E3B');
+        expect(container.querySelector('style')?.textContent).toContain('theme-great-vibes');
     });
 
     it('announces saving and saved in a polite status region', () => {

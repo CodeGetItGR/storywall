@@ -94,7 +94,53 @@ describe('ThemePresetRadioGroup fonts and title colour', () => {
         expect(label.closest('[data-theme-font]')).toBeNull();
         expect(label.closest('.bg-event')).toBeNull();
         expect(label).toHaveClass('text-ink');
-        expect(container.querySelector('[style*="--event-title"]')).toBeNull();
+        expect((label.parentElement as HTMLElement).style.getPropertyValue('--event-title')).toBe('');
         expect(container.querySelector('style')).toBeNull();
+    });
+
+    it('is still a radio named by its label on a themed card', () => {
+        renderGroup([preset('a', { headingFont: SCRIPT, titleColor: '#7A2E3B' })]);
+        expect(screen.getByRole('radio', { name: 'Preset a' })).toBeInTheDocument();
+    });
+
+    it('pads the strip and gives the label room for script fonts and accents', () => {
+        renderGroup([preset('a', { titleColor: '#7A2E3B' })]);
+        const label = labelOf('Preset a');
+        expect(label.closest('.bg-event')).toHaveClass('px-2', 'py-1');
+        expect(label).toHaveClass('leading-normal');
+    });
+
+    it('keeps ink on the strip for a title colour below 4.5:1 (only 3:1 is guaranteed; the label is small text)', () => {
+        // #A05A7A on #BFE6E2 is about 3.7:1.
+        renderGroup([preset('a', { titleColor: '#A05A7A' })]);
+        const label = labelOf('Preset a');
+        expect(label.closest('.bg-event')).not.toBeNull();
+        expect(label).toHaveClass('text-ink');
+        expect(label).not.toHaveClass('text-event-title');
+    });
+
+    it.each([null, 'pink'])('treats a valid title and font on an unusable background (%s) as no theme', (backgroundColor) => {
+        renderGroup([preset('a', { backgroundColor, titleColor: '#7A2E3B', headingFont: SCRIPT })]);
+        const label = labelOf('Preset a');
+        expect(label.closest('.bg-event')).toBeNull();
+        expect(label.closest('[data-theme-font]')).toBeNull();
+        expect(label).toHaveClass('text-ink');
+        expect((label.parentElement as HTMLElement).style.getPropertyValue('--event-title')).toBe('');
+    });
+
+    it('ignores a title colour that is not #RRGGBB', () => {
+        renderGroup([preset('a', { titleColor: 'red' })]);
+        const label = labelOf('Preset a');
+        expect(label).toHaveClass('text-ink');
+        expect(label.closest('.bg-event')).toBeNull();
+        expect((label.parentElement as HTMLElement).style.getPropertyValue('--event-title')).toBe('');
+    });
+
+    it("doesn't let a malformed font drop a valid sibling with the same key", () => {
+        const malformed: EventThemeFontDto = { ...SCRIPT, url: 'https://evil.example/great-vibes.woff2' };
+        const { container } = renderGroup([preset('a', { headingFont: malformed }), preset('b', { headingFont: SCRIPT })]);
+        const styles = container.querySelectorAll('style');
+        expect(styles).toHaveLength(1);
+        expect(styles[0].textContent).toContain('/api/theme-fonts/great-vibes/1.woff2');
     });
 });

@@ -5,6 +5,7 @@ import { type KeyboardEvent, useState } from 'react';
 import { ThemeFontFace } from '@/components/event/ThemeFontFace';
 import { ThemePresetOption } from '@/components/manage/ThemePresetOption';
 import type { EventThemeFontDto } from '@/lib/api/types';
+import { themeFontFaceCss } from '@/lib/eventTheme';
 import { cn } from '@/lib/utils';
 
 const NEXT_KEYS = ['ArrowRight', 'ArrowDown'];
@@ -46,10 +47,14 @@ export function ThemePresetRadioGroup({
     const tabbableId =
         (options.some((option) => option.id === focusedId) ? focusedId : options.find((option) => option.selected)?.id) ?? options[0]?.id;
 
-    // One @font-face per font, however many cards share it.
-    const fonts = [
-        ...new Map(options.flatMap((option) => (option.headingFont ? [[option.headingFont.key, option.headingFont] as const] : []))).values(),
-    ];
+    // One @font-face per font, however many cards share it: the first valid one per key, skipping
+    // fonts that would declare nothing.
+    const fontsByKey = new Map<string, EventThemeFontDto>();
+    for (const option of options) {
+        const font = option.headingFont;
+        if (font && themeFontFaceCss(font) !== null && !fontsByKey.has(font.key)) fontsByKey.set(font.key, font);
+    }
+    const fonts = [...fontsByKey.values()];
 
     function handleKeyDown(keyEvent: KeyboardEvent<HTMLDivElement>) {
         const { key } = keyEvent;
