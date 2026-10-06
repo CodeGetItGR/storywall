@@ -111,6 +111,7 @@ export function usePlansSection() {
     const selectEventType = useCallback((key: string) => setView({ view: 'eventType', key }), [setView]);
     const openSettingsModules = useCallback(() => setView({ view: 'settingsModules', key: null }), [setView]);
     const openSettingsEventTypes = useCallback(() => setView({ view: 'settingsEventTypes', key: null }), [setView]);
+    const openSettingsLandingCategories = useCallback(() => setView({ view: 'settingsLandingCategories', key: null }), [setView]);
     const openSettingsMemberRoles = useCallback(() => setView({ view: 'settingsMemberRoles', key: null }), [setView]);
 
     return {
@@ -133,6 +134,7 @@ export function usePlansSection() {
         selectEventType,
         openSettingsModules,
         openSettingsEventTypes,
+        openSettingsLandingCategories,
         openSettingsMemberRoles,
         modules: modulesQuery.data ?? [],
         unlocks: unlocksQuery.data ?? [],

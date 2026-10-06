@@ -3106,11 +3106,13 @@
                 "settings": "Settings",
                 "modules": "Modules",
                 "eventTypesSettings": "Event types",
+                "landingCategories": "Landing categories",
                 "memberRoles": "Member roles"
             },
             "settings": {
                 "modulesTitle": "Modules",
                 "eventTypesTitle": "Event types",
+                "landingCategoriesTitle": "Landing categories",
                 "memberRolesTitle": "Member roles"
             },
             "default": "Default",

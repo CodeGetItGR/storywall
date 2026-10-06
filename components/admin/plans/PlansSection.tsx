@@ -6,6 +6,7 @@ import { EventTypePlansPane } from '@/components/admin/plans/EventTypePlansPane'
 import { PlansPaneEmpty } from '@/components/admin/plans/PlansPaneEmpty';
 import { PlansRail } from '@/components/admin/plans/PlansRail';
 import { PlansSettingsEventTypes } from '@/components/admin/plans/PlansSettingsEventTypes';
+import { PlansSettingsLandingCategories } from '@/components/admin/plans/PlansSettingsLandingCategories';
 import { PlansSettingsMemberRoles } from '@/components/admin/plans/PlansSettingsMemberRoles';
 import { PlansSettingsModules } from '@/components/admin/plans/PlansSettingsModules';
 import { LoadingState } from '@/components/ui/LoadingState';
@@ -36,12 +37,14 @@ export function PlansSection() {
                     onSelectEventTypeAction={section.selectEventType}
                     onOpenSettingsModulesAction={section.openSettingsModules}
                     onOpenSettingsEventTypesAction={section.openSettingsEventTypes}
+                    onOpenSettingsLandingCategoriesAction={section.openSettingsLandingCategories}
                     onOpenSettingsMemberRolesAction={section.openSettingsMemberRoles}
                 />
 
                 {/* Pane */}
                 {section.view.view === 'settingsModules' && <PlansSettingsModules />}
                 {section.view.view === 'settingsEventTypes' && <PlansSettingsEventTypes />}
+                {section.view.view === 'settingsLandingCategories' && <PlansSettingsLandingCategories />}
                 {section.view.view === 'settingsMemberRoles' && <PlansSettingsMemberRoles />}
                 {showingEventType && section.isLoading && <LoadingState label={t('plans.loading')} className="justify-start py-6" />}
                 {showingEventType && section.error && (

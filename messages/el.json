@@ -3234,11 +3234,13 @@
                 "settings": "Ρυθμίσεις",
                 "modules": "Ενότητες",
                 "eventTypesSettings": "Τύποι εκδηλώσεων",
+                "landingCategories": "Κατηγορίες αρχικής σελίδας",
                 "memberRoles": "Ρόλοι καλεσμένων"
             },
             "settings": {
                 "modulesTitle": "Ενότητες",
                 "eventTypesTitle": "Τύποι εκδηλώσεων",
+                "landingCategoriesTitle": "Κατηγορίες αρχικής σελίδας",
                 "memberRolesTitle": "Ρόλοι καλεσμένων"
             },
             "default": "Προεπιλογή",

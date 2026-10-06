@@ -23,6 +23,11 @@ describe('parsePlansHash', () => {
         expect(parsePlansHash('#event-types')).toEqual({ view: 'settingsEventTypes', key: null });
     });
 
+    it('parses and formats the landing categories view', () => {
+        expect(parsePlansHash('#plans/settings/landing-categories')).toEqual({ view: 'settingsLandingCategories', key: null });
+        expect(formatPlansHash({ view: 'settingsLandingCategories', key: null })).toBe('#plans/settings/landing-categories');
+    });
+
     it('falls back for junk', () => {
         expect(parsePlansHash('#plans/settings/whatever')).toEqual({ view: 'eventType', key: null });
     });
