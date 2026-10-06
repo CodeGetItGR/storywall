@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { QrLinkResolutionDto } from '@/lib/api/types';
-import { getQrRedirectPath } from '@/lib/qrLinks';
+import type { EventModuleResponseDto, QrLinkResolutionDto } from '@/lib/api/types';
+import { getQrRedirectPath, isMemberArchiveEnabled } from '@/lib/qrLinks';
 
 const active = (targetType: QrLinkResolutionDto['targetType'], inviteToken?: string): QrLinkResolutionDto => ({
     status: 'ACTIVE',
@@ -30,5 +30,20 @@ describe('getQrRedirectPath', () => {
         expect(getQrRedirectPath(active('EVENT_JOIN'), true)).toBeNull();
         expect(getQrRedirectPath({ ...active('EVENT_JOIN', 'tok'), status: 'REVOKED' }, true)).toBeNull();
         expect(getQrRedirectPath(undefined, true)).toBeNull();
+    });
+});
+
+function gallery(isAvailable: boolean, configuration: Record<string, unknown> | null): EventModuleResponseDto[] {
+    return [{ moduleKey: 'gallery', isAvailable, configuration } as EventModuleResponseDto];
+}
+
+describe('isMemberArchiveEnabled', () => {
+    it('is on only when the gallery is available and the flag is exactly true', () => {
+        expect(isMemberArchiveEnabled(gallery(true, { qrUploadEnabled: true, memberArchiveAfterEnd: true }))).toBe(true);
+        expect(isMemberArchiveEnabled(gallery(false, { memberArchiveAfterEnd: true }))).toBe(false);
+        expect(isMemberArchiveEnabled(gallery(true, { qrUploadEnabled: true }))).toBe(false);
+        expect(isMemberArchiveEnabled(gallery(true, { memberArchiveAfterEnd: 'true' }))).toBe(false);
+        expect(isMemberArchiveEnabled(gallery(true, null))).toBe(false);
+        expect(isMemberArchiveEnabled(undefined)).toBe(false);
     });
 });

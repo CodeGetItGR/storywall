@@ -4596,6 +4596,7 @@
         "planInUse": "This plan is assigned to accounts or events, so it cannot be deleted.",
         "planIsOnlyDefault": "Set another default plan before changing this one.",
         "postEditNotAuthor": "Only the person who wrote this post can edit it. Hosts can pin, delete or report it.",
+        "memberArchiveNotEnabled": "Members of this event can't download the whole gallery.",
         "postMediaLimitExceeded": "This post already has the maximum number of photos.",
         "postPinNotHost": "Only hosts can pin posts.",
         "announcementNotHost": "Only hosts can post announcements.",
