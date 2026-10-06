@@ -347,3 +347,45 @@ describe('useThemePresetDrawer title colour and heading font', () => {
         expect(result.current.failure?.kind).toBe('other');
     });
 });
+
+describe('useThemePresetDrawer unmounted mid-save', () => {
+    it('skips the upload and onDoneAction when the drawer unmounts between create and upload', async () => {
+        const onDoneAction = vi.fn();
+        let finish: (preset: AdminThemePresetDto) => void = () => undefined;
+        mocks.create.mockReturnValue(new Promise((resolve) => (finish = resolve)));
+        const { result, unmount } = renderDrawer(null, onDoneAction);
+        fillValidDraft(result);
+        act(() => result.current.handleFileChange(fileChange(new File(['x'], 'dino.png', { type: 'image/png' }))));
+
+        let pending: Promise<void> = Promise.resolve();
+        act(() => {
+            pending = result.current.handleSubmit(submitEvent());
+        });
+        unmount();
+        finish({ ...PRESET, illustrationUrl: null });
+        await pending;
+
+        expect(mocks.create).toHaveBeenCalledOnce();
+        expect(mocks.upload).not.toHaveBeenCalled();
+        expect(onDoneAction).not.toHaveBeenCalled();
+    });
+
+    it('skips onDoneAction when the drawer unmounts while an edit is saving', async () => {
+        const onDoneAction = vi.fn();
+        let finish: (preset: AdminThemePresetDto) => void = () => undefined;
+        mocks.patch.mockReturnValue(new Promise((resolve) => (finish = resolve)));
+        const { result, unmount } = renderDrawer(PRESET, onDoneAction);
+        act(() => result.current.handleFieldChange(field('nameEn', 'Dino party')));
+
+        let pending: Promise<void> = Promise.resolve();
+        act(() => {
+            pending = result.current.handleSubmit(submitEvent());
+        });
+        unmount();
+        finish(PRESET);
+        await pending;
+
+        expect(mocks.patch).toHaveBeenCalledOnce();
+        expect(onDoneAction).not.toHaveBeenCalled();
+    });
+});

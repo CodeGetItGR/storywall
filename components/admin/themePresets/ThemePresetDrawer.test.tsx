@@ -14,8 +14,18 @@ vi.mock('next-intl', () => ({
     useLocale: () => drawerState.locale,
 }));
 vi.mock('@/components/admin/AdminDrawer', () => ({
-    AdminDrawer: ({ title, children, footer }: { title: ReactNode; children: ReactNode; footer: ReactNode }) => (
-        <div>
+    AdminDrawer: ({
+        title,
+        children,
+        footer,
+        closeDisabled,
+    }: {
+        title: ReactNode;
+        children: ReactNode;
+        footer: ReactNode;
+        closeDisabled?: boolean;
+    }) => (
+        <div data-testid="drawer" data-close-disabled={String(Boolean(closeDisabled))}>
             <h2>{title}</h2>
             {children}
             {footer}
@@ -270,6 +280,36 @@ describe('ThemePresetDrawer server errors', () => {
     });
 });
 
+describe('ThemePresetDrawer while saving', () => {
+    it('blocks closing the drawer and disables Cancel', () => {
+        state({ isSaving: true });
+        renderDrawer();
+        expect(screen.getByTestId('drawer').dataset.closeDisabled).toBe('true');
+        expect(screen.getByRole('button', { name: 'cancel' })).toBeDisabled();
+        expect(screen.getByRole('button', { name: 'save' })).toBeDisabled();
+    });
+
+    it('lets the drawer close and Cancel work when idle', () => {
+        const onCloseAction = vi.fn();
+        state();
+        render(<ThemePresetDrawer preset={PRESET} sortOrder={0} eventTypes={EVENT_TYPES} onCloseAction={onCloseAction} />);
+        expect(screen.getByTestId('drawer').dataset.closeDisabled).toBe('false');
+        fireEvent.click(screen.getByRole('button', { name: 'cancel' }));
+        expect(onCloseAction).toHaveBeenCalledOnce();
+    });
+});
+
+describe('ThemePresetDrawer colour inputs', () => {
+    it('gives each colour picker and hex input its own accessible name', () => {
+        state({ draft: draftWith({ titleColor: '#7A1F3D' }), titleColorInputValue: '#7a1f3d' });
+        const { container } = render(<ThemePresetDrawer preset={PRESET} sortOrder={0} eventTypes={EVENT_TYPES} onCloseAction={vi.fn()} />);
+        const pickers = container.querySelectorAll('input[type="color"]');
+        expect([...pickers].map((picker) => picker.getAttribute('aria-label'))).toEqual(['backgroundColor', 'titleColor']);
+        expect(screen.getByRole('textbox', { name: 'backgroundColorHex' })).toHaveValue('#BFE6E2');
+        expect(screen.getByRole('textbox', { name: 'titleColorHex' })).toHaveValue('#7A1F3D');
+    });
+});
+
 describe('ThemePresetDrawer title colour', () => {
     it('says the title uses the ink colour while empty, and offers no reset', () => {
         state();
@@ -283,7 +323,7 @@ describe('ThemePresetDrawer title colour', () => {
         state({ draft: draftWith({ titleColor: '#7A1F3D' }), titleContrastRatio: 9.1, previewTitleColor: '#7A1F3D', handleUseInk });
         renderDrawer();
         expect(screen.getByText('titleContrastOk {"ratio":"9.10"}')).toBeInTheDocument();
-        expect(screen.getByDisplayValue('#7A1F3D')).toHaveAccessibleName('titleColor');
+        expect(screen.getByDisplayValue('#7A1F3D')).toHaveAccessibleName('titleColorHex');
         expect(screen.getByTestId('preview').dataset.titleColor).toBe('#7A1F3D');
         fireEvent.click(screen.getByRole('button', { name: 'titleColorUseInk' }));
         expect(handleUseInk).toHaveBeenCalledOnce();

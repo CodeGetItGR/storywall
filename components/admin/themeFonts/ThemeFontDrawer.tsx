@@ -57,7 +57,10 @@ export function ThemeFontDrawer({ font, onCloseAction }: { font: AdminThemeFontD
         const code = getErrorCode(error);
         // The body as a whole was over the server's limit: for this form that is the font file.
         if (code === ERROR_CODES.REQUEST_TOO_LARGE) return t('fileSize');
-        // A 3001 that reaches here is about no field we show (an upload 3001): its detail is localized.
+        // A 3001 that reaches here is about no field we show (an upload 3001). The backend sends a
+        // localized detail for its service-level 3001s; a parallel backend change is adding message
+        // keys for the preset validation rejections. Framework-level 3001s (a missing multipart part,
+        // a bad UUID) are English, but a well-formed admin client never triggers them.
         if (code === ERROR_CODES.VALIDATION_FAILED) return getErrorMessage(error, '').trim() || apiErrorMessage(error);
         return apiErrorMessage(error);
     }

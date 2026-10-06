@@ -4,8 +4,8 @@ import { Check, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
-import { contrastRatio } from '@/lib/adminThemePresets';
 import type { EventThemeFontDto } from '@/lib/api/types';
+import { contrastRatio } from '@/lib/contrast';
 import { eventThemeStyle, isHexColor, themeFontScopeProps } from '@/lib/eventTheme';
 import { cn } from '@/lib/utils';
 

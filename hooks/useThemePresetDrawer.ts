@@ -67,6 +67,15 @@ export function useThemePresetDrawer({
     const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
     // Set synchronously: a fast double click submits twice before isSaving re-renders.
     const submitting = useRef(false);
+    // Cleared on unmount: a save still in flight then stops before the upload and never calls
+    // onDoneAction, which would otherwise act on whatever drawer is open by then.
+    const mounted = useRef(true);
+    useEffect(() => {
+        mounted.current = true;
+        return () => {
+            mounted.current = false;
+        };
+    }, []);
 
     // Revokes the previous preview whenever it's replaced, and the last one on unmount.
     useEffect(() => {
@@ -130,6 +139,7 @@ export function useThemePresetDrawer({
             try {
                 if (current === null) {
                     current = await create.mutateAsync(buildThemePresetCreatePayload(draft, sortOrder));
+                    if (!mounted.current) return;
                     setSaved(current);
                 } else {
                     const input = buildThemePresetPatchPayload(current, draft);
@@ -138,12 +148,15 @@ export function useThemePresetDrawer({
                         setSaved(current);
                     }
                 }
+                if (!mounted.current) return;
                 if (file) {
                     setSaved(await upload.mutateAsync({ id: current.id, file }));
                     setFile(null);
                 }
+                if (!mounted.current) return;
                 onDoneAction();
             } catch (error) {
+                if (!mounted.current) return;
                 const classified = classifyError(error, current === null);
                 if (classified.kind === 'notFound') void queryClient.invalidateQueries({ queryKey: adminThemePresetKeys.all });
                 setFailure(classified);

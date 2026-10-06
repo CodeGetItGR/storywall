@@ -9,8 +9,12 @@ import type {
     AdminThemePresetRequestDto,
     EventTypeConvention,
 } from '@/lib/api/types';
+import { contrastRatio } from '@/lib/contrast';
 import { isHexColor } from '@/lib/eventTheme';
 import { resolveLocalizedText } from '@/lib/localizedText';
+
+// Re-exported for existing admin callers; host code imports '@/lib/contrast' directly.
+export { contrastRatio };
 
 // Mirrors the backend's validation (event theme spec, "Admin" API) for inline
 // feedback only; the server stays the authority.
@@ -49,21 +53,6 @@ export type ThemePresetDraft = {
 export type ThemePresetDraftErrors = Partial<
     Record<'key' | 'nameEn' | 'nameEl' | 'backgroundColor' | 'backgroundContrast' | 'titleColor' | 'titleContrast' | 'eventTypes', true>
 >;
-
-function relativeLuminance(hex: string): number {
-    const [red, green, blue] = [1, 3, 5].map((start) => {
-        const channel = parseInt(hex.slice(start, start + 2), 16) / 255;
-        return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
-    });
-    return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
-}
-
-// WCAG 2.x contrast ratio (1–21) between two #RRGGBB colours, the formula the backend uses.
-export function contrastRatio(first: string, second: string): number {
-    const a = relativeLuminance(first);
-    const b = relativeLuminance(second);
-    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
-}
 
 // The ratio of a #RRGGBB background against the ink text.
 export function inkContrastRatio(hex: string): number {
@@ -230,9 +219,11 @@ export function themeFontOptions(fonts: AdminThemeFontDto[] | undefined, assigne
         .sort((left, right) => left.familyName.localeCompare(right.familyName) || left.key.localeCompare(right.key));
 }
 
-// A 3001 from a service rule (background contrast, an event type that can't be themed), not bean
-// validation: it has no field errors, so "check the highlighted fields" would point at nothing. Its
-// detail is localized; a bean-validation 3001 has field errors and a fixed English detail.
+// A 3001 with no field errors, so "check the highlighted fields" would point at nothing; the detail
+// is shown instead. The backend sends a localized detail for its service-level 3001s (background
+// contrast, an event type that can't be themed); a parallel backend change is adding message keys
+// for the preset validation rejections. Framework-level 3001s (a missing multipart part, a bad
+// UUID) are English, but a well-formed admin client never triggers them.
 export function isServiceValidationError(error: unknown): boolean {
     if (!(error instanceof ApiError) || getErrorCode(error) !== ERROR_CODES.VALIDATION_FAILED) return false;
     return Object.keys(error.problem?.errors ?? {}).length === 0;

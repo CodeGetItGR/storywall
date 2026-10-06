@@ -78,7 +78,12 @@ export function ThemePresetDrawer({
     const footer = (
         <div className="flex w-full items-center justify-end gap-2">
             {/* Save */}
-            <button type="button" onClick={onCloseAction} className="h-9 rounded-md px-3 text-sm font-semibold text-ink-muted hover:text-ink">
+            <button
+                type="button"
+                onClick={onCloseAction}
+                disabled={form.isSaving}
+                className="h-9 rounded-md px-3 text-sm font-semibold text-ink-muted hover:text-ink disabled:opacity-50"
+            >
                 {t('cancel')}
             </button>
             <button
@@ -94,10 +99,14 @@ export function ThemePresetDrawer({
     );
 
     return (
+        // closeDisabled blocks ×, Esc and the overlay while saving, so a save never runs on behind a
+        // drawer the admin thinks is gone. Back still closes (and unmounts) it mid-save; the hook's mounted
+        // guard then skips the upload and onDoneAction.
         <AdminDrawer
             open
             size="wide"
             onClose={onCloseAction}
+            closeDisabled={form.isSaving}
             title={preset ? localizedText(preset.name, preset.key) : t('createTitle')}
             closeLabel={t('close')}
             footer={footer}
@@ -169,6 +178,7 @@ export function ThemePresetDrawer({
                                 value={form.draft.backgroundColor}
                                 onChange={form.handleFieldChange}
                                 maxLength={7}
+                                aria-label={t('backgroundColorHex')}
                                 aria-invalid={Boolean(form.errors.backgroundColor || form.errors.backgroundContrast)}
                                 className={adminInputClass('font-mono uppercase')}
                             />
@@ -198,7 +208,7 @@ export function ThemePresetDrawer({
                                     onChange={form.handleFieldChange}
                                     maxLength={7}
                                     placeholder={t('titleColorPlaceholder')}
-                                    aria-label={t('titleColor')}
+                                    aria-label={t('titleColorHex')}
                                     aria-invalid={Boolean(form.errors.titleColor || form.errors.titleContrast)}
                                     className={adminInputClass('font-mono uppercase placeholder:normal-case')}
                                 />

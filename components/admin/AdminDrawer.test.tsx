@@ -40,10 +40,13 @@ describe('AdminDrawer closeDisabled', () => {
     it('closes on Esc by default', async () => {
         const onClose = vi.fn();
         await renderDrawer(onClose);
+        // Same spy as the disabled case: proves it does see the drawer clear its history entry.
+        const replaceState = vi.spyOn(window.history, 'replaceState');
 
         fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
 
         expect(onClose).toHaveBeenCalledOnce();
+        expect(replaceState).toHaveBeenCalled();
         expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
     });
 });
