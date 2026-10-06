@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useLocale } from 'next-intl';
 import { type ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { useAdminThemeFonts } from '@/hooks/useAdminThemeFonts';
+import { adminThemeFontKeys, useAdminThemeFonts } from '@/hooks/useAdminThemeFonts';
 import { adminThemePresetKeys, useCreateThemePreset, usePatchThemePreset, useUploadThemePresetIllustration } from '@/hooks/useAdminThemePresets';
 import {
     buildThemePresetCreatePayload,
@@ -159,6 +159,11 @@ export function useThemePresetDrawer({
                 if (!mounted.current) return;
                 const classified = classifyError(error, current === null);
                 if (classified.kind === 'notFound') void queryClient.invalidateQueries({ queryKey: adminThemePresetKeys.all });
+                // The picked font can no longer be assigned (another admin archived it, say): refetch
+                // the list so the select stops offering it.
+                if (getErrorCode(error) === ERROR_CODES.THEME_FONT_NOT_ASSIGNABLE) {
+                    void queryClient.invalidateQueries({ queryKey: adminThemeFontKeys.all });
+                }
                 setFailure(classified);
             } finally {
                 submitting.current = false;

@@ -220,10 +220,10 @@ export function themeFontOptions(fonts: AdminThemeFontDto[] | undefined, assigne
 }
 
 // A 3001 with no field errors, so "check the highlighted fields" would point at nothing; the detail
-// is shown instead. The backend sends a localized detail for its service-level 3001s (background
-// contrast, an event type that can't be themed); a parallel backend change is adding message keys
-// for the preset validation rejections. Framework-level 3001s (a missing multipart part, a bad
-// UUID) are English, but a well-formed admin client never triggers them.
+// is shown instead. The backend's service-level 3001s (background contrast, an event type that
+// can't be themed, the other preset validation rejections) carry a localized detail. Framework-level
+// 3001s (a missing multipart part, a malformed UUID) are English, but a well-formed admin client
+// never triggers them.
 export function isServiceValidationError(error: unknown): boolean {
     if (!(error instanceof ApiError) || getErrorCode(error) !== ERROR_CODES.VALIDATION_FAILED) return false;
     return Object.keys(error.problem?.errors ?? {}).length === 0;

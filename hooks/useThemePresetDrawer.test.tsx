@@ -20,7 +20,7 @@ vi.mock('@/hooks/useAdminThemePresets', () => ({
     usePatchThemePreset: () => ({ mutateAsync: mocks.patch, isPending: false }),
     useUploadThemePresetIllustration: () => ({ mutateAsync: mocks.upload, isPending: false }),
 }));
-vi.mock('@/hooks/useAdminThemeFonts', () => ({ useAdminThemeFonts: () => mocks.fonts }));
+vi.mock('@/hooks/useAdminThemeFonts', () => ({ adminThemeFontKeys: { all: ['admin', 'theme-fonts'] }, useAdminThemeFonts: () => mocks.fonts }));
 vi.mock('next-intl', () => ({ useLocale: () => 'en' }));
 
 const PRESET: AdminThemePresetDto = {
@@ -345,6 +345,37 @@ describe('useThemePresetDrawer title colour and heading font', () => {
         await act(() => result.current.handleSubmit(submitEvent()));
 
         expect(result.current.failure?.kind).toBe('other');
+    });
+
+    it('refetches the font list on a 5145 from create or patch', async () => {
+        const invalidate = vi.spyOn(QueryClient.prototype, 'invalidateQueries');
+        const refused = new ApiError(409, { errorCode: 5145, detail: 'Δεν μπορεί να χρησιμοποιηθεί.' });
+        mocks.create.mockRejectedValue(refused);
+        mocks.patch.mockRejectedValue(refused);
+
+        const created = renderDrawer();
+        fillValidDraft(created.result);
+        act(() => created.result.current.handleFieldChange(select('headingFontId', 'f1')));
+        await act(() => created.result.current.handleSubmit(submitEvent()));
+        expect(mocks.create).toHaveBeenCalled();
+        expect(invalidate).toHaveBeenCalledWith({ queryKey: ['admin', 'theme-fonts'] });
+
+        invalidate.mockClear();
+        const edited = renderDrawer(PRESET);
+        act(() => edited.result.current.handleFieldChange(select('headingFontId', 'f2')));
+        await act(() => edited.result.current.handleSubmit(submitEvent()));
+        expect(mocks.patch).toHaveBeenCalled();
+        expect(invalidate).toHaveBeenCalledWith({ queryKey: ['admin', 'theme-fonts'] });
+    });
+
+    it('leaves the font list alone on other save failures', async () => {
+        const invalidate = vi.spyOn(QueryClient.prototype, 'invalidateQueries');
+        mocks.patch.mockRejectedValue(new ApiError(500, { errorCode: 5000, detail: 'boom' }));
+        const { result } = renderDrawer(PRESET);
+        act(() => result.current.handleFieldChange(select('headingFontId', 'f2')));
+        await act(() => result.current.handleSubmit(submitEvent()));
+        expect(mocks.patch).toHaveBeenCalled();
+        expect(invalidate).not.toHaveBeenCalledWith({ queryKey: ['admin', 'theme-fonts'] });
     });
 });
 
