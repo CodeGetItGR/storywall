@@ -70,6 +70,18 @@ describe('EventThemeScope', () => {
         expect(renderScope().style.getPropertyValue('--event-bg')).toBe('');
     });
 
+    it("ignores the remembered event's font and title colour on an id-less route (/post/[id])", () => {
+        // No route event id means no theme at all: the remembered event is not what the page is about.
+        state.event = fontedEvent;
+        state.routeEventId = null;
+        state.pathname = '/post/p-1';
+        const root = renderScope();
+        expect(document.querySelector('style')).toBeNull();
+        expect(root).not.toHaveAttribute('data-theme-font');
+        expect(root.style.getPropertyValue('--event-title')).toBe('');
+        expect(root.style.getPropertyValue('--event-heading-font')).toBe('');
+    });
+
     it("stays plain on the host's working pages", () => {
         state.event = themedEvent;
         state.pathname = '/events/e-1/manage/qr';
@@ -113,6 +125,14 @@ describe('EventThemeScope', () => {
 
     it('declares no font when the theme has none', () => {
         state.event = themedEvent;
+        const root = renderScope();
+        expect(document.querySelector('style')).toBeNull();
+        expect(root).not.toHaveAttribute('data-theme-font');
+        expect(root.style.getPropertyValue('--event-title')).toBe('');
+    });
+
+    it.each(['red', null])('declares no font on an unusable background (%s)', (backgroundColor) => {
+        state.event = { id: 'e-1', theme: { ...fontedEvent.theme!, backgroundColor: backgroundColor as string } };
         const root = renderScope();
         expect(document.querySelector('style')).toBeNull();
         expect(root).not.toHaveAttribute('data-theme-font');

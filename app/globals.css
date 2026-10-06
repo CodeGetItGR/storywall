@@ -119,6 +119,9 @@
    alegreya-light's font-family; its two-class specificity would win on its own as well. */
 [data-theme-font] .event-heading {
     font-family: var(--event-heading-font);
+    /* Theme fonts are single-weight uploads (no faux bold), and alegreya-light's tracking would break script joins. */
+    font-synthesis: none;
+    letter-spacing: normal;
 }
 
 /* ── CSS variables ── */

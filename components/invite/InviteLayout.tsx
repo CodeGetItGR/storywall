@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useState } from 'react';
+import { CSSProperties, ReactNode, useState } from 'react';
 
 import { Logo } from '@/components/common/Logo';
 import { ProtectedImage } from '@/components/common/ProtectedImage';
@@ -22,9 +22,21 @@ export function InviteLayout({ coverImageSrc, coverImageAlt, theme, eventTitle, 
     // An illustration that 404s (art replaced by an admin) falls back to the cover.
     const [failedUrl, setFailedUrl] = useState<string | null>(null);
     const illustrationUrl = theme?.illustrationUrl && theme.illustrationUrl !== failedUrl ? theme.illustrationUrl : null;
-    // The theme's tokens (title colour, heading font) for the illustration column; undefined without a usable colour.
-    const themeStyle = theme ? eventThemeStyle(theme.backgroundColor, { titleColor: theme.titleColor, headingFont: theme.headingFont }) : undefined;
-    const headingFont = themeStyle ? theme?.headingFont : null;
+    // The illustration column takes the theme colour and only the title colour and heading font tokens:
+    // the event-page tokens (cards, pills, RSVP fill) mean nothing here. Nothing without a usable colour.
+    const tokens = theme
+        ? (eventThemeStyle(theme.backgroundColor, { titleColor: theme.titleColor, headingFont: theme.headingFont }) as
+              Record<string, string> | undefined)
+        : undefined;
+    const columnStyle =
+        tokens && theme
+            ? ({
+                  backgroundColor: theme.backgroundColor,
+                  '--event-title': tokens['--event-title'],
+                  '--event-heading-font': tokens['--event-heading-font'],
+              } as CSSProperties)
+            : undefined;
+    const headingFont = columnStyle ? theme?.headingFont : null;
 
     function handleIllustrationError() {
         setFailedUrl(theme?.illustrationUrl ?? null);
@@ -37,7 +49,7 @@ export function InviteLayout({ coverImageSrc, coverImageAlt, theme, eventTitle, 
                 // in dark ink. The cover-photo overlay (dark gradient, white title) would only muddy it.
                 <div
                     className="relative flex h-72 w-full shrink-0 flex-col bg-surface-muted md:h-130 lg:h-full lg:w-1/2"
-                    style={themeStyle && theme ? { ...themeStyle, backgroundColor: theme.backgroundColor } : undefined}
+                    style={columnStyle}
                     {...themeFontScopeProps(headingFont)}
                 >
                     <ThemeFontFace font={headingFont} />

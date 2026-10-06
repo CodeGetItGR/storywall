@@ -83,4 +83,22 @@ describe('InviteLayout', () => {
         expect(document.querySelector('style')).toBeNull();
         expect(document.querySelector('[data-theme-font]')).toBeNull();
     });
+
+    it.each(['red', null])('declares no font on an unusable background (%s)', (backgroundColor) => {
+        renderLayout({ ...THEME, backgroundColor: backgroundColor as string, titleColor: '#7A1F3D', headingFont: FONT });
+
+        const column = screen.getByTestId('hero').parentElement?.parentElement as HTMLElement;
+        expect(document.querySelector('style')).toBeNull();
+        expect(column).not.toHaveAttribute('data-theme-font');
+        expect(column.style.getPropertyValue('--event-title')).toBe('');
+    });
+
+    it('puts only the title colour and heading font tokens on the column, not the event-page tokens', () => {
+        renderLayout({ ...THEME, titleColor: '#7A1F3D', headingFont: FONT });
+
+        const column = screen.getByTestId('hero').parentElement?.parentElement as HTMLElement;
+        for (const token of ['--event-bg', '--event-card-bg', '--event-card-line', '--surface-muted', '--orangish']) {
+            expect(column.style.getPropertyValue(token), token).toBe('');
+        }
+    });
 });
