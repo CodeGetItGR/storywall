@@ -48,12 +48,7 @@ export function ThemeFontDrawer({ font, onCloseAction }: { font: AdminThemeFontD
                 ? t('filePending', { name: form.pendingFileName ?? '' })
                 : t('fileHint');
     const failedWith = form.failure?.kind === 'other' ? form.failure.error : null;
-    const serverError =
-        form.failure?.kind === 'other'
-            ? describeServerError(form.failure.error)
-            : form.failure?.kind === 'uploadUnavailable'
-              ? form.failure.detail
-              : null;
+    const serverError = form.failure?.kind === 'other' ? describeServerError(form.failure.error) : null;
     const retryIn = useRetryAfterCountdown(failedWith);
 
     function describeServerError(error: unknown): string {

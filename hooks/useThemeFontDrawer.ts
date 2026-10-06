@@ -15,17 +15,12 @@ import {
 } from '@/lib/adminThemeFonts';
 import { normalizePresetKeyInput } from '@/lib/adminThemePresets';
 import { ApiError } from '@/lib/api/client';
-import { ERROR_CODES, getErrorCode, getErrorMessage, getFieldErrors, isNotFoundError } from '@/lib/api/errors';
+import { ERROR_CODES, getErrorCode, getFieldErrors, isNotFoundError } from '@/lib/api/errors';
 import type { AdminThemeFontDto } from '@/lib/api/types';
 import { isThemeFontUrl } from '@/lib/eventTheme';
 
 export type ThemeFontDrawerError =
-    | { kind: 'keyTaken' }
-    | { kind: 'keyInvalid' }
-    | { kind: 'familyNameInvalid' }
-    | { kind: 'notFound' }
-    | { kind: 'uploadUnavailable'; detail: string }
-    | { kind: 'other'; error: unknown };
+    { kind: 'keyTaken' } | { kind: 'keyInvalid' } | { kind: 'familyNameInvalid' } | { kind: 'notFound' } | { kind: 'other'; error: unknown };
 export type ThemeFontAvailability = 'AVAILABLE' | 'ARCHIVED';
 
 type SaveStep = 'create' | 'patch' | 'upload';
@@ -33,14 +28,7 @@ type SaveStep = 'create' | 'patch' | 'upload';
 // 409 on create is a taken key (5146), shown on the key field. A 3001 on create/PATCH is about the
 // key (its field error) or the display name (the only other field the admin types), so it goes on
 // that field too. 404 means the font is gone from under this drawer.
-// A 503 on the upload that isn't a busy signal (5119, 3017) is the server saying it can't convert a
-// TTF/OTF right now; its detail is localized and says what to do, so it is kept as is.
 function classifyError(error: unknown, step: SaveStep): ThemeFontDrawerError {
-    if (step === 'upload' && error instanceof ApiError && error.status === 503) {
-        const code = getErrorCode(error);
-        const detail = getErrorMessage(error, '').trim();
-        if (code !== ERROR_CODES.RESOURCE_BUSY && code !== ERROR_CODES.MEDIA_PROCESSING_BUSY && detail) return { kind: 'uploadUnavailable', detail };
-    }
     if (step === 'create' && error instanceof ApiError && error.status === 409) return { kind: 'keyTaken' };
     if (step !== 'upload' && getErrorCode(error) === ERROR_CODES.VALIDATION_FAILED) {
         const fields = getFieldErrors(error) ?? {};

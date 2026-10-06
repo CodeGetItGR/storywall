@@ -250,19 +250,33 @@ describe('ThemeFontDrawer TTF and OTF', () => {
         expect(container.querySelector('input[type="file"]')).toHaveAttribute('accept', '.woff2,.ttf,.otf,font/woff2,font/ttf,font/otf');
     });
 
-    it('shows the backend detail when the upload could not be converted', () => {
-        const detail = 'Οι γραμματοσειρές TTF ή OTF δεν μπορούν να μετατραπούν αυτή τη στιγμή.';
-        state({ failure: { kind: 'uploadUnavailable', detail } });
+    it('shows the backend detail of a 5147 when the upload could not be converted', () => {
+        const detail = 'Οι γραμματοσειρές σε μορφή TTF ή OTF δεν μπορούν να μετατραπούν αυτή τη στιγμή.';
+        state({ failure: { kind: 'other', error: new ApiError(503, { errorCode: 5147, detail }) } });
         renderDrawer();
         expect(screen.getByRole('alert')).toHaveTextContent(detail);
         expect(screen.getByRole('button', { name: 'save' })).toBeEnabled();
     });
 
-    it('says the font was saved without its file when that upload followed a create', () => {
-        state({ failure: { kind: 'uploadUnavailable', detail: 'Try again later.' }, createdWithoutFile: true });
+    it('falls back to the localized copy for a 5147 with a blank detail', () => {
+        state({ failure: { kind: 'other', error: new ApiError(503, { errorCode: 5147, detail: ' ' }) } });
+        renderDrawer();
+        expect(screen.getByRole('alert')).toHaveTextContent('ApiErrors.themeFontConversionUnavailable');
+    });
+
+    it('says the font was saved without its file when a 5147 followed a create', () => {
+        state({ failure: { kind: 'other', error: new ApiError(503, { errorCode: 5147, detail: 'Try again later.' }) }, createdWithoutFile: true });
         renderDrawer(null);
         expect(screen.getByRole('alert')).toHaveTextContent('createdWithoutFile');
         expect(screen.getByRole('alert')).toHaveTextContent('Try again later.');
+    });
+
+    it('does not show the conversion copy or the detail for another 503', () => {
+        state({ failure: { kind: 'other', error: new ApiError(503, { errorCode: 5119, detail: 'This is busy right now.' }) } });
+        renderDrawer();
+        expect(screen.getByRole('alert')).toHaveTextContent('ApiErrors.resourceBusy');
+        expect(screen.getByRole('alert')).not.toHaveTextContent('themeFontConversionUnavailable');
+        expect(screen.getByRole('alert')).not.toHaveTextContent('This is busy right now.');
     });
 });
 

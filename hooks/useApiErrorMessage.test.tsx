@@ -67,6 +67,7 @@ describe('useApiErrorMessage', () => {
         [3055, 'The title colour is too close to the background colour. Choose a darker or lighter one.'],
         [5145, "This font can't be used in a theme: it doesn't exist, it's archived, or it has no font file yet. Choose another font."],
         [5146, 'A font with this key already exists. Choose a different key.'],
+        [5147, "Fonts in TTF or OTF format can't be converted right now. Upload a WOFF2 file, or try again later."],
         [5144, 'This event has ended.'],
         [5141, 'You have reached the story limit. Older stories expire after 24 hours, or delete one to post another.'],
     ])('maps %i to its own copy', (errorCode, message) => {
@@ -75,7 +76,7 @@ describe('useApiErrorMessage', () => {
 
     // The theme font and title colour errors arrive localized (Accept-Language) and name the
     // specifics (missing letters, file size, measured contrast), so the backend detail wins.
-    it.each([3052, 3053, 3054, 3055, 5145, 5146])('shows the backend detail for %i when there is one', (errorCode) => {
+    it.each([3052, 3053, 3054, 3055, 5145, 5146, 5147])('shows the backend detail for %i when there is one', (errorCode) => {
         const error = new ApiError(400, { errorCode, detail: 'Λείπουν τα γράμματα: Ψ, Ω.' });
 
         expect(describeIn('el', error)).toBe('Λείπουν τα γράμματα: Ψ, Ω.');
@@ -91,5 +92,18 @@ describe('useApiErrorMessage', () => {
         expect(describeIn('el', new ApiError(400, { errorCode: 3053 }))).toBe(
             'Το αρχείο της γραμματοσειράς είναι πολύ μεγάλο. Επιλέξτε μικρότερο, για παράδειγμα μια έκδοση μόνο με ελληνικά και λατινικά γράμματα.',
         );
+    });
+
+    it('has the 5147 copy in Greek too', () => {
+        expect(describeIn('el', new ApiError(503, { errorCode: 5147 }))).toBe(
+            'Οι γραμματοσειρές σε μορφή TTF ή OTF δεν μπορούν να μετατραπούν αυτή τη στιγμή. Ανεβάστε αρχείο WOFF2 ή δοκιμάστε ξανά αργότερα.',
+        );
+    });
+
+    // Every fallback the mapper can pick exists in both languages.
+    it('has the same ApiErrors keys in en and el', () => {
+        const enKeys = Object.keys(en.ApiErrors).sort();
+        expect(Object.keys(el.ApiErrors).sort()).toEqual(enKeys);
+        expect(enKeys).toContain('themeFontConversionUnavailable');
     });
 });

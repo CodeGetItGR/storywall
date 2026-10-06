@@ -197,6 +197,7 @@ export const ERROR_CODES = {
     EVENT_ENDED: 5144,
     THEME_FONT_NOT_ASSIGNABLE: 5145,
     THEME_FONT_KEY_TAKEN: 5146,
+    THEME_FONT_CONVERSION_UNAVAILABLE: 5147,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the

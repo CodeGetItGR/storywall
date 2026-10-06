@@ -389,27 +389,18 @@ describe('useThemeFontDrawer TTF and OTF', () => {
         expect(result.current.pendingFileName).toBe('second.ttf');
     });
 
-    // The backend answers a TTF/OTF it can't convert right now with a localized 503.
-    it('keeps the detail of an upload 503 that is not a busy signal', async () => {
-        const error = new ApiError(503, { errorCode: 5004, detail: 'Δεν γίνεται μετατροπή τώρα.' });
-        mocks.upload.mockRejectedValue(error);
-        const { result } = renderDrawer(FONT);
-        await act(() => result.current.handleFileChange(fileChange(ttf())));
-        await act(() => result.current.handleSubmit(submitEvent()));
-        expect(result.current.failure).toEqual({ kind: 'uploadUnavailable', detail: 'Δεν γίνεται μετατροπή τώρα.' });
-        expect(result.current.hasPendingFile).toBe(true);
-    });
-
+    // 5147 (conversion unavailable) and every other 503 go to the shared copy like any other error.
     it.each([
+        ['a 5147', new ApiError(503, { errorCode: 5147, detail: 'Δεν γίνεται μετατροπή τώρα.' })],
         ['a busy 5119', new ApiError(503, { errorCode: 5119, detail: 'busy', retryAfterSeconds: 5 })],
-        ['a busy 3017', new ApiError(503, { errorCode: 3017, detail: 'busy', retryAfterSeconds: 5 })],
-        ['a 503 without detail', new ApiError(503, { errorCode: 5004, detail: '  ' })],
-    ])('leaves %s to the shared copy', async (_label, error) => {
+        ['a 503 without a code', new ApiError(503, { detail: 'down' })],
+    ])('keeps %s from the upload as an error to show, with the file still pending', async (_label, error) => {
         mocks.upload.mockRejectedValue(error);
         const { result } = renderDrawer(FONT);
         await act(() => result.current.handleFileChange(fileChange(ttf())));
         await act(() => result.current.handleSubmit(submitEvent()));
         expect(result.current.failure).toEqual({ kind: 'other', error });
+        expect(result.current.hasPendingFile).toBe(true);
     });
 
     it('leaves a 503 from create to the shared copy', async () => {
