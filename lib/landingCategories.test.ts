@@ -77,6 +77,10 @@ describe('resolveLandingCategoryPlans', () => {
         ['months', { initialOptions: [option({ months: 6 })] }],
         ['an extension option', { extensionOptions: [option({ kind: 'EXTENSION', months: 1, priceAmountMinor: 1000 })] }],
         ['the discount', { discountPercent: 10 }],
+        ['the discount label', { discountLabel: 'Early bird' }],
+        ['the name', { name: 'Gold Plus' }],
+        ['storage', { storageBytes: 5_000_000_000 }],
+        ['the guest cap', { maxMembers: 150 }],
         ['modules', { moduleKeys: ['gallery', 'rsvp'] }],
         ['module config', { moduleConfigs: { gallery: { qrUploadEnabled: false } } }],
     ])('treats a difference in %s as drift', (_label, difference) => {

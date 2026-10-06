@@ -35,7 +35,9 @@ export function resolveLandingCategoryPlans(plans: PlanTierResponseDto[], eventT
     return { plans: shown, driftedGroups };
 }
 
-// Everything a visitor can tell apart on the card or at checkout.
+// Everything a visitor can tell apart on the card or at checkout: the name, storage, guest cap,
+// prices, discount (percent, label, window) and modules. A field the card shows must be here, or
+// copies that differ in it would merge and the landing would show only one of them.
 function offerSignature(plan: PlanTierResponseDto): string {
     const options = (list: CoverageOptionResponseDto[]) =>
         list
@@ -43,10 +45,13 @@ function offerSignature(plan: PlanTierResponseDto): string {
             .map((option) => [option.months, option.priceAmountMinor])
             .toSorted((left, right) => left[0] - right[0] || left[1] - right[1]);
     return stableStringify({
+        name: plan.name,
+        storageBytes: plan.storageBytes,
+        maxMembers: plan.maxMembers,
         currency: plan.priceCurrency,
         initial: options(plan.initialOptions),
         extension: options(plan.extensionOptions),
-        discount: [plan.discountPercent, plan.discountStartsAt, plan.discountEndsAt],
+        discount: [plan.discountPercent, plan.discountLabel, plan.discountStartsAt, plan.discountEndsAt],
         modules: [...plan.moduleKeys].sort(),
         moduleConfigs: plan.moduleConfigs ?? {},
     });
