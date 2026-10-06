@@ -155,6 +155,7 @@ export type ApiErrorMessageKey =
     | 'themeTitleColorLowContrast'
     | 'wishbookEmpty'
     | 'wishbookBookRendererUnavailable'
+    | 'landingCategoryTypeAssigned'
     | 'eventEnded'
     | 'eventScheduleLocked'
     | 'paidServiceCurrencyMismatch'
@@ -356,6 +357,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.THEME_FONT_CONVERSION_UNAVAILABLE]: 'themeFontConversionUnavailable',
     [ERROR_CODES.WISHBOOK_EMPTY]: 'wishbookEmpty',
     [ERROR_CODES.WISHBOOK_BOOK_RENDERER_UNAVAILABLE]: 'wishbookBookRendererUnavailable',
+    [ERROR_CODES.LANDING_CATEGORY_TYPE_ASSIGNED]: 'landingCategoryTypeAssigned',
     [ERROR_CODES.EVENT_ENDED]: 'eventEnded',
     [ERROR_CODES.PAID_SERVICE_CURRENCY_MISMATCH]: 'paidServiceCurrencyMismatch',
     [ERROR_CODES.PAID_SERVICE_IN_USE]: 'paidServiceInUse',

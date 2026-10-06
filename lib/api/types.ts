@@ -224,6 +224,41 @@ export type ReactionTypePatchDto = Partial<Omit<ReactionTypeRequestDto, 'eventTy
 // than destructuring exactly two keys. See event-type-voice-pack-fe-integration.md.
 export type LocalizedText = Record<string, string>;
 
+// GET /api/config → landingCategories. Visible only, display order; eventTypeKeys are enabled types in event-type order.
+export interface AppLandingCategoryDto {
+    id: string;
+    name: LocalizedText;
+    description: LocalizedText;
+    isDefault: boolean;
+    eventTypeKeys: EventTypeConvention[];
+}
+
+// /api/admin/landing-categories (ADMIN). Hidden categories and disabled types included.
+export interface AdminLandingCategoryDto {
+    id: string;
+    name: LocalizedText;
+    description: LocalizedText;
+    sortOrder: number;
+    isVisible: boolean;
+    isDefault: boolean;
+    eventTypeKeys: EventTypeConvention[];
+}
+
+export interface AdminLandingCategoryCreateDto {
+    name: LocalizedText;
+    description?: LocalizedText;
+    sortOrder?: number;
+    isVisible?: boolean;
+    isDefault?: boolean;
+}
+
+export type AdminLandingCategoryPatchDto = Partial<AdminLandingCategoryCreateDto>;
+
+export interface AdminLandingCategoryEventTypesDto {
+    eventTypeKeys: EventTypeConvention[];
+    moveFromOtherCategory?: boolean;
+}
+
 export type EventTypeAccentToken = 'rose' | 'sky' | 'amber';
 
 export interface AppEventTypeResponseDto {
@@ -441,6 +476,7 @@ export interface AppConfigResponseDto {
     contentLimits: AppContentLimitsDto;
     reactionTypesByEventType: Record<string, ReactionTypeResponseDto[]>;
     memberRolesByEventType: Record<string, MemberRoleCatalogDto[]>;
+    landingCategories: AppLandingCategoryDto[];
     rateLimits: AppRateLimitConfigDto[];
     reportTargetTypes: ReportTargetType[];
     reportReasons: ReportReason[];

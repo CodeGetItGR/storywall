@@ -405,6 +405,11 @@ export const endpoints = {
             list: '/api/admin/platform-event-types',
             byKey: (eventTypeKey: string) => `/api/admin/platform-event-types/${eventTypeKey}`,
         },
+        landingCategories: {
+            list: '/api/admin/landing-categories',
+            byId: (id: string) => `/api/admin/landing-categories/${id}`,
+            eventTypes: (id: string) => `/api/admin/landing-categories/${id}/event-types`,
+        },
         users: {
             planTier: (userId: string) => `/api/admin/users/${userId}/plan-tier`,
         },

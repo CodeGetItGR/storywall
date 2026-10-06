@@ -100,6 +100,7 @@ function makeConfig(): AppConfigResponseDto {
         contentLimits: {} as AppConfigResponseDto['contentLimits'],
         reactionTypesByEventType: {},
         memberRolesByEventType: {},
+        landingCategories: [],
         rateLimits: [],
         reportTargetTypes: ['POST'],
         reportReasons: ['SPAM'],

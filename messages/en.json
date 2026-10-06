@@ -4656,6 +4656,7 @@
         "themeFontConversionUnavailable": "Fonts in TTF or OTF format can't be converted right now. Upload a WOFF2 file, or try again later.",
         "wishbookEmpty": "There are no wishes yet, so there is nothing to put in a book.",
         "wishbookBookRendererUnavailable": "The book can't be created right now. Please try again later.",
+        "landingCategoryTypeAssigned": "This event type is already in another landing category.",
         "eventEnded": "This event has ended.",
         "orderNotPending": "This order is no longer pending.",
         "webhookAlreadyProcessed": "This webhook has already been processed.",
