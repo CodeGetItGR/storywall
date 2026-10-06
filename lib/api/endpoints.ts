@@ -126,6 +126,8 @@ export const endpoints = {
         wishbook: (eventId: string) => `/api/events/${eventId}/wishbook`,
         wishbookCount: (eventId: string) => `/api/events/${eventId}/wishbook/count`,
         wishbookExport: (eventId: string) => `/api/events/${eventId}/wishbook/export`,
+        wishbookBook: (eventId: string) => `/api/events/${eventId}/wishbook/book`,
+        wishbookBookTexts: (eventId: string) => `/api/events/${eventId}/wishbook/book-texts`,
         checkout: (eventId: string) => `/api/events/${eventId}/checkout`,
         checkoutCodePreview: (eventId: string) => `/api/events/${eventId}/checkout/preview-code`,
         upgradeCheckout: (eventId: string) => `/api/events/${eventId}/upgrade-checkout`,
@@ -169,6 +171,7 @@ export const endpoints = {
 
     wishbook: {
         byId: (id: string) => `/api/wishbook/${id}`,
+        highlight: (id: string) => `/api/wishbook/${id}/highlight`,
     },
 
     qrLinks: {

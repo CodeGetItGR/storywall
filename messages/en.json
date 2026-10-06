@@ -4625,6 +4625,8 @@
         "themeFontNotAssignable": "This font can't be used in a theme: it doesn't exist, it's archived, or it has no font file yet. Choose another font.",
         "themeFontKeyTaken": "A font with this key already exists. Choose a different key.",
         "themeFontConversionUnavailable": "Fonts in TTF or OTF format can't be converted right now. Upload a WOFF2 file, or try again later.",
+        "wishbookEmpty": "There are no wishes yet, so there is nothing to put in a book.",
+        "wishbookBookRendererUnavailable": "The book can't be created right now. Please try again later.",
         "eventEnded": "This event has ended.",
         "orderNotPending": "This order is no longer pending.",
         "webhookAlreadyProcessed": "This webhook has already been processed.",

@@ -44,6 +44,7 @@ const ROLE: MemberRoleCatalogDto = {
     sortOrder: 0,
     hostOnly: false,
     retired: false,
+    sectionLabel: null,
 };
 
 function state(overrides: Record<string, unknown> = {}) {

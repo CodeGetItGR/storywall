@@ -42,6 +42,7 @@ function makeRole(overrides: Partial<MemberRoleCatalogDto> = {}): MemberRoleCata
         sortOrder: 0,
         hostOnly: false,
         retired: false,
+        sectionLabel: null,
         ...overrides,
     };
 }

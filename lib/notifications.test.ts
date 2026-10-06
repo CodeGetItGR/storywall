@@ -26,6 +26,12 @@ describe('notificationCtaRoute', () => {
         );
     });
 
+    it('sends the book-ready CTA to the wishbook', () => {
+        expect(notificationCtaRoute(notification({ ctaTarget: 'EVENT_WISHBOOK', ctaParams: { eventId: 'event-1' } }))).toBe(
+            '/events/event-1/tools/wishbook',
+        );
+    });
+
     it('hides the CTA for a target this app does not know', () => {
         expect(
             notificationCtaRoute(notification({ ctaTarget: 'SOMETHING_NEW' as NotificationResponseDto['ctaTarget'], ctaParams: { eventId: 'e' } })),
