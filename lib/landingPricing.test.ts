@@ -100,7 +100,7 @@ const COPY: LandingPlanCopy = {
 };
 
 function role(id: string, retired = false): MemberRoleCatalogDto {
-    return { id, eventTypeKey: 'WEDDING', roleKey: id.toUpperCase(), label: { en: id, el: id }, emoji: null, maxHolders: null, sortOrder: 0, hostOnly: false, retired };
+    return { id, eventTypeKey: 'WEDDING', roleKey: id.toUpperCase(), label: { en: id, el: id }, emoji: null, maxHolders: null, sortOrder: 0, hostOnly: false, retired, sectionLabel: null };
 }
 
 const ROLES = { WEDDING: [role('a'), role('b'), role('c'), role('old', true)] };

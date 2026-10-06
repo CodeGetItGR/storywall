@@ -44,12 +44,23 @@ const ROLE: MemberRoleCatalogDto = {
     sortOrder: 0,
     hostOnly: false,
     retired: false,
+    sectionLabel: null,
 };
 
 function state(overrides: Record<string, unknown> = {}) {
     drawerState.current = {
         isCreate: false,
-        draft: { roleKey: 'BEST_MAN', labelEn: 'Best man', labelEl: 'Κουμπάρος', emoji: '', limited: false, maxHolders: '', hostOnly: false },
+        draft: {
+            roleKey: 'BEST_MAN',
+            labelEn: 'Best man',
+            labelEl: 'Κουμπάρος',
+            sectionEn: '',
+            sectionEl: '',
+            emoji: '',
+            limited: false,
+            maxHolders: '',
+            hostOnly: false,
+        },
         errors: {},
         failure: null,
         confirmingRetire: false,
@@ -77,7 +88,24 @@ describe('MemberRoleDrawer', () => {
         state();
         renderDrawer();
         expect(screen.getByText('BEST_MAN')).toBeTruthy();
-        expect(screen.getAllByRole('textbox')).toHaveLength(3);
+        expect(screen.getAllByRole('textbox')).toHaveLength(5);
+    });
+
+    it('offers the book section titles as optional fields, with a hint', () => {
+        state();
+        renderDrawer();
+        expect(screen.getByRole('textbox', { name: /sectionEn/ })).toBeTruthy();
+        expect(screen.getByRole('textbox', { name: /sectionEl/ })).toBeTruthy();
+        expect(screen.getByText('sectionHint')).toBeTruthy();
+        expect(screen.queryByText('sectionInvalid')).toBeNull();
+    });
+
+    it('says both titles are needed when only one is filled in', () => {
+        state({ errors: { sectionEl: true } });
+        renderDrawer();
+        expect(screen.getByText('sectionInvalid')).toBeTruthy();
+        expect(screen.getByRole('textbox', { name: /sectionEl/ }).getAttribute('aria-invalid')).toBe('true');
+        expect(screen.getByRole('textbox', { name: /sectionEn/ }).getAttribute('aria-invalid')).toBe('false');
     });
 
     it('asks before retiring', () => {

@@ -199,6 +199,8 @@ export const ERROR_CODES = {
     THEME_FONT_NOT_ASSIGNABLE: 5145,
     THEME_FONT_KEY_TAKEN: 5146,
     THEME_FONT_CONVERSION_UNAVAILABLE: 5147,
+    WISHBOOK_EMPTY: 5148,
+    WISHBOOK_BOOK_RENDERER_UNAVAILABLE: 5149,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the

@@ -363,6 +363,8 @@ export interface MemberRoleCatalogDto {
     // Only a host or co-host may give it; guests don't get it in their options (§1.1).
     hostOnly: boolean;
     retired: boolean;
+    // Heading of this role's section in the wishbook book (2026-10-06); null = the book uses `label`.
+    sectionLabel: { en: string; el: string } | null;
 }
 
 // POST /api/admin/member-roles. roleKey and eventTypeKey can't change later.
@@ -370,6 +372,7 @@ export interface MemberRoleCatalogRequestDto {
     eventTypeKey: string;
     roleKey: string;
     label: { en: string; el: string };
+    sectionLabel?: { en: string; el: string };
     emoji?: string | null;
     maxHolders?: number | null;
     sortOrder: number;
@@ -392,6 +395,8 @@ export interface BlockedTermRequestDto {
 // emoji "" clears it; clearMaxHolders wins over maxHolders.
 export interface MemberRoleCatalogPatchDto {
     label?: { en: string; el: string };
+    sectionLabel?: { en: string; el: string };
+    clearSectionLabel?: boolean;
     emoji?: string;
     maxHolders?: number;
     clearMaxHolders?: boolean;
@@ -592,7 +597,7 @@ export type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 // 2026-09-04: ctaRoute (a literal path) is gone, replaced by ctaTarget + ctaParams — the app
 // resolves the route itself. Closed but growable set; treat an unrecognized value defensively.
 // See docs/integration guides/notification-cta-target-fe-integration.md.
-export type NotificationCtaTarget = 'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS' | 'EVENT_COVERAGE_EXTEND';
+export type NotificationCtaTarget = 'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS' | 'EVENT_COVERAGE_EXTEND' | 'EVENT_WISHBOOK';
 
 export interface NotificationResponseDto {
     id: string;
@@ -1962,7 +1967,48 @@ export interface WishbookEntryResponseDto {
     message: string;
     createdAt: string;
     canDelete: boolean;
+    // Starred for the book (2026-10-06). Hosts get true/false; everyone else gets null.
+    highlighted: boolean | null;
 }
+
+// GET|POST /api/events/{eventId}/wishbook/book (wishbook-book-fe-integration.md).
+// downloadUrl only when READY; it's presigned and expires, so fetch GET again right before downloading.
+export type WishbookBookStatus = 'QUEUED' | 'RUNNING' | 'READY' | 'FAILED';
+
+export interface WishbookBookDto {
+    status: WishbookBookStatus;
+    requestedAt: string;
+    finishedAt: string | null;
+    // pageCount, entryCount, byteSize and downloadUrl are non-null only when READY; a rebuild hides the old figures.
+    pageCount: number | null;
+    entryCount: number | null;
+    byteSize: number | null;
+    // Non-null only when FAILED. An open set: never branch on a closed union. Everything means "try again"
+    // (RENDERER_* | STORAGE_FAILED | DB_UNAVAILABLE | PROCESSING_STALLED | BUILD_ERROR | RENDERER_NOT_CONFIGURED |
+    // MODULE_UNAVAILABLE | EVENT_SUSPENDED): show one generic line, never one per code.
+    // The one exception is CONTENT_CHANGED: a wish (or its author's account, or the event cover) was removed since
+    // the book was made, so the old book is gone. It gets its own message, "A wish was removed since the book was
+    // made - create it again", with the same build button. Never retried automatically.
+    failureCode: string | null;
+    downloadUrl: string | null;
+}
+
+// GET|PUT /api/events/{eventId}/wishbook/book-texts. null = the default (shown as placeholder).
+// PUT is a replace, not a patch: send all four.
+export interface WishbookBookTextsRequestDto {
+    subtitle: string | null;
+    dedication: string | null;
+    closingTitle: string | null;
+    closingBody: string | null;
+}
+
+export interface WishbookBookTextsDto extends WishbookBookTextsRequestDto {
+    defaults: { subtitle: string; dedication: string; closingTitle: string; closingBody: string };
+}
+
+export const WISHBOOK_BOOK_TEXT_LIMITS = { subtitle: 80, dedication: 400, closingTitle: 80, closingBody: 300 } as const;
+// dedication and closingBody keep line breaks (BE caps them at 6 lines, blank separator lines included); the others are single-line.
+export const WISHBOOK_BOOK_TEXT_MAX_LINES = 6;
 
 // GET /api/event-invitations/{inviteToken}/preview — public, unauthenticated.
 // Powers the per-event invite onboarding page; expired/alreadyUsed are not
