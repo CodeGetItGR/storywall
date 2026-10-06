@@ -24,6 +24,11 @@ const THEME_FONT_KEY = /^[a-z0-9][a-z0-9-]{1,62}$/;
 // The same shape the font route serves: /api/theme-fonts/<key>/<version>.woff2, version without leading zeros.
 const THEME_FONT_URL = /^\/api\/theme-fonts\/([a-z0-9][a-z0-9-]{1,62})\/(?:0|[1-9]\d{0,8})\.woff2$/;
 
+// Whether a url is a theme font file path the font route serves.
+export function isThemeFontUrl(url: string): boolean {
+    return THEME_FONT_URL.test(url);
+}
+
 // The backend shape is trusted, but these strings land inside CSS: only well-formed ones pass,
 // and the url must be this font's own file.
 function usableFont(font: EventThemeFontDto | null | undefined): font is EventThemeFontDto {

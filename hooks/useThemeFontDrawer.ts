@@ -17,6 +17,7 @@ import { normalizePresetKeyInput } from '@/lib/adminThemePresets';
 import { ApiError } from '@/lib/api/client';
 import { ERROR_CODES, getErrorCode, getFieldErrors, isNotFoundError } from '@/lib/api/errors';
 import type { AdminThemeFontDto } from '@/lib/api/types';
+import { isThemeFontUrl } from '@/lib/eventTheme';
 
 export type ThemeFontDrawerError =
     { kind: 'keyTaken' } | { kind: 'keyInvalid' } | { kind: 'familyNameInvalid' } | { kind: 'notFound' } | { kind: 'other'; error: unknown };
@@ -48,11 +49,13 @@ function nextPreviewFamily(): string {
 
 type PreviewSource = File | string;
 type PreviewState = { source: PreviewSource; family: string | null; failed: boolean };
+// 'file': a picked file the browser can't read. 'saved': the uploaded file didn't load.
+export type ThemeFontPreviewFailure = 'file' | 'saved' | null;
 
 // Loads the font with the FontFace API. A picked file is read as bytes, which fetches nothing, so
 // CSP doesn't apply; the saved file is a same-origin url. The face is removed again when the source
 // changes and on unmount.
-function useFontPreview(source: PreviewSource | null): { family: string | null; failed: boolean } {
+function useFontPreview(source: PreviewSource | null): { family: string | null; failed: ThemeFontPreviewFailure } {
     const [state, setState] = useState<PreviewState | null>(null);
 
     useEffect(() => {
@@ -85,8 +88,8 @@ function useFontPreview(source: PreviewSource | null): { family: string | null; 
     }, [source]);
 
     // A result for an earlier source is stale.
-    if (!state || state.source !== source) return { family: null, failed: false };
-    return { family: state.family, failed: state.failed };
+    if (!state || state.source !== source) return { family: null, failed: null };
+    return { family: state.family, failed: state.failed ? (typeof state.source === 'string' ? 'saved' : 'file') : null };
 }
 
 export function useThemeFontDrawer({ font, onDoneAction }: { font: AdminThemeFontDto | null; onDoneAction: () => void }) {
@@ -105,8 +108,24 @@ export function useThemeFontDrawer({ font, onDoneAction }: { font: AdminThemeFon
     const [fileError, setFileError] = useState<'type' | 'size' | null>(null);
     // Set synchronously: a fast double click submits twice before isSaving re-renders.
     const submitting = useRef(false);
+    // Cleared on unmount: a save still in flight then stops before the upload and never calls
+    // onDoneAction, which would otherwise act on whatever drawer is open by then.
+    const mounted = useRef(true);
+    useEffect(() => {
+        mounted.current = true;
+        return () => {
+            mounted.current = false;
+        };
+    }, []);
 
-    const preview = useFontPreview(file ?? saved?.url ?? null);
+    // Only a path the font route serves is loaded; anything else gets no preview.
+    const savedUrl = saved?.url && isThemeFontUrl(saved.url) ? saved.url : null;
+    const preview = useFontPreview(file ?? savedUrl);
+
+    // A saved file that doesn't load is likely stale (a newer upload bumped the version): refetch.
+    useEffect(() => {
+        if (preview.failed === 'saved') void queryClient.invalidateQueries({ queryKey: adminThemeFontKeys.all });
+    }, [preview.failed, queryClient]);
     const errors = useMemo(() => validateThemeFontDraft(draft, isCreate), [draft, isCreate]);
 
     const handleFieldChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
@@ -130,8 +149,8 @@ export function useThemeFontDrawer({ font, onDoneAction }: { font: AdminThemeFon
         if (!next) return;
         const problem = fontFileError(next);
         setFileError(problem);
-        if (problem) return;
-        setFile(next);
+        // A refused pick also drops the earlier one, so Save never uploads a file the admin replaced.
+        setFile(problem ? null : next);
     }, []);
 
     const handleSubmit = useCallback(
@@ -147,6 +166,7 @@ export function useThemeFontDrawer({ font, onDoneAction }: { font: AdminThemeFon
             try {
                 if (current === null) {
                     current = await create.mutateAsync(buildThemeFontCreate(draft));
+                    if (!mounted.current) return;
                     setSaved(current);
                 } else {
                     const input = buildThemeFontPatch(current, draft);
@@ -155,15 +175,19 @@ export function useThemeFontDrawer({ font, onDoneAction }: { font: AdminThemeFon
                         setSaved(current);
                     }
                 }
+                if (!mounted.current) return;
                 if (file) {
                     step = 'upload';
                     setSaved(await upload.mutateAsync({ id: current.id, file }));
                     setFile(null);
                 }
+                if (!mounted.current) return;
                 onDoneAction();
             } catch (error) {
+                if (!mounted.current) return;
                 const classified = classifyError(error, step);
-                if (classified.kind === 'notFound') void queryClient.invalidateQueries({ queryKey: adminThemeFontKeys.all });
+                if (classified.kind === 'notFound' || classified.kind === 'keyTaken')
+                    void queryClient.invalidateQueries({ queryKey: adminThemeFontKeys.all });
                 setFailure(classified);
             } finally {
                 submitting.current = false;
@@ -179,6 +203,7 @@ export function useThemeFontDrawer({ font, onDoneAction }: { font: AdminThemeFon
         failure,
         fileError,
         hasPendingFile: file !== null,
+        pendingFileName: file?.name ?? null,
         // This drawer created the font but its file didn't go up: saving again only uploads.
         createdWithoutFile: font === null && saved !== null && file !== null && failure !== null,
         availability: (draft.archived ? 'ARCHIVED' : 'AVAILABLE') as ThemeFontAvailability,

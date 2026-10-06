@@ -14,9 +14,12 @@ vi.mock('next-intl', () => ({
     useLocale: () => 'en',
 }));
 vi.mock('@/components/admin/AdminDrawer', () => ({
-    AdminDrawer: ({ title, children, footer }: { title: ReactNode; children: ReactNode; footer: ReactNode }) => (
+    AdminDrawer: ({ title, children, footer, onClose }: { title: ReactNode; children: ReactNode; footer: ReactNode; onClose: () => void }) => (
         <div>
             <h2>{title}</h2>
+            <button type="button" onClick={onClose}>
+                drawer-close
+            </button>
             {children}
             {footer}
         </div>
@@ -45,7 +48,8 @@ function state(overrides: Record<string, unknown> = {}) {
         createdWithoutFile: false,
         availability: 'AVAILABLE',
         previewFamily: 'theme-preview-1',
-        previewFailed: false,
+        previewFailed: null,
+        pendingFileName: null,
         presetCount: 2,
         isSaving: false,
         handleFieldChange: vi.fn(),
@@ -57,8 +61,9 @@ function state(overrides: Record<string, unknown> = {}) {
     };
 }
 
-function renderDrawer(font: AdminThemeFontDto | null = FONT) {
-    render(<ThemeFontDrawer font={font} onCloseAction={vi.fn()} />);
+function renderDrawer(font: AdminThemeFontDto | null = FONT, onCloseAction = vi.fn()) {
+    render(<ThemeFontDrawer font={font} onCloseAction={onCloseAction} />);
+    return onCloseAction;
 }
 
 afterEach(cleanup);
@@ -122,7 +127,7 @@ describe('ThemeFontDrawer', () => {
     });
 
     it('says when a picked file cannot be previewed', () => {
-        state({ previewFamily: null, previewFailed: true, hasPendingFile: true });
+        state({ previewFamily: null, previewFailed: 'file', hasPendingFile: true, pendingFileName: 'broken.woff2' });
         renderDrawer();
         expect(screen.getByRole('alert')).toHaveTextContent('previewFailed');
         expect(screen.getByTestId('font-sample')).toHaveStyle({ fontFamily: 'serif' });
@@ -161,5 +166,53 @@ describe('ThemeFontDrawer', () => {
         renderDrawer();
         expect(screen.getByRole('alert')).toHaveTextContent('notFound');
         expect(screen.getByRole('button', { name: 'save' })).toBeDisabled();
+    });
+});
+
+describe('ThemeFontDrawer review fixes', () => {
+    it('cannot be cancelled or closed while saving', () => {
+        state({ isSaving: true });
+        const onCloseAction = renderDrawer();
+        fireEvent.click(screen.getByRole('button', { name: 'drawer-close' }));
+        expect(onCloseAction).not.toHaveBeenCalled();
+        expect(screen.getByRole('button', { name: 'cancel' })).toBeDisabled();
+        expect(screen.getByRole('button', { name: 'save' })).toBeDisabled();
+    });
+
+    it('names the pending file', () => {
+        state({ hasPendingFile: true, pendingFileName: 'didot.woff2' });
+        renderDrawer();
+        expect(screen.getByText('filePending')).toBeInTheDocument();
+    });
+
+    it('shows the localized detail of an upload 3001 that is about no field', () => {
+        const detail = 'Το αίτημα δεν δήλωσε μέγεθος.';
+        state({ failure: { kind: 'other', error: new ApiError(411, { errorCode: 3001, detail }) } });
+        renderDrawer();
+        expect(screen.getByRole('alert')).toHaveTextContent(detail);
+    });
+
+    it('falls back to the mapped copy for a 3001 without a detail', () => {
+        state({ failure: { kind: 'other', error: new ApiError(400, { errorCode: 3001 }) } });
+        renderDrawer();
+        expect(screen.getByRole('alert')).toHaveTextContent('ApiErrors.validationFailed');
+    });
+
+    it('explains a 3005 as the file size', () => {
+        state({ failure: { kind: 'other', error: new ApiError(413, { errorCode: 3005, detail: 'Too large' }) } });
+        renderDrawer();
+        expect(screen.getByRole('alert')).toHaveTextContent('fileSize');
+    });
+
+    it('keeps Save disabled while a 429 wait runs', () => {
+        state({ failure: { kind: 'other', error: new ApiError(429, { errorCode: 3010, retryAfterSeconds: 600 }) } });
+        renderDrawer();
+        expect(screen.getByRole('button', { name: 'save' })).toBeDisabled();
+    });
+
+    it('says the saved file did not load, not that it is invalid', () => {
+        state({ previewFamily: null, previewFailed: 'saved' });
+        renderDrawer();
+        expect(screen.getByRole('alert')).toHaveTextContent('savedPreviewFailed');
     });
 });

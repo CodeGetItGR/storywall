@@ -257,7 +257,7 @@ describe('useThemeFontDrawer preview', () => {
         const { result } = renderDrawer(null);
         act(() => result.current.handleFileChange(fileChange(woff2('broken.woff2'))));
 
-        await waitFor(() => expect(result.current.previewFailed).toBe(true));
+        await waitFor(() => expect(result.current.previewFailed).toBe('file'));
         expect(result.current.previewFamily).toBeNull();
         expect(fonts.add).not.toHaveBeenCalled();
     });
@@ -266,6 +266,70 @@ describe('useThemeFontDrawer preview', () => {
         vi.stubGlobal('FontFace', undefined);
         const { result } = renderDrawer(FONT);
         expect(result.current.previewFamily).toBeNull();
-        expect(result.current.previewFailed).toBe(false);
+        expect(result.current.previewFailed).toBeNull();
+    });
+});
+
+describe('useThemeFontDrawer review fixes', () => {
+    it('skips the upload and onDoneAction when the drawer unmounts between create and upload', async () => {
+        const onDoneAction = vi.fn();
+        let finish: (font: AdminThemeFontDto) => void = () => undefined;
+        mocks.create.mockReturnValue(new Promise((resolve) => (finish = resolve)));
+        const { result, unmount } = renderDrawer(null, onDoneAction);
+        fillValidDraft(result);
+        act(() => result.current.handleFileChange(fileChange(woff2())));
+
+        let pending: Promise<void> = Promise.resolve();
+        act(() => {
+            pending = result.current.handleSubmit(submitEvent());
+        });
+        unmount();
+        finish({ ...FONT, url: null });
+        await pending;
+
+        expect(mocks.create).toHaveBeenCalledOnce();
+        expect(mocks.upload).not.toHaveBeenCalled();
+        expect(onDoneAction).not.toHaveBeenCalled();
+    });
+
+    it('drops the pending file when a second pick is refused', async () => {
+        mocks.patch.mockResolvedValue(FONT);
+        const { result } = renderDrawer(FONT);
+        act(() => result.current.handleFileChange(fileChange(woff2('a.woff2'))));
+        expect(result.current.pendingFileName).toBe('a.woff2');
+
+        act(() => result.current.handleFileChange(fileChange(new File(['x'], 'b.ttf'))));
+        expect(result.current.fileError).toBe('type');
+        expect(result.current.hasPendingFile).toBe(false);
+        expect(result.current.pendingFileName).toBeNull();
+
+        await act(() => result.current.handleSubmit(submitEvent()));
+        expect(mocks.upload).not.toHaveBeenCalled();
+    });
+
+    it('refetches the fonts when create says the key is taken', async () => {
+        const invalidate = vi.spyOn(QueryClient.prototype, 'invalidateQueries');
+        mocks.create.mockRejectedValue(new ApiError(409, { errorCode: 5146, detail: 'taken' }));
+        const { result } = renderDrawer();
+        fillValidDraft(result);
+        await act(() => result.current.handleSubmit(submitEvent()));
+        expect(invalidate).toHaveBeenCalledWith({ queryKey: ['admin', 'theme-fonts'] });
+    });
+
+    it('does not load a saved url that is not a theme font path', () => {
+        const { result } = renderDrawer({ ...FONT, url: 'https://evil.example/x.woff2' });
+        expect(faces).toHaveLength(0);
+        expect(result.current.previewFamily).toBeNull();
+    });
+
+    it('tells a saved file that failed to load apart from a bad pick, and refetches the fonts', async () => {
+        const invalidate = vi.spyOn(QueryClient.prototype, 'invalidateQueries');
+        loadResult = () => Promise.reject(new Error('404'));
+        const { result } = renderDrawer(FONT);
+        await waitFor(() => expect(result.current.previewFailed).toBe('saved'));
+        expect(invalidate).toHaveBeenCalledWith({ queryKey: ['admin', 'theme-fonts'] });
+
+        act(() => result.current.handleFileChange(fileChange(woff2('broken.woff2'))));
+        await waitFor(() => expect(result.current.previewFailed).toBe('file'));
     });
 });

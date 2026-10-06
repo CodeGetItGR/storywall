@@ -3899,9 +3899,9 @@
                 "key": "Key",
                 "keyHint": "Lower-case letters, digits and hyphens. It can't be changed later.",
                 "keyInvalid": "Use 2 to 63 lower-case letters, digits or hyphens, starting with a letter or digit.",
-                "keyTaken": "A font with this key already exists, or did and was archived. Keys can't be reused, so choose another.",
+                "keyTaken": "A font with this key already exists (archived fonts count too). Keys can't be reused, so choose another.",
                 "familyName": "Display name",
-                "familyNameHint": "Shown to admins only, e.g. GFS Didot.",
+                "familyNameHint": "For example, GFS Didot. Only admins see it.",
                 "familyNameInvalid": "Enter a name of 1 to 100 characters.",
                 "fallback": "Fallback",
                 "fallbackSerif": "Serif",
@@ -3910,7 +3910,7 @@
                 "file": "Font file",
                 "fileChoose": "Choose file",
                 "fileHint": "WOFF2, up to 500 KB, must include Greek and Latin letters.",
-                "filePending": "Uploads when you save.",
+                "filePending": "{name} uploads when you save.",
                 "fileType": "This isn't a WOFF2 file. Convert the font to WOFF2 (the file name ends in .woff2) and choose it again.",
                 "fileSize": "This file is over 500 KB. Choose a smaller one, for example a version with only Greek and Latin characters.",
                 "availability": "Availability",
@@ -3926,6 +3926,7 @@
                 "previewHint": "Any letter that looks different from the rest is missing from the font and shows in the fallback.",
                 "previewEmpty": "Until a font file loads, the sample shows in the fallback.",
                 "previewFailed": "This file couldn't be previewed. It may not be a valid font.",
+                "savedPreviewFailed": "The saved font file couldn't be loaded. Refresh the page to try again.",
                 "usedBy": "{count, plural, =0 {Not used by any preset} one {Used by # preset} other {Used by # presets}}"
             }
         },

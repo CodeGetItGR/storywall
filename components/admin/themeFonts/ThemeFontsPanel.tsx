@@ -2,7 +2,7 @@
 
 import { Pencil, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { ThemeFontDrawer } from '@/components/admin/themeFonts/ThemeFontDrawer';
 import { ThemeFontFace } from '@/components/event/ThemeFontFace';
@@ -14,7 +14,9 @@ import type { AdminThemeFontDto } from '@/lib/api/types';
 import { themeFontFamily } from '@/lib/eventTheme';
 import { cn } from '@/lib/utils';
 
-type DrawerState = { open: false } | { open: true; font: AdminThemeFontDto | null };
+// token: which opening this is. A drawer closes only its own opening, so a save that finishes after
+// the admin moved on (or a create, which has no id) can't close the drawer they have open now.
+type DrawerState = { open: false } | { open: true; font: AdminThemeFontDto | null; token: number };
 
 const STATUS_PILL = {
     READY: 'bg-status-good-wash text-status-good',
@@ -30,14 +32,22 @@ export function ThemeFontsPanel() {
     const fontsQuery = useAdminThemeFonts();
     const fonts = fontsQuery.data ?? [];
     const [drawer, setDrawer] = useState<DrawerState>({ open: false });
+    const nextToken = useRef(0);
+
+    function openDrawer(font: AdminThemeFontDto | null) {
+        nextToken.current += 1;
+        setDrawer({ open: true, font, token: nextToken.current });
+    }
 
     function openCreate() {
-        setDrawer({ open: true, font: null });
+        openDrawer(null);
     }
 
-    function closeDrawer() {
-        setDrawer({ open: false });
-    }
+    // Bound to the opening it was rendered for: a stale call finds a different token and does nothing.
+    const openToken = drawer.open ? drawer.token : 0;
+    const closeDrawer = useCallback(() => {
+        setDrawer((current) => (current.open && current.token === openToken ? { open: false } : current));
+    }, [openToken]);
 
     return (
         <div className="mx-auto max-w-6xl px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
@@ -80,7 +90,7 @@ export function ThemeFontsPanel() {
                             </thead>
                             <tbody>
                                 {fonts.map((font) => (
-                                    <ThemeFontRow key={font.id} font={font} onEditAction={setDrawer} />
+                                    <ThemeFontRow key={font.id} font={font} onEditAction={openDrawer} />
                                 ))}
                             </tbody>
                         </table>
@@ -89,18 +99,18 @@ export function ThemeFontsPanel() {
             </section>
 
             {/* Drawer */}
-            {drawer.open && <ThemeFontDrawer key={drawer.font?.id ?? 'new'} font={drawer.font} onCloseAction={closeDrawer} />}
+            {drawer.open && <ThemeFontDrawer key={drawer.token} font={drawer.font} onCloseAction={closeDrawer} />}
         </div>
     );
 }
 
-function ThemeFontRow({ font, onEditAction }: { font: AdminThemeFontDto; onEditAction: (state: DrawerState) => void }) {
+function ThemeFontRow({ font, onEditAction }: { font: AdminThemeFontDto; onEditAction: (font: AdminThemeFontDto) => void }) {
     const t = useTranslations('AdminPage.themeFonts');
     const status = themeFontStatus(font);
     const face = font.url ? { key: font.key, fallback: font.fallback, url: font.url } : null;
 
     function handleEdit() {
-        onEditAction({ open: true, font });
+        onEditAction(font);
     }
 
     return (

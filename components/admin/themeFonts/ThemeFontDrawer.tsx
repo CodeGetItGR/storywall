@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { ReactionTypeAvailabilityControl } from '@/components/admin/ReactionTypeAvailabilityControl';
-import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useApiErrorMessage, useRetryAfterCountdown } from '@/hooks/useApiErrorMessage';
 import { useThemeFontDrawer } from '@/hooks/useThemeFontDrawer';
 import {
     THEME_FONT_ACCEPT,
@@ -16,6 +16,7 @@ import {
     themeFontMissingCharacters,
 } from '@/lib/adminThemeFonts';
 import { ApiError } from '@/lib/api/client';
+import { ERROR_CODES, getErrorCode, getErrorMessage } from '@/lib/api/errors';
 import type { AdminThemeFontDto } from '@/lib/api/types';
 
 const FORM_ID = 'theme-font-form';
@@ -23,6 +24,9 @@ const FALLBACKS = [
     { value: 'serif', labelKey: 'fallbackSerif' },
     { value: 'sans-serif', labelKey: 'fallbackSansSerif' },
 ] as const;
+
+// While a save runs, closing would leave it running behind a drawer the admin thinks is gone.
+function ignoreClose() {}
 
 export function ThemeFontDrawer({ font, onCloseAction }: { font: AdminThemeFontDto | null; onCloseAction: () => void }) {
     const t = useTranslations('AdminPage.themeFonts.drawer');
@@ -44,24 +48,41 @@ export function ThemeFontDrawer({ font, onCloseAction }: { font: AdminThemeFontD
             : form.fileError === 'size'
               ? t('fileSize')
               : form.hasPendingFile
-                ? t('filePending')
+                ? t('filePending', { name: form.pendingFileName ?? '' })
                 : t('fileHint');
-    // A non-ApiError is fetch failing before any response: offline, DNS, the server down.
-    const serverError =
-        form.failure?.kind === 'other' ? (form.failure.error instanceof ApiError ? apiErrorMessage(form.failure.error) : t('network')) : null;
+    const failedWith = form.failure?.kind === 'other' ? form.failure.error : null;
+    const serverError = form.failure?.kind === 'other' ? describeServerError(form.failure.error) : null;
+    const retryIn = useRetryAfterCountdown(failedWith);
+    const close = form.isSaving ? ignoreClose : onCloseAction;
+
+    function describeServerError(error: unknown): string {
+        // A non-ApiError is fetch failing before any response: offline, DNS, the server down.
+        if (!(error instanceof ApiError)) return t('network');
+        const code = getErrorCode(error);
+        // The body as a whole was over the server's limit: for this form that is the font file.
+        if (code === ERROR_CODES.REQUEST_TOO_LARGE) return t('fileSize');
+        // A 3001 that reaches here is about no field we show (an upload 3001): its detail is localized.
+        if (code === ERROR_CODES.VALIDATION_FAILED) return getErrorMessage(error, '').trim() || apiErrorMessage(error);
+        return apiErrorMessage(error);
+    }
     const missing = form.failure?.kind === 'other' ? themeFontMissingCharacters(form.failure.error) : [];
     const sampleFont = form.previewFamily ? `"${form.previewFamily}", ${form.draft.fallback}` : form.draft.fallback;
 
     const footer = (
         <div className="flex w-full items-center justify-end gap-2">
             {/* Save */}
-            <button type="button" onClick={onCloseAction} className="h-9 rounded-md px-3 text-sm font-semibold text-ink-muted hover:text-ink">
+            <button
+                type="button"
+                onClick={onCloseAction}
+                disabled={form.isSaving}
+                className="h-9 rounded-md px-3 text-sm font-semibold text-ink-muted hover:text-ink disabled:opacity-50"
+            >
                 {t('cancel')}
             </button>
             <button
                 type="submit"
                 form={FORM_ID}
-                disabled={form.isSaving || form.failure?.kind === 'notFound'}
+                disabled={form.isSaving || retryIn > 0 || form.failure?.kind === 'notFound'}
                 className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-bold text-white disabled:opacity-50"
             >
                 {form.isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -71,14 +92,7 @@ export function ThemeFontDrawer({ font, onCloseAction }: { font: AdminThemeFontD
     );
 
     return (
-        <AdminDrawer
-            open
-            size="wide"
-            onClose={onCloseAction}
-            title={font ? font.familyName : t('createTitle')}
-            closeLabel={t('close')}
-            footer={footer}
-        >
+        <AdminDrawer open size="wide" onClose={close} title={font ? font.familyName : t('createTitle')} closeLabel={t('close')} footer={footer}>
             <div className="grid gap-6 sm:grid-cols-[minmax(0,1fr)_minmax(0,17rem)]">
                 <form id={FORM_ID} onSubmit={form.handleSubmit} className="space-y-4" noValidate>
                     {/* Error */}
@@ -183,7 +197,7 @@ export function ThemeFontDrawer({ font, onCloseAction }: { font: AdminThemeFontD
                     </div>
                     {form.previewFailed ? (
                         <p role="alert" className="text-xs leading-5 text-status-danger">
-                            {t('previewFailed')}
+                            {form.previewFailed === 'saved' ? t('savedPreviewFailed') : t('previewFailed')}
                         </p>
                     ) : (
                         <p className="text-xs leading-5 text-ink-faint">{form.previewFamily ? t('previewHint') : t('previewEmpty')}</p>
