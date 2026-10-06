@@ -38,7 +38,10 @@ export function useWishbookBook(eventId: string, isHost: boolean) {
             }
         },
         enabled: Boolean(eventId) && isAuthenticated && readable && isHost,
-        refetchInterval: (query) => bookRefetchInterval(query.state.data),
+        // The guide relies on a read on every load: a co-host's rebuild or a CONTENT_CHANGED takedown only shows up there.
+        staleTime: 0,
+        // A failing endpoint must not be hammered every 3 s on the cached QUEUED.
+        refetchInterval: (query) => (query.state.status === 'error' ? false : bookRefetchInterval(query.state.data)),
     });
 }
 
@@ -46,6 +49,8 @@ export function useRequestWishbookBook(eventId: string) {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: () => api.post<WishbookBookDto>(endpoints.events.wishbookBook(eventId)),
+        // A poll still in flight would land after the POST and overwrite the new build with the old one.
+        onMutate: () => queryClient.cancelQueries({ queryKey: wishbookBookKeys.book(eventId), exact: true }),
         onSuccess: (book) => queryClient.setQueryData(wishbookBookKeys.book(eventId), book),
     });
 }
@@ -61,10 +66,13 @@ export function useFreshBookDownloadUrl(eventId: string) {
 }
 
 export function useWishbookBookTexts(eventId: string, enabled: boolean) {
+    const { isAuthenticated } = useAuth();
     return useQuery({
         queryKey: wishbookBookKeys.texts(eventId),
         queryFn: () => api.get<WishbookBookTextsDto>(endpoints.events.wishbookBookTexts(eventId)),
-        enabled: Boolean(eventId) && enabled,
+        enabled: Boolean(eventId) && isAuthenticated && enabled,
+        // A co-host may have saved new texts since this cache entry was filled.
+        staleTime: 0,
     });
 }
 
@@ -80,29 +88,37 @@ type EntryPages = InfiniteData<Page<WishbookEntryResponseDto>>;
 
 export function useSetWishHighlighted(eventId: string) {
     const queryClient = useQueryClient();
-    const key = wishbookKeys.list(eventId);
+    const listKey = wishbookKeys.list(eventId);
+    const mutationKey = ['wishbook-highlight', eventId] as const;
+    const setHighlighted = (entryId: string, highlighted: boolean) =>
+        queryClient.setQueryData<EntryPages>(listKey, (data) =>
+            data
+                ? {
+                      ...data,
+                      pages: data.pages.map((page) => ({
+                          ...page,
+                          content: page.content.map((entry) => (entry.id === entryId ? { ...entry, highlighted } : entry)),
+                      })),
+                  }
+                : data,
+        );
     return useMutation({
+        mutationKey,
         mutationFn: ({ entryId, highlighted }: { entryId: string; highlighted: boolean }) =>
             highlighted ? api.put<void>(endpoints.wishbook.highlight(entryId)) : api.del<void>(endpoints.wishbook.highlight(entryId)),
         onMutate: async ({ entryId, highlighted }) => {
-            await queryClient.cancelQueries({ queryKey: key });
-            const previous = queryClient.getQueryData<EntryPages>(key);
-            queryClient.setQueryData<EntryPages>(key, (data) =>
-                data
-                    ? {
-                          ...data,
-                          pages: data.pages.map((page) => ({
-                              ...page,
-                              content: page.content.map((entry) => (entry.id === entryId ? { ...entry, highlighted } : entry)),
-                          })),
-                      }
-                    : data,
-            );
-            return { previous };
+            // Exact: the prefix would also cancel the count query.
+            await queryClient.cancelQueries({ queryKey: listKey, exact: true });
+            setHighlighted(entryId, highlighted);
         },
-        onError: (_error, _input, context) => {
-            if (context?.previous) queryClient.setQueryData(key, context.previous);
+        // Undo only this wish: restoring a whole snapshot would also undo a later toggle that succeeded.
+        onError: (_error, { entryId, highlighted }) => {
+            setHighlighted(entryId, !highlighted);
         },
-        onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
+        // Refetch once the last overlapping toggle is done; an earlier refetch could miss a request still in flight.
+        // This mutation still counts as mutating while its own onSettled runs.
+        onSettled: () => {
+            if (queryClient.isMutating({ mutationKey }) === 1) return queryClient.invalidateQueries({ queryKey: listKey, exact: true });
+        },
     });
 }

@@ -2148,7 +2148,7 @@
             "title": "Your keepsake book",
             "body": "Every wish, laid out as a printable-quality PDF book. Star the wishes you love most and they get a page of their own.",
             "create": "Create the book",
-            "building": "Building your book… you can leave this page; we'll notify you.",
+            "building": "This takes a minute or two. You can leave this page; if you started it, we'll let you know when it's ready.",
             "ready": "Ready · {pages, plural, one {# page} other {# pages}} · {wishes, plural, one {# wish} other {# wishes}}",
             "download": "Download",
             "rebuild": "Rebuild with the latest wishes",
@@ -2160,7 +2160,7 @@
         },
         "bookTexts": {
             "title": "The book's text",
-            "hint": "Leave a field empty to use the text shown.",
+            "hint": "Leave a field empty to use the suggested text shown.",
             "subtitle": "Subtitle (cover)",
             "dedication": "Dedication",
             "closingTitle": "Closing title",
