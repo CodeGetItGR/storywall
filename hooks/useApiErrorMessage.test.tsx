@@ -61,8 +61,8 @@ describe('useApiErrorMessage', () => {
         [5119, 'The server is busy right now. Try again in a moment.'],
         [5128, 'This was just changed somewhere else. Refresh and try again.'],
         [5143, 'This theme is no longer available — pick another.'],
-        [3052, "This file isn't a WOFF2 font, or it's damaged. Convert it to WOFF2 and upload it again."],
-        [3053, 'This font file is too large. Fonts can be up to 500 KB.'],
+        [3052, "This file isn't a WOFF2, TTF or OTF font, or it's damaged. Upload one font per file."],
+        [3053, 'This font file is too large. Choose a smaller one, for example a version with only Greek and Latin letters.'],
         [3054, "This font can't write every Greek and Latin letter that event titles need. Choose a font that covers both."],
         [3055, 'The title colour is too close to the background colour. Choose a darker or lighter one.'],
         [5145, "This font can't be used in a theme: it doesn't exist, it's archived, or it has no font file yet. Choose another font."],
@@ -82,12 +82,14 @@ describe('useApiErrorMessage', () => {
     });
 
     it.each(['', '   '])('falls back to the localized copy when a theme font detail is blank (%j)', (detail) => {
-        expect(describeIn('en', new ApiError(400, { errorCode: 3053, detail }))).toBe('This font file is too large. Fonts can be up to 500 KB.');
+        expect(describeIn('en', new ApiError(400, { errorCode: 3053, detail }))).toBe(
+            'This font file is too large. Choose a smaller one, for example a version with only Greek and Latin letters.',
+        );
     });
 
     it('falls back to the localized copy for a theme font error without detail', () => {
         expect(describeIn('el', new ApiError(400, { errorCode: 3053 }))).toBe(
-            'Το αρχείο της γραμματοσειράς είναι πολύ μεγάλο. Οι γραμματοσειρές μπορούν να είναι έως 500 KB.',
+            'Το αρχείο της γραμματοσειράς είναι πολύ μεγάλο. Επιλέξτε μικρότερο, για παράδειγμα μια έκδοση μόνο με ελληνικά και λατινικά γράμματα.',
         );
     });
 });

@@ -15,12 +15,17 @@ import {
 } from '@/lib/adminThemeFonts';
 import { normalizePresetKeyInput } from '@/lib/adminThemePresets';
 import { ApiError } from '@/lib/api/client';
-import { ERROR_CODES, getErrorCode, getFieldErrors, isNotFoundError } from '@/lib/api/errors';
+import { ERROR_CODES, getErrorCode, getErrorMessage, getFieldErrors, isNotFoundError } from '@/lib/api/errors';
 import type { AdminThemeFontDto } from '@/lib/api/types';
 import { isThemeFontUrl } from '@/lib/eventTheme';
 
 export type ThemeFontDrawerError =
-    { kind: 'keyTaken' } | { kind: 'keyInvalid' } | { kind: 'familyNameInvalid' } | { kind: 'notFound' } | { kind: 'other'; error: unknown };
+    | { kind: 'keyTaken' }
+    | { kind: 'keyInvalid' }
+    | { kind: 'familyNameInvalid' }
+    | { kind: 'notFound' }
+    | { kind: 'uploadUnavailable'; detail: string }
+    | { kind: 'other'; error: unknown };
 export type ThemeFontAvailability = 'AVAILABLE' | 'ARCHIVED';
 
 type SaveStep = 'create' | 'patch' | 'upload';
@@ -28,7 +33,14 @@ type SaveStep = 'create' | 'patch' | 'upload';
 // 409 on create is a taken key (5146), shown on the key field. A 3001 on create/PATCH is about the
 // key (its field error) or the display name (the only other field the admin types), so it goes on
 // that field too. 404 means the font is gone from under this drawer.
+// A 503 on the upload that isn't a busy signal (5119, 3017) is the server saying it can't convert a
+// TTF/OTF right now; its detail is localized and says what to do, so it is kept as is.
 function classifyError(error: unknown, step: SaveStep): ThemeFontDrawerError {
+    if (step === 'upload' && error instanceof ApiError && error.status === 503) {
+        const code = getErrorCode(error);
+        const detail = getErrorMessage(error, '').trim();
+        if (code !== ERROR_CODES.RESOURCE_BUSY && code !== ERROR_CODES.MEDIA_PROCESSING_BUSY && detail) return { kind: 'uploadUnavailable', detail };
+    }
     if (step === 'create' && error instanceof ApiError && error.status === 409) return { kind: 'keyTaken' };
     if (step !== 'upload' && getErrorCode(error) === ERROR_CODES.VALIDATION_FAILED) {
         const fields = getFieldErrors(error) ?? {};
@@ -75,7 +87,7 @@ function useFontPreview(source: PreviewSource | null): { family: string | null; 
                 document.fonts.add(loading);
                 setState({ source: current, family, failed: false });
             } catch {
-                // Not a font the browser can read (corrupt, or not really WOFF2): say so, don't throw.
+                // Not a font the browser can read (corrupt, or not really a font): say so, don't throw.
                 if (!cancelled) setState({ source: current, family: null, failed: true });
             }
         }
@@ -106,6 +118,8 @@ export function useThemeFontDrawer({ font, onDoneAction }: { font: AdminThemeFon
     const [failure, setFailure] = useState<ThemeFontDrawerError | null>(null);
     const [file, setFile] = useState<File | null>(null);
     const [fileError, setFileError] = useState<'type' | 'size' | null>(null);
+    // Each pick is numbered: a check that finishes after a later pick doesn't overwrite it.
+    const pickCount = useRef(0);
     // Set synchronously: a fast double click submits twice before isSaving re-renders.
     const submitting = useRef(false);
     // Cleared on unmount: a save still in flight then stops before the upload and never calls
@@ -142,12 +156,14 @@ export function useThemeFontDrawer({ font, onDoneAction }: { font: AdminThemeFon
         setDraft((current) => ({ ...current, archived: availability === 'ARCHIVED' }));
     }, []);
 
-    const handleFileChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
         const next = event.currentTarget.files?.[0] ?? null;
         // Lets the same file be picked again after a refusal.
         event.currentTarget.value = '';
         if (!next) return;
-        const problem = fontFileError(next);
+        const pick = ++pickCount.current;
+        const problem = await fontFileError(next);
+        if (pick !== pickCount.current || !mounted.current) return;
         setFileError(problem);
         // A refused pick also drops the earlier one, so Save never uploads a file the admin replaced.
         setFile(problem ? null : next);

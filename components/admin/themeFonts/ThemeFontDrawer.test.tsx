@@ -242,3 +242,26 @@ describe('ThemeFontDrawer review fixes', () => {
         expect(screen.getByRole('alert')).toHaveTextContent('savedPreviewFailed');
     });
 });
+
+describe('ThemeFontDrawer TTF and OTF', () => {
+    it('offers WOFF2, TTF and OTF in the file picker', () => {
+        state();
+        const { container } = render(<ThemeFontDrawer font={FONT} onCloseAction={vi.fn()} />);
+        expect(container.querySelector('input[type="file"]')).toHaveAttribute('accept', '.woff2,.ttf,.otf,font/woff2,font/ttf,font/otf');
+    });
+
+    it('shows the backend detail when the upload could not be converted', () => {
+        const detail = 'Οι γραμματοσειρές TTF ή OTF δεν μπορούν να μετατραπούν αυτή τη στιγμή.';
+        state({ failure: { kind: 'uploadUnavailable', detail } });
+        renderDrawer();
+        expect(screen.getByRole('alert')).toHaveTextContent(detail);
+        expect(screen.getByRole('button', { name: 'save' })).toBeEnabled();
+    });
+
+    it('says the font was saved without its file when that upload followed a create', () => {
+        state({ failure: { kind: 'uploadUnavailable', detail: 'Try again later.' }, createdWithoutFile: true });
+        renderDrawer(null);
+        expect(screen.getByRole('alert')).toHaveTextContent('createdWithoutFile');
+        expect(screen.getByRole('alert')).toHaveTextContent('Try again later.');
+    });
+});
