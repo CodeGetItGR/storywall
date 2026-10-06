@@ -65,7 +65,7 @@ describe('useApiErrorMessage', () => {
         [3053, 'This font file is too large. Fonts can be up to 500 KB.'],
         [3054, "This font can't write every Greek and Latin letter that event titles need. Choose a font that covers both."],
         [3055, 'The title colour is too close to the background colour. Choose a darker or lighter one.'],
-        [5145, "This font can't be used yet: it's archived or has no file."],
+        [5145, "This font can't be used in a theme: it doesn't exist, it's archived, or it has no font file yet. Choose another font."],
         [5146, 'A font with this key already exists. Choose a different key.'],
         [5144, 'This event has ended.'],
         [5141, 'You have reached the story limit. Older stories expire after 24 hours, or delete one to post another.'],
