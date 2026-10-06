@@ -1,19 +1,29 @@
 'use client';
 
 import { ImagePlus, Loader2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { ReactionTypeAvailabilityControl } from '@/components/admin/ReactionTypeAvailabilityControl';
 import { ThemePresetPreview } from '@/components/admin/themePresets/ThemePresetPreview';
+import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { useThemePresetDrawer } from '@/hooks/useThemePresetDrawer';
-import { MIN_INK_CONTRAST, THEME_ILLUSTRATION_ACCEPT, THEME_PRESET_NAME_MAX } from '@/lib/adminThemePresets';
-import { getErrorMessage } from '@/lib/api/errors';
+import {
+    backgroundContrastDetail,
+    formatContrastRatio,
+    MIN_INK_CONTRAST,
+    MIN_TITLE_CONTRAST,
+    THEME_ILLUSTRATION_ACCEPT,
+    THEME_PRESET_NAME_MAX,
+    type ThemeFontOption,
+} from '@/lib/adminThemePresets';
+import { ApiError } from '@/lib/api/client';
 import type { AdminThemePresetDto, EventTypeConvention } from '@/lib/api/types';
 
 const FORM_ID = 'theme-preset-form';
+const FONT_OPTION_LABEL_KEYS = { live: 'headingFontOption', archived: 'headingFontArchived', noFile: 'headingFontNoFile' } as const;
 
 export function ThemePresetDrawer({
     preset,
@@ -29,17 +39,38 @@ export function ThemePresetDrawer({
     const t = useTranslations('AdminPage.themePresets.drawer');
     const tPreview = useTranslations('AdminPage.themePresets.preview');
     const localizedText = useLocalizedText();
+    const locale = useLocale();
+    const apiErrorMessage = useApiErrorMessage();
     const form = useThemePresetDrawer({ preset, sortOrder, onDoneAction: onCloseAction });
     const keyHint = form.failure?.kind === 'keyTaken' ? t('keyTaken') : form.errors.key ? t('keyInvalid') : undefined;
-    // Floored, so a colour just under the minimum never reads as passing.
-    const contrast = form.contrastRatio === null ? null : (Math.floor(form.contrastRatio * 100) / 100).toFixed(2);
+    const formatMinimum = (value: number) => new Intl.NumberFormat(locale).format(value);
+    // Ratios are floored, like the server's, so a colour just under the minimum never reads as passing.
     // One contrast message at a time: once a save is blocked, the alert below replaces the live hint.
     const contrastHint =
-        contrast === null || form.errors.backgroundContrast
+        form.contrastRatio === null || form.errors.backgroundContrast
             ? undefined
-            : form.contrastRatio !== null && form.contrastRatio < MIN_INK_CONTRAST
-              ? t('contrastLow', { ratio: contrast, min: MIN_INK_CONTRAST })
-              : t('contrastOk', { ratio: contrast });
+            : form.contrastRatio < MIN_INK_CONTRAST
+              ? t('contrastLow', { ratio: formatContrastRatio(form.contrastRatio, locale), min: formatMinimum(MIN_INK_CONTRAST) })
+              : t('contrastOk', { ratio: formatContrastRatio(form.contrastRatio, locale) });
+    const titleColorHint = form.errors.titleColor
+        ? t('titleColorInvalid')
+        : !form.draft.titleColor
+          ? t('titleColorInkHint')
+          : form.titleContrastRatio === null || form.errors.titleContrast
+            ? undefined
+            : form.titleContrastRatio < MIN_TITLE_CONTRAST
+              ? t('titleContrastLow', { ratio: formatContrastRatio(form.titleContrastRatio, locale), min: formatMinimum(MIN_TITLE_CONTRAST) })
+              : t('titleContrastOk', { ratio: formatContrastRatio(form.titleContrastRatio, locale) });
+    const fontHint = form.fontsStatus === 'loading' ? t('headingFontLoading') : form.fontsStatus === 'error' ? t('headingFontLoadFailed') : undefined;
+    const fontLabel = (option: ThemeFontOption) => t(FONT_OPTION_LABEL_KEYS[option.status], { familyName: option.familyName, key: option.key });
+    // A non-ApiError is fetch failing before any response: offline, DNS, the server down. The background
+    // check's 3001 has a localized detail worth showing; the hook would replace it with generic copy.
+    const serverError =
+        form.failure?.kind !== 'other'
+            ? null
+            : form.failure.error instanceof ApiError
+              ? (backgroundContrastDetail(form.failure.error) ?? apiErrorMessage(form.failure.error))
+              : t('network');
     const fileHint = form.fileError === 'type' ? t('illustrationType') : form.fileError === 'size' ? t('illustrationSize') : undefined;
 
     const footer = (
@@ -77,9 +108,9 @@ export function ThemePresetDrawer({
                             {t('notFound')}
                         </p>
                     )}
-                    {form.failure?.kind === 'other' && (
+                    {serverError !== null && (
                         <p role="alert" className="text-sm text-status-danger">
-                            {getErrorMessage(form.failure.error)}
+                            {serverError}
                         </p>
                     )}
 
@@ -147,6 +178,71 @@ export function ThemePresetDrawer({
                         )}
                     </AdminField>
 
+                    {/* Title colour */}
+                    <div className="space-y-1.5">
+                        <AdminField label={t('titleColor')} hint={titleColorHint}>
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="color"
+                                    name="titleColor"
+                                    value={form.titleColorInputValue}
+                                    onChange={form.handleFieldChange}
+                                    aria-label={t('titleColor')}
+                                    className="h-10 w-12 shrink-0 cursor-pointer rounded-md border border-border bg-white p-1"
+                                />
+                                <input
+                                    name="titleColor"
+                                    value={form.draft.titleColor}
+                                    onChange={form.handleFieldChange}
+                                    maxLength={7}
+                                    placeholder={t('titleColorPlaceholder')}
+                                    aria-invalid={Boolean(form.errors.titleColor || form.errors.titleContrast)}
+                                    className={adminInputClass('font-mono uppercase placeholder:normal-case')}
+                                />
+                            </div>
+                            {form.errors.titleContrast && (
+                                <span role="alert" className="text-[11px] leading-4 font-semibold text-status-danger">
+                                    {t('titleContrastInvalid')}
+                                </span>
+                            )}
+                        </AdminField>
+                        <button
+                            type="button"
+                            onClick={form.handleUseInk}
+                            disabled={!form.draft.titleColor}
+                            className="h-8 rounded-md border border-border px-3 text-xs font-semibold text-ink hover:bg-canvas disabled:opacity-50"
+                        >
+                            {t('titleColorUseInk')}
+                        </button>
+                    </div>
+
+                    {/* Heading font */}
+                    <div className="space-y-1">
+                        <AdminField label={t('headingFont')} hint={fontHint}>
+                            <select
+                                name="headingFontId"
+                                value={form.draft.headingFontId}
+                                onChange={form.handleFieldChange}
+                                className={adminInputClass()}
+                            >
+                                <option value="">{t('headingFontDefault')}</option>
+                                {form.fontOptions.map((option) => (
+                                    <option key={option.id} value={option.id}>
+                                        {fontLabel(option)}
+                                    </option>
+                                ))}
+                            </select>
+                        </AdminField>
+                        {form.fontsStatus === 'ready' && !form.hasUsableFonts && (
+                            <p className="text-[11px] leading-4 text-ink-faint">
+                                {t('headingFontEmpty')}{' '}
+                                <a href="#theme-fonts" className="font-semibold text-primary underline-offset-2 hover:underline">
+                                    {t('headingFontEmptyLink')}
+                                </a>
+                            </p>
+                        )}
+                    </div>
+
                     {/* Event types */}
                     <fieldset>
                         <legend className="text-[11px] font-bold tracking-wide text-ink-muted uppercase">{t('eventTypes')}</legend>
@@ -195,6 +291,8 @@ export function ThemePresetDrawer({
                 <ThemePresetPreview
                     backgroundColor={form.previewColor}
                     illustrationUrl={form.previewIllustrationUrl}
+                    titleColor={form.previewTitleColor}
+                    headingFont={form.previewFont}
                     title={form.previewTitle || tPreview('sampleTitle')}
                 />
             </div>

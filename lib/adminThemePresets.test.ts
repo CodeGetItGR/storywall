@@ -1,20 +1,27 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+    backgroundContrastDetail,
     buildThemePresetCreatePayload,
     buildThemePresetPatchPayload,
+    contrastRatio,
     draftFromPreset,
     filterThemePresets,
+    floorContrastRatio,
+    formatContrastRatio,
     illustrationFileError,
     inkContrastRatio,
     MIN_INK_CONTRAST,
+    MIN_TITLE_CONTRAST,
     normalizePresetKeyInput,
     sortThemePresets,
+    themeFontOptions,
     themePresetStatus,
     toggleEventType,
     validateThemePresetDraft,
 } from '@/lib/adminThemePresets';
-import type { AdminThemePresetDto } from '@/lib/api/types';
+import { ApiError } from '@/lib/api/client';
+import type { AdminThemeFontDto, AdminThemePresetDto } from '@/lib/api/types';
 
 const PRESET: AdminThemePresetDto = {
     id: 'p1',
@@ -36,6 +43,8 @@ const VALID_DRAFT = {
     backgroundColor: '#bfe6e2',
     eventTypes: ['BAPTISM' as const],
     archived: false,
+    titleColor: '',
+    headingFontId: '',
 };
 
 describe('validateThemePresetDraft', () => {
@@ -45,7 +54,19 @@ describe('validateThemePresetDraft', () => {
 
     it('flags every missing or malformed field', () => {
         expect(
-            validateThemePresetDraft({ key: 'Dino Mint', nameEn: ' ', nameEl: '', backgroundColor: 'mint', eventTypes: [], archived: false }, true),
+            validateThemePresetDraft(
+                {
+                    key: 'Dino Mint',
+                    nameEn: ' ',
+                    nameEl: '',
+                    backgroundColor: 'mint',
+                    eventTypes: [],
+                    archived: false,
+                    titleColor: '',
+                    headingFontId: '',
+                },
+                true,
+            ),
         ).toEqual({
             key: true,
             nameEn: true,
@@ -90,6 +111,8 @@ describe('payloads', () => {
             backgroundColor: '#BFE6E2',
             eventTypes: ['BAPTISM'],
             sortOrder: 4,
+            headingFontId: null,
+            titleColor: null,
         });
     });
 
@@ -166,5 +189,143 @@ describe('inkContrastRatio', () => {
         expect(inkContrastRatio('#878787')).toBeGreaterThanOrEqual(MIN_INK_CONTRAST);
         expect(validateThemePresetDraft({ ...VALID_DRAFT, backgroundColor: '#868686' }, true)).toEqual({ backgroundContrast: true });
         expect(validateThemePresetDraft({ ...VALID_DRAFT, backgroundColor: '#878787' }, true)).toEqual({});
+    });
+});
+
+const FONT_SUMMARY = {
+    id: 'f1',
+    key: 'alegreya',
+    familyName: 'Alegreya',
+    fallback: 'serif' as const,
+    archived: false,
+    url: '/api/theme-fonts/alegreya/1.woff2',
+};
+
+describe('title colour and heading font', () => {
+    const base = { ...VALID_DRAFT, backgroundColor: '#FFFFFF' };
+    const savedPreset: AdminThemePresetDto = { ...PRESET, backgroundColor: '#FFFFFF' };
+
+    it('flags a title colour under 3:1 against the background', () => {
+        const draft = { ...base, titleColor: '#F5C6D0' };
+        expect(validateThemePresetDraft(draft, true).titleContrast).toBe(true);
+        expect(validateThemePresetDraft({ ...draft, titleColor: '#7A1F3D' }, true).titleContrast).toBeUndefined();
+        expect(validateThemePresetDraft({ ...draft, titleColor: '' }, true).titleContrast).toBeUndefined(); // empty = ink
+    });
+
+    it('flags a malformed title colour separately', () => {
+        expect(validateThemePresetDraft({ ...base, titleColor: '#12' }, true)).toEqual({ titleColor: true });
+    });
+
+    it('re-checks the pair only when either colour changed, as the server does', () => {
+        const low = { ...base, titleColor: '#f5c6d0' };
+        // Both untouched: the PATCH sends neither colour, so the server doesn't re-check.
+        expect(validateThemePresetDraft(low, false, '#FFFFFF', '#F5C6D0')).toEqual({});
+        // The title changed.
+        expect(validateThemePresetDraft(low, false, '#FFFFFF', '#7A1F3D')).toEqual({ titleContrast: true });
+        // The background changed under an existing title.
+        const greyer = { ...base, backgroundColor: '#E0E0E0', titleColor: '#BBBBBB' };
+        expect(validateThemePresetDraft(greyer, false, '#FFFFFF', '#BBBBBB')).toEqual({ titleContrast: true });
+    });
+
+    it('creates with the font and an upper-cased title colour, or null for none', () => {
+        expect(buildThemePresetCreatePayload({ ...base, titleColor: '#7a1f3d', headingFontId: 'f1' }, 0)).toMatchObject({
+            titleColor: '#7A1F3D',
+            headingFontId: 'f1',
+        });
+        expect(buildThemePresetCreatePayload(base, 0)).toMatchObject({ titleColor: null, headingFontId: null });
+    });
+
+    it('fills the draft from the preset, empty for none', () => {
+        expect(draftFromPreset(savedPreset)).toMatchObject({ titleColor: '', headingFontId: '' });
+        expect(draftFromPreset({ ...savedPreset, titleColor: '#7A1F3D', headingFont: FONT_SUMMARY })).toMatchObject({
+            titleColor: '#7A1F3D',
+            headingFontId: 'f1',
+        });
+    });
+
+    it('patch clears what the admin emptied and sends what changed', () => {
+        const preset = { ...savedPreset, titleColor: '#7A1F3D', headingFont: FONT_SUMMARY };
+        expect(buildThemePresetPatchPayload(preset, { ...draftFromPreset(preset), titleColor: '', headingFontId: '' })).toEqual({
+            clearTitleColor: true,
+            clearHeadingFont: true,
+        });
+        expect(buildThemePresetPatchPayload(preset, { ...draftFromPreset(preset), headingFontId: 'f2' })).toEqual({ headingFontId: 'f2' });
+        expect(buildThemePresetPatchPayload(preset, { ...draftFromPreset(preset), titleColor: '#5a1f3d' })).toEqual({ titleColor: '#5A1F3D' });
+        // Case alone is no change.
+        expect(buildThemePresetPatchPayload(preset, { ...draftFromPreset(preset), titleColor: '#7a1f3d' })).toEqual({});
+    });
+
+    it('sends no clear flag when the preset had nothing to clear', () => {
+        expect(buildThemePresetPatchPayload(savedPreset, draftFromPreset(savedPreset))).toEqual({});
+    });
+});
+
+describe('contrastRatio', () => {
+    it('is symmetric, 21 for black on white, and the ink ratio is the special case', () => {
+        expect(contrastRatio('#000000', '#FFFFFF')).toBeCloseTo(21, 5);
+        expect(contrastRatio('#FFFFFF', '#000000')).toBeCloseTo(21, 5);
+        expect(inkContrastRatio('#BFE6E2')).toBeCloseTo(contrastRatio('#BFE6E2', '#241F1A'), 10);
+        expect(MIN_TITLE_CONTRAST).toBe(3);
+    });
+
+    it('floors to 2 decimals, so a ratio just under the minimum never reads as passing', () => {
+        expect(floorContrastRatio(2.999)).toBe(2.99);
+        expect(floorContrastRatio(4.5)).toBe(4.5);
+        expect(floorContrastRatio(0.29)).toBe(0.29);
+    });
+
+    it('formats the floored ratio with the locale decimal separator and two decimals', () => {
+        expect(formatContrastRatio(2.6189, 'en')).toBe('2.61');
+        expect(formatContrastRatio(2.6189, 'el')).toBe('2,61');
+        expect(formatContrastRatio(4.5, 'en')).toBe('4.50');
+        expect(formatContrastRatio(12.3456, 'el')).toBe('12,34');
+    });
+});
+
+describe('themeFontOptions', () => {
+    const font = (overrides: Partial<AdminThemeFontDto>): AdminThemeFontDto => ({ ...FONT_SUMMARY, presetCount: 0, ...overrides });
+
+    it('offers live fonts with a file, sorted by family name', () => {
+        const fonts = [
+            font({ id: 'b', key: 'zz', familyName: 'Zilla' }),
+            font({ id: 'a', key: 'aa', familyName: 'Alegreya' }),
+            font({ id: 'c', familyName: 'Archived', archived: true }),
+            font({ id: 'd', familyName: 'No file', url: null }),
+        ];
+        expect(themeFontOptions(fonts, null)).toEqual([
+            { id: 'a', key: 'aa', familyName: 'Alegreya', status: 'live' },
+            { id: 'b', key: 'zz', familyName: 'Zilla', status: 'live' },
+        ]);
+    });
+
+    it('keeps the assigned font even when it is archived or has no file', () => {
+        const archived = { ...FONT_SUMMARY, id: 'c', familyName: 'Old', archived: true };
+        expect(themeFontOptions([font({ id: 'a', familyName: 'Bree' })], archived).map((option) => [option.id, option.status])).toEqual([
+            ['a', 'live'],
+            ['c', 'archived'],
+        ]);
+        // The list's copy wins (it is fresher).
+        const listed = font({ id: 'd', familyName: 'Draft', url: null });
+        expect(themeFontOptions([listed], { ...FONT_SUMMARY, id: 'd' })).toEqual([
+            { id: 'd', key: 'alegreya', familyName: 'Draft', status: 'noFile' },
+        ]);
+        // Not loaded yet: the assigned font still shows.
+        expect(themeFontOptions(undefined, FONT_SUMMARY)).toEqual([{ id: 'f1', key: 'alegreya', familyName: 'Alegreya', status: 'live' }]);
+    });
+});
+
+describe('backgroundContrastDetail', () => {
+    it('returns the localized detail of the background contrast 3001', () => {
+        const error = new ApiError(400, { errorCode: 3001, detail: 'Πολύ σκούρο: 3,60:1', details: { ratio: 3.6, minimum: 4.5 } });
+        expect(backgroundContrastDetail(error)).toBe('Πολύ σκούρο: 3,60:1');
+    });
+
+    it('ignores a bean-validation 3001, other codes and blank details', () => {
+        expect(
+            backgroundContrastDetail(new ApiError(400, { errorCode: 3001, detail: 'One or more fields are invalid', errors: { key: 'x' } })),
+        ).toBeNull();
+        expect(backgroundContrastDetail(new ApiError(400, { errorCode: 3055, detail: 'x', details: { ratio: 2, minimum: 3 } }))).toBeNull();
+        expect(backgroundContrastDetail(new ApiError(400, { errorCode: 3001, detail: ' ', details: { ratio: 3.6 } }))).toBeNull();
+        expect(backgroundContrastDetail(new Error('Failed to fetch'))).toBeNull();
     });
 });

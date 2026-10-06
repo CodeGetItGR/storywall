@@ -5,9 +5,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useThemePresetDrawer } from '@/hooks/useThemePresetDrawer';
 import { ApiError } from '@/lib/api/client';
-import type { AdminThemePresetDto } from '@/lib/api/types';
+import type { AdminThemeFontDto, AdminThemePresetDto } from '@/lib/api/types';
 
-const mocks = vi.hoisted(() => ({ create: vi.fn(), patch: vi.fn(), upload: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+    create: vi.fn(),
+    patch: vi.fn(),
+    upload: vi.fn(),
+    fonts: { data: undefined as AdminThemeFontDto[] | undefined, isPending: false, isError: false },
+}));
 
 vi.mock('@/hooks/useAdminThemePresets', () => ({
     adminThemePresetKeys: { all: ['admin', 'theme-presets'] },
@@ -15,6 +20,7 @@ vi.mock('@/hooks/useAdminThemePresets', () => ({
     usePatchThemePreset: () => ({ mutateAsync: mocks.patch, isPending: false }),
     useUploadThemePresetIllustration: () => ({ mutateAsync: mocks.upload, isPending: false }),
 }));
+vi.mock('@/hooks/useAdminThemeFonts', () => ({ useAdminThemeFonts: () => mocks.fonts }));
 vi.mock('next-intl', () => ({ useLocale: () => 'en' }));
 
 const PRESET: AdminThemePresetDto = {
@@ -58,7 +64,23 @@ function fillValidDraft(result: { current: ReturnType<typeof useThemePresetDrawe
     act(() => result.current.handleEventTypeChange(field('eventType', 'BAPTISM')));
 }
 
+const ALEGREYA: AdminThemeFontDto = {
+    id: 'f1',
+    key: 'alegreya',
+    familyName: 'Alegreya',
+    fallback: 'serif',
+    archived: false,
+    url: '/api/theme-fonts/alegreya/1.woff2',
+    presetCount: 0,
+};
+const BREE: AdminThemeFontDto = { ...ALEGREYA, id: 'f2', key: 'bree', familyName: 'Bree', url: '/api/theme-fonts/bree/3.woff2' };
+
+function select(name: string, value: string) {
+    return { currentTarget: { name, value } } as unknown as ChangeEvent<HTMLSelectElement>;
+}
+
 beforeEach(() => {
+    mocks.fonts = { data: [ALEGREYA, BREE], isPending: false, isError: false };
     mocks.create.mockReset();
     mocks.patch.mockReset();
     mocks.upload.mockReset();
@@ -96,6 +118,8 @@ describe('useThemePresetDrawer', () => {
             backgroundColor: '#BFE6E2',
             eventTypes: ['BAPTISM'],
             sortOrder: 3,
+            headingFontId: null,
+            titleColor: null,
         });
         expect(mocks.upload).toHaveBeenCalledWith({ id: 'p1', file });
         expect(onDoneAction).toHaveBeenCalledOnce();
@@ -223,6 +247,98 @@ describe('useThemePresetDrawer contrast', () => {
         const { result } = renderDrawer();
         fillValidDraft(result);
         await act(() => result.current.handleSubmit(submitEvent()));
+        expect(result.current.failure?.kind).toBe('other');
+    });
+});
+
+describe('useThemePresetDrawer title colour and heading font', () => {
+    it('sends the picked font and an upper-cased title colour on create', async () => {
+        mocks.create.mockResolvedValue(PRESET);
+        const { result } = renderDrawer();
+        fillValidDraft(result);
+        act(() => result.current.handleFieldChange(select('headingFontId', 'f2')));
+        act(() => result.current.handleFieldChange(field('titleColor', '#7a1f3d')));
+
+        expect(result.current.previewTitleColor).toBe('#7a1f3d');
+        expect(result.current.previewFont).toEqual({ key: 'bree', fallback: 'serif', url: '/api/theme-fonts/bree/3.woff2' });
+        await act(() => result.current.handleSubmit(submitEvent()));
+
+        expect(mocks.create).toHaveBeenCalledWith(expect.objectContaining({ headingFontId: 'f2', titleColor: '#7A1F3D' }));
+    });
+
+    it('sends the clear flags when an edit empties them', async () => {
+        const styled = { ...PRESET, titleColor: '#1F4D49', headingFont: { ...ALEGREYA } };
+        mocks.patch.mockResolvedValue(PRESET);
+        const { result } = renderDrawer(styled);
+        expect(result.current.draft.headingFontId).toBe('f1');
+
+        act(() => result.current.handleUseInk());
+        act(() => result.current.handleFieldChange(select('headingFontId', '')));
+        expect(result.current.previewFont).toBeNull();
+        await act(() => result.current.handleSubmit(submitEvent()));
+
+        expect(mocks.patch).toHaveBeenCalledWith({ id: 'p1', input: { clearTitleColor: true, clearHeadingFont: true } });
+    });
+
+    it('blocks save on a title colour too close to the background', async () => {
+        const { result } = renderDrawer();
+        fillValidDraft(result);
+        act(() => result.current.handleFieldChange(field('titleColor', '#C8EEEA')));
+
+        expect(result.current.titleContrastRatio).toBeLessThan(3);
+        await act(() => result.current.handleSubmit(submitEvent()));
+
+        expect(mocks.create).not.toHaveBeenCalled();
+        expect(result.current.errors).toEqual({ titleContrast: true });
+    });
+
+    it('has no title ratio or preview colour for the ink default or a malformed value', () => {
+        const { result } = renderDrawer(PRESET);
+        expect(result.current.titleContrastRatio).toBeNull();
+        expect(result.current.previewTitleColor).toBeNull();
+        // The picker shows the ink colour while the title uses it.
+        expect(result.current.titleColorInputValue).toBe('#241f1a');
+        act(() => result.current.handleFieldChange(field('titleColor', '#12')));
+        expect(result.current.titleContrastRatio).toBeNull();
+        expect(result.current.previewTitleColor).toBeNull();
+    });
+
+    it('keeps an archived font the preset already has among the options, selected', () => {
+        const archived = { ...ALEGREYA, id: 'f9', key: 'old', familyName: 'Old', archived: true };
+        mocks.fonts = { data: [BREE, { ...archived, presetCount: 1 }], isPending: false, isError: false };
+        const { result } = renderDrawer({ ...PRESET, headingFont: archived });
+
+        expect(result.current.draft.headingFontId).toBe('f9');
+        expect(result.current.fontOptions.map((option) => [option.id, option.status])).toEqual([
+            ['f2', 'live'],
+            ['f9', 'archived'],
+        ]);
+        expect(result.current.hasUsableFonts).toBe(true);
+    });
+
+    it('reports the font list loading and failing without dropping the assigned font', () => {
+        mocks.fonts = { data: undefined, isPending: true, isError: false };
+        const { result, rerender } = renderDrawer({ ...PRESET, headingFont: ALEGREYA });
+        expect(result.current.fontsStatus).toBe('loading');
+        expect(result.current.fontOptions.map((option) => option.id)).toEqual(['f1']);
+
+        mocks.fonts = { data: undefined, isPending: false, isError: true };
+        rerender();
+        expect(result.current.fontsStatus).toBe('error');
+
+        mocks.fonts = { data: [{ ...ALEGREYA, archived: true }], isPending: false, isError: false };
+        rerender();
+        expect(result.current.fontsStatus).toBe('ready');
+        expect(result.current.hasUsableFonts).toBe(false);
+    });
+
+    it('reads a 5145 on create as a server failure, not a taken key', async () => {
+        mocks.create.mockRejectedValue(new ApiError(409, { errorCode: 5145, detail: 'Δεν μπορεί να χρησιμοποιηθεί.' }));
+        const { result } = renderDrawer();
+        fillValidDraft(result);
+        act(() => result.current.handleFieldChange(select('headingFontId', 'f1')));
+        await act(() => result.current.handleSubmit(submitEvent()));
+
         expect(result.current.failure?.kind).toBe('other');
     });
 });
