@@ -5,7 +5,7 @@ import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { useLandingPricingPlans } from '@/hooks/useLandingPricingPlans';
-import type { AppConfigResponseDto } from '@/lib/api/types';
+import type { AppConfigResponseDto, PlanTierResponseDto } from '@/lib/api/types';
 
 const publicGet = vi.fn();
 vi.mock('@/lib/api/client', () => ({
@@ -16,7 +16,6 @@ vi.mock('@/lib/api/client', () => ({
 const MESSAGES = {
     LandingPage: {
         pricing: {
-            categories: { wedding: { label: 'Wedding' }, vip: { label: 'VIP' } },
             everythingIn: 'Everything in {plan}',
             scheduleSessions: 'Up to {count} schedule sessions',
             scheduleSessionsUnlimited: 'Unlimited schedule sessions',
@@ -31,6 +30,38 @@ const MESSAGES = {
     },
     Modules: { gallery: { name: 'Gallery' } },
 };
+
+function planTier(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto {
+    return {
+        id: 'p1',
+        code: 'START',
+        scope: 'EVENT',
+        name: 'START',
+        description: null,
+        sortOrder: 0,
+        isDefault: false,
+        isAssignable: true,
+        isPublic: true,
+        isGiftable: true,
+        storageBytes: 16 * 1024 * 1024 * 1024,
+        maxMembers: 150,
+        priceAmountMinor: null,
+        priceCurrency: 'EUR',
+        billingPeriod: 'ONE_TIME',
+        discountPercent: null,
+        discountLabel: null,
+        discountStartsAt: null,
+        discountEndsAt: null,
+        moduleKeys: ['gallery'],
+        paidModules: [],
+        moduleConfigs: null,
+        eventTypeKey: 'WEDDING',
+        sharedGroupKey: null,
+        initialOptions: [{ id: 'opt-3', kind: 'INITIAL', months: 3, priceAmountMinor: 7900, sortOrder: 0, active: true }],
+        extensionOptions: [],
+        ...overrides,
+    };
+}
 
 function makeConfig(): AppConfigResponseDto {
     return {
@@ -59,40 +90,15 @@ function makeConfig(): AppConfigResponseDto {
         },
         pagination: { defaultPageSize: 20, maxPageSize: 50 },
         planTiers: [
-            {
-                id: 'p1',
-                code: 'START',
-                scope: 'EVENT',
-                name: 'START',
-                description: null,
-                sortOrder: 0,
-                isDefault: true,
-                isAssignable: true,
-                isPublic: true,
-                isGiftable: true,
-                storageBytes: 16 * 1024 * 1024 * 1024,
-                maxMembers: 150,
-                priceAmountMinor: null,
-                priceCurrency: 'EUR',
-                billingPeriod: 'ONE_TIME',
-                discountPercent: null,
-                discountLabel: null,
-                discountStartsAt: null,
-                discountEndsAt: null,
-                moduleKeys: ['gallery'],
-                paidModules: [],
-                moduleConfigs: null,
-                eventTypeKey: 'WEDDING',
-                sharedGroupKey: null,
-                initialOptions: [{ id: 'opt-3', kind: 'INITIAL', months: 3, priceAmountMinor: 7900, sortOrder: 0, active: true }],
-                extensionOptions: [],
-            },
+            planTier({ id: 'p1', code: 'START', isDefault: true, eventTypeKey: 'WEDDING' }),
+            planTier({ id: 'p2', code: 'VIP', name: 'VIP', eventTypeKey: 'SOCIAL_EVENT' }),
+            planTier({ id: 'p3', code: 'REUNION', name: 'REUNION', eventTypeKey: 'REUNION', sortOrder: 1 }),
         ],
         paidServices: [],
         eventModuleKeys: ['gallery'],
         modules: [{ id: 'm1', moduleKey: 'gallery', name: 'Gallery', description: null, isEnabled: true, sortOrder: 0 }],
         eventTypes: [],
-        eventTypeKeys: ['WEDDING', 'BAPTISM', 'SOCIAL_EVENT'],
+        eventTypeKeys: ['WEDDING', 'BAPTISM', 'SOCIAL_EVENT', 'REUNION'],
         translations: { eventTypes: {} },
         rsvp: { minAdults: 1, maxAdults: 5, minChildren: 0, maxChildren: 4 },
         withdrawal: { termsVersion: '1' } as AppConfigResponseDto['withdrawal'],
@@ -110,37 +116,93 @@ function makeConfig(): AppConfigResponseDto {
     };
 }
 
-function wrapper({ children }: { children: React.ReactNode }) {
-    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    return (
-        <QueryClientProvider client={queryClient}>
-            <NextIntlClientProvider locale="en" messages={MESSAGES}>
-                {children}
-            </NextIntlClientProvider>
-        </QueryClientProvider>
-    );
+function makeWrapper(locale: string) {
+    return function Wrapper({ children }: { children: React.ReactNode }) {
+        const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+        return (
+            <QueryClientProvider client={queryClient}>
+                <NextIntlClientProvider locale={locale} messages={MESSAGES}>
+                    {children}
+                </NextIntlClientProvider>
+            </QueryClientProvider>
+        );
+    };
 }
 
+const wrapper = makeWrapper('en');
+const greekWrapper = makeWrapper('el');
+
 describe('useLandingPricingPlans', () => {
-    it('resolves the wedding tab from the public config catalog', async () => {
-        publicGet.mockResolvedValue(makeConfig());
+    it('builds tabs from the config categories and hides an empty one', async () => {
+        const config = makeConfig();
+        config.landingCategories = [
+            { id: 'wed', name: { en: 'Weddings', el: 'Γάμοι' }, description: {}, isDefault: true, eventTypeKeys: ['WEDDING'] },
+            { id: 'empty', name: { en: 'Empty' }, description: {}, isDefault: false, eventTypeKeys: ['BIRTHDAY'] },
+            { id: 'vip', name: { en: 'VIP' }, description: { en: 'Parties' }, isDefault: false, eventTypeKeys: ['SOCIAL_EVENT', 'REUNION'] },
+        ];
+        publicGet.mockResolvedValue(config);
 
         const { result } = renderHook(() => useLandingPricingPlans(), { wrapper });
 
-        await waitFor(() => expect(result.current.categories).not.toBeNull());
-
-        expect(result.current.categories?.wedding.label).toBe('Wedding');
-        expect(result.current.categories?.wedding.plans).toHaveLength(1);
-        expect(result.current.categories?.wedding.plans[0].name).toBe('START');
-        expect(result.current.categories?.wedding.plans[0].durations).toEqual([{ id: 'opt-3', months: 3, price: '79€' }]);
-        expect(result.current.categories?.vip.plans).toHaveLength(0);
+        await waitFor(() => expect(result.current.tabs).not.toBeNull());
+        expect(result.current.tabs?.map((tab) => tab.id)).toEqual(['wed', 'vip']);
+        expect(result.current.tabs?.[0]).toMatchObject({ label: 'Weddings', description: '' });
+        expect(result.current.tabs?.[0].plans[0].durations).toEqual([{ id: 'opt-3', months: 3, price: '79€' }]);
+        expect(result.current.tabs?.[1]).toMatchObject({ label: 'VIP', description: 'Parties' });
+        expect(result.current.tabs?.[1].plans.map((plan) => plan.code)).toEqual(['VIP', 'REUNION']);
+        expect(result.current.tabs?.[1].plans[1].features[0]).toBe('Everything in VIP');
+        expect(result.current.defaultTabId).toBe('wed');
     });
 
-    it('returns null categories before the config has loaded', () => {
+    it('falls back to the first tab when the default one is empty, and to English labels', async () => {
+        const config = makeConfig();
+        config.landingCategories = [
+            { id: 'empty', name: { en: 'Empty' }, description: {}, isDefault: true, eventTypeKeys: ['BIRTHDAY'] },
+            { id: 'vip', name: { en: 'VIP' }, description: {}, isDefault: false, eventTypeKeys: ['SOCIAL_EVENT'] },
+        ];
+        publicGet.mockResolvedValue(config);
+
+        const { result } = renderHook(() => useLandingPricingPlans(), { wrapper: greekWrapper });
+
+        await waitFor(() => expect(result.current.tabs).not.toBeNull());
+        expect(result.current.defaultTabId).toBe('vip');
+        expect(result.current.tabs?.[0].label).toBe('VIP');
+    });
+
+    it('rolls a card up into the previous card shown, skipping a plan that is not on sale', async () => {
+        const config = makeConfig();
+        config.planTiers = [
+            planTier({ id: 'a', code: 'A', name: 'A', eventTypeKey: 'SOCIAL_EVENT', sortOrder: 0 }),
+            planTier({ id: 'b', code: 'B', name: 'B', eventTypeKey: 'SOCIAL_EVENT', sortOrder: 1, initialOptions: [] }),
+            planTier({ id: 'c', code: 'C', name: 'C', eventTypeKey: 'SOCIAL_EVENT', sortOrder: 2 }),
+        ];
+        config.landingCategories = [{ id: 'vip', name: { en: 'VIP' }, description: {}, isDefault: true, eventTypeKeys: ['SOCIAL_EVENT'] }];
+        publicGet.mockResolvedValue(config);
+
+        const { result } = renderHook(() => useLandingPricingPlans(), { wrapper });
+
+        await waitFor(() => expect(result.current.tabs).not.toBeNull());
+        expect(result.current.tabs?.[0].plans.map((plan) => plan.code)).toEqual(['A', 'C']);
+        expect(result.current.tabs?.[0].plans[1].features[0]).toBe('Everything in A');
+    });
+
+    it('returns no tabs when no category has plans', async () => {
+        const config = makeConfig();
+        config.landingCategories = [];
+        publicGet.mockResolvedValue(config);
+
+        const { result } = renderHook(() => useLandingPricingPlans(), { wrapper });
+
+        await waitFor(() => expect(result.current.tabs).toEqual([]));
+        expect(result.current.defaultTabId).toBeNull();
+    });
+
+    it('returns null tabs before the config has loaded', () => {
         publicGet.mockReturnValue(new Promise(() => {}));
 
         const { result } = renderHook(() => useLandingPricingPlans(), { wrapper });
 
-        expect(result.current.categories).toBeNull();
+        expect(result.current.tabs).toBeNull();
+        expect(result.current.defaultTabId).toBeNull();
     });
 });

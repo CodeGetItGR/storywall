@@ -1,28 +1,11 @@
-import type {
-    AppMediaConfigDto,
-    CoverageOptionResponseDto,
-    EventTypeConvention,
-    PlanTierResponseDto,
-    PlatformModuleResponseDto,
-} from '@/lib/api/types';
+import type { AppMediaConfigDto, CoverageOptionResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { discountedAmountMinor } from '@/lib/billing';
 import { formatBytes, numberFormat } from '@/lib/format';
 import { activeRoleCount, type MemberRoleCatalog } from '@/lib/memberRoles';
 import { mediaEstimate } from '@/lib/planComparison';
 import { configCount, type ConfigObject } from '@/lib/planModuleConfig';
 import { enabledModuleKeys } from '@/lib/planModules';
-import { liveInitialOptions, publicAssignablePlans, shortestInitialOption } from '@/lib/planTiers';
-
-export type LandingPricingCategoryKey = 'wedding' | 'vip';
-
-// The two landing tabs don't correspond 1:1 to a BE eventTypeKey. Each entry
-// is an ordered list of candidate types for that tab — resolveLandingCategoryPlans
-// uses the first one that actually has plans, it never merges plans from two
-// types into one tab. See docs/superpowers/plans/2026-09-18-landing-pricing-dynamic-plans.md.
-export const LANDING_PRICING_CATEGORY_EVENT_TYPES: Record<LandingPricingCategoryKey, EventTypeConvention[]> = {
-    wedding: ['WEDDING', 'BAPTISM'],
-    vip: ['SOCIAL_EVENT'],
-};
+import { liveInitialOptions, shortestInitialOption } from '@/lib/planTiers';
 
 // One length a plan is sold at, with its price already formatted for the card.
 export type LandingPlanDuration = {
@@ -57,17 +40,6 @@ export interface LandingPlanCopy {
     memberRolesCustomOnly: string;
     scheduleSessions: (max: number | null) => string;
     storageUnlimited: string;
-}
-
-export function resolveLandingCategoryPlans(plans: PlanTierResponseDto[], category: LandingPricingCategoryKey): PlanTierResponseDto[] {
-    const eventPlans = publicAssignablePlans(plans, 'EVENT');
-
-    for (const eventTypeKey of LANDING_PRICING_CATEGORY_EVENT_TYPES[category]) {
-        const forType = eventPlans.filter((plan) => plan.eventTypeKey === eventTypeKey).sort((left, right) => left.sortOrder - right.sortOrder);
-        if (forType.length > 0) return forType;
-    }
-
-    return [];
 }
 
 // One duration's price after the plan's promotion. Mirrors the landing page's
@@ -145,8 +117,8 @@ function moduleFeatureLabel(
 }
 
 // Builds one landing pricing card from a plan tier plus the tier directly
-// below it in the same tab (already sorted by sortOrder — see
-// resolveLandingCategoryPlans). Each tier after the first rolls up the
+// below it in the same tab (already in tab order — see
+// resolveLandingCategoryPlans in lib/landingCategories.ts). Each tier after the first rolls up the
 // previous card and lists only its additional modules and raised limits, so
 // catalog rows do not need to repeat every inherited module. Returns null for a plan with no
 // duration on sale — it can't be bought, so it doesn't belong on a pricing

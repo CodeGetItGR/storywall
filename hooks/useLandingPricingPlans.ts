@@ -1,47 +1,55 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-
 import { useAppConfig } from '@/hooks/useAppConfig';
+import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { usePlanMarketingCopy } from '@/hooks/usePlanMarketingCopy';
-import {
-    buildLandingPlan,
-    LANDING_PRICING_CATEGORY_EVENT_TYPES,
-    type LandingPlan,
-    type LandingPricingCategoryKey,
-    resolveLandingCategoryPlans,
-} from '@/lib/landingPricing';
+import type { PlanTierResponseDto } from '@/lib/api/types';
+import { resolveLandingCategoryPlans } from '@/lib/landingCategories';
+import { buildLandingPlan, type LandingPlan } from '@/lib/landingPricing';
 
-export type LandingPricingCategories = Record<LandingPricingCategoryKey, { label: string; plans: LandingPlan[] }>;
+export type LandingPricingTab = { id: string; label: string; description: string; plans: LandingPlan[] };
 
-const CATEGORY_KEYS = Object.keys(LANDING_PRICING_CATEGORY_EVENT_TYPES) as LandingPricingCategoryKey[];
-
-export function useLandingPricingPlans(): { categories: LandingPricingCategories | null } {
-    const t = useTranslations('LandingPage.pricing');
+// Tabs from /api/config.landingCategories, in order; a tab with no plan to show is left out. The
+// default tab is the one marked isDefault if it survived, else the first.
+export function useLandingPricingPlans(): { tabs: LandingPricingTab[] | null; defaultTabId: string | null } {
     const { data } = useAppConfig();
     const { copy, moduleName } = usePlanMarketingCopy();
+    const localizedText = useLocalizedText();
 
-    if (!data) return { categories: null };
+    if (!data) return { tabs: null, defaultTabId: null };
 
-    const categories = CATEGORY_KEYS.reduce<LandingPricingCategories>((result, category) => {
-        const plans = resolveLandingCategoryPlans(data.planTiers, category);
-        const landingPlans = plans
-            .map((plan, index) =>
-                buildLandingPlan(
+    const tabs = data.landingCategories
+        .map((category) => {
+            const { plans } = resolveLandingCategoryPlans(data.planTiers, category.eventTypeKeys);
+            // "Everything in X" rolls up the previous card actually shown: a plan
+            // buildLandingPlan drops (nothing on sale) is skipped, not inherited from.
+            const shownPlans: PlanTierResponseDto[] = [];
+            const landingPlans: LandingPlan[] = [];
+            for (const plan of plans) {
+                const landingPlan = buildLandingPlan(
                     plan,
-                    plans[index - 1],
+                    shownPlans.at(-1),
                     data.modules,
                     data.media,
                     moduleName,
                     copy,
-                    plans.slice(0, index).flatMap((previousPlan) => previousPlan.moduleKeys),
+                    shownPlans.flatMap((previousPlan) => previousPlan.moduleKeys),
                     data.memberRolesByEventType,
-                ),
-            )
-            .filter((plan): plan is LandingPlan => plan !== null);
-        result[category] = { label: t(`categories.${category}.label`), plans: landingPlans };
-        return result;
-    }, {} as LandingPricingCategories);
+                );
+                if (landingPlan === null) continue;
+                shownPlans.push(plan);
+                landingPlans.push(landingPlan);
+            }
+            return {
+                id: category.id,
+                isDefault: category.isDefault,
+                label: localizedText(category.name),
+                description: localizedText(category.description),
+                plans: landingPlans,
+            };
+        })
+        .filter((tab) => tab.plans.length > 0);
 
-    return { categories };
+    const defaultTabId = (tabs.find((tab) => tab.isDefault) ?? tabs[0])?.id ?? null;
+    return { tabs: tabs.map(({ isDefault: _isDefault, ...tab }) => tab), defaultTabId };
 }

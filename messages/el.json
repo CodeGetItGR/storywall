@@ -5233,16 +5233,7 @@
             "storageNote": "Ο υπολογισμός βασίζεται σε αρχεία έως 5 MB ανά φωτογραφία και video clips διάρκειας έως 15″.",
             "cta": "ΔΗΜΙΟΥΡΓΗΣΕ ΤΟ STORYWALL ΣΟΥ",
             "verifyNotice": "Επιβεβαίωσε το email σου πριν δημιουργήσεις event.",
-            "categories": {
-                "wedding": {
-                    "label": "Γάμος · Βάπτιση · Gender Reveal · Baby Shower"
-                },
-                "vip": {
-                    "label": "VIP & Social Parties"
-                }
-            },
             "note": "Οι τιμές είναι ενδεικτικές για την παρουσίαση και μπορούν να αλλάξουν.",
-            "comingSoon": "Έρχονται σύντομα",
             "guestsUpTo": "Έως {count} χρήστες",
             "guestsUnlimited": "Απεριόριστοι χρήστες",
             "storageUnlimited": "Απεριόριστος χώρος",

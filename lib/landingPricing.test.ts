@@ -7,15 +7,7 @@ import type {
     PlanTierResponseDto,
     PlatformModuleResponseDto,
 } from '@/lib/api/types';
-import {
-    buildLandingPlan,
-    formatLandingOptionPrice,
-    LANDING_PRICING_CATEGORY_EVENT_TYPES,
-    type LandingPlan,
-    type LandingPlanCopy,
-    pickedLandingDuration,
-    resolveLandingCategoryPlans,
-} from '@/lib/landingPricing';
+import { buildLandingPlan, formatLandingOptionPrice, type LandingPlan, type LandingPlanCopy, pickedLandingDuration } from '@/lib/landingPricing';
 
 function makeOption(overrides: Partial<CoverageOptionResponseDto> = {}): CoverageOptionResponseDto {
     return { id: 'opt-3', kind: 'INITIAL', months: 3, priceAmountMinor: 7900, sortOrder: 0, active: true, ...overrides };
@@ -106,48 +98,6 @@ function role(id: string, retired = false): MemberRoleCatalogDto {
 const ROLES = { WEDDING: [role('a'), role('b'), role('c'), role('old', true)] };
 
 const MODULE_NAME = (moduleKey: string) => MODULES.find((module_) => module_.moduleKey === moduleKey)?.name ?? moduleKey;
-
-describe('resolveLandingCategoryPlans', () => {
-    it('returns the wedding-tab plans sorted by sortOrder', () => {
-        const plans = [
-            makePlan({ id: 'p2', code: 'SIGNATURE', sortOrder: 2, eventTypeKey: 'WEDDING' }),
-            makePlan({ id: 'p1', code: 'START', sortOrder: 0, eventTypeKey: 'WEDDING' }),
-            makePlan({ id: 'p3', code: 'VIP_START', sortOrder: 0, eventTypeKey: 'SOCIAL_EVENT' }),
-        ];
-
-        const result = resolveLandingCategoryPlans(plans, 'wedding');
-
-        expect(result.map((plan) => plan.code)).toEqual(['START', 'SIGNATURE']);
-    });
-
-    it('falls back to BAPTISM for the wedding tab when there are no WEDDING plans', () => {
-        const plans = [makePlan({ code: 'BAPTISM_BASIC', eventTypeKey: 'BAPTISM' })];
-
-        const result = resolveLandingCategoryPlans(plans, 'wedding');
-
-        expect(result.map((plan) => plan.code)).toEqual(['BAPTISM_BASIC']);
-    });
-
-    it('excludes archived and non-public plans', () => {
-        const plans = [
-            makePlan({ code: 'ARCHIVED', isAssignable: false }),
-            makePlan({ code: 'INTERNAL', isPublic: false }),
-            makePlan({ code: 'VISIBLE' }),
-        ];
-
-        const result = resolveLandingCategoryPlans(plans, 'wedding');
-
-        expect(result.map((plan) => plan.code)).toEqual(['VISIBLE']);
-    });
-
-    it('returns an empty array when the category has no matching event type at all', () => {
-        expect(resolveLandingCategoryPlans([makePlan({ eventTypeKey: 'PRIVATE_PARTY' })], 'vip')).toEqual([]);
-    });
-
-    it('defines the wedding and vip category mappings', () => {
-        expect(LANDING_PRICING_CATEGORY_EVENT_TYPES).toEqual({ wedding: ['WEDDING', 'BAPTISM'], vip: ['SOCIAL_EVENT'] });
-    });
-});
 
 describe('formatLandingOptionPrice', () => {
     it('renders a whole-euro price in the existing landing style (no decimals, suffixed symbol)', () => {
