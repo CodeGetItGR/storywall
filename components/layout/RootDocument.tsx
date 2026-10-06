@@ -34,7 +34,7 @@ export async function RootDocument({ children, messages }: RootDocumentProps) {
 
     return (
         <html lang={locale} className={`${geist.className} ${abhayaLibre.variable} ${alegreya.variable} h-dvh bg-background`}>
-            <body className="h-(--visual-viewport-page-height)overflow-hidden overscroll-none antialiased">
+            <body className="h-(--visual-viewport-height) overflow-hidden overscroll-none antialiased">
                 <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
                 {process.env.NODE_ENV === 'production' ? <Analytics /> : <OverlayLeakProbe />}
             </body>

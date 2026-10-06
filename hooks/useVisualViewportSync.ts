@@ -30,7 +30,6 @@ export function useVisualViewportSync() {
         function syncViewport() {
             const metrics = getVisualViewportMetrics(window.innerHeight, viewport, isTypingControl(document.activeElement));
             root.style.setProperty('--visual-viewport-height', `${metrics.height}px`);
-            root.style.setProperty('--visual-viewport-page-height', `${metrics.pageHeight}px`);
             root.style.setProperty('--visual-viewport-offset-top', `${metrics.offsetTop}px`);
             root.style.setProperty('--visual-viewport-bottom-inset', `${metrics.bottomInset}px`);
             root.style.setProperty('--visual-viewport-center-y', `${metrics.centerY}px`);

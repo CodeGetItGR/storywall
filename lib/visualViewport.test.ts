@@ -4,9 +4,8 @@ import { getPinchZoomBox, getVisualViewportMetrics } from '@/lib/visualViewport'
 
 describe('getVisualViewportMetrics', () => {
     it('keeps the bottom inset at zero when no typing control is focused', () => {
-        expect(getVisualViewportMetrics(800, { height: 480, offsetTop: 0, scale: 1 }, false)).toEqual({
+        expect(getVisualViewportMetrics(800, { height: 480, offsetTop: 0 }, false)).toEqual({
             height: 480,
-            pageHeight: 480,
             offsetTop: 0,
             bottomInset: 0,
             centerY: 240,
@@ -14,9 +13,8 @@ describe('getVisualViewportMetrics', () => {
     });
 
     it('exposes keyboard overlap while a typing control is focused', () => {
-        expect(getVisualViewportMetrics(800, { height: 480, offsetTop: 20, scale: 1 }, true)).toEqual({
+        expect(getVisualViewportMetrics(800, { height: 480, offsetTop: 20 }, true)).toEqual({
             height: 480,
-            pageHeight: 480,
             offsetTop: 20,
             bottomInset: 300,
             centerY: 260,
@@ -24,11 +22,7 @@ describe('getVisualViewportMetrics', () => {
     });
 
     it('ignores small browser chrome changes', () => {
-        expect(getVisualViewportMetrics(800, { height: 750, offsetTop: 0, scale: 1 }, true).bottomInset).toBe(0);
-    });
-
-    it('keeps the page height at the unzoomed visible height during a pinch zoom', () => {
-        expect(getVisualViewportMetrics(800, { height: 400, offsetTop: 200, scale: 2 }, false).pageHeight).toBe(800);
+        expect(getVisualViewportMetrics(800, { height: 750, offsetTop: 0 }, true).bottomInset).toBe(0);
     });
 });
 
