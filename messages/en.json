@@ -843,6 +843,10 @@
             "STORAGE_TRIM_WARNING": {
                 "title": "Photos and videos will be deleted soon",
                 "body": "{over} over the limit. Free up space by {dueDate}, or the newest photos and videos above the limit will be deleted."
+            },
+            "MEMBER_ARCHIVE_READY": {
+                "title": "The gallery is ready to download",
+                "body": "Every photo and video from the event, in one download. Open the gallery to get it."
             }
         }
     },
@@ -3237,10 +3241,12 @@
                         "maxSections": "Schedule sections",
                         "maxCoHosts": "Co-hosts",
                         "qrUploadEnabled": "Guest QR upload",
+                        "memberArchiveAfterEnd": "Member gallery download",
                         "allowCustom": "Custom roles"
                     },
                     "fieldHints": {
-                        "allowCustom": "Members can type their own role."
+                        "allowCustom": "Members can type their own role.",
+                        "memberArchiveAfterEnd": "Every member can download the whole gallery a day after the event. Each build costs egress."
                     },
                     "unlimited": "Unlimited",
                     "upTo": "Up to",

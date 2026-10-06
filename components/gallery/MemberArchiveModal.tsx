@@ -40,8 +40,7 @@ export function MemberArchiveModal({ eventId, open, onClose }: MemberArchiveModa
                     setDownloadError(tError(refreshed.error, t('archiveDownloadFailed')));
                     return;
                 }
-                const fresh =
-                    refreshed.data?.status === 'READY' ? refreshed.data.parts.find((entry) => entry.part === part) : undefined;
+                const fresh = refreshed.data?.status === 'READY' ? refreshed.data.parts.find((entry) => entry.part === part) : undefined;
                 if (!fresh) {
                     setDownloadError(t('memberArchiveChanged'));
                     return;
@@ -89,9 +88,7 @@ export function MemberArchiveModal({ eventId, open, onClose }: MemberArchiveModa
                     ) : archive?.status === 'NOT_YET' && archive.availableFrom ? (
                         <p className="py-6 text-center text-sm text-ink-muted">
                             {t('memberArchiveNotYet', {
-                                date: dateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(
-                                    new Date(archive.availableFrom),
-                                ),
+                                date: dateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(archive.availableFrom)),
                             })}
                         </p>
                     ) : archive?.status === 'PREPARING' ? (
@@ -120,11 +117,7 @@ export function MemberArchiveModal({ eventId, open, onClose }: MemberArchiveModa
                                             <p className="mt-1 text-xs text-ink-muted">{formatBytes(part.bytes)}</p>
                                         </div>
                                         <span className="inline-flex shrink-0 items-center gap-2 rounded-full border border-border/70 bg-surface-muted px-3 py-1.5 text-xs font-semibold text-ink-muted">
-                                            {isDownloading ? (
-                                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                            ) : (
-                                                <Download className="h-3.5 w-3.5" />
-                                            )}
+                                            {isDownloading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
                                             {isDownloading ? t('archiveDownloading') : t('archiveDownload')}
                                         </span>
                                     </button>

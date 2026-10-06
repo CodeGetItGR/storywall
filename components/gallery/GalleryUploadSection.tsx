@@ -13,6 +13,7 @@ interface GalleryUploadSectionProps {
     selectedFiles: File[];
     selectedSize: number;
     uploadNotice: string | null;
+    showMemberArchiveNote: boolean;
     maxFiles: number;
     isUploading: boolean;
     onFilesChange: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -25,6 +26,7 @@ export function GalleryUploadSection({
     selectedFiles,
     selectedSize,
     uploadNotice,
+    showMemberArchiveNote,
     maxFiles,
     isUploading,
     onFilesChange,
@@ -93,6 +95,8 @@ export function GalleryUploadSection({
                 </div>
             )}
 
+            {/* Uploaders must know everything here becomes downloadable by every member (spec §7). */}
+            {showMemberArchiveNote && <p className="mt-3 text-xs text-ink-muted">{t('memberArchiveUploadNote')}</p>}
             {uploadNotice && <p className="mt-3 text-xs text-ink-muted">{uploadNotice}</p>}
         </section>
     );

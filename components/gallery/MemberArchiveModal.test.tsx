@@ -13,8 +13,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('next-intl', () => ({
     useLocale: () => 'en',
-    useTranslations: () => (key: string, values?: Record<string, unknown>) =>
-        values ? `${key}:${Object.values(values).join(',')}` : key,
+    useTranslations: () => (key: string, values?: Record<string, unknown>) => (values ? `${key}:${Object.values(values).join(',')}` : key),
 }));
 vi.mock('@/components/ui/modal', () => {
     function Modal({ open, children }: { open: boolean; children: ReactNode }) {

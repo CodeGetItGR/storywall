@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useGalleryScreen } from '@/hooks/useGalleryScreen';
 import { formatDate } from '@/lib/datetime';
+import { isMemberArchiveEnabled } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
 
 export function GalleryScreen() {
@@ -110,6 +111,7 @@ export function GalleryScreen() {
                     selectedFiles={selectedFiles}
                     selectedSize={selectedSize}
                     uploadNotice={uploadNotice}
+                    showMemberArchiveNote={isMemberArchiveEnabled(activeEvent?.modules)}
                     maxFiles={maxFiles}
                     isUploading={uploadMediaBatch.isPending}
                     onFilesChange={handleFilesChange}
@@ -264,9 +266,7 @@ export function GalleryScreen() {
             {showArchiveDownload && eventId && (
                 <GalleryArchiveDownloadModal eventId={eventId} open={archiveDownloadOpen} onClose={closeArchiveDownload} />
             )}
-            {showMemberArchive && eventId && (
-                <MemberArchiveModal eventId={eventId} open={memberArchiveOpen} onClose={closeMemberArchive} />
-            )}
+            {showMemberArchive && eventId && <MemberArchiveModal eventId={eventId} open={memberArchiveOpen} onClose={closeMemberArchive} />}
         </ModulePageShell>
     );
 }
