@@ -176,7 +176,15 @@ describe('useWishbookBook', () => {
         const page = { size: 20, number: 0, totalElements: 2, totalPages: 1 };
         client.setQueryData(wishbookKeys.list('e1'), {
             pageParams: [0],
-            pages: [{ content: [{ id: 'w1', highlighted: false }, { id: 'w2', highlighted: false }], page }],
+            pages: [
+                {
+                    content: [
+                        { id: 'w1', highlighted: false },
+                        { id: 'w2', highlighted: false },
+                    ],
+                    page,
+                },
+            ],
         });
         let failA: (error: Error) => void = () => undefined;
         let finishB: () => void = () => undefined;

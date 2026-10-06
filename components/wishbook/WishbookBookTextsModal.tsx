@@ -87,7 +87,13 @@ function TextsForm({ eventId, texts, onCloseAction }: { eventId: string; texts: 
     // The counters are soft: the typed text is never cut. A field over a limit is flagged and Save waits for it.
     const measured = FIELDS.map(({ name, multiline }) => {
         const { length, lines } = measure(draft[name], multiline);
-        return { name, multiline, length, overLength: length > WISHBOOK_BOOK_TEXT_LIMITS[name], overLines: multiline && lines > WISHBOOK_BOOK_TEXT_MAX_LINES };
+        return {
+            name,
+            multiline,
+            length,
+            overLength: length > WISHBOOK_BOOK_TEXT_LIMITS[name],
+            overLines: multiline && lines > WISHBOOK_BOOK_TEXT_MAX_LINES,
+        };
     });
     const hasOverflow = measured.some((field) => field.overLength || field.overLines);
 

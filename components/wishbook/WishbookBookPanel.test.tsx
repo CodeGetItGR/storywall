@@ -44,7 +44,15 @@ beforeEach(() => {
     Object.defineProperty(window, 'location', { configurable: true, value: { ...originalLocation, assign } });
 });
 
-const base = { requestedAt: '2026-10-06T10:00:00Z', finishedAt: null, pageCount: null, entryCount: null, byteSize: null, failureCode: null, downloadUrl: null };
+const base = {
+    requestedAt: '2026-10-06T10:00:00Z',
+    finishedAt: null,
+    pageCount: null,
+    entryCount: null,
+    byteSize: null,
+    failureCode: null,
+    downloadUrl: null,
+};
 
 describe('WishbookBookPanel', () => {
     it('offers to create a book that was never built', () => {
