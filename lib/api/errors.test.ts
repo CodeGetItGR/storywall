@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
 import { ApiError } from '@/lib/api/client';
-import { ERROR_CODES, getBusyRetryAfterSeconds, getErrorCodeName, getLandingCategoryConflict, getSignupAcceptanceRequiredDetails, ignoreConcurrentModification } from '@/lib/api/errors';
+import {
+    ERROR_CODES,
+    getBusyRetryAfterSeconds,
+    getErrorCodeName,
+    getLandingCategoryConflict,
+    getSignupAcceptanceRequiredDetails,
+    ignoreConcurrentModification,
+} from '@/lib/api/errors';
 
 describe('getSignupAcceptanceRequiredDetails', () => {
     it('reads both versions off a 3044', () => {

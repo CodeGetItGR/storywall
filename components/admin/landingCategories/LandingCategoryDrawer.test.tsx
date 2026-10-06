@@ -30,18 +30,23 @@ vi.mock('@/components/ui/ConfirmActionModal', () => ({
         body,
         confirmLabel,
         onConfirmAction,
+        onCloseAction,
     }: {
         open: boolean;
         title: string;
         body: ReactNode;
         confirmLabel: string;
         onConfirmAction: () => void;
+        onCloseAction: () => void;
     }) =>
         open ? (
             <div role="dialog" aria-label={title}>
                 <p>{body}</p>
                 <button type="button" onClick={onConfirmAction}>
                     {confirmLabel}
+                </button>
+                <button type="button" onClick={onCloseAction}>
+                    dialog-cancel
                 </button>
             </div>
         ) : null,
@@ -56,6 +61,7 @@ vi.mock('@/hooks/useAdminLandingCategories', () => ({
 const eventTypes = [
     { eventTypeKey: 'SOCIAL_EVENT', name: { en: 'Social' }, sortOrder: 0 },
     { eventTypeKey: 'REUNION', name: { en: 'Reunion' }, sortOrder: 1 },
+    { eventTypeKey: 'BIRTHDAY', name: { en: 'Birthday' }, sortOrder: 2 },
 ] as unknown as PlatformEventTypeResponseDto[];
 const other: AdminLandingCategoryDto = {
     id: 'other',
@@ -76,12 +82,12 @@ const mine: AdminLandingCategoryDto = {
     eventTypeKeys: ['SOCIAL_EVENT'],
 };
 
-function conflict() {
-    return new ApiError(409, {
-        status: 409,
-        errorCode: 5150,
-        details: { eventTypeKey: 'REUNION', categoryId: 'other', categoryName: 'Other' },
-    });
+function conflict(eventTypeKey = 'REUNION', categoryId = 'other', categoryName = 'Other') {
+    return new ApiError(409, { status: 409, errorCode: 5150, details: { eventTypeKey, categoryId, categoryName } });
+}
+
+function setTypesCalls(): Array<{ eventTypeKeys: string[]; moveFromOtherCategory: boolean }> {
+    return hooks.setTypes.mock.calls.map(([call]) => call.input);
 }
 
 function renderDrawer(category: AdminLandingCategoryDto | null, categories: AdminLandingCategoryDto[], onCloseAction = vi.fn()) {
@@ -178,6 +184,80 @@ describe('LandingCategoryDrawer', () => {
             input: { eventTypeKeys: ['SOCIAL_EVENT', 'REUNION'], moveFromOtherCategory: true },
         });
         expect(hooks.setTypes).toHaveBeenCalledTimes(2);
+    });
+
+    it('forgets a confirmed move when the type is taken out again', async () => {
+        const onClose = renderDrawer(mine, [other, mine]);
+        fireEvent.click(screen.getByRole('button', { name: /Reunion/ }));
+        fireEvent.click(screen.getByRole('button', { name: 'landingCategories.move' }));
+        // Out again, then back in: asked again.
+        fireEvent.click(screen.getByRole('button', { name: /Reunion/ }));
+        fireEvent.click(screen.getByRole('button', { name: /Reunion/ }));
+        expect(screen.getByRole('dialog', { name: 'landingCategories.moveTitle:Reunion' })).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'dialog-cancel' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Birthday' }));
+        fireEvent.click(screen.getByRole('button', { name: 'save' }));
+
+        await waitFor(() => expect(onClose).toHaveBeenCalled());
+        expect(setTypesCalls()).toEqual([{ eventTypeKeys: ['SOCIAL_EVENT', 'BIRTHDAY'], moveFromOtherCategory: false }]);
+    });
+
+    it('asks again on a 5150 for a type that was never confirmed', async () => {
+        hooks.setTypes.mockRejectedValueOnce(conflict()).mockRejectedValueOnce(conflict());
+        const onClose = renderDrawer(mine, [mine]);
+        fireEvent.click(screen.getByRole('button', { name: 'Reunion' }));
+        fireEvent.click(screen.getByRole('button', { name: 'save' }));
+        await screen.findByRole('dialog', { name: 'landingCategories.moveTitle:Reunion' });
+        fireEvent.click(screen.getByRole('button', { name: 'dialog-cancel' }));
+
+        // Declined: the next save still does not move, and the server's answer asks again.
+        fireEvent.click(screen.getByRole('button', { name: 'save' }));
+        await screen.findByRole('dialog', { name: 'landingCategories.moveTitle:Reunion' });
+        fireEvent.click(screen.getByRole('button', { name: 'landingCategories.move' }));
+
+        await waitFor(() => expect(onClose).toHaveBeenCalled());
+        expect(setTypesCalls().map((input) => input.moveFromOtherCategory)).toEqual([false, false, true]);
+    });
+
+    it('on a 5150 naming a confirmed type, asks about the type that was not', async () => {
+        hooks.setTypes.mockRejectedValueOnce(conflict('BIRTHDAY', 'third', 'Third')).mockRejectedValueOnce(conflict('REUNION'));
+        const onClose = renderDrawer(mine, [other, mine]);
+        fireEvent.click(screen.getByRole('button', { name: 'Birthday' }));
+        fireEvent.click(screen.getByRole('button', { name: 'save' }));
+        // BIRTHDAY: learned from the server, declined.
+        await screen.findByRole('dialog', { name: 'landingCategories.moveTitle:Birthday' });
+        fireEvent.click(screen.getByRole('button', { name: 'dialog-cancel' }));
+        // REUNION: shown as held, confirmed.
+        fireEvent.click(screen.getByRole('button', { name: /Reunion/ }));
+        fireEvent.click(screen.getByRole('button', { name: 'landingCategories.move' }));
+        fireEvent.click(screen.getByRole('button', { name: 'save' }));
+
+        const dialog = await screen.findByRole('dialog', { name: 'landingCategories.moveTitle:Birthday' });
+        expect(dialog).toHaveTextContent('landingCategories.moveBody:Birthday,Third');
+        fireEvent.click(screen.getByRole('button', { name: 'landingCategories.move' }));
+
+        await waitFor(() => expect(onClose).toHaveBeenCalled());
+        expect(setTypesCalls().map((input) => input.moveFromOtherCategory)).toEqual([false, false, true]);
+    });
+
+    it('names the holding category of a 5150 in the admin locale when the list has it', async () => {
+        hooks.setTypes.mockRejectedValueOnce(conflict('REUNION', 'other', 'Server name'));
+        renderDrawer(mine, [{ ...other, name: { en: 'Others (en)', el: 'Άλλο' }, eventTypeKeys: [] }, mine]);
+        fireEvent.click(screen.getByRole('button', { name: 'Reunion' }));
+        fireEvent.click(screen.getByRole('button', { name: 'save' }));
+
+        const dialog = await screen.findByRole('dialog', { name: 'landingCategories.moveTitle:Reunion' });
+        expect(dialog).toHaveTextContent('landingCategories.moveBody:Reunion,Others (en)');
+    });
+
+    it('puts a new category at the end, but not past the server cap', async () => {
+        const onClose = renderDrawer(null, [{ ...other, sortOrder: 1000 }]);
+        fireEvent.change(screen.getByLabelText('landingCategories.nameEn'), { target: { value: 'Parties' } });
+        fireEvent.change(screen.getByLabelText('landingCategories.nameEl'), { target: { value: 'Πάρτι' } });
+        fireEvent.click(screen.getByRole('button', { name: 'save' }));
+
+        await waitFor(() => expect(onClose).toHaveBeenCalled());
+        expect(hooks.create).toHaveBeenCalledWith(expect.objectContaining({ sortOrder: 1000 }));
     });
 
     it('does not create twice when the types fail after the create succeeded', async () => {

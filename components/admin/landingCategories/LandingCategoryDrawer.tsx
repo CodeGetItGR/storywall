@@ -16,7 +16,7 @@ import {
 } from '@/hooks/useAdminLandingCategories';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
-import { getLandingCategoryConflict } from '@/lib/api/errors';
+import { getLandingCategoryConflict, type LandingCategoryConflict } from '@/lib/api/errors';
 import type {
     AdminLandingCategoryDto,
     AdminLandingCategoryPatchDto,
@@ -31,11 +31,16 @@ const FORM_ID = 'landing-category-form';
 const TYPES_LABEL_ID = 'landing-category-event-types';
 const NAME_MAX = 60;
 const DESCRIPTION_MAX = 160;
+// The server's cap on sortOrder (LandingCategoryCreateDto @Max).
+const SORT_ORDER_MAX = 1000;
 
 type TextField = 'nameEn' | 'nameEl' | 'descriptionEn' | 'descriptionEl';
 type Form = Record<TextField, string> & { isVisible: boolean; isDefault: boolean; eventTypeKeys: EventTypeConvention[] };
 // retry: the server reported the conflict (the list was stale), so confirming re-sends the save.
 type PendingMove = { key: EventTypeConvention; from: string; retry: boolean };
+// Types the server said (5150) sit in another category, which the list didn't show.
+type LearnedHolders = ReadonlyMap<EventTypeConvention, LandingCategoryConflict>;
+type ConfirmedKeys = ReadonlySet<EventTypeConvention>;
 
 function formOf(category: AdminLandingCategoryDto): Form {
     return {
@@ -106,7 +111,10 @@ export function LandingCategoryDrawer({
 
     const [form, setForm] = useState<Form>(() => (category ? formOf(category) : EMPTY_FORM));
     const [saved, setSaved] = useState<{ id: string; form: Form } | null>(() => (category ? { id: category.id, form: formOf(category) } : null));
-    const [moved, setMoved] = useState(false);
+    // The moves the admin agreed to. A key leaves the set when it's taken out of the form, so
+    // adding it again asks again.
+    const [confirmed, setConfirmed] = useState<ConfirmedKeys>(() => new Set());
+    const [learned, setLearned] = useState<LearnedHolders>(() => new Map());
     const [pendingMove, setPendingMove] = useState<PendingMove | null>(null);
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -120,10 +128,29 @@ export function LandingCategoryDrawer({
     }
 
     function holderOf(key: EventTypeConvention) {
-        return categories.find((item) => item.id !== category?.id && item.eventTypeKeys.includes(key));
+        const ownId = saved?.id ?? category?.id;
+        return categories.find((item) => item.id !== ownId && item.eventTypeKeys.includes(key));
     }
 
-    async function save(moveFromOtherCategory: boolean) {
+    // The name of the category holding a key, from the list, else from a 5150 (by its id in the
+    // list, so it's in the admin's locale; the server's own name if the list doesn't have it).
+    function holderNameOf(key: EventTypeConvention, holders: LearnedHolders): string | null {
+        const listed = holderOf(key);
+        if (listed) return localizedText(listed.name);
+        const conflict = holders.get(key);
+        if (!conflict) return null;
+        const known = categories.find((item) => item.id === conflict.categoryId);
+        return known ? localizedText(known.name) : conflict.categoryName;
+    }
+
+    // moveFromOtherCategory goes out only when every key known to sit elsewhere was confirmed;
+    // otherwise the server answers 5150 and the admin is asked about that key.
+    function canMove(keys: EventTypeConvention[], confirmedKeys: ConfirmedKeys, holders: LearnedHolders): boolean {
+        const held = keys.filter((key) => holderNameOf(key, holders) !== null);
+        return held.length > 0 && held.every((key) => confirmedKeys.has(key));
+    }
+
+    async function save(confirmedKeys: ConfirmedKeys, holders: LearnedHolders) {
         const values = trimmed(form);
         setError(null);
         setSaving(true);
@@ -133,7 +160,7 @@ export function LandingCategoryDrawer({
                 const created = await create.mutateAsync({
                     name: { en: values.nameEn, el: values.nameEl },
                     description: descriptionOf(values),
-                    sortOrder: nextSortOrder(categories),
+                    sortOrder: Math.min(nextSortOrder(categories), SORT_ORDER_MAX),
                     isVisible: values.isVisible,
                     isDefault: values.isDefault,
                 });
@@ -148,16 +175,24 @@ export function LandingCategoryDrawer({
                 }
             }
             if (!sameTypes(values.eventTypeKeys, current.form.eventTypeKeys)) {
+                const moveFromOtherCategory = canMove(values.eventTypeKeys, confirmedKeys, holders);
                 await setTypes.mutateAsync({ id: current.id, input: { eventTypeKeys: values.eventTypeKeys, moveFromOtherCategory } });
             }
             onCloseAction();
         } catch (caught) {
             const conflict = getLandingCategoryConflict(caught);
-            if (conflict) {
-                setPendingMove({ key: conflict.eventTypeKey as EventTypeConvention, from: conflict.categoryName, retry: true });
-            } else {
+            if (!conflict) {
                 setError(caught);
+                return;
             }
+            const conflictKey = conflict.eventTypeKey as EventTypeConvention;
+            const nextHolders = new Map(holders).set(conflictKey, conflict);
+            setLearned(nextHolders);
+            // Ask about the key the server named or, if that one was already confirmed, the next
+            // key held elsewhere that wasn't.
+            const ask = [conflictKey, ...values.eventTypeKeys].find((key) => !confirmedKeys.has(key) && holderNameOf(key, nextHolders) !== null);
+            if (ask) setPendingMove({ key: ask, from: holderNameOf(ask, nextHolders) ?? conflict.categoryName, retry: true });
+            else setError(caught);
         } finally {
             setSaving(false);
         }
@@ -166,7 +201,7 @@ export function LandingCategoryDrawer({
     function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
         if (!canSave) return;
-        void save(moved);
+        void save(confirmed, learned);
     }
 
     function handleTextChange(event: ChangeEvent<HTMLInputElement>) {
@@ -188,11 +223,12 @@ export function LandingCategoryDrawer({
         if (!key) return;
         if (form.eventTypeKeys.includes(key)) {
             setForm((current) => ({ ...current, eventTypeKeys: current.eventTypeKeys.filter((item) => item !== key) }));
+            setConfirmed((current) => new Set([...current].filter((item) => item !== key)));
             return;
         }
-        const holder = holderOf(key);
-        if (holder) {
-            setPendingMove({ key, from: localizedText(holder.name), retry: false });
+        const holderName = holderNameOf(key, learned);
+        if (holderName !== null) {
+            setPendingMove({ key, from: holderName, retry: false });
             return;
         }
         setForm((current) => ({ ...current, eventTypeKeys: [...current.eventTypeKeys, key] }));
@@ -200,10 +236,11 @@ export function LandingCategoryDrawer({
 
     function confirmMove() {
         if (!pendingMove) return;
-        setMoved(true);
+        const nextConfirmed = new Set(confirmed).add(pendingMove.key);
+        setConfirmed(nextConfirmed);
         setPendingMove(null);
         if (pendingMove.retry) {
-            void save(true);
+            void save(nextConfirmed, learned);
             return;
         }
         const { key } = pendingMove;
