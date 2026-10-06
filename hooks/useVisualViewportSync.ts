@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-import { getVisualViewportMetrics, isTypingControl } from '@/lib/visualViewport';
+import { getVisualViewportMetrics, isPinchZoomed, isTypingControl } from '@/lib/visualViewport';
 
 const FOCUS_MARGIN = 16;
 
@@ -30,9 +30,11 @@ export function useVisualViewportSync() {
         function syncViewport() {
             const metrics = getVisualViewportMetrics(window.innerHeight, viewport, isTypingControl(document.activeElement));
             root.style.setProperty('--visual-viewport-height', `${metrics.height}px`);
+            root.style.setProperty('--visual-viewport-page-height', `${metrics.pageHeight}px`);
             root.style.setProperty('--visual-viewport-offset-top', `${metrics.offsetTop}px`);
             root.style.setProperty('--visual-viewport-bottom-inset', `${metrics.bottomInset}px`);
             root.style.setProperty('--visual-viewport-center-y', `${metrics.centerY}px`);
+            root.toggleAttribute('data-pinch-zoomed', isPinchZoomed(viewport));
 
             if (visibilityFrame !== null) window.cancelAnimationFrame(visibilityFrame);
             visibilityFrame = window.requestAnimationFrame(keepFocusedControlVisible);
