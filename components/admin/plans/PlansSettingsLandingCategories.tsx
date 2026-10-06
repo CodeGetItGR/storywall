@@ -2,6 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
+import { LandingCategoriesPanel } from '@/components/admin/landingCategories/LandingCategoriesPanel';
+
 export function PlansSettingsLandingCategories() {
     const t = useTranslations('AdminPage.plans');
 
@@ -11,7 +13,7 @@ export function PlansSettingsLandingCategories() {
             <header className="mb-4">
                 <h2 className="text-xl font-semibold tracking-tight text-ink">{t('settings.landingCategoriesTitle')}</h2>
             </header>
-            {null}
+            <LandingCategoriesPanel />
         </div>
     );
 }
