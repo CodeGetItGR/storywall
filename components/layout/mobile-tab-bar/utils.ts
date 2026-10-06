@@ -30,5 +30,6 @@ export function isEventRoute(pathname: string) {
 }
 
 export function isFeedRoute(pathname: string) {
-    return pathname === routes.feed || pathname.startsWith(routes.feed + '/') || /^\/events\/[^/]+\/feed(\/|$)/.test(pathname);
+    // The demo event's feed sits at /demo/{eventType}/feed, outside the /events tree.
+    return pathname === routes.feed || pathname.startsWith(routes.feed + '/') || /^\/(events|demo)\/[^/]+\/feed(\/|$)/.test(pathname);
 }
