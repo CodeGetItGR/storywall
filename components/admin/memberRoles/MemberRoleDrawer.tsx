@@ -126,6 +126,27 @@ export function MemberRoleDrawer({
                             className={adminInputClass()}
                         />
                     </AdminField>
+                    {/* Wishbook book section */}
+                    <AdminField label={t('sectionEn')} optional hint={form.errors.sectionEn ? t('sectionInvalid') : t('sectionHint')}>
+                        <input
+                            name="sectionEn"
+                            value={form.draft.sectionEn}
+                            onChange={form.handleFieldChange}
+                            maxLength={40}
+                            aria-invalid={Boolean(form.errors.sectionEn)}
+                            className={adminInputClass()}
+                        />
+                    </AdminField>
+                    <AdminField label={t('sectionEl')} optional hint={form.errors.sectionEl ? t('sectionInvalid') : undefined}>
+                        <input
+                            name="sectionEl"
+                            value={form.draft.sectionEl}
+                            onChange={form.handleFieldChange}
+                            maxLength={40}
+                            aria-invalid={Boolean(form.errors.sectionEl)}
+                            className={adminInputClass()}
+                        />
+                    </AdminField>
                     <AdminField label={t('emoji')} optional hint={form.errors.emoji ? t('emojiInvalid') : undefined}>
                         <input
                             name="emoji"

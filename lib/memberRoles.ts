@@ -58,13 +58,16 @@ export type MemberRoleDraft = {
     roleKey: string;
     labelEn: string;
     labelEl: string;
+    // The wishbook book's section heading for this role: both or neither.
+    sectionEn: string;
+    sectionEl: string;
     emoji: string;
     limited: boolean;
     maxHolders: string;
     hostOnly: boolean;
 };
 
-export type MemberRoleDraftErrors = Partial<Record<'roleKey' | 'labelEn' | 'labelEl' | 'emoji' | 'maxHolders', true>>;
+export type MemberRoleDraftErrors = Partial<Record<'roleKey' | 'labelEn' | 'labelEl' | 'sectionEn' | 'sectionEl' | 'emoji' | 'maxHolders', true>>;
 
 export function normalizeRoleKeyInput(value: string): string {
     return value.toUpperCase().replace(/\s+/g, '_');
@@ -90,6 +93,8 @@ export function draftFromRole(role: MemberRoleCatalogDto | null): MemberRoleDraf
         roleKey: role?.roleKey ?? '',
         labelEn: role?.label.en ?? '',
         labelEl: role?.label.el ?? '',
+        sectionEn: role?.sectionLabel?.en ?? '',
+        sectionEl: role?.sectionLabel?.el ?? '',
         emoji: role?.emoji ?? '',
         limited: maxHolders !== null,
         maxHolders: maxHolders !== null ? String(maxHolders) : '',
@@ -102,6 +107,11 @@ export function validateRoleDraft(draft: MemberRoleDraft, isCreate: boolean): Me
     if (isCreate && !isValidRoleKey(draft.roleKey)) errors.roleKey = true;
     if (!isValidLabel(draft.labelEn)) errors.labelEn = true;
     if (!isValidLabel(draft.labelEl)) errors.labelEl = true;
+    // The server takes exactly en and el, each 1 to 40 characters, or no section title at all.
+    if (draft.sectionEn.trim() || draft.sectionEl.trim()) {
+        if (!isValidLabel(draft.sectionEn)) errors.sectionEn = true;
+        if (!isValidLabel(draft.sectionEl)) errors.sectionEl = true;
+    }
     if (draft.emoji.trim().length > ROLE_EMOJI_MAX) errors.emoji = true;
     if (draft.limited && !isValidCap(draft.maxHolders)) errors.maxHolders = true;
     return errors;
@@ -114,6 +124,9 @@ export function buildCreatePayload(draft: MemberRoleDraft, eventTypeKey: string,
         label: { en: draft.labelEn.trim(), el: draft.labelEl.trim() },
         sortOrder,
     };
+    // Validation guarantees both or neither.
+    const sectionLabel = { en: draft.sectionEn.trim(), el: draft.sectionEl.trim() };
+    if (sectionLabel.en && sectionLabel.el) payload.sectionLabel = sectionLabel;
     const emoji = draft.emoji.trim();
     if (emoji) payload.emoji = emoji;
     if (draft.limited) payload.maxHolders = Number(draft.maxHolders.trim());
@@ -126,6 +139,12 @@ export function buildPatchPayload(role: MemberRoleCatalogDto, draft: MemberRoleD
     const patch: MemberRoleCatalogPatchDto = {};
     const label = { en: draft.labelEn.trim(), el: draft.labelEl.trim() };
     if (label.en !== role.label.en || label.el !== role.label.el) patch.label = label;
+    const section = { en: draft.sectionEn.trim(), el: draft.sectionEl.trim() };
+    if (!section.en && !section.el) {
+        if (role.sectionLabel) patch.clearSectionLabel = true;
+    } else if (section.en !== role.sectionLabel?.en || section.el !== role.sectionLabel?.el) {
+        patch.sectionLabel = section;
+    }
     const emoji = draft.emoji.trim();
     if (emoji !== (role.emoji ?? '')) patch.emoji = emoji;
     if (!draft.limited) {
