@@ -1,11 +1,12 @@
 'use client';
 
-import { ReactNode, useState } from 'react';
+import { CSSProperties, ReactNode, useState } from 'react';
 
 import { Logo } from '@/components/common/Logo';
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { ThemeFontFace } from '@/components/event/ThemeFontFace';
 import type { EventThemeDto } from '@/lib/api/types';
-import { isHexColor } from '@/lib/eventTheme';
+import { eventThemeStyle, themeFontScopeProps } from '@/lib/eventTheme';
 
 interface InviteLayoutProps {
     coverImageSrc: string;
@@ -21,6 +22,21 @@ export function InviteLayout({ coverImageSrc, coverImageAlt, theme, eventTitle, 
     // An illustration that 404s (art replaced by an admin) falls back to the cover.
     const [failedUrl, setFailedUrl] = useState<string | null>(null);
     const illustrationUrl = theme?.illustrationUrl && theme.illustrationUrl !== failedUrl ? theme.illustrationUrl : null;
+    // The illustration column takes the theme colour and only the title colour and heading font tokens:
+    // the event-page tokens (cards, pills, RSVP fill) mean nothing here. Nothing without a usable colour.
+    const tokens = theme
+        ? (eventThemeStyle(theme.backgroundColor, { titleColor: theme.titleColor, headingFont: theme.headingFont }) as
+              Record<string, string> | undefined)
+        : undefined;
+    const columnStyle =
+        tokens && theme
+            ? ({
+                  backgroundColor: theme.backgroundColor,
+                  '--event-title': tokens['--event-title'],
+                  '--event-heading-font': tokens['--event-heading-font'],
+              } as CSSProperties)
+            : undefined;
+    const headingFont = columnStyle ? theme?.headingFont : null;
 
     function handleIllustrationError() {
         setFailedUrl(theme?.illustrationUrl ?? null);
@@ -33,8 +49,10 @@ export function InviteLayout({ coverImageSrc, coverImageAlt, theme, eventTitle, 
                 // in dark ink. The cover-photo overlay (dark gradient, white title) would only muddy it.
                 <div
                     className="relative flex h-72 w-full shrink-0 flex-col bg-surface-muted md:h-130 lg:h-full lg:w-1/2"
-                    style={theme?.backgroundColor && isHexColor(theme.backgroundColor) ? { backgroundColor: theme.backgroundColor } : undefined}
+                    style={columnStyle}
+                    {...themeFontScopeProps(headingFont)}
                 >
+                    <ThemeFontFace font={headingFont} />
                     <div className="relative m-4 min-h-0 flex-1 lg:m-12">
                         <ProtectedImage
                             src={illustrationUrl}
@@ -48,7 +66,7 @@ export function InviteLayout({ coverImageSrc, coverImageAlt, theme, eventTitle, 
                         />
                     </div>
                     <div className="px-6 pb-6 text-center lg:px-12 lg:pb-12 xl:px-16 xl:pb-16">
-                        <h1 className="text-2xl font-bold text-balance text-ink lg:text-4xl xl:text-5xl">{eventTitle}</h1>
+                        <h1 className="event-heading text-2xl font-bold text-balance text-event-title lg:text-4xl xl:text-5xl">{eventTitle}</h1>
                         {eventSubtitle && <p className="mx-auto mt-2 max-w-md text-sm text-ink lg:text-base">{eventSubtitle}</p>}
                     </div>
                 </div>

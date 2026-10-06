@@ -16,6 +16,12 @@ interface AdminDrawerProps {
     footer?: ReactNode;
     children: ReactNode;
     size?: 'default' | 'wide';
+    /**
+     * While true (e.g. a save in flight), ×, Esc and the overlay don't close the drawer, and the × is
+     * hidden. Checked before requestClose, which would otherwise drop the drawer's history entry and
+     * leave it open but unregistered. Back still closes it: owners must cope with an unmount mid-save.
+     */
+    closeDisabled?: boolean;
 }
 
 const DrawerFooterSlotContext = createContext<HTMLDivElement | null>(null);
@@ -31,15 +37,26 @@ export function useAdminDrawerFooterSlot() {
 
 // A right slide-over scoped to one record, per AGENTS.md — editing and
 // browsing stay visually distinct modes instead of a full-screen modal.
-export function AdminDrawer({ open, onClose, title, subtitle, closeLabel, footer, children, size = 'default' }: AdminDrawerProps) {
+export function AdminDrawer({
+    open,
+    onClose,
+    title,
+    subtitle,
+    closeLabel,
+    footer,
+    children,
+    size = 'default',
+    closeDisabled = false,
+}: AdminDrawerProps) {
     const [footerSlot, setFooterSlot] = useState<HTMLDivElement | null>(null);
     // Back closes the drawer instead of leaving the section it was opened from.
     const { requestClose } = useOverlayHistory(open, onClose);
     const onOpenChange = useCallback(
         (nextOpen: boolean) => {
+            if (!nextOpen && closeDisabled) return;
             if (!nextOpen) requestClose();
         },
-        [requestClose],
+        [closeDisabled, requestClose],
     );
 
     return (
@@ -62,12 +79,14 @@ export function AdminDrawer({ open, onClose, title, subtitle, closeLabel, footer
                             <Dialog.Title className="truncate text-[16.5px] font-extrabold tracking-tight text-ink">{title}</Dialog.Title>
                             {subtitle && <p className="mt-0.5 truncate text-xs text-ink-faint">{subtitle}</p>}
                         </div>
-                        <Dialog.Close
-                            aria-label={closeLabel}
-                            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-canvas text-ink-muted transition-colors hover:text-ink"
-                        >
-                            <X className="h-3.5 w-3.5" />
-                        </Dialog.Close>
+                        {!closeDisabled && (
+                            <Dialog.Close
+                                aria-label={closeLabel}
+                                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-canvas text-ink-muted transition-colors hover:text-ink"
+                            >
+                                <X className="h-3.5 w-3.5" />
+                            </Dialog.Close>
+                        )}
                     </div>
 
                     {/* Content */}

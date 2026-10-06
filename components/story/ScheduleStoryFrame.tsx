@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { type ReactNode, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -16,6 +17,7 @@ interface ScheduleStoryFrameProps {
 // shell's page is transformed, which would otherwise trap `fixed` inside it and
 // leave the page and the story as two separate scroll areas.
 export function ScheduleStoryFrame({ header, children }: ScheduleStoryFrameProps) {
+    const t = useTranslations('StoryPage');
     const isClient = useSyncExternalStore(
         subscribe,
         () => true,
@@ -23,7 +25,12 @@ export function ScheduleStoryFrame({ header, children }: ScheduleStoryFrameProps
     );
 
     const frame = (
-        <div className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-surface-muted">
+        <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={t('scheduleAuthor')}
+            className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-surface-muted"
+        >
             <div className="relative mx-auto min-h-full w-full max-w-sm">
                 {/* Header */}
                 <div className="sticky top-0 z-10 h-20 bg-surface-muted">

@@ -46,7 +46,7 @@ export function Banner({
                         <div className="flex h-full flex-col items-end justify-between gap-2">{actions}</div>
                     </div>
                 </div>
-                <h1 className="px-5 pt-3 text-center alegreya-light text-2xl text-ink">{title}</h1>
+                <h1 className="event-heading px-5 pt-3 text-center alegreya-light text-2xl text-event-title">{title}</h1>
             </div>
         );
     }

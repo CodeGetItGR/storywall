@@ -22,6 +22,8 @@ const PRESET: AdminThemePresetDto = {
     eventTypes: ['BAPTISM'],
     sortOrder: 0,
     archived: false,
+    titleColor: null,
+    headingFont: null,
 };
 
 function state(overrides: Record<string, unknown> = {}) {

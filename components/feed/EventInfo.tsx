@@ -14,14 +14,18 @@ export function EventInfo({ date, place, className }: { date: number; place: str
     }).toUpperCase();
 
     return (
-        <div className={cn(className, 'flex items-center justify-between')}>
-            <div className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
-                <p className="alegreya-light text-[1rem]">{formatted}</p>
+        <div className={cn(className, 'flex items-center justify-between gap-3')}>
+            {/* Date */}
+            <div className="flex shrink-0 items-center gap-1">
+                <Calendar className="h-4 w-4 shrink-0" />
+                <p className="alegreya-light text-[1rem] whitespace-nowrap">{formatted}</p>
             </div>
-            <div className="flex items-center gap-1 alegreya-light text-[1rem]" hidden={!place}>
-                <MapPin className="h-4 w-4" />
-                <p className="text-nowrap text-ellipsis whitespace-nowrap">{place}</p>
+            {/* Place */}
+            <div className="flex min-w-0 items-center gap-1 alegreya-light text-[1rem]" hidden={!place}>
+                <MapPin className="h-4 w-4 shrink-0" />
+                <p className="truncate" title={place}>
+                    {place}
+                </p>
             </div>
         </div>
     );

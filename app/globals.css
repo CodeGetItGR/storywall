@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
-@import 'shadcn/tailwind.css';
+@import './shadcn.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -39,6 +39,13 @@
     --color-event: var(--event-bg, var(--background));
     /* Inset fills (the composer's pill): the theme colour on a themed event, else the usual muted surface. */
     --color-event-muted: var(--event-bg, var(--surface-muted));
+    /* Post cards: the theme colour on a themed event, with a darker shade of it as their divider so
+       they stay distinct from the page; else the usual translucent card and its faint border.
+       The fallbacks are exactly what bg-card/60 and border-border/60 resolve to. */
+    --color-event-card: var(--event-card-bg, color-mix(in oklab, var(--card) 60%, transparent));
+    --color-event-card-line: var(--event-card-line, color-mix(in oklab, var(--border) 60%, transparent));
+    /* The event title: the theme's title colour, else ink. */
+    --color-event-title: var(--event-title, var(--ink));
 
     /* ── Brand extras ── */
     --color-canvas: var(--canvas);
@@ -107,6 +114,16 @@
     letter-spacing: 0.0525rem;
 }
 
+/* Headings in the theme's font, only inside a scope that has one (EventThemeScope, InviteLayout).
+   Unlayered, so it beats every Tailwind utility (they sit in @layer utilities) such as
+   alegreya-light's font-family; its two-class specificity would win on its own as well. */
+[data-theme-font] .event-heading {
+    font-family: var(--event-heading-font);
+    /* Theme fonts are single-weight uploads (no faux bold), and alegreya-light's tracking would break script joins. */
+    font-synthesis: none;
+    letter-spacing: normal;
+}
+
 /* ── CSS variables ── */
 :root {
     color-scheme: light;
@@ -114,6 +131,7 @@
     /* Updated from VisualViewport so keyboard-reduced layouts keep their
        existing inner scrollers instead of making the document scroll. */
     --visual-viewport-height: 100dvh;
+    --visual-viewport-page-height: 100dvh;
     --visual-viewport-offset-top: 0px;
     --visual-viewport-bottom-inset: 0px;
     --visual-viewport-center-y: 50dvh;
@@ -264,6 +282,12 @@
         min-height: 100dvh;
         overflow-x: hidden !important;
         overflow-y: auto !important;
+        overscroll-behavior: auto !important;
+    }
+
+    /* While pinch-zoomed, a swipe a scroller can't use has to reach the
+       viewport so the zoomed view can pan; contained scrollers would freeze it. */
+    html[data-pinch-zoomed] * {
         overscroll-behavior: auto !important;
     }
 }

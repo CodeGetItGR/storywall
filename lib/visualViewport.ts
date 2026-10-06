@@ -2,6 +2,8 @@ const NON_TYPING_INPUT_TYPES = new Set(['button', 'checkbox', 'color', 'file', '
 
 export interface VisualViewportMetrics {
     height: number;
+    // The visible height at the page's unzoomed size: shrinks for the keyboard, not for a pinch zoom.
+    pageHeight: number;
     offsetTop: number;
     bottomInset: number;
     centerY: number;
@@ -15,16 +17,18 @@ export function isTypingControl(element: Element | null): element is HTMLElement
 
 export function getVisualViewportMetrics(
     layoutHeight: number,
-    viewport: Pick<VisualViewport, 'height' | 'offsetTop'>,
+    viewport: Pick<VisualViewport, 'height' | 'offsetTop' | 'scale'>,
     typingControlFocused: boolean,
 ): VisualViewportMetrics {
     const height = Math.round(viewport.height);
+    const pageHeight = Math.round(viewport.height * viewport.scale);
     const offsetTop = Math.round(viewport.offsetTop);
     const obscuredHeight = Math.max(0, Math.round(layoutHeight - viewport.height - viewport.offsetTop));
     const bottomInset = typingControlFocused && obscuredHeight >= 80 ? obscuredHeight : 0;
 
     return {
         height,
+        pageHeight,
         offsetTop,
         bottomInset,
         centerY: Math.round(viewport.offsetTop + viewport.height / 2),
@@ -34,6 +38,10 @@ export function getVisualViewportMetrics(
 // Below this the page counts as unzoomed; browsers report 1 with float noise.
 const PINCH_ZOOM_MIN_SCALE = 1.01;
 
+export function isPinchZoomed(viewport: Pick<VisualViewport, 'scale'>): boolean {
+    return viewport.scale >= PINCH_ZOOM_MIN_SCALE;
+}
+
 // Fixed elements are laid out against the layout viewport, so a pinch zoom
 // magnifies them with the page. This box covers the visible part of the page
 // at its unzoomed screen size: pin chrome to its edges to keep it full size.
@@ -41,7 +49,7 @@ const PINCH_ZOOM_MIN_SCALE = 1.01;
 export function getPinchZoomBox(
     viewport: Pick<VisualViewport, 'scale' | 'width' | 'height' | 'offsetLeft' | 'offsetTop'>,
 ): { width: number; height: number; transform: string } | null {
-    if (viewport.scale < PINCH_ZOOM_MIN_SCALE) return null;
+    if (!isPinchZoomed(viewport)) return null;
 
     return {
         width: viewport.width * viewport.scale,

@@ -17,6 +17,19 @@ import {
 } from '@/lib/api/errors';
 import { formatDate } from '@/lib/datetime';
 
+// Codes whose backend detail beats our fixed copy: it arrives in the user's language (the client
+// sends Accept-Language) and is more specific (the missing letters, the file's actual size, the
+// measured contrast ratio). The mapped copy is the fallback when there is no detail.
+const DETAIL_FIRST_CODES: ReadonlySet<number> = new Set([
+    ERROR_CODES.THEME_FONT_INVALID_FILE,
+    ERROR_CODES.THEME_FONT_TOO_LARGE,
+    ERROR_CODES.THEME_FONT_MISSING_CHARACTERS,
+    ERROR_CODES.THEME_TITLE_COLOR_LOW_CONTRAST,
+    ERROR_CODES.THEME_FONT_NOT_ASSIGNABLE,
+    ERROR_CODES.THEME_FONT_KEY_TAKEN,
+    ERROR_CODES.THEME_FONT_CONVERSION_UNAVAILABLE,
+]);
+
 // One place that turns an ApiError into copy a person can act on, so the
 // cross-cutting codes from the billing guide (§3 quotas, §11 the
 // 429) don't have to be re-handled at every call site. Anything it doesn't
@@ -61,6 +74,9 @@ export function useApiErrorMessage() {
             if (isModuleNotAvailableError(error)) return t('moduleUnavailable');
 
             const messageKey = getApiErrorMessageKey(quotaCode);
+            if (messageKey && typeof quotaCode === 'number' && DETAIL_FIRST_CODES.has(quotaCode)) {
+                return getErrorMessage(error, '').trim() || t(messageKey);
+            }
             if (messageKey) return t(messageKey);
 
             return fallback ?? t('generic');

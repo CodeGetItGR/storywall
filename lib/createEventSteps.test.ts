@@ -3,7 +3,15 @@ import { describe, expect, it } from 'vitest';
 import type { ThemePresetDto } from '@/lib/api/types';
 import { effectiveThemePresetId, isThemeStepAvailable, parseCreateEventStep, visibleCreateEventSteps } from '@/lib/createEventSteps';
 
-const SWAN = { id: 'p1', key: 'swan', name: { en: 'Swan', el: 'Κύκνος' }, backgroundColor: '#FFCCEF', illustrationUrl: 'u' } as ThemePresetDto;
+const SWAN = {
+    id: 'p1',
+    key: 'swan',
+    name: { en: 'Swan', el: 'Κύκνος' },
+    backgroundColor: '#FFCCEF',
+    illustrationUrl: 'u',
+    titleColor: null,
+    headingFont: null,
+} as ThemePresetDto;
 
 describe('createEventSteps', () => {
     it('parses the theme step and falls back to the type step', () => {

@@ -1,7 +1,20 @@
 import type { Locale } from '@/i18n/config';
-import type { AdminThemePresetDto, AdminThemePresetPatchDto, AdminThemePresetRequestDto, EventTypeConvention } from '@/lib/api/types';
+import { ApiError } from '@/lib/api/client';
+import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
+import type {
+    AdminThemeFontDto,
+    AdminThemeFontSummaryDto,
+    AdminThemePresetDto,
+    AdminThemePresetPatchDto,
+    AdminThemePresetRequestDto,
+    EventTypeConvention,
+} from '@/lib/api/types';
+import { contrastRatio } from '@/lib/contrast';
 import { isHexColor } from '@/lib/eventTheme';
 import { resolveLocalizedText } from '@/lib/localizedText';
+
+// Re-exported for existing admin callers; host code imports '@/lib/contrast' directly.
+export { contrastRatio };
 
 // Mirrors the backend's validation (event theme spec, "Admin" API) for inline
 // feedback only; the server stays the authority.
@@ -16,6 +29,8 @@ const DEFAULT_THEME_COLOR = '#FFFFFF';
 // background). The backend rejects backgrounds below MIN_INK_CONTRAST against it.
 export const INK_COLOR = '#241F1A';
 export const MIN_INK_CONTRAST = 4.5;
+// The backend rejects a title colour below this against the preset's background (3055).
+export const MIN_TITLE_CONTRAST = 3;
 
 export const THEME_PRESET_STATUS_FILTERS = ['ALL', 'OFFERED', 'NEEDS_ILLUSTRATION', 'ARCHIVED'] as const;
 export type ThemePresetStatusFilter = (typeof THEME_PRESET_STATUS_FILTERS)[number];
@@ -28,24 +43,32 @@ export type ThemePresetDraft = {
     backgroundColor: string;
     eventTypes: EventTypeConvention[];
     archived: boolean;
+    // '' means none: the ink colour, the app font.
+    titleColor: string;
+    headingFontId: string;
 };
 
 // backgroundColor: not #RRGGBB. backgroundContrast: valid, but too dark for the ink text.
-export type ThemePresetDraftErrors = Partial<Record<'key' | 'nameEn' | 'nameEl' | 'backgroundColor' | 'backgroundContrast' | 'eventTypes', true>>;
+// titleColor: not #RRGGBB. titleContrast: valid, but too close to the background.
+export type ThemePresetDraftErrors = Partial<
+    Record<'key' | 'nameEn' | 'nameEl' | 'backgroundColor' | 'backgroundContrast' | 'titleColor' | 'titleContrast' | 'eventTypes', true>
+>;
 
-function relativeLuminance(hex: string): number {
-    const [red, green, blue] = [1, 3, 5].map((start) => {
-        const channel = parseInt(hex.slice(start, start + 2), 16) / 255;
-        return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
-    });
-    return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+// The ratio of a #RRGGBB background against the ink text.
+export function inkContrastRatio(hex: string): number {
+    return contrastRatio(hex, INK_COLOR);
 }
 
-// WCAG 2.x contrast ratio (1–21) of a #RRGGBB background against the ink text.
-export function inkContrastRatio(hex: string): number {
-    const background = relativeLuminance(hex);
-    const ink = relativeLuminance(INK_COLOR);
-    return (Math.max(background, ink) + 0.05) / (Math.min(background, ink) + 0.05);
+// Floored to 2 decimals like the backend's reported ratio, so a colour just under the minimum never
+// reads as passing. Exactly the server's Math.floor(ratio * 100) / 100, with no epsilon: a ratio of
+// 2.999999999996 must read 2.99 here too, or the hint and the server would disagree.
+export function floorContrastRatio(ratio: number): number {
+    return Math.floor(ratio * 100) / 100;
+}
+
+// "2.61" in English, "2,61" in Greek.
+export function formatContrastRatio(ratio: number, locale: string): string {
+    return new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(floorContrastRatio(ratio));
 }
 
 export function draftFromPreset(preset: AdminThemePresetDto | null): ThemePresetDraft {
@@ -56,6 +79,8 @@ export function draftFromPreset(preset: AdminThemePresetDto | null): ThemePreset
         backgroundColor: preset?.backgroundColor ?? DEFAULT_THEME_COLOR,
         eventTypes: preset?.eventTypes ?? [],
         archived: preset?.archived ?? false,
+        titleColor: preset?.titleColor ?? '',
+        headingFontId: preset?.headingFont?.id ?? '',
     };
 }
 
@@ -69,10 +94,20 @@ function isValidName(value: string): boolean {
     return trimmed.length > 0 && trimmed.length <= THEME_PRESET_NAME_MAX;
 }
 
-// savedColor: the colour the preset already has. The server re-checks contrast only when a PATCH sends
-// backgroundColor, and buildThemePresetPatchPayload sends it only when changed, so an untouched colour
-// (even one saved before the rule) must not block saving other fields.
-export function validateThemePresetDraft(draft: ThemePresetDraft, isCreate: boolean, savedColor?: string | null): ThemePresetDraftErrors {
+function sameColor(left: string, right: string | null | undefined): boolean {
+    return left.toUpperCase() === (right ?? '').toUpperCase();
+}
+
+// savedColor / savedTitleColor: the colours the preset already has. The server re-checks the background
+// only when a PATCH sends backgroundColor, and the title/background pair only when it sends either
+// colour; buildThemePresetPatchPayload sends a colour only when changed, so untouched colours (even
+// ones saved before a rule) must not block saving other fields.
+export function validateThemePresetDraft(
+    draft: ThemePresetDraft,
+    isCreate: boolean,
+    savedColor?: string | null,
+    savedTitleColor?: string | null,
+): ThemePresetDraftErrors {
     const errors: ThemePresetDraftErrors = {};
     if (isCreate && !THEME_PRESET_KEY_PATTERN.test(draft.key)) errors.key = true;
     if (!isValidName(draft.nameEn)) errors.nameEn = true;
@@ -80,6 +115,11 @@ export function validateThemePresetDraft(draft: ThemePresetDraft, isCreate: bool
     if (!isHexColor(draft.backgroundColor)) errors.backgroundColor = true;
     else if (draft.backgroundColor.toUpperCase() !== savedColor?.toUpperCase() && inkContrastRatio(draft.backgroundColor) < MIN_INK_CONTRAST) {
         errors.backgroundContrast = true;
+    }
+    if (draft.titleColor && !isHexColor(draft.titleColor)) errors.titleColor = true;
+    else if (draft.titleColor && isHexColor(draft.backgroundColor)) {
+        const pairChanged = isCreate || !sameColor(draft.titleColor, savedTitleColor) || !sameColor(draft.backgroundColor, savedColor);
+        if (pairChanged && contrastRatio(draft.titleColor, draft.backgroundColor) < MIN_TITLE_CONTRAST) errors.titleContrast = true;
     }
     if (draft.eventTypes.length === 0) errors.eventTypes = true;
     return errors;
@@ -92,6 +132,8 @@ export function buildThemePresetCreatePayload(draft: ThemePresetDraft, sortOrder
         backgroundColor: draft.backgroundColor.toUpperCase(),
         eventTypes: draft.eventTypes,
         sortOrder,
+        headingFontId: draft.headingFontId || null,
+        titleColor: draft.titleColor ? draft.titleColor.toUpperCase() : null,
     };
 }
 
@@ -108,6 +150,17 @@ export function buildThemePresetPatchPayload(preset: AdminThemePresetDto, draft:
     if (backgroundColor !== preset.backgroundColor.toUpperCase()) patch.backgroundColor = backgroundColor;
     if (!sameMembers(draft.eventTypes, preset.eventTypes)) patch.eventTypes = draft.eventTypes;
     if (draft.archived !== preset.archived) patch.archived = draft.archived;
+    // Emptied means back to the default, which only a clear flag does (null means unchanged).
+    if (!draft.titleColor) {
+        if (preset.titleColor) patch.clearTitleColor = true;
+    } else if (!sameColor(draft.titleColor, preset.titleColor)) {
+        patch.titleColor = draft.titleColor.toUpperCase();
+    }
+    if (!draft.headingFontId) {
+        if (preset.headingFont) patch.clearHeadingFont = true;
+    } else if (draft.headingFontId !== preset.headingFont?.id) {
+        patch.headingFontId = draft.headingFontId;
+    }
     return patch;
 }
 
@@ -146,4 +199,32 @@ export function illustrationFileError(file: File): 'type' | 'size' | null {
     if (!THEME_ILLUSTRATION_TYPES.includes(file.type)) return 'type';
     if (file.size > THEME_ILLUSTRATION_MAX_BYTES) return 'size';
     return null;
+}
+
+export type ThemeFontOption = { id: string; key: string; familyName: string; status: 'live' | 'archived' | 'noFile' };
+
+// The heading-font picker: fonts the server lets a preset newly take (live, with a file), plus the
+// font the preset already has, which it keeps even once archived. Sorted by family name.
+export function themeFontOptions(fonts: AdminThemeFontDto[] | undefined, assigned: AdminThemeFontSummaryDto | null): ThemeFontOption[] {
+    const usable = (fonts ?? []).filter((font) => !font.archived && font.url);
+    const assignedCurrent = assigned ? ((fonts ?? []).find((font) => font.id === assigned.id) ?? assigned) : null;
+    const picked = assignedCurrent && !usable.some((font) => font.id === assignedCurrent.id) ? [...usable, assignedCurrent] : usable;
+    return picked
+        .map((font) => ({
+            id: font.id,
+            key: font.key,
+            familyName: font.familyName,
+            status: font.archived ? ('archived' as const) : font.url ? ('live' as const) : ('noFile' as const),
+        }))
+        .sort((left, right) => left.familyName.localeCompare(right.familyName) || left.key.localeCompare(right.key));
+}
+
+// A 3001 with no field errors, so "check the highlighted fields" would point at nothing; the detail
+// is shown instead. The backend's service-level 3001s (background contrast, an event type that
+// can't be themed, the other preset validation rejections) carry a localized detail. Framework-level
+// 3001s (a missing multipart part, a malformed UUID) are English, but a well-formed admin client
+// never triggers them.
+export function isServiceValidationError(error: unknown): boolean {
+    if (!(error instanceof ApiError) || getErrorCode(error) !== ERROR_CODES.VALIDATION_FAILED) return false;
+    return Object.keys(error.problem?.errors ?? {}).length === 0;
 }
