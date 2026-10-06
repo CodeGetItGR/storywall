@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { useStoragePurchasePaused } from '@/hooks/useBillingWithdrawals';
+import type { PurchaseBlock } from '@/hooks/usePurchaseBlock';
 import { useStoragePackSelection } from '@/hooks/useStoragePackSelection';
 import { useEventUsage } from '@/hooks/useUsage';
 import type { PaidServiceResponseDto } from '@/lib/api/types';
@@ -19,16 +20,17 @@ const BUY_CLASS_NAME =
 export function StoragePackPurchase({
     eventId,
     services,
-    canPurchase,
+    purchaseBlock,
 }: {
     eventId: string;
     services: PaidServiceResponseDto[];
-    // Only the event's main host can buy a pack; co-hosts see the offer disabled.
-    canPurchase: boolean;
+    // Co-hosts and demo visitors see the offer with buying disabled.
+    purchaseBlock: PurchaseBlock | null;
 }) {
     const t = useTranslations('EventPlanSettingsPage.storagePacks');
     const tCommon = useTranslations('Common');
     const locale = useLocale();
+    const canPurchase = purchaseBlock === null;
     const usage = useEventUsage(eventId);
     const { selectedService, handleSelect } = useStoragePackSelection(services);
     // A whole-event withdrawal under review pauses pack purchases.
@@ -59,8 +61,8 @@ export function StoragePackPurchase({
                     </p>
                 )}
 
-                {/* Co-host note */}
-                {!canPurchase && <p className="mt-3 text-xs text-ink-muted">{tCommon('primaryHostOnly')}</p>}
+                {/* Why buying is disabled */}
+                {purchaseBlock && <p className="mt-3 text-xs text-ink-muted">{tCommon(purchaseBlock === 'demo' ? 'demoPurchaseDisabled' : 'primaryHostOnly')}</p>}
 
                 {/* Paused while a withdrawal is under review */}
                 {paused && <p className="mt-3 text-xs text-ink-muted">{t('paused')}</p>}
