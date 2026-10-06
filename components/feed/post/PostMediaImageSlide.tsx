@@ -59,7 +59,7 @@ export function PostMediaImageSlide({
             onTouchCancelCapture={handleTouchCancel}
         >
             <div
-                className="h-full w-full"
+                className="relative h-full w-full"
                 style={
                     {
                         transform: `translate(${zoom.translate.x}px, ${zoom.translate.y}px) scale(${zoom.scale})`,
