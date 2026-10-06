@@ -18,6 +18,7 @@ import { PaidServicesCatalogPanel } from '@/components/admin/PaidServicesCatalog
 import { PlansSection } from '@/components/admin/plans/PlansSection';
 import { PlatformMetricsPanel } from '@/components/admin/PlatformMetricsPanel';
 import { ReactionTypesCatalogPanel } from '@/components/admin/ReactionTypesCatalogPanel';
+import { ThemeFontsPanel } from '@/components/admin/themeFonts/ThemeFontsPanel';
 import { ThemePresetsPanel } from '@/components/admin/themePresets/ThemePresetsPanel';
 import { WithdrawalsSection } from '@/components/admin/WithdrawalsSection';
 
@@ -35,6 +36,7 @@ export function AdminConsole() {
     if (tab === 'collaborations') return <CollaborationsSection />;
     if (tab === 'reactionTypes') return <ReactionTypesCatalogPanel />;
     if (tab === 'themePresets') return <ThemePresetsPanel />;
+    if (tab === 'themeFonts') return <ThemeFontsPanel />;
     if (tab === 'demoEvents') return <DemoEventsSection />;
     if (tab === 'withdrawals') return <WithdrawalsSection />;
     if (tab === 'orders') return <OrdersSection />;

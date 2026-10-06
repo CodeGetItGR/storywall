@@ -17,6 +17,7 @@ import {
     Smile,
     TicketPercent,
     TrendingUp,
+    Type,
     Undo2,
     Users,
 } from 'lucide-react';
@@ -40,6 +41,7 @@ export type AdminTab =
     | 'collaborations'
     | 'reactionTypes'
     | 'themePresets'
+    | 'themeFonts'
     | 'demoEvents'
     | 'billingOps'
     | 'orders'
@@ -78,6 +80,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#discount-codes': 'discountCodes',
     '#reaction-types': 'reactionTypes',
     '#theme-presets': 'themePresets',
+    '#theme-fonts': 'themeFonts',
     '#billing-ops': 'billingOps',
     '#accounts': 'accounts',
     '#reports': 'reports',
@@ -95,6 +98,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     collaborations: COLLABORATIONS_HASH_ROOT,
     reactionTypes: '#reaction-types',
     themePresets: '#theme-presets',
+    themeFonts: '#theme-fonts',
     demoEvents: DEMO_EVENTS_HASH_ROOT,
     billingOps: '#billing-ops',
     orders: ORDERS_HASH_ROOT,
@@ -183,6 +187,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'collaborations', label: t('collaborations'), icon: Handshake },
             { key: 'reactionTypes', label: t('reactionTypes'), icon: Smile },
             { key: 'themePresets', label: t('themePresets'), icon: Palette },
+            { key: 'themeFonts', label: t('themeFonts'), icon: Type },
             { key: 'demoEvents', label: t('demoEvents'), icon: MonitorPlay },
             { key: 'accounts', label: t('accounts'), icon: Users },
             { key: 'orders', label: t('orders'), icon: ShoppingBag },

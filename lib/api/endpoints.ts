@@ -355,6 +355,11 @@ export const endpoints = {
             byId: (id: string) => `/api/admin/theme-presets/${id}`,
             illustration: (id: string) => `/api/admin/theme-presets/${id}/illustration`,
         },
+        themeFonts: {
+            list: '/api/admin/theme-fonts',
+            byId: (id: string) => `/api/admin/theme-fonts/${id}`,
+            file: (id: string) => `/api/admin/theme-fonts/${id}/file`,
+        },
         memberRoles: {
             collection: '/api/admin/member-roles',
             list: (eventTypeKey: string) => `/api/admin/member-roles?eventTypeKey=${encodeURIComponent(eventTypeKey)}`,

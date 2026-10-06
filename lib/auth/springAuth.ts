@@ -38,7 +38,7 @@ export function clientIpFrom(headers: Pick<Headers, 'get'>): string | null {
     return forwarded || headers.get('x-real-ip')?.trim() || null;
 }
 
-function clientIpHeaders(clientIp: string | null): Record<string, string> {
+export function clientIpHeaders(clientIp: string | null): Record<string, string> {
     const secret = process.env.CLIENT_IP_FORWARDING_SECRET;
     if (!secret || !clientIp) return {};
     return { [CLIENT_IP_HEADER]: clientIp, [CLIENT_IP_SECRET_HEADER]: secret };

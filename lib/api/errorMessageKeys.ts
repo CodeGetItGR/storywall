@@ -144,7 +144,13 @@ export type ApiErrorMessageKey =
     | 'storyExpiryOutOfRange'
     | 'storyLiveLimitReached'
     | 'storyMediaAlreadyLive'
+    | 'themeFontInvalidFile'
+    | 'themeFontKeyTaken'
+    | 'themeFontMissingCharacters'
+    | 'themeFontNotAssignable'
+    | 'themeFontTooLarge'
     | 'themePresetNotSelectable'
+    | 'themeTitleColorLowContrast'
     | 'eventEnded'
     | 'eventScheduleLocked'
     | 'paidServiceCurrencyMismatch'
@@ -336,6 +342,12 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.STORY_LIVE_LIMIT_REACHED]: 'storyLiveLimitReached',
     [ERROR_CODES.STORY_MEDIA_ALREADY_LIVE]: 'storyMediaAlreadyLive',
     [ERROR_CODES.THEME_PRESET_NOT_SELECTABLE]: 'themePresetNotSelectable',
+    [ERROR_CODES.THEME_FONT_INVALID_FILE]: 'themeFontInvalidFile',
+    [ERROR_CODES.THEME_FONT_TOO_LARGE]: 'themeFontTooLarge',
+    [ERROR_CODES.THEME_FONT_MISSING_CHARACTERS]: 'themeFontMissingCharacters',
+    [ERROR_CODES.THEME_TITLE_COLOR_LOW_CONTRAST]: 'themeTitleColorLowContrast',
+    [ERROR_CODES.THEME_FONT_NOT_ASSIGNABLE]: 'themeFontNotAssignable',
+    [ERROR_CODES.THEME_FONT_KEY_TAKEN]: 'themeFontKeyTaken',
     [ERROR_CODES.EVENT_ENDED]: 'eventEnded',
     [ERROR_CODES.PAID_SERVICE_CURRENCY_MISMATCH]: 'paidServiceCurrencyMismatch',
     [ERROR_CODES.PAID_SERVICE_IN_USE]: 'paidServiceInUse',

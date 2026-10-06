@@ -61,9 +61,33 @@ describe('useApiErrorMessage', () => {
         [5119, 'The server is busy right now. Try again in a moment.'],
         [5128, 'This was just changed somewhere else. Refresh and try again.'],
         [5143, 'This theme is no longer available — pick another.'],
+        [3052, "This file isn't a WOFF2 font, or it's damaged. Convert it to WOFF2 and upload it again."],
+        [3053, 'This font file is too large. Fonts can be up to 500 KB.'],
+        [3054, "This font can't write every Greek and Latin letter that event titles need. Choose a font that covers both."],
+        [3055, 'The title colour is too close to the background colour. Choose a darker or lighter one.'],
+        [5145, "This font can't be used in a theme: it doesn't exist, it's archived, or it has no font file yet. Choose another font."],
+        [5146, 'A font with this key already exists. Choose a different key.'],
         [5144, 'This event has ended.'],
         [5141, 'You have reached the story limit. Older stories expire after 24 hours, or delete one to post another.'],
     ])('maps %i to its own copy', (errorCode, message) => {
         expect(describeIn('en', new ApiError(409, { errorCode }))).toBe(message);
+    });
+
+    // The theme font and title colour errors arrive localized (Accept-Language) and name the
+    // specifics (missing letters, file size, measured contrast), so the backend detail wins.
+    it.each([3052, 3053, 3054, 3055, 5145, 5146])('shows the backend detail for %i when there is one', (errorCode) => {
+        const error = new ApiError(400, { errorCode, detail: 'Λείπουν τα γράμματα: Ψ, Ω.' });
+
+        expect(describeIn('el', error)).toBe('Λείπουν τα γράμματα: Ψ, Ω.');
+    });
+
+    it.each(['', '   '])('falls back to the localized copy when a theme font detail is blank (%j)', (detail) => {
+        expect(describeIn('en', new ApiError(400, { errorCode: 3053, detail }))).toBe('This font file is too large. Fonts can be up to 500 KB.');
+    });
+
+    it('falls back to the localized copy for a theme font error without detail', () => {
+        expect(describeIn('el', new ApiError(400, { errorCode: 3053 }))).toBe(
+            'Το αρχείο της γραμματοσειράς είναι πολύ μεγάλο. Οι γραμματοσειρές μπορούν να είναι έως 500 KB.',
+        );
     });
 });

@@ -66,7 +66,8 @@ describe('Banner', () => {
         it('shows the title below the artwork in dark ink, with no white overlay title or dark gradient', () => {
             const { container } = render(<Banner image={null} illustrationUrl={illustration} title="Baptism" glowVisible />);
             const heading = screen.getByRole('heading', { level: 1, name: 'Baptism' });
-            expect(heading).toHaveClass('text-ink');
+            // text-event-title is the theme's title colour, else ink; event-heading takes the theme font.
+            expect(heading).toHaveClass('text-event-title', 'event-heading');
             expect(heading).not.toHaveClass('text-white');
             expect(container.querySelector('[class*="rgba(20,17,16"]')).toBeNull();
             const art = screen.getByTestId('banner-image').parentElement as HTMLElement;
