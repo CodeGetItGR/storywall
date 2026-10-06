@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { InviteLayout } from '@/components/invite/InviteLayout';
+import type { EventThemeDto, EventThemeFontDto } from '@/lib/api/types';
 
 vi.mock('@/components/common/Logo', () => ({ Logo: () => null }));
 vi.mock('@/components/common/ProtectedImage', () => ({
@@ -9,13 +10,17 @@ vi.mock('@/components/common/ProtectedImage', () => ({
     ProtectedImage: ({ src, onError }: { src: string; onError?: () => void }) => <img data-testid="hero" src={src} alt="" onError={onError} />,
 }));
 
-const THEME = { presetKey: 'swan', backgroundColor: '#FFCCEF', illustrationUrl: 'https://r2.test/swan.png', titleColor: null, headingFont: null };
+const THEME: EventThemeDto = {
+    presetKey: 'swan',
+    backgroundColor: '#FFCCEF',
+    illustrationUrl: 'https://r2.test/swan.png',
+    titleColor: null,
+    headingFont: null,
+};
 
-const FONT = { key: 'swan-script', fallback: 'serif' as const, url: '/api/theme-fonts/swan-script/2.woff2' };
+const FONT: EventThemeFontDto = { key: 'swan-script', fallback: 'serif', url: '/api/theme-fonts/swan-script/2.woff2' };
 
-function renderLayout(
-    theme: (Omit<typeof THEME, 'titleColor' | 'headingFont'> & { titleColor: string | null; headingFont: typeof FONT | null }) | null,
-) {
+function renderLayout(theme: EventThemeDto | null) {
     render(
         <InviteLayout coverImageSrc="/images/couple-hero.png" coverImageAlt="" theme={theme} eventTitle="Baptism">
             <p>body</p>

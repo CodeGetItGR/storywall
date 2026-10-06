@@ -752,15 +752,15 @@ export interface AdminProvisionEventRequestDto {
     event: EventRequestDto;
 }
 
-// The event's look (event-theme-customization, 2026-10-05). Null when the event has
-// no preset, or when the theme module isn't readable for it (kill switch, plan,
-// event type) — then the app shows the default look. illustrationUrl is presigned.
 export interface EventThemeFontDto {
     key: string; // CSS family is "theme-" + key
     fallback: 'serif' | 'sans-serif';
     url: string; // FE-origin path, /api/theme-fonts/<key>/<version>.woff2
 }
 
+// The event's look (event-theme-customization, 2026-10-05). Null when the event has
+// no preset, or when the theme module isn't readable for it (kill switch, plan,
+// event type) — then the app shows the default look. illustrationUrl is presigned.
 export interface EventThemeDto {
     presetKey: string;
     backgroundColor: string; // #RRGGBB, upper-case
@@ -3254,6 +3254,16 @@ export interface EventThemeResponseDto {
     theme: EventThemeDto | null;
 }
 
+// The heading font as an admin preset row carries it.
+export interface AdminThemeFontSummaryDto {
+    id: string;
+    key: string;
+    familyName: string;
+    fallback: 'serif' | 'sans-serif';
+    archived: boolean;
+    url: string | null;
+}
+
 // /api/admin/theme-presets — the whole catalog, archived and unillustrated included.
 export interface AdminThemePresetDto {
     id: string;
@@ -3264,7 +3274,7 @@ export interface AdminThemePresetDto {
     eventTypes: EventTypeConvention[];
     sortOrder: number;
     archived: boolean;
-    headingFont: { id: string; key: string; familyName: string; fallback: 'serif' | 'sans-serif'; archived: boolean; url: string | null } | null;
+    headingFont: AdminThemeFontSummaryDto | null;
     titleColor: string | null;
 }
 

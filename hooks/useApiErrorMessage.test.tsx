@@ -81,6 +81,10 @@ describe('useApiErrorMessage', () => {
         expect(describeIn('el', error)).toBe('Λείπουν τα γράμματα: Ψ, Ω.');
     });
 
+    it.each(['', '   '])('falls back to the localized copy when a theme font detail is blank (%j)', (detail) => {
+        expect(describeIn('en', new ApiError(400, { errorCode: 3053, detail }))).toBe('This font file is too large. Fonts can be up to 500 KB.');
+    });
+
     it('falls back to the localized copy for a theme font error without detail', () => {
         expect(describeIn('el', new ApiError(400, { errorCode: 3053 }))).toBe(
             'Το αρχείο της γραμματοσειράς είναι πολύ μεγάλο. Οι γραμματοσειρές μπορούν να είναι έως 500 KB.',

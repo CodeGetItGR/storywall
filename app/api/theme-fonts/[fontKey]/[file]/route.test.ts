@@ -26,10 +26,13 @@ describe('GET /api/theme-fonts/[fontKey]/[file]', () => {
 
         expect(response.status).toBe(200);
         expect(response.headers.get('content-type')).toBe('font/woff2');
-        expect(response.headers.get('cache-control')).toBe('public, max-age=31536000, immutable');
+        expect(response.headers.get('cache-control')).toBe('public, max-age=31536000, s-maxage=31536000, immutable');
         expect(new Uint8Array(await response.arrayBuffer())).toEqual(new Uint8Array([119, 79, 70, 50]));
         const [url, init] = fetchMock.mock.calls[0];
         expect(url).toMatch(/\/api\/theme-fonts\/dino-serif\/3\.woff2$/);
+        expect(init.method).toBe('GET');
+        // The client-IP secret must never follow a redirect to another host.
+        expect(init.redirect).toBe('error');
         expect(init.headers['X-Storywall-Client-Ip']).toBe('203.0.113.9');
         expect(init.headers['X-Storywall-Client-Ip-Secret']).toBe('s3cret');
     });
@@ -59,8 +62,22 @@ describe('GET /api/theme-fonts/[fontKey]/[file]', () => {
         expect(response.headers.get('cache-control')).toBe('no-store');
     });
 
-    it.each([502, 503])('turns a backend %i into an uncached 502', async (status) => {
+    it.each([204, 206, 502, 503])('turns a backend %i into an uncached 502', async (status) => {
         vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status })));
+
+        const response = await call('dino-serif', '2.woff2');
+
+        expect(response.status).toBe(502);
+        expect(response.headers.get('cache-control')).toBe('no-store');
+    });
+
+    it('answers an uncached 502 when the backend body fails mid-read', async () => {
+        const broken = new ReadableStream({
+            start(controller) {
+                controller.error(new Error('reset'));
+            },
+        });
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(broken, { status: 200 })));
 
         const response = await call('dino-serif', '2.woff2');
 
@@ -81,8 +98,9 @@ describe('GET /api/theme-fonts/[fontKey]/[file]', () => {
 describe('HEAD /api/theme-fonts/[fontKey]/[file]', () => {
     afterEach(() => vi.unstubAllGlobals());
 
-    it('answers like GET without a body', async () => {
-        vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(new Uint8Array([1, 2, 3]), { status: 200 })));
+    it('sends HEAD upstream and answers like GET without a body', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 200 }));
+        vi.stubGlobal('fetch', fetchMock);
 
         const response = await HEAD(request('dino-serif', '3.woff2', {}, 'HEAD'), {
             params: Promise.resolve({ fontKey: 'dino-serif', file: '3.woff2' }),
@@ -90,8 +108,9 @@ describe('HEAD /api/theme-fonts/[fontKey]/[file]', () => {
 
         expect(response.status).toBe(200);
         expect(response.headers.get('content-type')).toBe('font/woff2');
-        expect(response.headers.get('cache-control')).toBe('public, max-age=31536000, immutable');
+        expect(response.headers.get('cache-control')).toBe('public, max-age=31536000, s-maxage=31536000, immutable');
         expect(response.body).toBeNull();
+        expect(fetchMock.mock.calls[0][1].method).toBe('HEAD');
     });
 
     it('404s a malformed file name without calling the backend', async () => {

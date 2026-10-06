@@ -73,7 +73,9 @@ export function useApiErrorMessage() {
             if (isModuleNotAvailableError(error)) return t('moduleUnavailable');
 
             const messageKey = getApiErrorMessageKey(quotaCode);
-            if (messageKey && typeof quotaCode === 'number' && DETAIL_FIRST_CODES.has(quotaCode)) return getErrorMessage(error, t(messageKey));
+            if (messageKey && typeof quotaCode === 'number' && DETAIL_FIRST_CODES.has(quotaCode)) {
+                return getErrorMessage(error, '').trim() || t(messageKey);
+            }
             if (messageKey) return t(messageKey);
 
             return fallback ?? t('generic');
