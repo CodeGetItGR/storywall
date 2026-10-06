@@ -144,6 +144,7 @@ export type ApiErrorMessageKey =
     | 'storyExpiryOutOfRange'
     | 'storyLiveLimitReached'
     | 'storyMediaAlreadyLive'
+    | 'themeFontConversionUnavailable'
     | 'themeFontInvalidFile'
     | 'themeFontKeyTaken'
     | 'themeFontMissingCharacters'
@@ -348,6 +349,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.THEME_TITLE_COLOR_LOW_CONTRAST]: 'themeTitleColorLowContrast',
     [ERROR_CODES.THEME_FONT_NOT_ASSIGNABLE]: 'themeFontNotAssignable',
     [ERROR_CODES.THEME_FONT_KEY_TAKEN]: 'themeFontKeyTaken',
+    [ERROR_CODES.THEME_FONT_CONVERSION_UNAVAILABLE]: 'themeFontConversionUnavailable',
     [ERROR_CODES.EVENT_ENDED]: 'eventEnded',
     [ERROR_CODES.PAID_SERVICE_CURRENCY_MISMATCH]: 'paidServiceCurrencyMismatch',
     [ERROR_CODES.PAID_SERVICE_IN_USE]: 'paidServiceInUse',

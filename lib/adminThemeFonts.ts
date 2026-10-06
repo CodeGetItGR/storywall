@@ -6,7 +6,9 @@ import type { AdminThemeFontDto, AdminThemeFontPatchDto, AdminThemeFontRequestDt
 export const THEME_FONT_KEY_PATTERN = /^[a-z0-9][a-z0-9-]{1,62}$/;
 export const THEME_FONT_FAMILY_MAX = 100;
 export const THEME_FONT_MAX_BYTES = 500 * 1024;
-export const THEME_FONT_ACCEPT = '.woff2,font/woff2';
+// TTF and OTF are converted to WOFF2 on the server, so they may be larger going up.
+export const THEME_FONT_SOURCE_MAX_BYTES = 2 * 1024 * 1024;
+export const THEME_FONT_ACCEPT = '.woff2,.ttf,.otf,font/woff2,font/ttf,font/otf';
 // Greek and Latin in one line: the admin sees at a glance whether the font covers both.
 export const THEME_FONT_SAMPLE = 'Βάπτιση της Ελένης · Eleni’s Baptism 2026';
 // The harder part of the required set (backend ThemeFontPipeline.REQUIRED_CHARACTERS): accented and
@@ -42,11 +44,24 @@ export function buildThemeFontPatch(font: AdminThemeFontDto, draft: ThemeFontDra
     return patch;
 }
 
-// Browsers report an empty or odd type for .woff2, so go by the name; the server checks the bytes.
-export function fontFileError(file: File): 'type' | 'size' | null {
-    if (!file.name.toLowerCase().endsWith('.woff2')) return 'type';
-    if (file.size > THEME_FONT_MAX_BYTES) return 'size';
-    return null;
+// The first 4 bytes decide, as on the server: browsers report an empty or odd type for fonts, and a
+// name can lie. A collection (ttcf), WOFF1 (wOFF) or anything else is refused. UX only; the server
+// checks the bytes again.
+const WOFF2_MAGIC = 'wOF2';
+// TrueType (00 01 00 00, or Apple's 'true') and OpenType with CFF outlines ('OTTO').
+const SFNT_MAGICS: ReadonlySet<string> = new Set(['\x00\x01\x00\x00', 'true', 'OTTO']);
+
+export async function fontFileError(file: File): Promise<'type' | 'size' | null> {
+    let magic: string;
+    try {
+        magic = String.fromCharCode(...new Uint8Array(await file.slice(0, 4).arrayBuffer()));
+    } catch {
+        // NotReadableError: the file changed or went away since it was picked.
+        return 'type';
+    }
+    if (magic === WOFF2_MAGIC) return file.size > THEME_FONT_MAX_BYTES ? 'size' : null;
+    if (SFNT_MAGICS.has(magic)) return file.size > THEME_FONT_SOURCE_MAX_BYTES ? 'size' : null;
+    return 'type';
 }
 
 // A font without a file can't be put on a preset yet.

@@ -80,7 +80,7 @@ export function ThemeFontDrawer({ font, onCloseAction }: { font: AdminThemeFontD
             <button
                 type="submit"
                 form={FORM_ID}
-                disabled={form.isSaving || retryIn > 0 || form.failure?.kind === 'notFound'}
+                disabled={form.isSaving || form.isCheckingFile || retryIn > 0 || form.failure?.kind === 'notFound'}
                 className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-bold text-white disabled:opacity-50"
             >
                 {form.isSaving && <Loader2 className="h-4 w-4 animate-spin" />}

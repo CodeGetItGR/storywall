@@ -27,6 +27,7 @@ const DETAIL_FIRST_CODES: ReadonlySet<number> = new Set([
     ERROR_CODES.THEME_TITLE_COLOR_LOW_CONTRAST,
     ERROR_CODES.THEME_FONT_NOT_ASSIGNABLE,
     ERROR_CODES.THEME_FONT_KEY_TAKEN,
+    ERROR_CODES.THEME_FONT_CONVERSION_UNAVAILABLE,
 ]);
 
 // One place that turns an ApiError into copy a person can act on, so the

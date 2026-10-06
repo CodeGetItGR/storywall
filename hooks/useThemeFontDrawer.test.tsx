@@ -64,6 +64,25 @@ function woff2(name = 'didot.woff2') {
     return new File([new Uint8Array([0x77, 0x4f, 0x46, 0x32])], name);
 }
 
+function ttf(name = 'didot.ttf') {
+    return new File([new Uint8Array([0x00, 0x01, 0x00, 0x00])], name);
+}
+
+// A file whose first-bytes read waits until the test lets it go.
+function slowFile(name: string): { file: File; release: () => void } {
+    const file = woff2(name);
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>((resolve) => (release = resolve));
+    const slice = file.slice.bind(file);
+    Object.defineProperty(file, 'slice', {
+        value: (start?: number, end?: number) => {
+            const part = slice(start, end);
+            return { arrayBuffer: () => gate.then(() => part.arrayBuffer()) };
+        },
+    });
+    return { file, release };
+}
+
 function renderDrawer(font: AdminThemeFontDto | null = null, onDoneAction = vi.fn()) {
     return renderHook(() => useThemeFontDrawer({ font, onDoneAction }), { wrapper });
 }
@@ -113,7 +132,7 @@ describe('useThemeFontDrawer', () => {
 
         fillValidDraft(result);
         act(() => result.current.handleFallbackChange(field('fallback', 'sans-serif')));
-        act(() => result.current.handleFileChange(fileChange(file)));
+        await act(() => result.current.handleFileChange(fileChange(file)));
         await act(() => result.current.handleSubmit(submitEvent()));
 
         expect(mocks.create).toHaveBeenCalledWith({ key: 'gfs-didot', familyName: 'GFS Didot', fallback: 'sans-serif' });
@@ -128,7 +147,7 @@ describe('useThemeFontDrawer', () => {
         const { result } = renderDrawer(null, onDoneAction);
 
         fillValidDraft(result);
-        act(() => result.current.handleFileChange(fileChange(woff2())));
+        await act(() => result.current.handleFileChange(fileChange(woff2())));
         await act(() => result.current.handleSubmit(submitEvent()));
         expect(result.current.failure?.kind).toBe('other');
         expect(result.current.isCreate).toBe(false);
@@ -142,10 +161,10 @@ describe('useThemeFontDrawer', () => {
         expect(onDoneAction).toHaveBeenCalledOnce();
     });
 
-    it('refuses a file that is not .woff2, and uploads nothing', async () => {
+    it('refuses a file that is not a font, and uploads nothing', async () => {
         mocks.patch.mockResolvedValue(FONT);
         const { result } = renderDrawer(FONT);
-        act(() => result.current.handleFileChange(fileChange(new File(['x'], 'didot.ttf'))));
+        await act(() => result.current.handleFileChange(fileChange(new File(['x'], 'didot.ttf'))));
         expect(result.current.fileError).toBe('type');
         expect(result.current.hasPendingFile).toBe(false);
 
@@ -199,7 +218,7 @@ describe('useThemeFontDrawer failures', () => {
         const error = new ApiError(400, { errorCode: 3054, detail: 'missing ΐ', details: { missing: ['ΐ'] } });
         mocks.upload.mockRejectedValue(error);
         const { result } = renderDrawer(FONT);
-        act(() => result.current.handleFileChange(fileChange(woff2())));
+        await act(() => result.current.handleFileChange(fileChange(woff2())));
         await act(() => result.current.handleSubmit(submitEvent()));
         expect(result.current.failure).toEqual({ kind: 'other', error });
         expect(result.current.hasPendingFile).toBe(true);
@@ -242,7 +261,7 @@ describe('useThemeFontDrawer preview', () => {
         await waitFor(() => expect(fonts.add).toHaveBeenCalledTimes(1));
         const savedFamily = result.current.previewFamily;
 
-        act(() => result.current.handleFileChange(fileChange(woff2())));
+        await act(() => result.current.handleFileChange(fileChange(woff2())));
         await waitFor(() => expect(fonts.add).toHaveBeenCalledTimes(2));
         expect(faces[1].source).toBeInstanceOf(ArrayBuffer);
         expect(fonts.delete).toHaveBeenCalledWith(faces[0]);
@@ -255,7 +274,7 @@ describe('useThemeFontDrawer preview', () => {
     it('says the file could not be previewed when the font fails to load', async () => {
         loadResult = () => Promise.reject(new DOMException('bad font', 'SyntaxError'));
         const { result } = renderDrawer(null);
-        act(() => result.current.handleFileChange(fileChange(woff2('broken.woff2'))));
+        await act(() => result.current.handleFileChange(fileChange(woff2('broken.woff2'))));
 
         await waitFor(() => expect(result.current.previewFailed).toBe('file'));
         expect(result.current.previewFamily).toBeNull();
@@ -277,7 +296,7 @@ describe('useThemeFontDrawer review fixes', () => {
         mocks.create.mockReturnValue(new Promise((resolve) => (finish = resolve)));
         const { result, unmount } = renderDrawer(null, onDoneAction);
         fillValidDraft(result);
-        act(() => result.current.handleFileChange(fileChange(woff2())));
+        await act(() => result.current.handleFileChange(fileChange(woff2())));
 
         let pending: Promise<void> = Promise.resolve();
         act(() => {
@@ -295,10 +314,10 @@ describe('useThemeFontDrawer review fixes', () => {
     it('drops the pending file when a second pick is refused', async () => {
         mocks.patch.mockResolvedValue(FONT);
         const { result } = renderDrawer(FONT);
-        act(() => result.current.handleFileChange(fileChange(woff2('a.woff2'))));
+        await act(() => result.current.handleFileChange(fileChange(woff2('a.woff2'))));
         expect(result.current.pendingFileName).toBe('a.woff2');
 
-        act(() => result.current.handleFileChange(fileChange(new File(['x'], 'b.ttf'))));
+        await act(() => result.current.handleFileChange(fileChange(new File(['x'], 'b.ttf'))));
         expect(result.current.fileError).toBe('type');
         expect(result.current.hasPendingFile).toBe(false);
         expect(result.current.pendingFileName).toBeNull();
@@ -333,7 +352,104 @@ describe('useThemeFontDrawer review fixes', () => {
         await waitFor(() => expect(result.current.previewFailed).toBe('saved'));
         expect(invalidate).toHaveBeenCalledWith({ queryKey: ['admin', 'theme-fonts'] });
 
-        act(() => result.current.handleFileChange(fileChange(woff2('broken.woff2'))));
+        await act(() => result.current.handleFileChange(fileChange(woff2('broken.woff2'))));
         await waitFor(() => expect(result.current.previewFailed).toBe('file'));
+    });
+});
+
+describe('useThemeFontDrawer TTF and OTF', () => {
+    it('accepts a TTF by its bytes, previews it and uploads it as picked', async () => {
+        mocks.upload.mockResolvedValue(FONT);
+        const { result } = renderDrawer(FONT);
+        await waitFor(() => expect(fonts.add).toHaveBeenCalledTimes(1));
+        const file = ttf();
+
+        await act(() => result.current.handleFileChange(fileChange(file)));
+        expect(result.current.fileError).toBeNull();
+        expect(result.current.pendingFileName).toBe('didot.ttf');
+        await waitFor(() => expect(fonts.add).toHaveBeenCalledTimes(2));
+        expect(faces[1].source).toBeInstanceOf(ArrayBuffer);
+
+        await act(() => result.current.handleSubmit(submitEvent()));
+        expect(mocks.upload).toHaveBeenCalledWith({ id: 'f1', file });
+    });
+
+    it('keeps the latest pick when an earlier one finishes its check later', async () => {
+        const { result } = renderDrawer(FONT);
+        const first = slowFile('first.woff2');
+
+        let firstCheck: Promise<void> = Promise.resolve();
+        act(() => {
+            firstCheck = result.current.handleFileChange(fileChange(first.file));
+        });
+        await act(() => result.current.handleFileChange(fileChange(ttf('second.ttf'))));
+        first.release();
+        await act(() => firstCheck);
+
+        expect(result.current.pendingFileName).toBe('second.ttf');
+    });
+
+    // 5147 (conversion unavailable) and every other 503 go to the shared copy like any other error.
+    it.each([
+        ['a 5147', new ApiError(503, { errorCode: 5147, detail: 'Δεν γίνεται μετατροπή τώρα.' })],
+        ['a busy 5119', new ApiError(503, { errorCode: 5119, detail: 'busy', retryAfterSeconds: 5 })],
+        ['a 503 without a code', new ApiError(503, { detail: 'down' })],
+    ])('keeps %s from the upload as an error to show, with the file still pending', async (_label, error) => {
+        mocks.upload.mockRejectedValue(error);
+        const { result } = renderDrawer(FONT);
+        await act(() => result.current.handleFileChange(fileChange(ttf())));
+        await act(() => result.current.handleSubmit(submitEvent()));
+        expect(result.current.failure).toEqual({ kind: 'other', error });
+        expect(result.current.hasPendingFile).toBe(true);
+    });
+
+    it('leaves a 503 from create to the shared copy', async () => {
+        const error = new ApiError(503, { errorCode: 5004, detail: 'down' });
+        mocks.create.mockRejectedValue(error);
+        const { result } = renderDrawer();
+        fillValidDraft(result);
+        await act(() => result.current.handleSubmit(submitEvent()));
+        expect(result.current.failure).toEqual({ kind: 'other', error });
+    });
+});
+
+describe('useThemeFontDrawer pending file check', () => {
+    it('does not upload an earlier pick while a later one is still being checked', async () => {
+        mocks.upload.mockResolvedValue(FONT);
+        const { result } = renderDrawer(FONT);
+        await act(() => result.current.handleFileChange(fileChange(woff2('a.woff2'))));
+        expect(result.current.pendingFileName).toBe('a.woff2');
+
+        const second = slowFile('b.woff2');
+        let check: Promise<void> = Promise.resolve();
+        act(() => {
+            check = result.current.handleFileChange(fileChange(second.file));
+        });
+        expect(result.current.isCheckingFile).toBe(true);
+        expect(result.current.hasPendingFile).toBe(false);
+
+        await act(() => result.current.handleSubmit(submitEvent()));
+        expect(mocks.upload).not.toHaveBeenCalled();
+        expect(mocks.patch).not.toHaveBeenCalled();
+
+        second.release();
+        await act(() => check);
+        expect(result.current.isCheckingFile).toBe(false);
+        expect(result.current.pendingFileName).toBe('b.woff2');
+    });
+
+    it('updates nothing when the drawer unmounts during a check', async () => {
+        const consoleError = vi.spyOn(console, 'error');
+        const { result, unmount } = renderDrawer(FONT);
+        const pick = slowFile('a.woff2');
+        let check: Promise<void> = Promise.resolve();
+        act(() => {
+            check = result.current.handleFileChange(fileChange(pick.file));
+        });
+        unmount();
+        pick.release();
+        await expect(check).resolves.toBeUndefined();
+        expect(result.current.pendingFileName).toBeNull();
+        expect(consoleError).not.toHaveBeenCalled();
     });
 });
