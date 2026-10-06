@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -8,14 +8,30 @@ import type { AdminThemeFontDto } from '@/lib/api/types';
 
 const drawerState = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
 
-// Keys come back as-is; the ApiErrors namespace is prefixed so the copy's source is visible.
+// Keys come back as-is, with any values after a colon; the ApiErrors namespace is prefixed so the
+// copy's source is visible.
 vi.mock('next-intl', () => ({
-    useTranslations: (namespace?: string) => (key: string) => (namespace === 'ApiErrors' ? `ApiErrors.${key}` : key),
+    useTranslations: (namespace?: string) => (key: string, values?: Record<string, unknown>) => {
+        const text = namespace === 'ApiErrors' ? `ApiErrors.${key}` : key;
+        return values ? `${text}:${Object.values(values).join(',')}` : text;
+    },
     useLocale: () => 'en',
 }));
 vi.mock('@/components/admin/AdminDrawer', () => ({
-    AdminDrawer: ({ title, children, footer, onClose }: { title: ReactNode; children: ReactNode; footer: ReactNode; onClose: () => void }) => (
-        <div>
+    AdminDrawer: ({
+        title,
+        children,
+        footer,
+        onClose,
+        closeDisabled,
+    }: {
+        title: ReactNode;
+        children: ReactNode;
+        footer: ReactNode;
+        onClose: () => void;
+        closeDisabled?: boolean;
+    }) => (
+        <div data-testid="admin-drawer" data-close-disabled={String(Boolean(closeDisabled))}>
             <h2>{title}</h2>
             <button type="button" onClick={onClose}>
                 drawer-close
@@ -99,7 +115,7 @@ describe('ThemeFontDrawer', () => {
         state({ draft: { key: 'gfs-didot', familyName: 'GFS Didot', fallback: 'sans-serif', archived: false } });
         renderDrawer();
         expect(screen.getByTestId('font-sample')).toHaveStyle({ fontFamily: '"theme-preview-1", sans-serif' });
-        expect(screen.getByText('usedBy')).toBeInTheDocument();
+        expect(screen.getByText('usedBy:2')).toBeInTheDocument();
     });
 
     it('shows a taken key on the key field', () => {
@@ -172,9 +188,8 @@ describe('ThemeFontDrawer', () => {
 describe('ThemeFontDrawer review fixes', () => {
     it('cannot be cancelled or closed while saving', () => {
         state({ isSaving: true });
-        const onCloseAction = renderDrawer();
-        fireEvent.click(screen.getByRole('button', { name: 'drawer-close' }));
-        expect(onCloseAction).not.toHaveBeenCalled();
+        renderDrawer();
+        expect(screen.getByTestId('admin-drawer').dataset.closeDisabled).toBe('true');
         expect(screen.getByRole('button', { name: 'cancel' })).toBeDisabled();
         expect(screen.getByRole('button', { name: 'save' })).toBeDisabled();
     });
@@ -182,7 +197,7 @@ describe('ThemeFontDrawer review fixes', () => {
     it('names the pending file', () => {
         state({ hasPendingFile: true, pendingFileName: 'didot.woff2' });
         renderDrawer();
-        expect(screen.getByText('filePending')).toBeInTheDocument();
+        expect(screen.getByText('filePending:didot.woff2')).toBeInTheDocument();
     });
 
     it('shows the localized detail of an upload 3001 that is about no field', () => {
@@ -204,10 +219,21 @@ describe('ThemeFontDrawer review fixes', () => {
         expect(screen.getByRole('alert')).toHaveTextContent('fileSize');
     });
 
-    it('keeps Save disabled while a 429 wait runs', () => {
-        state({ failure: { kind: 'other', error: new ApiError(429, { errorCode: 3010, retryAfterSeconds: 600 }) } });
-        renderDrawer();
-        expect(screen.getByRole('button', { name: 'save' })).toBeDisabled();
+    it('keeps Save disabled while a 429 wait runs, then re-enables it', () => {
+        vi.useFakeTimers();
+        try {
+            state({ failure: { kind: 'other', error: new ApiError(429, { errorCode: 3010, retryAfterSeconds: 3 }) } });
+            renderDrawer();
+            expect(screen.getByRole('button', { name: 'save' })).toBeDisabled();
+
+            act(() => vi.advanceTimersByTime(2000));
+            expect(screen.getByRole('button', { name: 'save' })).toBeDisabled();
+
+            act(() => vi.advanceTimersByTime(1500));
+            expect(screen.getByRole('button', { name: 'save' })).toBeEnabled();
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     it('says the saved file did not load, not that it is invalid', () => {

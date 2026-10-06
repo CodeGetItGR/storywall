@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, renderHook, waitFor } from '@testing-library/react';
+import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import React, { type ChangeEvent } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -316,10 +316,14 @@ describe('useThemeFontDrawer review fixes', () => {
         expect(invalidate).toHaveBeenCalledWith({ queryKey: ['admin', 'theme-fonts'] });
     });
 
-    it('does not load a saved url that is not a theme font path', () => {
+    it('does not load a saved url that is not the theme font path of this font', () => {
         const { result } = renderDrawer({ ...FONT, url: 'https://evil.example/x.woff2' });
         expect(faces).toHaveLength(0);
         expect(result.current.previewFamily).toBeNull();
+        cleanup();
+
+        renderDrawer({ ...FONT, url: '/api/theme-fonts/another-font/1.woff2' });
+        expect(faces).toHaveLength(0);
     });
 
     it('tells a saved file that failed to load apart from a bad pick, and refetches the fonts', async () => {

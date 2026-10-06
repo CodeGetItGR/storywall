@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
 import type { EventDetailResponseDto } from '@/lib/api/types';
-import { canPickTheme, eventThemeStyle, isHexColor, isThemedEventPage, themeFontFaceCss, themeFontScopeProps } from '@/lib/eventTheme';
+import {
+    canPickTheme,
+    eventThemeStyle,
+    isHexColor,
+    isThemedEventPage,
+    isThemeFontUrl,
+    themeFontFaceCss,
+    themeFontScopeProps,
+} from '@/lib/eventTheme';
 
 describe('isHexColor', () => {
     it('accepts #RRGGBB in either case', () => {
@@ -168,5 +176,14 @@ describe('canPickTheme', () => {
         expect(canPickTheme(event({ suspended: true }), NOW)).toBe(false);
         expect(canPickTheme(event({ schedule: { endAt: '2026-10-01T00:00:00Z' } }), NOW)).toBe(false);
         expect(canPickTheme(event({ schedule: { endAt: '2026-12-01T00:00:00Z' } }), NOW)).toBe(true);
+    });
+});
+
+describe('isThemeFontUrl', () => {
+    it('accepts only the font route path of that same font', () => {
+        expect(isThemeFontUrl('/api/theme-fonts/gfs-didot/1.woff2', 'gfs-didot')).toBe(true);
+        expect(isThemeFontUrl('/api/theme-fonts/other/1.woff2', 'gfs-didot')).toBe(false);
+        expect(isThemeFontUrl('/api/theme-fonts/gfs-didot/01.woff2', 'gfs-didot')).toBe(false);
+        expect(isThemeFontUrl('https://evil.example/api/theme-fonts/gfs-didot/1.woff2', 'gfs-didot')).toBe(false);
     });
 });

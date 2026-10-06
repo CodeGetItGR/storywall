@@ -25,9 +25,6 @@ const FALLBACKS = [
     { value: 'sans-serif', labelKey: 'fallbackSansSerif' },
 ] as const;
 
-// While a save runs, closing would leave it running behind a drawer the admin thinks is gone.
-function ignoreClose() {}
-
 export function ThemeFontDrawer({ font, onCloseAction }: { font: AdminThemeFontDto | null; onCloseAction: () => void }) {
     const t = useTranslations('AdminPage.themeFonts.drawer');
     const apiErrorMessage = useApiErrorMessage();
@@ -53,7 +50,6 @@ export function ThemeFontDrawer({ font, onCloseAction }: { font: AdminThemeFontD
     const failedWith = form.failure?.kind === 'other' ? form.failure.error : null;
     const serverError = form.failure?.kind === 'other' ? describeServerError(form.failure.error) : null;
     const retryIn = useRetryAfterCountdown(failedWith);
-    const close = form.isSaving ? ignoreClose : onCloseAction;
 
     function describeServerError(error: unknown): string {
         // A non-ApiError is fetch failing before any response: offline, DNS, the server down.
@@ -92,7 +88,18 @@ export function ThemeFontDrawer({ font, onCloseAction }: { font: AdminThemeFontD
     );
 
     return (
-        <AdminDrawer open size="wide" onClose={close} title={font ? font.familyName : t('createTitle')} closeLabel={t('close')} footer={footer}>
+        // closeDisabled blocks ×, Esc and the overlay while saving, so a save never runs on behind a
+        // drawer the admin thinks is gone. Back still closes (and unmounts) it mid-save; the hook's mounted
+        // guard then skips the upload and onDoneAction.
+        <AdminDrawer
+            open
+            size="wide"
+            onClose={onCloseAction}
+            closeDisabled={form.isSaving}
+            title={font ? font.familyName : t('createTitle')}
+            closeLabel={t('close')}
+            footer={footer}
+        >
             <div className="grid gap-6 sm:grid-cols-[minmax(0,1fr)_minmax(0,17rem)]">
                 <form id={FORM_ID} onSubmit={form.handleSubmit} className="space-y-4" noValidate>
                     {/* Error */}

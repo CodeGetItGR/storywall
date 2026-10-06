@@ -119,7 +119,7 @@ export function useThemeFontDrawer({ font, onDoneAction }: { font: AdminThemeFon
     }, []);
 
     // Only a path the font route serves is loaded; anything else gets no preview.
-    const savedUrl = saved?.url && isThemeFontUrl(saved.url) ? saved.url : null;
+    const savedUrl = saved?.url && isThemeFontUrl(saved.url, saved.key) ? saved.url : null;
     const preview = useFontPreview(file ?? savedUrl);
 
     // A saved file that doesn't load is likely stale (a newer upload bumped the version): refetch.
