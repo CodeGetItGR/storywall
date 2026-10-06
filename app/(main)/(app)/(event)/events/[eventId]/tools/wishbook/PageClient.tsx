@@ -1,6 +1,6 @@
 'use client';
 
-import { BookHeart, Download, Loader2, Send, Trash2 } from 'lucide-react';
+import { BookHeart, Loader2, Send, Star, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import React, { useEffect, useState } from 'react';
@@ -11,13 +11,15 @@ import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ModuleUnavailableState } from '@/components/tools/ModuleUnavailableState';
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
+import { WishbookBookPanel } from '@/components/wishbook/WishbookBookPanel';
 import { WishbookEntriesSkeleton } from '@/components/wishbook/WishbookSkeletons';
 import { useAppConfig } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useContentAccess } from '@/hooks/useContentAccess';
 import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { usePlanUpgradeHref } from '@/hooks/usePlanUpgradeHref';
-import { useCreateWishbookEntry, useDeleteWishbookEntry, useWishbook, useWishbookExportDownload } from '@/hooks/useWishbook';
+import { useCreateWishbookEntry, useDeleteWishbookEntry, useWishbook } from '@/hooks/useWishbook';
+import { useSetWishHighlighted } from '@/hooks/useWishbookBook';
 import type { WishbookEntryResponseDto } from '@/lib/api/types';
 import { canReportContent } from '@/lib/contentPermissions';
 import { formatDate } from '@/lib/datetime';
@@ -42,7 +44,7 @@ export default function WishbookPage() {
     const upgradeHref = usePlanUpgradeHref(eventId);
     const createEntry = useCreateWishbookEntry(eventId);
     const deleteEntry = useDeleteWishbookEntry(eventId);
-    const exportPdf = useWishbookExportDownload(eventId, t('exportFailed'));
+    const setHighlighted = useSetWishHighlighted(eventId);
     const toErrorMessage = useApiErrorMessage();
     const [message, setMessage] = useState('');
     const [deleteTarget, setDeleteTarget] = useState<WishbookEntryResponseDto | null>(null);
@@ -110,8 +112,9 @@ export default function WishbookPage() {
     function loadMore() {
         void wishbook.fetchNextPage();
     }
-    function handleExportPdf() {
-        void exportPdf.download();
+    function toggleStar(event_: React.MouseEvent<HTMLButtonElement>) {
+        const entry = entries.find((item) => item.id === event_.currentTarget.dataset.entryId);
+        if (entry) setHighlighted.mutate({ entryId: entry.id, highlighted: !entry.highlighted });
     }
 
     if (event && !wishbookReadable) {
@@ -184,29 +187,16 @@ export default function WishbookPage() {
                 </form>
             ) : null}
 
+            {/* Keepsake book */}
+            {isHost && total > 0 && <WishbookBookPanel eventId={eventId} canEditTexts={!isDeleted} />}
+
             {/* Entries */}
             <section className="mt-8" hidden={!isHost}>
                 {!wishbook.isLoading && !wishbook.error && (
                     <div className="mb-3 flex items-center justify-between gap-3">
                         <p className="text-xs text-ink-faint">{entries.length > 0 ? t('messageCount', { count: total }) : null}</p>
-                        {entries.length > 0 && (
-                            <button
-                                type="button"
-                                onClick={handleExportPdf}
-                                disabled={exportPdf.isDownloading}
-                                className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-ink-muted transition-colors hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-60"
-                            >
-                                {exportPdf.isDownloading ? (
-                                    <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-                                ) : (
-                                    <Download className="h-3.5 w-3.5" aria-hidden="true" />
-                                )}
-                                {t('exportPdf')}
-                            </button>
-                        )}
                     </div>
                 )}
-                {exportPdf.error && <p className="mb-3 text-xs text-rose-600">{exportPdf.error}</p>}
                 {wishbook.isLoading && <WishbookEntriesSkeleton />}
                 {wishbook.error && <p className="py-10 text-center text-sm text-rose-600">{toErrorMessage(wishbook.error)}</p>}
                 {showEmptyState && (
@@ -230,6 +220,19 @@ export default function WishbookPage() {
                                     </time>
                                 </div>
                                 <div className="flex shrink-0 items-center gap-1">
+                                    {/* Only hosts get a boolean here (everyone else, and demo wishes, get null or nothing). */}
+                                    {typeof entry.highlighted === 'boolean' && !isDeleted && (
+                                        <button
+                                            type="button"
+                                            data-entry-id={entry.id}
+                                            onClick={toggleStar}
+                                            aria-label={entry.highlighted ? t('unstar') : t('star')}
+                                            aria-pressed={entry.highlighted}
+                                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-faint hover:bg-amber-50 hover:text-amber-600"
+                                        >
+                                            <Star className={entry.highlighted ? 'h-4 w-4 fill-amber-400 text-amber-500' : 'h-4 w-4'} aria-hidden="true" />
+                                        </button>
+                                    )}
                                     {canReportEntry(entry) && (
                                         <button
                                             type="button"
