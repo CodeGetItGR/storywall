@@ -56,6 +56,18 @@ describe('ThemePresetPreview', () => {
         expect(container.querySelector('style')).toBeNull();
     });
 
+    it('leaves the font scope off while the background is not a colour, since the font variable is not set then', () => {
+        render(<ThemePresetPreview backgroundColor={null} illustrationUrl={null} title="Dino" titleColor={null} headingFont={FONT} />);
+        expect(screen.getByTestId('theme-preview-surface')).not.toHaveAttribute('data-theme-font');
+    });
+
+    it('keeps the caption the figure first child', () => {
+        const { container } = render(
+            <ThemePresetPreview backgroundColor="#FFFFFF" illustrationUrl={null} title="Dino" titleColor={null} headingFont={FONT} />,
+        );
+        expect(container.querySelector('figure')?.firstElementChild?.tagName).toBe('FIGCAPTION');
+    });
+
     it('paints the sample posts like the real post cards', () => {
         render(<ThemePresetPreview backgroundColor="#FFFFFF" illustrationUrl={null} title="Dino" titleColor={null} headingFont={null} />);
         const posts = screen.getAllByTestId('theme-preview-post');

@@ -25,24 +25,26 @@ export function ThemePresetPreview({
     headingFont: EventThemeFontDto | null;
 }) {
     const t = useTranslations('AdminPage.themePresets.preview');
+    const style = eventThemeStyle(backgroundColor, { titleColor, headingFont });
 
     return (
         <figure>
-            <ThemeFontFace font={headingFont} />
             {/* Caption */}
             <figcaption className="mb-2 text-[11px] font-bold tracking-wide text-ink-muted uppercase">{t('label')}</figcaption>
             {/* Event home */}
             <div
                 data-testid="theme-preview-surface"
                 className="mx-auto w-full max-w-90 overflow-hidden rounded-2xl border border-border bg-event pt-3 pb-4"
-                style={eventThemeStyle(backgroundColor, { titleColor, headingFont })}
-                {...themeFontScopeProps(headingFont)}
+                style={style}
+                // No style (the background isn't a colour yet) means no --event-heading-font, so no scope either.
+                {...(style ? themeFontScopeProps(headingFont) : {})}
             >
                 {illustrationUrl ? (
                     <Banner image={null} illustrationUrl={illustrationUrl} title={title} glowVisible={false} />
                 ) : (
                     <div className="relative w-full px-2">
                         <div className="aspect-16/11 w-full rounded-[1.5rem] border border-dashed border-event-card-line" aria-hidden="true" />
+                        {/* Same classes as Banner.tsx's illustration-mode title; keep them in step. */}
                         <h1 className="event-heading px-5 pt-3 text-center alegreya-light text-2xl text-event-title">{title}</h1>
                     </div>
                 )}
@@ -52,6 +54,7 @@ export function ThemePresetPreview({
                     <div data-testid="theme-preview-post" className="h-14 rounded-2xl border-b border-event-card-line bg-event-card" />
                 </div>
             </div>
+            <ThemeFontFace font={headingFont} />
         </figure>
     );
 }

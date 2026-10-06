@@ -11,8 +11,8 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { useThemePresetDrawer } from '@/hooks/useThemePresetDrawer';
 import {
-    backgroundContrastDetail,
     formatContrastRatio,
+    isServiceValidationError,
     MIN_INK_CONTRAST,
     MIN_TITLE_CONTRAST,
     THEME_ILLUSTRATION_ACCEPT,
@@ -38,6 +38,7 @@ export function ThemePresetDrawer({
 }) {
     const t = useTranslations('AdminPage.themePresets.drawer');
     const tPreview = useTranslations('AdminPage.themePresets.preview');
+    const tApi = useTranslations('ApiErrors');
     const localizedText = useLocalizedText();
     const locale = useLocale();
     const apiErrorMessage = useApiErrorMessage();
@@ -63,14 +64,15 @@ export function ThemePresetDrawer({
               : t('titleContrastOk', { ratio: formatContrastRatio(form.titleContrastRatio, locale) });
     const fontHint = form.fontsStatus === 'loading' ? t('headingFontLoading') : form.fontsStatus === 'error' ? t('headingFontLoadFailed') : undefined;
     const fontLabel = (option: ThemeFontOption) => t(FONT_OPTION_LABEL_KEYS[option.status], { familyName: option.familyName, key: option.key });
-    // A non-ApiError is fetch failing before any response: offline, DNS, the server down. The background
-    // check's 3001 has a localized detail worth showing; the hook would replace it with generic copy.
-    const serverError =
-        form.failure?.kind !== 'other'
-            ? null
-            : form.failure.error instanceof ApiError
-              ? (backgroundContrastDetail(form.failure.error) ?? apiErrorMessage(form.failure.error))
-              : t('network');
+    // A non-ApiError is fetch failing before any response: offline, DNS, the server down. A service-rule
+    // 3001 (background contrast, a type that can't be themed) highlights no field, so the hook's "check
+    // the highlighted fields" would point at nothing: its localized detail says what's wrong instead.
+    const describeServerError = (error: unknown) => {
+        if (!(error instanceof ApiError)) return t('network');
+        if (isServiceValidationError(error)) return error.problem?.detail?.trim() || tApi('generic');
+        return apiErrorMessage(error);
+    };
+    const serverError = form.failure?.kind === 'other' ? describeServerError(form.failure.error) : null;
     const fileHint = form.fileError === 'type' ? t('illustrationType') : form.fileError === 'size' ? t('illustrationSize') : undefined;
 
     const footer = (
@@ -196,6 +198,7 @@ export function ThemePresetDrawer({
                                     onChange={form.handleFieldChange}
                                     maxLength={7}
                                     placeholder={t('titleColorPlaceholder')}
+                                    aria-label={t('titleColor')}
                                     aria-invalid={Boolean(form.errors.titleColor || form.errors.titleContrast)}
                                     className={adminInputClass('font-mono uppercase placeholder:normal-case')}
                                 />

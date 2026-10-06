@@ -71,9 +71,10 @@ export function inkContrastRatio(hex: string): number {
 }
 
 // Floored to 2 decimals like the backend's reported ratio, so a colour just under the minimum never
-// reads as passing. The epsilon absorbs float noise (0.29 * 100 is 28.999...).
+// reads as passing. Exactly the server's Math.floor(ratio * 100) / 100, with no epsilon: a ratio of
+// 2.999999999996 must read 2.99 here too, or the hint and the server would disagree.
 export function floorContrastRatio(ratio: number): number {
-    return Math.floor(ratio * 100 + 1e-9) / 100;
+    return Math.floor(ratio * 100) / 100;
 }
 
 // "2.61" in English, "2,61" in Greek.
@@ -229,12 +230,10 @@ export function themeFontOptions(fonts: AdminThemeFontDto[] | undefined, assigne
         .sort((left, right) => left.familyName.localeCompare(right.familyName) || left.key.localeCompare(right.key));
 }
 
-// The background-contrast 3001 carries a localized detail and details.ratio; a bean-validation 3001
-// carries a fixed English detail and no details, so only the former is worth showing as-is.
-export function backgroundContrastDetail(error: unknown): string | null {
-    if (!(error instanceof ApiError) || getErrorCode(error) !== ERROR_CODES.VALIDATION_FAILED) return null;
-    const details = error.problem?.details;
-    if (typeof details !== 'object' || details === null || typeof (details as { ratio?: unknown }).ratio !== 'number') return null;
-    const detail = error.problem?.detail?.trim();
-    return detail ? detail : null;
+// A 3001 from a service rule (background contrast, an event type that can't be themed), not bean
+// validation: it has no field errors, so "check the highlighted fields" would point at nothing. Its
+// detail is localized; a bean-validation 3001 has field errors and a fixed English detail.
+export function isServiceValidationError(error: unknown): boolean {
+    if (!(error instanceof ApiError) || getErrorCode(error) !== ERROR_CODES.VALIDATION_FAILED) return false;
+    return Object.keys(error.problem?.errors ?? {}).length === 0;
 }

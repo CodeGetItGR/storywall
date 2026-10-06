@@ -162,9 +162,10 @@ describe('ThemePresetDrawer', () => {
     });
 
     it('shows the contrast against the text, and blocks a colour that is too dark', () => {
-        state({ contrastRatio: 8.2 });
+        // 8.25 is exact in binary; 8.2 * 100 is 819.999…, which floors to 8.19 here and on the server alike.
+        state({ contrastRatio: 8.25 });
         renderDrawer();
-        expect(screen.getByText('contrastOk {"ratio":"8.20"}')).toBeInTheDocument();
+        expect(screen.getByText('contrastOk {"ratio":"8.25"}')).toBeInTheDocument();
         cleanup();
 
         state({ contrastRatio: 3.6, errors: { backgroundContrast: true } });
@@ -236,6 +237,37 @@ describe('ThemePresetDrawer server errors', () => {
         const error = new ApiError(429, { errorCode: 3010, detail: 'Too many requests', retryAfterSeconds: 30 });
         expect(showFailure(error)).toHaveTextContent('rateLimitedWithWait {"seconds":30}');
     });
+
+    it('shows the localized detail of a service-rule 3001 that highlights no field', () => {
+        const error = new ApiError(400, { errorCode: 3001, detail: 'Αυτός ο τύπος εκδήλωσης δεν υποστηρίζει θέματα.' });
+        const alert = showFailure(error);
+        expect(alert).toHaveTextContent('Αυτός ο τύπος εκδήλωσης δεν υποστηρίζει θέματα.');
+        expect(alert).not.toHaveTextContent('validationFailed');
+    });
+
+    it('falls back to generic copy for a service-rule 3001 without a detail', () => {
+        const alert = showFailure(new ApiError(400, { errorCode: 3001, detail: ' ' }));
+        expect(alert).toHaveTextContent(/^generic$/);
+    });
+
+    it('says the theme is gone on a 404', () => {
+        state({ failure: { kind: 'notFound' } });
+        renderDrawer();
+        expect(screen.getByRole('alert')).toHaveTextContent('notFound');
+        expect(screen.getByRole('button', { name: 'save' })).toBeDisabled();
+    });
+
+    it('shows a 404 that reaches the server-error path as localized copy, not the backend detail', () => {
+        const alert = showFailure(new ApiError(404, { errorCode: 2001, detail: 'Theme preset not found' }));
+        expect(alert).not.toHaveTextContent('Theme preset not found');
+        expect(alert).toHaveTextContent('resourceNotFound');
+    });
+
+    it('shows generic copy and the reference on a 500', () => {
+        const alert = showFailure(new ApiError(500, { errorCode: 9001, detail: 'boom', errorRef: '0123456789ab' }));
+        expect(alert).not.toHaveTextContent('boom');
+        expect(alert).toHaveTextContent('errorRef {"ref":"0123456789ab"}');
+    });
 });
 
 describe('ThemePresetDrawer title colour', () => {
@@ -251,7 +283,7 @@ describe('ThemePresetDrawer title colour', () => {
         state({ draft: draftWith({ titleColor: '#7A1F3D' }), titleContrastRatio: 9.1, previewTitleColor: '#7A1F3D', handleUseInk });
         renderDrawer();
         expect(screen.getByText('titleContrastOk {"ratio":"9.10"}')).toBeInTheDocument();
-        expect(screen.getByDisplayValue('#7A1F3D')).toBeInTheDocument();
+        expect(screen.getByDisplayValue('#7A1F3D')).toHaveAccessibleName('titleColor');
         expect(screen.getByTestId('preview').dataset.titleColor).toBe('#7A1F3D');
         fireEvent.click(screen.getByRole('button', { name: 'titleColorUseInk' }));
         expect(handleUseInk).toHaveBeenCalledOnce();

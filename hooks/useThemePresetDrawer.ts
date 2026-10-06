@@ -177,7 +177,8 @@ export function useThemePresetDrawer({
         fontOptions,
         // Fonts a preset can newly take: live, with a file.
         hasUsableFonts: fonts.data?.some((font) => !font.archived && font.url) ?? false,
-        fontsStatus: (fonts.isPending ? 'loading' : fonts.isError ? 'error' : 'ready') as ThemeFontsStatus,
+        // A failed refetch over cached data still has a list to offer.
+        fontsStatus: (fonts.isPending ? 'loading' : fonts.isError && !fonts.data ? 'error' : 'ready') as ThemeFontsStatus,
         previewIllustrationUrl: filePreviewUrl ?? saved?.illustrationUrl ?? null,
         previewTitle: (locale === 'el' ? draft.nameEl : draft.nameEn).trim(),
         isSaving: create.isPending || patch.isPending || upload.isPending,

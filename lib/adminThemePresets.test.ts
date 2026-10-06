@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-    backgroundContrastDetail,
     buildThemePresetCreatePayload,
     buildThemePresetPatchPayload,
     contrastRatio,
@@ -11,6 +10,7 @@ import {
     formatContrastRatio,
     illustrationFileError,
     inkContrastRatio,
+    isServiceValidationError,
     MIN_INK_CONTRAST,
     MIN_TITLE_CONTRAST,
     normalizePresetKeyInput,
@@ -271,7 +271,11 @@ describe('contrastRatio', () => {
     it('floors to 2 decimals, so a ratio just under the minimum never reads as passing', () => {
         expect(floorContrastRatio(2.999)).toBe(2.99);
         expect(floorContrastRatio(4.5)).toBe(4.5);
-        expect(floorContrastRatio(0.29)).toBe(0.29);
+    });
+
+    it('floors a ratio a hair under 3 to 2.99, as the server does (e.g. #5A256F on #1E93A7)', () => {
+        expect(formatContrastRatio(2.999999999996, 'en')).toBe('2.99');
+        expect(formatContrastRatio(2.999999999996, 'el')).toBe('2,99');
     });
 
     it('formats the floored ratio with the locale decimal separator and two decimals', () => {
@@ -314,18 +318,20 @@ describe('themeFontOptions', () => {
     });
 });
 
-describe('backgroundContrastDetail', () => {
-    it('returns the localized detail of the background contrast 3001', () => {
-        const error = new ApiError(400, { errorCode: 3001, detail: 'Πολύ σκούρο: 3,60:1', details: { ratio: 3.6, minimum: 4.5 } });
-        expect(backgroundContrastDetail(error)).toBe('Πολύ σκούρο: 3,60:1');
+describe('isServiceValidationError', () => {
+    it('is a 3001 with no field errors: the background contrast check, a type that cannot be themed', () => {
+        expect(
+            isServiceValidationError(new ApiError(400, { errorCode: 3001, detail: 'Πολύ σκούρο: 3,60:1', details: { ratio: 3.6, minimum: 4.5 } })),
+        ).toBe(true);
+        expect(isServiceValidationError(new ApiError(400, { errorCode: 3001, detail: 'Δεν υποστηρίζει θέματα.' }))).toBe(true);
+        expect(isServiceValidationError(new ApiError(400, { errorCode: 3001, detail: '', errors: {} }))).toBe(true);
     });
 
-    it('ignores a bean-validation 3001, other codes and blank details', () => {
-        expect(
-            backgroundContrastDetail(new ApiError(400, { errorCode: 3001, detail: 'One or more fields are invalid', errors: { key: 'x' } })),
-        ).toBeNull();
-        expect(backgroundContrastDetail(new ApiError(400, { errorCode: 3055, detail: 'x', details: { ratio: 2, minimum: 3 } }))).toBeNull();
-        expect(backgroundContrastDetail(new ApiError(400, { errorCode: 3001, detail: ' ', details: { ratio: 3.6 } }))).toBeNull();
-        expect(backgroundContrastDetail(new Error('Failed to fetch'))).toBeNull();
+    it('is not a bean-validation 3001 (field errors), another code, or a network failure', () => {
+        expect(isServiceValidationError(new ApiError(400, { errorCode: 3001, detail: 'One or more fields are invalid', errors: { key: 'x' } }))).toBe(
+            false,
+        );
+        expect(isServiceValidationError(new ApiError(400, { errorCode: 3055, detail: 'x', details: { ratio: 2, minimum: 3 } }))).toBe(false);
+        expect(isServiceValidationError(new Error('Failed to fetch'))).toBe(false);
     });
 });

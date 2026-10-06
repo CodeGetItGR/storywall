@@ -330,6 +330,11 @@ describe('useThemePresetDrawer title colour and heading font', () => {
         rerender();
         expect(result.current.fontsStatus).toBe('ready');
         expect(result.current.hasUsableFonts).toBe(false);
+
+        // A failed refetch over a list already loaded keeps showing that list.
+        mocks.fonts = { data: [ALEGREYA], isPending: false, isError: true };
+        rerender();
+        expect(result.current.fontsStatus).toBe('ready');
     });
 
     it('reads a 5145 on create as a server failure, not a taken key', async () => {
