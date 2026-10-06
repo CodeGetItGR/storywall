@@ -3363,8 +3363,22 @@
             "deleteBody": "Its event types stay, but are no longer on the landing page.",
             "unassigned": "Not on the landing page",
             "warnNoEnabledType": "No enabled event type: this tab is hidden.",
-            "warnNoVisiblePlan": "No public plan to show: this tab is hidden.",
-            "warnDrifted": "Shared plan copies differ ({plans}); they show as separate cards."
+            "warnNoVisiblePlan": "No public plan on sale to show: this tab is hidden.",
+            "warnDrifted": "Shared plan copies differ in {fields} ({plans}); they show as separate cards.",
+            "driftFields": {
+                "price": "price",
+                "currency": "currency",
+                "durations": "durations",
+                "extensions": "extensions",
+                "discount": "discount",
+                "discountLabel": "discount label",
+                "modules": "modules",
+                "moduleConfigs": "module settings",
+                "storage": "storage",
+                "guests": "guest limit",
+                "name": "name",
+                "memberRoles": "member roles"
+            }
         },
         "funnel": {
             "title": "Growth",

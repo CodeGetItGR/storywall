@@ -46,7 +46,7 @@ function plan(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto {
 
 describe('landingCategoryWarnings', () => {
     it('flags a category with no enabled type', () => {
-        expect(landingCategoryWarnings(category(['REUNION']), [], enabled(['SOCIAL_EVENT']))).toEqual({
+        expect(landingCategoryWarnings(category(['REUNION']), [], enabled(['SOCIAL_EVENT']), {})).toEqual({
             noEnabledType: true,
             noVisiblePlan: true,
             driftedGroups: [],
@@ -55,7 +55,7 @@ describe('landingCategoryWarnings', () => {
 
     it('flags a category whose enabled types have no public plan', () => {
         const hidden = plan({ isPublic: false });
-        expect(landingCategoryWarnings(category(['SOCIAL_EVENT']), [hidden], enabled(['SOCIAL_EVENT']))).toEqual({
+        expect(landingCategoryWarnings(category(['SOCIAL_EVENT']), [hidden], enabled(['SOCIAL_EVENT']), {})).toEqual({
             noEnabledType: false,
             noVisiblePlan: true,
             driftedGroups: [],
@@ -64,11 +64,11 @@ describe('landingCategoryWarnings', () => {
 
     it('ignores plans of a type that is in the category but disabled', () => {
         const plans = [plan({ code: 'r', eventTypeKey: 'REUNION' })];
-        expect(landingCategoryWarnings(category(['SOCIAL_EVENT', 'REUNION']), plans, enabled(['SOCIAL_EVENT'])).noVisiblePlan).toBe(true);
+        expect(landingCategoryWarnings(category(['SOCIAL_EVENT', 'REUNION']), plans, enabled(['SOCIAL_EVENT']), {}).noVisiblePlan).toBe(true);
     });
 
     it('has nothing to say about a category with a public plan', () => {
-        expect(landingCategoryWarnings(category(['SOCIAL_EVENT']), [plan({})], enabled(['SOCIAL_EVENT']))).toEqual({
+        expect(landingCategoryWarnings(category(['SOCIAL_EVENT']), [plan({})], enabled(['SOCIAL_EVENT']), {})).toEqual({
             noEnabledType: false,
             noVisiblePlan: false,
             driftedGroups: [],
@@ -80,8 +80,22 @@ describe('landingCategoryWarnings', () => {
             plan({ code: 'a', sharedGroupKey: 'g' }),
             plan({ code: 'b', eventTypeKey: 'REUNION', sharedGroupKey: 'g', priceCurrency: 'USD' }),
         ];
-        expect(landingCategoryWarnings(category(['SOCIAL_EVENT', 'REUNION']), plans, enabled(['SOCIAL_EVENT', 'REUNION'])).driftedGroups).toEqual([
-            { sharedGroupKey: 'g', planCodes: ['a', 'b'] },
-        ]);
+        expect(landingCategoryWarnings(category(['SOCIAL_EVENT', 'REUNION']), plans, enabled(['SOCIAL_EVENT', 'REUNION']), {}).driftedGroups).toEqual(
+            [{ sharedGroupKey: 'g', planCodes: ['a', 'b'], differingFields: ['currency'] }],
+        );
+    });
+
+    it('flags a category whose only plan has no duration on sale, as the landing hides its tab', () => {
+        const offSale = plan({ initialOptions: [{ id: 'o', kind: 'INITIAL', months: 3, priceAmountMinor: 100, sortOrder: 0, active: false }] });
+        expect(landingCategoryWarnings(category(['SOCIAL_EVENT']), [offSale], enabled(['SOCIAL_EVENT']), {}).noVisiblePlan).toBe(true);
+    });
+
+    it('does not report drift against a copy that is off sale', () => {
+        const plans = [
+            plan({ code: 'a', sharedGroupKey: 'g' }),
+            plan({ code: 'b', eventTypeKey: 'REUNION', sharedGroupKey: 'g', priceCurrency: null }),
+        ];
+        const warnings = landingCategoryWarnings(category(['SOCIAL_EVENT', 'REUNION']), plans, enabled(['SOCIAL_EVENT', 'REUNION']), {});
+        expect(warnings).toEqual({ noEnabledType: false, noVisiblePlan: false, driftedGroups: [] });
     });
 });

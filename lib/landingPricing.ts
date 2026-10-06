@@ -72,6 +72,13 @@ function landingDurations(plan: PlanTierResponseDto): LandingPlanDuration[] {
     });
 }
 
+// Whether a plan gets a card at all: true exactly when buildLandingPlan doesn't return null (some
+// active initial option, priced in a currency). resolveLandingCategoryPlans filters through it, so
+// the landing and the admin panel's warnings agree on what a tab shows.
+export function isLandingPlanOnSale(plan: PlanTierResponseDto): boolean {
+    return landingDurations(plan).length > 0 && shortestInitialOption(plan) !== null;
+}
+
 function sortedModuleKeys(moduleKeys: string[], modules: PlatformModuleResponseDto[]): string[] {
     const sortOrderByKey = new Map(modules.map((module_) => [module_.moduleKey, module_.sortOrder]));
     return enabledModuleKeys(moduleKeys, modules)
@@ -117,8 +124,8 @@ function moduleFeatureLabel(
 }
 
 // Builds one landing pricing card from a plan tier plus the tier directly
-// below it in the same tab (already in tab order — see
-// resolveLandingCategoryPlans in lib/landingCategories.ts). Each tier after the first rolls up the
+// below it (on the landing: the previous card of the same event type — see
+// useLandingPricingPlans). Each tier after the first rolls up the
 // previous card and lists only its additional modules and raised limits, so
 // catalog rows do not need to repeat every inherited module. Returns null for a plan with no
 // duration on sale — it can't be bought, so it doesn't belong on a pricing
@@ -135,6 +142,7 @@ export function buildLandingPlan(
 ): LandingPlan | null {
     const durations = landingDurations(plan);
     const defaultDuration = shortestInitialOption(plan);
+    // Keep in step with isLandingPlanOnSale.
     if (durations.length === 0 || !defaultDuration) return null;
 
     const estimate = mediaEstimate(plan.storageBytes, media);

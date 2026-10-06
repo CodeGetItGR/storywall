@@ -28,7 +28,7 @@ const MESSAGES = {
             storageUnlimited: 'Unlimited storage',
         },
     },
-    Modules: { gallery: { name: 'Gallery' } },
+    Modules: { gallery: { name: 'Gallery' }, rsvp: { name: 'RSVP' } },
 };
 
 function planTier(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto {
@@ -150,7 +150,8 @@ describe('useLandingPricingPlans', () => {
         expect(result.current.tabs?.[0].plans[0].durations).toEqual([{ id: 'opt-3', months: 3, price: '79€' }]);
         expect(result.current.tabs?.[1]).toMatchObject({ label: 'VIP', description: 'Parties' });
         expect(result.current.tabs?.[1].plans.map((plan) => plan.code)).toEqual(['VIP', 'REUNION']);
-        expect(result.current.tabs?.[1].plans[1].features[0]).toBe('Everything in VIP');
+        // REUNION is the first card of its type: it rolls up nothing from SOCIAL_EVENT's VIP.
+        expect(result.current.tabs?.[1].plans[1].features).toEqual(['Gallery']);
         expect(result.current.defaultTabId).toBe('wed');
     });
 
@@ -184,6 +185,54 @@ describe('useLandingPricingPlans', () => {
         await waitFor(() => expect(result.current.tabs).not.toBeNull());
         expect(result.current.tabs?.[0].plans.map((plan) => plan.code)).toEqual(['A', 'C']);
         expect(result.current.tabs?.[0].plans[1].features[0]).toBe('Everything in A');
+    });
+
+    it('rolls a card up only into the previous card of the same event type', async () => {
+        const config = makeConfig();
+        config.modules = [
+            { id: 'm1', moduleKey: 'gallery', name: 'Gallery', description: null, isEnabled: true, sortOrder: 0 },
+            { id: 'm2', moduleKey: 'rsvp', name: 'RSVP', description: null, isEnabled: true, sortOrder: 1 },
+        ];
+        config.planTiers = [
+            planTier({ id: 's1', code: 'S_BASIC', name: 'Basic', eventTypeKey: 'SOCIAL_EVENT', sortOrder: 0 }),
+            planTier({ id: 's2', code: 'S_GOLD', name: 'Gold', eventTypeKey: 'SOCIAL_EVENT', sortOrder: 1, moduleKeys: ['gallery', 'rsvp'] }),
+            planTier({ id: 'r1', code: 'R_BASIC', name: 'Basic', eventTypeKey: 'REUNION', sortOrder: 0 }),
+        ];
+        config.landingCategories = [{ id: 'vip', name: { en: 'VIP' }, description: {}, isDefault: true, eventTypeKeys: ['SOCIAL_EVENT', 'REUNION'] }];
+        publicGet.mockResolvedValue(config);
+
+        const { result } = renderHook(() => useLandingPricingPlans(), { wrapper });
+
+        await waitFor(() => expect(result.current.tabs).not.toBeNull());
+        const [basic, gold, reunionBasic] = result.current.tabs?.[0].plans ?? [];
+        expect(basic.features).toEqual(['Gallery']);
+        expect(gold.features).toEqual(['Everything in Basic', 'RSVP']);
+        expect(reunionBasic.code).toBe('R_BASIC');
+        expect(reunionBasic.features).toEqual(['Gallery']);
+        expect(reunionBasic.includedFeatures).toBeUndefined();
+    });
+
+    it('keeps the same tabs across renders while the config is unchanged', async () => {
+        const config = makeConfig();
+        config.landingCategories = [{ id: 'wed', name: { en: 'Weddings' }, description: {}, isDefault: true, eventTypeKeys: ['WEDDING'] }];
+        publicGet.mockResolvedValue(config);
+
+        const { result, rerender } = renderHook(() => useLandingPricingPlans(), { wrapper });
+
+        await waitFor(() => expect(result.current.tabs).not.toBeNull());
+        const tabs = result.current.tabs;
+        rerender();
+        expect(result.current.tabs).toBe(tabs);
+    });
+
+    it('treats a config without landingCategories as no tabs', async () => {
+        const config = makeConfig();
+        (config as { landingCategories?: unknown }).landingCategories = undefined;
+        publicGet.mockResolvedValue(config);
+
+        const { result } = renderHook(() => useLandingPricingPlans(), { wrapper });
+
+        await waitFor(() => expect(result.current.tabs).toEqual([]));
     });
 
     it('returns no tabs when no category has plans', async () => {

@@ -39,8 +39,6 @@ export function LandingCategoriesPanel() {
 
     const assigned = new Set(categories.flatMap((category) => category.eventTypeKeys));
     const unassigned = eventTypes.filter((type) => !assigned.has(type.eventTypeKey));
-    const publicPlans = config.data?.planTiers ?? [];
-    const enabledEventTypes = config.data?.eventTypes ?? [];
 
     function eventTypeName(key: string) {
         return localizedText(eventTypes.find((type) => type.eventTypeKey === key)?.name, key);
@@ -93,7 +91,11 @@ export function LandingCategoriesPanel() {
                 {categories.length > 0 && (
                     <ul className="divide-y divide-border">
                         {categories.map((category, index) => {
-                            const warnings = landingCategoryWarnings(category, publicPlans, enabledEventTypes);
+                            // Nothing to warn about until the public config is in: an empty one would
+                            // read as "no enabled type" on every row.
+                            const warnings = config.data
+                                ? landingCategoryWarnings(category, config.data.planTiers, config.data.eventTypes, config.data.memberRolesByEventType)
+                                : null;
                             const name = localizedText(category.name);
                             return (
                                 <li key={category.id} className="flex items-start gap-3 px-4 py-3 hover:bg-canvas/60">
@@ -122,15 +124,20 @@ export function LandingCategoriesPanel() {
                                                 ))}
                                             </div>
                                         )}
-                                        {warnings.noEnabledType && (
+                                        {warnings?.noEnabledType && (
                                             <p className="text-xs text-status-warn">{t('landingCategories.warnNoEnabledType')}</p>
                                         )}
-                                        {!warnings.noEnabledType && warnings.noVisiblePlan && (
+                                        {warnings && !warnings.noEnabledType && warnings.noVisiblePlan && (
                                             <p className="text-xs text-status-warn">{t('landingCategories.warnNoVisiblePlan')}</p>
                                         )}
-                                        {warnings.driftedGroups.map((group) => (
+                                        {warnings?.driftedGroups.map((group) => (
                                             <p key={group.sharedGroupKey} className="text-xs text-status-warn">
-                                                {t('landingCategories.warnDrifted', { plans: group.planCodes.join(', ') })}
+                                                {t('landingCategories.warnDrifted', {
+                                                    plans: group.planCodes.join(', '),
+                                                    fields: group.differingFields
+                                                        .map((field) => t(`landingCategories.driftFields.${field}`))
+                                                        .join(', '),
+                                                })}
                                             </p>
                                         ))}
                                     </div>
