@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 
-import type { EventDetailResponseDto } from '@/lib/api/types';
+import type { EventDetailResponseDto, EventThemeFontDto } from '@/lib/api/types';
 import { isEventDeleted, isEventEnded } from '@/lib/eventLifecycle';
 
 // The only colour shape the backend stores for a theme (normalised upper-case there).
@@ -20,18 +20,52 @@ export function isThemedEventPage(pathname: string): boolean {
     return THEMED_EVENT_PAGE.test(pathname);
 }
 
-// The theme colour as the --event-bg custom property that `bg-event` surfaces read, and
-// the muted fill (pills, chips) turned near-white so it reads on the colour; a hint of
-// the theme keeps those pills visible inside white cards. The guest RSVP prompt's warm
-// fill (--orangish) goes plain white so it stands out as a card. Undefined keeps the default
-// look: no theme, or a value that isn't #RRGGBB.
-export function eventThemeStyle(backgroundColor: string | null | undefined): CSSProperties | undefined {
+const THEME_FONT_KEY = /^[a-z0-9][a-z0-9-]{1,62}$/;
+// The same shape the font route serves: /api/theme-fonts/<key>/<version>.woff2, version without leading zeros.
+const THEME_FONT_URL = /^\/api\/theme-fonts\/([a-z0-9][a-z0-9-]{1,62})\/(?:0|[1-9]\d{0,8})\.woff2$/;
+
+// The backend shape is trusted, but these strings land inside CSS: only well-formed ones pass,
+// and the url must be this font's own file.
+function usableFont(font: EventThemeFontDto | null | undefined): font is EventThemeFontDto {
+    if (!font || !THEME_FONT_KEY.test(font.key) || (font.fallback !== 'serif' && font.fallback !== 'sans-serif')) return false;
+    return THEME_FONT_URL.exec(font.url)?.[1] === font.key;
+}
+
+export function themeFontFamily(font: EventThemeFontDto): string {
+    return `"theme-${font.key}", ${font.fallback}`;
+}
+
+// The @font-face for a theme's heading font, or null when there is none (or it isn't well-formed).
+export function themeFontFaceCss(font: EventThemeFontDto | null | undefined): string | null {
+    if (!usableFont(font)) return null;
+    return `@font-face{font-family:"theme-${font.key}";src:url("${font.url}") format("woff2");font-display:swap;}`;
+}
+
+export type EventThemeExtras = { titleColor?: string | null; headingFont?: EventThemeFontDto | null };
+
+// The theme as CSS custom properties: --event-bg for `bg-event` surfaces, the same colour for post
+// cards (--event-card-bg) with a darker shade of it as their divider (--event-card-line), the muted
+// fill (pills, chips) turned near-white so it reads on the colour, the guest RSVP prompt's warm fill
+// (--orangish) plain white so it stands out as a card, the title colour (--event-title) and the
+// heading font (--event-heading-font, read by `.event-heading` inside a [data-theme-font] scope).
+// Undefined keeps the default look: no theme, or a value that isn't #RRGGBB.
+export function eventThemeStyle(backgroundColor: string | null | undefined, extras: EventThemeExtras = {}): CSSProperties | undefined {
     if (!backgroundColor || !isHexColor(backgroundColor)) return undefined;
-    return {
+    const style: Record<string, string> = {
         '--event-bg': backgroundColor,
+        '--event-card-bg': backgroundColor,
+        '--event-card-line': `color-mix(in oklab, ${backgroundColor} 85%, #000000)`,
         '--surface-muted': `color-mix(in oklab, ${backgroundColor} 15%, #ffffff)`,
         '--orangish': '#ffffff',
-    } as CSSProperties;
+    };
+    if (extras.titleColor && isHexColor(extras.titleColor)) style['--event-title'] = extras.titleColor;
+    if (usableFont(extras.headingFont)) style['--event-heading-font'] = themeFontFamily(extras.headingFont);
+    return style as CSSProperties;
+}
+
+// Spread on the theme scope's root so `.event-heading` switches to the theme font only when one is set.
+export function themeFontScopeProps(font: EventThemeFontDto | null | undefined): { 'data-theme-font'?: '' } {
+    return usableFont(font) ? { 'data-theme-font': '' } : {};
 }
 
 // Whether the host is offered the theme picker. Gated on the theme module's row being

@@ -28,6 +28,13 @@ const themedEvent: Partial<EventDetailResponseDto> = {
     },
 };
 
+const FONT = { key: 'dino-serif', fallback: 'serif' as const, url: '/api/theme-fonts/dino-serif/3.woff2' };
+
+const fontedEvent: Partial<EventDetailResponseDto> = {
+    id: 'e-1',
+    theme: { ...themedEvent.theme!, titleColor: '#7A1F3D', headingFont: FONT },
+};
+
 function renderScope() {
     render(
         <EventThemeScope>
@@ -73,5 +80,42 @@ describe('EventThemeScope', () => {
         state.event = themedEvent;
         state.routeEventId = 'e-2';
         expect(renderScope().style.getPropertyValue('--event-bg')).toBe('');
+    });
+
+    it('sets the post-card tokens on a themed page', () => {
+        state.event = themedEvent;
+        const root = renderScope();
+        expect(root.style.getPropertyValue('--event-card-bg')).toBe('#BFE6E2');
+        expect(root.style.getPropertyValue('--event-card-line')).not.toBe('');
+    });
+
+    it('declares the heading font once and marks the scope on a themed page with a font', () => {
+        state.event = fontedEvent;
+        const root = renderScope();
+        const styles = document.querySelectorAll('style');
+        expect(styles).toHaveLength(1);
+        expect(styles[0].textContent).toContain('@font-face');
+        expect(styles[0].textContent).toContain('/api/theme-fonts/dino-serif/3.woff2');
+        expect(root).toHaveAttribute('data-theme-font');
+        expect(root.style.getPropertyValue('--event-heading-font')).toBe('"theme-dino-serif", serif');
+        expect(root.style.getPropertyValue('--event-title')).toBe('#7A1F3D');
+    });
+
+    it('declares no font and sets no title colour on a host page', () => {
+        state.event = fontedEvent;
+        state.pathname = '/events/e-1/manage';
+        const root = renderScope();
+        expect(document.querySelector('style')).toBeNull();
+        expect(root).not.toHaveAttribute('data-theme-font');
+        expect(root.style.getPropertyValue('--event-title')).toBe('');
+        expect(root.style.getPropertyValue('--event-card-bg')).toBe('');
+    });
+
+    it('declares no font when the theme has none', () => {
+        state.event = themedEvent;
+        const root = renderScope();
+        expect(document.querySelector('style')).toBeNull();
+        expect(root).not.toHaveAttribute('data-theme-font');
+        expect(root.style.getPropertyValue('--event-title')).toBe('');
     });
 });
