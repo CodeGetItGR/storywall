@@ -131,6 +131,7 @@ export function MemberRoleDrawer({
                         <input
                             name="sectionEn"
                             value={form.draft.sectionEn}
+                            placeholder={form.draft.labelEn}
                             onChange={form.handleFieldChange}
                             maxLength={40}
                             aria-invalid={Boolean(form.errors.sectionEn)}
@@ -141,6 +142,7 @@ export function MemberRoleDrawer({
                         <input
                             name="sectionEl"
                             value={form.draft.sectionEl}
+                            placeholder={form.draft.labelEl}
                             onChange={form.handleFieldChange}
                             maxLength={40}
                             aria-invalid={Boolean(form.errors.sectionEl)}
