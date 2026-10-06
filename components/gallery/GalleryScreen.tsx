@@ -266,7 +266,15 @@ export function GalleryScreen() {
             {showArchiveDownload && eventId && (
                 <GalleryArchiveDownloadModal eventId={eventId} open={archiveDownloadOpen} onClose={closeArchiveDownload} />
             )}
-            {showMemberArchive && eventId && <MemberArchiveModal eventId={eventId} open={memberArchiveOpen} onClose={closeMemberArchive} />}
+            {showMemberArchive && eventId && (
+                // Keyed on open so each opening starts clean (no error left over from the last visit).
+                <MemberArchiveModal
+                    key={memberArchiveOpen ? 'open' : 'closed'}
+                    eventId={eventId}
+                    open={memberArchiveOpen}
+                    onClose={closeMemberArchive}
+                />
+            )}
         </ModulePageShell>
     );
 }

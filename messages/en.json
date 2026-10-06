@@ -4377,6 +4377,8 @@
         "memberArchiveSubtitle": "Every photo and video from the event, in display quality.",
         "memberArchiveNotYet": "The download opens on {date}, a day after the event ends.",
         "memberArchivePreparing": "We're putting the download together. Check back in a little while.",
+        "memberArchiveCheckAgain": "Check again",
+        "memberArchiveEmpty": "The gallery has no photos or videos.",
         "memberArchiveUnavailable": "The download isn't available for this event.",
         "memberArchiveChanged": "The gallery changed since this opened, so the download is being rebuilt. Try again later.",
         "memberArchiveUploadNote": "After the event, every member can download the whole gallery, including what you upload here.",

@@ -4,11 +4,21 @@ import { Download, Loader2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback, useState } from 'react';
 
+import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useMemberArchive } from '@/hooks/useMemberArchive';
 import { dateTimeFormat, formatBytes } from '@/lib/format';
 import { assignLocation } from '@/lib/navigation';
+
+// Only a presigned https link is followed; anything else from the response is refused.
+function isHttpsUrl(url: string): boolean {
+    try {
+        return new URL(url).protocol === 'https:';
+    } catch {
+        return false;
+    }
+}
 
 interface MemberArchiveModalProps {
     eventId: string;
@@ -45,6 +55,10 @@ export function MemberArchiveModal({ eventId, open, onClose }: MemberArchiveModa
                     setDownloadError(t('memberArchiveChanged'));
                     return;
                 }
+                if (!isHttpsUrl(fresh.url)) {
+                    setDownloadError(t('archiveDownloadFailed'));
+                    return;
+                }
                 assignLocation(fresh.url);
             } finally {
                 setActivePart(null);
@@ -52,6 +66,10 @@ export function MemberArchiveModal({ eventId, open, onClose }: MemberArchiveModa
         },
         [refetch, t, tError],
     );
+
+    const handleCheckAgain = useCallback(() => {
+        void refetch();
+    }, [refetch]);
 
     const handlePartClick = useCallback(
         (event: MouseEvent<HTMLButtonElement>) => {
@@ -81,10 +99,14 @@ export function MemberArchiveModal({ eventId, open, onClose }: MemberArchiveModa
                 <div className="mt-5">
                     {archiveQuery.isLoading ? (
                         <div className="py-6 text-center text-sm text-ink-muted">{t('archiveLoading')}</div>
-                    ) : archiveQuery.isError ? (
+                    ) : archiveQuery.isError && !archive ? (
+                        // Only when there is nothing to show: a failed click-refetch keeps the list and
+                        // reports through downloadError below.
                         <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
                             {tError(archiveQuery.error, t('archiveManifestFailed'))}
                         </div>
+                    ) : archive?.status === 'READY' && archive.parts.length === 0 ? (
+                        <div className="py-6 text-center text-sm text-ink-muted">{t('memberArchiveEmpty')}</div>
                     ) : archive?.status === 'NOT_YET' && archive.availableFrom ? (
                         <p className="py-6 text-center text-sm text-ink-muted">
                             {t('memberArchiveNotYet', {
@@ -92,14 +114,19 @@ export function MemberArchiveModal({ eventId, open, onClose }: MemberArchiveModa
                             })}
                         </p>
                     ) : archive?.status === 'PREPARING' ? (
-                        <p className="py-6 text-center text-sm text-ink-muted">{t('memberArchivePreparing')}</p>
-                    ) : archive?.status === 'UNAVAILABLE' ? (
+                        <div className="flex flex-col items-center gap-3 py-6 text-center">
+                            <p className="text-sm text-ink-muted">{t('memberArchivePreparing')}</p>
+                            <Button type="button" size="sm" variant="outline" onClick={handleCheckAgain} disabled={archiveQuery.isFetching}>
+                                {archiveQuery.isFetching && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                                {t('memberArchiveCheckAgain')}
+                            </Button>
+                        </div>
+                    ) : archive?.status !== 'READY' ? (
+                        // UNAVAILABLE, no data, NOT_YET without a date, or a status this build does not know.
                         <p className="py-6 text-center text-sm text-ink-muted">{t('memberArchiveUnavailable')}</p>
-                    ) : archive?.status === 'READY' && archive.parts.length === 0 ? (
-                        <div className="py-6 text-center text-sm text-ink-muted">{t('archiveEmpty')}</div>
                     ) : (
                         <div className="max-h-[46vh] overflow-y-auto rounded-2xl border border-border/70 bg-background">
-                            {archive?.parts.map((part) => {
+                            {archive.parts.map((part) => {
                                 const isDownloading = activePart === part.part;
                                 return (
                                     <button
