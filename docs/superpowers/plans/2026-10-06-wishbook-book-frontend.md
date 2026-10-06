@@ -71,9 +71,12 @@ export interface WishbookBookDto {
     status: WishbookBookStatus;
     requestedAt: string;
     finishedAt: string | null;
+    // pageCount, entryCount, byteSize and downloadUrl are non-null only when READY; a rebuild hides the old figures.
     pageCount: number | null;
     entryCount: number | null;
-    // RENDERER_TIMEOUT | RENDERER_UNREACHABLE | RENDERER_HTTP_<n> | STORAGE_FAILED | STALLED | BUILD_ERROR: all mean "try again".
+    byteSize: number | null;
+    // RENDERER_* | DB_UNAVAILABLE | STORAGE_FAILED | PROCESSING_STALLED | BUILD_ERROR | RENDERER_NOT_CONFIGURED:
+    // all mean "try again"; show one generic line, never one per code.
     failureCode: string | null;
     downloadUrl: string | null;
 }
@@ -91,6 +94,8 @@ export interface WishbookBookTextsDto extends WishbookBookTextsRequestDto {
 }
 
 export const WISHBOOK_BOOK_TEXT_LIMITS = { subtitle: 80, dedication: 400, closingTitle: 80, closingBody: 300 } as const;
+// dedication and closingBody keep line breaks (BE caps them at 6 lines, blank separator lines included); the others are single-line.
+export const WISHBOOK_BOOK_TEXT_MAX_LINES = 6;
 ```
 
 On `MemberRoleCatalogDto` add `sectionLabel: { en: string; el: string } | null;`. On `MemberRoleCatalogRequestDto` add `sectionLabel?: { en: string; el: string };`. On `MemberRoleCatalogPatchDto` add `sectionLabel?: { en: string; el: string };` and `clearSectionLabel?: boolean;`.
@@ -472,7 +477,7 @@ beforeEach(() => {
     downloadUrl.mockReset();
 });
 
-const base = { requestedAt: '2026-10-06T10:00:00Z', finishedAt: null, pageCount: null, entryCount: null, failureCode: null, downloadUrl: null };
+const base = { requestedAt: '2026-10-06T10:00:00Z', finishedAt: null, pageCount: null, entryCount: null, byteSize: null, failureCode: null, downloadUrl: null };
 
 describe('WishbookBookPanel', () => {
     it('offers to create a book that was never built', () => {
@@ -642,7 +647,12 @@ import { type ChangeEvent, useState } from 'react';
 import { Modal } from '@/components/ui/modal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useSaveWishbookBookTexts, useWishbookBookTexts } from '@/hooks/useWishbookBook';
-import { WISHBOOK_BOOK_TEXT_LIMITS, type WishbookBookTextsDto, type WishbookBookTextsRequestDto } from '@/lib/api/types';
+import {
+    WISHBOOK_BOOK_TEXT_LIMITS,
+    WISHBOOK_BOOK_TEXT_MAX_LINES,
+    type WishbookBookTextsDto,
+    type WishbookBookTextsRequestDto,
+} from '@/lib/api/types';
 
 type Field = keyof WishbookBookTextsRequestDto;
 const FIELDS: { name: Field; multiline: boolean }[] = [
@@ -687,7 +697,11 @@ function TextsForm({ eventId, texts, onCloseAction }: { eventId: string; texts: 
 
     function change(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
         const name = event.currentTarget.name as Field;
-        const value = event.currentTarget.value.slice(0, WISHBOOK_BOOK_TEXT_LIMITS[name]);
+        let value = event.currentTarget.value.slice(0, WISHBOOK_BOOK_TEXT_LIMITS[name]);
+        // Line breaks are kept by the BE in the multiline fields, up to 6 lines; drop any extra lines here.
+        if (FIELDS.find((f) => f.name === name)?.multiline) {
+            value = value.split('\n').slice(0, WISHBOOK_BOOK_TEXT_MAX_LINES).join('\n');
+        }
         setDraft((current) => ({ ...current, [name]: value }));
     }
     async function submit(event: React.SubmitEvent<HTMLFormElement>) {
@@ -749,7 +763,12 @@ function TextsForm({ eventId, texts, onCloseAction }: { eventId: string; texts: 
 }
 ```
 
-The FE counter measures raw length while the BE measures after collapsing whitespace, so the BE is never stricter than what the user sees.
+The FE counter measures raw length while the BE measures after collapsing whitespace, so the BE is never stricter than what the user sees. The BE's 6-line cap counts blank separator lines too, so the FE's split on `\n` matches it. A BE refusal comes back as 400 `3001` with a `detail` naming the field; show it via `toErrorMessage`.
+
+**Contract changes since this plan was written** (BE built 2026-10-06; see `wishbook-book-fe-integration.md`):
+- The highlight PUT/DELETE has its own rate-limit bucket of 120 per 60 s, so fast starring is fine. Book-texts PUT allows 30 per 60 s; the build POST allows 10 per 3600 s per user.
+- A never-built `GET …/book` returns 404 `2001` (the hook test above already uses 2001).
+- In the book itself, starred wishes appear last in their section, sized by length. No FE impact.
 
 - [ ] **Step 4:** `npx vitest run components/wishbook/WishbookBookPanel.test.tsx`. Expected: PASS.
 
