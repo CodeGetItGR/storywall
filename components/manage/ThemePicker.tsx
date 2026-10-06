@@ -11,15 +11,7 @@ import { useThemePicker } from '@/hooks/useThemePicker';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 
 // `showHeading` is off in the Theme section, whose section title already names it.
-export function ThemePicker({
-    event,
-    canWrite,
-    showHeading = true,
-}: {
-    event: EventDetailResponseDto;
-    canWrite: boolean;
-    showHeading?: boolean;
-}) {
+export function ThemePicker({ event, canWrite, showHeading = true }: { event: EventDetailResponseDto; canWrite: boolean; showHeading?: boolean }) {
     const t = useTranslations('ManagePage.settings.theme');
     const toErrorMessage = useApiErrorMessage();
     const localizedText = useLocalizedText();
@@ -30,7 +22,16 @@ export function ThemePicker({
 
     // The applied theme leads when it is no longer offered, so the host can see what is on the event.
     const options: ThemeRadioOption[] = [
-        { id: 'none', presetId: null, label: t('none'), backgroundColor: null, illustrationUrl: null, selected: picker.selectedKey === null },
+        {
+            id: 'none',
+            presetId: null,
+            label: t('none'),
+            backgroundColor: null,
+            illustrationUrl: null,
+            titleColor: null,
+            headingFont: null,
+            selected: picker.selectedKey === null,
+        },
         ...(picker.staleTheme
             ? [
                   {
@@ -39,6 +40,8 @@ export function ThemePicker({
                       label: t('current'),
                       backgroundColor: picker.staleTheme.backgroundColor,
                       illustrationUrl: picker.staleTheme.illustrationUrl,
+                      titleColor: picker.staleTheme.titleColor,
+                      headingFont: picker.staleTheme.headingFont,
                       selected: true,
                   },
               ]
@@ -49,6 +52,8 @@ export function ThemePicker({
             label: localizedText(preset.name, preset.key),
             backgroundColor: preset.backgroundColor,
             illustrationUrl: preset.illustrationUrl,
+            titleColor: preset.titleColor,
+            headingFont: preset.headingFont,
             selected: picker.selectedKey === preset.key,
         })),
     ];

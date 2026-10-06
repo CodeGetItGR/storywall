@@ -4,7 +4,8 @@ import { Check, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
-import { isHexColor } from '@/lib/eventTheme';
+import type { EventThemeFontDto } from '@/lib/api/types';
+import { eventThemeStyle, isHexColor, themeFontScopeProps } from '@/lib/eventTheme';
 import { cn } from '@/lib/utils';
 
 // One radio of the theme picker. "Disabled" is aria-disabled with a no-op click, never the
@@ -15,6 +16,8 @@ export function ThemePresetOption({
     label,
     backgroundColor,
     illustrationUrl,
+    titleColor,
+    headingFont,
     selected,
     saving,
     disabled,
@@ -29,6 +32,8 @@ export function ThemePresetOption({
     label: string;
     backgroundColor: string | null;
     illustrationUrl: string | null;
+    titleColor: string | null;
+    headingFont: EventThemeFontDto | null;
     selected: boolean;
     saving: boolean;
     disabled: boolean;
@@ -41,6 +46,10 @@ export function ThemePresetOption({
     // Keyed by URL, so a new URL (art replaced, presigned refresh) gets another try.
     const [failedUrl, setFailedUrl] = useState<string | null>(null);
     const inert = disabled || presetId === undefined;
+    const themeStyle = eventThemeStyle(backgroundColor, { titleColor, headingFont });
+    // The title colour's contrast was checked against the preset background only, not the white
+    // card: the label wears it on a strip of that background (the style is set only for a valid one).
+    const titleOnBackground = themeStyle !== undefined && titleColor !== null && isHexColor(titleColor);
 
     function handleClick() {
         if (inert) return;
@@ -102,8 +111,12 @@ export function ThemePresetOption({
                     </span>
                 )}
             </span>
-            {/* Label */}
-            <span className="truncate px-1 text-sm font-semibold text-ink">{label}</span>
+            {/* Label, in the preset's heading font and title colour */}
+            <span {...themeFontScopeProps(headingFont)} style={themeStyle} className={cn('min-w-0', titleOnBackground && 'rounded-md bg-event')}>
+                <span className={cn('event-heading block truncate px-1 text-sm font-semibold', titleOnBackground ? 'text-event-title' : 'text-ink')}>
+                    {label}
+                </span>
+            </span>
         </button>
     );
 }

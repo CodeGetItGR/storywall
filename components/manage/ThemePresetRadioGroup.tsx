@@ -2,7 +2,9 @@
 
 import { type KeyboardEvent, useState } from 'react';
 
+import { ThemeFontFace } from '@/components/event/ThemeFontFace';
 import { ThemePresetOption } from '@/components/manage/ThemePresetOption';
+import type { EventThemeFontDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
 const NEXT_KEYS = ['ArrowRight', 'ArrowDown'];
@@ -15,6 +17,8 @@ export type ThemeRadioOption = {
     label: string;
     backgroundColor: string | null;
     illustrationUrl: string | null;
+    titleColor: string | null;
+    headingFont: EventThemeFontDto | null;
     selected: boolean;
 };
 
@@ -42,6 +46,11 @@ export function ThemePresetRadioGroup({
     const tabbableId =
         (options.some((option) => option.id === focusedId) ? focusedId : options.find((option) => option.selected)?.id) ?? options[0]?.id;
 
+    // One @font-face per font, however many cards share it.
+    const fonts = [
+        ...new Map(options.flatMap((option) => (option.headingFont ? [[option.headingFont.key, option.headingFont] as const] : []))).values(),
+    ];
+
     function handleKeyDown(keyEvent: KeyboardEvent<HTMLDivElement>) {
         const { key } = keyEvent;
         const radios = Array.from(keyEvent.currentTarget.querySelectorAll<HTMLElement>('[role="radio"]'));
@@ -64,6 +73,9 @@ export function ThemePresetRadioGroup({
             onKeyDown={handleKeyDown}
             className={cn('mt-4 grid grid-cols-2 gap-4', size === 'default' && 'sm:grid-cols-3 xl:grid-cols-4')}
         >
+            {fonts.map((font) => (
+                <ThemeFontFace key={font.key} font={font} />
+            ))}
             {options.map((option) => (
                 <ThemePresetOption
                     key={option.id}
@@ -72,6 +84,8 @@ export function ThemePresetRadioGroup({
                     label={option.label}
                     backgroundColor={option.backgroundColor}
                     illustrationUrl={option.illustrationUrl}
+                    titleColor={option.titleColor}
+                    headingFont={option.headingFont}
                     selected={option.selected}
                     saving={option.presetId !== undefined && savingPresetId !== undefined && savingPresetId === option.presetId}
                     disabled={disabled}

@@ -20,13 +20,24 @@ export function EventThemeStep() {
     const { themePresets, isThemePresetsLoading, themePresetsError, selectedThemePresetId, onSelectThemePreset, error } = useCreateEventForm();
 
     const options: ThemeRadioOption[] = [
-        { id: 'none', presetId: null, label: t('none'), backgroundColor: null, illustrationUrl: null, selected: selectedThemePresetId === null },
+        {
+            id: 'none',
+            presetId: null,
+            label: t('none'),
+            backgroundColor: null,
+            illustrationUrl: null,
+            titleColor: null,
+            headingFont: null,
+            selected: selectedThemePresetId === null,
+        },
         ...themePresets.map((preset) => ({
             id: preset.id,
             presetId: preset.id,
             label: localizedText(preset.name, preset.key),
             backgroundColor: preset.backgroundColor,
             illustrationUrl: preset.illustrationUrl,
+            titleColor: preset.titleColor,
+            headingFont: preset.headingFont,
             selected: selectedThemePresetId === preset.id,
         })),
     ];
