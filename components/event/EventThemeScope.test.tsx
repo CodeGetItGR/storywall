@@ -19,7 +19,13 @@ vi.mock('@/providers/EventProvider', () => ({
 
 const themedEvent: Partial<EventDetailResponseDto> = {
     id: 'e-1',
-    theme: { presetKey: 'dino-mint', backgroundColor: '#BFE6E2', illustrationUrl: 'https://media.example/dino.webp' },
+    theme: {
+        presetKey: 'dino-mint',
+        backgroundColor: '#BFE6E2',
+        illustrationUrl: 'https://media.example/dino.webp',
+        titleColor: null,
+        headingFont: null,
+    },
 };
 
 function renderScope() {

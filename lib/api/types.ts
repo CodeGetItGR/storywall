@@ -755,10 +755,18 @@ export interface AdminProvisionEventRequestDto {
 // The event's look (event-theme-customization, 2026-10-05). Null when the event has
 // no preset, or when the theme module isn't readable for it (kill switch, plan,
 // event type) — then the app shows the default look. illustrationUrl is presigned.
+export interface EventThemeFontDto {
+    key: string; // CSS family is "theme-" + key
+    fallback: 'serif' | 'sans-serif';
+    url: string; // FE-origin path, /api/theme-fonts/<key>/<version>.woff2
+}
+
 export interface EventThemeDto {
     presetKey: string;
     backgroundColor: string; // #RRGGBB, upper-case
     illustrationUrl: string;
+    titleColor: string | null; // #RRGGBB; null = ink
+    headingFont: EventThemeFontDto | null; // null = the app's fonts
 }
 
 // Returned by GET /api/events (list) and POST /api/events — flat summary shape.
@@ -3232,6 +3240,8 @@ export interface ThemePresetDto {
     name: LocalizedText; // { el, en }
     backgroundColor: string; // #RRGGBB
     illustrationUrl: string;
+    titleColor: string | null; // #RRGGBB; null = ink
+    headingFont: EventThemeFontDto | null; // null = the app's fonts
 }
 
 // PUT /api/events/{eventId}/theme — null (or omitted) clears the theme.
@@ -3254,6 +3264,8 @@ export interface AdminThemePresetDto {
     eventTypes: EventTypeConvention[];
     sortOrder: number;
     archived: boolean;
+    headingFont: { id: string; key: string; familyName: string; fallback: 'serif' | 'sans-serif'; archived: boolean; url: string | null } | null;
+    titleColor: string | null;
 }
 
 // POST /api/admin/theme-presets
@@ -3263,6 +3275,8 @@ export interface AdminThemePresetRequestDto {
     backgroundColor: string;
     eventTypes: EventTypeConvention[];
     sortOrder: number;
+    headingFontId?: string | null;
+    titleColor?: string | null;
 }
 
 // PATCH /api/admin/theme-presets/{id}. Omitted fields stay as they are; sending `key` is rejected (3002).
@@ -3271,5 +3285,32 @@ export interface AdminThemePresetPatchDto {
     backgroundColor?: string;
     eventTypes?: EventTypeConvention[];
     sortOrder?: number;
+    archived?: boolean;
+    headingFontId?: string;
+    titleColor?: string;
+    clearHeadingFont?: boolean;
+    clearTitleColor?: boolean;
+}
+
+// /api/admin/theme-fonts
+export interface AdminThemeFontDto {
+    id: string;
+    key: string;
+    familyName: string;
+    fallback: 'serif' | 'sans-serif';
+    archived: boolean;
+    url: string | null; // null until a file is uploaded; such a font can't be put on a preset
+    presetCount: number;
+}
+
+export interface AdminThemeFontRequestDto {
+    key: string;
+    familyName: string;
+    fallback: 'serif' | 'sans-serif';
+}
+
+export interface AdminThemeFontPatchDto {
+    familyName?: string;
+    fallback?: 'serif' | 'sans-serif';
     archived?: boolean;
 }

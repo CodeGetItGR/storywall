@@ -26,6 +26,8 @@ const PRESET: AdminThemePresetDto = {
     eventTypes: ['BAPTISM'],
     sortOrder: 0,
     archived: false,
+    titleColor: null,
+    headingFont: null,
 };
 
 function wrapper({ children }: { children: React.ReactNode }) {

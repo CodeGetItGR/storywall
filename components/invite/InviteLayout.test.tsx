@@ -9,7 +9,7 @@ vi.mock('@/components/common/ProtectedImage', () => ({
     ProtectedImage: ({ src, onError }: { src: string; onError?: () => void }) => <img data-testid="hero" src={src} alt="" onError={onError} />,
 }));
 
-const THEME = { presetKey: 'swan', backgroundColor: '#FFCCEF', illustrationUrl: 'https://r2.test/swan.png' };
+const THEME = { presetKey: 'swan', backgroundColor: '#FFCCEF', illustrationUrl: 'https://r2.test/swan.png', titleColor: null, headingFont: null };
 
 function renderLayout(theme: typeof THEME | null) {
     render(

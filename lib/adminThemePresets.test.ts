@@ -25,6 +25,8 @@ const PRESET: AdminThemePresetDto = {
     eventTypes: ['BAPTISM'],
     sortOrder: 1,
     archived: false,
+    titleColor: null,
+    headingFont: null,
 };
 
 const VALID_DRAFT = {
