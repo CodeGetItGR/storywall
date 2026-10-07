@@ -9,7 +9,6 @@ import { PlanEditorDangerSection } from '@/components/admin/PlanEditorDangerSect
 import { PlanEditorDetailsSection } from '@/components/admin/PlanEditorDetailsSection';
 import { PlanEditorDurationsSection } from '@/components/admin/PlanEditorDurationsSection';
 import { PlanEditorFooter } from '@/components/admin/PlanEditorFooter';
-import { PlanEditorHeader } from '@/components/admin/PlanEditorHeader';
 import { PlanEditorLimitsSection } from '@/components/admin/PlanEditorLimitsSection';
 import { PlanEditorModulesSummary } from '@/components/admin/PlanEditorModulesSummary';
 import { PlanEditorPricingSection } from '@/components/admin/PlanEditorPricingSection';
@@ -28,61 +27,65 @@ export function PlanEditorCard(props: UsePlanEditorCardArgs) {
 
     return (
         <article className="min-w-0">
-            {/* Header */}
-            <PlanEditorHeader plan={plan} />
+            <div className="md:grid md:grid-cols-[160px_minmax(0,1fr)] md:gap-x-8">
+                {/* Anchors */}
+                <PlanEditorAnchors anchors={editor.anchors} active={editor.activeAnchor} />
 
-            {/* Anchors */}
-            <PlanEditorAnchors anchors={editor.anchors} active={editor.activeAnchor} />
+                <div className="min-w-0">
+                    {/* Form */}
+                    <form ref={formRef} id={`${editorId}-form`} onSubmit={editor.handleSubmit} onChange={editor.handleFormChange}>
+                        <PlanEditorDetailsSection
+                            id={`${editorId}-details`}
+                            plan={plan}
+                            eventTypes={editor.orderedEventTypes}
+                            siblings={editor.siblings}
+                            onOpenSiblingAction={editor.onOpenSiblingAction}
+                        />
+                        <PlanEditorAvailabilitySection
+                            id={`${editorId}-availability`}
+                            plan={plan}
+                            visibility={editor.visibility}
+                            isMakingDefault={editor.updatePlan.mutation.isPending}
+                            onVisibilityChangeAction={editor.handleVisibilityChange}
+                            isGiftable={editor.isGiftable}
+                            onGiftableChangeAction={editor.handleGiftableChange}
+                            onMakeDefaultAction={editor.handleMakeDefaultClick}
+                        />
+                        <PlanEditorLimitsSection id={`${editorId}-limits`} plan={plan} />
+                        {editor.isEvent && <PlanEditorDurationsSection id={`${editorId}-durations`} editor={editor.durations} />}
+                        <PlanEditorPricingSection id={`${editorId}-pricing`} plan={plan} />
+                        <PlanEditorModulesSummary
+                            id={`${editorId}-modules`}
+                            included={plan.moduleKeys.length}
+                            total={editor.orderedModules.length}
+                            onOpenGridAction={editor.onOpenGridAction ?? noop}
+                        />
+                        <PlanEditorAddonsSection
+                            id={`${editorId}-addons`}
+                            plan={plan}
+                            orderedModules={editor.orderedModules}
+                            moduleUnlocks={editor.moduleUnlocks}
+                            unlockDraft={editor.unlockDraft}
+                            onOpenUnlockEditorAction={editor.openUnlockEditor}
+                            onCloseUnlockEditorAction={editor.closeUnlockEditor}
+                            onUpdateUnlockDraftAction={editor.updateUnlockDraft}
+                            onCreateUnlockAction={editor.handleCreateUnlockClick}
+                            canCreateUnlock={editor.canCreateUnlock}
+                            isCreatingUnlock={editor.createPaidService.mutation.isPending}
+                            onUnlockAction={editor.handleUnlockAction}
+                            isUpdatingUnlocks={editor.updatePaidService.mutation.isPending}
+                        />
+                        <PlanEditorDangerSection
+                            id={`${editorId}-danger`}
+                            isDeleting={editor.deletePlan.mutation.isPending}
+                            onDeleteOpenAction={editor.handleDeleteOpenClick}
+                        />
+                    </form>
 
-            {/* Form */}
-            <form ref={formRef} id={`${editorId}-form`} onSubmit={editor.handleSubmit} onChange={editor.handleFormChange}>
-                <PlanEditorDetailsSection
-                    id={`${editorId}-details`}
-                    plan={plan}
-                    eventTypes={editor.orderedEventTypes}
-                    siblings={editor.siblings}
-                    onOpenSiblingAction={editor.onOpenSiblingAction}
-                />
-                <PlanEditorAvailabilitySection
-                    id={`${editorId}-availability`}
-                    plan={plan}
-                    visibility={editor.visibility}
-                    isMakingDefault={editor.updatePlan.mutation.isPending}
-                    onVisibilityChangeAction={editor.handleVisibilityChange}
-                    isGiftable={editor.isGiftable}
-                    onGiftableChangeAction={editor.handleGiftableChange}
-                    onMakeDefaultAction={editor.handleMakeDefaultClick}
-                />
-                <PlanEditorLimitsSection id={`${editorId}-limits`} plan={plan} />
-                {editor.isEvent && <PlanEditorDurationsSection id={`${editorId}-durations`} editor={editor.durations} />}
-                <PlanEditorPricingSection id={`${editorId}-pricing`} plan={plan} />
-                <PlanEditorModulesSummary
-                    id={`${editorId}-modules`}
-                    included={plan.moduleKeys.length}
-                    total={editor.orderedModules.length}
-                    onOpenGridAction={editor.onOpenGridAction ?? noop}
-                />
-                <PlanEditorAddonsSection
-                    id={`${editorId}-addons`}
-                    plan={plan}
-                    orderedModules={editor.orderedModules}
-                    moduleUnlocks={editor.moduleUnlocks}
-                    unlockDraft={editor.unlockDraft}
-                    onOpenUnlockEditorAction={editor.openUnlockEditor}
-                    onCloseUnlockEditorAction={editor.closeUnlockEditor}
-                    onUpdateUnlockDraftAction={editor.updateUnlockDraft}
-                    onCreateUnlockAction={editor.handleCreateUnlockClick}
-                    canCreateUnlock={editor.canCreateUnlock}
-                    isCreatingUnlock={editor.createPaidService.mutation.isPending}
-                    onUnlockAction={editor.handleUnlockAction}
-                    isUpdatingUnlocks={editor.updatePaidService.mutation.isPending}
-                />
-                <PlanEditorDangerSection
-                    id={`${editorId}-danger`}
-                    isDeleting={editor.deletePlan.mutation.isPending}
-                    onDeleteOpenAction={editor.handleDeleteOpenClick}
-                />
-            </form>
+                    {/* Error */}
+                    {editor.error && <p className="mt-3 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(editor.error)}`)}</p>}
+                </div>
+            </div>
 
             {/* Footer */}
             <PlanEditorFooter
@@ -92,9 +95,6 @@ export function PlanEditorCard(props: UsePlanEditorCardArgs) {
                 isSaving={editor.isSaving}
                 changeCount={editor.changeCount}
             />
-
-            {/* Error */}
-            {editor.error && <p className="mt-3 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(editor.error)}`)}</p>}
 
             {/* Confirmations */}
             <ConfirmActionModal

@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { PlanCreateForm } from '@/components/admin/PlanCreateForm';
 import { PlanEditorCard } from '@/components/admin/PlanEditorCard';
+import { PlanEditorTitle } from '@/components/admin/PlanEditorTitle';
 import { EventTypePlansHeader } from '@/components/admin/plans/EventTypePlansHeader';
 import { EventTypePlansTable } from '@/components/admin/plans/EventTypePlansTable';
 import { PlanModuleGrid } from '@/components/admin/plans/PlanModuleGrid';
@@ -70,8 +71,8 @@ export function EventTypePlansPane({ eventType, section }: { eventType: Platform
                 open={Boolean(pane.selectedPlan)}
                 onClose={pane.closeEditor}
                 closeLabel={t('cancel')}
-                title={pane.selectedPlan?.name ?? ''}
-                subtitle={pane.selectedPlan?.code}
+                title={pane.selectedPlan ? <PlanEditorTitle plan={pane.selectedPlan} /> : ''}
+                size="modal"
             >
                 {pane.selectedPlan && (
                     <PlanEditorCard

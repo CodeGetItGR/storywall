@@ -65,7 +65,6 @@ export function PlanModuleGrid({
                                     {grid.grid.columns.map(({ plan }) => (
                                         <th key={plan.id} className={cn('min-w-40 px-2.5 py-2 font-bold', !plan.isPublic && 'text-ink-faint/70')}>
                                             <span className="block truncate text-ink normal-case">{plan.name}</span>
-                                            <span className="font-mono text-[10px] font-semibold text-ink-faint normal-case">{plan.code}</span>
                                         </th>
                                     ))}
                                 </tr>
