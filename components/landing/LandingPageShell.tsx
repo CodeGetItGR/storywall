@@ -3,12 +3,14 @@
 import { type ReactNode, useEffect, useRef } from 'react';
 
 import { useLandingInteractions } from '@/hooks/useLandingInteractions';
+import { useManualScrollRestoration } from '@/hooks/useManualScrollRestoration';
 import { useLandingMotion } from '@/providers/LandingMotionProvider';
 
 export function LandingPageShell({ children }: { children: ReactNode }) {
     const landingRef = useRef<HTMLElement>(null);
     const { paused } = useLandingMotion();
     useLandingInteractions(landingRef, paused);
+    useManualScrollRestoration();
 
     useEffect(() => {
         document.body.classList.add('landing-document-scroll');
