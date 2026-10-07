@@ -3318,7 +3318,7 @@
             "saveConfirmBody": "This can change pricing, limits, or availability for the plan. Confirm that the edits are intentional."
         },
         "modules": {
-            "notice": "Platform modules are fixed by backend code. Disable a module here to withdraw it everywhere on the next config refresh.",
+            "notice": "Disable a module here to withdraw it everywhere on the next config refresh.",
             "loading": "Loading modules...",
             "enabled": "Enabled",
             "disabled": "Disabled",
