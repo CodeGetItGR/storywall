@@ -8,6 +8,7 @@ import { type MouseEvent, useCallback } from 'react';
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { HomeHorizontalScroller } from '@/components/home/HomeHorizontalScroller';
 import { EventQuickCardSkeleton, EventQuickCardsSkeleton } from '@/components/home/HomeSkeletons';
+import Badge from '@/components/ui/badge';
 import type { EventGridItem } from '@/hooks/useEventGridItems';
 import { useMemberRoleLabel } from '@/hooks/useMemberRoleLabel';
 import { formatDate, formatEventListDate } from '@/lib/datetime';
@@ -19,8 +20,10 @@ function EventQuickCard({ member, event }: EventGridItem) {
     const tEvents = useTranslations('EventsPage');
     const locale = useLocale();
 
+    const isHost = member.role === 'HOST';
     const memberRole = useMemberRoleLabel(member, event?.eventType);
-    const roleLabel = memberRole ?? (member.role === 'HOST' ? tEvents('roleFallback.host') : tEvents('roleFallback.attendee'));
+    // The host pill already says "Host", so a host only falls back to a custom role here.
+    const roleLabel = memberRole ?? (isHost ? null : tEvents('roleFallback.attendee'));
     const eventDate = formatEventListDate(event?.schedule.startAt, locale, tEvents('dateAt'));
     // A deleted event opens on its manage page (the only place left to land)
     // and shows its purge date instead of the event date.
@@ -53,6 +56,13 @@ function EventQuickCard({ member, event }: EventGridItem) {
                     {tEvents('suspended')}
                 </span>
             ) : null}
+            {/* Host badge */}
+            {isHost ? (
+                <Badge className="absolute top-2 right-2 bg-ink/55 px-2.5 text-[11px] font-semibold text-white backdrop-blur-sm">
+                    {tEvents('roleFallback.host')}
+                </Badge>
+            ) : null}
+            {/* Title and date */}
             <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-ink/85 via-ink/35 to-transparent px-3 pt-8 pb-3">
                 <p className="truncate text-sm font-semibold text-white">{event?.title ?? tEvents('eventUnavailable')}</p>
                 <p className="mt-0.5 truncate text-xs text-white/75">{secondaryLabel}</p>
