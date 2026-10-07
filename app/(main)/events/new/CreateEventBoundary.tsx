@@ -14,6 +14,7 @@ import { EventTypeStep } from '@/components/event/create/EventTypeStep';
 import { EventPlanSelector } from '@/components/plan/EventPlanSelector';
 import { BackButton } from '@/components/ui/BackButton';
 import { useAuth } from '@/hooks/useAuth';
+import { useCreateEventRun } from '@/hooks/useCreateEventRun';
 import { useCurrentReturnPath } from '@/hooks/useCurrentReturnPath';
 import { useScrollTopOnChange } from '@/hooks/useScrollTopOnChange';
 import { routes } from '@/lib/routes';
@@ -25,6 +26,7 @@ export default function CreateEventPage() {
     const router = useRouter();
     const { user, isAuthenticated, isBootstrapping } = useAuth();
     const returnPath = useCurrentReturnPath();
+    const run = useCreateEventRun();
     // Confirmed unverified (not just "not yet known") — the home screen is
     // where this is explained and where the flow should have been blocked
     // from starting in the first place; a direct visit to this URL must not
@@ -48,7 +50,7 @@ export default function CreateEventPage() {
 
     return (
         <CreateEventRouteState
-            isBlocked={isBootstrapping || !isAuthenticated || user?.role === 'ADMIN' || isConfirmedUnverified}
+            isBlocked={isBootstrapping || !isAuthenticated || user?.role === 'ADMIN' || isConfirmedUnverified || !run.isReady}
             content={
                 <CreateEventFormProvider>
                     <CreateEventFormBody />
