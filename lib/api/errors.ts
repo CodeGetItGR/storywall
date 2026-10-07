@@ -202,6 +202,7 @@ export const ERROR_CODES = {
     WISHBOOK_EMPTY: 5148,
     WISHBOOK_BOOK_RENDERER_UNAVAILABLE: 5149,
     LANDING_CATEGORY_TYPE_ASSIGNED: 5150,
+    COVERAGE_OPTION_PROMO_PRICE_INVALID: 5151,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the

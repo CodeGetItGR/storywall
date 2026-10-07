@@ -22,24 +22,27 @@ const plan: LandingPlan = {
     videos: '',
     features: ['Everything in START', 'RSVP'],
     durations: [
-        { id: 'd6', months: 6, price: '99€' },
-        { id: 'd9', months: 9, price: '109€' },
+        { id: 'd6', months: 6, price: '99€', listPrice: '129€' },
+        { id: 'd9', months: 9, price: '109€', listPrice: null },
     ],
     defaultDurationId: 'd9',
 };
 
 function renderCard({
     defaultExpanded,
+    durationId,
     onSelectAction,
     selected,
-}: { defaultExpanded?: boolean; onSelectAction?: (code: string) => void; selected?: boolean } = {}) {
+}: { defaultExpanded?: boolean; durationId?: string; onSelectAction?: (code: string) => void; selected?: boolean } = {}) {
     return render(
         <NextIntlClientProvider locale="en" messages={messages}>
             <MarketingPlanCard
                 featured={false}
                 plan={plan}
+                durationId={durationId}
                 popularLabel="Most popular"
                 durationLabel="Stays online for"
+                listPriceLabel="Original price"
                 expandLabel="Show features"
                 collapseLabel="Hide features"
                 defaultExpanded={defaultExpanded}
@@ -68,6 +71,21 @@ describe('MarketingPlanCard', () => {
         renderCard();
         expect(screen.getByRole('radio', { name: '6 months' })).toHaveTextContent('6 months');
         expect(screen.getByRole('radio', { name: '9 months' })).toHaveTextContent('9 months');
+    });
+
+    it('shows the price before the promotion struck through beside the promoted one, with no percent', () => {
+        renderCard({ durationId: 'd6' });
+
+        const listPrice = screen.getByText('129€');
+        expect(listPrice.closest('del')).toHaveTextContent('Original price 129€');
+        expect(screen.getByText('99€')).toBeInTheDocument();
+        expect(document.body.textContent).not.toContain('%');
+    });
+
+    it('shows no struck-through price when no promotion lowers the duration', () => {
+        renderCard();
+        expect(screen.getByText('109€')).toBeInTheDocument();
+        expect(document.querySelector('del')).toBeNull();
     });
 
     it('shows members and storage on one line', () => {

@@ -74,6 +74,20 @@ export function PlanDurationEditor({
                         className={adminInputClass('font-mono')}
                     />
                 </AdminField>
+                <AdminField
+                    label={currency ? t('plans.durations.promoPriceIn', { currency }) : t('plans.durations.promoPrice')}
+                    hint={t('plans.durations.promoPriceHint')}
+                >
+                    <input
+                        data-field="promoPrice"
+                        type="number"
+                        min={0}
+                        step="0.01"
+                        value={draft.promoPrice}
+                        onChange={onChangeAction}
+                        className={adminInputClass('font-mono')}
+                    />
+                </AdminField>
             </div>
 
             {/* Actions */}

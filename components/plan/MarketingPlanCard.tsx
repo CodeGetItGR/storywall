@@ -15,6 +15,8 @@ type MarketingPlanCardProps = {
     plan: LandingPlan;
     popularLabel: string;
     durationLabel: string;
+    // Screen-reader prefix for the struck-through price before a promotion.
+    listPriceLabel: string;
     expandLabel: string;
     collapseLabel: string;
     // Whether the feature list starts open on mobile. Desktop always shows it.
@@ -33,6 +35,7 @@ export function MarketingPlanCard({
     plan,
     popularLabel,
     durationLabel,
+    listPriceLabel,
     expandLabel,
     collapseLabel,
     defaultExpanded = false,
@@ -86,11 +89,20 @@ export function MarketingPlanCard({
                 {/* Popular */}
                 <PlanCardPopularBadge label={featured ? popularLabel : null} />
 
-                {/* Plan identity: name and price scale with the card so they fit side by side; the price drops below only on very narrow cards */}
+                {/* Plan identity: name and price scale with the card so they fit side by side; the price drops below only on very narrow cards.
+                    During a promotion the price before it sits struck through beside it, with no percent. */}
                 <div className="mt-2 flex flex-wrap items-baseline justify-between gap-x-3">
                     <h3 className="text-[clamp(18px,7cqi,28px)] leading-[1.05] font-black tracking-[.09em]">{plan.name}</h3>
-                    <p className="bg-[linear-gradient(110deg,#d889a0,#e98778_28%,#f39a63_58%,#f5b967)] bg-clip-text pr-[.06em] font-[Baskerville,Georgia,serif] text-[clamp(36px,16.5cqi,64px)] leading-[1.1] tracking-[-.06em] text-transparent">
-                        {duration.price}
+                    <p className="flex items-baseline gap-x-2">
+                        {duration.listPrice && (
+                            <del className="font-[Baskerville,Georgia,serif] text-[clamp(18px,7cqi,28px)] leading-none tracking-[-.04em] text-[#151313]/45">
+                                <span className="sr-only">{listPriceLabel} </span>
+                                {duration.listPrice}
+                            </del>
+                        )}
+                        <span className="bg-[linear-gradient(110deg,#d889a0,#e98778_28%,#f39a63_58%,#f5b967)] bg-clip-text pr-[.06em] font-[Baskerville,Georgia,serif] text-[clamp(36px,16.5cqi,64px)] leading-[1.1] tracking-[-.06em] text-transparent">
+                            {duration.price}
+                        </span>
                     </p>
                 </div>
                 <p className="mt-1 text-sm text-[#151313]/65">

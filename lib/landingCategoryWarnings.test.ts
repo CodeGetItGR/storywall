@@ -38,7 +38,7 @@ function plan(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto {
         moduleConfigs: {},
         eventTypeKey: 'SOCIAL_EVENT',
         sharedGroupKey: null,
-        initialOptions: [{ id: 'o', kind: 'INITIAL', months: 3, priceAmountMinor: 100, sortOrder: 0, active: true }],
+        initialOptions: [{ id: 'o', kind: 'INITIAL', months: 3, priceAmountMinor: 100, promoPriceAmountMinor: null, sortOrder: 0, active: true }],
         extensionOptions: [],
         ...overrides,
     };
@@ -86,7 +86,7 @@ describe('landingCategoryWarnings', () => {
     });
 
     it('flags a category whose only plan has no duration on sale, as the landing hides its tab', () => {
-        const offSale = plan({ initialOptions: [{ id: 'o', kind: 'INITIAL', months: 3, priceAmountMinor: 100, sortOrder: 0, active: false }] });
+        const offSale = plan({ initialOptions: [{ id: 'o', kind: 'INITIAL', months: 3, priceAmountMinor: 100, promoPriceAmountMinor: null, sortOrder: 0, active: false }] });
         expect(landingCategoryWarnings(category(['SOCIAL_EVENT']), [offSale], enabled(['SOCIAL_EVENT']), {}).noVisiblePlan).toBe(true);
     });
 

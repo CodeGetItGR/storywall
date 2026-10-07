@@ -7,10 +7,17 @@ import type {
     PlanTierResponseDto,
     PlatformModuleResponseDto,
 } from '@/lib/api/types';
-import { buildLandingPlan, formatLandingOptionPrice, type LandingPlan, type LandingPlanCopy, pickedLandingDuration } from '@/lib/landingPricing';
+import {
+    buildLandingPlan,
+    formatLandingListPrice,
+    formatLandingOptionPrice,
+    type LandingPlan,
+    type LandingPlanCopy,
+    pickedLandingDuration,
+} from '@/lib/landingPricing';
 
 function makeOption(overrides: Partial<CoverageOptionResponseDto> = {}): CoverageOptionResponseDto {
-    return { id: 'opt-3', kind: 'INITIAL', months: 3, priceAmountMinor: 7900, sortOrder: 0, active: true, ...overrides };
+    return { id: 'opt-3', kind: 'INITIAL', months: 3, priceAmountMinor: 7900, promoPriceAmountMinor: null, sortOrder: 0, active: true, ...overrides };
 }
 
 function makePlan(overrides: Partial<PlanTierResponseDto> = {}): PlanTierResponseDto {
@@ -111,6 +118,29 @@ describe('formatLandingOptionPrice', () => {
     it('returns null when the plan has no currency', () => {
         expect(formatLandingOptionPrice(makePlan({ priceCurrency: null }), makeOption())).toBeNull();
     });
+
+    it("shows a duration's promo price in place of the plan's percent", () => {
+        expect(formatLandingOptionPrice(makePlan({ discountPercent: 50 }), makeOption({ priceAmountMinor: 12900, promoPriceAmountMinor: 9900 }))).toBe(
+            '99€',
+        );
+    });
+});
+
+describe('formatLandingListPrice', () => {
+    it('gives the price before a promotion that lowers the duration', () => {
+        expect(formatLandingListPrice(makePlan(), makeOption({ priceAmountMinor: 12900, promoPriceAmountMinor: 9900 }))).toBe('129€');
+        expect(formatLandingListPrice(makePlan({ discountPercent: 20 }), makeOption({ priceAmountMinor: 10000 }))).toBe('100€');
+    });
+
+    it('is null when nothing lowers the duration', () => {
+        expect(formatLandingListPrice(makePlan(), makeOption())).toBeNull();
+        expect(
+            formatLandingListPrice(
+                makePlan({ discountEndsAt: '2000-01-01T00:00:00Z' }),
+                makeOption({ priceAmountMinor: 12900, promoPriceAmountMinor: 9900 }),
+            ),
+        ).toBeNull();
+    });
 });
 
 describe('pickedLandingDuration', () => {
@@ -123,8 +153,8 @@ describe('pickedLandingDuration', () => {
         storage: '',
         videos: '',
         durations: [
-            { id: 'opt-3', months: 3, price: '79€' },
-            { id: 'opt-6', months: 6, price: '99€' },
+            { id: 'opt-3', months: 3, price: '79€', listPrice: null },
+            { id: 'opt-6', months: 6, price: '99€', listPrice: null },
         ],
         defaultDurationId: 'opt-3',
     };
@@ -148,7 +178,7 @@ describe('buildLandingPlan', () => {
         expect(card).not.toBeNull();
         expect(card?.code).toBe('START');
         expect(card?.name).toBe('START');
-        expect(card?.durations).toEqual([{ id: 'opt-3', months: 3, price: '79€' }]);
+        expect(card?.durations).toEqual([{ id: 'opt-3', months: 3, price: '79€', listPrice: null }]);
         expect(card?.defaultDurationId).toBe('opt-3');
         expect(card?.audience).toBe('Up to 150 guests');
         expect(card?.storage).toBe('16 GB');

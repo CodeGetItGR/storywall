@@ -4,7 +4,7 @@ import type { CoverageOptionResponseDto, MemberRoleCatalogDto, PlanTierResponseD
 import { resolveLandingCategoryPlans } from '@/lib/landingCategories';
 
 function option(overrides: Partial<CoverageOptionResponseDto> = {}): CoverageOptionResponseDto {
-    return { id: 'o1', kind: 'INITIAL', months: 3, priceAmountMinor: 7900, sortOrder: 0, active: true, ...overrides };
+    return { id: 'o1', kind: 'INITIAL', months: 3, priceAmountMinor: 7900, promoPriceAmountMinor: null, sortOrder: 0, active: true, ...overrides };
 }
 
 function plan(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto {

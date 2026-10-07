@@ -1,5 +1,5 @@
 import type { CoverageOptionResponseDto, EventTypeConvention, ModuleKey, PlanScope, PlanTierResponseDto } from '@/lib/api/types';
-import { discountedAmountMinor, isPlanDiscountActive } from '@/lib/billing';
+import { activePromoPriceMinor, discountedAmountMinor, isPlanDiscountActive, promotedOptionAmountMinor } from '@/lib/billing';
 import { formatBytes, numberFormat } from '@/lib/format';
 
 export function scopedPlans(plans: PlanTierResponseDto[], scope: PlanScope): PlanTierResponseDto[] {
@@ -47,10 +47,10 @@ export function formatPlanMoney(plan: PlanTierResponseDto, locale?: string): str
     return formatPlanAmount(plan, locale);
 }
 
-// One duration's price, after the plan's own promotion. Every option is priced
-// in the plan's currency.
+// One duration's price, after the plan's own promotion (its promo price, else
+// the plan's percent). Every option is priced in the plan's currency.
 export function getOptionPriceDetails(plan: PlanTierResponseDto, option: CoverageOptionResponseDto): PlanPriceDetails | null {
-    return priceDetails(plan, option.priceAmountMinor);
+    return optionPriceDetails(plan, option);
 }
 
 // An EVENT plan has no price of its own: this is its cheapest live duration,
@@ -58,9 +58,21 @@ export function getOptionPriceDetails(plan: PlanTierResponseDto, option: Coverag
 export function getPlanPriceDetails(plan: PlanTierResponseDto): PlanPriceDetails | null {
     if (plan.scope === 'EVENT') {
         const cheapest = cheapestInitialOption(plan);
-        return cheapest ? priceDetails(plan, cheapest.priceAmountMinor) : null;
+        return cheapest ? optionPriceDetails(plan, cheapest) : null;
     }
     return priceDetails(plan, plan.priceAmountMinor);
+}
+
+function optionPriceDetails(plan: PlanTierResponseDto, option: CoverageOptionResponseDto): PlanPriceDetails | null {
+    if (!plan.priceCurrency) return null;
+
+    return {
+        amountMinor: promotedOptionAmountMinor(option, plan),
+        listAmountMinor: option.priceAmountMinor,
+        currency: plan.priceCurrency,
+        discountActive: activePromoPriceMinor(option, plan) !== null || isPlanDiscountActive(plan),
+        discountLabel: plan.discountLabel,
+    };
 }
 
 function priceDetails(plan: PlanTierResponseDto, listAmountMinor: number | null): PlanPriceDetails | null {

@@ -38,6 +38,11 @@ export function PlanDurationRow({
             <span className={cn('font-mono text-sm', option.active ? 'text-ink' : 'text-ink-faint')}>
                 {formatOptionalMoney(option.priceAmountMinor, currency, locale)}
             </span>
+            {option.promoPriceAmountMinor !== null && (
+                <span className="font-mono text-xs text-ink-muted">
+                    {t('plans.durations.promoPriceShort', { price: formatOptionalMoney(option.promoPriceAmountMinor, currency, locale) ?? '' })}
+                </span>
+            )}
 
             {/* Status */}
             <span

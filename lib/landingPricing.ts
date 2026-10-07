@@ -1,5 +1,5 @@
 import type { AppMediaConfigDto, CoverageOptionResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
-import { discountedAmountMinor } from '@/lib/billing';
+import { promotedOptionAmountMinor } from '@/lib/billing';
 import { formatBytes, numberFormat } from '@/lib/format';
 import { activeRoleCount, type MemberRoleCatalog } from '@/lib/memberRoles';
 import { mediaEstimate } from '@/lib/planComparison';
@@ -8,10 +8,13 @@ import { enabledModuleKeys } from '@/lib/planModules';
 import { liveInitialOptions, shortestInitialOption } from '@/lib/planTiers';
 
 // One length a plan is sold at, with its price already formatted for the card.
+// listPrice is the price before the plan's promotion, set only while one
+// lowers this duration, for the card to show struck through beside it.
 export type LandingPlanDuration = {
     id: string;
     months: number;
     price: string;
+    listPrice: string | null;
 };
 
 export type LandingPlan = {
@@ -42,18 +45,28 @@ export interface LandingPlanCopy {
     storageUnlimited: string;
 }
 
-// One duration's price after the plan's promotion. Mirrors the landing page's
-// existing static style exactly: a whole euro amount with a suffixed symbol and
-// no decimals ("79€"), not Intl.NumberFormat's default currency rendering
-// (which would print "€79.00" or add locale-specific spacing/decimals and
-// change the visual design).
+// One duration's price after the plan's promotion (its promo price, else the
+// plan's percent).
 export function formatLandingOptionPrice(plan: PlanTierResponseDto, option: CoverageOptionResponseDto): string | null {
     if (!plan.priceCurrency) return null;
+    return formatLandingAmount(promotedOptionAmountMinor(option, plan), plan.priceCurrency);
+}
 
-    const amount = discountedAmountMinor(option.priceAmountMinor, plan) / 100;
-    if (plan.priceCurrency === 'EUR' && Number.isInteger(amount)) return `${amount}€`;
+// The duration's price before the promotion, or null when no promotion lowers it.
+export function formatLandingListPrice(plan: PlanTierResponseDto, option: CoverageOptionResponseDto): string | null {
+    if (!plan.priceCurrency || promotedOptionAmountMinor(option, plan) >= option.priceAmountMinor) return null;
+    return formatLandingAmount(option.priceAmountMinor, plan.priceCurrency);
+}
 
-    return numberFormat(undefined, { style: 'currency', currency: plan.priceCurrency }).format(amount);
+// Mirrors the landing page's existing static style exactly: a whole euro
+// amount with a suffixed symbol and no decimals ("79€"), not
+// Intl.NumberFormat's default currency rendering (which would print "€79.00"
+// or add locale-specific spacing/decimals and change the visual design).
+function formatLandingAmount(amountMinor: number, currency: string): string {
+    const amount = amountMinor / 100;
+    if (currency === 'EUR' && Number.isInteger(amount)) return `${amount}€`;
+
+    return numberFormat(undefined, { style: 'currency', currency }).format(amount);
 }
 
 // The duration a card shows: the one picked, else the plan's default.
@@ -68,7 +81,7 @@ export function pickedLandingDuration(plan: LandingPlan, durationId: string | nu
 function landingDurations(plan: PlanTierResponseDto): LandingPlanDuration[] {
     return liveInitialOptions(plan).flatMap((option) => {
         const price = formatLandingOptionPrice(plan, option);
-        return price === null ? [] : [{ id: option.id, months: option.months, price }];
+        return price === null ? [] : [{ id: option.id, months: option.months, price, listPrice: formatLandingListPrice(plan, option) }];
     });
 }
 

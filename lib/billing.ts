@@ -1,4 +1,4 @@
-import type { CheckoutResponseDto, EventStatus, OrderSummaryDto, PlanTierResponseDto } from '@/lib/api/types';
+import type { CheckoutResponseDto, CoverageOptionResponseDto, EventStatus, OrderSummaryDto, PlanTierResponseDto } from '@/lib/api/types';
 import { dateTimeFormat, numberFormat } from '@/lib/format';
 
 type PendingCheckout = {
@@ -105,23 +105,42 @@ export function billingCurrency(orders: OrderSummaryDto[], fallback = 'EUR'): st
     );
 }
 
-export function isPlanDiscountActive(plan: PlanTierResponseDto, now = new Date()): boolean {
-    if (!plan.discountPercent || plan.discountPercent <= 0) return false;
-
+// Whether the plan's promotion window covers `now`. The dates govern the plan's
+// percent and every duration's promo price alike; a null bound is open.
+export function isPlanPromotionOpen(plan: PlanTierResponseDto, now = new Date()): boolean {
     const startsAt = parseDiscountBoundary(plan.discountStartsAt);
     if (startsAt && startsAt.getTime() > now.getTime()) return false;
 
     const endsAt = parseDiscountBoundary(plan.discountEndsAt);
-    if (endsAt && endsAt.getTime() <= now.getTime()) return false;
-
-    return true;
+    return !endsAt || endsAt.getTime() > now.getTime();
 }
 
+export function isPlanDiscountActive(plan: PlanTierResponseDto, now = new Date()): boolean {
+    if (!plan.discountPercent || plan.discountPercent <= 0) return false;
+    return isPlanPromotionOpen(plan, now);
+}
+
+// The amount after the plan's percent. The discount is truncated, never the
+// price, as the server does (CollaborationPricing.applyDiscount): 12.5% off
+// 999 takes 124, not 125. The percent carries at most two decimals, so it is
+// worked in hundredths to keep the arithmetic exact.
 export function discountedAmountMinor(amountMinor: number, plan: PlanTierResponseDto, now = new Date()): number {
     if (!isPlanDiscountActive(plan, now)) return amountMinor;
 
-    const discountPercent = Math.min(Math.max(plan.discountPercent ?? 0, 0), 100);
-    return Math.max(0, Math.round(amountMinor * (1 - discountPercent / 100)));
+    const hundredths = Math.round(Math.min(Math.max(plan.discountPercent ?? 0, 0), 100) * 100);
+    return Math.max(0, amountMinor - Math.floor((amountMinor * hundredths) / 10_000));
+}
+
+// The duration's promo price while the plan's promotion window is open, else null.
+export function activePromoPriceMinor(option: CoverageOptionResponseDto, plan: PlanTierResponseDto, now = new Date()): number | null {
+    if (option.kind !== 'INITIAL' || option.promoPriceAmountMinor === null) return null;
+    return isPlanPromotionOpen(plan, now) ? option.promoPriceAmountMinor : null;
+}
+
+// One duration's price after the plan's promotion: its promo price where it
+// has a live one (which replaces the plan's percent), else the percent.
+export function promotedOptionAmountMinor(option: CoverageOptionResponseDto, plan: PlanTierResponseDto, now = new Date()): number {
+    return activePromoPriceMinor(option, plan, now) ?? discountedAmountMinor(option.priceAmountMinor, plan, now);
 }
 
 function parseDiscountBoundary(value: string | null): Date | null {

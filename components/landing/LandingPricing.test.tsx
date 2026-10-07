@@ -22,7 +22,7 @@ function landingPlan(code: string): LandingPlan {
         photos: '',
         storage: '',
         videos: '',
-        durations: [{ id: 'o', months: 3, price: '79€' }],
+        durations: [{ id: 'o', months: 3, price: '79€', listPrice: null }],
         defaultDurationId: 'o',
     };
 }
