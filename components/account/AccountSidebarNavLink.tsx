@@ -19,12 +19,9 @@ export function AccountSidebarNavLink({ href, icon: Icon, label, onNavigateActio
     const pathname = usePathname();
     const active = isPathActive(pathname, href);
 
+    // On the current page there is nowhere to go, so the tap just closes the panel.
     function handleClick(event: MouseEvent<HTMLAnchorElement>) {
-        if (active) {
-            event.preventDefault();
-            return;
-        }
-
+        if (active) event.preventDefault();
         onNavigateAction();
     }
 
@@ -36,11 +33,15 @@ export function AccountSidebarNavLink({ href, icon: Icon, label, onNavigateActio
             className={cn(
                 'flex min-h-11 items-center gap-3 rounded-full px-4 py-2.5 text-sm font-semibold ring-1 transition-[background-color,transform]',
                 active
-                    ? 'bg-white/18 text-white ring-white/70'
+                    ? 'bg-white text-ink shadow-sm ring-white'
                     : 'bg-white/10 text-white/88 ring-white/14 hover:bg-white/16 hover:text-white active:scale-[0.99]',
             )}
         >
-            <Icon className={cn('h-5 w-5 shrink-0', active ? 'text-white' : 'text-white/80')} aria-hidden="true" strokeWidth={active ? 2.3 : 1.8} />
+            <Icon
+                className={cn('h-5 w-5 shrink-0', active ? 'text-primary-dark' : 'text-white/80')}
+                aria-hidden="true"
+                strokeWidth={active ? 2.3 : 1.8}
+            />
             <span className="truncate">{label}</span>
         </Link>
     );
