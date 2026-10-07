@@ -534,6 +534,9 @@
             "title": "Coming up"
         }
     },
+    "InviteEventCard": {
+        "eyebrow": "You’re joining"
+    },
     "InviteOnboardingPage": {
         "loading": "Loading your invitation…",
         "invalidInvite": {

@@ -11,6 +11,7 @@ import { AuthLayout } from '@/components/auth/AuthLayout';
 import { OAuthButtons } from '@/components/auth/OAuthButtons';
 import { RegisterBusinessSection } from '@/components/auth/RegisterBusinessSection';
 import { RegisterNewsletterCheckbox } from '@/components/auth/RegisterNewsletterCheckbox';
+import { InviteEventCard } from '@/components/invite/InviteEventCard';
 import { AuthLoadingState } from '@/components/layout/AuthLoadingState';
 import { AcceptanceCheckboxes } from '@/components/legal/AcceptanceCheckboxes';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
@@ -176,6 +177,7 @@ export default function RegisterPage() {
 
     return (
         <AuthLayout showLanguageSwitcher>
+            <InviteEventCard inviteToken={inviteToken} />
             <h2 className="mb-1 text-2xl font-bold text-ink">{t('title')}</h2>
 
             <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-4">

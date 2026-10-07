@@ -25,6 +25,7 @@ vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ register: mocks.register, 
 vi.mock('@/hooks/useAuthPageRedirect', () => ({ useAuthPageRedirect: () => ({ shouldRenderAuthPage: true }) }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'generic error' }));
 vi.mock('@/hooks/useAppConfig', () => ({ useAppNewsletterConfig: () => null }));
+vi.mock('@/components/invite/InviteEventCard', () => ({ InviteEventCard: () => null }));
 vi.mock('@/hooks/useContentLimits', () => ({ useContentLimits: () => ({}) }));
 vi.mock('@/hooks/useNavigateAfterSignIn', () => ({ useNavigateAfterSignIn: () => mocks.navigateAfterSignIn }));
 vi.mock('@/hooks/useRegisterBusinessProfile', () => ({

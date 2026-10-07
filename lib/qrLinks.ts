@@ -17,16 +17,12 @@ export function getQrTerminalCopyKey(resolution?: QrLinkResolutionDto | null, er
 }
 
 // Where a scanned link that leads to an invitation sends the visitor, or null
-// when the QR page renders something itself. The shared join link goes straight
-// to sign-up for a newcomer, but a signed-in visitor goes to the invite page:
-// /register would bounce them to /home and drop the invitation.
-export function getQrRedirectPath(resolution: QrLinkResolutionDto | null | undefined, isAuthenticated: boolean): string | null {
+// when the QR page renders something itself. Both the shared join link and a
+// personal invitation open the invite page: it shows the event, then lets a
+// newcomer sign up, a returning guest sign in, or a signed-in visitor accept.
+export function getQrRedirectPath(resolution: QrLinkResolutionDto | null | undefined): string | null {
     if (resolution?.status !== 'ACTIVE' || !resolution.inviteToken) return null;
-
-    if (resolution.targetType === 'INVITATION') return routes.inviteToken(resolution.inviteToken);
-    if (resolution.targetType === 'EVENT_JOIN') {
-        return isAuthenticated ? routes.inviteToken(resolution.inviteToken) : routes.auth.register({ invite: resolution.inviteToken });
-    }
+    if (resolution.targetType === 'INVITATION' || resolution.targetType === 'EVENT_JOIN') return routes.inviteToken(resolution.inviteToken);
     return null;
 }
 
