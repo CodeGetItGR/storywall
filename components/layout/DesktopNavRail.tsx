@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarDays, Home as HomeIcon, Pencil } from 'lucide-react';
+import { Bell, CalendarDays, Home as HomeIcon, Pencil, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -14,6 +14,7 @@ import { isEventRoute, isPathActive } from '@/components/layout/mobile-tab-bar';
 import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useDesktopAccountSidebar } from '@/hooks/useDesktopAccountSidebar';
+import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { isEventDeleted } from '@/lib/eventLifecycle';
 import { getInitials } from '@/lib/format';
 import { routes } from '@/lib/routes';
@@ -27,6 +28,7 @@ export function DesktopNavRail() {
     const { user: authUser } = useAuth();
     const { expanded, handleMouseEnter, handleMouseLeave, togglePinned } = useDesktopAccountSidebar();
     const activeEvent = useActiveEvent();
+    const { data: unreadCount = 0 } = useUnreadNotificationCount();
     // Events and profile need a real session; in the demo they would dead-end on the login page.
     const isDemoRoute = pathname?.startsWith('/demo') ?? false;
     const isDraft = activeEvent?.status === 'DRAFT';
@@ -40,6 +42,8 @@ export function DesktopNavRail() {
         : null;
     const homeActive = Boolean(homeHref) && (isPathActive(pathname, homeHref!) || isPathActive(pathname, routes.feed));
     const eventsActive = isPathActive(pathname, routes.home);
+    const profileActive = isPathActive(pathname, routes.profile);
+    const notificationsActive = isPathActive(pathname, routes.notifications);
 
     function handleRailClick(event: MouseEvent<HTMLElement>) {
         if (event.target === event.currentTarget) {
@@ -111,13 +115,30 @@ export function DesktopNavRail() {
                 )}
 
                 {!isDemoRoute && (
-                    <DesktopAccountNavLink
-                        href={routes.home}
-                        icon={CalendarDays}
-                        label={tAccount('events')}
-                        active={eventsActive}
-                        expanded={expanded}
-                    />
+                    <>
+                        <DesktopAccountNavLink
+                            href={routes.home}
+                            icon={CalendarDays}
+                            label={tAccount('events')}
+                            active={eventsActive}
+                            expanded={expanded}
+                        />
+                        <DesktopAccountNavLink
+                            href={routes.profile}
+                            icon={UserRound}
+                            label={tAccount('profile')}
+                            active={profileActive}
+                            expanded={expanded}
+                        />
+                        <DesktopAccountNavLink
+                            href={routes.notifications}
+                            icon={Bell}
+                            label={tAccount('notifications')}
+                            active={notificationsActive}
+                            expanded={expanded}
+                            badgeCount={unreadCount}
+                        />
+                    </>
                 )}
             </div>
 

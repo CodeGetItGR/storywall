@@ -25,7 +25,7 @@ export function HomeHeader() {
                 <Link
                     href={routes.notifications}
                     aria-label={tNotifications('title')}
-                    className="relative flex h-11 w-11 items-center justify-center"
+                    className="relative flex h-11 w-11 items-center justify-center lg:hidden"
                 >
                     <Bell className="h-5 w-5 text-ink" strokeWidth={1.8} />
                     {unreadCount > 0 && (
