@@ -3,6 +3,7 @@
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { DateTimeField } from '@/components/ui/DateTimeField';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { Modal } from '@/components/ui/modal';
 import { useCreateEventFieldLabels } from '@/hooks/useCreateEventFieldLabels';
@@ -26,15 +27,14 @@ export function DraftStartDateModal({ date, eventType }: { date: DraftStartDate;
 
                     {/* Date */}
                     <FormFieldLabel label={labels.startAt} required>
-                        <input
-                            type="datetime-local"
+                        <DateTimeField
                             value={date.value}
                             min={date.min}
                             max={date.max}
                             onChange={date.handleChange}
                             disabled={date.isSaving}
                             aria-invalid={Boolean(date.validationError)}
-                            className={inputClass}
+                            inputClassName={inputClass}
                         />
                         {date.validationError && <span className="text-xs text-rose-600">{date.validationError}</span>}
                     </FormFieldLabel>

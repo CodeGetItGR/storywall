@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, type SubmitEvent, useCallback, useState } from 'react';
+import { type SubmitEvent, useCallback, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
@@ -54,7 +54,7 @@ export function useDraftStartDate(eventId: string, { startAt, endAt }: { startAt
         if (!updateEvent.isPending) setIsOpen(false);
     }, [updateEvent.isPending]);
 
-    const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => setValue(event.target.value), []);
+    const handleChange = useCallback((nextValue: string) => setValue(nextValue), []);
 
     const { mutateAsync } = updateEvent;
     const save = useCallback(async () => {

@@ -202,3 +202,15 @@ export function eventWindowFromLocalStart(
     if (!start) return null;
     return { startAt: start.toISOString(), endAt: new Date(start.getTime() + lengthMs).toISOString() };
 }
+
+// A datetime-local value split into the values of a separate date input
+// ("YYYY-MM-DD") and time input ("HH:mm"), and joined back.
+export function splitDatetimeLocalValue(value: string | null | undefined): { date: string; time: string } {
+    if (!value) return { date: '', time: '' };
+    const [date = '', time = ''] = value.split('T');
+    return { date, time: time.slice(0, 5) };
+}
+
+export function joinDatetimeLocalValue(date: string, time: string): string {
+    return date && time ? `${date}T${time}` : '';
+}

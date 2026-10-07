@@ -28,7 +28,13 @@ import type {
 } from '@/lib/api/types';
 import { navigateToCheckout } from '@/lib/billing';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
-import { CREATE_EVENT_STEPS, effectiveThemePresetId, isThemeStepAvailable, parseCreateEventStep, visibleCreateEventSteps } from '@/lib/createEventSteps';
+import {
+    CREATE_EVENT_STEPS,
+    effectiveThemePresetId,
+    isThemeStepAvailable,
+    parseCreateEventStep,
+    visibleCreateEventSteps,
+} from '@/lib/createEventSteps';
 import { eventWindowFromLocalStart, getScheduleDatetimeLocalBounds, isDatetimeLocalAfter, isDatetimeLocalBefore } from '@/lib/datetime';
 import { projectCoverage } from '@/lib/eventCoverage';
 import { liveInitialOptions, resolveInitialOption } from '@/lib/planTiers';
@@ -199,7 +205,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
     );
 
     const onTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value), []);
-    const onStartAtChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setStartAt(e.target.value), []);
+    const onStartAtChange = useCallback((value: string) => setStartAt(value), []);
     const onTimezoneChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setTimezone(e.target.value), []);
     const onLocationNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setLocationName(e.target.value), []);
     const onLocationAddressChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setLocationAddress(e.target.value), []);

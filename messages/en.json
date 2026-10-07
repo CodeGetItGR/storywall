@@ -7,7 +7,8 @@
         "primaryHostOnly": "Only the event's main host can make purchases.",
         "demoPurchaseDisabled": "Purchases aren’t available in the demo.",
         "seeUpgradeOptions": "See upgrade options",
-        "loading": "Loading…"
+        "loading": "Loading…",
+        "time": "Time"
     },
     "DemoActAs": {
         "postingAs": "Posting as",

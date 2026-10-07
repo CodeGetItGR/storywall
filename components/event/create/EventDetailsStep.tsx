@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { EventTimezoneField } from '@/components/event/create/EventTimezoneField';
 import { GiftDetailsFields } from '@/components/giftMode/GiftDetailsFields';
+import { DateTimeField } from '@/components/ui/DateTimeField';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useContentLimits } from '@/hooks/useContentLimits';
 import { useCreateEventFieldLabels } from '@/hooks/useCreateEventFieldLabels';
@@ -62,14 +63,13 @@ export function EventDetailsStep() {
 
                 {/* Schedule */}
                 <FormFieldLabel label={labels.startAt} required>
-                    <input
-                        type="datetime-local"
+                    <DateTimeField
                         required
                         value={startAt}
                         onChange={onStartAtChange}
                         min={startAtMin}
                         max={startAtMax}
-                        className="rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink transition outline-none focus:ring-2 focus:ring-primary/30"
+                        inputClassName="rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink transition outline-none focus:ring-2 focus:ring-primary/30"
                     />
                     {scheduleError ? (
                         <span className="text-xs text-rose-500">{scheduleError}</span>

@@ -3,6 +3,7 @@
 import { Loader2, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { DateTimeField } from '@/components/ui/DateTimeField';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useContentLimits } from '@/hooks/useContentLimits';
@@ -57,7 +58,7 @@ export function CreateCoHostInvitationForm({ eventId, onDoneAction }: { eventId:
                     {errors?.email && <span className="text-xs text-rose-600">{errors.email}</span>}
                 </FormFieldLabel>
                 <FormFieldLabel label={t('expiresAt')} optional className={fieldLabelClass} labelClassName={fieldTextClass}>
-                    <input name="expiresAt" type="datetime-local" className={fieldControlClass} />
+                    <DateTimeField name="expiresAt" inputClassName={fieldControlClass} />
                 </FormFieldLabel>
                 <FormFieldLabel label={t('firstName')} optional className={fieldLabelClass} labelClassName={fieldTextClass}>
                     <input name="firstName" maxLength={limits.personNameMaxLength} className={fieldControlClass} />

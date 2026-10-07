@@ -6,6 +6,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { TargetedSection } from '@/components/manage/TargetedSection';
+import { DateTimeField } from '@/components/ui/DateTimeField';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
@@ -179,12 +180,12 @@ export default function SettingsTab({
         setMapsUrl(e.target.value);
     }
 
-    function handleStartAtChange(e: React.ChangeEvent<HTMLInputElement>) {
-        setStartAt(e.target.value);
+    function handleStartAtChange(value: string) {
+        setStartAt(value);
     }
 
-    function handleEndAtChange(e: React.ChangeEvent<HTMLInputElement>) {
-        setEndAt(e.target.value);
+    function handleEndAtChange(value: string) {
+        setEndAt(value);
     }
 
     function handleEndAtPresetClick(e: React.MouseEvent<HTMLButtonElement>) {
@@ -372,15 +373,14 @@ export default function SettingsTab({
                 {/* Schedule */}
                 <div className="grid gap-3 sm:grid-cols-2">
                     <FormFieldLabel label={fieldLabels.startAt} required labelClassName={labelClass}>
-                        <input
-                            type="datetime-local"
+                        <DateTimeField
                             required
                             value={startAt}
                             onChange={handleStartAtChange}
                             disabled={disabled || eventHasStarted}
                             min={startAtMin}
                             max={startAtMax}
-                            className={inputClass}
+                            inputClassName={inputClass}
                         />
                         {eventHasStarted ? (
                             <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('settings.startLocked')}</p>
@@ -393,14 +393,13 @@ export default function SettingsTab({
                         )}
                     </FormFieldLabel>
                     <FormFieldLabel label={t('settings.fields.endAt')} required labelClassName={labelClass}>
-                        <input
-                            type="datetime-local"
+                        <DateTimeField
                             required
                             value={endAt}
                             onChange={handleEndAtChange}
                             disabled={disabled}
                             min={endAtMin}
-                            className={inputClass}
+                            inputClassName={inputClass}
                         />
                         {/* End Presets */}
                         <div className="flex flex-wrap gap-1.5">
