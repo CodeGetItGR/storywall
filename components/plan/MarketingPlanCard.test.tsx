@@ -11,6 +11,11 @@ const messages = {
         short: '{count}m',
         months: '{count, plural, one {# month} other {# months}}',
     },
+    LandingPage: {
+        pricing: {
+            durationSingle: '{count, plural, one {Online for # month} other {Online for # months}}',
+        },
+    },
 };
 
 const plan: LandingPlan = {
@@ -29,16 +34,17 @@ const plan: LandingPlan = {
 };
 
 function renderCard({
+    cardPlan = plan,
     defaultExpanded,
     durationId,
     onSelectAction,
     selected,
-}: { defaultExpanded?: boolean; durationId?: string; onSelectAction?: (code: string) => void; selected?: boolean } = {}) {
+}: { cardPlan?: LandingPlan; defaultExpanded?: boolean; durationId?: string; onSelectAction?: (code: string) => void; selected?: boolean } = {}) {
     return render(
         <NextIntlClientProvider locale="en" messages={messages}>
             <MarketingPlanCard
                 featured={false}
-                plan={plan}
+                plan={cardPlan}
                 durationId={durationId}
                 popularLabel="Most popular"
                 durationLabel="Stays online for"
@@ -65,6 +71,13 @@ describe('MarketingPlanCard', () => {
         renderCard();
         expect(screen.getByText('Stays online for')).toBeInTheDocument();
         expect(screen.getByRole('radiogroup', { name: 'Stays online for' })).toBeInTheDocument();
+    });
+
+    it('states a single duration instead of asking to choose one', () => {
+        renderCard({ cardPlan: { ...plan, durations: [plan.durations[1]] } });
+        expect(screen.getByText('Online for 9 months')).toBeInTheDocument();
+        expect(screen.queryByText('Stays online for')).toBeNull();
+        expect(screen.queryByRole('radiogroup')).toBeNull();
     });
 
     it('spells out each duration in full', () => {

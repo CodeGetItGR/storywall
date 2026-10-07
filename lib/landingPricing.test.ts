@@ -94,15 +94,15 @@ const COPY: LandingPlanCopy = {
     mediaUnlimited: 'Unlimited',
     scheduleSessions: (max) => (max === null ? 'Unlimited schedule sessions' : `Up to ${max} schedule sessions`),
     storageUnlimited: 'Unlimited storage',
-    memberRoles: (count, custom) => `${count} member roles${custom ? ' + your own' : ''}`,
+    memberRoles: (count, custom, examples) => `${count} member roles (${examples.map((label) => label.en).join(', ')})${custom ? ' + your own' : ''}`,
     memberRolesCustomOnly: 'Custom member roles',
 };
 
-function role(id: string, retired = false): MemberRoleCatalogDto {
-    return { id, eventTypeKey: 'WEDDING', roleKey: id.toUpperCase(), label: { en: id, el: id }, emoji: null, maxHolders: null, sortOrder: 0, hostOnly: false, retired, sectionLabel: null };
+function role(id: string, retired = false, sortOrder = 0): MemberRoleCatalogDto {
+    return { id, eventTypeKey: 'WEDDING', roleKey: id.toUpperCase(), label: { en: id, el: id }, emoji: null, maxHolders: null, sortOrder, hostOnly: false, retired, sectionLabel: null };
 }
 
-const ROLES = { WEDDING: [role('a'), role('b'), role('c'), role('old', true)] };
+const ROLES = { WEDDING: [role('old', true), role('c', false, 2), role('b', false, 1), role('a')] };
 
 const MODULE_NAME = (moduleKey: string) => MODULES.find((module_) => module_.moduleKey === moduleKey)?.name ?? moduleKey;
 
@@ -300,12 +300,12 @@ describe('buildLandingPlan member roles line', () => {
         return buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY, undefined, catalog);
     }
 
-    it('counts active roles only', () => {
-        expect(card(false)?.features).toEqual(['3 member roles']);
+    it('counts active roles only and names the first two in catalog order', () => {
+        expect(card(false)?.features).toEqual(['3 member roles (a, b)']);
     });
 
     it('adds "your own" when the plan allows custom roles', () => {
-        expect(card(true)?.features).toEqual(['3 member roles + your own']);
+        expect(card(true)?.features).toEqual(['3 member roles (a, b) + your own']);
     });
 
     it('shows the custom-only line when the type has no roles', () => {
@@ -327,7 +327,7 @@ describe('buildLandingPlan member roles line', () => {
 
         const result = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY, undefined, ROLES);
 
-        expect(result?.features).toEqual(['Everything in START', '3 member roles + your own']);
+        expect(result?.features).toEqual(['Everything in START', '3 member roles (a, b) + your own']);
         expect(result?.includedFeatures).toBeUndefined();
     });
 });

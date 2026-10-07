@@ -12,12 +12,12 @@ type LandingFeatureDetailCardProps = {
 export function LandingFeatureDetailCard({ description, imageAlt, imagePath, items, subtitle, title }: LandingFeatureDetailCardProps) {
     return (
         <article className="flex h-full flex-col overflow-hidden rounded-[24px] border border-white/10 bg-[#101014]">
-            {/* Feature image */}
-            <div className="aspect-[0.69] shrink-0 overflow-hidden">
+            {/* Feature image: a landscape crop, kept low so the phone stays in frame */}
+            <div className="aspect-[4/3] shrink-0 overflow-hidden min-[1024px]:aspect-square">
                 <ProtectedImage
                     unoptimized
                     alt={imageAlt}
-                    className="size-full object-cover"
+                    className="size-full object-cover object-[center_65%]"
                     height={900}
                     loading="lazy"
                     src={imagePath}
@@ -26,13 +26,13 @@ export function LandingFeatureDetailCard({ description, imageAlt, imagePath, ite
             </div>
 
             {/* Feature details */}
-            <div className="flex flex-1 flex-col px-7 pt-7 pb-8">
-                <h3 className="max-w-[19rem] text-[clamp(40px,3.2vw,55px)] leading-[0.9] font-(--editorial) tracking-[-0.045em] text-white">
+            <div className="flex flex-1 flex-col px-6 pt-6 pb-7 min-[1024px]:px-5 min-[1024px]:pt-5 min-[1024px]:pb-6">
+                <h3 className="max-w-[19rem] text-[clamp(28px,2.4vw,40px)] leading-[0.9] font-(--editorial) tracking-[-0.045em] text-white">
                     {title}
                 </h3>
-                <p className="mt-5 text-[16px] leading-[1.35] font-black text-[#f2c66a]">{subtitle}</p>
-                <p className="mt-5 text-[15px] leading-[1.55] text-white/82">{description}</p>
-                <ul className="mt-auto space-y-2.5 border-t border-white/14 pt-6 text-[13px] leading-[1.4] font-semibold text-white/90">
+                <p className="mt-4 text-[16px] leading-[1.35] font-black text-[#f2c66a]">{subtitle}</p>
+                <p className="mt-3 text-[15px] leading-[1.55] text-white/82">{description}</p>
+                <ul className="mt-auto space-y-2.5 border-t border-white/14 pt-5 text-[13px] leading-[1.4] font-semibold text-white/90">
                     {items.map((item) => (
                         <li
                             className="relative pl-4 before:absolute before:top-[0.48em] before:left-0 before:size-1 before:rounded-full before:bg-[#f2c66a] before:content-['']"

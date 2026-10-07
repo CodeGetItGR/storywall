@@ -4423,7 +4423,7 @@
             "description": "Plan the event timeline with schedule sections."
         },
         "member_roles": {
-            "name": "Member roles",
+            "name": "Guest roles",
             "description": "Guests pick a role, like best man, shown next to their name."
         },
         "theme": {
@@ -5145,6 +5145,7 @@
             "popular": "Most popular",
             "categoryLabel": "Event category",
             "durationLabel": "Choose how long it stays online",
+            "durationSingle": "{count, plural, one {Online for # month} other {Online for # months}}",
             "listPrice": "Original price",
             "showFeatures": "Show features",
             "hideFeatures": "Hide features",
@@ -5164,9 +5165,9 @@
             "coHosts": "{count, plural, one {Up to # co-host} other {Up to # co-hosts}}",
             "coHostsUnlimited": "Unlimited co-hosts",
             "galleryWithQrUpload": "Gallery with QR upload",
-            "memberRoles": "{count, plural, one {# member role} other {# member roles}}",
-            "memberRolesWithCustom": "{count, plural, one {# member role + your own} other {# member roles + your own}}",
-            "memberRolesCustomOnly": "Custom member roles"
+            "memberRoles": "{count, plural, one {# guest role ({roles})} other {# guest roles ({roles})}}",
+            "memberRolesWithCustom": "{count, plural, one {# guest role ({roles}) + your own} other {# guest roles ({roles}) + your own}}",
+            "memberRolesCustomOnly": "Custom guest roles"
         },
         "faq": {
             "eyebrow": "FAQ",

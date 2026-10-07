@@ -1,7 +1,7 @@
-import type { AppMediaConfigDto, CoverageOptionResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import type { AppMediaConfigDto, CoverageOptionResponseDto, LocalizedText, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { promotedOptionAmountMinor } from '@/lib/billing';
 import { formatBytes, numberFormat } from '@/lib/format';
-import { activeRoleCount, type MemberRoleCatalog } from '@/lib/memberRoles';
+import { activeRoles, type MemberRoleCatalog } from '@/lib/memberRoles';
 import { mediaEstimate } from '@/lib/planComparison';
 import { configCount, type ConfigObject } from '@/lib/planModuleConfig';
 import { enabledModuleKeys } from '@/lib/planModules';
@@ -39,7 +39,8 @@ export interface LandingPlanCopy {
     guestsUnlimited: string;
     guestsUpTo: (count: number) => string;
     mediaUnlimited: string;
-    memberRoles: (count: number, custom: boolean) => string;
+    // examples: the first few role names, for the line to show what a role is.
+    memberRoles: (count: number, custom: boolean, examples: LocalizedText[]) => string;
     memberRolesCustomOnly: string;
     scheduleSessions: (max: number | null) => string;
     storageUnlimited: string;
@@ -99,6 +100,9 @@ function sortedModuleKeys(moduleKeys: string[], modules: PlatformModuleResponseD
         .sort((left, right) => (sortOrderByKey.get(left) ?? 0) - (sortOrderByKey.get(right) ?? 0));
 }
 
+// How many role names the member roles line shows.
+const MEMBER_ROLE_EXAMPLES = 2;
+
 // One module's line on a plan card, from that plan's own config for it. Null
 // hides the module: a count cap of 0 means the plan allows none. Plans without
 // moduleConfigs (null) fall back to the plain module name.
@@ -126,10 +130,11 @@ function moduleFeatureLabel(
         case 'member_roles': {
             // Plans don't cap roles: the count is the event type's catalog, and
             // the plan only decides whether members may type their own.
-            const count = activeRoleCount(memberRoles, plan.eventTypeKey);
+            const roles = activeRoles(memberRoles, plan.eventTypeKey);
             const custom = config?.allowCustom === true;
-            if (count === 0) return custom ? copy.memberRolesCustomOnly : null;
-            return copy.memberRoles(count, custom);
+            if (roles.length === 0) return custom ? copy.memberRolesCustomOnly : null;
+            const examples = roles.slice(0, MEMBER_ROLE_EXAMPLES).map((role) => role.label);
+            return copy.memberRoles(roles.length, custom, examples);
         }
         default:
             return moduleName(moduleKey);

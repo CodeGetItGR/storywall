@@ -41,6 +41,12 @@ export function memberRoleLabel({
     return role.emoji ? `${role.emoji} ${label}` : label;
 }
 
+// An event type's roles that can still be picked, in catalog order.
+export function activeRoles(catalog: MemberRoleCatalog, eventTypeKey: string | null): MemberRoleCatalogDto[] {
+    if (!eventTypeKey) return [];
+    return sortRoles((catalog[eventTypeKey] ?? []).filter((role) => !role.retired));
+}
+
 export function activeRoleCount(catalog: MemberRoleCatalog, eventTypeKey: string | null): number {
     if (!eventTypeKey) return 0;
     return (catalog[eventTypeKey] ?? []).filter((role) => !role.retired).length;

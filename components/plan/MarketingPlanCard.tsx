@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { type ReactNode, useId } from 'react';
 
 import { DurationPicker } from '@/components/plan/DurationPicker';
@@ -46,11 +47,13 @@ export function MarketingPlanCard({
     onSelectAction,
     footer,
 }: MarketingPlanCardProps) {
+    const t = useTranslations('LandingPage.pricing');
     const duration = pickedLandingDuration(plan, durationId);
     const { open, toggle } = useDisclosure(defaultExpanded);
     const durationLabelId = useId();
     const featuresId = useId();
     const selectable = Boolean(onSelectAction);
+    const singleDuration = plan.durations.length === 1;
 
     function handleSelect() {
         onSelectAction?.(plan.code);
@@ -109,18 +112,24 @@ export function MarketingPlanCard({
                     {plan.audience} · {plan.storage}
                 </p>
 
-                {/* Duration */}
-                <p id={durationLabelId} className="mt-5 text-sm font-semibold">
-                    {durationLabel}
-                </p>
-                <DurationPicker
-                    options={plan.durations}
-                    value={duration.id}
-                    onChangeAction={handleDurationChange}
-                    variant="marketing"
-                    labelledBy={durationLabelId}
-                    className="relative z-10 mb-3"
-                />
+                {/* Duration: one length is stated, several are a picker */}
+                {singleDuration ? (
+                    <p className="mt-5 mb-3 text-sm font-semibold">{t('durationSingle', { count: duration.months })}</p>
+                ) : (
+                    <>
+                        <p id={durationLabelId} className="mt-5 text-sm font-semibold">
+                            {durationLabel}
+                        </p>
+                        <DurationPicker
+                            options={plan.durations}
+                            value={duration.id}
+                            onChangeAction={handleDurationChange}
+                            variant="marketing"
+                            labelledBy={durationLabelId}
+                            className="relative z-10 mb-3"
+                        />
+                    </>
+                )}
 
                 {/* Plan features: collapsible on mobile, always shown on desktop */}
                 <ul id={featuresId} className={cn('mb-0 list-none p-0', !open && 'hidden min-[761px]:block')}>

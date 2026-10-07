@@ -5282,6 +5282,7 @@
             "popular": "Το πιο δημοφιλές",
             "categoryLabel": "Κατηγορία event",
             "durationLabel": "Διάλεξε πόσο μένει online",
+            "durationSingle": "{count, plural, one {Online για # μήνα} other {Online για # μήνες}}",
             "listPrice": "Αρχική τιμή",
             "showFeatures": "Δείτε τα χαρακτηριστικά",
             "hideFeatures": "Απόκρυψη χαρακτηριστικών",
@@ -5301,8 +5302,8 @@
             "coHosts": "{count, plural, one {Έως # συνδιοργανωτής} other {Έως # συνδιοργανωτές}}",
             "coHostsUnlimited": "Απεριόριστοι συνδιοργανωτές",
             "galleryWithQrUpload": "Φωτογραφίες με ανέβασμα μέσω QR",
-            "memberRoles": "{count, plural, one {# ρόλος καλεσμένων} other {# ρόλοι καλεσμένων}}",
-            "memberRolesWithCustom": "{count, plural, one {# ρόλος καλεσμένων + δικός σας} other {# ρόλοι καλεσμένων + δικός σας}}",
+            "memberRoles": "{count, plural, one {# ρόλος καλεσμένων ({roles})} other {# ρόλοι καλεσμένων ({roles})}}",
+            "memberRolesWithCustom": "{count, plural, one {# ρόλος καλεσμένων ({roles}) + δικός σας} other {# ρόλοι καλεσμένων ({roles}) + δικός σας}}",
             "memberRolesCustomOnly": "Δικοί σας ρόλοι καλεσμένων"
         },
         "faq": {
