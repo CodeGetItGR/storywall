@@ -6,9 +6,11 @@ import { type ReactNode, useEffect } from 'react';
 import { AccountPanelShell } from '@/components/account/AccountPanelShell';
 import { DemoActAsBar } from '@/components/demo/DemoActAsBar';
 import { AuthLoadingState, DesktopNavRail, MobileTabBar } from '@/components/layout';
+import { isAccountRoute } from '@/components/layout/mobile-tab-bar';
 import { useAdminDemoEventAccess } from '@/hooks/useAdminDemoEventAccess';
 import { useAuth } from '@/hooks/useAuth';
 import { routes } from '@/lib/routes';
+import { cn } from '@/lib/utils';
 import { AccountPanelProvider } from '@/providers/AccountPanelProvider';
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -19,6 +21,8 @@ export function AppShell({ children }: { children: ReactNode }) {
     const isAuthenticated = Boolean(user);
     const adminAccess = useAdminDemoEventAccess(pathname);
     const isBlockedAdmin = user?.role === 'ADMIN' && !adminAccess.isAdminAllowed;
+    // MobileTabBar stays off on account pages, so no room is kept for it there.
+    const reservesTabBar = !isAccountRoute(pathname);
 
     useEffect(() => {
         if (isBootstrapping) return;
@@ -39,7 +43,12 @@ export function AppShell({ children }: { children: ReactNode }) {
     const shellContent = (
         <div className="desktop-account-shell flex h-full min-h-0 overflow-hidden bg-background">
             <DesktopNavRail />
-            <main className="desktop-account-page h-full min-w-0 flex-1 overflow-y-auto overscroll-contain bg-background pb-(--tab-bar-h) lg:ml-20 lg:pb-0">
+            <main
+                className={cn(
+                    'desktop-account-page h-full min-w-0 flex-1 overflow-y-auto overscroll-contain bg-background lg:ml-20 lg:pb-0',
+                    reservesTabBar && 'pb-(--tab-bar-h)',
+                )}
+            >
                 {/* Demo authoring (admins on a demo event only) */}
                 {adminAccess.isAdminAllowed && adminAccess.eventId && <DemoActAsBar key={adminAccess.eventId} eventId={adminAccess.eventId} />}
                 {/* A grid, so a lone child (the event theme scope) stretches to the full min-height.

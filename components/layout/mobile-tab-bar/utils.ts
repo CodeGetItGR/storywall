@@ -29,6 +29,11 @@ export function isEventRoute(pathname: string) {
     return pathname === routes.feed || pathname.startsWith(routes.feed + '/') || pathname.startsWith('/post/') || pathname.startsWith('/events/');
 }
 
+// Home, profile and notifications sit outside any one event, so they get no event navigation.
+export function isAccountRoute(pathname: string) {
+    return [routes.home, routes.profile, routes.notifications].some((href) => isPathActive(pathname, href));
+}
+
 export function isFeedRoute(pathname: string) {
     // The demo event's feed sits at /demo/{eventType}/feed, outside the /events tree.
     return pathname === routes.feed || pathname.startsWith(routes.feed + '/') || /^\/(events|demo)\/[^/]+\/feed(\/|$)/.test(pathname);

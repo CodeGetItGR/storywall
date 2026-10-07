@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarDays, Pencil } from 'lucide-react';
+import { Bell, CalendarDays, Pencil, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -11,6 +11,7 @@ import { AccountSidebarNavLink } from '@/components/account/AccountSidebarNavLin
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
+import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { getInitials } from '@/lib/format';
 import { routes } from '@/lib/routes';
 
@@ -18,6 +19,7 @@ export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => 
     const t = useTranslations('AccountDrawer');
     const { user } = useAuth();
     const pathname = usePathname();
+    const { data: unreadCount = 0 } = useUnreadNotificationCount();
     // These nav destinations (account-wide event list, plans, modules, profile edit) all
     // require a real signed-in session and have no demo equivalent — linking to them from
     // /demo would just dead-end the host on the real login page.
@@ -76,6 +78,14 @@ export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => 
                 {!isDemoRoute && (
                     <nav className="mt-7 flex max-w-[52vw] flex-col gap-4">
                         <AccountSidebarNavLink href={routes.home} icon={CalendarDays} label={t('events')} onNavigateAction={onCloseAction} />
+                        <AccountSidebarNavLink href={routes.profile} icon={UserRound} label={t('profile')} onNavigateAction={onCloseAction} />
+                        <AccountSidebarNavLink
+                            href={routes.notifications}
+                            icon={Bell}
+                            label={t('notifications')}
+                            badgeCount={unreadCount}
+                            onNavigateAction={onCloseAction}
+                        />
                     </nav>
                 )}
 

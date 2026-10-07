@@ -12,10 +12,12 @@ interface AccountSidebarNavLinkProps {
     href: string;
     icon: LucideIcon;
     label: string;
+    // Shown as a count pill at the end of the row; hidden when zero.
+    badgeCount?: number;
     onNavigateAction: () => void;
 }
 
-export function AccountSidebarNavLink({ href, icon: Icon, label, onNavigateAction }: AccountSidebarNavLinkProps) {
+export function AccountSidebarNavLink({ href, icon: Icon, label, badgeCount = 0, onNavigateAction }: AccountSidebarNavLinkProps) {
     const pathname = usePathname();
     const active = isPathActive(pathname, href);
 
@@ -43,6 +45,11 @@ export function AccountSidebarNavLink({ href, icon: Icon, label, onNavigateActio
                 strokeWidth={active ? 2.3 : 1.8}
             />
             <span className="truncate">{label}</span>
+            {badgeCount > 0 && (
+                <span className="ml-auto flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-white tabular-nums">
+                    {badgeCount > 9 ? '9+' : badgeCount}
+                </span>
+            )}
         </Link>
     );
 }

@@ -639,6 +639,7 @@
         "modules": "Modules",
         "plans": "Plans",
         "profile": "Profile",
+        "notifications": "Notifications",
         "editProfile": "Edit profile",
         "logout": "Log out",
         "logoutConfirmTitle": "Log out?",
