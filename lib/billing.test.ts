@@ -1,8 +1,58 @@
 import { describe, expect, it } from 'vitest';
 
-import type { OrderSummaryDto } from '@/lib/api/types';
+import type { CoverageOptionResponseDto, OrderSummaryDto, PlanTierResponseDto } from '@/lib/api/types';
 
-import { canExtendCoverage, formatMoney, isOrderPaidByAnother, lastWithdrawalMoment, paidBillingTotal } from './billing';
+import {
+    activePromoPriceMinor,
+    canExtendCoverage,
+    discountedAmountMinor,
+    formatMoney,
+    isOrderPaidByAnother,
+    lastWithdrawalMoment,
+    paidBillingTotal,
+    promotedOptionAmountMinor,
+} from './billing';
+
+describe('plan promotions', () => {
+    const now = new Date('2026-10-07T10:00:00Z');
+    const plan = (overrides: Partial<PlanTierResponseDto> = {}) =>
+        ({ discountPercent: null, discountStartsAt: null, discountEndsAt: null, ...overrides }) as PlanTierResponseDto;
+    const option = (overrides: Partial<CoverageOptionResponseDto> = {}): CoverageOptionResponseDto => ({
+        id: 'o1',
+        kind: 'INITIAL',
+        months: 6,
+        priceAmountMinor: 12_900,
+        promoPriceAmountMinor: null,
+        sortOrder: 0,
+        active: true,
+        ...overrides,
+    });
+
+    it('truncates the discount, never the price, as the server does', () => {
+        expect(discountedAmountMinor(999, plan({ discountPercent: 12.5 }), now)).toBe(875);
+        expect(discountedAmountMinor(10_000, plan({ discountPercent: 20 }), now)).toBe(8_000);
+    });
+
+    it("charges a duration's promo price in place of the plan's percent", () => {
+        const promoted = option({ promoPriceAmountMinor: 9_900 });
+
+        expect(promotedOptionAmountMinor(promoted, plan({ discountPercent: 50 }), now)).toBe(9_900);
+        expect(promotedOptionAmountMinor(option(), plan({ discountPercent: 50 }), now)).toBe(6_450);
+    });
+
+    it('honours a promo price only inside the promotion window', () => {
+        const promoted = option({ promoPriceAmountMinor: 9_900 });
+
+        expect(activePromoPriceMinor(promoted, plan({ discountStartsAt: '2026-10-08T00:00:00Z' }), now)).toBeNull();
+        expect(activePromoPriceMinor(promoted, plan({ discountEndsAt: '2026-10-07T10:00:00Z' }), now)).toBeNull();
+        expect(promotedOptionAmountMinor(promoted, plan({ discountEndsAt: '2026-10-07T09:00:00Z' }), now)).toBe(12_900);
+        expect(activePromoPriceMinor(promoted, plan({ discountEndsAt: '2026-10-08T00:00:00Z' }), now)).toBe(9_900);
+    });
+
+    it('never applies a promo price to an extension', () => {
+        expect(activePromoPriceMinor(option({ kind: 'EXTENSION', promoPriceAmountMinor: 9_900 }), plan(), now)).toBeNull();
+    });
+});
 
 describe('lastWithdrawalMoment', () => {
     it('is one second before the window closes', () => {

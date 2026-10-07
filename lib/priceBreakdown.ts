@@ -54,8 +54,10 @@ export function breakdownItemLabelValues(item: PriceBreakdownItem, monthsText: s
 }
 
 // A discount without a label reads as "discount code −N%" / "plan promotion −N%".
+// A promo price (percent null) is an amount, not a percentage: it has its own wording.
 export function breakdownDiscountMessageKey(discount: PriceBreakdownDiscount): string {
-    return discount.label && discount.label.trim() ? discount.source : `${discount.source}_unnamed`;
+    const key = discount.percent === null ? `${discount.source}_amount` : discount.source;
+    return discount.label && discount.label.trim() ? key : `${key}_unnamed`;
 }
 
 // The order kinds the per-order withdrawal endpoints take. ACTIVATION goes

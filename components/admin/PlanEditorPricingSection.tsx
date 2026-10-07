@@ -67,6 +67,7 @@ export function PlanEditorPricingSection({ id, plan }: { id: string; plan: PlanT
                             type="number"
                             min={0}
                             max={100}
+                            step="0.01"
                             defaultValue={plan.discountPercent ?? ''}
                             placeholder={t('none')}
                             className={adminInputClass('max-w-24')}

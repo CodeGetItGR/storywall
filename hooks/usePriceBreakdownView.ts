@@ -37,7 +37,11 @@ export function usePriceBreakdownView(breakdown: PriceBreakdown | null | undefin
                 };
             }),
             discounts: breakdown.discounts.map((discount) =>
-                t(`discounts.${breakdownDiscountMessageKey(discount)}`, { label: discount.label ?? '', percent: discount.percent }),
+                t(`discounts.${breakdownDiscountMessageKey(discount)}`, {
+                    label: discount.label ?? '',
+                    percent: discount.percent ?? 0,
+                    amount: money(discount.amountMinor ?? 0),
+                }),
             ),
             total: money(breakdown.totalMinor),
             vatNote: breakdown.vat.included && breakdown.vat.note === VAT_INCLUDED_NOTE ? t('vatIncluded') : null,

@@ -30,7 +30,7 @@ function plan(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto {
         moduleConfigs: null,
         eventTypeKey: 'WEDDING',
         sharedGroupKey: null,
-        initialOptions: [{ id: 'option-6', kind: 'INITIAL', months: 6, priceAmountMinor: 4_900, sortOrder: 0, active: true }],
+        initialOptions: [{ id: 'option-6', kind: 'INITIAL', months: 6, priceAmountMinor: 4_900, promoPriceAmountMinor: null, sortOrder: 0, active: true }],
         extensionOptions: [],
         ...overrides,
     };
@@ -53,7 +53,7 @@ describe('admin account provisioning', () => {
             plan({
                 id: 'retired-durations',
                 initialOptions: [
-                    { ...{ id: 'option-6', kind: 'INITIAL', months: 6, priceAmountMinor: 4_900, sortOrder: 0, active: true }, active: false },
+                    { ...{ id: 'option-6', kind: 'INITIAL', months: 6, priceAmountMinor: 4_900, promoPriceAmountMinor: null, sortOrder: 0, active: true }, active: false },
                 ],
             }),
         ];

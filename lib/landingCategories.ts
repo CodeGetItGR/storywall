@@ -95,7 +95,16 @@ function offerFields(plan: PlanTierResponseDto, memberRoles: MemberRoleCatalog):
         currency: plan.priceCurrency,
         durations: initial.map(([months]) => months),
         extensions: options(plan.extensionOptions),
-        discount: [plan.discountPercent, plan.discountStartsAt, plan.discountEndsAt],
+        // The card shows each duration's promo price, so copies that differ in one differ in discount.
+        discount: [
+            plan.discountPercent,
+            plan.discountStartsAt,
+            plan.discountEndsAt,
+            plan.initialOptions
+                .filter((option) => option.active && option.promoPriceAmountMinor !== null)
+                .map((option) => [option.months, option.promoPriceAmountMinor])
+                .toSorted((left, right) => Number(left[0]) - Number(right[0])),
+        ],
         discountLabel: plan.discountLabel,
         modules: [...plan.moduleKeys].sort(),
         moduleConfigs: plan.moduleConfigs ?? {},

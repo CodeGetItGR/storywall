@@ -144,8 +144,10 @@ export interface PlanTierResponseDto {
     // Also the currency of every coverage option.
     priceCurrency: string | null;
     billingPeriod: BillingPeriod | null;
+    // Up to two decimals since V156 (e.g. 12.5). A duration's promoPriceAmountMinor replaces it for that duration.
     discountPercent: number | null;
     discountLabel: string | null;
+    // The promotion window, for the percent and every duration's promo price alike. null = open bound.
     discountStartsAt: string | null;
     discountEndsAt: string | null;
     moduleKeys: ModuleKey[];
@@ -185,6 +187,8 @@ export interface CoverageOptionResponseDto {
     kind: CoverageOptionKind;
     months: number; // 1–120
     priceAmountMinor: number; // in the plan's priceCurrency, before any promotion or code
+    // What it costs while the plan's promotion window is open, in place of the plan's percent. INITIAL only; null if none.
+    promoPriceAmountMinor: number | null;
     sortOrder: number;
     active: boolean; // always true outside the admin endpoints
 }
@@ -1125,6 +1129,7 @@ export interface PriceBreakdown {
     coverage: PriceBreakdownCoverage;
     items: PriceBreakdownItem[];
     discounts: PriceBreakdownDiscount[];
+    // Percentage discounts only (may carry decimals); a promo price is not counted here.
     combinedDiscountPercent: number;
     discountCapPercent: number;
     capApplied: boolean;
@@ -1160,7 +1165,10 @@ export interface PriceBreakdownItem {
 export interface PriceBreakdownDiscount {
     source: DiscountSource;
     label: string | null;
-    percent: number;
+    // null for a duration's promo price, which is an amount (amountMinor) rather than a percentage.
+    percent: number | null;
+    // What a promo price took off the plan line; null (or absent, before V156) for a percentage.
+    amountMinor?: number | null;
 }
 export interface PriceBreakdownVat {
     included: boolean;
@@ -1195,9 +1203,11 @@ export interface UpgradeOptionResponseDto {
     options: UpgradeCoverageOptionDto[];
     // The target plan's own promotion — the only discount an upgrade gets since
     // 2026-09-22 (a discount code prices the activation only). Sent as null, not
-    // left out, when the target has no live promotion.
+    // left out, when the target has no live percent. An option with a promo price
+    // ignores it; read each option's breakdown for what it actually takes off.
     discountPercent: number | null;
-    // null whenever discountPercent is, and also for a promotion set up without a label.
+    // Set whenever the promotion takes something off a listed option (percent or
+    // promo price); null otherwise, and for a promotion set up without a label.
     discountLabel: string | null;
 }
 export type OrderKind = 'ACTIVATION' | 'UPGRADE' | 'STORAGE_PACK' | 'EXTENSION';
@@ -2806,6 +2816,7 @@ export interface CoverageOptionRequestDto {
     kind: CoverageOptionKind;
     months: number; // 1–120
     priceAmountMinor: number; // >= 0, in the plan's priceCurrency
+    promoPriceAmountMinor?: number | null; // INITIAL only, 0 < promo < price (else 400 5151)
     sortOrder?: number;
 }
 
@@ -2813,6 +2824,8 @@ export interface CoverageOptionRequestDto {
 // fields are left unchanged. Nothing is ever deleted: retire with active: false.
 export interface CoverageOptionPatchDto {
     priceAmountMinor?: number;
+    promoPriceAmountMinor?: number; // sets it; clearPromoPrice removes it. Both together are 400 5151.
+    clearPromoPrice?: boolean;
     sortOrder?: number;
     active?: boolean;
 }

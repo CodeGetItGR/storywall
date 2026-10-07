@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
     durationDraftFromOption,
     durationPatchFromDraft,
+    durationPromoPriceFromDraft,
     isDurationDraftValid,
     newDurationDraft,
     parseDurationMonths,
@@ -12,7 +13,7 @@ import {
 import type { CoverageOptionResponseDto } from '@/lib/api/types';
 
 function option(overrides: Partial<CoverageOptionResponseDto> = {}): CoverageOptionResponseDto {
-    return { id: 'o1', kind: 'INITIAL', months: 6, priceAmountMinor: 4_900, sortOrder: 0, active: true, ...overrides };
+    return { id: 'o1', kind: 'INITIAL', months: 6, priceAmountMinor: 4_900, promoPriceAmountMinor: null, sortOrder: 0, active: true, ...overrides };
 }
 
 describe('admin plan durations', () => {
@@ -47,7 +48,7 @@ describe('admin plan durations', () => {
     it('needs a new duration length', () => {
         const draft = newDurationDraft();
 
-        expect(draft).toEqual({ optionId: null, months: '', price: '' });
+        expect(draft).toEqual({ optionId: null, months: '', price: '', promoPrice: '' });
         expect(isDurationDraftValid({ ...draft, price: '49' })).toBe(false);
         expect(isDurationDraftValid({ ...draft, months: '6', price: '49' })).toBe(true);
     });
@@ -58,5 +59,28 @@ describe('admin plan durations', () => {
 
         expect(durationPatchFromDraft(existing, draft)).toEqual({});
         expect(durationPatchFromDraft(existing, { ...draft, price: '59' })).toEqual({ priceAmountMinor: 5_900 });
+    });
+
+    it('accepts a promo price only above zero and below the price', () => {
+        const draft = { ...newDurationDraft(), months: '6', price: '49' };
+
+        expect(isDurationDraftValid({ ...draft, promoPrice: '' })).toBe(true);
+        expect(isDurationDraftValid({ ...draft, promoPrice: '39' })).toBe(true);
+        expect(isDurationDraftValid({ ...draft, promoPrice: '49' })).toBe(false);
+        expect(isDurationDraftValid({ ...draft, promoPrice: '0' })).toBe(false);
+        expect(isDurationDraftValid({ ...draft, promoPrice: 'abc' })).toBe(false);
+        expect(durationPromoPriceFromDraft({ ...draft, promoPrice: '39.50' })).toBe(3_950);
+        expect(durationPromoPriceFromDraft(draft)).toBeNull();
+    });
+
+    it('sets, changes and clears a promo price', () => {
+        const plain = option();
+        const promoted = option({ promoPriceAmountMinor: 3_900 });
+
+        expect(durationDraftFromOption(promoted).promoPrice).toBe('39');
+        expect(durationPatchFromDraft(plain, { ...durationDraftFromOption(plain), promoPrice: '39' })).toEqual({ promoPriceAmountMinor: 3_900 });
+        expect(durationPatchFromDraft(promoted, durationDraftFromOption(promoted))).toEqual({});
+        expect(durationPatchFromDraft(promoted, { ...durationDraftFromOption(promoted), promoPrice: '29' })).toEqual({ promoPriceAmountMinor: 2_900 });
+        expect(durationPatchFromDraft(promoted, { ...durationDraftFromOption(promoted), promoPrice: ' ' })).toEqual({ clearPromoPrice: true });
     });
 });

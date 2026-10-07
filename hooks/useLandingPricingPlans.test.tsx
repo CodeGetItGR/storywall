@@ -57,7 +57,7 @@ function planTier(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto 
         moduleConfigs: null,
         eventTypeKey: 'WEDDING',
         sharedGroupKey: null,
-        initialOptions: [{ id: 'opt-3', kind: 'INITIAL', months: 3, priceAmountMinor: 7900, sortOrder: 0, active: true }],
+        initialOptions: [{ id: 'opt-3', kind: 'INITIAL', months: 3, priceAmountMinor: 7900, promoPriceAmountMinor: null, sortOrder: 0, active: true }],
         extensionOptions: [],
         ...overrides,
     };
@@ -147,7 +147,7 @@ describe('useLandingPricingPlans', () => {
         await waitFor(() => expect(result.current.tabs).not.toBeNull());
         expect(result.current.tabs?.map((tab) => tab.id)).toEqual(['wed', 'vip']);
         expect(result.current.tabs?.[0]).toMatchObject({ label: 'Weddings', description: '' });
-        expect(result.current.tabs?.[0].plans[0].durations).toEqual([{ id: 'opt-3', months: 3, price: '79€' }]);
+        expect(result.current.tabs?.[0].plans[0].durations).toEqual([{ id: 'opt-3', months: 3, price: '79€', listPrice: null }]);
         expect(result.current.tabs?.[1]).toMatchObject({ label: 'VIP', description: 'Parties' });
         expect(result.current.tabs?.[1].plans.map((plan) => plan.code)).toEqual(['VIP', 'REUNION']);
         // REUNION is the first card of its type: it rolls up nothing from SOCIAL_EVENT's VIP.
