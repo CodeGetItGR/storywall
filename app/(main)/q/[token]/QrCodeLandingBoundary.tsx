@@ -8,7 +8,6 @@ import { AnonymousQrMediaUploadForm } from '@/components/invite/AnonymousQrMedia
 import { InviteLayout } from '@/components/invite/InviteLayout';
 import { InviteTerminalState } from '@/components/invite/InviteTerminalState';
 import { QrLandingState } from '@/components/invite/QrLandingState';
-import { useAuth } from '@/hooks/useAuth';
 import { useQrLinkResolution } from '@/hooks/useQrLinks';
 import { getQrRedirectPath, getQrTerminalCopyKey } from '@/lib/qrLinks';
 
@@ -18,19 +17,15 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
     const t = useTranslations('QrCodePage');
     const router = useRouter();
 
-    const { isAuthenticated, isBootstrapping } = useAuth();
     const { data: resolution, isLoading, error } = useQrLinkResolution(token);
     const coverMedia = resolution?.status === 'ACTIVE' ? (resolution.coverMedia ?? null) : null;
 
-    const isRedirectingToInvite = resolution?.status === 'ACTIVE' && resolution.targetType === 'INVITATION';
-    const isRedirectingToRegister = resolution?.status === 'ACTIVE' && resolution.targetType === 'EVENT_JOIN';
+    const isRedirecting = resolution?.status === 'ACTIVE' && (resolution.targetType === 'INVITATION' || resolution.targetType === 'EVENT_JOIN');
 
     useEffect(() => {
-        // The join link's destination depends on whether the visitor is signed in.
-        if (isBootstrapping) return;
-        const redirectPath = getQrRedirectPath(resolution, isAuthenticated);
+        const redirectPath = getQrRedirectPath(resolution);
         if (redirectPath) router.replace(redirectPath);
-    }, [isAuthenticated, isBootstrapping, resolution, router]);
+    }, [resolution, router]);
 
     function renderTerminalState() {
         if (error || !resolution || resolution.status !== 'ACTIVE') {
@@ -46,7 +41,6 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
     }
 
     const terminalState = renderTerminalState();
-    const isRedirecting = isRedirectingToInvite || isRedirectingToRegister;
     const isMediaUpload = !terminalState && !isRedirecting && resolution?.status === 'ACTIVE' && resolution.targetType === 'MEDIA_UPLOAD';
 
     return (

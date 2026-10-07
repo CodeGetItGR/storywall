@@ -656,6 +656,9 @@
             "title": "Το επόμενο ραντεβού"
         }
     },
+    "InviteEventCard": {
+        "eyebrow": "Συμμετέχετε στην εκδήλωση"
+    },
     "InviteOnboardingPage": {
         "loading": "Φόρτωση της πρόσκλησής σας…",
         "invalidInvite": {

@@ -195,6 +195,12 @@ Immediately invalidates the link — the preview/guest-login/accept endpoints be
 Covers the flow where a visitor scans a QR code or opens an invite link and lands on a
 per-event onboarding page, then chooses to join as a guest, log in, or register.
 
+In storywall every invitation lands on `/invite/{token}` first, the shared join link (`/q` with
+`EVENT_JOIN`) included: it shows the event (theme illustration, else cover) and then asks whether
+the guest has an account. Until 2026-10-07 a signed-out visitor of the join link went straight to
+`/register` and never saw the event. `/login` and `/register` opened with `?invite=` show a small
+card naming the event (`InviteEventCard`, reading this same preview; hidden when expired or used).
+
 ### 1. Load the invitation preview (unauthenticated)
 
 ```
