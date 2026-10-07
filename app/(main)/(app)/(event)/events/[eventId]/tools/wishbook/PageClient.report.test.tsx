@@ -18,6 +18,8 @@ let entries: Array<{ id: string; authorMemberId: string | null; canDelete: boole
 
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
 vi.mock('next/image', () => ({ default: () => null }));
+// BackButton steps back through the router when the previous page is in the app.
+vi.mock('next/navigation', () => ({ useRouter: () => ({ back: vi.fn() }) }));
 vi.mock('@/hooks', () => ({
     useAppConfig: () => ({ data: { reportTargetTypes, modules: [], contentLimits: {} } }),
 }));
