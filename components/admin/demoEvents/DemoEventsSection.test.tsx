@@ -13,6 +13,9 @@ const eventType = {
     sortOrder: 0,
 } as unknown as PlatformEventTypeResponseDto;
 
+// BackButton steps back through the router when the previous page is in the app.
+vi.mock('next/navigation', () => ({ useRouter: () => ({ back: vi.fn() }) }));
+
 vi.mock('@/hooks/useAdmin', () => ({
     useAdminPlatformEventTypes: () => ({ data: [eventType], isLoading: false, error: null }),
 }));
