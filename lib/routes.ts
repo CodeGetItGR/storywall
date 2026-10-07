@@ -35,6 +35,7 @@ export const routes = {
     forgotPassword: '/forgot-password',
     resetPassword: '/reset-password',
     demo: '/demo',
+    demoEventType: (eventTypeSlug: string) => `/demo/${eventTypeSlug}`,
     invite: '/invite',
     home: '/home',
     profile: '/profile',

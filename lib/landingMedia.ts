@@ -5,12 +5,15 @@ export type LandingImageAsset = {
 };
 
 export type LandingStoryMedia = {
+    // Demo event type slug (/demo/{slug}) shown as an "open demo" link on the row.
+    demoEventTypeSlug?: string;
     gallery: LandingImageAsset[];
     main: LandingImageAsset;
 };
 
 export const landingStoryMedia: LandingStoryMedia[] = [
     {
+        demoEventTypeSlug: 'wedding',
         main: { src: '/landing/wedding-party-celebrating-with-social-storywall-overlays.webp', width: 2048, height: 1152 },
         gallery: [
             { src: '/landing/01-bachelor-santorini.webp', width: 1536, height: 1024 },
