@@ -3284,7 +3284,7 @@
                 }
             },
             "search": {
-                "placeholder": "Search by name or code"
+                "placeholder": "Search"
             },
             "selectorHint": "Pick a plan on the left to edit it in the main pane.",
             "empty": "No plans to show.",
@@ -3329,7 +3329,7 @@
             "confirmBody": "This updates the platform module registry. Disabling a module can remove that feature everywhere after config refresh."
         },
         "eventTypes": {
-            "notice": "Event type keys are fixed by backend code. Disable a type here to withdraw it from the creation picker on the next config refresh.",
+            "notice": "Disable a type here to withdraw it from the creation picker on the next config refresh.",
             "loading": "Loading event types...",
             "enabled": "Enabled",
             "disabled": "Disabled",
