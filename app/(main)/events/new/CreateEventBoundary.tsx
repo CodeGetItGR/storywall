@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { CreateEventRouteState } from '@/components/event/create/CreateEventRouteState';
 import { EventCreateFooter } from '@/components/event/create/EventCreateFooter';
@@ -15,6 +15,7 @@ import { EventPlanSelector } from '@/components/plan/EventPlanSelector';
 import { BackButton } from '@/components/ui/BackButton';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrentReturnPath } from '@/hooks/useCurrentReturnPath';
+import { useScrollTopOnChange } from '@/hooks/useScrollTopOnChange';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
@@ -72,6 +73,8 @@ function CreateEventFormBody() {
         onSelectPlanDuration,
         isPlansLoading,
     } = useCreateEventForm();
+    const formShellRef = useRef<HTMLDivElement>(null);
+    useScrollTopOnChange(formShellRef, step);
 
     return (
         <main className="flex h-full flex-col bg-background">
@@ -86,7 +89,7 @@ function CreateEventFormBody() {
                 <EventCreateStepBreadcrumb />
 
                 {/* Form Shell */}
-                <div className="mt-3 min-h-0 flex-1 overflow-y-auto p-5">
+                <div ref={formShellRef} className="mt-3 min-h-0 flex-1 overflow-y-auto p-5">
                     <form id={formId} onSubmit={handleSubmit}>
                         {/* Subtitle */}
                         <h2 className="mb-5 text-lg font-bold text-ink">
