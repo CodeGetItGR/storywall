@@ -80,12 +80,12 @@ describe('LandingPricing', () => {
 
         expect(screen.getByRole('combobox', { name: 'eventTypeLabel' })).toHaveTextContent('Wedding');
         expect(cardNames()).toEqual(['START', 'STORY', 'SIGNATURE']);
-        expect(screen.getAllByRole('link', { name: /cta/ }).map((link) => link.getAttribute('href'))).toEqual([
+        expect(screen.getAllByRole('link', { name: /choose/ }).map((link) => link.getAttribute('href'))).toEqual([
             '/events/new?step=details&type=wedding&plan=START&option=o',
             '/events/new?step=details&type=wedding&plan=STORY&option=o',
             '/events/new?step=details&type=wedding&plan=SIGNATURE&option=o',
         ]);
-        expect(screen.getByRole('link', { name: /cta.*STORY/ })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: /choose.*STORY/ })).toBeInTheDocument();
     });
 
     it('opens on the type in ?event=', () => {
@@ -112,6 +112,9 @@ describe('LandingPricing', () => {
         await act(async () => fireEvent.click(screen.getByRole('option', { name: 'Baby shower' })));
         expect(cardNames()).toEqual(['SHOWER']);
         expect(window.location.search).toBe('?event=baby-shower');
-        expect(screen.getByRole('link', { name: /cta/ })).toHaveAttribute('href', '/events/new?step=details&type=baby-shower&plan=SHOWER&option=o');
+        expect(screen.getByRole('link', { name: /choose/ })).toHaveAttribute(
+            'href',
+            '/events/new?step=details&type=baby-shower&plan=SHOWER&option=o',
+        );
     });
 });

@@ -63,7 +63,7 @@ export function LandingPricing() {
                                 className="mt-5 flex w-full"
                                 durationId={picks[plan.code]}
                                 eventType={active.id}
-                                label={t('cta')}
+                                label={t('choose')}
                                 plan={plan}
                             />
                         }

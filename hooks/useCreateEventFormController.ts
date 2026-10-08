@@ -125,7 +125,8 @@ export function useCreateEventFormController(): CreateEventFormValue {
         eventType,
         requestedTypeSlug,
     );
-    const planTiersQuery = usePlanTiersForEventType(selectedEventType, isAuthenticated);
+    // Not before the config: the type isn't known until then, and WEDDING's plans would be fetched for nothing.
+    const planTiersQuery = usePlanTiersForEventType(selectedEventType, isAuthenticated && Boolean(appConfig));
     // A plan with no duration on sale can't be bought, so it isn't offered.
     const eventPlans = useMemo(() => (planTiersQuery.data ?? []).filter((plan) => liveInitialOptions(plan).length > 0), [planTiersQuery.data]);
     const selectedPlan = eventPlans.find((plan) => plan.code === selectedPlanCode) ?? eventPlans[0];

@@ -46,8 +46,11 @@ export function useCreateEventRun(): { isReady: boolean } {
 
     useEffect(() => {
         if (!run) {
-            replacePageUrl(routes.events.new({ step, run: newCreateEventRunId(), type, plan, option }));
-            return;
+            // Deferred a task: on a full page load this effect runs before the Next router's own
+            // (a parent's) has wrapped history.replaceState, and an unwrapped write never reaches
+            // useSearchParams, which would leave the run, and the form, waiting forever.
+            const write = window.setTimeout(() => replacePageUrl(routes.events.new({ step, run: newCreateEventRunId(), type, plan, option })));
+            return () => window.clearTimeout(write);
         }
         if (checkedRun === run) return;
 
