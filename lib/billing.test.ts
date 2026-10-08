@@ -10,6 +10,7 @@ import {
     isOrderPaidByAnother,
     lastWithdrawalMoment,
     paidBillingTotal,
+    partnerBrandingCheckoutFields,
     promotedOptionAmountMinor,
 } from './billing';
 
@@ -98,5 +99,21 @@ describe('gift orders', () => {
 
     it('has no total when a paid order was a gift', () => {
         expect(paidBillingTotal([order({}), order({ paidByCaller: false, amountMinor: null })])).toBeNull();
+    });
+});
+
+describe('partnerBrandingCheckoutFields', () => {
+    const notice = { displayName: 'Barn Venue', noticeVersion: '2026-10-08' };
+
+    it('leaves the fields out when the code carries no partner notice', () => {
+        expect(partnerBrandingCheckoutFields(null, true)).toEqual({});
+    });
+
+    it('sends the acceptance with the version of the notice that was shown', () => {
+        expect(partnerBrandingCheckoutFields(notice, true)).toEqual({ acceptsPartnerBranding: true, partnerBrandingNoticeVersion: '2026-10-08' });
+    });
+
+    it('sends a refusal as false rather than leaving it out', () => {
+        expect(partnerBrandingCheckoutFields(notice, false)).toEqual({ acceptsPartnerBranding: false, partnerBrandingNoticeVersion: '2026-10-08' });
     });
 });

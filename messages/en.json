@@ -1789,6 +1789,12 @@
             "notice": "Business purchase for {legalName} (VAT {vatNumber}). The consumer right of withdrawal does not apply to business purchases. The price includes VAT; no reverse charge is applied.",
             "pending": "Your VAT number is still being checked, so this purchase is made as a consumer.",
             "invalid": "Your VAT number couldn't be confirmed, so this purchase is made as a consumer."
+        },
+        "partnerBranding": {
+            "title": "Code from {partner}",
+            "body": "This discount is offered by {partner}, a StoryWall partner. In return, {partner} will be credited on your event: a small card with their name, logo, a short description and a link to their website will appear between the posts in your event's feed, visible to your guests. The card stays for as long as your event is online and can't be removed. We don't share your details or your guests' details with {partner}. We only count how many times the card is tapped.",
+            "accept": "I agree that {partner} will be credited on my event in return for this discount.",
+            "required": "To use this code, accept the partner credit or remove the code."
         }
     },
     "PriceBreakdown": {
@@ -1976,7 +1982,8 @@
             "percent": "{percent}%",
             "activationsThisYear": "{count, plural, one {# activation} other {# activations}} this year",
             "next": "Your {number, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} activation earns {percent}%"
-        }
+        },
+        "brandingClicks": "Card taps"
     },
     "SchedulePage": {
         "back": "Go back",
@@ -2620,7 +2627,8 @@
             "reports": "Reports",
             "bugReports": "Bug reports",
             "errorEvents": "Errors",
-            "demoEvents": "Demo events"
+            "demoEvents": "Demo events",
+            "partnerCards": "Partner cards"
         },
         "demoEvents": {
             "title": "Demo events",
@@ -3772,7 +3780,8 @@
             "collaboratorPayoutDetailsIncomplete": "This partner's business or payout details are incomplete, or their VAT number isn't VIES-valid. Complete their business details and try again.",
             "methodNotAllowed": "That action is not available here. Refresh and try again.",
             "invalidModuleKey": "One of the selected modules isn't available for this event type. Remove it and try again.",
-            "orderNotManual": "Only manual orders can be settled here. Stripe orders settle through Stripe."
+            "orderNotManual": "Only manual orders can be settled here. Stripe orders settle through Stripe.",
+            "collaboratorBrandingIncomplete": "This partner's card is incomplete. Fill in every field and add a logo, a cover and a website, then try again."
         },
         "reactionTypes": {
             "title": "Reaction catalog",
@@ -4378,6 +4387,76 @@
                     "thresholdsIncrease": "Each tier must start after the one before it.",
                     "ratesNeverDecrease": "A tier can't pay less than the one before it."
                 }
+            },
+            "feedCard": {
+                "title": "Feed card",
+                "edit": "Edit card",
+                "drawerTitle": "Feed card · {name}",
+                "missingValue": "Missing",
+                "missingWebsite": "Add a website in business details. The card links to it.",
+                "noRole": "Choose a role",
+                "status": {
+                    "on": "On",
+                    "off": "Off"
+                },
+                "groups": {
+                    "text": "Text",
+                    "images": "Images"
+                },
+                "fields": {
+                    "display_name": "Name on card",
+                    "role": "Role",
+                    "tagline_el": "Tagline (Greek)",
+                    "tagline_en": "Tagline (English)",
+                    "services_el": "Services (Greek)",
+                    "services_en": "Services (English)",
+                    "logo": "Logo",
+                    "cover": "Cover photo"
+                },
+                "roles": {
+                    "PLANNER": "Planner",
+                    "VENUE": "Venue",
+                    "PHOTOGRAPHER": "Photographer",
+                    "VIDEOGRAPHER": "Videographer",
+                    "DECORATION": "Decoration",
+                    "CATERING": "Catering",
+                    "MUSIC": "Music",
+                    "OTHER": "Other"
+                },
+                "images": {
+                    "choose": "Upload image",
+                    "replace": "Replace image",
+                    "remove": "Remove",
+                    "removeTitle": {
+                        "logo": "Remove the logo?",
+                        "cover": "Remove the cover photo?"
+                    },
+                    "removeBody": "The card can't be turned on without it.",
+                    "lockedHint": "Turn the card off to remove this image."
+                },
+                "enable": {
+                    "action": "Turn on",
+                    "title": "Turn on the feed card?",
+                    "body": "Only turn it on once the partner has agreed. Their card then shows on events that accepted it."
+                },
+                "disable": {
+                    "action": "Turn off",
+                    "title": "Turn off the feed card?",
+                    "body": "Their card disappears from every event."
+                },
+                "preview": {
+                    "title": "Preview",
+                    "language": "Card language",
+                    "locales": {
+                        "el": "Greek",
+                        "en": "English"
+                    },
+                    "placeholders": {
+                        "name": "Partner name",
+                        "tagline": "Tagline",
+                        "services": "Services"
+                    }
+                }
             }
         },
         "discountCodes": {
@@ -4434,6 +4513,60 @@
             "idSourceHint": "Copy the event ID from a refund request, or ask the host for the link to their event — the console has no event search.",
             "idInvalid": "That is not a valid event ID. It should look like 3fa85f64-5717-4562-b3fc-2c963f66afa6.",
             "eventIdPlaceholder": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        },
+        "feedCardVariants": {
+            "FEATURE_CARD": "Feature card",
+            "COMPACT_ROW": "Compact row",
+            "CREDIT": "Credit line"
+        },
+        "partnerCards": {
+            "title": "Partner cards",
+            "event": {
+                "title": "Event",
+                "idLabel": "Event id",
+                "lookup": "Look up",
+                "invalidId": "Enter a valid event id.",
+                "loading": "Loading…",
+                "none": "No partner linked.",
+                "fields": {
+                    "partner": "Partner",
+                    "showing": "Feed",
+                    "source": "Linked by",
+                    "design": "Card design",
+                    "accepted": "Host accepted"
+                },
+                "showing": {
+                    "yes": "Showing",
+                    "no": "Not showing"
+                },
+                "source": {
+                    "CODE": "Partner code",
+                    "ADMIN": "Admin"
+                },
+                "notAccepted": "Waiting for the host",
+                "choosePartner": "Choose a partner",
+                "noPartners": "No partner has a feed card turned on",
+                "link": "Link partner",
+                "replace": "Replace",
+                "remove": "Remove",
+                "removeTitle": "Remove the partner from this event?",
+                "removeBody": "Guests will stop seeing the card."
+            },
+            "report": {
+                "title": "Report",
+                "from": "From",
+                "to": "To",
+                "loading": "Loading…",
+                "columns": {
+                    "design": "Card design",
+                    "events": "Events",
+                    "cardSlots": "Cards in feeds",
+                    "clicks": "Taps",
+                    "clicksPerEvent": "Taps per event",
+                    "clicksPerCardSlot": "Taps per card"
+                },
+                "placement": "First card after post {firstAfter}, then every {every} posts."
+            }
         }
     },
     "FeedQuickAccessBar": {
@@ -4908,7 +5041,9 @@
         "moderationCaseClosed": "This case has already been decided.",
         "noticeAlreadyHandled": "Another admin has already handled this notice.",
         "moderationMemberIsHost": "Hosts can't be removed from their event. Suspend the account instead.",
-        "moderationTargetProtected": "Admin accounts can't be suspended here."
+        "moderationTargetProtected": "Admin accounts can't be suspended here.",
+        "collaboratorBrandingIncomplete": "This partner's card is incomplete.",
+        "partnerBrandingNoticeOutdated": "The partner notice has changed. Please review it again."
     },
     "LandingPage": {
         "shell": {
@@ -5624,5 +5759,27 @@
         "STORY_DURATION_EXCEEDED": "It's too long for a story. Trim it and try again.",
         "VIDEO_RESOLUTION_EXCEEDED": "Its resolution is above 8K. Export it at 4K or lower and upload it again.",
         "TRANSCODE_TIMEOUT": "It took too long to process. Try a shorter or smaller video."
+    },
+    "PartnerCard": {
+        "visit": "Visit website",
+        "newTab": "(opens in a new tab)",
+        "roles": {
+            "PLANNER": "Planner",
+            "VENUE": "Venue",
+            "PHOTOGRAPHER": "Photographer",
+            "VIDEOGRAPHER": "Videographer",
+            "DECORATION": "Decoration",
+            "CATERING": "Catering",
+            "MUSIC": "Music",
+            "OTHER": "Partner"
+        },
+        "partner": "Partner"
+    },
+    "PartnerBrandingPrompt": {
+        "title": "Show {partner} on your event?",
+        "body": "{partner} is a StoryWall partner connected to your event. With your OK, a small card with their name, logo, a short description and a link to their website will appear between the posts in your event's feed, visible to your guests. Once you accept, the card stays for as long as your event is online. If you decline, nothing is shown. We don't share your details or your guests' details with {partner}.",
+        "accept": "Accept",
+        "decline": "No thanks",
+        "close": "Close"
     }
 }

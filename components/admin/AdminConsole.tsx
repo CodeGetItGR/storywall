@@ -15,6 +15,7 @@ import { FunnelPanel } from '@/components/admin/funnel/FunnelPanel';
 import { ModerationPanel } from '@/components/admin/moderation/ModerationPanel';
 import { OrdersSection } from '@/components/admin/orders/OrdersSection';
 import { PaidServicesCatalogPanel } from '@/components/admin/PaidServicesCatalogPanel';
+import { PartnerCardsSection } from '@/components/admin/partnerCards/PartnerCardsSection';
 import { PlansSection } from '@/components/admin/plans/PlansSection';
 import { PlatformMetricsPanel } from '@/components/admin/PlatformMetricsPanel';
 import { ReactionTypesCatalogPanel } from '@/components/admin/ReactionTypesCatalogPanel';
@@ -34,6 +35,7 @@ export function AdminConsole() {
     if (tab === 'plans') return <PlansSection />;
     if (tab === 'discountCodes') return <AdminDiscountCodesPanel />;
     if (tab === 'collaborations') return <CollaborationsSection />;
+    if (tab === 'partnerCards') return <PartnerCardsSection />;
     if (tab === 'reactionTypes') return <ReactionTypesCatalogPanel />;
     if (tab === 'themePresets') return <ThemePresetsPanel />;
     if (tab === 'themeFonts') return <ThemeFontsPanel />;

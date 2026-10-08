@@ -23,6 +23,7 @@ export type AdminErrorMessageKey =
     | 'reactionTypeNotUsable'
     | 'collaborationEarningNotPayable'
     | 'collaboratorPayoutDetailsIncomplete'
+    | 'collaboratorBrandingIncomplete'
     | 'methodNotAllowed'
     | 'coverageOptionInvalid'
     | 'coverageOptionUnavailable'
@@ -84,6 +85,8 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.COLLABORATION_EARNING_NOT_PAYABLE) return 'collaborationEarningNotPayable';
     // Mark-paid refused: a partner in the batch lacks business/payout details or a VIES-valid VAT number.
     if (code === ERROR_CODES.COLLABORATOR_PAYOUT_DETAILS_INCOMPLETE) return 'collaboratorPayoutDetailsIncomplete';
+    // Enabling, or clearing a field of an enabled partner, while the card would be incomplete.
+    if (code === ERROR_CODES.COLLABORATOR_BRANDING_INCOMPLETE) return 'collaboratorBrandingIncomplete';
     if (code === ERROR_CODES.METHOD_NOT_ALLOWED) return 'methodNotAllowed';
     if (code === ERROR_CODES.COVERAGE_OPTION_INVALID) return 'coverageOptionInvalid';
     if (code === ERROR_CODES.COVERAGE_OPTION_UNAVAILABLE) return 'coverageOptionUnavailable';

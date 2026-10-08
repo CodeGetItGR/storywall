@@ -1,6 +1,6 @@
 'use client';
 
-import { Banknote, CalendarCheck2, Handshake } from 'lucide-react';
+import { Banknote, CalendarCheck2, Handshake, MousePointerClick } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 
@@ -58,7 +58,7 @@ export function PartnerPortalBoundary({ token }: { token: string }) {
                 </header>
 
                 {/* Summary */}
-                <section className={cn('grid gap-3 py-6 sm:grid-cols-2', portal.data.tierProgress && 'lg:grid-cols-3')} aria-label={t('summary')}>
+                <section className={cn('grid gap-3 py-6 sm:grid-cols-3', portal.data.tierProgress && 'lg:grid-cols-4')} aria-label={t('summary')}>
                     <div className="rounded-lg bg-surface-muted/55 p-4">
                         <div className="flex items-center gap-2 text-xs font-semibold tracking-wide text-ink-muted uppercase">
                             <CalendarCheck2 className="h-4 w-4" aria-hidden="true" />
@@ -72,6 +72,13 @@ export function PartnerPortalBoundary({ token }: { token: string }) {
                             {t('currencies')}
                         </div>
                         <p className="mt-3 text-3xl font-bold text-ink tabular-nums">{portal.data.totals.length}</p>
+                    </div>
+                    <div className="rounded-lg bg-surface-muted/55 p-4">
+                        <div className="flex items-center gap-2 text-xs font-semibold tracking-wide text-ink-muted uppercase">
+                            <MousePointerClick className="h-4 w-4" aria-hidden="true" />
+                            {t('brandingClicks')}
+                        </div>
+                        <p className="mt-3 text-3xl font-bold text-ink tabular-nums">{portal.data.brandingClicks}</p>
                     </div>
                     {portal.data.tierProgress && <PartnerTierProgress progress={portal.data.tierProgress} />}
                 </section>

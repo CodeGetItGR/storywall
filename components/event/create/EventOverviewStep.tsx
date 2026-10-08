@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { ActivationDisclosures } from '@/components/checkout/ActivationDisclosures';
 import { ActivationEventSummary } from '@/components/checkout/ActivationEventSummary';
+import { PartnerBrandingNotice } from '@/components/checkout/PartnerBrandingNotice';
 import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
 import { EventOverviewPriceRow } from '@/components/event/create/EventOverviewPriceRow';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
@@ -42,6 +43,9 @@ export function EventOverviewStep() {
         staleTerms,
         onRequestsImmediateStartChange: onRequestsImmediateStartChangeAction,
         onAcknowledgesWithdrawalTermsChange: onAcknowledgesWithdrawalTermsChangeAction,
+        partnerBrandingNotice,
+        partnerBrandingAccepted,
+        onPartnerBrandingChange: onPartnerBrandingChangeAction,
     } = useCreateEventForm();
 
     if (!plan || !option) return null;
@@ -148,6 +152,17 @@ export function EventOverviewStep() {
                     </p>
                 )}
             </section>
+
+            {/* Partner credit */}
+            {partnerBrandingNotice && (
+                <div className="border-t border-border/70 pt-5">
+                    <PartnerBrandingNotice
+                        notice={partnerBrandingNotice}
+                        accepted={partnerBrandingAccepted}
+                        onChangeAction={onPartnerBrandingChangeAction}
+                    />
+                </div>
+            )}
 
             {/* Activation disclosures */}
             <div className="border-t border-border/70 py-5">

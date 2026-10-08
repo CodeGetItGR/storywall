@@ -47,6 +47,17 @@ function collaborator(overrides: Partial<CollaboratorResponseDto> = {}): Collabo
         missingPayoutFields: [],
         commissionTiers: [],
         activationsThisYear: 0,
+        brandingEnabled: false,
+        brandingEnabledAt: null,
+        brandingDisplayName: null,
+        brandingRole: null,
+        brandingTaglineEl: null,
+        brandingTaglineEn: null,
+        brandingServicesEl: null,
+        brandingServicesEn: null,
+        brandingLogoUrl: null,
+        brandingCoverUrl: null,
+        missingBrandingFields: [],
         ...overrides,
     };
 }

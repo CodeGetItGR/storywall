@@ -15,4 +15,8 @@ describe('adminErrorMessageKey', () => {
     it('points mark-paid at the missing partner details instead of a generic error (5096)', () => {
         expect(adminErrorMessageKey(new ApiError(409, { errorCode: 5096 }))).toBe('collaboratorPayoutDetailsIncomplete');
     });
+
+    it('says the partner card is incomplete when it cannot be turned on (5152)', () => {
+        expect(adminErrorMessageKey(new ApiError(409, { errorCode: 5152 }))).toBe('collaboratorBrandingIncomplete');
+    });
 });

@@ -13,6 +13,7 @@ import { useDurationPicks } from '@/hooks/useDurationPicks';
 import { useCreateEvent, useUpdateEvent } from '@/hooks/useEvent';
 import { useThemePresetsForType } from '@/hooks/useEventTheme';
 import { useMe } from '@/hooks/useMe';
+import { usePartnerBrandingConsent } from '@/hooks/usePartnerBrandingConsent';
 import { usePlanTiersForEventType } from '@/hooks/usePlanTiersForEventType';
 import { useResetOnBfcacheRestore } from '@/hooks/useResetOnBfcacheRestore';
 import { useWithdrawalConsent } from '@/hooks/useWithdrawalConsent';
@@ -103,6 +104,8 @@ export function useCreateEventFormController(): CreateEventFormValue {
     const [checkoutCodePreview, setCheckoutCodePreview] = useState<CollaborationCodePreviewResponseDto | null>(null);
     const [checkoutCodeError, setCheckoutCodeError] = useState<string | null>(null);
     const [isCheckoutPending, setIsCheckoutPending] = useState(false);
+    // A branded partner's code asks for the partner credit before checkout.
+    const partnerBranding = usePartnerBrandingConsent(appliedCheckoutCode ? (checkoutCodePreview?.partnerBranding ?? null) : null);
 
     useResetOnBfcacheRestore(
         useCallback(() => {
@@ -304,7 +307,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
                 return;
             }
             if (step !== 'overview') return;
-            if (!isEmailVerified || !consent.consentSatisfied || !selectedOption) return;
+            if (!isEmailVerified || !consent.consentSatisfied || !partnerBranding.satisfied || !selectedOption) return;
 
             let eventId = createdDraftEventId;
 
@@ -401,6 +404,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
             try {
                 const checkout = await api.post<CheckoutResponseDto>(endpoints.events.checkout(eventId), {
                     ...(appliedCheckoutCode ? { collaborationCode: appliedCheckoutCode } : {}),
+                    ...partnerBranding.requestFields,
                     requestsImmediateStart: consent.requestsImmediateStart,
                     acknowledgesWithdrawalTerms: consent.acknowledgesWithdrawalTerms,
                     termsVersion: consent.termsVersion!,
@@ -429,6 +433,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
             initialSessionTitle,
             isEmailVerified,
             mapsUrl,
+            partnerBranding,
             planTiersQuery,
             run,
             saveGiftToDraft,
@@ -516,9 +521,12 @@ export function useCreateEventFormController(): CreateEventFormValue {
         requestsImmediateStart: consent.requestsImmediateStart,
         acknowledgesWithdrawalTerms: consent.acknowledgesWithdrawalTerms,
         staleTerms: consent.staleTerms,
-        consentSatisfied: consent.consentSatisfied,
+        consentSatisfied: consent.consentSatisfied && partnerBranding.satisfied,
         onRequestsImmediateStartChange: consent.handleRequestsImmediateStartChange,
         onAcknowledgesWithdrawalTermsChange: consent.handleAcknowledgesWithdrawalTermsChange,
+        partnerBrandingNotice: partnerBranding.notice,
+        partnerBrandingAccepted: partnerBranding.accepted,
+        onPartnerBrandingChange: partnerBranding.handleChange,
 
         themeStepAvailable,
         themePresets: themePresets ?? [],

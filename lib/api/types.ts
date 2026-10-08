@@ -914,6 +914,97 @@ export interface EventDetailResponseDto {
     // rsvpSummary and hosts are degraded while suspended and must not be read.
     suspended: boolean;
     suspension: EventSuspensionDto | null;
+    // The partner card the feed shows (2026-10-08); null when none should show.
+    partnerBranding: PartnerBrandingDto | null;
+    // Hosts only: an admin linked a partner and no host has answered yet.
+    partnerBrandingPrompt: PartnerBrandingNoticeDto | null;
+}
+
+// --- Partner feed branding (collaborator-feed-branding-design.md, 2026-10-08) ---
+export type BrandingVariant = 'FEATURE_CARD' | 'COMPACT_ROW' | 'CREDIT';
+export type PartnerRole = 'PLANNER' | 'VENUE' | 'PHOTOGRAPHER' | 'VIDEOGRAPHER' | 'DECORATION' | 'CATERING' | 'MUSIC' | 'OTHER';
+export type BrandingSource = 'CODE' | 'ADMIN';
+
+export interface PartnerBrandingTextDto {
+    el: string;
+    en: string;
+}
+
+// Insert a card after post firstAfter, then every `every` posts, counting from 1 across the feed.
+export interface PartnerBrandingPlacementDto {
+    firstAfter: number;
+    every: number;
+}
+
+export interface PartnerBrandingDto {
+    variant: BrandingVariant;
+    displayName: string;
+    role: PartnerRole;
+    logoUrl: string; // presigned
+    coverUrl: string; // presigned
+    tagline: PartnerBrandingTextDto;
+    services: PartnerBrandingTextDto;
+    // Relative to the API origin: a public 302 redirect that counts the tap.
+    linkUrl: string;
+    placement: PartnerBrandingPlacementDto;
+}
+
+// The notice a couple accepts: at checkout for a branded partner's code, or as the host prompt.
+export interface PartnerBrandingNoticeDto {
+    displayName: string;
+    noticeVersion: string;
+}
+
+// POST /api/events/{eventId}/partner-branding/acceptance — host only; 409 5153 when the version is outdated.
+export interface PartnerBrandingAcceptanceRequestDto {
+    noticeVersion: string;
+}
+
+// PUT /api/admin/collaborators/{id}/branding — a full replacement; blank clears a field (409 5152 while enabled).
+export interface CollaboratorBrandingRequestDto {
+    displayName: string | null; // max 80
+    role: PartnerRole | null;
+    taglineEl: string | null; // max 120
+    taglineEn: string | null;
+    servicesEl: string | null;
+    servicesEn: string | null;
+}
+
+// PUT /api/admin/events/{eventId}/partner-branding
+export interface EventPartnerBrandingRequestDto {
+    collaboratorId: string;
+}
+
+// GET /api/admin/events/{eventId}/partner-branding — 404 when the event has no link.
+export interface EventPartnerBrandingResponseDto {
+    eventId: string;
+    collaboratorId: string;
+    displayName: string;
+    source: BrandingSource;
+    variant: BrandingVariant;
+    acceptedAt: string | null;
+    noticeVersion: string | null;
+    assignedBy: string | null;
+    // Guests see the card right now.
+    showing: boolean;
+}
+
+// GET /api/admin/partner-branding/report?from&to — clicks per card design. No impressions.
+export interface PartnerBrandingReportDto {
+    from: string;
+    to: string;
+    firstAfter: number;
+    every: number;
+    variants: PartnerBrandingVariantRowDto[];
+}
+
+export interface PartnerBrandingVariantRowDto {
+    variant: BrandingVariant;
+    events: number;
+    cardSlots: number;
+    clicks: number;
+    clicksPerEvent: number; // 0 when events is 0
+    clicksPerCardSlot: number; // 0 when cardSlots is 0
 }
 
 // Why a StoryWall is suspended. ground, rule and explanation are null if the decision row was deleted.
@@ -954,6 +1045,10 @@ export interface WithdrawalConsentDto {
 // POST /api/events/{eventId}/checkout — host, DRAFT only (billing-fe-guide §6).
 export interface CheckoutRequestDto extends WithdrawalConsentDto {
     collaborationCode?: string;
+    // Required when the code's preview carried partnerBranding (else 400); ignored otherwise.
+    acceptsPartnerBranding?: boolean;
+    // Echo the preview's partnerBranding.noticeVersion.
+    partnerBrandingNoticeVersion?: string;
 }
 export interface CollaborationCodePreviewRequestDto {
     collaborationCode: string;
@@ -977,6 +1072,8 @@ export interface CollaborationCodePreviewResponseDto {
     // 2026-09-24: the activation with the code applied (add-ons included on an
     // existing event), or the upgrade on an upgrade preview.
     breakdown: PriceBreakdown;
+    // Set only when the code's partner has feed branding: the notice the couple must accept to use it.
+    partnerBranding: PartnerBrandingNoticeDto | null;
 }
 export interface PartnerPortalTotalDto {
     currency: string;
@@ -989,6 +1086,8 @@ export interface PartnerPortalResponseDto {
     totals: PartnerPortalTotalDto[];
     // Null when the partner has no tiered schedule (2026-10-08).
     tierProgress: PartnerTierProgressDto | null;
+    // Every tap on the partner's feed cards, across all events (2026-10-08).
+    brandingClicks: number;
 }
 // Counts only, nothing per event.
 export interface PartnerTierProgressDto {
@@ -1044,6 +1143,19 @@ export interface CollaboratorResponseDto {
     commissionTiers: CommissionTierDto[];
     // Activations counting toward a tier this calendar year (Athens time).
     activationsThisYear: number;
+    // Feed branding (2026-10-08). Enabling needs every field below plus websiteUrl (5152).
+    brandingEnabled: boolean;
+    brandingEnabledAt: string | null;
+    brandingDisplayName: string | null;
+    brandingRole: PartnerRole | null;
+    brandingTaglineEl: string | null;
+    brandingTaglineEn: string | null;
+    brandingServicesEl: string | null;
+    brandingServicesEn: string | null;
+    brandingLogoUrl: string | null; // presigned
+    brandingCoverUrl: string | null; // presigned
+    // What still blocks enabling, e.g. "tagline_en", "logo", "website_url"; [] when complete.
+    missingBrandingFields: string[];
 }
 // PUT /api/admin/collaborators/{id}/business-details — a full replacement of these
 // fields only; null or "" clears one. Never part of the PATCH name/email body.

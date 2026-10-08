@@ -94,7 +94,7 @@ export function useSaveCollaborator() {
     });
 }
 
-function upsertCollaborator(queryClient: ReturnType<typeof useQueryClient>, saved: CollaboratorResponseDto) {
+export function upsertCollaborator(queryClient: ReturnType<typeof useQueryClient>, saved: CollaboratorResponseDto) {
     queryClient.setQueryData<CollaboratorResponseDto[]>(adminKeys.collaborators, (current) =>
         current ? [...current.filter((item) => item.id !== saved.id), saved] : current,
     );

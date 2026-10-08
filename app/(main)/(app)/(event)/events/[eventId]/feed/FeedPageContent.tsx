@@ -14,6 +14,8 @@ import { EventSessionActionButtons } from '@/components/feed/EventSessionActionB
 import { FeedEmptyState } from '@/components/feed/FeedEmptyState';
 import { FeedPostRenderer } from '@/components/feed/FeedPostRenderer';
 import { Header } from '@/components/feed/Header';
+import { PartnerBrandingPromptModal } from '@/components/feed/partner/PartnerBrandingPromptModal';
+import { PartnerFeedCard } from '@/components/feed/partner/PartnerFeedCard';
 import { PostModal } from '@/components/feed/PostModal';
 import { PublishQueueCards } from '@/components/feed/PublishQueueCards';
 import { RsvpPrompt } from '@/components/feed/RsvpPrompt';
@@ -21,6 +23,7 @@ import { StoriesRow } from '@/components/feed/StoriesRow';
 import { StoryModal } from '@/components/story/StoryModal';
 import { useGiftAccount, useHideMobileTabBarOnScroll } from '@/hooks';
 import { eventKeys } from '@/hooks/useEvent';
+import { useFeedItems } from '@/hooks/useFeedItems';
 import { coverPhotoSettingsHref } from '@/lib/manageSectionTargets';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
@@ -32,6 +35,7 @@ export function FeedPageContent() {
     useHideMobileTabBarOnScroll();
     const { currentMemberRsvpId, event, eventId, isFetchingNextPage, isHost, loadMoreRef, loadingMoreLabel, moduleFlags, posts } = useFeedPage();
     const gifts = useGiftAccount(eventId);
+    const feedItems = useFeedItems(posts, event.partnerBranding);
     const queryClient = useQueryClient();
     // An admin replacing a preset's art can leave the event's illustration URL dead; refetch once per URL.
     const refetchedIllustration = useRef<string | null>(null);
@@ -136,7 +140,14 @@ export function FeedPageContent() {
                             {posts.length === 0 ? (
                                 <FeedEmptyState />
                             ) : (
-                                posts.map((post, index) => <FeedPostRenderer key={post.id} post={post} isLcpCandidate={index === 0} />)
+                                feedItems.map((item) =>
+                                    item.kind === 'post' ? (
+                                        <FeedPostRenderer key={item.post.id} post={item.post} isLcpCandidate={item.index === 0} />
+                                    ) : (
+                                        /* Partner card */
+                                        event.partnerBranding && <PartnerFeedCard key={item.key} branding={event.partnerBranding} />
+                                    ),
+                                )
                             )}
                             <div ref={loadMoreRef} className="h-1" />
                             {isFetchingNextPage && <p className="py-2 text-center text-sm text-ink-muted">{loadingMoreLabel}</p>}
@@ -149,6 +160,9 @@ export function FeedPageContent() {
 
             {/* Story Popup */}
             <StoryModal open={storyId !== null} storyId={storyId} onCloseAction={closeStoryModal} />
+
+            {/* Partner card prompt */}
+            {isHost && <PartnerBrandingPromptModal eventId={eventId} prompt={event.partnerBrandingPrompt} />}
         </div>
     );
 }

@@ -6,6 +6,7 @@ import { useCallback, useState } from 'react';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { appConfigKeys } from '@/hooks/useAppConfig';
 import { billingKeys, useCheckout, useEventQuote } from '@/hooks/useBilling';
+import { usePartnerBrandingConsent } from '@/hooks/usePartnerBrandingConsent';
 import { useResetOnBfcacheRestore } from '@/hooks/useResetOnBfcacheRestore';
 import { useWithdrawalConsent } from '@/hooks/useWithdrawalConsent';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
@@ -29,6 +30,9 @@ export function useDraftActivationCheckout(eventId: string, { quoteEnabled, star
     // The failure is kept with the start it was for: moving the date clears it.
     const [failure, setFailure] = useState<{ message: string; startPassed: boolean; startAt: string | null } | null>(null);
 
+    // A branded partner's code asks for the partner credit before checkout.
+    const partnerBranding = usePartnerBrandingConsent(collaborationPreview?.partnerBranding ?? null);
+
     useResetOnBfcacheRestore(checkout.reset);
 
     // The server's price for the pay button: a typed code's preview when there
@@ -42,11 +46,12 @@ export function useDraftActivationCheckout(eventId: string, { quoteEnabled, star
     }, []);
 
     const submit = useCallback(async () => {
-        if (!consent.consentSatisfied || !consent.termsVersion) return;
+        if (!consent.consentSatisfied || !consent.termsVersion || !partnerBranding.satisfied) return;
         setFailure(null);
         try {
             const response = await checkout.mutateAsync({
                 ...(collaborationCode ? { collaborationCode } : {}),
+                ...partnerBranding.requestFields,
                 requestsImmediateStart: consent.requestsImmediateStart,
                 acknowledgesWithdrawalTerms: consent.acknowledgesWithdrawalTerms,
                 termsVersion: consent.termsVersion,
@@ -66,7 +71,7 @@ export function useDraftActivationCheckout(eventId: string, { quoteEnabled, star
                 startAt,
             });
         }
-    }, [checkout, collaborationCode, consent, eventId, queryClient, startAt, toErrorMessage]);
+    }, [checkout, collaborationCode, consent, eventId, partnerBranding, queryClient, startAt, toErrorMessage]);
 
     const currentFailure = failure && failure.startAt === startAt ? failure : null;
     // The quote answers 3035 too, so a passed date shows before the host tries to pay.
@@ -74,6 +79,7 @@ export function useDraftActivationCheckout(eventId: string, { quoteEnabled, star
 
     return {
         consent,
+        partnerBranding,
         collaborationPreview,
         breakdown,
         handleCollaborationPreviewChange,

@@ -29,6 +29,8 @@ export type ApiErrorMessageKey =
     | 'collaborationCodeNotValid'
     | 'collaborationEarningNotPayable'
     | 'collaboratorPayoutDetailsIncomplete'
+    | 'collaboratorBrandingIncomplete'
+    | 'partnerBrandingNoticeOutdated'
     | 'concurrentModification'
     | 'conflict'
     | 'coverageEnded'
@@ -363,6 +365,8 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.WISHBOOK_BOOK_RENDERER_UNAVAILABLE]: 'wishbookBookRendererUnavailable',
     [ERROR_CODES.LANDING_CATEGORY_TYPE_ASSIGNED]: 'landingCategoryTypeAssigned',
     [ERROR_CODES.COVERAGE_OPTION_PROMO_PRICE_INVALID]: 'coverageOptionPromoPriceInvalid',
+    [ERROR_CODES.COLLABORATOR_BRANDING_INCOMPLETE]: 'collaboratorBrandingIncomplete',
+    [ERROR_CODES.PARTNER_BRANDING_NOTICE_OUTDATED]: 'partnerBrandingNoticeOutdated',
     [ERROR_CODES.EVENT_ENDED]: 'eventEnded',
     [ERROR_CODES.PAID_SERVICE_CURRENCY_MISMATCH]: 'paidServiceCurrencyMismatch',
     [ERROR_CODES.PAID_SERVICE_IN_USE]: 'paidServiceInUse',

@@ -3,10 +3,12 @@
 import { useTranslations } from 'next-intl';
 
 import { CollaborationCodeDrawer } from '@/components/admin/CollaborationCodeDrawer';
+import { CollaboratorBrandingDrawer } from '@/components/admin/collaborations/CollaboratorBrandingDrawer';
 import { CollaboratorBusinessDetails } from '@/components/admin/collaborations/CollaboratorBusinessDetails';
 import { CollaboratorBusinessDrawer } from '@/components/admin/collaborations/CollaboratorBusinessDrawer';
 import { CollaboratorCodesTable } from '@/components/admin/collaborations/CollaboratorCodesTable';
 import { CollaboratorCommissionTiers } from '@/components/admin/collaborations/CollaboratorCommissionTiers';
+import { CollaboratorFeedCard } from '@/components/admin/collaborations/CollaboratorFeedCard';
 import { CollaboratorLedger } from '@/components/admin/collaborations/CollaboratorLedger';
 import { CollaboratorOwedTotals } from '@/components/admin/collaborations/CollaboratorOwedTotals';
 import { CollaboratorPaneHeader } from '@/components/admin/collaborations/CollaboratorPaneHeader';
@@ -32,6 +34,9 @@ export function CollaboratorPane({ collaborator }: { collaborator: CollaboratorR
 
             {/* Business details */}
             <CollaboratorBusinessDetails collaborator={collaborator} onEditAction={pane.openBusiness} />
+
+            {/* Feed card */}
+            <CollaboratorFeedCard collaborator={collaborator} onEditAction={pane.openBranding} />
 
             {/* Codes */}
             <CollaboratorCodesTable
@@ -59,6 +64,12 @@ export function CollaboratorPane({ collaborator }: { collaborator: CollaboratorR
                 open={pane.businessOpen}
                 collaborator={collaborator}
                 onCloseAction={pane.closeBusiness}
+            />
+            <CollaboratorBrandingDrawer
+                key={`branding-${pane.drawerKey}`}
+                open={pane.brandingOpen}
+                collaborator={collaborator}
+                onCloseAction={pane.closeBranding}
             />
             <CommissionTiersDrawer
                 key={`tiers-${pane.drawerKey}`}

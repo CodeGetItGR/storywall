@@ -18,6 +18,7 @@ export function useCollaboratorPane(collaborator: CollaboratorResponseDto) {
     const [statusConfirmOpen, setStatusConfirmOpen] = useState(false);
     const [businessOpen, setBusinessOpen] = useState(false);
     const [tiersOpen, setTiersOpen] = useState(false);
+    const [brandingOpen, setBrandingOpen] = useState(false);
     // Bumped on every open so each drawer remounts with the partner's saved values, not a stale draft.
     const [drawerRun, setDrawerRun] = useState(0);
     // Fixed when the modal opens, so its copy doesn't flip mid-close once the saved status lands.
@@ -39,6 +40,12 @@ export function useCollaboratorPane(collaborator: CollaboratorResponseDto) {
         setTiersOpen(true);
     }, []);
     const closeTiers = useCallback(() => setTiersOpen(false), []);
+
+    const openBranding = useCallback(() => {
+        setDrawerRun((run) => run + 1);
+        setBrandingOpen(true);
+    }, []);
+    const closeBranding = useCallback(() => setBrandingOpen(false), []);
 
     const openCreateCode = useCallback(() => {
         setEditingCode(null);
@@ -90,6 +97,9 @@ export function useCollaboratorPane(collaborator: CollaboratorResponseDto) {
         tiersOpen,
         openTiers,
         closeTiers,
+        brandingOpen,
+        openBranding,
+        closeBranding,
         codeDrawerOpen,
         editingCode,
         openCreateCode,

@@ -6,6 +6,7 @@ import {
     CalendarDays,
     ChartNoAxesCombined,
     Flag,
+    GalleryVerticalEnd,
     Handshake,
     type LucideIcon,
     MonitorPlay,
@@ -39,6 +40,7 @@ export type AdminTab =
     | 'paidServices'
     | 'discountCodes'
     | 'collaborations'
+    | 'partnerCards'
     | 'reactionTypes'
     | 'themePresets'
     | 'themeFonts'
@@ -78,6 +80,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#cost-tracking': 'costTracking',
     '#paid-services': 'paidServices',
     '#discount-codes': 'discountCodes',
+    '#partner-cards': 'partnerCards',
     '#reaction-types': 'reactionTypes',
     '#theme-presets': 'themePresets',
     '#theme-fonts': 'themeFonts',
@@ -96,6 +99,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     paidServices: '#paid-services',
     discountCodes: '#discount-codes',
     collaborations: COLLABORATIONS_HASH_ROOT,
+    partnerCards: '#partner-cards',
     reactionTypes: '#reaction-types',
     themePresets: '#theme-presets',
     themeFonts: '#theme-fonts',
@@ -185,6 +189,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'paidServices', label: t('paidServices'), icon: PackagePlus },
             { key: 'discountCodes', label: t('discountCodes'), icon: TicketPercent },
             { key: 'collaborations', label: t('collaborations'), icon: Handshake },
+            { key: 'partnerCards', label: t('partnerCards'), icon: GalleryVerticalEnd },
             { key: 'reactionTypes', label: t('reactionTypes'), icon: Smile },
             { key: 'themePresets', label: t('themePresets'), icon: Palette },
             { key: 'themeFonts', label: t('themeFonts'), icon: Type },
