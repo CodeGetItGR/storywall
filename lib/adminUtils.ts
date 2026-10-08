@@ -2,6 +2,7 @@ import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 
 export type AdminErrorMessageKey =
     | 'planInUse'
+    | 'invalidModuleKey'
     | 'onlyDefault'
     | 'orderNotPending'
     | 'orderNotManual'
@@ -74,6 +75,8 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.ADDON_LOCKED_WHILE_ACTIVE) return 'addonLockedWhileActive';
     if (code === ERROR_CODES.ADDON_NOT_ACTIVE) return 'addonNotActive';
     if (code === ERROR_CODES.INVALID_PLAN_TIER_SCOPE) return 'invalidPlanTierScope';
+    // A module the plan's event type doesn't support, or one that no longer exists.
+    if (code === ERROR_CODES.INVALID_MODULE_KEY) return 'invalidModuleKey';
     if (code === ERROR_CODES.REACTION_TYPE_IN_USE) return 'reactionTypeInUse';
     if (code === ERROR_CODES.REACTION_TYPE_LIMIT_EXCEEDED) return 'reactionTypeLimitExceeded';
     if (code === ERROR_CODES.REACTION_TYPE_NOT_USABLE) return 'reactionTypeNotUsable';

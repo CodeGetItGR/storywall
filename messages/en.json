@@ -3764,6 +3764,7 @@
             "reactionTypeNotUsable": "That reaction is no longer available. Refresh and choose another.",
             "collaborationEarningNotPayable": "One or more selected earnings are not payable. Refresh the ledger and choose accrued rows.",
             "methodNotAllowed": "That action is not available here. Refresh and try again.",
+            "invalidModuleKey": "One of the selected modules isn't available for this event type. Remove it and try again.",
             "orderNotManual": "Only manual orders can be settled here. Stripe orders settle through Stripe."
         },
         "reactionTypes": {
@@ -4690,6 +4691,7 @@
         "tooManyFiles": "Choose fewer files and try again.",
         "requestTooLarge": "The selected files are too large. Choose fewer files and try again.",
         "methodNotAllowed": "That action is not available here. Refresh and try again.",
+        "invalidModuleKey": "One of the selected modules isn't available for this event type. Remove it and try again.",
         "authenticationRequired": "Please sign in to continue.",
         "accessDenied": "You don't have permission to do that.",
         "forbidden": "You don't have permission to do that.",
