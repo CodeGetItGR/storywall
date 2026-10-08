@@ -6,6 +6,7 @@ import { useEffect, useRef } from 'react';
 
 import { CreateEventRouteState } from '@/components/event/create/CreateEventRouteState';
 import { EventCreateFooter } from '@/components/event/create/EventCreateFooter';
+import { EventCreateSelectionSummary } from '@/components/event/create/EventCreateSelectionSummary';
 import { EventCreateStepBreadcrumb } from '@/components/event/create/EventCreateStepBreadcrumb';
 import { EventDetailsStep } from '@/components/event/create/EventDetailsStep';
 import { EventOverviewStep } from '@/components/event/create/EventOverviewStep';
@@ -93,6 +94,9 @@ function CreateEventFormBody() {
                 {/* Form Shell */}
                 <div ref={formShellRef} className="mt-3 min-h-0 flex-1 overflow-y-auto p-5">
                     <form id={formId} onSubmit={handleSubmit}>
+                        {/* Earlier picks */}
+                        <EventCreateSelectionSummary />
+
                         {/* Subtitle */}
                         <h2 className="mb-5 text-lg font-bold text-ink">
                             {step === 'type' && t('steps.typeSubtitle')}

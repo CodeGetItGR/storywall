@@ -1141,6 +1141,10 @@
         "actions": {
             "back": "Πίσω"
         },
+        "selection": {
+            "changeType": "Αλλαγή τύπου",
+            "changePlan": "Αλλαγή πλάνου"
+        },
         "steps": {
             "navigationLabel": "Βήματα δημιουργίας εκδήλωσης",
             "type": "Τύπος",

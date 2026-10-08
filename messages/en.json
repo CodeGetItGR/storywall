@@ -1015,6 +1015,10 @@
         "actions": {
             "back": "Back"
         },
+        "selection": {
+            "changeType": "Change event type",
+            "changePlan": "Change plan"
+        },
         "steps": {
             "navigationLabel": "Event creation steps",
             "type": "Event type",

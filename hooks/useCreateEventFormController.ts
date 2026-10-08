@@ -185,13 +185,16 @@ export function useCreateEventFormController(): CreateEventFormValue {
     }, [refetchAppConfig, step]);
 
     useEffect(() => {
+        // Until the config loads no step past the type one looks reachable: a link straight to a
+        // later step (the landing pricing opens on the plan step) must not be sent back meanwhile.
+        if (!appConfig) return;
         if (CREATE_EVENT_STEPS.indexOf(step) > CREATE_EVENT_STEPS.indexOf(reachableStep)) {
             router.replace(routes.events.new({ step: reachableStep, run }));
         } else if (step === 'theme' && !themeStepAvailable) {
             // Nothing to pick for this plan or type, or the list failed: skip ahead.
             router.replace(routes.events.new({ step: 'overview', run }));
         }
-    }, [reachableStep, router, run, step, themeStepAvailable]);
+    }, [appConfig, reachableStep, router, run, step, themeStepAvailable]);
 
     const onSelectEventType = useCallback(
         (type: EventTypeConvention) => {
