@@ -24,7 +24,8 @@ interface DateTimeFieldProps {
 // datetime-local value. The native look is turned off: Android draws its picker
 // arrow at the field's very edge, ignoring padding, where a rounded corner cuts
 // it off. On touch screens our own icon takes its place; desktop browsers keep
-// their own picker icon, which respects the padding.
+// their own picker icon, which respects the padding. On phones the two share the
+// row evenly so a 12-hour time keeps room for AM/PM, and stack below 380px.
 const NATIVE_RESET = cn(
     'relative w-full appearance-none pr-6 pointer-coarse:pr-11',
     // On touch screens the browser's own picker button is stretched invisibly over the whole field,
@@ -38,9 +39,9 @@ export function DateTimeField({ value, onChange, name, min, max, required, disab
     const field = useDateTimeField({ value, onChange, min, max });
 
     return (
-        <div className="flex min-w-0 gap-2">
+        <div className="flex min-w-0 gap-2 max-[379px]:flex-col">
             {/* Date */}
-            <div className="relative min-w-0 flex-3">
+            <div className="relative min-w-0 flex-1 sm:flex-3">
                 <input
                     type="date"
                     value={field.date}
@@ -56,7 +57,7 @@ export function DateTimeField({ value, onChange, name, min, max, required, disab
             </div>
 
             {/* Time */}
-            <div className="relative min-w-0 flex-2">
+            <div className="relative min-w-0 flex-1 sm:flex-2">
                 <input
                     type="time"
                     value={field.time}
