@@ -61,7 +61,8 @@ export function EventTypeStep() {
                     const style = ACCENT_TOKEN_STYLES[type.accentToken] ?? FALLBACK_STYLE;
                     const isSelected = type.eventTypeKey === selectedEventType;
                     const copy = eventTypeCopy(type.eventTypeKey);
-                    const backgroundImageSrc = getCreateEventCatalogEntry(type.eventTypeKey)?.backgroundImageSrc;
+                    // An admin-uploaded image wins over the built-in one.
+                    const backgroundImageSrc = type.imageUrl ?? getCreateEventCatalogEntry(type.eventTypeKey)?.backgroundImageSrc;
 
                     return (
                         <button

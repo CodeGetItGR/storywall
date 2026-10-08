@@ -9,7 +9,7 @@ function category(eventTypeKeys: AdminLandingCategoryDto['eventTypeKeys']): Admi
 
 // /api/config.eventTypes lists enabled types only.
 function enabled(keys: AppEventTypeResponseDto['eventTypeKey'][]): AppEventTypeResponseDto[] {
-    return keys.map((eventTypeKey, sortOrder) => ({ id: eventTypeKey, eventTypeKey, icon: 'x', accentToken: 'rose', isEnabled: true, sortOrder }));
+    return keys.map((eventTypeKey, sortOrder) => ({ id: eventTypeKey, eventTypeKey, icon: 'x', accentToken: 'rose', isEnabled: true, sortOrder, imageUrl: null }));
 }
 
 function plan(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto {

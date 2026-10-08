@@ -7,9 +7,11 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
+import { EventTypeImageField } from '@/components/admin/EventTypeImageField';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { adminKeys } from '@/hooks/useAdmin';
 import { invalidatePublicConfig } from '@/hooks/useAppConfig';
+import { useEventTypeCardImage } from '@/hooks/useEventTypeCardImage';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { adminErrorMessageKey, checked } from '@/lib/adminUtils';
 import type { PlatformEventTypePatchDto, PlatformEventTypeResponseDto } from '@/lib/api/types';
@@ -30,9 +32,11 @@ export function EventTypeEditDrawer({ eventType, onCloseAction }: { eventType: P
         },
     });
     const [pendingInput, setPendingInput] = useState<PlatformEventTypePatchDto | null>(null);
+    const image = useEventTypeCardImage(eventType);
 
     function close() {
         mutation.reset();
+        image.reset();
         setPendingInput(null);
         onCloseAction();
     }
@@ -98,6 +102,8 @@ export function EventTypeEditDrawer({ eventType, onCloseAction }: { eventType: P
                                 {t('eventTypes.enabled')} <span className="text-ink-faint">({tCommon('optional')})</span>
                             </span>
                         </label>
+
+                        <EventTypeImageField image={image} />
 
                         {mutation.error && <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(mutation.error)}`)}</p>}
                     </form>
