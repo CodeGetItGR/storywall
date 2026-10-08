@@ -987,6 +987,17 @@ export interface PartnerPortalResponseDto {
     name: string;
     eventsReferred: number;
     totals: PartnerPortalTotalDto[];
+    // Null when the partner has no tiered schedule (2026-10-08).
+    tierProgress: PartnerTierProgressDto | null;
+}
+// Counts only, nothing per event.
+export interface PartnerTierProgressDto {
+    activationsThisYear: number;
+    // The rate the partner's next activation would earn.
+    currentPercent: number;
+    // Both null at the top tier.
+    nextTierMinActivations: number | null;
+    nextTierPercent: number | null;
 }
 export type CollaboratorStatus = 'ACTIVE' | 'SUSPENDED';
 export type CollaborationCodeStatus = 'ACTIVE' | 'DISABLED';
@@ -1008,6 +1019,59 @@ export interface CollaboratorResponseDto {
     notes: string | null;
     // Same rows as GET …/earnings/totals, on list and detail. [] when never earned.
     earningsTotals: CollaborationEarningsTotalDto[];
+    // Business details (2026-10-08), set via PUT …/business-details. All nullable.
+    websiteUrl: string | null;
+    contactPersonName: string | null;
+    contactPhone: string | null; // E.164
+    billingEmail: string | null; // null = invoices go to contactEmail
+    legalName: string | null;
+    countryCode: string | null; // VIES code: EL for Greece
+    vatNumber: string | null; // without the country prefix
+    taxOffice: string | null; // ΔΟΥ
+    addressLine1: string | null;
+    addressLine2: string | null;
+    city: string | null;
+    postalCode: string | null;
+    viesStatus: ViesStatus | null; // null while no VAT number is set
+    viesCheckedAt: string | null;
+    viesName: string | null;
+    viesAddress: string | null;
+    payoutIban: string | null; // full IBAN, admin only
+    payoutAccountHolder: string | null;
+    // Column names still blocking a payout (5096); [] when the partner can be paid.
+    missingPayoutFields: string[];
+    // Tiered commission (2026-10-08), ascending; [] when each code's own rate applies.
+    commissionTiers: CommissionTierDto[];
+    // Activations counting toward a tier this calendar year (Athens time).
+    activationsThisYear: number;
+}
+// PUT /api/admin/collaborators/{id}/business-details — a full replacement of these
+// fields only; null or "" clears one. Never part of the PATCH name/email body.
+export interface CollaboratorBusinessDetailsRequestDto {
+    websiteUrl: string | null; // https only, max 500
+    contactPersonName: string | null; // max 200
+    contactPhone: string | null; // international format; spaces/dashes are stripped
+    billingEmail: string | null;
+    legalName: string | null; // max 200
+    countryCode: string | null; // VIES code, EU only; set together with vatNumber
+    vatNumber: string | null;
+    taxOffice: string | null; // required when countryCode is EL
+    addressLine1: string | null;
+    addressLine2: string | null;
+    city: string | null;
+    postalCode: string | null;
+    payoutIban: string | null; // checksum-validated, stored encrypted
+    payoutAccountHolder: string | null; // max 140
+}
+// From the minActivations-th activation of the year, earn commissionPercent.
+export interface CommissionTierDto {
+    minActivations: number; // >= 1; the first tier must be 1
+    commissionPercent: number; // 1-100; never lower than the tier below
+}
+// PUT /api/admin/collaborators/{id}/commission-tiers — replaces the whole schedule;
+// tiers: [] removes it. Only later activations are affected.
+export interface CommissionTiersRequestDto {
+    tiers: CommissionTierDto[];
 }
 export interface CollaboratorPortalTokenResponseDto {
     token: string;
@@ -1074,6 +1138,8 @@ export interface CollaborationEarningResponseDto {
     accruedAt: string;
     paidAt: string | null;
     payoutReference: string | null;
+    // Which activation of the year chose a tiered partner's rate; null when untiered and on clawbacks.
+    activationNumber: number | null;
 }
 export interface CollaborationEarningsTotalDto {
     currency: string;

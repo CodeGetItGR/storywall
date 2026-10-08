@@ -366,6 +366,9 @@ All under `/api/admin`, all `ROLE_ADMIN`.
 |---|---|---|
 | `GET`/`POST` | `/collaborators` | |
 | `GET`/`PATCH` | `/collaborators/{id}` | `PATCH` is a full replace |
+| `PUT` | `/collaborators/{id}/business-details` | Website, contact, invoicing, payout IBAN (§ below) |
+| `POST` | `/collaborators/{id}/vies-check` | Asks VIES again about the stored VAT number |
+| `PUT` | `/collaborators/{id}/commission-tiers` | Tiered commission schedule (§ below) |
 | `POST` | `/collaborators/{id}/portal-token` | Issues a partner page link |
 | `GET`/`POST` | `/collaborators/{id}/codes` | |
 | `POST` | `/collaborators/{id}/codes/link` | Attaches an existing house code instead of issuing a new one |
@@ -422,6 +425,68 @@ PATCH /api/admin/collaborators/{id}
 
 → 200  // same CollaboratorResponseDto shape as above, status now "SUSPENDED"
 ```
+
+### Business, invoicing and payout details
+
+Added 2026-10-08. A separate form section with its own save — **not** part of the `PATCH` body, so
+the name/email form can never wipe an IBAN. `PUT` is a full replacement of these fields only: send
+every field each time; `null` or `""` clears one. All fields are optional to save.
+
+```jsonc
+PUT /api/admin/collaborators/{id}/business-details
+{
+  "websiteUrl": "https://barn.example",       // https only, max 500
+  "contactPersonName": "Maria P",              // max 200
+  "contactPhone": "+30 210 123 4567",          // international format; spaces/dashes are stripped
+  "billingEmail": "invoices@barn.example",     // where invoices go; null = contactEmail
+  "legalName": "Barn Venue AE",                // max 200
+  "countryCode": "EL",                         // VIES code — EL for Greece; EU only. Set with vatNumber
+  "vatNumber": "EL123456789",                  // prefix optional; stored without it
+  "taxOffice": "Α' Αθηνών",                    // ΔΟΥ — required when countryCode is EL
+  "addressLine1": "Odos 1", "addressLine2": null, "city": "Athens", "postalCode": "10558",
+  "payoutIban": "GR16 0110 1250 0000 0001 2300 695",  // checksum-validated, stored encrypted
+  "payoutAccountHolder": "Barn Venue AE"       // max 140
+}
+
+→ 200  // CollaboratorResponseDto
+```
+
+A bad value is a `400` naming the field; the value is never echoed back. When the country or VAT
+number changes, VIES is asked once during the save; if it doesn't answer, the save still succeeds and
+`viesStatus` stays `PENDING` — offer a "Re-check VIES" button (`POST …/vies-check`, `409` when
+there is no VAT number or VIES is switched off).
+
+The response now carries all these fields (the **full IBAN** — admin only; nothing reaches the
+partner page), plus `viesStatus`, `viesCheckedAt`, `viesName`, `viesAddress`, and
+`missingPayoutFields`: the column names still blocking a payout, `[]` when the partner can be paid.
+Show it next to "Mark paid".
+
+### Tiered commission
+
+Added 2026-10-08. A partner can earn more the more activations they send in a calendar year (Athens
+time). The Nth activation of the year earns the rate of the tier N falls in; earlier rows are never
+re-rated. While a partner has a schedule it replaces the commission % of **all** their codes —
+except a 0% (perk-only) code, which still earns nothing and doesn't count. Only activations ever
+earn commission; upgrades, extensions and storage packs don't.
+
+```jsonc
+PUT /api/admin/collaborators/{id}/commission-tiers
+{ "tiers": [
+    { "minActivations": 1,  "commissionPercent": 10 },   // activations 1–9 of the year: 10%
+    { "minActivations": 10, "commissionPercent": 15 },   // 10–24: 15%
+    { "minActivations": 25, "commissionPercent": 20 }    // 25+: 20%
+] }
+
+→ 200  // CollaboratorResponseDto, with commissionTiers and activationsThisYear
+```
+
+`"tiers": []` removes the schedule and the partner goes back to each code's own rate. 400 unless
+the first tier starts at 1, thresholds strictly increase, rates are 1–100 and never go down, and
+there are at most 10 tiers. A change applies to later activations only.
+
+A fully refunded activation stops counting (the next one takes its place in the count); a partly
+refunded one still counts. Each ledger row shows `activationNumber` — which activation of the year
+chose its rate — and `commissionPercent`, the rate it got.
 
 ### The portal token is readable exactly once
 
@@ -631,6 +696,11 @@ currently be `ACCRUED` — if any row is `PAID` or `REVERSED` already, the whole
 one transaction), so double-paying is not possible. Re-fetch the ledger after a batch failure to
 see which rows are actually in which state before retrying.
 
+Since 2026-10-08 every partner behind the batch must also have complete business details and a
+VIES-valid VAT number (`missingPayoutFields` is `[]`). Otherwise the whole call is refused with
+`errorCode 5096 COLLABORATOR_PAYOUT_DETAILS_INCOMPLETE`, whose message names the partner and the
+missing fields, and nothing is marked.
+
 ---
 
 ## 3b. Admin: house discount codes
@@ -727,9 +797,19 @@ GET /api/partners/{token}          // No Authorization header
 {
   "name": "Barn Venue",
   "eventsReferred": 12,
-  "totals": [ { "currency": "EUR", "accruedMinor": 21600, "paidMinor": 18000 } ]
+  "totals": [ { "currency": "EUR", "accruedMinor": 21600, "paidMinor": 18000 } ],
+  "tierProgress": {                  // null when the partner has no tiered schedule
+    "activationsThisYear": 12,
+    "currentPercent": 15,            // what the next activation earns
+    "nextTierMinActivations": 25,    // null at the top tier
+    "nextTierPercent": 20            // null at the top tier
+  }
 }
 ```
+
+Show it as e.g. "12 activations this year at 15% — your 25th earns 20%". The partner is
+`nextTierMinActivations - activationsThisYear` activations (here 13) away from the first one at
+the higher rate.
 
 Unauthenticated, `GET` only, rate-limited to 30/minute. `eventsReferred` counts events that
 actually went live — an abandoned checkout is not a referral.
@@ -747,6 +827,7 @@ A stale link cannot confirm it was ever real.
 | `5060` | `COLLABORATION_CODE_NOT_VALID` | The code cannot be used here. No further detail, by design. |
 | `5061` | `COLLABORATION_ALREADY_REDEEMED` | This event already has a different discount code (house or partner). |
 | `5062` | `COLLABORATION_EARNING_NOT_PAYABLE` | That ledger row is not in `ACCRUED` state. |
+| `5096` | `COLLABORATOR_PAYOUT_DETAILS_INCOMPLETE` | Added 2026-10-08. A partner in a mark-paid batch is missing business/payout details or a VIES-valid VAT number. Nothing was marked. |
 | `5063` | `NO_DISCOUNT_TO_PREVIEW` | A blank `collaborationCode` was previewed (§1) and the event carries no code to fall back to. Activation previews only — an upgrade preview never falls back to a code. |
 | `5076` | `DISCOUNT_NOT_APPLICABLE_TO_UPGRADE` | A `collaborationCode` was previewed together with a `targetPlanTierCode` (§1). Codes price an activation, not an upgrade. Says nothing about the code itself. |
 | `5077` | `COVERAGE_OPTION_INVALID` | Added 2026-09-23. A preview's `coverageOptionId` (§1b) or `targetCoverageOptionId` (§1) is not a live duration of that plan, or `targetCoverageOptionId` is missing. A missing `coverageOptionId` on §1b fails validation first: `400 VALIDATION_FAILED` (3001). Not masked — it is about the plan, not the code. |

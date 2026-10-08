@@ -11,9 +11,11 @@ import type {
     CollaborationCodeRequestDto,
     CollaborationCodeResponseDto,
     CollaborationEarningResponseDto,
+    CollaboratorBusinessDetailsRequestDto,
     CollaboratorPortalTokenResponseDto,
     CollaboratorRequestDto,
     CollaboratorResponseDto,
+    CommissionTiersRequestDto,
     CostSummaryResponseDto,
     DiscountCodePatchDto,
     DiscountCodeRequestDto,
@@ -87,13 +89,45 @@ export function useSaveCollaborator() {
             id
                 ? api.patch<CollaboratorResponseDto>(endpoints.admin.collaborators.byId(id), input)
                 : api.post<CollaboratorResponseDto>(endpoints.admin.collaborators.list, input),
-        onSuccess: (saved) => {
-            // Upsert before the refetch so a just-created partner can be selected right away.
-            queryClient.setQueryData<CollaboratorResponseDto[]>(adminKeys.collaborators, (current) =>
-                current ? [...current.filter((item) => item.id !== saved.id), saved] : current,
-            );
-            queryClient.invalidateQueries({ queryKey: adminKeys.collaborators });
-        },
+        // Upsert before the refetch so a just-created partner can be selected right away.
+        onSuccess: (saved) => upsertCollaborator(queryClient, saved),
+    });
+}
+
+function upsertCollaborator(queryClient: ReturnType<typeof useQueryClient>, saved: CollaboratorResponseDto) {
+    queryClient.setQueryData<CollaboratorResponseDto[]>(adminKeys.collaborators, (current) =>
+        current ? [...current.filter((item) => item.id !== saved.id), saved] : current,
+    );
+    queryClient.invalidateQueries({ queryKey: adminKeys.collaborators });
+}
+
+// Kept apart from the PATCH name/email save so that form can never wipe an IBAN.
+export function useSaveCollaboratorBusinessDetails() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, input }: { id: string; input: CollaboratorBusinessDetailsRequestDto }) =>
+            api.put<CollaboratorResponseDto>(endpoints.admin.collaborators.businessDetails(id), input),
+        onSuccess: (saved) => upsertCollaborator(queryClient, saved),
+    });
+}
+
+export function useCheckCollaboratorVies() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (id: string) => api.post<CollaboratorResponseDto>(endpoints.admin.collaborators.viesCheck(id)),
+        onSuccess: (saved) => upsertCollaborator(queryClient, saved),
+    });
+}
+
+export function useSaveCollaboratorCommissionTiers() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, input }: { id: string; input: CommissionTiersRequestDto }) =>
+            api.put<CollaboratorResponseDto>(endpoints.admin.collaborators.commissionTiers(id), input),
+        onSuccess: (saved) => upsertCollaborator(queryClient, saved),
     });
 }
 

@@ -22,6 +22,7 @@ export type AdminErrorMessageKey =
     | 'reactionTypeLimitExceeded'
     | 'reactionTypeNotUsable'
     | 'collaborationEarningNotPayable'
+    | 'collaboratorPayoutDetailsIncomplete'
     | 'methodNotAllowed'
     | 'coverageOptionInvalid'
     | 'coverageOptionUnavailable'
@@ -81,6 +82,8 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.REACTION_TYPE_LIMIT_EXCEEDED) return 'reactionTypeLimitExceeded';
     if (code === ERROR_CODES.REACTION_TYPE_NOT_USABLE) return 'reactionTypeNotUsable';
     if (code === ERROR_CODES.COLLABORATION_EARNING_NOT_PAYABLE) return 'collaborationEarningNotPayable';
+    // Mark-paid refused: a partner in the batch lacks business/payout details or a VIES-valid VAT number.
+    if (code === ERROR_CODES.COLLABORATOR_PAYOUT_DETAILS_INCOMPLETE) return 'collaboratorPayoutDetailsIncomplete';
     if (code === ERROR_CODES.METHOD_NOT_ALLOWED) return 'methodNotAllowed';
     if (code === ERROR_CODES.COVERAGE_OPTION_INVALID) return 'coverageOptionInvalid';
     if (code === ERROR_CODES.COVERAGE_OPTION_UNAVAILABLE) return 'coverageOptionUnavailable';
