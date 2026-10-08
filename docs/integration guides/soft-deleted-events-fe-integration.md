@@ -71,12 +71,21 @@ answer 404 too.)
 | `GET /api/medias/{id}`, `GET /api/medias/{id}/original` | a single item / its original |
 | `GET /api/events/{id}/media/archive/manifest`, `.../archive?part=n`, `.../archive/selected` | the ZIP download flow (`gallery-archive-download-fe-integration.md`), unchanged |
 | `GET /api/events/{id}/wishbook`, `.../wishbook/count` | the wishes |
-| `GET /api/events/{id}/wishbook/export` | the wishbook PDF |
+| `GET /api/events/{id}/wishbook/book` | the wishbook book's status and download link |
+| `POST /api/events/{id}/wishbook/book` | **the one write that stays open**: a host can still build the book (see below) |
+| `GET /api/events/{id}/wishbook/book-texts` | the host's book text overrides and the defaults |
 | `GET /api/events/{id}/posts`, `.../stories`, `.../members`, sessions, RSVPs | all readable, member-gated as usual |
 | `GET /api/events/{id}/withdrawal-preview`, `GET .../withdrawals` | still answer (primary host) |
 
+**The wishbook book is a deliberate exception to "nobody writes".** During the soft-delete window a host can
+still `POST .../wishbook/book` to build the book, `GET` its status and download it: it is a read of the host's own
+data, and the window is their last chance to keep it (a build already running when the event is deleted also
+finishes). The neighbouring writes stay closed and answer `404 RESOURCE_NOT_FOUND`: `PUT`/`DELETE
+/api/wishbook/{entryId}/highlight` (starring) and `PUT .../wishbook/book-texts`. Detail:
+`wishbook-book-fe-integration.md` §6.
+
 So the "download-only" state that `billing-fe-guide.md` §9 asks for after a withdrawal is fully
-served by existing endpoints: link the host to the gallery archive and the wishbook PDF, and show
+served by existing endpoints: link the host to the gallery archive and the wishbook book (its download link), and show
 `deletionScheduledFor` as the deadline. Media bytes are destroyed at the same purge as the event
 row, not earlier.
 
@@ -93,10 +102,12 @@ row, not earlier.
 | `DELETE .../deletion-requests` on a **withdrawn**, under-review or charged-back event | `409 EVENT_WITHDRAWN` (5071) | refunded events do not come back |
 | `DELETE .../deletion-requests` once `coverageEndsAt` has passed | `409 COVERAGE_ENDED` (5085) | coverage can't be extended once ended, so the sweep would delete it again |
 | `DELETE .../deletion-requests` on a pending-deletion event whose coverage still runs | `200`, `deletedAt: null` | the undo |
+| `PATCH /api/events/{id}` (2026-10-04) | `404 RESOURCE_NOT_FOUND` (2001), for hosts too | the event's own details — title, dates, location, cover, branding, duration — are frozen with it |
+| `POST /api/event-sessions`, `PATCH /api/event-sessions/{id}` | `409 MODULE_NOT_AVAILABLE` (5012) | the schedule module's setup gate already refused a soft-deleted event |
+| `DELETE /api/event-sessions/{id}` (2026-10-04) | `404 RESOURCE_NOT_FOUND` (2001), for hosts too | delete has no module gate, so it checks `deletedAt` itself |
 
-Host-side edits to the event's own details (`PATCH /api/events/{id}`, sessions, hosts) are not
-gated by `deletedAt` today. Don't rely on that — hide the settings form behind the pending-deletion
-banner, as `event-deletion-fe-integration.md` §5 already says.
+Co-host edits weren't checked in this pass. Hide the settings form behind the pending-deletion
+banner anyway, as `event-deletion-fe-integration.md` §5 already says.
 
 ## 4. What the FE should do
 
@@ -108,7 +119,7 @@ On the event page, after `GET /api/events/{id}` returns with `deletedAt !== null
    this is where the host sees the `REFUNDED` activation order and amount.
 3. **Do not call `GET .../upgrade-options`**, and hide the upgrade / storage-pack CTAs. A 404 from it
    on a soft-deleted event is expected, not an error to toast.
-4. **Show gallery and wishbook in download-only mode**: list + archive ZIP + wishbook PDF work;
+4. **Show gallery and wishbook in download-only mode**: list + archive ZIP + wishbook book download work;
    upload, post, wish, react, comment do not (`409` 5012). Hide the composers rather than letting
    the user hit the 409.
 5. **Hide invite / QR / share affordances**; they resolve to `TARGET_UNAVAILABLE` for guests anyway.
@@ -145,8 +156,8 @@ than tightening the heuristic.
 
 | code | HTTP | when |
 |---|---|---|
-| `2001` `RESOURCE_NOT_FOUND` | 404 | any read by a non-host on a soft-deleted event; `upgrade-options` and every checkout by anyone |
-| `5012` `MODULE_NOT_AVAILABLE` | 409 | any module write on a soft-deleted event |
+| `2001` `RESOURCE_NOT_FOUND` | 404 | any read by a non-host on a soft-deleted event; `upgrade-options`, every checkout, `PATCH /api/events/{id}` and `DELETE /api/event-sessions/{id}` by anyone |
+| `5012` `MODULE_NOT_AVAILABLE` | 409 | any module write on a soft-deleted event, including creating or editing a session |
 | `5014` `EVENT_NOT_ACTIVE` | 409 | invite / member / QR writes on a soft-deleted event |
 | `5064` `EVENT_DELETE_ALREADY_PENDING` | 409 | requesting deletion of an already soft-deleted event |
 | `5071` `EVENT_WITHDRAWN` | 409 | undoing the deletion of a withdrawn, under-review or charged-back event |

@@ -16,7 +16,7 @@ export type PlatformRole = 'USER' | 'ADMIN' | 'GUEST';
 // INVALID_EVENT_TYPE. Not every key is necessarily offered right now: which
 // ones are currently enabled comes from GET /api/config's eventTypeKeys, not
 // this type — build pickers from that, not from this union directly.
-export type EventTypeConvention = 'WEDDING' | 'BAPTISM' | 'SOCIAL_EVENT' | 'BIRTHDAY' | 'PRIVATE_PARTY' | 'GENDER_REVEAL' | 'BABY_SHOWER';
+export type EventTypeConvention = 'WEDDING' | 'BAPTISM' | 'SOCIAL_EVENT' | 'BIRTHDAY' | 'PRIVATE_PARTY' | 'GENDER_REVEAL' | 'BABY_SHOWER' | 'REUNION';
 // Post.type / Reaction.reactionType are free strings server-side.
 // moduleKey is now a closed set on the backend and should match the config payload.
 export const EVENT_MODULE_KEYS = [
@@ -144,8 +144,10 @@ export interface PlanTierResponseDto {
     // Also the currency of every coverage option.
     priceCurrency: string | null;
     billingPeriod: BillingPeriod | null;
+    // Up to two decimals since V156 (e.g. 12.5). A duration's promoPriceAmountMinor replaces it for that duration.
     discountPercent: number | null;
     discountLabel: string | null;
+    // The promotion window, for the percent and every duration's promo price alike. null = open bound.
     discountStartsAt: string | null;
     discountEndsAt: string | null;
     moduleKeys: ModuleKey[];
@@ -185,6 +187,8 @@ export interface CoverageOptionResponseDto {
     kind: CoverageOptionKind;
     months: number; // 1–120
     priceAmountMinor: number; // in the plan's priceCurrency, before any promotion or code
+    // What it costs while the plan's promotion window is open, in place of the plan's percent. INITIAL only; null if none.
+    promoPriceAmountMinor: number | null;
     sortOrder: number;
     active: boolean; // always true outside the admin endpoints
 }
@@ -223,6 +227,41 @@ export type ReactionTypePatchDto = Partial<Omit<ReactionTypeRequestDto, 'eventTy
 // {en, el}-only shape — read whichever key matches the active locale rather
 // than destructuring exactly two keys. See event-type-voice-pack-fe-integration.md.
 export type LocalizedText = Record<string, string>;
+
+// GET /api/config → landingCategories. Visible only, display order; eventTypeKeys are enabled types in event-type order.
+export interface AppLandingCategoryDto {
+    id: string;
+    name: LocalizedText;
+    description: LocalizedText;
+    isDefault: boolean;
+    eventTypeKeys: EventTypeConvention[];
+}
+
+// /api/admin/landing-categories (ADMIN). Hidden categories and disabled types included.
+export interface AdminLandingCategoryDto {
+    id: string;
+    name: LocalizedText;
+    description: LocalizedText;
+    sortOrder: number;
+    isVisible: boolean;
+    isDefault: boolean;
+    eventTypeKeys: EventTypeConvention[];
+}
+
+export interface AdminLandingCategoryCreateDto {
+    name: LocalizedText;
+    description?: LocalizedText;
+    sortOrder?: number;
+    isVisible?: boolean;
+    isDefault?: boolean;
+}
+
+export type AdminLandingCategoryPatchDto = Partial<AdminLandingCategoryCreateDto>;
+
+export interface AdminLandingCategoryEventTypesDto {
+    eventTypeKeys: EventTypeConvention[];
+    moveFromOtherCategory?: boolean;
+}
 
 export type EventTypeAccentToken = 'rose' | 'sky' | 'amber';
 
@@ -363,6 +402,8 @@ export interface MemberRoleCatalogDto {
     // Only a host or co-host may give it; guests don't get it in their options (§1.1).
     hostOnly: boolean;
     retired: boolean;
+    // Heading of this role's section in the wishbook book (2026-10-06); null = the book uses `label`.
+    sectionLabel: { en: string; el: string } | null;
 }
 
 // POST /api/admin/member-roles. roleKey and eventTypeKey can't change later.
@@ -370,6 +411,7 @@ export interface MemberRoleCatalogRequestDto {
     eventTypeKey: string;
     roleKey: string;
     label: { en: string; el: string };
+    sectionLabel?: { en: string; el: string };
     emoji?: string | null;
     maxHolders?: number | null;
     sortOrder: number;
@@ -392,6 +434,8 @@ export interface BlockedTermRequestDto {
 // emoji "" clears it; clearMaxHolders wins over maxHolders.
 export interface MemberRoleCatalogPatchDto {
     label?: { en: string; el: string };
+    sectionLabel?: { en: string; el: string };
+    clearSectionLabel?: boolean;
     emoji?: string;
     maxHolders?: number;
     clearMaxHolders?: boolean;
@@ -436,6 +480,7 @@ export interface AppConfigResponseDto {
     contentLimits: AppContentLimitsDto;
     reactionTypesByEventType: Record<string, ReactionTypeResponseDto[]>;
     memberRolesByEventType: Record<string, MemberRoleCatalogDto[]>;
+    landingCategories: AppLandingCategoryDto[];
     rateLimits: AppRateLimitConfigDto[];
     reportTargetTypes: ReportTargetType[];
     reportReasons: ReportReason[];
@@ -592,7 +637,7 @@ export type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 // 2026-09-04: ctaRoute (a literal path) is gone, replaced by ctaTarget + ctaParams — the app
 // resolves the route itself. Closed but growable set; treat an unrecognized value defensively.
 // See docs/integration guides/notification-cta-target-fe-integration.md.
-export type NotificationCtaTarget = 'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS' | 'EVENT_COVERAGE_EXTEND';
+export type NotificationCtaTarget = 'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS' | 'EVENT_COVERAGE_EXTEND' | 'EVENT_WISHBOOK';
 
 export interface NotificationResponseDto {
     id: string;
@@ -1084,6 +1129,7 @@ export interface PriceBreakdown {
     coverage: PriceBreakdownCoverage;
     items: PriceBreakdownItem[];
     discounts: PriceBreakdownDiscount[];
+    // Percentage discounts only (may carry decimals); a promo price is not counted here.
     combinedDiscountPercent: number;
     discountCapPercent: number;
     capApplied: boolean;
@@ -1119,7 +1165,10 @@ export interface PriceBreakdownItem {
 export interface PriceBreakdownDiscount {
     source: DiscountSource;
     label: string | null;
-    percent: number;
+    // null for a duration's promo price, which is an amount (amountMinor) rather than a percentage.
+    percent: number | null;
+    // What a promo price took off the plan line; null (or absent, before V156) for a percentage.
+    amountMinor?: number | null;
 }
 export interface PriceBreakdownVat {
     included: boolean;
@@ -1154,9 +1203,11 @@ export interface UpgradeOptionResponseDto {
     options: UpgradeCoverageOptionDto[];
     // The target plan's own promotion — the only discount an upgrade gets since
     // 2026-09-22 (a discount code prices the activation only). Sent as null, not
-    // left out, when the target has no live promotion.
+    // left out, when the target has no live percent. An option with a promo price
+    // ignores it; read each option's breakdown for what it actually takes off.
     discountPercent: number | null;
-    // null whenever discountPercent is, and also for a promotion set up without a label.
+    // Set whenever the promotion takes something off a listed option (percent or
+    // promo price); null otherwise, and for a promotion set up without a label.
     discountLabel: string | null;
 }
 export type OrderKind = 'ACTIVATION' | 'UPGRADE' | 'STORAGE_PACK' | 'EXTENSION';
@@ -1962,7 +2013,48 @@ export interface WishbookEntryResponseDto {
     message: string;
     createdAt: string;
     canDelete: boolean;
+    // Starred for the book (2026-10-06). Hosts get true/false; everyone else gets null.
+    highlighted: boolean | null;
 }
+
+// GET|POST /api/events/{eventId}/wishbook/book (wishbook-book-fe-integration.md).
+// downloadUrl only when READY; it's presigned and expires, so fetch GET again right before downloading.
+export type WishbookBookStatus = 'QUEUED' | 'RUNNING' | 'READY' | 'FAILED';
+
+export interface WishbookBookDto {
+    status: WishbookBookStatus;
+    requestedAt: string;
+    finishedAt: string | null;
+    // pageCount, entryCount, byteSize and downloadUrl are non-null only when READY; a rebuild hides the old figures.
+    pageCount: number | null;
+    entryCount: number | null;
+    byteSize: number | null;
+    // Non-null only when FAILED. An open set: never branch on a closed union. Everything means "try again"
+    // (RENDERER_* | STORAGE_FAILED | DB_UNAVAILABLE | PROCESSING_STALLED | BUILD_ERROR | RENDERER_NOT_CONFIGURED |
+    // MODULE_UNAVAILABLE | EVENT_SUSPENDED): show one generic line, never one per code.
+    // The one exception is CONTENT_CHANGED: a wish (or its author's account, or the event cover) was removed since
+    // the book was made, so the old book is gone. It gets its own message, "A wish was removed since the book was
+    // made - create it again", with the same build button. Never retried automatically.
+    failureCode: string | null;
+    downloadUrl: string | null;
+}
+
+// GET|PUT /api/events/{eventId}/wishbook/book-texts. null = the default (shown as placeholder).
+// PUT is a replace, not a patch: send all four.
+export interface WishbookBookTextsRequestDto {
+    subtitle: string | null;
+    dedication: string | null;
+    closingTitle: string | null;
+    closingBody: string | null;
+}
+
+export interface WishbookBookTextsDto extends WishbookBookTextsRequestDto {
+    defaults: { subtitle: string; dedication: string; closingTitle: string; closingBody: string };
+}
+
+export const WISHBOOK_BOOK_TEXT_LIMITS = { subtitle: 80, dedication: 400, closingTitle: 80, closingBody: 300 } as const;
+// dedication and closingBody keep line breaks (BE caps them at 6 lines, blank separator lines included); the others are single-line.
+export const WISHBOOK_BOOK_TEXT_MAX_LINES = 6;
 
 // GET /api/event-invitations/{inviteToken}/preview — public, unauthenticated.
 // Powers the per-event invite onboarding page; expired/alreadyUsed are not
@@ -2047,6 +2139,25 @@ export interface EventModuleResponseDto {
 // See event-type-feature-toggles-quotas-fe-integration.md §2.
 export interface GalleryModuleConfiguration {
     qrUploadEnabled: boolean;
+    // Every member can download the prebuilt archive after the event (REUNION). Absent means off.
+    memberArchiveAfterEnd?: boolean;
+}
+
+// GET /api/events/{eventId}/media/member-archive. availableFrom is null unless NOT_YET; parts is
+// empty unless READY. Part urls are presigned and expire: fetch again for each download.
+export type MemberArchiveAvailability = 'NOT_YET' | 'PREPARING' | 'READY' | 'UNAVAILABLE';
+
+export interface MemberArchivePartDto {
+    part: number;
+    totalParts: number;
+    bytes: number;
+    url: string;
+}
+
+export interface MemberArchiveResponseDto {
+    status: MemberArchiveAvailability;
+    availableFrom: string | null;
+    parts: MemberArchivePartDto[];
 }
 
 // GET /api/event-types/{eventTypeKey}/modules — the event type's own module
@@ -2705,6 +2816,7 @@ export interface CoverageOptionRequestDto {
     kind: CoverageOptionKind;
     months: number; // 1–120
     priceAmountMinor: number; // >= 0, in the plan's priceCurrency
+    promoPriceAmountMinor?: number | null; // INITIAL only, 0 < promo < price (else 400 5151)
     sortOrder?: number;
 }
 
@@ -2712,6 +2824,8 @@ export interface CoverageOptionRequestDto {
 // fields are left unchanged. Nothing is ever deleted: retire with active: false.
 export interface CoverageOptionPatchDto {
     priceAmountMinor?: number;
+    promoPriceAmountMinor?: number; // sets it; clearPromoPrice removes it. Both together are 400 5151.
+    clearPromoPrice?: boolean;
     sortOrder?: number;
     active?: boolean;
 }

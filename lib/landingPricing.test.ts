@@ -9,16 +9,15 @@ import type {
 } from '@/lib/api/types';
 import {
     buildLandingPlan,
+    formatLandingListPrice,
     formatLandingOptionPrice,
-    LANDING_PRICING_CATEGORY_EVENT_TYPES,
     type LandingPlan,
     type LandingPlanCopy,
     pickedLandingDuration,
-    resolveLandingCategoryPlans,
 } from '@/lib/landingPricing';
 
 function makeOption(overrides: Partial<CoverageOptionResponseDto> = {}): CoverageOptionResponseDto {
-    return { id: 'opt-3', kind: 'INITIAL', months: 3, priceAmountMinor: 7900, sortOrder: 0, active: true, ...overrides };
+    return { id: 'opt-3', kind: 'INITIAL', months: 3, priceAmountMinor: 7900, promoPriceAmountMinor: null, sortOrder: 0, active: true, ...overrides };
 }
 
 function makePlan(overrides: Partial<PlanTierResponseDto> = {}): PlanTierResponseDto {
@@ -95,59 +94,17 @@ const COPY: LandingPlanCopy = {
     mediaUnlimited: 'Unlimited',
     scheduleSessions: (max) => (max === null ? 'Unlimited schedule sessions' : `Up to ${max} schedule sessions`),
     storageUnlimited: 'Unlimited storage',
-    memberRoles: (count, custom) => `${count} member roles${custom ? ' + your own' : ''}`,
+    memberRoles: (count, custom, examples) => `${count} member roles (${examples.map((label) => label.en).join(', ')})${custom ? ' + your own' : ''}`,
     memberRolesCustomOnly: 'Custom member roles',
 };
 
-function role(id: string, retired = false): MemberRoleCatalogDto {
-    return { id, eventTypeKey: 'WEDDING', roleKey: id.toUpperCase(), label: { en: id, el: id }, emoji: null, maxHolders: null, sortOrder: 0, hostOnly: false, retired };
+function role(id: string, retired = false, sortOrder = 0): MemberRoleCatalogDto {
+    return { id, eventTypeKey: 'WEDDING', roleKey: id.toUpperCase(), label: { en: id, el: id }, emoji: null, maxHolders: null, sortOrder, hostOnly: false, retired, sectionLabel: null };
 }
 
-const ROLES = { WEDDING: [role('a'), role('b'), role('c'), role('old', true)] };
+const ROLES = { WEDDING: [role('old', true), role('c', false, 2), role('b', false, 1), role('a')] };
 
 const MODULE_NAME = (moduleKey: string) => MODULES.find((module_) => module_.moduleKey === moduleKey)?.name ?? moduleKey;
-
-describe('resolveLandingCategoryPlans', () => {
-    it('returns the wedding-tab plans sorted by sortOrder', () => {
-        const plans = [
-            makePlan({ id: 'p2', code: 'SIGNATURE', sortOrder: 2, eventTypeKey: 'WEDDING' }),
-            makePlan({ id: 'p1', code: 'START', sortOrder: 0, eventTypeKey: 'WEDDING' }),
-            makePlan({ id: 'p3', code: 'VIP_START', sortOrder: 0, eventTypeKey: 'SOCIAL_EVENT' }),
-        ];
-
-        const result = resolveLandingCategoryPlans(plans, 'wedding');
-
-        expect(result.map((plan) => plan.code)).toEqual(['START', 'SIGNATURE']);
-    });
-
-    it('falls back to BAPTISM for the wedding tab when there are no WEDDING plans', () => {
-        const plans = [makePlan({ code: 'BAPTISM_BASIC', eventTypeKey: 'BAPTISM' })];
-
-        const result = resolveLandingCategoryPlans(plans, 'wedding');
-
-        expect(result.map((plan) => plan.code)).toEqual(['BAPTISM_BASIC']);
-    });
-
-    it('excludes archived and non-public plans', () => {
-        const plans = [
-            makePlan({ code: 'ARCHIVED', isAssignable: false }),
-            makePlan({ code: 'INTERNAL', isPublic: false }),
-            makePlan({ code: 'VISIBLE' }),
-        ];
-
-        const result = resolveLandingCategoryPlans(plans, 'wedding');
-
-        expect(result.map((plan) => plan.code)).toEqual(['VISIBLE']);
-    });
-
-    it('returns an empty array when the category has no matching event type at all', () => {
-        expect(resolveLandingCategoryPlans([makePlan({ eventTypeKey: 'PRIVATE_PARTY' })], 'vip')).toEqual([]);
-    });
-
-    it('defines the wedding and vip category mappings', () => {
-        expect(LANDING_PRICING_CATEGORY_EVENT_TYPES).toEqual({ wedding: ['WEDDING', 'BAPTISM'], vip: ['SOCIAL_EVENT'] });
-    });
-});
 
 describe('formatLandingOptionPrice', () => {
     it('renders a whole-euro price in the existing landing style (no decimals, suffixed symbol)', () => {
@@ -161,6 +118,29 @@ describe('formatLandingOptionPrice', () => {
     it('returns null when the plan has no currency', () => {
         expect(formatLandingOptionPrice(makePlan({ priceCurrency: null }), makeOption())).toBeNull();
     });
+
+    it("shows a duration's promo price in place of the plan's percent", () => {
+        expect(formatLandingOptionPrice(makePlan({ discountPercent: 50 }), makeOption({ priceAmountMinor: 12900, promoPriceAmountMinor: 9900 }))).toBe(
+            '99€',
+        );
+    });
+});
+
+describe('formatLandingListPrice', () => {
+    it('gives the price before a promotion that lowers the duration', () => {
+        expect(formatLandingListPrice(makePlan(), makeOption({ priceAmountMinor: 12900, promoPriceAmountMinor: 9900 }))).toBe('129€');
+        expect(formatLandingListPrice(makePlan({ discountPercent: 20 }), makeOption({ priceAmountMinor: 10000 }))).toBe('100€');
+    });
+
+    it('is null when nothing lowers the duration', () => {
+        expect(formatLandingListPrice(makePlan(), makeOption())).toBeNull();
+        expect(
+            formatLandingListPrice(
+                makePlan({ discountEndsAt: '2000-01-01T00:00:00Z' }),
+                makeOption({ priceAmountMinor: 12900, promoPriceAmountMinor: 9900 }),
+            ),
+        ).toBeNull();
+    });
 });
 
 describe('pickedLandingDuration', () => {
@@ -173,8 +153,8 @@ describe('pickedLandingDuration', () => {
         storage: '',
         videos: '',
         durations: [
-            { id: 'opt-3', months: 3, price: '79€' },
-            { id: 'opt-6', months: 6, price: '99€' },
+            { id: 'opt-3', months: 3, price: '79€', listPrice: null },
+            { id: 'opt-6', months: 6, price: '99€', listPrice: null },
         ],
         defaultDurationId: 'opt-3',
     };
@@ -198,7 +178,7 @@ describe('buildLandingPlan', () => {
         expect(card).not.toBeNull();
         expect(card?.code).toBe('START');
         expect(card?.name).toBe('START');
-        expect(card?.durations).toEqual([{ id: 'opt-3', months: 3, price: '79€' }]);
+        expect(card?.durations).toEqual([{ id: 'opt-3', months: 3, price: '79€', listPrice: null }]);
         expect(card?.defaultDurationId).toBe('opt-3');
         expect(card?.audience).toBe('Up to 150 guests');
         expect(card?.storage).toBe('16 GB');
@@ -320,12 +300,12 @@ describe('buildLandingPlan member roles line', () => {
         return buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY, undefined, catalog);
     }
 
-    it('counts active roles only', () => {
-        expect(card(false)?.features).toEqual(['3 member roles']);
+    it('counts active roles only and names the first two in catalog order', () => {
+        expect(card(false)?.features).toEqual(['3 member roles (a, b)']);
     });
 
     it('adds "your own" when the plan allows custom roles', () => {
-        expect(card(true)?.features).toEqual(['3 member roles + your own']);
+        expect(card(true)?.features).toEqual(['3 member roles (a, b) + your own']);
     });
 
     it('shows the custom-only line when the type has no roles', () => {
@@ -347,7 +327,7 @@ describe('buildLandingPlan member roles line', () => {
 
         const result = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY, undefined, ROLES);
 
-        expect(result?.features).toEqual(['Everything in START', '3 member roles + your own']);
+        expect(result?.features).toEqual(['Everything in START', '3 member roles (a, b) + your own']);
         expect(result?.includedFeatures).toBeUndefined();
     });
 });

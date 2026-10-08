@@ -42,6 +42,7 @@ function makeRole(overrides: Partial<MemberRoleCatalogDto> = {}): MemberRoleCata
         sortOrder: 0,
         hostOnly: false,
         retired: false,
+        sectionLabel: null,
         ...overrides,
     };
 }
@@ -106,19 +107,19 @@ describe('role keys', () => {
 
 describe('validateRoleDraft', () => {
     it('flags every bad field on create', () => {
-        const draft = { roleKey: 'x', labelEn: ' ', labelEl: 'a'.repeat(41), emoji: 'e'.repeat(17), limited: true, maxHolders: '0', hostOnly: false };
+        const draft = { ...draftFromRole(null), roleKey: 'x', labelEn: ' ', labelEl: 'a'.repeat(41), emoji: 'e'.repeat(17), limited: true, maxHolders: '0' };
         expect(validateRoleDraft(draft, true)).toEqual({ roleKey: true, labelEn: true, labelEl: true, emoji: true, maxHolders: true });
     });
 
     it('skips the key on edit and ignores the number when unlimited', () => {
-        const draft = { roleKey: '', labelEn: 'Best man', labelEl: 'Κουμπάρος', emoji: '', limited: false, maxHolders: '', hostOnly: false };
+        const draft = { ...draftFromRole(null), labelEn: 'Best man', labelEl: 'Κουμπάρος' };
         expect(validateRoleDraft(draft, false)).toEqual({});
     });
 });
 
 describe('buildCreatePayload', () => {
     it('trims, omits a blank emoji and an unlimited cap', () => {
-        const draft = { roleKey: 'BEST_MAN', labelEn: ' Best man ', labelEl: 'Κουμπάρος', emoji: ' ', limited: false, maxHolders: '', hostOnly: false };
+        const draft = { ...draftFromRole(null), roleKey: 'BEST_MAN', labelEn: ' Best man ', labelEl: 'Κουμπάρος', emoji: ' ' };
         expect(buildCreatePayload(draft, 'WEDDING', 3)).toEqual({
             eventTypeKey: 'WEDDING',
             roleKey: 'BEST_MAN',
@@ -128,7 +129,7 @@ describe('buildCreatePayload', () => {
     });
 
     it('sends emoji and cap when set', () => {
-        const draft = { roleKey: 'BEST_MAN', labelEn: 'Best man', labelEl: 'Κουμπάρος', emoji: '🤵', limited: true, maxHolders: '2', hostOnly: false };
+        const draft = { ...draftFromRole(null), roleKey: 'BEST_MAN', labelEn: 'Best man', labelEl: 'Κουμπάρος', emoji: '🤵', limited: true, maxHolders: '2' };
         expect(buildCreatePayload(draft, 'WEDDING', 0)).toMatchObject({ emoji: '🤵', maxHolders: 2 });
     });
 
@@ -154,6 +155,60 @@ describe('buildPatchPayload', () => {
         const role = makeRole();
         const draft = { ...draftFromRole(role), labelEl: 'Κουμπάρος γάμου', limited: true, maxHolders: '3' };
         expect(buildPatchPayload(role, draft)).toEqual({ label: { en: 'Best man', el: 'Κουμπάρος γάμου' }, maxHolders: 3 });
+    });
+});
+
+describe('section titles', () => {
+    const draft = { ...draftFromRole(null), roleKey: 'COUSIN', labelEn: 'Cousin', labelEl: 'Ξάδερφος' };
+    const withSection = makeRole({ sectionLabel: { en: 'Our friends', el: 'Οι φίλοι μας' } });
+
+    it('are optional, but both or neither', () => {
+        expect(validateRoleDraft(draft, true)).toEqual({});
+        expect(validateRoleDraft({ ...draft, sectionEn: 'Our cousins' }, true)).toEqual({ sectionEl: true });
+        expect(validateRoleDraft({ ...draft, sectionEl: 'Τα ξαδέρφια μας' }, true)).toEqual({ sectionEn: true });
+        expect(validateRoleDraft({ ...draft, sectionEn: 'Our cousins', sectionEl: 'Τα ξαδέρφια μας' }, true)).toEqual({});
+    });
+
+    it('treat blank text as empty, and enforce 1 to 40 characters once either is set', () => {
+        expect(validateRoleDraft({ ...draft, sectionEn: '  ', sectionEl: ' ' }, true)).toEqual({});
+        expect(validateRoleDraft({ ...draft, sectionEn: 'a'.repeat(40), sectionEl: 'b'.repeat(40) }, true)).toEqual({});
+        expect(validateRoleDraft({ ...draft, sectionEn: 'a'.repeat(41), sectionEl: 'b' }, true)).toEqual({ sectionEn: true });
+    });
+
+    it('fill the draft from the role', () => {
+        expect(draftFromRole(withSection)).toMatchObject({ sectionEn: 'Our friends', sectionEl: 'Οι φίλοι μας' });
+        expect(draftFromRole(makeRole())).toMatchObject({ sectionEn: '', sectionEl: '' });
+        expect(draftFromRole(null)).toMatchObject({ sectionEn: '', sectionEl: '' });
+    });
+
+    it('go into a create payload as exactly en and el, trimmed, or not at all', () => {
+        expect(buildCreatePayload({ ...draft, sectionEn: ' Our cousins ', sectionEl: 'Τα ξαδέρφια μας' }, 'WEDDING', 9).sectionLabel).toEqual({
+            en: 'Our cousins',
+            el: 'Τα ξαδέρφια μας',
+        });
+        expect(buildCreatePayload(draft, 'WEDDING', 9)).not.toHaveProperty('sectionLabel');
+        expect(buildCreatePayload({ ...draft, sectionEn: ' ', sectionEl: '' }, 'WEDDING', 9)).not.toHaveProperty('sectionLabel');
+    });
+
+    it('patch with clearSectionLabel when both are emptied, and nothing else', () => {
+        expect(buildPatchPayload(withSection, { ...draftFromRole(withSection), sectionEn: '', sectionEl: '' })).toEqual({ clearSectionLabel: true });
+    });
+
+    it('patch with the whole map when one side changes', () => {
+        expect(buildPatchPayload(withSection, { ...draftFromRole(withSection), sectionEl: 'Φίλοι' })).toEqual({
+            sectionLabel: { en: 'Our friends', el: 'Φίλοι' },
+        });
+    });
+
+    it('patch nothing when untouched, or when a role with no title still has none', () => {
+        expect(buildPatchPayload(withSection, draftFromRole(withSection))).toEqual({});
+        expect(buildPatchPayload(makeRole(), draftFromRole(makeRole()))).toEqual({});
+    });
+
+    it('patch a first title onto a role that had none', () => {
+        expect(buildPatchPayload(makeRole(), { ...draftFromRole(makeRole()), sectionEn: 'Friends', sectionEl: 'Φίλοι' })).toEqual({
+            sectionLabel: { en: 'Friends', el: 'Φίλοι' },
+        });
     });
 });
 

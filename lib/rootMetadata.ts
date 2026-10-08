@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 
 // Shared by both root layouts, app/(landing) and app/(main).
 export const rootViewport: Viewport = {
-    colorScheme: 'light',
+    colorScheme: 'only light',
     themeColor: '#fffaf3',
     width: 'device-width',
     initialScale: 1,

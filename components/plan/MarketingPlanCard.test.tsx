@@ -11,6 +11,11 @@ const messages = {
         short: '{count}m',
         months: '{count, plural, one {# month} other {# months}}',
     },
+    LandingPage: {
+        pricing: {
+            durationSingle: '{count, plural, one {Online for # month} other {Online for # months}}',
+        },
+    },
 };
 
 const plan: LandingPlan = {
@@ -22,24 +27,28 @@ const plan: LandingPlan = {
     videos: '',
     features: ['Everything in START', 'RSVP'],
     durations: [
-        { id: 'd6', months: 6, price: '99€' },
-        { id: 'd9', months: 9, price: '109€' },
+        { id: 'd6', months: 6, price: '99€', listPrice: '129€' },
+        { id: 'd9', months: 9, price: '109€', listPrice: null },
     ],
     defaultDurationId: 'd9',
 };
 
 function renderCard({
+    cardPlan = plan,
     defaultExpanded,
+    durationId,
     onSelectAction,
     selected,
-}: { defaultExpanded?: boolean; onSelectAction?: (code: string) => void; selected?: boolean } = {}) {
+}: { cardPlan?: LandingPlan; defaultExpanded?: boolean; durationId?: string; onSelectAction?: (code: string) => void; selected?: boolean } = {}) {
     return render(
         <NextIntlClientProvider locale="en" messages={messages}>
             <MarketingPlanCard
                 featured={false}
-                plan={plan}
+                plan={cardPlan}
+                durationId={durationId}
                 popularLabel="Most popular"
                 durationLabel="Stays online for"
+                listPriceLabel="Original price"
                 expandLabel="Show features"
                 collapseLabel="Hide features"
                 defaultExpanded={defaultExpanded}
@@ -64,10 +73,32 @@ describe('MarketingPlanCard', () => {
         expect(screen.getByRole('radiogroup', { name: 'Stays online for' })).toBeInTheDocument();
     });
 
+    it('states a single duration instead of asking to choose one', () => {
+        renderCard({ cardPlan: { ...plan, durations: [plan.durations[1]] } });
+        expect(screen.getByText('Online for 9 months')).toBeInTheDocument();
+        expect(screen.queryByText('Stays online for')).toBeNull();
+        expect(screen.queryByRole('radiogroup')).toBeNull();
+    });
+
     it('spells out each duration in full', () => {
         renderCard();
         expect(screen.getByRole('radio', { name: '6 months' })).toHaveTextContent('6 months');
         expect(screen.getByRole('radio', { name: '9 months' })).toHaveTextContent('9 months');
+    });
+
+    it('shows the price before the promotion struck through beside the promoted one, with no percent', () => {
+        renderCard({ durationId: 'd6' });
+
+        const listPrice = screen.getByText('129€');
+        expect(listPrice.closest('del')).toHaveTextContent('Original price 129€');
+        expect(screen.getByText('99€')).toBeInTheDocument();
+        expect(document.body.textContent).not.toContain('%');
+    });
+
+    it('shows no struck-through price when no promotion lowers the duration', () => {
+        renderCard();
+        expect(screen.getByText('109€')).toBeInTheDocument();
+        expect(document.querySelector('del')).toBeNull();
     });
 
     it('shows members and storage on one line', () => {

@@ -4,6 +4,7 @@ import { Check, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 
+import { DateTimeField } from '@/components/ui/DateTimeField';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useUpdateEvent } from '@/hooks/useEvent';
@@ -30,8 +31,8 @@ export function RsvpDeadlineField({ eventId, rsvpDeadline, canWrite }: { eventId
     const disabled = !canWrite;
     const isSaving = updateEvent.isPending;
 
-    function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-        setValue(e.target.value);
+    function handleChange(nextValue: string) {
+        setValue(nextValue);
         setSaved(false);
     }
 
@@ -52,7 +53,7 @@ export function RsvpDeadlineField({ eventId, rsvpDeadline, canWrite }: { eventId
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-2">
             <FormFieldLabel label={t('rsvpStats.deadlineField')} optional labelClassName={labelClass}>
-                <input type="datetime-local" value={value} onChange={handleChange} disabled={disabled} className={inputClass} />
+                <DateTimeField value={value} onChange={handleChange} disabled={disabled} inputClassName={inputClass} />
                 {fieldErrors?.rsvpDeadline && <span className="text-xs text-rose-500">{fieldErrors.rsvpDeadline}</span>}
             </FormFieldLabel>
 

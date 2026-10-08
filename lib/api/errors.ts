@@ -152,6 +152,7 @@ export const ERROR_CODES = {
     THEME_FONT_MISSING_CHARACTERS: 3054,
     THEME_TITLE_COLOR_LOW_CONTRAST: 3055,
     POST_EDIT_NOT_AUTHOR: 4022,
+    MEMBER_ARCHIVE_NOT_ENABLED: 4023,
     DISCOUNT_NOT_APPLICABLE_TO_UPGRADE: 5076,
     PURCHASE_NOT_PRIMARY_HOST: 4006,
     COVERAGE_OPTION_INVALID: 5077,
@@ -198,6 +199,10 @@ export const ERROR_CODES = {
     THEME_FONT_NOT_ASSIGNABLE: 5145,
     THEME_FONT_KEY_TAKEN: 5146,
     THEME_FONT_CONVERSION_UNAVAILABLE: 5147,
+    WISHBOOK_EMPTY: 5148,
+    WISHBOOK_BOOK_RENDERER_UNAVAILABLE: 5149,
+    LANDING_CATEGORY_TYPE_ASSIGNED: 5150,
+    COVERAGE_OPTION_PROMO_PRICE_INVALID: 5151,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the
@@ -256,6 +261,18 @@ export function getHostTransferUnlocksAt(error: unknown): string | undefined {
     if (typeof details !== 'object' || details === null || !('unlocksAt' in details)) return undefined;
     const { unlocksAt } = details as { unlocksAt: unknown };
     return typeof unlocksAt === 'string' ? unlocksAt : undefined;
+}
+
+export type LandingCategoryConflict = { eventTypeKey: string; categoryId: string; categoryName: string };
+
+// 409 5150: the type sits in another landing category; resend with moveFromOtherCategory to take it.
+export function getLandingCategoryConflict(error: unknown): LandingCategoryConflict | undefined {
+    if (!(error instanceof ApiError) || error.problem?.errorCode !== ERROR_CODES.LANDING_CATEGORY_TYPE_ASSIGNED) return undefined;
+    const details = error.problem?.details;
+    if (typeof details !== 'object' || details === null) return undefined;
+    const { eventTypeKey, categoryId, categoryName } = details as Record<string, unknown>;
+    if (typeof eventTypeKey !== 'string' || typeof categoryId !== 'string' || typeof categoryName !== 'string') return undefined;
+    return { eventTypeKey, categoryId, categoryName };
 }
 
 // The 12-hex-char reference a 500 carries, so a tester can quote it.

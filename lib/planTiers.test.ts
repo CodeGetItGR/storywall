@@ -4,7 +4,7 @@ import type { CoverageOptionResponseDto, PlanTierResponseDto } from '@/lib/api/t
 import { findNextPlan, getOptionPriceDetails, liveInitialOptions, resolveInitialOption, shortestInitialOption } from '@/lib/planTiers';
 
 function makeOption(overrides: Partial<CoverageOptionResponseDto> = {}): CoverageOptionResponseDto {
-    return { id: 'opt-3', kind: 'INITIAL', months: 3, priceAmountMinor: 4_900, sortOrder: 0, active: true, ...overrides };
+    return { id: 'opt-3', kind: 'INITIAL', months: 3, priceAmountMinor: 4_900, promoPriceAmountMinor: null, sortOrder: 0, active: true, ...overrides };
 }
 
 function makePlan(overrides: Partial<PlanTierResponseDto> = {}): PlanTierResponseDto {

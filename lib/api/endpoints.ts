@@ -115,6 +115,7 @@ export const endpoints = {
             `/api/events/${eventId}/media/archive/selected?variant=${encodeURIComponent(variant)}&mediaIds=${mediaIds
                 .map((id) => encodeURIComponent(id))
                 .join(',')}`,
+        memberArchive: (eventId: string) => `/api/events/${eventId}/media/member-archive`,
         usage: (eventId: string) => `/api/events/${eventId}/usage`,
         billing: (eventId: string) => `/api/events/${eventId}/billing`,
         addons: (eventId: string) => `/api/events/${eventId}/addons`,
@@ -124,7 +125,8 @@ export const endpoints = {
         giftCard: (eventId: string) => `/api/events/${eventId}/gift/card`,
         wishbook: (eventId: string) => `/api/events/${eventId}/wishbook`,
         wishbookCount: (eventId: string) => `/api/events/${eventId}/wishbook/count`,
-        wishbookExport: (eventId: string) => `/api/events/${eventId}/wishbook/export`,
+        wishbookBook: (eventId: string) => `/api/events/${eventId}/wishbook/book`,
+        wishbookBookTexts: (eventId: string) => `/api/events/${eventId}/wishbook/book-texts`,
         checkout: (eventId: string) => `/api/events/${eventId}/checkout`,
         checkoutCodePreview: (eventId: string) => `/api/events/${eventId}/checkout/preview-code`,
         upgradeCheckout: (eventId: string) => `/api/events/${eventId}/upgrade-checkout`,
@@ -168,6 +170,7 @@ export const endpoints = {
 
     wishbook: {
         byId: (id: string) => `/api/wishbook/${id}`,
+        highlight: (id: string) => `/api/wishbook/${id}/highlight`,
     },
 
     qrLinks: {
@@ -401,6 +404,11 @@ export const endpoints = {
         platformEventTypes: {
             list: '/api/admin/platform-event-types',
             byKey: (eventTypeKey: string) => `/api/admin/platform-event-types/${eventTypeKey}`,
+        },
+        landingCategories: {
+            list: '/api/admin/landing-categories',
+            byId: (id: string) => `/api/admin/landing-categories/${id}`,
+            eventTypes: (id: string) => `/api/admin/landing-categories/${id}/event-types`,
         },
         users: {
             planTier: (userId: string) => `/api/admin/users/${userId}/plan-tier`,

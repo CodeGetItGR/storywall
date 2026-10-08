@@ -39,7 +39,10 @@ export function LandingFeatureDetails() {
                 </div>
 
                 {/* Feature cards */}
-                <div aria-label={t('label')} className="mx-auto mt-12 grid max-w-375 grid-cols-2 gap-6 min-[1440px]:grid-cols-4 min-[1440px]:gap-4.5">
+                <div
+                    aria-label={t('label')}
+                    className="mx-auto mt-12 grid max-w-4xl grid-cols-2 gap-6 min-[1024px]:max-w-340 min-[1024px]:grid-cols-4 min-[1024px]:gap-4"
+                >
                     {availableDetails.map((detail) => (
                         <LandingFeatureDetailCard {...detail} key={detail.title} />
                     ))}

@@ -11,7 +11,7 @@ import type {
     PlanTierResponseDto,
     PlatformModuleResponseDto,
 } from '@/lib/api/types';
-import { discountedAmountMinor } from '@/lib/billing';
+import { promotedOptionAmountMinor } from '@/lib/billing';
 import { findPlanByCode, liveInitialOptions } from '@/lib/planTiers';
 
 /**
@@ -60,7 +60,7 @@ export function useEventOverviewPlan({
         const activationTotal =
             !currentPlan || !currentOption
                 ? null
-                : discountedAmountMinor(currentOption.priceAmountMinor, currentPlan) +
+                : promotedOptionAmountMinor(currentOption, currentPlan) +
                   moduleUnlocks.filter((service) => activeAddonCodes.has(service.code)).reduce((sum, service) => sum + service.priceAmountMinor, 0);
 
         const enabledModuleKeys = new Set(modules.filter((module_) => module_.isEnabled).map((module_) => module_.moduleKey));

@@ -28,7 +28,15 @@ import type {
 } from '@/lib/api/types';
 import { navigateToCheckout } from '@/lib/billing';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
-import { CREATE_EVENT_STEPS, effectiveThemePresetId, isThemeStepAvailable, parseCreateEventStep, visibleCreateEventSteps } from '@/lib/createEventSteps';
+import {
+    CREATE_EVENT_RUN_PARAM,
+    CREATE_EVENT_STEPS,
+    effectiveThemePresetId,
+    isThemeStepAvailable,
+    parseCreateEventStep,
+    rememberCreateEventCheckout,
+    visibleCreateEventSteps,
+} from '@/lib/createEventSteps';
 import { eventWindowFromLocalStart, getScheduleDatetimeLocalBounds, isDatetimeLocalAfter, isDatetimeLocalBefore } from '@/lib/datetime';
 import { projectCoverage } from '@/lib/eventCoverage';
 import { liveInitialOptions, resolveInitialOption } from '@/lib/planTiers';
@@ -94,6 +102,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
     );
 
     const step = parseCreateEventStep(searchParams.get('step'));
+    const run = searchParams.get(CREATE_EVENT_RUN_PARAM);
     // Public config should already contain only enabled rows. Keep the picker
     // fail-closed if a stale or malformed response includes a disabled type.
     const eventTypes = appConfig?.eventTypes.filter((eventType) => eventType.isEnabled) ?? [];
@@ -149,9 +158,9 @@ export function useCreateEventFormController(): CreateEventFormValue {
 
     const goToStep = useCallback(
         (nextStep: CreateEventStep) => {
-            router.push(routes.events.new({ step: nextStep }), { scroll: false });
+            router.push(routes.events.new({ step: nextStep, run }), { scroll: false });
         },
-        [router],
+        [router, run],
     );
 
     const goToType = useCallback(() => goToStep('type'), [goToStep]);
@@ -168,12 +177,12 @@ export function useCreateEventFormController(): CreateEventFormValue {
 
     useEffect(() => {
         if (CREATE_EVENT_STEPS.indexOf(step) > CREATE_EVENT_STEPS.indexOf(reachableStep)) {
-            router.replace(routes.events.new({ step: reachableStep }));
+            router.replace(routes.events.new({ step: reachableStep, run }));
         } else if (step === 'theme' && !themeStepAvailable) {
             // Nothing to pick for this plan or type, or the list failed: skip ahead.
-            router.replace(routes.events.new({ step: 'overview' }));
+            router.replace(routes.events.new({ step: 'overview', run }));
         }
-    }, [reachableStep, router, step, themeStepAvailable]);
+    }, [reachableStep, router, run, step, themeStepAvailable]);
 
     const onSelectEventType = useCallback(
         (type: EventTypeConvention) => {
@@ -199,7 +208,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
     );
 
     const onTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value), []);
-    const onStartAtChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setStartAt(e.target.value), []);
+    const onStartAtChange = useCallback((value: string) => setStartAt(value), []);
     const onTimezoneChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setTimezone(e.target.value), []);
     const onLocationNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setLocationName(e.target.value), []);
     const onLocationAddressChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setLocationAddress(e.target.value), []);
@@ -377,6 +386,8 @@ export function useCreateEventFormController(): CreateEventFormValue {
                     acknowledgesWithdrawalTerms: consent.acknowledgesWithdrawalTerms,
                     termsVersion: consent.termsVersion!,
                 });
+                // Back from checkout then opens the draft instead of an emptied wizard.
+                if (run) rememberCreateEventCheckout(run, eventId);
                 navigateToCheckout(eventId, checkout);
             } catch (checkoutError) {
                 setIsCheckoutPending(false);
@@ -400,6 +411,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
             isEmailVerified,
             mapsUrl,
             planTiersQuery,
+            run,
             saveGiftToDraft,
             selectedCode,
             selectedThemePresetId,

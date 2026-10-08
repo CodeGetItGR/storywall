@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useMemo } from 'react';
 
 import { LandingPricingCta } from '@/components/landing/LandingPricingCta';
 import { MarketingPlanCard } from '@/components/plan/MarketingPlanCard';
@@ -9,15 +10,15 @@ import { useLandingPricingCategory } from '@/hooks/useLandingPricingCategory';
 import { useLandingPricingPlans } from '@/hooks/useLandingPricingPlans';
 import { cn } from '@/lib/utils';
 
-const CATEGORY_ORDER = ['wedding', 'vip'] as const;
-
 export function LandingPricing() {
     const t = useTranslations('LandingPage.pricing');
-    const { categories } = useLandingPricingPlans();
-    const { category, selectCategory, handleCategoryKeyDown } = useLandingPricingCategory();
+    const { tabs, defaultTabId } = useLandingPricingPlans();
+    const ids = useMemo(() => (tabs ?? []).map((tab) => tab.id), [tabs]);
+    const { category, selectCategory, handleCategoryKeyDown } = useLandingPricingCategory(ids, defaultTabId);
     const { picks, pickDuration } = useDurationPicks();
+    const active = tabs?.find((tab) => tab.id === category);
 
-    if (!categories) return null;
+    if (!tabs || !active) return null;
 
     return (
         <section
@@ -45,61 +46,58 @@ export function LandingPricing() {
                 className="mx-auto mt-16 flex max-w-331 border-b border-[#151313]/20 min-[761px]:mt-20"
                 role="tablist"
             >
-                {CATEGORY_ORDER.map((key) => {
-                    const categoryHasPlans = categories[key].plans.length > 0;
-                    return (
-                        <button
-                            aria-controls="landing-pricing-panel"
-                            aria-selected={category === key}
-                            className={cn(
-                                'relative min-h-18 w-1/2 px-2 pb-4 text-center text-[12px] leading-tight font-black focus-ring transition-colors focus-visible:-outline-offset-4 min-[761px]:min-h-12 min-[761px]:px-6 min-[761px]:text-[17px]',
-                                {
-                                    'text-[#151313]/65 hover:text-[#151313]': category !== key && categoryHasPlans,
-                                    'text-[#151313] after:absolute after:inset-x-0 after:bottom-0 after:h-0.75 after:bg-[linear-gradient(90deg,#df7794,#f2c764)]':
-                                        category === key,
-                                    'cursor-not-allowed text-[#151313]/30': !categoryHasPlans,
-                                },
-                            )}
-                            data-category={key}
-                            id={`landing-pricing-tab-${key}`}
-                            key={key}
-                            onClick={selectCategory}
-                            onKeyDown={handleCategoryKeyDown}
-                            role="tab"
-                            tabIndex={category === key ? 0 : -1}
-                            type="button"
-                            disabled={!categoryHasPlans}
-                        >
-                            <span>{categories[key].label}</span>
-                            {!categoryHasPlans && <p className="text-center text-lg text-[#151313]/60 min-[761px]:col-span-3">{t('comingSoon')}</p>}
-                        </button>
-                    );
-                })}
+                {tabs.map((tab) => (
+                    <button
+                        aria-controls="landing-pricing-panel"
+                        aria-selected={category === tab.id}
+                        className={cn(
+                            'relative min-h-18 flex-1 px-2 pb-4 text-center text-[12px] leading-tight font-black focus-ring transition-colors focus-visible:-outline-offset-4 min-[761px]:min-h-12 min-[761px]:px-6 min-[761px]:text-[17px]',
+                            {
+                                'text-[#151313]/65 hover:text-[#151313]': category !== tab.id,
+                                'text-[#151313] after:absolute after:inset-x-0 after:bottom-0 after:h-0.75 after:bg-[linear-gradient(90deg,#df7794,#f2c764)]':
+                                    category === tab.id,
+                            },
+                        )}
+                        data-category={tab.id}
+                        id={`landing-pricing-tab-${tab.id}`}
+                        key={tab.id}
+                        onClick={selectCategory}
+                        onKeyDown={handleCategoryKeyDown}
+                        role="tab"
+                        tabIndex={category === tab.id ? 0 : -1}
+                        type="button"
+                    >
+                        <span>{tab.label}</span>
+                        {tab.description && (
+                            <span className="mt-1 block text-[11px] font-semibold text-[#151313]/55 min-[761px]:text-[13px]">{tab.description}</span>
+                        )}
+                    </button>
+                ))}
             </div>
 
             {/* Plans */}
             <div
-                aria-labelledby={`landing-pricing-tab-${category}`}
+                aria-labelledby={`landing-pricing-tab-${active.id}`}
                 className="mx-auto mt-9 grid max-w-331 gap-5 min-[761px]:grid-cols-3 min-[761px]:gap-[clamp(24px,3vw,52px)]"
                 id="landing-pricing-panel"
                 role="tabpanel"
             >
-                {categories[category].plans.length &&
-                    categories[category].plans.map((plan, index) => (
-                        <MarketingPlanCard
-                            featured={index === 1}
-                            footer={<LandingPricingCta className="mt-5 flex w-full min-[761px]:hidden" label={t('cta')} />}
-                            key={`${category}-${plan.code}`}
-                            plan={plan}
-                            durationId={picks[plan.code]}
-                            onDurationChangeAction={pickDuration}
-                            popularLabel={t('popular')}
-                            durationLabel={t('durationLabel')}
-                            expandLabel={t('showFeatures')}
-                            collapseLabel={t('hideFeatures')}
-                            defaultExpanded={index === 0}
-                        />
-                    ))}
+                {active.plans.map((plan, index) => (
+                    <MarketingPlanCard
+                        featured={index === 1}
+                        footer={<LandingPricingCta className="mt-5 flex w-full min-[761px]:hidden" label={t('cta')} />}
+                        key={`${active.id}-${plan.code}`}
+                        plan={plan}
+                        durationId={picks[plan.code]}
+                        onDurationChangeAction={pickDuration}
+                        popularLabel={t('popular')}
+                        durationLabel={t('durationLabel')}
+                        listPriceLabel={t('listPrice')}
+                        expandLabel={t('showFeatures')}
+                        collapseLabel={t('hideFeatures')}
+                        defaultExpanded={index === 0}
+                    />
+                ))}
             </div>
 
             {/* Create CTA */}

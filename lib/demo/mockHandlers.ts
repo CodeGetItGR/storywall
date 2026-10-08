@@ -409,6 +409,7 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
             message: String(body.message ?? ''),
             createdAt: nowIso(),
             canDelete: true,
+            highlighted: null,
         })),
         ...buildDetailHandlers(db, 'wishbook', '/api/wishbook/:id', { del: true }),
 

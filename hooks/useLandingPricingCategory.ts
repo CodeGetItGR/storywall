@@ -1,16 +1,18 @@
 import { type KeyboardEvent, type MouseEvent, useState } from 'react';
 
-type PricingCategory = 'vip' | 'wedding';
-const CATEGORY_ORDER: PricingCategory[] = ['wedding', 'vip'];
+// Which landing pricing tab is open. Starts on defaultId; if the open tab is no longer among ids
+// (config changed), the default — or else the first — tab is shown instead.
+export function useLandingPricingCategory(ids: readonly string[], defaultId: string | null) {
+    const [picked, setPicked] = useState<string | null>(null);
+    const category = picked !== null && ids.includes(picked) ? picked : defaultId !== null && ids.includes(defaultId) ? defaultId : (ids[0] ?? null);
 
-export function useLandingPricingCategory() {
-    const [category, setCategory] = useState<PricingCategory>('wedding');
     const selectCategory = (event: MouseEvent<HTMLButtonElement>) => {
-        const next = event.currentTarget.dataset.category as PricingCategory | undefined;
-        if (next && CATEGORY_ORDER.includes(next)) setCategory(next);
+        const next = event.currentTarget.dataset.category;
+        if (next && ids.includes(next)) setPicked(next);
     };
     const handleCategoryKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
-        const current = CATEGORY_ORDER.indexOf(category);
+        if (category === null) return;
+        const current = ids.indexOf(category);
         const next =
             event.key === 'ArrowRight'
                 ? current + 1
@@ -19,12 +21,12 @@ export function useLandingPricingCategory() {
                   : event.key === 'Home'
                     ? 0
                     : event.key === 'End'
-                      ? CATEGORY_ORDER.length - 1
+                      ? ids.length - 1
                       : null;
         if (next === null) return;
         event.preventDefault();
-        const nextCategory = CATEGORY_ORDER[(next + CATEGORY_ORDER.length) % CATEGORY_ORDER.length];
-        setCategory(nextCategory);
+        const nextCategory = ids[(next + ids.length) % ids.length];
+        setPicked(nextCategory);
         event.currentTarget.parentElement?.querySelector<HTMLButtonElement>(`[data-category="${nextCategory}"]`)?.focus();
     };
     return { category, selectCategory, handleCategoryKeyDown };

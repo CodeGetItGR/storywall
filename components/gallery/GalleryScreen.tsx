@@ -9,6 +9,7 @@ import { GallerySelectionActions } from '@/components/gallery/GallerySelectionAc
 import { GallerySelectionBar } from '@/components/gallery/GallerySelectionBar';
 import { GalleryUploadSection } from '@/components/gallery/GalleryUploadSection';
 import { GalleryViewer } from '@/components/gallery/GalleryViewer';
+import { MemberArchiveModal } from '@/components/gallery/MemberArchiveModal';
 import { ReportTargetModal } from '@/components/reports/ReportTargetModal';
 import { ModuleNotice } from '@/components/tools/ModuleNotice';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
@@ -16,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useGalleryScreen } from '@/hooks/useGalleryScreen';
 import { formatDate } from '@/lib/datetime';
+import { isMemberArchiveEnabled } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
 
 export function GalleryScreen() {
@@ -29,6 +31,7 @@ export function GalleryScreen() {
         galleryEnabled,
         canUpload,
         showArchiveDownload,
+        showMemberArchive,
         showGalleryActions,
         selectedFiles,
         selectedSize,
@@ -38,6 +41,7 @@ export function GalleryScreen() {
         selectionDownloadError,
         isDownloadingSelection,
         archiveDownloadOpen,
+        memberArchiveOpen,
         media,
         isLoadingMedia,
         loadMoreRef,
@@ -76,6 +80,8 @@ export function GalleryScreen() {
         handleScrollToTop,
         openArchiveDownload,
         closeArchiveDownload,
+        openMemberArchive,
+        closeMemberArchive,
         enterSelectionMode,
         exitSelectionMode,
         closeMedia,
@@ -105,6 +111,7 @@ export function GalleryScreen() {
                     selectedFiles={selectedFiles}
                     selectedSize={selectedSize}
                     uploadNotice={uploadNotice}
+                    showMemberArchiveNote={isMemberArchiveEnabled(activeEvent?.modules)}
                     maxFiles={maxFiles}
                     isUploading={uploadMediaBatch.isPending}
                     onFilesChange={handleFilesChange}
@@ -155,6 +162,20 @@ export function GalleryScreen() {
                                 )}
                             </div>
                         )}
+                    </div>
+                ) : showMemberArchive ? (
+                    // Not disabled on an empty list: the archive may hold items this page has not loaded.
+                    <div className="flex w-full justify-end">
+                        <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={openMemberArchive}
+                            className="inline-flex rounded-full border-border bg-background px-3 text-xs font-semibold text-ink-muted hover:text-ink"
+                        >
+                            <Download className="h-3.5 w-3.5" />
+                            {t('downloadGallery')}
+                        </Button>
                     </div>
                 ) : undefined}
             </section>
@@ -244,6 +265,15 @@ export function GalleryScreen() {
             {/* Archive download */}
             {showArchiveDownload && eventId && (
                 <GalleryArchiveDownloadModal eventId={eventId} open={archiveDownloadOpen} onClose={closeArchiveDownload} />
+            )}
+            {showMemberArchive && eventId && (
+                // Keyed on open so each opening starts clean (no error left over from the last visit).
+                <MemberArchiveModal
+                    key={memberArchiveOpen ? 'open' : 'closed'}
+                    eventId={eventId}
+                    open={memberArchiveOpen}
+                    onClose={closeMemberArchive}
+                />
             )}
         </ModulePageShell>
     );

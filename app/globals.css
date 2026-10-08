@@ -126,7 +126,7 @@
 
 /* ── CSS variables ── */
 :root {
-    color-scheme: light;
+    color-scheme: only light;
 
     /* Updated from VisualViewport so keyboard-reduced layouts keep their
        existing inner scrollers instead of making the document scroll. */

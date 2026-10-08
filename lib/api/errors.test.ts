@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
 import { ApiError } from '@/lib/api/client';
-import { getBusyRetryAfterSeconds, getErrorCodeName, getSignupAcceptanceRequiredDetails, ignoreConcurrentModification } from '@/lib/api/errors';
+import {
+    ERROR_CODES,
+    getBusyRetryAfterSeconds,
+    getErrorCodeName,
+    getLandingCategoryConflict,
+    getSignupAcceptanceRequiredDetails,
+    ignoreConcurrentModification,
+} from '@/lib/api/errors';
 
 describe('getSignupAcceptanceRequiredDetails', () => {
     it('reads both versions off a 3044', () => {
@@ -58,5 +65,23 @@ describe('getBusyRetryAfterSeconds', () => {
     it('is undefined for anything else', () => {
         expect(getBusyRetryAfterSeconds(new ApiError(429, { errorCode: 3010, retryAfterSeconds: 5 }))).toBeUndefined();
         expect(getBusyRetryAfterSeconds(new ApiError(503, null))).toBeUndefined();
+    });
+});
+
+describe('getLandingCategoryConflict', () => {
+    it('reads the type and the category that holds it', () => {
+        const error = new ApiError(409, {
+            errorCode: ERROR_CODES.LANDING_CATEGORY_TYPE_ASSIGNED,
+            details: { eventTypeKey: 'BIRTHDAY', categoryId: 'c1', categoryName: 'First' },
+        });
+        expect(getLandingCategoryConflict(error)).toEqual({ eventTypeKey: 'BIRTHDAY', categoryId: 'c1', categoryName: 'First' });
+    });
+
+    it('ignores other errors and malformed details', () => {
+        expect(getLandingCategoryConflict(new ApiError(409, { errorCode: 5147 }))).toBeUndefined();
+        expect(
+            getLandingCategoryConflict(new ApiError(409, { errorCode: ERROR_CODES.LANDING_CATEGORY_TYPE_ASSIGNED, details: { eventTypeKey: 1 } })),
+        ).toBeUndefined();
+        expect(getLandingCategoryConflict(new Error('x'))).toBeUndefined();
     });
 });

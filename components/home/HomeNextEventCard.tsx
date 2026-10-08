@@ -7,6 +7,7 @@ import { useMemo } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { HomeNextEventCountdown } from '@/components/home/HomeNextEventCountdown';
+import Badge from '@/components/ui/badge';
 import type { EventGridItem } from '@/hooks/useEventGridItems';
 import { useRecentEventItems } from '@/hooks/useEventGridItems';
 import { useMemberRoleLabel } from '@/hooks/useMemberRoleLabel';
@@ -28,7 +29,9 @@ export function HomeNextEventCard({ items }: { items: EventGridItem[] }) {
     if (!next || next.isLoading || !next.event) return null;
 
     const { event, member } = next;
-    const roleLabel = memberRole ?? (member.role === 'HOST' ? tEvents('roleFallback.host') : tEvents('roleFallback.attendee'));
+    const isHost = member.role === 'HOST';
+    // The host pill already says "Host", so a host only falls back to a custom role here.
+    const roleLabel = memberRole ?? (isHost ? null : tEvents('roleFallback.attendee'));
     const dateLabel = formatEventListDate(event.schedule.startAt, locale, tEvents('dateAt')) ?? roleLabel;
 
     return (
@@ -52,9 +55,17 @@ export function HomeNextEventCard({ items }: { items: EventGridItem[] }) {
                         <HomeNextEventCountdown time={new Date(event.schedule.startAt).getTime()} />
                     </div>
                 )}
+                {/* Details */}
                 <div className="flex items-center gap-3 p-4">
                     <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-semibold text-ink">{event.title}</p>
+                        <div className="flex min-w-0 items-center gap-2">
+                            <p className="truncate text-sm font-semibold text-ink">{event.title}</p>
+                            {isHost ? (
+                                <Badge variant="primary" className="shrink-0 px-2 text-[11px] font-semibold">
+                                    {tEvents('roleFallback.host')}
+                                </Badge>
+                            ) : null}
+                        </div>
                         <p className="truncate text-xs text-ink-muted">{dateLabel}</p>
                     </div>
                     <ChevronRight className="h-4 w-4 shrink-0 text-ink-faint transition-transform group-hover:translate-x-0.5" />

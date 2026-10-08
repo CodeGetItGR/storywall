@@ -329,6 +329,7 @@ type NotificationType =
   | 'HOST_TIP'
   | 'EVENT_REMINDER'
   | 'EVENT_SUMMARY'
+  | 'MEMBER_ARCHIVE_READY'       // once per event, to non-host members; CTA EVENT_GALLERY + params.eventId
   | 'REFUND_APPROVED'            // legacy since 2026-09-18
   | 'REFUND_REJECTED'            // legacy since 2026-09-18
   | 'WITHDRAWAL_REFUNDED'
@@ -337,6 +338,7 @@ type NotificationType =
   | 'STORAGE_TRIM_SCHEDULED'
   | 'STORAGE_TRIM_WARNING'
   | 'EVENT_AUTO_DELETE_WARNING'
+  | 'WISHBOOK_BOOK_READY'        // 2026-10-06: to the host who asked for the book, once per build, CTA EVENT_WISHBOOK + params.eventId. See fe-guides/wishbook-book-fe-integration.md §7
   | 'REPORT_OUTCOME';            // 2026-10-01: to a reporter, category SYSTEM, no CTA. See fe-guides/moderation-admin-fe-integration.md §6
 
 /** OFFER is marketing (gated on consent for email); the rest are transactional. */
@@ -352,11 +354,12 @@ type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 //   EVENT_GALLERY        -> your event gallery screen, needs params.eventId
 //   EVENT_GUESTS          -> your event guest list screen, needs params.eventId
 //   EVENT_COVERAGE_EXTEND -> your plan screen with the extension picker open, needs params.eventId (2026-09-24)
+//   EVENT_WISHBOOK        -> the host's wishbook page (suggested /events/{eventId}/tools/wishbook), needs params.eventId (2026-10-06)
 //
 // ctaTarget is a closed, growable set — treat an unrecognized value defensively (hide the CTA
 // rather than crash) so a future backend addition degrades gracefully instead of breaking the feed.
 // See notification-cta-target-fe-integration.md for the full migration guide.
-type NotificationCtaTarget = 'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS' | 'EVENT_COVERAGE_EXTEND';
+type NotificationCtaTarget = 'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS' | 'EVENT_COVERAGE_EXTEND' | 'EVENT_WISHBOOK';
 
 interface NotificationResponseDto {
   id: string;
@@ -431,7 +434,7 @@ interface EventRequestDto {
   title: string;                 // required, max 255
   subtitle?: string;              // max 255
   description?: string;
-  eventType: string;              // required, max 50 — free text (WEDDING | BAPTISM | BIRTHDAY | SOCIAL_EVENT | PRIVATE_PARTY | GENDER_REVEAL | BABY_SHOWER | <custom>)
+  eventType: string;              // required, max 50 — free text (WEDDING | BAPTISM | BIRTHDAY | SOCIAL_EVENT | PRIVATE_PARTY | GENDER_REVEAL | BABY_SHOWER | REUNION | <custom>)
   visibility: EventVisibility;    // required on this DTO despite the entity's DB default
   startAt: string;                // required
   endAt: string;                  // required, must be after startAt
@@ -450,6 +453,9 @@ interface EventRequestDto {
                                    // initialOptions: the duration being bought. 400
                                    // COVERAGE_OPTION_INVALID (5077) when missing, retired, or
                                    // another plan's. Optional only on admin provisioning.
+  themePresetId?: string | null;  // added 2026-10-05 — a preset from GET /api/theme-presets?eventType=.
+                                   // Applied in the create transaction: 409 5012 when the plan doesn't
+                                   // list `theme`, 409 5143 when not selectable; no event is created.
   initialSessionTitle?: string;   // max 255 — when set, seeds an EventSession anchored to
                                    // startAt/endAt (displayOrder 0) in the same transaction; see
                                    // fe-guides/event-creation-initial-session-fe-integration.md
@@ -476,6 +482,8 @@ interface EventResponseDto {
   // pending deletion. See fe-guides/event-deletion-fe-integration.md.
   deletionScheduledFor: string | null;
   suspended: boolean;               // added 2026-10-02; non-hosts never receive a suspended event
+  /** The host's theme; null for the default look (no preset, the `theme` module isn't readable, or the preset has no illustration). */
+  theme: EventThemeDto | null;
 }
 
 /** The window a DRAFT would be pinned to if paid for right now. See fe-guides/event-coverage-window-fe-integration.md. */
@@ -577,6 +585,13 @@ interface UserDataExportDto {
     media: { mediaId: string; mediaType: string; mimeType: string; originalFilename: string | null; fileSize: number | null; width: number | null; height: number | null; durationSeconds: number | null; createdAt: string; deletedAt: string | null }[];
     qrLinksCreated: { qrLinkId: string; targetType: string; label: string | null; createdAt: string; revokedAt: string | null }[];
   }[];
+  /** Added 2026-10-06. Wishbook wishes the user wrote in an event whose membership is gone (left or removed),
+   *  one group per event. Wishes of a membership that still exists stay in eventMemberships[].wishbookEntries;
+   *  no wish is in both. */
+  formerMembershipWishbookEntries: {
+    eventId: string; eventTitle: string;
+    wishbookEntries: { entryId: string; guestName: string | null; message: string; createdAt: string; deletedAt: string | null }[];
+  }[];
 }
 
 // --- GET /api/events/{id} detail response (grouped/enriched — added 2026-07-30) ---
@@ -614,6 +629,8 @@ interface EventDetailResponseDto {
   createdAt: string; updatedAt: string; deletedAt: string | null;
   deletionScheduledFor: string | null; // same contract as on EventResponseDto
   suspended: boolean;                  // added 2026-10-02
+  /** The host's theme; null for the default look (no preset, the `theme` module isn't readable, or the preset has no illustration). */
+  theme: EventThemeDto | null;
   suspension: EventSuspensionDto | null; // non-null only when suspended (only hosts ever see that). See fe-guides/storywall-suspension-fe-integration.md
 }
 
@@ -696,6 +713,8 @@ interface EventInvitationPreviewDto {
   /** NEW 2026-09-25 — the cover with its presigned `mediaUrl`; null without a cover. Use this instead of
    *  GET /api/medias/{id}, which the visitor (not a member yet) can't call. */
   coverMedia: MediaResponseDto | null;
+  /** NEW 2026-10-05 — the event's theme, null for the default look. Its illustration takes the hero's place. */
+  theme: EventThemeDto | null;
   /** Prefill hints from the invitation, when it named somebody. Null on a shared/QR invitation. */
   firstName: string | null;
   lastName: string | null;
@@ -993,6 +1012,35 @@ interface MediaArchivePartDto {
   sizeBytes: number; // zips are written uncompressed, so this is within a few KB of the download
 }
 
+/**
+ * Members' prebuilt gallery archive (REUNION). Added 2026-10-06. See
+ * `member-gallery-archive-fe-integration.md`.
+ *
+ * GET /api/events/{eventId}/media/member-archive  -> MemberArchiveResponseDto  (any active member)
+ *
+ * Show the entry only when `!isHost && gallery.isAvailable && configuration.memberArchiveAfterEnd === true`.
+ * Rate limit 30 per 60 s. 403/errorCode 4023 MEMBER_ARCHIVE_NOT_ENABLED when the event's gallery does not
+ * offer it; 404 on a hidden event for guests; 403/errorCode 4015 for a host of a suspended event.
+ */
+type MemberArchiveAvailability =
+  | 'NOT_YET'       // before endAt + 24 h (media.member-archive.build-delay-hours); availableFrom is set
+  | 'PREPARING'     // past that and not served yet: building, retrying, or withdrawn after a removal and rebuilding
+  | 'READY'         // parts populated; parts: [] means the gallery is empty
+  | 'UNAVAILABLE';  // gallery not readable, or the build failed for good
+
+interface MemberArchiveResponseDto {
+  status: MemberArchiveAvailability;
+  availableFrom: string | null;      // ISO instant; null unless NOT_YET
+  parts: MemberArchivePartDto[];     // [] unless READY
+}
+interface MemberArchivePartDto {
+  part: number;        // 1-based
+  totalParts: number;
+  bytes: number;
+  url: string;         // presigned R2 GET, expires (~40-60 min). Never store: refetch the endpoint on each click.
+                       // The object downloads as gallery-part{part}-of-{totalParts}.zip
+}
+
 interface PostRequestDto {
   eventId: string;
   authorMemberId?: string;
@@ -1145,15 +1193,80 @@ interface MemberRoleOptionDto {
 interface MemberRoleCatalogDto {
   id: string; eventTypeKey: string; roleKey: string;
   label: Record<'en' | 'el', string>;
+  /** Added 2026-10-06. Heading of this role's section in the wishbook book; null = the book uses `label`. */
+  sectionLabel: Record<'en' | 'el', string> | null;
   emoji: string | null; maxHolders: number | null; sortOrder: number;
   hostOnly: boolean; // added 2026-10-03: only a host or co-host may give it
   retired: boolean;
+}
+
+/** `theme` on the event DTOs. See event-theme-customization-fe-integration.md. */
+interface EventThemeDto {
+  presetKey: string;
+  /** "#RRGGBB", upper-case. */
+  backgroundColor: string;
+  /** Presigned, stable within the signing window. May 404 after an admin replaces the art: refetch the event. */
+  illustrationUrl: string;
+}
+
+/** GET /api/events/{eventId}/theme-presets, and GET /api/theme-presets?eventType= (creation form) */
+interface ThemePresetOptionDto {
+  id: string;
+  key: string;
+  name: { en: string; el: string };
+  backgroundColor: string;
+  illustrationUrl: string;
+}
+
+/** PUT /api/events/{eventId}/theme. Omitted or `presetId: null` clears the theme. */
+interface EventThemeRequestDto {
+  presetId?: string | null;
+}
+
+/** PUT /api/events/{eventId}/theme response. */
+interface EventThemeResponseDto {
+  theme: EventThemeDto | null;
+}
+
+/** /api/admin/theme-presets */
+interface ThemePresetAdminDto {
+  id: string;
+  key: string;
+  name: { en: string; el: string };
+  backgroundColor: string;
+  /** Sorted. */
+  eventTypes: string[];
+  sortOrder: number;
+  archived: boolean;
+  /** Null until an illustration is uploaded. */
+  illustrationUrl: string | null;
+}
+
+/** POST /api/admin/theme-presets */
+interface ThemePresetRequestDto {
+  /** ^[a-z0-9][a-z0-9-]{1,62}$, unique, immutable. */
+  key: string;
+  name: { en: string; el: string };
+  /** #RRGGBB, any case; stored upper-case. */
+  backgroundColor: string;
+  eventTypes: string[];
+  sortOrder?: number;
+}
+
+/** PATCH /api/admin/theme-presets/{id}. Omitted or null = unchanged; no `key`. */
+interface ThemePresetPatchDto {
+  name?: { en: string; el: string };
+  backgroundColor?: string;
+  eventTypes?: string[];
+  sortOrder?: number;
+  archived?: boolean;
 }
 /** POST /api/admin/member-roles (ADMIN). */
 interface MemberRoleCatalogRequestDto {
   eventTypeKey: string;
   roleKey: string;                       // ^[A-Z][A-Z0-9_]{1,49}$, immutable
   label: Record<'en' | 'el', string>;    // exactly these two keys, each 1-40 after trimming
+  sectionLabel?: Record<'en' | 'el', string> | null; // 2026-10-06, optional wishbook-book section title; when sent, same rule as label
   emoji?: string | null;                 // max 16
   maxHolders?: number | null;            // >= 1
   sortOrder: number;                     // >= 0
@@ -1162,6 +1275,8 @@ interface MemberRoleCatalogRequestDto {
 /** PATCH /api/admin/member-roles/{id} (ADMIN) — null/omitted = unchanged. */
 interface MemberRoleCatalogPatchDto {
   label?: Record<'en' | 'el', string>;   // replaces the whole map, exactly en + el
+  sectionLabel?: Record<'en' | 'el', string>; // 2026-10-06: replaces the whole map, exactly en + el, each 1-40
+  clearSectionLabel?: boolean;           // 2026-10-06: true removes the section title; wins over sectionLabel
   emoji?: string;                        // "" clears it; max 16
   maxHolders?: number;                   // >= 1
   clearMaxHolders?: boolean;             // true = unlimited; wins over maxHolders
@@ -1512,6 +1627,11 @@ export const WITHDRAWAL_ORDER_DISPUTED = 5120;           // 409, admin release r
 export const CONCURRENT_MODIFICATION = 5128;             // 409, another request changed or removed the same row at the same moment (e.g. a double-tapped delete); refresh, then retry if still needed
 export const STORY_LIVE_LIMIT_REACHED = 5141;            // 409 on POST /api/stories, or per item in the batch's failed[]: 30 unexpired stories per member per event (demo events exempt); one expiring or deleted makes room (B8)
 export const STORY_MEDIA_ALREADY_LIVE = 5142;            // 409, or per item in the batch's failed[]: the caller already has a live story made from this mediaId, including earlier in the same batch (B8)
+
+// ---- Event themes (added 2026-10-05) ----
+// See fe-guides/event-theme-customization-fe-integration.md.
+export const THEME_PRESET_NOT_SELECTABLE = 5143;         // 409 on PUT /api/events/{id}/theme: preset unknown, archived, without illustration, or not offered for the event's type; refetch theme-presets
+export const EVENT_ENDED = 5144;                         // 409 on GET theme-presets and PUT theme: the event's endAt has passed
 // - 503 MEDIA_PROCESSING_BUSY (3017) + Retry-After on ANY upload, before the body is read: 96 uploads in flight (Retry-After 10), temp disk low (60), or the video strip lane / decode slots busy (5). The body carries retryAfterSeconds (Retry-After isn't CORS-exposed). Retry after the advised wait (B7, D1, D3). In a batch's failed[] the item has errorCode "MEDIA_PROCESSING_BUSY" and no wait; resend that file.
 // - Upload ceilings are 100 MB per request and per video (was 260 / 200): split batches by /api/config maxRequestSizeBytes (G1).
 // - GET stories returns at most the newest 300 (B8).
@@ -1775,11 +1895,11 @@ interface PlatformFeatureFlagPatchDto {
 /** Canonical event module keys — see EventModuleRequestDto.moduleKey, now server-validated against
  *  this set. `wishlist` and `wishbook` were added 2026-08-16; prefer sourcing this union from
  *  `eventModuleKeys` at runtime rather than maintaining the literal list by hand. */
-// All eleven canonical keys as of V136 (`member_roles` added; ten as of V82). `eventModuleKeys` on /api/config carries only the ones
+// All twelve canonical keys as of V146 (`theme` added; eleven as of V136, ten as of V82). `eventModuleKeys` on /api/config carries only the ones
 // currently enabled platform-wide, which is a subset: `named_invites` was switched off in V87 and
 // does not appear there today. Gate on what the config returns, not on this union.
 type ModuleKey = 'posts' | 'rsvp' | 'playlist' | 'stories' | 'gallery' | 'wishlist' | 'wishbook'
-  | 'co_hosts' | 'named_invites' | 'schedule' | 'member_roles';
+  | 'co_hosts' | 'named_invites' | 'schedule' | 'member_roles' | 'theme';
 
 interface AppMediaConfigDto {
   maxFileSizeBytes: number;
@@ -1957,7 +2077,8 @@ export interface PlanTierResponseDto {
   /** Per-module quota/config, keyed by module key — added 2026-09-27. One entry per module
    *  applicable to the plan's event type, add-on modules included. Known keys:
    *  `schedule.maxSections` and `co_hosts.maxCoHosts` (absent = unlimited, never 0) and
-   *  `gallery.qrUploadEnabled`. `{}` for ACCOUNT plans. Populated on GET /api/config and
+   *  `gallery.qrUploadEnabled`, `gallery.memberArchiveAfterEnd` (boolean, absent = off) and
+   *  `member_roles.allowCustom`. `{}` for ACCOUNT plans. Populated on GET /api/config and
    *  GET /api/plan-tiers; null on admin endpoints. */
   moduleConfigs: Record<string, Record<string, unknown>> | null;
 
@@ -2703,6 +2824,8 @@ export interface QrLinkResolutionDto {
   /** NEW 2026-09-25 — the cover with its presigned `mediaUrl` (ACTIVE-only, null without a cover). Use this
    *  instead of GET /api/medias/{id}, which the scanner (not a member yet) can't call. */
   coverMedia?: MediaResponseDto | null;
+  /** NEW 2026-10-05 — the event's theme (ACTIVE-only), null for the default look. Its illustration takes the hero's place. */
+  theme?: EventThemeDto | null;
   /** Only ever 'ACTIVE' when present — any other event status resolves as TARGET_UNAVAILABLE
    *  instead, so a draft event's codes simply stop working until it goes live. */
   eventStatus?: 'ACTIVE';
@@ -2773,6 +2896,75 @@ export interface WishbookEntryResponseDto {
   /** Server-computed: the caller's own wish, or anything if they host. Read this rather than
    *  deriving it from authorMemberId, which cannot tell you about the host case. */
   canDelete: boolean;
+  /** Added 2026-10-06. Starred for the book: true/false for hosts, null for everyone else (always
+   *  present, never omitted). Toggle with PUT/DELETE /api/wishbook/{entryId}/highlight (204, idempotent,
+   *  120/60 s). fe-guides/wishbook-book-fe-integration.md section 3. */
+  highlighted: boolean | null;
+}
+
+// ---------------------------------------------------------------------------
+// Wishbook book - the designed A5 keepsake PDF, added 2026-10-06. Host-only.
+// Full contract: fe-guides/wishbook-book-fe-integration.md.
+//   PUT|DELETE /api/wishbook/{entryId}/highlight            -> 204
+//   GET|PUT    /api/events/{eventId}/wishbook/book-texts    -> WishbookBookTextsDto
+//   POST|GET   /api/events/{eventId}/wishbook/book          -> WishbookBookDto
+// Removed: GET /api/events/{eventId}/wishbook/export (the old plain PDF).
+// Errors: POST 409 5148 WISHBOOK_EMPTY, 503 5149 WISHBOOK_BOOK_RENDERER_UNAVAILABLE (show `detail`,
+// don't retry), 429 3010 (10 per 3600 s); GET 404 2001 when never built; book-texts PUT 400 3001 when
+// over a limit after normalization, 429 at 30 per 60 s. A failed build is NOT an HTTP error: it is
+// status FAILED.
+// ---------------------------------------------------------------------------
+
+export type WishbookBookStatus = 'QUEUED' | 'RUNNING' | 'READY' | 'FAILED';
+
+/** POST/GET /api/events/{eventId}/wishbook/book. Poll every 3 s while QUEUED or RUNNING. JSON nulls are sent, not omitted. */
+export interface WishbookBookDto {
+  status: WishbookBookStatus;
+  /** When the current build was requested. */
+  requestedAt: string;
+  /** Null while QUEUED/RUNNING; set on READY and on FAILED. */
+  finishedAt: string | null;
+  /** pageCount, entryCount, byteSize and downloadUrl are non-null only when status === 'READY'; null in every
+   *  other state (a rebuild hides the old book). */
+  pageCount: number | null;
+  entryCount: number | null;
+  byteSize: number | null;
+  /** Non-null only when FAILED. Open set; do not switch on it, except for CONTENT_CHANGED. RENDERER_TIMEOUT |
+   *  RENDERER_UNREACHABLE | RENDERER_INTERRUPTED | RENDERER_HTTP_<n> | RENDERER_BAD_PDF | RENDERER_NOT_CONFIGURED |
+   *  STORAGE_FAILED | DB_UNAVAILABLE | PROCESSING_STALLED | BUILD_ERROR | MODULE_UNAVAILABLE (the Wishbook module
+   *  stopped being readable after the request) | EVENT_SUSPENDED (the StoryWall was suspended after the request;
+   *  the last two are never retried by the backend) all mean "try again"; show one generic
+   *  message. CONTENT_CHANGED (added 2026-10-06): a wish was removed (by its author, a host or moderation) or a
+   *  wish author's account was deleted after the book was made; the old book is gone and is never retried
+   *  automatically. Show "A wish was removed since the book was made - create it again" and the build button. */
+  failureCode: string | null;
+  /** Presigned, expires. Refetch the book right before downloading; never store it. Downloads as `<event title>.pdf`. */
+  downloadUrl: string | null;
+}
+
+/** GET/PUT /api/events/{eventId}/wishbook/book-texts. Overrides are null when not set; `defaults` is
+ *  always filled, in the request's Accept-Language, for placeholders. */
+export interface WishbookBookTextsDto {
+  subtitle: string | null;       // max 80, single line
+  dedication: string | null;     // max 400, up to 6 lines kept
+  closingTitle: string | null;   // max 80, single line
+  closingBody: string | null;    // max 300, up to 6 lines kept
+  defaults: {
+    subtitle: string;
+    dedication: string;
+    closingTitle: string;
+    closingBody: string;
+  };
+}
+
+/** PUT /api/events/{eventId}/wishbook/book-texts. A REPLACE, not a patch: send all four; null, blank or
+ *  omitted resets that field to its default. Limits apply after normalization (spaces collapsed, control
+ *  characters stripped, counted in UTF-16 units); the request guard is 1000 characters per field. */
+export interface WishbookBookTextsRequestDto {
+  subtitle: string | null;
+  dedication: string | null;
+  closingTitle: string | null;
+  closingBody: string | null;
 }
 
 // ---- Newsletter ----
@@ -3453,6 +3645,7 @@ export const TERMS_ACCEPTANCE_REQUIRED = 4020;
 
 export const QR_UPLOAD_ACCEPTANCE_REQUIRED = 3051;
 export const POST_EDIT_NOT_AUTHOR = 4022;
+export const MEMBER_ARCHIVE_NOT_ENABLED = 4023;  // 403, GET …/media/member-archive on an event whose gallery config lacks memberArchiveAfterEnd
 
 // ---------------------------------------------------------------------------
 // Collaborations, partner codes and house discount codes

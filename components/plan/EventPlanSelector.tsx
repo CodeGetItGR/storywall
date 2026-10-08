@@ -50,6 +50,7 @@ export function EventPlanSelector({
                                 featured={featured}
                                 popularLabel={tPricing('popular')}
                                 durationLabel={tPricing('durationLabel')}
+                                listPriceLabel={tPricing('listPrice')}
                                 expandLabel={tPricing('showFeatures')}
                                 collapseLabel={tPricing('hideFeatures')}
                                 defaultExpanded={index === 0}

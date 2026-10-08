@@ -206,6 +206,9 @@ interface MemberRoleCatalogDto {
   eventTypeKey: string;
   roleKey: string;
   label: { en: string; el: string };
+  /** 2026-10-06: heading of this role's section in the wishbook book; null = the book uses `label`.
+   *  See wishbook-book-fe-integration.md §8. */
+  sectionLabel: { en: string; el: string } | null;
   emoji: string | null;
   maxHolders: number | null;
   sortOrder: number;
@@ -335,6 +338,7 @@ interface MemberRoleCatalogRequestDto {
   eventTypeKey: string;              // must be a known event type
   roleKey: string;                   // ^[A-Z][A-Z0-9_]{1,49}$, immutable after creation
   label: { en: string; el: string }; // see rules
+  sectionLabel?: { en: string; el: string } | null; // 2026-10-06, optional wishbook-book section title; same rules as label
   emoji?: string | null;
   maxHolders?: number | null;        // >= 1; omit for unlimited
   sortOrder: number;                 // >= 0
@@ -342,6 +346,8 @@ interface MemberRoleCatalogRequestDto {
 }
 interface MemberRoleCatalogPatchDto { // null / omitted fields are left unchanged
   label?: { en: string; el: string };
+  sectionLabel?: { en: string; el: string }; // 2026-10-06: replaces the whole map when sent; same rules as label
+  clearSectionLabel?: boolean;      // true removes the section title; wins over sectionLabel
   emoji?: string;                   // "" clears it
   maxHolders?: number;              // >= 1
   clearMaxHolders?: boolean;        // true makes the role unlimited
@@ -354,6 +360,10 @@ Validation (400 `3001` `VALIDATION_FAILED` with a message; 409 for a duplicate):
 
 - **`label` must have exactly the keys `en` and `el`**, nothing missing and nothing extra. Each is
   1 to **40** characters **after trimming** (the server normalizes whitespace first).
+- **`sectionLabel`** (2026-10-06, the wishbook book's section heading for this role) follows the
+  same rule as `label` when it is sent: exactly `en` and `el`, each 1 to 40 characters. It is
+  optional on create and on `PATCH`; `clearSectionLabel: true` removes it. Roles with equal section
+  titles share one section in the book (`wishbook-book-fe-integration.md` §8).
 - **`emoji` is at most 16 characters** after trimming. On `PATCH`, an **empty string clears** it
   (on create, omit it or send null).
 - **`clearMaxHolders: true` wins over `maxHolders`** when both are sent. To change a cap, send

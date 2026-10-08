@@ -62,7 +62,7 @@ export interface CreateEventFormValue {
     scheduleError: string | null;
     // Client-side estimate from /api/config — the server pins the real window at activation.
     projectedCoverage: ProjectedCoverageDto | null;
-    onStartAtChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onStartAtChange: (value: string) => void;
     timezone: string;
     timezoneOptions: string[];
     timezoneError: string | null;

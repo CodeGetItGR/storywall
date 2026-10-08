@@ -8,7 +8,10 @@ export type KnownConfigField = { key: string; type: 'number'; min?: number } | {
 
 const KNOWN_CONFIG_FIELDS: Record<string, KnownConfigField[]> = {
     schedule: [{ key: 'maxSections', type: 'number', min: 1 }],
-    gallery: [{ key: 'qrUploadEnabled', type: 'boolean' }],
+    gallery: [
+        { key: 'qrUploadEnabled', type: 'boolean' },
+        { key: 'memberArchiveAfterEnd', type: 'boolean', hint: true },
+    ],
     co_hosts: [{ key: 'maxCoHosts', type: 'number', min: 0 }],
     member_roles: [{ key: 'allowCustom', type: 'boolean', hint: true }],
 };

@@ -72,7 +72,6 @@ export function EventTypeRegistryPanel() {
                                     <tr key={eventType.eventTypeKey} className="border-b border-border last:border-b-0 hover:bg-canvas/60">
                                         <td className="max-w-96 px-4 py-2.5">
                                             <p className="truncate font-semibold text-ink">{localizedText(eventType.name)}</p>
-                                            <p className="truncate font-mono text-[11px] text-ink-faint">{eventType.eventTypeKey}</p>
                                             <p className="truncate text-[11px] text-ink-faint">{localizedText(eventType.tagline)}</p>
                                         </td>
                                         <td className="px-3 py-2.5">

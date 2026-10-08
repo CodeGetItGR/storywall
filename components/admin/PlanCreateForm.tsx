@@ -585,7 +585,7 @@ function PlanCreateNewForm({
                 <AdminSection title={t('plans.sections.promotion')} description={t('plans.sections.promotionHint')}>
                     <div className="grid grid-cols-2 gap-2.5">
                         <AdminField label={t('fields.discountPercent')} optional className="col-span-1">
-                            <input name="discountPercent" type="number" min={0} max={100} className={adminInputClass('max-w-24')} />
+                            <input name="discountPercent" type="number" min={0} max={100} step="0.01" className={adminInputClass('max-w-24')} />
                         </AdminField>
                         <AdminField label={t('fields.discountLabel')} optional className="col-span-1">
                             <input name="discountLabel" maxLength={100} className={adminInputClass()} />

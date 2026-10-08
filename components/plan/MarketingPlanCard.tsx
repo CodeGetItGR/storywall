@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { type ReactNode, useId } from 'react';
 
 import { DurationPicker } from '@/components/plan/DurationPicker';
@@ -15,6 +16,8 @@ type MarketingPlanCardProps = {
     plan: LandingPlan;
     popularLabel: string;
     durationLabel: string;
+    // Screen-reader prefix for the struck-through price before a promotion.
+    listPriceLabel: string;
     expandLabel: string;
     collapseLabel: string;
     // Whether the feature list starts open on mobile. Desktop always shows it.
@@ -33,6 +36,7 @@ export function MarketingPlanCard({
     plan,
     popularLabel,
     durationLabel,
+    listPriceLabel,
     expandLabel,
     collapseLabel,
     defaultExpanded = false,
@@ -43,11 +47,13 @@ export function MarketingPlanCard({
     onSelectAction,
     footer,
 }: MarketingPlanCardProps) {
+    const t = useTranslations('LandingPage.pricing');
     const duration = pickedLandingDuration(plan, durationId);
     const { open, toggle } = useDisclosure(defaultExpanded);
     const durationLabelId = useId();
     const featuresId = useId();
     const selectable = Boolean(onSelectAction);
+    const singleDuration = plan.durations.length === 1;
 
     function handleSelect() {
         onSelectAction?.(plan.code);
@@ -86,29 +92,44 @@ export function MarketingPlanCard({
                 {/* Popular */}
                 <PlanCardPopularBadge label={featured ? popularLabel : null} />
 
-                {/* Plan identity: name and price scale with the card so they fit side by side; the price drops below only on very narrow cards */}
+                {/* Plan identity: name and price scale with the card so they fit side by side; the price drops below only on very narrow cards.
+                    During a promotion the price before it sits struck through below it, so the pair stays as narrow as the price alone. */}
                 <div className="mt-2 flex flex-wrap items-baseline justify-between gap-x-3">
                     <h3 className="text-[clamp(18px,7cqi,28px)] leading-[1.05] font-black tracking-[.09em]">{plan.name}</h3>
-                    <p className="bg-[linear-gradient(110deg,#d889a0,#e98778_28%,#f39a63_58%,#f5b967)] bg-clip-text pr-[.06em] font-[Baskerville,Georgia,serif] text-[clamp(36px,16.5cqi,64px)] leading-[1.1] tracking-[-.06em] text-transparent">
-                        {duration.price}
+                    <p className="flex flex-col items-end">
+                        <span className="bg-[linear-gradient(110deg,#d889a0,#e98778_28%,#f39a63_58%,#f5b967)] bg-clip-text pr-[.06em] font-[Baskerville,Georgia,serif] text-[clamp(36px,16.5cqi,64px)] leading-[1.1] tracking-[-.06em] text-transparent">
+                            {duration.price}
+                        </span>
+                        {duration.listPrice && (
+                            <del className="pr-[.06em] font-[Baskerville,Georgia,serif] text-[clamp(16px,6cqi,22px)] leading-none tracking-[-.04em] text-[#151313]/45">
+                                <span className="sr-only">{listPriceLabel} </span>
+                                {duration.listPrice}
+                            </del>
+                        )}
                     </p>
                 </div>
                 <p className="mt-1 text-sm text-[#151313]/65">
                     {plan.audience} · {plan.storage}
                 </p>
 
-                {/* Duration */}
-                <p id={durationLabelId} className="mt-5 text-sm font-semibold">
-                    {durationLabel}
-                </p>
-                <DurationPicker
-                    options={plan.durations}
-                    value={duration.id}
-                    onChangeAction={handleDurationChange}
-                    variant="marketing"
-                    labelledBy={durationLabelId}
-                    className="relative z-10 mb-3"
-                />
+                {/* Duration: one length is stated, several are a picker */}
+                {singleDuration ? (
+                    <p className="mt-5 mb-3 text-sm font-semibold">{t('durationSingle', { count: duration.months })}</p>
+                ) : (
+                    <>
+                        <p id={durationLabelId} className="mt-5 text-sm font-semibold">
+                            {durationLabel}
+                        </p>
+                        <DurationPicker
+                            options={plan.durations}
+                            value={duration.id}
+                            onChangeAction={handleDurationChange}
+                            variant="marketing"
+                            labelledBy={durationLabelId}
+                            className="relative z-10 mb-3"
+                        />
+                    </>
+                )}
 
                 {/* Plan features: collapsible on mobile, always shown on desktop */}
                 <ul id={featuresId} className={cn('mb-0 list-none p-0', !open && 'hidden min-[761px]:block')}>

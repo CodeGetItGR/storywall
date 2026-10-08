@@ -5,7 +5,15 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
-import { ComposerFab, type ContextNavItem, ContextNavSlot, isFeedRoute, isPathActive, TabLink } from '@/components/layout/mobile-tab-bar';
+import {
+    ComposerFab,
+    type ContextNavItem,
+    ContextNavSlot,
+    isAccountRoute,
+    isFeedRoute,
+    isPathActive,
+    TabLink,
+} from '@/components/layout/mobile-tab-bar';
 import { useHasOpenOverlay } from '@/hooks/useOverlayPresence';
 import { usePinchZoomBox } from '@/hooks/usePinchZoomBox';
 import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
@@ -34,7 +42,7 @@ export function MobileTabBar() {
     const isHost = useIsHost();
     const isLoading = useEventContextLoading();
     const isFeedDetailPage = isFeedRoute(pathname);
-    const showEventNavigation = !isLoading && Boolean(activeEvent);
+    const showEventNavigation = !isLoading && Boolean(activeEvent) && !isAccountRoute(pathname);
     const isDraft = activeEvent?.status === 'DRAFT';
     // Draft and deleted events have no feed to land on; the manage page is home.
     const isDeleted = isEventDeleted(activeEvent);
@@ -97,7 +105,7 @@ export function MobileTabBar() {
                         aria-label={t('eventNavigation')}
                         aria-hidden={isMobileTabBarHidden}
                         className={cn(
-                            'overflow-hidden border grid h-16 min-w-0 rounded-t-xl border-b-0 border-border shadow-[0_-4px_18px_rgba(36,31,26,0.08)] backdrop-blur transition-[opacity,transform,box-shadow] duration-300 ease-out',
+                            'grid h-16 min-w-0 overflow-hidden rounded-t-xl border border-b-0 border-border shadow-[0_-4px_18px_rgba(36,31,26,0.08)] backdrop-blur transition-[opacity,transform,box-shadow] duration-300 ease-out',
                             isMobileTabBarHidden ? 'pointer-events-none translate-y-4 opacity-0 shadow-none' : 'translate-y-0 opacity-100',
                         )}
                         style={{

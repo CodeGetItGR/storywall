@@ -15,7 +15,6 @@ export function EventTypePlansHeader({ eventType, onCreateAction }: { eventType:
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
             <div className="flex min-w-0 items-center gap-2.5">
                 <h2 className="truncate text-xl font-semibold tracking-tight text-ink">{localizedText(eventType.name, eventType.eventTypeKey)}</h2>
-                <span className="font-mono text-[11px] text-ink-faint">{eventType.eventTypeKey}</span>
                 <span
                     className={cn(
                         'rounded-full px-2 py-0.5 text-[10px] font-bold',

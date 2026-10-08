@@ -2,7 +2,8 @@ export type PlansView =
     | { view: 'eventType'; key: string | null }
     | { view: 'settingsModules'; key: null }
     | { view: 'settingsEventTypes'; key: null }
-    | { view: 'settingsMemberRoles'; key: null };
+    | { view: 'settingsMemberRoles'; key: null }
+    | { view: 'settingsLandingCategories'; key: null };
 
 export const PLANS_HASH_ROOT = '#plans';
 
@@ -25,6 +26,7 @@ export function parsePlansHash(hash: string): PlansView {
     if (rest === 'settings/modules') return { view: 'settingsModules', key: null };
     if (rest === 'settings/event-types') return { view: 'settingsEventTypes', key: null };
     if (rest === 'settings/member-roles') return { view: 'settingsMemberRoles', key: null };
+    if (rest === 'settings/landing-categories') return { view: 'settingsLandingCategories', key: null };
     if (rest.startsWith('settings/')) return { view: 'eventType', key: null };
     return { view: 'eventType', key: decodeURIComponent(rest) };
 }
@@ -33,5 +35,6 @@ export function formatPlansHash(view: PlansView): string {
     if (view.view === 'settingsModules') return `${PLANS_HASH_ROOT}/settings/modules`;
     if (view.view === 'settingsEventTypes') return `${PLANS_HASH_ROOT}/settings/event-types`;
     if (view.view === 'settingsMemberRoles') return `${PLANS_HASH_ROOT}/settings/member-roles`;
+    if (view.view === 'settingsLandingCategories') return `${PLANS_HASH_ROOT}/settings/landing-categories`;
     return view.key ? `${PLANS_HASH_ROOT}/${encodeURIComponent(view.key)}` : PLANS_HASH_ROOT;
 }

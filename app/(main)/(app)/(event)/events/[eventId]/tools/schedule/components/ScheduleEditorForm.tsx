@@ -4,6 +4,7 @@ import { Loader2, PencilLine, Plus, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type ChangeEvent, useId, useMemo, useState } from 'react';
 
+import { DateTimeField } from '@/components/ui/DateTimeField';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { Modal } from '@/components/ui/modal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
@@ -127,12 +128,12 @@ export function ScheduleEditorForm({
         setDescription(event.target.value.slice(0, maxDescriptionLength));
     }
 
-    function handleStartAtChange(event: ChangeEvent<HTMLInputElement>) {
-        setStartAt(event.target.value);
+    function handleStartAtChange(value: string) {
+        setStartAt(value);
     }
 
-    function handleEndAtChange(event: ChangeEvent<HTMLInputElement>) {
-        setEndAt(event.target.value);
+    function handleEndAtChange(value: string) {
+        setEndAt(value);
     }
 
     function handleLocationNameChange(event: ChangeEvent<HTMLInputElement>) {
@@ -290,14 +291,13 @@ export function ScheduleEditorForm({
                             className="grid gap-1.5"
                             labelClassName="text-xs font-semibold uppercase tracking-wide text-ink-muted"
                         >
-                            <input
-                                type="datetime-local"
+                            <DateTimeField
                                 value={startAt}
                                 onChange={handleStartAtChange}
                                 disabled={datesDisabled}
                                 min={startAtMin}
                                 max={startAtMax}
-                                className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
+                                inputClassName="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
                             />
                             {sessionHasStarted && !isMainSession && (
                                 <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('host.startLocked')}</p>
@@ -309,13 +309,12 @@ export function ScheduleEditorForm({
                             className="grid gap-1.5"
                             labelClassName="text-xs font-semibold uppercase tracking-wide text-ink-muted"
                         >
-                            <input
-                                type="datetime-local"
+                            <DateTimeField
                                 value={endAt}
                                 onChange={handleEndAtChange}
                                 disabled={isMainSession}
                                 min={endAtMin}
-                                className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
+                                inputClassName="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
                             />
                         </FormFieldLabel>
                     </div>

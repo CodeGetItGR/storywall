@@ -69,6 +69,8 @@ describe('useApiErrorMessage', () => {
         [5146, 'A font with this key already exists. Choose a different key.'],
         [5147, "Fonts in TTF or OTF format can't be converted right now. Upload a WOFF2 file, or try again later."],
         [5144, 'This event has ended.'],
+        [5148, 'There are no wishes yet, so there is nothing to put in a book.'],
+        [5149, "The book can't be created right now. Please try again later."],
         [5141, 'You have reached the story limit. Older stories expire after 24 hours, or delete one to post another.'],
     ])('maps %i to its own copy', (errorCode, message) => {
         expect(describeIn('en', new ApiError(409, { errorCode }))).toBe(message);

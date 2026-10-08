@@ -39,7 +39,7 @@ export function ProfileContent() {
             <div className="relative mx-auto flex max-w-3xl flex-col gap-6 px-4 pt-8 pb-16 sm:px-8 lg:pt-14">
                 {/* Header */}
                 <section className="flex flex-col gap-3">
-                    <BackButton href={routes.home} label={t('back')} />
+                    <BackButton href={routes.home} label={t('back')} historyBack />
                     <h1 className="text-2xl font-bold text-ink">{t('title')}</h1>
                 </section>
 

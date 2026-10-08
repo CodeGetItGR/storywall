@@ -140,6 +140,7 @@ export type ApiErrorMessageKey =
     | 'postMediaLimitExceeded'
     | 'postPinNotHost'
     | 'postEditNotAuthor'
+    | 'memberArchiveNotEnabled'
     | 'announcementNotHost'
     | 'storyExpiryOutOfRange'
     | 'storyLiveLimitReached'
@@ -152,6 +153,10 @@ export type ApiErrorMessageKey =
     | 'themeFontTooLarge'
     | 'themePresetNotSelectable'
     | 'themeTitleColorLowContrast'
+    | 'wishbookEmpty'
+    | 'wishbookBookRendererUnavailable'
+    | 'landingCategoryTypeAssigned'
+    | 'coverageOptionPromoPriceInvalid'
     | 'eventEnded'
     | 'eventScheduleLocked'
     | 'paidServiceCurrencyMismatch'
@@ -272,6 +277,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.ACCOUNT_DELETE_HAS_HOSTED_EVENTS]: 'accountDeleteHasHostedEvents',
     [ERROR_CODES.QR_UPLOAD_ACCEPTANCE_REQUIRED]: 'qrUploadAcceptanceRequired',
     [ERROR_CODES.POST_EDIT_NOT_AUTHOR]: 'postEditNotAuthor',
+    [ERROR_CODES.MEMBER_ARCHIVE_NOT_ENABLED]: 'memberArchiveNotEnabled',
     [ERROR_CODES.EVENT_CO_HOST_LIMIT_EXCEEDED]: 'eventCoHostLimitExceeded',
     [ERROR_CODES.INVALID_EVENT_TYPE]: 'invalidEventType',
     [ERROR_CODES.EVENT_STORAGE_LIMIT_EXCEEDED]: 'storageLimit',
@@ -350,6 +356,10 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.THEME_FONT_NOT_ASSIGNABLE]: 'themeFontNotAssignable',
     [ERROR_CODES.THEME_FONT_KEY_TAKEN]: 'themeFontKeyTaken',
     [ERROR_CODES.THEME_FONT_CONVERSION_UNAVAILABLE]: 'themeFontConversionUnavailable',
+    [ERROR_CODES.WISHBOOK_EMPTY]: 'wishbookEmpty',
+    [ERROR_CODES.WISHBOOK_BOOK_RENDERER_UNAVAILABLE]: 'wishbookBookRendererUnavailable',
+    [ERROR_CODES.LANDING_CATEGORY_TYPE_ASSIGNED]: 'landingCategoryTypeAssigned',
+    [ERROR_CODES.COVERAGE_OPTION_PROMO_PRICE_INVALID]: 'coverageOptionPromoPriceInvalid',
     [ERROR_CODES.EVENT_ENDED]: 'eventEnded',
     [ERROR_CODES.PAID_SERVICE_CURRENCY_MISMATCH]: 'paidServiceCurrencyMismatch',
     [ERROR_CODES.PAID_SERVICE_IN_USE]: 'paidServiceInUse',

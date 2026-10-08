@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
-import type { ChangeEvent, SubmitEvent } from 'react';
+import type { SubmitEvent } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useDraftStartDate } from '@/hooks/useDraftStartDate';
@@ -29,10 +29,6 @@ vi.mock('@/hooks/useEvent', () => ({
 
 const submitEvent = { preventDefault: vi.fn() } as unknown as SubmitEvent<HTMLFormElement>;
 
-function change(value: string) {
-    return { target: { value } } as ChangeEvent<HTMLInputElement>;
-}
-
 function localIn(days: number) {
     const date = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
     date.setSeconds(0, 0);
@@ -51,7 +47,7 @@ describe('useDraftStartDate', () => {
 
         act(() => result.current.open());
         const next = localIn(30);
-        act(() => result.current.handleChange(change(next)));
+        act(() => result.current.handleChange(next));
         await act(async () => result.current.handleSubmit(submitEvent));
 
         const [dates] = mocks.calls;
@@ -64,7 +60,7 @@ describe('useDraftStartDate', () => {
         const { result } = renderHook(() => useDraftStartDate('event-1', { startAt: '2026-01-10T18:00:00Z', endAt: null }));
 
         act(() => result.current.open());
-        act(() => result.current.handleChange(change(localIn(-2))));
+        act(() => result.current.handleChange(localIn(-2)));
         await act(async () => result.current.handleSubmit(submitEvent));
 
         expect(result.current.validationError).toBe('validation.startInPast');
@@ -78,7 +74,7 @@ describe('useDraftStartDate', () => {
         const { result } = renderHook(() => useDraftStartDate('event-1', { startAt: '2026-01-10T18:00:00Z', endAt: null }));
 
         act(() => result.current.open());
-        act(() => result.current.handleChange(change(localIn(10))));
+        act(() => result.current.handleChange(localIn(10)));
         await act(async () => {
             result.current.handleSubmit(submitEvent);
             await new Promise((resolve) => setTimeout(resolve, 0));

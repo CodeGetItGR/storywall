@@ -7,6 +7,7 @@ import { type ReactNode, useEffect, useState } from 'react';
 import { BetaFeedback } from '@/components/betaFeedback/BetaFeedback';
 import { GuidelinesAcceptanceGate, GuidelinesGateSignOutHold } from '@/components/legal/GuidelinesAcceptanceGate';
 import { useAuth } from '@/hooks/useAuth';
+import { useInAppHistoryTracking } from '@/hooks/useInAppHistoryTracking';
 import { meQueryKey } from '@/hooks/useMe';
 import { useVisualViewportSync } from '@/hooks/useVisualViewportSync';
 import type { SessionHandoff } from '@/lib/auth/sessionHandoff';
@@ -43,6 +44,7 @@ function AccountComposerProvider({ children }: { children: ReactNode }) {
 export function AppProviders({ children, handoff = null }: { children: ReactNode; handoff?: SessionHandoff | null }) {
     const isDemoRoute = usePathname()?.startsWith('/demo') ?? false;
     useVisualViewportSync();
+    useInAppHistoryTracking();
     const [queryClient] = useState(() => {
         const client = makeQueryClient();
         // The /api/me answer the session was built from, so useMe doesn't fetch it again.

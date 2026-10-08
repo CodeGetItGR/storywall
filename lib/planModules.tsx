@@ -46,7 +46,7 @@ const moduleFallbacks: Record<string, { name: string; description: string }> = {
         description: 'Lets guests leave written wishes and messages for the host to keep.',
     },
     member_roles: {
-        name: 'Member roles',
+        name: 'Guest roles',
         description: 'Guests pick a role, like best man, shown next to their name.',
     },
     theme: {

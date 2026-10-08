@@ -7,7 +7,8 @@
         "primaryHostOnly": "Only the event's main host can make purchases.",
         "demoPurchaseDisabled": "Purchases aren’t available in the demo.",
         "seeUpgradeOptions": "See upgrade options",
-        "loading": "Loading…"
+        "loading": "Loading…",
+        "time": "Time"
     },
     "DemoActAs": {
         "postingAs": "Posting as",
@@ -533,6 +534,9 @@
             "title": "Coming up"
         }
     },
+    "InviteEventCard": {
+        "eyebrow": "You’re joining"
+    },
     "InviteOnboardingPage": {
         "loading": "Loading your invitation…",
         "invalidInvite": {
@@ -638,6 +642,7 @@
         "modules": "Modules",
         "plans": "Plans",
         "profile": "Profile",
+        "notifications": "Notifications",
         "editProfile": "Edit profile",
         "logout": "Log out",
         "logoutConfirmTitle": "Log out?",
@@ -843,6 +848,10 @@
             "STORAGE_TRIM_WARNING": {
                 "title": "Photos and videos will be deleted soon",
                 "body": "{over} over the limit. Free up space by {dueDate}, or the newest photos and videos above the limit will be deleted."
+            },
+            "MEMBER_ARCHIVE_READY": {
+                "title": "The gallery is ready to download",
+                "body": "Every photo and video from the event, in one download. Open the gallery to get it."
             }
         }
     },
@@ -1799,6 +1808,8 @@
         "discounts": {
             "PLAN_PROMOTION": "promotion \"{label}\" −{percent}%",
             "PLAN_PROMOTION_unnamed": "plan promotion −{percent}%",
+            "PLAN_PROMOTION_amount": "promotion \"{label}\" −{amount}",
+            "PLAN_PROMOTION_amount_unnamed": "plan promotion −{amount}",
             "CODE": "discount code \"{label}\" −{percent}%",
             "CODE_unnamed": "discount code −{percent}%"
         },
@@ -2138,8 +2149,33 @@
         "frozenReadOnly": "The event is paused. Existing wishes remain visible, but new ones cannot be added until it is renewed.",
         "draftReadOnly": "Wishes can be added after the event is published.",
         "hostReadOnly": "As the host, you can view wishes but can't add your own.",
-        "exportPdf": "Download as PDF",
-        "exportFailed": "Couldn't download the wishbook. Please try again.",
+        "book": {
+            "title": "Your keepsake book",
+            "body": "Every wish, laid out as a printable-quality PDF book. Star the wishes you love most and they get a page of their own.",
+            "create": "Create the book",
+            "building": "This takes a minute or two. You can leave this page; if you started it, we'll let you know when it's ready.",
+            "ready": "Ready · {pages, plural, one {# page} other {# pages}} · {wishes, plural, one {# wish} other {# wishes}}",
+            "download": "Download",
+            "rebuild": "Rebuild with the latest wishes",
+            "failed": "The book couldn't be built.",
+            "contentChanged": "A wish was removed since the book was made — create it again.",
+            "retry": "Try again",
+            "editTexts": "Edit the book's text",
+            "downloadFailed": "Couldn't get the download link. Please try again."
+        },
+        "bookTexts": {
+            "title": "The book's text",
+            "hint": "Leave a field empty to use the suggested text shown.",
+            "tooManyLines": "Use at most {max} lines. Blank lines between paragraphs count too.",
+            "subtitle": "Subtitle (cover)",
+            "dedication": "Dedication",
+            "closingTitle": "Closing title",
+            "closingBody": "Closing message",
+            "counter": "{current} / {max}",
+            "save": "Save",
+            "cancel": "Cancel"
+        },
+        "star": "Star for the book",
         "reportEntry": "Report",
         "delete": "Delete",
         "deleteTitle": "Delete this wish?",
@@ -3077,11 +3113,13 @@
                 "settings": "Settings",
                 "modules": "Modules",
                 "eventTypesSettings": "Event types",
+                "landingCategories": "Landing categories",
                 "memberRoles": "Member roles"
             },
             "settings": {
                 "modulesTitle": "Modules",
                 "eventTypesTitle": "Event types",
+                "landingCategoriesTitle": "Landing categories",
                 "memberRolesTitle": "Member roles"
             },
             "default": "Default",
@@ -3192,6 +3230,10 @@
                 "monthsHint": "1 to 120. Can't be changed later.",
                 "price": "Price",
                 "priceIn": "Price ({currency})",
+                "promoPrice": "Promo price",
+                "promoPriceIn": "Promo price ({currency})",
+                "promoPriceHint": "Optional. Charged instead of the plan's discount % while the promotion window is open. Must be below the price.",
+                "promoPriceShort": "promo {price}",
                 "retire": "Retire",
                 "reactivate": "Put back on sale",
                 "save": "Save duration",
@@ -3237,10 +3279,12 @@
                         "maxSections": "Schedule sections",
                         "maxCoHosts": "Co-hosts",
                         "qrUploadEnabled": "Guest QR upload",
+                        "memberArchiveAfterEnd": "Member gallery download",
                         "allowCustom": "Custom roles"
                     },
                     "fieldHints": {
-                        "allowCustom": "Members can type their own role."
+                        "allowCustom": "Members can type their own role.",
+                        "memberArchiveAfterEnd": "Every member can download the whole gallery a day after the event. Each build costs egress."
                     },
                     "unlimited": "Unlimited",
                     "upTo": "Up to",
@@ -3251,7 +3295,7 @@
                 }
             },
             "search": {
-                "placeholder": "Search by name or code"
+                "placeholder": "Search"
             },
             "selectorHint": "Pick a plan on the left to edit it in the main pane.",
             "empty": "No plans to show.",
@@ -3285,7 +3329,7 @@
             "saveConfirmBody": "This can change pricing, limits, or availability for the plan. Confirm that the edits are intentional."
         },
         "modules": {
-            "notice": "Platform modules are fixed by backend code. Disable a module here to withdraw it everywhere on the next config refresh.",
+            "notice": "Disable a module here to withdraw it everywhere on the next config refresh.",
             "loading": "Loading modules...",
             "enabled": "Enabled",
             "disabled": "Disabled",
@@ -3296,7 +3340,7 @@
             "confirmBody": "This updates the platform module registry. Disabling a module can remove that feature everywhere after config refresh."
         },
         "eventTypes": {
-            "notice": "Event type keys are fixed by backend code. Disable a type here to withdraw it from the creation picker on the next config refresh.",
+            "notice": "Disable a type here to withdraw it from the creation picker on the next config refresh.",
             "loading": "Loading event types...",
             "enabled": "Enabled",
             "disabled": "Disabled",
@@ -3305,6 +3349,47 @@
             "empty": "No event types to show.",
             "confirmTitle": "Save {eventType}?",
             "confirmBody": "This updates the platform event type registry. Disabling a type removes it from the event-creation picker after config refresh."
+        },
+        "landingCategories": {
+            "notice": "Tabs of the landing page's pricing section. A tab with no plan to show is hidden there.",
+            "create": "New category",
+            "createTitle": "New landing category",
+            "editTitle": "Edit landing category",
+            "empty": "No landing categories yet.",
+            "nameEn": "Name (English)",
+            "nameEl": "Name (Greek)",
+            "descriptionEn": "Short description (English)",
+            "descriptionEl": "Short description (Greek)",
+            "visible": "Shown on the landing page",
+            "default": "Opens first",
+            "defaultPill": "Default",
+            "hiddenPill": "Hidden",
+            "eventTypes": "Event types",
+            "inOtherCategory": "In {category}",
+            "moveTitle": "Move {eventType}?",
+            "moveBody": "{eventType} is in {category}. Moving it takes its plans off that tab.",
+            "move": "Move",
+            "delete": "Delete",
+            "deleteTitle": "Delete {category}?",
+            "deleteBody": "Its event types stay, but are no longer on the landing page.",
+            "unassigned": "Not on the landing page",
+            "warnNoEnabledType": "No enabled event type: this tab is hidden.",
+            "warnNoVisiblePlan": "No public plan on sale to show: this tab is hidden.",
+            "warnDrifted": "Shared plan copies differ in {fields} ({plans}); they show as separate cards.",
+            "driftFields": {
+                "price": "price",
+                "currency": "currency",
+                "durations": "durations",
+                "extensions": "extensions",
+                "discount": "discount",
+                "discountLabel": "discount label",
+                "modules": "modules",
+                "moduleConfigs": "module settings",
+                "storage": "storage",
+                "guests": "guest limit",
+                "name": "name",
+                "memberRoles": "member roles"
+            }
         },
         "funnel": {
             "title": "Growth",
@@ -3770,6 +3855,10 @@
                 "labelEn": "English label",
                 "labelEl": "Greek label",
                 "labelInvalid": "Enter 1 to 40 characters.",
+                "sectionEn": "Book section title (English)",
+                "sectionEl": "Book section title (Greek)",
+                "sectionHint": "Plural title for this role's section in the wishbook book, e.g. \"Our friends\". Roles with the same title share a section. Leave both empty to use the label.",
+                "sectionInvalid": "Fill in both titles (1 to 40 characters) or leave both empty.",
                 "emoji": "Emoji",
                 "emojiInvalid": "Use up to 16 characters.",
                 "limit": "Limit",
@@ -4334,7 +4423,7 @@
             "description": "Plan the event timeline with schedule sections."
         },
         "member_roles": {
-            "name": "Member roles",
+            "name": "Guest roles",
             "description": "Guests pick a role, like best man, shown next to their name."
         },
         "theme": {
@@ -4368,6 +4457,14 @@
         "downloadGalleryTitle": "Download gallery",
         "downloadGallerySubtitle": "Choose a version and download the archive parts one by one.",
         "closeDownloadGallery": "Close download gallery",
+        "memberArchiveSubtitle": "Every photo and video from the event, in display quality.",
+        "memberArchiveNotYet": "The download opens on {date}, a day after the event ends.",
+        "memberArchivePreparing": "We're putting the download together. Check back in a little while.",
+        "memberArchiveCheckAgain": "Check again",
+        "memberArchiveEmpty": "The gallery has no photos or videos.",
+        "memberArchiveUnavailable": "The download isn't available for this event.",
+        "memberArchiveChanged": "The gallery changed since this opened, so the download is being rebuilt. Try again later.",
+        "memberArchiveUploadNote": "After the event, every member can download the whole gallery, including what you upload here.",
         "selectPhotos": "Select",
         "selectAll": "Select all",
         "cancelSelection": "Cancel",
@@ -4596,6 +4693,7 @@
         "planInUse": "This plan is assigned to accounts or events, so it cannot be deleted.",
         "planIsOnlyDefault": "Set another default plan before changing this one.",
         "postEditNotAuthor": "Only the person who wrote this post can edit it. Hosts can pin, delete or report it.",
+        "memberArchiveNotEnabled": "Members of this event can't download the whole gallery.",
         "postMediaLimitExceeded": "This post already has the maximum number of photos.",
         "postPinNotHost": "Only hosts can pin posts.",
         "announcementNotHost": "Only hosts can post announcements.",
@@ -4610,6 +4708,10 @@
         "themeFontNotAssignable": "This font can't be used in a theme: it doesn't exist, it's archived, or it has no font file yet. Choose another font.",
         "themeFontKeyTaken": "A font with this key already exists. Choose a different key.",
         "themeFontConversionUnavailable": "Fonts in TTF or OTF format can't be converted right now. Upload a WOFF2 file, or try again later.",
+        "wishbookEmpty": "There are no wishes yet, so there is nothing to put in a book.",
+        "wishbookBookRendererUnavailable": "The book can't be created right now. Please try again later.",
+        "landingCategoryTypeAssigned": "This event type is already in another landing category.",
+        "coverageOptionPromoPriceInvalid": "The promo price must be above zero and below the duration's price, and only an initial duration can have one.",
         "eventEnded": "This event has ended.",
         "orderNotPending": "This order is no longer pending.",
         "webhookAlreadyProcessed": "This webhook has already been processed.",
@@ -4751,6 +4853,7 @@
             "eyebrow": "ONE PLATFORM. MANY STORIES.",
             "heading": ["Every important moment", "has its own story."],
             "intro": "StoryWall brings people, moments, and memories into one private social space, before, during, and after your event.",
+            "openDemo": "Open the demo",
             "rows": [
                 {
                     "tag": "WEDDING",
@@ -5041,7 +5144,9 @@
             "choose": "CHOOSE PLAN",
             "popular": "Most popular",
             "categoryLabel": "Event category",
-            "durationLabel": "Stays online for",
+            "durationLabel": "Choose how long it stays online",
+            "durationSingle": "{count, plural, one {Online for # month} other {Online for # months}}",
+            "listPrice": "Original price",
             "showFeatures": "Show features",
             "hideFeatures": "Hide features",
             "photosLabel": "photos",
@@ -5049,16 +5154,7 @@
             "storageNote": "Estimates assume files up to 5 MB per photo and video clips up to 15 seconds.",
             "cta": "CREATE YOUR STORYWALL",
             "verifyNotice": "Verify your email before creating an event.",
-            "categories": {
-                "wedding": {
-                    "label": "Wedding · Baptism · Gender Reveal · Baby Shower"
-                },
-                "vip": {
-                    "label": "VIP & Social Parties"
-                }
-            },
             "note": "Prices shown are indicative and may change.",
-            "comingSoon": "Coming soon",
             "guestsUpTo": "Up to {count} guests",
             "guestsUnlimited": "Unlimited guests",
             "storageUnlimited": "Unlimited storage",
@@ -5069,9 +5165,9 @@
             "coHosts": "{count, plural, one {Up to # co-host} other {Up to # co-hosts}}",
             "coHostsUnlimited": "Unlimited co-hosts",
             "galleryWithQrUpload": "Gallery with QR upload",
-            "memberRoles": "{count, plural, one {# member role} other {# member roles}}",
-            "memberRolesWithCustom": "{count, plural, one {# member role + your own} other {# member roles + your own}}",
-            "memberRolesCustomOnly": "Custom member roles"
+            "memberRoles": "{count, plural, one {# guest role ({roles})} other {# guest roles ({roles})}}",
+            "memberRolesWithCustom": "{count, plural, one {# guest role ({roles}) + your own} other {# guest roles ({roles}) + your own}}",
+            "memberRolesCustomOnly": "Custom guest roles"
         },
         "faq": {
             "eyebrow": "FAQ",

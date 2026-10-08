@@ -15,7 +15,8 @@ interface AdminDrawerProps {
     closeLabel: string;
     footer?: ReactNode;
     children: ReactNode;
-    size?: 'default' | 'wide';
+    /** `modal` centers a large surface on desktop (full screen on phones) for editors too dense for a side panel. */
+    size?: 'default' | 'wide' | 'modal';
     /**
      * While true (e.g. a save in flight), ×, Esc and the overlay don't close the drawer, and the × is
      * hidden. Checked before requestClose, which would otherwise drop the drawer's history entry and
@@ -36,7 +37,8 @@ export function useAdminDrawerFooterSlot() {
 }
 
 // A right slide-over scoped to one record, per AGENTS.md — editing and
-// browsing stay visually distinct modes instead of a full-screen modal.
+// browsing stay visually distinct modes. `size="modal"` is the exception for
+// editors whose sections need room side by side (e.g. plans).
 export function AdminDrawer({
     open,
     onClose,
@@ -68,9 +70,17 @@ export function AdminDrawer({
                 <Dialog.Popup
                     className={cn(
                         'motion-surface fixed top-(--visual-viewport-offset-top) right-0 z-50 flex h-(--visual-viewport-height) flex-col overflow-hidden',
-                        size === 'wide' ? 'w-[min(680px,100vw)]' : 'w-[min(440px,100vw)]',
-                        'border-l border-border bg-card text-ink shadow-[0_24px_60px_-20px_rgba(18,20,28,0.45)] outline-none',
-                        'data-ending-style:translate-x-full data-ending-style:opacity-0 data-starting-style:translate-x-full data-starting-style:opacity-0',
+                        'bg-card text-ink shadow-[0_24px_60px_-20px_rgba(18,20,28,0.45)] outline-none',
+                        size === 'modal'
+                            ? [
+                                  'w-full md:inset-0 md:m-auto md:h-[min(920px,calc(100dvh-48px))] md:w-[min(1120px,calc(100vw-48px))] md:rounded-xl md:border md:border-border',
+                                  'data-ending-style:scale-[0.98] data-ending-style:opacity-0 data-starting-style:scale-[0.98] data-starting-style:opacity-0',
+                              ]
+                            : [
+                                  size === 'wide' ? 'w-[min(680px,100vw)]' : 'w-[min(440px,100vw)]',
+                                  'border-l border-border',
+                                  'data-ending-style:translate-x-full data-ending-style:opacity-0 data-starting-style:translate-x-full data-starting-style:opacity-0',
+                              ],
                     )}
                 >
                     {/* Header */}

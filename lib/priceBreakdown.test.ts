@@ -118,6 +118,15 @@ describe('breakdown labels', () => {
         expect(breakdownDiscountMessageKey({ source: 'CODE', label: null, percent: 10 })).toBe('CODE_unnamed');
         expect(breakdownDiscountMessageKey({ source: 'PLAN_PROMOTION', label: ' ', percent: 10 })).toBe('PLAN_PROMOTION_unnamed');
     });
+
+    it('words a promo price as an amount, not a percentage', () => {
+        expect(breakdownDiscountMessageKey({ source: 'PLAN_PROMOTION', label: 'Autumn', percent: null, amountMinor: 3_000 })).toBe(
+            'PLAN_PROMOTION_amount',
+        );
+        expect(breakdownDiscountMessageKey({ source: 'PLAN_PROMOTION', label: null, percent: null, amountMinor: 3_000 })).toBe(
+            'PLAN_PROMOTION_amount_unnamed',
+        );
+    });
 });
 
 describe('orderWithdrawalWindowOpen', () => {

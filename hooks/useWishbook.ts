@@ -1,16 +1,13 @@
 'use client';
 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useState } from 'react';
 
-import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
 import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
 import type { WishbookEntryRequestDto, WishbookEntryResponseDto } from '@/lib/api/types';
-import { downloadBlob } from '@/lib/download';
 import { LIVE_CONTENT_STALE_TIME } from '@/lib/queryClient';
 
 export const WISHBOOK_PAGE_SIZE = 20;
@@ -66,26 +63,4 @@ export function useDeleteWishbookEntry(eventId: string) {
             queryClient.invalidateQueries({ queryKey: wishbookKeys.count(eventId) });
         },
     });
-}
-
-export function useWishbookExportDownload(eventId: string, failedMessage: string) {
-    const tError = useApiErrorMessage();
-    const [isDownloading, setIsDownloading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const download = useCallback(async () => {
-        setError(null);
-        setIsDownloading(true);
-        try {
-            const response = await api.download(endpoints.events.wishbookExport(eventId));
-            const blob = await response.blob();
-            downloadBlob(blob, 'wishbook.pdf');
-        } catch (downloadError) {
-            setError(tError(downloadError, failedMessage));
-        } finally {
-            setIsDownloading(false);
-        }
-    }, [eventId, failedMessage, tError]);
-
-    return { download, isDownloading, error };
 }

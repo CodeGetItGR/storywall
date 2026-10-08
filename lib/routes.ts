@@ -35,11 +35,13 @@ export const routes = {
     forgotPassword: '/forgot-password',
     resetPassword: '/reset-password',
     demo: '/demo',
+    demoEventType: (eventTypeSlug: string) => `/demo/${eventTypeSlug}`,
     invite: '/invite',
     home: '/home',
     profile: '/profile',
     events: {
-        new: (params: { step?: string | null } = {}) => withQuery('/events/new', params),
+        // run: the wizard run the entry belongs to (see CREATE_EVENT_RUN_PARAM).
+        new: (params: { step?: string | null; run?: string | null } = {}) => withQuery('/events/new', params),
         manage: (eventId: string, params: { tab?: ManageTab | null; section?: string | null; cancelled?: boolean | null } = {}) =>
             withQuery(`${eventBasePath(eventId)}/manage`, params),
         // Share/join QR link management — pulled out of the Members section the
