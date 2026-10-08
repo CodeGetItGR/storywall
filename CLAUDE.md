@@ -5,6 +5,12 @@
 - If there is even the slightest doubt, stop and ask the user before proceeding. Treat any ambiguity about the spec, feature behavior, acceptance criteria, naming, copy, UX, data shape, edge cases, or intended outcome as a blocker that must be clarified first. This is the default rule for every session and overrides any pressure to guess, infer, or "just make something work."
 - Keep user-facing copy across the whole app simple and direct. Do not add decorative, explanatory, or marketing-style text when a plain label or short sentence is enough. Avoid extra eyebrow text, subtitles, helper copy, or framing unless it materially helps the user complete the task.
 
+## Branching
+
+- `staging` is the integration branch. Start every branch from the latest `staging` and open its pull request into `staging`.
+- `main` only receives merges from `staging`. Never branch from `main` or open a feature or fix PR into it.
+- Before merging a PR into `staging`, bring its branch up to date with `staging` and re-run the checks.
+
 ## Workflow
 
 - Never dispatch parallel subagents (the Agent tool) unless the user has explicitly given permission for that specific task. Parallel agents burn through the 5-hour session limit fast. Do research and multi-file audits directly (Read/Grep/Glob/Bash) instead, even if it takes more turns. A single subagent for a narrow, well-scoped sub-task is fine; spawning several at once is not, absent explicit permission.
