@@ -92,7 +92,7 @@ function CreateEventFormBody() {
                 <EventCreateStepBreadcrumb />
 
                 {/* Form Shell */}
-                <div ref={formShellRef} className="mt-3 min-h-0 flex-1 overflow-y-auto p-5">
+                <div ref={formShellRef} className="mt-3 min-h-0 flex-1 overflow-y-auto p-3">
                     <form id={formId} onSubmit={handleSubmit}>
                         {/* Earlier picks */}
                         <EventCreateSelectionSummary />

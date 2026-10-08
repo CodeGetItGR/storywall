@@ -16,6 +16,10 @@ export function useCollaboratorPane(collaborator: CollaboratorResponseDto) {
     const [editingCode, setEditingCode] = useState<CollaborationCodeResponseDto | null>(null);
     const [linkOpen, setLinkOpen] = useState(false);
     const [statusConfirmOpen, setStatusConfirmOpen] = useState(false);
+    const [businessOpen, setBusinessOpen] = useState(false);
+    const [tiersOpen, setTiersOpen] = useState(false);
+    // Bumped on every open so each drawer remounts with the partner's saved values, not a stale draft.
+    const [drawerRun, setDrawerRun] = useState(0);
     // Fixed when the modal opens, so its copy doesn't flip mid-close once the saved status lands.
     const [nextStatus, setNextStatus] = useState<CollaboratorResponseDto['status']>('SUSPENDED');
 
@@ -23,6 +27,18 @@ export function useCollaboratorPane(collaborator: CollaboratorResponseDto) {
 
     const openEdit = useCallback(() => setEditOpen(true), []);
     const closeEdit = useCallback(() => setEditOpen(false), []);
+
+    const openBusiness = useCallback(() => {
+        setDrawerRun((run) => run + 1);
+        setBusinessOpen(true);
+    }, []);
+    const closeBusiness = useCallback(() => setBusinessOpen(false), []);
+
+    const openTiers = useCallback(() => {
+        setDrawerRun((run) => run + 1);
+        setTiersOpen(true);
+    }, []);
+    const closeTiers = useCallback(() => setTiersOpen(false), []);
 
     const openCreateCode = useCallback(() => {
         setEditingCode(null);
@@ -67,6 +83,13 @@ export function useCollaboratorPane(collaborator: CollaboratorResponseDto) {
         editOpen,
         openEdit,
         closeEdit,
+        drawerKey: `${collaborator.id}-${drawerRun}`,
+        businessOpen,
+        openBusiness,
+        closeBusiness,
+        tiersOpen,
+        openTiers,
+        closeTiers,
         codeDrawerOpen,
         editingCode,
         openCreateCode,

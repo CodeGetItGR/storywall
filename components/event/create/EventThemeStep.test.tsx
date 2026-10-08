@@ -17,6 +17,7 @@ const SWAN = { id: 'p1', key: 'swan', name: { en: 'Swan', el: 'Κύκνος' }, 
 
 function state(overrides: Record<string, unknown> = {}) {
     form.current = {
+        title: '',
         themePresets: [SWAN],
         isThemePresetsLoading: false,
         themePresetsError: null,
@@ -38,6 +39,14 @@ describe('EventThemeStep', () => {
         expect(radios.map((radio) => radio.textContent)).toEqual(['none', 'Swan']);
         expect(radios[0]).toHaveAttribute('aria-checked', 'true');
         expect(screen.getByTestId('art')).toHaveAttribute('src', SWAN.illustrationUrl);
+    });
+
+    it('previews the title from the details step on every card, with the theme name below', () => {
+        state({ title: '  Anna  ' });
+        render(<EventThemeStep />);
+
+        expect(screen.getAllByText('Anna')).toHaveLength(2);
+        expect(screen.getByRole('radio', { name: 'Swan' })).toBeInTheDocument();
     });
 
     it('picks a preset without saving anything itself', () => {

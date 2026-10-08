@@ -61,6 +61,11 @@ export function CollaboratorLedgerRow({
             <td className="px-2.5 py-2 font-mono text-xs font-bold text-ink">{earningCodeText(codes, earning.codeId)}</td>
             <td className="px-2.5 py-2 text-ink-muted">
                 {t('earnings.basis', { percent: earning.commissionPercent, amount: formatMoney(locale, earning.basisAmountMinor, earning.currency) })}
+                {earning.activationNumber !== null && (
+                    <span className="block font-mono text-[10.5px] text-ink-faint">
+                        {t('earnings.activation', { number: earning.activationNumber })}
+                    </span>
+                )}
             </td>
             <td className="px-2.5 py-2 whitespace-nowrap">
                 <span className="font-mono font-semibold text-ink">{formatMoney(locale, earning.amountMinor, earning.currency)}</span>

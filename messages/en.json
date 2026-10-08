@@ -1970,6 +1970,12 @@
             "accrued": "Accrued",
             "paid": "Paid",
             "balance": "Balance"
+        },
+        "tiers": {
+            "title": "Commission rate",
+            "percent": "{percent}%",
+            "activationsThisYear": "{count, plural, one {# activation} other {# activations}} this year",
+            "next": "Your {number, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} activation earns {percent}%"
         }
     },
     "SchedulePage": {
@@ -3763,6 +3769,7 @@
             "reactionTypeLimitExceeded": "This event type already has five available reactions.",
             "reactionTypeNotUsable": "That reaction is no longer available. Refresh and choose another.",
             "collaborationEarningNotPayable": "One or more selected earnings are not payable. Refresh the ledger and choose accrued rows.",
+            "collaboratorPayoutDetailsIncomplete": "This partner's business or payout details are incomplete, or their VAT number isn't VIES-valid. Complete their business details and try again.",
             "methodNotAllowed": "That action is not available here. Refresh and try again.",
             "invalidModuleKey": "One of the selected modules isn't available for this event type. Remove it and try again.",
             "orderNotManual": "Only manual orders can be settled here. Stripe orders settle through Stripe."
@@ -4263,7 +4270,9 @@
                 "basis": "{percent}% of {amount}",
                 "select": "Select {event}, {date}",
                 "selectAll": "Select all accrued rows",
-                "selected": "{count} selected"
+                "selected": "{count} selected",
+                "activation": "Activation #{number}",
+                "payoutBlocked": "Missing for payout: {fields}"
             },
             "void": {
                 "reason": "Reason",
@@ -4282,6 +4291,93 @@
                 "action": "Reactivate",
                 "title": "Reactivate {name}?",
                 "body": "Their partner page and active codes work again."
+            },
+            "business": {
+                "title": "Business details",
+                "edit": "Edit details",
+                "drawerTitle": "Business details · {name}",
+                "notSet": "Not set",
+                "noCountry": "None",
+                "northernIreland": "Northern Ireland",
+                "billingEmailDefault": "Contact email",
+                "groups": {
+                    "invoicing": "Invoicing",
+                    "payout": "Payout",
+                    "contact": "Contact"
+                },
+                "fields": {
+                    "legalName": "Legal name",
+                    "countryCode": "Country",
+                    "vatNumber": "VAT number",
+                    "taxOffice": "Tax office",
+                    "address": "Address",
+                    "addressLine1": "Address",
+                    "addressLine2": "Address line 2",
+                    "city": "City",
+                    "postalCode": "Postal code",
+                    "payoutIban": "IBAN",
+                    "payoutAccountHolder": "Account holder",
+                    "viesStatus": "VIES check",
+                    "contactPersonName": "Contact person",
+                    "contactPhone": "Phone",
+                    "billingEmail": "Billing email",
+                    "websiteUrl": "Website"
+                },
+                "hints": {
+                    "taxOffice": "Required for Greek VAT numbers.",
+                    "contactPhone": "International format, e.g. +30 210 123 4567",
+                    "billingEmail": "Leave empty to use the contact email.",
+                    "websiteUrl": "Starts with https://"
+                },
+                "errors": {
+                    "websiteNotHttps": "Use an https:// address.",
+                    "phoneFormat": "Use international format, e.g. +30 210 123 4567.",
+                    "emailInvalid": "Enter a valid email.",
+                    "countryWithoutVat": "Add the VAT number, or clear the country.",
+                    "vatWithoutCountry": "Choose the country of this VAT number.",
+                    "taxOfficeRequired": "Required for Greek VAT numbers.",
+                    "ibanInvalid": "This IBAN is not valid.",
+                    "invalid": "Check this value.",
+                    "rejected": "Some details were not accepted. Check them and try again."
+                },
+                "vies": {
+                    "VALID": "Valid",
+                    "PENDING": "Pending",
+                    "INVALID": "Invalid",
+                    "none": "Not checked",
+                    "checkedAt": "Checked {date}",
+                    "recheck": "Re-check VIES",
+                    "failed": "VIES couldn't be checked. Try again later."
+                }
+            },
+            "tiers": {
+                "title": "Commission tiers",
+                "edit": "Edit tiers",
+                "drawerTitle": "Commission tiers · {name}",
+                "none": "No tiers. Each code earns its own commission.",
+                "activationsThisYear": "{count, plural, one {# activation} other {# activations}} this year",
+                "range": "{from}–{to}",
+                "rangeOpen": "{from}+",
+                "current": "Current",
+                "columns": {
+                    "activations": "Activations",
+                    "from": "From activation",
+                    "percent": "Commission %"
+                },
+                "fromLabel": "Tier {number}: from activation",
+                "percentLabel": "Tier {number}: commission %",
+                "add": "Add tier",
+                "remove": "Remove tier {number}",
+                "hint": "Replaces every code's commission, except 0% codes. Counts restart each calendar year. Changes apply to later activations only.",
+                "emptyEditor": "No tiers. Saving removes the schedule.",
+                "errors": {
+                    "tooMany": "Use at most 10 tiers.",
+                    "activationsWhole": "Activations must be whole numbers from 1.",
+                    "percentRange": "Commission must be a whole number from 1 to 100.",
+                    "firstStartsAtOne": "The first tier must start at activation 1.",
+                    "thresholdsIncrease": "Each tier must start after the one before it.",
+                    "ratesNeverDecrease": "A tier can't pay less than the one before it."
+                }
             }
         },
         "discountCodes": {
@@ -4669,6 +4765,7 @@
         "discountNotApplicableToUpgrade": "Codes can't be used on upgrades.",
         "collaborationAlreadyRedeemed": "This event already has another discount code.",
         "collaborationEarningNotPayable": "That earning cannot be marked paid.",
+        "collaboratorPayoutDetailsIncomplete": "A partner's business or payout details are incomplete.",
         "subscriptionAlreadyActive": "A subscription is already running for this event.",
         "subscriptionNotLive": "There was no active subscription to stop - we have refreshed this page.",
         "subscriptionCancelFailed": "We couldn't stop it just now, so the subscription is still running and will still be charged. Please try again in a moment.",

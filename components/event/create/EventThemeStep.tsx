@@ -17,8 +17,10 @@ export function EventThemeStep() {
     const toErrorMessage = useApiErrorMessage();
     const localizedText = useLocalizedText();
     const headingId = useId();
-    const { themePresets, isThemePresetsLoading, themePresetsError, selectedThemePresetId, onSelectThemePreset, error } = useCreateEventForm();
+    const { title, themePresets, isThemePresetsLoading, themePresetsError, selectedThemePresetId, onSelectThemePreset, error } = useCreateEventForm();
 
+    // The cards preview the title from the details step; without one they show just the theme name.
+    const previewTitle = title.trim() || undefined;
     const options: ThemeRadioOption[] = [
         {
             id: 'none',
@@ -54,7 +56,14 @@ export function EventThemeStep() {
                 <p className="mt-4 text-xs text-rose-500">{toErrorMessage(themePresetsError)}</p>
             )}
             {!isThemePresetsLoading && !themePresetsError && (
-                <ThemePresetRadioGroup options={options} labelledBy={headingId} disabled={false} size="large" onSelectAction={onSelectThemePreset} />
+                <ThemePresetRadioGroup
+                    options={options}
+                    labelledBy={headingId}
+                    disabled={false}
+                    size="large"
+                    previewTitle={previewTitle}
+                    onSelectAction={onSelectThemePreset}
+                />
             )}
 
             {error && (

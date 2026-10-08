@@ -70,12 +70,12 @@ describe('ThemePresetRadioGroup fonts and title colour', () => {
         expect(label).toHaveClass('event-heading', 'text-event-title');
     });
 
-    it('puts a title colour only on the preset background it was checked against', () => {
+    it('puts the label on the card with no background strip, centred', () => {
         renderGroup([preset('a', { titleColor: '#7A2E3B' })]);
         const label = labelOf('Preset a');
-        const background = label.closest('.bg-event') as HTMLElement;
-        expect(background).not.toBeNull();
-        expect(background.style.getPropertyValue('--event-bg')).toBe('#BFE6E2');
+        expect(label.closest('.bg-event')).toBeNull();
+        expect(label).toHaveClass('text-center');
+        expect(label.parentElement).toHaveClass('items-center', 'justify-center');
     });
 
     it('keeps a card without a title colour or font on the default look', () => {
@@ -103,20 +103,33 @@ describe('ThemePresetRadioGroup fonts and title colour', () => {
         expect(screen.getByRole('radio', { name: 'Preset a' })).toBeInTheDocument();
     });
 
-    it('pads the strip and gives the label room for script fonts and accents', () => {
+    it('gives the label room for script fonts and accents', () => {
         renderGroup([preset('a', { titleColor: '#7A2E3B' })]);
-        const label = labelOf('Preset a');
-        expect(label.closest('.bg-event')).toHaveClass('px-2', 'py-1');
-        expect(label).toHaveClass('leading-normal');
+        expect(labelOf('Preset a')).toHaveClass('leading-normal', 'py-1');
     });
 
-    it('keeps ink on the strip for a title colour below 4.5:1 (only 3:1 is guaranteed; the label is small text)', () => {
-        // #A05A7A on #BFE6E2 is about 3.7:1.
-        renderGroup([preset('a', { titleColor: '#A05A7A' })]);
-        const label = labelOf('Preset a');
-        expect(label.closest('.bg-event')).not.toBeNull();
-        expect(label).toHaveClass('text-ink');
-        expect(label).not.toHaveClass('text-event-title');
+    it('keeps a pale title colour', () => {
+        renderGroup([preset('a', { titleColor: '#BFE6FF' })]);
+        expect(labelOf('Preset a')).toHaveClass('text-event-title');
+    });
+
+    it("previews the event title in the theme's font, with the theme name below in the normal font", () => {
+        render(
+            <ThemePresetRadioGroup
+                options={[preset('a', { headingFont: SCRIPT, titleColor: '#7A2E3B' })]}
+                labelledBy="heading"
+                disabled={false}
+                previewTitle="Anna's baptism"
+                onSelectAction={vi.fn()}
+            />,
+        );
+        const title = screen.getByText("Anna's baptism");
+        expect(title).toHaveClass('event-heading', 'text-event-title');
+        expect(title.closest('[data-theme-font]')).not.toBeNull();
+        const name = screen.getByText('Preset a');
+        expect(name).not.toHaveClass('event-heading');
+        expect(name.closest('[data-theme-font]')).toBeNull();
+        expect(screen.getByRole('radio', { name: 'Preset a' })).toBeInTheDocument();
     });
 
     it.each([null, 'pink'])('treats a valid title and font on an unusable background (%s) as no theme', (backgroundColor) => {

@@ -11,4 +11,8 @@ describe('adminErrorMessageKey', () => {
     it('names a module the event type does not support instead of a generic error (3006)', () => {
         expect(adminErrorMessageKey(new ApiError(400, { errorCode: 3006 }))).toBe('invalidModuleKey');
     });
+
+    it('points mark-paid at the missing partner details instead of a generic error (5096)', () => {
+        expect(adminErrorMessageKey(new ApiError(409, { errorCode: 5096 }))).toBe('collaboratorPayoutDetailsIncomplete');
+    });
 });
