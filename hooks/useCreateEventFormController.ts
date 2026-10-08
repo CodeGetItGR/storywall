@@ -29,6 +29,8 @@ import type {
 import { navigateToCheckout } from '@/lib/billing';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import {
+    CREATE_EVENT_OPTION_PARAM,
+    CREATE_EVENT_PLAN_PARAM,
     CREATE_EVENT_RUN_PARAM,
     CREATE_EVENT_STEPS,
     CREATE_EVENT_TYPE_PARAM,
@@ -63,7 +65,10 @@ export function useCreateEventFormController(): CreateEventFormValue {
     // defense-in-depth backstop for anyone who still reaches this route.)
     const isEmailVerified = user?.emailVerified === true;
     const createEvent = useCreateEvent();
-    const durationPicks = useDurationPicks();
+    // A link may pick the plan and its duration (?plan=, ?option=); a code or id not on sale falls back.
+    const [linkedPlanCode] = useState(() => searchParams.get(CREATE_EVENT_PLAN_PARAM) ?? '');
+    const [linkedOptionId] = useState(() => searchParams.get(CREATE_EVENT_OPTION_PARAM));
+    const durationPicks = useDurationPicks(linkedPlanCode && linkedOptionId ? { [linkedPlanCode]: linkedOptionId } : {});
     const previewCreateEventCode = usePreviewCreateEventCode();
     const { data: appConfig, refetch: refetchAppConfig } = useAppConfig();
     const toErrorMessage = useApiErrorMessage();
@@ -79,7 +84,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
     const [locationAddress, setLocationAddress] = useState('');
     const [mapsUrl, setMapsUrl] = useState('');
     const [error, setError] = useState<string | null>(null);
-    const [selectedPlanCode, setSelectedPlanCode] = useState('');
+    const [selectedPlanCode, setSelectedPlanCode] = useState(linkedPlanCode);
     const [themePresetId, setThemePresetId] = useState<string | null>(null);
     const [createdDraftEventId, setCreatedDraftEventId] = useState<string | null>(null);
     // What the draft was created with, so a duration changed afterwards is
@@ -185,16 +190,17 @@ export function useCreateEventFormController(): CreateEventFormValue {
     }, [refetchAppConfig, step]);
 
     useEffect(() => {
-        // Until the config loads no step past the type one looks reachable: a link straight to a
-        // later step (the landing pricing opens on the plan step) must not be sent back meanwhile.
-        if (!appConfig) return;
+        // Until the config and the type's plans load, no step past the type (or plan) one looks
+        // reachable: a link straight to a later step (a landing plan card opens on details) must not
+        // be sent back meanwhile.
+        if (!appConfig || planTiersQuery.isLoading) return;
         if (CREATE_EVENT_STEPS.indexOf(step) > CREATE_EVENT_STEPS.indexOf(reachableStep)) {
             router.replace(routes.events.new({ step: reachableStep, run }));
         } else if (step === 'theme' && !themeStepAvailable) {
             // Nothing to pick for this plan or type, or the list failed: skip ahead.
             router.replace(routes.events.new({ step: 'overview', run }));
         }
-    }, [appConfig, reachableStep, router, run, step, themeStepAvailable]);
+    }, [appConfig, planTiersQuery.isLoading, reachableStep, router, run, step, themeStepAvailable]);
 
     const onSelectEventType = useCallback(
         (type: EventTypeConvention) => {

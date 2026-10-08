@@ -41,6 +41,9 @@ export const CREATE_EVENT_RUN_PARAM = 'run';
 
 // The event type a link opens the wizard on, as an event type slug (see lib/eventTypeSlug.ts).
 export const CREATE_EVENT_TYPE_PARAM = 'type';
+// The plan (its code) and duration (its coverage option id) a link opens the wizard with.
+export const CREATE_EVENT_PLAN_PARAM = 'plan';
+export const CREATE_EVENT_OPTION_PARAM = 'option';
 
 // The wizard's event type among the enabled ones: the one picked, else the one the link asked for,
 // else WEDDING, else the first. WEDDING while the enabled types haven't loaded.

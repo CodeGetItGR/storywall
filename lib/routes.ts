@@ -42,7 +42,8 @@ export const routes = {
     profile: '/profile',
     events: {
         // run: the wizard run the entry belongs to (see CREATE_EVENT_RUN_PARAM).
-        new: (params: { step?: string | null; run?: string | null; type?: string | null } = {}) => withQuery('/events/new', params),
+        new: (params: { step?: string | null; run?: string | null; type?: string | null; plan?: string | null; option?: string | null } = {}) =>
+            withQuery('/events/new', params),
         manage: (eventId: string, params: { tab?: ManageTab | null; section?: string | null; cancelled?: boolean | null } = {}) =>
             withQuery(`${eventBasePath(eventId)}/manage`, params),
         // Share/join QR link management — pulled out of the Members section the

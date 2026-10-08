@@ -12,15 +12,17 @@ vi.mock('next/navigation', () => ({
 afterEach(() => window.history.replaceState(null, '', '/'));
 
 describe('useCreateEventRun', () => {
-    it('adds a run id, keeping the step and the linked event type', () => {
-        nav.search = 'step=type&type=baby-shower';
+    it('adds a run id, keeping the step and the linked type, plan and duration', () => {
+        nav.search = 'step=details&type=baby-shower&plan=START&option=o3';
         window.history.replaceState(null, '', `/events/new?${nav.search}`);
 
         renderHook(() => useCreateEventRun());
 
         const params = new URLSearchParams(window.location.search);
-        expect(params.get('step')).toBe('type');
+        expect(params.get('step')).toBe('details');
         expect(params.get('type')).toBe('baby-shower');
+        expect(params.get('plan')).toBe('START');
+        expect(params.get('option')).toBe('o3');
         expect(params.get('run')).toMatch(/\w+/);
     });
 });
