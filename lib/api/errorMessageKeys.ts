@@ -70,6 +70,7 @@ export type ApiErrorMessageKey =
     | 'eventSessionMainAlreadyExists'
     | 'eventCoHostLimitExceeded'
     | 'invalidEventType'
+    | 'invalidModuleKey'
     | 'invalidPlanTierScope'
     | 'forbidden'
     | 'giftAlreadyClaimed'
@@ -384,6 +385,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.UNSUPPORTED_MEDIA_FORMAT]: 'unsupportedMediaFormat',
     [ERROR_CODES.TOO_MANY_FILES]: 'tooManyFiles',
     [ERROR_CODES.VALIDATION_FAILED]: 'validationFailed',
+    [ERROR_CODES.INVALID_MODULE_KEY]: 'invalidModuleKey',
     [ERROR_CODES.INVALID_PLAN_TIER_SCOPE]: 'invalidPlanTierScope',
     [ERROR_CODES.WEBHOOK_ALREADY_PROCESSED]: 'webhookAlreadyProcessed',
     [ERROR_CODES.WEBHOOK_NOT_REPLAYABLE]: 'webhookNotReplayable',
