@@ -8,20 +8,30 @@ const form = vi.hoisted(() => ({
         step: 'type',
         selectedEventType: 'WEDDING',
         selectedPlan: undefined as { name: string } | undefined,
+        selectedOption: null as { months: number } | null,
         goToType: () => {},
         goToPlan: () => {},
     },
 }));
 
-vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
+vi.mock('next-intl', () => ({
+    useTranslations: () => (key: string, values?: { count: number }) => (values ? `${values.count} months` : key),
+}));
 vi.mock('@/hooks/useLocalizedAppEventTypeCopy', () => ({ useLocalizedAppEventTypeCopy: () => () => ({ name: 'Wedding' }) }));
 vi.mock('@/providers/createEvent/CreateEventFormContext', () => ({ useCreateEventForm: () => form.value }));
 
 const goToType = vi.fn();
 const goToPlan = vi.fn();
 
-function summaryAt(step: string, planName?: string) {
-    form.value = { step, selectedEventType: 'WEDDING', selectedPlan: planName ? { name: planName } : undefined, goToType, goToPlan };
+function summaryAt(step: string, planName?: string, months?: number) {
+    form.value = {
+        step,
+        selectedEventType: 'WEDDING',
+        selectedPlan: planName ? { name: planName } : undefined,
+        selectedOption: months ? { months } : null,
+        goToType,
+        goToPlan,
+    };
     return renderHook(() => useCreateEventSelectionSummary()).result.current;
 }
 
@@ -30,9 +40,10 @@ describe('useCreateEventSelectionSummary', () => {
         expect(summaryAt('plan', 'START')).toEqual({ label: 'Wedding', editLabel: 'changeType', onEdit: goToType });
     });
 
-    it('names the type and plan on details and theme, editing them on the plan step', () => {
-        expect(summaryAt('details', 'START')).toEqual({ label: 'Wedding · START', editLabel: 'changePlan', onEdit: goToPlan });
-        expect(summaryAt('theme', 'STORY')?.label).toBe('Wedding · STORY');
+    it('names the type, plan and duration on details and theme, editing them on the plan step', () => {
+        expect(summaryAt('details', 'START', 3)).toEqual({ label: 'Wedding · START · 3 months', editLabel: 'changePlan', onEdit: goToPlan });
+        expect(summaryAt('theme', 'STORY', 6)?.label).toBe('Wedding · STORY · 6 months');
+        expect(summaryAt('details', 'START')?.label).toBe('Wedding · START');
     });
 
     it('shows nothing on the type and overview steps, or before a plan is known', () => {
