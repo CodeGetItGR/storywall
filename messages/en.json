@@ -3353,7 +3353,14 @@
             "editTitle": "Edit event type",
             "empty": "No event types to show.",
             "confirmTitle": "Save {eventType}?",
-            "confirmBody": "This updates the platform event type registry. Disabling a type removes it from the event-creation picker after config refresh."
+            "confirmBody": "This updates the platform event type registry. Disabling a type removes it from the event-creation picker after config refresh.",
+            "image": "Card image",
+            "imageHint": "Shown on this type's card when creating an event.",
+            "imageChoose": "Upload image",
+            "imageReplace": "Replace image",
+            "imageRemove": "Remove image",
+            "imageRemoveTitle": "Remove the card image?",
+            "imageRemoveBody": "The card goes back to its default look."
         },
         "landingCategories": {
             "notice": "Tabs of the landing page's pricing section. A tab with no plan to show is hidden there.",

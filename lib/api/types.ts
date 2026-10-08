@@ -272,6 +272,8 @@ export interface AppEventTypeResponseDto {
     accentToken: EventTypeAccentToken;
     isEnabled: boolean;
     sortOrder: number;
+    // Admin-uploaded card image for the create-event picker; null → no uploaded image.
+    imageUrl: string | null;
 }
 
 export interface EventTypeVoicePack {
@@ -307,6 +309,7 @@ export interface PlatformEventTypeResponseDto {
     voice: EventTypeVoicePack;
     isEnabled: boolean;
     sortOrder: number;
+    imageUrl: string | null;
 }
 
 export interface AppRsvpConfigDto {

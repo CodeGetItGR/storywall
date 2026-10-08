@@ -404,6 +404,7 @@ export const endpoints = {
         platformEventTypes: {
             list: '/api/admin/platform-event-types',
             byKey: (eventTypeKey: string) => `/api/admin/platform-event-types/${eventTypeKey}`,
+            image: (eventTypeKey: string) => `/api/admin/platform-event-types/${eventTypeKey}/image`,
         },
         landingCategories: {
             list: '/api/admin/landing-categories',
