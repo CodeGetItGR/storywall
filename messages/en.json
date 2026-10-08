@@ -1016,6 +1016,7 @@
             "back": "Back"
         },
         "selection": {
+            "change": "Change",
             "changeType": "Change event type",
             "changePlan": "Change plan"
         },

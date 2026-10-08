@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
 import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 
-export type CreateEventSelectionSummary = { label: string; editLabel: string; onEdit: () => void };
+export type CreateEventSelectionSummary = { label: string; changeLabel: string; editLabel: string; onEdit: () => void };
 
 // What the earlier steps picked, for the steps where it is out of sight: the event type on the
 // plan step; the type, plan and duration on details and theme. Null on the type step, and on the overview,
@@ -16,10 +16,10 @@ export function useCreateEventSelectionSummary(): CreateEventSelectionSummary | 
     const { step, selectedEventType, selectedPlan, selectedOption, goToType, goToPlan } = useCreateEventForm();
     const eventTypeName = useLocalizedAppEventTypeCopy()(selectedEventType).name;
 
-    if (step === 'plan') return { label: eventTypeName, editLabel: t('changeType'), onEdit: goToType };
+    if (step === 'plan') return { label: eventTypeName, changeLabel: t('change'), editLabel: t('changeType'), onEdit: goToType };
     if ((step === 'details' || step === 'theme') && selectedPlan) {
         const parts = [eventTypeName, selectedPlan.name, ...(selectedOption ? [tDurations('months', { count: selectedOption.months })] : [])];
-        return { label: parts.join(' · '), editLabel: t('changePlan'), onEdit: goToPlan };
+        return { label: parts.join(' · '), changeLabel: t('change'), editLabel: t('changePlan'), onEdit: goToPlan };
     }
     return null;
 }

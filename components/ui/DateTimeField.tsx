@@ -20,7 +20,8 @@ interface DateTimeFieldProps {
 }
 
 // A date input and a time input side by side, read and written as one
-// datetime-local value.
+// datetime-local value. Both keep extra room on the right for the native picker
+// arrow or icon, which Android draws right at the padding edge.
 export function DateTimeField({ value, onChange, name, min, max, required, disabled, inputClassName, ...aria }: DateTimeFieldProps) {
     const t = useTranslations('Common');
     const field = useDateTimeField({ value, onChange, min, max });
@@ -36,7 +37,7 @@ export function DateTimeField({ value, onChange, name, min, max, required, disab
                 required={required}
                 disabled={disabled}
                 aria-invalid={aria['aria-invalid']}
-                className={cn(inputClassName, 'min-w-0 flex-3')}
+                className={cn(inputClassName, 'min-w-0 flex-3 pr-6')}
             />
             <input
                 type="time"
@@ -48,7 +49,7 @@ export function DateTimeField({ value, onChange, name, min, max, required, disab
                 disabled={disabled}
                 aria-label={t('time')}
                 aria-invalid={aria['aria-invalid']}
-                className={cn(inputClassName, 'min-w-0 flex-2')}
+                className={cn(inputClassName, 'min-w-0 flex-2 pr-6')}
             />
             {name && <input type="hidden" name={name} value={field.combined} />}
         </div>

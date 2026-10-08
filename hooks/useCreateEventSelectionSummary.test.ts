@@ -37,11 +37,16 @@ function summaryAt(step: string, planName?: string, months?: number) {
 
 describe('useCreateEventSelectionSummary', () => {
     it('names the event type on the plan step, editing it on the type step', () => {
-        expect(summaryAt('plan', 'START')).toEqual({ label: 'Wedding', editLabel: 'changeType', onEdit: goToType });
+        expect(summaryAt('plan', 'START')).toEqual({ label: 'Wedding', changeLabel: 'change', editLabel: 'changeType', onEdit: goToType });
     });
 
     it('names the type, plan and duration on details and theme, editing them on the plan step', () => {
-        expect(summaryAt('details', 'START', 3)).toEqual({ label: 'Wedding · START · 3 months', editLabel: 'changePlan', onEdit: goToPlan });
+        expect(summaryAt('details', 'START', 3)).toEqual({
+            label: 'Wedding · START · 3 months',
+            changeLabel: 'change',
+            editLabel: 'changePlan',
+            onEdit: goToPlan,
+        });
         expect(summaryAt('theme', 'STORY', 6)?.label).toBe('Wedding · STORY · 6 months');
         expect(summaryAt('details', 'START')?.label).toBe('Wedding · START');
     });

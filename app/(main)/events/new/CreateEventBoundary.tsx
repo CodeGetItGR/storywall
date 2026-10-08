@@ -94,9 +94,6 @@ function CreateEventFormBody() {
                 {/* Form Shell */}
                 <div ref={formShellRef} className="mt-3 min-h-0 flex-1 overflow-y-auto p-5">
                     <form id={formId} onSubmit={handleSubmit}>
-                        {/* Earlier picks */}
-                        <EventCreateSelectionSummary />
-
                         {/* Subtitle */}
                         <h2 className="mb-5 text-lg font-bold text-ink">
                             {step === 'type' && t('steps.typeSubtitle')}
@@ -105,6 +102,9 @@ function CreateEventFormBody() {
                             {step === 'theme' && t('steps.themeSubtitle')}
                             {step === 'overview' && t('steps.overviewSubtitle')}
                         </h2>
+
+                        {/* Earlier picks */}
+                        <EventCreateSelectionSummary />
 
                         {step === 'type' && <EventTypeStep />}
 

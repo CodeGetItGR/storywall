@@ -1142,6 +1142,7 @@
             "back": "Πίσω"
         },
         "selection": {
+            "change": "Αλλαγή",
             "changeType": "Αλλαγή τύπου",
             "changePlan": "Αλλαγή πλάνου"
         },
