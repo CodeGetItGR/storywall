@@ -45,7 +45,7 @@ export function ThemePresetPreview({
                     <div className="relative w-full px-2">
                         <div className="aspect-16/11 w-full rounded-[1.5rem] border border-dashed border-event-card-line" aria-hidden="true" />
                         {/* Same classes as Banner.tsx's illustration-mode title; keep them in step. */}
-                        <h1 className="event-heading px-5 pt-3 text-center alegreya-light text-2xl text-event-title">{title}</h1>
+                        <h1 className="event-heading px-5 pt-3 text-center alegreya-light text-4xl leading-tight text-balance text-event-title">{title}</h1>
                     </div>
                 )}
                 {/* Sample posts */}

@@ -31,6 +31,7 @@ export function ThemePresetRadioGroup({
     disabled,
     savingPresetId,
     size = 'default',
+    previewTitle,
     onSelectAction,
 }: {
     options: ThemeRadioOption[];
@@ -38,8 +39,10 @@ export function ThemePresetRadioGroup({
     disabled: boolean;
     // The preset id being saved (null for "No theme"), or undefined when nothing is saving.
     savingPresetId?: string | null;
-    // `large`: two cards per row with bigger art, for the narrow event-creation column.
+    // `large`: two cards per row with tight gaps and bigger art, for the narrow event-creation column.
     size?: 'default' | 'large';
+    // The event's title, previewed in each theme's font with the theme name below it.
+    previewTitle?: string;
     onSelectAction: (presetId: string | null) => void;
 }) {
     // The option last focused; the tab stop follows it.
@@ -76,7 +79,7 @@ export function ThemePresetRadioGroup({
             role="radiogroup"
             aria-labelledby={labelledBy}
             onKeyDown={handleKeyDown}
-            className={cn('mt-4 grid grid-cols-2 gap-4', size === 'default' && 'sm:grid-cols-3 xl:grid-cols-4')}
+            className={cn('mt-4 grid grid-cols-2', size === 'default' ? 'gap-4 sm:grid-cols-3 xl:grid-cols-4' : '-mx-2 gap-4')}
         >
             {fonts.map((font) => (
                 <ThemeFontFace key={font.key} font={font} />
@@ -96,6 +99,7 @@ export function ThemePresetRadioGroup({
                     disabled={disabled}
                     tabbable={option.id === tabbableId}
                     size={size}
+                    previewTitle={previewTitle}
                     onSelectAction={onSelectAction}
                     onFocusAction={setFocusedId}
                 />
