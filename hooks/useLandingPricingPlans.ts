@@ -3,60 +3,64 @@
 import { useMemo } from 'react';
 
 import { useAppConfig } from '@/hooks/useAppConfig';
+import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { usePlanMarketingCopy } from '@/hooks/usePlanMarketingCopy';
-import type { PlanTierResponseDto } from '@/lib/api/types';
+import type { EventTypeConvention } from '@/lib/api/types';
 import { resolveLandingCategoryPlans } from '@/lib/landingCategories';
-import { buildLandingPlan, type LandingPlan } from '@/lib/landingPricing';
+import { buildLandingPlan, landingEventSlug, type LandingPlan } from '@/lib/landingPricing';
 
-export type LandingPricingTab = { id: string; label: string; description: string; plans: LandingPlan[] };
-type LandingPricingTabs = { tabs: LandingPricingTab[] | null; defaultTabId: string | null };
+// One event type in the landing pricing picker. id is its LANDING_EVENT_PARAM value.
+export type LandingPricingEventType = { id: string; eventTypeKey: EventTypeConvention; label: string; plans: LandingPlan[] };
+// A landing category: only groups its event types in the picker. Each type shows its own plans.
+export type LandingPricingGroup = { id: string; label: string; items: LandingPricingEventType[] };
+type LandingPricingPlans = { groups: LandingPricingGroup[] | null; defaultEventTypeId: string | null };
 
-// Tabs from /api/config.landingCategories, in order; a tab with no plan to show is left out. The
-// default tab is the one marked isDefault if it survived, else the first.
-export function useLandingPricingPlans(): LandingPricingTabs {
+// Event types from /api/config.landingCategories, grouped by category in their order; a type with no
+// plan to show, and a category left with none, are left out. A type listed in two categories shows
+// in the first. The default is the first type of the category marked isDefault if it survived, else
+// the first type.
+export function useLandingPricingPlans(): LandingPricingPlans {
     const { data } = useAppConfig();
     const { copy, moduleName } = usePlanMarketingCopy();
     const localizedText = useLocalizedText();
+    const eventTypeCopy = useLocalizedAppEventTypeCopy();
 
     return useMemo(() => {
-        if (!data) return { tabs: null, defaultTabId: null };
+        if (!data) return { groups: null, defaultEventTypeId: null };
 
-        const tabs = (data.landingCategories ?? [])
+        const seen = new Set<EventTypeConvention>();
+        const groups = (data.landingCategories ?? [])
             .map((category) => {
-                // Only plans that get a card come back (see isLandingPlanOnSale).
-                const { plans } = resolveLandingCategoryPlans(data.planTiers, category.eventTypeKeys, data.memberRolesByEventType);
-                // "Everything in X" rolls up the previous card of the same event type: the first
-                // card of each type lists its own features in full. A merged shared-group card
-                // counts as its representative's type, which is the plan shown.
-                const landingPlans: LandingPlan[] = [];
-                for (const [index, plan] of plans.entries()) {
-                    const sameTypeBefore: PlanTierResponseDto[] = plans
-                        .slice(0, index)
-                        .filter((previousPlan) => previousPlan.eventTypeKey === plan.eventTypeKey);
-                    const landingPlan = buildLandingPlan(
-                        plan,
-                        sameTypeBefore.at(-1),
-                        data.modules,
-                        data.media,
-                        moduleName,
-                        copy,
-                        sameTypeBefore.flatMap((previousPlan) => previousPlan.moduleKeys),
-                        data.memberRolesByEventType,
-                    );
-                    if (landingPlan !== null) landingPlans.push(landingPlan);
-                }
-                return {
-                    id: category.id,
-                    isDefault: category.isDefault,
-                    label: localizedText(category.name),
-                    description: localizedText(category.description),
-                    plans: landingPlans,
-                };
+                const items = category.eventTypeKeys.flatMap((eventTypeKey): LandingPricingEventType[] => {
+                    if (seen.has(eventTypeKey)) return [];
+                    seen.add(eventTypeKey);
+                    // Only plans that get a card come back (see isLandingPlanOnSale).
+                    const { plans } = resolveLandingCategoryPlans(data.planTiers, [eventTypeKey], data.memberRolesByEventType);
+                    // "Everything in X" rolls up the previous card: the first card lists its own
+                    // features in full.
+                    const landingPlans = plans.flatMap((plan, index) => {
+                        const before = plans.slice(0, index);
+                        const landingPlan = buildLandingPlan(
+                            plan,
+                            before.at(-1),
+                            data.modules,
+                            data.media,
+                            moduleName,
+                            copy,
+                            before.flatMap((previousPlan) => previousPlan.moduleKeys),
+                            data.memberRolesByEventType,
+                        );
+                        return landingPlan === null ? [] : [landingPlan];
+                    });
+                    if (landingPlans.length === 0) return [];
+                    return [{ id: landingEventSlug(eventTypeKey), eventTypeKey, label: eventTypeCopy(eventTypeKey).name, plans: landingPlans }];
+                });
+                return { id: category.id, isDefault: category.isDefault, label: localizedText(category.name), items };
             })
-            .filter((tab) => tab.plans.length > 0);
+            .filter((group) => group.items.length > 0);
 
-        const defaultTabId = (tabs.find((tab) => tab.isDefault) ?? tabs[0])?.id ?? null;
-        return { tabs: tabs.map(({ isDefault: _isDefault, ...tab }) => tab), defaultTabId };
-    }, [data, copy, moduleName, localizedText]);
+        const defaultEventTypeId = (groups.find((group) => group.isDefault) ?? groups[0])?.items[0]?.id ?? null;
+        return { groups: groups.map(({ isDefault: _isDefault, ...group }) => group), defaultEventTypeId };
+    }, [data, copy, moduleName, localizedText, eventTypeCopy]);
 }

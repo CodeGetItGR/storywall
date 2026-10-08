@@ -57,7 +57,9 @@ function planTier(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto 
         moduleConfigs: null,
         eventTypeKey: 'WEDDING',
         sharedGroupKey: null,
-        initialOptions: [{ id: 'opt-3', kind: 'INITIAL', months: 3, priceAmountMinor: 7900, promoPriceAmountMinor: null, sortOrder: 0, active: true }],
+        initialOptions: [
+            { id: 'opt-3', kind: 'INITIAL', months: 3, priceAmountMinor: 7900, promoPriceAmountMinor: null, sortOrder: 0, active: true },
+        ],
         extensionOptions: [],
         ...overrides,
     };
@@ -133,10 +135,17 @@ const wrapper = makeWrapper('en');
 const greekWrapper = makeWrapper('el');
 
 describe('useLandingPricingPlans', () => {
-    it('builds tabs from the config categories and hides an empty one', async () => {
+    it('lists each event type with its own plans, grouped by category, and hides an empty type and category', async () => {
         const config = makeConfig();
+        config.translations = {
+            eventTypes: {
+                WEDDING: { name: { en: 'Wedding', el: 'Γάμος' }, tagline: {}, voice: {} as never },
+                SOCIAL_EVENT: { name: { en: 'Party' }, tagline: {}, voice: {} as never },
+                REUNION: { name: { en: 'Reunion' }, tagline: {}, voice: {} as never },
+            },
+        };
         config.landingCategories = [
-            { id: 'wed', name: { en: 'Weddings', el: 'Γάμοι' }, description: {}, isDefault: true, eventTypeKeys: ['WEDDING'] },
+            { id: 'wed', name: { en: 'Weddings', el: 'Γάμοι' }, description: {}, isDefault: true, eventTypeKeys: ['WEDDING', 'BAPTISM'] },
             { id: 'empty', name: { en: 'Empty' }, description: {}, isDefault: false, eventTypeKeys: ['BIRTHDAY'] },
             { id: 'vip', name: { en: 'VIP' }, description: { en: 'Parties' }, isDefault: false, eventTypeKeys: ['SOCIAL_EVENT', 'REUNION'] },
         ];
@@ -144,18 +153,25 @@ describe('useLandingPricingPlans', () => {
 
         const { result } = renderHook(() => useLandingPricingPlans(), { wrapper });
 
-        await waitFor(() => expect(result.current.tabs).not.toBeNull());
-        expect(result.current.tabs?.map((tab) => tab.id)).toEqual(['wed', 'vip']);
-        expect(result.current.tabs?.[0]).toMatchObject({ label: 'Weddings', description: '' });
-        expect(result.current.tabs?.[0].plans[0].durations).toEqual([{ id: 'opt-3', months: 3, price: '79€', listPrice: null }]);
-        expect(result.current.tabs?.[1]).toMatchObject({ label: 'VIP', description: 'Parties' });
-        expect(result.current.tabs?.[1].plans.map((plan) => plan.code)).toEqual(['VIP', 'REUNION']);
-        // REUNION is the first card of its type: it rolls up nothing from SOCIAL_EVENT's VIP.
-        expect(result.current.tabs?.[1].plans[1].features).toEqual(['Gallery']);
-        expect(result.current.defaultTabId).toBe('wed');
+        await waitFor(() => expect(result.current.groups).not.toBeNull());
+        const groups = result.current.groups ?? [];
+        expect(groups.map((group) => [group.id, group.label, group.items.map((item) => [item.id, item.label])])).toEqual([
+            ['wed', 'Weddings', [['wedding', 'Wedding']]],
+            [
+                'vip',
+                'VIP',
+                [
+                    ['social-event', 'Party'],
+                    ['reunion', 'Reunion'],
+                ],
+            ],
+        ]);
+        expect(groups[0].items[0].plans[0].durations).toEqual([{ id: 'opt-3', months: 3, price: '79€', listPrice: null }]);
+        expect(groups[1].items.map((item) => item.plans.map((plan) => plan.code))).toEqual([['VIP'], ['REUNION']]);
+        expect(result.current.defaultEventTypeId).toBe('wedding');
     });
 
-    it('falls back to the first tab when the default one is empty, and to English labels', async () => {
+    it('falls back to the first type when the default category is empty, and to English labels', async () => {
         const config = makeConfig();
         config.landingCategories = [
             { id: 'empty', name: { en: 'Empty' }, description: {}, isDefault: true, eventTypeKeys: ['BIRTHDAY'] },
@@ -165,9 +181,24 @@ describe('useLandingPricingPlans', () => {
 
         const { result } = renderHook(() => useLandingPricingPlans(), { wrapper: greekWrapper });
 
-        await waitFor(() => expect(result.current.tabs).not.toBeNull());
-        expect(result.current.defaultTabId).toBe('vip');
-        expect(result.current.tabs?.[0].label).toBe('VIP');
+        await waitFor(() => expect(result.current.groups).not.toBeNull());
+        expect(result.current.defaultEventTypeId).toBe('social-event');
+        expect(result.current.groups?.[0].label).toBe('VIP');
+    });
+
+    it('shows a type listed in two categories only in the first', async () => {
+        const config = makeConfig();
+        config.landingCategories = [
+            { id: 'a', name: { en: 'A' }, description: {}, isDefault: false, eventTypeKeys: ['REUNION'] },
+            { id: 'b', name: { en: 'B' }, description: {}, isDefault: true, eventTypeKeys: ['REUNION', 'WEDDING'] },
+        ];
+        publicGet.mockResolvedValue(config);
+
+        const { result } = renderHook(() => useLandingPricingPlans(), { wrapper });
+
+        await waitFor(() => expect(result.current.groups).not.toBeNull());
+        expect(result.current.groups?.map((group) => group.items.map((item) => item.id))).toEqual([['reunion'], ['wedding']]);
+        expect(result.current.defaultEventTypeId).toBe('wedding');
     });
 
     it('rolls a card up into the previous card shown, skipping a plan that is not on sale', async () => {
@@ -182,12 +213,13 @@ describe('useLandingPricingPlans', () => {
 
         const { result } = renderHook(() => useLandingPricingPlans(), { wrapper });
 
-        await waitFor(() => expect(result.current.tabs).not.toBeNull());
-        expect(result.current.tabs?.[0].plans.map((plan) => plan.code)).toEqual(['A', 'C']);
-        expect(result.current.tabs?.[0].plans[1].features[0]).toBe('Everything in A');
+        await waitFor(() => expect(result.current.groups).not.toBeNull());
+        const plans = result.current.groups?.[0].items[0].plans ?? [];
+        expect(plans.map((plan) => plan.code)).toEqual(['A', 'C']);
+        expect(plans[1].features[0]).toBe('Everything in A');
     });
 
-    it('rolls a card up only into the previous card of the same event type', async () => {
+    it('gives types in the same category their own plans, without rolling up across types', async () => {
         const config = makeConfig();
         config.modules = [
             { id: 'm1', moduleKey: 'gallery', name: 'Gallery', description: null, isEnabled: true, sortOrder: 0 },
@@ -203,55 +235,54 @@ describe('useLandingPricingPlans', () => {
 
         const { result } = renderHook(() => useLandingPricingPlans(), { wrapper });
 
-        await waitFor(() => expect(result.current.tabs).not.toBeNull());
-        const [basic, gold, reunionBasic] = result.current.tabs?.[0].plans ?? [];
-        expect(basic.features).toEqual(['Gallery']);
-        expect(gold.features).toEqual(['Everything in Basic', 'RSVP']);
-        expect(reunionBasic.code).toBe('R_BASIC');
-        expect(reunionBasic.features).toEqual(['Gallery']);
-        expect(reunionBasic.includedFeatures).toBeUndefined();
+        await waitFor(() => expect(result.current.groups).not.toBeNull());
+        const [social, reunion] = result.current.groups?.[0].items ?? [];
+        expect(social.plans.map((plan) => plan.features)).toEqual([['Gallery'], ['Everything in Basic', 'RSVP']]);
+        expect(reunion.plans.map((plan) => plan.code)).toEqual(['R_BASIC']);
+        expect(reunion.plans[0].features).toEqual(['Gallery']);
+        expect(reunion.plans[0].includedFeatures).toBeUndefined();
     });
 
-    it('keeps the same tabs across renders while the config is unchanged', async () => {
+    it('keeps the same groups across renders while the config is unchanged', async () => {
         const config = makeConfig();
         config.landingCategories = [{ id: 'wed', name: { en: 'Weddings' }, description: {}, isDefault: true, eventTypeKeys: ['WEDDING'] }];
         publicGet.mockResolvedValue(config);
 
         const { result, rerender } = renderHook(() => useLandingPricingPlans(), { wrapper });
 
-        await waitFor(() => expect(result.current.tabs).not.toBeNull());
-        const tabs = result.current.tabs;
+        await waitFor(() => expect(result.current.groups).not.toBeNull());
+        const groups = result.current.groups;
         rerender();
-        expect(result.current.tabs).toBe(tabs);
+        expect(result.current.groups).toBe(groups);
     });
 
-    it('treats a config without landingCategories as no tabs', async () => {
+    it('treats a config without landingCategories as no groups', async () => {
         const config = makeConfig();
         (config as { landingCategories?: unknown }).landingCategories = undefined;
         publicGet.mockResolvedValue(config);
 
         const { result } = renderHook(() => useLandingPricingPlans(), { wrapper });
 
-        await waitFor(() => expect(result.current.tabs).toEqual([]));
+        await waitFor(() => expect(result.current.groups).toEqual([]));
     });
 
-    it('returns no tabs when no category has plans', async () => {
+    it('returns no groups when no category has plans', async () => {
         const config = makeConfig();
         config.landingCategories = [];
         publicGet.mockResolvedValue(config);
 
         const { result } = renderHook(() => useLandingPricingPlans(), { wrapper });
 
-        await waitFor(() => expect(result.current.tabs).toEqual([]));
-        expect(result.current.defaultTabId).toBeNull();
+        await waitFor(() => expect(result.current.groups).toEqual([]));
+        expect(result.current.defaultEventTypeId).toBeNull();
     });
 
-    it('returns null tabs before the config has loaded', () => {
+    it('returns null groups before the config has loaded', () => {
         publicGet.mockReturnValue(new Promise(() => {}));
 
         const { result } = renderHook(() => useLandingPricingPlans(), { wrapper });
 
-        expect(result.current.tabs).toBeNull();
-        expect(result.current.defaultTabId).toBeNull();
+        expect(result.current.groups).toBeNull();
+        expect(result.current.defaultEventTypeId).toBeNull();
     });
 });

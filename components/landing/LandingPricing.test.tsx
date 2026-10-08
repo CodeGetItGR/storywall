@@ -1,11 +1,13 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { LandingPricing } from '@/components/landing/LandingPricing';
-import type { LandingPricingTab } from '@/hooks/useLandingPricingPlans';
+import type { LandingPricingGroup } from '@/hooks/useLandingPricingPlans';
 import type { LandingPlan } from '@/lib/landingPricing';
 
-const state = vi.hoisted(() => ({ result: { tabs: null, defaultTabId: null } as { tabs: unknown[] | null; defaultTabId: string | null } }));
+const state = vi.hoisted(() => ({
+    result: { groups: null, defaultEventTypeId: null } as { groups: unknown[] | null; defaultEventTypeId: string | null },
+}));
 
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
 vi.mock('@/hooks/useLandingPricingPlans', () => ({ useLandingPricingPlans: () => state.result }));
@@ -27,33 +29,76 @@ function landingPlan(code: string): LandingPlan {
     };
 }
 
-const TABS: LandingPricingTab[] = [
-    { id: 'wed', label: 'Weddings', description: '', plans: [landingPlan('START')] },
-    { id: 'vip', label: 'VIP', description: 'Parties and reunions', plans: [landingPlan('GOLD'), landingPlan('PLATINUM')] },
+const GROUPS: LandingPricingGroup[] = [
+    {
+        id: 'wed',
+        label: 'Weddings',
+        items: [
+            {
+                id: 'wedding',
+                eventTypeKey: 'WEDDING',
+                label: 'Wedding',
+                plans: [landingPlan('START'), landingPlan('STORY'), landingPlan('SIGNATURE')],
+            },
+            { id: 'baby-shower', eventTypeKey: 'BABY_SHOWER', label: 'Baby shower', plans: [landingPlan('SHOWER')] },
+        ],
+    },
+    {
+        id: 'vip',
+        label: 'VIP',
+        items: [{ id: 'reunion', eventTypeKey: 'REUNION', label: 'Reunion', plans: [landingPlan('GOLD'), landingPlan('PLATINUM')] }],
+    },
 ];
 
-afterEach(cleanup);
+const cardNames = () => screen.getAllByTestId('plan-card').map((card) => card.textContent);
+
+afterEach(() => {
+    cleanup();
+    window.history.replaceState(null, '', '/');
+});
 
 describe('LandingPricing', () => {
-    it('renders nothing before the config loads, or with no tab to show', () => {
-        state.result = { tabs: null, defaultTabId: null };
+    it('renders nothing before the config loads, or with no event type to show', () => {
+        state.result = { groups: null, defaultEventTypeId: null };
         const { container, rerender } = render(<LandingPricing />);
         expect(container).toBeEmptyDOMElement();
 
-        state.result = { tabs: [], defaultTabId: null };
+        state.result = { groups: [], defaultEventTypeId: null };
         rerender(<LandingPricing />);
         expect(container).toBeEmptyDOMElement();
     });
 
-    it('renders the tabs with their descriptions, opening the default one', () => {
-        state.result = { tabs: TABS, defaultTabId: 'vip' };
+    it("shows the default type's plans and names it on the picker", () => {
+        state.result = { groups: GROUPS, defaultEventTypeId: 'wedding' };
         render(<LandingPricing />);
 
-        expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual(['Weddings', 'VIPParties and reunions']);
-        expect(screen.getByRole('tab', { name: /VIP/ })).toHaveAttribute('aria-selected', 'true');
-        expect(screen.getAllByTestId('plan-card').map((card) => card.textContent)).toEqual(['GOLD', 'PLATINUM']);
+        expect(screen.getByRole('combobox', { name: 'eventTypeLabel' })).toHaveTextContent('Wedding');
+        expect(cardNames()).toEqual(['START', 'STORY', 'SIGNATURE']);
+    });
 
-        fireEvent.click(screen.getByRole('tab', { name: 'Weddings' }));
-        expect(screen.getAllByTestId('plan-card').map((card) => card.textContent)).toEqual(['START']);
+    it('opens on the type in ?event=', () => {
+        window.history.replaceState(null, '', '/?event=reunion');
+        state.result = { groups: GROUPS, defaultEventTypeId: 'wedding' };
+        render(<LandingPricing />);
+
+        expect(screen.getByRole('combobox', { name: 'eventTypeLabel' })).toHaveTextContent('Reunion');
+        expect(cardNames()).toEqual(['GOLD', 'PLATINUM']);
+    });
+
+    it('lists the types by category, filters them by name, and switches the plans on a pick', async () => {
+        state.result = { groups: GROUPS, defaultEventTypeId: 'wedding' };
+        render(<LandingPricing />);
+
+        await act(async () => fireEvent.click(screen.getByRole('combobox', { name: 'eventTypeLabel' })));
+        expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual(['Wedding', 'Baby shower', 'Reunion']);
+        expect(screen.getByText('VIP')).toBeInTheDocument();
+
+        await act(async () => fireEvent.change(screen.getByPlaceholderText('eventTypeSearch'), { target: { value: 'show' } }));
+        expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual(['Baby shower']);
+        expect(screen.queryByText('VIP')).not.toBeInTheDocument();
+
+        await act(async () => fireEvent.click(screen.getByRole('option', { name: 'Baby shower' })));
+        expect(cardNames()).toEqual(['SHOWER']);
+        expect(window.location.search).toBe('?event=baby-shower');
     });
 });

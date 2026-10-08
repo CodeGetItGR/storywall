@@ -1,24 +1,25 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useMemo } from 'react';
 
 import { LandingPricingCta } from '@/components/landing/LandingPricingCta';
+import { LandingPricingEventSelect } from '@/components/landing/LandingPricingEventSelect';
 import { MarketingPlanCard } from '@/components/plan/MarketingPlanCard';
-import { useDurationPicks } from '@/hooks/useDurationPicks';
-import { useLandingPricingCategory } from '@/hooks/useLandingPricingCategory';
-import { useLandingPricingPlans } from '@/hooks/useLandingPricingPlans';
+import { useLandingPricing } from '@/hooks/useLandingPricing';
 import { cn } from '@/lib/utils';
+
+// Columns by card count from 761px up: fewer cards get a narrower, centered grid instead of an empty column.
+const PLAN_GRID: Record<number, string> = {
+    1: 'max-w-110',
+    2: 'max-w-221 min-[761px]:grid-cols-2',
+    3: 'max-w-331 min-[761px]:grid-cols-3',
+};
 
 export function LandingPricing() {
     const t = useTranslations('LandingPage.pricing');
-    const { tabs, defaultTabId } = useLandingPricingPlans();
-    const ids = useMemo(() => (tabs ?? []).map((tab) => tab.id), [tabs]);
-    const { category, selectCategory, handleCategoryKeyDown } = useLandingPricingCategory(ids, defaultTabId);
-    const { picks, pickDuration } = useDurationPicks();
-    const active = tabs?.find((tab) => tab.id === category);
+    const { groups, active, pickEventType, picks, pickDuration } = useLandingPricing();
 
-    if (!tabs || !active) return null;
+    if (!active) return null;
 
     return (
         <section
@@ -40,48 +41,20 @@ export function LandingPricing() {
                 </div>
             </div>
 
-            {/* Event categories */}
-            <div
-                aria-label={t('categoryLabel')}
-                className="mx-auto mt-16 flex max-w-331 border-b border-[#151313]/20 min-[761px]:mt-20"
-                role="tablist"
-            >
-                {tabs.map((tab) => (
-                    <button
-                        aria-controls="landing-pricing-panel"
-                        aria-selected={category === tab.id}
-                        className={cn(
-                            'relative min-h-18 flex-1 px-2 pb-4 text-center text-[12px] leading-tight font-black focus-ring transition-colors focus-visible:-outline-offset-4 min-[761px]:min-h-12 min-[761px]:px-6 min-[761px]:text-[17px]',
-                            {
-                                'text-[#151313]/65 hover:text-[#151313]': category !== tab.id,
-                                'text-[#151313] after:absolute after:inset-x-0 after:bottom-0 after:h-0.75 after:bg-[linear-gradient(90deg,#df7794,#f2c764)]':
-                                    category === tab.id,
-                            },
-                        )}
-                        data-category={tab.id}
-                        id={`landing-pricing-tab-${tab.id}`}
-                        key={tab.id}
-                        onClick={selectCategory}
-                        onKeyDown={handleCategoryKeyDown}
-                        role="tab"
-                        tabIndex={category === tab.id ? 0 : -1}
-                        type="button"
-                    >
-                        <span>{tab.label}</span>
-                        {tab.description && (
-                            <span className="mt-1 block text-[11px] font-semibold text-[#151313]/55 min-[761px]:text-[13px]">{tab.description}</span>
-                        )}
-                    </button>
-                ))}
+            {/* Event type */}
+            <div className="mx-auto mt-16 flex max-w-331 justify-center min-[761px]:mt-20">
+                <LandingPricingEventSelect
+                    emptyLabel={t('eventTypeEmpty')}
+                    groups={groups}
+                    label={t('eventTypeLabel')}
+                    onValueChangeAction={pickEventType}
+                    searchPlaceholder={t('eventTypeSearch')}
+                    value={active}
+                />
             </div>
 
             {/* Plans */}
-            <div
-                aria-labelledby={`landing-pricing-tab-${active.id}`}
-                className="mx-auto mt-9 grid max-w-331 gap-5 min-[761px]:grid-cols-3 min-[761px]:gap-[clamp(24px,3vw,52px)]"
-                id="landing-pricing-panel"
-                role="tabpanel"
-            >
+            <div className={cn('mx-auto mt-9 grid gap-5 min-[761px]:gap-[clamp(24px,3vw,52px)]', PLAN_GRID[Math.min(active.plans.length, 3)])}>
                 {active.plans.map((plan, index) => (
                     <MarketingPlanCard
                         featured={index === 1}
