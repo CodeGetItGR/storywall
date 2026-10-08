@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import type { ThemePresetDto } from '@/lib/api/types';
-import { effectiveThemePresetId, isThemeStepAvailable, parseCreateEventStep, visibleCreateEventSteps } from '@/lib/createEventSteps';
+import {
+    effectiveThemePresetId,
+    isThemeStepAvailable,
+    parseCreateEventStep,
+    resolveCreateEventType,
+    visibleCreateEventSteps,
+} from '@/lib/createEventSteps';
 
 const SWAN = {
     id: 'p1',
@@ -37,5 +43,14 @@ describe('createEventSteps', () => {
         expect(effectiveThemePresetId('gone', [SWAN])).toBeNull();
         expect(effectiveThemePresetId('p1', undefined)).toBeNull();
         expect(effectiveThemePresetId(null, [SWAN])).toBeNull();
+    });
+
+    it('resolves the event type: picked, then linked, then WEDDING, then the first enabled', () => {
+        expect(resolveCreateEventType(['WEDDING', 'BABY_SHOWER', 'REUNION'], 'REUNION', 'baby-shower')).toBe('REUNION');
+        expect(resolveCreateEventType(['WEDDING', 'BABY_SHOWER'], null, 'baby-shower')).toBe('BABY_SHOWER');
+        expect(resolveCreateEventType(['BABY_SHOWER', 'WEDDING'], null, 'graduation')).toBe('WEDDING');
+        expect(resolveCreateEventType(['BABY_SHOWER', 'WEDDING'], 'REUNION', null)).toBe('WEDDING');
+        expect(resolveCreateEventType(['BABY_SHOWER', 'REUNION'], null, null)).toBe('BABY_SHOWER');
+        expect(resolveCreateEventType([], null, 'reunion')).toBe('WEDDING');
     });
 });

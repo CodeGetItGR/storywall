@@ -1,11 +1,4 @@
-import type {
-    AppMediaConfigDto,
-    CoverageOptionResponseDto,
-    EventTypeConvention,
-    LocalizedText,
-    PlanTierResponseDto,
-    PlatformModuleResponseDto,
-} from '@/lib/api/types';
+import type { AppMediaConfigDto, CoverageOptionResponseDto, LocalizedText, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { promotedOptionAmountMinor } from '@/lib/billing';
 import { formatBytes, numberFormat } from '@/lib/format';
 import { activeRoles, type MemberRoleCatalog } from '@/lib/memberRoles';
@@ -14,19 +7,9 @@ import { configCount, type ConfigObject } from '@/lib/planModuleConfig';
 import { enabledModuleKeys } from '@/lib/planModules';
 import { liveInitialOptions, shortestInitialOption } from '@/lib/planTiers';
 
-// The search param that picks the event type the landing pricing shows, so a link can open on it.
+// The search param that picks the event type the landing pricing shows, as an event type slug
+// (see lib/eventTypeSlug.ts), so a link can open on it.
 export const LANDING_EVENT_PARAM = 'event';
-
-// An event type's value for LANDING_EVENT_PARAM: BABY_SHOWER → baby-shower.
-export function landingEventSlug(eventTypeKey: EventTypeConvention): string {
-    return eventTypeKey.toLowerCase().replaceAll('_', '-');
-}
-
-// A LANDING_EVENT_PARAM value as typed in a link, in the same form (Baby_Shower → baby-shower).
-export function normalizeLandingEventSlug(value: string | null): string | null {
-    const slug = value?.trim().toLowerCase().replaceAll('_', '-');
-    return slug ? slug : null;
-}
 
 // The current URL with LANDING_EVENT_PARAM set to slug, keeping the other params and the hash.
 export function landingEventHref(href: string, slug: string): string {

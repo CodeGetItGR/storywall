@@ -42,7 +42,7 @@ export function LandingPricing() {
             </div>
 
             {/* Event type */}
-            <div className="mx-auto mt-16 flex max-w-331 justify-center min-[761px]:mt-20">
+            <div className="mx-auto mt-16 flex max-w-331 flex-col items-center min-[761px]:mt-20">
                 <LandingPricingEventSelect
                     emptyLabel={t('eventTypeEmpty')}
                     groups={groups}
@@ -58,7 +58,7 @@ export function LandingPricing() {
                 {active.plans.map((plan, index) => (
                     <MarketingPlanCard
                         featured={index === 1}
-                        footer={<LandingPricingCta className="mt-5 flex w-full min-[761px]:hidden" label={t('cta')} />}
+                        footer={<LandingPricingCta className="mt-5 flex w-full min-[761px]:hidden" eventType={active.id} label={t('cta')} />}
                         key={`${active.id}-${plan.code}`}
                         plan={plan}
                         durationId={picks[plan.code]}
@@ -75,7 +75,7 @@ export function LandingPricing() {
 
             {/* Create CTA */}
             <div className="mx-auto mt-8 flex max-w-331 flex-col items-center gap-3 min-[761px]:mt-12">
-                <LandingPricingCta className="hidden min-[761px]:flex" label={t('cta')} />
+                <LandingPricingCta className="hidden min-[761px]:flex" eventType={active.id} label={t('cta')} />
                 <p className="text-center text-[12px] text-[#151313]/65">{t('verifyNotice')}</p>
             </div>
         </section>

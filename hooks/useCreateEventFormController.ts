@@ -31,14 +31,17 @@ import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import {
     CREATE_EVENT_RUN_PARAM,
     CREATE_EVENT_STEPS,
+    CREATE_EVENT_TYPE_PARAM,
     effectiveThemePresetId,
     isThemeStepAvailable,
     parseCreateEventStep,
     rememberCreateEventCheckout,
+    resolveCreateEventType,
     visibleCreateEventSteps,
 } from '@/lib/createEventSteps';
 import { eventWindowFromLocalStart, getScheduleDatetimeLocalBounds, isDatetimeLocalAfter, isDatetimeLocalBefore } from '@/lib/datetime';
 import { projectCoverage } from '@/lib/eventCoverage';
+import { normalizeEventTypeSlug } from '@/lib/eventTypeSlug';
 import { liveInitialOptions, resolveInitialOption } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { getCurrentTimezone, getSupportedTimezones } from '@/lib/timezones';
@@ -67,7 +70,9 @@ export function useCreateEventFormController(): CreateEventFormValue {
     const consent = useWithdrawalConsent();
 
     const [title, setTitle] = useState('');
-    const [eventType, setEventType] = useState<EventTypeConvention>('WEDDING');
+    // The type picked here; until then, the one the link asked for (see resolveCreateEventType).
+    const [eventType, setEventType] = useState<EventTypeConvention | null>(null);
+    const [requestedTypeSlug] = useState(() => normalizeEventTypeSlug(searchParams.get(CREATE_EVENT_TYPE_PARAM)));
     const [startAt, setStartAt] = useState('');
     const [timezone, setTimezone] = useState(getCurrentTimezone);
     const [locationName, setLocationName] = useState('');
@@ -110,7 +115,11 @@ export function useCreateEventFormController(): CreateEventFormValue {
     const media = appConfig?.media ?? null;
 
     const fieldErrors = getFieldErrors(createEvent.error);
-    const selectedEventType = eventTypes.find((type) => type.eventTypeKey === eventType)?.eventTypeKey ?? eventTypes[0]?.eventTypeKey ?? eventType;
+    const selectedEventType = resolveCreateEventType(
+        eventTypes.map((type) => type.eventTypeKey),
+        eventType,
+        requestedTypeSlug,
+    );
     const planTiersQuery = usePlanTiersForEventType(selectedEventType, isAuthenticated);
     // A plan with no duration on sale can't be bought, so it isn't offered.
     const eventPlans = useMemo(() => (planTiersQuery.data ?? []).filter((plan) => liveInitialOptions(plan).length > 0), [planTiersQuery.data]);
@@ -186,7 +195,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
 
     const onSelectEventType = useCallback(
         (type: EventTypeConvention) => {
-            if (type === eventType) return;
+            if (type === selectedEventType) return;
             setEventType(type);
             setSelectedPlanCode('');
             setThemePresetId(null);
@@ -204,7 +213,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
             setCheckoutCode('');
             setIsCheckoutPending(false);
         },
-        [durationPicks, eventType, resetGift],
+        [durationPicks, resetGift, selectedEventType],
     );
 
     const onTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value), []);

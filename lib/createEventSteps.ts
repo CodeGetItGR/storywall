@@ -1,4 +1,5 @@
-import type { ThemePresetDto } from '@/lib/api/types';
+import type { EventTypeConvention, ThemePresetDto } from '@/lib/api/types';
+import { eventTypeSlug } from '@/lib/eventTypeSlug';
 import type { CreateEventStep } from '@/providers/createEvent/CreateEventFormContext';
 
 // Every step, in order. The theme step is shown only when themeStepAvailable says so.
@@ -37,6 +38,25 @@ export function effectiveThemePresetId(presetId: string | null, presets: ThemePr
 // Every wizard entry carries the id of the run it belongs to, so a run that went
 // to checkout can be told apart from a fresh one started later in the same tab.
 export const CREATE_EVENT_RUN_PARAM = 'run';
+
+// The event type a link opens the wizard on, as an event type slug (see lib/eventTypeSlug.ts).
+export const CREATE_EVENT_TYPE_PARAM = 'type';
+
+// The wizard's event type among the enabled ones: the one picked, else the one the link asked for,
+// else WEDDING, else the first. WEDDING while the enabled types haven't loaded.
+export function resolveCreateEventType(
+    enabledTypes: readonly EventTypeConvention[],
+    picked: EventTypeConvention | null,
+    requestedSlug: string | null,
+): EventTypeConvention {
+    return (
+        enabledTypes.find((type) => type === picked) ??
+        enabledTypes.find((type) => eventTypeSlug(type) === requestedSlug) ??
+        enabledTypes.find((type) => type === 'WEDDING') ??
+        enabledTypes[0] ??
+        'WEDDING'
+    );
+}
 
 export function newCreateEventRunId(): string {
     return Math.random().toString(36).slice(2, 10);

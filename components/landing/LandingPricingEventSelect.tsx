@@ -35,13 +35,21 @@ export function LandingPricingEventSelect({
             onValueChange={onValueChangeAction}
             value={value}
         >
+            {/* Label */}
+            <Combobox.Label className="text-[13px] font-black tracking-[.15em] text-[#151313] uppercase">{label}</Combobox.Label>
+
             {/* Trigger */}
-            <Combobox.Trigger
-                aria-label={label}
-                className="inline-flex min-h-12 max-w-full items-center gap-3 rounded-full border border-[#151313]/20 bg-white px-6 text-[15px] font-black text-[#151313] focus-ring transition-colors hover:border-[#151313]/45 focus-visible:outline-offset-4 data-[popup-open]:border-[#151313]/45 min-[761px]:text-[17px]"
-            >
+            <Combobox.Trigger className="group mt-3 inline-flex min-h-14 max-w-full items-center gap-4 rounded-full border-2 border-[#151313] bg-white py-2 pr-2 pl-7 text-[18px] font-black text-[#151313] shadow-[0_8px_24px_rgba(21,19,19,.08)] focus-ring transition-[box-shadow,transform] hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(21,19,19,.14)] focus-visible:outline-offset-4 motion-reduce:transition-none min-[761px]:min-h-16 min-[761px]:text-[22px]">
                 <span className="truncate">{value.label}</span>
-                <ChevronDown aria-hidden="true" className="size-4.5 shrink-0" strokeWidth={2.5} />
+                <span
+                    aria-hidden="true"
+                    className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,#df7794,#f2c764)] text-white min-[761px]:size-11"
+                >
+                    <ChevronDown
+                        className="size-5 transition-transform group-data-[popup-open]:rotate-180 motion-reduce:transition-none"
+                        strokeWidth={3}
+                    />
+                </span>
             </Combobox.Trigger>
 
             <Combobox.Portal>

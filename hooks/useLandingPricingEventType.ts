@@ -2,7 +2,8 @@
 
 import { useCallback, useSyncExternalStore } from 'react';
 
-import { LANDING_EVENT_PARAM, landingEventHref, normalizeLandingEventSlug } from '@/lib/landingPricing';
+import { normalizeEventTypeSlug } from '@/lib/eventTypeSlug';
+import { LANDING_EVENT_PARAM, landingEventHref } from '@/lib/landingPricing';
 import { replacePageUrl } from '@/lib/overlayHistory';
 
 // Picking writes the URL without a popstate, so this store tells its readers itself.
@@ -18,7 +19,7 @@ function subscribe(listener: () => void) {
 }
 
 function readUrlSlug(): string | null {
-    return normalizeLandingEventSlug(new URLSearchParams(window.location.search).get(LANDING_EVENT_PARAM));
+    return normalizeEventTypeSlug(new URLSearchParams(window.location.search).get(LANDING_EVENT_PARAM));
 }
 
 // The server render and hydration don't know the URL: they show the default, then the URL's pick.

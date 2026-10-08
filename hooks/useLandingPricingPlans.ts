@@ -7,8 +7,9 @@ import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCo
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { usePlanMarketingCopy } from '@/hooks/usePlanMarketingCopy';
 import type { EventTypeConvention } from '@/lib/api/types';
+import { eventTypeSlug } from '@/lib/eventTypeSlug';
 import { resolveLandingCategoryPlans } from '@/lib/landingCategories';
-import { buildLandingPlan, landingEventSlug, type LandingPlan } from '@/lib/landingPricing';
+import { buildLandingPlan, type LandingPlan } from '@/lib/landingPricing';
 
 // One event type in the landing pricing picker. id is its LANDING_EVENT_PARAM value.
 export type LandingPricingEventType = { id: string; eventTypeKey: EventTypeConvention; label: string; plans: LandingPlan[] };
@@ -54,7 +55,7 @@ export function useLandingPricingPlans(): LandingPricingPlans {
                         return landingPlan === null ? [] : [landingPlan];
                     });
                     if (landingPlans.length === 0) return [];
-                    return [{ id: landingEventSlug(eventTypeKey), eventTypeKey, label: eventTypeCopy(eventTypeKey).name, plans: landingPlans }];
+                    return [{ id: eventTypeSlug(eventTypeKey), eventTypeKey, label: eventTypeCopy(eventTypeKey).name, plans: landingPlans }];
                 });
                 return { id: category.id, isDefault: category.isDefault, label: localizedText(category.name), items };
             })
