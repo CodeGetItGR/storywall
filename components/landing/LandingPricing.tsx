@@ -42,7 +42,7 @@ export function LandingPricing() {
             </div>
 
             {/* Event type */}
-            <div className="mx-auto mt-16 flex max-w-331 flex-col items-center min-[761px]:mt-20">
+            <div className="mx-auto mt-16 flex w-full max-w-110 flex-col min-[761px]:mt-20">
                 <LandingPricingEventSelect
                     emptyLabel={t('eventTypeEmpty')}
                     groups={groups}
