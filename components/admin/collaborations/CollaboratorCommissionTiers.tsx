@@ -30,41 +30,43 @@ export function CollaboratorCommissionTiers({ collaborator, onEditAction }: { co
             </div>
 
             {/* Schedule */}
-            {tiers.length === 0 ? (
-                <p className="text-sm text-ink-muted">{t('none')}</p>
-            ) : (
-                <table className="w-full max-w-md border-collapse text-[13px]">
-                    <thead>
-                        <tr className="border-b border-border text-left text-[11px] font-bold tracking-wide text-ink-faint uppercase">
-                            <th className="py-2 pr-4 font-bold">{t('columns.activations')}</th>
-                            <th className="py-2 pr-4 font-bold">{t('columns.percent')}</th>
-                            <th className="py-2" />
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {tiers.map((tier, index) => {
-                            const end = commissionTierEnd(tiers, index);
-                            return (
-                                <tr key={tier.minActivations} className="border-b border-border last:border-b-0">
-                                    <td className="py-2 pr-4 font-mono text-ink">
-                                        {end === null
-                                            ? t('rangeOpen', { from: tier.minActivations })
-                                            : t('range', { from: tier.minActivations, to: end })}
-                                    </td>
-                                    <td className="py-2 pr-4 font-mono font-semibold text-ink">{tier.commissionPercent}%</td>
-                                    <td className="py-2 text-right">
-                                        {index === currentIndex && (
-                                            <span className="inline-flex rounded-full bg-status-good-wash px-2 py-0.5 text-[10px] font-bold text-status-good">
-                                                {t('current')}
-                                            </span>
-                                        )}
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-            )}
+            <div className="rounded-xl border border-border bg-card">
+                {tiers.length === 0 ? (
+                    <p className="px-4 py-6 text-sm text-ink-muted">{t('none')}</p>
+                ) : (
+                    <table className="w-full border-collapse text-[13px]">
+                        <thead>
+                            <tr className="border-b border-border text-left text-[11px] font-bold tracking-wide text-ink-faint uppercase">
+                                <th className="px-4 py-2 font-bold">{t('columns.activations')}</th>
+                                <th className="px-4 py-2 font-bold">{t('columns.percent')}</th>
+                                <th className="px-4 py-2" />
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {tiers.map((tier, index) => {
+                                const end = commissionTierEnd(tiers, index);
+                                return (
+                                    <tr key={tier.minActivations} className="border-b border-border last:border-b-0">
+                                        <td className="px-4 py-2.5 font-mono text-ink">
+                                            {end === null
+                                                ? t('rangeOpen', { from: tier.minActivations })
+                                                : t('range', { from: tier.minActivations, to: end })}
+                                        </td>
+                                        <td className="px-4 py-2.5 font-mono font-semibold text-ink">{tier.commissionPercent}%</td>
+                                        <td className="px-4 py-2.5 text-right">
+                                            {index === currentIndex && (
+                                                <span className="inline-flex rounded-full bg-status-good-wash px-2 py-0.5 text-[10px] font-bold text-status-good">
+                                                    {t('current')}
+                                                </span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                )}
+            </div>
         </section>
     );
 }
