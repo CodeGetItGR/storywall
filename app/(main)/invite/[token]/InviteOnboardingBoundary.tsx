@@ -17,8 +17,6 @@ import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import { inviteGiftFraming } from '@/lib/gift';
 import { routes } from '@/lib/routes';
 
-const DEFAULT_HERO_IMAGE = '/images/couple-hero.png';
-
 export default function InviteOnboardingBoundary({ token }: { token: string }) {
     const t = useTranslations('InviteOnboardingPage');
     const router = useRouter();
@@ -90,7 +88,7 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
             content={
                 activePreview ? (
                     <InviteLayout
-                        coverImageSrc={coverMedia?.mediaUrl ?? DEFAULT_HERO_IMAGE}
+                        coverImageSrc={coverMedia?.mediaUrl}
                         coverImageAlt={t('defaultHeroImageAlt')}
                         theme={activePreview.theme}
                         eventTitle={activePreview.eventTitle}

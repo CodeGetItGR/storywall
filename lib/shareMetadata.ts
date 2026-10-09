@@ -15,6 +15,8 @@ const SHARE_LOOKUP_REVALIDATE_SECONDS = 300;
 export type ShareEvent = {
     title: string;
     subtitle: string | null;
+    // The event's own description, used as the link preview text. Without one the preview uses a generic line.
+    description?: string | null;
     cover: MediaResponseDto | null;
 };
 
@@ -47,7 +49,12 @@ export async function getInviteShareEvent(token: string): Promise<ShareEvent | n
         );
         if (preview.expired || preview.alreadyUsed) return null;
 
-        return { title: preview.eventTitle, subtitle: preview.eventSubtitle, cover: preview.coverMedia };
+        return {
+            title: preview.eventTitle,
+            subtitle: preview.eventSubtitle,
+            description: preview.eventDescription?.trim() || null,
+            cover: preview.coverMedia,
+        };
     } catch {
         return null;
     }
@@ -67,7 +74,7 @@ export function coverImageUrl(cover: MediaResponseDto | null): string | null {
 async function buildShareMetadata(event: ShareEvent | null, descriptionKey: 'uploadDescription' | 'inviteDescription'): Promise<Metadata> {
     const [tRoot, tShare] = await Promise.all([getTranslations('RootLayout'), getTranslations('ShareMetadata')]);
     const title = event?.title ?? tRoot('title');
-    const description = event ? tShare(descriptionKey) : tRoot('description');
+    const description = event ? (event.description ?? tShare(descriptionKey)) : tRoot('description');
 
     return {
         metadataBase: new URL(SITE_URL),

@@ -11,8 +11,6 @@ import { QrLandingState } from '@/components/invite/QrLandingState';
 import { useQrLinkResolution } from '@/hooks/useQrLinks';
 import { getQrRedirectPath, getQrTerminalCopyKey } from '@/lib/qrLinks';
 
-const DEFAULT_HERO_IMAGE = '/images/couple-hero.png';
-
 export default function QrCodeLandingBoundary({ token }: { token: string }) {
     const t = useTranslations('QrCodePage');
     const router = useRouter();
@@ -50,7 +48,7 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
             content={
                 isMediaUpload ? (
                     <InviteLayout
-                        coverImageSrc={coverMedia?.mediaUrl ?? DEFAULT_HERO_IMAGE}
+                        coverImageSrc={coverMedia?.mediaUrl}
                         coverImageAlt={t('defaultHeroImageAlt')}
                         theme={resolution.theme}
                         eventTitle={resolution.eventTitle ?? t('fallbackTitle')}

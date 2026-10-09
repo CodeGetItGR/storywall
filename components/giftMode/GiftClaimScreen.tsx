@@ -9,8 +9,6 @@ import { InviteOnboardingState } from '@/components/invite/InviteOnboardingState
 import { InviteTerminalState } from '@/components/invite/InviteTerminalState';
 import { useGiftClaim } from '@/hooks/useGiftClaim';
 
-const DEFAULT_HERO_IMAGE = '/images/couple-hero.png';
-
 export function GiftClaimScreen({ token }: { token: string }) {
     const t = useTranslations('GiftMode.claim');
     const claim = useGiftClaim(token);
@@ -29,7 +27,7 @@ export function GiftClaimScreen({ token }: { token: string }) {
             content={
                 preview ? (
                     <InviteLayout
-                        coverImageSrc={preview.coverMedia?.mediaUrl ?? DEFAULT_HERO_IMAGE}
+                        coverImageSrc={preview.coverMedia?.mediaUrl}
                         coverImageAlt={t('coverAlt')}
                         eventTitle={preview.eventTitle}
                         eventSubtitle={preview.eventSubtitle}
