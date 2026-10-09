@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from 'next-intl';
 import { type ComponentType, useCallback } from 'react';
 
+import { EventModuleConfigItem } from '@/components/admin/events/EventModuleConfigItem';
 import type { EventModuleRow as EventModuleRowData } from '@/lib/adminEvents';
 import { formatAdminDate } from '@/lib/adminOrders';
 import { cn } from '@/lib/utils';
@@ -14,7 +15,8 @@ const SOURCE_STYLES: Record<EventModuleRowData['source'], string> = {
     NONE: '',
 };
 
-// One module: what it is, where it comes from, and the admin grant's reason when there is one.
+// One module: what it is, where it comes from, the admin grant's reason when there is one, and the
+// settings an admin may change while the event has it.
 export function EventModuleRow({
     row,
     name,
@@ -22,6 +24,7 @@ export function EventModuleRow({
     editable,
     onGrantAction,
     onRevokeAction,
+    onEditConfigAction,
 }: {
     row: EventModuleRowData;
     name: string;
@@ -29,6 +32,7 @@ export function EventModuleRow({
     editable: boolean;
     onGrantAction: (moduleKey: string) => void;
     onRevokeAction: (moduleKey: string) => void;
+    onEditConfigAction: (moduleKey: string, configKey: string) => void;
 }) {
     const t = useTranslations('AdminPage.events.modules');
     const locale = useLocale();
@@ -59,6 +63,15 @@ export function EventModuleRow({
                         {t('grantedOn', { date: formatAdminDate(locale, row.grant.grantedAt) })}
                         <span className="text-ink"> · {row.grant.reason}</span>
                     </p>
+                )}
+
+                {/* Settings */}
+                {included && row.configs.length > 0 && (
+                    <ul className="mt-2 space-y-1">
+                        {row.configs.map((config) => (
+                            <EventModuleConfigItem key={config.configKey} config={config} editable={editable} onEditAction={onEditConfigAction} />
+                        ))}
+                    </ul>
                 )}
             </div>
 

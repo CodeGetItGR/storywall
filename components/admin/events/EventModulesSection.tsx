@@ -15,11 +15,13 @@ export function EventModulesSection({
     editable,
     onGrantAction,
     onRevokeAction,
+    onEditConfigAction,
 }: {
     event: AdminEventDetailDto;
     editable: boolean;
     onGrantAction: (moduleKey: string) => void;
     onRevokeAction: (moduleKey: string) => void;
+    onEditConfigAction: (moduleKey: string, configKey: string) => void;
 }) {
     const t = useTranslations('AdminPage.events.modules');
     const modulesQuery = useAdminPlatformModules();
@@ -43,6 +45,7 @@ export function EventModulesSection({
                                 editable={editable}
                                 onGrantAction={onGrantAction}
                                 onRevokeAction={onRevokeAction}
+                                onEditConfigAction={onEditConfigAction}
                             />
                         );
                     })}

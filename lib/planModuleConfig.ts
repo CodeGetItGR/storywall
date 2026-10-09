@@ -1,4 +1,4 @@
-import type { ModuleKey, PlanTierResponseDto } from '@/lib/api/types';
+import type { EventModuleResponseDto, ModuleKey, PlanTierResponseDto } from '@/lib/api/types';
 
 // The per-plan module config keys the backend documents. Each gets a labelled
 // control in the plan grid (AdminPage.plans.grid.cell.fields.<key>); anything
@@ -32,13 +32,29 @@ export function planModuleCount(plan: PlanTierResponseDto | undefined, moduleKey
     return configCount(plan?.moduleConfigs?.[moduleKey], key);
 }
 
+// The event's own count cap for one module. Its module row carries the cap the server enforces,
+// an admin's extra included; the plan's is the fallback while the event's modules aren't loaded.
+export function eventModuleCount(
+    modules: Pick<EventModuleResponseDto, 'moduleKey' | 'configuration'>[] | undefined,
+    plan: PlanTierResponseDto | undefined,
+    moduleKey: ModuleKey,
+    key: string,
+): number | null {
+    const configuration = modules?.find((module) => module.moduleKey === moduleKey)?.configuration;
+    return configuration ? configCount(configuration, key) : planModuleCount(plan, moduleKey, key);
+}
+
 export type CoHostCapacity = { used: number; limit: number | null; isFull: boolean };
 
-// Co-hosts against the plan's co_hosts.maxCoHosts. The primary host
+// Co-hosts against the event's co_hosts.maxCoHosts (see eventModuleCount). The primary host
 // (displayOrder 0) is not counted. See wishlist-wishbook-cohost-fe-integration.md §1.
-export function coHostCapacity(hosts: { displayOrder: number }[], plan: PlanTierResponseDto | undefined): CoHostCapacity {
+export function coHostCapacity(
+    hosts: { displayOrder: number }[],
+    plan: PlanTierResponseDto | undefined,
+    modules?: Pick<EventModuleResponseDto, 'moduleKey' | 'configuration'>[],
+): CoHostCapacity {
     const used = hosts.filter((host) => host.displayOrder > 0).length;
-    const limit = planModuleCount(plan, 'co_hosts', 'maxCoHosts');
+    const limit = eventModuleCount(modules, plan, 'co_hosts', 'maxCoHosts');
     return { used, limit, isFull: limit !== null && used >= limit };
 }
 

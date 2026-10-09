@@ -41,6 +41,7 @@ export function EventDetail({ event }: { event: AdminEventDetailDto }) {
                         editable={editable}
                         onGrantAction={overlays.openGrantModule}
                         onRevokeAction={overlays.openRevokeModule}
+                        onEditConfigAction={overlays.openModuleConfig}
                     />
                     <EventAddonsSection addons={event.addons} editable={editable} onRemoveAction={overlays.openRemoveAddon} />
                 </div>

@@ -437,6 +437,10 @@ export const endpoints = {
             storageGrant: (eventId: string) => `/api/admin/events/${eventId}/grants/storage`,
             memberGrant: (eventId: string) => `/api/admin/events/${eventId}/grants/members`,
             moduleGrant: (eventId: string, moduleKey: string) => `/api/admin/events/${eventId}/grants/modules/${encodeURIComponent(moduleKey)}`,
+            moduleConfig: (eventId: string, moduleKey: string, configKey: string) =>
+                `/api/admin/events/${eventId}/modules/${encodeURIComponent(moduleKey)}/config/${encodeURIComponent(configKey)}`,
+            moduleConfigReset: (eventId: string, moduleKey: string, configKey: string) =>
+                `/api/admin/events/${eventId}/modules/${encodeURIComponent(moduleKey)}/config/${encodeURIComponent(configKey)}/reset`,
             suspend: (eventId: string) => `/api/admin/events/${eventId}/suspend`,
             close: (eventId: string) => `/api/admin/events/${eventId}/close`,
             planTier: (eventId: string) => `/api/admin/events/${eventId}/plan-tier`,

@@ -97,7 +97,7 @@ export function MembersPanel({
     const nextUpgradeOption = upgradeOptions[0];
     const nextPlan = nextUpgradeOption ? findPlanByCode(planTiers, 'EVENT', nextUpgradeOption.planTierCode) : undefined;
     const upgradeHref = routes.events.manage(eventId, { tab: 'billing' });
-    const coHostCapacity = useCoHostCapacity(hosts, currentPlan, nextPlan);
+    const coHostCapacity = useCoHostCapacity(hosts, currentPlan, nextPlan, activeEvent?.modules);
 
     const canCreate = canWrite && !isFull && !coHostCapacity.isFull;
 

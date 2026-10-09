@@ -9,6 +9,7 @@ export type EventOverlay =
     | { kind: 'plan' }
     | { kind: 'grantModule'; moduleKey: string }
     | { kind: 'revokeModule'; moduleKey: string }
+    | { kind: 'moduleConfig'; moduleKey: string; configKey: string }
     | { kind: 'removeAddon'; code: string; name: string }
     | { kind: 'suspend' }
     | { kind: 'close' }
@@ -33,6 +34,7 @@ export function useEventDetailOverlays() {
     const openLift = useCallback(() => show({ kind: 'lift' }), [show]);
     const openGrantModule = useCallback((moduleKey: string) => show({ kind: 'grantModule', moduleKey }), [show]);
     const openRevokeModule = useCallback((moduleKey: string) => show({ kind: 'revokeModule', moduleKey }), [show]);
+    const openModuleConfig = useCallback((moduleKey: string, configKey: string) => show({ kind: 'moduleConfig', moduleKey, configKey }), [show]);
     const openRemoveAddon = useCallback((code: string, name: string) => show({ kind: 'removeAddon', code, name }), [show]);
 
     return {
@@ -48,6 +50,7 @@ export function useEventDetailOverlays() {
         openLift,
         openGrantModule,
         openRevokeModule,
+        openModuleConfig,
         openRemoveAddon,
     };
 }

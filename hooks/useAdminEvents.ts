@@ -11,6 +11,7 @@ import type {
     AdminEventSummaryDto,
     AdminEventSuspendRequestDto,
     AdminMemberGrantRequestDto,
+    AdminModuleConfigOverrideRequestDto,
     AdminStorageGrantRequestDto,
     EventUsageResponseDto,
     ModerationDecisionDto,
@@ -77,6 +78,20 @@ export function useGrantEventModule(eventId: string) {
 
 export function useRevokeEventModule(eventId: string) {
     return useEventDetailMutation(eventId, (moduleKey: string) => api.del<AdminEventDetailDto>(endpoints.admin.events.moduleGrant(eventId, moduleKey)));
+}
+
+type ModuleConfigTarget = { moduleKey: string; configKey: string };
+
+export function useSetEventModuleConfig(eventId: string) {
+    return useEventDetailMutation(eventId, ({ moduleKey, configKey, ...input }: ModuleConfigTarget & AdminModuleConfigOverrideRequestDto) =>
+        api.put<AdminEventDetailDto>(endpoints.admin.events.moduleConfig(eventId, moduleKey, configKey), input),
+    );
+}
+
+export function useResetEventModuleConfig(eventId: string) {
+    return useEventDetailMutation(eventId, ({ moduleKey, configKey, reason }: ModuleConfigTarget & { reason: string }) =>
+        api.post<AdminEventDetailDto>(endpoints.admin.events.moduleConfigReset(eventId, moduleKey, configKey), { reason }),
+    );
 }
 
 // Every action below answers without the event: the page re-reads it, whether the action went

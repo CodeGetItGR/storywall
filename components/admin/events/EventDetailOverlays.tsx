@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { EventConfirmModal } from '@/components/admin/events/EventConfirmModal';
 import { EventMemberGrantDrawer } from '@/components/admin/events/EventMemberGrantDrawer';
+import { EventModuleConfigDrawer } from '@/components/admin/events/EventModuleConfigDrawer';
 import { EventModuleGrantDrawer } from '@/components/admin/events/EventModuleGrantDrawer';
 import { EventPlanDrawer } from '@/components/admin/events/EventPlanDrawer';
 import { EventRestrictionModal } from '@/components/admin/events/EventRestrictionModal';
@@ -12,6 +13,7 @@ import { useAdminPlatformModules } from '@/hooks/useAdmin';
 import { useEventConfirmActions } from '@/hooks/useEventConfirmActions';
 import type { EventDetailOverlays as Overlays } from '@/hooks/useEventDetailOverlays';
 import { useLocalizedModuleLabel } from '@/hooks/useLocalizedModuleLabel';
+import { findModuleConfig } from '@/lib/adminEvents';
 import type { AdminEventDetailDto } from '@/lib/api/types';
 
 // Every drawer and confirmation the event page opens. Only the last one opened is mounted.
@@ -42,6 +44,20 @@ export function EventDetailOverlays({ event, overlays }: { event: AdminEventDeta
                     moduleKey={overlay.moduleKey}
                     moduleName={label.name}
                     moduleDescription={label.description}
+                    onCloseAction={overlays.close}
+                />
+            );
+        }
+        case 'moduleConfig': {
+            const config = findModuleConfig(event, overlay.moduleKey, overlay.configKey);
+            if (!config) return null;
+            return (
+                <EventModuleConfigDrawer
+                    key={key}
+                    open={isOpen('moduleConfig')}
+                    eventId={event.id}
+                    config={config}
+                    moduleName={moduleLabel(overlay.moduleKey).name}
                     onCloseAction={overlays.close}
                 />
             );
