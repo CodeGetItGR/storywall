@@ -46,13 +46,17 @@ export type LandingPlan = {
 export interface LandingPlanCopy {
     coHosts: (max: number | null) => string;
     everythingIn: (planName: string) => string;
-    galleryWithQrUpload: string;
     guestsUnlimited: string;
     guestsUpTo: (count: number) => string;
     mediaUnlimited: string;
     // examples: the first few role names, for the line to show what a role is.
     memberRoles: (count: number, custom: boolean, examples: LocalizedText[]) => string;
     memberRolesCustomOnly: string;
+    // A module line with a plan detail after it ("Gallery · QR upload"). The
+    // label stays standalone so a renamed module never sits inside a sentence.
+    moduleWithDetail: (label: string, detail: string) => string;
+    qrUpload: string;
+    // Detail only, joined to the module label by moduleWithDetail.
     scheduleSessions: (max: number | null) => string;
     storageUnlimited: string;
 }
@@ -130,14 +134,14 @@ function moduleFeatureLabel(
     switch (moduleKey) {
         case 'schedule': {
             const max = configCount(config, 'maxSections');
-            return max === 0 ? null : copy.scheduleSessions(max);
+            return max === 0 ? null : copy.moduleWithDetail(moduleName(moduleKey), copy.scheduleSessions(max));
         }
         case 'co_hosts': {
             const max = configCount(config, 'maxCoHosts');
             return max === 0 ? null : copy.coHosts(max);
         }
         case 'gallery':
-            return config?.qrUploadEnabled === true ? copy.galleryWithQrUpload : moduleName(moduleKey);
+            return config?.qrUploadEnabled === true ? copy.moduleWithDetail(moduleName(moduleKey), copy.qrUpload) : moduleName(moduleKey);
         case 'member_roles': {
             // Plans don't cap roles: the count is the event type's catalog, and
             // the plan only decides whether members may type their own.
