@@ -3,23 +3,28 @@ import { describe, expect, it } from 'vitest';
 import {
     adminEventsPath,
     adminEventState,
+    capWithExtra,
     closeRequest,
     EMPTY_EVENT_FILTERS,
     EMPTY_RESTRICTION_DRAFT,
     eventModuleRows,
+    findModuleConfig,
+    flagChoice,
     formatEventsHash,
     gbToBytes,
     isGrantReasonValid,
     isStorageGrantBelowUsage,
     MAX_EXTRA_MEMBER_SLOTS,
     memberLimitWithSlots,
+    moduleConfigChange,
+    parseConfigExtra,
     parseEventsHash,
     parseMemberSlots,
     storageLimitWithGrant,
     suspendRequest,
     usageRatio,
 } from '@/lib/adminEvents';
-import type { AdminEventDetailDto } from '@/lib/api/types';
+import type { AdminEventDetailDto, AdminEventModuleConfig } from '@/lib/api/types';
 
 const GB = 1024 ** 3;
 const EXPLANATION = 'Repeated insults aimed at one guest.';
@@ -145,9 +150,83 @@ describe('eventModuleRows', () => {
                 { moduleKey: 'MUSIC', enabled: false, source: 'NONE' },
             ],
             moduleGrants: [{ moduleKey: 'GALLERY', reason: 'Kept on after a downgrade', grantedByUserId: 'a-1', grantedAt: '2026-10-01T10:00:00Z' }],
+            moduleConfigs: [SECTIONS],
         });
         expect(rows[0].grant?.reason).toBe('Kept on after a downgrade');
         expect(rows[1].grant).toBeNull();
+        expect(rows[0].configs).toEqual([]);
+    });
+
+    it('attaches each module its own settings', () => {
+        const rows = eventModuleRows({
+            modules: [{ moduleKey: 'schedule', enabled: true, source: 'PLAN' }],
+            moduleGrants: [],
+            moduleConfigs: [SECTIONS, QR],
+        });
+        expect(rows[0].configs).toEqual([SECTIONS]);
+    });
+});
+
+const OVERRIDE = { reason: 'Asked', setByUserId: 'a-1', setAt: '2026-10-01T10:00:00Z' };
+const SECTIONS: AdminEventModuleConfig = {
+    moduleKey: 'schedule',
+    configKey: 'maxSections',
+    kind: 'COUNT',
+    planValue: 3,
+    effectiveValue: 3,
+    override: null,
+};
+const QR: AdminEventModuleConfig = {
+    moduleKey: 'gallery',
+    configKey: 'qrUploadEnabled',
+    kind: 'FLAG',
+    planValue: true,
+    effectiveValue: true,
+    override: null,
+};
+
+describe('module config', () => {
+    it('finds a setting by module and key', () => {
+        expect(findModuleConfig({ moduleConfigs: [SECTIONS, QR] }, 'gallery', 'qrUploadEnabled')).toBe(QR);
+        expect(findModuleConfig({ moduleConfigs: [SECTIONS] }, 'gallery', 'qrUploadEnabled')).toBeNull();
+    });
+
+    it('takes a whole extra up to the server maximum', () => {
+        expect(parseConfigExtra(' 2 ')).toBe(2);
+        expect(parseConfigExtra('0')).toBe(0);
+        expect(parseConfigExtra('10000')).toBe(10_000);
+        expect(parseConfigExtra('10001')).toBeNull();
+        expect(parseConfigExtra('-1')).toBeNull();
+        expect(parseConfigExtra('1.5')).toBeNull();
+        expect(parseConfigExtra('')).toBeNull();
+    });
+
+    it('adds an extra to a cap, and leaves unlimited unlimited', () => {
+        expect(capWithExtra(3, 2)).toBe(5);
+        expect(capWithExtra(null, 2)).toBeNull();
+    });
+
+    it('reads a flag choice from the override', () => {
+        expect(flagChoice(QR)).toBe('PLAN');
+        expect(flagChoice({ ...QR, override: { ...OVERRIDE, extra: null, enabled: false } })).toBe('OFF');
+        expect(flagChoice({ ...QR, override: { ...OVERRIDE, extra: null, enabled: true } })).toBe('ON');
+    });
+
+    it('sets a new extra, resets at 0, and does nothing when unchanged', () => {
+        const overridden = { ...SECTIONS, override: { ...OVERRIDE, extra: 2, enabled: null } };
+        expect(moduleConfigChange(SECTIONS, { extra: 2 })).toEqual({ kind: 'set', extra: 2, enabled: null });
+        expect(moduleConfigChange(SECTIONS, { extra: 0 })).toBeNull();
+        expect(moduleConfigChange(overridden, { extra: 2 })).toBeNull();
+        expect(moduleConfigChange(overridden, { extra: 0 })).toEqual({ kind: 'reset' });
+    });
+
+    it('sets a flag, resets to the plan, and does nothing when unchanged', () => {
+        const off = { ...QR, override: { ...OVERRIDE, extra: null, enabled: false } };
+        expect(moduleConfigChange(QR, { choice: 'OFF' })).toEqual({ kind: 'set', extra: null, enabled: false });
+        expect(moduleConfigChange(QR, { choice: 'PLAN' })).toBeNull();
+        expect(moduleConfigChange(off, { choice: 'OFF' })).toBeNull();
+        expect(moduleConfigChange(off, { choice: 'ON' })).toEqual({ kind: 'set', extra: null, enabled: true });
+        expect(moduleConfigChange(off, { choice: 'PLAN' })).toEqual({ kind: 'reset' });
     });
 });
 

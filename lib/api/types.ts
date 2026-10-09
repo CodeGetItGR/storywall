@@ -3701,8 +3701,31 @@ export interface AdminEventDetailDto {
     // One row per module the event's type supports.
     modules: { moduleKey: ModuleKey; enabled: boolean; source: AdminEventModuleSource }[];
     moduleGrants: { moduleKey: ModuleKey; reason: string; grantedByUserId: string | null; grantedAt: string }[];
+    // Every setting an admin may override, for the modules the event's type supports.
+    moduleConfigs: AdminEventModuleConfig[];
     // Null unless suspended or closed.
     suspension: { suspendedAt: string; closedAt: string | null; decision: ModerationDecisionDto | null } | null;
+}
+
+// A cap (COUNT: a number, null = unlimited) or a flag (FLAG: absent counts as off).
+export type ModuleConfigKind = 'COUNT' | 'FLAG';
+
+// One module setting of an event: the plan's value, the admin override if any, and what the event gets.
+// A cap's override is an extra on top of the plan's; a flag's replaces it.
+export interface AdminEventModuleConfig {
+    moduleKey: ModuleKey;
+    configKey: string;
+    kind: ModuleConfigKind;
+    planValue: number | boolean | null;
+    effectiveValue: number | boolean | null;
+    override: { extra: number | null; enabled: boolean | null; reason: string; setByUserId: string; setAt: string } | null;
+}
+
+// PUT /api/admin/events/{id}/modules/{moduleKey}/config/{configKey}. extra for a cap, enabled for a flag, never both.
+export interface AdminModuleConfigOverrideRequestDto {
+    extra: number | null;
+    enabled: boolean | null;
+    reason: string;
 }
 
 // PUT /api/admin/events/{id}/grants/storage. A total, not an increment; 0 removes the grant.

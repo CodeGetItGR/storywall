@@ -2,6 +2,7 @@ import { endpoints } from '@/lib/api/endpoints';
 import type {
     AdminEventCloseRequestDto,
     AdminEventDetailDto,
+    AdminEventModuleConfig,
     AdminEventSummaryDto,
     AdminEventSuspendRequestDto,
     EventStatus,
@@ -42,6 +43,7 @@ export const PLAN_CODE_MAX_LENGTH = 50;
 export const GRANT_REASON_MAX_LENGTH = 500;
 export const NOTE_MAX_LENGTH = 2000;
 export const MAX_EXTRA_MEMBER_SLOTS = 100_000;
+export const MAX_CONFIG_EXTRA = 10_000;
 export const EVENTS_PAGE_SIZE = 50;
 
 // Where an event stands for an admin: closed wins over suspended, which wins over deleted.
@@ -192,14 +194,57 @@ export function closeRequest(kind: CloseKind, draft: RestrictionDraft): AdminEve
 
 export type EventModuleRow = AdminEventDetailDto['modules'][number] & {
     grant: AdminEventDetailDto['moduleGrants'][number] | null;
+    configs: AdminEventModuleConfig[];
 };
 
 // Each module with the admin grant behind it, if any. A grant can sit under a plan or bought
 // unlock that already covers the module (the source names the first that applies), so it is
 // looked up by key rather than read off the source.
-export function eventModuleRows(event: Pick<AdminEventDetailDto, 'modules' | 'moduleGrants'>): EventModuleRow[] {
+export function eventModuleRows(event: Pick<AdminEventDetailDto, 'modules' | 'moduleGrants' | 'moduleConfigs'>): EventModuleRow[] {
     const grants = new Map(event.moduleGrants.map((grant) => [grant.moduleKey, grant]));
-    return event.modules.map((module) => ({ ...module, grant: grants.get(module.moduleKey) ?? null }));
+    return event.modules.map((module) => ({
+        ...module,
+        grant: grants.get(module.moduleKey) ?? null,
+        configs: event.moduleConfigs.filter((config) => config.moduleKey === module.moduleKey),
+    }));
+}
+
+export function findModuleConfig(event: Pick<AdminEventDetailDto, 'moduleConfigs'>, moduleKey: string, configKey: string): AdminEventModuleConfig | null {
+    return event.moduleConfigs.find((config) => config.moduleKey === moduleKey && config.configKey === configKey) ?? null;
+}
+
+// A whole extra from 0 to MAX_CONFIG_EXTRA, as the server takes it.
+export function parseConfigExtra(value: string): number | null {
+    const text = value.trim();
+    if (!/^\d+$/.test(text)) return null;
+    const extra = Number(text);
+    return extra <= MAX_CONFIG_EXTRA ? extra : null;
+}
+
+// The cap an extra would leave: null while the plan's is unlimited, which an extra can't change.
+export function capWithExtra(planValue: AdminEventModuleConfig['planValue'], extra: number): number | null {
+    return typeof planValue === 'number' ? planValue + extra : null;
+}
+
+// A flag follows the plan until an admin sets it on or off.
+export type FlagChoice = 'PLAN' | 'ON' | 'OFF';
+
+export function flagChoice(config: AdminEventModuleConfig): FlagChoice {
+    if (config.override?.enabled === true) return 'ON';
+    if (config.override?.enabled === false) return 'OFF';
+    return 'PLAN';
+}
+
+// What saving the drawer does: set an override, put the plan's value back, or nothing at all.
+// An extra of 0 and "follow the plan" both mean the plan's value.
+export type ModuleConfigChange = { kind: 'set'; extra: number | null; enabled: boolean | null } | { kind: 'reset' } | null;
+
+export function moduleConfigChange(config: AdminEventModuleConfig, input: { extra: number } | { choice: FlagChoice }): ModuleConfigChange {
+    const followsPlan = 'extra' in input ? input.extra === 0 : input.choice === 'PLAN';
+    if (followsPlan) return config.override ? { kind: 'reset' } : null;
+    if ('extra' in input) return config.override?.extra === input.extra ? null : { kind: 'set', extra: input.extra, enabled: null };
+    const enabled = input.choice === 'ON';
+    return config.override?.enabled === enabled ? null : { kind: 'set', extra: null, enabled };
 }
 
 // Used over limit as a 0–1 share for the meters; 0 when the limit is unlimited.

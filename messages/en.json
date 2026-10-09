@@ -3034,6 +3034,18 @@
                 "belowUsage": "The event already holds {used}. The limit can't go below that.",
                 "save": "Save storage"
             },
+            "moduleConfig": {
+                "edit": "Edit",
+                "admin": "Admin",
+                "save": "Save",
+                "extra": "Extra on top of the plan",
+                "extraHint": "The plan gives {plan}. A plan upgrade still adds to it. 0 puts the plan's back.",
+                "extraInvalid": "Enter a whole number from 0 to 10,000.",
+                "planUnlimited": "The plan already has no limit, so an extra changes nothing until the plan sets one.",
+                "value": "Setting",
+                "followPlan": "Follow the plan ({value})",
+                "flagHint": "On or off stays until an admin puts it back, whatever the plan does."
+            },
             "memberGrant": {
                 "title": "Extra members",
                 "field": "Extra member slots",
