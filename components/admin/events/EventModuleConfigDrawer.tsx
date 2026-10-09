@@ -74,6 +74,7 @@ export function EventModuleConfigDrawer({
                         <EventLimitPreview
                             current={formatValue('COUNT', config.effectiveValue)}
                             next={form.parsedExtra === null ? null : formatValue('COUNT', form.resultCap)}
+                            breakdown={null}
                             warning={null}
                         />
                         {planUnlimited && <p className="text-sm text-ink-muted">{t('events.moduleConfig.planUnlimited')}</p>}
