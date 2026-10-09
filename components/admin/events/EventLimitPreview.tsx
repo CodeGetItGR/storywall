@@ -4,7 +4,18 @@ import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
 // The limit now and the limit the drawer would leave, side by side, so the effect is read before saving.
-export function EventLimitPreview({ current, next, warning }: { current: string; next: string | null; warning: string | null }) {
+// The breakdown spells out the sum, since the field holds only the free part of it.
+export function EventLimitPreview({
+    current,
+    next,
+    breakdown,
+    warning,
+}: {
+    current: string;
+    next: string | null;
+    breakdown: string | null;
+    warning: string | null;
+}) {
     const t = useTranslations('AdminPage.events');
 
     return (
@@ -21,6 +32,9 @@ export function EventLimitPreview({ current, next, warning }: { current: string;
                     <p className="mt-0.5 font-mono text-lg font-bold text-ink tabular-nums">{next ?? t('noValue')}</p>
                 </div>
             </div>
+
+            {/* What the limit is made of */}
+            {breakdown && <p className="mt-2 font-mono text-xs text-ink-muted tabular-nums">{breakdown}</p>}
 
             {/* Why it can't be saved */}
             {warning && <p className="mt-3 text-sm text-status-danger">{warning}</p>}

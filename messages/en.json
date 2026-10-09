@@ -3023,13 +3023,15 @@
                 "purchased": "Bought",
                 "granted": "Free from admin",
                 "edit": "Adjust",
-                "now": "Now",
-                "after": "After"
+                "now": "Limit now",
+                "after": "Limit after",
+                "breakdown": "{plan} plan + {granted} free",
+                "breakdownWithBought": "{plan} plan + {bought} bought + {granted} free"
             },
             "storageGrant": {
                 "title": "Free storage",
-                "field": "Free storage",
-                "hint": "The total free storage, not an amount to add. 0 removes it.",
+                "field": "Free storage on top of the plan",
+                "hint": "Replaces the current {current}, it isn't added to it. 0 removes it.",
                 "invalid": "Enter a number of GB from 0 to 10240.",
                 "belowUsage": "The event already holds {used}. The limit can't go below that.",
                 "save": "Save storage"
@@ -3048,8 +3050,8 @@
             },
             "memberGrant": {
                 "title": "Extra members",
-                "field": "Extra member slots",
-                "hint": "The total on top of the plan, not an amount to add. 0 removes them. Nobody is removed.",
+                "field": "Free member slots on top of the plan",
+                "hint": "Replaces the current {current}, it isn't added to it. 0 removes them. Nobody is removed.",
                 "invalid": "Enter a whole number from 0 to 100000.",
                 "save": "Save members"
             },

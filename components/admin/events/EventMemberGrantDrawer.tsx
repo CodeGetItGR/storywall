@@ -17,7 +17,12 @@ export function EventMemberGrantDrawer({ open, event, onCloseAction }: { open: b
     const t = useTranslations('AdminPage');
     const locale = useLocale();
     const form = useMemberGrantForm(event, onCloseAction);
-    const current = event.usage.memberLimit;
+    const { usage } = event;
+    const current = usage.memberLimit;
+    const breakdown =
+        usage.planMaxMembers === null || form.grantedSlots === null
+            ? null
+            : t('events.limits.breakdown', { plan: usage.planMaxMembers.toLocaleString(locale), granted: form.grantedSlots.toLocaleString(locale) });
 
     return (
         <AdminDrawer
@@ -39,7 +44,7 @@ export function EventMemberGrantDrawer({ open, event, onCloseAction }: { open: b
         >
             <form id={FORM_ID} onSubmit={form.handleSubmit} noValidate className="space-y-6">
                 {/* Slots */}
-                <AdminField label={t('events.memberGrant.field')} hint={form.slotsInvalid ? t('events.memberGrant.invalid') : t('events.memberGrant.hint')}>
+                <AdminField label={t('events.memberGrant.field')} hint={form.slotsInvalid ? t('events.memberGrant.invalid') : t('events.memberGrant.hint', { current: usage.extraMemberSlots.toLocaleString(locale) })}>
                     <input
                         inputMode="numeric"
                         value={form.slots}
@@ -53,6 +58,7 @@ export function EventMemberGrantDrawer({ open, event, onCloseAction }: { open: b
                 <EventLimitPreview
                     current={current === null ? t('events.limits.unlimited') : current.toLocaleString(locale)}
                     next={form.resultLimit === null ? null : form.resultLimit.toLocaleString(locale)}
+                    breakdown={breakdown}
                     warning={null}
                 />
 
