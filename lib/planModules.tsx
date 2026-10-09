@@ -1,4 +1,4 @@
-import { BookHeart, CalendarCheck, Gift, HelpCircle, Images, MessageSquareText, Music, Palette, Tags } from 'lucide-react';
+import { BookHeart, CalendarCheck, CalendarDays, Gift, HelpCircle, Images, MessageSquareText, Music, Palette, Tags, UserCog } from 'lucide-react';
 import type { ComponentType } from 'react';
 
 import type {
@@ -21,6 +21,8 @@ const moduleIcons: Record<string, ComponentType<{ className?: string }>> = {
     wishbook: BookHeart,
     member_roles: Tags,
     theme: Palette,
+    schedule: CalendarDays,
+    co_hosts: UserCog,
 };
 
 const moduleFallbacks: Record<string, { name: string; description: string }> = {
