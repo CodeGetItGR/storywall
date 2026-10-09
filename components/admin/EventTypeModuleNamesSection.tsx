@@ -52,10 +52,7 @@ export function EventTypeModuleNamesSection({
                                 className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-canvas/60"
                             >
                                 <Icon className="h-4 w-4 shrink-0 text-ink-muted" />
-                                <span className="min-w-0 flex-1">
-                                    <span className="block truncate text-sm font-semibold text-ink">{name}</span>
-                                    <span className="block font-mono text-[11px] text-ink-faint">{moduleKey}</span>
-                                </span>
+                                <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink">{name}</span>
                                 <span
                                     className={cn(
                                         'inline-flex shrink-0 rounded-full px-2 py-1 text-[11px] font-bold',

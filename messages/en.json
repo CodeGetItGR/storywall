@@ -4820,6 +4820,10 @@
             "name": "Co-hosts",
             "description": "Invite co-hosts to help manage the event."
         },
+        "named_invites": {
+            "name": "Personal invitations",
+            "description": "Invitations sent to a guest by name and email."
+        },
         "schedule": {
             "name": "Schedule",
             "description": "The event's timeline, session by session."
