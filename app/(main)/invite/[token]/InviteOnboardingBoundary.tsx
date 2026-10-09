@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
+import { InviteEventDetails } from '@/components/invite/InviteEventDetails';
 import { InviteLayout } from '@/components/invite/InviteLayout';
 import { InviteOnboardingState } from '@/components/invite/InviteOnboardingState';
 import { InviteTerminalState } from '@/components/invite/InviteTerminalState';
@@ -101,6 +102,15 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
                             </p>
                         )}
 
+                        {/* Details */}
+                        <InviteEventDetails
+                            startAt={activePreview.eventStartAt}
+                            endAt={activePreview.eventEndAt}
+                            timeZone={activePreview.eventTimezone}
+                            locationName={activePreview.eventLocationName}
+                        />
+
+                        {/* Description */}
                         {activePreview.eventDescription && (
                             <p className="mb-7 text-sm leading-relaxed text-ink-muted">{activePreview.eventDescription}</p>
                         )}

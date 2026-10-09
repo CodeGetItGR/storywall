@@ -214,3 +214,35 @@ export function splitDatetimeLocalValue(value: string | null | undefined): { dat
 export function joinDatetimeLocalValue(date: string, time: string): string {
     return date && time ? `${date}T${time}` : '';
 }
+
+const eventRangeFormat: Intl.DateTimeFormatOptions = {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+};
+
+// An event's start and end in its own time zone. A same-day event names the date once
+// ("Saturday, 12 June 2027, 18:00 – 23:00"); one that runs past midnight names both dates.
+export function formatEventDateRange(
+    locale: string,
+    startAt: string | null | undefined,
+    endAt: string | null | undefined,
+    timeZone?: string | null,
+): string | null {
+    const start = startAt ? parseDate(startAt) : null;
+    if (!start) return null;
+
+    const end = endAt ? parseDate(endAt) : null;
+    let format: Intl.DateTimeFormat;
+    try {
+        format = dateTimeFormat(locale, { ...eventRangeFormat, timeZone: timeZone ?? undefined });
+    } catch {
+        // An unknown time zone name: show the times in the viewer's own.
+        format = dateTimeFormat(locale, eventRangeFormat);
+    }
+
+    return end && end > start ? format.formatRange(start, end) : format.format(start);
+}

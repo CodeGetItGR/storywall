@@ -24,67 +24,68 @@ export function InviteLayout({ coverImageSrc, coverImageAlt, theme, eventTitle, 
     const { hero, handleIllustrationError } = useInviteHero(theme, coverImageSrc);
 
     return (
-        <div className="flex h-full flex-col overflow-hidden bg-background lg:flex-row">
+        // One stacked column at every size: the hero on top, the actions below. Wider screens centre it.
+        <div className="mx-auto flex h-full w-full max-w-xl flex-col overflow-hidden bg-background md:px-6 md:pt-6">
             {hero.kind === 'illustration' && (
                 // Illustration mode: the art sits clean on the theme colour and the title goes below it
                 // in dark ink. The cover-photo overlay (dark gradient, white title) would only muddy it.
                 <div
-                    className="relative flex h-72 w-full shrink-0 flex-col bg-surface-muted md:h-130 lg:h-full lg:w-1/2"
+                    className="relative flex h-72 w-full shrink-0 flex-col bg-surface-muted md:h-96 md:overflow-hidden md:rounded-3xl"
                     style={hero.columnStyle}
                     {...themeFontScopeProps(hero.headingFont)}
                 >
                     <ThemeFontFace font={hero.headingFont} />
-                    <div className="relative m-4 min-h-0 flex-1 lg:m-12">
+                    <div className="relative m-4 min-h-0 flex-1 md:m-6">
                         <ProtectedImage
                             src={hero.src}
                             alt=""
                             fill
-                            sizes="(min-width: 1024px) 50vw, 100vw"
+                            sizes="(min-width: 768px) 576px, 100vw"
                             className="object-contain"
                             preload
                             loading="eager"
                             onError={handleIllustrationError}
                         />
                     </div>
-                    <div className="px-6 pb-6 text-center lg:px-12 lg:pb-12 xl:px-16 xl:pb-16">
-                        <h1 className="event-heading text-2xl font-bold text-balance text-event-title lg:text-4xl xl:text-5xl">{eventTitle}</h1>
-                        {eventSubtitle && <p className="mx-auto mt-2 max-w-md text-sm text-ink lg:text-base">{eventSubtitle}</p>}
+                    <div className="px-6 pb-6 text-center">
+                        <h1 className="event-heading text-2xl font-bold text-balance text-event-title md:text-3xl">{eventTitle}</h1>
+                        {eventSubtitle && <p className="mx-auto mt-2 max-w-md text-sm text-ink md:text-base">{eventSubtitle}</p>}
                     </div>
                 </div>
             )}
 
             {hero.kind === 'cover' && (
-                <div className="relative h-64 w-full shrink-0 bg-gradient-brand md:h-130 lg:h-full lg:w-1/2">
+                <div className="relative h-64 w-full shrink-0 bg-gradient-brand md:h-80 md:overflow-hidden md:rounded-3xl">
                     <ProtectedImage
                         src={hero.src}
                         alt={coverImageAlt}
                         fill
-                        sizes="(min-width: 1024px) 50vw, 100vw"
+                        sizes="(min-width: 768px) 576px, 100vw"
                         className="object-cover"
                         preload
                         loading="eager"
                     />
                     <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
-                    <div className="absolute right-0 bottom-0 left-0 p-6 lg:p-12 xl:p-16">
-                        <h1 className="text-2xl font-bold text-balance text-white lg:text-4xl xl:text-5xl">{eventTitle}</h1>
-                        {eventSubtitle && <p className="mt-2 max-w-md text-sm text-white/80 lg:text-base">{eventSubtitle}</p>}
+                    <div className="absolute right-0 bottom-0 left-0 p-6">
+                        <h1 className="text-2xl font-bold text-balance text-white md:text-3xl">{eventTitle}</h1>
+                        {eventSubtitle && <p className="mt-2 max-w-md text-sm text-white/80 md:text-base">{eventSubtitle}</p>}
                     </div>
                 </div>
             )}
 
             {hero.kind === 'logo' && (
                 // Logo mode: no illustration and no cover, so the app logo stands in, with the title below it.
-                <div className="flex h-64 w-full shrink-0 flex-col items-center justify-center gap-6 bg-surface-muted px-6 text-center md:h-130 lg:h-full lg:w-1/2 lg:px-12 xl:px-16">
-                    <Logo direction="col" iconClassName="h-12 w-auto lg:h-16" wordmarkClassName="h-6 w-auto lg:h-8" />
+                <div className="flex h-64 w-full shrink-0 flex-col items-center justify-center gap-6 bg-surface-muted px-6 text-center md:h-80 md:rounded-3xl">
+                    <Logo direction="col" iconClassName="h-12 w-auto" wordmarkClassName="h-6 w-auto" />
                     <div>
-                        <h1 className="text-2xl font-bold text-balance text-ink lg:text-4xl xl:text-5xl">{eventTitle}</h1>
-                        {eventSubtitle && <p className="mx-auto mt-2 max-w-md text-sm text-ink-muted lg:text-base">{eventSubtitle}</p>}
+                        <h1 className="text-2xl font-bold text-balance text-ink md:text-3xl">{eventTitle}</h1>
+                        {eventSubtitle && <p className="mx-auto mt-2 max-w-md text-sm text-ink-muted md:text-base">{eventSubtitle}</p>}
                     </div>
                 </div>
             )}
 
-            <div className="flex flex-1 flex-col items-center overflow-y-auto px-6 py-8 lg:w-1/2 lg:p-12">
-                <div className="flex w-full max-w-sm flex-col items-center lg:max-w-md">
+            <div className="flex flex-1 flex-col items-center overflow-y-auto px-6 py-8">
+                <div className="flex w-full max-w-sm flex-col items-center">
                     {/* The logo column already shows it */}
                     {hero.kind !== 'logo' && <Logo direction="col" iconClassName="h-7 w-auto" wordmarkClassName="h-5 w-auto" className="mb-6" />}
                     <div className="w-full">{children}</div>

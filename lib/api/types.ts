@@ -2248,6 +2248,12 @@ export interface EventInvitationPreviewDto {
     eventTitle: string;
     eventSubtitle: string | null;
     eventDescription: string | null;
+    // When the event runs, with its UTC offset. Show the times in eventTimezone (e.g. "Europe/Athens").
+    eventStartAt: string;
+    eventEndAt: string | null;
+    eventTimezone: string;
+    // The venue name only.
+    eventLocationName: string | null;
     coverMediaId: string | null;
     // Read the cover from here: the visitor isn't a member, so GET /api/medias/{id} refuses them.
     // Only for drawing it: uploaderMemberId, anonymousUploaderName, originalFilename and storageKey come back null, metadata {}.
