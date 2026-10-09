@@ -37,6 +37,7 @@ export function useMemberGrantForm(event: AdminEventDetailDto, onDoneAction: () 
         handleReasonChange,
         slotsInvalid: slots.trim() !== '' && parsedSlots === null,
         reasonInvalid: reason.length > 0 && !reasonValid,
+        grantedSlots: parsedSlots,
         resultLimit: parsedSlots === null ? null : memberLimitWithSlots(event.usage, parsedSlots),
         canSave,
         handleSubmit,

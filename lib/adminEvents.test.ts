@@ -8,6 +8,7 @@ import {
     EMPTY_RESTRICTION_DRAFT,
     eventModuleRows,
     formatEventsHash,
+    formatGb,
     gbToBytes,
     isGrantReasonValid,
     isStorageGrantBelowUsage,
@@ -83,6 +84,13 @@ describe('gbToBytes', () => {
         expect(gbToBytes('-1')).toBeNull();
         expect(gbToBytes('1e3')).toBeNull();
         expect(gbToBytes('10241')).toBeNull();
+    });
+});
+
+describe('formatGb', () => {
+    it('shows the typed unit, zero included', () => {
+        expect(formatGb(0, 'en')).toBe('0 GB');
+        expect(formatGb(1.5 * GB, 'en')).toBe('1.5 GB');
     });
 });
 

@@ -112,6 +112,11 @@ export function bytesToGb(bytes: number): number {
     return Math.round((bytes / BYTES_PER_GB) * 100) / 100;
 }
 
+// The free storage in the unit it is typed in, so 0 reads "0 GB" rather than "0 B".
+export function formatGb(bytes: number, locale: string): string {
+    return `${bytesToGb(bytes).toLocaleString(locale)} GB`;
+}
+
 // null for anything the server would refuse: not a number, negative, or over 10 TiB.
 export function gbToBytes(value: string): number | null {
     const text = value.trim().replace(',', '.');

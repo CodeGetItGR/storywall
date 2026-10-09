@@ -39,6 +39,7 @@ export function useStorageGrantForm(event: AdminEventDetailDto, onDoneAction: ()
         handleReasonChange,
         gbInvalid: gb.trim() !== '' && grantedBytes === null,
         reasonInvalid: reason.length > 0 && !reasonValid,
+        grantedBytes,
         resultLimit,
         belowUsage,
         canSave,
