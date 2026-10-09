@@ -244,6 +244,7 @@ describe('ModerationCaseDrawer', () => {
                     eventSuspended: true,
                     ground: 'GUIDELINES_BREACH',
                     rule: 'HARASSMENT',
+                    operationalReason: null,
                     explanation: 'Insults aimed at one guest, twice.',
                     reportCount: 1,
                     adminUserId: 'a-1',

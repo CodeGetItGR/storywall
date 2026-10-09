@@ -1893,6 +1893,13 @@
         }
     },
     "SuspendedEvent": {
+        "reason": "Reason",
+        "operationalReasons": {
+            "HOST_REQUEST": "The host asked for it",
+            "DUPLICATE": "Duplicate event",
+            "PAYMENT_ISSUE": "Payment issue",
+            "OTHER": "Other"
+        },
         "title": "This StoryWall is suspended",
         "body": "We suspended this StoryWall on {date}. Your guests can't see it, and nothing can be added to it.",
         "ground": "Ground",
@@ -2609,6 +2616,7 @@
             "signOutConfirmBody": "Please confirm before leaving the admin area."
         },
         "tabs": {
+            "events": "Events",
             "orders": "Orders",
             "metrics": "Metrics",
             "funnel": "Growth",
@@ -2938,7 +2946,194 @@
             "ref": "Ref",
             "lastUserId": "Last user ID"
         },
+        "events": {
+            "title": "Events",
+            "loading": "Loading events…",
+            "empty": "No events yet.",
+            "noResults": "No events match these filters.",
+            "count": "{count, plural, one {# event} other {# events}}",
+            "untitled": "Untitled event",
+            "openEvent": "Open {event}",
+            "noHost": "No host",
+            "noValue": "—",
+            "filters": {
+                "search": "Search events",
+                "searchPlaceholder": "Title, host email or event ID",
+                "status": "Status",
+                "restriction": "Restriction",
+                "planCode": "Plan code",
+                "any": "Any",
+                "suspended": "Suspended",
+                "notSuspended": "Not suspended",
+                "closed": "Closed",
+                "includeDeleted": "Include deleted",
+                "host": "Host: {name}",
+                "clearHost": "Show every host"
+            },
+            "columns": {
+                "event": "Event",
+                "host": "Primary host",
+                "plan": "Plan",
+                "dates": "Event date",
+                "created": "Created",
+                "state": "State"
+            },
+            "state": {
+                "ACTIVE": "Live",
+                "DRAFT": "Draft",
+                "SUSPENDED": "Suspended",
+                "CLOSED": "Closed",
+                "DELETED": "Deleted"
+            },
+            "visibility": {
+                "PUBLIC": "Public",
+                "PRIVATE": "Private"
+            },
+            "detail": {
+                "type": "Type",
+                "when": "Event date",
+                "coverageEnds": "Paid until",
+                "notSet": "Not set",
+                "record": "Record",
+                "visibility": "Visibility",
+                "timezone": "Time zone",
+                "created": "Created",
+                "deleted": "Deleted",
+                "suspend": "Suspend",
+                "close": "Close event"
+            },
+            "plan": {
+                "title": "Plan",
+                "none": "No plan",
+                "change": "Change",
+                "drawerTitle": "Change plan",
+                "loading": "Loading plans…",
+                "field": "New plan",
+                "hint": "The event keeps its dates. The host isn't charged or refunded.",
+                "noPlans": "No other plan can be given to this event type.",
+                "save": "Change plan"
+            },
+            "limits": {
+                "title": "Limits",
+                "storage": "Storage",
+                "members": "Members",
+                "ofLimit": "of {limit}",
+                "unlimited": "Unlimited",
+                "fromPlan": "Plan",
+                "purchased": "Bought",
+                "granted": "Free from admin",
+                "edit": "Adjust",
+                "now": "Now",
+                "after": "After"
+            },
+            "storageGrant": {
+                "title": "Free storage",
+                "field": "Free storage",
+                "hint": "The total free storage, not an amount to add. 0 removes it.",
+                "invalid": "Enter a number of GB from 0 to 10240.",
+                "belowUsage": "The event already holds {used}. The limit can't go below that.",
+                "save": "Save storage"
+            },
+            "memberGrant": {
+                "title": "Extra members",
+                "field": "Extra member slots",
+                "hint": "The total on top of the plan, not an amount to add. 0 removes them. Nobody is removed.",
+                "invalid": "Enter a whole number from 0 to 100000.",
+                "save": "Save members"
+            },
+            "reason": {
+                "label": "Reason",
+                "hint": "Kept in the audit log. The host doesn't see it.",
+                "invalid": "Add a reason of up to 500 characters."
+            },
+            "modules": {
+                "title": "Modules",
+                "empty": "This event type has no modules.",
+                "source": {
+                    "PLAN": "Plan",
+                    "ADDON": "Bought",
+                    "ADMIN_GRANT": "Admin",
+                    "NONE": "Not included"
+                },
+                "grant": "Turn on",
+                "revoke": "Take back",
+                "grantedOn": "Turned on by an admin, {date}",
+                "grantTitle": "Turn on {module}",
+                "grantHint": "It stays on, through plan changes, until you take it back. The host isn't charged.",
+                "grantSave": "Turn on",
+                "revokeTitle": "Take back {module}?",
+                "revokeBody": "It turns off unless the plan or a bought unlock still includes it.",
+                "revokeConfirm": "Take back"
+            },
+            "addons": {
+                "title": "Paid add-ons",
+                "empty": "No paid add-ons.",
+                "activated": "since {date}",
+                "remove": "Remove",
+                "removeTitle": "Remove {addon}?",
+                "removeBody": "The host loses what this add-on gives. Nothing is refunded.",
+                "removeConfirm": "Remove add-on"
+            },
+            "hosts": {
+                "title": "Hosts",
+                "primary": "Primary",
+                "noAccount": "No account",
+                "account": "Account"
+            },
+            "restriction": {
+                "suspendedOn": "Suspended on {date}",
+                "closedOn": "Closed on {date}",
+                "explanation": "Sent to the hosts",
+                "note": "Internal note",
+                "lift": "Lift suspension",
+                "liftTitle": "Lift the suspension?",
+                "liftBody": "The event comes back for everyone, and every host is emailed.",
+                "liftConfirm": "Lift suspension"
+            },
+            "operationalReason": {
+                "HOST_REQUEST": "The host asked for it",
+                "DUPLICATE": "Duplicate event",
+                "PAYMENT_ISSUE": "Payment issue",
+                "OTHER": "Other"
+            },
+            "suspend": {
+                "title": "Suspend this event?",
+                "body": "Guests can't see it and hosts can't change it until you lift the suspension. Every host is emailed this statement.",
+                "confirm": "Suspend event"
+            },
+            "close": {
+                "title": "Close this event?",
+                "body": "This can't be undone. The event is deleted after the retention period, and nothing is refunded. Every host is emailed.",
+                "confirm": "Close event",
+                "kind": "Why",
+                "kinds": {
+                    "POLICY": "A rule was broken",
+                    "OPERATIONAL": "Another reason"
+                },
+                "kindHints": {
+                    "POLICY": "The hosts get a statement naming the rule.",
+                    "OPERATIONAL": "The hosts get a plain notice with your reason."
+                }
+            },
+            "statement": {
+                "ground": "Ground",
+                "rule": "Rule",
+                "rulePlaceholder": "Choose a rule",
+                "operationalReason": "Reason",
+                "operationalReasonPlaceholder": "Choose a reason",
+                "explanation": "Explanation for the hosts",
+                "explanationCount": "{count} / 2000 characters, at least 20",
+                "illegalHint": "Name the law or legal provision.",
+                "note": "Internal note",
+                "noteHint": "Only admins see this."
+            }
+        },
         "accounts": {
+            "events": {
+                "title": "Events",
+                "empty": "Hosts no events.",
+                "viewAll": "View all {count}"
+            },
             "title": "Accounts",
             "subtitle": "Create accounts, control event access, and provision live events.",
             "searchLabel": "Search accounts",
@@ -3751,6 +3946,12 @@
             }
         },
         "errors": {
+            "storageGrantBelowUsage": "The event already holds more than that. Ask the host to free some space first.",
+            "moduleAlreadyGranted": "This module is already on for this event. Refresh the page.",
+            "moduleNotAvailable": "This event type doesn't support that module.",
+            "eventAlreadySuspended": "This event is already suspended. Refresh the page.",
+            "eventAlreadyClosed": "This event is already closed. Refresh the page.",
+            "statementInvalid": "Check the reason and the explanation, then try again.",
             "planInUse": "This plan is in use. Archive it instead of deleting it.",
             "onlyDefault": "Make another plan the default for this scope first.",
             "generic": "Something went wrong. Please try again.",

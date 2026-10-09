@@ -13,6 +13,7 @@ import {
     OctagonAlert,
     PackagePlus,
     Palette,
+    PartyPopper,
     Receipt,
     ShoppingBag,
     Smile,
@@ -27,6 +28,7 @@ import { createContext, type ReactNode, useCallback, useContext, useEffect, useM
 
 import { COLLABORATIONS_HASH_ROOT, isCollaborationsHash } from '@/lib/adminCollaborationsRouting';
 import { DEMO_EVENTS_HASH_ROOT, isDemoEventsHash } from '@/lib/adminDemoEventsRouting';
+import { EVENTS_HASH_ROOT, isEventsHash } from '@/lib/adminEvents';
 import { isOrdersHash, ORDERS_HASH_ROOT } from '@/lib/adminOrders';
 import { isPlansHash, PLANS_HASH_ROOT } from '@/lib/adminPlansRouting';
 import { isWithdrawalsHash, WITHDRAWALS_HASH_ROOT } from '@/lib/adminWithdrawalsRouting';
@@ -46,6 +48,7 @@ export type AdminTab =
     | 'themeFonts'
     | 'demoEvents'
     | 'billingOps'
+    | 'events'
     | 'orders'
     | 'withdrawals'
     | 'accounts'
@@ -59,10 +62,9 @@ export type AdminTabItem = {
     icon: LucideIcon;
 };
 
-// The console has no event search: the only ids an admin can reach are the ones
-// a panel already shows them. Carrying that id — and the title, when a row knows
-// one — into the panel that acts on it keeps assignment and add-on removal usable
-// without database access.
+// Carrying an id a panel already shows — and the title, when a row knows one —
+// into the panel that acts on it keeps assignment and add-on removal usable
+// without retyping it.
 export type AdminFocus = {
     eventId?: string;
     eventTitle?: string;
@@ -70,6 +72,9 @@ export type AdminFocus = {
     // An account's orders: the Orders list opens filtered to this buyer.
     buyerId?: string;
     buyerLabel?: string;
+    // An account's events: the Events list opens filtered to this host.
+    hostUserId?: string;
+    hostLabel?: string;
     // A 500's reference, carried from a bug report into the Errors list.
     errorRef?: string;
 };
@@ -105,6 +110,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     themeFonts: '#theme-fonts',
     demoEvents: DEMO_EVENTS_HASH_ROOT,
     billingOps: '#billing-ops',
+    events: EVENTS_HASH_ROOT,
     orders: ORDERS_HASH_ROOT,
     withdrawals: WITHDRAWALS_HASH_ROOT,
     accounts: '#accounts',
@@ -125,7 +131,7 @@ const AdminNavigationContext = createContext<
     | undefined
 >(undefined);
 
-// `#plans/...`, `#collaborations/...`, `#withdrawals/...` and `#orders/...` carry their own sub-route, parsed by
+// `#plans/...`, `#collaborations/...`, `#withdrawals/...`, `#events/...` and `#orders/...` carry their own sub-route, parsed by
 // the section itself; legacy `#event-plans`, `#modules`, `#event-types` land
 // on Plans too so old links keep working.
 function currentHashTab(): AdminTab {
@@ -136,6 +142,7 @@ function currentHashTab(): AdminTab {
     if (isDemoEventsHash(hash)) return 'demoEvents';
     if (isWithdrawalsHash(hash)) return 'withdrawals';
     if (isOrdersHash(hash)) return 'orders';
+    if (isEventsHash(hash)) return 'events';
     return HASH_TO_TAB[hash] ?? 'metrics';
 }
 
@@ -195,6 +202,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'themeFonts', label: t('themeFonts'), icon: Type },
             { key: 'demoEvents', label: t('demoEvents'), icon: MonitorPlay },
             { key: 'accounts', label: t('accounts'), icon: Users },
+            { key: 'events', label: t('events'), icon: PartyPopper },
             { key: 'orders', label: t('orders'), icon: ShoppingBag },
             { key: 'billingOps', label: t('billingOps'), icon: Receipt },
             { key: 'withdrawals', label: t('withdrawals'), icon: Undo2 },

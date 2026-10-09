@@ -389,7 +389,8 @@ export interface AppRateLimitConfigDto {
     windowSeconds: number;
 }
 
-export type ReportTargetType = 'POST' | 'COMMENT' | 'MEMBER' | 'STORY' | 'MEDIA' | 'WISHBOOK_ENTRY' | 'PLAYLIST_SUGGESTION';
+// EVENT is never reported: it is the target of a decision an admin takes on a whole event directly.
+export type ReportTargetType = 'POST' | 'COMMENT' | 'MEMBER' | 'STORY' | 'MEDIA' | 'WISHBOOK_ENTRY' | 'PLAYLIST_SUGGESTION' | 'EVENT';
 export type ReportReason = 'SPAM' | 'HARASSMENT' | 'INAPPROPRIATE_CONTENT' | 'IMPERSONATION' | 'ILLEGAL_CONTENT' | 'COPYRIGHT' | 'OTHER';
 
 // member-roles-fe-integration.md §5.1 and §9. One role in an event type's
@@ -1018,6 +1019,8 @@ export interface EventSuspensionDto {
     deletesOn: string | null; // set with closedAt
     contactEmail: string | null; // where to write to disagree; null = leave the address out
     primaryHost: boolean; // the caller is the primary host: show the billing-and-withdrawal link
+    // Added 2026-10-09: set only when an admin closed it for a non-policy reason; ground and rule are then null.
+    operationalReason: OperationalCloseReason | null;
 }
 
 export interface CheckoutResponseDto {
@@ -3290,7 +3293,11 @@ export type AdminAuditAction =
     | 'EVENT_SUSPENDED'
     | 'EVENT_SUSPENSION_LIFTED'
     | 'EVENT_CLOSED'
-    | 'STATEMENT_OF_REASONS_SENT';
+    | 'STATEMENT_OF_REASONS_SENT'
+    | 'EVENT_STORAGE_GRANTED'
+    | 'EVENT_MEMBERS_GRANTED'
+    | 'EVENT_MODULE_GRANTED'
+    | 'EVENT_MODULE_REVOKED';
 
 // The statement of reasons sent with every moderation action (Guidelines §22).
 export type StatementGround = 'ILLEGAL_CONTENT' | 'GUIDELINES_BREACH';
@@ -3370,6 +3377,7 @@ export interface ModerationDecisionDto {
     eventSuspended: boolean;
     ground: StatementGround | null; // null on dismissals and on decisions before 2026-10-02
     rule: GuidelinesRule | null;
+    operationalReason: OperationalCloseReason | null; // set instead of ground and rule on an operational close
     explanation: string | null;
     reportCount: number;
     adminUserId: string;
@@ -3624,4 +3632,104 @@ export interface AdminThemeFontPatchDto {
     familyName?: string;
     fallback?: 'serif' | 'sans-serif';
     archived?: boolean;
+}
+
+// Why an admin closed an event when no rule was broken (admin-event-management-fe-integration.md §7).
+export type OperationalCloseReason = 'HOST_REQUEST' | 'DUPLICATE' | 'PAYMENT_ISSUE' | 'OTHER';
+
+// admin-event-management-fe-integration.md. userId and email are null for a host with no account.
+export interface AdminEventHostDto {
+    userId: string | null;
+    email: string | null;
+    displayName: string | null;
+    primary: boolean;
+}
+
+// GET /api/admin/events (Page<AdminEventSummaryDto>), newest first.
+export interface AdminEventSummaryDto {
+    id: string;
+    title: string | null;
+    eventType: string;
+    status: EventStatus;
+    planCode: string | null;
+    startAt: string | null;
+    endAt: string | null;
+    createdAt: string;
+    primaryHost: AdminEventHostDto | null;
+    suspendedAt: string | null;
+    closedAt: string | null;
+    deletedAt: string | null;
+}
+
+export type AdminEventModuleSource = 'PLAN' | 'ADDON' | 'ADMIN_GRANT' | 'NONE';
+
+// GET /api/admin/events/{id}; every grant and revoke answers with it, already updated.
+export interface AdminEventDetailDto {
+    id: string;
+    title: string | null;
+    eventType: string;
+    status: EventStatus;
+    visibility: EventVisibility | null;
+    timezone: string | null;
+    startAt: string | null;
+    endAt: string | null;
+    coverageEndsAt: string | null;
+    createdAt: string;
+    deletedAt: string | null;
+    // storageBytes and maxMembers null = unlimited.
+    plan: { id: string; code: string; name: string; storageBytes: number | null; maxMembers: number | null; moduleKeys: ModuleKey[] } | null;
+    usage: {
+        storageBytes: number;
+        planStorageBytes: number | null;
+        purchasedExtraStorageBytes: number;
+        grantedStorageBytes: number;
+        storageLimitBytes: number | null; // plan + purchased + granted; null = unlimited
+        memberCount: number;
+        planMaxMembers: number | null;
+        extraMemberSlots: number;
+        memberLimit: number | null; // planMaxMembers + extraMemberSlots; null = unlimited
+    };
+    hosts: AdminEventHostDto[]; // primary host first
+    addons: {
+        code: string;
+        name: string;
+        kind: PaidServiceKind;
+        grantsModuleKey: string | null;
+        grantsStorageBytes: number | null;
+        activatedAt: string | null;
+    }[];
+    // One row per module the event's type supports.
+    modules: { moduleKey: ModuleKey; enabled: boolean; source: AdminEventModuleSource }[];
+    moduleGrants: { moduleKey: ModuleKey; reason: string; grantedByUserId: string | null; grantedAt: string }[];
+    // Null unless suspended or closed.
+    suspension: { suspendedAt: string; closedAt: string | null; decision: ModerationDecisionDto | null } | null;
+}
+
+// PUT /api/admin/events/{id}/grants/storage. A total, not an increment; 0 removes the grant.
+export interface AdminStorageGrantRequestDto {
+    grantedStorageBytes: number;
+    reason: string;
+}
+
+// PUT /api/admin/events/{id}/grants/members. A total, on top of the plan's maxMembers.
+export interface AdminMemberGrantRequestDto {
+    extraMemberSlots: number;
+    reason: string;
+}
+
+// POST /api/admin/events/{id}/suspend.
+export interface AdminEventSuspendRequestDto {
+    ground: StatementGround;
+    rule: GuidelinesRule;
+    explanation: string;
+    note: string | null;
+}
+
+// POST /api/admin/events/{id}/close: ground + rule, or operationalReason, never both.
+export interface AdminEventCloseRequestDto {
+    ground: StatementGround | null;
+    rule: GuidelinesRule | null;
+    operationalReason: OperationalCloseReason | null;
+    explanation: string;
+    note: string | null;
 }
