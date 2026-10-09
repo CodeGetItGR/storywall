@@ -432,6 +432,13 @@ export const endpoints = {
         },
         events: {
             provision: '/api/admin/events',
+            list: '/api/admin/events',
+            byId: (eventId: string) => `/api/admin/events/${eventId}`,
+            storageGrant: (eventId: string) => `/api/admin/events/${eventId}/grants/storage`,
+            memberGrant: (eventId: string) => `/api/admin/events/${eventId}/grants/members`,
+            moduleGrant: (eventId: string, moduleKey: string) => `/api/admin/events/${eventId}/grants/modules/${encodeURIComponent(moduleKey)}`,
+            suspend: (eventId: string) => `/api/admin/events/${eventId}/suspend`,
+            close: (eventId: string) => `/api/admin/events/${eventId}/close`,
             planTier: (eventId: string) => `/api/admin/events/${eventId}/plan-tier`,
             addon: (eventId: string, code: string) => `/api/admin/events/${eventId}/addons/${encodeURIComponent(code)}`,
             collaborationRedemptionVoid: (eventId: string) => `/api/admin/events/${eventId}/collaboration-redemption/void`,

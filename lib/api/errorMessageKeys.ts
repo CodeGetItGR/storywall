@@ -208,6 +208,8 @@ export type ApiErrorMessageKey =
     | 'memberRoleFeaturedMember'
     | 'memberRoleCapReached'
     | 'memberRoleTextChanged'
+    | 'storageGrantBelowUsage'
+    | 'moduleAlreadyGranted'
     | 'withdrawalNotPrimaryHost'
     | 'oauthEmailUnverified';
 
@@ -417,6 +419,8 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.MEMBER_ROLE_FEATURED_MEMBER]: 'memberRoleFeaturedMember',
     [ERROR_CODES.MEMBER_ROLE_CAP_REACHED]: 'memberRoleCapReached',
     [ERROR_CODES.MEMBER_ROLE_TEXT_CHANGED]: 'memberRoleTextChanged',
+    [ERROR_CODES.ADMIN_STORAGE_GRANT_BELOW_USAGE]: 'storageGrantBelowUsage',
+    [ERROR_CODES.MODULE_ALREADY_GRANTED]: 'moduleAlreadyGranted',
 } satisfies Record<KnownApiErrorCode, ApiErrorMessageKey>;
 
 export function getApiErrorMessageKey(code: number | string | undefined): ApiErrorMessageKey | undefined {

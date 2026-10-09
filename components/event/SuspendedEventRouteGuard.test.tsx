@@ -31,6 +31,7 @@ const suspension: EventSuspensionDto = {
     suspendedAt: '2026-10-02T10:00:00Z',
     ground: 'GUIDELINES_BREACH',
     rule: 'HARASSMENT',
+    operationalReason: null,
     explanation: 'Insults aimed at one guest, twice.',
     reference: 'AB12CD34',
     closedAt: null,

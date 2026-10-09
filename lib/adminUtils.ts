@@ -30,6 +30,12 @@ export type AdminErrorMessageKey =
     | 'coverageOptionLastInitial'
     | 'coverageOptionDuplicate'
     | 'demoDesignationInvalid'
+    | 'storageGrantBelowUsage'
+    | 'moduleAlreadyGranted'
+    | 'moduleNotAvailable'
+    | 'eventAlreadySuspended'
+    | 'eventAlreadyClosed'
+    | 'statementInvalid'
     | 'generic';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -93,6 +99,12 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.COVERAGE_OPTION_LAST_INITIAL) return 'coverageOptionLastInitial';
     if (code === ERROR_CODES.COVERAGE_OPTION_DUPLICATE) return 'coverageOptionDuplicate';
     if (code === ERROR_CODES.DEMO_DESIGNATION_INVALID) return 'demoDesignationInvalid';
+    if (code === ERROR_CODES.ADMIN_STORAGE_GRANT_BELOW_USAGE) return 'storageGrantBelowUsage';
+    if (code === ERROR_CODES.MODULE_ALREADY_GRANTED) return 'moduleAlreadyGranted';
+    if (code === ERROR_CODES.MODULE_NOT_AVAILABLE) return 'moduleNotAvailable';
+    if (code === ERROR_CODES.EVENT_ALREADY_SUSPENDED) return 'eventAlreadySuspended';
+    if (code === ERROR_CODES.EVENT_ALREADY_CLOSED) return 'eventAlreadyClosed';
+    if (code === ERROR_CODES.MODERATION_DECISION_INVALID) return 'statementInvalid';
     return 'generic';
 }
 
