@@ -16,6 +16,7 @@ import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useCreateEventSession, useDeleteEventSession, useEventSessions, useUpdateEventSession } from '@/hooks/useEventSessions';
+import { useActiveModuleCopy } from '@/hooks/useModuleCopy';
 import { useScheduleSessionLimit } from '@/hooks/useScheduleSessionLimit';
 import type { EventSessionResponseDto } from '@/lib/api/types';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
@@ -28,6 +29,7 @@ import { cn } from '@/lib/utils';
 export function ScheduleScreen() {
     const { activeEvent, eventId, isHost } = useEventRouteContext();
     const t = useTranslations('SchedulePage');
+    const scheduleCopy = useActiveModuleCopy('schedule');
     const tCreateEvent = useTranslations('CreateEventPage');
     const toErrorMessage = useApiErrorMessage();
     const locale = useLocale();
@@ -153,12 +155,12 @@ export function ScheduleScreen() {
 
     return (
         <ModulePageShell
-            title={t('title')}
+            title={scheduleCopy.name}
             icon={Calendar}
             iconClassName="text-amber-500"
             backLabel={t('back')}
             backHref={routes.events.feed(eventId)}
-            subtitle={t('subtitle')}
+            subtitle={scheduleCopy.description}
             notice={
                 isHost && !canWrite ? (
                     <ModuleNotice>{t('host.readOnly')}</ModuleNotice>

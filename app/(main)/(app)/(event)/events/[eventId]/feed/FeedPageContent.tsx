@@ -24,6 +24,7 @@ import { StoryModal } from '@/components/story/StoryModal';
 import { useGiftAccount, useHideMobileTabBarOnScroll } from '@/hooks';
 import { eventKeys } from '@/hooks/useEvent';
 import { useFeedItems } from '@/hooks/useFeedItems';
+import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { coverPhotoSettingsHref } from '@/lib/manageSectionTargets';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
@@ -36,6 +37,7 @@ export function FeedPageContent() {
     const { currentMemberRsvpId, event, eventId, isFetchingNextPage, isHost, loadMoreRef, loadingMoreLabel, moduleFlags, posts } = useFeedPage();
     const gifts = useGiftAccount(eventId);
     const feedItems = useFeedItems(posts, event.partnerBranding);
+    const giftName = useModuleCopy(event.eventType)('wishlist').name;
     const queryClient = useQueryClient();
     // An admin replacing a preset's art can leave the event's illustration URL dead; refetch once per URL.
     const refetchedIllustration = useRef<string | null>(null);
@@ -90,7 +92,7 @@ export function FeedPageContent() {
                             {moduleFlags.wishlist && !gifts.isLoading && gifts.data && (
                                 <Link
                                     href={routes.events.tools.gifts(eventId)}
-                                    aria-label={t('giftAccount')}
+                                    aria-label={giftName}
                                     className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-background/92 text-ink shadow-[0_8px_22px_rgba(36,31,26,0.18)] transition-transform hover:-translate-y-0.5"
                                 >
                                     <Image src="/icons/present.svg" alt="" width={22} height={22} className="h-5 w-5" unoptimized />

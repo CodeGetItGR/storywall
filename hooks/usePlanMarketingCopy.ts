@@ -4,16 +4,19 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useMemo } from 'react';
 
 import { useLocalizedText } from '@/hooks/useLocalizedText';
+import { useModuleCopyResolver } from '@/hooks/useModuleCopy';
+import type { EventTypeConvention } from '@/lib/api/types';
 import type { LandingPlanCopy } from '@/lib/landingPricing';
 
 export function usePlanMarketingCopy() {
     const t = useTranslations('LandingPage.pricing');
-    const tModules = useTranslations('Modules');
+    const moduleCopy = useModuleCopyResolver();
     const localizedText = useLocalizedText();
 
+    // A module's line on the plan's card, as the plan's event type calls it.
     const moduleName = useCallback(
-        (moduleKey: string) => (tModules.has(`${moduleKey}.name`) ? tModules(`${moduleKey}.name`) : moduleKey),
-        [tModules],
+        (moduleKey: string, eventTypeKey: EventTypeConvention | null) => moduleCopy(eventTypeKey, moduleKey).cardLabel,
+        [moduleCopy],
     );
     const copy = useMemo<LandingPlanCopy>(
         () => ({

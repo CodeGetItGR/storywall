@@ -5,6 +5,14 @@ import { EventThemeStep } from '@/components/event/create/EventThemeStep';
 
 const form = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
 
+vi.mock('@/hooks/useModuleCopy', () => {
+    const copy = (moduleKey: string) => ({ name: moduleKey, description: `${moduleKey} description`, cardLabel: moduleKey, Icon: () => null });
+    return {
+        useModuleCopy: () => copy,
+        useActiveModuleCopy: copy,
+        useModuleCopyResolver: () => (_eventType: unknown, moduleKey: string) => copy(moduleKey),
+    };
+});
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
 vi.mock('@/providers/createEvent/CreateEventFormContext', () => ({ useCreateEventForm: () => form.current }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'Could not load themes.' }));

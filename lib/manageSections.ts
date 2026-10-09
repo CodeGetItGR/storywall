@@ -8,6 +8,9 @@ export type ManageSection = 'overview' | 'settings' | 'theme' | 'rsvp' | 'member
 
 export const manageSections: ManageSection[] = ['overview', 'settings', 'theme', 'rsvp', 'members', 'gift', 'billing', 'help', 'danger'];
 
+// Sections named after a module show that module's name for the event type.
+export const manageSectionModuleKeys: Partial<Record<ManageSection, string>> = { rsvp: 'rsvp', theme: 'theme' };
+
 export function parseManageSection(value: string | null): ManageSection {
     return manageSections.find((section) => section === value) ?? 'overview';
 }
@@ -27,7 +30,10 @@ export function visibleManageSections({
     themeAvailable?: boolean;
 }): ManageSection[] {
     return manageSections.filter(
-        (section) => (section !== 'danger' || canDelete) && (section !== 'rsvp' || rsvpAvailable) && (section !== 'gift' || giftAvailable) &&
+        (section) =>
+            (section !== 'danger' || canDelete) &&
+            (section !== 'rsvp' || rsvpAvailable) &&
+            (section !== 'gift' || giftAvailable) &&
             (section !== 'theme' || themeAvailable),
     );
 }

@@ -1,8 +1,8 @@
 'use client';
 
 import { CalendarDays } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
+import { useActiveModuleCopy } from '@/hooks/useModuleCopy';
 import { formatDate } from '@/lib/datetime';
 import { cn } from '@/lib/utils';
 
@@ -14,7 +14,7 @@ type ScheduleStoryDateBadgeProps = {
 };
 
 export function ScheduleStoryDateBadge({ date, locale, size = 'md', className }: ScheduleStoryDateBadgeProps) {
-    const t = useTranslations('StoryAvatar');
+    const scheduleName = useActiveModuleCopy('schedule').name;
     const isSmall = size === 'sm';
 
     if (!date) {
@@ -44,7 +44,7 @@ export function ScheduleStoryDateBadge({ date, locale, size = 'md', className }:
         <div
             className={cn('flex items-center justify-center rounded-full p-0.75 bg-gradient-brand', isSmall ? 'h-9 w-9' : 'h-15.5 w-15.5', className)}
             role="img"
-            aria-label={t('scheduleStory')}
+            aria-label={scheduleName}
             title={label}
         >
             <div className="flex h-full w-full items-center justify-center rounded-full bg-background p-0.5">

@@ -5,20 +5,18 @@ import Section from '@/components/manage/Section';
 import { useBillingUpgradeRows } from '@/hooks/useBillingUpgradeRows';
 import { useDurationPicks } from '@/hooks/useDurationPicks';
 import type { BillingUpgradeTarget } from '@/hooks/useEventBillingPanel';
-import type { PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import type { PlanTierResponseDto } from '@/lib/api/types';
 
 export function BillingUpgradeSection({
     eventId,
     targets,
     currentPlan,
     extraStorageBytes,
-    modules,
 }: {
     eventId: string;
     targets: BillingUpgradeTarget[];
     currentPlan: PlanTierResponseDto | null;
     extraStorageBytes: number;
-    modules: PlatformModuleResponseDto[];
 }) {
     const t = useTranslations('EventPlanSettingsPage');
     const { picks, pickDuration } = useDurationPicks();
@@ -31,7 +29,12 @@ export function BillingUpgradeSection({
             {/* Plans */}
             <ul className="divide-y divide-ink/10">
                 {rows.map((row) => (
-                    <BillingUpgradeRow key={row.code} row={row} modules={modules} onDurationChangeAction={pickDuration} />
+                    <BillingUpgradeRow
+                        key={row.code}
+                        row={row}
+                        eventTypeKey={currentPlan?.eventTypeKey ?? null}
+                        onDurationChangeAction={pickDuration}
+                    />
                 ))}
             </ul>
         </Section>

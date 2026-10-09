@@ -210,6 +210,9 @@ export type ApiErrorMessageKey =
     | 'memberRoleTextChanged'
     | 'storageGrantBelowUsage'
     | 'moduleAlreadyGranted'
+    | 'moduleCopyIncomplete'
+    | 'moduleCopyTooLong'
+    | 'moduleCopyModuleUnsupported'
     | 'withdrawalNotPrimaryHost'
     | 'oauthEmailUnverified';
 
@@ -421,6 +424,9 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.MEMBER_ROLE_TEXT_CHANGED]: 'memberRoleTextChanged',
     [ERROR_CODES.ADMIN_STORAGE_GRANT_BELOW_USAGE]: 'storageGrantBelowUsage',
     [ERROR_CODES.MODULE_ALREADY_GRANTED]: 'moduleAlreadyGranted',
+    [ERROR_CODES.MODULE_COPY_INCOMPLETE]: 'moduleCopyIncomplete',
+    [ERROR_CODES.MODULE_COPY_TOO_LONG]: 'moduleCopyTooLong',
+    [ERROR_CODES.MODULE_COPY_MODULE_UNSUPPORTED]: 'moduleCopyModuleUnsupported',
 } satisfies Record<KnownApiErrorCode, ApiErrorMessageKey>;
 
 export function getApiErrorMessageKey(code: number | string | undefined): ApiErrorMessageKey | undefined {

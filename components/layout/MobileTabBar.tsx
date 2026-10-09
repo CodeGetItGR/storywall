@@ -14,6 +14,7 @@ import {
     isPathActive,
     TabLink,
 } from '@/components/layout/mobile-tab-bar';
+import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { useHasOpenOverlay } from '@/hooks/useOverlayPresence';
 import { usePinchZoomBox } from '@/hooks/usePinchZoomBox';
 import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
@@ -39,6 +40,7 @@ export function MobileTabBar() {
     const hasOpenOverlay = useHasOpenOverlay();
     const pinchZoomBox = usePinchZoomBox();
     const activeEvent = useActiveEvent();
+    const moduleCopy = useModuleCopy(activeEvent?.eventType);
     const isHost = useIsHost();
     const isLoading = useEventContextLoading();
     const isFeedDetailPage = isFeedRoute(pathname);
@@ -131,7 +133,7 @@ export function MobileTabBar() {
                                 <TabLink
                                     href={routes.events.tools.playlist(activeEvent.id)}
                                     icon="/icons/music.svg"
-                                    label={t('items.playlist')}
+                                    label={moduleCopy('playlist').name}
                                     active={playlistActive}
                                 />
                             </div>
@@ -140,7 +142,7 @@ export function MobileTabBar() {
                         {/* RSVP */}
                         {rsvpTabAvailable && (
                             <div className="flex h-full items-center justify-center">
-                                <TabLink href={rsvpHref} icon="/icons/rsvp.png" label={t('items.rsvp')} active={rsvpActive} />
+                                <TabLink href={rsvpHref} icon="/icons/rsvp.png" label={moduleCopy('rsvp').name} active={rsvpActive} />
                             </div>
                         )}
 

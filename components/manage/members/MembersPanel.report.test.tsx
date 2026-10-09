@@ -7,12 +7,22 @@ import { MembersPanel } from './MembersPanel';
 
 let activeMemberId: string | null = 'm1';
 
+vi.mock('@/hooks/useModuleCopy', () => {
+    const copy = (moduleKey: string) => ({ name: moduleKey, description: `${moduleKey} description`, cardLabel: moduleKey, Icon: () => null });
+    return {
+        useModuleCopy: () => copy,
+        useActiveModuleCopy: copy,
+        useModuleCopyResolver: () => (_eventType: unknown, moduleKey: string) => copy(moduleKey),
+    };
+});
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
 vi.mock('next/navigation', () => ({ useSearchParams: () => new URLSearchParams() }));
 vi.mock('@/hooks', () => ({ useAppConfig: () => ({ data: { reportTargetTypes: ['MEMBER'] } }) }));
 vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: () => ({ data: { reportTargetTypes: ['MEMBER'] } }) }));
 vi.mock('@/hooks/useBilling', () => ({ useUpgradeOptions: () => ({ data: [] }) }));
-vi.mock('@/hooks/useCoHostCapacity', () => ({ useCoHostCapacity: () => ({ isFull: false, used: 0, limit: null, percent: 0, valueLabel: '', fullNotice: null }) }));
+vi.mock('@/hooks/useCoHostCapacity', () => ({
+    useCoHostCapacity: () => ({ isFull: false, used: 0, limit: null, percent: 0, valueLabel: '', fullNotice: null }),
+}));
 vi.mock('@/hooks/useMemberAvatarUrl', () => ({ useMemberAvatarUrl: () => () => null }));
 vi.mock('@/hooks/useMemberRoleLabel', () => ({ useMemberRoleLabel: () => null }));
 vi.mock('@/hooks/useMemberModeration', () => ({

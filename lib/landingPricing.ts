@@ -1,4 +1,11 @@
-import type { AppMediaConfigDto, CoverageOptionResponseDto, LocalizedText, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import type {
+    AppMediaConfigDto,
+    CoverageOptionResponseDto,
+    EventTypeConvention,
+    LocalizedText,
+    PlanTierResponseDto,
+    PlatformModuleResponseDto,
+} from '@/lib/api/types';
 import { promotedOptionAmountMinor } from '@/lib/billing';
 import { formatBytes, numberFormat } from '@/lib/format';
 import { activeRoles, type MemberRoleCatalog } from '@/lib/memberRoles';
@@ -115,6 +122,9 @@ function sortedModuleKeys(moduleKeys: string[], modules: PlatformModuleResponseD
         .sort((left, right) => (sortOrderByKey.get(left) ?? 0) - (sortOrderByKey.get(right) ?? 0));
 }
 
+// A module's line on a plan card, as the plan's event type calls it.
+export type ModuleCardLabel = (moduleKey: string, eventTypeKey: EventTypeConvention | null) => string;
+
 // How many role names the member roles line shows.
 const MEMBER_ROLE_EXAMPLES = 2;
 
@@ -124,24 +134,25 @@ const MEMBER_ROLE_EXAMPLES = 2;
 function moduleFeatureLabel(
     moduleKey: string,
     plan: PlanTierResponseDto,
-    moduleName: (moduleKey: string) => string,
+    moduleName: ModuleCardLabel,
     copy: LandingPlanCopy,
     memberRoles: MemberRoleCatalog,
 ): string | null {
-    if (!plan.moduleConfigs) return moduleName(moduleKey);
+    const label = () => moduleName(moduleKey, plan.eventTypeKey);
+    if (!plan.moduleConfigs) return label();
 
     const config: ConfigObject | undefined = plan.moduleConfigs[moduleKey];
     switch (moduleKey) {
         case 'schedule': {
             const max = configCount(config, 'maxSections');
-            return max === 0 ? null : copy.moduleWithDetail(moduleName(moduleKey), copy.scheduleSessions(max));
+            return max === 0 ? null : copy.moduleWithDetail(label(), copy.scheduleSessions(max));
         }
         case 'co_hosts': {
             const max = configCount(config, 'maxCoHosts');
             return max === 0 ? null : copy.coHosts(max);
         }
         case 'gallery':
-            return config?.qrUploadEnabled === true ? copy.moduleWithDetail(moduleName(moduleKey), copy.qrUpload) : moduleName(moduleKey);
+            return config?.qrUploadEnabled === true ? copy.moduleWithDetail(label(), copy.qrUpload) : label();
         case 'member_roles': {
             // Plans don't cap roles: the count is the event type's catalog, and
             // the plan only decides whether members may type their own.
@@ -152,7 +163,7 @@ function moduleFeatureLabel(
             return copy.memberRoles(roles.length, custom, examples);
         }
         default:
-            return moduleName(moduleKey);
+            return label();
     }
 }
 
@@ -168,7 +179,7 @@ export function buildLandingPlan(
     previousPlan: PlanTierResponseDto | undefined,
     modules: PlatformModuleResponseDto[],
     media: AppMediaConfigDto,
-    moduleName: (moduleKey: string) => string,
+    moduleName: ModuleCardLabel,
     copy: LandingPlanCopy,
     inheritedModuleKeys?: string[],
     memberRoles: MemberRoleCatalog = {},

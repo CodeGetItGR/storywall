@@ -1,9 +1,22 @@
 'use client';
 
-import { BookHeart, CalendarCheck, CalendarDays, Gift, HelpCircle, Images, LayoutDashboard, type LucideIcon, QrCode, Ticket, UserRound } from 'lucide-react';
+import {
+    BookHeart,
+    CalendarCheck,
+    CalendarDays,
+    Gift,
+    HelpCircle,
+    Images,
+    LayoutDashboard,
+    type LucideIcon,
+    QrCode,
+    Ticket,
+    UserRound,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { useGiftAccount } from '@/hooks/useGiftAccount';
+import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { isEventDeleted, readableModuleKeys } from '@/lib/eventLifecycle';
 import { canEditOwnRole, ROLE_SHEET_VALUE } from '@/lib/memberRoles';
 import { isGalleryQrFeatureEnabled } from '@/lib/qrLinks';
@@ -30,6 +43,7 @@ export function useToolsMenuItems(): ToolMenuItem[] {
     // event-scoped requests for it.
     const giftAccount = useGiftAccount(useRouteEventId());
     const availableModules = readableModuleKeys(activeEvent);
+    const moduleCopy = useModuleCopy(activeEvent?.eventType);
 
     // A suspended StoryWall shows only the suspended view: no tool menu.
     if (!activeEvent || activeEvent.suspended) return [];
@@ -38,9 +52,11 @@ export function useToolsMenuItems(): ToolMenuItem[] {
     // PDF are the only tools that still do anything.
     const isDeleted = isEventDeleted(activeEvent);
 
-    const toolDefinitions: { key: string; href: string; icon: LucideIcon; moduleKey?: string }[] = [
+    // copyKey: the module whose event-type name and description label the tool.
+    const toolDefinitions: { key: string; href: string; icon: LucideIcon; moduleKey?: string; copyKey?: string }[] = [
         { key: 'rsvp', href: routes.events.tools.rsvpSubmit(activeEvent.id), icon: CalendarCheck, moduleKey: 'rsvp' },
-        { key: 'schedule', href: routes.events.tools.schedule(activeEvent.id), icon: CalendarDays },
+        // Always on, so not filtered by availability; copyKey still names it.
+        { key: 'schedule', href: routes.events.tools.schedule(activeEvent.id), icon: CalendarDays, copyKey: 'schedule' },
         { key: 'gallery', href: routes.events.tools.gallery(activeEvent.id), icon: Images, moduleKey: 'gallery' },
         { key: 'wishbook', href: routes.events.tools.wishbook(activeEvent.id), icon: BookHeart, moduleKey: 'wishbook' },
         { key: 'gifts', href: routes.events.tools.gifts(activeEvent.id), icon: Gift, moduleKey: 'wishlist' },
@@ -53,13 +69,17 @@ export function useToolsMenuItems(): ToolMenuItem[] {
         .filter((tool) => tool.key !== 'gifts' || isHost || Boolean(giftAccount.data))
         .filter((tool) => tool.key !== 'myRole' || (!isDemoVisitor && canEditOwnRole(activeEvent, activeMember)))
         .filter((tool) => !isDeleted || tool.key === 'gallery' || tool.key === 'wishbook')
-        .map((tool) => ({
-            key: tool.key,
-            href: tool.href,
-            icon: tool.icon,
-            label: t(`items.${tool.key}.label`),
-            description: t(`items.${tool.key}.description`),
-        }));
+        .map((tool) => {
+            const copyKey = tool.copyKey ?? tool.moduleKey;
+            const copy = copyKey && copyKey !== 'member_roles' ? moduleCopy(copyKey) : null;
+            return {
+                key: tool.key,
+                href: tool.href,
+                icon: tool.icon,
+                label: copy?.name ?? t(`items.${tool.key}.label`),
+                description: copy?.description ?? t(`items.${tool.key}.description`),
+            };
+        });
 }
 
 /** The host's own administrative destinations. The dashboard is one

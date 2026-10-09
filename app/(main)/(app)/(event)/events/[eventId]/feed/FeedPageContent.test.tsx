@@ -10,6 +10,14 @@ import { FeedPageContent } from './FeedPageContent';
 import { FeedPageProvider } from './FeedPageContext';
 
 // Only the banner wiring is under test: every other section is stubbed out.
+vi.mock('@/hooks/useModuleCopy', () => {
+    const copy = (moduleKey: string) => ({ name: moduleKey, description: `${moduleKey} description`, cardLabel: moduleKey, Icon: () => null });
+    return {
+        useModuleCopy: () => copy,
+        useActiveModuleCopy: copy,
+        useModuleCopyResolver: () => (_eventType: unknown, moduleKey: string) => copy(moduleKey),
+    };
+});
 vi.mock('@/components/feed/Banner', () => ({
     Banner: ({ illustrationUrl, onIllustrationError }: { illustrationUrl?: string | null; onIllustrationError?: () => void }) => (
         <button data-testid="banner" data-illustration={illustrationUrl ?? ''} onClick={onIllustrationError} />

@@ -140,9 +140,9 @@ describe('useLandingPricingPlans', () => {
         const config = makeConfig();
         config.translations = {
             eventTypes: {
-                WEDDING: { name: { en: 'Wedding', el: 'Γάμος' }, tagline: {}, voice: {} as never },
-                SOCIAL_EVENT: { name: { en: 'Party' }, tagline: {}, voice: {} as never },
-                REUNION: { name: { en: 'Reunion' }, tagline: {}, voice: {} as never },
+                WEDDING: { name: { en: 'Wedding', el: 'Γάμος' }, tagline: {}, voice: {} as never, modules: {} },
+                SOCIAL_EVENT: { name: { en: 'Party' }, tagline: {}, voice: {} as never, modules: {} },
+                REUNION: { name: { en: 'Reunion' }, tagline: {}, voice: {} as never, modules: {} },
             },
         };
         config.landingCategories = [

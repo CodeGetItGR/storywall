@@ -6,6 +6,14 @@ import type { EventDetailResponseDto } from '@/lib/api/types';
 
 const picker = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
 
+vi.mock('@/hooks/useModuleCopy', () => {
+    const copy = (moduleKey: string) => ({ name: moduleKey, description: `${moduleKey} description`, cardLabel: moduleKey, Icon: () => null });
+    return {
+        useModuleCopy: () => copy,
+        useActiveModuleCopy: copy,
+        useModuleCopyResolver: () => (_eventType: unknown, moduleKey: string) => copy(moduleKey),
+    };
+});
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
 vi.mock('@/hooks/useThemePicker', () => ({ useThemePicker: () => picker.current }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'Could not save.' }));
@@ -47,13 +55,13 @@ describe('ThemePicker', () => {
     it("renders nothing when the plan doesn't include themes", () => {
         state({ available: false });
         renderPicker();
-        expect(screen.queryByText('label')).toBeNull();
+        expect(screen.queryByText('theme')).toBeNull();
     });
 
     it('is a radio group named by its heading', () => {
         state();
         renderPicker();
-        expect(screen.getByRole('radiogroup', { name: 'label' })).toBeInTheDocument();
+        expect(screen.getByRole('radiogroup', { name: 'theme' })).toBeInTheDocument();
     });
 
     it('offers "No theme" and every preset, with the current one checked', () => {

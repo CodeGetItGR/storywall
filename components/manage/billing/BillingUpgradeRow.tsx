@@ -5,17 +5,17 @@ import { useTranslations } from 'next-intl';
 import { PlanUpgradeModules } from '@/components/manage/billing/PlanUpgradeModules';
 import { DurationPicker } from '@/components/plan/DurationPicker';
 import type { BillingUpgradeRow as BillingUpgradeRowData } from '@/hooks/useBillingUpgradeRows';
-import type { PlatformModuleResponseDto } from '@/lib/api/types';
+import type { EventTypeConvention } from '@/lib/api/types';
 
 // The landing plan card's look (tracked name, gradient serif price, underlined
 // durations, ✓ list), laid out inline as a row.
 export function BillingUpgradeRow({
     row,
-    modules,
+    eventTypeKey,
     onDurationChangeAction,
 }: {
     row: BillingUpgradeRowData;
-    modules: PlatformModuleResponseDto[];
+    eventTypeKey: EventTypeConvention | null;
     onDurationChangeAction: (planCode: string, optionId: string) => void;
 }) {
     const t = useTranslations('EventPlanSettingsPage');
@@ -74,7 +74,7 @@ export function BillingUpgradeRow({
                         {t('upgrade.whatChanges')}
                         <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
                     </summary>
-                    <PlanUpgradeModules addedModuleKeys={row.addedModuleKeys} removedModuleKeys={row.removedModuleKeys} modules={modules} />
+                    <PlanUpgradeModules addedModuleKeys={row.addedModuleKeys} removedModuleKeys={row.removedModuleKeys} eventTypeKey={eventTypeKey} />
                 </details>
             )}
 

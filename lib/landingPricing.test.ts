@@ -197,6 +197,13 @@ describe('buildLandingPlan', () => {
         expect(card?.features).toEqual(['Gallery']);
     });
 
+    it("names modules as the plan's event type does", () => {
+        const plan = makePlan({ moduleKeys: ['gallery'] });
+        const moduleName = (moduleKey: string, eventTypeKey: string | null) => (eventTypeKey === 'WEDDING' ? `${moduleKey} for weddings` : moduleKey);
+
+        expect(buildLandingPlan(plan, undefined, MODULES, MEDIA, moduleName, COPY)?.features).toEqual(['gallery for weddings']);
+    });
+
     it('lists live durations in display order and starts on the shortest', () => {
         const plan = makePlan({
             initialOptions: [

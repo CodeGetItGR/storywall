@@ -10,6 +10,7 @@ import { ScheduleStoryDateBadge } from '@/components/story/ScheduleStoryDateBadg
 import { ScheduleStoryFrame } from '@/components/story/ScheduleStoryFrame';
 import { ScheduleStorySkeleton } from '@/components/story/ScheduleStorySkeleton';
 import { useEventSessions } from '@/hooks/useEventSessions';
+import { useActiveModuleCopy } from '@/hooks/useModuleCopy';
 import { routes } from '@/lib/routes';
 
 function noop() {}
@@ -17,6 +18,7 @@ function noop() {}
 export function ScheduleStoryScreen() {
     const { activeEvent, eventId } = useEventRouteContext();
     const t = useTranslations('StoryPage');
+    const scheduleName = useActiveModuleCopy('schedule').name;
     const locale = useLocale();
     const router = useRouter();
     const { data: sessions = [], isLoading } = useEventSessions(eventId);
@@ -43,7 +45,7 @@ export function ScheduleStoryScreen() {
 
                     {/* Story Header */}
                     <StoryHeader
-                        authorName={t('scheduleAuthor')}
+                        authorName={scheduleName}
                         authorId={eventId}
                         timeStr={activeEvent.title}
                         tone="light"

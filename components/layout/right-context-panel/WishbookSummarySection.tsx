@@ -7,11 +7,12 @@ import { routes } from '@/lib/routes';
 
 type WishbookSummarySectionProps = {
     eventId: string;
+    title: string;
     entries: WishbookEntryResponseDto[];
     total: number;
 };
 
-export function WishbookSummarySection({ eventId, entries, total }: WishbookSummarySectionProps) {
+export function WishbookSummarySection({ eventId, title, entries, total }: WishbookSummarySectionProps) {
     const t = useTranslations('RightContextPanel.wishbookSummary');
 
     return (
@@ -20,7 +21,7 @@ export function WishbookSummarySection({ eventId, entries, total }: WishbookSumm
                 href={routes.events.tools.wishbook(eventId)}
                 className="group mb-2 flex items-center gap-1 text-sm font-semibold text-ink hover:text-ink-muted"
             >
-                {t('title')}
+                {title}
                 <ChevronRight className="h-3.5 w-3.5 shrink-0 text-ink-faint transition-colors group-hover:text-ink-muted" aria-hidden="true" />
             </Link>
             <div className="space-y-2">

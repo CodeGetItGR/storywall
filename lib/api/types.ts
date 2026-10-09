@@ -285,14 +285,23 @@ export interface EventTypeVoicePack {
     rsvpMessageLabel: LocalizedText;
     rsvpAttendingConfirmation: LocalizedText;
     toolsSubtitle: LocalizedText;
-    toolsScheduleDescription: LocalizedText;
-    toolsPlaylistDescription: LocalizedText;
+}
+
+// An admin's per-event-type wording for one module. Each field null = use the
+// default. Both locales are always present when set.
+// See module-names-per-event-type-fe-integration.md.
+export interface AppModuleCopyDto {
+    name: LocalizedText | null;
+    description: LocalizedText | null;
+    cardLabel: LocalizedText | null; // the module's line on plan cards; null = the resolved name
 }
 
 export interface AppEventTypeTranslationDto {
     name: LocalizedText;
     tagline: LocalizedText;
     voice: EventTypeVoicePack;
+    // Keyed by moduleKey; only modules with at least one override. Always present.
+    modules: Record<string, AppModuleCopyDto>;
 }
 
 export interface AppTranslationsDto {
@@ -2372,6 +2381,10 @@ export interface EventTypeModuleResponseDto {
     // ("unknown yet") when no planTierCode was given. See
     // event-lifecycle-locks-and-event-types-fe-integration.md §3.
     includedInPlan: boolean | null;
+    // Admin endpoints only: per-event-type wording overrides, null = default.
+    name?: LocalizedText | null;
+    description?: LocalizedText | null;
+    cardLabel?: LocalizedText | null;
 }
 
 // PATCH /api/admin/event-types/{eventTypeKey}/modules/{moduleKey} — every field
@@ -2382,6 +2395,10 @@ export interface EventTypeModulePatchDto {
     applicability?: EventTypeModuleApplicability;
     defaultConfig?: Record<string, unknown>;
     sortOrder?: number;
+    // Omit = unchanged, null = back to the default. Both en and el required when set.
+    name?: LocalizedText | null;
+    description?: LocalizedText | null;
+    cardLabel?: LocalizedText | null;
 }
 
 // GET /api/admin/plan-tiers/{planTierId}/modules — one row per module the
