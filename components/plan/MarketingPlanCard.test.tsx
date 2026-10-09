@@ -101,6 +101,14 @@ describe('MarketingPlanCard', () => {
         expect(document.querySelector('del')).toBeNull();
     });
 
+    it('lists what carries over from the plan below one per line, keeping each line whole', () => {
+        renderCard({ cardPlan: { ...plan, includedFeatures: ['Posts', 'Gallery · QR upload', 'Schedule · up to 5 sessions'] } });
+
+        expect(screen.getByText('Gallery · QR upload').tagName).toBe('LI');
+        expect(screen.getByText('Posts').tagName).toBe('LI');
+        expect(screen.getByText('Schedule · up to 5 sessions').tagName).toBe('LI');
+    });
+
     it('shows members and storage on one line', () => {
         renderCard();
         expect(screen.getByText('Up to 300 guests · 25 GB')).toBeInTheDocument();

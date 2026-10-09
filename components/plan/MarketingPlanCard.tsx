@@ -146,8 +146,13 @@ export function MarketingPlanCard({
                             >
                                 {feature}
                             </span>
+                            {/* Carried over from the plan below, one per line: a line's own " · " detail never runs into the next */}
                             {index === 0 && plan.includedFeatures && (
-                                <span className="mt-1 block text-[12px] leading-[1.55] text-[#151313]/70">({plan.includedFeatures.join(' · ')})</span>
+                                <ul className="mt-1 list-none p-0 text-[12px] leading-[1.55] text-[#151313]/70">
+                                    {plan.includedFeatures.map((included) => (
+                                        <li key={included}>{included}</li>
+                                    ))}
+                                </ul>
                             )}
                         </li>
                     ))}
