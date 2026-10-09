@@ -8,6 +8,7 @@ import { PlaylistItemRow } from '@/components/playlist';
 import { PlaylistListSkeleton } from '@/components/playlist/PlaylistSkeletons';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
+import { useActiveModuleCopy } from '@/hooks/useModuleCopy';
 import type { PlaylistSuggestionResponseDto } from '@/lib/api/types';
 import { PLAYLIST_TOP_RANK_COUNT, shouldShowPlaylistTopRanks } from '@/lib/playlistRanking';
 import { routes } from '@/lib/routes';
@@ -32,12 +33,13 @@ export function PlaylistContent({
     showTitleIcon = false,
 }: PlaylistContentProps) {
     const t = useTranslations('PlaylistPage');
+    const playlistCopy = useActiveModuleCopy('playlist');
     const showTopRanks = shouldShowPlaylistTopRanks(suggestions);
 
     return (
         <ModulePageShell
             maxWidth="2xl"
-            title={t('title')}
+            title={playlistCopy.name}
             icon={Music}
             iconClassName="text-violet-500"
             showTitleIcon={showTitleIcon}

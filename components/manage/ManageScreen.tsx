@@ -15,6 +15,7 @@ import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventInvitations } from '@/hooks/useEventInvitations';
 import { useEventMembers } from '@/hooks/useEventMembers';
 import { useGiftSection } from '@/hooks/useGiftSection';
+import { useManageSectionLabel } from '@/hooks/useManageSectionLabel';
 import { useEventRsvps } from '@/hooks/useRsvps';
 import { useEventUsage } from '@/hooks/useUsage';
 import { countPendingCoHostInvitations } from '@/lib/eventInvitations';
@@ -40,6 +41,7 @@ import SettingsTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/
 export function ManageScreen() {
     const { activeEvent, eventId, isHost } = useEventRouteContext();
     const t = useTranslations('ManagePage');
+    const sectionLabel = useManageSectionLabel();
     const searchParams = useSearchParams();
     const requestedSection = parseManageSection(searchParams.get('tab'));
     const cancelledCheckout = searchParams.get('cancelled') === 'true';
@@ -247,7 +249,7 @@ export function ManageScreen() {
                             className="flex min-h-12 w-full items-center gap-2.5 rounded-2xl border border-border bg-surface-muted px-3.5 text-left"
                         >
                             <ActiveIcon className="h-4 w-4 shrink-0 text-primary" strokeWidth={2.2} aria-hidden="true" />
-                            <span className="min-w-0 flex-1 truncate text-sm font-bold text-ink">{t(`sections.${section}`)}</span>
+                            <span className="min-w-0 flex-1 truncate text-sm font-bold text-ink">{sectionLabel(section)}</span>
                             <ChevronDown className="h-4 w-4 shrink-0 text-ink-muted" aria-hidden="true" />
                         </button>
                     </div>
@@ -274,7 +276,7 @@ export function ManageScreen() {
                 >
                     {/* Section heading (desktop) */}
                     {!isDraft && (
-                        <h2 className="mb-4 hidden text-sm font-bold tracking-wide text-ink-muted uppercase lg:block">{t(`sections.${section}`)}</h2>
+                        <h2 className="mb-4 hidden text-sm font-bold tracking-wide text-ink-muted uppercase lg:block">{sectionLabel(section)}</h2>
                     )}
                     {renderedSection}
                 </div>

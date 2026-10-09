@@ -8,6 +8,7 @@ import Avatar from '@/components/ui/avatar';
 import { useEventStories } from '@/hooks';
 import { useEventSessions } from '@/hooks/useEventSessions';
 import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
+import { useActiveModuleCopy } from '@/hooks/useModuleCopy';
 import { usePostingAsMember } from '@/hooks/usePostingAsMember';
 import { groupStoriesByAuthor } from '@/lib/stories';
 import { avatarColorFromId, initialsFromName } from '@/lib/utils';
@@ -22,7 +23,7 @@ interface StoriesRowProps {
 }
 
 export function StoriesRow({ eventId, onOpenStoryAction }: StoriesRowProps) {
-    const t = useTranslations('StoriesRow');
+    const storiesName = useActiveModuleCopy('stories').name;
     const tAvatar = useTranslations('StoryAvatar');
     // The "your story" slot follows who new stories are posted as (a demo persona, for an admin).
     const { member: activeMember } = usePostingAsMember();
@@ -39,7 +40,7 @@ export function StoriesRow({ eventId, onOpenStoryAction }: StoriesRowProps) {
     const hasStartItems = Boolean(ownAuthor || canComposeStory || hasScheduleStory);
 
     return (
-        <section aria-label={t('ariaLabel')} className="no-scrollbar flex items-start gap-4 overflow-x-auto px-4 py-4">
+        <section aria-label={storiesName} className="no-scrollbar flex items-start gap-4 overflow-x-auto px-4 py-4">
             {/* Current user slot */}
             {ownGroup && activeMember && ownAuthor ? (
                 <StoryAvatar group={ownGroup} author={ownAuthor} isCurrentUser onOpenStoryAction={onOpenStoryAction} />

@@ -4,6 +4,12 @@ import { adminErrorMessageKey } from '@/lib/adminUtils';
 import { ApiError } from '@/lib/api/client';
 
 describe('adminErrorMessageKey', () => {
+    it('maps the module copy errors (3056, 3057, 5156)', () => {
+        expect(adminErrorMessageKey(new ApiError(400, { errorCode: 3056 }))).toBe('moduleCopyIncomplete');
+        expect(adminErrorMessageKey(new ApiError(400, { errorCode: 3057 }))).toBe('moduleCopyTooLong');
+        expect(adminErrorMessageKey(new ApiError(409, { errorCode: 5156 }))).toBe('moduleCopyModuleUnsupported');
+    });
+
     it('explains that only manual-provider orders can be settled by hand (5105)', () => {
         expect(adminErrorMessageKey(new ApiError(409, { errorCode: 5105 }))).toBe('orderNotManual');
     });

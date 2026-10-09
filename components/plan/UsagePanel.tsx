@@ -4,6 +4,7 @@ import { ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+import { useActiveModuleCopy } from '@/hooks/useModuleCopy';
 import { cn } from '@/lib/utils';
 
 type UsageItem = {
@@ -30,7 +31,7 @@ function clampPercent(percent: number): number {
 
 export function UsagePanel({ title, planName, items, includedModuleKeys = [], nextPlanName, upgradeHref, className }: UsagePanelProps) {
     const t = useTranslations('PlanUsage');
-    const tModules = useTranslations('Modules');
+    const coHostsName = useActiveModuleCopy('co_hosts').name;
 
     return (
         <section className={cn('space-y-3', className)}>
@@ -66,7 +67,7 @@ export function UsagePanel({ title, planName, items, includedModuleKeys = [], ne
                     return (
                         <div key={item.key}>
                             <div className="flex items-center justify-between gap-3 text-xs">
-                                <span className="font-medium text-ink">{t(`items.${item.key}`)}</span>
+                                <span className="font-medium text-ink">{item.key === 'coHosts' ? coHostsName : t(`items.${item.key}`)}</span>
                                 <span className={cn('text-ink-muted tabular-nums', isOverLimit && 'font-semibold text-destructive')}>
                                     {item.valueLabel}
                                 </span>

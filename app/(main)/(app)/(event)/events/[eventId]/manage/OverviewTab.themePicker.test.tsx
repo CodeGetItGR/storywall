@@ -10,6 +10,14 @@ import OverviewTab from './OverviewTab';
 // hid the picker never rendering on a draft. Only the data hooks and unrelated panels are.
 const mocks = vi.hoisted(() => ({ presetsArg: undefined as string | null | undefined }));
 
+vi.mock('@/hooks/useModuleCopy', () => {
+    const copy = (moduleKey: string) => ({ name: moduleKey, description: `${moduleKey} description`, cardLabel: moduleKey, Icon: () => null });
+    return {
+        useModuleCopy: () => copy,
+        useActiveModuleCopy: copy,
+        useModuleCopyResolver: () => (_eventType: unknown, moduleKey: string) => copy(moduleKey),
+    };
+});
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
 vi.mock('@/hooks/useEventTheme', () => ({
     useEventThemePresets: (eventId: string | null) => {

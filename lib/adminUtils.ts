@@ -33,6 +33,9 @@ export type AdminErrorMessageKey =
     | 'storageGrantBelowUsage'
     | 'moduleAlreadyGranted'
     | 'moduleNotAvailable'
+    | 'moduleCopyIncomplete'
+    | 'moduleCopyTooLong'
+    | 'moduleCopyModuleUnsupported'
     | 'eventAlreadySuspended'
     | 'eventAlreadyClosed'
     | 'statementInvalid'
@@ -102,6 +105,9 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.ADMIN_STORAGE_GRANT_BELOW_USAGE) return 'storageGrantBelowUsage';
     if (code === ERROR_CODES.MODULE_ALREADY_GRANTED) return 'moduleAlreadyGranted';
     if (code === ERROR_CODES.MODULE_NOT_AVAILABLE) return 'moduleNotAvailable';
+    if (code === ERROR_CODES.MODULE_COPY_INCOMPLETE) return 'moduleCopyIncomplete';
+    if (code === ERROR_CODES.MODULE_COPY_TOO_LONG) return 'moduleCopyTooLong';
+    if (code === ERROR_CODES.MODULE_COPY_MODULE_UNSUPPORTED) return 'moduleCopyModuleUnsupported';
     if (code === ERROR_CODES.EVENT_ALREADY_SUSPENDED) return 'eventAlreadySuspended';
     if (code === ERROR_CODES.EVENT_ALREADY_CLOSED) return 'eventAlreadyClosed';
     if (code === ERROR_CODES.MODERATION_DECISION_INVALID) return 'statementInvalid';

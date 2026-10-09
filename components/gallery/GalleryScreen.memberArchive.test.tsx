@@ -12,6 +12,14 @@ const mocks = vi.hoisted(() => ({
     modalMounts: 0,
 }));
 
+vi.mock('@/hooks/useModuleCopy', () => {
+    const copy = (moduleKey: string) => ({ name: moduleKey, description: `${moduleKey} description`, cardLabel: moduleKey, Icon: () => null });
+    return {
+        useModuleCopy: () => copy,
+        useActiveModuleCopy: copy,
+        useModuleCopyResolver: () => (_eventType: unknown, moduleKey: string) => copy(moduleKey),
+    };
+});
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
 vi.mock('@/components/reports/ReportTargetModal', () => ({ ReportTargetModal: () => null }));
 vi.mock('@/components/gallery/GalleryViewer', () => ({ GalleryViewer: () => null }));

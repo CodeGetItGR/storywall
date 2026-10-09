@@ -1,12 +1,12 @@
 'use client';
 
 import { Music4 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useUpgradeOptions } from '@/hooks/useBilling';
 import { useGallerySummary } from '@/hooks/useGalleryArchive';
 import { useIsPrimaryHost } from '@/hooks/useIsPrimaryHost';
+import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { useEventQrLinks } from '@/hooks/useQrLinks';
 import { type ToolMenuItem, useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
 import { useEventUsage } from '@/hooks/useUsage';
@@ -24,8 +24,8 @@ import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/E
 // set MobileTabBar's member context menu shows), so every host-only
 // summary/fetch below is also gated on `isHost`.
 export function useRightContextPanel({ includeManageLinks = true }: { includeManageLinks?: boolean } = {}) {
-    const tTools = useTranslations('ToolsMenu');
     const activeEvent = useActiveEvent();
+    const moduleCopy = useModuleCopy(activeEvent?.eventType);
     const isHost = useIsHost();
     const isPrimaryHost = useIsPrimaryHost();
     const isLoading = useEventContextLoading();
@@ -72,8 +72,8 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
                       key: 'playlist',
                       href: routes.events.tools.playlist(activeEvent.id),
                       icon: Music4,
-                      label: tTools('items.playlist.label'),
-                      description: tTools('items.playlist.description'),
+                      label: moduleCopy('playlist').name,
+                      description: moduleCopy('playlist').description,
                   },
               ]
             : [];
@@ -101,6 +101,7 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
         includedModuleKeys,
         actionItems,
         showRsvpSummary,
+        rsvpTitle: moduleCopy('rsvp').name,
         rsvpSummary: activeEvent?.rsvpSummary ?? null,
         showMediaSummary,
         mediaSummary: gallerySummary.data ?? null,
@@ -109,6 +110,7 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
         showInvitationsQr,
         invitationsQrCount: (qrLinks.data ?? []).filter((link) => link.targetType !== 'MEDIA_UPLOAD' && link.status !== 'REVOKED').length,
         showWishbookSummary,
+        wishbookTitle: moduleCopy('wishbook').name,
         wishbookEntries: wishbook.data?.pages[0]?.content.slice(0, 2) ?? [],
         wishbookTotal: wishbook.data?.pages[0]?.page.totalElements ?? 0,
     };

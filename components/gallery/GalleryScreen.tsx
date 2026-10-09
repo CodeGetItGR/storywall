@@ -16,12 +16,14 @@ import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { Button } from '@/components/ui/button';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useGalleryScreen } from '@/hooks/useGalleryScreen';
+import { useActiveModuleCopy } from '@/hooks/useModuleCopy';
 import { formatDate } from '@/lib/datetime';
 import { isMemberArchiveEnabled } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
 
 export function GalleryScreen() {
     const t = useTranslations('GalleryPage');
+    const galleryCopy = useActiveModuleCopy('gallery');
     const locale = useLocale();
     const {
         activeEvent,
@@ -91,12 +93,12 @@ export function GalleryScreen() {
     return (
         <ModulePageShell
             maxWidth="5xl"
-            title={t('title')}
+            title={galleryCopy.name}
             icon={Images}
             iconClassName="text-cyan-600"
             backLabel={t('backToTools')}
             backHref={isDeleted ? routes.events.manage(eventId) : routes.events.feed(eventId)}
-            subtitle={isHost ? t('hostSubtitle') : t('guestSubtitle')}
+            subtitle={isHost ? t('hostSubtitle') : galleryCopy.description}
             notice={
                 <>
                     {!galleryEnabled && <ModuleNotice>{t('moduleUnavailable')}</ModuleNotice>}

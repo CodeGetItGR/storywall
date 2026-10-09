@@ -5,6 +5,14 @@ import { GalleryScreen } from '@/components/gallery/GalleryScreen';
 
 const mocks = vi.hoisted(() => ({ modalProps: vi.fn() }));
 
+vi.mock('@/hooks/useModuleCopy', () => {
+    const copy = (moduleKey: string) => ({ name: moduleKey, description: `${moduleKey} description`, cardLabel: moduleKey, Icon: () => null });
+    return {
+        useModuleCopy: () => copy,
+        useActiveModuleCopy: copy,
+        useModuleCopyResolver: () => (_eventType: unknown, moduleKey: string) => copy(moduleKey),
+    };
+});
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
 vi.mock('@/components/reports/ReportTargetModal', () => ({
     ReportTargetModal: (props: Record<string, unknown>) => {

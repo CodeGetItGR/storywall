@@ -15,12 +15,14 @@ import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useGiftAccount } from '@/hooks/useGiftAccount';
 import { useGiftAccountEditor } from '@/hooks/useGiftAccountEditor';
 import { useIsPrimaryHost } from '@/hooks/useIsPrimaryHost';
+import { useActiveModuleCopy } from '@/hooks/useModuleCopy';
 import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { usePlanUpgradeHref } from '@/hooks/usePlanUpgradeHref';
 import { routes } from '@/lib/routes';
 
 export function GiftAccountPage() {
     const t = useTranslations('GiftsPage');
+    const giftCopy = useActiveModuleCopy('wishlist');
     const { eventId } = useEventRouteContext();
     const account = useGiftAccount(eventId);
     const editor = useGiftAccountEditor(eventId);
@@ -51,7 +53,7 @@ export function GiftAccountPage() {
     return (
         <ModulePageShell
             maxWidth="xl"
-            title={t('accountTitle')}
+            title={giftCopy.name}
             icon={Gift}
             iconClassName="text-rose-500"
             showTitleIcon={false}

@@ -16,6 +16,7 @@ import { WishbookEntriesSkeleton } from '@/components/wishbook/WishbookSkeletons
 import { useAppConfig } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useContentAccess } from '@/hooks/useContentAccess';
+import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { usePlanUpgradeHref } from '@/hooks/usePlanUpgradeHref';
 import { useCreateWishbookEntry, useDeleteWishbookEntry, useWishbook } from '@/hooks/useWishbook';
@@ -58,9 +59,9 @@ export default function WishbookPage() {
     const canWrite = event?.status === 'ACTIVE' && (!isHost || contentAccess.isDemoBuilder);
     const reportable = Boolean(appConfig?.reportTargetTypes?.includes('WISHBOOK_ENTRY'));
     const reportEntry = reportEntryId ? (entries.find((item) => item.id === reportEntryId) ?? null) : null;
-    const wishbookModule = appConfig?.modules.find((module) => module.moduleKey === 'wishbook');
-    const title = wishbookModule?.name ?? t('title');
-    const subtitle = wishbookModule?.description ?? undefined;
+    const wishbookCopy = useModuleCopy(event?.eventType)('wishbook');
+    const title = wishbookCopy.name;
+    const subtitle = wishbookCopy.description;
     const maxMessageLength = appConfig?.contentLimits.wishbookMessageMaxLength ?? 2000;
     const showEmptyState = !wishbook.isLoading && !wishbook.error && entries.length === 0;
     const showHeaderArt = canWrite || !showEmptyState;
@@ -232,7 +233,10 @@ export default function WishbookPage() {
                                             aria-pressed={entry.highlighted}
                                             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-faint hover:bg-amber-50 hover:text-amber-600"
                                         >
-                                            <Star className={entry.highlighted ? 'h-4 w-4 fill-amber-400 text-amber-500' : 'h-4 w-4'} aria-hidden="true" />
+                                            <Star
+                                                className={entry.highlighted ? 'h-4 w-4 fill-amber-400 text-amber-500' : 'h-4 w-4'}
+                                                aria-hidden="true"
+                                            />
                                         </button>
                                     )}
                                     {canReportEntry(entry) && (
@@ -275,13 +279,7 @@ export default function WishbookPage() {
             </section>
 
             {reportEntry && (
-                <ReportTargetModal
-                    eventId={eventId}
-                    targetType="WISHBOOK_ENTRY"
-                    targetId={reportEntry.id}
-                    open
-                    onCloseAction={closeReport}
-                />
+                <ReportTargetModal eventId={eventId} targetType="WISHBOOK_ENTRY" targetId={reportEntry.id} open onCloseAction={closeReport} />
             )}
 
             <ConfirmActionModal

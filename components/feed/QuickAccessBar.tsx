@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
 import { useGiftAccount } from '@/hooks/useGiftAccount';
+import { useModuleCopy } from '@/hooks/useModuleCopy';
 import type { ModuleKeyConvention } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useIsHost } from '@/providers/EventProvider';
@@ -24,6 +25,7 @@ export function QuickAccessBar() {
     const activeEvent = useActiveEvent();
     const isHost = useIsHost();
     const giftAccount = useGiftAccount(activeEvent?.id ?? null);
+    const moduleCopy = useModuleCopy(activeEvent?.eventType);
 
     const enabledItems = useMemo(() => {
         if (!activeEvent) return [];
@@ -71,7 +73,7 @@ export function QuickAccessBar() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
-                    {enabledItems.map(({ key, href, icon: Icon }) => (
+                    {enabledItems.map(({ key, moduleKey, href, icon: Icon }) => (
                         <Link
                             key={key}
                             href={href}
@@ -81,7 +83,7 @@ export function QuickAccessBar() {
                                 <Icon className="h-4 w-4" aria-hidden="true" />
                             </span>
                             <span className="min-w-0">
-                                <span className="block text-sm font-medium text-ink">{t(`items.${key}.label`)}</span>
+                                <span className="block text-sm font-medium text-ink">{moduleCopy(moduleKey).name}</span>
                                 <span className="block text-xs text-ink-muted">{t(`items.${key}.subtitle`)}</span>
                             </span>
                         </Link>
