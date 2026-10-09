@@ -19,7 +19,7 @@ export async function LandingStructuredData() {
                 '@id': `${SITE_URL}/#organization`,
                 name: t('siteName'),
                 url: absoluteUrl('/'),
-                logo: absoluteUrl('/assets/Logo.svg'),
+                logo: absoluteUrl('/apple-icon.png'),
             },
             {
                 '@type': 'WebSite',

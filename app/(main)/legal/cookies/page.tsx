@@ -3,12 +3,14 @@ import { getTranslations } from 'next-intl/server';
 
 import { LegalDocumentPage } from '@/components/legal/LegalDocumentPage';
 import { versionParam } from '@/lib/legalDocuments';
+import { routes } from '@/lib/routes';
+import { canonicalAlternates } from '@/lib/seo';
 
 type PageProps = { searchParams: Promise<{ version?: string | string[] }> };
 
 export async function generateMetadata(): Promise<Metadata> {
     const t = await getTranslations('LegalPages');
-    return { title: `StoryWall - ${t('cookies')}` };
+    return { title: `StoryWall - ${t('cookies')}`, alternates: canonicalAlternates(routes.legal.cookies()) };
 }
 
 // Public.

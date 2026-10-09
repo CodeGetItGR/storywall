@@ -17,6 +17,15 @@ export function absoluteUrl(path: string): string {
     return path === '/' ? SITE_URL : new URL(path, `${SITE_URL}/`).toString();
 }
 
+// Account, email-link and other utility pages work for visitors but have
+// nothing worth finding in search.
+export const NO_INDEX: Metadata['robots'] = { index: false, follow: true };
+
+// The page's own URL, so a `?version=` copy of a legal page counts as the page itself.
+export function canonicalAlternates(path: string): Metadata['alternates'] {
+    return { canonical: absoluteUrl(path) };
+}
+
 // Each locale is its own canonical page: `/` for the default locale and
 // `/<locale>` for the rest. x-default points at the default page so a
 // crawler with no language preference lands where an unknown visitor would.
