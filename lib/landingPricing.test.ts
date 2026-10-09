@@ -88,18 +88,30 @@ const MEDIA: AppMediaConfigDto = {
 const COPY: LandingPlanCopy = {
     coHosts: (max) => (max === null ? 'Unlimited co-hosts' : `Up to ${max} co-hosts`),
     everythingIn: (planName) => `Everything in ${planName}`,
-    galleryWithQrUpload: 'Gallery with QR upload',
     guestsUnlimited: 'Unlimited guests',
     guestsUpTo: (count) => `Up to ${count} guests`,
     mediaUnlimited: 'Unlimited',
-    scheduleSessions: (max) => (max === null ? 'Unlimited schedule sessions' : `Up to ${max} schedule sessions`),
+    moduleWithDetail: (label, detail) => `${label} · ${detail}`,
+    qrUpload: 'QR upload',
+    scheduleSessions: (max) => (max === null ? 'unlimited sessions' : `up to ${max} sessions`),
     storageUnlimited: 'Unlimited storage',
     memberRoles: (count, custom, examples) => `${count} member roles (${examples.map((label) => label.en).join(', ')})${custom ? ' + your own' : ''}`,
     memberRolesCustomOnly: 'Custom member roles',
 };
 
 function role(id: string, retired = false, sortOrder = 0): MemberRoleCatalogDto {
-    return { id, eventTypeKey: 'WEDDING', roleKey: id.toUpperCase(), label: { en: id, el: id }, emoji: null, maxHolders: null, sortOrder, hostOnly: false, retired, sectionLabel: null };
+    return {
+        id,
+        eventTypeKey: 'WEDDING',
+        roleKey: id.toUpperCase(),
+        label: { en: id, el: id },
+        emoji: null,
+        maxHolders: null,
+        sortOrder,
+        hostOnly: false,
+        retired,
+        sectionLabel: null,
+    };
 }
 
 const ROLES = { WEDDING: [role('old', true), role('c', false, 2), role('b', false, 1), role('a')] };
@@ -120,9 +132,9 @@ describe('formatLandingOptionPrice', () => {
     });
 
     it("shows a duration's promo price in place of the plan's percent", () => {
-        expect(formatLandingOptionPrice(makePlan({ discountPercent: 50 }), makeOption({ priceAmountMinor: 12900, promoPriceAmountMinor: 9900 }))).toBe(
-            '99€',
-        );
+        expect(
+            formatLandingOptionPrice(makePlan({ discountPercent: 50 }), makeOption({ priceAmountMinor: 12900, promoPriceAmountMinor: 9900 })),
+        ).toBe('99€');
     });
 });
 
@@ -246,7 +258,7 @@ describe('buildLandingPlan', () => {
 
         const card = buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY);
 
-        expect(card?.features).toEqual(['Gallery with QR upload', 'Up to 2 co-hosts', 'Unlimited schedule sessions']);
+        expect(card?.features).toEqual(['Gallery · QR upload', 'Up to 2 co-hosts', 'Schedule · unlimited sessions']);
     });
 
     it('hides a module whose count cap is 0', () => {
@@ -271,7 +283,7 @@ describe('buildLandingPlan', () => {
 
         const card = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY);
 
-        expect(card?.features).toEqual(['Everything in START', 'RSVP', 'Up to 10 schedule sessions']);
+        expect(card?.features).toEqual(['Everything in START', 'RSVP', 'Schedule · up to 10 sessions']);
         expect(card?.includedFeatures).toEqual(['Gallery']);
     });
 

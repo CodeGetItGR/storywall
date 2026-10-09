@@ -17,11 +17,12 @@ const MESSAGES = {
     LandingPage: {
         pricing: {
             everythingIn: 'Everything in {plan}',
-            scheduleSessions: 'Up to {count} schedule sessions',
-            scheduleSessionsUnlimited: 'Unlimited schedule sessions',
+            scheduleSessions: 'up to {count} sessions',
+            scheduleSessionsUnlimited: 'unlimited sessions',
             coHosts: 'Up to {count} co-hosts',
             coHostsUnlimited: 'Unlimited co-hosts',
-            galleryWithQrUpload: 'Gallery with QR upload',
+            moduleWithDetail: '{label} · {detail}',
+            qrUpload: 'QR upload',
             guestsUnlimited: 'Unlimited guests',
             guestsUpTo: 'Up to {count} guests',
             mediaUnlimited: 'Unlimited',

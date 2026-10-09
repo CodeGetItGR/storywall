@@ -74,7 +74,7 @@ describe('ScheduleEditSessionRow', () => {
     it('lets a host restore a missing main session', () => {
         const { onCreateManagedSession } = renderRow({ definition: mainDefinition });
 
-        expect(screen.getByText('No ceremony session yet. Add it to show it on the schedule.')).toBeInTheDocument();
+        expect(screen.getByText('No ceremony session yet. Add it to show it here.')).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: 'Add Ceremony' }));
         expect(onCreateManagedSession).toHaveBeenCalledWith(mainDefinition);
     });

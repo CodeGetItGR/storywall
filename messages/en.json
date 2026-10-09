@@ -125,8 +125,8 @@
         "intro": "A quick run of show so everyone knows when to arrive, when the ceremony starts, and how the evening flows.",
         "guestLabel": "Guest view",
         "program": "Program",
-        "viewFullSchedule": "Open full schedule",
-        "emptyTitle": "Schedule coming soon",
+        "viewFullSchedule": "See all",
+        "emptyTitle": "Coming soon",
         "emptyBody": "The host hasn't published the full run of show yet. Check back later for the day-by-day timeline.",
         "timeTba": "Time TBA",
         "timeRangeNote": "Ends at {time}",
@@ -168,10 +168,10 @@
         "unknownAuthor": "Unknown",
         "moduleUnavailable": "Posts are not available on this event's current plan.",
         "reactionFailed": "Couldn't update your reaction. Please try again.",
-        "playlistDigest": "Playlist update",
-        "playlistDigestCount": "{count, plural, one {# song was added to the playlist} other {# songs were added to the playlist}}",
-        "playlistDigestSingle": "\"{song}\" was just added to the playlist",
-        "openPlaylist": "Open playlist",
+        "playlistDigest": "New songs",
+        "playlistDigestCount": "{count, plural, one {# song was added} other {# songs were added}}",
+        "playlistDigestSingle": "\"{song}\" was just added",
+        "openPlaylist": "View songs",
         "date": "Date",
         "month": "Month",
         "time": "Time",
@@ -220,8 +220,8 @@
                 "description": "Overview of your event"
             },
             "galleryQr": {
-                "label": "Gallery QR",
-                "description": "Download or share your gallery's upload code"
+                "label": "Upload QR code",
+                "description": "Download or share the photo upload code"
             },
             "invitationsQr": {
                 "label": "Share links",
@@ -250,7 +250,7 @@
             },
             "schedule": {
                 "label": "Schedule",
-                "description": "Full timeline of events leading up to the big day"
+                "description": "Full timeline of the event"
             },
             "gallery": {
                 "label": "Gallery",
@@ -566,7 +566,7 @@
             "filesLabel": "Photos or videos",
             "chooseFiles": "Choose files",
             "submit": "Upload",
-            "success": "Thanks! Your photos are on their way to the gallery.",
+            "success": "Thanks! Your photos are on their way.",
             "rateLimited": "This event has had a lot of uploads in the last hour. The files below weren't sent; try them again later.",
             "someFailed": "{count, plural, one {One file wasn't sent} other {# files weren't sent}}. Check the files below and try again.",
             "addMore": "Add more",
@@ -666,7 +666,7 @@
     "ProfilePage": {
             "dataExport": {
                 "title": "Your data",
-                "body": "Download a copy of everything StoryWall holds about you — your profile, your activity in events and your purchases — as a JSON file. Photos and videos aren't in it; download those from each event's gallery.",
+                "body": "Download a copy of everything StoryWall holds about you — your profile, your activity in events and your purchases — as a JSON file. Photos and videos aren't in it; download those from each event.",
                 "download": "Download my data",
                 "downloading": "Preparing…",
                 "failed": "We couldn't prepare your data. Try again."
@@ -850,8 +850,8 @@
                 "body": "{over} over the limit. Free up space by {dueDate}, or the newest photos and videos above the limit will be deleted."
             },
             "MEMBER_ARCHIVE_READY": {
-                "title": "The gallery is ready to download",
-                "body": "Every photo and video from the event, in one download. Open the gallery to get it."
+                "title": "Photos and videos are ready to download",
+                "body": "Every photo and video from the event, in one download."
             }
         }
     },
@@ -904,7 +904,7 @@
         "userStory": "{name}'s story",
         "story": "Story",
         "scheduleAuthor": "Schedule",
-        "scheduleStaticProgress": "Static schedule story",
+        "scheduleStaticProgress": "Static story",
         "previousStory": "Previous story",
         "nextStory": "Next story",
         "previous": "Previous",
@@ -1073,10 +1073,10 @@
     },
     "ManagePage": {
         "coverage": {
-            "openUntil": "Gallery open · closes {date}",
-            "closingIn": "Closing in {days, plural, one {# day} other {# days}} — download your gallery",
-            "ended": "Gallery closed on {date}",
-            "download": "Download gallery"
+            "openUntil": "Event open · closes {date}",
+            "closingIn": "Closing in {days, plural, one {# day} other {# days}} — download your photos and videos",
+            "ended": "Event closed on {date}",
+            "download": "Download all"
         },
         "title": "Host Dashboard",
         "backToTools": "Back",
@@ -1195,7 +1195,7 @@
             },
             "guide": {
                 "shareTitle": "Share with a group",
-                "shareBody": "Create a link or QR code for group chats, printed cards, posters, or gallery access."
+                "shareBody": "Create a link or QR code for group chats, printed cards, posters, or photo uploads."
             },
             "claimed": "Claimed",
             "unclaimed": "Unclaimed",
@@ -1248,7 +1248,7 @@
             "summary": "{count} QR codes",
             "empty": "No share links yet.",
             "emptyTitle": "No share links yet",
-            "emptyBody": "Create one for group chats, printed cards, posters, or gallery access.",
+            "emptyBody": "Create one for group chats, printed cards, posters, or photo uploads.",
             "readOnly": "This event is read-only. QR code changes are paused, but existing codes can still be previewed and printed.",
             "untitled": "Untitled QR code",
             "preview": "Preview",
@@ -1361,7 +1361,7 @@
                 "body": "Deleting this event hides it from guests right away. This can't be undone.",
                 "delete": "Delete event",
                 "confirmTitle": "Delete this event?",
-                "confirmBody": "Guests lose access right away and the event is permanently deleted later. This can't be undone. Until then you can still view and download the gallery and wishes.",
+                "confirmBody": "Guests lose access right away and the event is permanently deleted later. This can't be undone. Until then you can still view and download photos, videos and messages.",
                 "confirmAction": "Delete event",
                 "cancelAction": "Cancel",
                 "otp": {
@@ -1381,11 +1381,11 @@
             },
             "deleted": {
                 "title": "This event is being deleted",
-                "body": "It will be permanently deleted on {date}. Guests can't see it. Only the gallery and wishes stay available until then.",
+                "body": "It will be permanently deleted on {date}. Guests can't see it. Only photos, videos and messages stay available until then.",
                 "actionsTitle": "Still available",
                 "actions": {
                     "gallery": "View and download all photos and videos",
-                    "wishbook": "Read the wishes and export them as a PDF"
+                    "wishbook": "Read the messages and export them as a PDF"
                 }
             }
         },
@@ -1657,13 +1657,13 @@
             "partialRefund": "Partial refund",
             "daysUsed": "{used} of {total} days used",
             "until": "You can withdraw until {date}.",
-            "eventScope": "This permanently takes the event offline and can't be undone. You can still view and download the gallery and wishes until it's deleted.",
+            "eventScope": "This permanently takes the event offline and can't be undone. You can still view and download photos, videos and messages until it's deleted.",
             "upgradeScope": "Any upgrade bought after this one is withdrawn too. Your event stays online.",
             "orderScope": "Your event stays online.",
             "instant": "Refunded straight away.",
             "reviewed": "Because this event's date was changed after payment, your request will be reviewed by a person.",
             "storageAfter": "Your storage limit goes from {from} to {to}. You hold {usage}.",
-            "storageOver": "{over} will be over the limit. Unless you free space by {date}, the newest photos and videos above it will be deleted. Download the gallery first.",
+            "storageOver": "{over} will be over the limit. Unless you free space by {date}, the newest photos and videos above it will be deleted. Download your photos and videos first.",
             "unlimited": "unlimited",
             "yourDetails": "Your details",
             "name": "Name",
@@ -1769,7 +1769,7 @@
             "activatesTodayTitle": "Activates today",
             "activatesTodayBody": "Your event goes live the moment payment completes.",
             "datesFixedTitle": "Your dates are fixed at payment",
-            "datesFixedBody": "Changing your event date later won't move when the gallery closes.",
+            "datesFixedBody": "Changing your event date later won't change how long your photos are kept.",
             "keptUntilTitle": "Photos kept until {date}",
             "keptUntilBody": "{months, plural, one {# month} other {# months}} after your event date. After that everything is permanently deleted — we'll remind you 7 days and 1 day before."
         },
@@ -2011,10 +2011,10 @@
         "host": {
             "eyebrow": "Host tools",
             "badge": "Host view",
-            "title": "Add schedule item",
+            "title": "Add session",
             "subtitle": "Create a session that shows up in the guest timeline and feed preview.",
             "editingEyebrow": "Editing item",
-            "editingTitle": "Edit schedule item",
+            "editingTitle": "Edit session",
             "editingSubtitle": "Update “{title}” and save your changes.",
             "startInPast": "The start time must be now or later.",
             "endBeforeStart": "The end time must be after the start time.",
@@ -2047,7 +2047,7 @@
             "cancel": "Cancel",
             "editSession": "Edit {title}",
             "deleteSession": "Delete {title}",
-            "readOnly": "This event is read-only. Schedule changes are paused until the event is active again.",
+            "readOnly": "This event is read-only. Changes are paused until the event is active again.",
             "deleteConfirm": "This can't be undone.",
             "mapPreview": "Map preview",
             "mapPreviewUnavailable": "Map preview isn't available for this link, but the location still opens in Google Maps.",
@@ -2056,8 +2056,8 @@
             "openInGoogleMaps": "Open in Google Maps",
             "openMap": "Open map for {title}",
             "emptyTitle": "No sessions yet",
-            "emptyBody": "Add the first item so guests can see the timeline.",
-            "emptyReadOnlyBody": "The schedule is empty, and new sessions can't be added while the event is read-only.",
+            "emptyBody": "Add the first session so guests can see the timeline.",
+            "emptyReadOnlyBody": "Nothing has been added, and new sessions can't be added while the event is read-only.",
             "sessionManagement": {
                 "title": "Event sessions",
                 "description": "Manage the ceremony and venue details shown to guests.",
@@ -2076,19 +2076,19 @@
                 "location": "Location",
                 "notSet": "Not set",
                 "missing": "No venue session has been added yet.",
-                "mainMissing": "No ceremony session yet. Add it to show it on the schedule.",
+                "mainMissing": "No ceremony session yet. Add it to show it here.",
                 "untitled": "Untitled",
                 "editNamed": "Edit {title}",
                 "addNamed": "Add {title}",
                 "deleteNamed": "Delete {title}",
-                "sessionLimitReached": "This event's plan allows up to {max} schedule sessions."
+                "sessionLimitReached": "This event's plan allows up to {max} sessions."
             }
         },
         "guest": {
-            "emptyTitle": "Schedule coming soon",
+            "emptyTitle": "Coming soon",
             "emptyBody": "The host hasn't published the run of show yet. Check back later."
         },
-        "moduleUnavailable": "Schedule is not available on this event's current plan."
+        "moduleUnavailable": "This isn't available on this event's current plan."
     },
     "HostOnboarding": {
         "welcome": {
@@ -2116,7 +2116,7 @@
             },
             "schedule": {
                 "title": "Schedule",
-                "edit": "Edit schedule"
+                "edit": "Add sessions"
             },
             "invitations": {
                 "title": "Invitations & QR codes",
@@ -2154,36 +2154,36 @@
     "WishbookPage": {
         "deletedReadOnly": "Read-only. This event will be deleted on {date}.",
         "currentSubtitle": "Leave a message for the hosts.",
-        "currentPlaceholder": "Write your wish...",
+        "currentPlaceholder": "Write your message...",
         "goBack": "Go back",
-        "unavailableTitle": "Wishbook is not available",
-        "unavailableBody": "Wishbook is not available on this event's current plan.",
+        "unavailableTitle": "Not available",
+        "unavailableBody": "This isn't available on this event's current plan.",
         "title": "Wishbook",
         "subtitle": "Leave a message for the hosts.",
         "messagePlaceholder": "Write your message...",
-        "messageAriaLabel": "Wishbook message",
-        "addToWishbook": "Add wish",
+        "messageAriaLabel": "Your message",
+        "addToWishbook": "Add message",
         "messageCount": "{count, plural, one {# Message} other {# Messages}}",
         "charactersLeft": "{current} / {max} characters",
-        "loading": "Loading wishes...",
-        "emptyTitle": "No wishes yet",
+        "loading": "Loading messages...",
+        "emptyTitle": "No messages yet",
         "emptyBody": "Be the first to leave one.",
-        "empty": "No wishes yet. Be the first to leave one.",
-        "emptyReadOnly": "No wishes yet.",
+        "empty": "No messages yet. Be the first to leave one.",
+        "emptyReadOnly": "No messages yet.",
         "loadMore": "Load more",
-        "frozenReadOnly": "The event is paused. Existing wishes remain visible, but new ones cannot be added until it is renewed.",
-        "draftReadOnly": "Wishes can be added after the event is published.",
-        "hostReadOnly": "As the host, you can view wishes but can't add your own.",
+        "frozenReadOnly": "The event is paused. Existing messages remain visible, but new ones cannot be added until it is renewed.",
+        "draftReadOnly": "Messages can be added after the event is published.",
+        "hostReadOnly": "As the host, you can view messages but can't add your own.",
         "book": {
             "title": "Your keepsake book",
-            "body": "Every wish, laid out as a printable-quality PDF book. Star the wishes you love most and they get a page of their own.",
+            "body": "Every message, laid out as a printable-quality PDF book. Star the messages you love most and they get a page of their own.",
             "create": "Create the book",
             "building": "This takes a minute or two. You can leave this page; if you started it, we'll let you know when it's ready.",
-            "ready": "Ready · {pages, plural, one {# page} other {# pages}} · {wishes, plural, one {# wish} other {# wishes}}",
+            "ready": "Ready · {pages, plural, one {# page} other {# pages}} · {wishes, plural, one {# message} other {# messages}}",
             "download": "Download",
-            "rebuild": "Rebuild with the latest wishes",
+            "rebuild": "Rebuild with the latest messages",
             "failed": "The book couldn't be built.",
-            "contentChanged": "A wish was removed since the book was made — create it again.",
+            "contentChanged": "A message was removed since the book was made — create it again.",
             "retry": "Try again",
             "editTexts": "Edit the book's text",
             "downloadFailed": "Couldn't get the download link. Please try again."
@@ -2203,11 +2203,11 @@
         "star": "Star for the book",
         "reportEntry": "Report",
         "delete": "Delete",
-        "deleteTitle": "Delete this wish?",
-        "deleteBody": "This removes the wish from the wishbook.",
+        "deleteTitle": "Delete this message?",
+        "deleteBody": "The message will be removed.",
         "cancel": "Cancel",
-        "wishSentTitle": "Your wish is on its way",
-        "wishSentBody": "Thank you for taking the time to write something so kind. It's tucked safely into the wishbook now, waiting to be read."
+        "wishSentTitle": "Your message is on its way",
+        "wishSentBody": "Thank you for taking the time to write something so kind. It's saved now, waiting to be read."
     },
     "PlaylistPage": {
         "backToFeed": "Back to feed",
@@ -2215,7 +2215,6 @@
         "cancel": "Cancel",
         "suggestASong": "Suggest a song",
         "suggest": "Suggest",
-        "heroEyebrow": "Playlist studio",
         "heroTitle": "Shape the night with the tracks that matter.",
         "heroBody": "Drop in a song, attach a Spotify or YouTube link if you have one, and let the room vote it upward. Clean, simple, and actually playable.",
         "heroStatSongs": "Songs",
@@ -2234,18 +2233,18 @@
         "artistPlaceholder": "ABBA",
         "youtubePlaceholder": "Paste a YouTube link",
         "spotifyPlaceholder": "Paste a Spotify track link",
-        "commentPlaceholder": "Why this one belongs on the playlist",
+        "commentPlaceholder": "Why this song belongs here",
         "urlHint": "Spotify and YouTube links embed automatically",
         "momentForSong": "Moment for song",
         "moreDetails": "More details",
-        "addToPlaylist": "Add to Playlist",
+        "addToPlaylist": "Add song",
         "submitFailed": "Couldn't add the song. Please try again.",
         "voteFailed": "Couldn't update your vote. Please try again.",
-        "moduleUnavailable": "Playlist is not available on this event's current plan.",
-        "readOnly": "This event is read-only. Playlist changes are paused.",
+        "moduleUnavailable": "This isn't available on this event's current plan.",
+        "readOnly": "This event is read-only. Song changes are paused.",
         "allSongs": "All songs",
-        "disabledTitle": "Playlist is not available",
-        "disabledBody": "Playlist is not available for this event.",
+        "disabledTitle": "Not available",
+        "disabledBody": "This isn't available for this event.",
         "moments": {
             "ceremony": "Ceremony",
             "cocktail": "Cocktail Hour",
@@ -2276,7 +2275,7 @@
         "topSongBadge": "Top {rank}",
         "up": "Up",
         "down": "Down",
-        "disabledUpgradeBody": "Playlist is not included in this event plan. Upgrade to {plans} to unlock song suggestions and votes."
+        "disabledUpgradeBody": "This isn't included in this event's plan. Upgrade to {plans} to unlock song suggestions and votes."
     },
     "QuizPage": {
         "backToTools": "Back",
@@ -4861,7 +4860,7 @@
         },
         "gallery": {
             "name": "Gallery",
-            "description": "Guests can upload event photos to a separate gallery for the host."
+            "description": "Guests can upload event photos for the host."
         },
         "wishlist": {
             "name": "Wishlist",
@@ -4869,7 +4868,7 @@
         },
         "wishbook": {
             "name": "Wishbook",
-            "description": "Guests can leave written wishes and messages for the host to keep."
+            "description": "Guests can leave written messages for the host to keep."
         },
         "co_hosts": {
             "name": "Co-hosts",
@@ -4877,7 +4876,7 @@
         },
         "schedule": {
             "name": "Schedule",
-            "description": "Plan the event timeline with schedule sections."
+            "description": "Plan the event timeline in sessions."
         },
         "member_roles": {
             "name": "Guest roles",
@@ -4909,31 +4908,31 @@
         "backToTools": "Back",
         "title": "Gallery",
         "hostSubtitle": "Guest uploads are stored here without creating feed posts, so you can review and download them later.",
-        "guestSubtitle": "Share photos and videos from the celebration. Uploads are saved to the event gallery for the host.",
-        "downloadGallery": "Download gallery",
-        "downloadGalleryTitle": "Download gallery",
+        "guestSubtitle": "Share photos and videos from the celebration. Uploads are saved for the host.",
+        "downloadGallery": "Download all",
+        "downloadGalleryTitle": "Download all",
         "downloadGallerySubtitle": "Choose a version and download the archive parts one by one.",
-        "closeDownloadGallery": "Close download gallery",
+        "closeDownloadGallery": "Close download",
         "memberArchiveSubtitle": "Every photo and video from the event, in display quality.",
         "memberArchiveNotYet": "The download opens on {date}, a day after the event ends.",
         "memberArchivePreparing": "We're putting the download together. Check back in a little while.",
         "memberArchiveCheckAgain": "Check again",
-        "memberArchiveEmpty": "The gallery has no photos or videos.",
+        "memberArchiveEmpty": "There are no photos or videos.",
         "memberArchiveUnavailable": "The download isn't available for this event.",
-        "memberArchiveChanged": "The gallery changed since this opened, so the download is being rebuilt. Try again later.",
-        "memberArchiveUploadNote": "After the event, every member can download the whole gallery, including what you upload here.",
+        "memberArchiveChanged": "Photos or videos changed since this opened, so the download is being rebuilt. Try again later.",
+        "memberArchiveUploadNote": "After the event, every member can download all photos and videos, including what you upload here.",
         "selectPhotos": "Select",
         "selectAll": "Select all",
         "cancelSelection": "Cancel",
         "top": "Top",
         "photosSelected": "{count} selected",
         "downloadSelected": "Download {count}",
-        "selectionTooLarge": "A download of selected items is limited to {size}. Select fewer, or download the whole gallery.",
+        "selectionTooLarge": "A download of selected items is limited to {size}. Select fewer, or download everything.",
         "download": "Download",
         "selectMedia": "Select {filename}",
         "unselectMedia": "Unselect {filename}",
         "selectionDownloadFailed": "We couldn't download those files. Please try again.",
-        "moduleUnavailable": "Gallery is not available on this event's current plan.",
+        "moduleUnavailable": "This isn't available on this event's current plan.",
         "deletedReadOnly": "Read-only. This event will be deleted on {date}.",
         "uploadTitle": "Upload media",
         "uploadHint": "Choose up to {count} files at a time.",
@@ -4970,7 +4969,7 @@
         "deleteMediaFailed": "We couldn't delete this file. Please try again.",
         "reportMedia": "Report",
         "cancelDelete": "Cancel",
-        "archiveSummaryTitle": "Gallery summary",
+        "archiveSummaryTitle": "Summary",
         "archiveTotalsWithOriginals": "{originals} originals · {display} compressed",
         "archiveTotalsDisplayOnly": "{display} compressed",
         "displayVariant": "Compressed",
@@ -4982,7 +4981,7 @@
         "archivePartListTitle": "Parts",
         "archiveLoading": "Loading download details...",
         "archiveManifestFailed": "We couldn't load the download list. Please try again.",
-        "archiveManifestRefreshed": "The gallery changed. Please try again.",
+        "archiveManifestRefreshed": "Photos or videos changed. Please try again.",
         "archiveEmpty": "Nothing is ready to download yet.",
         "archivePartLabel": "Part {part} of {total}",
         "archivePartMeta": "{count} items · {size}",
@@ -4992,20 +4991,20 @@
         "libraryTitle": "Event photos",
         "photoCount": "{count} photos",
         "emptyTitle": "No photos or videos yet",
-        "guestSavedForHost": "Uploaded photos are saved privately to the event gallery for the host to review later.",
+        "guestSavedForHost": "Uploaded photos are saved privately for the host to review later.",
         "loadingMore": "Loading more…",
         "videoProcessing": "Processing video…",
         "videoFailed": "This video couldn't be processed."
     },
     "GalleryQrPage": {
-        "title": "Gallery QR",
+        "title": "Upload QR code",
         "back": "Back to feed",
-        "subtitle": "Anyone who scans this code can upload photos and videos straight to your gallery — no sign-in required.",
+        "subtitle": "Anyone who scans this code can upload photos and videos straight to the event — no sign-in required.",
         "permanentNote": "This code is set up for you and can't be deleted or replaced.",
         "temporarilyOff": "Uploads through this code are temporarily turned off. Existing photos and videos aren't affected.",
         "linkUnavailable": "This code isn't accepting uploads right now.",
         "missing": {
-            "body": "This event doesn't have a gallery upload code yet."
+            "body": "This event doesn't have a photo upload code yet."
         }
     },
     "InvitationsQrPage": {
@@ -5076,9 +5075,9 @@
         "reportOwnContent": "You can't report your own content.",
         "rateLimitedWithWait": "Too many requests. Try again in {seconds}s.",
         "rateLimitedWithWaitMinutes": "Too many requests. Try again in {minutes} min.",
-        "mediaArchiveDownloadsInProgress": "You already have two gallery downloads running. Start another once one finishes.",
-        "mediaArchiveDailyLimitReached": "This gallery has been downloaded as much as it can be for today. Try again later.",
-        "mediaArchiveDailyLimitReachedWithWait": "This gallery has been downloaded as much as it can be for today. Try again in {hours, plural, one {about an hour} other {about # hours}}.",
+        "mediaArchiveDownloadsInProgress": "You already have two downloads running. Start another once one finishes.",
+        "mediaArchiveDailyLimitReached": "This event has reached today's download limit. Try again later.",
+        "mediaArchiveDailyLimitReachedWithWait": "This event has reached today's download limit. Try again in {hours, plural, one {about an hour} other {about # hours}}.",
         "coHostInvitationAlreadyPending": "That address already has a co-host invitation waiting. Revoke it to send a new one.",
         "coHostInvitationsPendingLimit": "This event has as many co-host invitations waiting as it can hold. Revoke one, or wait for one to be accepted or expire.",
         "resourceBusy": "The server is busy right now. Try again in a moment.",
@@ -5152,7 +5151,7 @@
         "planInUse": "This plan is assigned to accounts or events, so it cannot be deleted.",
         "planIsOnlyDefault": "Set another default plan before changing this one.",
         "postEditNotAuthor": "Only the person who wrote this post can edit it. Hosts can pin, delete or report it.",
-        "memberArchiveNotEnabled": "Members of this event can't download the whole gallery.",
+        "memberArchiveNotEnabled": "Members of this event can't download all photos and videos.",
         "postMediaLimitExceeded": "This post already has the maximum number of photos.",
         "postPinNotHost": "Only hosts can pin posts.",
         "announcementNotHost": "Only hosts can post announcements.",
@@ -5167,7 +5166,7 @@
         "themeFontNotAssignable": "This font can't be used in a theme: it doesn't exist, it's archived, or it has no font file yet. Choose another font.",
         "themeFontKeyTaken": "A font with this key already exists. Choose a different key.",
         "themeFontConversionUnavailable": "Fonts in TTF or OTF format can't be converted right now. Upload a WOFF2 file, or try again later.",
-        "wishbookEmpty": "There are no wishes yet, so there is nothing to put in a book.",
+        "wishbookEmpty": "There are no messages yet, so there is nothing to put in a book.",
         "wishbookBookRendererUnavailable": "The book can't be created right now. Please try again later.",
         "landingCategoryTypeAssigned": "This event type is already in another landing category.",
         "coverageOptionPromoPriceInvalid": "The promo price must be above zero and below the duration's price, and only an initial duration can have one.",
@@ -5178,7 +5177,7 @@
         "accountPlansDisabled": "Account plan changes are currently disabled.",
         "invitationExhausted": "This invite link is full. Ask the host to raise its guest limit or send a new link.",
         "internalError": "Something went wrong on our side. Please try again.",
-        "eventScheduleLocked": "This event's schedule can no longer be changed.",
+        "eventScheduleLocked": "This event's dates can no longer be changed.",
         "eventModuleCompositionLocked": "Event modules can't be added, removed, or toggled after the event is created.",
         "eventVisibilityNotSupported": "Public events aren't supported yet. This event must stay private.",
         "eventTypeNotAvailable": "This event type isn't available yet.",
@@ -5199,7 +5198,7 @@
         "eventHostTransferNotPrimaryHost": "Only the primary host can transfer ownership.",
         "hostTransferWithdrawalOpen": "You can hand this event over once the refund period ends.",
         "hostTransferWithdrawalOpenFrom": "You can hand this event over from {date}.",
-        "qrMediaUploadDisabled": "The QR upload link is turned off for this event's gallery.",
+        "qrMediaUploadDisabled": "The QR upload link is turned off for this event.",
         "eventWithdrawn": "This event's deletion can't be cancelled — it was withdrawn and closed permanently.",
         "withdrawalTermsVersionStale": "These terms were updated. Review them again and try again.",
         "withdrawalRefused": "This event doesn't currently qualify for a withdrawal.",
@@ -5220,7 +5219,7 @@
         "memberRoleTextChanged": "The role changed since you opened this case. Check it and decide again.",
         "qrSharedLinkHostManaged": "This shared link is managed automatically.",
         "eventSessionMainLocationReadOnly": "This is the event's main session, so its location always matches the event's own.",
-        "eventSessionLimitReached": "This event's plan doesn't allow more schedule sessions.",
+        "eventSessionLimitReached": "This event's plan doesn't allow more sessions.",
         "eventSessionMainNotDeletable": "The ceremony session can't be deleted. Rename it instead.",
         "eventSessionMainAlreadyExists": "This event already has a ceremony session.",
         "eventCoHostLimitExceeded": "This event's plan doesn't allow more co-hosts.",
@@ -5622,11 +5621,12 @@
             "storageUnlimited": "Unlimited storage",
             "mediaUnlimited": "Unlimited",
             "everythingIn": "Everything in {plan}",
-            "scheduleSessions": "{count, plural, one {Up to # schedule session} other {Up to # schedule sessions}}",
-            "scheduleSessionsUnlimited": "Unlimited schedule sessions",
+            "scheduleSessions": "{count, plural, one {up to # session} other {up to # sessions}}",
+            "scheduleSessionsUnlimited": "unlimited sessions",
             "coHosts": "{count, plural, one {Up to # co-host} other {Up to # co-hosts}}",
             "coHostsUnlimited": "Unlimited co-hosts",
-            "galleryWithQrUpload": "Gallery with QR upload",
+            "moduleWithDetail": "{label} · {detail}",
+            "qrUpload": "QR upload",
             "memberRoles": "{count, plural, one {# guest role ({roles})} other {# guest roles ({roles})}}",
             "memberRolesWithCustom": "{count, plural, one {# guest role ({roles}) + your own} other {# guest roles ({roles}) + your own}}",
             "memberRolesCustomOnly": "Custom guest roles"
@@ -5724,7 +5724,7 @@
             "COMMENT": "Report this comment to the platform team.",
             "STORY": "Report this story to the platform team.",
             "MEDIA": "Report this photo or video to the platform team.",
-            "WISHBOOK_ENTRY": "Report this wish to the platform team.",
+            "WISHBOOK_ENTRY": "Report this message to the platform team.",
             "PLAYLIST_SUGGESTION": "Report this song suggestion to the platform team."
         },
         "reason": "Reason",
@@ -5840,7 +5840,7 @@
     "qrLink": {
         "default": {
             "eventJoinLabel": "Event Invite",
-            "mediaUploadLabel": "Gallery Upload"
+            "mediaUploadLabel": "Photo upload"
         }
     },
     "GiftMode": {
