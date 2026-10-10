@@ -31,6 +31,7 @@ export const EVENT_MODULE_KEYS = [
     'schedule',
     'member_roles',
     'theme',
+    'he_or_she',
 ] as const;
 // Use this (not the raw `ModuleKey` wire type below) whenever code branches on
 // a specific module — it's a closed set and catches typos at compile time.
@@ -2211,6 +2212,74 @@ export interface WishbookEntryResponseDto {
     canDelete: boolean;
     // Starred for the book (2026-10-06). Hosts get true/false; everyone else gets null.
     highlighted: boolean | null;
+}
+
+// Boy or Girl? quiz — module he_or_she, GENDER_REVEAL only (he-or-she-quiz-fe-integration.md).
+// The API uses HE/SHE; the labels are Boy/Girl.
+export type HeOrSheValue = 'HE' | 'SHE';
+export type QuizAnswerType = 'HE_SHE' | 'YES_NO' | 'CHOICE' | 'DATE' | 'TIME' | 'NUMBER' | 'FILL_GAP' | 'FREE_TEXT';
+
+export interface QuizOption {
+    id: string;
+    label: string;
+}
+
+export interface QuizQuestionDto {
+    id: string;
+    answerType: QuizAnswerType;
+    prompt: string;
+    // CHOICE only.
+    options: QuizOption[] | null;
+    sortOrder: number;
+}
+
+// GET /he-or-she; PUT /answers, PUT /settings and POST /reveal return it too.
+export interface HeOrSheViewDto {
+    status: 'OPEN' | 'REVEALED';
+    // The scheduled reveal. Revealed is computed on read, so refetch when it passes.
+    revealAt: string | null;
+    canGuess: boolean;
+    myGuess: HeOrSheValue | null;
+    // Null for a member who hasn't guessed while OPEN; never null for hosts.
+    tally: { he: number; she: number } | null;
+    // Only once REVEALED.
+    result: HeOrSheValue | null;
+    // The stored secret answer: hosts only.
+    answer: HeOrSheValue | null;
+    questions: QuizQuestionDto[];
+    // questionId -> canonical value.
+    myAnswers: Record<string, string>;
+}
+
+// PUT /answers: the caller's whole set. An extra question left out has its answer cleared.
+export interface HeOrSheAnswersRequestDto {
+    guess: HeOrSheValue;
+    answers: { questionId: string; value: string }[];
+}
+
+// PUT /settings (host). Both null clears them.
+export interface HeOrSheSettingsRequestDto {
+    answer: HeOrSheValue | null;
+    revealAt: string | null;
+}
+
+export interface QuizQuestionRequestDto {
+    answerType: QuizAnswerType;
+    prompt: string;
+    options?: string[];
+}
+
+export interface QuizQuestionPatchDto {
+    prompt?: string;
+    // Send an option's id to keep it.
+    options?: { id?: string; label: string }[];
+    sortOrder?: number;
+}
+
+// GET /results (host): every answer by name. An empty answers[] means nobody answered it.
+export interface HeOrSheResultsDto {
+    main: { memberId: string; displayName: string; avatarUrl: string | null; guess: HeOrSheValue }[];
+    questions: { questionId: string; answers: { memberId: string; displayName: string; avatarUrl: string | null; value: string }[] }[];
 }
 
 // GET|POST /api/events/{eventId}/wishbook/book (wishbook-book-fe-integration.md).

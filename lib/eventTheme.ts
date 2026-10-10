@@ -14,7 +14,7 @@ export function isHexColor(value: string): boolean {
 // links, gallery QR, RSVP admin, checkout, plan settings) keep the default palette:
 // their status chips and controls are drawn for it.
 const THEMED_EVENT_PAGE =
-    /^\/events\/[^/]+\/(?:feed|location|story\/schedule|tools\/(?:gallery(?!\/qr)|gifts|playlist|quiz|schedule|wishbook|rsvp\/submit))(?:\/|$)/;
+    /^\/events\/[^/]+\/(?:feed|location|story\/schedule|tools\/(?:gallery(?!\/qr)|gifts|he-or-she|playlist|quiz|schedule|wishbook|rsvp\/submit))(?:\/|$)/;
 
 export function isThemedEventPage(pathname: string): boolean {
     return THEMED_EVENT_PAGE.test(pathname);

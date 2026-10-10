@@ -227,6 +227,10 @@
     },
     "ToolsMenu": {
         "items": {
+            "heOrShe": {
+                "label": "Boy or Girl?",
+                "description": "Guess before the reveal"
+            },
             "rsvp": {
                 "label": "RSVP",
                 "description": "Confirm your attendance"
@@ -1850,8 +1854,7 @@
         "humanDecision": "This decision was taken by a person. No automated means were used.",
         "closedTitle": "This StoryWall has been closed",
         "closedBody": "We suspended this StoryWall on {date} and have since closed it. It will be deleted for good on {deletesOn}, with everything in it.",
-        "redressWithContact": "If you disagree with this decision, write to us at {email} quoting #{reference}. You may also turn to a certified out-of-court dispute settlement body, or to the courts.",
-        "redressWithoutContact": "If you disagree with this decision, you may turn to a certified out-of-court dispute settlement body, or to the courts.",
+        "redressWithContact": "If you disagree with this decision, write to us at {email} quoting #{reference}.",
         "billingLink": "Billing and withdrawal",
         "billingTitle": "Billing and withdrawal",
         "billingBack": "Back",
@@ -2212,6 +2215,82 @@
         "up": "Up",
         "down": "Down",
         "disabledUpgradeBody": "This isn't included in this event's plan. Upgrade to {plans} to unlock song suggestions and votes."
+    },
+    "HeOrShePage": {
+        "unavailableTitle": "Not available",
+        "unavailableBody": "This isn't available on this event's current plan.",
+        "loadError": "Couldn't load this page",
+        "retry": "Try again",
+        "backToTools": "Back",
+        "he": "Boy",
+        "she": "Girl",
+        "or": "or",
+        "yes": "Yes",
+        "no": "No",
+        "yourGuess": "Your guess",
+        "revealOn": "Reveal on {date}",
+        "extraQuestions": "More questions",
+        "optional": "Optional",
+        "send": "Send",
+        "changeAnswers": "Change my answers",
+        "thanks": "Thanks for your answer",
+        "notOpen": "Guessing isn't open yet.",
+        "resultHe": "It's a boy!",
+        "resultShe": "It's a girl!",
+        "guesses": "{count, plural, =0 {No guesses yet} one {# guess} other {# guesses}}",
+        "answerPlaceholder": "Your answer",
+        "numberPlaceholder": "Number",
+        "answerErrors": {
+            "tooLong": "This answer is too long.",
+            "invalidNumber": "Enter a number.",
+            "invalidDate": "Enter a valid date.",
+            "invalidTime": "Enter a valid time."
+        },
+        "host": {
+            "settingsTitle": "Answer and reveal",
+            "secretAnswer": "The answer",
+            "secretAnswerHint": "Only hosts see this.",
+            "revealAt": "Reveal time",
+            "revealAtHint": "Leave empty to reveal by hand.",
+            "needsAnswer": "Choose the answer to set a reveal time.",
+            "save": "Save",
+            "revealNow": "Reveal now",
+            "revealConfirmTitle": "Reveal the answer?",
+            "revealConfirmBody": "Everyone will see it. This can't be undone.",
+            "revealPickAnswer": "Choose the answer",
+            "revealConfirmAction": "Reveal",
+            "cancel": "Cancel",
+            "questionsTitle": "Extra questions",
+            "addQuestion": "Add question",
+            "noQuestions": "No extra questions.",
+            "questionLimit": "You can add up to {max} questions.",
+            "types": {
+                "HE_SHE": "Boy or girl",
+                "YES_NO": "Yes or no",
+                "CHOICE": "Multiple choice",
+                "DATE": "Date",
+                "TIME": "Time",
+                "NUMBER": "Number",
+                "FILL_GAP": "Fill in the gap",
+                "FREE_TEXT": "Free text"
+            },
+            "newQuestion": "New question",
+            "editQuestion": "Edit question",
+            "type": "Type",
+            "prompt": "Question",
+            "fillGapHint": "Write ___ where the answer goes.",
+            "options": "Options",
+            "option": "Option {number}",
+            "addOption": "Add option",
+            "removeOption": "Remove option {number}",
+            "optionsLocked": "Guests have answered. Options can't change.",
+            "deleteQuestion": "Delete question",
+            "deleteConfirmTitle": "Delete this question?",
+            "deleteConfirmBody": "Its answers will be deleted too.",
+            "deleteConfirmAction": "Delete",
+            "resultsTitle": "Answers",
+            "noAnswers": "No answers yet."
+        }
     },
     "QuizPage": {
         "backToTools": "Back",
@@ -3203,7 +3282,13 @@
                 "eventId": "Event ID",
                 "another": "Provision another",
                 "done": "Done",
-                "unnamedHost": "Unnamed account"
+                "unnamedHost": "Unnamed account",
+                "description": "Description",
+                "rsvpDeadline": "RSVP deadline",
+                "rsvpDeadlineAfterStart": "The RSVP deadline must be before the event starts.",
+                "reviewTheme": "Theme",
+                "reviewRsvpDeadline": "RSVP deadline",
+                "reviewDescription": "Description"
             },
             "email": {
                 "title": "Email",
@@ -4739,6 +4824,9 @@
         "ariaLabel": "Quick access",
         "eyebrow": "Quick access",
         "items": {
+            "heOrShe": {
+                "subtitle": "Guess before the reveal"
+            },
             "posts": {
                 "label": "Posts",
                 "subtitle": "Read the wall"
@@ -4792,6 +4880,10 @@
         "toolsSubtitle": "Everything you need to enjoy and participate in the event"
     },
     "Modules": {
+        "he_or_she": {
+            "name": "Boy or Girl?",
+            "description": "Guests guess before the reveal."
+        },
         "posts": {
             "name": "Posts",
             "description": "Guests can share messages, photos, reactions, and comments on the event wall."
@@ -5171,6 +5263,14 @@
         "themePresetEventTypesInvalid": "Choose at least one event type that can have themes.",
         "themeBackgroundLowContrast": "The background is too dark for the text. Choose a lighter colour.",
         "contentLengthRequired": "The upload couldn't be read. Try again.",
+        "rsvpDeadlineAfterStart": "The RSVP deadline must be before the event starts.",
+        "quizAnswerInvalid": "One of the answers isn't valid. Check it and try again.",
+        "quizQuestionInvalid": "This question isn't valid. Check its text and options.",
+        "quizRevealAtInvalid": "Pick a reveal time in the future.",
+        "quizClosed": "The answer has been revealed. Answers can no longer change.",
+        "quizAnswerRequired": "Choose the answer first.",
+        "quizQuestionHasAnswers": "Guests have answered this question, so its options can't change.",
+        "quizQuestionLimitReached": "You've reached the maximum number of questions.",
         "notEventMember": "You're not a member of this event.",
         "notEventHost": "Only the event's hosts can do this.",
         "reportMemberNotHost": "Only hosts can report a member.",
