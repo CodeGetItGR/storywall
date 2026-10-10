@@ -64,6 +64,11 @@ export const endpoints = {
         unsubscribe: '/api/newsletter/unsubscribe',
     },
 
+    partnerProgram: {
+        summary: '/api/public/partner-program',
+        applications: '/api/public/partner-applications',
+    },
+
     notifications: {
         list: '/api/notifications',
         byId: (id: string) => `/api/notifications/${id}`,

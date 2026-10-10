@@ -1017,6 +1017,41 @@ export interface PartnerBrandingVariantRowDto {
     clicksPerCardSlot: number; // 0 when cardSlots is 0
 }
 
+// --- Public partner program (2026-10-10-business-partner-landing-design.md) ---
+
+// GET /api/public/partner-program — public, the same for everyone.
+export interface PartnerProgramSummaryDto {
+    foundingSpotsTotal: number;
+    // Never negative; 0 once every founding spot is taken.
+    foundingSpotsLeft: number;
+}
+
+// POST /api/public/partner-applications — public.
+// 201 PartnerApplicationResponseDto; 400 field errors; 409 a pending application
+// already exists for this email; 429 rate limited per IP.
+export interface PartnerApplicationRequestDto {
+    name: string;
+    businessName: string;
+    role: PartnerRole;
+    email: string;
+    // A website URL or an @handle.
+    link: string;
+    // ISO 3166-1 alpha-2.
+    countryCode: string;
+    phone: string | null;
+    locale: string;
+    consent: true;
+    utmSource: string | null;
+    utmMedium: string | null;
+    utmCampaign: string | null;
+    // Honeypot: always '' from a person. Spring answers 201 and stores nothing when it isn't.
+    website: string;
+}
+
+export interface PartnerApplicationResponseDto {
+    id: string;
+}
+
 // Why a StoryWall is suspended. ground, rule and explanation are null if the decision row was deleted.
 export interface EventSuspensionDto {
     suspendedAt: string;
