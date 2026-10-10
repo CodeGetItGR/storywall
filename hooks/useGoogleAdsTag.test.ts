@@ -10,7 +10,7 @@ vi.mock('@/lib/googleAds', async (importOriginal) => ({
     GOOGLE_ADS_ID: 'AW-TEST',
 }));
 
-const ORDER: GoogleAdsPurchase = { id: 'order-1', amountMinor: 4900, currency: 'EUR' };
+const ORDER: GoogleAdsPurchase = { id: 'order-1', amountMinor: 4900, currency: 'EUR', firstPurchase: true };
 
 function conversions(gtag: ReturnType<typeof vi.fn<(...args: unknown[]) => void>>) {
     return gtag.mock.calls.filter(([command, action]) => command === 'event' && action === 'conversion');
@@ -39,16 +39,28 @@ describe('useGoogleAdsTag purchase', () => {
         rerender({ purchase: { ...ORDER } });
 
         expect(conversions(gtag)).toEqual([
-            ['event', 'conversion', { send_to: 'AW-TEST/2AceCLvk-ZcdEPye-vdE', transaction_id: 'order-1', value: 49, currency: 'EUR' }],
+            [
+                'event',
+                'conversion',
+                { send_to: 'AW-TEST/2AceCLvk-ZcdEPye-vdE', transaction_id: 'order-1', value: 49, currency: 'EUR', new_customer: true },
+            ],
         ]);
     });
 
-    it('sends no value when the amount is unknown', () => {
+    it('sends no value or new_customer when they are unknown', () => {
         writeConsent(true);
-        const { result } = renderHook(() => useGoogleAdsTag({ id: 'order-2', amountMinor: null, currency: null }));
+        const { result } = renderHook(() => useGoogleAdsTag({ id: 'order-2', amountMinor: null, currency: null, firstPurchase: null }));
         act(() => result.current.onReady());
 
         expect(conversions(gtag)[0][2]).toEqual({ send_to: 'AW-TEST/2AceCLvk-ZcdEPye-vdE', transaction_id: 'order-2' });
+    });
+
+    it('tells Google about a returning customer', () => {
+        writeConsent(true);
+        const { result } = renderHook(() => useGoogleAdsTag({ ...ORDER, firstPurchase: false }));
+        act(() => result.current.onReady());
+
+        expect(conversions(gtag)[0][2]).toMatchObject({ new_customer: false });
     });
 
     it('reports nothing without Advertising consent', () => {
