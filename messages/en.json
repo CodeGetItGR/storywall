@@ -5961,5 +5961,21 @@
         "accept": "Accept",
         "decline": "No thanks",
         "close": "Close"
+    },
+    "CookieConsent": {
+        "bannerLabel": "Cookies",
+        "message": "We use optional cookies to measure our ads. They stay off unless you accept.",
+        "policyLink": "Cookie Policy",
+        "acceptAll": "Accept all",
+        "rejectAll": "Reject all",
+        "settings": "Settings",
+        "settingsTitle": "Cookie settings",
+        "essentialLabel": "Essential",
+        "essentialBody": "Keep the site working. Always on.",
+        "adsLabel": "Advertising",
+        "adsBody": "Lets Google Ads measure which ads bring people to StoryWall.",
+        "save": "Save",
+        "close": "Close",
+        "openSettings": "Cookie settings"
     }
 }

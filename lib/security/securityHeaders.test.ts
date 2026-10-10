@@ -111,6 +111,22 @@ describe('contentSecurityPolicy', () => {
         expect(csp.get('media-src')).toEqual(["'self'", 'blob:']);
     });
 
+    it('allows Google Ads origins only when the tag id is set', () => {
+        expect(contentSecurityPolicy(PRODUCTION)).not.toContain('googletagmanager');
+
+        const csp = directives({ ...PRODUCTION, NEXT_PUBLIC_GOOGLE_ADS_ID: 'AW-1' });
+        expect(csp.get('script-src')).toEqual(
+            expect.arrayContaining(['https://www.googletagmanager.com', 'https://www.googleadservices.com', 'https://www.google.com']),
+        );
+        for (const directive of ['img-src', 'connect-src']) {
+            expect(csp.get(directive)).toEqual(
+                expect.arrayContaining(['https://googleads.g.doubleclick.net', 'https://www.google.gr', 'https://www.google.com.cy']),
+            );
+        }
+        expect(csp.get('connect-src')).toContain('https://ad.doubleclick.net');
+        expect(csp.get('frame-src')).toContain('https://www.googletagmanager.com');
+    });
+
     it('is one header line', () => {
         expect(contentSecurityPolicy(PRODUCTION)).not.toMatch(/[\r\n]/);
     });

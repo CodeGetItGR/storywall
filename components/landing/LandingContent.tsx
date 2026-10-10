@@ -1,5 +1,6 @@
 import './landing.css';
 
+import { CookieConsent } from '@/components/consent/CookieConsent';
 import { LandingDeferredExperience } from '@/components/landing/LandingDeferredExperience';
 import { LandingDemo } from '@/components/landing/LandingDemo';
 import { LandingFaq } from '@/components/landing/LandingFaq';
@@ -59,6 +60,9 @@ export function LandingContent() {
                     <LandingFooter />
                 </div>
             </LandingPageShell>
+
+            {/* Cookie consent */}
+            <CookieConsent />
         </LandingMotionProvider>
     );
 }

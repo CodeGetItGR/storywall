@@ -8,7 +8,7 @@ import { PlanCardExpandToggle } from '@/components/plan/PlanCardExpandToggle';
 import { PlanCardPopularBadge } from '@/components/plan/PlanCardPopularBadge';
 import { PlanCardSelectionLabel } from '@/components/plan/PlanCardSelectionLabel';
 import { useDisclosure } from '@/hooks/useDisclosure';
-import { type LandingPlan, pickedLandingDuration } from '@/lib/landingPricing';
+import { type LandingPlan, pickedLandingDuration, planCardPriceSize } from '@/lib/landingPricing';
 import { cn } from '@/lib/utils';
 
 type MarketingPlanCardProps = {
@@ -49,6 +49,7 @@ export function MarketingPlanCard({
 }: MarketingPlanCardProps) {
     const t = useTranslations('LandingPage.pricing');
     const duration = pickedLandingDuration(plan, durationId);
+    const priceSize = planCardPriceSize(plan.name, duration.price);
     const { open, toggle } = useDisclosure(defaultExpanded);
     const durationLabelId = useId();
     const featuresId = useId();
@@ -92,12 +93,16 @@ export function MarketingPlanCard({
                 {/* Popular */}
                 <PlanCardPopularBadge label={featured ? popularLabel : null} />
 
-                {/* Plan identity: name and price scale with the card so they fit side by side; the price drops below only on very narrow cards.
-                    During a promotion the price before it sits struck through below it, so the pair stays as narrow as the price alone. */}
+                {/* Plan identity: name and price scale with the card so they fit side by side, and a long price shrinks to stay beside the name;
+                    the price drops below only on very narrow cards. During a promotion the price before it sits struck through below it,
+                    so the pair stays as narrow as the price alone. */}
                 <div className="mt-2 flex flex-wrap items-baseline justify-between gap-x-3">
                     <h3 className="text-[clamp(18px,7cqi,28px)] leading-[1.05] font-black tracking-[.09em]">{plan.name}</h3>
                     <p className="flex flex-col items-end">
-                        <span className="bg-[linear-gradient(110deg,#d889a0,#e98778_28%,#f39a63_58%,#f5b967)] bg-clip-text pr-[.06em] font-[Baskerville,Georgia,serif] text-[clamp(36px,16.5cqi,64px)] leading-[1.1] tracking-[-.06em] text-transparent">
+                        <span
+                            className="bg-[linear-gradient(110deg,#d889a0,#e98778_28%,#f39a63_58%,#f5b967)] bg-clip-text pr-[.06em] font-[Baskerville,Georgia,serif] leading-[1.1] tracking-[-.06em] text-transparent"
+                            style={{ fontSize: `clamp(32px, ${priceSize}cqi, 64px)` }}
+                        >
                             {duration.price}
                         </span>
                         {duration.listPrice && (
