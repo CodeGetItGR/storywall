@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { CookieSettingsLink } from '@/components/consent/CookieSettingsLink';
 import { LandingMotionToggle } from '@/components/landing/LandingMotionToggle';
 import { LandingNewsletter } from '@/components/landing/LandingNewsletter';
 import { routes } from '@/lib/routes';
@@ -101,6 +102,7 @@ export async function LandingFooter() {
                             {t(`legalLinks.${key}`)}
                         </Link>
                     ))}
+                    <CookieSettingsLink className="text-white/62 hover:text-white" />
                 </div>
                 <a className="justify-self-end text-white no-underline max-[760px]:col-start-2 max-[760px]:row-start-1" href={TOP_HREF}>
                     {t('backToTop')} ↑

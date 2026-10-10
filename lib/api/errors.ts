@@ -212,6 +212,19 @@ export const ERROR_CODES = {
     ADMIN_STORAGE_GRANT_BELOW_USAGE: 5154,
     MODULE_ALREADY_GRANTED: 5155,
     MODULE_COPY_MODULE_UNSUPPORTED: 5156,
+    EVENT_HOST_ALREADY_CO_HOST: 5157,
+    EVENT_HOST_LAST_HOST: 5158,
+    EVENT_HOST_ALREADY_PRIMARY: 5159,
+    INVITE_CODE_TAKEN: 5160,
+    CO_HOST_ALREADY_MEMBER: 5161,
+    MEMBER_IS_HOST: 5162,
+    MEMBER_ROLE_KEY_TAKEN: 5163,
+    REACTION_TYPE_CODE_TAKEN: 5164,
+    BLOCKED_TERM_EXISTS: 5165,
+    PAID_SERVICE_CODE_TAKEN: 5166,
+    PLAN_TIER_CODE_TAKEN: 5167,
+    PLAN_TIER_NOT_ASSIGNABLE: 5168,
+    THEME_PRESET_KEY_TAKEN: 5169,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the
@@ -254,6 +267,16 @@ function isQuotaExceededDetails(details: unknown): details is QuotaExceededDetai
         typeof (details as QuotaExceededDetails).used === 'number' &&
         typeof (details as QuotaExceededDetails).limit === 'number'
     );
+}
+
+export type CoHostAlreadyMemberDetails = { memberId: string; userId: string; displayName: string };
+
+// 5161 names the member the invited address belongs to, so the host can promote them instead.
+export function getCoHostAlreadyMemberDetails(error: unknown): CoHostAlreadyMemberDetails | undefined {
+    if (!(error instanceof ApiError) || getErrorCode(error) !== ERROR_CODES.CO_HOST_ALREADY_MEMBER) return undefined;
+    const details = error.problem?.details as Partial<CoHostAlreadyMemberDetails> | undefined;
+    if (typeof details?.userId !== 'string') return undefined;
+    return { memberId: String(details.memberId ?? ''), userId: details.userId, displayName: String(details.displayName ?? '') };
 }
 
 export function getQuotaExceededDetails(error: unknown): QuotaExceededDetails | undefined {

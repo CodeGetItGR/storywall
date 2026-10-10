@@ -18,6 +18,7 @@ import { useCoHostCapacity } from '@/hooks/useCoHostCapacity';
 import { useMemberModeration } from '@/hooks/useMemberModeration';
 import { useMemberRoleSheet } from '@/hooks/useMemberRoleSheet';
 import { useActiveModuleCopy } from '@/hooks/useModuleCopy';
+import { usePromoteCoHost } from '@/hooks/usePromoteCoHost';
 import type {
     EventHostResponseDto,
     EventInvitationResponseDto,
@@ -35,6 +36,7 @@ import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
 
 import { CoHostManagementList } from './CoHostManagementList';
 import { MemberRow } from './MemberRow';
+import { PromoteCoHostModal } from './PromoteCoHostModal';
 
 type MembersSubTab = 'members' | 'coHosts';
 
@@ -102,6 +104,9 @@ export function MembersPanel({
     const coHostCapacity = useCoHostCapacity(hosts, currentPlan, nextPlan, activeEvent?.modules);
 
     const canCreate = canWrite && !isFull && !coHostCapacity.isFull;
+    // Promoting takes no member seat (they are already in), only a co-host one.
+    const canPromote = canWrite && coHostsAvailable && !coHostCapacity.isFull;
+    const promoteFlow = usePromoteCoHost(eventId);
 
     const handleTabSelect = useCallback((next: MembersSubTab) => {
         setTab(next);
@@ -183,6 +188,7 @@ export function MembersPanel({
                                     key={member.id}
                                     member={member}
                                     canModerate={canModerate}
+                                    canPromote={canPromote && member.role !== 'HOST' && member.userId !== null}
                                     canRemove={canModerate && member.role !== 'HOST'}
                                     canReport={canReport && member.id !== activeMember?.id}
                                     joinedLabel={tMembers('joined', { date: formatDate(locale, member.joinedAt, { dateStyle: 'medium' }) })}
@@ -190,8 +196,10 @@ export function MembersPanel({
                                     eventTypeKey={activeEvent?.eventType ?? null}
                                     editRoleLabel={tRoles('host.edit', { name: member.displayName })}
                                     onEditRoleAction={canManageRoles && !member.isFeatured ? roleSheet.open : undefined}
+                                    onPromoteAction={promoteFlow.requestForMember}
                                     onReportAction={moderation.requestReport}
                                     onRemoveAction={moderation.requestRemove}
+                                    promoteLabel={tMembers('promote')}
                                     reportLabel={tMembers('report')}
                                     removeLabel={tMembers('remove')}
                                 />
@@ -273,6 +281,9 @@ export function MembersPanel({
                 cancelLabel={tMembers('cancel')}
                 isConfirming={moderation.isRemoving}
             />
+
+            {/* Promote to co-host confirmation */}
+            <PromoteCoHostModal flow={promoteFlow} />
 
             {/* Role sheet */}
             {roleSheet.member && <MemberRoleSheet eventId={eventId} member={roleSheet.member} onCloseAction={roleSheet.close} />}

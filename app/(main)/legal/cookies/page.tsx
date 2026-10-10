@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { CookiePolicySettings } from '@/components/consent/CookiePolicySettings';
 import { LegalDocumentPage } from '@/components/legal/LegalDocumentPage';
 import { versionParam } from '@/lib/legalDocuments';
 import { routes } from '@/lib/routes';
@@ -16,5 +17,10 @@ export async function generateMetadata(): Promise<Metadata> {
 // Public.
 export default async function CookiePolicyPage({ searchParams }: PageProps) {
     const { version } = await searchParams;
-    return <LegalDocumentPage document="cookies" version={versionParam(version)} />;
+    return (
+        <LegalDocumentPage document="cookies" version={versionParam(version)}>
+            {/* Cookie settings */}
+            <CookiePolicySettings />
+        </LegalDocumentPage>
+    );
 }

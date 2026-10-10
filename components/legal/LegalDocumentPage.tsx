@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import type { ReactNode } from 'react';
 
 import { LegalPageShell } from '@/components/legal/LegalPageShell';
 import { MarkdownDocument } from '@/components/legal/MarkdownDocument';
@@ -6,7 +7,16 @@ import type { LegalDocumentSlug } from '@/lib/api/types';
 import { loadLegalDocument } from '@/lib/legalDocuments';
 
 // One backend-served legal page: the version in force, or an older one by ?version=.
-export async function LegalDocumentPage({ document, version }: { document: LegalDocumentSlug; version: string | null }) {
+// children render under the document, for page-specific controls.
+export async function LegalDocumentPage({
+    document,
+    version,
+    children,
+}: {
+    document: LegalDocumentSlug;
+    version: string | null;
+    children?: ReactNode;
+}) {
     const t = await getTranslations('LegalPages');
     const page = await loadLegalDocument(document, version);
 
@@ -19,6 +29,7 @@ export async function LegalDocumentPage({ document, version }: { document: Legal
                 /* Unavailable */
                 <p className="text-sm text-ink-muted">{t('unavailable')}</p>
             )}
+            {children}
         </LegalPageShell>
     );
 }

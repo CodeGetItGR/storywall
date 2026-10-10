@@ -64,7 +64,15 @@ describe('PUBLIC_CLIENT_NAMESPACES', () => {
 describe('pickPublicMessages', () => {
     it('drops everything outside the listed namespaces', () => {
         const picked = pickPublicMessages(en);
-        expect(Object.keys(picked).sort()).toEqual(['AccountDrawer', 'Durations', 'LandingPage', 'LanguageSwitcher', 'Modules', 'NewsletterForm']);
+        expect(Object.keys(picked).sort()).toEqual([
+            'AccountDrawer',
+            'CookieConsent',
+            'Durations',
+            'LandingPage',
+            'LanguageSwitcher',
+            'Modules',
+            'NewsletterForm',
+        ]);
         expect(Object.keys(picked.LandingPage as object).sort()).toEqual(['featureDetails', 'features', 'hero', 'pricing', 'shell', 'stack']);
         expect(picked.RootLayout).toBeUndefined();
     });

@@ -101,6 +101,22 @@ export function pickedLandingDuration(plan: LandingPlan, durationId: string | nu
     );
 }
 
+// Approximate glyph widths (in em) of the plan card's name and serif price faces, and the name's size in cqi.
+const CARD_NAME_EM_PER_CHAR = 0.76;
+const CARD_NAME_CQI = 7;
+const CARD_PRICE_EM_PER_CHAR = 0.48;
+const CARD_PRICE_MAX_CQI = 16.5;
+// Room left for the gap between name and price, in cqi.
+const CARD_PRICE_GAP_CQI = 5;
+
+// The price's font size on a plan card, in cqi: as large as the design allows, shrunk just enough that a
+// long price still fits beside the plan's name instead of wrapping below it.
+export function planCardPriceSize(name: string, price: string): number {
+    const room = 100 - name.length * CARD_NAME_EM_PER_CHAR * CARD_NAME_CQI - CARD_PRICE_GAP_CQI;
+    const fit = room / (price.length * CARD_PRICE_EM_PER_CHAR + 0.06);
+    return Math.min(CARD_PRICE_MAX_CQI, Math.max(fit, 0));
+}
+
 function landingDurations(plan: PlanTierResponseDto): LandingPlanDuration[] {
     return liveInitialOptions(plan).flatMap((option) => {
         const price = formatLandingOptionPrice(plan, option);
