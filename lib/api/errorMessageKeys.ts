@@ -33,6 +33,19 @@ export type ApiErrorMessageKey =
     | 'partnerBrandingNoticeOutdated'
     | 'concurrentModification'
     | 'conflict'
+    | 'eventHostAlreadyCoHost'
+    | 'eventHostLastHost'
+    | 'eventHostAlreadyPrimary'
+    | 'inviteCodeTaken'
+    | 'coHostAlreadyMember'
+    | 'memberIsHost'
+    | 'memberRoleKeyTaken'
+    | 'reactionTypeCodeTaken'
+    | 'blockedTermExists'
+    | 'paidServiceCodeTaken'
+    | 'planCodeTaken'
+    | 'planNotAssignable'
+    | 'themePresetKeyTaken'
     | 'coverageEnded'
     | 'coverageOptionDuplicate'
     | 'coverageOptionInvalid'
@@ -427,6 +440,19 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.MODULE_COPY_INCOMPLETE]: 'moduleCopyIncomplete',
     [ERROR_CODES.MODULE_COPY_TOO_LONG]: 'moduleCopyTooLong',
     [ERROR_CODES.MODULE_COPY_MODULE_UNSUPPORTED]: 'moduleCopyModuleUnsupported',
+    [ERROR_CODES.EVENT_HOST_ALREADY_CO_HOST]: 'eventHostAlreadyCoHost',
+    [ERROR_CODES.EVENT_HOST_LAST_HOST]: 'eventHostLastHost',
+    [ERROR_CODES.EVENT_HOST_ALREADY_PRIMARY]: 'eventHostAlreadyPrimary',
+    [ERROR_CODES.INVITE_CODE_TAKEN]: 'inviteCodeTaken',
+    [ERROR_CODES.CO_HOST_ALREADY_MEMBER]: 'coHostAlreadyMember',
+    [ERROR_CODES.MEMBER_IS_HOST]: 'memberIsHost',
+    [ERROR_CODES.MEMBER_ROLE_KEY_TAKEN]: 'memberRoleKeyTaken',
+    [ERROR_CODES.REACTION_TYPE_CODE_TAKEN]: 'reactionTypeCodeTaken',
+    [ERROR_CODES.BLOCKED_TERM_EXISTS]: 'blockedTermExists',
+    [ERROR_CODES.PAID_SERVICE_CODE_TAKEN]: 'paidServiceCodeTaken',
+    [ERROR_CODES.PLAN_TIER_CODE_TAKEN]: 'planCodeTaken',
+    [ERROR_CODES.PLAN_TIER_NOT_ASSIGNABLE]: 'planNotAssignable',
+    [ERROR_CODES.THEME_PRESET_KEY_TAKEN]: 'themePresetKeyTaken',
 } satisfies Record<KnownApiErrorCode, ApiErrorMessageKey>;
 
 export function getApiErrorMessageKey(code: number | string | undefined): ApiErrorMessageKey | undefined {

@@ -45,8 +45,8 @@ describe('InviteOnboardingBoundary accepting as a signed-in user', () => {
     });
 
     // A member reopening the shared join link: they're already in, so this is not an error.
-    it('opens the event when the caller is already a member (409/5001)', async () => {
-        mocks.accept.mockRejectedValue(new ApiError(409, { status: 409, errorCode: 5001 }));
+    it.each([5003, 5001])('opens the event when the caller is already a member (409/%i)', async (errorCode) => {
+        mocks.accept.mockRejectedValue(new ApiError(409, { status: 409, errorCode }));
         render(<InviteOnboardingBoundary token="tok" />);
 
         fireEvent.click(screen.getByRole('button', { name: /haveAccount/ }));
