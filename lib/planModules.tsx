@@ -1,4 +1,5 @@
 import {
+    Baby,
     BookHeart,
     CalendarCheck,
     CalendarDays,
@@ -37,6 +38,7 @@ const moduleIcons: Record<string, ComponentType<{ className?: string }>> = {
     schedule: CalendarDays,
     co_hosts: UserCog,
     named_invites: Mail,
+    he_or_she: Baby,
 };
 
 const moduleFallbacks: Record<string, { name: string; description: string }> = {
@@ -80,6 +82,10 @@ const moduleFallbacks: Record<string, { name: string; description: string }> = {
     theme: {
         name: 'Theme',
         description: 'An illustration and background colour for the event.',
+    },
+    he_or_she: {
+        name: 'Boy or Girl?',
+        description: 'Guests guess before the reveal.',
     },
 };
 

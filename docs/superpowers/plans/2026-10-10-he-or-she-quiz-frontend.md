@@ -47,7 +47,7 @@
         heOrSheResults: (eventId: string) => `/api/events/${eventId}/he-or-she/results`,
 ```
 
-- [ ] **Step 3:** `lib/api/errors.ts`: add the seven codes (3099–3101, 5170–5173) with the names the BE uses.
+- [ ] **Step 3:** `lib/api/errors.ts`: add the seven codes (3100–3102, 5170–5173) with the names the BE uses.
 - [ ] **Step 4:** `lib/routes.ts`: `heOrShe: (eventId: string) => \`${eventBasePath(eventId)}/tools/he-or-she\``. In `lib/eventTheme.ts`, add `he-or-she` to the themed-routes alternation, and add a case to `lib/eventTheme.test.ts` (`'/events/e1/tools/he-or-she'` is themed).
 - [ ] **Step 5:** `npx vitest run lib/eventTheme.test.ts`, then commit.
 
@@ -86,7 +86,7 @@ plus `useHeOrShe`, `useHeOrSheResults` (enabled for hosts only), `useSendHeOrShe
 
 ### Task 4: Messages
 
-- [ ] Add a `HeOrShePage` namespace to `en.json` and `el.json`. The keys: `he` ("Boy" / "Αγόρι"), `she` ("Girl" / "Κορίτσι"), `yes`, `no`, `send`, `changeAnswers`, `thanks`, `revealOn` (`{date}`), `resultIs` (`{result}`), `noVotesYet`, `extraQuestions`, `optional`, the per-type placeholders, the answer-error keys, host: `secretAnswer`, `secretAnswerHint` ("Only hosts see this."), `revealAt`, `save`, `revealNow`, `revealConfirmTitle`, `revealConfirmBody` ("Guests will see the answer. This can't be undone."), `revealConfirmAction`, `cancel`, `addQuestion`, the type labels (8), `editQuestion`, `deleteQuestion`, `deleteQuestionConfirm` ("Its answers will be deleted too."), `optionsLocked` ("Guests have answered. Options can't change."), `results`, `noAnswers`, `answeredBy` (`{count}`), plus the error-code messages for 3099–3101 and 5170–5173.
+- [ ] Add a `HeOrShePage` namespace to `en.json` and `el.json`. The keys: `he` ("Boy" / "Αγόρι"), `she` ("Girl" / "Κορίτσι"), `yes`, `no`, `send`, `changeAnswers`, `thanks`, `revealOn` (`{date}`), `resultIs` (`{result}`), `noVotesYet`, `extraQuestions`, `optional`, the per-type placeholders, the answer-error keys, host: `secretAnswer`, `secretAnswerHint` ("Only hosts see this."), `revealAt`, `save`, `revealNow`, `revealConfirmTitle`, `revealConfirmBody` ("Guests will see the answer. This can't be undone."), `revealConfirmAction`, `cancel`, `addQuestion`, the type labels (8), `editQuestion`, `deleteQuestion`, `deleteQuestionConfirm` ("Its answers will be deleted too."), `optionsLocked` ("Guests have answered. Options can't change."), `results`, `noAnswers`, `answeredBy` (`{count}`), plus the error-code messages for 3100–3102 and 5170–5173.
 - [ ] Labels use the confirmed copy from the spec's Copy section: Boy / Girl, Αγόρι / Κορίτσι. The module name itself comes from `useModuleCopy(eventType)('he_or_she')`, as the BE/admin copy, so don't hardcode a title.
 - [ ] `ToolsMenu.items.heOrShe.{label,description}` fallbacks.
 

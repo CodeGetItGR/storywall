@@ -77,6 +77,23 @@ describe('useToolsMenuItems', () => {
         expect(result.current.map((item) => item.key)).toEqual(['gallery', 'wishbook']);
     });
 
+    const withHeOrShe = () => event({ modules: [{ moduleKey: 'he_or_she', isEnabled: true, isAvailable: true, configuration: {} }] });
+
+    it('lists Boy or Girl? when its module is readable', () => {
+        mocks.activeEvent = withHeOrShe();
+        const item = renderHook(() => useToolsMenuItems()).result.current.find((tool) => tool.key === 'heOrShe');
+        expect(item?.href).toBe('/events/event-1/tools/he-or-she');
+    });
+
+    it('leaves Boy or Girl? out without the module, and for a demo visitor', () => {
+        mocks.activeEvent = event();
+        expect(renderHook(() => useToolsMenuItems()).result.current.map((tool) => tool.key)).not.toContain('heOrShe');
+
+        mocks.activeEvent = withHeOrShe();
+        mocks.accessMode = 'demoVisitor';
+        expect(renderHook(() => useToolsMenuItems()).result.current.map((tool) => tool.key)).not.toContain('heOrShe');
+    });
+
     const withRoles = (overrides: Record<string, unknown> = {}) =>
         event({
             modules: [{ moduleKey: 'member_roles', isEnabled: true, isAvailable: true, configuration: {} }],
