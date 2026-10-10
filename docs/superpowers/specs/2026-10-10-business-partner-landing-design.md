@@ -19,14 +19,14 @@ Main traffic source at launch is outreach (Instagram DMs, email, print), not org
 | Sign-up | Apply → admin approves → admin creates the collaborator. |
 | Business model | Referral (existing codes) now. Reselling in packages later, not on this page. |
 | Rates | Not shown publicly. Shared after approval. |
-| Occasions on the page | Weddings and baptisms only. |
+| Occasions on the page | Weddings and baptisms at launch, driven by a config list so more can be added later (see "Occasions config"). |
 | Founding partners | First 20 approved partners get the founding perk. The cap is real and enforced. |
 | Free trial | Every approved partner gets one free event to use with a client (a 100% code created in admin). |
 | Spots left | Live count from Spring. |
 | Address | Subfolder on the main origin. `business.storywall.gr` is a 308 short link only. |
 | Short link target | The Greek page. |
 | Language hint | A small dismissible banner, never a modal or redirect. |
-| Partners abroad | Accepted anywhere, paid in EUR. |
+| Partners abroad | Applications accepted from anywhere. Payouts are by bank transfer in EUR to an IBAN account, against the partner's invoice (matches the collaborator payout fields: IBAN, legal name, VAT, address). Partners outside IBAN countries are told to apply anyway and are handled by hand. A second payout method is built only once the Country field shows the demand. |
 | English page | Written for international professionals, not translated from Greek. Neutral English. Has a destination weddings section (not limited to Greece). |
 | Apply backend | A new Spring endpoint. Applications are stored, not emailed. |
 
@@ -131,7 +131,7 @@ A dedicated OG image per locale (`opengraph-image.tsx` in each route folder): th
 Every section gets a JSX comment marking its boundary. Copy stays short and plain (project rule). All text uses translation keys under a new `ForBusinessPage` namespace, included in `pickPublicMessages`.
 
 1. **Hero:** h1, one-sentence benefit, primary button "Apply" (scrolls to `#apply`), secondary link "Try the demo".
-2. **What your clients get:** QR → guests upload → live wall, using a static preview image. Weddings and baptisms only.
+2. **What your clients get:** QR → guests upload → live wall, using a static preview image. The occasions come from the occasions config (weddings and baptisms at launch).
 3. **What you get:** four items with no numbers:
    - your clients get a discount with your code
    - you earn on every event
@@ -149,6 +149,21 @@ Every section gets a JSX comment marking its boundary. Copy stays short and plai
    - Which events does it cover? (weddings, baptisms)
    - What happens after I apply?
 8. **Apply form (`#apply`):** see below.
+
+## Occasions config
+
+The occasions the page talks about come from one list, so adding one later does not touch the components.
+
+- `lib/forBusinessOccasions.ts` exports an ordered list. Each entry has:
+  - `eventTypeKey`: the existing event type key, e.g. `WEDDING`, `BAPTISM`
+  - a translation key prefix for its copy (name, short line, alt text), with separate copy per locale
+  - its static preview image path
+  - `locales`: the locales it shows in, so an occasion can go live in one language first
+- Sections that mention occasions map over the list: "What your clients get", the hero line naming the occasions, and the FAQ answer "Which events does it cover?".
+- Adding an occasion means: a list entry, its translations in both locales, an image, and updating the keyword map in this spec. Nothing else changes.
+- The SEO occasion rule applies here too: only list an occasion once the event type is enabled in the app and has a working demo in that language.
+- The list order is the display order in both locales. Weddings come first. How strongly each page emphasizes an occasion is a copy choice, not a config field.
+- A unit test checks that every entry has its translation keys in both locales it lists, and an image.
 
 ## English page: international audience
 
@@ -176,7 +191,8 @@ The two pages share the same structure and components, but not their copy, empha
 - It does not claim support for languages the app does not have (the app is English and Greek).
 
 **FAQ differences**
-- English page adds: "Can I join from outside Greece?" (yes) and "How do I get paid?" (in EUR). The payout method stated must match how admin pays collaborators today; confirm it with the business owner before the copy is final.
+- English page adds: "Can I join from outside Greece?" (yes) and "How do I get paid?": by bank transfer in EUR to an IBAN account, against your invoice. Outside an IBAN country, apply anyway and we'll work it out with you.
+- The Greek page's payout answer says the same in Greek, mentioning the invoice (τιμολόγιο).
 - English page adds: "Can guests upload without an app?" (yes).
 - English page leaves out Greece-specific questions.
 
@@ -202,6 +218,7 @@ Visible fields:
 - role (select: `PartnerRole`)
 - email
 - website or Instagram (one field, URL or `@handle`)
+- country (required, searchable select of ISO 3166-1 alpha-2 codes, with localized names from `Intl.DisplayNames`, preselected from the page locale: `GR` on the Greek page, empty on the English page)
 - phone (optional)
 - consent checkbox linking to the privacy policy
 
@@ -251,6 +268,7 @@ export interface PartnerApplicationRequestDto {
     role: PartnerRole;
     email: string;
     link: string;          // website URL or @handle
+    countryCode: string;   // ISO 3166-1 alpha-2
     phone: string | null;  // optional
     locale: Locale;
     consent: true;
