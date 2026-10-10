@@ -2,13 +2,13 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** The `tools/he-or-she` page for GENDER_REVEAL events. Guests guess He or She, answer optional extra questions, and see the tally after guessing (and everyone sees the result after the reveal). Hosts set the secret answer and reveal time, press Reveal, manage the extra questions, and read every answer by name.
+**Goal:** The `tools/he-or-she` page for GENDER_REVEAL events. Everyone (hosts included) guesses Boy or Girl, answers optional extra questions, and see the tally after guessing (and everyone sees the result after the reveal). Hosts set the secret answer and reveal time, press Reveal, manage the extra questions, and read every answer by name.
 
 **Architecture:** A server-prefetched route (`page.tsx` seeds `heOrSheKeys.view(eventId)`) over a thin `PageClient.tsx` that picks the guest or the host screen. Data and mutations live in `hooks/useHeOrShe.ts`. Per-type input parsing and formatting live in `lib/heOrShe.ts`. The UI is small files under `components/heOrShe/`. The mock `tools/quiz` page is not touched.
 
 **Tech Stack:** Next.js 16, React 19, TanStack Query 5, next-intl, vitest + Testing Library.
 
-**Backend contract:** `guestwall-be/docs/fe-guides/he-or-she-quiz-fe-integration.md` (BE plan Task 11). Spec: `guestwall-be/docs/superpowers/specs/2026-10-10-he-or-she-quiz-design.md`. **Ship after the BE is on `staging`.** Don't start until the spec's "Copy to confirm" section is signed off.
+**Backend contract:** `guestwall-be/docs/fe-guides/he-or-she-quiz-fe-integration.md` (BE plan Task 11). Spec: `guestwall-be/docs/superpowers/specs/2026-10-10-he-or-she-quiz-design.md`. **Ship after the BE is on `staging`.** The spec's decisions and copy were confirmed on 2026-10-10.
 
 ---
 
@@ -47,7 +47,7 @@
         heOrSheResults: (eventId: string) => `/api/events/${eventId}/he-or-she/results`,
 ```
 
-- [ ] **Step 3:** `lib/api/errors.ts`: add the eight codes (3099–3101, 4032, 5170–5173) with the names the BE uses.
+- [ ] **Step 3:** `lib/api/errors.ts`: add the seven codes (3099–3101, 5170–5173) with the names the BE uses.
 - [ ] **Step 4:** `lib/routes.ts`: `heOrShe: (eventId: string) => \`${eventBasePath(eventId)}/tools/he-or-she\``. In `lib/eventTheme.ts`, add `he-or-she` to the themed-routes alternation, and add a case to `lib/eventTheme.test.ts` (`'/events/e1/tools/he-or-she'` is themed).
 - [ ] **Step 5:** `npx vitest run lib/eventTheme.test.ts`, then commit.
 
@@ -86,8 +86,8 @@ plus `useHeOrShe`, `useHeOrSheResults` (enabled for hosts only), `useSendHeOrShe
 
 ### Task 4: Messages
 
-- [ ] Add a `HeOrShePage` namespace to `en.json` and `el.json`. The keys: `he`, `she`, `yes`, `no`, `send`, `changeAnswers`, `thanks`, `revealOn` (`{date}`), `resultIs` (`{result}`), `noVotesYet`, `extraQuestions`, `optional`, the per-type placeholders, the answer-error keys, host: `secretAnswer`, `secretAnswerHint` ("Only hosts see this."), `revealAt`, `save`, `revealNow`, `revealConfirmTitle`, `revealConfirmBody` ("Guests will see the answer. This can't be undone."), `revealConfirmAction`, `cancel`, `addQuestion`, the type labels (8), `editQuestion`, `deleteQuestion`, `deleteQuestionConfirm` ("Its answers will be deleted too."), `optionsLocked` ("Guests have answered. Options can't change."), `results`, `noAnswers`, `answeredBy` (`{count}`), plus the error-code messages for 3099–3101, 4032 and 5170–5173.
-- [ ] Module name and labels use the **confirmed** copy from the spec ("Copy to confirm"). The module name itself comes from `useModuleCopy(eventType)('he_or_she')`, as the BE/admin copy, so don't hardcode a title.
+- [ ] Add a `HeOrShePage` namespace to `en.json` and `el.json`. The keys: `he` ("Boy" / "Αγόρι"), `she` ("Girl" / "Κορίτσι"), `yes`, `no`, `send`, `changeAnswers`, `thanks`, `revealOn` (`{date}`), `resultIs` (`{result}`), `noVotesYet`, `extraQuestions`, `optional`, the per-type placeholders, the answer-error keys, host: `secretAnswer`, `secretAnswerHint` ("Only hosts see this."), `revealAt`, `save`, `revealNow`, `revealConfirmTitle`, `revealConfirmBody` ("Guests will see the answer. This can't be undone."), `revealConfirmAction`, `cancel`, `addQuestion`, the type labels (8), `editQuestion`, `deleteQuestion`, `deleteQuestionConfirm` ("Its answers will be deleted too."), `optionsLocked` ("Guests have answered. Options can't change."), `results`, `noAnswers`, `answeredBy` (`{count}`), plus the error-code messages for 3099–3101 and 5170–5173.
+- [ ] Labels use the confirmed copy from the spec's Copy section: Boy / Girl, Αγόρι / Κορίτσι. The module name itself comes from `useModuleCopy(eventType)('he_or_she')`, as the BE/admin copy, so don't hardcode a title.
 - [ ] `ToolsMenu.items.heOrShe.{label,description}` fallbacks.
 
 ### Task 5: Guest components
@@ -99,7 +99,7 @@ plus `useHeOrShe`, `useHeOrSheResults` (enabled for hosts only), `useSendHeOrShe
   - `revealAt` set: "Reveal on {date}" shows.
   - No names appear anywhere in the guest screen (assert on the DOM text).
 - [ ] **Step 2: Implement** these, each a render shell taking props:
-  - `GuessButtons`: He / She as two thumb-sized toggle buttons, `aria-pressed`.
+  - `GuessButtons`: Boy / Girl as two thumb-sized toggle buttons, `aria-pressed`.
   - `ExtraQuestionField`: one input per type. Segmented buttons for HE_SHE/YES_NO, radio rows for CHOICE, `DateTimeField` (or native date/time) for DATE/TIME, `inputMode="decimal"` for NUMBER, an inline text field in the sentence for FILL_GAP (`splitFillGap`), and a textarea with a counter for FREE_TEXT.
   - `GuessForm`: composes them with `useHeOrSheGuessForm`.
   - `TallyBar`: one horizontal bar, He % / She %, with the counts underneath. This is the page's only home for the counts, so don't repeat them elsewhere (CLAUDE.md, "Never show the same fact twice").
@@ -143,7 +143,7 @@ export default async function Page({ params }: PageProps) {
 ```
 
 Results are not prefetched. They are host-only, and the host screen shows its own loading state for them. (The server can't tell host from guest here without `resolveServerEventContext()`. If the reviewer wants results prefetched, switch to that and gate on `isHost`.)
-- [ ] **Step 2:** `PageClient.tsx` stays thin: `ModulePageShell` with the title from `useModuleCopy`, `ModuleUnavailableState` when the module isn't readable, `HeOrSheSkeleton` while loading, then `isHost ? <HostView/> : <GuestView/>`, where those are small compositions of the Task 5 and 6 components. The back link uses `routes.events.feed(eventId)` with the same icon-plus-label pattern as the other tools.
+- [ ] **Step 2:** `PageClient.tsx` stays thin: `ModulePageShell` with the title from `useModuleCopy`, `ModuleUnavailableState` when the module isn't readable, `HeOrSheSkeleton` while loading, then the guess section (everyone, hosts included), and for hosts the settings, questions and results sections below it. Each is a small composition of the Task 5 and 6 components. The back link uses `routes.events.feed(eventId)` with the same icon-plus-label pattern as the other tools.
 - [ ] **Step 3:** `loading.tsx` renders `HeOrSheSkeleton` inside the shell skeleton.
 - [ ] **Step 4:** Commit.
 
