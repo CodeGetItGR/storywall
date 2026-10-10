@@ -21,6 +21,7 @@ export const PUBLIC_CLIENT_NAMESPACES = [
     'Durations',
     'AccountDrawer',
     'NewsletterForm',
+    'ForBusinessPage.apply',
     'CookieConsent',
 ] as const;
 
