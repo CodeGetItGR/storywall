@@ -116,7 +116,12 @@ describe('contentSecurityPolicy', () => {
 
         const csp = directives({ ...PRODUCTION, NEXT_PUBLIC_GOOGLE_ADS_ID: 'AW-1' });
         expect(csp.get('script-src')).toEqual(
-            expect.arrayContaining(['https://www.googletagmanager.com', 'https://www.googleadservices.com', 'https://www.google.com']),
+            expect.arrayContaining([
+                'https://www.googletagmanager.com',
+                'https://www.googleadservices.com',
+                'https://www.google.com',
+                'https://googleads.g.doubleclick.net',
+            ]),
         );
         for (const directive of ['img-src', 'connect-src']) {
             expect(csp.get(directive)).toEqual(
