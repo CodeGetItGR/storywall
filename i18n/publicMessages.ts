@@ -23,6 +23,7 @@ export const PUBLIC_CLIENT_NAMESPACES = [
     'NewsletterForm',
     'ForBusinessPage.apply',
     'CookieConsent',
+    'PartnerCard',
 ] as const;
 
 function readPath(messages: AbstractIntlMessages, segments: string[]): AbstractIntlMessages | string | undefined {

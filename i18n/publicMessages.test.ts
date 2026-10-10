@@ -73,6 +73,7 @@ describe('pickPublicMessages', () => {
             'LanguageSwitcher',
             'Modules',
             'NewsletterForm',
+            'PartnerCard',
         ]);
         expect(Object.keys(picked.LandingPage as object).sort()).toEqual(['featureDetails', 'features', 'hero', 'pricing', 'shell', 'stack']);
         expect(picked.RootLayout).toBeUndefined();
