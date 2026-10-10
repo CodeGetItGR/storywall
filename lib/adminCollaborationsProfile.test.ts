@@ -134,6 +134,7 @@ describe('server business detail errors', () => {
 
     it('is not a rejection for any other failure', () => {
         expect(serverBusinessDetailErrors(new Error('offline'))).toEqual({});
+        expect(rejectedBusinessDetails(new ApiError(400, { errorCode: 3067 }))).toBe(true);
         expect(rejectedBusinessDetails(new ApiError(409, { errorCode: 5096 }))).toBe(false);
     });
 });

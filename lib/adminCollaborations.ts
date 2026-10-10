@@ -306,8 +306,8 @@ export function businessDetailsErrors(input: CollaboratorBusinessDetailsRequestD
     return errors;
 }
 
-// A 400 from bean validation names its fields; the service's own format checks don't, so
-// rejectedBusinessDetails tells the form to show a general message instead.
+// A 400 from bean validation names its fields; the service's own format checks (3067, or 3001 from
+// older backends) don't, so rejectedBusinessDetails tells the form to show a general message instead.
 export function serverBusinessDetailErrors(error: unknown): BusinessDetailErrors {
     const fields = getFieldErrors(error) ?? {};
     const errors: BusinessDetailErrors = {};
@@ -316,7 +316,8 @@ export function serverBusinessDetailErrors(error: unknown): BusinessDetailErrors
 }
 
 export function rejectedBusinessDetails(error: unknown): boolean {
-    return getErrorCode(error) === ERROR_CODES.VALIDATION_FAILED;
+    const code = getErrorCode(error);
+    return code === ERROR_CODES.BUSINESS_DETAILS_INVALID || code === ERROR_CODES.VALIDATION_FAILED;
 }
 
 export function hasBusinessDetailErrors(errors: BusinessDetailErrors): boolean {
