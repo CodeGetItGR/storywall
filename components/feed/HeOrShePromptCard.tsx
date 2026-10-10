@@ -22,7 +22,7 @@ export function HeOrShePromptCard({ eventId, eventType, enabled }: { eventId: st
     if (!prompt.visible) return null;
 
     return (
-        <article className="p-2">
+        <article className="mt-3 p-2">
             <div className="@container relative isolate overflow-hidden rounded-2xl bg-linear-to-br from-sky-100 via-white to-pink-100 px-5 pt-7 pb-6 shadow-[0_10px_30px_rgba(36,31,26,0.08)] ring-1 ring-white/80">
                 {/* Decoration */}
                 <LightRay />
