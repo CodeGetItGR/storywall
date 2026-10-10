@@ -14,6 +14,7 @@ import { EventSessionActionButtons } from '@/components/feed/EventSessionActionB
 import { FeedEmptyState } from '@/components/feed/FeedEmptyState';
 import { FeedPostRenderer } from '@/components/feed/FeedPostRenderer';
 import { Header } from '@/components/feed/Header';
+import { HeOrShePromptCard } from '@/components/feed/HeOrShePromptCard';
 import { PartnerBrandingPromptModal } from '@/components/feed/partner/PartnerBrandingPromptModal';
 import { PartnerFeedCard } from '@/components/feed/partner/PartnerFeedCard';
 import { PostModal } from '@/components/feed/PostModal';
@@ -138,6 +139,8 @@ export function FeedPageContent() {
                     >
                         <ComposerCard />
                         <PublishQueueCards />
+                        {/* Boy or Girl? prompt */}
+                        <HeOrShePromptCard eventId={eventId} eventType={event.eventType} enabled={moduleFlags.he_or_she} />
                         <div className="flex flex-col">
                             {posts.length === 0 ? (
                                 <FeedEmptyState />
