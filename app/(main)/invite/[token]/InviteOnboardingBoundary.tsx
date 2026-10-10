@@ -37,8 +37,10 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
             const member = await acceptInvitation.mutateAsync(token);
             router.replace(routes.events.feed(member.eventId));
         } catch (err) {
-            // 409/5001: already a member — someone reopening the shared join link. They're in.
-            if (preview && err instanceof ApiError && err.status === 409 && getErrorCode(err) === ERROR_CODES.CONFLICT) {
+            // 409/5003 (5001 before the backend named it): already a member — someone reopening the
+            // shared join link. They're in.
+            const code = getErrorCode(err);
+            if (preview && err instanceof ApiError && err.status === 409 && (code === ERROR_CODES.DUPLICATE_MEMBERSHIP || code === ERROR_CODES.CONFLICT)) {
                 router.replace(routes.events.feed(preview.eventId));
                 return;
             }

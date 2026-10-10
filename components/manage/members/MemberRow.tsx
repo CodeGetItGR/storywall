@@ -1,4 +1,4 @@
-import { Flag, Trash2 } from 'lucide-react';
+import { Flag, Trash2, UserCog } from 'lucide-react';
 import { type ReactNode, useCallback } from 'react';
 
 import { RoleChip } from '@/components/memberRoles/RoleChip';
@@ -10,6 +10,7 @@ import { avatarColorFromId, initialsFromName } from '@/lib/utils';
 
 type MemberRowProps = {
     canModerate: boolean;
+    canPromote: boolean;
     canRemove: boolean;
     canReport: boolean;
     editRoleLabel: string;
@@ -17,8 +18,10 @@ type MemberRowProps = {
     joinedLabel: string;
     member: EventMemberResponseDto;
     onEditRoleAction?: (member: EventMemberResponseDto) => void;
+    onPromoteAction: (member: EventMemberResponseDto) => void;
     onRemoveAction: (member: EventMemberResponseDto) => void;
     onReportAction: (member: EventMemberResponseDto) => void;
+    promoteLabel: string;
     removeLabel: string;
     reportLabel: string;
     roleLabel: string | null;
@@ -26,6 +29,7 @@ type MemberRowProps = {
 
 export function MemberRow({
     canModerate,
+    canPromote,
     canRemove,
     canReport,
     editRoleLabel,
@@ -33,8 +37,10 @@ export function MemberRow({
     joinedLabel,
     member,
     onEditRoleAction,
+    onPromoteAction,
     onRemoveAction,
     onReportAction,
+    promoteLabel,
     removeLabel,
     reportLabel,
     roleLabel,
@@ -42,6 +48,7 @@ export function MemberRow({
     const memberAvatarUrl = useMemberAvatarUrl();
     const memberRole = useMemberRoleLabel(member, eventTypeKey);
     const handleEditRole = useCallback(() => onEditRoleAction?.(member), [member, onEditRoleAction]);
+    const handlePromote = useCallback(() => onPromoteAction(member), [member, onPromoteAction]);
     const handleReport = useCallback(() => onReportAction(member), [member, onReportAction]);
     const handleRemove = useCallback(() => onRemoveAction(member), [member, onRemoveAction]);
 
@@ -71,8 +78,19 @@ export function MemberRow({
             </MemberIdentity>
 
             {/* Actions */}
-            {canModerate && (
+            {(canModerate || canPromote) && (
                 <div className="flex shrink-0 items-center gap-1">
+                    {canPromote && (
+                        <button
+                            type="button"
+                            onClick={handlePromote}
+                            aria-label={promoteLabel}
+                            className="flex min-h-10 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
+                        >
+                            <UserCog className="h-3.5 w-3.5" aria-hidden="true" />
+                            <span className="hidden sm:inline">{promoteLabel}</span>
+                        </button>
+                    )}
                     {canReport && (
                         <button
                             type="button"
