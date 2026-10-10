@@ -122,10 +122,10 @@ export function tallyPercent(tally: { he: number; she: number }): { he: number; 
     return { he, she: 100 - he };
 }
 
-/** Milliseconds until {@code revealAt}, or null when there is nothing to wait for. */
-export function msUntilReveal(revealAt: string | null, now: number = Date.now()): number | null {
-    if (!revealAt) return null;
-    const at = Date.parse(revealAt);
+/** Milliseconds until {@code closesAt}, or null when there is nothing to wait for. */
+export function msUntilClose(closesAt: string | null, now: number = Date.now()): number | null {
+    if (!closesAt) return null;
+    const at = Date.parse(closesAt);
     if (Number.isNaN(at)) return null;
     return Math.max(0, at - now);
 }

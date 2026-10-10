@@ -2233,19 +2233,15 @@ export interface QuizQuestionDto {
     sortOrder: number;
 }
 
-// GET /he-or-she; PUT /answers, PUT /settings and POST /reveal return it too.
+// GET /he-or-she; PUT /answers and PUT /settings return it too.
 export interface HeOrSheViewDto {
-    status: 'OPEN' | 'REVEALED';
-    // The scheduled reveal. Revealed is computed on read, so refetch when it passes.
-    revealAt: string | null;
+    status: 'OPEN' | 'CLOSED';
+    // When voting closes. Closed is computed on read, so refetch when it passes.
+    closesAt: string | null;
     canGuess: boolean;
     myGuess: HeOrSheValue | null;
-    // Null for a member who hasn't guessed while OPEN; never null for hosts.
+    // Null for a member who hasn't voted while OPEN; never null for hosts or once CLOSED.
     tally: { he: number; she: number } | null;
-    // Only once REVEALED.
-    result: HeOrSheValue | null;
-    // The stored secret answer: hosts only.
-    answer: HeOrSheValue | null;
     questions: QuizQuestionDto[];
     // questionId -> canonical value.
     myAnswers: Record<string, string>;
@@ -2257,10 +2253,9 @@ export interface HeOrSheAnswersRequestDto {
     answers: { questionId: string; value: string }[];
 }
 
-// PUT /settings (host). Both null clears them.
+// PUT /settings (host). Null clears it, so voting stays open.
 export interface HeOrSheSettingsRequestDto {
-    answer: HeOrSheValue | null;
-    revealAt: string | null;
+    closesAt: string | null;
 }
 
 export interface QuizQuestionRequestDto {

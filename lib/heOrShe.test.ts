@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { answerError, formatAnswer, hasOneGap, msUntilReveal, splitFillGap, tallyPercent, toAnswerValue } from '@/lib/heOrShe';
+import { answerError, formatAnswer, hasOneGap, msUntilClose, splitFillGap, tallyPercent, toAnswerValue } from '@/lib/heOrShe';
 
 const labels = { he: 'Boy', she: 'Girl', yes: 'Yes', no: 'No' };
 
@@ -86,10 +86,10 @@ describe('tallyPercent', () => {
     });
 });
 
-describe('msUntilReveal', () => {
+describe('msUntilClose', () => {
     it('is the wait, never negative, and null without a time', () => {
-        expect(msUntilReveal('2026-01-01T00:01:00Z', Date.parse('2026-01-01T00:00:00Z'))).toBe(60_000);
-        expect(msUntilReveal('2025-01-01T00:00:00Z', Date.parse('2026-01-01T00:00:00Z'))).toBe(0);
-        expect(msUntilReveal(null)).toBeNull();
+        expect(msUntilClose('2026-01-01T00:01:00Z', Date.parse('2026-01-01T00:00:00Z'))).toBe(60_000);
+        expect(msUntilClose('2025-01-01T00:00:00Z', Date.parse('2026-01-01T00:00:00Z'))).toBe(0);
+        expect(msUntilClose(null)).toBeNull();
     });
 });

@@ -131,7 +131,6 @@ export const endpoints = {
         heOrShe: (eventId: string) => `/api/events/${eventId}/he-or-she`,
         heOrSheAnswers: (eventId: string) => `/api/events/${eventId}/he-or-she/answers`,
         heOrSheSettings: (eventId: string) => `/api/events/${eventId}/he-or-she/settings`,
-        heOrSheReveal: (eventId: string) => `/api/events/${eventId}/he-or-she/reveal`,
         heOrSheQuestions: (eventId: string) => `/api/events/${eventId}/he-or-she/questions`,
         heOrSheQuestion: (eventId: string, questionId: string) => `/api/events/${eventId}/he-or-she/questions/${questionId}`,
         heOrSheResults: (eventId: string) => `/api/events/${eventId}/he-or-she/results`,
