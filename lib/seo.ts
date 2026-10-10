@@ -11,6 +11,14 @@ export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.storyw
 export const OG_IMAGE_PATH = '/opengraph-image';
 export const OG_IMAGE_SIZE = { width: 1200, height: 630 } as const;
 
+// Official StoryWall profiles: linked from the landing footer and listed as the
+// Organization's `sameAs` so search engines tie them to the site.
+export const SOCIAL_PROFILES = [
+    { key: 'instagram', href: 'https://www.instagram.com/storywall.gr/' },
+    { key: 'tiktok', href: 'https://www.tiktok.com/@storywall.gr' },
+    { key: 'facebook', href: 'https://www.facebook.com/storywall.gr' },
+] as const;
+
 // The root resolves to the bare origin so it matches the canonical Next emits
 // (no trailing slash) and the sitemap lists byte-identical URLs.
 export function absoluteUrl(path: string): string {

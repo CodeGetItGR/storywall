@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 
 vi.mock('next-intl/server', () => ({
-    getTranslations: async () => Object.assign((key: string) => key, { raw: () => [] }),
+    getTranslations: async () => (key: string) => key,
 }));
 vi.mock('@/components/common/ProtectedImage', () => ({ ProtectedImage: () => null }));
 vi.mock('@/components/landing/LandingMotionToggle', () => ({ LandingMotionToggle: () => null }));
@@ -34,6 +34,15 @@ describe('LandingFooter', () => {
         expect(screen.getByRole('link', { name: 'legalLinks.cookies' })).toHaveAttribute('href', '/legal/cookies');
         expect(screen.getByRole('link', { name: 'legalLinks.withdrawal' })).toHaveAttribute('href', '/legal/withdrawal-terms');
         expect(screen.getByRole('link', { name: 'legalLinks.contact' })).toHaveAttribute('href', '/contact');
+    });
+
+    it('links every social profile in a new tab', async () => {
+        render(await LandingFooter());
+
+        expect(screen.getByRole('link', { name: 'socialLinks.instagram' })).toHaveAttribute('href', 'https://www.instagram.com/storywall.gr/');
+        expect(screen.getByRole('link', { name: 'socialLinks.tiktok' })).toHaveAttribute('href', 'https://www.tiktok.com/@storywall.gr');
+        expect(screen.getByRole('link', { name: 'socialLinks.facebook' })).toHaveAttribute('href', 'https://www.facebook.com/storywall.gr');
+        expect(screen.getByRole('link', { name: 'socialLinks.facebook' })).toHaveAttribute('target', '_blank');
     });
 
     it('offers the cookie settings next to the legal links', async () => {
