@@ -75,6 +75,7 @@ function order(overrides: Partial<OrderSummaryDto> = {}): OrderSummaryDto {
         buyerType: 'CONSUMER',
         breakdown: breakdown({ available: true, windowDays: 14, windowClosesAt: '2026-10-05T21:00:00Z' }),
         paidByCaller: true,
+        firstPurchase: null,
         ...overrides,
     };
 }
