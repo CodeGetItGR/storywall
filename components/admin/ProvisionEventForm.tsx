@@ -5,6 +5,7 @@ import type { ChangeEvent, MouseEvent } from 'react';
 
 import { AdminDurationSelect } from '@/components/admin/AdminDurationSelect';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
+import { ProvisionEventTheme } from '@/components/admin/ProvisionEventTheme';
 import { useCreateEventFieldLabels } from '@/hooks/useCreateEventFieldLabels';
 import { useEventTypeVoice } from '@/hooks/useEventTypeVoice';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
@@ -31,6 +32,14 @@ export function ProvisionEventForm({ form }: { form: ProvisionEventFormState }) 
 
     function handleTitleChange(event: ChangeEvent<HTMLInputElement>) {
         form.setTitle(event.target.value);
+    }
+
+    function handleDescriptionChange(event: ChangeEvent<HTMLTextAreaElement>) {
+        form.setDescription(event.target.value);
+    }
+
+    function handleRsvpDeadlineChange(event: ChangeEvent<HTMLInputElement>) {
+        form.setRsvpDeadline(event.target.value);
     }
 
     function handleStartChange(event: ChangeEvent<HTMLInputElement>) {
@@ -135,6 +144,17 @@ export function ProvisionEventForm({ form }: { form: ProvisionEventFormState }) 
                     />
                     {form.fieldError('title') ? <span className="text-xs text-status-danger">{form.fieldError('title')}</span> : null}
                 </AdminField>
+                <AdminField label={t('description')} optional>
+                    <textarea
+                        rows={3}
+                        maxLength={form.descriptionMaxLength}
+                        value={form.description}
+                        onChange={handleDescriptionChange}
+                        className={adminInputClass()}
+                        aria-invalid={Boolean(form.fieldError('description'))}
+                    />
+                    {form.fieldError('description') ? <span className="text-xs text-status-danger">{form.fieldError('description')}</span> : null}
+                </AdminField>
                 <AdminField label={fieldLabels.startAt} required>
                     <input
                         required
@@ -147,6 +167,19 @@ export function ProvisionEventForm({ form }: { form: ProvisionEventFormState }) 
                     />
                 </AdminField>
                 {form.scheduleError ? <p className="text-xs text-status-danger">{form.scheduleError}</p> : null}
+                {form.planHasRsvp ? (
+                    <AdminField label={t('rsvpDeadline')} optional>
+                        <input
+                            type="datetime-local"
+                            value={form.rsvpDeadline}
+                            max={form.startAt || undefined}
+                            onChange={handleRsvpDeadlineChange}
+                            className={adminInputClass()}
+                            aria-invalid={Boolean(form.rsvpDeadlineError)}
+                        />
+                        {form.rsvpDeadlineError ? <span className="text-xs text-status-danger">{form.rsvpDeadlineError}</span> : null}
+                    </AdminField>
+                ) : null}
                 <AdminField label={t('timezone')} required>
                     <input
                         required
@@ -182,6 +215,9 @@ export function ProvisionEventForm({ form }: { form: ProvisionEventFormState }) 
                     <input type="url" value={form.mapsUrl} onChange={handleMapsUrlChange} className={adminInputClass()} />
                 </AdminField>
             </section>
+
+            {/* Theme */}
+            {form.isThemeAvailable ? <ProvisionEventTheme form={form} /> : null}
 
             {/* Visibility */}
             <section aria-labelledby="provision-event-visibility" className="border-t border-border pt-6">
