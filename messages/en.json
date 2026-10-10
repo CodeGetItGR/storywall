@@ -1163,6 +1163,7 @@
                 "lastName": "Last name",
                 "expiresAt": "Expires",
                 "emailNotice": "We send the invitation automatically. Another account cannot accept this link.",
+                "alreadyMember": "{name} is already a member of this event.",
                 "submit": "Send invitation",
                 "cancel": "Cancel",
                 "guideTitle": "Invite someone to help",
@@ -1413,6 +1414,9 @@
             "cancel": "Cancel",
             "removeConfirmTitle": "Remove this member?",
             "removeConfirmBody": "{name} will lose access to this event.",
+            "promote": "Make co-host",
+            "promoteConfirmTitle": "Make {name} a co-host?",
+            "promoteConfirmBody": "They'll be able to manage this event.",
             "removeFailed": "Couldn't remove this member. Please try again."
         }
     },

@@ -269,6 +269,16 @@ function isQuotaExceededDetails(details: unknown): details is QuotaExceededDetai
     );
 }
 
+export type CoHostAlreadyMemberDetails = { memberId: string; userId: string; displayName: string };
+
+// 5161 names the member the invited address belongs to, so the host can promote them instead.
+export function getCoHostAlreadyMemberDetails(error: unknown): CoHostAlreadyMemberDetails | undefined {
+    if (!(error instanceof ApiError) || getErrorCode(error) !== ERROR_CODES.CO_HOST_ALREADY_MEMBER) return undefined;
+    const details = error.problem?.details as Partial<CoHostAlreadyMemberDetails> | undefined;
+    if (typeof details?.userId !== 'string') return undefined;
+    return { memberId: String(details.memberId ?? ''), userId: details.userId, displayName: String(details.displayName ?? '') };
+}
+
 export function getQuotaExceededDetails(error: unknown): QuotaExceededDetails | undefined {
     if (error instanceof ApiError && isQuotaExceededDetails(error.problem?.details)) {
         return error.problem.details;

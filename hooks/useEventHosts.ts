@@ -7,7 +7,7 @@ import { myEventsKeys } from '@/hooks/useMyEvents';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
-import type { EventHostPatchDto, EventHostRequestDto, EventHostResponseDto } from '@/lib/api/types';
+import type { CoHostInviteRequestDto, EventHostPatchDto, EventHostRequestDto, EventHostResponseDto } from '@/lib/api/types';
 
 export const eventHostKeys = {
     list: (eventId: string) => ['events', eventId, 'hosts'] as const,
@@ -47,6 +47,17 @@ export function useCreateEventHost() {
         onSuccess: (host) => {
             queryClient.invalidateQueries({ queryKey: eventHostKeys.list(host.eventId) });
         },
+    });
+}
+
+// POST /api/events/{eventId}/hosts — any HOST. Makes a member (by account) a co-host at once,
+// with no acceptance step.
+export function usePromoteToCoHost(eventId: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (input: CoHostInviteRequestDto) => api.post<EventHostResponseDto>(endpoints.events.hosts(eventId), input),
+        onSuccess: () => refreshAfterHostChange(queryClient, eventId),
     });
 }
 
