@@ -33,6 +33,55 @@ export type ApiErrorMessageKey =
     | 'partnerBrandingNoticeOutdated'
     | 'concurrentModification'
     | 'conflict'
+    | 'emailConfirmationLinkInvalid'
+    | 'passwordResetLinkInvalid'
+    | 'dateRangeInvalid'
+    | 'dateRangeTooLong'
+    | 'searchTermTooLong'
+    | 'queryParameterInvalid'
+    | 'checkoutQuoteInvalid'
+    | 'checkoutConsentRequired'
+    | 'withdrawalNoteRequired'
+    | 'businessDetailsInvalid'
+    | 'commissionTiersInvalid'
+    | 'partnerBrandingNotAccepted'
+    | 'unknownPlanTier'
+    | 'moduleConfigValueInvalid'
+    | 'moduleConfigNotOverridable'
+    | 'crossEventReference'
+    | 'coHostNeedsAccount'
+    | 'memberHostRoleNotAllowed'
+    | 'qrLinkMaxGuestsNotAllowed'
+    | 'qrLinkTargetInvalid'
+    | 'bugReportTooShort'
+    | 'feedbackPageUrlInvalid'
+    | 'uploadFilesRequired'
+    | 'coverUploadNotBatched'
+    | 'storyItemsRequired'
+    | 'storyItemInvalid'
+    | 'blockedTermInvalid'
+    | 'noticeIdentityRequired'
+    | 'noticeTextTooShort'
+    | 'paidServiceFieldsInvalid'
+    | 'withdrawalPercentsTooHigh'
+    | 'accountHasNoPassword'
+    | 'wishbookBookTextTooLong'
+    | 'localizedTextInvalid'
+    | 'memberRoleEmojiTooLong'
+    | 'landingCategoryEventTypesDuplicate'
+    | 'landingCategoryDefaultHidden'
+    | 'themeFontFamilyNameInvalid'
+    | 'themePresetEventTypesInvalid'
+    | 'themeBackgroundLowContrast'
+    | 'contentLengthRequired'
+    | 'notEventMember'
+    | 'notEventHost'
+    | 'reportMemberNotHost'
+    | 'coHostGuestAccount'
+    | 'membershipClaimNoEmail'
+    | 'membershipClaimEmailMismatch'
+    | 'notificationNotYours'
+    | 'sessionNotYours'
     | 'eventHostAlreadyCoHost'
     | 'eventHostLastHost'
     | 'eventHostAlreadyPrimary'
@@ -453,6 +502,55 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.PLAN_TIER_CODE_TAKEN]: 'planCodeTaken',
     [ERROR_CODES.PLAN_TIER_NOT_ASSIGNABLE]: 'planNotAssignable',
     [ERROR_CODES.THEME_PRESET_KEY_TAKEN]: 'themePresetKeyTaken',
+    [ERROR_CODES.EMAIL_CONFIRMATION_LINK_INVALID]: 'emailConfirmationLinkInvalid',
+    [ERROR_CODES.PASSWORD_RESET_LINK_INVALID]: 'passwordResetLinkInvalid',
+    [ERROR_CODES.DATE_RANGE_INVALID]: 'dateRangeInvalid',
+    [ERROR_CODES.DATE_RANGE_TOO_LONG]: 'dateRangeTooLong',
+    [ERROR_CODES.SEARCH_TERM_TOO_LONG]: 'searchTermTooLong',
+    [ERROR_CODES.QUERY_PARAMETER_INVALID]: 'queryParameterInvalid',
+    [ERROR_CODES.CHECKOUT_QUOTE_INVALID]: 'checkoutQuoteInvalid',
+    [ERROR_CODES.CHECKOUT_CONSENT_REQUIRED]: 'checkoutConsentRequired',
+    [ERROR_CODES.WITHDRAWAL_NOTE_REQUIRED]: 'withdrawalNoteRequired',
+    [ERROR_CODES.BUSINESS_DETAILS_INVALID]: 'businessDetailsInvalid',
+    [ERROR_CODES.COMMISSION_TIERS_INVALID]: 'commissionTiersInvalid',
+    [ERROR_CODES.PARTNER_BRANDING_NOT_ACCEPTED]: 'partnerBrandingNotAccepted',
+    [ERROR_CODES.UNKNOWN_PLAN_TIER]: 'unknownPlanTier',
+    [ERROR_CODES.MODULE_CONFIG_VALUE_INVALID]: 'moduleConfigValueInvalid',
+    [ERROR_CODES.MODULE_CONFIG_NOT_OVERRIDABLE]: 'moduleConfigNotOverridable',
+    [ERROR_CODES.CROSS_EVENT_REFERENCE]: 'crossEventReference',
+    [ERROR_CODES.CO_HOST_NEEDS_ACCOUNT]: 'coHostNeedsAccount',
+    [ERROR_CODES.MEMBER_HOST_ROLE_NOT_ALLOWED]: 'memberHostRoleNotAllowed',
+    [ERROR_CODES.QR_LINK_MAX_GUESTS_NOT_ALLOWED]: 'qrLinkMaxGuestsNotAllowed',
+    [ERROR_CODES.QR_LINK_TARGET_INVALID]: 'qrLinkTargetInvalid',
+    [ERROR_CODES.BUG_REPORT_TOO_SHORT]: 'bugReportTooShort',
+    [ERROR_CODES.FEEDBACK_PAGE_URL_INVALID]: 'feedbackPageUrlInvalid',
+    [ERROR_CODES.UPLOAD_FILES_REQUIRED]: 'uploadFilesRequired',
+    [ERROR_CODES.COVER_UPLOAD_NOT_BATCHED]: 'coverUploadNotBatched',
+    [ERROR_CODES.STORY_ITEMS_REQUIRED]: 'storyItemsRequired',
+    [ERROR_CODES.STORY_ITEM_INVALID]: 'storyItemInvalid',
+    [ERROR_CODES.BLOCKED_TERM_INVALID]: 'blockedTermInvalid',
+    [ERROR_CODES.NOTICE_IDENTITY_REQUIRED]: 'noticeIdentityRequired',
+    [ERROR_CODES.NOTICE_TEXT_TOO_SHORT]: 'noticeTextTooShort',
+    [ERROR_CODES.PAID_SERVICE_FIELDS_INVALID]: 'paidServiceFieldsInvalid',
+    [ERROR_CODES.WITHDRAWAL_PERCENTS_TOO_HIGH]: 'withdrawalPercentsTooHigh',
+    [ERROR_CODES.ACCOUNT_HAS_NO_PASSWORD]: 'accountHasNoPassword',
+    [ERROR_CODES.WISHBOOK_BOOK_TEXT_TOO_LONG]: 'wishbookBookTextTooLong',
+    [ERROR_CODES.LOCALIZED_TEXT_INVALID]: 'localizedTextInvalid',
+    [ERROR_CODES.MEMBER_ROLE_EMOJI_TOO_LONG]: 'memberRoleEmojiTooLong',
+    [ERROR_CODES.LANDING_CATEGORY_EVENT_TYPES_DUPLICATE]: 'landingCategoryEventTypesDuplicate',
+    [ERROR_CODES.LANDING_CATEGORY_DEFAULT_HIDDEN]: 'landingCategoryDefaultHidden',
+    [ERROR_CODES.THEME_FONT_FAMILY_NAME_INVALID]: 'themeFontFamilyNameInvalid',
+    [ERROR_CODES.THEME_PRESET_EVENT_TYPES_INVALID]: 'themePresetEventTypesInvalid',
+    [ERROR_CODES.THEME_BACKGROUND_LOW_CONTRAST]: 'themeBackgroundLowContrast',
+    [ERROR_CODES.CONTENT_LENGTH_REQUIRED]: 'contentLengthRequired',
+    [ERROR_CODES.NOT_EVENT_MEMBER]: 'notEventMember',
+    [ERROR_CODES.NOT_EVENT_HOST]: 'notEventHost',
+    [ERROR_CODES.REPORT_MEMBER_NOT_HOST]: 'reportMemberNotHost',
+    [ERROR_CODES.CO_HOST_GUEST_ACCOUNT]: 'coHostGuestAccount',
+    [ERROR_CODES.MEMBERSHIP_CLAIM_NO_EMAIL]: 'membershipClaimNoEmail',
+    [ERROR_CODES.MEMBERSHIP_CLAIM_EMAIL_MISMATCH]: 'membershipClaimEmailMismatch',
+    [ERROR_CODES.NOTIFICATION_NOT_YOURS]: 'notificationNotYours',
+    [ERROR_CODES.SESSION_NOT_YOURS]: 'sessionNotYours',
 } satisfies Record<KnownApiErrorCode, ApiErrorMessageKey>;
 
 export function getApiErrorMessageKey(code: number | string | undefined): ApiErrorMessageKey | undefined {

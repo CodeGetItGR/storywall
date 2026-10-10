@@ -1440,6 +1440,9 @@ export interface OrderSummaryDto {
     // event, false means the amounts, splits and breakdown are null: show "Gift"
     // and no Withdraw. Only null on internal views.
     paidByCaller: boolean | null;
+    // Added 2026-10-10: whether this is the first order the reading host ever
+    // paid, on any event. Null unless they paid this order and it is paid.
+    firstPurchase: boolean | null;
 }
 export interface EventAddonDto {
     code: string;
