@@ -5715,7 +5715,11 @@
                 "faq": "FAQ"
             },
             "social": "SOCIAL",
-            "socialLinks": ["Instagram", "TikTok", "Facebook"],
+            "socialLinks": {
+                "instagram": "Instagram",
+                "tiktok": "TikTok",
+                "facebook": "Facebook"
+            },
             "copyright": "© 2026 STORYWALL",
             "legalLinks": {
                 "privacy": "Privacy Policy",
