@@ -2852,6 +2852,12 @@
                 "BACKGROUND": "Background",
                 "CLIENT": "App"
             },
+            "statusLabel": "Status",
+            "statusClasses": {
+                "ALL": "All",
+                "CLIENT_ERROR": "4xx",
+                "SERVER_ERROR": "5xx"
+            },
             "refLabel": "Ref",
             "refPlaceholder": "Ref, e.g. a1b2c3d4e5f6",
             "refInvalid": "A ref is 12 characters, 0-9 and a-f.",
@@ -2859,6 +2865,7 @@
             "columns": {
                 "lastSeen": "Last seen",
                 "source": "Source",
+                "status": "Status",
                 "error": "Error",
                 "count": "Count",
                 "ref": "Ref"

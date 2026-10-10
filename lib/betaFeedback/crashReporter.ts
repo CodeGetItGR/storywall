@@ -87,7 +87,7 @@ export function reportCrash(error: unknown, componentStack?: string): void {
             body: JSON.stringify(request),
         })
             .then((res) => {
-                // 429: out of budget. 409: switched off (5100). Either way, done for this page load.
+                // 429: out of budget. 409: switched off (5170). Either way, done for this page load.
                 if (res.status === 429 || res.status === 409) stopped = true;
             })
             .catch(() => {
@@ -106,7 +106,7 @@ function handleUnhandledRejection(event: PromiseRejectionEvent): void {
     reportCrash(event.reason);
 }
 
-// Installed once the config says beta feedback is on; the returned function
+// Installed once the config says error tracking is on; the returned function
 // removes the listeners again if it's switched off.
 export function installCrashReporter(): () => void {
     enabled = true;

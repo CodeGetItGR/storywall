@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 
 import { installCrashReporter } from '@/lib/betaFeedback/crashReporter';
 
-// Listens for uncaught errors only while beta feedback is on.
+// Listens for uncaught errors only while error tracking is on.
 export function useCrashReporter(enabled: boolean): void {
     useEffect(() => {
         if (!enabled) return;

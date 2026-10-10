@@ -6,15 +6,24 @@ import type React from 'react';
 import type { MouseEvent } from 'react';
 
 import { adminInputClass } from '@/components/admin/AdminField';
-import { ERROR_EVENT_SOURCES } from '@/lib/adminBetaFeedback';
-import type { ErrorEventSource } from '@/lib/api/types';
+import { ERROR_EVENT_SOURCES, ERROR_EVENT_STATUS_CLASSES } from '@/lib/adminBetaFeedback';
+import type { ErrorEventSource, ErrorEventStatusClass } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
 const ALL = 'ALL';
 
+function segmentClass(active: boolean): string {
+    return cn(
+        'rounded-md px-3 py-1.5 text-[12.5px] font-bold transition-colors',
+        active ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted',
+    );
+}
+
 export function ErrorEventFilters({
     source,
     onSourceChangeAction,
+    statusClass,
+    onStatusClassChangeAction,
     refInput,
     refInvalid,
     onRefChangeAction,
@@ -22,6 +31,8 @@ export function ErrorEventFilters({
 }: {
     source: ErrorEventSource | null;
     onSourceChangeAction: (source: ErrorEventSource | null) => void;
+    statusClass: ErrorEventStatusClass | null;
+    onStatusClassChangeAction: (statusClass: ErrorEventStatusClass | null) => void;
     refInput: string;
     refInvalid: boolean;
     onRefChangeAction: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -29,10 +40,16 @@ export function ErrorEventFilters({
 }) {
     const t = useTranslations('AdminPage.errorEvents');
     const options = [ALL, ...ERROR_EVENT_SOURCES] as const;
+    const statusOptions = [ALL, ...ERROR_EVENT_STATUS_CLASSES] as const;
 
     function handleSourceClick(event: MouseEvent<HTMLButtonElement>) {
         const value = event.currentTarget.dataset.source;
         onSourceChangeAction(!value || value === ALL ? null : (value as ErrorEventSource));
+    }
+
+    function handleStatusClick(event: MouseEvent<HTMLButtonElement>) {
+        const value = event.currentTarget.dataset.statusClass;
+        onStatusClassChangeAction(!value || value === ALL ? null : (value as ErrorEventStatusClass));
     }
 
     return (
@@ -48,12 +65,28 @@ export function ErrorEventFilters({
                             data-source={option}
                             onClick={handleSourceClick}
                             aria-pressed={active}
-                            className={cn(
-                                'rounded-md px-3 py-1.5 text-[12.5px] font-bold transition-colors',
-                                active ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted',
-                            )}
+                            className={segmentClass(active)}
                         >
                             {t(`sources.${option}`)}
+                        </button>
+                    );
+                })}
+            </div>
+
+            {/* Status */}
+            <div className="flex gap-1 rounded-lg bg-canvas p-1" role="group" aria-label={t('statusLabel')}>
+                {statusOptions.map((option) => {
+                    const active = option === ALL ? statusClass === null : statusClass === option;
+                    return (
+                        <button
+                            key={option}
+                            type="button"
+                            data-status-class={option}
+                            onClick={handleStatusClick}
+                            aria-pressed={active}
+                            className={segmentClass(active)}
+                        >
+                            {t(`statusClasses.${option}`)}
                         </button>
                     );
                 })}

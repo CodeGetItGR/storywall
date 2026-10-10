@@ -6,12 +6,13 @@ import { useCallback, useState } from 'react';
 import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { useAdminErrorEvents } from '@/hooks/useAdminBetaFeedback';
 import { isErrorRef } from '@/lib/adminBetaFeedback';
-import type { ErrorEventResponseDto, ErrorEventSource } from '@/lib/api/types';
+import type { ErrorEventResponseDto, ErrorEventSource, ErrorEventStatusClass } from '@/lib/api/types';
 
 export function useErrorEventsPanel() {
     const { focus } = useAdminNavigation();
     const [page, setPage] = useState(0);
     const [source, setSourceState] = useState<ErrorEventSource | null>(null);
+    const [statusClass, setStatusClassState] = useState<ErrorEventStatusClass | null>(null);
     // Arriving from a bug report pre-fills the ref filter.
     const [refInput, setRefInput] = useState(focus?.errorRef ?? '');
     const [selected, setSelected] = useState<ErrorEventResponseDto | null>(null);
@@ -19,10 +20,15 @@ export function useErrorEventsPanel() {
     const normalizedRef = refInput.trim().toLowerCase();
     const appliedRef = isErrorRef(normalizedRef) ? normalizedRef : '';
     const refInvalid = normalizedRef.length > 0 && !appliedRef;
-    const eventsQuery = useAdminErrorEvents({ page, source, ref: appliedRef });
+    const eventsQuery = useAdminErrorEvents({ page, source, statusClass, ref: appliedRef });
 
     const setSource = useCallback((next: ErrorEventSource | null) => {
         setSourceState(next);
+        setPage(0);
+    }, []);
+
+    const setStatusClass = useCallback((next: ErrorEventStatusClass | null) => {
+        setStatusClassState(next);
         setPage(0);
     }, []);
 
@@ -44,6 +50,8 @@ export function useErrorEventsPanel() {
         setPage,
         source,
         setSource,
+        statusClass,
+        setStatusClass,
         refInput,
         refInvalid,
         appliedRef,

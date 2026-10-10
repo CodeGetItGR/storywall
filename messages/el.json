@@ -2974,6 +2974,12 @@
                 "BACKGROUND": "Παρασκήνιο",
                 "CLIENT": "Εφαρμογή"
             },
+            "statusLabel": "Κατάσταση",
+            "statusClasses": {
+                "ALL": "Όλα",
+                "CLIENT_ERROR": "4xx",
+                "SERVER_ERROR": "5xx"
+            },
             "refLabel": "Κωδικός",
             "refPlaceholder": "Κωδικός, π.χ. a1b2c3d4e5f6",
             "refInvalid": "Ο κωδικός έχει 12 χαρακτήρες, 0-9 και a-f.",
@@ -2981,6 +2987,7 @@
             "columns": {
                 "lastSeen": "Τελευταία φορά",
                 "source": "Προέλευση",
+                "status": "Κατάσταση",
                 "error": "Σφάλμα",
                 "count": "Φορές",
                 "ref": "Κωδ."

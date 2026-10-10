@@ -500,14 +500,21 @@ export interface AppConfigResponseDto {
     newsletter: AppNewsletterConfigDto;
     eventDeletion: AppEventDeletionConfigDto;
     betaFeedback: AppBetaFeedbackConfigDto;
+    errorTracking: AppErrorTrackingConfigDto;
 }
 
-// Bug reports and crash capture (beta-feedback-fe-integration.md). While
-// `enabled` is false both POST routes answer 409 / 5100.
+// Bug reports (beta-feedback-fe-integration.md). While `enabled` is false
+// POST /api/bug-reports answers 409 / 5100.
 export interface AppBetaFeedbackConfigDto {
     enabled: boolean;
     screenshotMaxBytes: number;
     screenshotMimeTypes: string[];
+}
+
+// Crash capture (error-tracking-fe-integration.md). While `enabled` is false
+// POST /api/error-events/client answers 409 / 5170.
+export interface AppErrorTrackingConfigDto {
+    enabled: boolean;
 }
 
 // GET /api/config → newsletter (newsletter-fe-integration §6). Describes the
@@ -3151,12 +3158,17 @@ export interface BugReportResponseDto {
 
 export type ErrorEventSource = 'BACKEND' | 'BACKGROUND' | 'CLIENT';
 
+// ?statusClass= on GET /api/error-events: 4xx or 5xx rows.
+export type ErrorEventStatusClass = 'CLIENT_ERROR' | 'SERVER_ERROR';
+
 // GET /api/error-events(/{id}) — admin only, newest lastSeenAt first. One row
 // groups every occurrence of the same error; `ref` is what a 500's errorRef holds.
 export interface ErrorEventResponseDto {
     id: string;
     ref: string;
     source: ErrorEventSource;
+    // The response status of a BACKEND row (4xx or 5xx); null for BACKGROUND and CLIENT.
+    httpStatus: number | null;
     errorType: string;
     message: string | null;
     stackTrace: string | null;
