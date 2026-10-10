@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 import { defaultLocale, type Locale, locales } from '@/i18n/config';
-import { getPublicLandingPath } from '@/i18n/publicLocale';
+import { getForBusinessPath, getPublicLandingPath } from '@/i18n/publicLocale';
 
 // Single source for the production origin. Canonicals, alternates, the
 // sitemap and structured data all build absolute URLs from it, so it must
@@ -36,29 +36,43 @@ export function landingLanguageAlternates(): Record<string, string> {
     return languages;
 }
 
+// Same shape as the landing's: every partner URL plus x-default on the default locale.
+export function forBusinessLanguageAlternates(): Record<string, string> {
+    const languages: Record<string, string> = {};
+    for (const locale of locales) languages[locale] = absoluteUrl(getForBusinessPath(locale));
+    languages['x-default'] = absoluteUrl(getForBusinessPath(defaultLocale));
+    return languages;
+}
+
 export function ogLocale(locale: Locale): string {
     return locale === 'el' ? 'el_GR' : 'en_US';
 }
 
-type LandingMetadataCopy = {
+type PublicPageMetadataCopy = {
     title: string;
     description: string;
     siteName: string;
     imageAlt: string;
 };
 
-export function buildLandingMetadata(locale: Locale, copy: LandingMetadataCopy): Metadata {
-    const canonical = absoluteUrl(getPublicLandingPath(locale));
-    const image = { url: absoluteUrl(OG_IMAGE_PATH), ...OG_IMAGE_SIZE, alt: copy.imageAlt };
+type PublicPageMetadataInput = {
+    locale: Locale;
+    path: string;
+    languages: Record<string, string>;
+    imagePath: string;
+    copy: PublicPageMetadataCopy;
+};
+
+// An indexable public page with a self-referential canonical and its language twins.
+function buildPublicPageMetadata({ locale, path, languages, imagePath, copy }: PublicPageMetadataInput): Metadata {
+    const canonical = absoluteUrl(path);
+    const image = { url: absoluteUrl(imagePath), ...OG_IMAGE_SIZE, alt: copy.imageAlt };
 
     return {
         metadataBase: new URL(SITE_URL),
         title: copy.title,
         description: copy.description,
-        alternates: {
-            canonical,
-            languages: landingLanguageAlternates(),
-        },
+        alternates: { canonical, languages },
         openGraph: {
             type: 'website',
             url: canonical,
@@ -77,4 +91,26 @@ export function buildLandingMetadata(locale: Locale, copy: LandingMetadataCopy):
         },
         robots: { index: true, follow: true },
     };
+}
+
+export function buildLandingMetadata(locale: Locale, copy: PublicPageMetadataCopy): Metadata {
+    return buildPublicPageMetadata({
+        locale,
+        path: getPublicLandingPath(locale),
+        languages: landingLanguageAlternates(),
+        imagePath: OG_IMAGE_PATH,
+        copy,
+    });
+}
+
+// The partner page's OG image is the opengraph-image.tsx in its own route folder.
+export function buildForBusinessMetadata(locale: Locale, copy: PublicPageMetadataCopy): Metadata {
+    const path = getForBusinessPath(locale);
+    return buildPublicPageMetadata({
+        locale,
+        path,
+        languages: forBusinessLanguageAlternates(),
+        imagePath: `${path}/opengraph-image`,
+        copy,
+    });
 }
