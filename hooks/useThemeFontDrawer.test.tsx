@@ -206,6 +206,14 @@ describe('useThemeFontDrawer failures', () => {
         expect(result.current.failure).toEqual({ kind: 'familyNameInvalid' });
     });
 
+    it('puts a 3095 on the display name', async () => {
+        mocks.create.mockRejectedValueOnce(new ApiError(400, { errorCode: 3095, detail: 'The display name must be 1 to 100 characters.' }));
+        const { result } = renderDrawer();
+        fillValidDraft(result);
+        await act(() => result.current.handleSubmit(submitEvent()));
+        expect(result.current.failure).toEqual({ kind: 'familyNameInvalid' });
+    });
+
     it('reports a font removed from under the drawer', async () => {
         mocks.patch.mockRejectedValue(new ApiError(404, { errorCode: 2001, detail: 'gone' }));
         const { result } = renderDrawer(FONT);

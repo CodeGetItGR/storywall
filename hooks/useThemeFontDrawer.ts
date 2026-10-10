@@ -27,9 +27,11 @@ type SaveStep = 'create' | 'patch' | 'upload';
 
 // 409 on create is a taken key (5146), shown on the key field. A 3001 on create/PATCH is about the
 // key (its field error) or the display name (the only other field the admin types), so it goes on
-// that field too. 404 means the font is gone from under this drawer.
+// that field too, as does 3095, the display name's own code. 404 means the font is gone from under
+// this drawer.
 function classifyError(error: unknown, step: SaveStep): ThemeFontDrawerError {
     if (step === 'create' && error instanceof ApiError && error.status === 409) return { kind: 'keyTaken' };
+    if (step !== 'upload' && getErrorCode(error) === ERROR_CODES.THEME_FONT_FAMILY_NAME_INVALID) return { kind: 'familyNameInvalid' };
     if (step !== 'upload' && getErrorCode(error) === ERROR_CODES.VALIDATION_FAILED) {
         const fields = getFieldErrors(error) ?? {};
         if (fields.key) return { kind: 'keyInvalid' };

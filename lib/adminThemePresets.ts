@@ -219,12 +219,22 @@ export function themeFontOptions(fonts: AdminThemeFontDto[] | undefined, assigne
         .sort((left, right) => left.familyName.localeCompare(right.familyName) || left.key.localeCompare(right.key));
 }
 
-// A 3001 with no field errors, so "check the highlighted fields" would point at nothing; the detail
-// is shown instead. The backend's service-level 3001s (background contrast, an event type that
-// can't be themed, the other preset validation rejections) carry a localized detail. Framework-level
-// 3001s (a missing multipart part, a malformed UUID) are English, but a well-formed admin client
-// never triggers them.
+// The preset rejections whose localized detail names the exact problem (the contrast ratio, the
+// language or event type at fault), so the drawer shows the detail.
+const PRESET_DETAIL_CODES: ReadonlySet<number> = new Set([
+    ERROR_CODES.THEME_BACKGROUND_LOW_CONTRAST,
+    ERROR_CODES.THEME_PRESET_EVENT_TYPES_INVALID,
+    ERROR_CODES.LOCALIZED_TEXT_INVALID,
+]);
+
+// A preset rejection with a localized detail, or a 3001 with no field errors (older backends sent
+// the rejections above as 3001), where "check the highlighted fields" would point at nothing.
+// Framework-level 3001s (a missing multipart part, a malformed UUID) are English, but a
+// well-formed admin client never triggers them.
 export function isServiceValidationError(error: unknown): boolean {
-    if (!(error instanceof ApiError) || getErrorCode(error) !== ERROR_CODES.VALIDATION_FAILED) return false;
+    if (!(error instanceof ApiError)) return false;
+    const code = getErrorCode(error);
+    if (typeof code === 'number' && PRESET_DETAIL_CODES.has(code)) return true;
+    if (code !== ERROR_CODES.VALIDATION_FAILED) return false;
     return Object.keys(error.problem?.errors ?? {}).length === 0;
 }

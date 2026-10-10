@@ -10,6 +10,12 @@ import { endpoints } from '@/lib/api/endpoints';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import { routes } from '@/lib/routes';
 
+// 3059 names the bad link; older backends answer the generic 3001.
+function isInvalidResetLink(error: unknown): boolean {
+    const code = getErrorCode(error);
+    return code === ERROR_CODES.PASSWORD_RESET_LINK_INVALID || code === ERROR_CODES.VALIDATION_FAILED;
+}
+
 export function useResetPassword() {
     const t = useTranslations('ResetPasswordPage');
     const router = useRouter();
@@ -58,7 +64,7 @@ export function useResetPassword() {
             } catch (requestError) {
                 inFlightRef.current = false;
                 setIsSubmitting(false);
-                setError(getErrorCode(requestError) === ERROR_CODES.VALIDATION_FAILED ? t('invalidLink') : toErrorMessage(requestError));
+                setError(isInvalidResetLink(requestError) ? t('invalidLink') : toErrorMessage(requestError));
             }
         },
         [confirmation, password, router, t, toErrorMessage, token],
