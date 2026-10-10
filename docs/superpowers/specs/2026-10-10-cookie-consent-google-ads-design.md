@@ -43,13 +43,14 @@ installs the base tag only.
 - `clearAdCookies()`: expires every `_gcl_*` cookie on the current host and the parent domain.
 - Browser-only. Never read on the server, so the landing page stays static and cacheable.
 
-### `hooks/useCookieConsent.ts` + `providers/CookieConsentProvider.tsx`
-- Provider holds `{ consent, settingsOpen }`, reads the cookie after mount (before that,
-  `consent` is `undefined` = unknown, so nothing renders and there is no hydration mismatch).
-- Hook exposes `consent`, `acceptAll()`, `rejectAll()`, `save(ads)`, `openSettings()`,
+### `hooks/useCookieConsent.ts`
+- A small module store read with `useSyncExternalStore` (same pattern as `LandingMotionProvider`'s
+  storage), so no context provider is needed. Holds the raw consent cookie and whether the settings
+  sheet is open. `consent` is `undefined` until the first client read, so nothing consent-dependent
+  renders on the server and there is no hydration mismatch.
+- Exposes `consent`, `settingsOpen`, `acceptAll()`, `rejectAll()`, `save(ads)`, `openSettings()`,
   `closeSettings()`. `rejectAll` and `save(false)` call `clearAdCookies()`.
-- Provider is mounted only on the landing page, the checkout success page and the Cookie Policy
-  page. Context is justified: banner, settings sheet, footer link and tag are distant siblings.
+- `hooks/useCookieSettingsDraft.ts` holds the sheet's switch, reset from the saved choice on open.
 
 ### `components/consent/CookieBanner.tsx`
 - Renders when `consent === null`. Fixed to the bottom, mobile-first, does not block the page.
@@ -75,12 +76,16 @@ installs the base tag only.
   and delete `_gcl_*` cookies. The script itself stays loaded until the next navigation.
 - `NEXT_PUBLIC_GOOGLE_ADS_ID` is set only in Vercel Production, so localhost and previews send
   nothing.
+- Changing the choice in the same page view calls `gtag('consent', 'update', …)` with the new value.
+
+### CSP
+- `lib/security/securityHeaders.mjs` allows Google's tag origins (per Google's CSP guide) only
+  when `NEXT_PUBLIC_GOOGLE_ADS_ID` is set at build time.
 
 ### Mount points
-- Landing: `components/landing/LandingContent.tsx` (or the landing page shell) wraps in the
-  provider and renders `CookieBanner`, `CookieSettingsSheet`, `GoogleAdsTag`.
-- Checkout success: wraps in the provider and renders `GoogleAdsTag` only (no banner, no sheet).
-- Cookie Policy page: provider, `CookieSettingsLink`, `CookieSettingsSheet`.
+- Landing: `components/landing/LandingContent.tsx` renders `CookieConsent` (banner, sheet, tag).
+- Checkout success: renders `GoogleAdsTag` only (no banner, no sheet).
+- Cookie Policy page: `CookiePolicySettings` (settings button + sheet) under the document.
 
 ## Copy
 

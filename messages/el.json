@@ -5953,5 +5953,21 @@
         "accept": "Αποδοχή",
         "decline": "Όχι, ευχαριστώ",
         "close": "Κλείσιμο"
+    },
+    "CookieConsent": {
+        "bannerLabel": "Cookies",
+        "message": "Χρησιμοποιούμε προαιρετικά cookies για να μετράμε τις διαφημίσεις μας. Μένουν ανενεργά αν δεν τα αποδεχτείτε.",
+        "policyLink": "Πολιτική Cookies",
+        "acceptAll": "Αποδοχή όλων",
+        "rejectAll": "Απόρριψη όλων",
+        "settings": "Ρυθμίσεις",
+        "settingsTitle": "Ρυθμίσεις cookies",
+        "essentialLabel": "Απαραίτητα",
+        "essentialBody": "Κρατούν τον ιστότοπο σε λειτουργία. Πάντα ενεργά.",
+        "adsLabel": "Διαφήμιση",
+        "adsBody": "Επιτρέπει στο Google Ads να μετρά ποιες διαφημίσεις φέρνουν επισκέπτες στο StoryWall.",
+        "save": "Αποθήκευση",
+        "close": "Κλείσιμο",
+        "openSettings": "Ρυθμίσεις cookies"
     }
 }

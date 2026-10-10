@@ -21,6 +21,7 @@ export const PUBLIC_CLIENT_NAMESPACES = [
     'Durations',
     'AccountDrawer',
     'NewsletterForm',
+    'CookieConsent',
 ] as const;
 
 function readPath(messages: AbstractIntlMessages, segments: string[]): AbstractIntlMessages | string | undefined {

@@ -6,6 +6,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
+import { GoogleAdsTag } from '@/components/consent/GoogleAdsTag';
 import { billingKeys, useEventBilling } from '@/hooks/useBilling';
 import { eventKeys } from '@/hooks/useEvent';
 import { myEventsKeys } from '@/hooks/useMyEvents';
@@ -86,6 +87,8 @@ export default function CheckoutSuccessPage() {
                 </Link>
             </div>
             {!paid && isDraftEvent && <p className="mt-5 text-sm leading-relaxed text-ink-muted">{t('draftProcessingNote')}</p>}
+            {/* Ad conversion tag, only with the visitor's consent */}
+            <GoogleAdsTag />
         </main>
     );
 }

@@ -9,6 +9,7 @@ vi.mock('next-intl/server', () => ({
 vi.mock('@/components/common/ProtectedImage', () => ({ ProtectedImage: () => null }));
 vi.mock('@/components/landing/LandingMotionToggle', () => ({ LandingMotionToggle: () => null }));
 vi.mock('@/components/landing/LandingNewsletter', () => ({ LandingNewsletter: () => null }));
+vi.mock('@/components/consent/CookieSettingsLink', () => ({ CookieSettingsLink: () => <button type="button">cookieSettings</button> }));
 
 describe('LandingFooter', () => {
     afterEach(cleanup);
@@ -33,5 +34,11 @@ describe('LandingFooter', () => {
         expect(screen.getByRole('link', { name: 'legalLinks.cookies' })).toHaveAttribute('href', '/legal/cookies');
         expect(screen.getByRole('link', { name: 'legalLinks.withdrawal' })).toHaveAttribute('href', '/legal/withdrawal-terms');
         expect(screen.getByRole('link', { name: 'legalLinks.contact' })).toHaveAttribute('href', '/contact');
+    });
+
+    it('offers the cookie settings next to the legal links', async () => {
+        render(await LandingFooter());
+
+        expect(screen.getByRole('button', { name: 'cookieSettings' })).toBeInTheDocument();
     });
 });
