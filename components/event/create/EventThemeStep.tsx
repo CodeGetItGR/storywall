@@ -7,6 +7,7 @@ import { ThemePresetRadioGroup, type ThemeRadioOption } from '@/components/manag
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
+import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 
 // The creation form's optional theme step. Nothing is saved here: the pick goes out with
@@ -17,8 +18,12 @@ export function EventThemeStep() {
     const toErrorMessage = useApiErrorMessage();
     const localizedText = useLocalizedText();
     const headingId = useId();
-    const { themePresets, isThemePresetsLoading, themePresetsError, selectedThemePresetId, onSelectThemePreset, error } = useCreateEventForm();
+    const { title, selectedEventType, themePresets, isThemePresetsLoading, themePresetsError, selectedThemePresetId, onSelectThemePreset, error } =
+        useCreateEventForm();
+    const themeName = useModuleCopy(selectedEventType)('theme').name;
 
+    // The cards preview the title from the details step; without one they show just the theme name.
+    const previewTitle = title.trim() || undefined;
     const options: ThemeRadioOption[] = [
         {
             id: 'none',
@@ -45,7 +50,7 @@ export function EventThemeStep() {
     return (
         <section>
             <h3 id={headingId} className="sr-only">
-                {t('label')}
+                {themeName}
             </h3>
             <p className="text-sm text-ink-muted">{tSteps('themeHint')}</p>
 
@@ -54,7 +59,14 @@ export function EventThemeStep() {
                 <p className="mt-4 text-xs text-rose-500">{toErrorMessage(themePresetsError)}</p>
             )}
             {!isThemePresetsLoading && !themePresetsError && (
-                <ThemePresetRadioGroup options={options} labelledBy={headingId} disabled={false} size="large" onSelectAction={onSelectThemePreset} />
+                <ThemePresetRadioGroup
+                    options={options}
+                    labelledBy={headingId}
+                    disabled={false}
+                    size="large"
+                    previewTitle={previewTitle}
+                    onSelectAction={onSelectThemePreset}
+                />
             )}
 
             {error && (

@@ -4,11 +4,15 @@ import { ChevronRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Fragment } from 'react';
 
+import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { type CreateEventStep, useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 
 export function EventCreateStepBreadcrumb() {
     const t = useTranslations('CreateEventPage');
-    const { step, steps, goToType, goToPlan, goToDetails, goToTheme } = useCreateEventForm();
+    const { step, steps, goToType, goToPlan, goToDetails, goToTheme, selectedEventType } = useCreateEventForm();
+    const moduleCopy = useModuleCopy(selectedEventType);
+    // The theme step is named after the theme module, as the event type calls it.
+    const stepLabel = (item: CreateEventStep) => (item === 'theme' ? moduleCopy('theme').name : t(`steps.${item}`));
     const currentIndex = steps.indexOf(step);
     const goTo: Partial<Record<CreateEventStep, () => void>> = {
         type: goToType,
@@ -36,11 +40,11 @@ export function EventCreateStepBreadcrumb() {
                                     onClick={goTo[item]}
                                     className="text-ink-muted underline-offset-2 transition-colors hover:text-ink hover:underline"
                                 >
-                                    {t(`steps.${item}`)}
+                                    {stepLabel(item)}
                                 </button>
                             ) : (
                                 <span aria-current={isCurrent ? 'step' : undefined} className={isCurrent ? 'text-ink' : 'text-ink-faint'}>
-                                    {t(`steps.${item}`)}
+                                    {stepLabel(item)}
                                 </span>
                             )}
                         </span>

@@ -87,7 +87,6 @@ export default function BillingTab({
                         targets={withdrawals.purchaseBlocks.upgradeBlocked ? [] : panel.upgradeTargets}
                         currentPlan={panel.currentPlan}
                         extraStorageBytes={panel.usage?.extraStorageBytes ?? 0}
-                        modules={panel.platformModules}
                     />
                 </>
             )}

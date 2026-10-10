@@ -1,4 +1,12 @@
-import type { CheckoutResponseDto, CoverageOptionResponseDto, EventStatus, OrderSummaryDto, PlanTierResponseDto } from '@/lib/api/types';
+import type {
+    CheckoutRequestDto,
+    CheckoutResponseDto,
+    CoverageOptionResponseDto,
+    EventStatus,
+    OrderSummaryDto,
+    PartnerBrandingNoticeDto,
+    PlanTierResponseDto,
+} from '@/lib/api/types';
 import { dateTimeFormat, numberFormat } from '@/lib/format';
 
 type PendingCheckout = {
@@ -169,4 +177,14 @@ export function canExtendCoverage({
 }): boolean {
     if (!isPrimaryHost || eventStatus !== 'ACTIVE' || !coverageEndsAt) return false;
     return new Date(coverageEndsAt).getTime() > now.getTime();
+}
+
+// A branded partner's code needs the couple's acceptance of the notice the preview carried;
+// without a notice the fields are left out.
+export function partnerBrandingCheckoutFields(
+    notice: PartnerBrandingNoticeDto | null,
+    accepted: boolean,
+): Pick<CheckoutRequestDto, 'acceptsPartnerBranding' | 'partnerBrandingNoticeVersion'> {
+    if (!notice) return {};
+    return { acceptsPartnerBranding: accepted, partnerBrandingNoticeVersion: notice.noticeVersion };
 }

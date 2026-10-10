@@ -285,14 +285,23 @@ export interface EventTypeVoicePack {
     rsvpMessageLabel: LocalizedText;
     rsvpAttendingConfirmation: LocalizedText;
     toolsSubtitle: LocalizedText;
-    toolsScheduleDescription: LocalizedText;
-    toolsPlaylistDescription: LocalizedText;
+}
+
+// An admin's per-event-type wording for one module. Each field null = use the
+// default. Both locales are always present when set.
+// See module-names-per-event-type-fe-integration.md.
+export interface AppModuleCopyDto {
+    name: LocalizedText | null;
+    description: LocalizedText | null;
+    cardLabel: LocalizedText | null; // the module's line on plan cards; null = the resolved name
 }
 
 export interface AppEventTypeTranslationDto {
     name: LocalizedText;
     tagline: LocalizedText;
     voice: EventTypeVoicePack;
+    // Keyed by moduleKey; only modules with at least one override. Always present.
+    modules: Record<string, AppModuleCopyDto>;
 }
 
 export interface AppTranslationsDto {
@@ -389,7 +398,8 @@ export interface AppRateLimitConfigDto {
     windowSeconds: number;
 }
 
-export type ReportTargetType = 'POST' | 'COMMENT' | 'MEMBER' | 'STORY' | 'MEDIA' | 'WISHBOOK_ENTRY' | 'PLAYLIST_SUGGESTION';
+// EVENT is never reported: it is the target of a decision an admin takes on a whole event directly.
+export type ReportTargetType = 'POST' | 'COMMENT' | 'MEMBER' | 'STORY' | 'MEDIA' | 'WISHBOOK_ENTRY' | 'PLAYLIST_SUGGESTION' | 'EVENT';
 export type ReportReason = 'SPAM' | 'HARASSMENT' | 'INAPPROPRIATE_CONTENT' | 'IMPERSONATION' | 'ILLEGAL_CONTENT' | 'COPYRIGHT' | 'OTHER';
 
 // member-roles-fe-integration.md §5.1 and §9. One role in an event type's
@@ -914,6 +924,97 @@ export interface EventDetailResponseDto {
     // rsvpSummary and hosts are degraded while suspended and must not be read.
     suspended: boolean;
     suspension: EventSuspensionDto | null;
+    // The partner card the feed shows (2026-10-08); null when none should show.
+    partnerBranding: PartnerBrandingDto | null;
+    // Hosts only: an admin linked a partner and no host has answered yet.
+    partnerBrandingPrompt: PartnerBrandingNoticeDto | null;
+}
+
+// --- Partner feed branding (collaborator-feed-branding-design.md, 2026-10-08) ---
+export type BrandingVariant = 'FEATURE_CARD' | 'COMPACT_ROW' | 'CREDIT';
+export type PartnerRole = 'PLANNER' | 'VENUE' | 'PHOTOGRAPHER' | 'VIDEOGRAPHER' | 'DECORATION' | 'CATERING' | 'MUSIC' | 'OTHER';
+export type BrandingSource = 'CODE' | 'ADMIN';
+
+export interface PartnerBrandingTextDto {
+    el: string;
+    en: string;
+}
+
+// Insert a card after post firstAfter, then every `every` posts, counting from 1 across the feed.
+export interface PartnerBrandingPlacementDto {
+    firstAfter: number;
+    every: number;
+}
+
+export interface PartnerBrandingDto {
+    variant: BrandingVariant;
+    displayName: string;
+    role: PartnerRole;
+    logoUrl: string; // presigned
+    coverUrl: string; // presigned
+    tagline: PartnerBrandingTextDto;
+    services: PartnerBrandingTextDto;
+    // Relative to the API origin: a public 302 redirect that counts the tap.
+    linkUrl: string;
+    placement: PartnerBrandingPlacementDto;
+}
+
+// The notice a couple accepts: at checkout for a branded partner's code, or as the host prompt.
+export interface PartnerBrandingNoticeDto {
+    displayName: string;
+    noticeVersion: string;
+}
+
+// POST /api/events/{eventId}/partner-branding/acceptance — host only; 409 5153 when the version is outdated.
+export interface PartnerBrandingAcceptanceRequestDto {
+    noticeVersion: string;
+}
+
+// PUT /api/admin/collaborators/{id}/branding — a full replacement; blank clears a field (409 5152 while enabled).
+export interface CollaboratorBrandingRequestDto {
+    displayName: string | null; // max 80
+    role: PartnerRole | null;
+    taglineEl: string | null; // max 120
+    taglineEn: string | null;
+    servicesEl: string | null;
+    servicesEn: string | null;
+}
+
+// PUT /api/admin/events/{eventId}/partner-branding
+export interface EventPartnerBrandingRequestDto {
+    collaboratorId: string;
+}
+
+// GET /api/admin/events/{eventId}/partner-branding — 404 when the event has no link.
+export interface EventPartnerBrandingResponseDto {
+    eventId: string;
+    collaboratorId: string;
+    displayName: string;
+    source: BrandingSource;
+    variant: BrandingVariant;
+    acceptedAt: string | null;
+    noticeVersion: string | null;
+    assignedBy: string | null;
+    // Guests see the card right now.
+    showing: boolean;
+}
+
+// GET /api/admin/partner-branding/report?from&to — clicks per card design. No impressions.
+export interface PartnerBrandingReportDto {
+    from: string;
+    to: string;
+    firstAfter: number;
+    every: number;
+    variants: PartnerBrandingVariantRowDto[];
+}
+
+export interface PartnerBrandingVariantRowDto {
+    variant: BrandingVariant;
+    events: number;
+    cardSlots: number;
+    clicks: number;
+    clicksPerEvent: number; // 0 when events is 0
+    clicksPerCardSlot: number; // 0 when cardSlots is 0
 }
 
 // Why a StoryWall is suspended. ground, rule and explanation are null if the decision row was deleted.
@@ -927,6 +1028,8 @@ export interface EventSuspensionDto {
     deletesOn: string | null; // set with closedAt
     contactEmail: string | null; // where to write to disagree; null = leave the address out
     primaryHost: boolean; // the caller is the primary host: show the billing-and-withdrawal link
+    // Added 2026-10-09: set only when an admin closed it for a non-policy reason; ground and rule are then null.
+    operationalReason: OperationalCloseReason | null;
 }
 
 export interface CheckoutResponseDto {
@@ -954,6 +1057,10 @@ export interface WithdrawalConsentDto {
 // POST /api/events/{eventId}/checkout — host, DRAFT only (billing-fe-guide §6).
 export interface CheckoutRequestDto extends WithdrawalConsentDto {
     collaborationCode?: string;
+    // Required when the code's preview carried partnerBranding (else 400); ignored otherwise.
+    acceptsPartnerBranding?: boolean;
+    // Echo the preview's partnerBranding.noticeVersion.
+    partnerBrandingNoticeVersion?: string;
 }
 export interface CollaborationCodePreviewRequestDto {
     collaborationCode: string;
@@ -977,6 +1084,8 @@ export interface CollaborationCodePreviewResponseDto {
     // 2026-09-24: the activation with the code applied (add-ons included on an
     // existing event), or the upgrade on an upgrade preview.
     breakdown: PriceBreakdown;
+    // Set only when the code's partner has feed branding: the notice the couple must accept to use it.
+    partnerBranding: PartnerBrandingNoticeDto | null;
 }
 export interface PartnerPortalTotalDto {
     currency: string;
@@ -987,6 +1096,19 @@ export interface PartnerPortalResponseDto {
     name: string;
     eventsReferred: number;
     totals: PartnerPortalTotalDto[];
+    // Null when the partner has no tiered schedule (2026-10-08).
+    tierProgress: PartnerTierProgressDto | null;
+    // Every tap on the partner's feed cards, across all events (2026-10-08).
+    brandingClicks: number;
+}
+// Counts only, nothing per event.
+export interface PartnerTierProgressDto {
+    activationsThisYear: number;
+    // The rate the partner's next activation would earn.
+    currentPercent: number;
+    // Both null at the top tier.
+    nextTierMinActivations: number | null;
+    nextTierPercent: number | null;
 }
 export type CollaboratorStatus = 'ACTIVE' | 'SUSPENDED';
 export type CollaborationCodeStatus = 'ACTIVE' | 'DISABLED';
@@ -1008,6 +1130,72 @@ export interface CollaboratorResponseDto {
     notes: string | null;
     // Same rows as GET …/earnings/totals, on list and detail. [] when never earned.
     earningsTotals: CollaborationEarningsTotalDto[];
+    // Business details (2026-10-08), set via PUT …/business-details. All nullable.
+    websiteUrl: string | null;
+    contactPersonName: string | null;
+    contactPhone: string | null; // E.164
+    billingEmail: string | null; // null = invoices go to contactEmail
+    legalName: string | null;
+    countryCode: string | null; // VIES code: EL for Greece
+    vatNumber: string | null; // without the country prefix
+    taxOffice: string | null; // ΔΟΥ
+    addressLine1: string | null;
+    addressLine2: string | null;
+    city: string | null;
+    postalCode: string | null;
+    viesStatus: ViesStatus | null; // null while no VAT number is set
+    viesCheckedAt: string | null;
+    viesName: string | null;
+    viesAddress: string | null;
+    payoutIban: string | null; // full IBAN, admin only
+    payoutAccountHolder: string | null;
+    // Column names still blocking a payout (5096); [] when the partner can be paid.
+    missingPayoutFields: string[];
+    // Tiered commission (2026-10-08), ascending; [] when each code's own rate applies.
+    commissionTiers: CommissionTierDto[];
+    // Activations counting toward a tier this calendar year (Athens time).
+    activationsThisYear: number;
+    // Feed branding (2026-10-08). Enabling needs every field below plus websiteUrl (5152).
+    brandingEnabled: boolean;
+    brandingEnabledAt: string | null;
+    brandingDisplayName: string | null;
+    brandingRole: PartnerRole | null;
+    brandingTaglineEl: string | null;
+    brandingTaglineEn: string | null;
+    brandingServicesEl: string | null;
+    brandingServicesEn: string | null;
+    brandingLogoUrl: string | null; // presigned
+    brandingCoverUrl: string | null; // presigned
+    // What still blocks enabling, e.g. "tagline_en", "logo", "website_url"; [] when complete.
+    missingBrandingFields: string[];
+}
+// PUT /api/admin/collaborators/{id}/business-details — a full replacement of these
+// fields only; null or "" clears one. Never part of the PATCH name/email body.
+export interface CollaboratorBusinessDetailsRequestDto {
+    websiteUrl: string | null; // https only, max 500
+    contactPersonName: string | null; // max 200
+    contactPhone: string | null; // international format; spaces/dashes are stripped
+    billingEmail: string | null;
+    legalName: string | null; // max 200
+    countryCode: string | null; // VIES code, EU only; set together with vatNumber
+    vatNumber: string | null;
+    taxOffice: string | null; // required when countryCode is EL
+    addressLine1: string | null;
+    addressLine2: string | null;
+    city: string | null;
+    postalCode: string | null;
+    payoutIban: string | null; // checksum-validated, stored encrypted
+    payoutAccountHolder: string | null; // max 140
+}
+// From the minActivations-th activation of the year, earn commissionPercent.
+export interface CommissionTierDto {
+    minActivations: number; // >= 1; the first tier must be 1
+    commissionPercent: number; // 1-100; never lower than the tier below
+}
+// PUT /api/admin/collaborators/{id}/commission-tiers — replaces the whole schedule;
+// tiers: [] removes it. Only later activations are affected.
+export interface CommissionTiersRequestDto {
+    tiers: CommissionTierDto[];
 }
 export interface CollaboratorPortalTokenResponseDto {
     token: string;
@@ -1074,6 +1262,8 @@ export interface CollaborationEarningResponseDto {
     accruedAt: string;
     paidAt: string | null;
     payoutReference: string | null;
+    // Which activation of the year chose a tiered partner's rate; null when untiered and on clawbacks.
+    activationNumber: number | null;
 }
 export interface CollaborationEarningsTotalDto {
     currency: string;
@@ -2070,6 +2260,12 @@ export interface EventInvitationPreviewDto {
     eventTitle: string;
     eventSubtitle: string | null;
     eventDescription: string | null;
+    // When the event runs, with its UTC offset. Show the times in eventTimezone (e.g. "Europe/Athens").
+    eventStartAt: string;
+    eventEndAt: string | null;
+    eventTimezone: string;
+    // The venue name only.
+    eventLocationName: string | null;
     coverMediaId: string | null;
     // Read the cover from here: the visitor isn't a member, so GET /api/medias/{id} refuses them.
     // Only for drawing it: uploaderMemberId, anonymousUploaderName, originalFilename and storageKey come back null, metadata {}.
@@ -2185,6 +2381,10 @@ export interface EventTypeModuleResponseDto {
     // ("unknown yet") when no planTierCode was given. See
     // event-lifecycle-locks-and-event-types-fe-integration.md §3.
     includedInPlan: boolean | null;
+    // Admin endpoints only: per-event-type wording overrides, null = default.
+    name?: LocalizedText | null;
+    description?: LocalizedText | null;
+    cardLabel?: LocalizedText | null;
 }
 
 // PATCH /api/admin/event-types/{eventTypeKey}/modules/{moduleKey} — every field
@@ -2195,6 +2395,10 @@ export interface EventTypeModulePatchDto {
     applicability?: EventTypeModuleApplicability;
     defaultConfig?: Record<string, unknown>;
     sortOrder?: number;
+    // Omit = unchanged, null = back to the default. Both en and el required when set.
+    name?: LocalizedText | null;
+    description?: LocalizedText | null;
+    cardLabel?: LocalizedText | null;
 }
 
 // GET /api/admin/plan-tiers/{planTierId}/modules — one row per module the
@@ -3106,7 +3310,11 @@ export type AdminAuditAction =
     | 'EVENT_SUSPENDED'
     | 'EVENT_SUSPENSION_LIFTED'
     | 'EVENT_CLOSED'
-    | 'STATEMENT_OF_REASONS_SENT';
+    | 'STATEMENT_OF_REASONS_SENT'
+    | 'EVENT_STORAGE_GRANTED'
+    | 'EVENT_MEMBERS_GRANTED'
+    | 'EVENT_MODULE_GRANTED'
+    | 'EVENT_MODULE_REVOKED';
 
 // The statement of reasons sent with every moderation action (Guidelines §22).
 export type StatementGround = 'ILLEGAL_CONTENT' | 'GUIDELINES_BREACH';
@@ -3186,6 +3394,7 @@ export interface ModerationDecisionDto {
     eventSuspended: boolean;
     ground: StatementGround | null; // null on dismissals and on decisions before 2026-10-02
     rule: GuidelinesRule | null;
+    operationalReason: OperationalCloseReason | null; // set instead of ground and rule on an operational close
     explanation: string | null;
     reportCount: number;
     adminUserId: string;
@@ -3440,4 +3649,127 @@ export interface AdminThemeFontPatchDto {
     familyName?: string;
     fallback?: 'serif' | 'sans-serif';
     archived?: boolean;
+}
+
+// Why an admin closed an event when no rule was broken (admin-event-management-fe-integration.md §7).
+export type OperationalCloseReason = 'HOST_REQUEST' | 'DUPLICATE' | 'PAYMENT_ISSUE' | 'OTHER';
+
+// admin-event-management-fe-integration.md. userId and email are null for a host with no account.
+export interface AdminEventHostDto {
+    userId: string | null;
+    email: string | null;
+    displayName: string | null;
+    primary: boolean;
+}
+
+// GET /api/admin/events (Page<AdminEventSummaryDto>), newest first.
+export interface AdminEventSummaryDto {
+    id: string;
+    title: string | null;
+    eventType: string;
+    status: EventStatus;
+    planCode: string | null;
+    startAt: string | null;
+    endAt: string | null;
+    createdAt: string;
+    primaryHost: AdminEventHostDto | null;
+    suspendedAt: string | null;
+    closedAt: string | null;
+    deletedAt: string | null;
+}
+
+export type AdminEventModuleSource = 'PLAN' | 'ADDON' | 'ADMIN_GRANT' | 'NONE';
+
+// GET /api/admin/events/{id}; every grant and revoke answers with it, already updated.
+export interface AdminEventDetailDto {
+    id: string;
+    title: string | null;
+    eventType: string;
+    status: EventStatus;
+    visibility: EventVisibility | null;
+    timezone: string | null;
+    startAt: string | null;
+    endAt: string | null;
+    coverageEndsAt: string | null;
+    createdAt: string;
+    deletedAt: string | null;
+    // storageBytes and maxMembers null = unlimited.
+    plan: { id: string; code: string; name: string; storageBytes: number | null; maxMembers: number | null; moduleKeys: ModuleKey[] } | null;
+    usage: {
+        storageBytes: number;
+        planStorageBytes: number | null;
+        purchasedExtraStorageBytes: number;
+        grantedStorageBytes: number;
+        storageLimitBytes: number | null; // plan + purchased + granted; null = unlimited
+        memberCount: number;
+        planMaxMembers: number | null;
+        extraMemberSlots: number;
+        memberLimit: number | null; // planMaxMembers + extraMemberSlots; null = unlimited
+    };
+    hosts: AdminEventHostDto[]; // primary host first
+    addons: {
+        code: string;
+        name: string;
+        kind: PaidServiceKind;
+        grantsModuleKey: string | null;
+        grantsStorageBytes: number | null;
+        activatedAt: string | null;
+    }[];
+    // One row per module the event's type supports.
+    modules: { moduleKey: ModuleKey; enabled: boolean; source: AdminEventModuleSource }[];
+    moduleGrants: { moduleKey: ModuleKey; reason: string; grantedByUserId: string | null; grantedAt: string }[];
+    // Every setting an admin may override, for the modules the event's type supports.
+    moduleConfigs: AdminEventModuleConfig[];
+    // Null unless suspended or closed.
+    suspension: { suspendedAt: string; closedAt: string | null; decision: ModerationDecisionDto | null } | null;
+}
+
+// A cap (COUNT: a number, null = unlimited) or a flag (FLAG: absent counts as off).
+export type ModuleConfigKind = 'COUNT' | 'FLAG';
+
+// One module setting of an event: the plan's value, the admin override if any, and what the event gets.
+// A cap's override is an extra on top of the plan's; a flag's replaces it.
+export interface AdminEventModuleConfig {
+    moduleKey: ModuleKey;
+    configKey: string;
+    kind: ModuleConfigKind;
+    planValue: number | boolean | null;
+    effectiveValue: number | boolean | null;
+    override: { extra: number | null; enabled: boolean | null; reason: string; setByUserId: string; setAt: string } | null;
+}
+
+// PUT /api/admin/events/{id}/modules/{moduleKey}/config/{configKey}. extra for a cap, enabled for a flag, never both.
+export interface AdminModuleConfigOverrideRequestDto {
+    extra: number | null;
+    enabled: boolean | null;
+    reason: string;
+}
+
+// PUT /api/admin/events/{id}/grants/storage. A total, not an increment; 0 removes the grant.
+export interface AdminStorageGrantRequestDto {
+    grantedStorageBytes: number;
+    reason: string;
+}
+
+// PUT /api/admin/events/{id}/grants/members. A total, on top of the plan's maxMembers.
+export interface AdminMemberGrantRequestDto {
+    extraMemberSlots: number;
+    reason: string;
+}
+
+// POST /api/admin/events/{id}/suspend.
+export interface AdminEventSuspendRequestDto {
+    ground: StatementGround;
+    rule: GuidelinesRule;
+    explanation: string;
+    note: string | null;
+}
+
+// POST /api/admin/events/{id}/close: ground + rule, or operationalReason, never both.
+export interface AdminEventCloseRequestDto {
+    ground: StatementGround | null;
+    rule: GuidelinesRule | null;
+    operationalReason: OperationalCloseReason | null;
+    explanation: string;
+    note: string | null;
 }

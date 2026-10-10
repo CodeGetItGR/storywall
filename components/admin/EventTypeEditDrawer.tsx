@@ -8,11 +8,14 @@ import { useState } from 'react';
 
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { EventTypeImageField } from '@/components/admin/EventTypeImageField';
+import { EventTypeModuleNamesSection } from '@/components/admin/EventTypeModuleNamesSection';
+import { ModuleCopyDrawer } from '@/components/admin/ModuleCopyDrawer';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { adminKeys } from '@/hooks/useAdmin';
 import { invalidatePublicConfig } from '@/hooks/useAppConfig';
 import { useEventTypeCardImage } from '@/hooks/useEventTypeCardImage';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
+import { useModuleCopyEditor } from '@/hooks/useModuleCopyEditor';
 import { adminErrorMessageKey, checked } from '@/lib/adminUtils';
 import type { PlatformEventTypePatchDto, PlatformEventTypeResponseDto } from '@/lib/api/types';
 
@@ -33,6 +36,7 @@ export function EventTypeEditDrawer({ eventType, onCloseAction }: { eventType: P
     });
     const [pendingInput, setPendingInput] = useState<PlatformEventTypePatchDto | null>(null);
     const image = useEventTypeCardImage(eventType);
+    const moduleCopy = useModuleCopyEditor(eventType?.eventTypeKey ?? null);
 
     function close() {
         mutation.reset();
@@ -108,7 +112,12 @@ export function EventTypeEditDrawer({ eventType, onCloseAction }: { eventType: P
                         {mutation.error && <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(mutation.error)}`)}</p>}
                     </form>
                 )}
+
+                {/* Module names: outside the form, since its editor saves on its own */}
+                {eventType && <EventTypeModuleNamesSection rows={moduleCopy.rows} isLoading={moduleCopy.isLoading} onOpenAction={moduleCopy.open} />}
             </AdminDrawer>
+
+            <ModuleCopyDrawer editor={moduleCopy} eventTypeName={eventType ? localizedText(eventType.name) : ''} />
 
             <ConfirmActionModal
                 open={Boolean(pendingInput)}

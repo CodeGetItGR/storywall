@@ -7,6 +7,7 @@ import type { ReactNode } from 'react';
 import { ActivationDisclosures } from '@/components/checkout/ActivationDisclosures';
 import { ActivationEventSummary } from '@/components/checkout/ActivationEventSummary';
 import { CollaborationCodeSection } from '@/components/checkout/CollaborationCodeSection';
+import { PartnerBrandingNotice } from '@/components/checkout/PartnerBrandingNotice';
 import { PriceBreakdownSummary } from '@/components/checkout/PriceBreakdownSummary';
 import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
 import { EventOverviewPriceRow } from '@/components/event/create/EventOverviewPriceRow';
@@ -86,7 +87,7 @@ export function OverviewDraftPanel({
 
     const duration = useDraftDuration({ eventId, options: durationOptions, currentOptionId: savedOptionId });
     // Only the main host can be quoted, and only once there is a start date and a duration on sale.
-    const { consent, collaborationPreview, breakdown, handleCollaborationPreviewChange, submit, error, startPassed, isPending } =
+    const { consent, partnerBranding, collaborationPreview, breakdown, handleCollaborationPreviewChange, submit, error, startPassed, isPending } =
         useDraftActivationCheckout(eventId, { quoteEnabled: canPay && canPurchase && Boolean(currentOption) && !duration.isSaving, startAt });
     const startDate = useDraftStartDate(eventId, { startAt, endAt });
     const canCheckout = canPurchase && Boolean(currentOption) && !duration.isSaving;
@@ -215,6 +216,15 @@ export function OverviewDraftPanel({
                     />
                 )}
 
+                {/* Partner credit */}
+                {canPay && partnerBranding.notice && (
+                    <PartnerBrandingNotice
+                        notice={partnerBranding.notice}
+                        accepted={partnerBranding.accepted}
+                        onChangeAction={partnerBranding.handleChange}
+                    />
+                )}
+
                 {/* Activation disclosures */}
                 {canPay && <ActivationDisclosures projectedCoverage={projectedCoverage} />}
 
@@ -264,7 +274,7 @@ export function OverviewDraftPanel({
                         <button
                             type="button"
                             onClick={submit}
-                            disabled={isPending || !canCheckout || !consent.consentSatisfied}
+                            disabled={isPending || !canCheckout || !consent.consentSatisfied || !partnerBranding.satisfied}
                             className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             {isPending ? (

@@ -22,12 +22,23 @@ export type AdminErrorMessageKey =
     | 'reactionTypeLimitExceeded'
     | 'reactionTypeNotUsable'
     | 'collaborationEarningNotPayable'
+    | 'collaboratorPayoutDetailsIncomplete'
+    | 'collaboratorBrandingIncomplete'
     | 'methodNotAllowed'
     | 'coverageOptionInvalid'
     | 'coverageOptionUnavailable'
     | 'coverageOptionLastInitial'
     | 'coverageOptionDuplicate'
     | 'demoDesignationInvalid'
+    | 'storageGrantBelowUsage'
+    | 'moduleAlreadyGranted'
+    | 'moduleNotAvailable'
+    | 'moduleCopyIncomplete'
+    | 'moduleCopyTooLong'
+    | 'moduleCopyModuleUnsupported'
+    | 'eventAlreadySuspended'
+    | 'eventAlreadyClosed'
+    | 'statementInvalid'
     | 'generic';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -81,12 +92,25 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.REACTION_TYPE_LIMIT_EXCEEDED) return 'reactionTypeLimitExceeded';
     if (code === ERROR_CODES.REACTION_TYPE_NOT_USABLE) return 'reactionTypeNotUsable';
     if (code === ERROR_CODES.COLLABORATION_EARNING_NOT_PAYABLE) return 'collaborationEarningNotPayable';
+    // Mark-paid refused: a partner in the batch lacks business/payout details or a VIES-valid VAT number.
+    if (code === ERROR_CODES.COLLABORATOR_PAYOUT_DETAILS_INCOMPLETE) return 'collaboratorPayoutDetailsIncomplete';
+    // Enabling, or clearing a field of an enabled partner, while the card would be incomplete.
+    if (code === ERROR_CODES.COLLABORATOR_BRANDING_INCOMPLETE) return 'collaboratorBrandingIncomplete';
     if (code === ERROR_CODES.METHOD_NOT_ALLOWED) return 'methodNotAllowed';
     if (code === ERROR_CODES.COVERAGE_OPTION_INVALID) return 'coverageOptionInvalid';
     if (code === ERROR_CODES.COVERAGE_OPTION_UNAVAILABLE) return 'coverageOptionUnavailable';
     if (code === ERROR_CODES.COVERAGE_OPTION_LAST_INITIAL) return 'coverageOptionLastInitial';
     if (code === ERROR_CODES.COVERAGE_OPTION_DUPLICATE) return 'coverageOptionDuplicate';
     if (code === ERROR_CODES.DEMO_DESIGNATION_INVALID) return 'demoDesignationInvalid';
+    if (code === ERROR_CODES.ADMIN_STORAGE_GRANT_BELOW_USAGE) return 'storageGrantBelowUsage';
+    if (code === ERROR_CODES.MODULE_ALREADY_GRANTED) return 'moduleAlreadyGranted';
+    if (code === ERROR_CODES.MODULE_NOT_AVAILABLE) return 'moduleNotAvailable';
+    if (code === ERROR_CODES.MODULE_COPY_INCOMPLETE) return 'moduleCopyIncomplete';
+    if (code === ERROR_CODES.MODULE_COPY_TOO_LONG) return 'moduleCopyTooLong';
+    if (code === ERROR_CODES.MODULE_COPY_MODULE_UNSUPPORTED) return 'moduleCopyModuleUnsupported';
+    if (code === ERROR_CODES.EVENT_ALREADY_SUSPENDED) return 'eventAlreadySuspended';
+    if (code === ERROR_CODES.EVENT_ALREADY_CLOSED) return 'eventAlreadyClosed';
+    if (code === ERROR_CODES.MODERATION_DECISION_INVALID) return 'statementInvalid';
     return 'generic';
 }
 

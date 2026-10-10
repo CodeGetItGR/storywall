@@ -3,21 +3,21 @@
 import { Check, Minus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { useLocalizedModuleLabel } from '@/hooks/useLocalizedModuleLabel';
-import type { PlatformModuleResponseDto } from '@/lib/api/types';
+import { useModuleCopy } from '@/hooks/useModuleCopy';
+import type { EventTypeConvention } from '@/lib/api/types';
 
 /** The features an upgrade adds, with descriptions, and any it no longer includes. */
 export function PlanUpgradeModules({
     addedModuleKeys,
     removedModuleKeys,
-    modules,
+    eventTypeKey,
 }: {
     addedModuleKeys: string[];
     removedModuleKeys: string[];
-    modules: PlatformModuleResponseDto[];
+    eventTypeKey: EventTypeConvention | null;
 }) {
     const t = useTranslations('EventPlanSettingsPage.compare');
-    const moduleLabel = useLocalizedModuleLabel(modules);
+    const moduleLabel = useModuleCopy(eventTypeKey);
 
     return (
         <div className="space-y-3 rounded-lg bg-surface-muted/55 px-4 py-3">

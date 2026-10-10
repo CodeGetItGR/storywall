@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { datetimeLocalValueToIso, eventWindowFromLocalStart, getScheduleDatetimeLocalBounds } from './datetime';
+import { datetimeLocalValueToIso, eventWindowFromLocalStart, formatEventDateRange, getScheduleDatetimeLocalBounds } from './datetime';
 
 describe('datetimeLocalValueToIso', () => {
     it('converts a datetime-local value to a full ISO-8601 instant with offset', () => {
@@ -52,5 +52,34 @@ describe('eventWindowFromLocalStart', () => {
         const window = eventWindowFromLocalStart('2026-10-10T18:00', 6 * 60 * 60 * 1000);
         expect(Date.parse(window!.endAt) - Date.parse(window!.startAt)).toBe(6 * 60 * 60 * 1000);
         expect(eventWindowFromLocalStart('')).toBeNull();
+    });
+});
+
+describe('formatEventDateRange', () => {
+    it('names the date once for a same-day event, in the event time zone', () => {
+        const label = formatEventDateRange('en-GB', '2027-06-12T18:00:00+03:00', '2027-06-12T23:00:00+03:00', 'Europe/Athens');
+
+        expect(label).toContain('Saturday, 12 June 2027');
+        expect(label).toMatch(/18:00\s*–\s*23:00/);
+    });
+
+    it('names both dates for an event that runs past midnight', () => {
+        const label = formatEventDateRange('en-GB', '2027-06-12T18:00:00+03:00', '2027-06-13T02:00:00+03:00', 'Europe/Athens');
+
+        expect(label).toContain('12 June');
+        expect(label).toContain('13 June');
+    });
+
+    it('shows only the start without an end', () => {
+        expect(formatEventDateRange('en-GB', '2027-06-12T18:00:00+03:00', null, 'Europe/Athens')).toBe('Saturday, 12 June 2027 at 18:00');
+    });
+
+    it("falls back to the viewer's time zone for an unknown zone", () => {
+        expect(formatEventDateRange('en-GB', '2027-06-12T18:00:00+03:00', null, 'Not/AZone')).toContain('2027');
+    });
+
+    it('returns null without a usable start', () => {
+        expect(formatEventDateRange('en-GB', null, null, 'Europe/Athens')).toBeNull();
+        expect(formatEventDateRange('en-GB', 'nope', null, 'Europe/Athens')).toBeNull();
     });
 });

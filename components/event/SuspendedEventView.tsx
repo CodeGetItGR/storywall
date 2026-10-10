@@ -12,7 +12,8 @@ import { routes } from '@/lib/routes';
 
 const TERM = 'text-xs font-bold tracking-wide text-ink-faint uppercase';
 
-// What a host sees instead of a suspended StoryWall: when, why, which rule, the admin's own words,
+// What a host sees instead of a suspended StoryWall: when, why, which rule (or, for a close that
+// isn't about a rule, the reason), the admin's own words,
 // and how to disagree (Guidelines §19, §22). No tabs, no settings: everything else is refused (4015).
 // A closed StoryWall shows the same statement, plus the date it is deleted for good.
 // billingHref: the primary host's way to the billing and withdrawal page; null for everyone else.
@@ -54,6 +55,12 @@ export function SuspendedEventView({ event, billingHref = null }: { event: Event
 
             {/* The statement of reasons */}
             <dl className="space-y-4">
+                {suspension?.operationalReason ? (
+                    <div className="space-y-1">
+                        <dt className={TERM}>{t('reason')}</dt>
+                        <dd className="text-sm text-ink">{t(`operationalReasons.${suspension.operationalReason}`)}</dd>
+                    </div>
+                ) : null}
                 {suspension?.ground ? (
                     <div className="space-y-1">
                         <dt className={TERM}>{t('ground')}</dt>

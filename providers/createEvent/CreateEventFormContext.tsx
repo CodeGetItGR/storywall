@@ -10,6 +10,7 @@ import type {
     CollaborationCodePreviewResponseDto,
     CoverageOptionResponseDto,
     EventTypeConvention,
+    PartnerBrandingNoticeDto,
     PlanTierResponseDto,
     PlatformModuleResponseDto,
     ProjectedCoverageDto,
@@ -102,13 +103,16 @@ export interface CreateEventFormValue {
     onCheckoutCodeChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     applyCheckoutCode: () => void;
 
-    // Withdrawal consent (required to submit)
+    // Withdrawal consent and partner credit (both required to submit)
     requestsImmediateStart: boolean;
     acknowledgesWithdrawalTerms: boolean;
     staleTerms: boolean;
     consentSatisfied: boolean;
     onRequestsImmediateStartChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     onAcknowledgesWithdrawalTermsChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    partnerBrandingNotice: PartnerBrandingNoticeDto | null;
+    partnerBrandingAccepted: boolean;
+    onPartnerBrandingChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 
     isSubmitPending: boolean;
     isEmailVerified: boolean;

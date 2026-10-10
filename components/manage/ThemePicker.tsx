@@ -7,6 +7,7 @@ import { ThemePresetRadioGroup, type ThemeRadioOption } from '@/components/manag
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
+import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { useThemePicker } from '@/hooks/useThemePicker';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 
@@ -15,6 +16,7 @@ export function ThemePicker({ event, canWrite, showHeading = true }: { event: Ev
     const t = useTranslations('ManagePage.settings.theme');
     const toErrorMessage = useApiErrorMessage();
     const localizedText = useLocalizedText();
+    const themeName = useModuleCopy(event.eventType)('theme').name;
     const picker = useThemePicker(event, canWrite);
     const headingId = useId();
 
@@ -63,7 +65,7 @@ export function ThemePicker({ event, canWrite, showHeading = true }: { event: Ev
         <section className="mb-6">
             {/* Heading */}
             <h2 id={headingId} className={showHeading ? 'text-xs font-semibold tracking-wide text-ink-muted uppercase' : 'sr-only'}>
-                {t('label')}
+                {themeName}
             </h2>
             <p className="mt-1 text-sm text-ink-muted">{t('hint')}</p>
 

@@ -101,6 +101,13 @@ describe('coHostCapacity', () => {
         expect(coHostCapacity(hosts, planWith({ co_hosts: {} }))).toEqual({ used: 2, limit: null, isFull: false });
         expect(coHostCapacity(hosts, undefined).limit).toBeNull();
     });
+
+    it("prefers the event's own cap, which has an admin's extra", () => {
+        const modules = [{ moduleKey: 'co_hosts', configuration: { maxCoHosts: 5 } }];
+        expect(coHostCapacity(hosts, planWith({ co_hosts: { maxCoHosts: 2 } }), modules).limit).toBe(5);
+        expect(coHostCapacity(hosts, planWith({ co_hosts: { maxCoHosts: 2 } }), [{ moduleKey: 'co_hosts', configuration: {} }]).limit).toBeNull();
+        expect(coHostCapacity(hosts, planWith({ co_hosts: { maxCoHosts: 2 } }), [{ moduleKey: 'co_hosts', configuration: null }]).limit).toBe(2);
+    });
 });
 
 describe('mergeConfigDraft switches', () => {

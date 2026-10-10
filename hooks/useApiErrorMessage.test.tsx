@@ -44,16 +44,16 @@ describe('useApiErrorMessage', () => {
     it('maps 3045 to the two-downloads-at-a-time copy, not the generic 429', () => {
         const busy = new ApiError(429, { errorCode: 3045, retryAfterSeconds: 60 });
 
-        expect(describeIn('en', busy)).toBe('You already have two gallery downloads running. Start another once one finishes.');
+        expect(describeIn('en', busy)).toBe('You already have two downloads running. Start another once one finishes.');
     });
 
-    it('maps 3046 to the daily gallery allowance, with the wait in hours', () => {
+    it('maps 3046 to the daily download limit, with the wait in hours', () => {
         const spent = new ApiError(429, { errorCode: 3046, retryAfterSeconds: 3 * 3600 + 5 });
         const spentSoon = new ApiError(429, { errorCode: 3046, retryAfterSeconds: 600 });
 
-        expect(describeIn('en', spent)).toBe('This gallery has been downloaded as much as it can be for today. Try again in about 4 hours.');
-        expect(describeIn('en', spentSoon)).toBe('This gallery has been downloaded as much as it can be for today. Try again in about an hour.');
-        expect(describeIn('el', spent)).toBe('Η συλλογή έχει κατέβει όσο επιτρέπεται για σήμερα. Δοκιμάστε ξανά σε περίπου 4 ώρες.');
+        expect(describeIn('en', spent)).toBe("This event has reached today's download limit. Try again in about 4 hours.");
+        expect(describeIn('en', spentSoon)).toBe("This event has reached today's download limit. Try again in about an hour.");
+        expect(describeIn('el', spent)).toBe('Η εκδήλωση έφτασε το σημερινό όριο λήψεων. Δοκιμάστε ξανά σε περίπου 4 ώρες.');
     });
 
     it.each([
@@ -69,7 +69,7 @@ describe('useApiErrorMessage', () => {
         [5146, 'A font with this key already exists. Choose a different key.'],
         [5147, "Fonts in TTF or OTF format can't be converted right now. Upload a WOFF2 file, or try again later."],
         [5144, 'This event has ended.'],
-        [5148, 'There are no wishes yet, so there is nothing to put in a book.'],
+        [5148, 'There are no messages yet, so there is nothing to put in a book.'],
         [5149, "The book can't be created right now. Please try again later."],
         [5141, 'You have reached the story limit. Older stories expire after 24 hours, or delete one to post another.'],
     ])('maps %i to its own copy', (errorCode, message) => {

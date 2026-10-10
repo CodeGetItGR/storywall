@@ -5,7 +5,6 @@ import { useState } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import type { EventThemeFontDto } from '@/lib/api/types';
-import { contrastRatio } from '@/lib/contrast';
 import { eventThemeStyle, isHexColor, themeFontScopeProps } from '@/lib/eventTheme';
 import { cn } from '@/lib/utils';
 
@@ -24,6 +23,7 @@ export function ThemePresetOption({
     disabled,
     tabbable,
     size = 'default',
+    previewTitle,
     onSelectAction,
     onFocusAction,
 }: {
@@ -40,6 +40,8 @@ export function ThemePresetOption({
     disabled: boolean;
     tabbable: boolean;
     size?: 'default' | 'large';
+    // The event's title, shown in the theme's font as a preview; the theme name then goes below it.
+    previewTitle?: string;
     onSelectAction: (presetId: string | null) => void;
     onFocusAction: (optionId: string) => void;
 }) {
@@ -48,12 +50,8 @@ export function ThemePresetOption({
     const [failedUrl, setFailedUrl] = useState<string | null>(null);
     const inert = disabled || presetId === undefined;
     const themeStyle = eventThemeStyle(backgroundColor, { titleColor, headingFont });
-    // The title colour's contrast was checked against the preset background only, not the white card,
-    // so a card with one puts its label on a strip of that background (themeStyle is set only for a
-    // valid one). The backend guarantees 3:1, the large-text bar; this ~14px label needs 4.5:1, so
-    // below that the strip keeps ink, which the backend guarantees reads on the background.
-    const hasStrip = themeStyle !== undefined && titleColor !== null && isHexColor(titleColor);
-    const titleOnBackground = hasStrip && contrastRatio(titleColor, backgroundColor!) >= 4.5;
+    // The preset's title colour, whenever the theme is usable (themeStyle is set only for a valid background).
+    const hasTitleColor = themeStyle !== undefined && titleColor !== null && isHexColor(titleColor);
 
     function handleClick() {
         if (inert) return;
@@ -79,8 +77,8 @@ export function ThemePresetOption({
             onClick={handleClick}
             onFocus={handleFocus}
             className={cn(
-                'bg-surface flex min-w-0 flex-col gap-2.5 text-left transition aria-disabled:cursor-not-allowed',
-                size === 'large' ? 'rounded-xl p-1.5 pb-2.5' : 'rounded-2xl p-2.5 pb-3',
+                'bg-surface flex min-w-0 flex-col text-left transition aria-disabled:cursor-not-allowed',
+                size === 'large' ? 'gap-1 rounded-xl p-1 pb-1.5' : 'gap-2.5 rounded-2xl p-2.5 pb-3',
                 selected ? 'ring-2 ring-primary' : 'ring-1 ring-border hover:ring-primary/40',
                 disabled && !selected && 'opacity-60',
             )}
@@ -115,24 +113,28 @@ export function ThemePresetOption({
                     </span>
                 )}
             </span>
-            {/* Label, in the preset's heading font and title colour */}
+            {/* Title, in the preset's heading font and title colour, centred in a fixed-height row:
+                the event's own title when there is one, else the theme name */}
             {/* An unusable background means no theme at all, font included (EventThemeScope's rule) */}
             <span
                 {...themeFontScopeProps(themeStyle ? headingFont : null)}
                 style={themeStyle}
-                className={cn('min-w-0', hasStrip && 'rounded-md bg-event px-2 py-1')}
+                className="flex min-h-7 min-w-0 items-center justify-center"
             >
-                {/* leading-normal leaves room for script fonts and Greek accents under truncate */}
+                {/* font-size-adjust evens out how big each font looks; the padding and leading-normal
+                    leave room for script fonts and Greek accents under truncate */}
                 <span
+                    aria-hidden={previewTitle !== undefined || undefined}
                     className={cn(
-                        'event-heading block truncate text-sm leading-normal font-semibold',
-                        !hasStrip && 'px-1',
-                        titleOnBackground ? 'text-event-title' : 'text-ink',
+                        'event-heading block max-w-full truncate px-1 py-1 text-center text-sm leading-normal font-semibold [font-size-adjust:0.53]',
+                        hasTitleColor ? 'text-event-title' : 'text-ink',
                     )}
                 >
-                    {label}
+                    {previewTitle ?? label}
                 </span>
             </span>
+            {/* Theme name, under the event title in the normal font */}
+            {previewTitle !== undefined && <span className="block truncate px-1 text-center text-xs text-ink-muted">{label}</span>}
         </button>
     );
 }

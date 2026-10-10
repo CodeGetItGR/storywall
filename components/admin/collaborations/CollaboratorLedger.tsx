@@ -13,7 +13,15 @@ import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { CollaborationCodeResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
-export function CollaboratorLedger({ collaboratorId, codes }: { collaboratorId: string; codes: CollaborationCodeResponseDto[] }) {
+export function CollaboratorLedger({
+    collaboratorId,
+    codes,
+    missingPayoutFields,
+}: {
+    collaboratorId: string;
+    codes: CollaborationCodeResponseDto[];
+    missingPayoutFields: string[];
+}) {
     const t = useTranslations('AdminPage.collaborations.earnings');
     const tAdmin = useTranslations('AdminPage');
     const ledger = useCollaboratorLedger(collaboratorId);
@@ -43,7 +51,9 @@ export function CollaboratorLedger({ collaboratorId, codes }: { collaboratorId: 
 
             {/* Rows */}
             {ledger.isLoading && <LoadingState label={t('loading')} className="justify-start px-4 py-6" />}
-            {Boolean(ledger.error) && <p className="px-4 py-6 text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(ledger.error)}`)}</p>}
+            {Boolean(ledger.error) && (
+                <p className="px-4 py-6 text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(ledger.error)}`)}</p>
+            )}
             {!ledger.isLoading && !ledger.error && ledger.visibleEarnings.length === 0 && (
                 <p className="px-4 py-6 text-sm text-ink-muted">{t('empty')}</p>
             )}
@@ -94,6 +104,7 @@ export function CollaboratorLedger({ collaboratorId, codes }: { collaboratorId: 
                 <LedgerSelectionBar
                     count={ledger.selectedIds.length}
                     totals={ledger.selectionTotals}
+                    missingPayoutFields={missingPayoutFields}
                     onClearAction={ledger.clearSelection}
                     onMarkPaidAction={ledger.openMarkPaid}
                 />

@@ -4,6 +4,7 @@ import { CreditCard, Gift, HelpCircle, LayoutDashboard, type LucideIcon, Palette
 import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
+import { useManageSectionLabel } from '@/hooks/useManageSectionLabel';
 import { type ManageSection, manageSections } from '@/lib/manageSections';
 import { cn } from '@/lib/utils';
 
@@ -37,6 +38,7 @@ export function ManageSectionNav({
     className?: string;
 }) {
     const t = useTranslations('ManagePage');
+    const sectionLabel = useManageSectionLabel();
 
     function handleClick(event: MouseEvent<HTMLButtonElement>) {
         const next = event.currentTarget.dataset.section as ManageSection | undefined;
@@ -64,7 +66,7 @@ export function ManageSectionNav({
                         )}
                     >
                         <Icon className="h-4 w-4 shrink-0" strokeWidth={isActive ? 2.4 : 1.8} aria-hidden="true" />
-                        <span className="truncate">{t(`sections.${section}`)}</span>
+                        <span className="truncate">{sectionLabel(section)}</span>
                     </button>
                 );
             })}

@@ -7,12 +7,14 @@ import { getServerLocale } from '@/i18n/serverLocale';
 import { endpoints } from '@/lib/api/endpoints';
 import { serverPublicGet } from '@/lib/api/serverFetch';
 import type { WithdrawalTermsDto } from '@/lib/api/types';
+import { routes } from '@/lib/routes';
+import { canonicalAlternates } from '@/lib/seo';
 
 type PageProps = { searchParams: Promise<{ version?: string | string[] }> };
 
 export async function generateMetadata(): Promise<Metadata> {
     const t = await getTranslations('WithdrawalTermsPage');
-    return { title: `StoryWall - ${t('title')}` };
+    return { title: `StoryWall - ${t('title')}`, alternates: canonicalAlternates(routes.legal.withdrawalTerms()) };
 }
 
 async function loadTerms(version: string | null): Promise<WithdrawalTermsDto | null> {

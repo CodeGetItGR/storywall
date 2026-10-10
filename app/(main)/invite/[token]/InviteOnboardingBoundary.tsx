@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
+import { InviteEventDetails } from '@/components/invite/InviteEventDetails';
 import { InviteLayout } from '@/components/invite/InviteLayout';
 import { InviteOnboardingState } from '@/components/invite/InviteOnboardingState';
 import { InviteTerminalState } from '@/components/invite/InviteTerminalState';
@@ -16,8 +17,6 @@ import { ApiError } from '@/lib/api/client';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import { inviteGiftFraming } from '@/lib/gift';
 import { routes } from '@/lib/routes';
-
-const DEFAULT_HERO_IMAGE = '/images/couple-hero.png';
 
 export default function InviteOnboardingBoundary({ token }: { token: string }) {
     const t = useTranslations('InviteOnboardingPage');
@@ -90,7 +89,7 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
             content={
                 activePreview ? (
                     <InviteLayout
-                        coverImageSrc={coverMedia?.mediaUrl ?? DEFAULT_HERO_IMAGE}
+                        coverImageSrc={coverMedia?.mediaUrl}
                         coverImageAlt={t('defaultHeroImageAlt')}
                         theme={activePreview.theme}
                         eventTitle={activePreview.eventTitle}
@@ -103,6 +102,15 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
                             </p>
                         )}
 
+                        {/* Details */}
+                        <InviteEventDetails
+                            startAt={activePreview.eventStartAt}
+                            endAt={activePreview.eventEndAt}
+                            timeZone={activePreview.eventTimezone}
+                            locationName={activePreview.eventLocationName}
+                        />
+
+                        {/* Description */}
                         {activePreview.eventDescription && (
                             <p className="mb-7 text-sm leading-relaxed text-ink-muted">{activePreview.eventDescription}</p>
                         )}

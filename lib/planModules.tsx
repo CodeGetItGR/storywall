@@ -1,7 +1,27 @@
-import { BookHeart, CalendarCheck, Gift, HelpCircle, Images, MessageSquareText, Music, Palette, Tags } from 'lucide-react';
+import {
+    BookHeart,
+    CalendarCheck,
+    CalendarDays,
+    Gift,
+    HelpCircle,
+    Images,
+    Mail,
+    MessageSquareText,
+    Music,
+    Palette,
+    Tags,
+    UserCog,
+} from 'lucide-react';
 import type { ComponentType } from 'react';
 
-import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import type {
+    AppModuleCopyDto,
+    EventTypeModulePatchDto,
+    LocalizedText,
+    PaidServiceResponseDto,
+    PlanTierResponseDto,
+    PlatformModuleResponseDto,
+} from '@/lib/api/types';
 import { PLAN_COMPARISON_EMPTY } from '@/lib/planComparison';
 
 const moduleIcons: Record<string, ComponentType<{ className?: string }>> = {
@@ -14,6 +34,9 @@ const moduleIcons: Record<string, ComponentType<{ className?: string }>> = {
     wishbook: BookHeart,
     member_roles: Tags,
     theme: Palette,
+    schedule: CalendarDays,
+    co_hosts: UserCog,
+    named_invites: Mail,
 };
 
 const moduleFallbacks: Record<string, { name: string; description: string }> = {
@@ -49,6 +72,11 @@ const moduleFallbacks: Record<string, { name: string; description: string }> = {
         name: 'Guest roles',
         description: 'Guests pick a role, like best man, shown next to their name.',
     },
+    // Off platform-wide, so /api/config never lists it to name it.
+    named_invites: {
+        name: 'Personal invitations',
+        description: 'Invitations sent to a guest by name and email.',
+    },
     theme: {
         name: 'Theme',
         description: 'An illustration and background colour for the event.',
@@ -73,6 +101,73 @@ export function getModuleMeta(moduleKey: string, modules: PlatformModuleResponse
         description: description && description !== PLAN_COMPARISON_EMPTY ? description : (fallback?.description ?? 'Included in this plan.'),
         Icon: moduleIcons[moduleKey] ?? HelpCircle,
     };
+}
+
+export type ModuleCopy = {
+    name: string;
+    description: string;
+    // The module's line on plan cards.
+    cardLabel: string;
+};
+
+// What an event type calls a module: the admin's override for that type, else
+// the app's own translation, else the platform module's name. Each field falls
+// back on its own, and the card label falls back to the resolved name.
+// See module-names-per-event-type-fe-integration.md.
+export function resolveModuleCopy({
+    override,
+    translated,
+    platform,
+    localize,
+}: {
+    override: AppModuleCopyDto | undefined;
+    translated: { name?: string; description?: string };
+    platform: ModuleMeta;
+    localize: (text: LocalizedText | null | undefined) => string;
+}): ModuleCopy {
+    const name = localize(override?.name) || translated.name || platform.name;
+    return {
+        name,
+        description: localize(override?.description) || translated.description || platform.description,
+        cardLabel: localize(override?.cardLabel) || name,
+    };
+}
+
+// The wording an admin can override per event type, in both locales (see
+// module-names-per-event-type-fe-integration.md §2).
+export const MODULE_COPY_FIELDS = ['name', 'description', 'cardLabel'] as const;
+export type ModuleCopyField = (typeof MODULE_COPY_FIELDS)[number];
+export const MODULE_COPY_LOCALES = ['en', 'el'] as const;
+export type ModuleCopyLocale = (typeof MODULE_COPY_LOCALES)[number];
+export const MODULE_COPY_MAX_LENGTH: Record<ModuleCopyField, number> = { name: 40, description: 160, cardLabel: 40 };
+
+export type ModuleCopyDraft = Record<ModuleCopyField, Record<ModuleCopyLocale, string>>;
+type ModuleCopyOverrides = Partial<Record<ModuleCopyField, LocalizedText | null>>;
+
+export function hasModuleCopyOverride(row: ModuleCopyOverrides): boolean {
+    return MODULE_COPY_FIELDS.some((field) => Boolean(row[field]));
+}
+
+export function moduleCopyDraft(row: ModuleCopyOverrides): ModuleCopyDraft {
+    const draft = {} as ModuleCopyDraft;
+    for (const field of MODULE_COPY_FIELDS) draft[field] = { en: row[field]?.en ?? '', el: row[field]?.el ?? '' };
+    return draft;
+}
+
+// The PATCH body for a draft: a field left empty in both locales goes back to
+// the default (null). One locale filled and the other empty is incomplete.
+export function moduleCopyPatch(
+    draft: ModuleCopyDraft,
+): { patch: EventTypeModulePatchDto } | { incomplete: { field: ModuleCopyField; locale: ModuleCopyLocale } } {
+    const patch: EventTypeModulePatchDto = {};
+    for (const field of MODULE_COPY_FIELDS) {
+        const en = draft[field].en.trim();
+        const el = draft[field].el.trim();
+        if (!en && !el) patch[field] = null;
+        else if (!en || !el) return { incomplete: { field, locale: en ? 'el' : 'en' } };
+        else patch[field] = { en, el };
+    }
+    return { patch };
 }
 
 export function enabledModuleKeys(moduleKeys: string[], modules: PlatformModuleResponseDto[]): string[] {

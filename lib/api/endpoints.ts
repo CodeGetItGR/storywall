@@ -128,6 +128,8 @@ export const endpoints = {
         wishbookBook: (eventId: string) => `/api/events/${eventId}/wishbook/book`,
         wishbookBookTexts: (eventId: string) => `/api/events/${eventId}/wishbook/book-texts`,
         checkout: (eventId: string) => `/api/events/${eventId}/checkout`,
+        partnerBrandingAcceptance: (eventId: string) => `/api/events/${eventId}/partner-branding/acceptance`,
+        partnerBrandingDecline: (eventId: string) => `/api/events/${eventId}/partner-branding/decline`,
         checkoutCodePreview: (eventId: string) => `/api/events/${eventId}/checkout/preview-code`,
         upgradeCheckout: (eventId: string) => `/api/events/${eventId}/upgrade-checkout`,
         upgradeOptions: (eventId: string) => `/api/events/${eventId}/upgrade-options`,
@@ -378,9 +380,23 @@ export const endpoints = {
             list: '/api/admin/collaborators',
             byId: (id: string) => `/api/admin/collaborators/${id}`,
             portalToken: (id: string) => `/api/admin/collaborators/${id}/portal-token`,
+            businessDetails: (id: string) => `/api/admin/collaborators/${id}/business-details`,
+            viesCheck: (id: string) => `/api/admin/collaborators/${id}/vies-check`,
+            commissionTiers: (id: string) => `/api/admin/collaborators/${id}/commission-tiers`,
             codes: (id: string) => `/api/admin/collaborators/${id}/codes`,
             linkCode: (id: string) => `/api/admin/collaborators/${id}/codes/link`,
             earnings: (id: string) => `/api/admin/collaborators/${id}/earnings`,
+            branding: (id: string) => `/api/admin/collaborators/${id}/branding`,
+            brandingImage: (id: string, kind: 'logo' | 'cover') => `/api/admin/collaborators/${id}/branding/${kind}`,
+            brandingEnable: (id: string) => `/api/admin/collaborators/${id}/branding/enable`,
+            brandingDisable: (id: string) => `/api/admin/collaborators/${id}/branding/disable`,
+        },
+        partnerBrandingReport: ({ from, to }: { from?: string; to?: string }) => {
+            const params = new URLSearchParams();
+            if (from) params.set('from', from);
+            if (to) params.set('to', to);
+            const query = params.toString();
+            return `/api/admin/partner-branding/report${query ? `?${query}` : ''}`;
         },
         collaborationCodes: {
             byId: (id: string) => `/api/admin/collaboration-codes/${id}`,
@@ -416,9 +432,21 @@ export const endpoints = {
         },
         events: {
             provision: '/api/admin/events',
+            list: '/api/admin/events',
+            byId: (eventId: string) => `/api/admin/events/${eventId}`,
+            storageGrant: (eventId: string) => `/api/admin/events/${eventId}/grants/storage`,
+            memberGrant: (eventId: string) => `/api/admin/events/${eventId}/grants/members`,
+            moduleGrant: (eventId: string, moduleKey: string) => `/api/admin/events/${eventId}/grants/modules/${encodeURIComponent(moduleKey)}`,
+            moduleConfig: (eventId: string, moduleKey: string, configKey: string) =>
+                `/api/admin/events/${eventId}/modules/${encodeURIComponent(moduleKey)}/config/${encodeURIComponent(configKey)}`,
+            moduleConfigReset: (eventId: string, moduleKey: string, configKey: string) =>
+                `/api/admin/events/${eventId}/modules/${encodeURIComponent(moduleKey)}/config/${encodeURIComponent(configKey)}/reset`,
+            suspend: (eventId: string) => `/api/admin/events/${eventId}/suspend`,
+            close: (eventId: string) => `/api/admin/events/${eventId}/close`,
             planTier: (eventId: string) => `/api/admin/events/${eventId}/plan-tier`,
             addon: (eventId: string, code: string) => `/api/admin/events/${eventId}/addons/${encodeURIComponent(code)}`,
             collaborationRedemptionVoid: (eventId: string) => `/api/admin/events/${eventId}/collaboration-redemption/void`,
+            partnerBranding: (eventId: string) => `/api/admin/events/${eventId}/partner-branding`,
         },
     },
 

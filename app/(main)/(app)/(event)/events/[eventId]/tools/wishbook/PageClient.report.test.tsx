@@ -16,6 +16,14 @@ const createEntry = vi.fn();
 const setHighlighted = vi.fn();
 let entries: Array<{ id: string; authorMemberId: string | null; canDelete: boolean; highlighted?: boolean | null }> = [];
 
+vi.mock('@/hooks/useModuleCopy', () => {
+    const copy = (moduleKey: string) => ({ name: moduleKey, description: `${moduleKey} description`, cardLabel: moduleKey, Icon: () => null });
+    return {
+        useModuleCopy: () => copy,
+        useActiveModuleCopy: copy,
+        useModuleCopyResolver: () => (_eventType: unknown, moduleKey: string) => copy(moduleKey),
+    };
+});
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
 vi.mock('next/image', () => ({ default: () => null }));
 // BackButton steps back through the router when the previous page is in the app.

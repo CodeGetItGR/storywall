@@ -25,6 +25,7 @@ export function HostContextSections({ panel, showMembersUsage = true }: { panel:
         includedModuleKeys,
         actionItems,
         showRsvpSummary,
+        rsvpTitle,
         rsvpSummary,
         showMediaSummary,
         mediaSummary,
@@ -33,6 +34,7 @@ export function HostContextSections({ panel, showMembersUsage = true }: { panel:
         showInvitationsQr,
         invitationsQrCount,
         showWishbookSummary,
+        wishbookTitle,
         wishbookEntries,
         wishbookTotal,
     } = panel;
@@ -61,7 +63,7 @@ export function HostContextSections({ panel, showMembersUsage = true }: { panel:
             )}
 
             {/* RSVP summary */}
-            {showRsvpSummary && rsvpSummary && <RsvpSummarySection eventId={activeEvent.id} summary={rsvpSummary} />}
+            {showRsvpSummary && rsvpSummary && <RsvpSummarySection eventId={activeEvent.id} title={rsvpTitle} summary={rsvpSummary} />}
 
             {/* Media summary */}
             {showMediaSummary && mediaSummary && <MediaSummarySection eventId={activeEvent.id} summary={mediaSummary} />}
@@ -76,7 +78,9 @@ export function HostContextSections({ panel, showMembersUsage = true }: { panel:
             />
 
             {/* Wishbook summary */}
-            {showWishbookSummary && <WishbookSummarySection eventId={activeEvent.id} entries={wishbookEntries} total={wishbookTotal} />}
+            {showWishbookSummary && (
+                <WishbookSummarySection eventId={activeEvent.id} title={wishbookTitle} entries={wishbookEntries} total={wishbookTotal} />
+            )}
 
             {/* Plan usage */}
             {eventUsage && (

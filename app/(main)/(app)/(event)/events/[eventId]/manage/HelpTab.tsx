@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { HelpStep, type HelpStepAction } from '@/components/manage/help/HelpStep';
 import { HelpStepper } from '@/components/manage/help/HelpStepper';
 import { useHelpProgress } from '@/hooks/useHelpProgress';
+import { useModuleCopy } from '@/hooks/useModuleCopy';
 import type { EventLocationDto, EventModuleResponseDto, EventScheduleDto, EventSessionResponseDto, EventTypeConvention } from '@/lib/api/types';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import { isModuleAvailable } from '@/lib/eventLifecycle';
@@ -28,6 +29,7 @@ export default function HelpTab({
     eventModules: EventModuleResponseDto[];
 }) {
     const t = useTranslations('HostOnboarding');
+    const moduleCopy = useModuleCopy(eventType);
     const progress = useHelpProgress({ eventId, title: eventTitle, schedule, location, sessions });
 
     const hasVenueConvention = Boolean(getCreateEventCatalogEntry(eventType)?.secondarySessionTitleKey);
@@ -58,19 +60,19 @@ export default function HelpTab({
         },
         rsvpAvailable && {
             key: 'rsvp',
-            title: t('steps.rsvp.title'),
+            title: moduleCopy('rsvp').name,
             complete: progress.rsvp,
             actions: [{ key: 'rsvp', href: routes.events.tools.rsvp(eventId), label: t('steps.rsvp.edit') }],
         },
         hasGiftAccountModule && {
             key: 'giftAccount',
-            title: t('steps.giftAccount.title'),
+            title: moduleCopy('wishlist').name,
             complete: progress.giftAccount,
             actions: [{ key: 'gifts', href: routes.events.tools.gifts(eventId), label: t('steps.giftAccount.edit') }],
         },
         {
             key: 'schedule',
-            title: t('steps.schedule.title'),
+            title: moduleCopy('schedule').name,
             complete: progress.schedule,
             actions: [{ key: 'schedule', href: routes.events.tools.schedule(eventId), label: t('steps.schedule.edit') }],
         },

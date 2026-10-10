@@ -17,6 +17,7 @@ import { useUpgradeOptions } from '@/hooks/useBilling';
 import { useCoHostCapacity } from '@/hooks/useCoHostCapacity';
 import { useMemberModeration } from '@/hooks/useMemberModeration';
 import { useMemberRoleSheet } from '@/hooks/useMemberRoleSheet';
+import { useActiveModuleCopy } from '@/hooks/useModuleCopy';
 import type {
     EventHostResponseDto,
     EventInvitationResponseDto,
@@ -70,6 +71,7 @@ export function MembersPanel({
     const activeMember = useActiveMember();
     const searchParams = useSearchParams();
     const requestedTab = searchParams.get('section');
+    const coHostsName = useActiveModuleCopy('co_hosts').name;
     const coHostsAvailable = eventModules.find((module_) => module_.moduleKey === 'co_hosts')?.isAvailable ?? false;
     const [tab, setTab] = useState<MembersSubTab>(requestedTab === 'coHosts' && coHostsAvailable ? 'coHosts' : 'members');
     const [showCreate, setShowCreate] = useState(false);
@@ -85,9 +87,9 @@ export function MembersPanel({
     const tabs = useMemo<SubTabItem<MembersSubTab>[]>(
         () => [
             { key: 'members', icon: Users, label: tMembers('title') },
-            ...(coHostsAvailable ? [{ key: 'coHosts' as const, icon: UserCog, label: t('invitations.panels.coHosts') }] : []),
+            ...(coHostsAvailable ? [{ key: 'coHosts' as const, icon: UserCog, label: coHostsName }] : []),
         ],
-        [t, tMembers, coHostsAvailable],
+        [tMembers, coHostsAvailable, coHostsName],
     );
 
     const memberLimit = eventUsage?.memberLimit ?? null;
@@ -97,7 +99,7 @@ export function MembersPanel({
     const nextUpgradeOption = upgradeOptions[0];
     const nextPlan = nextUpgradeOption ? findPlanByCode(planTiers, 'EVENT', nextUpgradeOption.planTierCode) : undefined;
     const upgradeHref = routes.events.manage(eventId, { tab: 'billing' });
-    const coHostCapacity = useCoHostCapacity(hosts, currentPlan, nextPlan);
+    const coHostCapacity = useCoHostCapacity(hosts, currentPlan, nextPlan, activeEvent?.modules);
 
     const canCreate = canWrite && !isFull && !coHostCapacity.isFull;
 

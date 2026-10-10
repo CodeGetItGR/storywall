@@ -7,7 +7,7 @@ import { useAppConfig } from '@/hooks/useAppConfig';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import type { EventTypeConvention, EventTypeVoicePack } from '@/lib/api/types';
 
-// Resolves the ten-string voice pack for one event type, falling back to a
+// Resolves the eight-string voice pack for one event type, falling back to a
 // neutral FE string only if config translations are unavailable.
 // See docs/integration guides/event-type-voice-pack-fe-integration.md.
 export function useEventTypeVoice(eventTypeKey: EventTypeConvention | null | undefined) {
@@ -32,8 +32,6 @@ export function useEventTypeVoice(eventTypeKey: EventTypeConvention | null | und
             rsvpMessageLabel: resolve('rsvpMessageLabel'),
             rsvpAttendingConfirmation: resolve('rsvpAttendingConfirmation'),
             toolsSubtitle: resolve('toolsSubtitle'),
-            toolsScheduleDescription: resolve('toolsScheduleDescription'),
-            toolsPlaylistDescription: resolve('toolsPlaylistDescription'),
         };
     }, [voice, localizedText, tFallback]);
 }

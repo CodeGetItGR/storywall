@@ -28,6 +28,9 @@ export type ApiErrorMessageKey =
     | 'collaborationAlreadyRedeemed'
     | 'collaborationCodeNotValid'
     | 'collaborationEarningNotPayable'
+    | 'collaboratorPayoutDetailsIncomplete'
+    | 'collaboratorBrandingIncomplete'
+    | 'partnerBrandingNoticeOutdated'
     | 'concurrentModification'
     | 'conflict'
     | 'coverageEnded'
@@ -205,6 +208,11 @@ export type ApiErrorMessageKey =
     | 'memberRoleFeaturedMember'
     | 'memberRoleCapReached'
     | 'memberRoleTextChanged'
+    | 'storageGrantBelowUsage'
+    | 'moduleAlreadyGranted'
+    | 'moduleCopyIncomplete'
+    | 'moduleCopyTooLong'
+    | 'moduleCopyModuleUnsupported'
     | 'withdrawalNotPrimaryHost'
     | 'oauthEmailUnverified';
 
@@ -228,6 +236,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.COLLABORATION_ALREADY_REDEEMED]: 'collaborationAlreadyRedeemed',
     [ERROR_CODES.COLLABORATION_CODE_NOT_VALID]: 'collaborationCodeNotValid',
     [ERROR_CODES.COLLABORATION_EARNING_NOT_PAYABLE]: 'collaborationEarningNotPayable',
+    [ERROR_CODES.COLLABORATOR_PAYOUT_DETAILS_INCOMPLETE]: 'collaboratorPayoutDetailsIncomplete',
     [ERROR_CODES.CONFLICT]: 'conflict',
     [ERROR_CODES.CONCURRENT_MODIFICATION]: 'concurrentModification',
     [ERROR_CODES.COVERAGE_ENDED]: 'coverageEnded',
@@ -361,6 +370,8 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.WISHBOOK_BOOK_RENDERER_UNAVAILABLE]: 'wishbookBookRendererUnavailable',
     [ERROR_CODES.LANDING_CATEGORY_TYPE_ASSIGNED]: 'landingCategoryTypeAssigned',
     [ERROR_CODES.COVERAGE_OPTION_PROMO_PRICE_INVALID]: 'coverageOptionPromoPriceInvalid',
+    [ERROR_CODES.COLLABORATOR_BRANDING_INCOMPLETE]: 'collaboratorBrandingIncomplete',
+    [ERROR_CODES.PARTNER_BRANDING_NOTICE_OUTDATED]: 'partnerBrandingNoticeOutdated',
     [ERROR_CODES.EVENT_ENDED]: 'eventEnded',
     [ERROR_CODES.PAID_SERVICE_CURRENCY_MISMATCH]: 'paidServiceCurrencyMismatch',
     [ERROR_CODES.PAID_SERVICE_IN_USE]: 'paidServiceInUse',
@@ -411,6 +422,11 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.MEMBER_ROLE_FEATURED_MEMBER]: 'memberRoleFeaturedMember',
     [ERROR_CODES.MEMBER_ROLE_CAP_REACHED]: 'memberRoleCapReached',
     [ERROR_CODES.MEMBER_ROLE_TEXT_CHANGED]: 'memberRoleTextChanged',
+    [ERROR_CODES.ADMIN_STORAGE_GRANT_BELOW_USAGE]: 'storageGrantBelowUsage',
+    [ERROR_CODES.MODULE_ALREADY_GRANTED]: 'moduleAlreadyGranted',
+    [ERROR_CODES.MODULE_COPY_INCOMPLETE]: 'moduleCopyIncomplete',
+    [ERROR_CODES.MODULE_COPY_TOO_LONG]: 'moduleCopyTooLong',
+    [ERROR_CODES.MODULE_COPY_MODULE_UNSUPPORTED]: 'moduleCopyModuleUnsupported',
 } satisfies Record<KnownApiErrorCode, ApiErrorMessageKey>;
 
 export function getApiErrorMessageKey(code: number | string | undefined): ApiErrorMessageKey | undefined {

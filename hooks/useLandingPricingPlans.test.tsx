@@ -17,11 +17,12 @@ const MESSAGES = {
     LandingPage: {
         pricing: {
             everythingIn: 'Everything in {plan}',
-            scheduleSessions: 'Up to {count} schedule sessions',
-            scheduleSessionsUnlimited: 'Unlimited schedule sessions',
+            scheduleSessions: 'up to {count} sessions',
+            scheduleSessionsUnlimited: 'unlimited sessions',
             coHosts: 'Up to {count} co-hosts',
             coHostsUnlimited: 'Unlimited co-hosts',
-            galleryWithQrUpload: 'Gallery with QR upload',
+            moduleWithDetail: '{label} · {detail}',
+            qrUpload: 'QR upload',
             guestsUnlimited: 'Unlimited guests',
             guestsUpTo: 'Up to {count} guests',
             mediaUnlimited: 'Unlimited',
@@ -139,9 +140,9 @@ describe('useLandingPricingPlans', () => {
         const config = makeConfig();
         config.translations = {
             eventTypes: {
-                WEDDING: { name: { en: 'Wedding', el: 'Γάμος' }, tagline: {}, voice: {} as never },
-                SOCIAL_EVENT: { name: { en: 'Party' }, tagline: {}, voice: {} as never },
-                REUNION: { name: { en: 'Reunion' }, tagline: {}, voice: {} as never },
+                WEDDING: { name: { en: 'Wedding', el: 'Γάμος' }, tagline: {}, voice: {} as never, modules: {} },
+                SOCIAL_EVENT: { name: { en: 'Party' }, tagline: {}, voice: {} as never, modules: {} },
+                REUNION: { name: { en: 'Reunion' }, tagline: {}, voice: {} as never, modules: {} },
             },
         };
         config.landingCategories = [

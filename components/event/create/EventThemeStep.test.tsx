@@ -5,6 +5,14 @@ import { EventThemeStep } from '@/components/event/create/EventThemeStep';
 
 const form = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
 
+vi.mock('@/hooks/useModuleCopy', () => {
+    const copy = (moduleKey: string) => ({ name: moduleKey, description: `${moduleKey} description`, cardLabel: moduleKey, Icon: () => null });
+    return {
+        useModuleCopy: () => copy,
+        useActiveModuleCopy: copy,
+        useModuleCopyResolver: () => (_eventType: unknown, moduleKey: string) => copy(moduleKey),
+    };
+});
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
 vi.mock('@/providers/createEvent/CreateEventFormContext', () => ({ useCreateEventForm: () => form.current }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'Could not load themes.' }));
@@ -17,6 +25,7 @@ const SWAN = { id: 'p1', key: 'swan', name: { en: 'Swan', el: 'Κύκνος' }, 
 
 function state(overrides: Record<string, unknown> = {}) {
     form.current = {
+        title: '',
         themePresets: [SWAN],
         isThemePresetsLoading: false,
         themePresetsError: null,
@@ -38,6 +47,14 @@ describe('EventThemeStep', () => {
         expect(radios.map((radio) => radio.textContent)).toEqual(['none', 'Swan']);
         expect(radios[0]).toHaveAttribute('aria-checked', 'true');
         expect(screen.getByTestId('art')).toHaveAttribute('src', SWAN.illustrationUrl);
+    });
+
+    it('previews the title from the details step on every card, with the theme name below', () => {
+        state({ title: '  Anna  ' });
+        render(<EventThemeStep />);
+
+        expect(screen.getAllByText('Anna')).toHaveLength(2);
+        expect(screen.getByRole('radio', { name: 'Swan' })).toBeInTheDocument();
     });
 
     it('picks a preset without saving anything itself', () => {

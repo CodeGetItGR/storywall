@@ -92,15 +92,11 @@
         "secondsShort": "S",
         "started": "It's happening!"
     },
-    "StoriesRow": {
-        "ariaLabel": "Stories"
-    },
     "StoryAvatar": {
         "addYourStory": "Add your story",
         "addAnotherStory": "Add another story",
         "userStory": "{name}'s story",
-        "yourStory": "Your story",
-        "scheduleStory": "Schedule"
+        "yourStory": "Your story"
     },
     "FeedPage": {
         "scheduleBadge": "Schedule",
@@ -118,19 +114,6 @@
     "SessionLocationPage": {
         "back": "Back",
         "locationMissing": "Location not set"
-    },
-    "FeedScheduleCard": {
-        "eyebrow": "Schedule",
-        "title": "Guest program",
-        "intro": "A quick run of show so everyone knows when to arrive, when the ceremony starts, and how the evening flows.",
-        "guestLabel": "Guest view",
-        "program": "Program",
-        "viewFullSchedule": "Open full schedule",
-        "emptyTitle": "Schedule coming soon",
-        "emptyBody": "The host hasn't published the full run of show yet. Check back later for the day-by-day timeline.",
-        "timeTba": "Time TBA",
-        "timeRangeNote": "Ends at {time}",
-        "footer": "Guests will always have the latest version here."
     },
     "PostCard": {
         "justNow": "just now",
@@ -168,10 +151,10 @@
         "unknownAuthor": "Unknown",
         "moduleUnavailable": "Posts are not available on this event's current plan.",
         "reactionFailed": "Couldn't update your reaction. Please try again.",
-        "playlistDigest": "Playlist update",
-        "playlistDigestCount": "{count, plural, one {# song was added to the playlist} other {# songs were added to the playlist}}",
-        "playlistDigestSingle": "\"{song}\" was just added to the playlist",
-        "openPlaylist": "Open playlist",
+        "playlistDigest": "New songs",
+        "playlistDigestCount": "{count, plural, one {# song was added} other {# songs were added}}",
+        "playlistDigestSingle": "\"{song}\" was just added",
+        "openPlaylist": "View songs",
         "date": "Date",
         "month": "Month",
         "time": "Time",
@@ -220,8 +203,8 @@
                 "description": "Overview of your event"
             },
             "galleryQr": {
-                "label": "Gallery QR",
-                "description": "Download or share your gallery's upload code"
+                "label": "Upload QR code",
+                "description": "Download or share the photo upload code"
             },
             "invitationsQr": {
                 "label": "Share links",
@@ -250,7 +233,7 @@
             },
             "schedule": {
                 "label": "Schedule",
-                "description": "Full timeline of events leading up to the big day"
+                "description": "Full timeline of the event"
             },
             "gallery": {
                 "label": "Gallery",
@@ -566,7 +549,7 @@
             "filesLabel": "Photos or videos",
             "chooseFiles": "Choose files",
             "submit": "Upload",
-            "success": "Thanks! Your photos are on their way to the gallery.",
+            "success": "Thanks! Your photos are on their way.",
             "rateLimited": "This event has had a lot of uploads in the last hour. The files below weren't sent; try them again later.",
             "someFailed": "{count, plural, one {One file wasn't sent} other {# files weren't sent}}. Check the files below and try again.",
             "addMore": "Add more",
@@ -592,46 +575,6 @@
         "unavailable": {
             "title": "This event is not available",
             "description": "The event behind this QR code is not available right now."
-        }
-    },
-    "ToolsPage": {
-        "title": "Tools",
-        "items": {
-            "rsvp": {
-                "label": "RSVP",
-                "description": "Confirm your attendance",
-                "badge": "{count} attending"
-            },
-            "gifts": {
-                "accountLabel": "Gift account",
-                "accountDescription": "View the hosts' bank details for a monetary gift",
-                "label": "Gift account",
-                "description": "View the hosts' bank details for a monetary gift",
-                "badge": "{count} gifts"
-            },
-            "wishbook": {
-                "currentDescription": "Leave a message for the hosts",
-                "label": "Wishbook",
-                "description": "Leave a message for the hosts",
-                "badge": "{count} entries"
-            },
-            "schedule": {
-                "label": "Schedule",
-                "badge": "{count} events"
-            },
-            "gallery": {
-                "label": "Gallery",
-                "description": "Upload and browse event photos"
-            },
-            "playlist": {
-                "label": "Playlist",
-                "badge": "{count} songs"
-            },
-            "quiz": {
-                "label": "Couple Quiz",
-                "description": "How well do you know Emma & James?",
-                "badge": "{count} questions"
-            }
         }
     },
     "AccountDrawer": {
@@ -666,7 +609,7 @@
     "ProfilePage": {
             "dataExport": {
                 "title": "Your data",
-                "body": "Download a copy of everything StoryWall holds about you — your profile, your activity in events and your purchases — as a JSON file. Photos and videos aren't in it; download those from each event's gallery.",
+                "body": "Download a copy of everything StoryWall holds about you — your profile, your activity in events and your purchases — as a JSON file. Photos and videos aren't in it; download those from each event.",
                 "download": "Download my data",
                 "downloading": "Preparing…",
                 "failed": "We couldn't prepare your data. Try again."
@@ -850,8 +793,8 @@
                 "body": "{over} over the limit. Free up space by {dueDate}, or the newest photos and videos above the limit will be deleted."
             },
             "MEMBER_ARCHIVE_READY": {
-                "title": "The gallery is ready to download",
-                "body": "Every photo and video from the event, in one download. Open the gallery to get it."
+                "title": "Photos and videos are ready to download",
+                "body": "Every photo and video from the event, in one download."
             }
         }
     },
@@ -903,8 +846,7 @@
         "closeStory": "Close story",
         "userStory": "{name}'s story",
         "story": "Story",
-        "scheduleAuthor": "Schedule",
-        "scheduleStaticProgress": "Static schedule story",
+        "scheduleStaticProgress": "Static story",
         "previousStory": "Previous story",
         "nextStory": "Next story",
         "previous": "Previous",
@@ -1073,10 +1015,10 @@
     },
     "ManagePage": {
         "coverage": {
-            "openUntil": "Gallery open · closes {date}",
-            "closingIn": "Closing in {days, plural, one {# day} other {# days}} — download your gallery",
-            "ended": "Gallery closed on {date}",
-            "download": "Download gallery"
+            "openUntil": "Event open · closes {date}",
+            "closingIn": "Closing in {days, plural, one {# day} other {# days}} — download your photos and videos",
+            "ended": "Event closed on {date}",
+            "download": "Download all"
         },
         "title": "Host Dashboard",
         "backToTools": "Back",
@@ -1165,7 +1107,6 @@
             "expand": "Show"
         },
         "giftAccount": {
-            "title": "Gift account",
             "body": "Add one bank account members can copy when they want to send a monetary gift.",
             "configured": "Ready for members · {holder}",
             "add": "Set up",
@@ -1181,9 +1122,6 @@
             "editorBody": "These details are visible only to event members and are not stored in this browser."
         },
         "invitations": {
-            "panels": {
-                "coHosts": "Co-hosts"
-            },
             "capacity": {
                 "title": "Guest capacity",
                 "coHostsTitle": "Guests and co-hosts"
@@ -1195,7 +1133,7 @@
             },
             "guide": {
                 "shareTitle": "Share with a group",
-                "shareBody": "Create a link or QR code for group chats, printed cards, posters, or gallery access."
+                "shareBody": "Create a link or QR code for group chats, printed cards, posters, or photo uploads."
             },
             "claimed": "Claimed",
             "unclaimed": "Unclaimed",
@@ -1248,7 +1186,7 @@
             "summary": "{count} QR codes",
             "empty": "No share links yet.",
             "emptyTitle": "No share links yet",
-            "emptyBody": "Create one for group chats, printed cards, posters, or gallery access.",
+            "emptyBody": "Create one for group chats, printed cards, posters, or photo uploads.",
             "readOnly": "This event is read-only. QR code changes are paused, but existing codes can still be previewed and printed.",
             "untitled": "Untitled QR code",
             "preview": "Preview",
@@ -1346,7 +1284,6 @@
                 "formats": "JPEG, PNG, HEIC up to 10 MB"
             },
             "theme": {
-                "label": "Theme",
                 "hint": "An illustration and background colour for the pages your guests see. Changes apply right away.",
                 "none": "No theme",
                 "loading": "Loading themes…",
@@ -1361,7 +1298,7 @@
                 "body": "Deleting this event hides it from guests right away. This can't be undone.",
                 "delete": "Delete event",
                 "confirmTitle": "Delete this event?",
-                "confirmBody": "Guests lose access right away and the event is permanently deleted later. This can't be undone. Until then you can still view and download the gallery and wishes.",
+                "confirmBody": "Guests lose access right away and the event is permanently deleted later. This can't be undone. Until then you can still view and download photos, videos and messages.",
                 "confirmAction": "Delete event",
                 "cancelAction": "Cancel",
                 "otp": {
@@ -1381,11 +1318,11 @@
             },
             "deleted": {
                 "title": "This event is being deleted",
-                "body": "It will be permanently deleted on {date}. Guests can't see it. Only the gallery and wishes stay available until then.",
+                "body": "It will be permanently deleted on {date}. Guests can't see it. Only photos, videos and messages stay available until then.",
                 "actionsTitle": "Still available",
                 "actions": {
                     "gallery": "View and download all photos and videos",
-                    "wishbook": "Read the wishes and export them as a PDF"
+                    "wishbook": "Read the messages and export them as a PDF"
                 }
             }
         },
@@ -1657,13 +1594,13 @@
             "partialRefund": "Partial refund",
             "daysUsed": "{used} of {total} days used",
             "until": "You can withdraw until {date}.",
-            "eventScope": "This permanently takes the event offline and can't be undone. You can still view and download the gallery and wishes until it's deleted.",
+            "eventScope": "This permanently takes the event offline and can't be undone. You can still view and download photos, videos and messages until it's deleted.",
             "upgradeScope": "Any upgrade bought after this one is withdrawn too. Your event stays online.",
             "orderScope": "Your event stays online.",
             "instant": "Refunded straight away.",
             "reviewed": "Because this event's date was changed after payment, your request will be reviewed by a person.",
             "storageAfter": "Your storage limit goes from {from} to {to}. You hold {usage}.",
-            "storageOver": "{over} will be over the limit. Unless you free space by {date}, the newest photos and videos above it will be deleted. Download the gallery first.",
+            "storageOver": "{over} will be over the limit. Unless you free space by {date}, the newest photos and videos above it will be deleted. Download your photos and videos first.",
             "unlimited": "unlimited",
             "yourDetails": "Your details",
             "name": "Name",
@@ -1769,7 +1706,7 @@
             "activatesTodayTitle": "Activates today",
             "activatesTodayBody": "Your event goes live the moment payment completes.",
             "datesFixedTitle": "Your dates are fixed at payment",
-            "datesFixedBody": "Changing your event date later won't move when the gallery closes.",
+            "datesFixedBody": "Changing your event date later won't change how long your photos are kept.",
             "keptUntilTitle": "Photos kept until {date}",
             "keptUntilBody": "{months, plural, one {# month} other {# months}} after your event date. After that everything is permanently deleted — we'll remind you 7 days and 1 day before."
         },
@@ -1789,6 +1726,12 @@
             "notice": "Business purchase for {legalName} (VAT {vatNumber}). The consumer right of withdrawal does not apply to business purchases. The price includes VAT; no reverse charge is applied.",
             "pending": "Your VAT number is still being checked, so this purchase is made as a consumer.",
             "invalid": "Your VAT number couldn't be confirmed, so this purchase is made as a consumer."
+        },
+        "partnerBranding": {
+            "title": "Code from {partner}",
+            "body": "This discount is offered by {partner}, a StoryWall partner. In return, {partner} will be credited on your event: a small card with their name, logo, a short description and a link to their website will appear between the posts in your event's feed, visible to your guests. The card stays for as long as your event is online and can't be removed. We don't share your details or your guests' details with {partner}. We only count how many times the card is tapped.",
+            "accept": "I agree that {partner} will be credited on my event in return for this discount.",
+            "required": "To use this code, accept the partner credit or remove the code."
         }
     },
     "PriceBreakdown": {
@@ -1887,6 +1830,13 @@
         }
     },
     "SuspendedEvent": {
+        "reason": "Reason",
+        "operationalReasons": {
+            "HOST_REQUEST": "The host asked for it",
+            "DUPLICATE": "Duplicate event",
+            "PAYMENT_ISSUE": "Payment issue",
+            "OTHER": "Other"
+        },
         "title": "This StoryWall is suspended",
         "body": "We suspended this StoryWall on {date}. Your guests can't see it, and nothing can be added to it.",
         "ground": "Ground",
@@ -1970,12 +1920,17 @@
             "accrued": "Accrued",
             "paid": "Paid",
             "balance": "Balance"
-        }
+        },
+        "tiers": {
+            "title": "Commission rate",
+            "percent": "{percent}%",
+            "activationsThisYear": "{count, plural, one {# activation} other {# activations}} this year",
+            "next": "Your {number, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} activation earns {percent}%"
+        },
+        "brandingClicks": "Card taps"
     },
     "SchedulePage": {
         "back": "Go back",
-        "title": "Schedule",
-        "subtitle": "See the full run of show. Hosts can add new sessions here.",
         "timeTba": "Time TBA",
         "unscheduled": "Unscheduled",
         "endsAt": "Ends at {time}",
@@ -1991,10 +1946,10 @@
         "host": {
             "eyebrow": "Host tools",
             "badge": "Host view",
-            "title": "Add schedule item",
+            "title": "Add session",
             "subtitle": "Create a session that shows up in the guest timeline and feed preview.",
             "editingEyebrow": "Editing item",
-            "editingTitle": "Edit schedule item",
+            "editingTitle": "Edit session",
             "editingSubtitle": "Update “{title}” and save your changes.",
             "startInPast": "The start time must be now or later.",
             "endBeforeStart": "The end time must be after the start time.",
@@ -2027,7 +1982,7 @@
             "cancel": "Cancel",
             "editSession": "Edit {title}",
             "deleteSession": "Delete {title}",
-            "readOnly": "This event is read-only. Schedule changes are paused until the event is active again.",
+            "readOnly": "This event is read-only. Changes are paused until the event is active again.",
             "deleteConfirm": "This can't be undone.",
             "mapPreview": "Map preview",
             "mapPreviewUnavailable": "Map preview isn't available for this link, but the location still opens in Google Maps.",
@@ -2036,8 +1991,8 @@
             "openInGoogleMaps": "Open in Google Maps",
             "openMap": "Open map for {title}",
             "emptyTitle": "No sessions yet",
-            "emptyBody": "Add the first item so guests can see the timeline.",
-            "emptyReadOnlyBody": "The schedule is empty, and new sessions can't be added while the event is read-only.",
+            "emptyBody": "Add the first session so guests can see the timeline.",
+            "emptyReadOnlyBody": "Nothing has been added, and new sessions can't be added while the event is read-only.",
             "sessionManagement": {
                 "title": "Event sessions",
                 "description": "Manage the ceremony and venue details shown to guests.",
@@ -2056,19 +2011,19 @@
                 "location": "Location",
                 "notSet": "Not set",
                 "missing": "No venue session has been added yet.",
-                "mainMissing": "No ceremony session yet. Add it to show it on the schedule.",
+                "mainMissing": "No ceremony session yet. Add it to show it here.",
                 "untitled": "Untitled",
                 "editNamed": "Edit {title}",
                 "addNamed": "Add {title}",
                 "deleteNamed": "Delete {title}",
-                "sessionLimitReached": "This event's plan allows up to {max} schedule sessions."
+                "sessionLimitReached": "This event's plan allows up to {max} sessions."
             }
         },
         "guest": {
-            "emptyTitle": "Schedule coming soon",
+            "emptyTitle": "Coming soon",
             "emptyBody": "The host hasn't published the run of show yet. Check back later."
         },
-        "moduleUnavailable": "Schedule is not available on this event's current plan."
+        "moduleUnavailable": "This isn't available on this event's current plan."
     },
     "HostOnboarding": {
         "welcome": {
@@ -2096,7 +2051,7 @@
             },
             "schedule": {
                 "title": "Schedule",
-                "edit": "Edit schedule"
+                "edit": "Add sessions"
             },
             "invitations": {
                 "title": "Invitations & QR codes",
@@ -2106,11 +2061,10 @@
         }
     },
     "GiftsPage": {
-        "accountTitle": "Gift account",
         "accountSubtitle": "Use these bank details if you would like to send a monetary gift.",
         "goBack": "Go back",
-        "unavailableTitle": "Gift account is not available",
-        "unavailableBody": "The gift account is not available on this event's current plan.",
+        "unavailableTitle": "Not available",
+        "unavailableBody": "This isn't available on this event's current plan.",
         "loadError": "Gift details could not be loaded.",
         "emptyTitle": "No gift account yet",
         "emptyHost": "Add bank details so members can send a gift.",
@@ -2134,36 +2088,35 @@
     "WishbookPage": {
         "deletedReadOnly": "Read-only. This event will be deleted on {date}.",
         "currentSubtitle": "Leave a message for the hosts.",
-        "currentPlaceholder": "Write your wish...",
+        "currentPlaceholder": "Write your message...",
         "goBack": "Go back",
-        "unavailableTitle": "Wishbook is not available",
-        "unavailableBody": "Wishbook is not available on this event's current plan.",
-        "title": "Wishbook",
+        "unavailableTitle": "Not available",
+        "unavailableBody": "This isn't available on this event's current plan.",
         "subtitle": "Leave a message for the hosts.",
         "messagePlaceholder": "Write your message...",
-        "messageAriaLabel": "Wishbook message",
-        "addToWishbook": "Add wish",
+        "messageAriaLabel": "Your message",
+        "addToWishbook": "Add message",
         "messageCount": "{count, plural, one {# Message} other {# Messages}}",
         "charactersLeft": "{current} / {max} characters",
-        "loading": "Loading wishes...",
-        "emptyTitle": "No wishes yet",
+        "loading": "Loading messages...",
+        "emptyTitle": "No messages yet",
         "emptyBody": "Be the first to leave one.",
-        "empty": "No wishes yet. Be the first to leave one.",
-        "emptyReadOnly": "No wishes yet.",
+        "empty": "No messages yet. Be the first to leave one.",
+        "emptyReadOnly": "No messages yet.",
         "loadMore": "Load more",
-        "frozenReadOnly": "The event is paused. Existing wishes remain visible, but new ones cannot be added until it is renewed.",
-        "draftReadOnly": "Wishes can be added after the event is published.",
-        "hostReadOnly": "As the host, you can view wishes but can't add your own.",
+        "frozenReadOnly": "The event is paused. Existing messages remain visible, but new ones cannot be added until it is renewed.",
+        "draftReadOnly": "Messages can be added after the event is published.",
+        "hostReadOnly": "As the host, you can view messages but can't add your own.",
         "book": {
             "title": "Your keepsake book",
-            "body": "Every wish, laid out as a printable-quality PDF book. Star the wishes you love most and they get a page of their own.",
+            "body": "Every message, laid out as a printable-quality PDF book. Star the messages you love most and they get a page of their own.",
             "create": "Create the book",
             "building": "This takes a minute or two. You can leave this page; if you started it, we'll let you know when it's ready.",
-            "ready": "Ready · {pages, plural, one {# page} other {# pages}} · {wishes, plural, one {# wish} other {# wishes}}",
+            "ready": "Ready · {pages, plural, one {# page} other {# pages}} · {wishes, plural, one {# message} other {# messages}}",
             "download": "Download",
-            "rebuild": "Rebuild with the latest wishes",
+            "rebuild": "Rebuild with the latest messages",
             "failed": "The book couldn't be built.",
-            "contentChanged": "A wish was removed since the book was made — create it again.",
+            "contentChanged": "A message was removed since the book was made — create it again.",
             "retry": "Try again",
             "editTexts": "Edit the book's text",
             "downloadFailed": "Couldn't get the download link. Please try again."
@@ -2183,19 +2136,17 @@
         "star": "Star for the book",
         "reportEntry": "Report",
         "delete": "Delete",
-        "deleteTitle": "Delete this wish?",
-        "deleteBody": "This removes the wish from the wishbook.",
+        "deleteTitle": "Delete this message?",
+        "deleteBody": "The message will be removed.",
         "cancel": "Cancel",
-        "wishSentTitle": "Your wish is on its way",
-        "wishSentBody": "Thank you for taking the time to write something so kind. It's tucked safely into the wishbook now, waiting to be read."
+        "wishSentTitle": "Your message is on its way",
+        "wishSentBody": "Thank you for taking the time to write something so kind. It's saved now, waiting to be read."
     },
     "PlaylistPage": {
         "backToFeed": "Back to feed",
-        "title": "Playlist",
         "cancel": "Cancel",
         "suggestASong": "Suggest a song",
         "suggest": "Suggest",
-        "heroEyebrow": "Playlist studio",
         "heroTitle": "Shape the night with the tracks that matter.",
         "heroBody": "Drop in a song, attach a Spotify or YouTube link if you have one, and let the room vote it upward. Clean, simple, and actually playable.",
         "heroStatSongs": "Songs",
@@ -2214,18 +2165,18 @@
         "artistPlaceholder": "ABBA",
         "youtubePlaceholder": "Paste a YouTube link",
         "spotifyPlaceholder": "Paste a Spotify track link",
-        "commentPlaceholder": "Why this one belongs on the playlist",
+        "commentPlaceholder": "Why this song belongs here",
         "urlHint": "Spotify and YouTube links embed automatically",
         "momentForSong": "Moment for song",
         "moreDetails": "More details",
-        "addToPlaylist": "Add to Playlist",
+        "addToPlaylist": "Add song",
         "submitFailed": "Couldn't add the song. Please try again.",
         "voteFailed": "Couldn't update your vote. Please try again.",
-        "moduleUnavailable": "Playlist is not available on this event's current plan.",
-        "readOnly": "This event is read-only. Playlist changes are paused.",
+        "moduleUnavailable": "This isn't available on this event's current plan.",
+        "readOnly": "This event is read-only. Song changes are paused.",
         "allSongs": "All songs",
-        "disabledTitle": "Playlist is not available",
-        "disabledBody": "Playlist is not available for this event.",
+        "disabledTitle": "Not available",
+        "disabledBody": "This isn't available for this event.",
         "moments": {
             "ceremony": "Ceremony",
             "cocktail": "Cocktail Hour",
@@ -2256,7 +2207,7 @@
         "topSongBadge": "Top {rank}",
         "up": "Up",
         "down": "Down",
-        "disabledUpgradeBody": "Playlist is not included in this event plan. Upgrade to {plans} to unlock song suggestions and votes."
+        "disabledUpgradeBody": "This isn't included in this event's plan. Upgrade to {plans} to unlock song suggestions and votes."
     },
     "QuizPage": {
         "backToTools": "Back",
@@ -2282,7 +2233,6 @@
     },
     "RSVPPage": {
         "goBack": "Go back",
-        "title": "RSVP",
         "onTheList": "You're on the list!",
         "rsvpReceived": "RSVP received",
         "declinedConfirmation": "Thank you for letting us know. You'll still have access to the StoryWall.",
@@ -2333,7 +2283,6 @@
         "eventTools": "Event tools",
         "toolsTitle": "Tools",
         "rsvpSummary": {
-            "title": "RSVP summary",
             "attending": "Attending",
             "declined": "Declined",
             "noResponse": "No response"
@@ -2355,7 +2304,6 @@
             }
         },
         "wishbookSummary": {
-            "title": "Wishbook",
             "count": "{count, plural, one {# message} other {# messages}}",
             "empty": "No messages yet"
         }
@@ -2596,6 +2544,7 @@
             "signOutConfirmBody": "Please confirm before leaving the admin area."
         },
         "tabs": {
+            "events": "Events",
             "orders": "Orders",
             "metrics": "Metrics",
             "funnel": "Growth",
@@ -2614,7 +2563,8 @@
             "reports": "Reports",
             "bugReports": "Bug reports",
             "errorEvents": "Errors",
-            "demoEvents": "Demo events"
+            "demoEvents": "Demo events",
+            "partnerCards": "Partner cards"
         },
         "demoEvents": {
             "title": "Demo events",
@@ -2924,7 +2874,208 @@
             "ref": "Ref",
             "lastUserId": "Last user ID"
         },
+        "events": {
+            "title": "Events",
+            "loading": "Loading events…",
+            "empty": "No events yet.",
+            "noResults": "No events match these filters.",
+            "count": "{count, plural, one {# event} other {# events}}",
+            "untitled": "Untitled event",
+            "openEvent": "Open {event}",
+            "noHost": "No host",
+            "noValue": "—",
+            "filters": {
+                "search": "Search events",
+                "searchPlaceholder": "Title, host email or event ID",
+                "status": "Status",
+                "restriction": "Restriction",
+                "planCode": "Plan code",
+                "any": "Any",
+                "suspended": "Suspended",
+                "notSuspended": "Not suspended",
+                "closed": "Closed",
+                "includeDeleted": "Include deleted",
+                "host": "Host: {name}",
+                "clearHost": "Show every host"
+            },
+            "columns": {
+                "event": "Event",
+                "host": "Primary host",
+                "plan": "Plan",
+                "dates": "Event date",
+                "created": "Created",
+                "state": "State"
+            },
+            "state": {
+                "ACTIVE": "Live",
+                "DRAFT": "Draft",
+                "SUSPENDED": "Suspended",
+                "CLOSED": "Closed",
+                "DELETED": "Deleted"
+            },
+            "visibility": {
+                "PUBLIC": "Public",
+                "PRIVATE": "Private"
+            },
+            "detail": {
+                "type": "Type",
+                "when": "Event date",
+                "coverageEnds": "Paid until",
+                "notSet": "Not set",
+                "record": "Record",
+                "visibility": "Visibility",
+                "timezone": "Time zone",
+                "created": "Created",
+                "deleted": "Deleted",
+                "suspend": "Suspend",
+                "close": "Close event"
+            },
+            "plan": {
+                "title": "Plan",
+                "none": "No plan",
+                "change": "Change",
+                "drawerTitle": "Change plan",
+                "loading": "Loading plans…",
+                "field": "New plan",
+                "hint": "The event keeps its dates. The host isn't charged or refunded.",
+                "noPlans": "No other plan can be given to this event type.",
+                "save": "Change plan"
+            },
+            "limits": {
+                "title": "Limits",
+                "storage": "Storage",
+                "members": "Members",
+                "ofLimit": "of {limit}",
+                "unlimited": "Unlimited",
+                "fromPlan": "Plan",
+                "purchased": "Bought",
+                "granted": "Free from admin",
+                "edit": "Adjust",
+                "now": "Limit now",
+                "after": "Limit after",
+                "breakdown": "{plan} plan + {granted} free",
+                "breakdownWithBought": "{plan} plan + {bought} bought + {granted} free"
+            },
+            "storageGrant": {
+                "title": "Free storage",
+                "field": "Free storage on top of the plan",
+                "hint": "Replaces the current {current}, it isn't added to it. 0 removes it.",
+                "invalid": "Enter a number of GB from 0 to 10240.",
+                "belowUsage": "The event already holds {used}. The limit can't go below that.",
+                "save": "Save storage"
+            },
+            "moduleConfig": {
+                "edit": "Edit",
+                "admin": "Admin",
+                "save": "Save",
+                "extra": "Extra on top of the plan",
+                "extraHint": "The plan gives {plan}. A plan upgrade still adds to it. 0 puts the plan's back.",
+                "extraInvalid": "Enter a whole number from 0 to 10,000.",
+                "planUnlimited": "The plan already has no limit, so an extra changes nothing until the plan sets one.",
+                "value": "Setting",
+                "followPlan": "Follow the plan ({value})",
+                "flagHint": "On or off stays until an admin puts it back, whatever the plan does."
+            },
+            "memberGrant": {
+                "title": "Extra members",
+                "field": "Free member slots on top of the plan",
+                "hint": "Replaces the current {current}, it isn't added to it. 0 removes them. Nobody is removed.",
+                "invalid": "Enter a whole number from 0 to 100000.",
+                "save": "Save members"
+            },
+            "reason": {
+                "label": "Reason",
+                "hint": "Kept in the audit log. The host doesn't see it.",
+                "invalid": "Add a reason of up to 500 characters."
+            },
+            "modules": {
+                "title": "Modules",
+                "empty": "This event type has no modules.",
+                "source": {
+                    "PLAN": "Plan",
+                    "ADDON": "Bought",
+                    "ADMIN_GRANT": "Admin",
+                    "NONE": "Not included"
+                },
+                "grant": "Turn on",
+                "revoke": "Take back",
+                "grantedOn": "Turned on by an admin, {date}",
+                "grantTitle": "Turn on {module}",
+                "grantHint": "It stays on, through plan changes, until you take it back. The host isn't charged.",
+                "grantSave": "Turn on",
+                "revokeTitle": "Take back {module}?",
+                "revokeBody": "It turns off unless the plan or a bought unlock still includes it.",
+                "revokeConfirm": "Take back"
+            },
+            "addons": {
+                "title": "Paid add-ons",
+                "empty": "No paid add-ons.",
+                "activated": "since {date}",
+                "remove": "Remove",
+                "removeTitle": "Remove {addon}?",
+                "removeBody": "The host loses what this add-on gives. Nothing is refunded.",
+                "removeConfirm": "Remove add-on"
+            },
+            "hosts": {
+                "title": "Hosts",
+                "primary": "Primary",
+                "noAccount": "No account",
+                "account": "Account"
+            },
+            "restriction": {
+                "suspendedOn": "Suspended on {date}",
+                "closedOn": "Closed on {date}",
+                "explanation": "Sent to the hosts",
+                "note": "Internal note",
+                "lift": "Lift suspension",
+                "liftTitle": "Lift the suspension?",
+                "liftBody": "The event comes back for everyone, and every host is emailed.",
+                "liftConfirm": "Lift suspension"
+            },
+            "operationalReason": {
+                "HOST_REQUEST": "The host asked for it",
+                "DUPLICATE": "Duplicate event",
+                "PAYMENT_ISSUE": "Payment issue",
+                "OTHER": "Other"
+            },
+            "suspend": {
+                "title": "Suspend this event?",
+                "body": "Guests can't see it and hosts can't change it until you lift the suspension. Every host is emailed this statement.",
+                "confirm": "Suspend event"
+            },
+            "close": {
+                "title": "Close this event?",
+                "body": "This can't be undone. The event is deleted after the retention period, and nothing is refunded. Every host is emailed.",
+                "confirm": "Close event",
+                "kind": "Why",
+                "kinds": {
+                    "POLICY": "A rule was broken",
+                    "OPERATIONAL": "Another reason"
+                },
+                "kindHints": {
+                    "POLICY": "The hosts get a statement naming the rule.",
+                    "OPERATIONAL": "The hosts get a plain notice with your reason."
+                }
+            },
+            "statement": {
+                "ground": "Ground",
+                "rule": "Rule",
+                "rulePlaceholder": "Choose a rule",
+                "operationalReason": "Reason",
+                "operationalReasonPlaceholder": "Choose a reason",
+                "explanation": "Explanation for the hosts",
+                "explanationCount": "{count} / 2000 characters, at least 20",
+                "illegalHint": "Name the law or legal provision.",
+                "note": "Internal note",
+                "noteHint": "Only admins see this."
+            }
+        },
         "accounts": {
+            "events": {
+                "title": "Events",
+                "empty": "Hosts no events.",
+                "viewAll": "View all {count}"
+            },
             "title": "Accounts",
             "subtitle": "Create accounts, control event access, and provision live events.",
             "searchLabel": "Search accounts",
@@ -3360,7 +3511,23 @@
             "imageReplace": "Replace image",
             "imageRemove": "Remove image",
             "imageRemoveTitle": "Remove the card image?",
-            "imageRemoveBody": "The card goes back to its default look."
+            "imageRemoveBody": "The card goes back to its default look.",
+            "moduleCopy": {
+                "title": "Module names",
+                "custom": "Custom",
+                "default": "Default",
+                "empty": "No modules are on for this event type.",
+                "loading": "Loading modules…",
+                "name": "Name",
+                "description": "Description",
+                "cardLabel": "Plan card line",
+                "cardLabelHint": "Leave empty to use the name.",
+                "english": "English",
+                "greek": "Greek",
+                "reset": "Reset to default",
+                "resetTitle": "Reset {module} to default?",
+                "resetBody": "The default name and description show again everywhere for this event type."
+            }
         },
         "landingCategories": {
             "notice": "Tabs of the landing page's pricing section. A tab with no plan to show is hidden there.",
@@ -3737,6 +3904,15 @@
             }
         },
         "errors": {
+            "storageGrantBelowUsage": "The event already holds more than that. Ask the host to free some space first.",
+            "moduleAlreadyGranted": "This module is already on for this event. Refresh the page.",
+            "moduleCopyIncomplete": "Fill in both English and Greek.",
+            "moduleCopyTooLong": "Too long. Shorten it and try again.",
+            "moduleCopyModuleUnsupported": "This module isn't on for this event type.",
+            "moduleNotAvailable": "This event type doesn't support that module.",
+            "eventAlreadySuspended": "This event is already suspended. Refresh the page.",
+            "eventAlreadyClosed": "This event is already closed. Refresh the page.",
+            "statementInvalid": "Check the reason and the explanation, then try again.",
             "planInUse": "This plan is in use. Archive it instead of deleting it.",
             "onlyDefault": "Make another plan the default for this scope first.",
             "generic": "Something went wrong. Please try again.",
@@ -3763,9 +3939,11 @@
             "reactionTypeLimitExceeded": "This event type already has five available reactions.",
             "reactionTypeNotUsable": "That reaction is no longer available. Refresh and choose another.",
             "collaborationEarningNotPayable": "One or more selected earnings are not payable. Refresh the ledger and choose accrued rows.",
+            "collaboratorPayoutDetailsIncomplete": "This partner's business or payout details are incomplete, or their VAT number isn't VIES-valid. Complete their business details and try again.",
             "methodNotAllowed": "That action is not available here. Refresh and try again.",
             "invalidModuleKey": "One of the selected modules isn't available for this event type. Remove it and try again.",
-            "orderNotManual": "Only manual orders can be settled here. Stripe orders settle through Stripe."
+            "orderNotManual": "Only manual orders can be settled here. Stripe orders settle through Stripe.",
+            "collaboratorBrandingIncomplete": "This partner's card is incomplete. Fill in every field and add a logo, a cover and a website, then try again."
         },
         "reactionTypes": {
             "title": "Reaction catalog",
@@ -4263,7 +4441,9 @@
                 "basis": "{percent}% of {amount}",
                 "select": "Select {event}, {date}",
                 "selectAll": "Select all accrued rows",
-                "selected": "{count} selected"
+                "selected": "{count} selected",
+                "activation": "Activation #{number}",
+                "payoutBlocked": "Missing for payout: {fields}"
             },
             "void": {
                 "reason": "Reason",
@@ -4282,6 +4462,163 @@
                 "action": "Reactivate",
                 "title": "Reactivate {name}?",
                 "body": "Their partner page and active codes work again."
+            },
+            "business": {
+                "title": "Business details",
+                "edit": "Edit details",
+                "drawerTitle": "Business details · {name}",
+                "notSet": "Not set",
+                "noCountry": "None",
+                "northernIreland": "Northern Ireland",
+                "billingEmailDefault": "Contact email",
+                "groups": {
+                    "invoicing": "Invoicing",
+                    "payout": "Payout",
+                    "contact": "Contact"
+                },
+                "fields": {
+                    "legalName": "Legal name",
+                    "countryCode": "Country",
+                    "vatNumber": "VAT number",
+                    "taxOffice": "Tax office",
+                    "address": "Address",
+                    "addressLine1": "Address",
+                    "addressLine2": "Address line 2",
+                    "city": "City",
+                    "postalCode": "Postal code",
+                    "payoutIban": "IBAN",
+                    "payoutAccountHolder": "Account holder",
+                    "viesStatus": "VIES check",
+                    "contactPersonName": "Contact person",
+                    "contactPhone": "Phone",
+                    "billingEmail": "Billing email",
+                    "websiteUrl": "Website"
+                },
+                "hints": {
+                    "taxOffice": "Required for Greek VAT numbers.",
+                    "contactPhone": "International format, e.g. +30 210 123 4567",
+                    "billingEmail": "Leave empty to use the contact email.",
+                    "websiteUrl": "Starts with https://"
+                },
+                "errors": {
+                    "websiteNotHttps": "Use an https:// address.",
+                    "phoneFormat": "Use international format, e.g. +30 210 123 4567.",
+                    "emailInvalid": "Enter a valid email.",
+                    "countryWithoutVat": "Add the VAT number, or clear the country.",
+                    "vatWithoutCountry": "Choose the country of this VAT number.",
+                    "taxOfficeRequired": "Required for Greek VAT numbers.",
+                    "ibanInvalid": "This IBAN is not valid.",
+                    "invalid": "Check this value.",
+                    "rejected": "Some details were not accepted. Check them and try again."
+                },
+                "vies": {
+                    "VALID": "Valid",
+                    "PENDING": "Pending",
+                    "INVALID": "Invalid",
+                    "none": "Not checked",
+                    "checkedAt": "Checked {date}",
+                    "recheck": "Re-check VIES",
+                    "failed": "VIES couldn't be checked. Try again later."
+                }
+            },
+            "tiers": {
+                "title": "Commission tiers",
+                "edit": "Edit tiers",
+                "drawerTitle": "Commission tiers · {name}",
+                "none": "No tiers. Each code earns its own commission.",
+                "activationsThisYear": "{count, plural, one {# activation} other {# activations}} this year",
+                "range": "{from}–{to}",
+                "rangeOpen": "{from}+",
+                "current": "Current",
+                "columns": {
+                    "activations": "Activations",
+                    "from": "From activation",
+                    "percent": "Commission %"
+                },
+                "fromLabel": "Tier {number}: from activation",
+                "percentLabel": "Tier {number}: commission %",
+                "add": "Add tier",
+                "remove": "Remove tier {number}",
+                "hint": "Replaces every code's commission, except 0% codes. Counts restart each calendar year. Changes apply to later activations only.",
+                "emptyEditor": "No tiers. Saving removes the schedule.",
+                "errors": {
+                    "tooMany": "Use at most 10 tiers.",
+                    "activationsWhole": "Activations must be whole numbers from 1.",
+                    "percentRange": "Commission must be a whole number from 1 to 100.",
+                    "firstStartsAtOne": "The first tier must start at activation 1.",
+                    "thresholdsIncrease": "Each tier must start after the one before it.",
+                    "ratesNeverDecrease": "A tier can't pay less than the one before it."
+                }
+            },
+            "feedCard": {
+                "title": "Feed card",
+                "edit": "Edit card",
+                "drawerTitle": "Feed card · {name}",
+                "missingValue": "Missing",
+                "missingWebsite": "Add a website in business details. The card links to it.",
+                "noRole": "Choose a role",
+                "status": {
+                    "on": "On",
+                    "off": "Off"
+                },
+                "groups": {
+                    "text": "Text",
+                    "images": "Images"
+                },
+                "fields": {
+                    "display_name": "Name on card",
+                    "role": "Role",
+                    "tagline_el": "Tagline (Greek)",
+                    "tagline_en": "Tagline (English)",
+                    "services_el": "Services (Greek)",
+                    "services_en": "Services (English)",
+                    "logo": "Logo",
+                    "cover": "Cover photo"
+                },
+                "roles": {
+                    "PLANNER": "Planner",
+                    "VENUE": "Venue",
+                    "PHOTOGRAPHER": "Photographer",
+                    "VIDEOGRAPHER": "Videographer",
+                    "DECORATION": "Decoration",
+                    "CATERING": "Catering",
+                    "MUSIC": "Music",
+                    "OTHER": "Other"
+                },
+                "images": {
+                    "choose": "Upload image",
+                    "replace": "Replace image",
+                    "remove": "Remove",
+                    "removeTitle": {
+                        "logo": "Remove the logo?",
+                        "cover": "Remove the cover photo?"
+                    },
+                    "removeBody": "The card can't be turned on without it.",
+                    "lockedHint": "Turn the card off to remove this image."
+                },
+                "enable": {
+                    "action": "Turn on",
+                    "title": "Turn on the feed card?",
+                    "body": "Only turn it on once the partner has agreed. Their card then shows on events that accepted it."
+                },
+                "disable": {
+                    "action": "Turn off",
+                    "title": "Turn off the feed card?",
+                    "body": "Their card disappears from every event."
+                },
+                "preview": {
+                    "title": "Preview",
+                    "language": "Card language",
+                    "locales": {
+                        "el": "Greek",
+                        "en": "English"
+                    },
+                    "placeholders": {
+                        "name": "Partner name",
+                        "tagline": "Tagline",
+                        "services": "Services"
+                    }
+                }
             }
         },
         "discountCodes": {
@@ -4338,6 +4675,60 @@
             "idSourceHint": "Copy the event ID from a refund request, or ask the host for the link to their event — the console has no event search.",
             "idInvalid": "That is not a valid event ID. It should look like 3fa85f64-5717-4562-b3fc-2c963f66afa6.",
             "eventIdPlaceholder": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        },
+        "feedCardVariants": {
+            "FEATURE_CARD": "Feature card",
+            "COMPACT_ROW": "Compact row",
+            "CREDIT": "Credit line"
+        },
+        "partnerCards": {
+            "title": "Partner cards",
+            "event": {
+                "title": "Event",
+                "idLabel": "Event id",
+                "lookup": "Look up",
+                "invalidId": "Enter a valid event id.",
+                "loading": "Loading…",
+                "none": "No partner linked.",
+                "fields": {
+                    "partner": "Partner",
+                    "showing": "Feed",
+                    "source": "Linked by",
+                    "design": "Card design",
+                    "accepted": "Host accepted"
+                },
+                "showing": {
+                    "yes": "Showing",
+                    "no": "Not showing"
+                },
+                "source": {
+                    "CODE": "Partner code",
+                    "ADMIN": "Admin"
+                },
+                "notAccepted": "Waiting for the host",
+                "choosePartner": "Choose a partner",
+                "noPartners": "No partner has a feed card turned on",
+                "link": "Link partner",
+                "replace": "Replace",
+                "remove": "Remove",
+                "removeTitle": "Remove the partner from this event?",
+                "removeBody": "Guests will stop seeing the card."
+            },
+            "report": {
+                "title": "Report",
+                "from": "From",
+                "to": "To",
+                "loading": "Loading…",
+                "columns": {
+                    "design": "Card design",
+                    "events": "Events",
+                    "cardSlots": "Cards in feeds",
+                    "clicks": "Taps",
+                    "clicksPerEvent": "Taps per event",
+                    "clicksPerCardSlot": "Taps per card"
+                },
+                "placement": "First card after post {firstAfter}, then every {every} posts."
+            }
         }
     },
     "FeedQuickAccessBar": {
@@ -4394,9 +4785,7 @@
         "inviteHeadline": "You're invited",
         "rsvpMessageLabel": "Message for the hosts",
         "rsvpAttendingConfirmation": "We can't wait to celebrate with you! You'll receive updates as the day approaches.",
-        "toolsSubtitle": "Everything you need to enjoy and participate in the event",
-        "toolsScheduleDescription": "Full timeline of events leading up to the big day",
-        "toolsPlaylistDescription": "Vote on songs and suggest tracks for the celebration"
+        "toolsSubtitle": "Everything you need to enjoy and participate in the event"
     },
     "Modules": {
         "posts": {
@@ -4405,11 +4794,11 @@
         },
         "rsvp": {
             "name": "RSVP",
-            "description": "Collect guest attendance, notes, seat counts, and session replies."
+            "description": "Guests say if they're coming and how many."
         },
         "playlist": {
             "name": "Playlist",
-            "description": "Guests can suggest songs and vote for the tracks they want to hear."
+            "description": "Guests suggest songs and vote for their favourites."
         },
         "stories": {
             "name": "Stories",
@@ -4417,23 +4806,27 @@
         },
         "gallery": {
             "name": "Gallery",
-            "description": "Guests can upload event photos to a separate gallery for the host."
+            "description": "Photos and videos from the event, in one place."
         },
         "wishlist": {
-            "name": "Wishlist",
-            "description": "Guests can view the host's gift account details to send a monetary gift."
+            "name": "Gift account",
+            "description": "The hosts' bank details for a monetary gift."
         },
         "wishbook": {
             "name": "Wishbook",
-            "description": "Guests can leave written wishes and messages for the host to keep."
+            "description": "Messages from guests for the hosts to keep."
         },
         "co_hosts": {
             "name": "Co-hosts",
             "description": "Invite co-hosts to help manage the event."
         },
+        "named_invites": {
+            "name": "Personal invitations",
+            "description": "Invitations sent to a guest by name and email."
+        },
         "schedule": {
             "name": "Schedule",
-            "description": "Plan the event timeline with schedule sections."
+            "description": "The event's timeline, session by session."
         },
         "member_roles": {
             "name": "Guest roles",
@@ -4463,33 +4856,31 @@
     },
     "GalleryPage": {
         "backToTools": "Back",
-        "title": "Gallery",
         "hostSubtitle": "Guest uploads are stored here without creating feed posts, so you can review and download them later.",
-        "guestSubtitle": "Share photos and videos from the celebration. Uploads are saved to the event gallery for the host.",
-        "downloadGallery": "Download gallery",
-        "downloadGalleryTitle": "Download gallery",
+        "downloadGallery": "Download all",
+        "downloadGalleryTitle": "Download all",
         "downloadGallerySubtitle": "Choose a version and download the archive parts one by one.",
-        "closeDownloadGallery": "Close download gallery",
+        "closeDownloadGallery": "Close download",
         "memberArchiveSubtitle": "Every photo and video from the event, in display quality.",
         "memberArchiveNotYet": "The download opens on {date}, a day after the event ends.",
         "memberArchivePreparing": "We're putting the download together. Check back in a little while.",
         "memberArchiveCheckAgain": "Check again",
-        "memberArchiveEmpty": "The gallery has no photos or videos.",
+        "memberArchiveEmpty": "There are no photos or videos.",
         "memberArchiveUnavailable": "The download isn't available for this event.",
-        "memberArchiveChanged": "The gallery changed since this opened, so the download is being rebuilt. Try again later.",
-        "memberArchiveUploadNote": "After the event, every member can download the whole gallery, including what you upload here.",
+        "memberArchiveChanged": "Photos or videos changed since this opened, so the download is being rebuilt. Try again later.",
+        "memberArchiveUploadNote": "After the event, every member can download all photos and videos, including what you upload here.",
         "selectPhotos": "Select",
         "selectAll": "Select all",
         "cancelSelection": "Cancel",
         "top": "Top",
         "photosSelected": "{count} selected",
         "downloadSelected": "Download {count}",
-        "selectionTooLarge": "A download of selected items is limited to {size}. Select fewer, or download the whole gallery.",
+        "selectionTooLarge": "A download of selected items is limited to {size}. Select fewer, or download everything.",
         "download": "Download",
         "selectMedia": "Select {filename}",
         "unselectMedia": "Unselect {filename}",
         "selectionDownloadFailed": "We couldn't download those files. Please try again.",
-        "moduleUnavailable": "Gallery is not available on this event's current plan.",
+        "moduleUnavailable": "This isn't available on this event's current plan.",
         "deletedReadOnly": "Read-only. This event will be deleted on {date}.",
         "uploadTitle": "Upload media",
         "uploadHint": "Choose up to {count} files at a time.",
@@ -4526,7 +4917,7 @@
         "deleteMediaFailed": "We couldn't delete this file. Please try again.",
         "reportMedia": "Report",
         "cancelDelete": "Cancel",
-        "archiveSummaryTitle": "Gallery summary",
+        "archiveSummaryTitle": "Summary",
         "archiveTotalsWithOriginals": "{originals} originals · {display} compressed",
         "archiveTotalsDisplayOnly": "{display} compressed",
         "displayVariant": "Compressed",
@@ -4538,7 +4929,7 @@
         "archivePartListTitle": "Parts",
         "archiveLoading": "Loading download details...",
         "archiveManifestFailed": "We couldn't load the download list. Please try again.",
-        "archiveManifestRefreshed": "The gallery changed. Please try again.",
+        "archiveManifestRefreshed": "Photos or videos changed. Please try again.",
         "archiveEmpty": "Nothing is ready to download yet.",
         "archivePartLabel": "Part {part} of {total}",
         "archivePartMeta": "{count} items · {size}",
@@ -4548,20 +4939,20 @@
         "libraryTitle": "Event photos",
         "photoCount": "{count} photos",
         "emptyTitle": "No photos or videos yet",
-        "guestSavedForHost": "Uploaded photos are saved privately to the event gallery for the host to review later.",
+        "guestSavedForHost": "Uploaded photos are saved privately for the host to review later.",
         "loadingMore": "Loading more…",
         "videoProcessing": "Processing video…",
         "videoFailed": "This video couldn't be processed."
     },
     "GalleryQrPage": {
-        "title": "Gallery QR",
+        "title": "Upload QR code",
         "back": "Back to feed",
-        "subtitle": "Anyone who scans this code can upload photos and videos straight to your gallery — no sign-in required.",
+        "subtitle": "Anyone who scans this code can upload photos and videos straight to the event — no sign-in required.",
         "permanentNote": "This code is set up for you and can't be deleted or replaced.",
         "temporarilyOff": "Uploads through this code are temporarily turned off. Existing photos and videos aren't affected.",
         "linkUnavailable": "This code isn't accepting uploads right now.",
         "missing": {
-            "body": "This event doesn't have a gallery upload code yet."
+            "body": "This event doesn't have a photo upload code yet."
         }
     },
     "InvitationsQrPage": {
@@ -4632,9 +5023,9 @@
         "reportOwnContent": "You can't report your own content.",
         "rateLimitedWithWait": "Too many requests. Try again in {seconds}s.",
         "rateLimitedWithWaitMinutes": "Too many requests. Try again in {minutes} min.",
-        "mediaArchiveDownloadsInProgress": "You already have two gallery downloads running. Start another once one finishes.",
-        "mediaArchiveDailyLimitReached": "This gallery has been downloaded as much as it can be for today. Try again later.",
-        "mediaArchiveDailyLimitReachedWithWait": "This gallery has been downloaded as much as it can be for today. Try again in {hours, plural, one {about an hour} other {about # hours}}.",
+        "mediaArchiveDownloadsInProgress": "You already have two downloads running. Start another once one finishes.",
+        "mediaArchiveDailyLimitReached": "This event has reached today's download limit. Try again later.",
+        "mediaArchiveDailyLimitReachedWithWait": "This event has reached today's download limit. Try again in {hours, plural, one {about an hour} other {about # hours}}.",
         "coHostInvitationAlreadyPending": "That address already has a co-host invitation waiting. Revoke it to send a new one.",
         "coHostInvitationsPendingLimit": "This event has as many co-host invitations waiting as it can hold. Revoke one, or wait for one to be accepted or expire.",
         "resourceBusy": "The server is busy right now. Try again in a moment.",
@@ -4669,6 +5060,7 @@
         "discountNotApplicableToUpgrade": "Codes can't be used on upgrades.",
         "collaborationAlreadyRedeemed": "This event already has another discount code.",
         "collaborationEarningNotPayable": "That earning cannot be marked paid.",
+        "collaboratorPayoutDetailsIncomplete": "A partner's business or payout details are incomplete.",
         "subscriptionAlreadyActive": "A subscription is already running for this event.",
         "subscriptionNotLive": "There was no active subscription to stop - we have refreshed this page.",
         "subscriptionCancelFailed": "We couldn't stop it just now, so the subscription is still running and will still be charged. Please try again in a moment.",
@@ -4707,7 +5099,7 @@
         "planInUse": "This plan is assigned to accounts or events, so it cannot be deleted.",
         "planIsOnlyDefault": "Set another default plan before changing this one.",
         "postEditNotAuthor": "Only the person who wrote this post can edit it. Hosts can pin, delete or report it.",
-        "memberArchiveNotEnabled": "Members of this event can't download the whole gallery.",
+        "memberArchiveNotEnabled": "Members of this event can't download all photos and videos.",
         "postMediaLimitExceeded": "This post already has the maximum number of photos.",
         "postPinNotHost": "Only hosts can pin posts.",
         "announcementNotHost": "Only hosts can post announcements.",
@@ -4722,7 +5114,7 @@
         "themeFontNotAssignable": "This font can't be used in a theme: it doesn't exist, it's archived, or it has no font file yet. Choose another font.",
         "themeFontKeyTaken": "A font with this key already exists. Choose a different key.",
         "themeFontConversionUnavailable": "Fonts in TTF or OTF format can't be converted right now. Upload a WOFF2 file, or try again later.",
-        "wishbookEmpty": "There are no wishes yet, so there is nothing to put in a book.",
+        "wishbookEmpty": "There are no messages yet, so there is nothing to put in a book.",
         "wishbookBookRendererUnavailable": "The book can't be created right now. Please try again later.",
         "landingCategoryTypeAssigned": "This event type is already in another landing category.",
         "coverageOptionPromoPriceInvalid": "The promo price must be above zero and below the duration's price, and only an initial duration can have one.",
@@ -4733,7 +5125,7 @@
         "accountPlansDisabled": "Account plan changes are currently disabled.",
         "invitationExhausted": "This invite link is full. Ask the host to raise its guest limit or send a new link.",
         "internalError": "Something went wrong on our side. Please try again.",
-        "eventScheduleLocked": "This event's schedule can no longer be changed.",
+        "eventScheduleLocked": "This event's dates can no longer be changed.",
         "eventModuleCompositionLocked": "Event modules can't be added, removed, or toggled after the event is created.",
         "eventVisibilityNotSupported": "Public events aren't supported yet. This event must stay private.",
         "eventTypeNotAvailable": "This event type isn't available yet.",
@@ -4754,7 +5146,7 @@
         "eventHostTransferNotPrimaryHost": "Only the primary host can transfer ownership.",
         "hostTransferWithdrawalOpen": "You can hand this event over once the refund period ends.",
         "hostTransferWithdrawalOpenFrom": "You can hand this event over from {date}.",
-        "qrMediaUploadDisabled": "The QR upload link is turned off for this event's gallery.",
+        "qrMediaUploadDisabled": "The QR upload link is turned off for this event.",
         "eventWithdrawn": "This event's deletion can't be cancelled — it was withdrawn and closed permanently.",
         "withdrawalTermsVersionStale": "These terms were updated. Review them again and try again.",
         "withdrawalRefused": "This event doesn't currently qualify for a withdrawal.",
@@ -4775,7 +5167,7 @@
         "memberRoleTextChanged": "The role changed since you opened this case. Check it and decide again.",
         "qrSharedLinkHostManaged": "This shared link is managed automatically.",
         "eventSessionMainLocationReadOnly": "This is the event's main session, so its location always matches the event's own.",
-        "eventSessionLimitReached": "This event's plan doesn't allow more schedule sessions.",
+        "eventSessionLimitReached": "This event's plan doesn't allow more sessions.",
         "eventSessionMainNotDeletable": "The ceremony session can't be deleted. Rename it instead.",
         "eventSessionMainAlreadyExists": "This event already has a ceremony session.",
         "eventCoHostLimitExceeded": "This event's plan doesn't allow more co-hosts.",
@@ -4811,7 +5203,9 @@
         "moderationCaseClosed": "This case has already been decided.",
         "noticeAlreadyHandled": "Another admin has already handled this notice.",
         "moderationMemberIsHost": "Hosts can't be removed from their event. Suspend the account instead.",
-        "moderationTargetProtected": "Admin accounts can't be suspended here."
+        "moderationTargetProtected": "Admin accounts can't be suspended here.",
+        "collaboratorBrandingIncomplete": "This partner's card is incomplete.",
+        "partnerBrandingNoticeOutdated": "The partner notice has changed. Please review it again."
     },
     "LandingPage": {
         "shell": {
@@ -5175,11 +5569,12 @@
             "storageUnlimited": "Unlimited storage",
             "mediaUnlimited": "Unlimited",
             "everythingIn": "Everything in {plan}",
-            "scheduleSessions": "{count, plural, one {Up to # schedule session} other {Up to # schedule sessions}}",
-            "scheduleSessionsUnlimited": "Unlimited schedule sessions",
+            "scheduleSessions": "{count, plural, one {up to # session} other {up to # sessions}}",
+            "scheduleSessionsUnlimited": "unlimited sessions",
             "coHosts": "{count, plural, one {Up to # co-host} other {Up to # co-hosts}}",
             "coHostsUnlimited": "Unlimited co-hosts",
-            "galleryWithQrUpload": "Gallery with QR upload",
+            "moduleWithDetail": "{label} · {detail}",
+            "qrUpload": "QR upload",
             "memberRoles": "{count, plural, one {# guest role ({roles})} other {# guest roles ({roles})}}",
             "memberRolesWithCustom": "{count, plural, one {# guest role ({roles}) + your own} other {# guest roles ({roles}) + your own}}",
             "memberRolesCustomOnly": "Custom guest roles"
@@ -5277,7 +5672,7 @@
             "COMMENT": "Report this comment to the platform team.",
             "STORY": "Report this story to the platform team.",
             "MEDIA": "Report this photo or video to the platform team.",
-            "WISHBOOK_ENTRY": "Report this wish to the platform team.",
+            "WISHBOOK_ENTRY": "Report this message to the platform team.",
             "PLAYLIST_SUGGESTION": "Report this song suggestion to the platform team."
         },
         "reason": "Reason",
@@ -5393,7 +5788,7 @@
     "qrLink": {
         "default": {
             "eventJoinLabel": "Event Invite",
-            "mediaUploadLabel": "Gallery Upload"
+            "mediaUploadLabel": "Photo upload"
         }
     },
     "GiftMode": {
@@ -5527,5 +5922,27 @@
         "STORY_DURATION_EXCEEDED": "It's too long for a story. Trim it and try again.",
         "VIDEO_RESOLUTION_EXCEEDED": "Its resolution is above 8K. Export it at 4K or lower and upload it again.",
         "TRANSCODE_TIMEOUT": "It took too long to process. Try a shorter or smaller video."
+    },
+    "PartnerCard": {
+        "visit": "Visit website",
+        "newTab": "(opens in a new tab)",
+        "roles": {
+            "PLANNER": "Planner",
+            "VENUE": "Venue",
+            "PHOTOGRAPHER": "Photographer",
+            "VIDEOGRAPHER": "Videographer",
+            "DECORATION": "Decoration",
+            "CATERING": "Catering",
+            "MUSIC": "Music",
+            "OTHER": "Partner"
+        },
+        "partner": "Partner"
+    },
+    "PartnerBrandingPrompt": {
+        "title": "Show {partner} on your event?",
+        "body": "{partner} is a StoryWall partner connected to your event. With your OK, a small card with their name, logo, a short description and a link to their website will appear between the posts in your event's feed, visible to your guests. Once you accept, the card stays for as long as your event is online. If you decline, nothing is shown. We don't share your details or your guests' details with {partner}.",
+        "accept": "Accept",
+        "decline": "No thanks",
+        "close": "Close"
     }
 }

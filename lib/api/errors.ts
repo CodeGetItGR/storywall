@@ -152,6 +152,8 @@ export const ERROR_CODES = {
     THEME_FONT_TOO_LARGE: 3053,
     THEME_FONT_MISSING_CHARACTERS: 3054,
     THEME_TITLE_COLOR_LOW_CONTRAST: 3055,
+    MODULE_COPY_INCOMPLETE: 3056,
+    MODULE_COPY_TOO_LONG: 3057,
     POST_EDIT_NOT_AUTHOR: 4022,
     MEMBER_ARCHIVE_NOT_ENABLED: 4023,
     DISCOUNT_NOT_APPLICABLE_TO_UPGRADE: 5076,
@@ -178,6 +180,7 @@ export const ERROR_CODES = {
     GIFT_HANDOVER_PENDING: 5093,
     WITHDRAWAL_CONFIRMATION_INVALID: 5094,
     WITHDRAWAL_PREVIEW_STALE: 5095,
+    COLLABORATOR_PAYOUT_DETAILS_INCOMPLETE: 5096,
     BETA_FEEDBACK_DISABLED: 5100,
     MEMBER_ROLE_INVALID_REQUEST: 3040,
     MEMBER_ROLE_UNKNOWN: 3041,
@@ -204,6 +207,11 @@ export const ERROR_CODES = {
     WISHBOOK_BOOK_RENDERER_UNAVAILABLE: 5149,
     LANDING_CATEGORY_TYPE_ASSIGNED: 5150,
     COVERAGE_OPTION_PROMO_PRICE_INVALID: 5151,
+    COLLABORATOR_BRANDING_INCOMPLETE: 5152,
+    PARTNER_BRANDING_NOTICE_OUTDATED: 5153,
+    ADMIN_STORAGE_GRANT_BELOW_USAGE: 5154,
+    MODULE_ALREADY_GRANTED: 5155,
+    MODULE_COPY_MODULE_UNSUPPORTED: 5156,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the
@@ -253,6 +261,16 @@ export function getQuotaExceededDetails(error: unknown): QuotaExceededDetails | 
         return error.problem.details;
     }
     return undefined;
+}
+
+// 3056/3057/5156 name the module copy field (and locale) the backend refused.
+export function getModuleCopyErrorTarget(error: unknown): { field: string; locale?: string } | undefined {
+    if (!(error instanceof ApiError)) return undefined;
+    const details = error.problem?.details;
+    if (typeof details !== 'object' || details === null || !('field' in details)) return undefined;
+    const { field, locale } = details as { field: unknown; locale?: unknown };
+    if (typeof field !== 'string') return undefined;
+    return { field, locale: typeof locale === 'string' ? locale : undefined };
 }
 
 // 5081 carries the moment the last withdrawal window closes.

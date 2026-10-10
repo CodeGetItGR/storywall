@@ -1,18 +1,18 @@
 import { useTranslations } from 'next-intl';
 
-import type { EventHostResponseDto, PlanTierResponseDto } from '@/lib/api/types';
+import type { EventHostResponseDto, EventModuleResponseDto, PlanTierResponseDto } from '@/lib/api/types';
 import { coHostCapacity, planModuleCount } from '@/lib/planModuleConfig';
 
-// The event's co-host cap from its plan, plus the notice to show once it is
-// reached. No plan (archived, not public) means no cap here; the server's 409
-// still applies.
+// The event's co-host cap (its module config, else its plan), plus the notice to show once it is
+// reached. Neither (archived, not public plan) means no cap here; the server's 409 still applies.
 export function useCoHostCapacity(
     hosts: EventHostResponseDto[],
     currentPlan: PlanTierResponseDto | undefined,
     nextPlan: PlanTierResponseDto | undefined,
+    modules: EventModuleResponseDto[] | undefined,
 ) {
     const t = useTranslations('ManagePage.invitations.coHosts');
-    const capacity = coHostCapacity(hosts, currentPlan);
+    const capacity = coHostCapacity(hosts, currentPlan, modules);
     const nextLimit = planModuleCount(nextPlan, 'co_hosts', 'maxCoHosts');
     const upgradeRaisesLimit = nextPlan !== undefined && (nextLimit === null || (capacity.limit !== null && nextLimit > capacity.limit));
 
