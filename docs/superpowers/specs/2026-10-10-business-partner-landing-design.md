@@ -26,6 +26,8 @@ Main traffic source at launch is outreach (Instagram DMs, email, print), not org
 | Address | Subfolder on the main origin. `business.storywall.gr` is a 308 short link only. |
 | Short link target | The Greek page. |
 | Language hint | A small dismissible banner, never a modal or redirect. |
+| Partners abroad | Accepted anywhere, paid in EUR. |
+| English page | Written for international professionals, not translated from Greek. Neutral English. Has a destination weddings section (not limited to Greece). |
 | Apply backend | A new Spring endpoint. Applications are stored, not emailed. |
 
 ## Routes
@@ -68,15 +70,21 @@ What the research showed (2026-10-10):
 | Secondary | ψηφιακό άλμπουμ γάμου | "What your clients get" |
 | Partner intent | συνεργασία, πρόγραμμα συνεργατών, προμήθεια | "What you get" h2, FAQ |
 
-**English page (`/for-business`) — global English plus the Greek diaspora**
+**English page (`/for-business`) — international wedding professionals anywhere**
+
+The English page is not a version of the Greek page. It is written for wedding professionals outside Greece and the way they search, talk and sell (see "English page: international audience" below).
 
 | Role | Keyword | Where it goes |
 | --- | --- | --- |
-| Primary | guest photo sharing for wedding planners and venues | title, h1 wording, intro |
+| Primary | wedding photo sharing app for vendors / guest photo sharing for wedding planners and venues | title, h1 wording, intro |
 | Secondary | QR code wedding photo sharing | "What your clients get" |
-| Secondary | wedding vendor referral program / partner program | "What you get" h2, FAQ |
-| Secondary | christening / baptism photo sharing | intro, "What your clients get" |
-| Long tail | how do wedding planners collect guest photos | FAQ question |
+| Secondary | disposable camera alternative for weddings | "What your clients get" |
+| Secondary | live photo wall for weddings | "What your clients get" |
+| Secondary | wedding vendor referral program / affiliate program for wedding planners | "What you get" h2, FAQ |
+| Secondary | destination wedding photo sharing | destination weddings section |
+| Secondary | baptism and christening photo sharing | "What your clients get", secondary to weddings |
+| Long tail | how to collect guest photos at a wedding | FAQ question |
+| Long tail | can guests upload photos without an app | FAQ question |
 | Long tail | does guest photo sharing compete with the wedding photographer | FAQ question |
 
 Rules:
@@ -129,9 +137,10 @@ Every section gets a JSX comment marking its boundary. Copy stays short and plai
    - you earn on every event
    - your brand appears in the event feed (screenshot of the partner card)
    - a portal shows your earnings
+3b. **Destination weddings (English page only):** see "English page: international audience".
 4. **Founding partners:** "X of 20 spots left" from Spring, plus "one free event to try with a client". Fallback and sold-out rules are below.
 5. **How it works:** 4 steps: apply → we set up your code → share it with clients → earn.
-6. **Who it's for:** planners, reception venues, photographers, videographers, decoration, catering, music. These match `PartnerRole` minus `OTHER`, which the form still accepts.
+6. **Who it's for:** planners, venues (reception venues on the Greek page), photographers, videographers, decoration, catering, music. These match `PartnerRole` minus `OTHER`, which the form still accepts.
 7. **FAQ:** at least these questions:
    - What does it cost? (nothing)
    - How and when do I get paid?
@@ -140,6 +149,40 @@ Every section gets a JSX comment marking its boundary. Copy stays short and plai
    - Which events does it cover? (weddings, baptisms)
    - What happens after I apply?
 8. **Apply form (`#apply`):** see below.
+
+## English page: international audience
+
+The two pages share the same structure and components, but not their copy, emphasis or FAQ. Partners anywhere in the world can join and are paid in EUR.
+
+**Wording**
+- Neutral international English. Where the US and UK term differ, use both once and then the shorter one: "vendors and suppliers", "baptisms and christenings". US spelling where a word has to pick one. No country-specific idioms.
+- Weddings lead. Baptisms and christenings appear as a secondary use, not a headline. In Greece they are a main market; abroad they are not.
+- No Greek wedding concepts (κέντρα δεξιώσεων, very large guest lists, church plus reception as the default).
+
+**What foreign professionals care about, and where the page answers it**
+
+| Concern | Answered in |
+| --- | --- |
+| A better experience for their couples, a reason to choose them | Hero, "What your clients get" |
+| Replacing disposable cameras and chasing guests for photos afterwards | "What your clients get" |
+| Extra income from referrals | "What you get" |
+| Being seen by guests, who are future clients | "What you get" (the partner card in the feed) |
+| Guests from many places, no app to install | Destination weddings section |
+| Joining and getting paid from outside Greece | FAQ |
+
+**Destination weddings section (English page only)**
+- Placed after "What you get". For planners and venues running destination weddings anywhere, not only in Greece.
+- Message: guests travel from many places; everyone scans one QR code, needs no app, and every photo ends up in one place for the couple.
+- It does not claim support for languages the app does not have (the app is English and Greek).
+
+**FAQ differences**
+- English page adds: "Can I join from outside Greece?" (yes) and "How do I get paid?" (in EUR). The payout method stated must match how admin pays collaborators today; confirm it with the business owner before the copy is final.
+- English page adds: "Can guests upload without an app?" (yes).
+- English page leaves out Greece-specific questions.
+
+**Greek page**
+- Written for Greek professionals: reception venues, the planner and venue relationship, weddings and baptisms as equal headlines.
+- No destination weddings section by default. A Greek line for businesses that serve foreign couples can be added later if outreach shows a need.
 
 ### Founding block states
 
@@ -159,6 +202,7 @@ Visible fields:
 - role (select: `PartnerRole`)
 - email
 - website or Instagram (one field, URL or `@handle`)
+- phone (optional)
 - consent checkbox linking to the privacy policy
 
 Hidden fields:
@@ -207,6 +251,7 @@ export interface PartnerApplicationRequestDto {
     role: PartnerRole;
     email: string;
     link: string;          // website URL or @handle
+    phone: string | null;  // optional
     locale: Locale;
     consent: true;
     utmSource: string | null;
