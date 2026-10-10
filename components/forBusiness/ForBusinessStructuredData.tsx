@@ -48,7 +48,7 @@ export async function ForBusinessStructuredData() {
     };
 
     // JSON.stringify output is escaped so a `</script>` in copy can't close the tag.
-    const json = JSON.stringify(graph).replace(/</g, '<');
+    const json = JSON.stringify(graph).replace(/</g, '\\u003c');
 
     return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: json }} />;
 }
