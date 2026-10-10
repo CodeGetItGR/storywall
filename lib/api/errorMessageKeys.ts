@@ -74,6 +74,7 @@ export type ApiErrorMessageKey =
     | 'themePresetEventTypesInvalid'
     | 'themeBackgroundLowContrast'
     | 'contentLengthRequired'
+    | 'rsvpDeadlineAfterStart'
     | 'notEventMember'
     | 'notEventHost'
     | 'reportMemberNotHost'
@@ -543,6 +544,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.THEME_PRESET_EVENT_TYPES_INVALID]: 'themePresetEventTypesInvalid',
     [ERROR_CODES.THEME_BACKGROUND_LOW_CONTRAST]: 'themeBackgroundLowContrast',
     [ERROR_CODES.CONTENT_LENGTH_REQUIRED]: 'contentLengthRequired',
+    [ERROR_CODES.RSVP_DEADLINE_AFTER_START]: 'rsvpDeadlineAfterStart',
     [ERROR_CODES.NOT_EVENT_MEMBER]: 'notEventMember',
     [ERROR_CODES.NOT_EVENT_HOST]: 'notEventHost',
     [ERROR_CODES.REPORT_MEMBER_NOT_HOST]: 'reportMemberNotHost',

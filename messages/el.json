@@ -3330,7 +3330,13 @@
                 "eventId": "ID εκδήλωσης",
                 "another": "Δημιουργία άλλης",
                 "done": "Τέλος",
-                "unnamedHost": "Λογαριασμός χωρίς όνομα"
+                "unnamedHost": "Λογαριασμός χωρίς όνομα",
+                "description": "Περιγραφή",
+                "rsvpDeadline": "Προθεσμία RSVP",
+                "rsvpDeadlineAfterStart": "Η προθεσμία RSVP πρέπει να είναι πριν την έναρξη της εκδήλωσης.",
+                "reviewTheme": "Θέμα",
+                "reviewRsvpDeadline": "Προθεσμία RSVP",
+                "reviewDescription": "Περιγραφή"
             },
             "email": {
                 "title": "Email",
@@ -5209,6 +5215,7 @@
         "themePresetEventTypesInvalid": "Επιλέξτε τουλάχιστον έναν τύπο εκδήλωσης που υποστηρίζει θέματα.",
         "themeBackgroundLowContrast": "Το φόντο είναι πολύ σκούρο για το κείμενο. Επιλέξτε πιο ανοιχτό χρώμα.",
         "contentLengthRequired": "Δεν μπορέσαμε να διαβάσουμε το αρχείο. Δοκιμάστε ξανά.",
+        "rsvpDeadlineAfterStart": "Η προθεσμία RSVP πρέπει να είναι πριν την έναρξη της εκδήλωσης.",
         "notEventMember": "Δεν είστε μέλος αυτής της εκδήλωσης.",
         "notEventHost": "Μόνο οι διοργανωτές της εκδήλωσης μπορούν να το κάνουν.",
         "reportMemberNotHost": "Μόνο οι διοργανωτές μπορούν να αναφέρουν μέλος.",

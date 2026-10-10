@@ -3202,7 +3202,13 @@
                 "eventId": "Event ID",
                 "another": "Provision another",
                 "done": "Done",
-                "unnamedHost": "Unnamed account"
+                "unnamedHost": "Unnamed account",
+                "description": "Description",
+                "rsvpDeadline": "RSVP deadline",
+                "rsvpDeadlineAfterStart": "The RSVP deadline must be before the event starts.",
+                "reviewTheme": "Theme",
+                "reviewRsvpDeadline": "RSVP deadline",
+                "reviewDescription": "Description"
             },
             "email": {
                 "title": "Email",
@@ -5170,6 +5176,7 @@
         "themePresetEventTypesInvalid": "Choose at least one event type that can have themes.",
         "themeBackgroundLowContrast": "The background is too dark for the text. Choose a lighter colour.",
         "contentLengthRequired": "The upload couldn't be read. Try again.",
+        "rsvpDeadlineAfterStart": "The RSVP deadline must be before the event starts.",
         "notEventMember": "You're not a member of this event.",
         "notEventHost": "Only the event's hosts can do this.",
         "reportMemberNotHost": "Only hosts can report a member.",
