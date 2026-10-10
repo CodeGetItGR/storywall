@@ -38,6 +38,10 @@ export default function CheckoutSuccessPage() {
             (!targetPlanTierCode || billing.data.planTierCode === targetPlanTierCode),
         [billing.data, orderId, targetPlanTierCode],
     );
+    const paidOrder = useMemo(
+        () => (paid ? (billing.data?.orders.find((order) => order.id === orderId) ?? null) : null),
+        [billing.data, orderId, paid],
+    );
     useEffect(() => {
         const timer = window.setTimeout(() => setTimedOut(true), 30000);
         return () => window.clearTimeout(timer);
@@ -88,7 +92,7 @@ export default function CheckoutSuccessPage() {
             </div>
             {!paid && isDraftEvent && <p className="mt-5 text-sm leading-relaxed text-ink-muted">{t('draftProcessingNote')}</p>}
             {/* Ad conversion tag, only with the visitor's consent */}
-            <GoogleAdsTag />
+            <GoogleAdsTag purchase={paidOrder} />
         </main>
     );
 }
