@@ -29,7 +29,7 @@ export function useForBusinessApplication() {
 
             try {
                 const body = applicationRequestFromFormData(new FormData(event.currentTarget), { locale, search: window.location.search });
-                await api.post<PartnerApplicationResponseDto>(endpoints.partnerProgram.applications, body);
+                await api.publicPost<PartnerApplicationResponseDto>(endpoints.partnerProgram.applications, body);
                 setIsSent(true);
             } catch (submitError) {
                 setError(toApplicationError(submitError));

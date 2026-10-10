@@ -8,7 +8,7 @@ import { ApiError } from '@/lib/api/client';
 const post = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/api/client', async (importOriginal) => {
     const actual = await importOriginal<typeof import('@/lib/api/client')>();
-    return { ...actual, api: { ...actual.api, post: (...args: unknown[]) => post(...args) } };
+    return { ...actual, api: { ...actual.api, publicPost: (...args: unknown[]) => post(...args) } };
 });
 vi.mock('next-intl', () => ({ useLocale: () => 'en' }));
 
