@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
 import { ErrorSourcePill } from '@/components/admin/betaFeedback/ErrorSourcePill';
+import { ErrorStatusPill } from '@/components/admin/betaFeedback/ErrorStatusPill';
 import { firstLine } from '@/lib/adminBetaFeedback';
 import type { ErrorEventResponseDto } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
@@ -32,6 +33,7 @@ export function ErrorEventsTable({
                     <tr className="border-b border-border text-left text-[11px] font-bold tracking-wide text-ink-faint uppercase">
                         <th className="px-5 py-3 font-bold">{t('columns.lastSeen')}</th>
                         <th className="px-3 py-3 font-bold">{t('columns.source')}</th>
+                        <th className="px-3 py-3 font-bold">{t('columns.status')}</th>
                         <th className="px-3 py-3 font-bold">{t('columns.error')}</th>
                         <th className="px-3 py-3 text-right font-bold">{t('columns.count')}</th>
                         <th className="px-5 py-3 font-bold">{t('columns.ref')}</th>
@@ -45,6 +47,9 @@ export function ErrorEventsTable({
                             </td>
                             <td className="px-3 py-3.5">
                                 <ErrorSourcePill source={event.source} />
+                            </td>
+                            <td className="px-3 py-3.5 font-mono text-xs text-ink-faint">
+                                {event.httpStatus !== null ? <ErrorStatusPill status={event.httpStatus} /> : '—'}
                             </td>
                             <td className="px-3 py-3.5">
                                 <button
