@@ -44,7 +44,7 @@ export default function HeOrShePage() {
             {view ? (
                 <div className="space-y-10">
                     {/* Guess */}
-                    <GuessSection eventId={page.eventId} view={view} revealOn={page.revealOn} />
+                    <GuessSection eventId={page.eventId} view={view} closesOn={page.closesOn} />
 
                     {/* Host */}
                     {page.isHost && <HostSection eventId={page.eventId} view={view} results={page.results.data} />}

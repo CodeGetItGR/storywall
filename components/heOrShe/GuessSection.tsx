@@ -3,25 +3,24 @@
 import { useTranslations } from 'next-intl';
 
 import { GuessForm } from '@/components/heOrShe/GuessForm';
-import { RevealedResult } from '@/components/heOrShe/RevealedResult';
 import { TallyBar } from '@/components/heOrShe/TallyBar';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useHeOrSheGuessForm } from '@/hooks/useHeOrSheGuessForm';
 import type { HeOrSheViewDto } from '@/lib/api/types';
 
-/** What everyone sees, hosts included: the form, or the tally and thanks, or the result. */
-export function GuessSection({ eventId, view, revealOn }: { eventId: string; view: HeOrSheViewDto; revealOn: string | null }) {
+/** What everyone sees, hosts included: the form, or the tally and thanks. */
+export function GuessSection({ eventId, view, closesOn }: { eventId: string; view: HeOrSheViewDto; closesOn: string | null }) {
     const t = useTranslations('HeOrShePage');
     const toErrorMessage = useApiErrorMessage();
     const form = useHeOrSheGuessForm(eventId, view);
 
     return (
         <section className="space-y-6">
-            {/* Result */}
-            {view.status === 'REVEALED' && view.result && <RevealedResult result={view.result} />}
+            {/* Closing time */}
+            {view.status === 'OPEN' && closesOn && <p className="text-center text-sm text-ink-muted">{t('closesOn', { date: closesOn })}</p>}
 
-            {/* Reveal time */}
-            {view.status === 'OPEN' && revealOn && <p className="text-center text-sm text-ink-muted">{t('revealOn', { date: revealOn })}</p>}
+            {/* Closed */}
+            {view.status === 'CLOSED' && <p className="text-center text-base font-semibold text-ink">{t('closed')}</p>}
 
             {/* Form */}
             {form.editing ? (
@@ -41,7 +40,7 @@ export function GuessSection({ eventId, view, revealOn }: { eventId: string; vie
                 view.status === 'OPEN' && !form.answered && <p className="text-center text-sm text-ink-muted">{t('notOpen')}</p>
             )}
 
-            {/* Tally: the server sends it only to hosts, to members who guessed, and after the reveal */}
+            {/* Tally: the server sends it only to hosts, to members who voted, and once voting closes */}
             {view.tally && <TallyBar tally={view.tally} />}
 
             {/* Thanks */}
