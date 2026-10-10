@@ -1,10 +1,12 @@
 import Link from 'next/link';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { CookieSettingsLink } from '@/components/consent/CookieSettingsLink';
 import { LandingMotionToggle } from '@/components/landing/LandingMotionToggle';
 import { LandingNewsletter } from '@/components/landing/LandingNewsletter';
+import type { Locale } from '@/i18n/config';
+import { getForBusinessPath } from '@/i18n/publicLocale';
 import { routes } from '@/lib/routes';
 
 // Every in-page anchor here must match an id rendered by a landing section.
@@ -29,8 +31,11 @@ const LEGAL_LINKS = [
 const COLUMN_HEADING = 'mb-5.5 text-[9px] font-black tracking-[0.16em] text-white/48';
 const COLUMN_ITEM = 'py-1.5 text-[13px] leading-[1.35] text-white';
 
-export async function LandingFooter() {
+// anchorBase prefixes the in-page anchors when the footer renders on a page
+// other than the landing (e.g. '/el' turns '#faq' into '/el#faq').
+export async function LandingFooter({ anchorBase = '', topHref = TOP_HREF }: { anchorBase?: string; topHref?: string } = {}) {
     const t = await getTranslations('LandingPage.footer');
+    const locale = (await getLocale()) as Locale;
     // Social profiles have no destinations yet, so their labels render as plain
     // text rather than dead links.
     const socialLabels = t.raw('socialLinks') as string[];
@@ -66,12 +71,18 @@ export async function LandingFooter() {
                     {EXPLORE_LINKS.map(({ key, href }) => (
                         <a
                             className={`${COLUMN_ITEM} no-underline transition-[opacity,transform] duration-250 ease-[ease] hover:translate-x-0.75 hover:opacity-[0.62] motion-reduce:transition-none`}
-                            href={href}
+                            href={`${anchorBase}${href}`}
                             key={key}
                         >
                             {t(`exploreLinks.${key}`)}
                         </a>
                     ))}
+                    <a
+                        className={`${COLUMN_ITEM} no-underline transition-[opacity,transform] duration-250 ease-[ease] hover:translate-x-0.75 hover:opacity-[0.62] motion-reduce:transition-none`}
+                        href={getForBusinessPath(locale)}
+                    >
+                        {t('exploreLinks.forBusiness')}
+                    </a>
                 </div>
                 {/* Social */}
                 <div className="flex flex-col items-start">
@@ -104,7 +115,7 @@ export async function LandingFooter() {
                     ))}
                     <CookieSettingsLink className="text-white/62 hover:text-white" />
                 </div>
-                <a className="justify-self-end text-white no-underline max-[760px]:col-start-2 max-[760px]:row-start-1" href={TOP_HREF}>
+                <a className="justify-self-end text-white no-underline max-[760px]:col-start-2 max-[760px]:row-start-1" href={topHref}>
                     {t('backToTop')} ↑
                 </a>
             </div>
