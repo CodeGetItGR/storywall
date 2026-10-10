@@ -1,11 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useLocale } from 'next-intl';
 
 import { useHeOrShe, useSendHeOrSheAnswers } from '@/hooks/useHeOrShe';
 import type { HeOrSheValue } from '@/lib/api/types';
-import { formatDate } from '@/lib/datetime';
 import { routes } from '@/lib/routes';
 import { useContentAccessMode } from '@/providers/EventProvider';
 
@@ -15,12 +13,12 @@ import { useContentAccessMode } from '@/providers/EventProvider';
  */
 export function useHeOrSheFeedPrompt(eventId: string, enabled: boolean) {
     const router = useRouter();
-    const locale = useLocale();
     // The public demo's mock backend has no Boy or Girl? handlers (v1).
     const isDemoVisitor = useContentAccessMode() === 'demoVisitor';
     const view = useHeOrShe(enabled && !isDemoVisitor ? eventId : null).data;
     const send = useSendHeOrSheAnswers(eventId);
 
+    const revealTime = view?.revealAt ? Date.parse(view.revealAt) : Number.NaN;
     const visible = Boolean(view && view.status === 'OPEN' && view.canGuess && view.myGuess === null);
 
     async function guess(value: HeOrSheValue) {
@@ -38,7 +36,8 @@ export function useHeOrSheFeedPrompt(eventId: string, enabled: boolean) {
 
     return {
         visible,
-        revealOn: view?.revealAt ? formatDate(locale, view.revealAt, { dateStyle: 'medium', timeStyle: 'short' }) : null,
+        // Epoch ms of the scheduled reveal, for the countdown; null when the host reveals by hand.
+        revealTime: Number.isNaN(revealTime) ? null : revealTime,
         isSending: send.isPending,
         error: send.error,
         guess,

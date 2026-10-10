@@ -1,9 +1,11 @@
 'use client';
 
-import { Baby } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { PiBalloonFill } from 'react-icons/pi';
 
-import { GuessButtons } from '@/components/heOrShe/GuessButtons';
+import { HeOrShePromptChoice } from '@/components/feed/HeOrShePromptChoice';
+import { HeOrSheRevealCountdown } from '@/components/feed/HeOrSheRevealCountdown';
+import { LightRay } from '@/components/feed/LightRay';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { HE_OR_SHE_MODULE } from '@/hooks/useHeOrShe';
 import { useHeOrSheFeedPrompt } from '@/hooks/useHeOrSheFeedPrompt';
@@ -20,23 +22,36 @@ export function HeOrShePromptCard({ eventId, eventType, enabled }: { eventId: st
     if (!prompt.visible) return null;
 
     return (
-        <article className="border-b border-event-card-line bg-event-card px-4 pt-5 pb-6">
-            {/* Header */}
-            <div className="mb-5 flex flex-col items-center gap-1 text-center">
-                <Baby className="h-6 w-6 text-sky-500" aria-hidden="true" />
-                <h2 className="event-heading text-2xl font-bold text-balance text-event-title">{title}</h2>
-                {prompt.revealOn && <p className="text-sm text-ink-muted">{t('revealOn', { date: prompt.revealOn })}</p>}
+        <article className="p-2">
+            <div className="@container relative isolate overflow-hidden rounded-2xl bg-linear-to-br from-sky-100 via-white to-pink-100 px-5 pt-7 pb-6 shadow-[0_10px_30px_rgba(36,31,26,0.08)] ring-1 ring-white/80">
+                {/* Decoration */}
+                <LightRay />
+                <PiBalloonFill className="he-or-she-balloon pointer-events-none absolute top-4 left-4 -z-10 h-12 w-12 text-sky-300/45" aria-hidden="true" />
+                <PiBalloonFill
+                    className="he-or-she-balloon pointer-events-none absolute right-5 bottom-16 -z-10 h-14 w-14 text-pink-300/45 [animation-delay:-3s]"
+                    aria-hidden="true"
+                />
+
+                {/* Header */}
+                <div className="flex flex-col items-center gap-4 text-center">
+                    <h2 className="event-heading alegreya-light text-4xl leading-tight text-balance text-ink">{title}</h2>
+                    {prompt.revealTime !== null && <HeOrSheRevealCountdown time={prompt.revealTime} />}
+                </div>
+
+                {/* Guess */}
+                <div role="group" aria-label={t('yourGuess')} className="mt-6 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                    <HeOrShePromptChoice value="HE" label={t('he')} disabled={prompt.isSending} onChooseAction={prompt.guess} />
+                    <span className="alegreya text-sm text-ink-muted italic">{t('or')}</span>
+                    <HeOrShePromptChoice value="SHE" label={t('she')} disabled={prompt.isSending} onChooseAction={prompt.guess} />
+                </div>
+
+                {/* Error */}
+                {prompt.error && (
+                    <p role="alert" className="mt-3 text-center text-xs text-rose-600">
+                        {toErrorMessage(prompt.error)}
+                    </p>
+                )}
             </div>
-
-            {/* Guess */}
-            <GuessButtons value={null} onChangeAction={prompt.guess} disabled={prompt.isSending} size="sm" label={t('yourGuess')} />
-
-            {/* Error */}
-            {prompt.error && (
-                <p role="alert" className="mt-3 text-center text-xs text-rose-600">
-                    {toErrorMessage(prompt.error)}
-                </p>
-            )}
         </article>
     );
 }

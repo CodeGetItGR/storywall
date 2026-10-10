@@ -70,11 +70,17 @@ describe('HeOrShePromptCard', () => {
         await vi.waitFor(() => expect(push).toHaveBeenCalledWith(expect.stringContaining('/tools/he-or-she')));
     });
 
-    it('shows the reveal time when there is one', () => {
-        current = view({ revealAt: '2026-10-12T15:00:00Z' });
+    it('counts down to the reveal when there is a reveal time', () => {
+        current = view({ revealAt: new Date(Date.now() + 2 * 86_400_000).toISOString() });
         render(<HeOrShePromptCard eventId="e1" eventType={null} enabled />);
 
-        expect(screen.getByText('revealOn')).toBeTruthy();
+        expect(screen.getByRole('timer')).toBeTruthy();
+    });
+
+    it('shows no countdown when the host reveals by hand', () => {
+        render(<HeOrShePromptCard eventId="e1" eventType={null} enabled />);
+
+        expect(screen.queryByRole('timer')).toBeNull();
     });
 
     it.each([
