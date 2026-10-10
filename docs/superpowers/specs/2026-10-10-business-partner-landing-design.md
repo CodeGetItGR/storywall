@@ -40,8 +40,8 @@ Main traffic source at launch is outreach (Instagram DMs, email, print), not org
 - Both live in the `(landing)` route group so they get the public root layout, the trimmed message set and a full page load when the visitor moves into the app.
 - `app/(landing)/[locale]/epaggelmaties/page.tsx` returns `notFound()` for any locale other than `el`. `/en/epaggelmaties` must not exist, and `/el/for-business` must not exist either.
 - Slugs never change once live (SEO guidelines). A route helper in `lib/routes.ts` maps locale → path (`routes.forBusiness(locale)`), used by the sitemap, hreflang, the landing link and the language banner, so the two slugs are written once.
-- The pages are static (no `headers()`/cookies in the render path). The spots count is fetched with `revalidate: 300`, so the page stays ISR and fast.
-- `proxy.ts` is not changed. Its locale redirect applies only to `/`, so neither page ever redirects, and crawlers reach both versions by their own URL.
+- The pages render per request, like the landing (`i18n/request.ts` reads the proxy's locale header). The spots count is a cached fetch (`revalidate: 300`), so Spring is not called on every view.
+- `proxy.ts` sets the page's locale header for both URLs, as it does for `/` and `/el`, so `/el/epaggelmaties` is always Greek and `/for-business` always English, whatever the visitor's cookie or browser. The `/` redirect is unchanged; neither partner URL ever redirects, and crawlers reach both versions by their own URL.
 - `/partners/` stays private and in `PRIVATE_PATHS`. The new page must not live under it.
 
 ### Short link
