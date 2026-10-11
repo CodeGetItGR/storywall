@@ -1049,6 +1049,11 @@ export interface CheckoutResponseDto {
     breakdown: PriceBreakdown;
 }
 
+// POST /api/events/{id}/orders/{orderId}/sync (billing-fe-guide.md §6 step 5, 2026-10-11).
+export interface OrderSyncResponseDto {
+    status: OrderStatus;
+}
+
 // Shared by activation and upgrade checkout — the consent Directive 2011/83/EU
 // art. 14(3)/(4)(a) requires before a paid service may begin inside the
 // withdrawal window. Both booleans MUST be sent true; termsVersion comes from

@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
 import { GoogleAdsTag } from '@/components/consent/GoogleAdsTag';
-import { billingKeys, useEventBilling } from '@/hooks/useBilling';
+import { billingKeys, useEventBilling, useOrderSync } from '@/hooks/useBilling';
 import { eventKeys } from '@/hooks/useEvent';
 import { useLeaveCheckoutOnBack } from '@/hooks/useLeaveCheckoutOnBack';
 import { myEventsKeys } from '@/hooks/useMyEvents';
@@ -44,6 +44,7 @@ export default function CheckoutSuccessPage() {
         [billing.data, orderId, paid],
     );
     const exitHref = paid ? feedHref : routes.events.manage(eventId);
+    useOrderSync(eventId, orderId, !paid && !timedOut);
     useLeaveCheckoutOnBack(exitHref);
     useEffect(() => {
         const timer = window.setTimeout(() => setTimedOut(true), 30000);

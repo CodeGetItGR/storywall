@@ -185,8 +185,9 @@ const settled = await pollUntil(
 );
 ```
 
-On timeout, show "still processing" — never "failed". A lost webhook is reconciled by a sweep within
-~15 minutes.
+On timeout, show "still processing" — never "failed". While waiting,
+`POST /api/events/{id}/orders/{orderId}/sync` asks the backend to settle a paid order now
+(`billing-fe-guide.md` §6 step 5). A lost webhook is reconciled by a sweep within about 10 minutes.
 
 ### What settlement actually changes
 

@@ -608,6 +608,12 @@ Calling it twice (with the same consent) is safe: our order id is also the provi
 key, so a retry returns the same session rather than opening a second one. Still disable the button
 while the request is in flight.
 
+**A retry after the host already paid (2026-10-11).** If the open order's session is already paid
+but its webhook hasn't arrived, the call settles the order first (the same check and settlement the
+reconciliation sweep uses) and answers with `redirectUrl` pointing at `/events/{eventId}/checkout/success`
+instead of the finished session. Send the host there as usual; the success page finds the order `PAID`.
+A session that is paid but can't be settled answers `409 CHECKOUT_SESSION_UNRESOLVED` (5031).
+
 **It charges the draft's duration (2026-09-23).** The amount is the chosen coverage option's price,
 after the plan's promotion and any code. If that duration was retired after the host picked it, the
 call answers `409 COVERAGE_OPTION_UNAVAILABLE` (5078) and nothing is charged: send the host back to
@@ -654,14 +660,24 @@ const settled = await pollUntil(
 );
 
 if (!settled) {
-  // Not a failure. Payments that arrive late are reconciled by a sweep within ~15 minutes.
+  // Not a failure. Payments that arrive late are reconciled by a sweep within about 10 minutes.
   showPending("Payment received — we're finishing up. This page will update shortly.");
 }
 ```
 
+**Ask the backend to check, while waiting (2026-10-11).** If the order is still not `PAID` after
+about 10 seconds, call `POST /api/events/{id}/orders/{orderId}/sync` (no body; host of the event).
+The backend asks the provider about the order's session and, if it is paid, settles it on the spot,
+through the same checks as the webhook. It answers `{ "status": "PAID" }` once settled, or the
+order's current status otherwise (`PENDING` while the session is open or still processing, or when
+a paid session could not be settled; that one is logged for an operator). On `PAID`, refetch
+`/billing`. Calling it again is harmless; it is rate limited to 10 calls a minute, so every 10
+seconds until the page's own timeout is fine. 404 if the order is not this event's.
+
 **Never tell the host the payment failed on a timeout.** If a webhook is lost entirely, a
-reconciliation sweep asks the provider directly and settles the order within about 15 minutes. The
-correct message is "still processing", with a way back to the event.
+reconciliation sweep asks the provider directly every 5 minutes and settles an order once it is 5
+minutes old, so within about 10 minutes. The correct message is "still processing", with a way back
+to the event.
 
 On `/checkout/cancelled` the event is still a `DRAFT` and nothing was charged — offer the button
 again. Nothing needs cleaning up.
@@ -1673,7 +1689,7 @@ All require `ROLE_ADMIN`; non-admins get `403`.
 | endpoint | effect |
 |---|---|
 | `POST /api/admin/orders/{orderId}/settle` | marks a **manual-provider** order paid (dev and staging only). Activates the event exactly as a real payment would. A Stripe order is refused with `409` `5105` `ORDER_NOT_MANUAL`: there is no hand settlement in production — no bank transfers, no settling around a lost webhook. |
-| `GET /api/admin/webhooks/unprocessed` | deliveries received but never processed — settlements the platform may have lost. The remedy is `replay` below; reconciliation also settles a lost checkout on its own within about 15 minutes. |
+| `GET /api/admin/webhooks/unprocessed` | deliveries received but never processed — settlements the platform may have lost. The remedy is `replay` below; reconciliation also settles a lost checkout on its own within about 10 minutes. |
 | `POST /api/admin/webhooks/{provider}/{providerEventId}/replay` | re-verifies and re-runs one delivery from the list above against the provider's signed payload. For anything `settle` can't express — a refund, a lost dispute — that only ever arrives once. |
 | `GET /api/admin/withdrawals` | the held-withdrawal queue with the full facts sheet (§9) |
 | `POST /api/admin/withdrawals/{id}/release` | decide a held withdrawal, optionally keeping the event day (§9) |

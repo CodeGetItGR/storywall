@@ -149,6 +149,8 @@ export const endpoints = {
         // One upgrade (with every newer one), storage pack or extension; the event stays.
         orderWithdrawalPreview: (eventId: string, orderId: string) => `/api/events/${eventId}/orders/${orderId}/withdrawal-preview`,
         orderWithdrawals: (eventId: string, orderId: string) => `/api/events/${eventId}/orders/${orderId}/withdrawals`,
+        // Settles the order now if its payment went through but the webhook hasn't arrived.
+        orderSync: (eventId: string, orderId: string) => `/api/events/${eventId}/orders/${orderId}/sync`,
         quote: (eventId: string) => `/api/events/${eventId}/quote`,
         deletionRequests: (eventId: string) => `/api/events/${eventId}/deletion-requests`,
         deletionRequestOtp: (eventId: string) => `/api/events/${eventId}/deletion-requests/otp`,

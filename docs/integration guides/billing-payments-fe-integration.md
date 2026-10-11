@@ -193,13 +193,15 @@ const settled = await pollUntil(
 );
 
 if (!settled) {
-  // Not a failure. Payments that arrive late are reconciled by a sweep within ~15 minutes.
+  // Not a failure. Payments that arrive late are reconciled by a sweep within about 10 minutes.
+  // While waiting, POST /api/events/{id}/orders/{orderId}/sync asks the backend to check now
+  // (billing-fe-guide.md §6 step 5).
   showPending("Payment received — we're finishing up. This page will update shortly.");
 }
 ```
 
 Never tell the host the payment failed on a timeout. If a webhook is lost entirely, a reconciliation
-sweep asks Stripe directly and settles the order within about 15 minutes. The correct message is
+sweep asks Stripe directly and settles the order within about 10 minutes. The correct message is
 "still processing", with a way back to the event.
 
 If the host lands on `/checkout/cancelled`, the event is still a `DRAFT` and nothing was charged —
