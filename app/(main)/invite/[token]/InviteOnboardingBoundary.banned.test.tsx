@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: mocks.replace }) }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ isAuthenticated: true, isBootstrapping: false }) }));
+vi.mock('@/hooks/useMyEvents', () => ({ useMyEvents: () => ({ data: [], isLoading: false }) }));
 vi.mock('@/hooks/useEventInvitations', () => ({
     useEventInvitationPreview: () => ({
         data: {
