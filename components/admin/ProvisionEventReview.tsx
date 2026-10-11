@@ -18,13 +18,23 @@ export function ProvisionEventReview({ form, host }: { form: ProvisionEventForm;
     const eventType = form.eventTypes.find((item) => item.eventTypeKey === form.selectedEventType);
     const hostName = [host.firstName, host.lastName].filter(Boolean).join(' ') || host.email || t('unnamedHost');
 
-    const rows = [
+    const description = form.description.trim();
+    const rsvpDeadline = form.planHasRsvp ? form.rsvpDeadline : '';
+    const theme = form.selectedThemePreset;
+
+    // Optional fields show only when set.
+    const rows: [string, string][] = [
         [t('reviewHost'), hostName],
         [fieldLabels.title, form.title.trim()],
+        ...(description ? [[t('reviewDescription'), description] as [string, string]] : []),
         [t('reviewType'), eventType ? localizedText(eventType.name, eventType.eventTypeKey) : form.selectedEventType],
         [fieldLabels.startAt, formatDate(locale, form.startAt, { dateStyle: 'medium', timeStyle: 'short' })],
+        ...(rsvpDeadline
+            ? [[t('reviewRsvpDeadline'), formatDate(locale, rsvpDeadline, { dateStyle: 'medium', timeStyle: 'short' })] as [string, string]]
+            : []),
         [t('reviewPlan'), form.selectedPlan?.name ?? ''],
         [t('reviewDuration'), form.duration.selectedOption ? tAdmin('plans.columns.months', { count: form.duration.selectedOption.months }) : ''],
+        ...(theme ? [[t('reviewTheme'), localizedText(theme.name, theme.key)] as [string, string]] : []),
         [t('reviewVisibility'), t(`visibilityOption.${form.visibility}`)],
     ];
 
@@ -39,7 +49,7 @@ export function ProvisionEventReview({ form, host }: { form: ProvisionEventForm;
                     {rows.map(([label, value]) => (
                         <div key={label} className="grid grid-cols-[9rem_1fr] gap-5 py-3.5 text-sm">
                             <dt className="text-ink-faint">{label}</dt>
-                            <dd className="text-right font-semibold text-ink">{value}</dd>
+                            <dd className="text-right font-semibold break-words whitespace-pre-line text-ink">{value}</dd>
                         </div>
                     ))}
                 </dl>

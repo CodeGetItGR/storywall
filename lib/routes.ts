@@ -64,6 +64,7 @@ export const routes = {
             galleryQr: (eventId: string) => `${eventBasePath(eventId)}/tools/gallery/qr`,
             playlist: (eventId: string) => `${eventBasePath(eventId)}/tools/playlist`,
             quiz: (eventId: string) => `${eventBasePath(eventId)}/tools/quiz`,
+            heOrShe: (eventId: string) => `${eventBasePath(eventId)}/tools/he-or-she`,
             gifts: (eventId: string) => `${eventBasePath(eventId)}/tools/gifts`,
             schedule: (eventId: string, params: { section?: string | null } = {}) => withQuery(`${eventBasePath(eventId)}/tools/schedule`, params),
             wishbook: (eventId: string) => `${eventBasePath(eventId)}/tools/wishbook`,

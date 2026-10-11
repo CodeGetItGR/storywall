@@ -74,6 +74,13 @@ export type ApiErrorMessageKey =
     | 'themePresetEventTypesInvalid'
     | 'themeBackgroundLowContrast'
     | 'contentLengthRequired'
+    | 'rsvpDeadlineAfterStart'
+    | 'quizAnswerInvalid'
+    | 'quizQuestionInvalid'
+    | 'quizClosesAtInvalid'
+    | 'quizClosed'
+    | 'quizQuestionHasAnswers'
+    | 'quizQuestionLimitReached'
     | 'notEventMember'
     | 'notEventHost'
     | 'reportMemberNotHost'
@@ -543,6 +550,13 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.THEME_PRESET_EVENT_TYPES_INVALID]: 'themePresetEventTypesInvalid',
     [ERROR_CODES.THEME_BACKGROUND_LOW_CONTRAST]: 'themeBackgroundLowContrast',
     [ERROR_CODES.CONTENT_LENGTH_REQUIRED]: 'contentLengthRequired',
+    [ERROR_CODES.RSVP_DEADLINE_AFTER_START]: 'rsvpDeadlineAfterStart',
+    [ERROR_CODES.QUIZ_ANSWER_INVALID]: 'quizAnswerInvalid',
+    [ERROR_CODES.QUIZ_QUESTION_INVALID]: 'quizQuestionInvalid',
+    [ERROR_CODES.QUIZ_CLOSES_AT_INVALID]: 'quizClosesAtInvalid',
+    [ERROR_CODES.QUIZ_CLOSED]: 'quizClosed',
+    [ERROR_CODES.QUIZ_QUESTION_HAS_ANSWERS]: 'quizQuestionHasAnswers',
+    [ERROR_CODES.QUIZ_QUESTION_LIMIT_REACHED]: 'quizQuestionLimitReached',
     [ERROR_CODES.NOT_EVENT_MEMBER]: 'notEventMember',
     [ERROR_CODES.NOT_EVENT_HOST]: 'notEventHost',
     [ERROR_CODES.REPORT_MEMBER_NOT_HOST]: 'reportMemberNotHost',

@@ -120,6 +120,7 @@ describe('isThemedEventPage', () => {
             '/events/e1/story/schedule',
             '/events/e1/tools/gallery',
             '/events/e1/tools/gifts',
+            '/events/e1/tools/he-or-she',
             '/events/e1/tools/playlist',
             '/events/e1/tools/quiz',
             '/events/e1/tools/schedule',

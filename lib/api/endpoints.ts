@@ -127,6 +127,13 @@ export const endpoints = {
         wishbookCount: (eventId: string) => `/api/events/${eventId}/wishbook/count`,
         wishbookBook: (eventId: string) => `/api/events/${eventId}/wishbook/book`,
         wishbookBookTexts: (eventId: string) => `/api/events/${eventId}/wishbook/book-texts`,
+        // Boy or Girl? quiz (module he_or_she, he-or-she-quiz-fe-integration.md).
+        heOrShe: (eventId: string) => `/api/events/${eventId}/he-or-she`,
+        heOrSheAnswers: (eventId: string) => `/api/events/${eventId}/he-or-she/answers`,
+        heOrSheSettings: (eventId: string) => `/api/events/${eventId}/he-or-she/settings`,
+        heOrSheQuestions: (eventId: string) => `/api/events/${eventId}/he-or-she/questions`,
+        heOrSheQuestion: (eventId: string, questionId: string) => `/api/events/${eventId}/he-or-she/questions/${questionId}`,
+        heOrSheResults: (eventId: string) => `/api/events/${eventId}/he-or-she/results`,
         checkout: (eventId: string) => `/api/events/${eventId}/checkout`,
         partnerBrandingAcceptance: (eventId: string) => `/api/events/${eventId}/partner-branding/acceptance`,
         partnerBrandingDecline: (eventId: string) => `/api/events/${eventId}/partner-branding/decline`,

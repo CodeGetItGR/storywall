@@ -89,11 +89,9 @@ export function SuspendedEventView({ event, billingHref = null }: { event: Event
             {/* Redress: the same reference and address as the statement email */}
             <div className="space-y-2 text-sm text-ink-muted">
                 <p>{t('humanDecision')}</p>
-                {suspension ? (
+                {suspension?.contactEmail ? (
                     <p className="break-words">
-                        {suspension.contactEmail
-                            ? t('redressWithContact', { email: suspension.contactEmail, reference: suspension.reference })
-                            : t('redressWithoutContact')}
+                        {t('redressWithContact', { email: suspension.contactEmail, reference: suspension.reference })}
                     </p>
                 ) : null}
             </div>

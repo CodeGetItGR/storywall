@@ -745,6 +745,22 @@
     animation: playlist-note-float 3.5s var(--motion-ease-standard) infinite;
 }
 
+.he-or-she-balloon {
+    animation: he-or-she-balloon 7s var(--motion-ease-standard) infinite;
+}
+
+@keyframes he-or-she-balloon {
+    0%,
+    100% {
+        rotate: -6deg;
+        translate: 0 0;
+    }
+    50% {
+        rotate: 4deg;
+        translate: 0 -0.6rem;
+    }
+}
+
 /* Sweeps across its @container's width, not the viewport. */
 .light-ray {
     animation: light-ray 8s ease-in-out infinite;
