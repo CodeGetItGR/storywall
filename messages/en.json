@@ -1083,6 +1083,7 @@
         },
         "noGuestsYet": "No guests have joined yet — share an invite to get started.",
         "draft": {
+            "backToEvents": "Back to your events",
             "title": "Not published yet",
             "body": "Set a start date before publishing.",
             "bodyReadyToPay": "Complete payment to publish.",

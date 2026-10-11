@@ -1,6 +1,6 @@
 'use client';
 
-import { BadgePercent, Loader2 } from 'lucide-react';
+import { BadgePercent, Loader2, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import type React from 'react';
 import { type ChangeEvent, useEffect, useState } from 'react';
@@ -28,13 +28,14 @@ export function CollaborationCodeSection({
     onPreviewChangeAction: (code: string | null, preview: CollaborationCodePreviewResponseDto | null) => void;
 }) {
     const t = useTranslations(copyNamespace);
+    const tCommon = useTranslations('Common');
     const locale = useLocale();
     const previewCode = usePreviewCollaborationCode(eventId);
     const toErrorMessage = useApiErrorMessage();
     const [code, setCode] = useState('');
     const [appliedCode, setAppliedCode] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const { open, toggle } = useDisclosure(!collapsible);
+    const { open, toggle, close } = useDisclosure(!collapsible);
     const trimmedCode = code.trim();
     const preview = appliedCode === trimmedCode ? (previewCode.data ?? null) : null;
 
@@ -47,6 +48,15 @@ export function CollaborationCodeSection({
         setAppliedCode(null);
         setError(null);
         previewCode.reset();
+    }
+
+    // Hiding the field drops the code with it, so no unseen discount stays applied.
+    function handleCollapse() {
+        setCode('');
+        setAppliedCode(null);
+        setError(null);
+        previewCode.reset();
+        close();
     }
 
     async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
@@ -87,9 +97,22 @@ export function CollaborationCodeSection({
                         <BadgePercent className="h-4 w-4" aria-hidden="true" />
                     </span>
                     <div className="min-w-0 flex-1">
-                        <h2 id="checkout-code-title" className="text-base font-bold text-ink">
-                            {t('title')}
-                        </h2>
+                        {/* Heading */}
+                        <div className="flex items-center justify-between gap-2">
+                            <h2 id="checkout-code-title" className="text-base font-bold text-ink">
+                                {t('title')}
+                            </h2>
+                            {collapsible && (
+                                <button
+                                    type="button"
+                                    onClick={handleCollapse}
+                                    aria-label={tCommon('close')}
+                                    className="-my-2 -mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
+                                >
+                                    <X className="h-4 w-4" aria-hidden="true" />
+                                </button>
+                            )}
+                        </div>
                         <form onSubmit={handleSubmit} className="mt-3 flex flex-col gap-2 sm:flex-row">
                             <label className="sr-only" htmlFor="checkout-code">
                                 {t('field')}
