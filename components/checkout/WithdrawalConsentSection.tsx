@@ -7,6 +7,8 @@ import { BusinessPurchaseNotice } from '@/components/checkout/BusinessPurchaseNo
 import { useCheckoutBuyer } from '@/hooks/useBusinessProfile';
 import { routes } from '@/lib/routes';
 
+const CONSENT_CARD_CLASS = 'rounded-lg border border-border bg-surface-muted/40 p-4';
+
 export function WithdrawalConsentSection({
     bodyKey = 'body',
     requestsImmediateStart,
@@ -14,6 +16,7 @@ export function WithdrawalConsentSection({
     staleTerms,
     onRequestsImmediateStartChangeAction,
     onAcknowledgesWithdrawalTermsChangeAction,
+    className = CONSENT_CARD_CLASS,
 }: {
     // The intro names what starts immediately: a plan by default, or a storage pack.
     bodyKey?: 'body' | 'storageBody';
@@ -22,6 +25,8 @@ export function WithdrawalConsentSection({
     staleTerms: boolean;
     onRequestsImmediateStartChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
     onAcknowledgesWithdrawalTermsChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
+    // Defaults to its own card; pass a plain style when it sits inside another surface.
+    className?: string;
 }) {
     // Canonical copy lives under CheckoutReviewPage — this is the one legal-terms
     // namespace, shared by every surface that requires this consent.
@@ -30,11 +35,11 @@ export function WithdrawalConsentSection({
 
     // A VIES-confirmed business buyer has no consumer right of withdrawal.
     if (buyer.notice === 'business') {
-        return <BusinessPurchaseNotice legalName={buyer.legalName} vatNumber={buyer.vatNumber} staleTerms={staleTerms} />;
+        return <BusinessPurchaseNotice legalName={buyer.legalName} vatNumber={buyer.vatNumber} staleTerms={staleTerms} className={className} />;
     }
 
     return (
-        <section className="rounded-lg border border-border bg-surface-muted/40 p-4" aria-labelledby="withdrawal-terms-title">
+        <section className={className} aria-labelledby="withdrawal-terms-title">
             <h2 id="withdrawal-terms-title" className="text-base font-bold text-ink">
                 {t('withdrawalTerms.title')}
             </h2>

@@ -111,7 +111,7 @@ export function OverviewDraftPanel({
 
     return (
         <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-8">
-            {/* Left: event, pricing, collaboration code, consent */}
+            {/* Left: event, pricing, collaboration code */}
             <div className="flex flex-col gap-5">
                 {/* Status */}
                 <div className="flex items-start gap-3">
@@ -216,28 +216,8 @@ export function OverviewDraftPanel({
                     />
                 )}
 
-                {/* Partner credit */}
-                {canPay && partnerBranding.notice && (
-                    <PartnerBrandingNotice
-                        notice={partnerBranding.notice}
-                        accepted={partnerBranding.accepted}
-                        onChangeAction={partnerBranding.handleChange}
-                    />
-                )}
-
                 {/* Activation disclosures */}
                 {canPay && <ActivationDisclosures projectedCoverage={projectedCoverage} />}
-
-                {/* Withdrawal consent */}
-                {canPay && (
-                    <WithdrawalConsentSection
-                        requestsImmediateStart={consent.requestsImmediateStart}
-                        acknowledgesWithdrawalTerms={consent.acknowledgesWithdrawalTerms}
-                        staleTerms={consent.staleTerms}
-                        onRequestsImmediateStartChangeAction={consent.handleRequestsImmediateStartChange}
-                        onAcknowledgesWithdrawalTermsChangeAction={consent.handleAcknowledgesWithdrawalTermsChange}
-                    />
-                )}
 
                 {/* Gift account: like buying, only the main host may set it (4019 otherwise) */}
                 {wishlistAvailable && canPurchase && (
@@ -247,10 +227,32 @@ export function OverviewDraftPanel({
                 )}
             </div>
 
-            {/* Right: payment action */}
+            {/* Right: total, partner credit, consent, payment action */}
             <div className="rounded-2xl border border-border bg-surface-muted/40 p-5 lg:sticky lg:top-24">
                 <p className="text-xs font-semibold tracking-wide text-ink-faint uppercase">{tCreate('overview.dueNow')}</p>
                 <p className="mt-1 text-2xl font-bold text-primary-dark">{dueNowTotalLabel}</p>
+
+                {/* Partner credit: next to the button it unlocks */}
+                {canPay && partnerBranding.notice && (
+                    <PartnerBrandingNotice
+                        notice={partnerBranding.notice}
+                        accepted={partnerBranding.accepted}
+                        onChangeAction={partnerBranding.handleChange}
+                        className="mt-4 border-t border-border/70 pt-4"
+                    />
+                )}
+
+                {/* Withdrawal consent: next to the button it unlocks */}
+                {canPay && (
+                    <WithdrawalConsentSection
+                        requestsImmediateStart={consent.requestsImmediateStart}
+                        acknowledgesWithdrawalTerms={consent.acknowledgesWithdrawalTerms}
+                        staleTerms={consent.staleTerms}
+                        onRequestsImmediateStartChangeAction={consent.handleRequestsImmediateStartChange}
+                        onAcknowledgesWithdrawalTermsChangeAction={consent.handleAcknowledgesWithdrawalTermsChange}
+                        className="mt-4 border-t border-border/70 pt-4"
+                    />
+                )}
 
                 {error && <p className="mt-3 text-sm text-rose-600">{error}</p>}
 
