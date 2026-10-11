@@ -59,14 +59,16 @@ type PublicPageMetadataInput = {
     locale: Locale;
     path: string;
     languages: Record<string, string>;
-    imagePath: string;
+    // Left out when the route has its own opengraph-image file: Next adds that
+    // one itself, under a URL only it knows (route groups get a hash suffix).
+    imagePath?: string;
     copy: PublicPageMetadataCopy;
 };
 
 // An indexable public page with a self-referential canonical and its language twins.
 function buildPublicPageMetadata({ locale, path, languages, imagePath, copy }: PublicPageMetadataInput): Metadata {
     const canonical = absoluteUrl(path);
-    const image = { url: absoluteUrl(imagePath), ...OG_IMAGE_SIZE, alt: copy.imageAlt };
+    const images = imagePath ? [{ url: absoluteUrl(imagePath), ...OG_IMAGE_SIZE, alt: copy.imageAlt }] : undefined;
 
     return {
         metadataBase: new URL(SITE_URL),
@@ -81,13 +83,13 @@ function buildPublicPageMetadata({ locale, path, languages, imagePath, copy }: P
             description: copy.description,
             locale: ogLocale(locale),
             alternateLocale: locales.filter((other) => other !== locale).map(ogLocale),
-            images: [image],
+            ...(images && { images }),
         },
         twitter: {
             card: 'summary_large_image',
             title: copy.title,
             description: copy.description,
-            images: [image],
+            ...(images && { images }),
         },
         robots: { index: true, follow: true },
     };
@@ -105,12 +107,10 @@ export function buildLandingMetadata(locale: Locale, copy: PublicPageMetadataCop
 
 // The partner page's OG image is the opengraph-image.tsx in its own route folder.
 export function buildForBusinessMetadata(locale: Locale, copy: PublicPageMetadataCopy): Metadata {
-    const path = getForBusinessPath(locale);
     return buildPublicPageMetadata({
         locale,
-        path,
+        path: getForBusinessPath(locale),
         languages: forBusinessLanguageAlternates(),
-        imagePath: `${path}/opengraph-image`,
         copy,
     });
 }

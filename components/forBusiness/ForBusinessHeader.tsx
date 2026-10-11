@@ -21,7 +21,7 @@ export async function ForBusinessHeader() {
                 <LanguageSwitcher />
                 <a
                     href="#apply"
-                    className="hidden min-h-10 items-center rounded-full bg-[#151313] px-4 text-sm font-semibold text-white no-underline min-[761px]:inline-flex"
+                    className="hidden min-h-10 items-center rounded-full bg-[#151313] px-4 text-sm font-semibold text-white! no-underline min-[761px]:inline-flex"
                 >
                     {t('apply')}
                 </a>

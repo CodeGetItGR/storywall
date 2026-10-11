@@ -116,7 +116,7 @@ export function ForBusinessApplyForm({ countries, defaultCountry }: Props) {
                 <span>
                     {t.rich('consent', {
                         link: (chunks) => (
-                            <a href={routes.legal.privacy()} target="_blank" rel="noopener" className="underline underline-offset-2">
+                            <a href={routes.legal.privacy()} target="_blank" rel="noopener" className="underline! underline-offset-2">
                                 {chunks}
                             </a>
                         ),

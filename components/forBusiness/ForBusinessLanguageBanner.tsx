@@ -22,7 +22,7 @@ export function ForBusinessLanguageBanner({ pageLocale, target, href, text, link
             {/* Message */}
             <span className="flex-1">{text}</span>
             {/* Actions */}
-            <a href={href} onClick={banner.rememberChoice} className="font-semibold text-white underline underline-offset-4">
+            <a href={href} onClick={banner.rememberChoice} className="font-semibold text-white! underline! underline-offset-4">
                 {link}
             </a>
             <button

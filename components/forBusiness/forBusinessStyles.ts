@@ -4,6 +4,8 @@ export const INNER = 'mx-auto w-full max-w-295';
 export const H2 =
     'm-0 [font-family:var(--editorial)] text-[44px] leading-[0.9] font-normal tracking-[-0.05em] min-[761px]:text-[clamp(52px,5vw,80px)]';
 export const BODY = 'text-[15px] leading-[1.55] text-[#151313]/80 min-[761px]:text-base';
+// landing.css resets `.landing-page a` (color: inherit, no underline) outside
+// any layer, so it beats Tailwind utilities. Link color and underline need `!`.
 export const PRIMARY_BUTTON =
-    'inline-flex min-h-12 items-center justify-center rounded-full bg-[#151313] px-6 text-sm font-semibold text-white no-underline transition-opacity hover:opacity-85';
-export const SECONDARY_LINK = 'text-sm font-semibold text-[#151313] underline underline-offset-4 hover:opacity-70';
+    'inline-flex min-h-12 items-center justify-center rounded-full bg-[#151313] px-6 text-sm font-semibold text-white! no-underline transition-opacity hover:opacity-85';
+export const SECONDARY_LINK = 'text-sm font-semibold text-[#151313] underline! underline-offset-4 hover:opacity-70';

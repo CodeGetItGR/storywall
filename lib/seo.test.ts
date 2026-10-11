@@ -70,4 +70,12 @@ describe('buildForBusinessMetadata', () => {
         expect(metadata.robots).toEqual({ index: true, follow: true });
         expect(openGraph.url).toBe(metadata.alternates?.canonical);
     });
+
+    // The route's opengraph-image file sits in a route group, so Next serves it
+    // under a hashed URL and adds the tag itself. A hand-built URL would 404.
+    it('leaves the image to the route opengraph-image file', () => {
+        const metadata = buildForBusinessMetadata('en', copy);
+        expect((metadata.openGraph as { images?: unknown }).images).toBeUndefined();
+        expect((metadata.twitter as { images?: unknown }).images).toBeUndefined();
+    });
 });
