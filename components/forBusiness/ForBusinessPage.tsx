@@ -17,6 +17,7 @@ import { ForBusinessRoles } from '@/components/forBusiness/ForBusinessRoles';
 import { ForBusinessSteps } from '@/components/forBusiness/ForBusinessSteps';
 import { ForBusinessStructuredData } from '@/components/forBusiness/ForBusinessStructuredData';
 import { SECONDARY_LINK } from '@/components/forBusiness/forBusinessStyles';
+import { LandingDocumentScroll } from '@/components/landing/LandingDocumentScroll';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 import { appConfigKeys } from '@/hooks/useAppConfig';
 import { type Locale, locales } from '@/i18n/config';
@@ -50,6 +51,7 @@ export async function ForBusinessPage() {
     return (
         <HydrationBoundary state={dehydrate(queryClient)}>
             <ForBusinessStructuredData />
+            <LandingDocumentScroll />
             <LandingMotionProvider>
                 <main id="top" className="landing-page overflow-x-clip bg-white text-[#151313]">
                     {/* Header */}
