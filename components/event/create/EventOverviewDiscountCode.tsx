@@ -1,7 +1,8 @@
 'use client';
 
-import { Loader2 } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useCallback } from 'react';
 
 import { useDisclosure } from '@/hooks/useDisclosure';
 import { cn } from '@/lib/utils';
@@ -10,6 +11,7 @@ import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormConte
 /** Discount code entry, collapsed behind a link until the host asks for it or already has a code. */
 export function EventOverviewDiscountCode() {
     const t = useTranslations('CreateEventPage');
+    const tCommon = useTranslations('Common');
     const {
         checkoutCode,
         appliedCheckoutCode,
@@ -18,8 +20,13 @@ export function EventOverviewDiscountCode() {
         isCheckingCheckoutCode,
         onCheckoutCodeChange,
         applyCheckoutCode,
+        clearCheckoutCode,
     } = useCreateEventForm();
-    const { open, toggle } = useDisclosure(Boolean(checkoutCode));
+    const { open, toggle, close } = useDisclosure(Boolean(checkoutCode));
+    const collapse = useCallback(() => {
+        clearCheckoutCode();
+        close();
+    }, [clearCheckoutCode, close]);
 
     const trimmedCheckoutCode = checkoutCode.trim();
     const codeApplied = Boolean(appliedCheckoutCode && checkoutCodePreview);
@@ -42,9 +49,19 @@ export function EventOverviewDiscountCode() {
     return (
         <section aria-labelledby="checkout-code-heading" className="py-5">
             {/* Heading */}
-            <h3 id="checkout-code-heading" className="text-[11px] font-semibold tracking-wide text-ink-faint uppercase">
-                {t('collaboration.title')}
-            </h3>
+            <div className="flex items-center justify-between gap-2">
+                <h3 id="checkout-code-heading" className="text-[11px] font-semibold tracking-wide text-ink-faint uppercase">
+                    {t('collaboration.title')}
+                </h3>
+                <button
+                    type="button"
+                    onClick={collapse}
+                    aria-label={tCommon('close')}
+                    className="-my-2 -mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
+                >
+                    <X className="h-4 w-4" aria-hidden="true" />
+                </button>
+            </div>
 
             {/* Field */}
             <div className="mt-3 flex flex-col gap-2 sm:flex-row">

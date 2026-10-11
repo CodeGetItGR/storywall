@@ -1083,6 +1083,11 @@
         },
         "noGuestsYet": "No guests have joined yet — share an invite to get started.",
         "draft": {
+            "delete": {
+                "action": "Delete draft",
+                "title": "Delete this draft?",
+                "body": "The draft and its details are deleted. This can't be undone."
+            },
             "backToEvents": "Back to your events",
             "title": "Not published yet",
             "body": "Set a start date before publishing.",

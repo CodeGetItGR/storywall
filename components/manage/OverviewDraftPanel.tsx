@@ -11,6 +11,7 @@ import { PartnerBrandingNotice } from '@/components/checkout/PartnerBrandingNoti
 import { PriceBreakdownSummary } from '@/components/checkout/PriceBreakdownSummary';
 import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
 import { EventOverviewPriceRow } from '@/components/event/create/EventOverviewPriceRow';
+import { DraftDeleteSection } from '@/components/manage/DraftDeleteSection';
 import { DraftPayBar } from '@/components/manage/DraftPayBar';
 import { DraftStartDateModal } from '@/components/manage/DraftStartDateModal';
 import { GiftAccountSetup } from '@/components/manage/GiftAccountSetup';
@@ -231,6 +232,9 @@ export function OverviewDraftPanel({
                         <GiftAccountSetup eventId={eventId} className="" />
                     </TargetedSection>
                 )}
+
+                {/* Delete: like buying, only the main host may */}
+                {canPurchase && <DraftDeleteSection eventId={eventId} />}
             </div>
 
             {/* Right: consent and the pay bar. Its box only exists on desktop, so on mobile the bar sticks over the whole panel. */}
