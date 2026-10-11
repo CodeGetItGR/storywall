@@ -3,9 +3,10 @@
 import { Copy, Download, Printer, Share2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { QRCodeSVG } from 'qrcode.react';
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 
 import { useCopyText } from '@/hooks/useCopyText';
+import { useNativeShare } from '@/hooks/useNativeShare';
 import { useShareLink } from '@/hooks/useShareLink';
 import type { QrLinkResponseDto } from '@/lib/api/types';
 
@@ -23,15 +24,10 @@ export function QrCodeCard({ qrLink, size = 240 }: { qrLink: QrLinkResponseDto; 
     const t = useTranslations('ManagePage');
     const tGlobal = useTranslations();
     const svgRef = useRef<SVGSVGElement | null>(null);
-    const [canShare, setCanShare] = useState(false);
     // The printed code stays language-neutral; copied and shared links carry the host's language.
     const shareLink = useShareLink(qrLink.publicUrl);
     const { copied, copy: copyLink } = useCopyText(shareLink);
-
-    useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time client-only feature detection, not derived from render state.
-        setCanShare(typeof navigator !== 'undefined' && 'share' in navigator);
-    }, []);
+    const { canShare, share: handleShare } = useNativeShare(shareLink, qrLink.labelKey ? tGlobal(qrLink.labelKey) : qrLink.label || undefined);
 
     function handleDownloadSvg() {
         const svg = svgRef.current;
@@ -80,14 +76,6 @@ export function QrCodeCard({ qrLink, size = 240 }: { qrLink: QrLinkResponseDto; 
         popup.document.close();
         popup.focus();
         popup.print();
-    }
-
-    async function handleShare() {
-        try {
-            await navigator.share({ title: qrLink.labelKey ? tGlobal(qrLink.labelKey) : qrLink.label || undefined, url: shareLink });
-        } catch {
-            // User cancelled the share sheet — nothing to do.
-        }
     }
 
     return (

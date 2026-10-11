@@ -1,12 +1,13 @@
 'use client';
 
-import { AlertTriangle, BarChart3, Copy, Lock, Pencil, QrCode, Trash2 } from 'lucide-react';
+import { AlertTriangle, BarChart3, Copy, Lock, Pencil, QrCode, Share2, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type ChangeEvent, useCallback, useState } from 'react';
 
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useCopyText } from '@/hooks/useCopyText';
+import { useNativeShare } from '@/hooks/useNativeShare';
 import { useRevokeQrLink, useUpdateQrLink } from '@/hooks/useQrLinks';
 import { useShareLink } from '@/hooks/useShareLink';
 import type { QrLinkResponseDto, QrLinkStatsDto } from '@/lib/api/types';
@@ -36,7 +37,10 @@ export function QrLinkRow({
     const [statsOpen, setStatsOpen] = useState(false);
     const [revokeConfirmOpen, setRevokeConfirmOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const { copied, copy: handleCopy } = useCopyText(useShareLink(qrLink.publicUrl));
+    const shareLink = useShareLink(qrLink.publicUrl);
+    const label = qrLink.labelKey ? tGlobal(qrLink.labelKey) : qrLink.label || t('qr.untitled');
+    const { copied, copy: handleCopy } = useCopyText(shareLink);
+    const { canShare, share: handleShare } = useNativeShare(shareLink, label);
     const [maxGuests, setMaxGuests] = useState(qrLink.maxGuests ?? stats?.maxGuests ?? 50);
     const revokeQrLink = useRevokeQrLink(eventId);
     const updateQrLink = useUpdateQrLink(eventId, qrLink.id);
@@ -116,7 +120,7 @@ export function QrLinkRow({
                 <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                         <p className="truncate text-sm leading-5 font-semibold text-ink">
-                            {qrLink.labelKey ? tGlobal(qrLink.labelKey) : qrLink.label || t('qr.untitled')}
+                            {label}
                         </p>
                         <span className={cn('shrink-0 rounded-full px-1.5 py-0.5 text-[10px] leading-none font-bold', getQrStatusTone(status))}>
                             {t(`qr.status.${status}`)}
@@ -198,6 +202,16 @@ export function QrLinkRow({
                     <Copy className="h-3.5 w-3.5" />
                     {copied ? t('invitations.copied') : t('invitations.copyLink')}
                 </button>
+                {canShare && (
+                    <button
+                        type="button"
+                        onClick={handleShare}
+                        className="flex items-center gap-1.5 rounded-full bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-ink"
+                    >
+                        <Share2 className="h-3.5 w-3.5" />
+                        {t('qr.share')}
+                    </button>
+                )}
                 {canEditLimit && !isEditing && (
                     <button
                         type="button"
