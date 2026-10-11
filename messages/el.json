@@ -851,11 +851,9 @@
         }
     },
     "EventsPage": {
-        "deletingOn": "Διαγράφεται στις {date}",
         "yourEvents": "Οι εκδηλώσεις σου",
         "createEventCta": "Δημιουργία εκδήλωσης",
         "eventUnavailable": "Η εκδήλωση δεν είναι διαθέσιμη",
-        "suspended": "Σε αναστολή",
         "previous": "Προηγούμενες εκδηλώσεις",
         "next": "Επόμενες εκδηλώσεις",
         "roleFallback": {
@@ -863,7 +861,13 @@
             "attendee": "Καλεσμένος/η"
         },
         "dateAt": "στις",
-        "goingCount": "{count} παρευρίσκονται"
+        "goingCount": "{count} παρευρίσκονται",
+        "status": {
+            "suspended": "Σε αναστολή",
+            "deleting": "Διαγράφεται",
+            "draft": "Πρόχειρο",
+            "ended": "Ολοκληρώθηκε"
+        }
     },
     "NotificationsPage": {
         "back": "Πίσω",

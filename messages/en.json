@@ -729,11 +729,9 @@
         }
     },
     "EventsPage": {
-        "deletingOn": "Deleting on {date}",
         "yourEvents": "Your events",
         "createEventCta": "Create event",
         "eventUnavailable": "Event unavailable",
-        "suspended": "Suspended",
         "previous": "Previous events",
         "next": "Next events",
         "roleFallback": {
@@ -741,7 +739,13 @@
             "attendee": "Guest"
         },
         "dateAt": "at",
-        "goingCount": "{count} going"
+        "goingCount": "{count} going",
+        "status": {
+            "suspended": "Suspended",
+            "deleting": "Deleting",
+            "draft": "Draft",
+            "ended": "Ended"
+        }
     },
     "NotificationsPage": {
         "back": "Back",
