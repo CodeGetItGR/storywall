@@ -135,7 +135,7 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
                                         <Loader2 className="h-4 w-4 animate-spin" />
                                     ) : (
                                         <>
-                                            {t('haveAccount')}
+                                            {t('join')}
                                             <ArrowRight className="h-4 w-4" />
                                         </>
                                     )}

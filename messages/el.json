@@ -662,6 +662,7 @@
         },
         "defaultHeroImageAlt": "Φωτογραφία εξωφύλλου εκδήλωσης",
         "haveAccount": "Έχω ήδη λογαριασμό",
+        "join": "Συμμετοχή",
         "createAccount": "Δημιουργία λογαριασμού",
         "gift": "Ένα δώρο από {giver} για {recipient}."
     },

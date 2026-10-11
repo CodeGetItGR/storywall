@@ -39,7 +39,7 @@ describe('InviteOnboardingBoundary accepting as a signed-in user', () => {
         mocks.accept.mockResolvedValue({ eventId: 'event-1' });
         render(<InviteOnboardingBoundary token="tok" />);
 
-        fireEvent.click(screen.getByRole('button', { name: /haveAccount/ }));
+        fireEvent.click(screen.getByRole('button', { name: /join/ }));
 
         await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith('/events/event-1/feed'));
     });
@@ -49,7 +49,7 @@ describe('InviteOnboardingBoundary accepting as a signed-in user', () => {
         mocks.accept.mockRejectedValue(new ApiError(409, { status: 409, errorCode }));
         render(<InviteOnboardingBoundary token="tok" />);
 
-        fireEvent.click(screen.getByRole('button', { name: /haveAccount/ }));
+        fireEvent.click(screen.getByRole('button', { name: /join/ }));
 
         await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith('/events/event-1/feed'));
         expect(screen.queryByRole('alert')).not.toBeInTheDocument();
@@ -59,7 +59,7 @@ describe('InviteOnboardingBoundary accepting as a signed-in user', () => {
         mocks.accept.mockRejectedValue(new ApiError(409, { status: 409, errorCode: 5035 }));
         render(<InviteOnboardingBoundary token="tok" />);
 
-        fireEvent.click(screen.getByRole('button', { name: /haveAccount/ }));
+        fireEvent.click(screen.getByRole('button', { name: /join/ }));
 
         expect(await screen.findByRole('alert')).toHaveTextContent('error copy');
         expect(mocks.replace).not.toHaveBeenCalled();

@@ -540,6 +540,7 @@
         },
         "defaultHeroImageAlt": "Event cover photo",
         "haveAccount": "I have an account",
+        "join": "Join",
         "createAccount": "Create an account",
         "gift": "A gift from {giver} for {recipient}."
     },

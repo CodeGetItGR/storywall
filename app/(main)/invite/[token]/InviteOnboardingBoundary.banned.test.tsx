@@ -50,7 +50,7 @@ describe('InviteOnboardingBoundary', () => {
             </NextIntlClientProvider>,
         );
 
-        fireEvent.click(screen.getByRole('button', { name: 'I have an account' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Join' }));
 
         expect(await screen.findByRole('alert')).toHaveTextContent("You can't join this event.");
         expect(mocks.replace).not.toHaveBeenCalled();
