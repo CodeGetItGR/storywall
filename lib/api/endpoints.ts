@@ -318,6 +318,15 @@ export const endpoints = {
                 return `/api/admin/metrics/funnel${params.length ? `?${params.join('&')}` : ''}`;
             },
             funnelCohorts: (weeks: number) => `/api/admin/metrics/funnel/cohorts?weeks=${encodeURIComponent(String(weeks))}`,
+            moduleUsage: (filters: { since: string | null; until: string | null; eventTypeKey: string; planCode: string }) => {
+                const params = new URLSearchParams();
+                if (filters.since) params.set('since', filters.since);
+                if (filters.until) params.set('until', filters.until);
+                if (filters.eventTypeKey) params.set('eventTypeKey', filters.eventTypeKey);
+                if (filters.planCode) params.set('planCode', filters.planCode);
+                const query = params.toString();
+                return `/api/admin/metrics/module-usage${query ? `?${query}` : ''}`;
+            },
         },
         orders: {
             list: '/api/admin/orders',

@@ -2637,6 +2637,7 @@
             "orders": "Orders",
             "metrics": "Metrics",
             "funnel": "Growth",
+            "moduleUsage": "Module usage",
             "costTracking": "Cost tracking",
             "plans": "Plans",
             "paidServices": "Paid services",
@@ -3670,6 +3671,57 @@
                 "guests": "guest limit",
                 "name": "name",
                 "memberRoles": "member roles"
+            }
+        },
+        "moduleUsage": {
+            "title": "Module usage",
+            "loading": "Loading module usage…",
+            "rangeNote": "Counts events created in this range, with everything they have so far.",
+            "tooFew": "Too few events",
+            "tooFewOverall": "Fewer than {count} events match. Widen the range or filters.",
+            "filters": {
+                "eventType": "Event type",
+                "plan": "Plan",
+                "all": "All"
+            },
+            "columns": {
+                "module": "Module",
+                "events": "Events with it",
+                "used": "Used",
+                "average": "Average",
+                "median": "Median"
+            },
+            "modules": {
+                "posts": "Posts",
+                "gallery": "Gallery",
+                "stories": "Stories",
+                "wishbook": "Wishbook",
+                "rsvp": "RSVP",
+                "playlist": "Playlist",
+                "schedule": "Schedule",
+                "wishlist": "Bank details",
+                "qr_links": "QR links"
+            },
+            "metrics": {
+                "posts": "Posts per event",
+                "comments": "Comments per event",
+                "reactions": "Reactions per event",
+                "commentsPerPost": "Comments per post",
+                "reactionsPerPost": "Reactions per post",
+                "eventsWithComments": "Events with a comment",
+                "eventsWithReactions": "Events with a reaction",
+                "media": "Media per event",
+                "photoShare": "Photos",
+                "videoShare": "Videos",
+                "qrUploadShare": "Uploaded by QR",
+                "stories": "Stories per event",
+                "responses": "Responses per event",
+                "suggestions": "Songs suggested per event",
+                "votes": "Votes per event",
+                "sessions": "Sessions per event",
+                "wishes": "Wishes per event",
+                "qrJoins": "QR joins per event",
+                "qrUploads": "QR uploads per event"
             }
         },
         "funnel": {

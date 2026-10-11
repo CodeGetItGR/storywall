@@ -1949,6 +1949,61 @@ export interface FunnelCohortDto {
     engagedHost: number;
 }
 
+// --- Module usage (docs/module-usage-be-spec.md) ---
+
+/** The modules the usage dashboard reports on. `qr_links` is not a plan module: its base is every event in scope. */
+export type ModuleUsageModuleKey = 'posts' | 'gallery' | 'stories' | 'rsvp' | 'playlist' | 'schedule' | 'wishbook' | 'wishlist' | 'qr_links';
+
+export type ModuleUsageMetricKey =
+    | 'posts'
+    | 'comments'
+    | 'reactions'
+    | 'commentsPerPost'
+    | 'reactionsPerPost'
+    | 'eventsWithComments'
+    | 'eventsWithReactions'
+    | 'media'
+    | 'photoShare'
+    | 'videoShare'
+    | 'qrUploadShare'
+    | 'stories'
+    | 'responses'
+    | 'suggestions'
+    | 'votes'
+    | 'sessions'
+    | 'wishes'
+    | 'qrJoins'
+    | 'qrUploads';
+
+/** PER_EVENT and PER_POST carry `average` and `median`; SHARE carries `share` (0–1). */
+export type ModuleUsageMetricKind = 'PER_EVENT' | 'PER_POST' | 'SHARE';
+
+export interface ModuleUsageMetricDto {
+    key: ModuleUsageMetricKey;
+    kind: ModuleUsageMetricKind;
+    average: number | null;
+    median: number | null;
+    share: number | null;
+}
+
+export interface ModuleUsageRowDto {
+    moduleKey: ModuleUsageModuleKey;
+    /** True when fewer than `minEvents` events have the module on; every number below is then null and `metrics` empty. */
+    suppressed: boolean;
+    eventsWithModule: number | null;
+    /** Events with the module on that have at least one item (wishlist: bank details saved; qr_links: a link created). */
+    eventsUsed: number | null;
+    metrics: ModuleUsageMetricDto[];
+}
+
+/** GET /api/admin/metrics/module-usage?since&until&eventTypeKey&planCode — active, non-demo events created in range. */
+export interface ModuleUsageResponseDto {
+    minEvents: number;
+    /** Null when fewer than `minEvents` events match; every row is then suppressed. */
+    eventsInScope: number | null;
+    modules: ModuleUsageRowDto[];
+}
+
 export interface PlatformNewsletterMetricsDto {
     pending: number;
     confirmed: number;
