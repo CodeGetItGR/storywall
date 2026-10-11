@@ -3,6 +3,8 @@
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { EventOverviewConsentHint } from '@/components/event/create/EventOverviewConsentHint';
+import { EventOverviewError } from '@/components/event/create/EventOverviewError';
 import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 
 export function EventCreateFooter() {
@@ -98,6 +100,10 @@ export function EventCreateFooter() {
                         </button>
                     </div>
                 )}
+
+                {/* Overview error and consent hint */}
+                {step === 'overview' && <EventOverviewError />}
+                {step === 'overview' && <EventOverviewConsentHint />}
 
                 {step === 'overview' && (
                     <div className="flex gap-3">

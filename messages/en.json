@@ -990,6 +990,7 @@
             "title": "Discount code",
             "field": "Discount code",
             "placeholder": "Enter code",
+            "reveal": "Have a discount code?",
             "apply": "Apply",
             "checking": "Checking",
             "applied": "{discount}% discount applied",
@@ -999,6 +1000,7 @@
             "event": "Event details",
             "pricing": "Pricing details",
             "pricingHint": "Activation is a one-time payment.",
+            "consentHint": "Tick the boxes above to continue.",
             "planActivation": "Plan activation",
             "planActivationFor": "Plan activation · {duration}",
             "discount": "Discount",
@@ -1673,6 +1675,7 @@
             "title": "Discount code",
             "field": "Discount code",
             "placeholder": "Enter code",
+            "reveal": "Have a discount code?",
             "apply": "Apply",
             "checking": "Checking...",
             "applied": "{label}: {discount}% off. Plan charge is now {amount}."

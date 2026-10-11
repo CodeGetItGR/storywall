@@ -7,6 +7,7 @@ import { type ChangeEvent, useEffect, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { usePreviewCollaborationCode } from '@/hooks/useBilling';
+import { useDisclosure } from '@/hooks/useDisclosure';
 import type { CollaborationCodePreviewResponseDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
 
@@ -17,9 +18,12 @@ export function CollaborationCodeSection({
     onPreviewChangeAction,
     copyNamespace = 'CheckoutReviewPage.collaboration',
     disabled = false,
+    collapsible = false,
 }: {
     eventId: string;
     disabled?: boolean;
+    // Starts as a single link that opens the field.
+    collapsible?: boolean;
     copyNamespace?: 'CheckoutReviewPage.collaboration' | 'CreateEventPage.collaboration';
     onPreviewChangeAction: (code: string | null, preview: CollaborationCodePreviewResponseDto | null) => void;
 }) {
@@ -30,6 +34,7 @@ export function CollaborationCodeSection({
     const [code, setCode] = useState('');
     const [appliedCode, setAppliedCode] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const { open, toggle } = useDisclosure(!collapsible);
     const trimmedCode = code.trim();
     const preview = appliedCode === trimmedCode ? (previewCode.data ?? null) : null;
 
@@ -58,6 +63,21 @@ export function CollaborationCodeSection({
         }
     }
 
+    // Collapsed link
+    if (!open) {
+        return (
+            <button
+                type="button"
+                onClick={toggle}
+                disabled={disabled}
+                className="inline-flex min-h-11 items-center gap-2 self-start text-sm font-semibold text-primary-dark underline underline-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+                <BadgePercent className="h-4 w-4" aria-hidden="true" />
+                {t('reveal')}
+            </button>
+        );
+    }
+
     return (
         <section className="mt-6" aria-labelledby="checkout-code-title">
             {/* Checkout code */}
@@ -81,6 +101,7 @@ export function CollaborationCodeSection({
                                 maxLength={MAX_COLLABORATION_CODE_LENGTH}
                                 autoComplete="off"
                                 placeholder={t('placeholder')}
+                                autoFocus={collapsible}
                                 disabled={disabled}
                                 className="min-h-11 flex-1 rounded-full border border-border bg-card px-4 text-sm font-semibold text-ink transition outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-50"
                             />

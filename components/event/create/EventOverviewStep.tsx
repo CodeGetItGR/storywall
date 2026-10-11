@@ -1,17 +1,17 @@
 'use client';
 
-import { Loader2, Receipt } from 'lucide-react';
+import { Receipt } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { ActivationDisclosures } from '@/components/checkout/ActivationDisclosures';
 import { ActivationEventSummary } from '@/components/checkout/ActivationEventSummary';
 import { PartnerBrandingNotice } from '@/components/checkout/PartnerBrandingNotice';
 import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
+import { EventOverviewDiscountCode } from '@/components/event/create/EventOverviewDiscountCode';
 import { EventOverviewPriceRow } from '@/components/event/create/EventOverviewPriceRow';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
 import { formatMoney } from '@/lib/billing';
 import { getOptionPriceDetails } from '@/lib/planTiers';
-import { cn } from '@/lib/utils';
 import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 
 export function EventOverviewStep() {
@@ -27,17 +27,8 @@ export function EventOverviewStep() {
         projectedCoverage,
         selectedPlan: plan,
         selectedOption: option,
-        error,
-        startPassed,
-        goToDetails,
-        hasDraft,
-        checkoutCode,
         appliedCheckoutCode,
         checkoutCodePreview,
-        checkoutCodeError,
-        isCheckingCheckoutCode,
-        onCheckoutCodeChange: onCheckoutCodeChangeAction,
-        applyCheckoutCode: onApplyCheckoutCodeAction,
         requestsImmediateStart,
         acknowledgesWithdrawalTerms,
         staleTerms,
@@ -54,7 +45,6 @@ export function EventOverviewStep() {
     const activationTotalLabel = planActivation ? formatMoney(locale, planActivation.amountMinor, planActivation.currency) : t('payment.noCharge');
     const matchedEventType = eventTypes.find((type) => type.eventTypeKey === eventType);
     const eventTypeName = matchedEventType ? eventTypeCopy(matchedEventType.eventTypeKey).name : eventType;
-    const trimmedCheckoutCode = checkoutCode.trim();
     const codeApplied = Boolean(appliedCheckoutCode && checkoutCodePreview);
     const previewAmount = checkoutCodePreview ? formatMoney(locale, checkoutCodePreview.payableAmountMinor, checkoutCodePreview.currency) : null;
     const finalTotalLabel = previewAmount ?? activationTotalLabel;
@@ -110,48 +100,7 @@ export function EventOverviewStep() {
             </section>
 
             {/* Checkout code */}
-            <section aria-labelledby="checkout-code-heading" className="py-5">
-                <h3 id="checkout-code-heading" className="text-[11px] font-semibold tracking-wide text-ink-faint uppercase">
-                    {t('collaboration.title')}
-                </h3>
-
-                <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-                    <label className="sr-only" htmlFor="event-checkout-code">
-                        {t('collaboration.field')}
-                    </label>
-                    <input
-                        id="event-checkout-code"
-                        value={checkoutCode}
-                        onChange={onCheckoutCodeChangeAction}
-                        maxLength={40}
-                        autoComplete="off"
-                        disabled={codeApplied}
-                        aria-invalid={Boolean(checkoutCodeError)}
-                        aria-describedby={checkoutCodeError ? 'event-checkout-code-error' : undefined}
-                        placeholder={t('collaboration.placeholder')}
-                        className={cn(
-                            'min-h-11 flex-1 rounded-full border bg-card px-4 text-sm font-semibold text-ink transition outline-none focus:ring-2 disabled:bg-surface-muted disabled:text-ink-muted',
-                            checkoutCodeError
-                                ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/15'
-                                : 'border-border focus:border-primary focus:ring-primary/15',
-                        )}
-                    />
-                    <button
-                        type="button"
-                        disabled={!trimmedCheckoutCode || codeApplied || isCheckingCheckoutCode}
-                        onClick={onApplyCheckoutCodeAction}
-                        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-card px-5 text-sm font-semibold text-ink shadow-sm ring-1 ring-border transition hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                        {isCheckingCheckoutCode && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
-                        {isCheckingCheckoutCode ? t('collaboration.checking') : t('collaboration.apply')}
-                    </button>
-                </div>
-                {checkoutCodeError && (
-                    <p id="event-checkout-code-error" className="mt-2 text-sm font-semibold text-rose-600">
-                        {checkoutCodeError}
-                    </p>
-                )}
-            </section>
+            <EventOverviewDiscountCode />
 
             {/* Partner credit */}
             {partnerBrandingNotice && (
@@ -179,20 +128,6 @@ export function EventOverviewStep() {
                     onAcknowledgesWithdrawalTermsChangeAction={onAcknowledgesWithdrawalTermsChangeAction}
                 />
             </section>
-
-            {/* Error State */}
-            {error && (
-                <div className="mt-auto rounded-lg bg-rose-50 px-3 py-2 text-center text-xs text-rose-600">
-                    <p>{error}</p>
-                    {startPassed ? (
-                        <button type="button" onClick={goToDetails} className="mt-1 font-semibold underline underline-offset-2">
-                            {t('changeDate')}
-                        </button>
-                    ) : (
-                        hasDraft && <p className="mt-1 font-semibold">{t('paidModules.openSetup')}</p>
-                    )}
-                </div>
-            )}
         </div>
     );
 }
