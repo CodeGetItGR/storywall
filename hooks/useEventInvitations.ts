@@ -2,7 +2,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { usePresignedUrlRefreshMs } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
+import { eventKeys } from '@/hooks/useEvent';
 import { eventMemberKeys } from '@/hooks/useEventMembers';
+import { myEventsKeys } from '@/hooks/useMyEvents';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
@@ -79,8 +81,15 @@ export function useAcceptEventInvitation() {
 
     return useMutation({
         mutationFn: (inviteToken: string) => api.post<EventMemberResponseDto>(endpoints.eventInvitations.accept(inviteToken)),
-        onSuccess: (member) => {
-            queryClient.invalidateQueries({ queryKey: eventMemberKeys.list(member.eventId) });
-        },
+        // Awaited, so mutateAsync resolves only once the memberships are fresh:
+        // EventProvider derives activeMember from them, and the composer and
+        // the event navigation stay hidden while it is missing. Also on a
+        // 409 already-a-member, where the cache can predate the join too.
+        onSettled: (member) =>
+            Promise.all([
+                queryClient.invalidateQueries({ queryKey: myEventsKeys.all }),
+                member && queryClient.invalidateQueries({ queryKey: eventKeys.detail(member.eventId), exact: true }),
+                member && queryClient.invalidateQueries({ queryKey: eventMemberKeys.list(member.eventId) }),
+            ]),
     });
 }
