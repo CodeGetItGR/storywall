@@ -87,7 +87,7 @@ export function reportCrash(error: unknown, componentStack?: string): void {
             body: JSON.stringify(request),
         })
             .then((res) => {
-                // 429: out of budget. 409: switched off (5170). Either way, done for this page load.
+                // 429: out of budget. 409: switched off (5174). Either way, done for this page load.
                 if (res.status === 429 || res.status === 409) stopped = true;
             })
             .catch(() => {

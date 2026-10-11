@@ -513,7 +513,7 @@ export interface AppBetaFeedbackConfigDto {
 }
 
 // Crash capture (error-tracking-fe-integration.md). While `enabled` is false
-// POST /api/error-events/client answers 409 / 5170.
+// POST /api/error-events/client answers 409 / 5174.
 export interface AppErrorTrackingConfigDto {
     enabled: boolean;
 }
