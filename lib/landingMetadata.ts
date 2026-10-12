@@ -4,7 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import type { Locale } from '@/i18n/config';
 import { buildLandingMetadata } from '@/lib/seo';
 
-// Shared by `app/page.tsx` and `app/[locale]/page.tsx`, which render the same
+// Shared by `app/page.tsx` and `app/(landing)/[slug]/page.tsx`, which render the same
 // landing page for different locales.
 export async function getLandingMetadata(locale: Locale): Promise<Metadata> {
     const t = await getTranslations({ locale, namespace: 'LandingPage.meta' });

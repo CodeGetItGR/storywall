@@ -205,3 +205,48 @@ async function eventOgPng(event: ShareEvent) {
         },
     );
 }
+
+// An occasion page's share image: the brand canvas with the occasion's H1.
+export async function occasionOgImage(title: string) {
+    const [logoSrc, font] = await Promise.all([logoDataUri(), loadTitleFont(title)]);
+    const titleSize = title.length > 48 ? 64 : 80;
+
+    return new ImageResponse(
+        <div
+            style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                padding: '72px 88px',
+                background: CANVAS,
+                color: INK,
+                fontFamily: font ? TITLE_FONT : 'sans-serif',
+            }}
+        >
+            {/* Corner accent */}
+            <div
+                style={{
+                    position: 'absolute',
+                    right: -140,
+                    top: -140,
+                    width: 460,
+                    height: 460,
+                    borderRadius: 9999,
+                    background: CORAL,
+                    opacity: 0.16,
+                }}
+            />
+            {/* Logo */}
+            {/* eslint-disable-next-line @next/next/no-img-element -- next/image cannot render inside ImageResponse */}
+            <img alt="" height={64} src={logoSrc} width={268} />
+            {/* Title */}
+            <div style={{ display: 'flex', fontSize: titleSize, fontWeight: 700, lineHeight: 1.05, maxWidth: 1000 }}>{title}</div>
+        </div>,
+        {
+            ...OG_IMAGE_SIZE,
+            fonts: font ? [{ name: TITLE_FONT, data: font, weight: 700, style: 'normal' }] : undefined,
+        },
+    );
+}
