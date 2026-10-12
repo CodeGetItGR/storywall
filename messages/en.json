@@ -880,8 +880,8 @@
         "title": "Create an event",
         "subtitle": "Add the event details.",
         "detailsHint": "You can add or edit more details after creation.",
-        "startAtHint": "Events can be scheduled up to 18 months ahead.",
-        "coverageProjection": "Photos kept until {endsAt}",
+        "startAtHint": "Coverage starts on the day you pay.",
+        "coverageProjection": "Photos kept until {endsAt} if you pay today",
         "fields": {
             "title": "Event title",
             "startAt": "Starts",
@@ -893,7 +893,7 @@
         },
         "validation": {
             "startInPast": "The start time must be now or later.",
-            "startTooFarAhead": "The start time can't be more than 18 months from now.",
+            "startTooFarAhead": "For this plan, the event must start by {date}.",
             "endBeforeStart": "The end time must be after the start time.",
             "invalidTimezone": "Choose a timezone from the list."
         },
@@ -1281,7 +1281,7 @@
             },
             "validation": {
                 "startInPast": "The start time must be now or later.",
-                "startTooFarAhead": "The start time can't be more than 18 months from now.",
+                "startTooFarAhead": "The event must start by {date}.",
                 "endBeforeStart": "The end time must be after the start time."
             },
             "startLocked": "This event has already started, so the start date cannot be changed.",
@@ -1730,7 +1730,7 @@
             "datesFixedTitle": "Your dates are fixed at payment",
             "datesFixedBody": "Changing your event date later won't change how long your photos are kept.",
             "keptUntilTitle": "Photos kept until {date}",
-            "keptUntilBody": "{months, plural, one {# month} other {# months}} after your event date. After that everything is permanently deleted — we'll remind you 7 days and 1 day before."
+            "keptUntilBody": "{months, plural, one {# month} other {# months}} from the day you pay. After that everything is permanently deleted — we'll remind you 7 days and 1 day before."
         },
         "withdrawalTerms": {
             "title": "Right of withdrawal",
@@ -5249,7 +5249,7 @@
         "memberLimitWithPlan": "Guest limit reached on the {plan} plan. Upgrade to invite more.",
         "moduleUnavailable": "This feature is not included in the current plan.",
         "eventDatesIncomplete": "Add a start date to the event before paying.",
-        "eventStartTooFarAhead": "An event can't be scheduled more than 18 months ahead.",
+        "eventStartTooFarAhead": "This date is too far ahead for your plan's coverage.",
         "eventCreationLocked": "An admin has limited event creation for this account.",
         "eventDraftLimitReached": "You have too many events waiting to be published. Publish or delete one to start another.",
         "eventNotDraft": "This event has already been published.",

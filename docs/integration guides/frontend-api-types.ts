@@ -1966,7 +1966,7 @@ interface AppWithdrawalConfigDto {
 
 /** Event coverage-window constants — see fe-guides/event-coverage-window-fe-integration.md. Added 2026-09-21. */
 interface AppCoverageConfigDto {
-  maxLeadDays: number;               // 548 — picker max is today + this
+  minDaysAfterStart: number;         // 30  — picker max is coverage end (pinned, or projected now + months) minus this; maxLeadDays removed 2026-10-12
   defaultEventDurationHours: number; // 24  — endAt defaults to startAt + this when omitted
 } // defaultHostingMonths removed 2026-09-23 — the term is the event's coverage option's months; maxPreEventDays removed 2026-09-23
 

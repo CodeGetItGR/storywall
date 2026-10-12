@@ -162,7 +162,7 @@ interface AppConfigResponseDto {
   translations: { eventTypes: Record<string, AppEventTypeTranslationDto> }; // locale copy, keyed by eventTypeKey
   rsvp: { minAdults: number; maxAdults: number; minChildren: number; maxChildren: number };
   withdrawal: { termsVersion: string; windowDays: number; holdDays: number }; // see billing-fe-guide.md §9
-  coverage: { maxLeadDays: number; defaultEventDurationHours: number }; // added 2026-09-21, defaultHostingMonths and maxPreEventDays removed 2026-09-23 — see event-coverage-window-fe-integration.md
+  coverage: { minDaysAfterStart: number; defaultEventDurationHours: number }; // added 2026-09-21, maxLeadDays replaced by minDaysAfterStart 2026-10-12, defaultHostingMonths and maxPreEventDays removed 2026-09-23 — see event-coverage-window-fe-integration.md
   newsletter: { enabled: boolean; discountPercent: number; rewardValidityMonths: number }; // added 2026-09-23 — see newsletter-fe-integration.md
   eventDeletion: { codeDigits: number; codeValidMinutes: number; maxCodeAttempts: number }; // added 2026-09-27 — see below
   contentLimits: AppContentLimitsDto;   // added 2026-08-23 — see below
@@ -304,7 +304,7 @@ A Next.js server-side fetch with its own `revalidate` window adds that window's 
   unrestricted strings). Source your report-target and report-reason pickers from these instead
   of hardcoding them, the same way `eventModuleKeys` is the source of truth for module keys.
 - **`rsvp`** — see "RSVP guest-count bounds" below.
-- **`coverage`** — the event date-picker bound (`maxLeadDays`) and the coverage-window constants.
+- **`coverage`** — the event date-picker bound (`minDaysAfterStart`: latest start = coverage end minus these days) and the coverage-window constants.
   Constants only; the dates for a given event come from the event itself. See
   [`event-coverage-window-fe-integration.md`](event-coverage-window-fe-integration.md).
 - **`modules`** / **`eventModuleKeys`** — the module registry as it stands right now.

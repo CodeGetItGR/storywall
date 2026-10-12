@@ -25,6 +25,7 @@ import {
     isDatetimeLocalBefore,
     toDatetimeLocalValue,
 } from '@/lib/datetime';
+import { getLatestStartAt } from '@/lib/eventCoverage';
 import { getEventEndPresets } from '@/lib/eventEndPresets';
 import { COVER_PHOTO_SECTION_ID } from '@/lib/manageSectionTargets';
 import { cn } from '@/lib/utils';
@@ -83,17 +84,23 @@ export default function SettingsTab({
     const fieldErrors = getFieldErrors(updateEvent.error);
     const nowAt = getCurrentDatetimeLocalValue();
     const eventHasStarted = Boolean(event.schedule.startAt && isDatetimeLocalBefore(toDatetimeLocalValue(event.schedule.startAt), nowAt));
-    const { startAtMin, startAtMax, endAtMin } = getScheduleDatetimeLocalBounds({ startAt, endAt, maxLeadDays: appConfig?.coverage.maxLeadDays });
+    // Coverage runs from payment, so the start must leave some of it after the event: the pinned end
+    // once live, the server's projection while DRAFT.
+    const latestStartAt = getLatestStartAt(
+        event.schedule.coverageEndsAt ?? event.schedule.projectedCoverage?.coverageEndsAt,
+        appConfig?.coverage.minDaysAfterStart,
+    );
+    const { startAtMin, startAtMax, endAtMin } = getScheduleDatetimeLocalBounds({ startAt, endAt, latestStartAt });
     const endAtPresets = React.useMemo(() => getEventEndPresets(event.eventType, startAt), [event.eventType, startAt]);
-    // Order matters: startAtMax is the earlier of the end date and the lead-day cap,
+    // Order matters: startAtMax is the earlier of the end date and the coverage cap,
     // so a start past the end must be reported as that, not as "too far ahead".
     const scheduleError =
         !eventHasStarted && startAt && isDatetimeLocalBefore(startAt, startAtMin)
             ? t('settings.validation.startInPast')
             : startAt && endAt && !isDatetimeLocalAfter(endAt, startAt)
               ? t('settings.validation.endBeforeStart')
-              : !eventHasStarted && startAt && isDatetimeLocalAfter(startAt, startAtMax)
-                ? t('settings.validation.startTooFarAhead')
+              : !eventHasStarted && startAt && latestStartAt && isDatetimeLocalAfter(startAt, startAtMax)
+                ? t('settings.validation.startTooFarAhead', { date: formatDate(locale, latestStartAt, { dateStyle: 'medium' }) })
                 : null;
     // The coverage window is pinned at activation, so moving a live event's start
     // does not move it. Say so inline the moment the host changes the date.

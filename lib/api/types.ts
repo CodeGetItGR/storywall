@@ -332,8 +332,8 @@ export interface AppRsvpConfigDto {
 // Coverage-window constants — event-coverage-window-fe-integration.md. Added 2026-09-21.
 // Constants only; a given event's dates come from the event itself.
 export interface AppCoverageConfigDto {
-    // Furthest ahead startAt may be scheduled, in days from now (3032 past it).
-    maxLeadDays: number;
+    // Coverage that must remain after startAt; the latest start is coverage end minus this (3032 past it).
+    minDaysAfterStart: number;
     // endAt the server fills when a request omits it.
     defaultEventDurationHours: number;
 }
