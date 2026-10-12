@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import {
     findReadyOccasion,
+    liveOccasions,
     occasionLanguageAlternates,
     occasionLocaleForPath,
     occasionPath,
     OCCASIONS,
-    liveOccasions,
     readyOccasions,
 } from '@/lib/occasions/occasions';
 import { SITE_URL } from '@/lib/seo';
