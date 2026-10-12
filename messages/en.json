@@ -186,6 +186,24 @@
             "el": "EL"
         }
     },
+    "InstallApp": {
+        "install": "Install",
+        "dismiss": "Close",
+        "menuItem": "Install app",
+        "banner": {
+            "title": "Get the StoryWall app",
+            "tip": "You can install it any time from the menu."
+        },
+        "iosGuide": {
+            "title": "Add StoryWall to your Home Screen",
+            "steps": {
+                "share": "Tap the Share button. If you don't see it, tap ••• first.",
+                "add": "Choose Add to Home Screen.",
+                "confirm": "Tap Add."
+            },
+            "done": "Got it"
+        }
+    },
     "MobileTabBar": {
         "eventNavigation": "Event navigation",
         "eventMenu": "Event menu",

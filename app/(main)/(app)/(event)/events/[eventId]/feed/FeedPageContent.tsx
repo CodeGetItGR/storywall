@@ -21,6 +21,7 @@ import { PostModal } from '@/components/feed/PostModal';
 import { PublishQueueCards } from '@/components/feed/PublishQueueCards';
 import { RsvpPrompt } from '@/components/feed/RsvpPrompt';
 import { StoriesRow } from '@/components/feed/StoriesRow';
+import { InstallAppBanner } from '@/components/pwa/InstallAppBanner';
 import { StoryModal } from '@/components/story/StoryModal';
 import { useGiftAccount, useHideMobileTabBarOnScroll } from '@/hooks';
 import { eventKeys } from '@/hooks/useEvent';
@@ -77,6 +78,8 @@ export function FeedPageContent() {
         <div className="mx-auto flex w-full flex-col lg:max-w-2xl">
             {/* Header */}
             <Header countdownTime={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0} eventId={eventId} />
+            {/* Install */}
+            <InstallAppBanner />
             {/* Hero */}
             <section className={'mt-3'}>
                 <Banner

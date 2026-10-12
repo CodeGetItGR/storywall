@@ -39,6 +39,7 @@ vi.mock('@/components/feed/PostModal', () => ({ PostModal: () => null }));
 vi.mock('@/components/feed/PublishQueueCards', () => ({ PublishQueueCards: () => null }));
 vi.mock('@/components/feed/RsvpPrompt', () => ({ RsvpPrompt: () => null }));
 vi.mock('@/components/feed/StoriesRow', () => ({ StoriesRow: () => null }));
+vi.mock('@/components/pwa/InstallAppBanner', () => ({ InstallAppBanner: () => null }));
 vi.mock('@/components/story/StoryModal', () => ({ StoryModal: () => null }));
 
 afterEach(cleanup);

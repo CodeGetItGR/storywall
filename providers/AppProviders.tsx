@@ -13,6 +13,7 @@ import { useVisualViewportSync } from '@/hooks/useVisualViewportSync';
 import type { SessionHandoff } from '@/lib/auth/sessionHandoff';
 import { refreshEventOn4015 } from '@/lib/eventSuspension';
 import { reopenAcceptanceGate } from '@/lib/guidelinesAcceptance';
+import { startPwaInstallListening } from '@/lib/pwaInstall';
 import { makeQueryClient } from '@/lib/queryClient';
 import { AppConfigBootstrap } from '@/providers/AppConfigBootstrap';
 import { AuthProvider } from '@/providers/AuthProvider';
@@ -54,6 +55,7 @@ export function AppProviders({ children, handoff = null }: { children: ReactNode
     // Browser only (an effect): the API client is shared with server code.
     useEffect(() => reopenAcceptanceGate(queryClient), [queryClient]);
     useEffect(() => refreshEventOn4015(queryClient), [queryClient]);
+    useEffect(() => startPwaInstallListening(), []);
     const chrome = (
         <MobileChromeProvider>
             <ModalProvider>
