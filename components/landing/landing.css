@@ -6388,3 +6388,15 @@
             var(--swx-photo-scrim), url('/landing/decor-04.webp') !important;
     }
 }
+
+/* Occasion pages: palette tokens. A dated theme (lib/occasions/themes.ts) swaps them.
+   Brand coral stays on primary actions. */
+.occasion-page {
+    --occasion-accent: #e78274;
+    --occasion-tint: #fff7f1;
+}
+
+.occasion-page[data-occasion-theme='winter'] {
+    --occasion-accent: #5b7fa6;
+    --occasion-tint: #f3f6fa;
+}
