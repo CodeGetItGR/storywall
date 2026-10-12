@@ -816,6 +816,51 @@ export interface EventRequestDto {
 export interface AdminProvisionEventRequestDto {
     hostUserId: string;
     event: EventRequestDto;
+    // Emails the host a welcome; the server treats a missing value as true.
+    notifyHost?: boolean;
+}
+
+export type AdminEmailTemplateKey = 'PASSWORD_RESET' | 'PROVISIONED_HOST_WELCOME' | 'EMAIL_VERIFICATION' | 'CUSTOM';
+
+export type AdminEmailUnavailableReason =
+    | 'ACCOUNT_DELETED'
+    | 'NO_EMAIL'
+    | 'NOT_ACTIVE'
+    | 'NOT_PASSWORD_ACCOUNT'
+    | 'ALREADY_VERIFIED'
+    | 'NO_HOSTED_EVENTS';
+
+export interface AdminEmailTemplateDto {
+    key: AdminEmailTemplateKey;
+    available: boolean;
+    unavailableReason: AdminEmailUnavailableReason | null;
+}
+
+export interface AdminEmailRequestDto {
+    template: AdminEmailTemplateKey;
+    // Defaults to the account's saved language.
+    locale?: Locale;
+    eventId?: string;
+    subject?: string;
+    body?: string;
+}
+
+// The email as it will be delivered; token links hold a placeholder.
+export interface AdminEmailPreviewDto {
+    to: string;
+    subject: string;
+    html: string;
+    text: string;
+}
+
+export interface AdminWelcomePreviewRequestDto {
+    hostUserId: string;
+    title: string;
+    startAt?: string;
+    timezone?: string;
+    locationName?: string;
+    locationAddress?: string;
+    locale?: Locale;
 }
 
 export interface EventThemeFontDto {

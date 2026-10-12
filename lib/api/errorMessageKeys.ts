@@ -112,6 +112,9 @@ export type ApiErrorMessageKey =
     | 'duplicateMembership'
     | 'duplicateReaction'
     | 'emailAlreadyExists'
+    | 'emailEventNotHosted'
+    | 'emailMessageRequired'
+    | 'emailTemplateUnavailable'
     | 'eventDatesIncomplete'
     | 'eventStartPassed'
     | 'eventStartTooFarAhead'
@@ -318,6 +321,9 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.DUPLICATE_MEMBERSHIP]: 'duplicateMembership',
     [ERROR_CODES.DUPLICATE_REACTION]: 'duplicateReaction',
     [ERROR_CODES.EMAIL_ALREADY_EXISTS]: 'emailAlreadyExists',
+    [ERROR_CODES.EMAIL_EVENT_NOT_HOSTED]: 'emailEventNotHosted',
+    [ERROR_CODES.EMAIL_MESSAGE_REQUIRED]: 'emailMessageRequired',
+    [ERROR_CODES.EMAIL_TEMPLATE_UNAVAILABLE]: 'emailTemplateUnavailable',
     [ERROR_CODES.EVENT_DATES_INCOMPLETE]: 'eventDatesIncomplete',
     [ERROR_CODES.EVENT_START_PASSED]: 'eventStartPassed',
     [ERROR_CODES.EVENT_START_TOO_FAR_AHEAD]: 'eventStartTooFarAhead',
