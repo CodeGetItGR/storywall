@@ -149,13 +149,6 @@ export function MobileTabBar() {
                             </div>
                         )}
 
-                        {/* Invite */}
-                        {inviteShare.available && (
-                            <div className="flex h-full items-center justify-center">
-                                <ShareInviteTab copied={inviteShare.copied} onShare={inviteShare.share} />
-                            </div>
-                        )}
-
                         {/* Event menu */}
                         {contextItems.length > 0 && (
                             <div className="flex h-full items-center justify-center">
@@ -169,6 +162,13 @@ export function MobileTabBar() {
                                     searchParams={searchParams}
                                     onItemClick={handleDashboardMenuClick}
                                 />
+                            </div>
+                        )}
+
+                        {/* Invite */}
+                        {inviteShare.available && (
+                            <div className="flex h-full items-center justify-center">
+                                <ShareInviteTab copied={inviteShare.copied} onShare={inviteShare.share} />
                             </div>
                         )}
 
