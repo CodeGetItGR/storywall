@@ -28,6 +28,8 @@ export function ErrorEventsPanel() {
                 <ErrorEventFilters
                     source={panel.source}
                     onSourceChangeAction={panel.setSource}
+                    statusClass={panel.statusClass}
+                    onStatusClassChangeAction={panel.setStatusClass}
                     refInput={panel.refInput}
                     refInvalid={panel.refInvalid}
                     onRefChangeAction={panel.handleRefChange}

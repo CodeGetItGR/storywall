@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminIdentifier } from '@/components/admin/AdminIdentifier';
 import { ErrorSourcePill } from '@/components/admin/betaFeedback/ErrorSourcePill';
+import { ErrorStatusPill } from '@/components/admin/betaFeedback/ErrorStatusPill';
 import type { ErrorEventResponseDto } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
 
@@ -33,7 +34,12 @@ export function ErrorEventDrawer({ event, onCloseAction }: { event: ErrorEventRe
             onClose={onCloseAction}
             closeLabel={t('close')}
             title={<span className="font-mono text-base break-all">{event.errorType}</span>}
-            subtitle={<ErrorSourcePill source={event.source} />}
+            subtitle={
+                <span className="flex flex-wrap items-center gap-2">
+                    <ErrorSourcePill source={event.source} />
+                    {event.httpStatus !== null ? <ErrorStatusPill status={event.httpStatus} /> : null}
+                </span>
+            }
             size="wide"
         >
             <div className="space-y-7">

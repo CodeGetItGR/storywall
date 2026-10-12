@@ -1,12 +1,13 @@
 'use client';
 
-import { BadgePercent, Loader2 } from 'lucide-react';
+import { BadgePercent, Loader2, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import type React from 'react';
 import { type ChangeEvent, useEffect, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { usePreviewCollaborationCode } from '@/hooks/useBilling';
+import { useDisclosure } from '@/hooks/useDisclosure';
 import type { CollaborationCodePreviewResponseDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
 
@@ -17,19 +18,24 @@ export function CollaborationCodeSection({
     onPreviewChangeAction,
     copyNamespace = 'CheckoutReviewPage.collaboration',
     disabled = false,
+    collapsible = false,
 }: {
     eventId: string;
     disabled?: boolean;
+    // Starts as a single link that opens the field.
+    collapsible?: boolean;
     copyNamespace?: 'CheckoutReviewPage.collaboration' | 'CreateEventPage.collaboration';
     onPreviewChangeAction: (code: string | null, preview: CollaborationCodePreviewResponseDto | null) => void;
 }) {
     const t = useTranslations(copyNamespace);
+    const tCommon = useTranslations('Common');
     const locale = useLocale();
     const previewCode = usePreviewCollaborationCode(eventId);
     const toErrorMessage = useApiErrorMessage();
     const [code, setCode] = useState('');
     const [appliedCode, setAppliedCode] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const { open, toggle, close } = useDisclosure(!collapsible);
     const trimmedCode = code.trim();
     const preview = appliedCode === trimmedCode ? (previewCode.data ?? null) : null;
 
@@ -42,6 +48,15 @@ export function CollaborationCodeSection({
         setAppliedCode(null);
         setError(null);
         previewCode.reset();
+    }
+
+    // Hiding the field drops the code with it, so no unseen discount stays applied.
+    function handleCollapse() {
+        setCode('');
+        setAppliedCode(null);
+        setError(null);
+        previewCode.reset();
+        close();
     }
 
     async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
@@ -58,6 +73,21 @@ export function CollaborationCodeSection({
         }
     }
 
+    // Collapsed link
+    if (!open) {
+        return (
+            <button
+                type="button"
+                onClick={toggle}
+                disabled={disabled}
+                className="inline-flex min-h-11 items-center gap-2 self-start text-sm font-semibold text-primary-dark underline underline-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+                <BadgePercent className="h-4 w-4" aria-hidden="true" />
+                {t('reveal')}
+            </button>
+        );
+    }
+
     return (
         <section className="mt-6" aria-labelledby="checkout-code-title">
             {/* Checkout code */}
@@ -67,9 +97,22 @@ export function CollaborationCodeSection({
                         <BadgePercent className="h-4 w-4" aria-hidden="true" />
                     </span>
                     <div className="min-w-0 flex-1">
-                        <h2 id="checkout-code-title" className="text-base font-bold text-ink">
-                            {t('title')}
-                        </h2>
+                        {/* Heading */}
+                        <div className="flex items-center justify-between gap-2">
+                            <h2 id="checkout-code-title" className="text-base font-bold text-ink">
+                                {t('title')}
+                            </h2>
+                            {collapsible && (
+                                <button
+                                    type="button"
+                                    onClick={handleCollapse}
+                                    aria-label={tCommon('close')}
+                                    className="-my-2 -mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
+                                >
+                                    <X className="h-4 w-4" aria-hidden="true" />
+                                </button>
+                            )}
+                        </div>
                         <form onSubmit={handleSubmit} className="mt-3 flex flex-col gap-2 sm:flex-row">
                             <label className="sr-only" htmlFor="checkout-code">
                                 {t('field')}
@@ -81,6 +124,7 @@ export function CollaborationCodeSection({
                                 maxLength={MAX_COLLABORATION_CODE_LENGTH}
                                 autoComplete="off"
                                 placeholder={t('placeholder')}
+                                autoFocus={collapsible}
                                 disabled={disabled}
                                 className="min-h-11 flex-1 rounded-full border border-border bg-card px-4 text-sm font-semibold text-ink transition outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-50"
                             />

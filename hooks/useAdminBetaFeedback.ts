@@ -6,12 +6,13 @@ import { adminBugReportsPath, adminErrorEventsPath } from '@/lib/adminBetaFeedba
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
-import type { BugReportResponseDto, ErrorEventResponseDto, ErrorEventSource } from '@/lib/api/types';
+import type { BugReportResponseDto, ErrorEventResponseDto, ErrorEventSource, ErrorEventStatusClass } from '@/lib/api/types';
 
 export const adminBetaFeedbackKeys = {
     bugReports: (page: number) => ['admin', 'bug-reports', 'list', page] as const,
     bugReport: (id: string) => ['admin', 'bug-reports', 'detail', id] as const,
-    errorEvents: (page: number, source: ErrorEventSource | null, ref: string) => ['admin', 'error-events', 'list', page, source, ref] as const,
+    errorEvents: (page: number, source: ErrorEventSource | null, statusClass: ErrorEventStatusClass | null, ref: string) =>
+        ['admin', 'error-events', 'list', page, source, statusClass, ref] as const,
 };
 
 export function useAdminBugReports(page: number) {
@@ -31,10 +32,20 @@ export function useAdminBugReport(id: string) {
     });
 }
 
-export function useAdminErrorEvents({ page, source, ref }: { page: number; source: ErrorEventSource | null; ref: string }) {
+export function useAdminErrorEvents({
+    page,
+    source,
+    statusClass,
+    ref,
+}: {
+    page: number;
+    source: ErrorEventSource | null;
+    statusClass: ErrorEventStatusClass | null;
+    ref: string;
+}) {
     return useQuery({
-        queryKey: adminBetaFeedbackKeys.errorEvents(page, source, ref),
-        queryFn: () => api.get<Page<ErrorEventResponseDto>>(adminErrorEventsPath({ page, source, ref })),
+        queryKey: adminBetaFeedbackKeys.errorEvents(page, source, statusClass, ref),
+        queryFn: () => api.get<Page<ErrorEventResponseDto>>(adminErrorEventsPath({ page, source, statusClass, ref })),
         placeholderData: (previous) => previous,
     });
 }

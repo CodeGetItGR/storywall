@@ -77,9 +77,8 @@ export type ApiErrorMessageKey =
     | 'rsvpDeadlineAfterStart'
     | 'quizAnswerInvalid'
     | 'quizQuestionInvalid'
-    | 'quizRevealAtInvalid'
+    | 'quizClosesAtInvalid'
     | 'quizClosed'
-    | 'quizAnswerRequired'
     | 'quizQuestionHasAnswers'
     | 'quizQuestionLimitReached'
     | 'notEventMember'
@@ -554,9 +553,8 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.RSVP_DEADLINE_AFTER_START]: 'rsvpDeadlineAfterStart',
     [ERROR_CODES.QUIZ_ANSWER_INVALID]: 'quizAnswerInvalid',
     [ERROR_CODES.QUIZ_QUESTION_INVALID]: 'quizQuestionInvalid',
-    [ERROR_CODES.QUIZ_REVEAL_AT_INVALID]: 'quizRevealAtInvalid',
+    [ERROR_CODES.QUIZ_CLOSES_AT_INVALID]: 'quizClosesAtInvalid',
     [ERROR_CODES.QUIZ_CLOSED]: 'quizClosed',
-    [ERROR_CODES.QUIZ_ANSWER_REQUIRED]: 'quizAnswerRequired',
     [ERROR_CODES.QUIZ_QUESTION_HAS_ANSWERS]: 'quizQuestionHasAnswers',
     [ERROR_CODES.QUIZ_QUESTION_LIMIT_REACHED]: 'quizQuestionLimitReached',
     [ERROR_CODES.NOT_EVENT_MEMBER]: 'notEventMember',

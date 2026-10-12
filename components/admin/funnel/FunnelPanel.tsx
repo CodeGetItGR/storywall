@@ -25,11 +25,11 @@ export function FunnelPanel() {
     return (
         <div className="mx-auto max-w-6xl px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
             {/* Header */}
-            <FunnelHeader updatedAt={updatedAt} isFetching={isFetching} onRefreshAction={refresh} />
+            <FunnelHeader title={t('funnel.title')} updatedAt={updatedAt} isFetching={isFetching} onRefreshAction={refresh} />
 
             <div className="space-y-5">
                 {/* Range */}
-                <FunnelRangeControl range={range} />
+                <FunnelRangeControl range={range} note={t('funnel.range.windows')} />
 
                 {isLoading && <LoadingState label={t('funnel.loading')} className="justify-start" />}
                 {Boolean(error) && <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(error)}`)}</p>}

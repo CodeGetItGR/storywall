@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { datetimeLocalValueToIso, eventWindowFromLocalStart, formatEventDateRange, getScheduleDatetimeLocalBounds } from './datetime';
+import { datetimeLocalValueToIso, eventWindowFromLocalStart, formatEventDateParts, getScheduleDatetimeLocalBounds } from './datetime';
 
 describe('datetimeLocalValueToIso', () => {
     it('converts a datetime-local value to a full ISO-8601 instant with offset', () => {
@@ -55,31 +55,27 @@ describe('eventWindowFromLocalStart', () => {
     });
 });
 
-describe('formatEventDateRange', () => {
+describe('formatEventDateParts', () => {
     it('names the date once for a same-day event, in the event time zone', () => {
-        const label = formatEventDateRange('en-GB', '2027-06-12T18:00:00+03:00', '2027-06-12T23:00:00+03:00', 'Europe/Athens');
+        const parts = formatEventDateParts('en-GB', '2027-06-12T18:00:00+03:00', '2027-06-12T23:00:00+03:00', 'Europe/Athens');
 
-        expect(label).toContain('Saturday, 12 June 2027');
-        expect(label).toMatch(/18:00\s*–\s*23:00/);
+        expect(parts?.date).toBe('Sat, 12 Jun 2027');
+        expect(parts?.time).toMatch(/^18:00\s*–\s*23:00$/);
     });
 
     it('names both dates for an event that runs past midnight', () => {
-        const label = formatEventDateRange('en-GB', '2027-06-12T18:00:00+03:00', '2027-06-13T02:00:00+03:00', 'Europe/Athens');
+        const parts = formatEventDateParts('en-GB', '2027-06-12T18:00:00+03:00', '2027-06-13T18:00:00+03:00', 'Europe/Athens');
 
-        expect(label).toContain('12 June');
-        expect(label).toContain('13 June');
+        expect(parts?.date).toContain('12');
+        expect(parts?.date).toContain('13 Jun');
+        expect(parts?.time).toBe('18:00 – 18:00');
     });
 
     it('shows only the start without an end', () => {
-        expect(formatEventDateRange('en-GB', '2027-06-12T18:00:00+03:00', null, 'Europe/Athens')).toBe('Saturday, 12 June 2027 at 18:00');
+        expect(formatEventDateParts('en-GB', '2027-06-12T18:00:00+03:00', null, 'Europe/Athens')).toEqual({ date: 'Sat, 12 Jun 2027', time: '18:00' });
     });
 
     it("falls back to the viewer's time zone for an unknown zone", () => {
-        expect(formatEventDateRange('en-GB', '2027-06-12T18:00:00+03:00', null, 'Not/AZone')).toContain('2027');
-    });
-
-    it('returns null without a usable start', () => {
-        expect(formatEventDateRange('en-GB', null, null, 'Europe/Athens')).toBeNull();
-        expect(formatEventDateRange('en-GB', 'nope', null, 'Europe/Athens')).toBeNull();
+        expect(formatEventDateParts('en-GB', '2027-06-12T18:00:00+03:00', null, 'Not/AZone')?.date).toContain('2027');
     });
 });

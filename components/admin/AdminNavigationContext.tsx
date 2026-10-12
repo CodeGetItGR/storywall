@@ -8,6 +8,7 @@ import {
     Flag,
     GalleryVerticalEnd,
     Handshake,
+    LayoutGrid,
     type LucideIcon,
     MonitorPlay,
     OctagonAlert,
@@ -37,6 +38,7 @@ import { pushPageEntry } from '@/lib/overlayHistory';
 export type AdminTab =
     | 'metrics'
     | 'funnel'
+    | 'moduleUsage'
     | 'costTracking'
     | 'plans'
     | 'paidServices'
@@ -82,6 +84,7 @@ export type AdminFocus = {
 const HASH_TO_TAB: Record<string, AdminTab> = {
     '#metrics': 'metrics',
     '#funnel': 'funnel',
+    '#module-usage': 'moduleUsage',
     '#cost-tracking': 'costTracking',
     '#paid-services': 'paidServices',
     '#discount-codes': 'discountCodes',
@@ -99,6 +102,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
 const TAB_TO_HASH: Record<AdminTab, string> = {
     metrics: '#metrics',
     funnel: '#funnel',
+    moduleUsage: '#module-usage',
     costTracking: '#cost-tracking',
     plans: PLANS_HASH_ROOT,
     paidServices: '#paid-services',
@@ -191,6 +195,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
         () => [
             { key: 'metrics', label: t('metrics'), icon: BarChart3 },
             { key: 'funnel', label: t('funnel'), icon: TrendingUp },
+            { key: 'moduleUsage', label: t('moduleUsage'), icon: LayoutGrid },
             { key: 'costTracking', label: t('costTracking'), icon: ChartNoAxesCombined },
             { key: 'plans', label: t('plans'), icon: CalendarDays },
             { key: 'paidServices', label: t('paidServices'), icon: PackagePlus },

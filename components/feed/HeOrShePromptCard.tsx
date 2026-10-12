@@ -3,8 +3,8 @@
 import { useTranslations } from 'next-intl';
 import { PiBalloonFill } from 'react-icons/pi';
 
+import { HeOrSheCloseCountdown } from '@/components/feed/HeOrSheCloseCountdown';
 import { HeOrShePromptChoice } from '@/components/feed/HeOrShePromptChoice';
-import { HeOrSheRevealCountdown } from '@/components/feed/HeOrSheRevealCountdown';
 import { LightRay } from '@/components/feed/LightRay';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { HE_OR_SHE_MODULE } from '@/hooks/useHeOrShe';
@@ -35,7 +35,7 @@ export function HeOrShePromptCard({ eventId, eventType, enabled }: { eventId: st
                 {/* Header */}
                 <div className="flex flex-col items-center gap-4 text-center">
                     <h2 className="event-heading alegreya-light text-4xl leading-tight text-balance text-ink">{title}</h2>
-                    {prompt.revealTime !== null && <HeOrSheRevealCountdown time={prompt.revealTime} />}
+                    {prompt.closesTime !== null && <HeOrSheCloseCountdown time={prompt.closesTime} />}
                 </div>
 
                 {/* Guess */}

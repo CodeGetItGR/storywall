@@ -7,6 +7,7 @@ import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import type { EventDeletionStep } from '@/hooks/useEventDeletionFlow';
 
 export function EventDeleteConfirmModal({
+    draft = false,
     open,
     step,
     otpCode,
@@ -21,6 +22,8 @@ export function EventDeleteConfirmModal({
     onSendCodeAction,
     onConfirmAction,
 }: {
+    // A draft has no guests or content yet, so it gets its own wording.
+    draft?: boolean;
     open: boolean;
     step: EventDeletionStep;
     otpCode: string;
@@ -43,12 +46,12 @@ export function EventDeleteConfirmModal({
     return (
         <ConfirmActionModal
             open={open}
-            title={t('settings.dangerZone.confirmTitle')}
+            title={draft ? t('draft.delete.title') : t('settings.dangerZone.confirmTitle')}
             size="md"
             body={
                 <div className="flex flex-col gap-3">
                     {/* Deletion explanation */}
-                    <p>{isVerifyStep ? t('settings.dangerZone.otp.verifyBody', { digits: codeDigits }) : t('settings.dangerZone.confirmBody')}</p>
+                    <p>{isVerifyStep ? t('settings.dangerZone.otp.verifyBody', { digits: codeDigits }) : draft ? t('draft.delete.body') : t('settings.dangerZone.confirmBody')}</p>
 
                     {isVerifyStep && (
                         <>
@@ -99,7 +102,7 @@ export function EventDeleteConfirmModal({
                     )}
                 </div>
             }
-            confirmLabel={isVerifyStep ? t('settings.dangerZone.confirmAction') : sendCodeLabel}
+            confirmLabel={isVerifyStep ? (draft ? t('draft.delete.action') : t('settings.dangerZone.confirmAction')) : sendCodeLabel}
             cancelLabel={t('settings.dangerZone.cancelAction')}
             onCloseAction={onCloseAction}
             onConfirmAction={isVerifyStep ? onConfirmAction : onSendCodeAction}

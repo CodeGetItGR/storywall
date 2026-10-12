@@ -18,7 +18,7 @@ export function useHeOrSheFeedPrompt(eventId: string, enabled: boolean) {
     const view = useHeOrShe(enabled && !isDemoVisitor ? eventId : null).data;
     const send = useSendHeOrSheAnswers(eventId);
 
-    const revealTime = view?.revealAt ? Date.parse(view.revealAt) : Number.NaN;
+    const closesTime = view?.closesAt ? Date.parse(view.closesAt) : Number.NaN;
     const visible = Boolean(view && view.status === 'OPEN' && view.canGuess && view.myGuess === null);
 
     async function guess(value: HeOrSheValue) {
@@ -36,8 +36,8 @@ export function useHeOrSheFeedPrompt(eventId: string, enabled: boolean) {
 
     return {
         visible,
-        // Epoch ms of the scheduled reveal, for the countdown; null when the host reveals by hand.
-        revealTime: Number.isNaN(revealTime) ? null : revealTime,
+        // Epoch ms of the closing time, for the countdown; null when voting has no closing time.
+        closesTime: Number.isNaN(closesTime) ? null : closesTime,
         isSending: send.isPending,
         error: send.error,
         guess,

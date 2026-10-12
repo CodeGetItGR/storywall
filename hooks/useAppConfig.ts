@@ -78,11 +78,17 @@ export function useAppNewsletterConfig(): AppNewsletterConfigDto | null {
     return data?.newsletter?.enabled ? data.newsletter : null;
 }
 
-// Null while beta feedback is off (or config hasn't loaded): no report
-// button and no crash reporter.
+// Null while beta feedback is off (or config hasn't loaded): no report button.
 export function useAppBetaFeedbackConfig(): AppBetaFeedbackConfigDto | null {
     const { data } = useAppConfig();
     return data?.betaFeedback?.enabled ? data.betaFeedback : null;
+}
+
+// Whether the crash reporter runs. A backend from before the split has no
+// `errorTracking`; it still gated crashes on beta feedback.
+export function useAppErrorTrackingEnabled(): boolean {
+    const { data } = useAppConfig();
+    return data?.errorTracking?.enabled ?? data?.betaFeedback?.enabled ?? false;
 }
 
 const EMPTY_MEMBER_ROLE_CATALOG: MemberRoleCatalog = {};

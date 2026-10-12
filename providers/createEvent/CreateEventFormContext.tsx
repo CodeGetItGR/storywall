@@ -102,6 +102,7 @@ export interface CreateEventFormValue {
     isCheckingCheckoutCode: boolean;
     onCheckoutCodeChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     applyCheckoutCode: () => void;
+    clearCheckoutCode: () => void;
 
     // Withdrawal consent and partner credit (both required to submit)
     requestsImmediateStart: boolean;

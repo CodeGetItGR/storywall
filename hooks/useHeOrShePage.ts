@@ -21,7 +21,7 @@ export function useHeOrShePage() {
     const copy = useModuleCopy(event?.eventType)(HE_OR_SHE_MODULE);
     const upgradeHref = usePlanUpgradeHref(eventId);
     const locale = useLocale();
-    const revealAt = view.data?.revealAt;
+    const closesAt = view.data?.closesAt;
 
     function retry() {
         void view.refetch();
@@ -37,7 +37,7 @@ export function useHeOrShePage() {
         title: copy.name,
         backHref: routes.events.feed(eventId),
         upgradeHref,
-        revealOn: revealAt ? formatDate(locale, revealAt, { dateStyle: 'medium', timeStyle: 'short' }) : null,
+        closesOn: closesAt ? formatDate(locale, closesAt, { dateStyle: 'medium', timeStyle: 'short' }) : null,
         retry,
     };
 }

@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: mocks.replace }) }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ isAuthenticated: true, isBootstrapping: false }) }));
+vi.mock('@/hooks/useMyEvents', () => ({ useMyEvents: () => ({ data: [], isLoading: false }) }));
 vi.mock('@/hooks/useEventInvitations', () => ({
     useEventInvitationPreview: () => ({
         data: {
@@ -50,7 +51,7 @@ describe('InviteOnboardingBoundary', () => {
             </NextIntlClientProvider>,
         );
 
-        fireEvent.click(screen.getByRole('button', { name: 'I have an account' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Join' }));
 
         expect(await screen.findByRole('alert')).toHaveTextContent("You can't join this event.");
         expect(mocks.replace).not.toHaveBeenCalled();

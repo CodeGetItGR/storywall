@@ -5,12 +5,22 @@ import { useTranslations } from 'next-intl';
 
 import { cn } from '@/lib/utils';
 
-export function FunnelHeader({ updatedAt, isFetching, onRefreshAction }: { updatedAt: string | null; isFetching: boolean; onRefreshAction: () => void }) {
+export function FunnelHeader({
+    title,
+    updatedAt,
+    isFetching,
+    onRefreshAction,
+}: {
+    title: string;
+    updatedAt: string | null;
+    isFetching: boolean;
+    onRefreshAction: () => void;
+}) {
     const t = useTranslations('AdminPage.funnel');
 
     return (
         <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
-            <h1 className="text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">{t('title')}</h1>
+            <h1 className="text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">{title}</h1>
             <div className="flex items-center gap-3">
                 {updatedAt && <span className="text-xs text-ink-faint">{t('updatedAt', { time: updatedAt })}</span>}
                 <button

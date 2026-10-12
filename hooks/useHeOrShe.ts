@@ -11,13 +11,12 @@ import type {
     HeOrSheAnswersRequestDto,
     HeOrSheResultsDto,
     HeOrSheSettingsRequestDto,
-    HeOrSheValue,
     HeOrSheViewDto,
     QuizQuestionDto,
     QuizQuestionPatchDto,
     QuizQuestionRequestDto,
 } from '@/lib/api/types';
-import { msUntilReveal } from '@/lib/heOrShe';
+import { msUntilClose } from '@/lib/heOrShe';
 import { LIVE_CONTENT_STALE_TIME } from '@/lib/queryClient';
 
 export const HE_OR_SHE_MODULE = 'he_or_she';
@@ -27,12 +26,12 @@ export const heOrSheKeys = {
     results: (eventId: string) => ['events', eventId, 'he-or-she', 'results'] as const,
 };
 
-// setTimeout overflows past ~24.8 days; a reveal further out is refetched on the next visit anyway.
+// setTimeout overflows past ~24.8 days; a closing time further out is refetched on the next visit anyway.
 const MAX_TIMER_MS = 2_147_483_647;
 
 /**
- * The role-aware view. "Revealed" is computed on read, so while the page is open a timer refetches
- * the moment the scheduled reveal passes.
+ * The role-aware view. "Closed" is computed on read, so while the page is open a timer refetches
+ * the moment the closing time passes.
  */
 export function useHeOrShe(eventId: string | null) {
     const { isAuthenticated } = useAuth();
@@ -46,17 +45,17 @@ export function useHeOrShe(eventId: string | null) {
     });
 
     const status = query.data?.status;
-    const revealAt = query.data?.revealAt ?? null;
+    const closesAt = query.data?.closesAt ?? null;
     useEffect(() => {
         if (!eventId || status !== 'OPEN') return;
-        const wait = msUntilReveal(revealAt);
+        const wait = msUntilClose(closesAt);
         if (wait === null || wait > MAX_TIMER_MS) return;
-        // A second's slack, so the server's clock has passed revealAt too.
+        // A second's slack, so the server's clock has passed closesAt too.
         const timer = setTimeout(() => {
             void queryClient.invalidateQueries({ queryKey: heOrSheKeys.view(eventId) });
         }, wait + 1000);
         return () => clearTimeout(timer);
-    }, [eventId, queryClient, revealAt, status]);
+    }, [closesAt, eventId, queryClient, status]);
 
     return query;
 }
@@ -91,12 +90,6 @@ export function useSendHeOrSheAnswers(eventId: string) {
 
 export function useUpdateHeOrSheSettings(eventId: string) {
     return useViewMutation(eventId, (input: HeOrSheSettingsRequestDto) => api.put<HeOrSheViewDto>(endpoints.events.heOrSheSettings(eventId), input));
-}
-
-export function useRevealHeOrShe(eventId: string) {
-    return useViewMutation(eventId, (answer: HeOrSheValue | null) =>
-        api.post<HeOrSheViewDto>(endpoints.events.heOrSheReveal(eventId), answer ? { answer } : {}),
-    );
 }
 
 /** Question writes don't return the view: refetch it and the results. */

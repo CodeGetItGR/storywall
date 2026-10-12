@@ -276,6 +276,13 @@ export function useCreateEventFormController(): CreateEventFormValue {
         [clearCheckoutCodePreview],
     );
 
+    // Closing the field drops the code with it, so no unseen discount stays applied.
+    const clearCheckoutCode = useCallback(() => {
+        setCheckoutCode('');
+        clearCheckoutCodePreview();
+        previewCreateEventCode.reset();
+    }, [clearCheckoutCodePreview, previewCreateEventCode]);
+
     const applyCheckoutCode = useCallback(async () => {
         const trimmedCode = checkoutCode.trim();
         if (!trimmedCode || !selectedCode || !selectedOption) return;
@@ -517,6 +524,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
         isCheckingCheckoutCode: previewCreateEventCode.isPending,
         onCheckoutCodeChange,
         applyCheckoutCode,
+        clearCheckoutCode,
 
         requestsImmediateStart: consent.requestsImmediateStart,
         acknowledgesWithdrawalTerms: consent.acknowledgesWithdrawalTerms,

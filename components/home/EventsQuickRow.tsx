@@ -2,70 +2,64 @@
 
 import { Heart, Plus } from 'lucide-react';
 import Link from 'next/link';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { HomeHorizontalScroller } from '@/components/home/HomeHorizontalScroller';
 import { EventQuickCardSkeleton, EventQuickCardsSkeleton } from '@/components/home/HomeSkeletons';
-import Badge from '@/components/ui/badge';
 import type { EventGridItem } from '@/hooks/useEventGridItems';
-import { useMemberRoleLabel } from '@/hooks/useMemberRoleLabel';
-import { formatDate, formatEventListDate } from '@/lib/datetime';
-import { isEventDeleted } from '@/lib/eventLifecycle';
+import { useEventQuickCard } from '@/hooks/useEventQuickCard';
+import type { EventCardStatus } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
-function EventQuickCard({ member, event }: EventGridItem) {
-    const tEvents = useTranslations('EventsPage');
-    const locale = useLocale();
+const STATUS_DOT_CLASS_NAME: Record<EventCardStatus, string> = {
+    suspended: 'bg-status-danger',
+    deleting: 'bg-status-danger',
+    draft: 'bg-status-warn',
+    ended: 'bg-ink-faint',
+};
 
-    const isHost = member.role === 'HOST';
-    const memberRole = useMemberRoleLabel(member, event?.eventType);
-    // The host pill already says "Host", so a host only falls back to a custom role here.
-    const roleLabel = memberRole ?? (isHost ? null : tEvents('roleFallback.attendee'));
-    const eventDate = formatEventListDate(event?.schedule.startAt, locale, tEvents('dateAt'));
-    // A deleted event opens on its manage page (the only place left to land)
-    // and shows its purge date instead of the event date.
-    const isDeleted = isEventDeleted(event);
-    const secondaryLabel =
-        isDeleted && event?.deletionScheduledFor
-            ? tEvents('deletingOn', { date: formatDate(locale, event.deletionScheduledFor, { dateStyle: 'medium' }) })
-            : (eventDate ?? roleLabel);
+function EventQuickCard(item: EventGridItem) {
+    const { href, coverUrl, title, detailLabel, status, statusLabel, dateLabel } = useEventQuickCard(item);
 
     return (
         <Link
-            href={isDeleted ? routes.events.manage(member.eventId) : routes.events.feed(member.eventId)}
-            className="group relative h-62 w-44 shrink-0 overflow-hidden rounded-lg bg-surface-muted transition-transform hover:-translate-y-0.5 lg:h-56 lg:w-40"
+            href={href}
+            className="group relative h-72 w-52 shrink-0 overflow-hidden rounded-lg bg-surface-muted transition-transform hover:-translate-y-0.5"
         >
-            {event?.coverMedia?.mediaUrl ? (
+            {coverUrl ? (
                 <ProtectedImage
-                    src={event.coverMedia.mediaUrl}
+                    src={coverUrl}
                     alt=""
                     fill
                     className="object-cover transition-transform duration-300 group-hover:scale-[1.04]"
-                    sizes="160px"
+                    sizes="208px"
                 />
             ) : (
                 <div className="absolute inset-0 flex items-center justify-center bg-gradient-brand">
                     <Heart className="h-7 w-7 text-white/85" />
                 </div>
             )}
-            {event?.suspended ? (
-                <span className="absolute top-2 left-2 rounded-full bg-status-danger px-2.5 py-0.5 text-[11px] font-bold text-white">
-                    {tEvents('suspended')}
-                </span>
-            ) : null}
-            {/* Host badge */}
-            {isHost ? (
-                <Badge className="absolute top-2 right-2 bg-ink/55 px-2.5 text-[11px] font-semibold text-white backdrop-blur-sm">
-                    {tEvents('roleFallback.host')}
-                </Badge>
-            ) : null}
-            {/* Title and date */}
-            <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-ink/85 via-ink/35 to-transparent px-3 pt-8 pb-3">
-                <p className="truncate text-sm font-semibold text-white">{event?.title ?? tEvents('eventUnavailable')}</p>
-                <p className="mt-0.5 truncate text-xs text-white/75">{secondaryLabel}</p>
+            {/* Details */}
+            <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-ink/85 via-ink/40 to-transparent px-3 pt-12 pb-3">
+                {detailLabel ? (
+                    <p className="truncate text-[10px] font-semibold tracking-wide text-white/70 uppercase">{detailLabel}</p>
+                ) : null}
+                <p className="mt-0.5 line-clamp-2 text-[15px] leading-snug font-semibold text-white">{title}</p>
+                {status || dateLabel ? (
+                    <p className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-white/75">
+                        {status ? (
+                            <>
+                                <span aria-hidden="true" className={cn('h-1.5 w-1.5 shrink-0 rounded-full', STATUS_DOT_CLASS_NAME[status])} />
+                                <span className="shrink-0 font-semibold text-white">{statusLabel}</span>
+                                {dateLabel ? <span aria-hidden="true">·</span> : null}
+                            </>
+                        ) : null}
+                        {dateLabel ? <span className="truncate">{dateLabel}</span> : null}
+                    </p>
+                ) : null}
             </div>
         </Link>
     );

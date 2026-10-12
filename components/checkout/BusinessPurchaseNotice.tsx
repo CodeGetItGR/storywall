@@ -5,11 +5,21 @@ import { useTranslations } from 'next-intl';
 // Shown before redirecting to Stripe in place of the consumer withdrawal text
 // (business-buyers-fe-integration.md §3). Same wording as the Stripe page footer.
 // Reuses the consent section's heading id, since callers label their wrapper with it.
-export function BusinessPurchaseNotice({ legalName, vatNumber, staleTerms }: { legalName: string; vatNumber: string; staleTerms: boolean }) {
+export function BusinessPurchaseNotice({
+    legalName,
+    vatNumber,
+    staleTerms,
+    className = 'rounded-lg border border-border bg-surface-muted/40 p-4',
+}: {
+    legalName: string;
+    vatNumber: string;
+    staleTerms: boolean;
+    className?: string;
+}) {
     const t = useTranslations('CheckoutReviewPage');
 
     return (
-        <section className="rounded-lg border border-border bg-surface-muted/40 p-4" aria-labelledby="withdrawal-terms-title">
+        <section className={className} aria-labelledby="withdrawal-terms-title">
             {/* Business purchase */}
             <h2 id="withdrawal-terms-title" className="text-base font-bold text-ink">
                 {t('businessPurchase.title')}

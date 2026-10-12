@@ -540,6 +540,7 @@
         },
         "defaultHeroImageAlt": "Event cover photo",
         "haveAccount": "I have an account",
+        "join": "Join",
         "createAccount": "Create an account",
         "gift": "A gift from {giver} for {recipient}."
     },
@@ -728,11 +729,9 @@
         }
     },
     "EventsPage": {
-        "deletingOn": "Deleting on {date}",
         "yourEvents": "Your events",
         "createEventCta": "Create event",
         "eventUnavailable": "Event unavailable",
-        "suspended": "Suspended",
         "previous": "Previous events",
         "next": "Next events",
         "roleFallback": {
@@ -740,7 +739,13 @@
             "attendee": "Guest"
         },
         "dateAt": "at",
-        "goingCount": "{count} going"
+        "goingCount": "{count} going",
+        "status": {
+            "suspended": "Suspended",
+            "deleting": "Deleting",
+            "draft": "Draft",
+            "ended": "Ended"
+        }
     },
     "NotificationsPage": {
         "back": "Back",
@@ -989,6 +994,7 @@
             "title": "Discount code",
             "field": "Discount code",
             "placeholder": "Enter code",
+            "reveal": "Have a discount code?",
             "apply": "Apply",
             "checking": "Checking",
             "applied": "{discount}% discount applied",
@@ -998,6 +1004,7 @@
             "event": "Event details",
             "pricing": "Pricing details",
             "pricingHint": "Activation is a one-time payment.",
+            "consentHint": "Tick the boxes above to continue.",
             "planActivation": "Plan activation",
             "planActivationFor": "Plan activation · {duration}",
             "discount": "Discount",
@@ -1080,6 +1087,12 @@
         },
         "noGuestsYet": "No guests have joined yet — share an invite to get started.",
         "draft": {
+            "delete": {
+                "action": "Delete draft",
+                "title": "Delete this draft?",
+                "body": "The draft and its details are deleted. This can't be undone."
+            },
+            "backToEvents": "Back to your events",
             "title": "Not published yet",
             "body": "Set a start date before publishing.",
             "bodyReadyToPay": "Complete payment to publish.",
@@ -1672,6 +1685,7 @@
             "title": "Discount code",
             "field": "Discount code",
             "placeholder": "Enter code",
+            "reveal": "Have a discount code?",
             "apply": "Apply",
             "checking": "Checking...",
             "applied": "{label}: {discount}% off. Plan charge is now {amount}."
@@ -2228,15 +2242,15 @@
         "yes": "Yes",
         "no": "No",
         "yourGuess": "Your guess",
-        "revealOn": "Reveal on {date}",
+        "closesIn": "Voting closes in",
+        "closesOn": "Voting closes on {date}",
+        "closed": "Voting is closed",
         "extraQuestions": "More questions",
         "optional": "Optional",
         "send": "Send",
         "changeAnswers": "Change my answers",
         "thanks": "Thanks for your answer",
-        "notOpen": "Guessing isn't open yet.",
-        "resultHe": "It's a boy!",
-        "resultShe": "It's a girl!",
+        "notOpen": "Voting isn't open yet.",
         "guesses": "{count, plural, =0 {No guesses yet} one {# guess} other {# guesses}}",
         "answerPlaceholder": "Your answer",
         "numberPlaceholder": "Number",
@@ -2247,18 +2261,10 @@
             "invalidTime": "Enter a valid time."
         },
         "host": {
-            "settingsTitle": "Answer and reveal",
-            "secretAnswer": "The answer",
-            "secretAnswerHint": "Only hosts see this.",
-            "revealAt": "Reveal time",
-            "revealAtHint": "Leave empty to reveal by hand.",
-            "needsAnswer": "Choose the answer to set a reveal time.",
+            "settingsTitle": "Voting",
+            "closesAt": "Closing time",
+            "closesAtHint": "Leave empty to keep voting open.",
             "save": "Save",
-            "revealNow": "Reveal now",
-            "revealConfirmTitle": "Reveal the answer?",
-            "revealConfirmBody": "Everyone will see it. This can't be undone.",
-            "revealPickAnswer": "Choose the answer",
-            "revealConfirmAction": "Reveal",
             "cancel": "Cancel",
             "questionsTitle": "Extra questions",
             "addQuestion": "Add question",
@@ -2631,6 +2637,7 @@
             "orders": "Orders",
             "metrics": "Metrics",
             "funnel": "Growth",
+            "moduleUsage": "Module usage",
             "costTracking": "Cost tracking",
             "plans": "Plans",
             "paidServices": "Paid services",
@@ -2931,6 +2938,12 @@
                 "BACKGROUND": "Background",
                 "CLIENT": "App"
             },
+            "statusLabel": "Status",
+            "statusClasses": {
+                "ALL": "All",
+                "CLIENT_ERROR": "4xx",
+                "SERVER_ERROR": "5xx"
+            },
             "refLabel": "Ref",
             "refPlaceholder": "Ref, e.g. a1b2c3d4e5f6",
             "refInvalid": "A ref is 12 characters, 0-9 and a-f.",
@@ -2938,6 +2951,7 @@
             "columns": {
                 "lastSeen": "Last seen",
                 "source": "Source",
+                "status": "Status",
                 "error": "Error",
                 "count": "Count",
                 "ref": "Ref"
@@ -3657,6 +3671,57 @@
                 "guests": "guest limit",
                 "name": "name",
                 "memberRoles": "member roles"
+            }
+        },
+        "moduleUsage": {
+            "title": "Module usage",
+            "loading": "Loading module usage…",
+            "rangeNote": "Counts events created in this range, with everything they have so far.",
+            "tooFew": "Too few events",
+            "tooFewOverall": "Fewer than {count} events match. Widen the range or filters.",
+            "filters": {
+                "eventType": "Event type",
+                "plan": "Plan",
+                "all": "All"
+            },
+            "columns": {
+                "module": "Module",
+                "events": "Events with it",
+                "used": "Used",
+                "average": "Average",
+                "median": "Median"
+            },
+            "modules": {
+                "posts": "Posts",
+                "gallery": "Gallery",
+                "stories": "Stories",
+                "wishbook": "Wishbook",
+                "rsvp": "RSVP",
+                "playlist": "Playlist",
+                "schedule": "Schedule",
+                "wishlist": "Bank details",
+                "qr_links": "QR links"
+            },
+            "metrics": {
+                "posts": "Posts per event",
+                "comments": "Comments per event",
+                "reactions": "Reactions per event",
+                "commentsPerPost": "Comments per post",
+                "reactionsPerPost": "Reactions per post",
+                "eventsWithComments": "Events with a comment",
+                "eventsWithReactions": "Events with a reaction",
+                "media": "Media per event",
+                "photoShare": "Photos",
+                "videoShare": "Videos",
+                "qrUploadShare": "Uploaded by QR",
+                "stories": "Stories per event",
+                "responses": "Responses per event",
+                "suggestions": "Songs suggested per event",
+                "votes": "Votes per event",
+                "sessions": "Sessions per event",
+                "wishes": "Wishes per event",
+                "qrJoins": "QR joins per event",
+                "qrUploads": "QR uploads per event"
             }
         },
         "funnel": {
@@ -5266,9 +5331,8 @@
         "rsvpDeadlineAfterStart": "The RSVP deadline must be before the event starts.",
         "quizAnswerInvalid": "One of the answers isn't valid. Check it and try again.",
         "quizQuestionInvalid": "This question isn't valid. Check its text and options.",
-        "quizRevealAtInvalid": "Pick a reveal time in the future.",
-        "quizClosed": "The answer has been revealed. Answers can no longer change.",
-        "quizAnswerRequired": "Choose the answer first.",
+        "quizClosesAtInvalid": "Pick a closing time in the future.",
+        "quizClosed": "Voting is closed. Answers can no longer change.",
         "quizQuestionHasAnswers": "Guests have answered this question, so its options can't change.",
         "quizQuestionLimitReached": "You've reached the maximum number of questions.",
         "notEventMember": "You're not a member of this event.",

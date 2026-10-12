@@ -10,7 +10,7 @@ import type { HeOrSheResultsDto, HeOrSheViewDto } from '@/lib/api/types';
 /** The host's part of the page: settings, extra questions, and everyone's answers. */
 export function HostSection({ eventId, view, results }: { eventId: string; view: HeOrSheViewDto; results: HeOrSheResultsDto | undefined }) {
     const editor = useHeOrSheQuestionEditor(eventId, results);
-    const locked = view.status === 'REVEALED';
+    const locked = view.status === 'CLOSED';
 
     return (
         <div className="space-y-10">

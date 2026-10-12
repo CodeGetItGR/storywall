@@ -64,3 +64,18 @@ export function isEventEnded(event: { schedule: { endAt: string | null } }, now:
     const end = Date.parse(endAt);
     return Number.isFinite(end) && end < now;
 }
+
+export type EventCardStatus = 'suspended' | 'deleting' | 'draft' | 'ended';
+
+// The one state worth flagging on an event card, or null for a normal live
+// event. The most pressing state wins when several apply.
+export function eventCardStatus(
+    event: { status: EventStatus; suspended?: boolean; deletedAt: string | null; schedule: { endAt: string | null } },
+    now: number = Date.now(),
+): EventCardStatus | null {
+    if (event.suspended) return 'suspended';
+    if (isEventDeleted(event)) return 'deleting';
+    if (event.status === 'DRAFT') return 'draft';
+    if (isEventEnded(event, now)) return 'ended';
+    return null;
+}

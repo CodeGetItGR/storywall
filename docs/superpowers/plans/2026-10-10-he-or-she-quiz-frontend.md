@@ -1,5 +1,7 @@
 # He or She? Quiz (Frontend) Implementation Plan
 
+> **Superseded in part (2026-10-11):** nobody knows the answer, the host included, so there is no secret answer, no reveal and no result. The host sets an optional closing time (`closesAt`, status `OPEN`/`CLOSED`); members see the split after voting, hosts always, and everyone once voting closes. The reveal parts of this plan are history; the code and the BE guide are current.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** The `tools/he-or-she` page for GENDER_REVEAL events. Everyone (hosts included) guesses Boy or Girl, answers optional extra questions, and see the tally after guessing (and everyone sees the result after the reveal). Hosts set the secret answer and reveal time, press Reveal, manage the extra questions, and read every answer by name.

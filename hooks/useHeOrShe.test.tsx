@@ -3,7 +3,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { heOrSheKeys, useCreateHeOrSheQuestion, useHeOrShe, useHeOrSheResults, useRevealHeOrShe, useSendHeOrSheAnswers } from '@/hooks/useHeOrShe';
+import { heOrSheKeys, useCreateHeOrSheQuestion, useHeOrShe, useHeOrSheResults, useSendHeOrSheAnswers, useUpdateHeOrSheSettings } from '@/hooks/useHeOrShe';
 import { endpoints } from '@/lib/api/endpoints';
 import type { HeOrSheViewDto } from '@/lib/api/types';
 
@@ -25,12 +25,10 @@ vi.mock('@/hooks/useModuleReadable', () => ({ useModuleReadable: () => moduleSta
 function view(overrides: Partial<HeOrSheViewDto> = {}): HeOrSheViewDto {
     return {
         status: 'OPEN',
-        revealAt: null,
+        closesAt: null,
         canGuess: true,
         myGuess: null,
         tally: null,
-        result: null,
-        answer: null,
         questions: [],
         myAnswers: {},
         ...overrides,
@@ -70,10 +68,10 @@ describe('useHeOrShe', () => {
         expect(apiGet).not.toHaveBeenCalled();
     });
 
-    it('refetches when the scheduled reveal passes', async () => {
+    it('refetches when the closing time passes', async () => {
         vi.useFakeTimers({ shouldAdvanceTime: true });
-        const revealAt = new Date(Date.now() + 5_000).toISOString();
-        apiGet.mockResolvedValueOnce(view({ revealAt })).mockResolvedValue(view({ revealAt, status: 'REVEALED', result: 'SHE' }));
+        const closesAt = new Date(Date.now() + 5_000).toISOString();
+        apiGet.mockResolvedValueOnce(view({ closesAt })).mockResolvedValue(view({ closesAt, status: 'CLOSED', canGuess: false }));
         const { result } = renderHook(() => useHeOrShe('e1'), { wrapper: wrapperFor(client) });
         await waitFor(() => expect(result.current.data?.status).toBe('OPEN'));
 
@@ -81,13 +79,13 @@ describe('useHeOrShe', () => {
             await vi.advanceTimersByTimeAsync(6_500);
         });
 
-        await waitFor(() => expect(result.current.data?.status).toBe('REVEALED'));
+        await waitFor(() => expect(result.current.data?.status).toBe('CLOSED'));
         expect(apiGet).toHaveBeenCalledTimes(2);
     });
 
-    it('sets no timer once revealed', async () => {
+    it('sets no timer once closed', async () => {
         vi.useFakeTimers({ shouldAdvanceTime: true });
-        apiGet.mockResolvedValue(view({ status: 'REVEALED', revealAt: new Date(Date.now() + 5_000).toISOString() }));
+        apiGet.mockResolvedValue(view({ status: 'CLOSED', closesAt: new Date(Date.now() + 5_000).toISOString() }));
         renderHook(() => useHeOrShe('e1'), { wrapper: wrapperFor(client) });
         await waitFor(() => expect(apiGet).toHaveBeenCalledTimes(1));
 
@@ -120,15 +118,16 @@ describe('he-or-she writes', () => {
         expect(apiGet).not.toHaveBeenCalled();
     });
 
-    it('reveals with the answer, or with an empty body to use the stored one', async () => {
-        apiPost.mockResolvedValue(view({ status: 'REVEALED' }));
-        const { result } = renderHook(() => useRevealHeOrShe('e1'), { wrapper: wrapperFor(client) });
+    it('sends only the closing time in the settings', async () => {
+        const closesAt = '2026-11-01T18:00:00.000Z';
+        const updated = view({ closesAt });
+        apiPut.mockResolvedValue(updated);
+        const { result } = renderHook(() => useUpdateHeOrSheSettings('e1'), { wrapper: wrapperFor(client) });
 
-        await act(() => result.current.mutateAsync('SHE'));
-        await act(() => result.current.mutateAsync(null));
+        await act(() => result.current.mutateAsync({ closesAt }));
 
-        expect(apiPost).toHaveBeenNthCalledWith(1, endpoints.events.heOrSheReveal('e1'), { answer: 'SHE' });
-        expect(apiPost).toHaveBeenNthCalledWith(2, endpoints.events.heOrSheReveal('e1'), {});
+        expect(apiPut).toHaveBeenCalledWith(endpoints.events.heOrSheSettings('e1'), { closesAt });
+        expect(client.getQueryData(heOrSheKeys.view('e1'))).toEqual(updated);
     });
 
     it('refetches the view and the results after a question write', async () => {

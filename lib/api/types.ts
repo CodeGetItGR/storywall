@@ -501,14 +501,21 @@ export interface AppConfigResponseDto {
     newsletter: AppNewsletterConfigDto;
     eventDeletion: AppEventDeletionConfigDto;
     betaFeedback: AppBetaFeedbackConfigDto;
+    errorTracking: AppErrorTrackingConfigDto;
 }
 
-// Bug reports and crash capture (beta-feedback-fe-integration.md). While
-// `enabled` is false both POST routes answer 409 / 5100.
+// Bug reports (beta-feedback-fe-integration.md). While `enabled` is false
+// POST /api/bug-reports answers 409 / 5100.
 export interface AppBetaFeedbackConfigDto {
     enabled: boolean;
     screenshotMaxBytes: number;
     screenshotMimeTypes: string[];
+}
+
+// Crash capture (error-tracking-fe-integration.md). While `enabled` is false
+// POST /api/error-events/client answers 409 / 5174.
+export interface AppErrorTrackingConfigDto {
+    enabled: boolean;
 }
 
 // GET /api/config → newsletter (newsletter-fe-integration §6). Describes the
@@ -1040,6 +1047,11 @@ export interface CheckoutResponseDto {
     buyerType: BuyerType;
     // The order's pinned breakdown: exactly what the payment page charges (2026-09-24).
     breakdown: PriceBreakdown;
+}
+
+// POST /api/events/{id}/orders/{orderId}/sync (billing-fe-guide.md §6 step 5, 2026-10-11).
+export interface OrderSyncResponseDto {
+    status: OrderStatus;
 }
 
 // Shared by activation and upgrade checkout — the consent Directive 2011/83/EU
@@ -1942,6 +1954,61 @@ export interface FunnelCohortDto {
     engagedHost: number;
 }
 
+// --- Module usage (docs/module-usage-be-spec.md) ---
+
+/** The modules the usage dashboard reports on. `qr_links` is not a plan module: its base is every event in scope. */
+export type ModuleUsageModuleKey = 'posts' | 'gallery' | 'stories' | 'rsvp' | 'playlist' | 'schedule' | 'wishbook' | 'wishlist' | 'qr_links';
+
+export type ModuleUsageMetricKey =
+    | 'posts'
+    | 'comments'
+    | 'reactions'
+    | 'commentsPerPost'
+    | 'reactionsPerPost'
+    | 'eventsWithComments'
+    | 'eventsWithReactions'
+    | 'media'
+    | 'photoShare'
+    | 'videoShare'
+    | 'qrUploadShare'
+    | 'stories'
+    | 'responses'
+    | 'suggestions'
+    | 'votes'
+    | 'sessions'
+    | 'wishes'
+    | 'qrJoins'
+    | 'qrUploads';
+
+/** PER_EVENT and PER_POST carry `average` and `median`; SHARE carries `share` (0–1). */
+export type ModuleUsageMetricKind = 'PER_EVENT' | 'PER_POST' | 'SHARE';
+
+export interface ModuleUsageMetricDto {
+    key: ModuleUsageMetricKey;
+    kind: ModuleUsageMetricKind;
+    average: number | null;
+    median: number | null;
+    share: number | null;
+}
+
+export interface ModuleUsageRowDto {
+    moduleKey: ModuleUsageModuleKey;
+    /** True when fewer than `minEvents` events have the module on; every number below is then null and `metrics` empty. */
+    suppressed: boolean;
+    eventsWithModule: number | null;
+    /** Events with the module on that have at least one item (wishlist: bank details saved; qr_links: a link created). */
+    eventsUsed: number | null;
+    metrics: ModuleUsageMetricDto[];
+}
+
+/** GET /api/admin/metrics/module-usage?since&until&eventTypeKey&planCode — active, non-demo events created in range. */
+export interface ModuleUsageResponseDto {
+    minEvents: number;
+    /** Null when fewer than `minEvents` events match; every row is then suppressed. */
+    eventsInScope: number | null;
+    modules: ModuleUsageRowDto[];
+}
+
 export interface PlatformNewsletterMetricsDto {
     pending: number;
     confirmed: number;
@@ -2233,19 +2300,15 @@ export interface QuizQuestionDto {
     sortOrder: number;
 }
 
-// GET /he-or-she; PUT /answers, PUT /settings and POST /reveal return it too.
+// GET /he-or-she; PUT /answers and PUT /settings return it too.
 export interface HeOrSheViewDto {
-    status: 'OPEN' | 'REVEALED';
-    // The scheduled reveal. Revealed is computed on read, so refetch when it passes.
-    revealAt: string | null;
+    status: 'OPEN' | 'CLOSED';
+    // When voting closes. Closed is computed on read, so refetch when it passes.
+    closesAt: string | null;
     canGuess: boolean;
     myGuess: HeOrSheValue | null;
-    // Null for a member who hasn't guessed while OPEN; never null for hosts.
+    // Null for a member who hasn't voted while OPEN; never null for hosts or once CLOSED.
     tally: { he: number; she: number } | null;
-    // Only once REVEALED.
-    result: HeOrSheValue | null;
-    // The stored secret answer: hosts only.
-    answer: HeOrSheValue | null;
     questions: QuizQuestionDto[];
     // questionId -> canonical value.
     myAnswers: Record<string, string>;
@@ -2257,10 +2320,9 @@ export interface HeOrSheAnswersRequestDto {
     answers: { questionId: string; value: string }[];
 }
 
-// PUT /settings (host). Both null clears them.
+// PUT /settings (host). Null clears it, so voting stays open.
 export interface HeOrSheSettingsRequestDto {
-    answer: HeOrSheValue | null;
-    revealAt: string | null;
+    closesAt: string | null;
 }
 
 export interface QuizQuestionRequestDto {
@@ -3220,12 +3282,17 @@ export interface BugReportResponseDto {
 
 export type ErrorEventSource = 'BACKEND' | 'BACKGROUND' | 'CLIENT';
 
+// ?statusClass= on GET /api/error-events: 4xx or 5xx rows.
+export type ErrorEventStatusClass = 'CLIENT_ERROR' | 'SERVER_ERROR';
+
 // GET /api/error-events(/{id}) — admin only, newest lastSeenAt first. One row
 // groups every occurrence of the same error; `ref` is what a 500's errorRef holds.
 export interface ErrorEventResponseDto {
     id: string;
     ref: string;
     source: ErrorEventSource;
+    // The response status of a BACKEND row (4xx or 5xx); null for BACKGROUND and CLIENT.
+    httpStatus: number | null;
     errorType: string;
     message: string | null;
     stackTrace: string | null;

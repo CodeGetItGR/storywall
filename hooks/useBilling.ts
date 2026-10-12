@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 
 import { appConfigKeys } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
@@ -19,6 +20,7 @@ import type {
     ExtensionCheckoutRequestDto,
     ExtensionOptionResponseDto,
     OrderSummaryDto,
+    OrderSyncResponseDto,
     PriceBreakdown,
     QuoteRequestDto,
     StorageCheckoutRequestDto,
@@ -102,6 +104,30 @@ export function useCheckout(eventId: string) {
             queryClient.invalidateQueries({ queryKey: ['events', eventId], exact: true });
         },
     });
+}
+
+// How often the success page asks the backend to check an order with the
+// provider while it waits. The endpoint allows 10 calls a minute.
+const ORDER_SYNC_INTERVAL_MS = 10_000;
+
+// While `active`, asks the backend every few seconds to settle the order if its
+// payment went through but the webhook hasn't arrived. The billing poll still
+// owns the status; this only refetches it once the backend reports PAID.
+// Failures are ignored: the billing poll and the backend's own sweep remain.
+export function useOrderSync(eventId: string, orderId: string | null, active: boolean) {
+    const queryClient = useQueryClient();
+
+    useEffect(() => {
+        if (!active || !orderId) return;
+        const timer = window.setInterval(() => {
+            api.post<OrderSyncResponseDto>(endpoints.events.orderSync(eventId, orderId))
+                .then((response) => {
+                    if (response.status === 'PAID') void queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
+                })
+                .catch(() => undefined);
+        }, ORDER_SYNC_INTERVAL_MS);
+        return () => window.clearInterval(timer);
+    }, [active, eventId, orderId, queryClient]);
 }
 
 export function usePreviewCollaborationCode(eventId: string) {

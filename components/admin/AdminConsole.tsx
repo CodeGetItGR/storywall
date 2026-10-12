@@ -14,6 +14,7 @@ import { DemoEventsSection } from '@/components/admin/demoEvents/DemoEventsSecti
 import { EventsSection } from '@/components/admin/events/EventsSection';
 import { FunnelPanel } from '@/components/admin/funnel/FunnelPanel';
 import { ModerationPanel } from '@/components/admin/moderation/ModerationPanel';
+import { ModuleUsagePanel } from '@/components/admin/moduleUsage/ModuleUsagePanel';
 import { OrdersSection } from '@/components/admin/orders/OrdersSection';
 import { PaidServicesCatalogPanel } from '@/components/admin/PaidServicesCatalogPanel';
 import { PartnerCardsSection } from '@/components/admin/partnerCards/PartnerCardsSection';
@@ -32,6 +33,7 @@ export function AdminConsole() {
     // primary action) — the shared eyebrow/title block would just duplicate it.
     if (tab === 'metrics') return <PlatformMetricsPanel />;
     if (tab === 'funnel') return <FunnelPanel />;
+    if (tab === 'moduleUsage') return <ModuleUsagePanel />;
     if (tab === 'paidServices') return <PaidServicesCatalogPanel />;
     if (tab === 'plans') return <PlansSection />;
     if (tab === 'discountCodes') return <AdminDiscountCodesPanel />;

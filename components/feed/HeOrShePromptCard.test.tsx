@@ -27,12 +27,10 @@ vi.mock('@/hooks/useHeOrShe', () => ({
 function view(overrides: Partial<HeOrSheViewDto> = {}): HeOrSheViewDto {
     return {
         status: 'OPEN',
-        revealAt: null,
+        closesAt: null,
         canGuess: true,
         myGuess: null,
         tally: null,
-        result: null,
-        answer: null,
         questions: [],
         myAnswers: {},
         ...overrides,
@@ -70,14 +68,15 @@ describe('HeOrShePromptCard', () => {
         await vi.waitFor(() => expect(push).toHaveBeenCalledWith(expect.stringContaining('/tools/he-or-she')));
     });
 
-    it('counts down to the reveal when there is a reveal time', () => {
-        current = view({ revealAt: new Date(Date.now() + 2 * 86_400_000).toISOString() });
+    it('counts down to the closing time when there is one', () => {
+        current = view({ closesAt: new Date(Date.now() + 2 * 86_400_000).toISOString() });
         render(<HeOrShePromptCard eventId="e1" eventType={null} enabled />);
 
+        expect(screen.getByText('closesIn')).toBeTruthy();
         expect(screen.getByRole('timer')).toBeTruthy();
     });
 
-    it('shows no countdown when the host reveals by hand', () => {
+    it('shows no countdown when voting has no closing time', () => {
         render(<HeOrShePromptCard eventId="e1" eventType={null} enabled />);
 
         expect(screen.queryByRole('timer')).toBeNull();
@@ -85,8 +84,8 @@ describe('HeOrShePromptCard', () => {
 
     it.each([
         ['already guessed', () => (current = view({ myGuess: 'HE' }))],
-        ['guessing is closed', () => (current = view({ canGuess: false }))],
-        ['revealed', () => (current = view({ status: 'REVEALED', result: 'SHE', canGuess: false }))],
+        ['guessing is not open', () => (current = view({ canGuess: false }))],
+        ['voting is closed', () => (current = view({ status: 'CLOSED', canGuess: false, tally: { he: 1, she: 0 } }))],
         ['a demo visitor', () => (accessMode = 'demoVisitor')],
     ])('renders nothing when %s', (_, arrange) => {
         arrange();

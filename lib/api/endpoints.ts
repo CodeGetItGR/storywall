@@ -131,7 +131,6 @@ export const endpoints = {
         heOrShe: (eventId: string) => `/api/events/${eventId}/he-or-she`,
         heOrSheAnswers: (eventId: string) => `/api/events/${eventId}/he-or-she/answers`,
         heOrSheSettings: (eventId: string) => `/api/events/${eventId}/he-or-she/settings`,
-        heOrSheReveal: (eventId: string) => `/api/events/${eventId}/he-or-she/reveal`,
         heOrSheQuestions: (eventId: string) => `/api/events/${eventId}/he-or-she/questions`,
         heOrSheQuestion: (eventId: string, questionId: string) => `/api/events/${eventId}/he-or-she/questions/${questionId}`,
         heOrSheResults: (eventId: string) => `/api/events/${eventId}/he-or-she/results`,
@@ -150,6 +149,8 @@ export const endpoints = {
         // One upgrade (with every newer one), storage pack or extension; the event stays.
         orderWithdrawalPreview: (eventId: string, orderId: string) => `/api/events/${eventId}/orders/${orderId}/withdrawal-preview`,
         orderWithdrawals: (eventId: string, orderId: string) => `/api/events/${eventId}/orders/${orderId}/withdrawals`,
+        // Settles the order now if its payment went through but the webhook hasn't arrived.
+        orderSync: (eventId: string, orderId: string) => `/api/events/${eventId}/orders/${orderId}/sync`,
         quote: (eventId: string) => `/api/events/${eventId}/quote`,
         deletionRequests: (eventId: string) => `/api/events/${eventId}/deletion-requests`,
         deletionRequestOtp: (eventId: string) => `/api/events/${eventId}/deletion-requests/otp`,
@@ -319,6 +320,15 @@ export const endpoints = {
                 return `/api/admin/metrics/funnel${params.length ? `?${params.join('&')}` : ''}`;
             },
             funnelCohorts: (weeks: number) => `/api/admin/metrics/funnel/cohorts?weeks=${encodeURIComponent(String(weeks))}`,
+            moduleUsage: (filters: { since: string | null; until: string | null; eventTypeKey: string; planCode: string }) => {
+                const params = new URLSearchParams();
+                if (filters.since) params.set('since', filters.since);
+                if (filters.until) params.set('until', filters.until);
+                if (filters.eventTypeKey) params.set('eventTypeKey', filters.eventTypeKey);
+                if (filters.planCode) params.set('planCode', filters.planCode);
+                const query = params.toString();
+                return `/api/admin/metrics/module-usage${query ? `?${query}` : ''}`;
+            },
         },
         orders: {
             list: '/api/admin/orders',
