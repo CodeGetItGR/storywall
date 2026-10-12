@@ -22,14 +22,14 @@ export function SessionLocationPageShell({ eventId, location }: SessionLocationP
     const when = useSessionLocationWhen(location);
 
     return (
-        <main className="mx-auto flex w-full max-w-2xl flex-col bg-background px-6 pt-4 pb-10">
+        <main className="mx-auto flex w-full max-w-2xl flex-col px-6 pt-4 pb-10 lg:pb-16">
             {/* Header */}
             <header>
                 <BackButton href={routes.events.feed(eventId)} label={t('back')} />
             </header>
 
             {/* Location */}
-            <section className="flex flex-col items-center gap-5 pt-10 text-center">
+            <section className="flex flex-col items-center gap-5 pt-10 text-center lg:pt-16">
                 <div className="text-primary">
                     <SessionLocationIcon icon={location.icon} />
                 </div>
@@ -38,7 +38,7 @@ export function SessionLocationPageShell({ eventId, location }: SessionLocationP
             </section>
 
             {/* Details */}
-            <section className="mt-8 grid gap-3 text-ink">
+            <section className="mx-auto mt-8 grid w-fit max-w-full gap-3 text-ink">
                 {when && (
                     <p className="flex items-center gap-3">
                         <CalendarDays className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
@@ -59,7 +59,7 @@ export function SessionLocationPageShell({ eventId, location }: SessionLocationP
 
             {/* Map */}
             {location.mapsUrl && (
-                <section className="mt-6">
+                <section className="mt-8">
                     <ScheduleMapPreview
                         mapsUrl={location.mapsUrl}
                         title={tSchedule('openMap', { title: location.title })}
