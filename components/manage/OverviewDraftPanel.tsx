@@ -93,7 +93,7 @@ export function OverviewDraftPanel({
     // Only the main host can be quoted, and only once there is a start date and a duration on sale.
     const { consent, partnerBranding, collaborationPreview, breakdown, handleCollaborationPreviewChange, submit, error, startPassed, isPending } =
         useDraftActivationCheckout(eventId, { quoteEnabled: canPay && canPurchase && Boolean(currentOption) && !duration.isSaving, startAt });
-    const startDate = useDraftStartDate(eventId, { startAt, endAt });
+    const startDate = useDraftStartDate(eventId, { startAt, endAt, coverageEndsAt: projectedCoverage?.coverageEndsAt ?? null });
     const canCheckout = canPurchase && Boolean(currentOption) && !duration.isSaving;
     const consentReady = consent.consentSatisfied && partnerBranding.satisfied;
     const showConsent = useCallback(() => focusFirstUncheckedBox(DRAFT_CONSENT_ID), []);

@@ -70,17 +70,17 @@ export function getLaterDatetimeLocalValue(...values: Array<string | null | unde
 export function getScheduleDatetimeLocalBounds({
     startAt,
     endAt,
-    maxLeadDays,
+    latestStartAt,
     referenceDate = new Date(),
 }: {
     startAt?: string | null;
     endAt?: string | null;
-    // Furthest ahead the start may be scheduled, counted from `referenceDate`.
-    maxLeadDays?: number;
+    // Latest start the event's coverage allows, as an ISO instant (see getLatestStartAt).
+    latestStartAt?: string | null;
     referenceDate?: Date;
 }): { startAtMin: string; startAtMax?: string; endAtMin: string } {
     const nowAt = getCurrentDatetimeLocalValue(referenceDate);
-    const leadCap = maxLeadDays !== undefined ? addDatetimeLocalDuration(nowAt, { days: maxLeadDays }) : null;
+    const leadCap = latestStartAt ? toDatetimeLocalValue(latestStartAt) || null : null;
     const endCap = isDatetimeLocalAfter(endAt, nowAt) ? endAt : null;
     const startAtMax = getEarlierDatetimeLocalValue(leadCap, endCap) ?? undefined;
     const endAtMin = getLaterDatetimeLocalValue(nowAt, startAt) ?? nowAt;

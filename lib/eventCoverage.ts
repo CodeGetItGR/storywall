@@ -31,30 +31,37 @@ export function getCoverageStatus(schedule: Pick<EventScheduleDto, 'coverageEnds
 }
 
 /**
- * The window an event would get if it were activated right now: the start
- * plus the picked duration's months, never before now. The server's
+ * The window an event would get if it were activated right now: the picked
+ * duration's months from today, since coverage runs from payment. The server's
  * `projectedCoverage` is the source of truth and must be preferred wherever an
  * event exists; this is only for the create wizard, where there is no event
- * yet to read a projection off. Null until both a start and a duration are set.
+ * yet to read a projection off. Null until a duration is picked.
  */
 export function projectCoverage({
-    startAt,
     hostingMonths,
     referenceDate = new Date(),
 }: {
-    startAt: string | Date | null | undefined;
     hostingMonths: number | null | undefined;
     referenceDate?: Date;
 }): ProjectedCoverageDto | null {
-    if (!startAt || !hostingMonths) return null;
-    const start = new Date(startAt);
-    if (Number.isNaN(start.getTime())) return null;
+    if (!hostingMonths) return null;
 
-    const ends = new Date(start);
+    const ends = new Date(referenceDate);
     ends.setUTCMonth(ends.getUTCMonth() + hostingMonths);
 
-    return {
-        coverageEndsAt: new Date(Math.max(ends.getTime(), referenceDate.getTime())).toISOString(),
-        hostingMonths,
-    };
+    return { coverageEndsAt: ends.toISOString(), hostingMonths };
+}
+
+/**
+ * The latest start that leaves `minDaysAfterStart` of coverage after the event
+ * (3032 past it). Pass the pinned `coverageEndsAt` of a live event, or the
+ * projected one of a draft. Null while either is unknown.
+ */
+export function getLatestStartAt(coverageEndsAt: string | null | undefined, minDaysAfterStart: number | undefined): string | null {
+    if (!coverageEndsAt || minDaysAfterStart === undefined) return null;
+    const ends = new Date(coverageEndsAt);
+    if (Number.isNaN(ends.getTime())) return null;
+
+    ends.setUTCDate(ends.getUTCDate() - minDaysAfterStart);
+    return ends.toISOString();
 }
