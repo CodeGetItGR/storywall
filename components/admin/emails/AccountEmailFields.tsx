@@ -12,6 +12,7 @@ import { formatAdminDate } from '@/lib/adminOrders';
 
 export function AccountEmailFields({ form }: { form: AccountEmailForm }) {
     const t = useTranslations('AdminPage.accounts.emails');
+    const tEvents = useTranslations('AdminPage.events');
     const uiLocale = useLocale();
     const languageOptions = [
         { value: 'en' as Locale, label: t('languages.en') },
@@ -35,13 +36,21 @@ export function AccountEmailFields({ form }: { form: AccountEmailForm }) {
             {/* Event */}
             {form.template === 'PROVISIONED_HOST_WELCOME' ? (
                 <AdminField label={t('event')}>
-                    <select value={form.eventId} onChange={handleEventChange} className={adminInputClass()}>
-                        {form.events.map((event) => (
-                            <option key={event.id} value={event.id}>
-                                {(event.title ?? t('untitledEvent')) + (event.startAt ? ` · ${formatAdminDate(uiLocale, event.startAt)}` : '')}
-                            </option>
-                        ))}
-                    </select>
+                    {form.isEventsLoading ? <span className="block text-sm text-ink-muted">{tEvents('loading')}</span> : null}
+                    {form.eventsError ? (
+                        <span role="alert" className="block text-sm text-status-danger">
+                            {form.eventsError}
+                        </span>
+                    ) : null}
+                    {!form.isEventsLoading && !form.eventsError ? (
+                        <select value={form.eventId} onChange={handleEventChange} className={adminInputClass()}>
+                            {form.events.map((event) => (
+                                <option key={event.id} value={event.id}>
+                                    {(event.title ?? t('untitledEvent')) + (event.startAt ? ` · ${formatAdminDate(uiLocale, event.startAt)}` : '')}
+                                </option>
+                            ))}
+                        </select>
+                    ) : null}
                 </AdminField>
             ) : null}
 

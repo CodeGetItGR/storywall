@@ -3280,6 +3280,7 @@
                 "language": "Language",
                 "languages": { "en": "English", "el": "Greek" },
                 "preview": "Preview",
+                "previewWidth": "Preview width",
                 "previewTo": "To",
                 "previewSubject": "Subject",
                 "previewFrame": "Email preview",
@@ -3293,7 +3294,6 @@
                 "confirmTitle": "Send this email?",
                 "confirmBody": "{template} goes to {email}.",
                 "sentTitle": "Email sent",
-                "sentBody": "Sent to {email}.",
                 "done": "Done",
                 "loading": "Loading..."
             },
@@ -3353,7 +3353,7 @@
                 "reviewRsvpDeadline": "RSVP deadline",
                 "reviewDescription": "Description",
                 "notifyHost": "Email the host",
-                "hostEmailed": "The host was emailed.",
+                "hostEmailed": "The host will get a welcome email.",
                 "hostNotEmailed": "The host was not emailed."
             },
             "email": {

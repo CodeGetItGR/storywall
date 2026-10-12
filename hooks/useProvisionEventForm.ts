@@ -26,6 +26,7 @@ export type ProvisionEventOptions = {
     // Runs after the event is created, before the success step shows.
     onProvisioned?: (event: EventResponseDto) => Promise<unknown>;
     // False hides "Email the host" (e.g. demo events, hosted by the admin's own demo account).
+    // It's also hidden when the host has no email address.
     canNotifyHost?: boolean;
 };
 
@@ -51,7 +52,8 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
     const [description, setDescription] = useState('');
     const [rsvpDeadline, setRsvpDeadline] = useState('');
     const [themePresetId, setThemePresetId] = useState<string | null>(null);
-    const canNotifyHost = options.canNotifyHost ?? true;
+    // A host without an email address can't be emailed at all.
+    const canNotifyHost = (options.canNotifyHost ?? true) && Boolean(host.email);
     const [notifyHostChoice, setNotifyHost] = useState(true);
     const notifyHost = canNotifyHost && notifyHostChoice;
 
@@ -235,9 +237,10 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
         canNotifyHost,
         notifyHost,
         setNotifyHost,
-        welcomePreview: welcomePreviewQuery.data ?? null,
-        isWelcomePreviewLoading: welcomePreviewQuery.isFetching,
-        welcomePreviewError: welcomePreviewQuery.error ? toErrorMessage(welcomePreviewQuery.error) : null,
+        // keepPreviousData would otherwise keep showing the last email once there is no request.
+        welcomePreview: welcomePreviewRequest ? (welcomePreviewQuery.data ?? null) : null,
+        isWelcomePreviewLoading: welcomePreviewRequest !== null && welcomePreviewQuery.isFetching,
+        welcomePreviewError: welcomePreviewRequest && welcomePreviewQuery.error ? toErrorMessage(welcomePreviewQuery.error) : null,
         // What the success step reports: the choice that was submitted.
         hostEmailed: Boolean(provisionEvent.data) && notifyHost,
     };

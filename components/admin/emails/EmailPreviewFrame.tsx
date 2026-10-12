@@ -6,6 +6,10 @@ import { useTranslations } from 'next-intl';
 import { FunnelSegmented } from '@/components/admin/funnel/FunnelSegmented';
 import { type EmailPreviewWidth, useEmailPreviewWidth } from '@/hooks/useEmailPreviewWidth';
 import type { AdminEmailPreviewDto } from '@/lib/api/types';
+import { cn } from '@/lib/utils';
+
+// The email's own page background, so the frame edge matches.
+const EMAIL_PAGE_BACKGROUND = 'bg-[#FFFAF3]';
 
 export function EmailPreviewFrame({
     preview,
@@ -33,7 +37,7 @@ export function EmailPreviewFrame({
                     {t('preview')}
                     {isLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-label={t('previewLoading')} /> : null}
                 </h3>
-                <FunnelSegmented label={t('preview')} options={widthOptions} value={width} onChangeAction={setWidth} />
+                <FunnelSegmented label={t('previewWidth')} options={widthOptions} value={width} onChangeAction={setWidth} />
             </div>
 
             {error ? (
@@ -57,7 +61,7 @@ export function EmailPreviewFrame({
                         </div>
                     </dl>
                     {/* Email */}
-                    <div className="overflow-x-auto bg-[#FFFAF3]">
+                    <div className={cn('overflow-x-auto', EMAIL_PAGE_BACKGROUND)}>
                         <iframe
                             title={t('previewFrame')}
                             sandbox=""

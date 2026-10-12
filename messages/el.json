@@ -3408,6 +3408,7 @@
                 "language": "Γλώσσα",
                 "languages": { "en": "Αγγλικά", "el": "Ελληνικά" },
                 "preview": "Προεπισκόπηση",
+                "previewWidth": "Πλάτος προεπισκόπησης",
                 "previewTo": "Προς",
                 "previewSubject": "Θέμα",
                 "previewFrame": "Προεπισκόπηση email",
@@ -3421,7 +3422,6 @@
                 "confirmTitle": "Αποστολή αυτού του email;",
                 "confirmBody": "Το «{template}» θα σταλεί στο {email}.",
                 "sentTitle": "Το email στάλθηκε",
-                "sentBody": "Στάλθηκε στο {email}.",
                 "done": "Τέλος",
                 "loading": "Φόρτωση..."
             },
@@ -3481,7 +3481,7 @@
                 "reviewRsvpDeadline": "Προθεσμία RSVP",
                 "reviewDescription": "Περιγραφή",
                 "notifyHost": "Αποστολή email στον διοργανωτή",
-                "hostEmailed": "Στάλθηκε email στον διοργανωτή.",
+                "hostEmailed": "Ο διοργανωτής θα λάβει email καλωσορίσματος.",
                 "hostNotEmailed": "Δεν στάλθηκε email στον διοργανωτή."
             },
             "email": {

@@ -6,6 +6,10 @@ import { type MouseEvent } from 'react';
 import type { AdminEmailTemplateDto, AdminEmailTemplateKey } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
+function unavailableReasonId(key: AdminEmailTemplateKey) {
+    return `email-template-unavailable-${key}`;
+}
+
 export function AccountEmailTemplatePicker({
     templates,
     value,
@@ -37,6 +41,7 @@ export function AccountEmailTemplatePicker({
                         onClick={handleClick}
                         disabled={!item.available}
                         aria-pressed={value === item.key}
+                        aria-describedby={!item.available && item.unavailableReason ? unavailableReasonId(item.key) : undefined}
                         className={cn(
                             'rounded-md px-2 py-1.5 text-[12.5px] font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40',
                             value === item.key ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted',
@@ -51,7 +56,7 @@ export function AccountEmailTemplatePicker({
             {unavailable.length > 0 ? (
                 <ul className="mt-2 space-y-0.5 text-xs leading-5 text-ink-faint">
                     {unavailable.map((item) => (
-                        <li key={item.key}>
+                        <li key={item.key} id={unavailableReasonId(item.key)}>
                             <span className="font-semibold">{t(`templates.${item.key}`)}:</span> {t(`unavailable.${item.unavailableReason}`)}
                         </li>
                     ))}

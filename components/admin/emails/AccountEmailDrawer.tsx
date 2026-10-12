@@ -59,7 +59,7 @@ export function AccountEmailDrawer({ account, onCloseAction }: { account: UserRe
             closeDisabled={form.isSending}
         >
             {/* Sent */}
-            {form.sent ? <AccountEmailSent email={email} /> : null}
+            {form.sent ? <AccountEmailSent /> : null}
 
             {/* Loading */}
             {!form.sent && form.templatesQuery.isLoading ? <LoadingState label={t('loading')} className="min-h-48" /> : null}
@@ -78,7 +78,7 @@ export function AccountEmailDrawer({ account, onCloseAction }: { account: UserRe
                     {form.template ? <AccountEmailFields form={form} /> : null}
 
                     {/* Preview */}
-                    {form.template ? (
+                    {form.template && form.isTemplateAvailable ? (
                         <EmailPreviewFrame
                             preview={form.preview}
                             isLoading={form.isPreviewLoading}

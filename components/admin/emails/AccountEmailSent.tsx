@@ -3,7 +3,7 @@
 import { CheckCircle2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-export function AccountEmailSent({ email }: { email: string }) {
+export function AccountEmailSent() {
     const t = useTranslations('AdminPage.accounts.emails');
 
     return (
@@ -13,7 +13,6 @@ export function AccountEmailSent({ email }: { email: string }) {
                 <CheckCircle2 className="h-6 w-6" />
             </span>
             <h3 className="mt-4 text-lg font-bold text-ink">{t('sentTitle')}</h3>
-            <p className="mt-1 text-sm text-ink-muted">{t('sentBody', { email })}</p>
         </section>
     );
 }

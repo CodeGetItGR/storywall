@@ -58,9 +58,10 @@ vi.mock('@/hooks/useAdminAccounts', () => ({
     }),
 }));
 
+// Like keepPreviousData: the last email stays in `data` even once the request is gone.
 vi.mock('@/hooks/useAdminEmails', () => ({
-    useWelcomeEmailPreview: (request: unknown) => ({
-        data: request ? { to: 'host@example.com', subject: 's', html: '', text: '' } : undefined,
+    useWelcomeEmailPreview: () => ({
+        data: { to: 'host@example.com', subject: 's', html: '', text: '' },
         isFetching: false,
         error: null,
     }),
@@ -164,6 +165,14 @@ describe('useProvisionEventForm', () => {
         const { result } = renderHook(() => useProvisionEventForm(HOST, { canNotifyHost: false }));
         expect(result.current.canNotifyHost).toBe(false);
         expect(result.current.notifyHost).toBe(false);
+        act(() => fillRequired(result.current));
+        await submitTwice(result);
+        expect((mocks.calls.at(-1) as AdminProvisionEventRequestDto).notifyHost).toBe(false);
+    });
+
+    it('never offers the email when the host has no email address', async () => {
+        const { result } = renderHook(() => useProvisionEventForm({ ...HOST, email: null }));
+        expect(result.current.canNotifyHost).toBe(false);
         act(() => fillRequired(result.current));
         await submitTwice(result);
         expect((mocks.calls.at(-1) as AdminProvisionEventRequestDto).notifyHost).toBe(false);

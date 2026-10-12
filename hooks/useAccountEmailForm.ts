@@ -33,17 +33,27 @@ export function useAccountEmailForm(account: UserResponseDto) {
         (item) => item !== undefined,
     );
     const isAvailable = (key: AdminEmailTemplateKey) => templates.some((item) => item.key === key && item.available);
-    // Until the admin picks one (or their pick stops being available), the first template this account can receive.
-    const template =
-        (pickedTemplate && isAvailable(pickedTemplate) ? pickedTemplate : null) ?? templates.find((item) => item.available)?.key ?? null;
+    // Until the admin picks one, the first template this account can receive. A pick that stops being
+    // available (e.g. after a 409) stays selected, so the picker shows why and Send stays off.
+    const template = pickedTemplate ?? templates.find((item) => item.available)?.key ?? null;
+    const isTemplateAvailable = template !== null && isAvailable(template);
+    const sendableTemplate = isTemplateAvailable ? template : null;
     const events = eventsQuery.data?.content ?? [];
     const eventId = pickedEventId || events[0]?.id || '';
     // Typing only re-renders the preview once the admin pauses.
     const debouncedSubject = useDebouncedValue(subject, TEXT_DEBOUNCE_MS);
     const debouncedBody = useDebouncedValue(body, TEXT_DEBOUNCE_MS);
-    const request = adminEmailRequest({ template, locale, eventId, subject, body });
-    const previewRequest = adminEmailRequest({ template, locale, eventId, subject: debouncedSubject, body: debouncedBody });
+    const request = adminEmailRequest({ template: sendableTemplate, locale, eventId, subject, body });
+    const previewRequest = adminEmailRequest({ template: sendableTemplate, locale, eventId, subject: debouncedSubject, body: debouncedBody });
     const previewQuery = useAdminEmailPreview(account.id, previewRequest);
+
+    // A send error belongs to the email as it was; any change clears it.
+    function changeInput<T>(setValue: (value: T) => void) {
+        return (value: T) => {
+            setValue(value);
+            send.reset();
+        };
+    }
 
     function changeTemplate(next: AdminEmailTemplateKey) {
         if (!isAvailable(next)) return;
@@ -75,21 +85,24 @@ export function useAccountEmailForm(account: UserResponseDto) {
         templates,
         templatesQuery,
         template,
+        isTemplateAvailable,
         changeTemplate,
         locale,
-        setLocale,
+        setLocale: changeInput(setLocale),
         events,
-        eventsQuery,
+        isEventsLoading: eventsQuery.isLoading,
+        eventsError: eventsQuery.error ? toErrorMessage(eventsQuery.error) : null,
         eventId,
-        setEventId: setPickedEventId,
+        setEventId: changeInput(setPickedEventId),
         subject,
-        setSubject,
+        setSubject: changeInput(setSubject),
         body,
-        setBody,
+        setBody: changeInput(setBody),
         request,
-        preview: previewQuery.data ?? null,
-        isPreviewLoading: previewQuery.isFetching,
-        previewError: previewQuery.error ? toErrorMessage(previewQuery.error) : null,
+        // keepPreviousData would otherwise keep showing the last email once there is no request.
+        preview: previewRequest ? (previewQuery.data ?? null) : null,
+        isPreviewLoading: previewRequest !== null && previewQuery.isFetching,
+        previewError: previewRequest && previewQuery.error ? toErrorMessage(previewQuery.error) : null,
         canSend: request !== null && !send.isPending,
         isSending: send.isPending,
         sendError: send.error ? toErrorMessage(send.error) : null,
