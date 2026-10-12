@@ -20,10 +20,11 @@ export async function OccasionHeader({ alternatePaths, createHref, locale }: Occ
             {/* Actions */}
             <nav className="flex items-center gap-4 text-sm font-bold">
                 <LanguageSwitcher alternatePaths={alternatePaths} className="hidden min-[761px]:inline-flex" />
-                <a className="hidden min-[761px]:inline" href={routes.login}>
+                <a className="inline-flex min-h-11 items-center" href={routes.login}>
                     {t('signIn')}
                 </a>
-                <a className="rounded-full bg-[#151313] px-4 py-2.5 text-xs tracking-wide text-white uppercase no-underline" href={createHref}>
+                {/* Create (desktop): on phones the hero button sits right below */}
+                <a className="hidden rounded-full bg-[#151313] px-4 py-2.5 text-xs tracking-wide text-white uppercase no-underline min-[761px]:inline" href={createHref}>
                     {t('create')}
                 </a>
             </nav>

@@ -23,7 +23,9 @@ export async function OccasionFinalCta({ alternatePaths, createHref, locale, occ
                 {common('finalCta')}
             </a>
             {/* Language (mobile) */}
-            <LanguageSwitcher alternatePaths={alternatePaths} className="mt-8 flex min-[761px]:hidden" />
+            <div className="mt-8 min-[761px]:hidden">
+                <LanguageSwitcher alternatePaths={alternatePaths} />
+            </div>
         </section>
     );
 }
