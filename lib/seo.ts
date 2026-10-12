@@ -48,25 +48,28 @@ export function ogLocale(locale: Locale): string {
     return locale === 'el' ? 'el_GR' : 'en_US';
 }
 
-type LandingMetadataCopy = {
+export type PageMetadataCopy = {
     title: string;
     description: string;
     siteName: string;
     imageAlt: string;
 };
 
-export function buildLandingMetadata(locale: Locale, copy: LandingMetadataCopy): Metadata {
-    const canonical = absoluteUrl(getPublicLandingPath(locale));
-    const image = { url: absoluteUrl(OG_IMAGE_PATH), ...OG_IMAGE_SIZE, alt: copy.imageAlt };
+export function buildIndexableMetadata(
+    locale: Locale,
+    canonicalPath: string,
+    languages: Record<string, string>,
+    imagePath: string,
+    copy: PageMetadataCopy,
+): Metadata {
+    const canonical = absoluteUrl(canonicalPath);
+    const image = { url: absoluteUrl(imagePath), ...OG_IMAGE_SIZE, alt: copy.imageAlt };
 
     return {
         metadataBase: new URL(SITE_URL),
         title: copy.title,
         description: copy.description,
-        alternates: {
-            canonical,
-            languages: landingLanguageAlternates(),
-        },
+        alternates: { canonical, languages },
         openGraph: {
             type: 'website',
             url: canonical,
@@ -85,4 +88,13 @@ export function buildLandingMetadata(locale: Locale, copy: LandingMetadataCopy):
         },
         robots: { index: true, follow: true },
     };
+}
+
+export function buildLandingMetadata(locale: Locale, copy: PageMetadataCopy): Metadata {
+    return buildIndexableMetadata(locale, getPublicLandingPath(locale), landingLanguageAlternates(), OG_IMAGE_PATH, copy);
+}
+
+// JSON-LD for a <script> tag: `<` is escaped so a `</script>` in copy can't close it.
+export function jsonLdHtml(data: unknown): string {
+    return JSON.stringify(data).replace(/</g, '\u003c');
 }
