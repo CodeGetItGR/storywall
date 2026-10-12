@@ -41,7 +41,7 @@ describe('buildLandingMetadata', () => {
 
 describe('jsonLdHtml', () => {
     it('escapes < so copy cannot close the script tag', () => {
-        expect(jsonLdHtml({ a: '</script>' })).toBe('{"a":"\u003c/script>"}');
+        expect(jsonLdHtml({ a: '</script>' })).toBe('{"a":"\\u003c/script>"}');
     });
 });
 

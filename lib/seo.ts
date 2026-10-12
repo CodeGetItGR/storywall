@@ -96,5 +96,5 @@ export function buildLandingMetadata(locale: Locale, copy: PageMetadataCopy): Me
 
 // JSON-LD for a <script> tag: `<` is escaped so a `</script>` in copy can't close it.
 export function jsonLdHtml(data: unknown): string {
-    return JSON.stringify(data).replace(/</g, '\u003c');
+    return JSON.stringify(data).replace(/</g, '\\u003c');
 }
