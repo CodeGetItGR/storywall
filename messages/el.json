@@ -92,6 +92,10 @@
         "secondsShort": "δ",
         "started": "Ξεκίνησε!"
     },
+    "StoriesRow": {
+        "emptyTitle": "Δεν υπάρχουν ακόμη {name}",
+        "emptyBody": "Κάντε εσείς την αρχή."
+    },
     "StoryAvatar": {
         "addYourStory": "Προσθέστε την ιστορία σας",
         "addAnotherStory": "Προσθήκη νέας ιστορίας",

@@ -92,6 +92,10 @@
         "secondsShort": "S",
         "started": "It's happening!"
     },
+    "StoriesRow": {
+        "emptyTitle": "No {name} yet",
+        "emptyBody": "Be the first to share one."
+    },
     "StoryAvatar": {
         "addYourStory": "Add your story",
         "addAnotherStory": "Add another story",
