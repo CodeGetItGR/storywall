@@ -58,6 +58,14 @@ vi.mock('@/hooks/useAdminAccounts', () => ({
     }),
 }));
 
+vi.mock('@/hooks/useAdminEmails', () => ({
+    useWelcomeEmailPreview: (request: unknown) => ({
+        data: request ? { to: 'host@example.com', subject: 's', html: '', text: '' } : undefined,
+        isFetching: false,
+        error: null,
+    }),
+}));
+
 const HOST = { id: 'host-1', email: 'host@example.com', firstName: null, lastName: null };
 const submitEvent = { preventDefault: () => undefined } as React.SubmitEvent<HTMLFormElement>;
 
@@ -131,5 +139,33 @@ describe('useProvisionEventForm', () => {
 
         expect(result.current.rsvpDeadlineError).toBe('rsvpDeadlineAfterStart');
         expect(result.current.canReview).toBe(false);
+    });
+    it('emails the host by default and sends notifyHost', async () => {
+        const { result } = renderHook(() => useProvisionEventForm(HOST));
+        act(() => fillRequired(result.current));
+        await act(() => result.current.submit(submitEvent));
+        expect(result.current.notifyHost).toBe(true);
+        expect(result.current.welcomePreview).not.toBeNull();
+        await act(() => result.current.submit(submitEvent));
+        expect((mocks.calls.at(-1) as AdminProvisionEventRequestDto).notifyHost).toBe(true);
+    });
+
+    it('can skip the email, and then has no preview', async () => {
+        const { result } = renderHook(() => useProvisionEventForm(HOST));
+        act(() => fillRequired(result.current));
+        await act(() => result.current.submit(submitEvent));
+        act(() => result.current.setNotifyHost(false));
+        expect(result.current.welcomePreview).toBeNull();
+        await act(() => result.current.submit(submitEvent));
+        expect((mocks.calls.at(-1) as AdminProvisionEventRequestDto).notifyHost).toBe(false);
+    });
+
+    it('never offers the email when the caller turns it off', async () => {
+        const { result } = renderHook(() => useProvisionEventForm(HOST, { canNotifyHost: false }));
+        expect(result.current.canNotifyHost).toBe(false);
+        expect(result.current.notifyHost).toBe(false);
+        act(() => fillRequired(result.current));
+        await submitTwice(result);
+        expect((mocks.calls.at(-1) as AdminProvisionEventRequestDto).notifyHost).toBe(false);
     });
 });

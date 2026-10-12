@@ -1,7 +1,9 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
+import type { ChangeEvent } from 'react';
 
+import { EmailPreviewFrame } from '@/components/admin/emails/EmailPreviewFrame';
 import { useCreateEventFieldLabels } from '@/hooks/useCreateEventFieldLabels';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import type { ProvisionEventForm } from '@/hooks/useProvisionEventForm';
@@ -38,6 +40,10 @@ export function ProvisionEventReview({ form, host }: { form: ProvisionEventForm;
         [t('reviewVisibility'), t(`visibilityOption.${form.visibility}`)],
     ];
 
+    function handleNotifyHostChange(event: ChangeEvent<HTMLInputElement>) {
+        form.setNotifyHost(event.target.checked);
+    }
+
     return (
         <div className="space-y-7">
             {/* Review */}
@@ -54,6 +60,21 @@ export function ProvisionEventReview({ form, host }: { form: ProvisionEventForm;
                     ))}
                 </dl>
             </section>
+
+            {form.canNotifyHost ? (
+                <section className="space-y-4 border-t border-border pt-5">
+                    {/* Notify */}
+                    <label className="flex items-center gap-3 text-sm font-semibold text-ink">
+                        <input type="checkbox" checked={form.notifyHost} onChange={handleNotifyHostChange} className="h-4 w-4 accent-primary" />
+                        {t('notifyHost')}
+                    </label>
+
+                    {/* Preview */}
+                    {form.notifyHost ? (
+                        <EmailPreviewFrame preview={form.welcomePreview} isLoading={form.isWelcomePreviewLoading} error={form.welcomePreviewError} />
+                    ) : null}
+                </section>
+            ) : null}
 
             {/* Activation notice */}
             <p className="rounded-lg bg-canvas px-4 py-3 text-sm leading-6 text-ink-muted">{t('activeNotice')}</p>
