@@ -124,6 +124,23 @@
     letter-spacing: normal;
 }
 
+/* iOS Safari zooms the page into any text field under 16px when it is focused, which pushes
+   the field off-screen. On touch screens, form controls never go below 16px: an inherited size
+   gets a 16px floor (after preflight's `font: inherit`), and text-xs/text-sm resolve
+   var(--text-xs)/var(--text-sm) on the element itself, so they read 16px too. Larger sizes and
+   desktop keep their own. */
+@layer base {
+    @media (pointer: coarse) {
+        input,
+        textarea,
+        select {
+            --text-xs: 1rem;
+            --text-sm: 1rem;
+            font-size: max(1rem, 1em);
+        }
+    }
+}
+
 /* ── CSS variables ── */
 :root {
     color-scheme: only light;

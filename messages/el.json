@@ -937,6 +937,7 @@
         "notFoundDescription": "Αυτή η δημοσίευση μπορεί να έχει αφαιρεθεί.",
         "loadFailedTitle": "Δεν ήταν δυνατή η φόρτωση της δημοσίευσης",
         "loadFailedDescription": "Κάτι πήγε στραβά. Δοκιμάστε ξανά αργότερα.",
+        "tryAgain": "Δοκιμάστε ξανά",
         "backToFeed": "Πίσω στη ροή",
         "noCommentsYet": "Δεν υπάρχουν σχόλια ακόμα",
         "commentCount": "{count, plural, one {# σχόλιο} other {# σχόλια}}",
