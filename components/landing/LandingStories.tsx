@@ -4,6 +4,7 @@ import { LandingMoreStories, type LandingMoreStory } from '@/components/landing/
 import { type LandingStoryCopyData, LandingStoryRow } from '@/components/landing/LandingStoryRow';
 import type { Locale } from '@/i18n/config';
 import { landingStoryMedia } from '@/lib/landingMedia';
+import { loadLiveOccasions } from '@/lib/occasions/liveOccasions.server';
 
 export async function LandingStories() {
     const locale = (await getLocale()) as Locale;
@@ -11,6 +12,7 @@ export async function LandingStories() {
     const heading = t.raw('heading') as string[];
     const rows = t.raw('rows') as LandingStoryCopyData[];
     const moreStories = t.raw('moreStories') as LandingMoreStory[];
+    const occasions = await loadLiveOccasions();
 
     return (
         <section className="platform bg-white py-17 min-[761px]:py-[clamp(90px,11vw,180px)]" id="platformStories">
@@ -31,7 +33,16 @@ export async function LandingStories() {
             {/* Story rows */}
             <div className="showcase story-list mt-12.5 min-[761px]:mt-[clamp(80px,10vw,150px)]">
                 {rows.map((copy, index) => (
-                    <LandingStoryRow copy={copy} demoLabel={t('openDemo')} index={index} key={copy.tag} locale={locale} media={landingStoryMedia[index]} occasionLabel={t('occasionLink')} />
+                    <LandingStoryRow
+                        copy={copy}
+                        demoLabel={t('openDemo')}
+                        index={index}
+                        key={copy.tag}
+                        locale={locale}
+                        media={landingStoryMedia[index]}
+                        occasionLabel={t('occasionLink')}
+                        occasions={occasions}
+                    />
                 ))}
             </div>
             <LandingMoreStories ariaLabel={t('moreLabel')} eyebrow={t('moreEyebrow')} heading={t('moreHeading')} stories={moreStories} />

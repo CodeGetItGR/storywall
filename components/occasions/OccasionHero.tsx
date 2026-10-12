@@ -40,7 +40,10 @@ export async function OccasionHero({ campaign, createHref, locale, occasion }: O
                     width={image.width}
                 />
             ) : (
-                <div aria-hidden="true" className="aspect-[4/3] w-full rounded-br-[42px] bg-[linear-gradient(135deg,#d27b9b_0%,#e78274_28%,#f4905f_58%,#fcba63_100%)]" />
+                <div
+                    aria-hidden="true"
+                    className="aspect-[4/3] w-full rounded-br-[42px] bg-[linear-gradient(135deg,#d27b9b_0%,#e78274_28%,#f4905f_58%,#fcba63_100%)]"
+                />
             )}
         </section>
     );

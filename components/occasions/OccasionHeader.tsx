@@ -24,7 +24,10 @@ export async function OccasionHeader({ alternatePaths, createHref, locale }: Occ
                     {t('signIn')}
                 </a>
                 {/* Create (desktop): on phones the hero button sits right below */}
-                <a className="hidden rounded-full bg-[#151313] px-4 py-2.5 text-xs tracking-wide text-white uppercase no-underline min-[761px]:inline" href={createHref}>
+                <a
+                    className="hidden rounded-full bg-[#151313] px-4 py-2.5 text-xs tracking-wide text-white uppercase no-underline min-[761px]:inline"
+                    href={createHref}
+                >
                     {t('create')}
                 </a>
             </nav>

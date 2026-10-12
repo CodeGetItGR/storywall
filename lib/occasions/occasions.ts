@@ -50,6 +50,12 @@ export function readyOccasions(): Occasion[] {
     return OCCASIONS.filter((occasion) => occasion.ready);
 }
 
+// Ready occasions whose event type is enabled. null (config unknown) → every ready occasion,
+// matching the page gate.
+export function liveOccasions(enabled: ReadonlySet<EventTypeConvention> | null): Occasion[] {
+    return readyOccasions().filter((occasion) => !enabled || enabled.has(occasion.eventType));
+}
+
 export function findReadyOccasion(locale: Locale, slug: string): Occasion | null {
     return readyOccasions().find((occasion) => occasion.slugs[locale] === slug) ?? null;
 }

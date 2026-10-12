@@ -6,7 +6,8 @@ import { CookieSettingsLink } from '@/components/consent/CookieSettingsLink';
 import { LandingMotionToggle } from '@/components/landing/LandingMotionToggle';
 import { LandingNewsletter } from '@/components/landing/LandingNewsletter';
 import type { Locale } from '@/i18n/config';
-import { occasionPath, readyOccasions } from '@/lib/occasions/occasions';
+import { loadLiveOccasions } from '@/lib/occasions/liveOccasions.server';
+import { occasionPath } from '@/lib/occasions/occasions';
 import { routes } from '@/lib/routes';
 import { SOCIAL_PROFILES } from '@/lib/seo';
 
@@ -38,6 +39,7 @@ export async function LandingFooter({ anchorBase = '' }: { anchorBase?: string }
     const t = await getTranslations('LandingPage.footer');
     const pages = await getTranslations('OccasionPages');
     const locale = (await getLocale()) as Locale;
+    const occasions = await loadLiveOccasions();
 
     return (
         <footer className="overflow-hidden bg-[#262626] px-5 pt-14.5 pb-6 text-white min-[761px]:px-[5vw] min-[761px]:pt-18.5">
@@ -68,11 +70,7 @@ export async function LandingFooter({ anchorBase = '' }: { anchorBase?: string }
                 <div className="flex flex-col items-start">
                     <div className={COLUMN_HEADING}>{t('explore')}</div>
                     {EXPLORE_LINKS.map(({ key, href }) => (
-                        <a
-                            className={COLUMN_LINK}
-                            href={`${anchorBase}${href}`}
-                            key={key}
-                        >
+                        <a className={COLUMN_LINK} href={`${anchorBase}${href}`} key={key}>
                             {t(`exploreLinks.${key}`)}
                         </a>
                     ))}
@@ -80,7 +78,7 @@ export async function LandingFooter({ anchorBase = '' }: { anchorBase?: string }
                 {/* Occasions */}
                 <div className="flex flex-col items-start">
                     <div className={COLUMN_HEADING}>{t('occasions')}</div>
-                    {readyOccasions().map((occasion) => (
+                    {occasions.map((occasion) => (
                         <a className={COLUMN_LINK} href={occasionPath(occasion, locale)} key={occasion.eventType}>
                             {pages(`${occasion.eventType}.name`)}
                         </a>
@@ -90,13 +88,7 @@ export async function LandingFooter({ anchorBase = '' }: { anchorBase?: string }
                 <div className="flex flex-col items-start">
                     <div className={COLUMN_HEADING}>{t('social')}</div>
                     {SOCIAL_PROFILES.map(({ key, href }) => (
-                        <a
-                            className={COLUMN_LINK}
-                            href={href}
-                            key={key}
-                            rel="noopener noreferrer"
-                            target="_blank"
-                        >
+                        <a className={COLUMN_LINK} href={href} key={key} rel="noopener noreferrer" target="_blank">
                             {t(`socialLinks.${key}`)}
                         </a>
                     ))}

@@ -8,7 +8,8 @@ type Json = Record<string, unknown>;
 
 function keyPaths(value: unknown, prefix = ''): string[] {
     if (Array.isArray(value)) return value.flatMap((item, index) => keyPaths(item, `${prefix}[${index}]`));
-    if (value && typeof value === 'object') return Object.entries(value).flatMap(([key, child]) => keyPaths(child, prefix ? `${prefix}.${key}` : key));
+    if (value && typeof value === 'object')
+        return Object.entries(value).flatMap(([key, child]) => keyPaths(child, prefix ? `${prefix}.${key}` : key));
     return [prefix];
 }
 
@@ -17,14 +18,17 @@ describe('occasion copy', () => {
         expect(keyPaths((el as Json).OccasionPages)).toEqual(keyPaths((en as Json).OccasionPages));
     });
 
-    it.each(readyOccasions().map((occasion) => [occasion.eventType, occasion] as const))('%s has copy for every listed feature', (eventType, occasion) => {
-        for (const catalog of [en, el] as Json[]) {
-            const copy = (catalog.OccasionPages as Json)[eventType] as Json;
-            expect(Object.keys(copy.features as Json)).toEqual([...occasion.features]);
-            expect(((copy.meta as Json).title as string).length).toBeLessThanOrEqual(60);
-            expect((copy.faq as unknown[]).length).toBeGreaterThanOrEqual(5);
-        }
-    });
+    it.each(readyOccasions().map((occasion) => [occasion.eventType, occasion] as const))(
+        '%s has copy for every listed feature',
+        (eventType, occasion) => {
+            for (const catalog of [en, el] as Json[]) {
+                const copy = (catalog.OccasionPages as Json)[eventType] as Json;
+                expect(Object.keys(copy.features as Json)).toEqual([...occasion.features]);
+                expect(((copy.meta as Json).title as string).length).toBeLessThanOrEqual(60);
+                expect((copy.faq as unknown[]).length).toBeGreaterThanOrEqual(5);
+            }
+        },
+    );
 
     it('gives each occasion a unique title', () => {
         for (const catalog of [en, el] as Json[]) {

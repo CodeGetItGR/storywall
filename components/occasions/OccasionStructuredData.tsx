@@ -16,7 +16,13 @@ export async function OccasionStructuredData({ locale, occasion }: { locale: Loc
     const graph = {
         '@context': 'https://schema.org',
         '@graph': [
-            { '@type': 'Organization', '@id': `${SITE_URL}/#organization`, name: 'StoryWall', url: absoluteUrl('/'), logo: absoluteUrl('/apple-icon.png') },
+            {
+                '@type': 'Organization',
+                '@id': `${SITE_URL}/#organization`,
+                name: 'StoryWall',
+                url: absoluteUrl('/'),
+                logo: absoluteUrl('/apple-icon.png'),
+            },
             {
                 '@type': 'Service',
                 name: t('meta.title'),

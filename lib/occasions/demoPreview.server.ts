@@ -12,16 +12,24 @@ const PREVIEW_WINDOW_MS = 5 * 60 * 1000;
 // address, so the snapshot is read at most once per type, language and 5-minute window. The
 // window is part of the cache key rather than a revalidate: a stale entry would carry media
 // links that expire 15 minutes after the snapshot. Only the small preview is cached; the full
-// snapshot can be larger than the data cache's 2 MB item limit.
+// snapshot can be larger than the data cache's 2 MB item limit. A failed read is cached as
+// null for the window too, so an error or a rate limit is not retried on every page view.
 const loadPreview = unstable_cache(
     async (eventType: EventTypeConvention, locale: Locale, _window: number): Promise<DemoPreview | null> => {
-        const res = await fetch(`${API_BASE_URL}${demoSnapshotPath(eventType)}`, {
-            headers: { Accept: 'application/json', 'Accept-Language': locale },
-            cache: 'no-store',
-        });
-        if (res.status === 404) return null;
-        if (!res.ok) throw new Error(`Demo snapshot for ${eventType} failed with status ${res.status}`);
-        return pickDemoPreview((await res.json()) as DemoSnapshotDto);
+        try {
+            const res = await fetch(`${API_BASE_URL}${demoSnapshotPath(eventType)}`, {
+                headers: { Accept: 'application/json', 'Accept-Language': locale },
+                cache: 'no-store',
+            });
+            if (!res.ok) return null;
+            const snapshot = (await res.json()) as DemoSnapshotDto;
+            // Media links that expire before this window ends would show as broken images.
+            const validUntil = snapshot.presignedUrlsValidUntil ? Date.parse(snapshot.presignedUrlsValidUntil) : Number.POSITIVE_INFINITY;
+            if (validUntil < Date.now() + PREVIEW_WINDOW_MS) return null;
+            return pickDemoPreview(snapshot);
+        } catch {
+            return null;
+        }
     },
     ['occasion-demo-preview'],
     { revalidate: PREVIEW_WINDOW_MS / 1000 },
@@ -32,6 +40,7 @@ export async function loadOccasionDemoPreview(eventType: EventTypeConvention, lo
     try {
         return await loadPreview(eventType, locale, Math.floor(Date.now() / PREVIEW_WINDOW_MS));
     } catch {
+        // The data cache itself failed.
         return null;
     }
 }

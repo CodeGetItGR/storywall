@@ -2,7 +2,7 @@ import { LandingStoryCopy, type LandingTextSegment } from '@/components/landing/
 import { LandingStoryGallery } from '@/components/landing/LandingStoryGallery';
 import type { Locale } from '@/i18n/config';
 import { type LandingStoryMedia } from '@/lib/landingMedia';
-import { findOccasion, occasionPath } from '@/lib/occasions/occasions';
+import { type Occasion, occasionPath } from '@/lib/occasions/occasions';
 import { routes } from '@/lib/routes';
 
 export type LandingStoryCopyData = {
@@ -20,14 +20,16 @@ type LandingStoryRowProps = {
     locale: Locale;
     media: LandingStoryMedia;
     occasionLabel: string;
+    // Live occasion pages; a row links to its own when it is one of them.
+    occasions: readonly Occasion[];
 };
 
-export function LandingStoryRow({ copy, demoLabel, index, locale, media, occasionLabel }: LandingStoryRowProps) {
+export function LandingStoryRow({ copy, demoLabel, index, locale, media, occasionLabel, occasions }: LandingStoryRowProps) {
     const isOdd = index % 2 === 0;
     const wide = index === 0 || index === 4;
     const demo = media.demoEventTypeSlug ? { href: routes.demoEventType(media.demoEventTypeSlug), label: demoLabel } : undefined;
-    const occasion = media.occasion ? findOccasion(media.occasion) : null;
-    const more = occasion?.ready ? { href: occasionPath(occasion, locale), label: occasionLabel } : undefined;
+    const occasion = occasions.find((candidate) => candidate.eventType === media.occasion);
+    const more = occasion ? { href: occasionPath(occasion, locale), label: occasionLabel } : undefined;
 
     return (
         <article

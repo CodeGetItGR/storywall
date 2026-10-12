@@ -6,6 +6,7 @@ import {
     occasionLocaleForPath,
     occasionPath,
     OCCASIONS,
+    liveOccasions,
     readyOccasions,
 } from '@/lib/occasions/occasions';
 import { SITE_URL } from '@/lib/seo';
@@ -14,15 +15,29 @@ const wedding = OCCASIONS.find((occasion) => occasion.eventType === 'WEDDING')!;
 
 describe('occasion registry', () => {
     it('lists every event type once with unique slugs per locale', () => {
-        expect(OCCASIONS.map((occasion) => occasion.eventType).sort()).toEqual(
-            ['BABY_SHOWER', 'BAPTISM', 'BIRTHDAY', 'GENDER_REVEAL', 'PRIVATE_PARTY', 'REUNION', 'SOCIAL_EVENT', 'WEDDING'],
-        );
+        expect(OCCASIONS.map((occasion) => occasion.eventType).sort()).toEqual([
+            'BABY_SHOWER',
+            'BAPTISM',
+            'BIRTHDAY',
+            'GENDER_REVEAL',
+            'PRIVATE_PARTY',
+            'REUNION',
+            'SOCIAL_EVENT',
+            'WEDDING',
+        ]);
         expect(new Set(OCCASIONS.map((occasion) => occasion.slugs.en)).size).toBe(OCCASIONS.length);
         expect(new Set(OCCASIONS.map((occasion) => occasion.slugs.el)).size).toBe(OCCASIONS.length);
     });
 
     it('ships wedding and baptism as ready', () => {
         expect(readyOccasions().map((occasion) => occasion.eventType)).toEqual(['WEDDING', 'BAPTISM']);
+    });
+
+    it('keeps only enabled occasions, or every ready one when the config is unknown', () => {
+        const types = (enabled: ReadonlySet<'WEDDING' | 'BAPTISM'> | null) => liveOccasions(enabled).map((occasion) => occasion.eventType);
+        expect(types(new Set(['WEDDING']))).toEqual(['WEDDING']);
+        expect(types(new Set())).toEqual([]);
+        expect(types(null)).toEqual(['WEDDING', 'BAPTISM']);
     });
 
     it('finds a ready occasion only by its own language slug', () => {
