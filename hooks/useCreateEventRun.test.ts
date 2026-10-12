@@ -17,7 +17,7 @@ afterEach(() => {
 
 describe('useCreateEventRun', () => {
     it('adds a run id after the mount, keeping the step and the linked type, plan and duration', () => {
-        nav.search = 'step=details&type=baby-shower&plan=START&option=o3';
+        nav.search = 'step=details&type=baby-shower&plan=START&option=o3&code=SUMMER27';
         window.history.replaceState(null, '', `/events/new?${nav.search}`);
 
         renderHook(() => useCreateEventRun());
@@ -30,6 +30,7 @@ describe('useCreateEventRun', () => {
         expect(params.get('type')).toBe('baby-shower');
         expect(params.get('plan')).toBe('START');
         expect(params.get('option')).toBe('o3');
+        expect(params.get('code')).toBe('SUMMER27');
         expect(params.get('run')).toMatch(/\w+/);
     });
 

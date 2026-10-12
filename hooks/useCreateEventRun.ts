@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useResetOnBfcacheRestore } from '@/hooks/useResetOnBfcacheRestore';
 import { clearPendingCheckout } from '@/lib/billing';
 import {
+    CREATE_EVENT_CODE_PARAM,
     CREATE_EVENT_OPTION_PARAM,
     CREATE_EVENT_PLAN_PARAM,
     CREATE_EVENT_RUN_PARAM,
@@ -33,10 +34,11 @@ export function useCreateEventRun(): { isReady: boolean } {
     const searchParams = useSearchParams();
     const run = searchParams.get(CREATE_EVENT_RUN_PARAM);
     const step = searchParams.get('step');
-    // Kept so the form, which mounts once the run is known, opens on the linked type, plan and duration.
+    // Kept so the form, which mounts once the run is known, opens on the linked type, plan, duration and code.
     const type = searchParams.get(CREATE_EVENT_TYPE_PARAM);
     const plan = searchParams.get(CREATE_EVENT_PLAN_PARAM);
     const option = searchParams.get(CREATE_EVENT_OPTION_PARAM);
+    const code = searchParams.get(CREATE_EVENT_CODE_PARAM);
     // The run found to have no checkout. Storage is read after mount, so the
     // server render and hydration show the loading state.
     const [checkedRun, setCheckedRun] = useState<string | null>(null);
@@ -49,7 +51,7 @@ export function useCreateEventRun(): { isReady: boolean } {
             // Deferred a task: on a full page load this effect runs before the Next router's own
             // (a parent's) has wrapped history.replaceState, and an unwrapped write never reaches
             // useSearchParams, which would leave the run, and the form, waiting forever.
-            const write = window.setTimeout(() => replacePageUrl(routes.events.new({ step, run: newCreateEventRunId(), type, plan, option })));
+            const write = window.setTimeout(() => replacePageUrl(routes.events.new({ step, run: newCreateEventRunId(), type, plan, option, code })));
             return () => window.clearTimeout(write);
         }
         if (checkedRun === run) return;
@@ -72,7 +74,7 @@ export function useCreateEventRun(): { isReady: boolean } {
         window.history.back();
         const fallback = window.setTimeout(() => router.replace(draftPage), STEP_BACK_FALLBACK_MS);
         return () => window.clearTimeout(fallback);
-    }, [checkedRun, option, plan, router, run, step, type]);
+    }, [checkedRun, code, option, plan, router, run, step, type]);
 
     return { isReady: Boolean(run) && checkedRun === run };
 }
