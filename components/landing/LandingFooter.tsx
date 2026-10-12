@@ -31,7 +31,8 @@ const COLUMN_HEADING = 'mb-5.5 text-[9px] font-black tracking-[0.16em] text-whit
 const COLUMN_ITEM = 'py-1.5 text-[13px] leading-[1.35] text-white';
 const COLUMN_LINK = `${COLUMN_ITEM} no-underline transition-[opacity,transform] duration-250 ease-[ease] hover:translate-x-0.75 hover:opacity-[0.62] motion-reduce:transition-none`;
 
-export async function LandingFooter() {
+// anchorBase prefixes the Explore anchors, so another page can point them at the homepage sections.
+export async function LandingFooter({ anchorBase = '' }: { anchorBase?: string } = {}) {
     const t = await getTranslations('LandingPage.footer');
 
     return (
@@ -65,7 +66,7 @@ export async function LandingFooter() {
                     {EXPLORE_LINKS.map(({ key, href }) => (
                         <a
                             className={COLUMN_LINK}
-                            href={href}
+                            href={`${anchorBase}${href}`}
                             key={key}
                         >
                             {t(`exploreLinks.${key}`)}
