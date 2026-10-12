@@ -63,7 +63,7 @@ export function buildIndexableMetadata(
     copy: PageMetadataCopy,
 ): Metadata {
     const canonical = absoluteUrl(canonicalPath);
-    const image = { url: absoluteUrl(imagePath), ...OG_IMAGE_SIZE, alt: copy.imageAlt };
+    const images = [{ url: absoluteUrl(imagePath), ...OG_IMAGE_SIZE, alt: copy.imageAlt }];
 
     return {
         metadataBase: new URL(SITE_URL),
@@ -78,13 +78,13 @@ export function buildIndexableMetadata(
             description: copy.description,
             locale: ogLocale(locale),
             alternateLocale: locales.filter((other) => other !== locale).map(ogLocale),
-            images: [image],
+            images,
         },
         twitter: {
             card: 'summary_large_image',
             title: copy.title,
             description: copy.description,
-            images: [image],
+            images,
         },
         robots: { index: true, follow: true },
     };
