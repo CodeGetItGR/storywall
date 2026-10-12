@@ -3246,7 +3246,56 @@
                 "accountId": "Account ID",
                 "eventCreation": "Event creation",
                 "saved": "Access updated.",
-                "provision": "Provision event"
+                "provision": "Provision event",
+                "sendEmail": "Send email"
+            },
+            "emails": {
+                "title": "Send email",
+                "close": "Close",
+                "template": "Email",
+                "templates": {
+                    "PROVISIONED_HOST_WELCOME": "Welcome",
+                    "PASSWORD_RESET": "Password reset",
+                    "EMAIL_VERIFICATION": "Verify email",
+                    "CUSTOM": "Custom"
+                },
+                "templateHints": {
+                    "PROVISIONED_HOST_WELCOME": "Tells the host their event is ready, with a button to open it.",
+                    "PASSWORD_RESET": "Sends a new link to choose a password. Earlier links stop working.",
+                    "EMAIL_VERIFICATION": "Sends a new link to confirm their email address.",
+                    "CUSTOM": "Your own subject and message, in the standard layout."
+                },
+                "unavailable": {
+                    "ACCOUNT_DELETED": "The account is deleted.",
+                    "NO_EMAIL": "The account has no email address.",
+                    "NOT_ACTIVE": "The account is not active.",
+                    "NOT_PASSWORD_ACCOUNT": "The account signs in without a password.",
+                    "ALREADY_VERIFIED": "The email is already verified.",
+                    "NO_HOSTED_EVENTS": "The account hosts no events."
+                },
+                "event": "Event",
+                "untitledEvent": "Untitled event",
+                "subject": "Subject",
+                "message": "Message",
+                "language": "Language",
+                "languages": { "en": "English", "el": "Greek" },
+                "preview": "Preview",
+                "previewTo": "To",
+                "previewSubject": "Subject",
+                "previewFrame": "Email preview",
+                "previewDesktop": "Desktop",
+                "previewPhone": "Phone",
+                "previewLoading": "Loading preview...",
+                "previewEmpty": "Fill in the fields to see the email.",
+                "tokenNote": "The link in the email will be a new one.",
+                "send": "Send email",
+                "cancel": "Cancel",
+                "confirmTitle": "Send this email?",
+                "confirmBody": "{template} goes to {email}.",
+                "sentTitle": "Email sent",
+                "sentBody": "Sent to {email}.",
+                "done": "Done",
+                "loading": "Loading..."
             },
             "provision": {
                 "openEvent": "Open event",
@@ -3302,7 +3351,10 @@
                 "rsvpDeadlineAfterStart": "The RSVP deadline must be before the event starts.",
                 "reviewTheme": "Theme",
                 "reviewRsvpDeadline": "RSVP deadline",
-                "reviewDescription": "Description"
+                "reviewDescription": "Description",
+                "notifyHost": "Email the host",
+                "hostEmailed": "The host was emailed.",
+                "hostNotEmailed": "The host was not emailed."
             },
             "email": {
                 "title": "Email",
