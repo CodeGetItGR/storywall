@@ -191,6 +191,8 @@
         "eventMenu": "Event menu",
         "toolsMenu": "Tools",
         "openAccount": "Open your account",
+        "shareInvite": "Share invite link",
+        "inviteCopied": "Invite link copied",
         "compose": "Create",
         "composeMenu": {
             "post": "Post",
