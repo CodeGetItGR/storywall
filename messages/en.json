@@ -5921,6 +5921,7 @@
             "cta": "CREATE YOUR STORYWALL"
         },
         "footer": {
+            "occasions": "OCCASIONS",
             "imageAlt": "StoryWall",
             "lineOne": "Moments pass.",
             "lineTwo": "The story stays.",
@@ -6249,5 +6250,230 @@
         "save": "Save",
         "close": "Close",
         "openSettings": "Cookie settings"
+    },
+    "OccasionPages": {
+        "common": {
+            "nav": {
+                "home": "StoryWall home",
+                "signIn": "Sign in",
+                "create": "Create your StoryWall"
+            },
+            "breadcrumbHome": "Home",
+            "timelineHeading": "Before, on the day, after",
+            "featuresHeading": "What you get",
+            "demo": {
+                "heading": "See a real StoryWall",
+                "postsLabel": "Posts from guests",
+                "photosLabel": "Photos",
+                "wishesLabel": "Wishes",
+                "tryDemo": "Try the live demo"
+            },
+            "howItWorksHeading": "How it works",
+            "plans": {
+                "line": "Plans start with everything you need for one event.",
+                "link": "See plans"
+            },
+            "faqHeading": "Questions",
+            "finalCta": "Create your StoryWall",
+            "linksHeading": "Other occasions",
+            "linksHome": "All of StoryWall"
+        },
+        "campaigns": {},
+        "WEDDING": {
+            "name": "Weddings",
+            "meta": {
+                "title": "Wedding Website & Guest Photo Sharing | StoryWall",
+                "description": "One private wedding website for your invitation, RSVPs, guest photos by QR code, wishes and song requests. No app for guests to install.",
+                "imageAlt": "StoryWall for weddings"
+            },
+            "hero": {
+                "h1": "Wedding website and guest photo sharing",
+                "lead": "Send the invitation, collect RSVPs and gather every guest photo in one private space, before, during and after the day.",
+                "cta": "Create your wedding StoryWall",
+                "imageAlt": "Wedding guests celebrating with photos shared on StoryWall"
+            },
+            "timeline": [
+                {
+                    "title": "Before",
+                    "body": "Guests get one link with the date, schedule and maps. They RSVP, suggest songs and follow the plans."
+                },
+                {
+                    "title": "On the day",
+                    "body": "Guests scan the QR code on the tables and add photos and videos. No app, no account needed to upload."
+                },
+                {
+                    "title": "After",
+                    "body": "Photos, stories and wishes stay together, from the preparations to the honeymoon."
+                }
+            ],
+            "features": {
+                "invitation": {
+                    "title": "Digital wedding invitation",
+                    "body": "Date, schedule, ceremony and reception with maps, all on your guests' phones."
+                },
+                "rsvp": {
+                    "title": "Online wedding RSVP",
+                    "body": "Guests answer from the link. You see who is coming, with notes and plus-ones, in one list."
+                },
+                "qrPhotos": {
+                    "title": "QR code wedding photos",
+                    "body": "Put the QR code on the tables. Guests scan it and add their photos and videos straight from the camera roll."
+                },
+                "wishbook": {
+                    "title": "Digital wedding guestbook",
+                    "body": "Guests leave their wishes in one book you can keep and read again."
+                },
+                "gifts": {
+                    "title": "Wedding gift list",
+                    "body": "Share a gift list or gift account on the same page as the invitation."
+                },
+                "music": {
+                    "title": "Wedding song requests",
+                    "body": "Guests suggest the songs they want to hear, so the DJ knows the room before the party."
+                }
+            },
+            "howItWorks": [
+                {
+                    "title": "Create",
+                    "body": "Pick a plan and add your date, venues and schedule."
+                },
+                {
+                    "title": "Share",
+                    "body": "Send the invitation link and print the QR code for the tables."
+                },
+                {
+                    "title": "The story begins",
+                    "body": "Guests RSVP, post and add photos. Everything lands in one private feed."
+                }
+            ],
+            "faq": [
+                {
+                    "q": "Do guests need to install an app?",
+                    "a": "No. Everything opens in the phone's browser from the invitation link or the QR code."
+                },
+                {
+                    "q": "How do guests upload photos at the reception?",
+                    "a": "They scan the QR code on the table and pick photos or videos. Uploading through the QR code doesn't need an account."
+                },
+                {
+                    "q": "Can older guests use it?",
+                    "a": "Yes. They open a link or scan a code, the same as any website."
+                },
+                {
+                    "q": "Who can see our photos?",
+                    "a": "Only the people you invite. Your StoryWall is private and isn't listed anywhere."
+                },
+                {
+                    "q": "How long does it stay online?",
+                    "a": "Your plan sets how long your event stays open. You can extend it from your event's settings."
+                },
+                {
+                    "q": "Can it replace the paper invitation?",
+                    "a": "Yes. Many couples send the link instead, or add the QR code to their printed invitation."
+                },
+                {
+                    "q": "Does it replace our photographer?",
+                    "a": "No. It collects the moments your guests capture, alongside your photographer's work."
+                }
+            ],
+            "finalCta": {
+                "heading": "Start your wedding StoryWall",
+                "body": "Set it up in a few minutes and share it with your guests today."
+            }
+        },
+        "BAPTISM": {
+            "name": "Baptisms",
+            "meta": {
+                "title": "Digital Baptism Invitation & Photo Sharing | StoryWall",
+                "description": "A private page for your baptism or christening: invitation with maps, RSVPs, guest photos by QR code and a book of wishes for your child.",
+                "imageAlt": "StoryWall for baptisms"
+            },
+            "hero": {
+                "h1": "Digital baptism invitation and photo sharing",
+                "lead": "One private space for the christening day, with the photos and wishes kept for your child to read when they grow up.",
+                "cta": "Create your baptism StoryWall",
+                "imageAlt": "Family and guests celebrating a baptism outside a church"
+            },
+            "timeline": [
+                {
+                    "title": "Before",
+                    "body": "Guests get the church, reception and schedule in one link, with maps. They RSVP from there."
+                },
+                {
+                    "title": "On the day",
+                    "body": "Guests scan the QR code and add their photos from the church and the reception."
+                },
+                {
+                    "title": "After",
+                    "body": "The photos and the book of wishes stay together, ready for your child one day."
+                }
+            ],
+            "features": {
+                "invitation": {
+                    "title": "Digital baptism invitation",
+                    "body": "Church, reception, schedule and maps on every guest's phone."
+                },
+                "rsvp": {
+                    "title": "Baptism RSVP",
+                    "body": "Guests answer from the link and you see who is coming in one list."
+                },
+                "wishbook": {
+                    "title": "A book of wishes for your child",
+                    "body": "Godparents, grandparents and friends write their christening wishes in one book your child can read one day."
+                },
+                "qrPhotos": {
+                    "title": "Christening photo sharing",
+                    "body": "Guests scan the QR code and add their photos to one album, without installing anything."
+                },
+                "gifts": {
+                    "title": "Christening gift list",
+                    "body": "Share a gift list or gift account next to the invitation."
+                }
+            },
+            "howItWorks": [
+                {
+                    "title": "Create",
+                    "body": "Pick a plan and add the church, reception and time."
+                },
+                {
+                    "title": "Share",
+                    "body": "Send the link to your guests and print the QR code for the reception."
+                },
+                {
+                    "title": "The story begins",
+                    "body": "Guests RSVP, add photos and write their wishes for your child."
+                }
+            ],
+            "faq": [
+                {
+                    "q": "Do guests need to install an app?",
+                    "a": "No. The invitation and the QR code open in the phone's browser."
+                },
+                {
+                    "q": "Can grandparents use it easily?",
+                    "a": "Yes. They tap a link or scan a code. Nothing to install."
+                },
+                {
+                    "q": "Who can see the photos of our child?",
+                    "a": "Only the guests you invite. Your StoryWall is private."
+                },
+                {
+                    "q": "How long does it stay online?",
+                    "a": "Your plan sets how long your event stays open. You can extend it from your event's settings."
+                },
+                {
+                    "q": "Can we keep the wishes?",
+                    "a": "Yes. The book of wishes stays with the event, together with the photos."
+                },
+                {
+                    "q": "Does it replace the paper invitation?",
+                    "a": "It can. Send the link on its own, or add the QR code to your printed invitation."
+                }
+            ],
+            "finalCta": {
+                "heading": "Start your baptism StoryWall",
+                "body": "Set it up in a few minutes and send it to your guests."
+            }
+        }
     }
 }
