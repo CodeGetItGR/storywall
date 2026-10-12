@@ -96,6 +96,18 @@ describe('proxy', () => {
         expect(location.pathname).toBe('/login');
         expect(location.searchParams.get('next')).toBe('/events/new?step=plan');
     });
+
+    it('renders an English occasion page in English whatever the cookie says', async () => {
+        const req = request({}, 'http://localhost/weddings');
+        req.cookies.set(localeCookieName, 'el');
+        const res = await proxy(req);
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('en');
+    });
+
+    it('renders a Greek occasion page in Greek', async () => {
+        const res = await proxy(request({}, 'http://localhost/el/gamos'));
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('el');
+    });
 });
 
 describe('proxy landing locale', () => {

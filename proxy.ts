@@ -14,6 +14,7 @@ import {
 } from '@/lib/auth/authCookies';
 import { AUTH_RETURN_PATH_PARAM } from '@/lib/auth/returnPath';
 import { clientIpFrom, springAuth, SpringAuthError } from '@/lib/auth/springAuth';
+import { occasionLocaleForPath } from '@/lib/occasions/occasions';
 import { routes } from '@/lib/routes';
 import { isSharedLinkPath, readShareLocale, SHARE_LOCALE_PARAM } from '@/lib/shareLinks';
 
@@ -108,7 +109,8 @@ export async function proxy(request: NextRequest) {
         if (redirect) return redirect;
     }
 
-    const publicLocale = pathname === '/' ? defaultLocale : locales.find((locale) => pathname === `/${locale}`);
+    const publicLocale =
+        pathname === '/' ? defaultLocale : (locales.find((locale) => pathname === `/${locale}`) ?? occasionLocaleForPath(pathname));
     if (publicLocale) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(PUBLIC_LOCALE_HEADER, publicLocale);
