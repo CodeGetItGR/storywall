@@ -1,10 +1,12 @@
 import Link from 'next/link';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { CookieSettingsLink } from '@/components/consent/CookieSettingsLink';
 import { LandingMotionToggle } from '@/components/landing/LandingMotionToggle';
 import { LandingNewsletter } from '@/components/landing/LandingNewsletter';
+import type { Locale } from '@/i18n/config';
+import { occasionPath, readyOccasions } from '@/lib/occasions/occasions';
 import { routes } from '@/lib/routes';
 import { SOCIAL_PROFILES } from '@/lib/seo';
 
@@ -34,10 +36,12 @@ const COLUMN_LINK = `${COLUMN_ITEM} no-underline transition-[opacity,transform] 
 // anchorBase prefixes the Explore anchors, so another page can point them at the homepage sections.
 export async function LandingFooter({ anchorBase = '' }: { anchorBase?: string } = {}) {
     const t = await getTranslations('LandingPage.footer');
+    const pages = await getTranslations('OccasionPages');
+    const locale = (await getLocale()) as Locale;
 
     return (
         <footer className="overflow-hidden bg-[#262626] px-5 pt-14.5 pb-6 text-white min-[761px]:px-[5vw] min-[761px]:pt-18.5">
-            <div className="grid grid-cols-2 gap-x-6.5 gap-y-10.5 border-b border-white/14 pb-13.5 min-[761px]:grid-cols-[1.65fr_0.75fr_0.75fr] min-[761px]:gap-[5vw] min-[761px]:pb-19">
+            <div className="grid grid-cols-2 gap-x-6.5 gap-y-10.5 border-b border-white/14 pb-13.5 min-[761px]:grid-cols-[1.65fr_0.75fr_0.75fr_0.75fr] min-[761px]:gap-[5vw] min-[761px]:pb-19">
                 {/* Brand */}
                 <div className="col-span-2 min-[761px]:col-span-1">
                     <div className="w-[min(82vw,330px)] leading-none min-[761px]:w-[clamp(179px,19.6vw,301px)]">
@@ -70,6 +74,15 @@ export async function LandingFooter({ anchorBase = '' }: { anchorBase?: string }
                             key={key}
                         >
                             {t(`exploreLinks.${key}`)}
+                        </a>
+                    ))}
+                </div>
+                {/* Occasions */}
+                <div className="flex flex-col items-start">
+                    <div className={COLUMN_HEADING}>{t('occasions')}</div>
+                    {readyOccasions().map((occasion) => (
+                        <a className={COLUMN_LINK} href={occasionPath(occasion, locale)} key={occasion.eventType}>
+                            {pages(`${occasion.eventType}.name`)}
                         </a>
                     ))}
                 </div>

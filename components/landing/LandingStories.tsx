@@ -1,10 +1,12 @@
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { LandingMoreStories, type LandingMoreStory } from '@/components/landing/LandingMoreStories';
 import { type LandingStoryCopyData, LandingStoryRow } from '@/components/landing/LandingStoryRow';
+import type { Locale } from '@/i18n/config';
 import { landingStoryMedia } from '@/lib/landingMedia';
 
 export async function LandingStories() {
+    const locale = (await getLocale()) as Locale;
     const t = await getTranslations('LandingPage.stories');
     const heading = t.raw('heading') as string[];
     const rows = t.raw('rows') as LandingStoryCopyData[];
@@ -29,7 +31,7 @@ export async function LandingStories() {
             {/* Story rows */}
             <div className="showcase story-list mt-12.5 min-[761px]:mt-[clamp(80px,10vw,150px)]">
                 {rows.map((copy, index) => (
-                    <LandingStoryRow copy={copy} demoLabel={t('openDemo')} index={index} key={copy.tag} media={landingStoryMedia[index]} />
+                    <LandingStoryRow copy={copy} demoLabel={t('openDemo')} index={index} key={copy.tag} locale={locale} media={landingStoryMedia[index]} occasionLabel={t('occasionLink')} />
                 ))}
             </div>
             <LandingMoreStories ariaLabel={t('moreLabel')} eyebrow={t('moreEyebrow')} heading={t('moreHeading')} stories={moreStories} />

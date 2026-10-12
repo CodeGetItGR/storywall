@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 
 vi.mock('next-intl/server', () => ({
+    getLocale: async () => 'en',
     getTranslations: async () => (key: string) => key,
 }));
 vi.mock('@/components/common/ProtectedImage', () => ({ ProtectedImage: () => null }));

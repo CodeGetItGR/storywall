@@ -1,6 +1,8 @@
 import { LandingStoryCopy, type LandingTextSegment } from '@/components/landing/LandingStoryCopy';
 import { LandingStoryGallery } from '@/components/landing/LandingStoryGallery';
+import type { Locale } from '@/i18n/config';
 import { type LandingStoryMedia } from '@/lib/landingMedia';
+import { findOccasion, occasionPath } from '@/lib/occasions/occasions';
 import { routes } from '@/lib/routes';
 
 export type LandingStoryCopyData = {
@@ -15,13 +17,17 @@ type LandingStoryRowProps = {
     copy: LandingStoryCopyData;
     demoLabel: string;
     index: number;
+    locale: Locale;
     media: LandingStoryMedia;
+    occasionLabel: string;
 };
 
-export function LandingStoryRow({ copy, demoLabel, index, media }: LandingStoryRowProps) {
+export function LandingStoryRow({ copy, demoLabel, index, locale, media, occasionLabel }: LandingStoryRowProps) {
     const isOdd = index % 2 === 0;
     const wide = index === 0 || index === 4;
     const demo = media.demoEventTypeSlug ? { href: routes.demoEventType(media.demoEventTypeSlug), label: demoLabel } : undefined;
+    const occasion = media.occasion ? findOccasion(media.occasion) : null;
+    const more = occasion?.ready ? { href: occasionPath(occasion, locale), label: occasionLabel } : undefined;
 
     return (
         <article
@@ -46,6 +52,7 @@ export function LandingStoryRow({ copy, demoLabel, index, media }: LandingStoryR
             >
                 <LandingStoryCopy
                     demo={demo}
+                    more={more}
                     paragraphSegments={copy.paragraphSegments}
                     tag={copy.tag}
                     titleSegments={copy.titleSegments}
