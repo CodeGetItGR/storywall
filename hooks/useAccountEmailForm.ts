@@ -33,8 +33,9 @@ export function useAccountEmailForm(account: UserResponseDto) {
         (item) => item !== undefined,
     );
     const isAvailable = (key: AdminEmailTemplateKey) => templates.some((item) => item.key === key && item.available);
-    // Until the admin picks one, the first template this account can receive.
-    const template = pickedTemplate ?? templates.find((item) => item.available)?.key ?? null;
+    // Until the admin picks one (or their pick stops being available), the first template this account can receive.
+    const template =
+        (pickedTemplate && isAvailable(pickedTemplate) ? pickedTemplate : null) ?? templates.find((item) => item.available)?.key ?? null;
     const events = eventsQuery.data?.content ?? [];
     const eventId = pickedEventId || events[0]?.id || '';
     // Typing only re-renders the preview once the admin pauses.
