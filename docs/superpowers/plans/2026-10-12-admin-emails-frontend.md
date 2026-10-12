@@ -319,7 +319,7 @@ export function useDebouncedValue<T>(value: T, delay: number): T {
 - [ ] **Step 2: `useAdminEmails`**
 
 ```ts
-import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -359,9 +359,12 @@ export function useWelcomeEmailPreview(request: AdminWelcomePreviewRequestDto | 
     });
 }
 
+// A 409 carries no reason: re-read the templates so the picker shows why it's unavailable now.
 export function useSendAdminEmailMutation(userId: string) {
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (request: AdminEmailRequestDto) => api.post<void>(endpoints.admin.users.emails.send(userId), request),
+        onError: () => queryClient.invalidateQueries({ queryKey: adminEmailKeys.templates(userId) }),
     });
 }
 ```

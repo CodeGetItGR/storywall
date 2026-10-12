@@ -1006,7 +1006,7 @@ class AdminUserEmailControllerTest {
                         .content(body("PROVISIONED_HOST_WELCOME", ",\"eventId\":\"" + hosted.getId() + "\"")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.subject").value("Your event " + hosted.getTitle() + " is ready"))
-                .andExpect(jsonPath("$.text").value(org.hamcrest.Matchers.containsString("/events/" + hosted.getId())));
+                .andExpect(jsonPath("$.text").value(org.hamcrest.Matchers.containsString("/events/" + hosted.getId() + "/feed")));
     }
 
     @Test

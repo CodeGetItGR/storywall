@@ -18,7 +18,7 @@ Fixed in backend code. Admins cannot edit them.
 | Key | Needs | Call to action | Token |
 |---|---|---|---|
 | `PASSWORD_RESET` | account is `ACTIVE`, `LOCAL`, has a password hash, not a guest | "Choose a new password" → `/reset-password?token=` | New `PASSWORD_RESET` token, as Forgot password issues |
-| `PROVISIONED_HOST_WELCOME` | account + an event they host (`eventId`) | "Open your event" → `/events/{eventId}` | None |
+| `PROVISIONED_HOST_WELCOME` | account + an event they host (`eventId`) | "Open your event" → `/events/{eventId}/feed` | None |
 | `EMAIL_VERIFICATION` | account has an email that is not verified | existing verification link | New `EMAIL_VERIFICATION` token |
 | `CUSTOM` | account has an email; admin-written `subject` (≤ 150 chars) and `body` (≤ 5000 chars), plain text | none | None |
 
@@ -36,7 +36,8 @@ Fixed in backend code. Admins cannot edit them.
 Each template is either available or unavailable with a reason code, for example:
 `NO_EMAIL`, `ACCOUNT_DELETED`, `NOT_PASSWORD_ACCOUNT`, `ALREADY_VERIFIED`, `NOT_ACTIVE`,
 `NO_HOSTED_EVENTS`. For a deleted account, or one with no email, every template is unavailable.
-Preview and send both re-check availability and return `409` with the reason code when it fails.
+Preview and send both re-check availability and return `409` (`5175`) when it fails. The `409` carries
+no reason code; the client re-reads the templates list to show the current reason.
 
 ## Backend
 
@@ -73,16 +74,16 @@ keep their current behaviour. Add `composeProvisionedHostWelcome` and `composeCu
 - `POST /api/admin/events`: new optional top-level `notifyHost` (default `true`). When true, the
   welcome email is sent in the host's saved locale after the provisioning transaction commits. A
   delivery failure is logged and never fails provisioning (as with all transactional mail).
-- `POST /api/admin/events/welcome-preview` takes the same body as `POST /api/admin/events` and
-  returns `{to, subject, html, text}` for the welcome email that provisioning would send, without
-  creating anything. It validates only what the email needs (host exists and has an email, title,
-  start, timezone, location).
+- `POST /api/admin/events/welcome-preview` takes `{hostUserId, title, startAt?, timezone?,
+  locationName?, locationAddress?, locale?}` and returns `{to, subject, html, text}` for the welcome
+  email that provisioning would send, without creating anything. The host must exist and have an
+  email.
 
 ### i18n
 
 New keys in `messages.properties` and `messages_el.properties`:
-`email.provisioned_welcome.{subject,heading,body,cta}`. Custom emails use the admin's subject as
-both subject and heading.
+`email.provisioned_welcome.{subject,body,cta}`. The welcome heading reuses the subject. Custom emails
+use the admin's subject as both subject and heading.
 
 ## Frontend
 
@@ -99,15 +100,17 @@ both subject and heading.
   refetches when any input changes (custom text debounced). For token templates a short caption says
   the link in the sent email will be a new one.
 - **Send** opens a confirmation modal (the recipient's address and the template name, "Send email" /
-  "Cancel"). On success the drawer shows a toast and closes. On `409` the drawer shows the reason's
-  copy.
+  "Cancel"). On success the drawer shows an "Email sent" state with a Done button. On `409` the drawer
+  shows a short error and re-reads the templates, so the picker shows the current reason.
 - Hooks: `useAccountEmailTemplates`, `useEmailPreview`, `useSendAccountEmail`, `useAccountEmailForm`
   (form state). Components stay presentational.
 
 ### Provision event form
 
-- An "Email the host" checkbox, ticked by default, on the form. Its value is sent as `notifyHost`.
+- An "Email the host" checkbox, ticked by default, on the review step directly above the preview. Its
+  value is sent as `notifyHost`.
 - When it's ticked, the review step shows the same preview frame, fed by `welcome-preview`.
+- Demo-event provisioning does not offer it (sends `notifyHost: false`).
 - The success screen says whether the host was emailed.
 
 ### Copy
