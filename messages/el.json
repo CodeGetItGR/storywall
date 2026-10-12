@@ -3374,7 +3374,56 @@
                 "accountId": "ID λογαριασμού",
                 "eventCreation": "Δημιουργία εκδηλώσεων",
                 "saved": "Η πρόσβαση ενημερώθηκε.",
-                "provision": "Δημιουργία εκδήλωσης"
+                "provision": "Δημιουργία εκδήλωσης",
+                "sendEmail": "Αποστολή email"
+            },
+            "emails": {
+                "title": "Αποστολή email",
+                "close": "Κλείσιμο",
+                "template": "Email",
+                "templates": {
+                    "PROVISIONED_HOST_WELCOME": "Καλωσόρισμα",
+                    "PASSWORD_RESET": "Επαναφορά κωδικού",
+                    "EMAIL_VERIFICATION": "Επιβεβαίωση email",
+                    "CUSTOM": "Προσαρμοσμένο"
+                },
+                "templateHints": {
+                    "PROVISIONED_HOST_WELCOME": "Ενημερώνει τον διοργανωτή ότι η εκδήλωση είναι έτοιμη, με κουμπί για να την ανοίξει.",
+                    "PASSWORD_RESET": "Στέλνει νέο σύνδεσμο για επιλογή κωδικού. Οι παλιοί σύνδεσμοι σταματούν να λειτουργούν.",
+                    "EMAIL_VERIFICATION": "Στέλνει νέο σύνδεσμο για επιβεβαίωση της διεύθυνσης email.",
+                    "CUSTOM": "Δικό σας θέμα και μήνυμα, στην τυπική μορφή."
+                },
+                "unavailable": {
+                    "ACCOUNT_DELETED": "Ο λογαριασμός έχει διαγραφεί.",
+                    "NO_EMAIL": "Ο λογαριασμός δεν έχει email.",
+                    "NOT_ACTIVE": "Ο λογαριασμός δεν είναι ενεργός.",
+                    "NOT_PASSWORD_ACCOUNT": "Ο λογαριασμός συνδέεται χωρίς κωδικό.",
+                    "ALREADY_VERIFIED": "Το email έχει ήδη επιβεβαιωθεί.",
+                    "NO_HOSTED_EVENTS": "Ο λογαριασμός δεν διοργανώνει εκδηλώσεις."
+                },
+                "event": "Εκδήλωση",
+                "untitledEvent": "Εκδήλωση χωρίς τίτλο",
+                "subject": "Θέμα",
+                "message": "Μήνυμα",
+                "language": "Γλώσσα",
+                "languages": { "en": "Αγγλικά", "el": "Ελληνικά" },
+                "preview": "Προεπισκόπηση",
+                "previewWidth": "Πλάτος προεπισκόπησης",
+                "previewTo": "Προς",
+                "previewSubject": "Θέμα",
+                "previewFrame": "Προεπισκόπηση email",
+                "previewDesktop": "Υπολογιστής",
+                "previewPhone": "Κινητό",
+                "previewLoading": "Φόρτωση προεπισκόπησης...",
+                "previewEmpty": "Συμπληρώστε τα πεδία για να δείτε το email.",
+                "tokenNote": "Ο σύνδεσμος στο email θα είναι καινούργιος.",
+                "send": "Αποστολή email",
+                "cancel": "Ακύρωση",
+                "confirmTitle": "Αποστολή αυτού του email;",
+                "confirmBody": "Το «{template}» θα σταλεί στο {email}.",
+                "sentTitle": "Το email στάλθηκε",
+                "done": "Τέλος",
+                "loading": "Φόρτωση..."
             },
             "provision": {
                 "openEvent": "Άνοιγμα εκδήλωσης",
@@ -3430,7 +3479,10 @@
                 "rsvpDeadlineAfterStart": "Η προθεσμία RSVP πρέπει να είναι πριν την έναρξη της εκδήλωσης.",
                 "reviewTheme": "Θέμα",
                 "reviewRsvpDeadline": "Προθεσμία RSVP",
-                "reviewDescription": "Περιγραφή"
+                "reviewDescription": "Περιγραφή",
+                "notifyHost": "Αποστολή email στον διοργανωτή",
+                "hostEmailed": "Ο διοργανωτής θα λάβει email καλωσορίσματος.",
+                "hostNotEmailed": "Δεν στάλθηκε email στον διοργανωτή."
             },
             "email": {
                 "title": "Email",
@@ -5290,6 +5342,9 @@
         "conflict": "Η αλλαγή συγκρούεται με την πιο πρόσφατη αποθηκευμένη έκδοση. Ανανεώστε και δοκιμάστε ξανά.",
         "concurrentModification": "Αυτό μόλις άλλαξε από αλλού. Ανανεώστε και δοκιμάστε ξανά.",
         "emailAlreadyExists": "Υπάρχει ήδη λογαριασμός με αυτό το email.",
+        "emailEventNotHosted": "Αυτός ο λογαριασμός δεν διοργανώνει αυτή την εκδήλωση.",
+        "emailMessageRequired": "Προσθέστε θέμα και μήνυμα.",
+        "emailTemplateUnavailable": "Αυτό το email δεν μπορεί να σταλεί σε αυτόν τον λογαριασμό.",
         "duplicateMembership": "Είστε ήδη μέλος αυτής της εκδήλωσης.",
         "duplicateMediaIdInRequest": "Αφαιρέστε τις διπλές φωτογραφίες και δοκιμάστε ξανά.",
         "storageUploadFailed": "Δεν μπορέσαμε να ανεβάσουμε το αρχείο. Δοκιμάστε ξανά.",

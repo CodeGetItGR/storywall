@@ -27,6 +27,7 @@ export function useDemoEventDetail(eventTypeKey: EventTypeConvention) {
     const provisionOptions = useMemo<ProvisionEventOptions>(
         () => ({
             eventType: eventTypeKey,
+            canNotifyHost: false,
             onProvisioned: (event: EventResponseDto) => {
                 removeDemo.reset();
                 return setDemo.mutateAsync({ eventTypeKey, input: { eventId: event.id } });
