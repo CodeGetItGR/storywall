@@ -113,7 +113,14 @@
         "mainSession": "Κύρια ενότητα",
         "secondarySession": "Δευτερεύουσα ενότητα",
         "emptyPostsTitle": "Δεν υπάρχουν δημοσιεύσεις ακόμη",
-        "emptyPostsBody": "Μοιραστείτε πρώτοι ένα μήνυμα ή μια φωτογραφία."
+        "emptyPostsBody": "Μοιραστείτε πρώτοι ένα μήνυμα ή μια φωτογραφία.",
+        "close": "Κλείσιμο",
+        "addToCalendar": "Προσθήκη στο ημερολόγιο",
+        "calendarEntry": "Επιλέξτε τι θα προσθέσετε",
+        "calendarGoogle": "Google Calendar",
+        "calendarApple": "Apple Calendar",
+        "calendarOutlook": "Outlook.com",
+        "calendarMicrosoft365": "Microsoft 365"
     },
     "SessionLocationPage": {
         "back": "Πίσω",
