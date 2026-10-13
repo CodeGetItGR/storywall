@@ -7,10 +7,10 @@ import { routes } from '@/lib/routes';
 // The plan targets open the billing tab directly: /settings/plan only redirects there, for older links.
 const CTA_ROUTES: Record<NotificationCtaTarget, (params: Record<string, string>) => string> = {
     EVENT_PLAN_SETTINGS: (p) => routes.events.manage(p.eventId, { tab: 'billing' }),
-    EVENT_GALLERY: (p) => `/events/${p.eventId}/gallery`,
-    EVENT_GUESTS: (p) => `/events/${p.eventId}/guests`,
+    EVENT_GALLERY: (p) => routes.events.tools.gallery(p.eventId),
+    EVENT_GUESTS: (p) => routes.events.invitationsQr(p.eventId),
     EVENT_COVERAGE_EXTEND: (p) => routes.events.manage(p.eventId, { tab: 'billing', section: EXTEND_COVERAGE_SECTION_ID }),
-    EVENT_WISHBOOK: (p) => `/events/${p.eventId}/tools/wishbook`,
+    EVENT_WISHBOOK: (p) => routes.events.tools.wishbook(p.eventId),
 };
 
 export function notificationCtaRoute(notification: NotificationResponseDto): string | null {

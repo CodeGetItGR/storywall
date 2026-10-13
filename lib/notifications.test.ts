@@ -39,6 +39,18 @@ describe('notificationCtaRoute', () => {
         );
     });
 
+    it('sends the gallery CTA to the gallery page', () => {
+        expect(notificationCtaRoute(notification({ ctaTarget: 'EVENT_GALLERY', ctaParams: { eventId: 'event-1' } }))).toBe(
+            '/events/event-1/tools/gallery',
+        );
+    });
+
+    it('sends the share-the-invite CTA to the share links page', () => {
+        expect(notificationCtaRoute(notification({ ctaTarget: 'EVENT_GUESTS', ctaParams: { eventId: 'event-1' } }))).toBe(
+            '/events/event-1/manage/qr',
+        );
+    });
+
     it('hides the CTA for a target this app does not know', () => {
         expect(
             notificationCtaRoute(notification({ ctaTarget: 'SOMETHING_NEW' as NotificationResponseDto['ctaTarget'], ctaParams: { eventId: 'e' } })),
