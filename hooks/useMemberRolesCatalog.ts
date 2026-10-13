@@ -52,7 +52,7 @@ export function useMemberRolesCatalog() {
         eventTypes,
         eventTypeKey,
         roles,
-        visibleRoles,
+        visibleRoles: move.arrange(visibleRoles),
         search,
         status,
         setStatus,
@@ -68,5 +68,6 @@ export function useMemberRolesCatalog() {
         openEdit,
         closeDrawer,
         moveRole: move.move,
+        reorderRole: move.reorder,
     };
 }
