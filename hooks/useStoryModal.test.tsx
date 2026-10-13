@@ -6,14 +6,14 @@ import type { MediaResponseDto, StoryResponseDto } from '@/lib/api/types';
 
 const useMediaItem = vi.fn();
 let story: StoryResponseDto | undefined;
-vi.mock('@/hooks', () => ({
+vi.mock('@/hooks/useStories', () => ({
     useStory: () => ({ data: story, error: null }),
     useEventStories: () => ({ data: story ? [story] : [] }),
-    useMediaItem: (id: string | null) => useMediaItem(id),
     useMarkStoryViewed: () => ({ mutate: vi.fn() }),
     useDeleteStory: () => ({ mutateAsync: vi.fn(), isPending: false }),
-    useAppConfig: () => ({ data: { reportTargetTypes: [] } }),
 }));
+vi.mock('@/hooks/useMedia', () => ({ useMediaItem: (id: string | null) => useMediaItem(id) }));
+vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: () => ({ data: { reportTargetTypes: [] } }) }));
 vi.mock('@/hooks/useOverlayHistory', () => ({ useOverlayHistory: () => ({ requestClose: vi.fn() }) }));
 vi.mock('@/hooks/useContentAccess', () => ({ useContentAccess: () => ({ isDemoBuilder: false, isLocked: () => false }) }));
 vi.mock('@/hooks/useCustomRoleReport', () => ({ useCustomRoleReport: () => false }));

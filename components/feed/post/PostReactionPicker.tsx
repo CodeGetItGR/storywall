@@ -4,8 +4,8 @@ import { Heart } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { usePostLike } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { usePostLike } from '@/hooks/usePostLike';
 import { isModuleNotAvailableError } from '@/lib/api/errors';
 import type { PostResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';

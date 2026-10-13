@@ -10,14 +10,14 @@ let reportTargetTypes: string[] = ['STORY'];
 let eventStatus: EventStatus = 'ACTIVE';
 let mediaType = 'IMAGE';
 
-vi.mock('@/hooks', () => ({
+vi.mock('@/hooks/useStories', () => ({
     useStory: () => ({ data: story, error: null }),
     useEventStories: () => ({ data: [story] }),
-    useMediaItem: () => ({ data: undefined }),
     useMarkStoryViewed: () => ({ mutate: vi.fn() }),
     useDeleteStory: () => ({ mutateAsync: vi.fn(), isPending: false }),
-    useAppConfig: () => ({ data: { reportTargetTypes } }),
 }));
+vi.mock('@/hooks/useMedia', () => ({ useMediaItem: () => ({ data: undefined }) }));
+vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: () => ({ data: { reportTargetTypes } }) }));
 vi.mock('@/hooks/useOverlayHistory', () => ({ useOverlayHistory: () => ({ requestClose: vi.fn() }) }));
 vi.mock('@/hooks/useContentAccess', () => ({ useContentAccess: () => ({ isDemoBuilder: false, isLocked: () => false }) }));
 vi.mock('@/hooks/useCustomRoleReport', () => ({ useCustomRoleReport: () => false }));

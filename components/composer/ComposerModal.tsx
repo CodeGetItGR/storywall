@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { AddImageButton } from '@/components/composer/AddImageButton';
 import { ComposerModeToggle } from '@/components/composer/ComposerModeToggle';
-import { AddSongForm } from '@/components/playlist';
+import { AddSongForm } from '@/components/playlist/AddSongForm';
 import { Modal } from '@/components/ui/modal';
 import type { ComposerController } from '@/hooks/useComposerController';
 import { useUploadAccept } from '@/hooks/useUploadAccept';

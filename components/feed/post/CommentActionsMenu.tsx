@@ -4,10 +4,11 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { PostActionsMenu } from '@/components/feed/post/PostActionsMenu';
-import { ReportTargetModal } from '@/components/reports';
+import { ReportTargetModal } from '@/components/reports/ReportTargetModal';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { useAppConfig, useDeleteComment } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useAppConfig } from '@/hooks/useAppConfig';
+import { useDeleteComment } from '@/hooks/useComments';
 import { useContentAccess } from '@/hooks/useContentAccess';
 import { useCustomRoleReport } from '@/hooks/useCustomRoleReport';
 import type { CommentResponseDto } from '@/lib/api/types';
