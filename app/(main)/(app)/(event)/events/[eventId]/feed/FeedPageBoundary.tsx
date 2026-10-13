@@ -6,11 +6,12 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useMemo } from 'react';
 
 import { FeedPageSkeleton } from '@/components/feed/FeedPageSkeleton';
-import { useEventFeedStream, useEventPosts } from '@/hooks';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEvent } from '@/hooks/useEvent';
+import { useEventFeedStream } from '@/hooks/useEventFeedStream';
 import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
 import { useModuleReadable } from '@/hooks/useModuleReadable';
+import { useEventPosts } from '@/hooks/usePosts';
 import { setMemberRsvpIdInCaches, useRsvp } from '@/hooks/useRsvps';
 import { ApiError } from '@/lib/api/client';
 import { EVENT_MODULE_KEYS, type ModuleKeyConvention } from '@/lib/api/types';

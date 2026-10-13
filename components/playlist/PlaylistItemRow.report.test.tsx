@@ -16,7 +16,7 @@ vi.mock('@/hooks/usePlaylist', () => ({
     useDeletePlaylistVote: () => ({ isPending: false, mutateAsync: vi.fn() }),
     useDeletePlaylistSuggestion: () => ({ isPending: false, mutateAsync: vi.fn() }),
 }));
-vi.mock('@/hooks', () => ({
+vi.mock('@/hooks/useAppConfig', () => ({
     useAppConfig: () => ({ data: { reportTargetTypes } }),
 }));
 vi.mock('@/hooks/useContentAccess', () => ({ useContentAccess: () => ({ isDemoBuilder: false, isLocked: () => false }) }));
@@ -28,7 +28,7 @@ vi.mock('@/providers/EventProvider', () => ({
 vi.mock('@/hooks/usePostingAsMember', () => ({
     usePostingAsMember: () => ({ member: activeMemberId ? { id: activeMemberId } : null, isPersona: false }),
 }));
-vi.mock('@/components/reports', () => ({
+vi.mock('@/components/reports/ReportTargetModal', () => ({
     ReportTargetModal: ({ open, targetType, targetId }: { open: boolean; targetType: string; targetId: string }) =>
         open ? <div data-testid="report-modal" data-target-type={targetType} data-target-id={targetId} /> : null,
 }));

@@ -5,8 +5,8 @@ import type React from 'react';
 import { useState } from 'react';
 
 import { Modal } from '@/components/ui/modal';
-import { useAppConfig } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useAppConfig } from '@/hooks/useAppConfig';
 import { useUpdatePost } from '@/hooks/usePosts';
 import type { PostResponseDto } from '@/lib/api/types';
 

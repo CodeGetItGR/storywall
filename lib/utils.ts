@@ -5,6 +5,19 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
+const IDLE_FALLBACK_DELAY_MS = 200;
+
+// Runs the callback once the browser is idle, or after timeoutMs at the latest. Safari has no
+// requestIdleCallback, so there it runs after a short delay. Returns a function that cancels it.
+export function runWhenIdle(callback: () => void, timeoutMs: number): () => void {
+    if (typeof window.requestIdleCallback === 'function') {
+        const handle = window.requestIdleCallback(callback, { timeout: timeoutMs });
+        return () => window.cancelIdleCallback(handle);
+    }
+    const handle = window.setTimeout(callback, Math.min(IDLE_FALLBACK_DELAY_MS, timeoutMs));
+    return () => window.clearTimeout(handle);
+}
+
 export function initialsFromName(name: string): string {
     const parts = name.trim().split(/\s+/).filter(Boolean);
     if (parts.length === 0) return '?';
