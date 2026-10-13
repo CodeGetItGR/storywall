@@ -4,7 +4,7 @@ import { Music, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { PiMusicNotesPlusDuotone } from 'react-icons/pi';
 
-import { PlaylistItemRow } from '@/components/playlist';
+import { PlaylistItemRow } from '@/components/playlist/PlaylistItemRow';
 import { PlaylistListSkeleton } from '@/components/playlist/PlaylistSkeletons';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';

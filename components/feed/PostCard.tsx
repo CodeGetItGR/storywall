@@ -15,13 +15,15 @@ import {
     ReactionSummary,
 } from '@/components/feed/post';
 import { AuthorRoleChip } from '@/components/memberRoles/AuthorRoleChip';
-import { ReportTargetModal } from '@/components/reports';
+import { ReportTargetModal } from '@/components/reports/ReportTargetModal';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { openPostModal, useAppConfig, useDeletePost, useUpdatePost } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useAppConfig } from '@/hooks/useAppConfig';
 import { useContentAccess } from '@/hooks/useContentAccess';
 import { useCustomRoleReport } from '@/hooks/useCustomRoleReport';
 import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
+import { openPostModal } from '@/hooks/usePostModal';
+import { useDeletePost, useUpdatePost } from '@/hooks/usePosts';
 import type { PostResponseDto } from '@/lib/api/types';
 import { canDeleteContent, canReportContent } from '@/lib/contentPermissions';
 import { isEventWritable } from '@/lib/eventLifecycle';

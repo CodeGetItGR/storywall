@@ -1,14 +1,14 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { lazy, type ReactNode, Suspense } from 'react';
 
-import { ComposerModal } from '@/components/composer/ComposerModal';
-import { PostMediaPreviewModal } from '@/components/composer/PostMediaPreviewModal';
-import { StoryComposerModal } from '@/components/composer/StoryComposerModal';
 import { useComposerController } from '@/hooks/useComposerController';
+import { useDeferredMount } from '@/hooks/useDeferredMount';
 import { useGuidelinesAcceptanceBlocking } from '@/hooks/useGuidelinesAcceptanceBlocking';
 import { ComposerContext, useComposer } from '@/providers/composer/ComposerContext';
 import { PublishQueueProvider } from '@/providers/PublishQueueProvider';
+
+const ComposerModals = lazy(() => import('@/components/composer/ComposerModals').then((module) => ({ default: module.ComposerModals })));
 
 function ComposerProviderInner({ children }: { children: ReactNode }) {
     const controller = useComposerController();
@@ -17,16 +17,17 @@ function ComposerProviderInner({ children }: { children: ReactNode }) {
     // it, so they're left out while it's up; their drafts live in the controller
     // and come back once the guidelines are accepted.
     const { isBlocking: isGuidelinesGateUp } = useGuidelinesAcceptanceBlocking();
+    // The modals' code loads once the browser is idle on a page where this member can post,
+    // or straight away when a composer opens before that.
+    const shouldMountModals = useDeferredMount({ likely: contextValue.canCompose, needed: controller.isOpen || storyComposer.isOpen });
 
     return (
         <ComposerContext.Provider value={contextValue}>
             {children}
-            {!isGuidelinesGateUp && (
-                <>
-                    <ComposerModal {...controller} />
-                    <PostMediaPreviewModal controller={controller} />
-                    <StoryComposerModal controller={storyComposer} />
-                </>
+            {!isGuidelinesGateUp && shouldMountModals && (
+                <Suspense fallback={null}>
+                    <ComposerModals controller={controller} />
+                </Suspense>
             )}
         </ComposerContext.Provider>
     );

@@ -6,10 +6,10 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { SpotifyMark, YouTubeMark } from '@/components/playlist/MusicServiceMarks';
 import { PlaylistItemActionsMenu } from '@/components/playlist/PlaylistItemActionsMenu';
-import { ReportTargetModal } from '@/components/reports';
+import { ReportTargetModal } from '@/components/reports/ReportTargetModal';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { useAppConfig } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useAppConfig } from '@/hooks/useAppConfig';
 import { useContentAccess } from '@/hooks/useContentAccess';
 import { useCreatePlaylistVote, useDeletePlaylistSuggestion, useDeletePlaylistVote, usePlaylistVotes } from '@/hooks/usePlaylist';
 import { usePostingAsMember } from '@/hooks/usePostingAsMember';
