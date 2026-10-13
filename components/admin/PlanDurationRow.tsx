@@ -5,10 +5,13 @@ import { useLocale, useTranslations } from 'next-intl';
 import type { MouseEventHandler } from 'react';
 
 import { AdminOrderArrows } from '@/components/admin/AdminOrderArrows';
+import { AdminSortableRow } from '@/components/admin/AdminSortableRow';
 import type { CoverageOptionResponseDto } from '@/lib/api/types';
 import { formatOptionalMoney } from '@/lib/billing';
 import type { MoveDirection } from '@/lib/sortOrder';
 import { cn } from '@/lib/utils';
+
+const ROW = 'flex min-h-11 items-center gap-3 px-3 py-2';
 
 export function PlanDurationRow({
     option,
@@ -31,8 +34,8 @@ export function PlanDurationRow({
     const locale = useLocale();
     const monthsLabel = t('plans.columns.months', { count: option.months });
 
-    return (
-        <div className="flex min-h-11 items-center gap-3 px-3 py-2">
+    const content = (
+        <>
             {/* Duration */}
             <span className={cn('w-24 shrink-0 text-sm font-semibold', option.active ? 'text-ink' : 'text-ink-faint')}>{monthsLabel}</span>
             <span className={cn('font-mono text-sm', option.active ? 'text-ink' : 'text-ink-faint')}>
@@ -82,6 +85,15 @@ export function PlanDurationRow({
             >
                 <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
-        </div>
+        </>
+    );
+
+    // Only live durations have an order, so only they can be dragged.
+    return option.active ? (
+        <AdminSortableRow id={option.id} name={monthsLabel} as="div" className={ROW}>
+            {content}
+        </AdminSortableRow>
+    ) : (
+        <div className={ROW}>{content}</div>
     );
 }

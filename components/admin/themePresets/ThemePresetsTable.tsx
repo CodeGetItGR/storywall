@@ -2,9 +2,12 @@
 
 import { useTranslations } from 'next-intl';
 
+import { AdminSortableList } from '@/components/admin/AdminSortableList';
 import { ThemePresetRow } from '@/components/admin/themePresets/ThemePresetRow';
 import type { AdminThemePresetDto } from '@/lib/api/types';
 import type { MoveDirection } from '@/lib/sortOrder';
+
+const presetIdOf = (preset: AdminThemePresetDto) => preset.id;
 
 export function ThemePresetsTable({
     presets,
@@ -12,6 +15,7 @@ export function ThemePresetsTable({
     eventTypeLabels,
     canReorder,
     onMoveAction,
+    onReorderAction,
     onEditAction,
 }: {
     presets: AdminThemePresetDto[];
@@ -19,6 +23,7 @@ export function ThemePresetsTable({
     eventTypeLabels: Record<string, string>;
     canReorder: boolean;
     onMoveAction: (presetId: string, direction: MoveDirection) => void;
+    onReorderAction: (activeId: string, overId: string) => void;
     onEditAction: (presetId: string) => void;
 }) {
     const t = useTranslations('AdminPage.themePresets');
@@ -40,18 +45,20 @@ export function ThemePresetsTable({
                     </tr>
                 </thead>
                 <tbody>
-                    {presets.map((preset, index) => (
-                        <ThemePresetRow
-                            key={preset.id}
-                            preset={preset}
-                            eventTypeLabels={eventTypeLabels}
-                            isFirst={index === 0}
-                            isLast={index === presets.length - 1}
-                            canReorder={canReorder}
-                            onMoveAction={onMoveAction}
-                            onEditAction={onEditAction}
-                        />
-                    ))}
+                    <AdminSortableList ids={presets.map(presetIdOf)} disabled={!canReorder} onReorderAction={onReorderAction}>
+                        {presets.map((preset, index) => (
+                            <ThemePresetRow
+                                key={preset.id}
+                                preset={preset}
+                                eventTypeLabels={eventTypeLabels}
+                                isFirst={index === 0}
+                                isLast={index === presets.length - 1}
+                                canReorder={canReorder}
+                                onMoveAction={onMoveAction}
+                                onEditAction={onEditAction}
+                            />
+                        ))}
+                    </AdminSortableList>
                 </tbody>
             </table>
         </div>

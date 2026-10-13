@@ -7,6 +7,8 @@ import React, { type ChangeEvent, useCallback, useMemo, useState } from 'react';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { AdminOrderArrows } from '@/components/admin/AdminOrderArrows';
+import { AdminSortableList } from '@/components/admin/AdminSortableList';
+import { AdminSortableRow } from '@/components/admin/AdminSortableRow';
 import { ReactionTypeDrawer } from '@/components/admin/ReactionTypeDrawer';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useAdminPlatformEventTypes } from '@/hooks/useAdmin';
@@ -28,6 +30,8 @@ const STATUS_PILL = {
 function statusOf(reactionType: ReactionTypeResponseDto): Exclude<StatusFilter, 'ALL'> {
     return reactionType.isAssignable ? 'AVAILABLE' : 'ARCHIVED';
 }
+
+const reactionTypeIdOf = (reactionType: ReactionTypeResponseDto) => reactionType.id;
 
 export function ReactionTypesCatalogPanel() {
     const t = useTranslations('AdminPage.reactionTypes');
@@ -72,6 +76,7 @@ export function ReactionTypesCatalogPanel() {
     const move = useReactionTypeMove(reactionTypes);
     // Arrows move a row within the full list, so they only work while nothing is hidden.
     const canReorder = !search.trim() && statusFilter === 'ALL' && !move.isPending;
+    const visibleRows = move.arrange(visibleReactionTypes);
 
     function handleEventTypeChange(event: ChangeEvent<HTMLSelectElement>) {
         setSelectedEventTypeKey(event.target.value as EventTypeConvention);
@@ -195,50 +200,60 @@ export function ReactionTypesCatalogPanel() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {visibleReactionTypes.map((reactionType, index) => {
-                                    const status = statusOf(reactionType);
-                                    return (
-                                        <tr key={reactionType.id} className="border-b border-border last:border-b-0 hover:bg-canvas/60">
-                                            <td className="max-w-64 px-4 py-2.5">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-canvas text-lg">
-                                                        {reactionType.emoji}
+                                <AdminSortableList ids={visibleRows.map(reactionTypeIdOf)} disabled={!canReorder} onReorderAction={move.reorder}>
+                                    {visibleRows.map((reactionType, index) => {
+                                        const status = statusOf(reactionType);
+                                        return (
+                                            <AdminSortableRow
+                                                key={reactionType.id}
+                                                id={reactionType.id}
+                                                name={reactionType.name}
+                                                className="border-b border-border last:border-b-0 hover:bg-canvas/60"
+                                            >
+                                                <td className="max-w-64 px-4 py-2.5">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-canvas text-lg">
+                                                            {reactionType.emoji}
+                                                        </span>
+                                                        <p className="truncate font-semibold text-ink">{reactionType.name}</p>
+                                                    </div>
+                                                </td>
+                                                <td className="px-3 py-2.5 font-mono text-[12px] text-ink-muted">{reactionType.code}</td>
+                                                <td className="px-3 py-2.5">
+                                                    <AdminOrderArrows
+                                                        id={reactionType.id}
+                                                        name={reactionType.name}
+                                                        isFirst={index === 0}
+                                                        isLast={index === visibleReactionTypes.length - 1}
+                                                        disabled={!canReorder}
+                                                        onMoveAction={move.move}
+                                                    />
+                                                </td>
+                                                <td className="px-3 py-2.5">
+                                                    <span
+                                                        className={cn(
+                                                            'inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold',
+                                                            STATUS_PILL[status],
+                                                        )}
+                                                    >
+                                                        {t(`status.${status}`)}
                                                     </span>
-                                                    <p className="truncate font-semibold text-ink">{reactionType.name}</p>
-                                                </div>
-                                            </td>
-                                            <td className="px-3 py-2.5 font-mono text-[12px] text-ink-muted">{reactionType.code}</td>
-                                            <td className="px-3 py-2.5">
-                                                <AdminOrderArrows
-                                                    id={reactionType.id}
-                                                    name={reactionType.name}
-                                                    isFirst={index === 0}
-                                                    isLast={index === visibleReactionTypes.length - 1}
-                                                    disabled={!canReorder}
-                                                    onMoveAction={move.move}
-                                                />
-                                            </td>
-                                            <td className="px-3 py-2.5">
-                                                <span
-                                                    className={cn('inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold', STATUS_PILL[status])}
-                                                >
-                                                    {t(`status.${status}`)}
-                                                </span>
-                                            </td>
-                                            <td className="px-3 py-2.5 text-right">
-                                                <button
-                                                    type="button"
-                                                    data-reaction-type-id={reactionType.id}
-                                                    onClick={handleEditClick}
-                                                    aria-label={t('edit')}
-                                                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-canvas hover:text-ink"
-                                                >
-                                                    <Pencil className="h-3.5 w-3.5" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
+                                                </td>
+                                                <td className="px-3 py-2.5 text-right">
+                                                    <button
+                                                        type="button"
+                                                        data-reaction-type-id={reactionType.id}
+                                                        onClick={handleEditClick}
+                                                        aria-label={t('edit')}
+                                                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-canvas hover:text-ink"
+                                                    >
+                                                        <Pencil className="h-3.5 w-3.5" />
+                                                    </button>
+                                                </td>
+                                            </AdminSortableRow>
+                                        );
+                                    })}
+                                </AdminSortableList>
                             </tbody>
                         </table>
                     </div>

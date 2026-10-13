@@ -3,11 +3,13 @@
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { AdminDragHandle, useAdminDragHandle } from '@/components/admin/AdminSortableRow';
 import type { MoveDirection } from '@/lib/sortOrder';
 
 const ARROW_BUTTON = 'rounded-md p-1.5 text-ink-muted hover:bg-canvas hover:text-ink disabled:pointer-events-none disabled:opacity-30';
 
-// The up/down arrows every admin catalog uses to change a row's order.
+// The up/down arrows every admin catalog uses to change a row's order, plus a
+// drag handle when the row is an AdminSortableRow.
 export function AdminOrderArrows({
     id,
     name,
@@ -27,6 +29,8 @@ export function AdminOrderArrows({
     onMoveAction: (id: string, direction: MoveDirection) => void;
 }) {
     const t = useTranslations('AdminPage.order');
+    const dragHandle = useAdminDragHandle();
+    const isAlone = isFirst && isLast;
 
     function handleUp() {
         onMoveAction(id, 'up');
@@ -38,6 +42,9 @@ export function AdminOrderArrows({
 
     return (
         <div className="flex gap-1" title={disabled ? disabledHint : undefined}>
+            {dragHandle && (
+                <AdminDragHandle handle={dragHandle} label={t('drag', { name })} disabled={disabled || isAlone} className={ARROW_BUTTON} />
+            )}
             <button type="button" onClick={handleUp} disabled={disabled || isFirst} aria-label={t('moveUp', { name })} className={ARROW_BUTTON}>
                 <ArrowUp className="h-4 w-4" aria-hidden="true" />
             </button>
