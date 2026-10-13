@@ -14,6 +14,11 @@ const WORKER_SCOPE = '/demo/';
 // SSR too — so the worker is created lazily, on first use in the browser, not at module scope.
 let worker: SetupWorker | null = null;
 let startPromise: Promise<SetupWorker> | null = null;
+// The latest start, even one a stop has since disowned. A new start waits for it: two worker.start()
+// calls at once would set MSW up twice.
+let lastStart: Promise<unknown> = Promise.resolve();
+// Whether worker.start() has finished with no worker.stop() since.
+let running = false;
 // Bumped by every stop, so a stop still waiting on a start can tell whether a newer start owns the worker.
 let stops = 0;
 
@@ -36,28 +41,40 @@ function stopWatchingForResume() {
     window.removeEventListener('pageshow', reactivateMocking);
 }
 
+// Starts interception (once). Until startDemoMocking() hands it the session's handlers, every
+// request passes through, so the demo can start the worker while its snapshot is still loading.
+export function startDemoWorker(): Promise<SetupWorker> {
+    if (!startPromise) {
+        const starting: Promise<SetupWorker> = lastStart
+            .then(() => import('msw/browser'))
+            .then(async ({ setupWorker }) => {
+                // MSW reuses any registration of its script, so a site-wide one would keep its scope.
+                await unregisterSiteWideDemoWorker();
+                worker ??= setupWorker();
+                // Media files (presigned storage URLs), Next.js assets and fonts pass through untouched;
+                // backend calls are covered by the handlers' own catch-all.
+                if (!running) {
+                    await worker.start({
+                        onUnhandledRequest: 'bypass',
+                        quiet: true,
+                        serviceWorker: { url: WORKER_URL, options: { scope: WORKER_SCOPE } },
+                    });
+                    running = true;
+                }
+                // Not if the visitor left the demo meanwhile: it would turn mocking back on for the real app.
+                if (startPromise === starting) watchForResume();
+                return worker;
+            });
+        startPromise = starting;
+        lastStart = starting.catch(() => undefined);
+    }
+    return startPromise;
+}
+
 // Starts interception (once) and makes `handlers` the complete handler set. Callers pass the
 // session's handlers, which end in a catch-all that blocks every other backend call.
 export async function startDemoMocking(handlers: RequestHandler[]): Promise<void> {
-    if (!startPromise) {
-        const starting: Promise<SetupWorker> = import('msw/browser').then(async ({ setupWorker }) => {
-            // MSW reuses any registration of its script, so a site-wide one would keep its scope.
-            await unregisterSiteWideDemoWorker();
-            worker ??= setupWorker();
-            // Media files (presigned storage URLs), Next.js assets and fonts pass through untouched;
-            // backend calls are covered by the handlers' own catch-all.
-            await worker.start({
-                onUnhandledRequest: 'bypass',
-                quiet: true,
-                serviceWorker: { url: WORKER_URL, options: { scope: WORKER_SCOPE } },
-            });
-            // Not if the visitor left the demo meanwhile: it would turn mocking back on for the real app.
-            if (startPromise === starting) watchForResume();
-            return worker;
-        });
-        startPromise = starting;
-    }
-    const started = await startPromise;
+    const started = await startDemoWorker();
     started.resetHandlers(...handlers);
 }
 
@@ -73,7 +90,10 @@ export function stopDemoMocking(): void {
     void starting?.then(
         (started) => {
             // The visitor came straight back: a newer start owns the same worker now.
-            if (stop === stops && !startPromise) started.stop();
+            if (stop === stops && !startPromise) {
+                started.stop();
+                running = false;
+            }
         },
         () => undefined,
     );

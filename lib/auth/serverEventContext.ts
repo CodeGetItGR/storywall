@@ -18,8 +18,7 @@ export interface ServerEventContext {
     isHost: boolean;
 }
 
-// The access token a page's server prefetch should use, or null when it
-// shouldn't prefetch: no session, or not a full page load.
+// Whether a page's server prefetch should run at all.
 //
 // Only a full page load (a typed URL, a reload, an opened link) prefetches.
 // An in-app navigation, a link prefetch or router.refresh() is the app router
@@ -30,11 +29,16 @@ export interface ServerEventContext {
 // Next hides its own `rsc` header from server code, so this reads the
 // browser's Sec-Fetch-Dest: `document` for a page load, `empty` for the
 // router's fetches. A browser that doesn't send it counts as a page load.
+export async function isFullPageLoad(): Promise<boolean> {
+    const fetchDest = (await headers()).get('sec-fetch-dest');
+    return fetchDest === null || fetchDest === 'document';
+}
+
+// The access token a page's server prefetch should use, or null when it
+// shouldn't prefetch: no session, or not a full page load.
 export async function prefetchAccessToken(): Promise<string | null> {
-    const headerList = await headers();
-    const fetchDest = headerList.get('sec-fetch-dest');
-    if (fetchDest !== null && fetchDest !== 'document') return null;
-    return headerList.get(ACCESS_TOKEN_HEADER);
+    if (!(await isFullPageLoad())) return null;
+    return (await headers()).get(ACCESS_TOKEN_HEADER);
 }
 
 async function resolveEventContext(accessToken: string | null, eventId?: string): Promise<ServerEventContext | null> {

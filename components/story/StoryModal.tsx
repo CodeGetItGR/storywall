@@ -14,6 +14,7 @@ import { StoryVideo } from '@/components/story/StoryVideo';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useStoryModal } from '@/hooks/useStoryModal';
 import { formatTime } from '@/lib/datetime';
+import { STORY_IMAGE_SIZES } from '@/lib/stories';
 
 type StoryModalProps = {
     open: boolean;
@@ -128,7 +129,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                                     alt={t('userStory', { name: authorName })}
                                     fill
                                     className="object-contain"
-                                    sizes="100vw"
+                                    sizes={STORY_IMAGE_SIZES}
                                     preload
                                     onLoad={handleMediaLoaded}
                                     onError={handleMediaError}
