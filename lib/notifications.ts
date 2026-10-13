@@ -1,12 +1,15 @@
 import type { BillingNotificationType, NotificationCtaTarget, NotificationResponseDto, NotificationSeverity } from '@/lib/api/types';
+import { EXTEND_COVERAGE_SECTION_ID } from '@/lib/billing';
+import { routes } from '@/lib/routes';
 
 // ctaTarget is a closed, growable set (notification-cta-target-fe-integration.md) — an
 // unrecognized target hides the CTA rather than crashing or navigating nowhere.
+// The plan targets open the billing tab directly: /settings/plan only redirects there, for older links.
 const CTA_ROUTES: Record<NotificationCtaTarget, (params: Record<string, string>) => string> = {
-    EVENT_PLAN_SETTINGS: (p) => `/events/${p.eventId}/settings/plan`,
+    EVENT_PLAN_SETTINGS: (p) => routes.events.manage(p.eventId, { tab: 'billing' }),
     EVENT_GALLERY: (p) => `/events/${p.eventId}/gallery`,
     EVENT_GUESTS: (p) => `/events/${p.eventId}/guests`,
-    EVENT_COVERAGE_EXTEND: (p) => `/events/${p.eventId}/settings/plan?extend=1`,
+    EVENT_COVERAGE_EXTEND: (p) => routes.events.manage(p.eventId, { tab: 'billing', section: EXTEND_COVERAGE_SECTION_ID }),
     EVENT_WISHBOOK: (p) => `/events/${p.eventId}/tools/wishbook`,
 };
 
