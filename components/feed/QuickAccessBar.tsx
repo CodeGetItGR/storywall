@@ -9,6 +9,7 @@ import { useMemo } from 'react';
 import { useGiftAccount } from '@/hooks/useGiftAccount';
 import { useModuleCopy } from '@/hooks/useModuleCopy';
 import type { ModuleKeyConvention } from '@/lib/api/types';
+import { isGalleryOpenToGuests } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useContentAccessMode, useIsHost } from '@/providers/EventProvider';
 
@@ -57,7 +58,7 @@ export function QuickAccessBar() {
             .map((module) => {
                 const item = quickAccessItems.find((entry) => entry.moduleKey === module.moduleKey && entry.visible);
                 if (item?.key === 'gifts' && !giftsVisibleToCurrentMember) return null;
-                if (item?.key === 'gallery' && !isHost) return null;
+                if (item?.key === 'gallery' && !isHost && !isGalleryOpenToGuests(activeEvent)) return null;
                 // Not in the public demo in v1: its mock backend has no handlers for it.
                 if (item?.key === 'heOrShe' && isDemoVisitor) return null;
                 return item && availableModules.has(item.moduleKey) ? item : null;

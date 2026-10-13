@@ -7,6 +7,7 @@ import { serverGet } from '@/lib/api/serverFetch';
 import type { MediaResponseDto } from '@/lib/api/types';
 import { resolveServerEventContext, resolveServerEventDetail } from '@/lib/auth/serverEventContext';
 import { readableModuleKeys } from '@/lib/eventLifecycle';
+import { isGalleryOpenToGuests } from '@/lib/qrLinks';
 import { makeQueryClient } from '@/lib/queryClient';
 
 import GalleryPage from '../PageClient';
@@ -15,15 +16,15 @@ type PageProps = { params: Promise<{ eventId: string }> };
 
 // Prefetches the gallery's first page of media for the event named in the
 // URL so GalleryScreen finds it already cached instead of showing its
-// loading state. Gallery is host-only (see EventRouteGate requireHost in
-// PageClient), so this mirrors that gating rather than wasting a fetch for
-// members who'll be redirected client-side.
+// loading state. Gallery is host-only unless members get the archive (see
+// isGalleryOpenToGuests in PageClient), so this mirrors that gating rather
+// than wasting a fetch for guests who'll be redirected client-side.
 export default async function Page({ params }: PageProps) {
     const { eventId } = await params;
     const queryClient = makeQueryClient();
     const [context, event] = await Promise.all([resolveServerEventContext(eventId), resolveServerEventDetail(eventId)]);
 
-    if (context?.isHost && readableModuleKeys(event).has('gallery')) {
+    if (context && (context.isHost || isGalleryOpenToGuests(event)) && readableModuleKeys(event).has('gallery')) {
         try {
             const firstPage = await serverGet<Page<MediaResponseDto>>(
                 `${endpoints.events.media(eventId)}?page=0&size=${MEDIA_PAGE_SIZE}`,
