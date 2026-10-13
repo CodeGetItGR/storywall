@@ -1,13 +1,13 @@
 'use client';
 
 import { QueryClientProvider } from '@tanstack/react-query';
-import { usePathname } from 'next/navigation';
 import { type ReactNode, useEffect, useState } from 'react';
 
 import { BetaFeedback } from '@/components/betaFeedback/BetaFeedback';
 import { GuidelinesAcceptanceGate, GuidelinesGateSignOutHold } from '@/components/legal/GuidelinesAcceptanceGate';
 import { useAuth } from '@/hooks/useAuth';
 import { useInAppHistoryTracking } from '@/hooks/useInAppHistoryTracking';
+import { useIsDemoRoute } from '@/hooks/useIsDemoRoute';
 import { meQueryKey } from '@/hooks/useMe';
 import { useVisualViewportSync } from '@/hooks/useVisualViewportSync';
 import type { SessionHandoff } from '@/lib/auth/sessionHandoff';
@@ -19,6 +19,7 @@ import { makeQueryClient } from '@/lib/queryClient';
 import { AppConfigBootstrap } from '@/providers/AppConfigBootstrap';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { ComposerProvider } from '@/providers/ComposerProvider';
+import { DemoRouteAuthScope } from '@/providers/demo/DemoRouteAuthScope';
 import { DocumentTitleSync } from '@/providers/DocumentTitleSync';
 import { EventProvider } from '@/providers/EventProvider';
 import { MobileChromeProvider } from '@/providers/MobileChromeProvider';
@@ -44,7 +45,7 @@ function AccountComposerProvider({ children }: { children: ReactNode }) {
 // handoff: the session the server already holds on a full page load of a
 // signed-in page (see app/(main)/layout.tsx); null everywhere else.
 export function AppProviders({ children, handoff = null }: { children: ReactNode; handoff?: SessionHandoff | null }) {
-    const isDemoRoute = usePathname()?.startsWith('/demo') ?? false;
+    const isDemoRoute = useIsDemoRoute();
     useVisualViewportSync();
     useInAppHistoryTracking();
     const [queryClient] = useState(() => {
@@ -75,13 +76,15 @@ export function AppProviders({ children, handoff = null }: { children: ReactNode
         <QueryClientProvider client={queryClient}>
             <AppConfigBootstrap />
             <AuthProvider handoff={handoff}>
-                <EventProvider>
-                    <DocumentTitleSync />
-                    <BetaFeedback />
-                    <GuidelinesGateSignOutHold>
-                        {isDemoRoute ? chrome : <AccountComposerProvider>{chrome}</AccountComposerProvider>}
-                    </GuidelinesGateSignOutHold>
-                </EventProvider>
+                <DemoRouteAuthScope>
+                    <EventProvider>
+                        <DocumentTitleSync />
+                        <BetaFeedback />
+                        <GuidelinesGateSignOutHold>
+                            {isDemoRoute ? chrome : <AccountComposerProvider>{chrome}</AccountComposerProvider>}
+                        </GuidelinesGateSignOutHold>
+                    </EventProvider>
+                </DemoRouteAuthScope>
             </AuthProvider>
         </QueryClientProvider>
     );

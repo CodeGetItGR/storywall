@@ -2,7 +2,6 @@
 
 import { Bell, CalendarDays, Pencil, UserRound } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import { AccountInstallAppButton } from '@/components/account/AccountInstallAppButton';
@@ -12,6 +11,7 @@ import { AccountSidebarNavLink } from '@/components/account/AccountSidebarNavLin
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsDemoRoute } from '@/hooks/useIsDemoRoute';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { getInitials } from '@/lib/format';
 import { routes } from '@/lib/routes';
@@ -19,12 +19,11 @@ import { routes } from '@/lib/routes';
 export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => void }) {
     const t = useTranslations('AccountDrawer');
     const { user } = useAuth();
-    const pathname = usePathname();
     const { data: unreadCount = 0 } = useUnreadNotificationCount();
     // These nav destinations (account-wide event list, plans, modules, profile edit) all
     // require a real signed-in session and have no demo equivalent — linking to them from
     // /demo would just dead-end the host on the real login page.
-    const isDemoRoute = pathname?.startsWith('/demo') ?? false;
+    const isDemoRoute = useIsDemoRoute();
     const accountName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.firstName || t('fallbackName');
 
     return (

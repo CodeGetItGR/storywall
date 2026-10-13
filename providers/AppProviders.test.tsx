@@ -21,6 +21,7 @@ vi.mock('@/providers/AppConfigBootstrap', () => ({ AppConfigBootstrap: () => nul
 vi.mock('@/providers/DocumentTitleSync', () => ({ DocumentTitleSync: () => null }));
 vi.mock('@/components/betaFeedback/BetaFeedback', () => ({ BetaFeedback: () => null }));
 vi.mock('@/providers/AuthProvider', () => ({ AuthProvider: mocks.passThrough }));
+vi.mock('@/providers/demo/DemoRouteAuthScope', () => ({ DemoRouteAuthScope: mocks.passThrough }));
 vi.mock('@/providers/EventProvider', () => ({ EventProvider: mocks.passThrough }));
 vi.mock('@/providers/MobileChromeProvider', () => ({ MobileChromeProvider: mocks.passThrough }));
 vi.mock('@/providers/ModalProvider', () => ({ ModalProvider: mocks.passThrough }));
@@ -112,15 +113,13 @@ describe('AppProviders and the guidelines gate', () => {
         expect(screen.getByText('queued 1')).toBeInTheDocument();
     });
 
-    // /demo has no composer, but the gate must still cover it.
-    it('gates the demo pages too', () => {
-        mocks.pathname = '/demo';
-        mocks.gated = true;
+    // The demo brings its own composer.
+    it('leaves the account composer out of the demo pages', () => {
+        mocks.pathname = '/demo/wedding/feed';
         render(<AppProviders>page</AppProviders>);
 
         expect(screen.queryByRole('button', { name: 'queue' })).not.toBeInTheDocument();
-        expect(screen.getByText('gate')).toBeInTheDocument();
-        expect(screen.queryByText('page')).not.toBeInTheDocument();
+        expect(screen.getByText('page')).toBeInTheDocument();
     });
 
     // A failed refresh clears the session without logout(): the draft must go too.
