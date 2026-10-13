@@ -1,6 +1,7 @@
 import { ApiError } from '@/lib/api/client';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type { EventModuleResponseDto, GalleryModuleConfiguration, QrLinkResolutionDto, QrLinkResponseDto } from '@/lib/api/types';
+import { readableModuleKeys } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
 
 export type QrTerminalCopyKey = 'unknown' | 'revoked' | 'expired' | 'unavailable';
@@ -72,4 +73,12 @@ export function isMemberArchiveEnabled(modules: EventModuleResponseDto[] | undef
 
     const configuration = galleryModule.configuration as GalleryModuleConfiguration | null;
     return configuration?.memberArchiveAfterEnd === true;
+}
+
+// The gallery page is host-only, except where members get the archive: there guests open it to
+// browse and reach that download (the member archive notification links to it). Hosts need no check.
+export function isGalleryOpenToGuests(
+    event: { deletedAt: string | null; suspended?: boolean; modules: EventModuleResponseDto[] } | null | undefined,
+): boolean {
+    return readableModuleKeys(event).has('gallery') && isMemberArchiveEnabled(event?.modules);
 }
