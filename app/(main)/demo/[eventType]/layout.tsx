@@ -3,6 +3,7 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { type ReactNode, use, useState } from 'react';
 
+import { DemoLoading } from '@/components/demo/DemoLoading';
 import { DemoShell } from '@/components/demo/DemoShell';
 import { DemoUnavailable } from '@/components/demo/DemoUnavailable';
 import { useDemoSession } from '@/hooks/useDemoSession';
@@ -16,7 +17,7 @@ export default function DemoEventTypeLayout({ children, params }: { children: Re
     const [queryClient] = useState(makeQueryClient);
     const state = useDemoSession(eventType, queryClient);
 
-    if (state.kind === 'loading') return null;
+    if (state.kind === 'loading') return <DemoLoading />;
     if (state.kind !== 'ready') return <DemoUnavailable reason={state.kind} />;
 
     return (
