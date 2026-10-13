@@ -113,7 +113,14 @@
         "mainSession": "Main session",
         "secondarySession": "Secondary session",
         "emptyPostsTitle": "No posts yet",
-        "emptyPostsBody": "Be the first to share a memory, message, or photo."
+        "emptyPostsBody": "Be the first to share a memory, message, or photo.",
+        "close": "Close",
+        "addToCalendar": "Add to calendar",
+        "calendarEntry": "Choose what to add",
+        "calendarGoogle": "Google Calendar",
+        "calendarApple": "Apple Calendar",
+        "calendarOutlook": "Outlook.com",
+        "calendarMicrosoft365": "Microsoft 365"
     },
     "SessionLocationPage": {
         "back": "Back",

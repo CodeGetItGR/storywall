@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Banner } from '@/components/feed/Banner';
 import { ComposerCard } from '@/components/feed/ComposerCard';
 import { EventDescription } from '@/components/feed/EventDescription';
-import { EventInfo } from '@/components/feed/EventInfo';
+import { EventInfoSection } from '@/components/feed/EventInfoSection';
 import { EventSessionActionButtons } from '@/components/feed/EventSessionActionButtons';
 import { FeedEmptyState } from '@/components/feed/FeedEmptyState';
 import { FeedPostRenderer } from '@/components/feed/FeedPostRenderer';
@@ -109,11 +109,7 @@ export function FeedPageContent() {
 
             {/* Event details */}
             <section className="mt-3">
-                <EventInfo
-                    date={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0}
-                    place={event.location.name ?? event.location.address ?? ''}
-                    className="w-full px-4"
-                />
+                <EventInfoSection event={event} />
             </section>
 
             {/* Stories */}
