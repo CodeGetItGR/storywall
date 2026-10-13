@@ -6,12 +6,13 @@ import { useAppConfig, useDeleteStory, useEventStories, useMarkStoryViewed, useM
 import { useContentAccess } from '@/hooks/useContentAccess';
 import { useCustomRoleReport } from '@/hooks/useCustomRoleReport';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
+import { useStoryImagePreload } from '@/hooks/useStoryImagePreload';
 import { ApiError } from '@/lib/api/client';
 import { isModuleNotAvailableError } from '@/lib/api/errors';
 import type { AuthorDto, MediaResponseDto, StoryResponseDto } from '@/lib/api/types';
 import { canReportContent } from '@/lib/contentPermissions';
 import { isEventWritable } from '@/lib/eventLifecycle';
-import { findAdjacentGroup, groupStoriesByAuthor, type StoryGroup } from '@/lib/stories';
+import { findAdjacentGroup, findNextStory, groupStoriesByAuthor, type StoryGroup } from '@/lib/stories';
 import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider';
 
 type UseStoryModalArgs = {
@@ -142,18 +143,12 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
     const canReportRole = useCustomRoleReport(author);
     const canAdvanceStory = Boolean(activeStory && group && storyIndex >= 0);
 
+    const nextStory = group && storyIndex >= 0 ? findNextStory(frozenGroupOrder, group, storyIndex, groups) : null;
+    useStoryImagePreload(open ? nextStory : null);
+
     function goNext() {
-        if (!group || storyIndex < 0) {
-            onCloseAction();
-            return;
-        }
-        if (storyIndex < group.stories.length - 1) {
-            setActiveStoryId(group.stories[storyIndex + 1].id);
-            return;
-        }
-        const nextGroup = findAdjacentGroup(frozenGroupOrder, group.authorMemberId, groups, 1);
-        if (nextGroup) {
-            setActiveStoryId(nextGroup.stories[0].id);
+        if (nextStory) {
+            setActiveStoryId(nextStory.id);
             return;
         }
         onCloseAction();
