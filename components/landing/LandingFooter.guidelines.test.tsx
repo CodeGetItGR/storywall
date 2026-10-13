@@ -13,7 +13,10 @@ vi.mock('@/components/landing/LandingNewsletter', () => ({ LandingNewsletter: ()
 vi.mock('@/components/consent/CookieSettingsLink', () => ({ CookieSettingsLink: () => <button type="button">cookieSettings</button> }));
 
 describe('LandingFooter', () => {
-    afterEach(cleanup);
+    afterEach(() => {
+        cleanup();
+        vi.unstubAllEnvs();
+    });
 
     it('links to the community guidelines', async () => {
         render(await LandingFooter());
@@ -56,6 +59,14 @@ describe('LandingFooter', () => {
         render(await LandingFooter());
 
         expect(screen.getByRole('link', { name: 'exploreLinks.forBusiness' })).toHaveAttribute('href', '/el/epaggelmaties');
+    });
+
+    it('leaves out the partner and occasion links on the production site before launch', async () => {
+        vi.stubEnv('VERCEL_ENV', 'production');
+        render(await LandingFooter());
+
+        expect(screen.queryByRole('link', { name: 'exploreLinks.forBusiness' })).not.toBeInTheDocument();
+        expect(screen.queryByText('occasions')).not.toBeInTheDocument();
     });
 
     it('points the anchors back at the landing when rendered elsewhere', async () => {

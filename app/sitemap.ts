@@ -5,6 +5,7 @@ import { getForBusinessPath, getPublicLandingPath } from '@/i18n/publicLocale';
 import { loadLiveOccasions } from '@/lib/occasions/liveOccasions.server';
 import { occasionLanguageAlternates, occasionPath } from '@/lib/occasions/occasions';
 import { absoluteUrl, forBusinessLanguageAlternates, landingLanguageAlternates } from '@/lib/seo';
+import { showsUnreleasedPages } from '@/lib/unreleasedPages';
 
 // Only the public landing, partner and occasion pages are indexable. Every other route is
 // either behind a session or a tokenised guest link, so it stays out on purpose.
@@ -18,7 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
 
     const forBusinessLanguages = forBusinessLanguageAlternates();
-    const forBusiness: MetadataRoute.Sitemap = locales.map((locale) => ({
+    const forBusiness: MetadataRoute.Sitemap = (showsUnreleasedPages() ? locales : []).map((locale) => ({
         url: absoluteUrl(getForBusinessPath(locale)),
         changeFrequency: 'monthly',
         priority: 0.8,

@@ -11,6 +11,7 @@ import { loadLiveOccasions } from '@/lib/occasions/liveOccasions.server';
 import { occasionPath } from '@/lib/occasions/occasions';
 import { routes } from '@/lib/routes';
 import { SOCIAL_PROFILES } from '@/lib/seo';
+import { showsUnreleasedPages } from '@/lib/unreleasedPages';
 
 // Every in-page anchor here must match an id rendered by a landing section.
 const EXPLORE_LINKS = [
@@ -41,10 +42,14 @@ export async function LandingFooter({ anchorBase = '', topHref = TOP_HREF }: { a
     const pages = await getTranslations('OccasionPages');
     const locale = (await getLocale()) as Locale;
     const occasions = await loadLiveOccasions();
+    const showsForBusiness = showsUnreleasedPages();
+    const columns = occasions.length > 0 ? 'min-[761px]:grid-cols-[1.65fr_0.75fr_0.75fr_0.75fr]' : 'min-[761px]:grid-cols-[1.65fr_0.75fr_0.75fr]';
 
     return (
         <footer className="overflow-hidden bg-[#262626] px-5 pt-14.5 pb-6 text-white min-[761px]:px-[5vw] min-[761px]:pt-18.5">
-            <div className="grid grid-cols-2 gap-x-6.5 gap-y-10.5 border-b border-white/14 pb-13.5 min-[761px]:grid-cols-[1.65fr_0.75fr_0.75fr_0.75fr] min-[761px]:gap-[5vw] min-[761px]:pb-19">
+            <div
+                className={`grid grid-cols-2 gap-x-6.5 gap-y-10.5 border-b border-white/14 pb-13.5 ${columns} min-[761px]:gap-[5vw] min-[761px]:pb-19`}
+            >
                 {/* Brand */}
                 <div className="col-span-2 min-[761px]:col-span-1">
                     <div className="w-[min(82vw,330px)] leading-none min-[761px]:w-[clamp(179px,19.6vw,301px)]">
@@ -75,19 +80,23 @@ export async function LandingFooter({ anchorBase = '', topHref = TOP_HREF }: { a
                             {t(`exploreLinks.${key}`)}
                         </a>
                     ))}
-                    <a className={COLUMN_LINK} href={getForBusinessPath(locale)}>
-                        {t('exploreLinks.forBusiness')}
-                    </a>
+                    {showsForBusiness && (
+                        <a className={COLUMN_LINK} href={getForBusinessPath(locale)}>
+                            {t('exploreLinks.forBusiness')}
+                        </a>
+                    )}
                 </div>
                 {/* Occasions */}
-                <div className="flex flex-col items-start">
-                    <div className={COLUMN_HEADING}>{t('occasions')}</div>
-                    {occasions.map((occasion) => (
-                        <a className={COLUMN_LINK} href={occasionPath(occasion, locale)} key={occasion.eventType}>
-                            {pages(`${occasion.eventType}.name`)}
-                        </a>
-                    ))}
-                </div>
+                {occasions.length > 0 && (
+                    <div className="flex flex-col items-start">
+                        <div className={COLUMN_HEADING}>{t('occasions')}</div>
+                        {occasions.map((occasion) => (
+                            <a className={COLUMN_LINK} href={occasionPath(occasion, locale)} key={occasion.eventType}>
+                                {pages(`${occasion.eventType}.name`)}
+                            </a>
+                        ))}
+                    </div>
+                )}
                 {/* Social */}
                 <div className="flex flex-col items-start">
                     <div className={COLUMN_HEADING}>{t('social')}</div>

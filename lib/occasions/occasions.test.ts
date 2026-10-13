@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
     findReadyOccasion,
@@ -14,6 +14,17 @@ import { SITE_URL } from '@/lib/seo';
 const wedding = OCCASIONS.find((occasion) => occasion.eventType === 'WEDDING')!;
 
 describe('occasion registry', () => {
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    it('has no ready occasion on the production site before launch', () => {
+        vi.stubEnv('VERCEL_ENV', 'production');
+        expect(readyOccasions()).toEqual([]);
+        expect(findReadyOccasion('en', 'weddings')).toBeNull();
+        expect(occasionLocaleForPath('/el/gamos')).toBeNull();
+    });
+
     it('lists every event type once with unique slugs per locale', () => {
         expect(OCCASIONS.map((occasion) => occasion.eventType).sort()).toEqual([
             'BABY_SHOWER',
