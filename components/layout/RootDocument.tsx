@@ -1,13 +1,12 @@
 import '@/app/globals.css';
 
-import { Analytics } from '@vercel/analytics/next';
 import { Abhaya_Libre, Alegreya, Geist } from 'next/font/google';
 import { type AbstractIntlMessages, NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
 import { type ReactNode } from 'react';
 
 import { OverlayLeakProbe } from '@/components/dev/OverlayLeakProbe';
-import { SpeedInsightsReporter } from '@/components/layout/SpeedInsightsReporter';
+import { VercelInsights } from '@/components/layout/VercelInsights';
 
 const geist = Geist({ subsets: ['latin'] });
 
@@ -37,14 +36,7 @@ export async function RootDocument({ children, messages }: RootDocumentProps) {
         <html lang={locale} className={`${geist.className} ${abhayaLibre.variable} ${alegreya.variable} h-dvh bg-background`}>
             <body className="h-(--visual-viewport-page-height) overflow-hidden overscroll-none antialiased">
                 <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
-                {process.env.NODE_ENV === 'production' ? (
-                    <>
-                        <Analytics />
-                        <SpeedInsightsReporter />
-                    </>
-                ) : (
-                    <OverlayLeakProbe />
-                )}
+                {process.env.NODE_ENV === 'production' ? <VercelInsights /> : <OverlayLeakProbe />}
             </body>
         </html>
     );
