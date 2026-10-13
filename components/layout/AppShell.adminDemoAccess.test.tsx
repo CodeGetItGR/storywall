@@ -21,11 +21,9 @@ vi.mock('@/hooks/useAuth', () => ({
 }));
 vi.mock('@/lib/api/client', () => ({ api: { get: mocks.get } }));
 // The shell's chrome is not what this test is about.
-vi.mock('@/components/layout', () => ({
-    AuthLoadingState: () => <p>loading</p>,
-    DesktopNavRail: () => null,
-    MobileTabBar: () => null,
-}));
+vi.mock('@/components/layout/AuthLoadingState', () => ({ AuthLoadingState: () => <p>loading</p> }));
+vi.mock('@/components/layout/DesktopNavRail', () => ({ DesktopNavRail: () => null }));
+vi.mock('@/components/layout/MobileTabBar', () => ({ MobileTabBar: () => null }));
 vi.mock('@/providers/AccountPanelProvider', () => ({ AccountPanelProvider: ({ children }: { children: React.ReactNode }) => children }));
 vi.mock('@/components/account/AccountPanelShell', () => ({ AccountPanelShell: ({ children }: { children: React.ReactNode }) => children }));
 

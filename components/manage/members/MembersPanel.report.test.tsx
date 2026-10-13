@@ -46,11 +46,9 @@ vi.mock('@/providers/EventProvider', () => ({
     useActiveMember: () => (activeMemberId ? { id: activeMemberId } : null),
     useActiveEvent: () => null,
 }));
-vi.mock('@/components/manage/invitations', () => ({
-    CoHostInvitationRow: () => null,
-    CreateCoHostInvitationForm: () => null,
-    ShareLanguageNote: () => null,
-}));
+vi.mock('@/components/manage/invitations/CoHostInvitationRow', () => ({ CoHostInvitationRow: () => null }));
+vi.mock('@/components/manage/invitations/CreateCoHostInvitationForm', () => ({ CreateCoHostInvitationForm: () => null }));
+vi.mock('@/components/manage/invitations/ShareLanguageNote', () => ({ ShareLanguageNote: () => null }));
 vi.mock('@/components/plan/UsagePanel', () => ({ UsagePanel: () => null }));
 vi.mock('@/components/reports/ReportTargetModal', () => ({ ReportTargetModal: () => null }));
 vi.mock('./CoHostManagementList', () => ({ CoHostManagementList: () => null }));

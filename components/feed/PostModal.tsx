@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import React from 'react';
 
-import { PostCommentsPanel } from '@/components/feed/post';
+import { PostCommentsPanel } from '@/components/feed/post/PostCommentsPanel';
 import { PostModalStatus } from '@/components/feed/post/PostModalStatus';
 import { Modal } from '@/components/ui/modal';
 import { useAppConfig } from '@/hooks/useAppConfig';
