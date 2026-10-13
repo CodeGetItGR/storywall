@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { AuthorRoleChip } from '@/components/memberRoles/AuthorRoleChip';
-import { ReportTargetModal } from '@/components/reports';
+import { ReportTargetModal } from '@/components/reports/ReportTargetModal';
 import { StoryCaptionBar, StoryHeader, StoryProgressBar } from '@/components/story';
 import { StoryVideo } from '@/components/story/StoryVideo';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';

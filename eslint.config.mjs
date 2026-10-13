@@ -25,6 +25,21 @@ export default defineConfig([
             'simple-import-sort/exports': 'error',
 
             /*
+             * No barrel files. Importing one pulls every module it re-exports
+             * into the page's JavaScript, used or not. Import the file that
+             * defines the thing instead.
+             */
+            'no-restricted-imports': [
+                'error',
+                {
+                    paths: ['@/hooks', '@/components/playlist', '@/components/reports'].map((name) => ({
+                        name,
+                        message: 'Import from the file that defines it (e.g. @/hooks/useAuth). Barrel imports ship every re-exported module.',
+                    })),
+                },
+            ],
+
+            /*
              * Ban inline arrow/bind functions passed as JSX props (e.g.
              * onClick={() => ...}). They create a new function every render,
              * defeat memoization, and push logic into markup. Extract a
