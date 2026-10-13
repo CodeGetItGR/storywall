@@ -12,6 +12,8 @@ export interface UploadLimits {
     // Byte budget for the files of one upload request.
     requestFileBytes: number;
     filesPerRequest: number;
+    // Long edge photos are shrunk to before upload (see lib/uploadImageResize.ts).
+    imageMaxDimension: number;
 }
 
 export function getUploadLimits(media: AppMediaConfigDto | undefined): UploadLimits {
@@ -23,6 +25,7 @@ export function getUploadLimits(media: AppMediaConfigDto | undefined): UploadLim
         storyVideoBytes: Math.min(media?.maxStoryVideoBytes ?? DEFAULT_UPLOAD_LIMITS.maxStoryVideoBytes, fileCap),
         requestFileBytes: Math.max(1, requestBytes - UPLOAD_REQUEST_ENVELOPE_BYTES),
         filesPerRequest: Math.max(1, media?.maxBatchUploadFiles ?? DEFAULT_UPLOAD_LIMITS.maxBatchUploadFiles),
+        imageMaxDimension: media?.maxImageDimension ?? DEFAULT_UPLOAD_LIMITS.maxImageDimension,
     };
 }
 

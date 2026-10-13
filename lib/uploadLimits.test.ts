@@ -46,6 +46,7 @@ describe('getUploadLimits', () => {
             maxVideoBytes: 70 * MB,
             maxStoryVideoBytes: 40 * MB,
             maxBatchUploadFiles: 7,
+            maxImageDimension: 3000,
         } as AppMediaConfigDto;
 
         expect(getUploadLimits(media)).toEqual({
@@ -54,7 +55,13 @@ describe('getUploadLimits', () => {
             storyVideoBytes: 40 * MB,
             requestFileBytes: 90 * MB - UPLOAD_REQUEST_ENVELOPE_BYTES,
             filesPerRequest: 7,
+            imageMaxDimension: 3000,
         });
+    });
+
+    // A backend deployed before 2026-10-13 doesn't send it yet; its normalizer default is 2560.
+    it("shrinks photos to the server's default long edge when the config doesn't say", () => {
+        expect(getUploadLimits({ maxImageBytes: 20 * MB } as AppMediaConfigDto).imageMaxDimension).toBe(2560);
     });
 
     it('never lets a per-kind cap exceed the per-file cap', () => {
