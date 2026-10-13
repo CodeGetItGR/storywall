@@ -1,5 +1,6 @@
 'use client';
 
+import * as Sentry from '@sentry/nextjs';
 import { useEffect } from 'react';
 
 import { reportCrash } from '@/lib/betaFeedback/crashReporter';
@@ -8,5 +9,6 @@ import { reportCrash } from '@/lib/betaFeedback/crashReporter';
 export function useReportCrash(error: unknown): void {
     useEffect(() => {
         reportCrash(error);
+        Sentry.captureException(error);
     }, [error]);
 }
