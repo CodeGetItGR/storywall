@@ -11,6 +11,7 @@ import { useInAppHistoryTracking } from '@/hooks/useInAppHistoryTracking';
 import { meQueryKey } from '@/hooks/useMe';
 import { useVisualViewportSync } from '@/hooks/useVisualViewportSync';
 import type { SessionHandoff } from '@/lib/auth/sessionHandoff';
+import { unregisterSiteWideDemoWorker } from '@/lib/demo/mockWorker';
 import { refreshEventOn4015 } from '@/lib/eventSuspension';
 import { reopenAcceptanceGate } from '@/lib/guidelinesAcceptance';
 import { startPwaInstallListening } from '@/lib/pwaInstall';
@@ -56,6 +57,8 @@ export function AppProviders({ children, handoff = null }: { children: ReactNode
     useEffect(() => reopenAcceptanceGate(queryClient), [queryClient]);
     useEffect(() => refreshEventOn4015(queryClient), [queryClient]);
     useEffect(() => startPwaInstallListening(), []);
+    // A visitor who opened the demo before its worker was scoped to /demo/ still has it on every page.
+    useEffect(() => void unregisterSiteWideDemoWorker(), []);
     const chrome = (
         <MobileChromeProvider>
             <ModalProvider>

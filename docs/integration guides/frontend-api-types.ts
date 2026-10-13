@@ -1921,6 +1921,7 @@ interface AppMediaConfigDto {
   acceptedMimeTypes: string[];    // added 2026-09-27 — gallery/story/post/cover uploads; detected from the bytes, HEIC rejected
   acceptedProfilePictureMimeTypes: string[]; // added 2026-09-27 — images only
   maxImagePixels: number;         // added 2026-09-27 — width x height; larger is 3016 MEDIA_IMAGE_TOO_MANY_PIXELS
+  maxImageDimension: number;      // added 2026-10-13 — long edge (px) every image is downscaled to; shrink larger photos to it before upload
   defaultStoryLifetimeHours: number; // added 2026-09-27 — a story posted without expiresAt lives this long
 }
 

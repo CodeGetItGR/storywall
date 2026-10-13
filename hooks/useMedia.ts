@@ -10,6 +10,7 @@ import type { Page } from '@/lib/api/pagination';
 import type { MediaBatchUploadResponseDto, MediaResponseDto, MediaUploadContext, OriginalMediaUrlDto } from '@/lib/api/types';
 import { sendUploadWithBusyRetry } from '@/lib/api/uploadRetry';
 import { LIVE_CONTENT_STALE_TIME } from '@/lib/queryClient';
+import { shrinkImageForUpload } from '@/lib/uploadImageResize';
 import { getUploadLimits } from '@/lib/uploadLimits';
 
 export const mediaKeys = {
@@ -65,11 +66,13 @@ interface UploadMediaInput {
 // A busy server (503 + Retry-After) gets the upload resent after its wait.
 export function useUploadMedia() {
     const queryClient = useQueryClient();
+    const { data: appConfig } = useAppConfig();
+    const { imageMaxDimension } = getUploadLimits(appConfig?.media);
 
     return useMutation({
-        mutationFn: ({ eventId, file, context = 'GALLERY', onBusy }: UploadMediaInput) => {
+        mutationFn: async ({ eventId, file, context = 'GALLERY', onBusy }: UploadMediaInput) => {
             const formData = new FormData();
-            formData.append('file', file);
+            formData.append('file', await shrinkImageForUpload(file, imageMaxDimension));
             formData.append('context', context);
             return sendUploadWithBusyRetry(() => api.postForm<MediaResponseDto>(endpoints.events.media(eventId), formData), { onBusy });
         },
