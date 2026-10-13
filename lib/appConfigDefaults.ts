@@ -51,7 +51,13 @@ export const DEFAULT_ACCEPTED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/we
 // Upload size and count limits (see lib/uploadLimits.ts).
 export const DEFAULT_UPLOAD_LIMITS: Pick<
     AppMediaConfigDto,
-    'maxFileSizeBytes' | 'maxRequestSizeBytes' | 'maxImageBytes' | 'maxVideoBytes' | 'maxStoryVideoBytes' | 'maxBatchUploadFiles'
+    | 'maxFileSizeBytes'
+    | 'maxRequestSizeBytes'
+    | 'maxImageBytes'
+    | 'maxVideoBytes'
+    | 'maxStoryVideoBytes'
+    | 'maxBatchUploadFiles'
+    | 'maxImageDimension'
 > = {
     maxFileSizeBytes: 100 * 1024 * 1024,
     maxRequestSizeBytes: 100 * 1024 * 1024,
@@ -59,6 +65,7 @@ export const DEFAULT_UPLOAD_LIMITS: Pick<
     maxVideoBytes: 100 * 1024 * 1024,
     maxStoryVideoBytes: 50 * 1024 * 1024,
     maxBatchUploadFiles: 10,
+    maxImageDimension: 2560,
 };
 
 export const DEFAULT_PROFILE_PICTURE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];

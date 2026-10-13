@@ -85,6 +85,8 @@ export interface AppMediaConfigDto {
     acceptedMimeTypes: string[];
     acceptedProfilePictureMimeTypes: string[];
     maxImagePixels: number; // width x height; 3016 past it
+    // Added 2026-10-13. Long edge (px) the server downscales every image to; photos are shrunk to it before upload.
+    maxImageDimension: number;
     defaultStoryLifetimeHours: number;
 }
 
