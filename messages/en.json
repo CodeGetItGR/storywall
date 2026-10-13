@@ -5762,6 +5762,13 @@
                     ]
                 }
             ],
+            "themes": {
+                "eyebrow": "BAPTISM THEMES",
+                "heading": "Give your baptism StoryWall the theme that suits it.",
+                "intro": "Sample themes, from minimal and classic to playful and fairytale.",
+                "listLabel": "Baptism themes",
+                "cta": "Create your own StoryWall"
+            },
             "moreEyebrow": "MORE STORIES",
             "moreHeading": "And so much more.",
             "moreLabel": "More ways to use StoryWall",
