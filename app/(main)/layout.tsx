@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from 'next';
+import { getMessages } from 'next-intl/server';
 import { type ReactNode } from 'react';
 
 import { RootDocument } from '@/components/layout/RootDocument';
+import { pickAppMessages } from '@/i18n/appMessages';
 import { resolveServerSession } from '@/lib/auth/serverEventContext';
 import { getRootMetadata, rootViewport } from '@/lib/rootMetadata';
 import { AppProviders } from '@/providers/AppProviders';
@@ -19,7 +21,7 @@ export default async function MainLayout({ children }: Readonly<{ children: Reac
     const handoff = await resolveServerSession();
 
     return (
-        <RootDocument>
+        <RootDocument messages={pickAppMessages(await getMessages())}>
             <AppProviders handoff={handoff}>{children}</AppProviders>
         </RootDocument>
     );
