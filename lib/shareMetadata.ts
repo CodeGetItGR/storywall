@@ -35,11 +35,18 @@ export type ShareEvent = {
 
 export type QrShareEvent = ShareEvent & { targetType: QrTargetType };
 
-// Only an active code shows its event, matching QrCodeLandingBoundary.
+// Only an active code shows its event, matching QrCodeLandingBoundary. A code
+// that leads to an invitation opens the invite page (see getQrRedirectPath),
+// so it gets that page's preview, with the description, date and venue the
+// code lookup leaves out.
 export async function getQrShareEvent(token: string, options: ShareLookupOptions = {}): Promise<QrShareEvent | null> {
     try {
         const resolution = await shareLookup<QrLinkResolutionDto>(endpoints.qrLinks.resolve(token), options);
         if (resolution.status !== 'ACTIVE' || !resolution.eventTitle) return null;
+
+        const leadsToInvite = resolution.targetType === 'EVENT_JOIN' || resolution.targetType === 'INVITATION';
+        const inviteEvent = leadsToInvite && resolution.inviteToken ? await getInviteShareEvent(resolution.inviteToken, options) : null;
+        if (inviteEvent) return { ...inviteEvent, targetType: resolution.targetType };
 
         return {
             title: resolution.eventTitle,
@@ -96,9 +103,7 @@ export function coverImageUrl(cover: MediaResponseDto | null): string | null {
 async function buildShareMetadata(event: ShareEvent | null, descriptionKey: 'uploadDescription' | 'inviteDescription'): Promise<Metadata> {
     const [tRoot, tShare] = await Promise.all([getTranslations('RootLayout'), getTranslations('ShareMetadata')]);
     const title = event?.title ?? tRoot('title');
-    const description = event
-        ? [event.details, event.description ?? tShare(descriptionKey)].filter(Boolean).join('. ')
-        : tRoot('description');
+    const description = event ? [event.details, event.description ?? tShare(descriptionKey)].filter(Boolean).join('. ') : tRoot('description');
 
     return {
         metadataBase: new URL(SITE_URL),
