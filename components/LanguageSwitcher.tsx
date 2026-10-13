@@ -7,7 +7,7 @@ import { type MouseEvent, useCallback, useTransition } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { setLocale } from '@/i18n/actions';
 import { type Locale, localeCookieMaxAge, localeCookieName, locales } from '@/i18n/config';
-import { getPublicLandingPath, isPublicLandingPath } from '@/i18n/publicLocale';
+import { publicTwinPath } from '@/i18n/publicLocale';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { MeUpdateRequestDto } from '@/lib/api/types';
@@ -28,15 +28,17 @@ export function LanguageSwitcher({ className, variant = 'default' }: { className
         (next: Locale) => {
             if (next === locale) return;
 
-            if (isPublicLandingPath(pathname)) {
-                // `/` and `/[locale]` are sibling routes under the same root layout, so a
-                // plain router.push leaves the layout (and its NextIntlClientProvider
-                // messages) mounted with the old locale. router.refresh() forces the server
-                // components, including the layout, to re-render with the new locale.
+            const twin = publicTwinPath(pathname, next);
+            if (twin) {
+                // Public pages in each language are sibling routes under the same root
+                // layout, so a plain router.push leaves the layout (and its
+                // NextIntlClientProvider messages) mounted with the old locale.
+                // router.refresh() forces the server components, including the layout,
+                // to re-render with the new locale.
                 document.cookie = `${localeCookieName}=${encodeURIComponent(next)}; path=/; max-age=${localeCookieMaxAge}; samesite=lax`;
 
                 startTransition(() => {
-                    router.push(getPublicLandingPath(next));
+                    router.push(twin);
                     router.refresh();
                 });
 

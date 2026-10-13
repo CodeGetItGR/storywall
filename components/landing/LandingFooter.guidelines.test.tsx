@@ -5,6 +5,7 @@ import { LandingFooter } from '@/components/landing/LandingFooter';
 
 vi.mock('next-intl/server', () => ({
     getTranslations: async () => (key: string) => key,
+    getLocale: async () => 'el',
 }));
 vi.mock('@/components/common/ProtectedImage', () => ({ ProtectedImage: () => null }));
 vi.mock('@/components/landing/LandingMotionToggle', () => ({ LandingMotionToggle: () => null }));
@@ -49,5 +50,18 @@ describe('LandingFooter', () => {
         render(await LandingFooter());
 
         expect(screen.getByRole('button', { name: 'cookieSettings' })).toBeInTheDocument();
+    });
+
+    it('links to the partner page in the page language', async () => {
+        render(await LandingFooter());
+
+        expect(screen.getByRole('link', { name: 'exploreLinks.forBusiness' })).toHaveAttribute('href', '/el/epaggelmaties');
+    });
+
+    it('points the anchors back at the landing when rendered elsewhere', async () => {
+        render(await LandingFooter({ anchorBase: '/el', topHref: '#top' }));
+
+        expect(screen.getByRole('link', { name: 'exploreLinks.faq' })).toHaveAttribute('href', '/el#faq');
+        expect(screen.getByRole('link', { name: /backToTop/ })).toHaveAttribute('href', '#top');
     });
 });

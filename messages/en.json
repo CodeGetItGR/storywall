@@ -5970,7 +5970,8 @@
                 "howItWorks": "How it works",
                 "features": "Features",
                 "plans": "Plans",
-                "faq": "FAQ"
+                "faq": "FAQ",
+                "forBusiness": "For professionals"
             },
             "social": "SOCIAL",
             "socialLinks": {
@@ -5990,6 +5991,131 @@
             "reportContent": "Report content",
             "backToTop": "BACK TO TOP"
         }
+    },
+    "ForBusinessPage": {
+        "meta": {
+            "title": "Guest photo sharing for wedding planners & venues",
+            "description": "Give your couples every guest photo on one live wall. No app, just a QR code. Earn on every event you refer.",
+            "siteName": "StoryWall",
+            "imageAlt": "StoryWall for wedding professionals",
+            "ogEyebrow": "FOR WEDDING PROFESSIONALS",
+            "ogHeadline": "Every guest photo, one live wall."
+        },
+        "breadcrumb": "For professionals",
+        "header": { "home": "StoryWall home", "apply": "Apply" },
+        "hero": {
+            "title": "The wedding photo sharing app for planners, venues and vendors",
+            "lead": "Guests scan a QR code and their photos land on one live wall. Your couples love it, and you earn on every event.",
+            "apply": "Apply to partner",
+            "demo": "Try the demo"
+        },
+        "clients": {
+            "heading": "What your couples get",
+            "steps": ["Guests scan one QR code. No app to install.", "Every photo and video lands in one place, live.", "The couple keeps it all. No chasing guests for photos afterwards."],
+            "disposable": "A simpler alternative to disposable cameras on the tables."
+        },
+        "occasions": {
+            "WEDDING": { "name": "Weddings", "line": "From the ceremony to the last dance.", "alt": "Wedding reception at sunset" },
+            "BAPTISM": { "name": "Baptisms and christenings", "line": "The whole family's photos in one place.", "alt": "Family celebrating a baptism outside a church" }
+        },
+        "benefits": {
+            "heading": "What you get",
+            "items": {
+                "discount": { "title": "A discount for your clients", "body": "Your own code gives your couples a better price." },
+                "earn": { "title": "Earn on every event", "body": "You earn commission each time a couple uses your code." },
+                "brand": { "title": "Your brand in front of every guest", "body": "Your card appears in the event feed. Guests planning their own wedding see who made this one happen." },
+                "portal": { "title": "Track your earnings", "body": "A private page shows your events and what you've earned." }
+            },
+            "cardCaption": "How your card looks in the event feed."
+        },
+        "sampleCard": {
+            "name": "Your business",
+            "tagline": "Weddings that feel like you",
+            "services": "Planning · Coordination · Design"
+        },
+        "destination": {
+            "heading": "Made for destination weddings",
+            "body": "Guests fly in from everywhere. They all scan the same QR code, need no app, and every photo ends up in one place for the couple."
+        },
+        "founding": {
+            "heading": "Founding partners",
+            "spotsLeft": "{left} of {total} spots left",
+            "limited": "Limited to the first {total} partners.",
+            "body": "Founding partners get our best terms, kept for as long as they partner with us.",
+            "freeEvent": "Every approved partner also gets one free event to try with a client."
+        },
+        "freeEvent": {
+            "title": "One free event",
+            "body": "Try it with a client before you recommend it."
+        },
+        "steps": {
+            "heading": "How it works",
+            "items": ["Apply. It takes a minute.", "We set up your code and your page.", "Share your code with your couples.", "Earn on every event."]
+        },
+        "roles": {
+            "heading": "Who it's for",
+            "items": {
+                "PLANNER": "Wedding planners",
+                "VENUE": "Venues",
+                "PHOTOGRAPHER": "Photographers",
+                "VIDEOGRAPHER": "Videographers",
+                "DECORATION": "Decorators and florists",
+                "CATERING": "Caterers",
+                "MUSIC": "Bands and DJs"
+            }
+        },
+        "faq": {
+            "heading": "FAQ",
+            "items": [
+                ["What does it cost to join?", "Nothing. Partnering is free."],
+                ["Can I join from outside Greece?", "Yes. Partners can be anywhere in the world."],
+                ["How do I get paid?", "By bank transfer in EUR to an IBAN account, against your invoice. Outside an IBAN country? Apply anyway and we'll work it out with you."],
+                ["How do you know a couple came from me?", "They use your code when they set up their event."],
+                ["Does this compete with the photographer?", "No. Guests capture the moments a photographer can't be at. The professional photos stay the photographer's."],
+                ["Can guests upload without an app?", "Yes. They scan the QR code and upload from their phone's browser."],
+                ["How do wedding planners collect guest photos with it?", "Put the QR code on the tables, the invitation or a sign. Guest photos collect on the live wall during the event."],
+                ["Which events does it cover?", "{occasions}."],
+                ["What happens after I apply?", "We review your application and reply by email."]
+            ]
+        },
+        "apply": {
+            "heading": "Apply to partner",
+            "fields": {
+                "name": "Your name",
+                "businessName": "Business name",
+                "role": "What you do",
+                "email": "Email",
+                "link": "Website or Instagram",
+                "country": "Country",
+                "phone": "Phone (optional)"
+            },
+            "rolePlaceholder": "Choose one",
+            "countryPlaceholder": "Choose your country",
+            "roles": {
+                "PLANNER": "Wedding planner",
+                "VENUE": "Venue",
+                "PHOTOGRAPHER": "Photographer",
+                "VIDEOGRAPHER": "Videographer",
+                "DECORATION": "Decoration or flowers",
+                "CATERING": "Catering",
+                "MUSIC": "Music",
+                "OTHER": "Something else"
+            },
+            "consent": "I agree to the <link>privacy policy</link>.",
+            "submit": "Send application",
+            "sent": "Thanks. We'll reply by email.",
+            "errors": {
+                "invalid": "Check the highlighted fields.",
+                "exists": "We already have your application. We'll reply by email.",
+                "rateLimited": "Too many tries. Wait a moment and try again.",
+                "failed": "Something went wrong. Try again."
+            }
+        },
+        "languageBanner": {
+            "en": { "text": "This page is in English too.", "link": "View in English", "dismiss": "Close" },
+            "el": { "text": "Η σελίδα υπάρχει και στα ελληνικά.", "link": "Δείτε τη στα ελληνικά", "dismiss": "Κλείσιμο" }
+        },
+        "links": { "couples": "See how it works for couples" }
     },
     "Report": {
         "title": "Report",

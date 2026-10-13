@@ -102,6 +102,39 @@ export async function brandOgImage() {
     );
 }
 
+// The partner page's preview. Uses Alegreya for the text because the built-in
+// font has no Greek; falls back to the default font if Google Fonts is down.
+export async function forBusinessOgImage(copy: { eyebrow: string; headline: string }) {
+    const logoSrc = await logoDataUri();
+    const font = await loadTitleFont(`${copy.eyebrow}${copy.headline}`, 700);
+
+    return new ImageResponse(
+        <div
+            style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                padding: '72px 88px',
+                background: CANVAS,
+                color: INK,
+                fontFamily: font ? TITLE_FONT : 'sans-serif',
+            }}
+        >
+            {/* Logo */}
+            {/* eslint-disable-next-line @next/next/no-img-element -- next/image cannot render inside ImageResponse */}
+            <img alt="" height={64} src={logoSrc} width={268} />
+            {/* Headline */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                <div style={{ fontSize: 30, letterSpacing: 6, color: CORAL }}>{copy.eyebrow}</div>
+                <div style={{ fontSize: 84, lineHeight: 1.04, maxWidth: 1000 }}>{copy.headline}</div>
+            </div>
+        </div>,
+        { ...OG_IMAGE_SIZE, fonts: font ? [{ name: TITLE_FONT, data: font, weight: 700, style: 'normal' }] : undefined },
+    );
+}
+
 // Served as JPEG: a photo rendered to PNG runs past a megabyte, which some
 // messaging apps refuse to show as a preview. `refresh` looks the event up
 // again past the cache, for when the cached cover link has expired.

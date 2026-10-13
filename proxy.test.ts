@@ -177,3 +177,21 @@ describe('proxy shared link locale', () => {
         expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBeNull();
     });
 });
+
+describe('proxy partner page locale', () => {
+    function partnerRequest(url: string, acceptLanguage: string) {
+        return new NextRequest(url, { headers: { 'accept-language': acceptLanguage } });
+    }
+
+    it('renders /el/epaggelmaties in Greek for an English browser', async () => {
+        const res = await proxy(partnerRequest('http://localhost/el/epaggelmaties', 'en-US'));
+        expect(res.status).toBe(200);
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('el');
+    });
+
+    it('renders /for-business in English for a Greek browser, without redirecting', async () => {
+        const res = await proxy(partnerRequest('http://localhost/for-business', 'el-GR'));
+        expect(res.status).toBe(200);
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('en');
+    });
+});

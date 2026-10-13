@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { defaultLocale, type Locale, localeCookieMaxAge, localeCookieName, locales } from '@/i18n/config';
-import { getPublicLandingPath } from '@/i18n/publicLocale';
+import { defaultLocale, type Locale, localeCookieMaxAge, localeCookieName } from '@/i18n/config';
+import { getPublicLandingPath, publicPageLocale } from '@/i18n/publicLocale';
 import { PUBLIC_LOCALE_HEADER } from '@/i18n/publicMessages';
 import { resolveLocale } from '@/i18n/resolveLocale';
 import {
@@ -108,7 +108,7 @@ export async function proxy(request: NextRequest) {
         if (redirect) return redirect;
     }
 
-    const publicLocale = pathname === '/' ? defaultLocale : locales.find((locale) => pathname === `/${locale}`);
+    const publicLocale = publicPageLocale(pathname);
     if (publicLocale) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(PUBLIC_LOCALE_HEADER, publicLocale);
