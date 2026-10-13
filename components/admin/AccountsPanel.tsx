@@ -8,6 +8,7 @@ import { AccountCreateDrawer } from '@/components/admin/AccountCreateDrawer';
 import { AccountDetailDrawer } from '@/components/admin/AccountDetailDrawer';
 import { AccountsTable } from '@/components/admin/AccountsTable';
 import { adminInputClass } from '@/components/admin/AdminField';
+import { AccountEmailDrawer } from '@/components/admin/emails/AccountEmailDrawer';
 import { EventProvisionDrawer } from '@/components/admin/EventProvisionDrawer';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useAccountsPanel } from '@/hooks/useAccountsPanel';
@@ -33,6 +34,10 @@ export function AccountsPanel() {
 
     function closeProvisioning() {
         panel.setProvisionAccount(null);
+    }
+
+    function closeEmail() {
+        panel.setEmailAccount(null);
     }
 
     function handleSearchChange(event: ChangeEvent<HTMLInputElement>) {
@@ -98,12 +103,14 @@ export function AccountsPanel() {
                     account={panel.selectedAccount}
                     onCloseAction={closeAccount}
                     onProvisionAction={panel.provisionFor}
+                    onSendEmailAction={panel.emailTo}
                     onAccountChangedAction={panel.setSelectedAccount}
                 />
             ) : null}
             {panel.provisionAccount ? (
                 <EventProvisionDrawer key={panel.provisionAccount.id} host={panel.provisionAccount} onCloseAction={closeProvisioning} />
             ) : null}
+            {panel.emailAccount ? <AccountEmailDrawer key={panel.emailAccount.id} account={panel.emailAccount} onCloseAction={closeEmail} /> : null}
         </section>
     );
 }

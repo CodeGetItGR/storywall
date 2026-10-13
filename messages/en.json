@@ -92,6 +92,10 @@
         "secondsShort": "S",
         "started": "It's happening!"
     },
+    "StoriesRow": {
+        "emptyTitle": "No {name} yet",
+        "emptyBody": "Be the first to share one."
+    },
     "StoryAvatar": {
         "addYourStory": "Add your story",
         "addAnotherStory": "Add another story",
@@ -109,7 +113,14 @@
         "mainSession": "Main session",
         "secondarySession": "Secondary session",
         "emptyPostsTitle": "No posts yet",
-        "emptyPostsBody": "Be the first to share a memory, message, or photo."
+        "emptyPostsBody": "Be the first to share a memory, message, or photo.",
+        "close": "Close",
+        "addToCalendar": "Add to calendar",
+        "calendarEntry": "Choose what to add",
+        "calendarGoogle": "Google Calendar",
+        "calendarApple": "Apple Calendar",
+        "calendarOutlook": "Outlook.com",
+        "calendarMicrosoft365": "Microsoft 365"
     },
     "SessionLocationPage": {
         "back": "Back",
@@ -186,11 +197,31 @@
             "el": "EL"
         }
     },
+    "InstallApp": {
+        "install": "Install",
+        "dismiss": "Close",
+        "menuItem": "Install app",
+        "banner": {
+            "title": "Get the StoryWall app",
+            "tip": "You can install it any time from the menu."
+        },
+        "iosGuide": {
+            "title": "Add StoryWall to your Home Screen",
+            "steps": {
+                "share": "Tap the Share button. If you don't see it, tap ••• first.",
+                "add": "Choose Add to Home Screen.",
+                "confirm": "Tap Add."
+            },
+            "done": "Got it"
+        }
+    },
     "MobileTabBar": {
         "eventNavigation": "Event navigation",
         "eventMenu": "Event menu",
         "toolsMenu": "Tools",
         "openAccount": "Open your account",
+        "shareInvite": "Share invite link",
+        "inviteCopied": "Invite link copied",
         "compose": "Create",
         "composeMenu": {
             "post": "Post",
@@ -614,7 +645,7 @@
     "ProfilePage": {
             "dataExport": {
                 "title": "Your data",
-                "body": "Download a copy of everything StoryWall holds about you — your profile, your activity in events and your purchases — as a JSON file. Photos and videos aren't in it; download those from each event.",
+                "body": "Download a copy of everything StoryWall holds about you (your profile, your activity in events and your purchases) as a JSON file. Photos and videos aren't in it; download those from each event.",
                 "download": "Download my data",
                 "downloading": "Preparing…",
                 "failed": "We couldn't prepare your data. Try again."
@@ -815,6 +846,7 @@
         "notFoundDescription": "This post may have been removed.",
         "loadFailedTitle": "Couldn't load this post",
         "loadFailedDescription": "Something went wrong. Please try again later.",
+        "tryAgain": "Try again",
         "backToFeed": "Back to feed",
         "noCommentsYet": "No comments yet",
         "commentCount": "{count, plural, one {# Comment} other {# Comments}}",
@@ -880,8 +912,8 @@
         "title": "Create an event",
         "subtitle": "Add the event details.",
         "detailsHint": "You can add or edit more details after creation.",
-        "startAtHint": "Events can be scheduled up to 18 months ahead.",
-        "coverageProjection": "Photos kept until {endsAt}",
+        "startAtHint": "Coverage starts on the day you pay.",
+        "coverageProjection": "Photos kept until {endsAt} if you pay today",
         "fields": {
             "title": "Event title",
             "startAt": "Starts",
@@ -893,7 +925,7 @@
         },
         "validation": {
             "startInPast": "The start time must be now or later.",
-            "startTooFarAhead": "The start time can't be more than 18 months from now.",
+            "startTooFarAhead": "For this plan, the event must start by {date}.",
             "endBeforeStart": "The end time must be after the start time.",
             "invalidTimezone": "Choose a timezone from the list."
         },
@@ -1027,7 +1059,7 @@
     "ManagePage": {
         "coverage": {
             "openUntil": "Event open · closes {date}",
-            "closingIn": "Closing in {days, plural, one {# day} other {# days}} — download your photos and videos",
+            "closingIn": "Closing in {days, plural, one {# day} other {# days}}. Download your photos and videos",
             "ended": "Event closed on {date}",
             "download": "Download all"
         },
@@ -1085,7 +1117,7 @@
             "DECLINED": "Won't attend",
             "NO_RESPONSE": "Hasn't replied yet"
         },
-        "noGuestsYet": "No guests have joined yet — share an invite to get started.",
+        "noGuestsYet": "No guests have joined yet. Share an invite to get started.",
         "draft": {
             "delete": {
                 "action": "Delete draft",
@@ -1281,7 +1313,7 @@
             },
             "validation": {
                 "startInPast": "The start time must be now or later.",
-                "startTooFarAhead": "The start time can't be more than 18 months from now.",
+                "startTooFarAhead": "The event must start by {date}.",
                 "endBeforeStart": "The end time must be after the start time."
             },
             "startLocked": "This event has already started, so the start date cannot be changed.",
@@ -1727,10 +1759,10 @@
             "title": "What you're buying",
             "activatesTodayTitle": "Activates today",
             "activatesTodayBody": "Your event goes live the moment payment completes.",
-            "datesFixedTitle": "Your dates are fixed at payment",
+            "datesFixedTitle": "Coverage is fixed at payment",
             "datesFixedBody": "Changing your event date later won't change how long your photos are kept.",
             "keptUntilTitle": "Photos kept until {date}",
-            "keptUntilBody": "{months, plural, one {# month} other {# months}} after your event date. After that everything is permanently deleted — we'll remind you 7 days and 1 day before."
+            "keptUntilBody": "{months, plural, one {# month} other {# months}} from the day you pay. After that everything is permanently deleted. We'll remind you 7 days and 1 day before."
         },
         "withdrawalTerms": {
             "title": "Right of withdrawal",
@@ -1758,15 +1790,15 @@
     },
     "PriceBreakdown": {
         "items": {
-            "activation": "Activation — {plan}",
-            "eventDay": "Event day — {plan}",
-            "coverage": "Coverage — {monthsText}",
-            "upgradeSetup": "Upgrade to {plan} — setup",
-            "upgradeEventDay": "Upgrade to {plan} — event day",
-            "upgradeCoverage": "Upgrade to {plan} — {monthsText}{added}",
-            "addon": "Add-on — {name}",
-            "storagePack": "Storage pack — {name}",
-            "coverageExtension": "Coverage extension — {monthsText}"
+            "activation": "Activation: {plan}",
+            "eventDay": "Event day: {plan}",
+            "coverage": "Coverage: {monthsText}",
+            "upgradeSetup": "Upgrade to {plan}: setup",
+            "upgradeEventDay": "Upgrade to {plan}: event day",
+            "upgradeCoverage": "Upgrade to {plan}: {monthsText}{added}",
+            "addon": "Add-on: {name}",
+            "storagePack": "Storage pack: {name}",
+            "coverageExtension": "Coverage extension: {monthsText}"
         },
         "months": "{months, plural, one {# month} other {# months}}",
         "rules": {
@@ -2137,7 +2169,7 @@
             "download": "Download",
             "rebuild": "Rebuild with the latest messages",
             "failed": "The book couldn't be built.",
-            "contentChanged": "A message was removed since the book was made — create it again.",
+            "contentChanged": "A message was removed since the book was made. Create it again.",
             "retry": "Try again",
             "editTexts": "Edit the book's text",
             "downloadFailed": "Couldn't get the download link. Please try again."
@@ -2301,12 +2333,12 @@
     "QuizPage": {
         "backToTools": "Back",
         "title": "Couple Quiz",
-        "resultsTitle": "Couple Quiz — Results",
+        "resultsTitle": "Couple Quiz: Results",
         "quizComplete": "Quiz complete!",
         "tryAgain": "Try again",
         "reviewYourAnswers": "Review your answers",
         "correctAnswer": "Correct: {answer}",
-        "yourAnswerVsCorrect": "Your answer: {yourAnswer} — Correct: {correctAnswer}",
+        "yourAnswerVsCorrect": "Your answer: {yourAnswer}. Correct: {correctAnswer}",
         "skipped": "Skipped",
         "questionCounter": "Question {current} of {total}",
         "correct": "Correct!",
@@ -2316,7 +2348,7 @@
         "grades": {
             "perfect": "Perfect score! You clearly know them inside out.",
             "excellent": "Excellent! You know Emma & James really well.",
-            "good": "Pretty good — you've been paying attention!",
+            "good": "Pretty good! You've been paying attention.",
             "okay": "Not bad! Maybe catch up with them at the wedding."
         }
     },
@@ -2343,7 +2375,7 @@
         "plusOnes": "Plus ones",
         "sessionsTitle": "Which parts will you attend?",
         "sessionsRequired": "Answer each one to send your RSVP.",
-        "messagePlaceholder": "Optional — share your excitement or a special note...",
+        "messagePlaceholder": "Optional: share your excitement or a special note...",
         "submitRsvp": "Submit RSVP",
         "submitError": "Something went wrong submitting your RSVP. Please try again.",
         "sessionsSubmitError": "We couldn't save your answers. Please try again.",
@@ -3246,7 +3278,56 @@
                 "accountId": "Account ID",
                 "eventCreation": "Event creation",
                 "saved": "Access updated.",
-                "provision": "Provision event"
+                "provision": "Provision event",
+                "sendEmail": "Send email"
+            },
+            "emails": {
+                "title": "Send email",
+                "close": "Close",
+                "template": "Email",
+                "templates": {
+                    "PROVISIONED_HOST_WELCOME": "Welcome",
+                    "PASSWORD_RESET": "Password reset",
+                    "EMAIL_VERIFICATION": "Verify email",
+                    "CUSTOM": "Custom"
+                },
+                "templateHints": {
+                    "PROVISIONED_HOST_WELCOME": "Tells the host their event is ready, with a button to open it.",
+                    "PASSWORD_RESET": "Sends a new link to choose a password. Earlier links stop working.",
+                    "EMAIL_VERIFICATION": "Sends a new link to confirm their email address.",
+                    "CUSTOM": "Your own subject and message, in the standard layout."
+                },
+                "unavailable": {
+                    "ACCOUNT_DELETED": "The account is deleted.",
+                    "NO_EMAIL": "The account has no email address.",
+                    "NOT_ACTIVE": "The account is not active.",
+                    "NOT_PASSWORD_ACCOUNT": "The account signs in without a password.",
+                    "ALREADY_VERIFIED": "The email is already verified.",
+                    "NO_HOSTED_EVENTS": "The account hosts no events."
+                },
+                "event": "Event",
+                "untitledEvent": "Untitled event",
+                "subject": "Subject",
+                "message": "Message",
+                "language": "Language",
+                "languages": { "en": "English", "el": "Greek" },
+                "preview": "Preview",
+                "previewWidth": "Preview width",
+                "previewTo": "To",
+                "previewSubject": "Subject",
+                "previewFrame": "Email preview",
+                "previewDesktop": "Desktop",
+                "previewPhone": "Phone",
+                "previewLoading": "Loading preview...",
+                "previewEmpty": "Fill in the fields to see the email.",
+                "tokenNote": "The link in the email will be a new one.",
+                "send": "Send email",
+                "cancel": "Cancel",
+                "confirmTitle": "Send this email?",
+                "confirmBody": "{template} goes to {email}.",
+                "sentTitle": "Email sent",
+                "done": "Done",
+                "loading": "Loading..."
             },
             "provision": {
                 "openEvent": "Open event",
@@ -3302,7 +3383,10 @@
                 "rsvpDeadlineAfterStart": "The RSVP deadline must be before the event starts.",
                 "reviewTheme": "Theme",
                 "reviewRsvpDeadline": "RSVP deadline",
-                "reviewDescription": "Description"
+                "reviewDescription": "Description",
+                "notifyHost": "Email the host",
+                "hostEmailed": "The host will get a welcome email.",
+                "hostNotEmailed": "The host was not emailed."
             },
             "email": {
                 "title": "Email",
@@ -3346,7 +3430,7 @@
             "visibilityLive": "Live",
             "visibilityHidden": "Hidden",
             "visibilityArchived": "Archived",
-            "visibilityLiveHint": "Public and assignable — visible during signup and can be assigned by admins.",
+            "visibilityLiveHint": "Public and assignable. Visible during signup and can be assigned by admins.",
             "visibilityHiddenHint": "Hidden from signup, but admins can still assign it manually.",
             "visibilityArchivedHint": "Not assignable to anyone. Accounts or events already on this plan are unaffected.",
             "plan": "Plan",
@@ -4429,9 +4513,9 @@
                 "grantsModuleKey": "Granted module",
                 "selectModule": "Select a module",
                 "billingPeriod": "Billing period",
-                "billingPeriodHint": "Once any event holds this service, this can no longer be changed — archive it and create a new one instead.",
+                "billingPeriodHint": "Once any event holds this service, this can no longer be changed. Archive it and create a new one instead.",
                 "billingPeriodMonthly": "One-time",
-                "billingPeriodOnce": "One-time — charged once, on activation only",
+                "billingPeriodOnce": "One-time: charged once, on activation only",
                 "billingPeriodMonthlyShort": "Monthly",
                 "billingPeriodOnceShort": "One-time",
                 "availablePlans": "Available event plans",
@@ -4444,7 +4528,7 @@
                 "visibilityLive": "Live",
                 "visibilityHidden": "Hidden",
                 "visibilityArchived": "Archived",
-                "visibilityLiveHint": "Public and assignable — buyers can add it and admins can grant it.",
+                "visibilityLiveHint": "Public and assignable. Buyers can add it and admins can grant it.",
                 "visibilityHiddenHint": "Hidden from buyers, but admins can still grant it manually.",
                 "visibilityArchivedHint": "Not assignable to anyone. Entitlements already granted are unaffected."
             },
@@ -4806,7 +4890,7 @@
             "settle": "Settle order",
             "settleSuccess": "Order {orderId} settled. The event is now active.",
             "webhooksTitle": "Unprocessed webhooks",
-            "webhooksSubtitle": "Deliveries received but never processed — settlements the platform may have lost.",
+            "webhooksSubtitle": "Deliveries received but never processed. These are settlements the platform may have lost.",
             "webhooksLoading": "Loading webhooks...",
             "webhooksEmpty": "Nothing unprocessed. Every delivery has been handled.",
             "refresh": "Refresh",
@@ -4826,7 +4910,7 @@
         },
         "lifecycle": {
             "resolvedEvent": "Acting on: {title}",
-            "idSourceHint": "Copy the event ID from a refund request, or ask the host for the link to their event — the console has no event search.",
+            "idSourceHint": "Copy the event ID from a refund request, or ask the host for the link to their event. The console has no event search.",
             "idInvalid": "That is not a valid event ID. It should look like 3fa85f64-5717-4562-b3fc-2c963f66afa6.",
             "eventIdPlaceholder": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
         },
@@ -5108,7 +5192,7 @@
     "GalleryQrPage": {
         "title": "Upload QR code",
         "back": "Back to feed",
-        "subtitle": "Anyone who scans this code can upload photos and videos straight to the event — no sign-in required.",
+        "subtitle": "Anyone who scans this code can upload photos and videos straight to the event, no sign-in required.",
         "permanentNote": "This code is set up for you and can't be deleted or replaced.",
         "temporarilyOff": "Uploads through this code are temporarily turned off. Existing photos and videos aren't affected.",
         "linkUnavailable": "This code isn't accepting uploads right now.",
@@ -5197,7 +5281,7 @@
         "memberLimitWithPlan": "Guest limit reached on the {plan} plan. Upgrade to invite more.",
         "moduleUnavailable": "This feature is not included in the current plan.",
         "eventDatesIncomplete": "Add a start date to the event before paying.",
-        "eventStartTooFarAhead": "An event can't be scheduled more than 18 months ahead.",
+        "eventStartTooFarAhead": "This date is too far ahead for your plan's coverage.",
         "eventCreationLocked": "An admin has limited event creation for this account.",
         "eventDraftLimitReached": "You have too many events waiting to be published. Publish or delete one to start another.",
         "eventNotDraft": "This event has already been published.",
@@ -5228,7 +5312,7 @@
         "invalidCredentials": "The email or password is incorrect.",
         "invalidRefreshToken": "Your session expired. Please sign in again.",
         "accountNotActive": "This account is not active.",
-        "oauthTokenInvalid": "Something went wrong signing you in — please try again.",
+        "oauthTokenInvalid": "Something went wrong signing you in. Please try again.",
         "oauthEmailRequired": "Please try signing in again.",
         "oauthEmailUnverified": "We couldn't verify this email. Sign in with your password instead.",
         "resourceNotFound": "We couldn't find that item.",
@@ -5251,6 +5335,9 @@
         "conflict": "That change conflicts with the latest saved version. Refresh and try again.",
         "concurrentModification": "This was just changed somewhere else. Refresh and try again.",
         "emailAlreadyExists": "An account with this email already exists.",
+        "emailEventNotHosted": "This account doesn't host that event.",
+        "emailMessageRequired": "Add a subject and a message.",
+        "emailTemplateUnavailable": "This email can't be sent to this account.",
         "duplicateMembership": "You're already a member of this event.",
         "duplicateMediaIdInRequest": "Remove duplicate photos and try again.",
         "storageUploadFailed": "We couldn't upload that file. Please try again.",
@@ -5267,7 +5354,7 @@
         "storyExpiryOutOfRange": "A story can last up to 24 hours.",
         "storyLiveLimitReached": "You have reached the story limit. Older stories expire after 24 hours, or delete one to post another.",
         "storyMediaAlreadyLive": "This photo or video is already in one of your stories.",
-        "themePresetNotSelectable": "This theme is no longer available — pick another.",
+        "themePresetNotSelectable": "This theme is no longer available. Pick another.",
         "themeFontInvalidFile": "This file isn't a WOFF2, TTF or OTF font, or it's damaged. Choose another file with a single font.",
         "themeFontTooLarge": "This font file is too large. Choose a smaller one, for example a version with only Greek and Latin letters.",
         "themeFontMissingCharacters": "This font can't write every Greek and Latin letter that event titles need. Choose a font that covers both.",
@@ -5377,7 +5464,7 @@
         "hostTransferWithdrawalOpen": "You can hand this event over once the refund period ends.",
         "hostTransferWithdrawalOpenFrom": "You can hand this event over from {date}.",
         "qrMediaUploadDisabled": "The QR upload link is turned off for this event.",
-        "eventWithdrawn": "This event's deletion can't be cancelled — it was withdrawn and closed permanently.",
+        "eventWithdrawn": "This event's deletion can't be cancelled. It was withdrawn and closed permanently.",
         "withdrawalTermsVersionStale": "These terms were updated. Review them again and try again.",
         "withdrawalRefused": "This event doesn't currently qualify for a withdrawal.",
         "withdrawalNotHeld": "This request was already decided.",
@@ -5443,13 +5530,13 @@
             "playMotion": "Play animations"
         },
         "meta": {
-            "title": "StoryWall — A private social space for your event",
+            "title": "StoryWall | A private social space for your event",
             "description": "Share photos, wishes and moments with your guests before, during and after your wedding, baptism or party. No app needed.",
             "siteName": "StoryWall",
-            "imageAlt": "StoryWall — the social space for every private event"
+            "imageAlt": "StoryWall, the social space for every private event"
         },
         "hero": {
-            "homeLabel": "StoryWall — Home",
+            "homeLabel": "StoryWall home",
             "accountHomeLabel": "Home",
             "navLabel": "Main navigation",
             "mobileNavLabel": "Mobile menu",
@@ -5675,6 +5762,13 @@
                     ]
                 }
             ],
+            "themes": {
+                "eyebrow": "BAPTISM THEMES",
+                "heading": "Give your baptism StoryWall the theme that suits it.",
+                "intro": "Sample themes, from minimal and classic to playful and fairytale.",
+                "listLabel": "Baptism themes",
+                "cta": "Create your own StoryWall"
+            },
             "moreEyebrow": "MORE STORIES",
             "moreHeading": "And so much more.",
             "moreLabel": "More ways to use StoryWall",
@@ -5707,11 +5801,11 @@
             "previewLabel": "StoryWall mobile preview"
         },
         "stack": {
-            "socialTopbar": "CHAPTER 01 — SOCIAL SIDE",
+            "socialTopbar": "CHAPTER 01 · SOCIAL SIDE",
             "socialChapter": "CHAPTER 01",
             "socialTitle": ["Everything you", "need..."],
             "socialCopy": "Posts, stories, reactions, and comments from everyone sharing your event.",
-            "hostTopbar": "CHAPTER 02 — HOST SIDE",
+            "hostTopbar": "CHAPTER 02 · HOST SIDE",
             "hostChapter": "CHAPTER 02",
             "hostTitle": ["...is in your", "hands!"],
             "hostCopy": "RSVPs, photos, wishes, content, and event control, all in one place."
@@ -5784,8 +5878,8 @@
             "eventTypeLabel": "Select your event type",
             "eventTypeSearch": "Search events",
             "eventTypeEmpty": "No events found",
-            "durationLabel": "Choose how long it stays online",
-            "durationSingle": "{count, plural, one {Online for # month} other {Online for # months}}",
+            "durationLabel": "Choose how long it stays online, from the day you pay",
+            "durationSingle": "{count, plural, one {Online for # month from the day you pay} other {Online for # months from the day you pay}}",
             "listPrice": "Original price",
             "showFeatures": "Show features",
             "hideFeatures": "Hide features",

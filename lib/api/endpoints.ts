@@ -447,9 +447,15 @@ export const endpoints = {
         },
         users: {
             planTier: (userId: string) => `/api/admin/users/${userId}/plan-tier`,
+            emails: {
+                templates: (userId: string) => `/api/admin/users/${userId}/emails/templates`,
+                preview: (userId: string) => `/api/admin/users/${userId}/emails/preview`,
+                send: (userId: string) => `/api/admin/users/${userId}/emails/send`,
+            },
         },
         events: {
             provision: '/api/admin/events',
+            welcomePreview: '/api/admin/events/welcome-preview',
             list: '/api/admin/events',
             byId: (eventId: string) => `/api/admin/events/${eventId}`,
             storageGrant: (eventId: string) => `/api/admin/events/${eventId}/grants/storage`,

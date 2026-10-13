@@ -21,19 +21,21 @@ describe('datetimeLocalValueToIso', () => {
 describe('getScheduleDatetimeLocalBounds', () => {
     const referenceDate = new Date('2026-09-21T10:00:00');
 
-    it('caps the start at the lead-day bound when no end date is set', () => {
-        const { startAtMax } = getScheduleDatetimeLocalBounds({ startAt: '', maxLeadDays: 548, referenceDate });
+    it('caps the start at the latest start the coverage allows when no end date is set', () => {
+        const latestStartAt = new Date('2027-08-22T10:00:00').toISOString();
+        const { startAtMax } = getScheduleDatetimeLocalBounds({ startAt: '', latestStartAt, referenceDate });
 
-        expect(startAtMax).toBe('2028-03-22T10:00');
+        expect(startAtMax).toBe('2027-08-22T10:00');
     });
 
-    it('uses the earlier of the end date and the lead-day bound', () => {
-        const { startAtMax } = getScheduleDatetimeLocalBounds({ startAt: '', endAt: '2026-12-01T10:00', maxLeadDays: 548, referenceDate });
+    it('uses the earlier of the end date and the latest start', () => {
+        const latestStartAt = new Date('2027-08-22T10:00:00').toISOString();
+        const { startAtMax } = getScheduleDatetimeLocalBounds({ startAt: '', endAt: '2026-12-01T10:00', latestStartAt, referenceDate });
 
         expect(startAtMax).toBe('2026-12-01T10:00');
     });
 
-    it('leaves the start uncapped without a lead-day bound or end date', () => {
+    it('leaves the start uncapped without a latest start or end date', () => {
         const { startAtMax } = getScheduleDatetimeLocalBounds({ startAt: '', referenceDate });
 
         expect(startAtMax).toBeUndefined();

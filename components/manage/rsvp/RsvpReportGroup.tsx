@@ -9,8 +9,8 @@ import { RsvpReportTableRow } from './RsvpReportTableRow';
 export function RsvpReportGroup({ group }: { group: RsvpReportGroupDto }) {
     const t = useTranslations('ManagePage.rsvpReport');
     const title = group.attending
-        ? `${group.label} — ${t('responses', { count: group.responses })} / ${t('people', { count: group.people })}`
-        : `${group.label} — ${t('responses', { count: group.responses })}`;
+        ? `${group.label} · ${t('responses', { count: group.responses })} / ${t('people', { count: group.people })}`
+        : `${group.label} · ${t('responses', { count: group.responses })}`;
 
     return (
         <div>

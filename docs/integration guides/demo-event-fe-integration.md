@@ -93,8 +93,17 @@ and stories look fresh.
 
 ## 5. Media URLs
 
-Presigned URLs work until `presignedUrlsValidUntil` (at least 39 minutes after you receive them). Before then, re-fetch
-the snapshot and swap URLs by media id. Media a visitor "uploads" stays local (object URLs).
+Since 2026-10-12 the snapshot's files (media, thumbnails, persona pictures, the theme illustration) are served
+from a public bucket, so their URLs don't expire. `presignedUrlsValidUntil` is then `null`.
+
+A file the backend hasn't copied there yet (just uploaded, or the first build after designation)
+keeps a presigned URL, and `presignedUrlsValidUntil` is set, as before: those URLs work until then
+(at least 39 minutes after you receive them). Before then, re-fetch the snapshot and swap URLs by
+media id; the next build normally has them public. With no public bucket configured, every URL is
+presigned. Media a visitor "uploads" stays local (object URLs).
+
+The public origin is the backend's `R2_PUBLIC_BASE_URL`. Add its host to the frontend's allowed
+media hosts (`MEDIA_IMAGE_HOSTS`).
 
 ## 6. No account photos; persona pictures are published
 

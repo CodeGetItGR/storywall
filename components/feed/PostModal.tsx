@@ -4,12 +4,12 @@ import { useTranslations } from 'next-intl';
 import React from 'react';
 
 import { PostCommentsPanel } from '@/components/feed/post';
+import { PostModalStatus } from '@/components/feed/post/PostModalStatus';
 import { Modal } from '@/components/ui/modal';
-import { usePost, usePostCommentThread, usePostModal } from '@/hooks';
+import { usePostCommentThread, usePostModal } from '@/hooks';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useModuleReadable } from '@/hooks/useModuleReadable';
-import { ApiError } from '@/lib/api/client';
-import { isModuleNotAvailableError } from '@/lib/api/errors';
+import { usePostModalPost } from '@/hooks/usePostModalPost';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
 
@@ -19,7 +19,7 @@ export function PostModal() {
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
     const postsReadable = useModuleReadable(activeEvent?.id ?? null, 'posts');
-    const { data: post, error, isPending } = usePost(postsReadable ? postId : null);
+    const { post, isLoading, isNotFound, isLoadFailed, retry } = usePostModalPost(postsReadable ? postId : null);
     const { data: appConfig } = useAppConfig();
 
     const canComment = Boolean(activeMember) && isEventWritable(activeEvent?.status);
@@ -90,14 +90,14 @@ export function PostModal() {
             closeButtonPosition="right"
             className="min-h-[70vh]"
         >
-            {isPending && <p className="py-16 text-center text-sm text-ink-muted">{t('loading')}</p>}
+            {/* Loading */}
+            {isLoading && <p className="py-16 text-center text-sm text-ink-muted">{t('loading')}</p>}
 
-            {((error instanceof ApiError && error.status === 404) || isModuleNotAvailableError(error)) && (
-                <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-                    <p className="mb-1 text-base font-semibold text-ink">{t('notFoundTitle')}</p>
-                    <p className="text-sm text-ink-muted">{t('notFoundDescription')}</p>
-                </div>
-            )}
+            {/* Not found */}
+            {isNotFound && <PostModalStatus title={t('notFoundTitle')} description={t('notFoundDescription')} />}
+
+            {/* Load failed */}
+            {isLoadFailed && <PostModalStatus title={t('loadFailedTitle')} actionLabel={t('tryAgain')} onAction={retry} />}
 
             {/* Comments */}
             {post && <section className="mt-5 flex min-h-0 w-full min-w-0 flex-1 flex-col">{commentsPanel}</section>}

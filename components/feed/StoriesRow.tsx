@@ -15,6 +15,7 @@ import { avatarColorFromId, initialsFromName } from '@/lib/utils';
 import { useComposer } from '@/providers/ComposerProvider';
 
 import { ScheduleStoryAvatar } from './ScheduleStoryAvatar';
+import { StoriesEmptyHint } from './StoriesEmptyHint';
 import { StoryAvatar } from './StoryAvatar';
 
 interface StoriesRowProps {
@@ -28,7 +29,7 @@ export function StoriesRow({ eventId, onOpenStoryAction }: StoriesRowProps) {
     // The "your story" slot follows who new stories are posted as (a demo persona, for an admin).
     const { member: activeMember } = usePostingAsMember();
     const memberAvatarUrl = useMemberAvatarUrl();
-    const { data: stories = [] } = useEventStories(eventId);
+    const { data: stories = [], isLoading: isLoadingStories } = useEventStories(eventId);
     const { data: sessions = [], isLoading: isLoadingSessions } = useEventSessions(eventId);
     const { openStoryCapture, canComposeStory } = useComposer();
 
@@ -38,6 +39,7 @@ export function StoriesRow({ eventId, onOpenStoryAction }: StoriesRowProps) {
     const otherGroups = groups.filter((g) => g.authorMemberId !== activeMember?.id);
     const hasScheduleStory = !isLoadingSessions && sessions.length > 0;
     const hasStartItems = Boolean(ownAuthor || canComposeStory || hasScheduleStory);
+    const isEmpty = !isLoadingStories && !isLoadingSessions && groups.length === 0 && sessions.length === 0;
 
     return (
         <section aria-label={storiesName} className="no-scrollbar flex items-start gap-4 overflow-x-auto px-4 py-4">
@@ -79,6 +81,9 @@ export function StoriesRow({ eventId, onOpenStoryAction }: StoriesRowProps) {
                 if (!author) return null;
                 return <StoryAvatar key={group.authorMemberId} group={group} author={author} onOpenStoryAction={onOpenStoryAction} />;
             })}
+
+            {/* Empty */}
+            {isEmpty && <StoriesEmptyHint storiesName={storiesName} canCompose={canComposeStory} />}
         </section>
     );
 }

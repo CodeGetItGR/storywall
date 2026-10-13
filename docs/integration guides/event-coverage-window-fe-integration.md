@@ -1,5 +1,17 @@
 # FE integration: optional end date and the event coverage window
 
+> **2026-10-12: coverage runs from payment, not from the event.** `coverageEndsAt` is pinned at
+> activation as *payment + the option's months*, and a draft's `projectedCoverage` is *now + months*
+> (it no longer moves with `startAt`). Events activated before this keep the end they were sold.
+> Because the window no longer follows the event, the event must fall inside it: `startAt` may be at
+> most the coverage end minus `coverage.minDaysAfterStart` (30) days — for a draft, *now + the
+> option's months − 30 days*; for a live event, *`coverageEndsAt` − 30 days*. Past that, `POST`/`PATCH
+> /api/events`, the activation quote and checkout answer `400 3032 EVENT_START_TOO_FAR_AHEAD`; on a
+> draft, `PATCH` checks it when `startAt` or `coverageOptionId` changes. **`coverage.maxLeadDays` is
+> gone** from `/api/config` (the 548-day cap was removed), replaced by `coverage.minDaysAfterStart`.
+> Picker max = `getLatestStartAt(coverageEndsAt ?? projectedCoverage.coverageEndsAt, minDaysAfterStart)`.
+> Sections below about the 548-day cap and retention running from `startAt` are historical.
+
 > **2026-09-23: `galleryOpensAt` and `coverage.maxPreEventDays` were removed.** There is no
 > pre-event gallery gate. Everything below about the gallery opening is historical; see
 > [`withdrawal-compliance-phase1-fe-integration.md`](withdrawal-compliance-phase1-fe-integration.md).

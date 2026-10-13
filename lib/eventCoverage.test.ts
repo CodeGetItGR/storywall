@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getCoverageStatus, projectCoverage } from './eventCoverage';
+import { getCoverageStatus, getLatestStartAt, projectCoverage } from './eventCoverage';
 
 const now = new Date('2026-09-21T10:00:00Z');
 const days = (n: number) => new Date(now.getTime() + n * 86_400_000).toISOString();
@@ -27,19 +27,23 @@ describe('getCoverageStatus', () => {
 });
 
 describe('projectCoverage', () => {
-    it('is null without a start or a duration', () => {
-        expect(projectCoverage({ startAt: '', hostingMonths: 12, referenceDate: now })).toBeNull();
-        expect(projectCoverage({ startAt: days(10), hostingMonths: undefined, referenceDate: now })).toBeNull();
+    it('is null without a duration', () => {
+        expect(projectCoverage({ hostingMonths: undefined, referenceDate: now })).toBeNull();
     });
 
-    it('keeps the event for the picked months after its start', () => {
-        const projection = projectCoverage({ startAt: '2027-06-01T10:00:00Z', hostingMonths: 12, referenceDate: now });
-        expect(projection).toEqual({ coverageEndsAt: '2028-06-01T10:00:00.000Z', hostingMonths: 12 });
+    it('keeps the event for the picked months from payment', () => {
+        const projection = projectCoverage({ hostingMonths: 12, referenceDate: new Date('2026-10-12T10:00:00Z') });
+        expect(projection).toEqual({ coverageEndsAt: '2027-10-12T10:00:00.000Z', hostingMonths: 12 });
+    });
+});
+
+describe('getLatestStartAt', () => {
+    it('leaves the minimum days of coverage after the start', () => {
+        expect(getLatestStartAt('2027-10-12T10:00:00.000Z', 30)).toBe('2027-09-12T10:00:00.000Z');
     });
 
-    it('never ends before now', () => {
-        const projection = projectCoverage({ startAt: '2025-01-01T10:00:00Z', hostingMonths: 3, referenceDate: now });
-        expect(projection?.coverageEndsAt).toBe(now.toISOString());
-        expect(projection?.hostingMonths).toBe(3);
+    it('is null until both the coverage end and the minimum are known', () => {
+        expect(getLatestStartAt(null, 30)).toBeNull();
+        expect(getLatestStartAt('2027-10-12T10:00:00.000Z', undefined)).toBeNull();
     });
 });
