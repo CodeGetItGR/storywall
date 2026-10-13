@@ -30,14 +30,14 @@ export function LandingStoryThemes({ copy, themes }: LandingStoryThemesProps) {
             {/* Tiles */}
             <ul
                 aria-label={copy.listLabel}
-                className="-mx-5 mt-7 no-scrollbar flex snap-x snap-mandatory scroll-px-5 gap-3 overflow-x-auto px-5 pb-2 min-[761px]:mx-0 min-[761px]:mt-10 min-[761px]:grid min-[761px]:grid-cols-6 min-[761px]:gap-[clamp(10px,1.1vw,18px)] min-[761px]:overflow-visible min-[761px]:px-0"
+                className="-mx-5 mt-7 no-scrollbar flex snap-x snap-mandatory scroll-px-5 gap-3 overflow-x-auto px-5 pb-2 min-[761px]:mx-0 min-[761px]:mt-10 min-[761px]:grid min-[761px]:grid-cols-[repeat(6,minmax(0,190px))] min-[761px]:gap-[clamp(10px,1vw,16px)] min-[761px]:overflow-visible min-[761px]:px-0"
             >
                 {themes.map((theme) => (
                     <LandingThemeTile key={theme.id} theme={theme} />
                 ))}
             </ul>
             {/* Call to action */}
-            <div className="mt-8 flex justify-center min-[761px]:mt-12">
+            <div className="mt-8 flex justify-center min-[761px]:mt-12 min-[761px]:justify-start">
                 <a
                     className="flex min-h-14 w-full items-center justify-center gap-2.5 rounded-full bg-[linear-gradient(100deg,#ff6f93,#ff936a_52%,#ffb25b)] px-5 text-center text-[14px] leading-tight font-semibold text-white! no-underline shadow-[0_16px_32px_rgba(217,102,74,.15)] focus-ring transition-transform hover:-translate-y-0.5 focus-visible:outline-offset-4 motion-reduce:transition-none min-[761px]:w-auto min-[761px]:min-w-105 min-[761px]:text-[16px]"
                     href={routes.events.new()}

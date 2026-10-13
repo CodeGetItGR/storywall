@@ -11,7 +11,7 @@ export function LandingThemeTile({ theme }: { theme: LandingTheme }) {
                     className="object-contain"
                     fill
                     loading="lazy"
-                    sizes="(min-width: 761px) 15vw, 40vw"
+                    sizes="(min-width: 761px) 190px, 40vw"
                     src={theme.illustrationUrl}
                 />
             </div>
