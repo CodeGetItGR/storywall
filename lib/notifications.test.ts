@@ -22,7 +22,14 @@ function notification(overrides: Partial<NotificationResponseDto>): Notification
 describe('notificationCtaRoute', () => {
     it('sends the coverage-ending CTA to the plan screen with the extension picker open', () => {
         expect(notificationCtaRoute(notification({ ctaTarget: 'EVENT_COVERAGE_EXTEND', ctaParams: { eventId: 'event-1' } }))).toBe(
-            '/events/event-1/settings/plan?extend=1',
+            '/events/event-1/manage?tab=billing&section=extend-coverage',
+        );
+    });
+
+    // /settings/plan only redirects to the billing tab, which costs a round trip.
+    it('sends the plan CTA straight to the billing tab', () => {
+        expect(notificationCtaRoute(notification({ ctaTarget: 'EVENT_PLAN_SETTINGS', ctaParams: { eventId: 'event-1' } }))).toBe(
+            '/events/event-1/manage?tab=billing',
         );
     });
 
