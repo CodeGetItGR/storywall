@@ -36,6 +36,7 @@ vi.mock('@/lib/auth/springAuth', async (importOriginal) => {
 import { SpringAuthError } from '@/lib/auth/springAuth';
 
 import {
+    isFullPageLoad,
     prefetchAccessToken,
     redirectAccessToken,
     resolveServerEventContext,
@@ -53,6 +54,19 @@ beforeEach(() => {
     mocks.refreshToken = 'refresh-1';
     mocks.serverGet.mockReset();
     mocks.refresh.mockReset().mockResolvedValue({ accessToken: 'token-2' });
+});
+
+// Signed-out pages (an opened invite link) prefetch too.
+describe('isFullPageLoad', () => {
+    it('is true for a page load', async () => {
+        await expect(isFullPageLoad()).resolves.toBe(true);
+    });
+
+    it("is false for the router's own fetches", async () => {
+        mocks.fetchDest = 'empty';
+
+        await expect(isFullPageLoad()).resolves.toBe(false);
+    });
 });
 
 describe('prefetchAccessToken', () => {
