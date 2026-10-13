@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { getServerLocale } from '@/i18n/serverLocale';
 import { endpoints } from '@/lib/api/endpoints';
-import { serverPublicCachedGet } from '@/lib/api/serverFetch';
+import { serverPublicCachedGet, serverPublicGet } from '@/lib/api/serverFetch';
 import type { EventInvitationPreviewDto, MediaResponseDto, QrLinkResolutionDto, QrTargetType } from '@/lib/api/types';
+import { formatEventDateParts } from '@/lib/datetime';
 import { SITE_URL } from '@/lib/seo';
 
 // Link previews are built from the same public lookups the pages use. Both the
@@ -12,20 +14,31 @@ import { SITE_URL } from '@/lib/seo';
 // for fifteen) usable when the image route reads it from the cache.
 const SHARE_LOOKUP_REVALIDATE_SECONDS = 300;
 
+// A cached lookup can still hand back an expired cover link: the first visit
+// after a quiet spell gets the stale entry while the cache refreshes. The
+// image route then asks again with `fresh`, which skips the cache.
+type ShareLookupOptions = { fresh?: boolean };
+
+function shareLookup<T>(path: string, { fresh = false }: ShareLookupOptions): Promise<T> {
+    return fresh ? serverPublicGet<T>(path) : serverPublicCachedGet<T>(path, SHARE_LOOKUP_REVALIDATE_SECONDS);
+}
+
 export type ShareEvent = {
     title: string;
     subtitle: string | null;
     // The event's own description, used as the link preview text. Without one the preview uses a generic line.
     description?: string | null;
+    // When and where, as one line, e.g. "Sat, 14 Nov 2026 · 18:00 – 23:00 · Villa Rosa".
+    details?: string | null;
     cover: MediaResponseDto | null;
 };
 
 export type QrShareEvent = ShareEvent & { targetType: QrTargetType };
 
 // Only an active code shows its event, matching QrCodeLandingBoundary.
-export async function getQrShareEvent(token: string): Promise<QrShareEvent | null> {
+export async function getQrShareEvent(token: string, options: ShareLookupOptions = {}): Promise<QrShareEvent | null> {
     try {
-        const resolution = await serverPublicCachedGet<QrLinkResolutionDto>(endpoints.qrLinks.resolve(token), SHARE_LOOKUP_REVALIDATE_SECONDS);
+        const resolution = await shareLookup<QrLinkResolutionDto>(endpoints.qrLinks.resolve(token), options);
         if (resolution.status !== 'ACTIVE' || !resolution.eventTitle) return null;
 
         return {
@@ -41,23 +54,32 @@ export async function getQrShareEvent(token: string): Promise<QrShareEvent | nul
 
 // Expired and used invites show their terminal state, not the event, so they
 // get the generic preview too.
-export async function getInviteShareEvent(token: string): Promise<ShareEvent | null> {
+export async function getInviteShareEvent(token: string, options: ShareLookupOptions = {}): Promise<ShareEvent | null> {
     try {
-        const preview = await serverPublicCachedGet<EventInvitationPreviewDto>(
-            endpoints.eventInvitations.preview(token),
-            SHARE_LOOKUP_REVALIDATE_SECONDS,
-        );
+        const preview = await shareLookup<EventInvitationPreviewDto>(endpoints.eventInvitations.preview(token), options);
         if (preview.expired || preview.alreadyUsed) return null;
 
         return {
             title: preview.eventTitle,
             subtitle: preview.eventSubtitle,
             description: preview.eventDescription?.trim() || null,
+            details: formatShareDetails(await getServerLocale(), preview),
             cover: preview.coverMedia,
         };
     } catch {
         return null;
     }
+}
+
+// The date, time and venue in the event's own time zone, so a server running
+// in UTC still shows the times the host picked.
+export function formatShareDetails(
+    locale: string,
+    preview: Pick<EventInvitationPreviewDto, 'eventStartAt' | 'eventEndAt' | 'eventTimezone' | 'eventLocationName'>,
+): string | null {
+    const when = formatEventDateParts(locale, preview.eventStartAt, preview.eventEndAt, preview.eventTimezone);
+    const parts = [when?.date, when?.time, preview.eventLocationName?.trim()].filter(Boolean);
+    return parts.length > 0 ? parts.join(' · ') : null;
 }
 
 // The preview image renderer reads JPEG and PNG. Anything else, and videos,
@@ -74,7 +96,9 @@ export function coverImageUrl(cover: MediaResponseDto | null): string | null {
 async function buildShareMetadata(event: ShareEvent | null, descriptionKey: 'uploadDescription' | 'inviteDescription'): Promise<Metadata> {
     const [tRoot, tShare] = await Promise.all([getTranslations('RootLayout'), getTranslations('ShareMetadata')]);
     const title = event?.title ?? tRoot('title');
-    const description = event ? (event.description ?? tShare(descriptionKey)) : tRoot('description');
+    const description = event
+        ? [event.details, event.description ?? tShare(descriptionKey)].filter(Boolean).join('. ')
+        : tRoot('description');
 
     return {
         metadataBase: new URL(SITE_URL),
