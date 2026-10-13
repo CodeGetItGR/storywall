@@ -192,13 +192,19 @@ function failedResponseError(method: string | undefined, path: string, res: Resp
     return error;
 }
 
+// Only a JSON body is labelled. The header isn't CORS-safelisted, so on a request
+// without a body it would only cost a preflight round trip to Spring.
+function jsonContentType(body: RequestInit['body']): Record<string, string> {
+    return typeof body === 'string' ? { 'Content-Type': 'application/json' } : {};
+}
+
 // Bare fetch straight to Spring with no auth header and no retry-on-401 —
 // used by api.publicGet for the handful of endpoints that don't require auth.
 async function rawFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
     const res = await fetch(`${API_BASE_URL}${path}`, {
         ...options,
         headers: {
-            'Content-Type': 'application/json',
+            ...jsonContentType(options.body),
             'Accept-Language': getClientLocale(),
             ...options.headers,
         },
@@ -239,12 +245,11 @@ async function rawPostForm<T>(path: string, formData: FormData, options: Request
 async function apiFetchResponse(path: string, options: ApiFetchOptions = {}): Promise<Response> {
     const { allowNotModified, skipAuthRetry, ...init } = options;
     const accessToken = getAccessToken();
-    const isFormData = init.body instanceof FormData;
 
     const res = await fetch(`${API_BASE_URL}${path}`, {
         ...init,
         headers: {
-            ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+            ...jsonContentType(init.body),
             'Accept-Language': getClientLocale(),
             ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
             ...demoActAsHeaders(init.method, path),
