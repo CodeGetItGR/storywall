@@ -10,7 +10,7 @@ import { AccountLogoutButton } from '@/components/account/AccountLogoutButton';
 import { AccountSidebarLogo } from '@/components/account/AccountSidebarLogo';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { DesktopAccountNavLink } from '@/components/layout/DesktopAccountNavLink';
-import { isEventRoute, isPathActive } from '@/components/layout/mobile-tab-bar';
+import { isEventRoute, isPathActive } from '@/components/layout/mobile-tab-bar/utils';
 import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useDesktopAccountSidebar } from '@/hooks/useDesktopAccountSidebar';

@@ -1,7 +1,7 @@
 'use client';
 
 import { PlaylistDigestCard } from '@/components/feed/PlaylistDigestCard';
-import { isPlaylistDigestPost } from '@/components/feed/post';
+import { isPlaylistDigestPost } from '@/components/feed/post/postUtils';
 import { PostCard } from '@/components/feed/PostCard';
 import type { PostResponseDto } from '@/lib/api/types';
 

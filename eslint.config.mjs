@@ -32,7 +32,23 @@ export default defineConfig([
             'no-restricted-imports': [
                 'error',
                 {
-                    paths: ['@/hooks', '@/components/playlist', '@/components/reports'].map((name) => ({
+                    paths: [
+                        '@/hooks',
+                        '@/components/account',
+                        '@/components/feed',
+                        '@/components/feed/post',
+                        '@/components/home',
+                        '@/components/landing',
+                        '@/components/layout',
+                        '@/components/layout/mobile-tab-bar',
+                        '@/components/manage/invitations',
+                        '@/components/manage/members',
+                        '@/components/manage/rsvp',
+                        '@/components/playlist',
+                        '@/components/reports',
+                        '@/components/rsvp',
+                        '@/components/story',
+                    ].map((name) => ({
                         name,
                         message: 'Import from the file that defines it (e.g. @/hooks/useAuth). Barrel imports ship every re-exported module.',
                     })),
@@ -100,5 +116,16 @@ export default defineConfig([
      */
     prettierConfig,
 
-    globalIgnores(['.next/**', 'node_modules/**', 'coverage/**', 'dist/**', 'out/**', 'next-env.d.ts', '.worktrees/**', '.claude/**', 'docs/**', 'public/mockServiceWorker.js']),
+    globalIgnores([
+        '.next/**',
+        'node_modules/**',
+        'coverage/**',
+        'dist/**',
+        'out/**',
+        'next-env.d.ts',
+        '.worktrees/**',
+        '.claude/**',
+        'docs/**',
+        'public/mockServiceWorker.js',
+    ]),
 ]);

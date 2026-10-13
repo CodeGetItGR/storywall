@@ -5,7 +5,9 @@ import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 
-import { CoHostInvitationRow, CreateCoHostInvitationForm, ShareLanguageNote } from '@/components/manage/invitations';
+import { CoHostInvitationRow } from '@/components/manage/invitations/CoHostInvitationRow';
+import { CreateCoHostInvitationForm } from '@/components/manage/invitations/CreateCoHostInvitationForm';
+import { ShareLanguageNote } from '@/components/manage/invitations/ShareLanguageNote';
 import { MemberRoleSheet } from '@/components/manage/members/MemberRoleSheet';
 import { UsagePanel } from '@/components/plan/UsagePanel';
 import { ReportTargetModal } from '@/components/reports/ReportTargetModal';

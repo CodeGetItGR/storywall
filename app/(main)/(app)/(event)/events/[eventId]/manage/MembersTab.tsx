@@ -1,4 +1,4 @@
-import { MembersPanel } from '@/components/manage/members';
+import { MembersPanel } from '@/components/manage/members/MembersPanel';
 import type {
     EventHostResponseDto,
     EventInvitationResponseDto,

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { MouseEvent } from 'react';
 
-import { isPathActive } from '@/components/layout/mobile-tab-bar';
+import { isPathActive } from '@/components/layout/mobile-tab-bar/utils';
 import { cn } from '@/lib/utils';
 
 interface AccountSidebarNavLinkProps {
