@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { AddImageButton } from '@/components/composer/AddImageButton';
 import Avatar from '@/components/ui/avatar';
-import { useAuth } from '@/hooks';
+import { useAuth } from '@/hooks/useAuth';
 import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
 import { usePostingAsMember } from '@/hooks/usePostingAsMember';
 import { initialsFromName } from '@/lib/utils';

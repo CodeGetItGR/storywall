@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import React, { useEffect, useState } from 'react';
 
-import { ReportTargetModal } from '@/components/reports';
+import { ReportTargetModal } from '@/components/reports/ReportTargetModal';
 import { ModuleNotice } from '@/components/tools/ModuleNotice';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ModuleUnavailableState } from '@/components/tools/ModuleUnavailableState';
@@ -13,8 +13,8 @@ import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { WishbookBookPanel } from '@/components/wishbook/WishbookBookPanel';
 import { WishbookEntriesSkeleton } from '@/components/wishbook/WishbookSkeletons';
-import { useAppConfig } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useAppConfig } from '@/hooks/useAppConfig';
 import { useContentAccess } from '@/hooks/useContentAccess';
 import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { useModuleReadable } from '@/hooks/useModuleReadable';

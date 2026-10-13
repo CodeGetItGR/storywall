@@ -2,10 +2,12 @@
 
 import { type SyntheticEvent, useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 
-import { useAppConfig, useDeleteStory, useEventStories, useMarkStoryViewed, useMediaItem, useStory } from '@/hooks';
+import { useAppConfig } from '@/hooks/useAppConfig';
 import { useContentAccess } from '@/hooks/useContentAccess';
 import { useCustomRoleReport } from '@/hooks/useCustomRoleReport';
+import { useMediaItem } from '@/hooks/useMedia';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
+import { useDeleteStory, useEventStories, useMarkStoryViewed, useStory } from '@/hooks/useStories';
 import { ApiError } from '@/lib/api/client';
 import { isModuleNotAvailableError } from '@/lib/api/errors';
 import type { AuthorDto, MediaResponseDto, StoryResponseDto } from '@/lib/api/types';
