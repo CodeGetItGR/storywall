@@ -6,8 +6,10 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { AuthorRoleChip } from '@/components/memberRoles/AuthorRoleChip';
-import { ReportTargetModal } from '@/components/reports';
-import { StoryCaptionBar, StoryHeader, StoryProgressBar } from '@/components/story';
+import { ReportTargetModal } from '@/components/reports/ReportTargetModal';
+import { StoryCaptionBar } from '@/components/story/StoryCaptionBar';
+import { StoryHeader } from '@/components/story/StoryHeader';
+import { StoryProgressBar } from '@/components/story/StoryProgressBar';
 import { StoryVideo } from '@/components/story/StoryVideo';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useStoryModal } from '@/hooks/useStoryModal';

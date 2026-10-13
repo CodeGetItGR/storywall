@@ -6388,3 +6388,108 @@
             var(--swx-photo-scrim), url('/landing/decor-04.webp') !important;
     }
 }
+
+/* Occasion pages: palette tokens. A dated theme (lib/occasions/themes.ts) swaps them.
+   Brand coral stays on primary actions. */
+.occasion-page {
+    --ink: #151313;
+    --editorial: Baskerville, 'Iowan Old Style', 'Times New Roman', Georgia, serif;
+    --occasion-accent: #e78274;
+    --occasion-cream: #fdfaf7;
+    --occasion-tint: #faf2ec;
+    --occasion-line: #f0e3da;
+    /* White text keeps ≥4.3:1 across the whole gradient. */
+    --occasion-gradient: linear-gradient(90deg, #d43a62 0%, #cf4f2a 100%);
+    --occasion-label: var(--occasion-gradient);
+    background: var(--occasion-cream);
+    color: var(--ink);
+}
+
+.occasion-page[data-occasion-theme='winter'] {
+    --occasion-accent: #5b7fa6;
+    --occasion-cream: #f9fbfd;
+    --occasion-tint: #f0f4f9;
+    --occasion-line: #dfe6ef;
+    --occasion-label: linear-gradient(90deg, #3f5f85 0%, #5b7fa6 100%);
+}
+
+/* Small capitals in the label gradient, above a heading. */
+.occasion-label {
+    background-image: var(--occasion-label);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+@media (forced-colors: active) {
+    .occasion-label {
+        color: CanvasText;
+    }
+}
+
+/* Occasion pages: app pieces floating over a photo. */
+.occasion-float {
+    position: absolute;
+    z-index: 5;
+    pointer-events: none;
+    filter: drop-shadow(0 18px 28px rgba(21, 19, 19, 0.28));
+}
+.occasion-float img {
+    display: block;
+    width: 100%;
+    height: auto;
+    animation: swxFloatCard 9.6s ease-in-out infinite alternate;
+}
+.occasion-float[data-motion='comment'] img {
+    animation: swxFloatComment 8.2s ease-in-out infinite alternate;
+}
+.occasion-float[data-motion='emoji'] img {
+    animation: swxFloatEmoji 5.8s ease-in-out infinite alternate;
+}
+
+/* The dark band behind the feature explorer. */
+.occasion-dark {
+    background:
+        radial-gradient(circle at 12% 8%, rgba(212, 58, 98, 0.28), transparent 38%),
+        radial-gradient(circle at 88% 92%, rgba(232, 118, 72, 0.22), transparent 40%),
+        #141116;
+}
+
+/* Fade and rise into view; useOccasionReveal sets data-visible. */
+.occasion-reveal {
+    opacity: 0;
+    transform: translate3d(0, 28px, 0);
+    transition:
+        opacity 0.8s cubic-bezier(0.2, 0.75, 0.2, 1),
+        transform 0.9s cubic-bezier(0.2, 0.75, 0.2, 1);
+    transition-delay: var(--reveal-delay, 0s);
+}
+.occasion-reveal[data-visible='true'] {
+    opacity: 1;
+    transform: none;
+}
+
+/* The footer's motion toggle. */
+body[data-landing-motion-paused] .occasion-page *,
+body[data-landing-motion-paused] .occasion-page *::before,
+body[data-landing-motion-paused] .occasion-page *::after {
+    animation-play-state: paused !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .occasion-float img {
+        animation: none;
+    }
+    .occasion-reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
+
+@media (scripting: none) {
+    .occasion-reveal {
+        opacity: 1;
+        transform: none;
+    }
+}

@@ -4,13 +4,14 @@ export type LandingTextSegment = { strong?: boolean; text: string };
 
 type LandingStoryCopyProps = {
     demo?: { href: string; label: string };
+    more?: { href: string; label: string };
     paragraphSegments: LandingTextSegment[][];
     tag: string;
     titleSegments: LandingTextSegment[];
     wide: boolean;
 };
 
-export function LandingStoryCopy({ demo, paragraphSegments, tag, titleSegments, wide }: LandingStoryCopyProps) {
+export function LandingStoryCopy({ demo, more, paragraphSegments, tag, titleSegments, wide }: LandingStoryCopyProps) {
     return (
         <div className="story-copy min-w-0">
             <span className="mb-3.5 block w-max max-w-full bg-[linear-gradient(135deg,#d27b9b_0%,#e78274_28%,#f4905f_58%,#fcba63_100%)] bg-clip-text text-[13px] leading-[1.15] font-black tracking-[0.12em] text-transparent min-[761px]:mb-[24px] min-[761px]:text-[clamp(16px,1.35vw,22px)] min-[761px]:tracking-[0.13em]">
@@ -55,6 +56,12 @@ export function LandingStoryCopy({ demo, paragraphSegments, tag, titleSegments, 
                     <span aria-hidden="true" className="text-[18px] leading-none">
                         ↗
                     </span>
+                </a>
+            ) : null}
+            {/* Occasion page link */}
+            {more ? (
+                <a className="mt-4 ml-1 inline-block text-[13px] font-bold text-[var(--ink)] underline underline-offset-4 min-[761px]:ml-5" href={more.href}>
+                    {more.label}
                 </a>
             ) : null}
         </div>

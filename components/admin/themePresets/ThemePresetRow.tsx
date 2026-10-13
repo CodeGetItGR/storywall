@@ -4,6 +4,7 @@ import { Pencil } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { AdminOrderArrows } from '@/components/admin/AdminOrderArrows';
+import { AdminSortableRow } from '@/components/admin/AdminSortableRow';
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { themePresetStatus } from '@/lib/adminThemePresets';
@@ -45,7 +46,7 @@ export function ThemePresetRow({
     }
 
     return (
-        <tr className="border-b border-border/70 last:border-b-0">
+        <AdminSortableRow id={preset.id} name={name} className="border-b border-border/70 last:border-b-0">
             {/* Theme */}
             <td className="px-3 py-2.5">
                 <div className="flex items-center gap-3">
@@ -96,6 +97,6 @@ export function ThemePresetRow({
                     <Pencil className="h-4 w-4" />
                 </button>
             </td>
-        </tr>
+        </AdminSortableRow>
     );
 }

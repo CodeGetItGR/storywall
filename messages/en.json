@@ -643,38 +643,38 @@
         "showPreview": "Show {name} preview"
     },
     "ProfilePage": {
-            "dataExport": {
-                "title": "Your data",
-                "body": "Download a copy of everything StoryWall holds about you (your profile, your activity in events and your purchases) as a JSON file. Photos and videos aren't in it; download those from each event.",
-                "download": "Download my data",
-                "downloading": "Preparing…",
-                "failed": "We couldn't prepare your data. Try again."
-            },
-            "deleteAccount": {
-                "title": "Delete account",
-                "body": "Your account closes immediately and you're signed out everywhere. Within 30 days your name, email and photo are erased. What you posted in other people's events stays there as \"Deleted user\". Events where you're the main host must be deleted or handed to a co-host first.",
-                "adminBody": "Admin accounts can't be deleted here. Ask another admin to remove your admin role first.",
-                "action": "Delete my account",
-                "confirmTitle": "Delete your account?",
-                "confirmBody": "We'll email you a code to confirm. Once confirmed, you can't undo this yourself.",
-                "blocked": "You're the main host of these events. Delete each one, or make a co-host the main host, then try again:",
-                "confirmAction": "Delete account",
-                "cancel": "Cancel",
-                "otp": {
-                    "send": "Send code",
-                    "sending": "Sending…",
-                    "verifyBody": "Enter the {digits}-digit code sent to your email.",
-                    "label": "Confirmation code",
-                    "resend": "Send a new code",
-                    "resendIn": "Send a new code in {seconds}s",
-                    "errors": {
-                        "invalid": "Incorrect code.",
-                        "notRequested": "Request a new code to continue.",
-                        "expired": "That code has expired. Request a new one.",
-                        "tooManyAttempts": "Too many incorrect attempts. Request a new code."
-                    }
+        "dataExport": {
+            "title": "Your data",
+            "body": "Download a copy of everything StoryWall holds about you (your profile, your activity in events and your purchases) as a JSON file. Photos and videos aren't in it; download those from each event.",
+            "download": "Download my data",
+            "downloading": "Preparing…",
+            "failed": "We couldn't prepare your data. Try again."
+        },
+        "deleteAccount": {
+            "title": "Delete account",
+            "body": "Your account closes immediately and you're signed out everywhere. Within 30 days your name, email and photo are erased. What you posted in other people's events stays there as \"Deleted user\". Events where you're the main host must be deleted or handed to a co-host first.",
+            "adminBody": "Admin accounts can't be deleted here. Ask another admin to remove your admin role first.",
+            "action": "Delete my account",
+            "confirmTitle": "Delete your account?",
+            "confirmBody": "We'll email you a code to confirm. Once confirmed, you can't undo this yourself.",
+            "blocked": "You're the main host of these events. Delete each one, or make a co-host the main host, then try again:",
+            "confirmAction": "Delete account",
+            "cancel": "Cancel",
+            "otp": {
+                "send": "Send code",
+                "sending": "Sending…",
+                "verifyBody": "Enter the {digits}-digit code sent to your email.",
+                "label": "Confirmation code",
+                "resend": "Send a new code",
+                "resendIn": "Send a new code in {seconds}s",
+                "errors": {
+                    "invalid": "Incorrect code.",
+                    "notRequested": "Request a new code to continue.",
+                    "expired": "That code has expired. Request a new one.",
+                    "tooManyAttempts": "Too many incorrect attempts. Request a new code."
                 }
-            },
+            }
+        },
         "back": "Back",
         "title": "Profile",
         "fallbackName": "Account",
@@ -2434,6 +2434,12 @@
             "column": "Order",
             "moveUp": "Move {name} up",
             "moveDown": "Move {name} down",
+            "drag": "Drag {name} to change its place",
+            "dragInstructions": "Press space to pick up a row. Use the arrow keys to move it, space to drop it, or escape to cancel.",
+            "picked": "Picked up {name}.",
+            "over": "{name} is at place {position} of {count}.",
+            "dropped": "Dropped {name} at place {position} of {count}.",
+            "cancelled": "{name} is back where it was.",
             "pickKind": "Pick one kind to change the order."
         },
         "orders": {
@@ -5579,6 +5585,7 @@
             "heading": ["Every important moment", "has its own story."],
             "intro": "StoryWall brings people, moments, and memories into one private social space, before, during, and after your event.",
             "openDemo": "Open the demo",
+            "occasionLink": "Learn more",
             "rows": [
                 {
                     "tag": "WEDDING",
@@ -5960,6 +5967,7 @@
             "cta": "CREATE YOUR STORYWALL"
         },
         "footer": {
+            "occasions": "OCCASIONS",
             "imageAlt": "StoryWall",
             "lineOne": "Moments pass.",
             "lineTwo": "The story stays.",
@@ -5970,7 +5978,8 @@
                 "howItWorks": "How it works",
                 "features": "Features",
                 "plans": "Plans",
-                "faq": "FAQ"
+                "faq": "FAQ",
+                "forBusiness": "For professionals"
             },
             "social": "SOCIAL",
             "socialLinks": {
@@ -5990,6 +5999,131 @@
             "reportContent": "Report content",
             "backToTop": "BACK TO TOP"
         }
+    },
+    "ForBusinessPage": {
+        "meta": {
+            "title": "Guest photo sharing for wedding planners & venues",
+            "description": "Give your couples every guest photo on one live wall. No app, just a QR code. Earn on every event you refer.",
+            "siteName": "StoryWall",
+            "imageAlt": "StoryWall for wedding professionals",
+            "ogEyebrow": "FOR WEDDING PROFESSIONALS",
+            "ogHeadline": "Every guest photo, one live wall."
+        },
+        "breadcrumb": "For professionals",
+        "header": { "home": "StoryWall home", "apply": "Apply" },
+        "hero": {
+            "title": "The wedding photo sharing app for planners, venues and vendors",
+            "lead": "Guests scan a QR code and their photos land on one live wall. Your couples love it, and you earn on every event.",
+            "apply": "Apply to partner",
+            "demo": "Try the demo"
+        },
+        "clients": {
+            "heading": "What your couples get",
+            "steps": ["Guests scan one QR code. No app to install.", "Every photo and video lands in one place, live.", "The couple keeps it all. No chasing guests for photos afterwards."],
+            "disposable": "A simpler alternative to disposable cameras on the tables."
+        },
+        "occasions": {
+            "WEDDING": { "name": "Weddings", "line": "From the ceremony to the last dance.", "alt": "Wedding reception at sunset" },
+            "BAPTISM": { "name": "Baptisms and christenings", "line": "The whole family's photos in one place.", "alt": "Family celebrating a baptism outside a church" }
+        },
+        "benefits": {
+            "heading": "What you get",
+            "items": {
+                "discount": { "title": "A discount for your clients", "body": "Your own code gives your couples a better price." },
+                "earn": { "title": "Earn on every event", "body": "You earn commission each time a couple uses your code." },
+                "brand": { "title": "Your brand in front of every guest", "body": "Your card appears in the event feed. Guests planning their own wedding see who made this one happen." },
+                "portal": { "title": "Track your earnings", "body": "A private page shows your events and what you've earned." }
+            },
+            "cardCaption": "How your card looks in the event feed."
+        },
+        "sampleCard": {
+            "name": "Your business",
+            "tagline": "Weddings that feel like you",
+            "services": "Planning · Coordination · Design"
+        },
+        "destination": {
+            "heading": "Made for destination weddings",
+            "body": "Guests fly in from everywhere. They all scan the same QR code, need no app, and every photo ends up in one place for the couple."
+        },
+        "founding": {
+            "heading": "Founding partners",
+            "spotsLeft": "{left} of {total} spots left",
+            "limited": "Limited to the first {total} partners.",
+            "body": "Founding partners get our best terms, kept for as long as they partner with us.",
+            "freeEvent": "Every approved partner also gets one free event to try with a client."
+        },
+        "freeEvent": {
+            "title": "One free event",
+            "body": "Try it with a client before you recommend it."
+        },
+        "steps": {
+            "heading": "How it works",
+            "items": ["Apply. It takes a minute.", "We set up your code and your page.", "Share your code with your couples.", "Earn on every event."]
+        },
+        "roles": {
+            "heading": "Who it's for",
+            "items": {
+                "PLANNER": "Wedding planners",
+                "VENUE": "Venues",
+                "PHOTOGRAPHER": "Photographers",
+                "VIDEOGRAPHER": "Videographers",
+                "DECORATION": "Decorators and florists",
+                "CATERING": "Caterers",
+                "MUSIC": "Bands and DJs"
+            }
+        },
+        "faq": {
+            "heading": "FAQ",
+            "items": [
+                ["What does it cost to join?", "Nothing. Partnering is free."],
+                ["Can I join from outside Greece?", "Yes. Partners can be anywhere in the world."],
+                ["How do I get paid?", "By bank transfer in EUR to an IBAN account, against your invoice. Outside an IBAN country? Apply anyway and we'll work it out with you."],
+                ["How do you know a couple came from me?", "They use your code when they set up their event."],
+                ["Does this compete with the photographer?", "No. Guests capture the moments a photographer can't be at. The professional photos stay the photographer's."],
+                ["Can guests upload without an app?", "Yes. They scan the QR code and upload from their phone's browser."],
+                ["How do wedding planners collect guest photos with it?", "Put the QR code on the tables, the invitation or a sign. Guest photos collect on the live wall during the event."],
+                ["Which events does it cover?", "{occasions}."],
+                ["What happens after I apply?", "We review your application and reply by email."]
+            ]
+        },
+        "apply": {
+            "heading": "Apply to partner",
+            "fields": {
+                "name": "Your name",
+                "businessName": "Business name",
+                "role": "What you do",
+                "email": "Email",
+                "link": "Website or Instagram",
+                "country": "Country",
+                "phone": "Phone (optional)"
+            },
+            "rolePlaceholder": "Choose one",
+            "countryPlaceholder": "Choose your country",
+            "roles": {
+                "PLANNER": "Wedding planner",
+                "VENUE": "Venue",
+                "PHOTOGRAPHER": "Photographer",
+                "VIDEOGRAPHER": "Videographer",
+                "DECORATION": "Decoration or flowers",
+                "CATERING": "Catering",
+                "MUSIC": "Music",
+                "OTHER": "Something else"
+            },
+            "consent": "I agree to the <link>privacy policy</link>.",
+            "submit": "Send application",
+            "sent": "Thanks. We'll reply by email.",
+            "errors": {
+                "invalid": "Check the highlighted fields.",
+                "exists": "We already have your application. We'll reply by email.",
+                "rateLimited": "Too many tries. Wait a moment and try again.",
+                "failed": "Something went wrong. Try again."
+            }
+        },
+        "languageBanner": {
+            "en": { "text": "This page is in English too.", "link": "View in English", "dismiss": "Close" },
+            "el": { "text": "Η σελίδα υπάρχει και στα ελληνικά.", "link": "Δείτε τη στα ελληνικά", "dismiss": "Κλείσιμο" }
+        },
+        "links": { "couples": "See how it works for couples" }
     },
     "Report": {
         "title": "Report",
@@ -6288,5 +6422,350 @@
         "save": "Save",
         "close": "Close",
         "openSettings": "Cookie settings"
+    },
+    "OccasionPages": {
+        "common": {
+            "nav": {
+                "home": "StoryWall home",
+                "signIn": "Sign in",
+                "create": "Create your StoryWall"
+            },
+            "breadcrumbHome": "Home",
+            "timelineHeading": "Before, on the day, after",
+            "featuresHeading": "What you get",
+            "features": {
+                "invitation": {
+                    "title": "Digital invitation",
+                    "body": "Date, place, schedule and maps on every guest's phone."
+                },
+                "posts": {
+                    "title": "Guest posts",
+                    "body": "Guests share messages, photos and reactions on your event wall."
+                },
+                "rsvp": {
+                    "title": "RSVP",
+                    "body": "Guests reply from the link and you see who is coming in one list."
+                },
+                "playlist": {
+                    "title": "Song requests",
+                    "body": "Guests suggest songs and vote for the ones they want to hear."
+                },
+                "stories": {
+                    "title": "Stories",
+                    "body": "Short stories from guests and hosts, as the moments happen."
+                },
+                "gallery": {
+                    "title": "Photo sharing by QR code",
+                    "body": "Guests scan the QR code and add their photos to one album, without installing anything."
+                },
+                "wishlist": {
+                    "title": "Gift account",
+                    "body": "Share your gift account next to the invitation."
+                },
+                "wishbook": {
+                    "title": "Book of wishes",
+                    "body": "Guests write their wishes in one book you can keep."
+                },
+                "schedule": {
+                    "title": "Schedule",
+                    "body": "Every part of the day and its time, step by step."
+                },
+                "he_or_she": {
+                    "title": "Boy or Girl?",
+                    "body": "Guests guess before the reveal."
+                }
+            },
+            "demo": {
+                "heading": "See a real StoryWall",
+                "postsLabel": "Posts from guests",
+                "photosLabel": "Photos",
+                "wishesLabel": "Wishes",
+                "tryDemo": "Try the live demo"
+            },
+            "howItWorksHeading": "How it works",
+            "plans": {
+                "line": "Plans start with everything you need for one event.",
+                "link": "See plans"
+            },
+            "faqHeading": "Questions",
+            "finalCta": "Create your StoryWall",
+            "linksHeading": "Other occasions",
+            "linksHome": "All of StoryWall"
+        },
+        "campaigns": {},
+        "WEDDING": {
+            "name": "Weddings",
+            "meta": {
+                "title": "Wedding Website & Guest Photo Sharing | StoryWall",
+                "description": "One private wedding website for your invitation, RSVPs, guest photos by QR code, wishes and song requests. No app for guests to install.",
+                "imageAlt": "StoryWall for weddings"
+            },
+            "hero": {
+                "h1": "Wedding website and guest photo sharing",
+                "headline": "A wedding full of moments <b>worth keeping.</b>",
+                "lead": "From the invitation and RSVPs to the photos, posts and wishes from the day.",
+                "promise": "Everything your people share, together in one StoryWall.",
+                "cta": "Create your wedding StoryWall",
+                "imageAlt": "Wedding guests celebrating with photos shared on StoryWall"
+            },
+            "themes": {
+                "eyebrow": "Wedding themes",
+                "heading": "Give your wedding StoryWall the theme that suits it."
+            },
+            "timeline": [
+                {
+                    "title": "Before",
+                    "heading": "One link with everything.",
+                    "body": "Guests get one link with the date, schedule and maps. They RSVP, suggest songs and follow the plans."
+                },
+                {
+                    "title": "On the day",
+                    "heading": "Every guest becomes a photographer.",
+                    "body": "Guests scan the QR code on the tables and add photos and videos. No app, no account needed to upload."
+                },
+                {
+                    "title": "After",
+                    "heading": "The day stays with you.",
+                    "body": "Photos, stories and wishes stay together, from the preparations to the honeymoon."
+                }
+            ],
+            "story": {
+                "galleryLabel": "Photos from the wedding day",
+                "imageAlts": [
+                    "Bride getting ready with her bridesmaids",
+                    "Wedding ceremony in Santorini",
+                    "Wedding reception in Santorini"
+                ]
+            },
+            "scene": {
+                "title": [
+                    "Everyone shares",
+                    "the day."
+                ],
+                "copy": "Posts, stories, wishes and reactions from everyone at your wedding."
+            },
+            "features": {
+                "invitation": {
+                    "title": "Digital wedding invitation",
+                    "body": "Date, schedule, ceremony and reception with maps, all on your guests' phones."
+                },
+                "posts": {
+                    "title": "Posts from your guests",
+                    "body": "Guests share messages, photos and reactions on your wedding wall."
+                },
+                "rsvp": {
+                    "title": "Online wedding RSVP",
+                    "body": "Guests answer from the link. You see who is coming, with notes and plus-ones, in one list."
+                },
+                "playlist": {
+                    "title": "Wedding song requests",
+                    "body": "Guests suggest the songs they want to hear, so the DJ knows the room before the party."
+                },
+                "stories": {
+                    "title": "Stories from the day",
+                    "body": "Short stories from guests and hosts, as the moments happen."
+                },
+                "gallery": {
+                    "title": "QR code wedding photos",
+                    "body": "Put the QR code on the tables. Guests scan it and add their photos and videos straight from the camera roll."
+                },
+                "wishlist": {
+                    "title": "Wedding gift account",
+                    "body": "Share your gift account next to the invitation, for guests who want to send a gift."
+                },
+                "wishbook": {
+                    "title": "Digital wedding guestbook",
+                    "body": "Guests leave their wishes in one book you can keep and read again."
+                },
+                "schedule": {
+                    "title": "Wedding schedule",
+                    "body": "Ceremony, reception, party and their times, step by step."
+                }
+            },
+            "howItWorks": [
+                {
+                    "title": "Create",
+                    "body": "Pick a plan and add your date, venues and schedule."
+                },
+                {
+                    "title": "Share",
+                    "body": "Send the invitation link and print the QR code for the tables."
+                },
+                {
+                    "title": "The story begins",
+                    "body": "Guests RSVP, post and add photos. Everything lands in one private feed."
+                }
+            ],
+            "faq": [
+                {
+                    "q": "Do guests need to install an app?",
+                    "a": "No. Everything opens in the phone's browser from the invitation link or the QR code."
+                },
+                {
+                    "q": "How do guests upload photos at the reception?",
+                    "a": "They scan the QR code on the table and pick photos or videos. Uploading through the QR code doesn't need an account."
+                },
+                {
+                    "q": "Can older guests use it?",
+                    "a": "Yes. They open a link or scan a code, the same as any website."
+                },
+                {
+                    "q": "Who can see our photos?",
+                    "a": "Only the people you invite. Your StoryWall is private and isn't listed anywhere."
+                },
+                {
+                    "q": "How long does it stay online?",
+                    "a": "Your plan sets how long your event stays open. You can extend it from your event's settings."
+                },
+                {
+                    "q": "Can it replace the paper invitation?",
+                    "a": "Yes. Many couples send the link instead, or add the QR code to their printed invitation."
+                },
+                {
+                    "q": "Does it replace our photographer?",
+                    "a": "No. It collects the moments your guests capture, alongside your photographer's work."
+                }
+            ],
+            "finalCta": {
+                "heading": "Start your wedding StoryWall",
+                "body": "Set it up in a few minutes and share it with your guests today.",
+                "imageAlt": "Wedding celebration in Santorini"
+            }
+        },
+        "BAPTISM": {
+            "name": "Baptisms",
+            "meta": {
+                "title": "Digital Baptism Invitation & Photo Sharing | StoryWall",
+                "description": "A private page for your baptism or christening: invitation with maps, RSVPs, guest photos by QR code and a book of wishes for your child.",
+                "imageAlt": "StoryWall for baptisms"
+            },
+            "hero": {
+                "h1": "Digital baptism invitation and photo sharing",
+                "headline": "A baptism full of moments <b>worth keeping.</b>",
+                "lead": "From the invitation and the first wishes to the photos, posts and moments of the day.",
+                "promise": "Everything your people share, together in one StoryWall.",
+                "cta": "Create your baptism StoryWall",
+                "imageAlt": "Family and guests celebrating a baptism outside a church"
+            },
+            "themes": {
+                "eyebrow": "Baptism themes",
+                "heading": "Give your baptism StoryWall the theme that suits it."
+            },
+            "timeline": [
+                {
+                    "title": "Before",
+                    "heading": "Everyone knows where to be.",
+                    "body": "Guests get the church, reception and schedule in one link, with maps. They RSVP from there."
+                },
+                {
+                    "title": "On the day",
+                    "heading": "Every guest becomes a photographer.",
+                    "body": "Guests scan the QR code and add their photos from the church and the reception."
+                },
+                {
+                    "title": "After",
+                    "heading": "A story your child will read one day.",
+                    "body": "The photos and the book of wishes stay together, ready for your child one day."
+                }
+            ],
+            "story": {
+                "galleryLabel": "Photos from the baptism day",
+                "imageAlts": [
+                    "Baptism ceremony inside the church",
+                    "Baptism outside the church",
+                    "Baptism celebration at the table"
+                ]
+            },
+            "scene": {
+                "title": [
+                    "Everyone shares",
+                    "the day."
+                ],
+                "copy": "Posts, stories, wishes and reactions from everyone at the baptism."
+            },
+            "features": {
+                "invitation": {
+                    "title": "Digital baptism invitation",
+                    "body": "Church, reception, schedule and maps on every guest's phone."
+                },
+                "posts": {
+                    "title": "Posts from your guests",
+                    "body": "Guests share messages, photos and reactions on your baptism wall."
+                },
+                "rsvp": {
+                    "title": "Baptism RSVP",
+                    "body": "Guests answer from the link and you see who is coming in one list."
+                },
+                "playlist": {
+                    "title": "Songs for the reception",
+                    "body": "Guests suggest songs and vote for the ones they want to hear."
+                },
+                "stories": {
+                    "title": "Stories from the day",
+                    "body": "Short stories from guests and hosts, as the moments happen."
+                },
+                "gallery": {
+                    "title": "Christening photo sharing",
+                    "body": "Guests scan the QR code and add their photos to one album, without installing anything."
+                },
+                "wishlist": {
+                    "title": "Christening gift account",
+                    "body": "Share your gift account next to the invitation, for guests who want to send a gift."
+                },
+                "wishbook": {
+                    "title": "A book of wishes for your child",
+                    "body": "Godparents, grandparents and friends write their christening wishes in one book your child can read one day."
+                },
+                "schedule": {
+                    "title": "Baptism schedule",
+                    "body": "The church service, the reception and their times, step by step."
+                }
+            },
+            "howItWorks": [
+                {
+                    "title": "Create",
+                    "body": "Pick a plan and add the church, reception and time."
+                },
+                {
+                    "title": "Share",
+                    "body": "Send the link to your guests and print the QR code for the reception."
+                },
+                {
+                    "title": "The story begins",
+                    "body": "Guests RSVP, add photos and write their wishes for your child."
+                }
+            ],
+            "faq": [
+                {
+                    "q": "Do guests need to install an app?",
+                    "a": "No. The invitation and the QR code open in the phone's browser."
+                },
+                {
+                    "q": "Can grandparents use it easily?",
+                    "a": "Yes. They tap a link or scan a code. Nothing to install."
+                },
+                {
+                    "q": "Who can see the photos of our child?",
+                    "a": "Only the guests you invite. Your StoryWall is private."
+                },
+                {
+                    "q": "How long does it stay online?",
+                    "a": "Your plan sets how long your event stays open. You can extend it from your event's settings."
+                },
+                {
+                    "q": "Can we keep the wishes?",
+                    "a": "Yes. The book of wishes stays with the event, together with the photos."
+                },
+                {
+                    "q": "Does it replace the paper invitation?",
+                    "a": "It can. Send the link on its own, or add the QR code to your printed invitation."
+                }
+            ],
+            "finalCta": {
+                "heading": "Start your baptism StoryWall",
+                "body": "Set it up in a few minutes and send it to your guests.",
+                "imageAlt": "Family and guests at the baptism table"
+            }
+        }
     }
 }

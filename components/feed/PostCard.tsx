@@ -5,23 +5,23 @@ import { useTranslations } from 'next-intl';
 import React, { useMemo, useState } from 'react';
 
 import { MediaThumbnail } from '@/components/common/MediaThumbnail';
-import {
-    CommentsList,
-    EditPostModal,
-    PostActionsMenu,
-    PostAuthorAvatar,
-    PostMediaViewer,
-    PostReactionPicker,
-    ReactionSummary,
-} from '@/components/feed/post';
+import { CommentsList } from '@/components/feed/post/CommentsList';
+import { EditPostModal } from '@/components/feed/post/EditPostModal';
+import { PostActionsMenu } from '@/components/feed/post/PostActionsMenu';
+import { PostAuthorAvatar } from '@/components/feed/post/PostAuthorAvatar';
+import { PostMediaViewer } from '@/components/feed/post/PostMediaViewer';
+import { PostReactionPicker } from '@/components/feed/post/PostReactionPicker';
+import { ReactionSummary } from '@/components/feed/post/ReactionSummary';
 import { AuthorRoleChip } from '@/components/memberRoles/AuthorRoleChip';
-import { ReportTargetModal } from '@/components/reports';
+import { ReportTargetModal } from '@/components/reports/ReportTargetModal';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { openPostModal, useAppConfig, useDeletePost, useUpdatePost } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useAppConfig } from '@/hooks/useAppConfig';
 import { useContentAccess } from '@/hooks/useContentAccess';
 import { useCustomRoleReport } from '@/hooks/useCustomRoleReport';
 import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
+import { openPostModal } from '@/hooks/usePostModal';
+import { useDeletePost, useUpdatePost } from '@/hooks/usePosts';
 import type { PostResponseDto } from '@/lib/api/types';
 import { canDeleteContent, canReportContent } from '@/lib/contentPermissions';
 import { isEventWritable } from '@/lib/eventLifecycle';

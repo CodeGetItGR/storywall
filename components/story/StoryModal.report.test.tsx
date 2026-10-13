@@ -15,7 +15,7 @@ vi.mock('@/components/ui/ConfirmActionModal', () => ({
     ConfirmActionModal: ({ layer }: { layer?: string }) => <div data-testid="confirm-modal" data-layer={layer} />,
 }));
 vi.mock('@/components/story/StoryVideo', () => ({ StoryVideo: () => null }));
-vi.mock('@/components/reports', () => ({
+vi.mock('@/components/reports/ReportTargetModal', () => ({
     ReportTargetModal: ({
         open,
         layer,

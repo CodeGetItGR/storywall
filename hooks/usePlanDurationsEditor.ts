@@ -16,11 +16,13 @@ import {
     parseDurationPrice,
     sortDurationsForAdmin,
 } from '@/lib/adminPlanDurations';
-import type { PlanTierResponseDto } from '@/lib/api/types';
+import type { CoverageOptionResponseDto, PlanTierResponseDto } from '@/lib/api/types';
 import { nextSortOrder } from '@/lib/sortOrder';
 
 // The plan editor's Durations section: read-only rows, and one duration open for
 // editing at a time. Each change is its own request, separate from the plan's Save.
+const optionIdOf = (option: CoverageOptionResponseDto) => option.id;
+
 export function usePlanDurationsEditor(plan: PlanTierResponseDto) {
     const createOption = useCreateCoverageOption();
     const updateOption = useUpdateCoverageOption();
@@ -113,14 +115,16 @@ export function usePlanDurationsEditor(plan: PlanTierResponseDto) {
     }
 
     return {
-        options,
+        options: move.arrange(options),
         currency: plan.priceCurrency,
         draft,
         editingOption,
         canSave,
         isSaving: isPending,
         liveOptions,
+        liveOptionIds: liveOptions.map(optionIdOf),
         move: move.move,
+        reorder: move.reorder,
         error: createOption.error ?? updateOption.error ?? move.error,
         openNew,
         openEdit,

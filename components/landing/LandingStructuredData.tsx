@@ -2,7 +2,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 
 import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
-import { absoluteUrl, OG_IMAGE_PATH, SITE_URL, SOCIAL_PROFILES } from '@/lib/seo';
+import { absoluteUrl, jsonLdHtml, OG_IMAGE_PATH, SITE_URL, SOCIAL_PROFILES } from '@/lib/seo';
 
 // Only facts that stay true without maintenance: name, URL, logo, social
 // profiles, description and category. Pricing is indicative and comes from config, so no offers.
@@ -44,8 +44,5 @@ export async function LandingStructuredData() {
         ],
     };
 
-    // JSON.stringify output is escaped so a `</script>` in copy can't close the tag.
-    const json = JSON.stringify(graph).replace(/</g, '\u003c');
-
-    return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: json }} />;
+    return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(graph) }} />;
 }

@@ -15,6 +15,8 @@ export type DemoSnapshotResult =
 
 // Must only ever run in the visitor's browser: the endpoint is rate-limited per caller IP, and a
 // fetch from the Next.js server would put every visitor in the server's single bucket.
+// The one server-side reader is lib/occasions/demoPreview.server.ts, cached so Spring sees about
+// one call per type every 5 minutes.
 // Deliberately a bare fetch, not lib/api/client — no auth header and no 401 refresh flow.
 export async function fetchDemoSnapshot(eventTypeKey: string, etag?: string | null): Promise<DemoSnapshotResult> {
     if (typeof window === 'undefined') {

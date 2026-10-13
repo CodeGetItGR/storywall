@@ -291,6 +291,16 @@ describe('useGalleryScreen', () => {
             expect(result.current.showMemberArchive).toBe(false);
         });
 
+        // Guests upload through posts and the QR link; the gallery page is view and download only for them.
+        it('gives a guest no upload box, and a host one', () => {
+            mocks.activeEvent = withArchive;
+            mocks.activeMember = { id: 'me' };
+            expect(renderHook(() => useGalleryScreen()).result.current).toMatchObject({ showUpload: false, canUpload: false });
+
+            mocks.isHost = true;
+            expect(renderHook(() => useGalleryScreen()).result.current).toMatchObject({ showUpload: true, canUpload: true });
+        });
+
         it('opens and closes the member modal', () => {
             mocks.activeEvent = withArchive;
             const { result } = renderHook(() => useGalleryScreen());

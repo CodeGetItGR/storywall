@@ -6,6 +6,12 @@ import { routes } from '@/lib/routes';
 const DEMO_EVENT_ID = 'evt-demo-wedding';
 registerDemoEventRoute(DEMO_EVENT_ID, 'wedding');
 
+describe('routes.events.new', () => {
+    it('carries a discount code', () => {
+        expect(routes.events.new({ type: 'wedding', code: 'SUMMER27' })).toBe('/events/new?type=wedding&code=SUMMER27');
+    });
+});
+
 describe('routes.events for a registered demo event id', () => {
     it('feed() resolves under /demo instead of /events/{id}', () => {
         expect(routes.events.feed(DEMO_EVENT_ID)).toBe('/demo/wedding/feed');

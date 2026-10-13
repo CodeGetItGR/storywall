@@ -28,7 +28,7 @@ vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLo
 vi.mock('next/image', () => ({ default: () => null }));
 // BackButton steps back through the router when the previous page is in the app.
 vi.mock('next/navigation', () => ({ useRouter: () => ({ back: vi.fn() }) }));
-vi.mock('@/hooks', () => ({
+vi.mock('@/hooks/useAppConfig', () => ({
     useAppConfig: () => ({ data: { reportTargetTypes, modules: [], contentLimits: {} } }),
 }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'error' }));
@@ -69,7 +69,7 @@ vi.mock('@/providers/EventProvider', () => ({
     useIsHost: () => isHost,
     useContentAccessMode: () => accessMode,
 }));
-vi.mock('@/components/reports', () => ({
+vi.mock('@/components/reports/ReportTargetModal', () => ({
     ReportTargetModal: ({ open, targetType, targetId, eventId }: { open: boolean; targetType: string; targetId: string; eventId: string }) =>
         open ? <div data-testid="report-modal" data-target-type={targetType} data-target-id={targetId} data-event-id={eventId} /> : null,
 }));

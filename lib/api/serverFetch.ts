@@ -5,6 +5,7 @@
 // client-side hook fetches normally after hydration (see the try/catch
 // around every call site).
 
+import type { Locale } from '@/i18n/config';
 import { getServerLocale } from '@/i18n/serverLocale';
 import { endpoints } from '@/lib/api/endpoints';
 import type { EventDetailResponseDto, ModuleKeyConvention } from '@/lib/api/types';
@@ -92,10 +93,10 @@ export async function serverPublicCachedGet<T>(path: string, revalidateSeconds: 
 // It is safe to share between visitors, but is deliberately separate from the
 // generic public helper so future public endpoints do not become cached by
 // accident.
-export async function serverPublicConfigGet<T>(path: string): Promise<T> {
-    const locale = await getServerLocale();
+export async function serverPublicConfigGet<T>(path: string, locale?: Locale): Promise<T> {
+    const requestLocale = locale ?? (await getServerLocale());
     const res = await fetch(`${API_BASE_URL}${path}`, {
-        headers: { 'Accept-Language': locale },
+        headers: { 'Accept-Language': requestLocale },
         next: {
             revalidate: PUBLIC_CONFIG_REVALIDATE_SECONDS,
             tags: [PUBLIC_CONFIG_CACHE_TAG],

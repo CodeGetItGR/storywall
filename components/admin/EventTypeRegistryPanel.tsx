@@ -6,6 +6,8 @@ import { useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback, useMemo, useState } from 'react';
 
 import { AdminOrderArrows } from '@/components/admin/AdminOrderArrows';
+import { AdminSortableList } from '@/components/admin/AdminSortableList';
+import { AdminSortableRow } from '@/components/admin/AdminSortableRow';
 import { EventTypeEditDrawer } from '@/components/admin/EventTypeEditDrawer';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { usePlatformEventTypeMove } from '@/hooks/useAdminReorder';
@@ -14,6 +16,8 @@ import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { PlatformEventTypeResponseDto } from '@/lib/api/types';
 import { bySortOrder } from '@/lib/sortOrder';
 import { cn } from '@/lib/utils';
+
+const eventTypeKeyOf = (eventType: PlatformEventTypeResponseDto) => eventType.eventTypeKey;
 
 export function EventTypeRegistryPanel() {
     const t = useTranslations('AdminPage');
@@ -26,6 +30,7 @@ export function EventTypeRegistryPanel() {
     const [selectedEventType, setSelectedEventType] = useState<PlatformEventTypeResponseDto | null>(null);
     const eventTypes = useMemo(() => [...eventTypesResult.data].sort(bySortOrder), [eventTypesResult.data]);
     const move = usePlatformEventTypeMove(eventTypes);
+    const rows = move.arrange(eventTypes);
 
     function closeEditor() {
         setSelectedEventType(null);
@@ -68,53 +73,60 @@ export function EventTypeRegistryPanel() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {eventTypes.map((eventType, index) => (
-                                    <tr key={eventType.eventTypeKey} className="border-b border-border last:border-b-0 hover:bg-canvas/60">
-                                        <td className="max-w-96 px-4 py-2.5">
-                                            <p className="truncate font-semibold text-ink">{localizedText(eventType.name)}</p>
-                                            <p className="truncate text-[11px] text-ink-faint">{localizedText(eventType.tagline)}</p>
-                                        </td>
-                                        <td className="px-3 py-2.5">
-                                            <span
-                                                className={cn(
-                                                    'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold',
-                                                    eventType.isEnabled
-                                                        ? 'bg-status-good-wash text-status-good'
-                                                        : 'bg-status-neutral-wash text-status-neutral',
-                                                )}
-                                            >
+                                <AdminSortableList ids={rows.map(eventTypeKeyOf)} disabled={move.isPending} onReorderAction={move.reorder}>
+                                    {rows.map((eventType, index) => (
+                                        <AdminSortableRow
+                                            key={eventType.eventTypeKey}
+                                            id={eventType.eventTypeKey}
+                                            name={localizedText(eventType.name)}
+                                            className="border-b border-border last:border-b-0 hover:bg-canvas/60"
+                                        >
+                                            <td className="max-w-96 px-4 py-2.5">
+                                                <p className="truncate font-semibold text-ink">{localizedText(eventType.name)}</p>
+                                                <p className="truncate text-[11px] text-ink-faint">{localizedText(eventType.tagline)}</p>
+                                            </td>
+                                            <td className="px-3 py-2.5">
                                                 <span
                                                     className={cn(
-                                                        'h-1.5 w-1.5 rounded-full',
-                                                        eventType.isEnabled ? 'bg-status-good' : 'bg-status-neutral',
+                                                        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold',
+                                                        eventType.isEnabled
+                                                            ? 'bg-status-good-wash text-status-good'
+                                                            : 'bg-status-neutral-wash text-status-neutral',
                                                     )}
+                                                >
+                                                    <span
+                                                        className={cn(
+                                                            'h-1.5 w-1.5 rounded-full',
+                                                            eventType.isEnabled ? 'bg-status-good' : 'bg-status-neutral',
+                                                        )}
+                                                    />
+                                                    {eventType.isEnabled ? t('eventTypes.enabled') : t('eventTypes.disabled')}
+                                                </span>
+                                            </td>
+                                            <td className="px-3 py-2.5">
+                                                <AdminOrderArrows
+                                                    id={eventType.eventTypeKey}
+                                                    name={localizedText(eventType.name)}
+                                                    isFirst={index === 0}
+                                                    isLast={index === eventTypes.length - 1}
+                                                    disabled={move.isPending}
+                                                    onMoveAction={move.move}
                                                 />
-                                                {eventType.isEnabled ? t('eventTypes.enabled') : t('eventTypes.disabled')}
-                                            </span>
-                                        </td>
-                                        <td className="px-3 py-2.5">
-                                            <AdminOrderArrows
-                                                id={eventType.eventTypeKey}
-                                                name={localizedText(eventType.name)}
-                                                isFirst={index === 0}
-                                                isLast={index === eventTypes.length - 1}
-                                                disabled={move.isPending}
-                                                onMoveAction={move.move}
-                                            />
-                                        </td>
-                                        <td className="px-3 py-2.5 text-right">
-                                            <button
-                                                type="button"
-                                                data-event-type-key={eventType.eventTypeKey}
-                                                onClick={handleEditClick}
-                                                aria-label={t('eventTypes.edit')}
-                                                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-canvas hover:text-ink"
-                                            >
-                                                <Pencil className="h-3.5 w-3.5" />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
+                                            </td>
+                                            <td className="px-3 py-2.5 text-right">
+                                                <button
+                                                    type="button"
+                                                    data-event-type-key={eventType.eventTypeKey}
+                                                    onClick={handleEditClick}
+                                                    aria-label={t('eventTypes.edit')}
+                                                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-canvas hover:text-ink"
+                                                >
+                                                    <Pencil className="h-3.5 w-3.5" />
+                                                </button>
+                                            </td>
+                                        </AdminSortableRow>
+                                    ))}
+                                </AdminSortableList>
                             </tbody>
                         </table>
                     </div>

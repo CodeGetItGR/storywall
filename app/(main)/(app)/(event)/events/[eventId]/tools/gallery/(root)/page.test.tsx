@@ -65,6 +65,27 @@ describe('GalleryPage (server)', () => {
         expect(mocks.serverGet).not.toHaveBeenCalled();
     });
 
+    it("seeds a guest's gallery when members get the download", async () => {
+        mocks.resolveServerEventContext.mockResolvedValue({ ...hostContext, isHost: false });
+        mocks.resolveServerEventDetail.mockResolvedValue({
+            ...liveEvent,
+            modules: [{ moduleKey: 'gallery', isAvailable: true, isEnabled: true, configuration: { memberArchiveAfterEnd: true } }],
+        });
+
+        expect(seededQueries(await visit())).toEqual([{ key: ['events', 'e1', 'media'], data: { pages: [firstPage], pageParams: [0] } }]);
+    });
+
+    it('prefetches nothing without a session', async () => {
+        mocks.resolveServerEventContext.mockResolvedValue(null);
+        mocks.resolveServerEventDetail.mockResolvedValue({
+            ...liveEvent,
+            modules: [{ moduleKey: 'gallery', isAvailable: true, isEnabled: true, configuration: { memberArchiveAfterEnd: true } }],
+        });
+
+        expect(seededQueries(await visit())).toEqual([]);
+        expect(mocks.serverGet).not.toHaveBeenCalled();
+    });
+
     it("prefetches nothing when the plan doesn't include the gallery", async () => {
         mocks.resolveServerEventDetail.mockResolvedValue({ ...liveEvent, modules: [{ moduleKey: 'gallery', isAvailable: false, isEnabled: true }] });
 

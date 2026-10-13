@@ -73,6 +73,15 @@ describe('GuidelinesAcceptanceGate', () => {
         expect(screen.getByText('app')).toBeInTheDocument();
     });
 
+    // The demo runs on mocks: a /api/me cached from the real app must not block it.
+    it.each(['/demo', '/demo/wedding/feed'])('does not block the demo page %s', (pathname) => {
+        mocks.me = { guidelinesAcceptanceRequired: true, currentGuidelinesVersion: '2026-09-30' };
+        mocks.pathname = pathname;
+        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
+
+        expect(screen.getByText('app')).toBeInTheDocument();
+    });
+
     it('accepts the version /api/me reported', () => {
         mocks.me = { guidelinesAcceptanceRequired: true, currentGuidelinesVersion: '2026-09-30' };
         render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });

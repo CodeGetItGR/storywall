@@ -3,12 +3,13 @@
 import { useTranslations } from 'next-intl';
 import React from 'react';
 
-import { PostCommentsPanel } from '@/components/feed/post';
+import { PostCommentsPanel } from '@/components/feed/post/PostCommentsPanel';
 import { PostModalStatus } from '@/components/feed/post/PostModalStatus';
 import { Modal } from '@/components/ui/modal';
-import { usePostCommentThread, usePostModal } from '@/hooks';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useModuleReadable } from '@/hooks/useModuleReadable';
+import { usePostCommentThread } from '@/hooks/usePostCommentThread';
+import { usePostModal } from '@/hooks/usePostModal';
 import { usePostModalPost } from '@/hooks/usePostModalPost';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';

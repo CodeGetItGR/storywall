@@ -1,12 +1,17 @@
 import Link from 'next/link';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { CookieSettingsLink } from '@/components/consent/CookieSettingsLink';
 import { LandingMotionToggle } from '@/components/landing/LandingMotionToggle';
 import { LandingNewsletter } from '@/components/landing/LandingNewsletter';
+import type { Locale } from '@/i18n/config';
+import { getForBusinessPath } from '@/i18n/publicLocale';
+import { loadLiveOccasions } from '@/lib/occasions/liveOccasions.server';
+import { occasionPath } from '@/lib/occasions/occasions';
 import { routes } from '@/lib/routes';
 import { SOCIAL_PROFILES } from '@/lib/seo';
+import { showsUnreleasedPages } from '@/lib/unreleasedPages';
 
 // Every in-page anchor here must match an id rendered by a landing section.
 const EXPLORE_LINKS = [
@@ -31,12 +36,20 @@ const COLUMN_HEADING = 'mb-5.5 text-[9px] font-black tracking-[0.16em] text-whit
 const COLUMN_ITEM = 'py-1.5 text-[13px] leading-[1.35] text-white';
 const COLUMN_LINK = `${COLUMN_ITEM} no-underline transition-[opacity,transform] duration-250 ease-[ease] hover:translate-x-0.75 hover:opacity-[0.62] motion-reduce:transition-none`;
 
-export async function LandingFooter() {
+// anchorBase prefixes the Explore anchors, so another page can point them at the homepage sections.
+export async function LandingFooter({ anchorBase = '', topHref = TOP_HREF }: { anchorBase?: string; topHref?: string } = {}) {
     const t = await getTranslations('LandingPage.footer');
+    const pages = await getTranslations('OccasionPages');
+    const locale = (await getLocale()) as Locale;
+    const occasions = await loadLiveOccasions();
+    const showsForBusiness = showsUnreleasedPages();
+    const columns = occasions.length > 0 ? 'min-[761px]:grid-cols-[1.65fr_0.75fr_0.75fr_0.75fr]' : 'min-[761px]:grid-cols-[1.65fr_0.75fr_0.75fr]';
 
     return (
         <footer className="overflow-hidden bg-[#262626] px-5 pt-14.5 pb-6 text-white min-[761px]:px-[5vw] min-[761px]:pt-18.5">
-            <div className="grid grid-cols-2 gap-x-6.5 gap-y-10.5 border-b border-white/14 pb-13.5 min-[761px]:grid-cols-[1.65fr_0.75fr_0.75fr] min-[761px]:gap-[5vw] min-[761px]:pb-19">
+            <div
+                className={`grid grid-cols-2 gap-x-6.5 gap-y-10.5 border-b border-white/14 pb-13.5 ${columns} min-[761px]:gap-[5vw] min-[761px]:pb-19`}
+            >
                 {/* Brand */}
                 <div className="col-span-2 min-[761px]:col-span-1">
                     <div className="w-[min(82vw,330px)] leading-none min-[761px]:w-[clamp(179px,19.6vw,301px)]">
@@ -63,26 +76,32 @@ export async function LandingFooter() {
                 <div className="flex flex-col items-start">
                     <div className={COLUMN_HEADING}>{t('explore')}</div>
                     {EXPLORE_LINKS.map(({ key, href }) => (
-                        <a
-                            className={COLUMN_LINK}
-                            href={href}
-                            key={key}
-                        >
+                        <a className={COLUMN_LINK} href={`${anchorBase}${href}`} key={key}>
                             {t(`exploreLinks.${key}`)}
                         </a>
                     ))}
+                    {showsForBusiness && (
+                        <a className={COLUMN_LINK} href={getForBusinessPath(locale)}>
+                            {t('exploreLinks.forBusiness')}
+                        </a>
+                    )}
                 </div>
+                {/* Occasions */}
+                {occasions.length > 0 && (
+                    <div className="flex flex-col items-start">
+                        <div className={COLUMN_HEADING}>{t('occasions')}</div>
+                        {occasions.map((occasion) => (
+                            <a className={COLUMN_LINK} href={occasionPath(occasion, locale)} key={occasion.eventType}>
+                                {pages(`${occasion.eventType}.name`)}
+                            </a>
+                        ))}
+                    </div>
+                )}
                 {/* Social */}
                 <div className="flex flex-col items-start">
                     <div className={COLUMN_HEADING}>{t('social')}</div>
                     {SOCIAL_PROFILES.map(({ key, href }) => (
-                        <a
-                            className={COLUMN_LINK}
-                            href={href}
-                            key={key}
-                            rel="noopener noreferrer"
-                            target="_blank"
-                        >
+                        <a className={COLUMN_LINK} href={href} key={key} rel="noopener noreferrer" target="_blank">
                             {t(`socialLinks.${key}`)}
                         </a>
                     ))}
@@ -109,7 +128,7 @@ export async function LandingFooter() {
                     ))}
                     <CookieSettingsLink className="text-white/62 hover:text-white" />
                 </div>
-                <a className="justify-self-end text-white no-underline max-[760px]:col-start-2 max-[760px]:row-start-1" href={TOP_HREF}>
+                <a className="justify-self-end text-white no-underline max-[760px]:col-start-2 max-[760px]:row-start-1" href={topHref}>
                     {t('backToTop')} ↑
                 </a>
             </div>
