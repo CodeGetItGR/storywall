@@ -1,6 +1,7 @@
 import { defaultLocale, type Locale, locales } from '@/i18n/config';
 import type { EventTypeConvention } from '@/lib/api/types';
 import { absoluteUrl } from '@/lib/seo';
+import { showsUnreleasedPages } from '@/lib/unreleasedPages';
 
 export type OccasionImage = { src: string; width: number; height: number };
 
@@ -41,7 +42,9 @@ export const OCCASIONS: readonly Occasion[] = [
     { eventType: 'SOCIAL_EVENT', slugs: { en: 'social-events', el: 'koinonikes-ekdiloseis' }, ready: false, heroImage: null },
 ];
 
+// None on the production site until the pages launch (lib/unreleasedPages.ts).
 export function readyOccasions(): Occasion[] {
+    if (!showsUnreleasedPages()) return [];
     return OCCASIONS.filter((occasion) => occasion.ready);
 }
 
