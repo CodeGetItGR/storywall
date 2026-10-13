@@ -56,25 +56,25 @@ export function ogLocale(locale: Locale): string {
     return locale === 'el' ? 'el_GR' : 'en_US';
 }
 
-type PublicPageMetadataCopy = {
+export type PageMetadataCopy = {
     title: string;
     description: string;
     siteName: string;
     imageAlt: string;
 };
 
-type PublicPageMetadataInput = {
+type IndexableMetadataInput = {
     locale: Locale;
     path: string;
     languages: Record<string, string>;
     // Left out when the route has its own opengraph-image file: Next adds that
     // one itself, under a URL only it knows (route groups get a hash suffix).
     imagePath?: string;
-    copy: PublicPageMetadataCopy;
+    copy: PageMetadataCopy;
 };
 
 // An indexable public page with a self-referential canonical and its language twins.
-function buildPublicPageMetadata({ locale, path, languages, imagePath, copy }: PublicPageMetadataInput): Metadata {
+export function buildIndexableMetadata({ locale, path, languages, imagePath, copy }: IndexableMetadataInput): Metadata {
     const canonical = absoluteUrl(path);
     const images = imagePath ? [{ url: absoluteUrl(imagePath), ...OG_IMAGE_SIZE, alt: copy.imageAlt }] : undefined;
 
@@ -103,8 +103,8 @@ function buildPublicPageMetadata({ locale, path, languages, imagePath, copy }: P
     };
 }
 
-export function buildLandingMetadata(locale: Locale, copy: PublicPageMetadataCopy): Metadata {
-    return buildPublicPageMetadata({
+export function buildLandingMetadata(locale: Locale, copy: PageMetadataCopy): Metadata {
+    return buildIndexableMetadata({
         locale,
         path: getPublicLandingPath(locale),
         languages: landingLanguageAlternates(),
@@ -114,11 +114,16 @@ export function buildLandingMetadata(locale: Locale, copy: PublicPageMetadataCop
 }
 
 // The partner page's OG image is the opengraph-image.tsx in its own route folder.
-export function buildForBusinessMetadata(locale: Locale, copy: PublicPageMetadataCopy): Metadata {
-    return buildPublicPageMetadata({
+export function buildForBusinessMetadata(locale: Locale, copy: PageMetadataCopy): Metadata {
+    return buildIndexableMetadata({
         locale,
         path: getForBusinessPath(locale),
         languages: forBusinessLanguageAlternates(),
         copy,
     });
+}
+
+// JSON-LD for a <script> tag: `<` is escaped so a `</script>` in copy can't close it.
+export function jsonLdHtml(data: unknown): string {
+    return JSON.stringify(data).replace(/</g, '\\u003c');
 }

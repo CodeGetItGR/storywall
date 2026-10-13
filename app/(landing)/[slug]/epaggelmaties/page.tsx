@@ -4,22 +4,23 @@ import { notFound } from 'next/navigation';
 import { ForBusinessPage } from '@/components/forBusiness/ForBusinessPage';
 import { getForBusinessMetadata } from '@/lib/forBusinessMetadata';
 
-type PageProps = { params: Promise<{ locale: string }> };
+type PageProps = { params: Promise<{ slug: string }> };
 
-// Only /el/epaggelmaties exists; /en/epaggelmaties and any other locale 404.
-// The English page lives at /for-business.
+// Only /el/epaggelmaties exists; /en/epaggelmaties and any other slug 404.
+// The English page lives at /for-business. The segment is [slug] because it also
+// serves English occasion pages (see ../page.tsx).
 export function generateStaticParams() {
-    return [{ locale: 'el' }];
+    return [{ slug: 'el' }];
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-    const { locale } = await params;
-    if (locale !== 'el') return {};
+    const { slug } = await params;
+    if (slug !== 'el') return {};
     return getForBusinessMetadata('el');
 }
 
 export default async function Page({ params }: PageProps) {
-    const { locale } = await params;
-    if (locale !== 'el') notFound();
+    const { slug } = await params;
+    if (slug !== 'el') notFound();
     return <ForBusinessPage />;
 }

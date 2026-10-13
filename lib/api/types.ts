@@ -275,6 +275,8 @@ export interface AppEventTypeResponseDto {
     sortOrder: number;
     // Admin-uploaded card image for the create-event picker; null → no uploaded image.
     imageUrl: string | null;
+    // GET /api/demo/{eventTypeKey} would answer 200 right now (app-config-fe-integration.md, 2026-10-02).
+    hasDemo: boolean;
 }
 
 export interface EventTypeVoicePack {

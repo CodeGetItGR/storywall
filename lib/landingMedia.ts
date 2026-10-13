@@ -11,6 +11,8 @@ export type LandingStoryMedia = {
     demoEventTypeSlug?: string;
     gallery: LandingImageAsset[];
     main: LandingImageAsset;
+    // The occasion page this row links to, when it is live (lib/occasions/occasions.ts).
+    occasion?: EventTypeConvention;
     // Event type whose theme presets are shown under the row.
     themeEventType?: EventTypeConvention;
 };
@@ -18,6 +20,7 @@ export type LandingStoryMedia = {
 export const landingStoryMedia: LandingStoryMedia[] = [
     {
         demoEventTypeSlug: 'wedding',
+        occasion: 'WEDDING',
         main: { src: '/landing/wedding-party-celebrating-with-social-storywall-overlays.webp', width: 2048, height: 1152 },
         gallery: [
             { src: '/landing/01-bachelor-santorini.webp', width: 1536, height: 1024 },
@@ -28,6 +31,7 @@ export const landingStoryMedia: LandingStoryMedia[] = [
         ],
     },
     {
+        occasion: 'BAPTISM',
         themeEventType: 'BAPTISM',
         main: { src: '/landing/happy-baptism-celebration-outside-the-church-on-a-greek-island.webp', width: 1536, height: 1024 },
         gallery: [

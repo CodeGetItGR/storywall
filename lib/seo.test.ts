@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
+import { OCCASIONS } from '@/lib/occasions/occasions';
+import { buildOccasionMetadata } from '@/lib/occasions/occasionSeo';
 import {
     absoluteUrl,
     buildForBusinessMetadata,
     buildLandingMetadata,
     forBusinessLanguageAlternates,
+    jsonLdHtml,
     landingLanguageAlternates,
     SITE_URL,
 } from '@/lib/seo';
@@ -77,5 +80,28 @@ describe('buildForBusinessMetadata', () => {
         const metadata = buildForBusinessMetadata('en', copy);
         expect((metadata.openGraph as { images?: unknown }).images).toBeUndefined();
         expect((metadata.twitter as { images?: unknown }).images).toBeUndefined();
+    });
+});
+
+describe('jsonLdHtml', () => {
+    it('escapes < so copy cannot close the script tag', () => {
+        expect(jsonLdHtml({ a: '</script>' })).toBe('{"a":"\\u003c/script>"}');
+    });
+});
+
+describe('buildOccasionMetadata', () => {
+    const wedding = OCCASIONS.find((occasion) => occasion.eventType === 'WEDDING')!;
+    const copy = { title: 'T', description: 'D', siteName: 'StoryWall', imageAlt: 'A' };
+
+    it('uses the occasion page as canonical and lists both languages', () => {
+        const metadata = buildOccasionMetadata(wedding, 'el', copy);
+        expect(metadata.alternates?.canonical).toBe(`${SITE_URL}/el/gamos`);
+        expect(metadata.alternates?.languages).toEqual({
+            en: `${SITE_URL}/weddings`,
+            el: `${SITE_URL}/el/gamos`,
+            'x-default': `${SITE_URL}/weddings`,
+        });
+        expect((metadata.openGraph as { url?: string }).url).toBe(`${SITE_URL}/el/gamos`);
+        expect(metadata.robots).toEqual({ index: true, follow: true });
     });
 });
