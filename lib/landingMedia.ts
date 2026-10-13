@@ -13,6 +13,8 @@ export type LandingStoryMedia = {
     main: LandingImageAsset;
     // The occasion page this row links to, when it is live (lib/occasions/occasions.ts).
     occasion?: EventTypeConvention;
+    // Event type whose theme presets are shown under the row.
+    themeEventType?: EventTypeConvention;
 };
 
 export const landingStoryMedia: LandingStoryMedia[] = [
@@ -30,6 +32,7 @@ export const landingStoryMedia: LandingStoryMedia[] = [
     },
     {
         occasion: 'BAPTISM',
+        themeEventType: 'BAPTISM',
         main: { src: '/landing/happy-baptism-celebration-outside-the-church-on-a-greek-island.webp', width: 1536, height: 1024 },
         gallery: [
             { src: '/landing/happy-baptism-celebration-outside-the-church-on-a-greek-island.webp', width: 1536, height: 1024 },

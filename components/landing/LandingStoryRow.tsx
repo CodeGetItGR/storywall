@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import { LandingStoryCopy, type LandingTextSegment } from '@/components/landing/LandingStoryCopy';
 import { LandingStoryGallery } from '@/components/landing/LandingStoryGallery';
 import type { Locale } from '@/i18n/config';
@@ -14,6 +16,8 @@ export type LandingStoryCopyData = {
 };
 
 type LandingStoryRowProps = {
+    // Extra content under the photo and copy, spanning the row (e.g. its event type's themes).
+    children?: ReactNode;
     copy: LandingStoryCopyData;
     demoLabel: string;
     index: number;
@@ -24,7 +28,7 @@ type LandingStoryRowProps = {
     occasions: readonly Occasion[];
 };
 
-export function LandingStoryRow({ copy, demoLabel, index, locale, media, occasionLabel, occasions }: LandingStoryRowProps) {
+export function LandingStoryRow({ children, copy, demoLabel, index, locale, media, occasionLabel, occasions }: LandingStoryRowProps) {
     const isOdd = index % 2 === 0;
     const wide = index === 0 || index === 4;
     const demo = media.demoEventTypeSlug ? { href: routes.demoEventType(media.demoEventTypeSlug), label: demoLabel } : undefined;
@@ -67,6 +71,7 @@ export function LandingStoryRow({ copy, demoLabel, index, locale, media, occasio
                     ↗
                 </div>
             </div>
+            {children}
         </article>
     );
 }

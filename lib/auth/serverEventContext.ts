@@ -81,6 +81,12 @@ export async function redirectAccessToken(): Promise<string | null> {
     return (await headers()).get(ACCESS_TOKEN_HEADER);
 }
 
+// The access token for a route handler under a protected path (e.g. the
+// calendar file), which also has to resolve on every request.
+export async function routeHandlerAccessToken(): Promise<string | null> {
+    return (await headers()).get(ACCESS_TOKEN_HEADER);
+}
+
 // The same resolution for a bare-path redirect stub, which has no eventId of
 // its own (see redirectAccessToken).
 export async function resolveServerRedirectContext(): Promise<ServerEventContext | null> {

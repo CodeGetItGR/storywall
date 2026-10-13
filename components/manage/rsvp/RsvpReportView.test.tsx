@@ -101,8 +101,8 @@ describe('RsvpReportView', () => {
             ],
         });
 
-        expect(screen.getByText('Attending — 1 response / 3 people')).toBeTruthy();
-        expect(screen.getByText('Not attending — 1 response')).toBeTruthy();
+        expect(screen.getByText('Attending · 1 response / 3 people')).toBeTruthy();
+        expect(screen.getByText('Not attending · 1 response')).toBeTruthy();
         const table = screen.getAllByRole('table')[0];
         expect(within(table).getByText('Full name')).toBeTruthy();
         expect(within(table).getByText('Maria')).toBeTruthy();

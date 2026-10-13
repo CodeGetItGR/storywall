@@ -78,6 +78,8 @@ export const routes = {
             wishbook: (eventId: string) => `${eventBasePath(eventId)}/tools/wishbook`,
         },
         storySchedule: (eventId: string) => `${eventBasePath(eventId)}/story/schedule`,
+        // The .ics file for one calendar entry; no session = the event's own date.
+        calendar: (eventId: string, session?: string | null) => withQuery(`${eventBasePath(eventId)}/calendar`, { session }),
         location: (eventId: string, role?: 'main' | 'secondary' | null) => `${eventBasePath(eventId)}/location${role ? `/${role}` : ''}`,
         feed: (eventId: string, params: { post?: string | null; sheet?: 'role' | null } = {}) => withQuery(`${eventBasePath(eventId)}/feed`, params),
         settingsAddons: (eventId: string) => `${eventBasePath(eventId)}/settings/addons`,
