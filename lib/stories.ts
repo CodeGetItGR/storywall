@@ -67,3 +67,14 @@ export function findAdjacentGroup(order: string[], currentAuthorId: string, grou
     }
     return null;
 }
+
+// The story after `storyIndex` in `group`: the author's next one, else the first of the next author
+// in the viewer's frozen order. Null at the very end.
+export function findNextStory(order: string[], group: StoryGroup, storyIndex: number, groups: StoryGroup[]): StoryResponseDto | null {
+    if (storyIndex < group.stories.length - 1) return group.stories[storyIndex + 1];
+    return findAdjacentGroup(order, group.authorMemberId, groups, 1)?.stories[0] ?? null;
+}
+
+// The viewer shows a photo story across the whole screen. Preloading the next one needs the same
+// sizes, or the browser fetches a different file from the image optimizer.
+export const STORY_IMAGE_SIZES = '100vw';

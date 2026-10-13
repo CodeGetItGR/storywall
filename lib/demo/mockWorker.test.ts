@@ -74,6 +74,49 @@ describe('demo mock worker', () => {
         expect(resetHandlers).toHaveBeenCalledTimes(2);
     });
 
+    // The demo starts the worker while its snapshot loads, then hands it the handlers.
+    it('starts the worker once for the early start and the handlers', async () => {
+        const { startDemoMocking, startDemoWorker } = await load();
+
+        const early = startDemoWorker();
+        await startDemoMocking([]);
+        await early;
+
+        expect(start).toHaveBeenCalledTimes(1);
+        expect(resetHandlers).toHaveBeenCalledTimes(1);
+    });
+
+    // React runs a mount's effect twice in development: start, stop, start, all before the first start ends.
+    it('never starts the worker twice at once', async () => {
+        const starting = deferred();
+        start.mockReturnValue(starting.promise);
+        const { startDemoMocking, startDemoWorker, stopDemoMocking } = await load();
+
+        void startDemoWorker();
+        stopDemoMocking();
+        const pending = startDemoMocking([]);
+        await vi.waitFor(() => expect(start).toHaveBeenCalledTimes(1));
+
+        starting.resolve();
+        await pending;
+        await Promise.resolve();
+
+        expect(start).toHaveBeenCalledTimes(1);
+        expect(stop).not.toHaveBeenCalled();
+        expect(resetHandlers).toHaveBeenCalledTimes(1);
+    });
+
+    it('starts the worker again after it was stopped', async () => {
+        const { startDemoMocking, stopDemoMocking } = await load();
+        await startDemoMocking([]);
+        stopDemoMocking();
+        await vi.waitFor(() => expect(stop).toHaveBeenCalledTimes(1));
+
+        await startDemoMocking([]);
+
+        expect(start).toHaveBeenCalledTimes(2);
+    });
+
     it('stops a running worker when the visitor leaves', async () => {
         const { startDemoMocking, stopDemoMocking } = await load();
         await startDemoMocking([]);
