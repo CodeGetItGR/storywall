@@ -1,11 +1,24 @@
 import { act, renderHook } from '@testing-library/react';
+import { createElement } from 'react';
+import { renderToString } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useLandingTypewriter } from '@/hooks/useLandingTypewriter';
 
 const WORDS = ['wedding', 'party'];
 
-beforeEach(() => vi.useFakeTimers());
+function setPrefersReducedMotion(matches: boolean) {
+    window.matchMedia = vi.fn().mockReturnValue({
+        matches,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+    }) as unknown as typeof window.matchMedia;
+}
+
+beforeEach(() => {
+    vi.useFakeTimers();
+    setPrefersReducedMotion(false);
+});
 afterEach(() => vi.useRealTimers());
 
 // Each character needs its own flush: the next timer is only scheduled once
@@ -54,5 +67,32 @@ describe('useLandingTypewriter', () => {
         rerender({ paused: false });
         act(() => void vi.advanceTimersByTime(1250));
         expect(result.current).toBe('p');
+    });
+
+    it('hydrates on the first letter and then shows the whole word for reduced motion', () => {
+        setPrefersReducedMotion(true);
+        function Typewriter() {
+            return createElement('span', null, useLandingTypewriter(WORDS));
+        }
+        const container = document.createElement('div');
+        container.innerHTML = renderToString(createElement(Typewriter));
+        expect(container.textContent).toBe('w');
+
+        const onRecoverableError = vi.fn();
+        const renders: string[] = [];
+        const { result } = renderHook(
+            () => {
+                const word = useLandingTypewriter(WORDS);
+                renders.push(word);
+                return word;
+            },
+            { container, hydrate: true, onRecoverableError },
+        );
+
+        expect(renders[0]).toBe('w');
+        expect(result.current).toBe('wedding');
+        expect(onRecoverableError).not.toHaveBeenCalled();
+        act(() => void vi.advanceTimersByTime(5000));
+        expect(result.current).toBe('wedding');
     });
 });
