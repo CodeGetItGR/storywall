@@ -17,7 +17,7 @@ vi.mock('@/hooks/usePlaylist', () => ({
     useDeletePlaylistVote: () => ({ isPending: false, mutateAsync: mocks.deleteVote }),
     useDeletePlaylistSuggestion: () => ({ isPending: false, mutateAsync: vi.fn() }),
 }));
-vi.mock('@/hooks', () => ({ useAppConfig: () => ({ data: { reportTargetTypes: [] } }) }));
+vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: () => ({ data: { reportTargetTypes: [] } }) }));
 vi.mock('@/hooks/useContentAccess', () => ({ useContentAccess: () => ({ isDemoBuilder: true, isLocked: () => false }) }));
 vi.mock('@/providers/EventProvider', () => ({
     useActiveEvent: () => ({ id: 'event-1', status: 'ACTIVE' }),

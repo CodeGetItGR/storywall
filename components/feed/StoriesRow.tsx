@@ -5,11 +5,11 @@ import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
 import Avatar from '@/components/ui/avatar';
-import { useEventStories } from '@/hooks';
 import { useEventSessions } from '@/hooks/useEventSessions';
 import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
 import { useActiveModuleCopy } from '@/hooks/useModuleCopy';
 import { usePostingAsMember } from '@/hooks/usePostingAsMember';
+import { useEventStories } from '@/hooks/useStories';
 import { groupStoriesByAuthor } from '@/lib/stories';
 import { avatarColorFromId, initialsFromName } from '@/lib/utils';
 import { useComposer } from '@/providers/ComposerProvider';

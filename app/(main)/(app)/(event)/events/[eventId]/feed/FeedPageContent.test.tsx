@@ -24,10 +24,8 @@ vi.mock('@/components/feed/Banner', () => ({
     ),
 }));
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
-vi.mock('@/hooks', () => ({
-    useGiftAccount: () => ({ isLoading: true, data: undefined }),
-    useHideMobileTabBarOnScroll: () => undefined,
-}));
+vi.mock('@/hooks/useGiftAccount', () => ({ useGiftAccount: () => ({ isLoading: true, data: undefined }) }));
+vi.mock('@/hooks/useHideMobileTabBarOnScroll', () => ({ useHideMobileTabBarOnScroll: () => undefined }));
 vi.mock('@/components/feed/ComposerCard', () => ({ ComposerCard: () => null }));
 vi.mock('@/components/feed/EventDescription', () => ({ EventDescription: () => null }));
 vi.mock('@/components/feed/EventInfoSection', () => ({ EventInfoSection: () => null }));
