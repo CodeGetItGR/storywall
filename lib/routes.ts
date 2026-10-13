@@ -1,4 +1,5 @@
 import type { RsvpReportType } from '@/lib/api/types';
+import { DEFAULT_DEMO_EVENT_TYPE_SLUG } from '@/lib/demo/demoEventTypes';
 import { demoEventBasePath } from '@/lib/demo/demoRouting';
 
 type RouteQueryValue = string | number | boolean | null | undefined;
@@ -35,8 +36,9 @@ export const routes = {
     verifyEmail: '/verify-email',
     forgotPassword: '/forgot-password',
     resetPassword: '/reset-password',
-    demo: '/demo',
-    demoEventType: (eventTypeSlug: string) => `/demo/${eventTypeSlug}`,
+    // Straight to the demo's feed: /demo and /demo/{slug} only redirect there, which costs a round trip.
+    demo: `/demo/${DEFAULT_DEMO_EVENT_TYPE_SLUG}/feed`,
+    demoEventType: (eventTypeSlug: string) => `/demo/${eventTypeSlug}/feed`,
     invite: '/invite',
     home: '/home',
     profile: '/profile',
