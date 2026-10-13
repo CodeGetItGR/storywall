@@ -83,6 +83,7 @@ const MEDIA: AppMediaConfigDto = {
     acceptedProfilePictureMimeTypes: [],
     maxImagePixels: 0,
     defaultStoryLifetimeHours: 24,
+    maxImageDimension: 2560,
 };
 
 const COPY: LandingPlanCopy = {
