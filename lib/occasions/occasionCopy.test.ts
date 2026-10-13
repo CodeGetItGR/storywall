@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { OCCASION_FEATURE_KEYS } from '@/lib/occasions/occasionFeatures';
 import { readyOccasions } from '@/lib/occasions/occasions';
 import el from '@/messages/el.json';
 import en from '@/messages/en.json';
@@ -19,16 +20,23 @@ describe('occasion copy', () => {
     });
 
     it.each(readyOccasions().map((occasion) => [occasion.eventType, occasion] as const))(
-        '%s has copy for every listed feature',
-        (eventType, occasion) => {
+        '%s has copy for known features only',
+        (eventType) => {
             for (const catalog of [en, el] as Json[]) {
                 const copy = (catalog.OccasionPages as Json)[eventType] as Json;
-                expect(Object.keys(copy.features as Json)).toEqual([...occasion.features]);
+                expect(OCCASION_FEATURE_KEYS).toEqual(expect.arrayContaining(Object.keys(copy.features as Json)));
                 expect(((copy.meta as Json).title as string).length).toBeLessThanOrEqual(60);
                 expect((copy.faq as unknown[]).length).toBeGreaterThanOrEqual(5);
             }
         },
     );
+
+    it('has generic copy for every feature', () => {
+        for (const catalog of [en, el] as Json[]) {
+            const common = (catalog.OccasionPages as Json).common as Json;
+            expect(Object.keys(common.features as Json)).toEqual([...OCCASION_FEATURE_KEYS]);
+        }
+    });
 
     it('gives each occasion a unique title', () => {
         for (const catalog of [en, el] as Json[]) {

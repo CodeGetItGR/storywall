@@ -12,8 +12,6 @@ export type Occasion = {
     ready: boolean;
     // null → the brand hero art.
     heroImage: OccasionImage | null;
-    // Keys under OccasionPages.<eventType>.features, in page order.
-    features: readonly string[];
 };
 
 // One list drives the routes, sitemap, hreflang and every link to an occasion page.
@@ -23,27 +21,24 @@ export const OCCASIONS: readonly Occasion[] = [
         slugs: { en: 'weddings', el: 'gamos' },
         ready: true,
         heroImage: { src: '/landing/wedding-party-celebrating-with-social-storywall-overlays.webp', width: 2048, height: 1152 },
-        features: ['invitation', 'rsvp', 'qrPhotos', 'wishbook', 'gifts', 'music'],
     },
     {
         eventType: 'BAPTISM',
         slugs: { en: 'baptisms', el: 'vaptisi' },
         ready: true,
         heroImage: { src: '/landing/happy-baptism-celebration-outside-the-church-on-a-greek-island.webp', width: 1536, height: 1024 },
-        features: ['invitation', 'rsvp', 'wishbook', 'qrPhotos', 'gifts'],
     },
-    { eventType: 'BIRTHDAY', slugs: { en: 'birthdays', el: 'genethlia' }, ready: false, heroImage: null, features: [] },
-    { eventType: 'BABY_SHOWER', slugs: { en: 'baby-showers', el: 'baby-shower' }, ready: false, heroImage: null, features: [] },
+    { eventType: 'BIRTHDAY', slugs: { en: 'birthdays', el: 'genethlia' }, ready: false, heroImage: null },
+    { eventType: 'BABY_SHOWER', slugs: { en: 'baby-showers', el: 'baby-shower' }, ready: false, heroImage: null },
     {
         eventType: 'GENDER_REVEAL',
         slugs: { en: 'gender-reveal', el: 'gender-reveal' },
         ready: false,
         heroImage: { src: '/landing/gender-reveal-box-opening-with-blue-balloons-and-confetti.webp', width: 1536, height: 1024 },
-        features: [],
     },
-    { eventType: 'REUNION', slugs: { en: 'reunions', el: 'reunion' }, ready: false, heroImage: null, features: [] },
-    { eventType: 'PRIVATE_PARTY', slugs: { en: 'private-parties', el: 'idiotiko-parti' }, ready: false, heroImage: null, features: [] },
-    { eventType: 'SOCIAL_EVENT', slugs: { en: 'social-events', el: 'koinonikes-ekdiloseis' }, ready: false, heroImage: null, features: [] },
+    { eventType: 'REUNION', slugs: { en: 'reunions', el: 'reunion' }, ready: false, heroImage: null },
+    { eventType: 'PRIVATE_PARTY', slugs: { en: 'private-parties', el: 'idiotiko-parti' }, ready: false, heroImage: null },
+    { eventType: 'SOCIAL_EVENT', slugs: { en: 'social-events', el: 'koinonikes-ekdiloseis' }, ready: false, heroImage: null },
 ];
 
 export function readyOccasions(): Occasion[] {

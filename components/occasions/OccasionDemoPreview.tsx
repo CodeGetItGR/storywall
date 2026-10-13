@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 
+import { OccasionSectionHeading } from '@/components/occasions/OccasionSectionHeading';
 import type { Locale } from '@/i18n/config';
 import { eventTypeSlug } from '@/lib/eventTypeSlug';
 import type { DemoPreview } from '@/lib/occasions/demoPreview';
@@ -11,28 +12,27 @@ export async function OccasionDemoPreview({ locale, occasion, preview }: { local
     const t = await getTranslations({ locale, namespace: 'OccasionPages.common.demo' });
 
     return (
-        <section className="bg-[#151313] px-5 py-12 text-white min-[761px]:px-[5vw] min-[761px]:py-20">
-            <h2 className="m-0 [font-family:var(--editorial)] text-[clamp(30px,8vw,40px)] font-normal tracking-[-0.04em] min-[761px]:text-[56px]">
-                {t('heading')}
-            </h2>
+        <section className="px-5 py-12 min-[761px]:px-[5vw] min-[761px]:py-20">
+            {/* Heading */}
+            <OccasionSectionHeading>{t('heading')}</OccasionSectionHeading>
 
             {/* Posts */}
             {preview.posts.length > 0 ? (
                 <div aria-label={t('postsLabel')} className="mt-8" role="group">
                     <div className="grid gap-5 min-[761px]:grid-cols-3">
                         {preview.posts.map((post) => (
-                            <article className="overflow-hidden rounded-2xl bg-white text-[#151313]" key={post.id}>
+                            <article className="overflow-hidden rounded-2xl border border-[var(--occasion-line)] bg-white p-1.5" key={post.id}>
                                 <Image
                                     alt=""
-                                    className="aspect-[4/3] h-auto w-full object-cover"
+                                    className="aspect-[4/3] h-auto w-full rounded-xl object-cover"
                                     height={post.photo.height}
                                     sizes="(min-width: 761px) 30vw, 100vw"
                                     src={post.photo.src}
                                     width={post.photo.width}
                                 />
-                                <div className="p-4">
+                                <div className="px-3 pt-3 pb-2.5">
                                     <p className="m-0 text-xs font-bold">{post.author}</p>
-                                    <p className="mt-1 line-clamp-3 text-sm leading-[1.5]">{post.content}</p>
+                                    <p className="mt-1 mb-0 line-clamp-3 text-sm leading-[1.5] text-[#3d3836]">{post.content}</p>
                                 </div>
                             </article>
                         ))}
@@ -46,7 +46,7 @@ export async function OccasionDemoPreview({ locale, occasion, preview }: { local
                     {preview.photos.map((photo) => (
                         <Image
                             alt=""
-                            className="aspect-square h-auto w-full object-cover"
+                            className="aspect-square h-auto w-full rounded-lg object-cover"
                             height={photo.height}
                             key={photo.src}
                             sizes="(min-width: 761px) 16vw, 33vw"
@@ -61,9 +61,9 @@ export async function OccasionDemoPreview({ locale, occasion, preview }: { local
             {preview.wishes.length > 0 ? (
                 <ul aria-label={t('wishesLabel')} className="mt-8 grid list-none gap-5 p-0 min-[761px]:grid-cols-3">
                     {preview.wishes.map((wish) => (
-                        <li key={wish.id}>
+                        <li className="rounded-2xl border border-[var(--occasion-line)] bg-white p-5" key={wish.id}>
                             <blockquote className="m-0 [font-family:var(--editorial)] text-xl leading-[1.35]">{wish.message}</blockquote>
-                            <p className="mt-2 text-xs font-bold text-white/70">{wish.guestName}</p>
+                            <p className="mt-3 mb-0 text-xs font-bold text-[#6b625e]">{wish.guestName}</p>
                         </li>
                     ))}
                 </ul>
@@ -71,7 +71,7 @@ export async function OccasionDemoPreview({ locale, occasion, preview }: { local
 
             {/* Demo link */}
             <a
-                className="mt-10 inline-flex min-h-13 items-center rounded-full bg-white px-6 text-xs font-black tracking-[0.08em] text-[#151313] uppercase no-underline"
+                className="mt-10 inline-flex min-h-13 items-center rounded-full border border-[#151313] px-7 text-[15px] font-bold text-[#151313] no-underline transition hover:bg-white"
                 href={routes.demoEventType(eventTypeSlug(occasion.eventType))}
             >
                 {t('tryDemo')}

@@ -96,6 +96,10 @@ export type ModuleMeta = {
     Icon: ComponentType<{ className?: string }>;
 };
 
+export function getModuleIcon(moduleKey: string): ComponentType<{ className?: string }> {
+    return moduleIcons[moduleKey] ?? HelpCircle;
+}
+
 export function getModuleMeta(moduleKey: string, modules: PlatformModuleResponseDto[]): ModuleMeta {
     const module_ = modules.find((item) => item.moduleKey === moduleKey);
     const fallback = moduleFallbacks[moduleKey];
@@ -105,7 +109,7 @@ export function getModuleMeta(moduleKey: string, modules: PlatformModuleResponse
         key: moduleKey,
         name: module_?.name ?? fallback?.name ?? moduleKey,
         description: description && description !== PLAN_COMPARISON_EMPTY ? description : (fallback?.description ?? 'Included in this plan.'),
-        Icon: moduleIcons[moduleKey] ?? HelpCircle,
+        Icon: getModuleIcon(moduleKey),
     };
 }
 

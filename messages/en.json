@@ -6262,6 +6262,48 @@
             "breadcrumbHome": "Home",
             "timelineHeading": "Before, on the day, after",
             "featuresHeading": "What you get",
+            "features": {
+                "invitation": {
+                    "title": "Digital invitation",
+                    "body": "Date, place, schedule and maps on every guest's phone."
+                },
+                "posts": {
+                    "title": "Guest posts",
+                    "body": "Guests share messages, photos and reactions on your event wall."
+                },
+                "rsvp": {
+                    "title": "RSVP",
+                    "body": "Guests reply from the link and you see who is coming in one list."
+                },
+                "playlist": {
+                    "title": "Song requests",
+                    "body": "Guests suggest songs and vote for the ones they want to hear."
+                },
+                "stories": {
+                    "title": "Stories",
+                    "body": "Short stories from guests and hosts, as the moments happen."
+                },
+                "gallery": {
+                    "title": "Photo sharing by QR code",
+                    "body": "Guests scan the QR code and add their photos to one album, without installing anything."
+                },
+                "wishlist": {
+                    "title": "Gift account",
+                    "body": "Share your gift account next to the invitation."
+                },
+                "wishbook": {
+                    "title": "Book of wishes",
+                    "body": "Guests write their wishes in one book you can keep."
+                },
+                "schedule": {
+                    "title": "Schedule",
+                    "body": "Every part of the day and its time, step by step."
+                },
+                "he_or_she": {
+                    "title": "Boy or Girl?",
+                    "body": "Guests guess before the reveal."
+                }
+            },
             "demo": {
                 "heading": "See a real StoryWall",
                 "postsLabel": "Posts from guests",
@@ -6289,48 +6331,84 @@
             },
             "hero": {
                 "h1": "Wedding website and guest photo sharing",
-                "lead": "Send the invitation, collect RSVPs and gather every guest photo in one private space, before, during and after the day.",
+                "headline": "A wedding full of moments <b>worth keeping.</b>",
+                "lead": "From the invitation and RSVPs to the photos, posts and wishes from the day.",
+                "promise": "Everything your people share, together in one StoryWall.",
                 "cta": "Create your wedding StoryWall",
                 "imageAlt": "Wedding guests celebrating with photos shared on StoryWall"
+            },
+            "themes": {
+                "eyebrow": "Wedding themes",
+                "heading": "Give your wedding StoryWall the theme that suits it."
             },
             "timeline": [
                 {
                     "title": "Before",
+                    "heading": "One link with everything.",
                     "body": "Guests get one link with the date, schedule and maps. They RSVP, suggest songs and follow the plans."
                 },
                 {
                     "title": "On the day",
+                    "heading": "Every guest becomes a photographer.",
                     "body": "Guests scan the QR code on the tables and add photos and videos. No app, no account needed to upload."
                 },
                 {
                     "title": "After",
+                    "heading": "The day stays with you.",
                     "body": "Photos, stories and wishes stay together, from the preparations to the honeymoon."
                 }
             ],
+            "story": {
+                "galleryLabel": "Photos from the wedding day",
+                "imageAlts": [
+                    "Bride getting ready with her bridesmaids",
+                    "Wedding ceremony in Santorini",
+                    "Wedding reception in Santorini"
+                ]
+            },
+            "scene": {
+                "title": [
+                    "Everyone shares",
+                    "the day."
+                ],
+                "copy": "Posts, stories, wishes and reactions from everyone at your wedding."
+            },
             "features": {
                 "invitation": {
                     "title": "Digital wedding invitation",
                     "body": "Date, schedule, ceremony and reception with maps, all on your guests' phones."
                 },
+                "posts": {
+                    "title": "Posts from your guests",
+                    "body": "Guests share messages, photos and reactions on your wedding wall."
+                },
                 "rsvp": {
                     "title": "Online wedding RSVP",
                     "body": "Guests answer from the link. You see who is coming, with notes and plus-ones, in one list."
                 },
-                "qrPhotos": {
+                "playlist": {
+                    "title": "Wedding song requests",
+                    "body": "Guests suggest the songs they want to hear, so the DJ knows the room before the party."
+                },
+                "stories": {
+                    "title": "Stories from the day",
+                    "body": "Short stories from guests and hosts, as the moments happen."
+                },
+                "gallery": {
                     "title": "QR code wedding photos",
                     "body": "Put the QR code on the tables. Guests scan it and add their photos and videos straight from the camera roll."
+                },
+                "wishlist": {
+                    "title": "Wedding gift account",
+                    "body": "Share your gift account next to the invitation, for guests who want to send a gift."
                 },
                 "wishbook": {
                     "title": "Digital wedding guestbook",
                     "body": "Guests leave their wishes in one book you can keep and read again."
                 },
-                "gifts": {
-                    "title": "Wedding gift list",
-                    "body": "Share a gift list or gift account on the same page as the invitation."
-                },
-                "music": {
-                    "title": "Wedding song requests",
-                    "body": "Guests suggest the songs they want to hear, so the DJ knows the room before the party."
+                "schedule": {
+                    "title": "Wedding schedule",
+                    "body": "Ceremony, reception, party and their times, step by step."
                 }
             },
             "howItWorks": [
@@ -6379,7 +6457,8 @@
             ],
             "finalCta": {
                 "heading": "Start your wedding StoryWall",
-                "body": "Set it up in a few minutes and share it with your guests today."
+                "body": "Set it up in a few minutes and share it with your guests today.",
+                "imageAlt": "Wedding celebration in Santorini"
             }
         },
         "BAPTISM": {
@@ -6391,44 +6470,84 @@
             },
             "hero": {
                 "h1": "Digital baptism invitation and photo sharing",
-                "lead": "One private space for the christening day, with the photos and wishes kept for your child to read when they grow up.",
+                "headline": "A baptism full of moments <b>worth keeping.</b>",
+                "lead": "From the invitation and the first wishes to the photos, posts and moments of the day.",
+                "promise": "Everything your people share, together in one StoryWall.",
                 "cta": "Create your baptism StoryWall",
                 "imageAlt": "Family and guests celebrating a baptism outside a church"
+            },
+            "themes": {
+                "eyebrow": "Baptism themes",
+                "heading": "Give your baptism StoryWall the theme that suits it."
             },
             "timeline": [
                 {
                     "title": "Before",
+                    "heading": "Everyone knows where to be.",
                     "body": "Guests get the church, reception and schedule in one link, with maps. They RSVP from there."
                 },
                 {
                     "title": "On the day",
+                    "heading": "Every guest becomes a photographer.",
                     "body": "Guests scan the QR code and add their photos from the church and the reception."
                 },
                 {
                     "title": "After",
+                    "heading": "A story your child will read one day.",
                     "body": "The photos and the book of wishes stay together, ready for your child one day."
                 }
             ],
+            "story": {
+                "galleryLabel": "Photos from the baptism day",
+                "imageAlts": [
+                    "Baptism ceremony inside the church",
+                    "Baptism outside the church",
+                    "Baptism celebration at the table"
+                ]
+            },
+            "scene": {
+                "title": [
+                    "Everyone shares",
+                    "the day."
+                ],
+                "copy": "Posts, stories, wishes and reactions from everyone at the baptism."
+            },
             "features": {
                 "invitation": {
                     "title": "Digital baptism invitation",
                     "body": "Church, reception, schedule and maps on every guest's phone."
                 },
+                "posts": {
+                    "title": "Posts from your guests",
+                    "body": "Guests share messages, photos and reactions on your baptism wall."
+                },
                 "rsvp": {
                     "title": "Baptism RSVP",
                     "body": "Guests answer from the link and you see who is coming in one list."
+                },
+                "playlist": {
+                    "title": "Songs for the reception",
+                    "body": "Guests suggest songs and vote for the ones they want to hear."
+                },
+                "stories": {
+                    "title": "Stories from the day",
+                    "body": "Short stories from guests and hosts, as the moments happen."
+                },
+                "gallery": {
+                    "title": "Christening photo sharing",
+                    "body": "Guests scan the QR code and add their photos to one album, without installing anything."
+                },
+                "wishlist": {
+                    "title": "Christening gift account",
+                    "body": "Share your gift account next to the invitation, for guests who want to send a gift."
                 },
                 "wishbook": {
                     "title": "A book of wishes for your child",
                     "body": "Godparents, grandparents and friends write their christening wishes in one book your child can read one day."
                 },
-                "qrPhotos": {
-                    "title": "Christening photo sharing",
-                    "body": "Guests scan the QR code and add their photos to one album, without installing anything."
-                },
-                "gifts": {
-                    "title": "Christening gift list",
-                    "body": "Share a gift list or gift account next to the invitation."
+                "schedule": {
+                    "title": "Baptism schedule",
+                    "body": "The church service, the reception and their times, step by step."
                 }
             },
             "howItWorks": [
@@ -6473,7 +6592,8 @@
             ],
             "finalCta": {
                 "heading": "Start your baptism StoryWall",
-                "body": "Set it up in a few minutes and send it to your guests."
+                "body": "Set it up in a few minutes and send it to your guests.",
+                "imageAlt": "Family and guests at the baptism table"
             }
         }
     }

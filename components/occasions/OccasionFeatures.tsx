@@ -1,25 +1,31 @@
 import { getTranslations } from 'next-intl/server';
 
+import { OccasionFeatureExplorer, type OccasionFeatureItem } from '@/components/occasions/OccasionFeatureExplorer';
+import { OccasionSectionHeading } from '@/components/occasions/OccasionSectionHeading';
 import type { Locale } from '@/i18n/config';
+import { occasionFeatureImage } from '@/lib/occasions/occasionMedia';
 import type { Occasion } from '@/lib/occasions/occasions';
 
-export async function OccasionFeatures({ locale, occasion }: { locale: Locale; occasion: Occasion }) {
+type OccasionFeaturesProps = { featureKeys: string[]; locale: Locale; occasion: Occasion };
+
+export async function OccasionFeatures({ featureKeys, locale, occasion }: OccasionFeaturesProps) {
     const common = await getTranslations({ locale, namespace: 'OccasionPages.common' });
-    const t = await getTranslations({ locale, namespace: `OccasionPages.${occasion.eventType}.features` });
+    const t = await getTranslations({ locale, namespace: `OccasionPages.${occasion.eventType}` });
+    // The occasion's own words, else the generic line. A module with neither is left out.
+    const features = featureKeys.flatMap<OccasionFeatureItem>((key) => {
+        const image = occasionFeatureImage(occasion.eventType, key);
+        if (t.has(`features.${key}.title`)) return [{ key, image, title: t(`features.${key}.title`), body: t(`features.${key}.body`) }];
+        if (common.has(`features.${key}.title`)) return [{ key, image, title: common(`features.${key}.title`), body: common(`features.${key}.body`) }];
+        return [];
+    });
 
     return (
-        <section className="px-5 py-12 min-[761px]:px-[5vw] min-[761px]:py-20">
-            <h2 className="m-0 [font-family:var(--editorial)] text-[clamp(30px,8vw,40px)] font-normal tracking-[-0.04em] min-[761px]:text-[56px]">
-                {common('featuresHeading')}
-            </h2>
-            <div className="mt-8 grid gap-x-12 gap-y-8 min-[761px]:grid-cols-2">
-                {occasion.features.map((key) => (
-                    <div key={key}>
-                        <h3 className="m-0 text-lg font-bold">{t(`${key}.title`)}</h3>
-                        <p className="mt-2 text-[15px] leading-[1.55] text-[var(--ink)]">{t(`${key}.body`)}</p>
-                    </div>
-                ))}
-            </div>
+        <section className="occasion-dark px-5 py-14 text-white min-[761px]:px-[5vw] min-[761px]:py-24">
+            {/* Heading */}
+            <OccasionSectionHeading>{common('featuresHeading')}</OccasionSectionHeading>
+
+            {/* Features */}
+            <OccasionFeatureExplorer features={features} />
         </section>
     );
 }

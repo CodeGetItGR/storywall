@@ -12,7 +12,7 @@ export async function OccasionLinks({ locale, occasion }: { locale: Locale; occa
 
     return (
         <nav aria-label={common('linksHeading')} className="flex flex-wrap items-center gap-x-6 gap-y-2 px-5 py-8 text-sm min-[761px]:px-[5vw]">
-            <span className="w-full font-black tracking-[0.12em] uppercase min-[761px]:w-auto">{common('linksHeading')}</span>
+            <span className="occasion-label w-full font-black tracking-[0.18em] uppercase min-[761px]:w-auto">{common('linksHeading')}</span>
             {others.map((other) => (
                 <a href={occasionPath(other, locale)} key={other.eventType}>
                     {pages(`${other.eventType}.name`)}

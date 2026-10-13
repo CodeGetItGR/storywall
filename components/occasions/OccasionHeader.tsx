@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { OccasionCtaLink } from '@/components/occasions/OccasionCtaLink';
 import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
 import { routes } from '@/lib/routes';
@@ -24,12 +25,9 @@ export async function OccasionHeader({ alternatePaths, createHref, locale }: Occ
                     {t('signIn')}
                 </a>
                 {/* Create (desktop): on phones the hero button sits right below */}
-                <a
-                    className="hidden rounded-full bg-[#151313] px-4 py-2.5 text-xs tracking-wide text-white uppercase no-underline min-[761px]:inline"
-                    href={createHref}
-                >
+                <OccasionCtaLink className="hidden min-[761px]:inline-flex" href={createHref} size="sm">
                     {t('create')}
-                </a>
+                </OccasionCtaLink>
             </nav>
         </header>
     );
