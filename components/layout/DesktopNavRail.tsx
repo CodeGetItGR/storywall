@@ -14,6 +14,7 @@ import { isEventRoute, isPathActive } from '@/components/layout/mobile-tab-bar/u
 import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useDesktopAccountSidebar } from '@/hooks/useDesktopAccountSidebar';
+import { useIsDemoRoute } from '@/hooks/useIsDemoRoute';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { isEventDeleted } from '@/lib/eventLifecycle';
 import { getInitials } from '@/lib/format';
@@ -30,7 +31,7 @@ export function DesktopNavRail() {
     const activeEvent = useActiveEvent();
     const { data: unreadCount = 0 } = useUnreadNotificationCount();
     // Events and profile need a real session; in the demo they would dead-end on the login page.
-    const isDemoRoute = pathname?.startsWith('/demo') ?? false;
+    const isDemoRoute = useIsDemoRoute();
     const isDraft = activeEvent?.status === 'DRAFT';
     const showEventActions = Boolean(activeEvent) && isEventRoute(pathname);
     const accountName = [authUser?.firstName, authUser?.lastName].filter(Boolean).join(' ') || authUser?.firstName || tAccount('fallbackName');

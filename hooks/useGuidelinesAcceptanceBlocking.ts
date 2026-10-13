@@ -9,8 +9,10 @@ import { useMe } from '@/hooks/useMe';
 // newsletter token links are exempt from 4013 and 4020 server-side, and gating them would
 // only trap a signed-in user who landed there. /report-content is the public content
 // notice form: POST /api/content-notices is exempt from 4013 and 4020 so that a user who has
-// not accepted the current Guidelines can still report. Keep this list short.
+// not accepted the current Guidelines can still report. /demo runs on mocks and sends nothing
+// to the backend, so there is nothing to accept for. Keep this list short.
 const UNGATED_PREFIXES = [
+    '/demo',
     '/legal/',
     '/login',
     '/register',

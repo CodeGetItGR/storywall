@@ -123,6 +123,22 @@ describe('useToolsMenuItems', () => {
         mocks.activeEvent = withRoles({ status: 'DRAFT' });
         expect(renderHook(() => useToolsMenuItems()).result.current.map((tool) => tool.key)).not.toContain('myRole');
     });
+
+    const withMemberArchive = () =>
+        event({ modules: [{ moduleKey: 'gallery', isEnabled: true, isAvailable: true, configuration: { memberArchiveAfterEnd: true } }] });
+
+    it('lists the gallery for a guest when members get the download', () => {
+        mocks.isHost = false;
+        mocks.activeEvent = withMemberArchive();
+        const item = renderHook(() => useToolsMenuItems()).result.current.find((tool) => tool.key === 'gallery');
+        expect(item?.href).toBe('/events/event-1/tools/gallery');
+    });
+
+    it('leaves the gallery out for a guest otherwise', () => {
+        mocks.isHost = false;
+        mocks.activeEvent = event();
+        expect(renderHook(() => useToolsMenuItems()).result.current.map((tool) => tool.key)).not.toContain('gallery');
+    });
 });
 
 describe('suspended StoryWall', () => {
