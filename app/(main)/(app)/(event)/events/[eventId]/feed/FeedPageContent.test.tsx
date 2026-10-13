@@ -30,7 +30,7 @@ vi.mock('@/hooks', () => ({
 }));
 vi.mock('@/components/feed/ComposerCard', () => ({ ComposerCard: () => null }));
 vi.mock('@/components/feed/EventDescription', () => ({ EventDescription: () => null }));
-vi.mock('@/components/feed/EventInfo', () => ({ EventInfo: () => null }));
+vi.mock('@/components/feed/EventInfoSection', () => ({ EventInfoSection: () => null }));
 vi.mock('@/components/feed/EventSessionActionButtons', () => ({ EventSessionActionButtons: () => null }));
 vi.mock('@/components/feed/FeedEmptyState', () => ({ FeedEmptyState: () => null }));
 vi.mock('@/components/feed/FeedPostRenderer', () => ({ FeedPostRenderer: () => null }));
@@ -39,6 +39,7 @@ vi.mock('@/components/feed/PostModal', () => ({ PostModal: () => null }));
 vi.mock('@/components/feed/PublishQueueCards', () => ({ PublishQueueCards: () => null }));
 vi.mock('@/components/feed/RsvpPrompt', () => ({ RsvpPrompt: () => null }));
 vi.mock('@/components/feed/StoriesRow', () => ({ StoriesRow: () => null }));
+vi.mock('@/components/pwa/InstallAppBanner', () => ({ InstallAppBanner: () => null }));
 vi.mock('@/components/story/StoryModal', () => ({ StoryModal: () => null }));
 
 afterEach(cleanup);

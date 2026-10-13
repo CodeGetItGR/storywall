@@ -1,16 +1,31 @@
 import { describe, expect, it } from 'vitest';
 
-import { adminBugReportsPath, adminErrorEventsPath, isErrorRef, pagePathOf, toStoredRecentErrors } from '@/lib/adminBetaFeedback';
+import { adminBugReportsPath, adminErrorEventsPath, errorStatusTone, isErrorRef, pagePathOf, toStoredRecentErrors } from '@/lib/adminBetaFeedback';
 
 describe('adminErrorEventsPath', () => {
     it('adds source and a valid ref', () => {
-        expect(adminErrorEventsPath({ page: 2, source: 'CLIENT', ref: ' A1B2C3D4E5F6 ' })).toBe(
+        expect(adminErrorEventsPath({ page: 2, source: 'CLIENT', statusClass: null, ref: ' A1B2C3D4E5F6 ' })).toBe(
             '/api/error-events?page=2&size=50&source=CLIENT&ref=a1b2c3d4e5f6',
         );
     });
 
     it('leaves out a partial ref and no source, since a malformed ref is a 400', () => {
-        expect(adminErrorEventsPath({ page: 0, source: null, ref: 'a1b2' })).toBe('/api/error-events?page=0&size=50');
+        expect(adminErrorEventsPath({ page: 0, source: null, statusClass: null, ref: 'a1b2' })).toBe('/api/error-events?page=0&size=50');
+    });
+
+    it('adds the status class', () => {
+        expect(adminErrorEventsPath({ page: 0, source: 'BACKEND', statusClass: 'CLIENT_ERROR', ref: '' })).toBe(
+            '/api/error-events?page=0&size=50&source=BACKEND&statusClass=CLIENT_ERROR',
+        );
+    });
+});
+
+describe('errorStatusTone', () => {
+    it('marks 4xx as a warning and 5xx as danger', () => {
+        expect(errorStatusTone(400)).toBe('warn');
+        expect(errorStatusTone(499)).toBe('warn');
+        expect(errorStatusTone(500)).toBe('danger');
+        expect(errorStatusTone(503)).toBe('danger');
     });
 });
 

@@ -1,7 +1,9 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
+import type { ChangeEvent } from 'react';
 
+import { EmailPreviewFrame } from '@/components/admin/emails/EmailPreviewFrame';
 import { useCreateEventFieldLabels } from '@/hooks/useCreateEventFieldLabels';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import type { ProvisionEventForm } from '@/hooks/useProvisionEventForm';
@@ -18,15 +20,29 @@ export function ProvisionEventReview({ form, host }: { form: ProvisionEventForm;
     const eventType = form.eventTypes.find((item) => item.eventTypeKey === form.selectedEventType);
     const hostName = [host.firstName, host.lastName].filter(Boolean).join(' ') || host.email || t('unnamedHost');
 
-    const rows = [
+    const description = form.description.trim();
+    const rsvpDeadline = form.planHasRsvp ? form.rsvpDeadline : '';
+    const theme = form.selectedThemePreset;
+
+    // Optional fields show only when set.
+    const rows: [string, string][] = [
         [t('reviewHost'), hostName],
         [fieldLabels.title, form.title.trim()],
+        ...(description ? [[t('reviewDescription'), description] as [string, string]] : []),
         [t('reviewType'), eventType ? localizedText(eventType.name, eventType.eventTypeKey) : form.selectedEventType],
         [fieldLabels.startAt, formatDate(locale, form.startAt, { dateStyle: 'medium', timeStyle: 'short' })],
+        ...(rsvpDeadline
+            ? [[t('reviewRsvpDeadline'), formatDate(locale, rsvpDeadline, { dateStyle: 'medium', timeStyle: 'short' })] as [string, string]]
+            : []),
         [t('reviewPlan'), form.selectedPlan?.name ?? ''],
         [t('reviewDuration'), form.duration.selectedOption ? tAdmin('plans.columns.months', { count: form.duration.selectedOption.months }) : ''],
+        ...(theme ? [[t('reviewTheme'), localizedText(theme.name, theme.key)] as [string, string]] : []),
         [t('reviewVisibility'), t(`visibilityOption.${form.visibility}`)],
     ];
+
+    function handleNotifyHostChange(event: ChangeEvent<HTMLInputElement>) {
+        form.setNotifyHost(event.target.checked);
+    }
 
     return (
         <div className="space-y-7">
@@ -39,11 +55,26 @@ export function ProvisionEventReview({ form, host }: { form: ProvisionEventForm;
                     {rows.map(([label, value]) => (
                         <div key={label} className="grid grid-cols-[9rem_1fr] gap-5 py-3.5 text-sm">
                             <dt className="text-ink-faint">{label}</dt>
-                            <dd className="text-right font-semibold text-ink">{value}</dd>
+                            <dd className="text-right font-semibold break-words whitespace-pre-line text-ink">{value}</dd>
                         </div>
                     ))}
                 </dl>
             </section>
+
+            {form.canNotifyHost ? (
+                <section className="space-y-4 border-t border-border pt-5">
+                    {/* Notify */}
+                    <label className="flex items-center gap-3 text-sm font-semibold text-ink">
+                        <input type="checkbox" checked={form.notifyHost} onChange={handleNotifyHostChange} className="h-4 w-4 accent-primary" />
+                        {t('notifyHost')}
+                    </label>
+
+                    {/* Preview */}
+                    {form.notifyHost ? (
+                        <EmailPreviewFrame preview={form.welcomePreview} isLoading={form.isWelcomePreviewLoading} error={form.welcomePreviewError} />
+                    ) : null}
+                </section>
+            ) : null}
 
             {/* Activation notice */}
             <p className="rounded-lg bg-canvas px-4 py-3 text-sm leading-6 text-ink-muted">{t('activeNotice')}</p>

@@ -3,11 +3,11 @@
 import { useTranslations } from 'next-intl';
 import { useId } from 'react';
 
-import { ThemePresetRadioGroup, type ThemeRadioOption } from '@/components/manage/ThemePresetRadioGroup';
+import { ThemePresetRadioGroup } from '@/components/manage/ThemePresetRadioGroup';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
-import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { useModuleCopy } from '@/hooks/useModuleCopy';
+import { useThemeRadioOptions } from '@/hooks/useThemeRadioOptions';
 import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 
 // The creation form's optional theme step. Nothing is saved here: the pick goes out with
@@ -16,7 +16,6 @@ export function EventThemeStep() {
     const t = useTranslations('ManagePage.settings.theme');
     const tSteps = useTranslations('CreateEventPage.steps');
     const toErrorMessage = useApiErrorMessage();
-    const localizedText = useLocalizedText();
     const headingId = useId();
     const { title, selectedEventType, themePresets, isThemePresetsLoading, themePresetsError, selectedThemePresetId, onSelectThemePreset, error } =
         useCreateEventForm();
@@ -24,28 +23,7 @@ export function EventThemeStep() {
 
     // The cards preview the title from the details step; without one they show just the theme name.
     const previewTitle = title.trim() || undefined;
-    const options: ThemeRadioOption[] = [
-        {
-            id: 'none',
-            presetId: null,
-            label: t('none'),
-            backgroundColor: null,
-            illustrationUrl: null,
-            titleColor: null,
-            headingFont: null,
-            selected: selectedThemePresetId === null,
-        },
-        ...themePresets.map((preset) => ({
-            id: preset.id,
-            presetId: preset.id,
-            label: localizedText(preset.name, preset.key),
-            backgroundColor: preset.backgroundColor,
-            illustrationUrl: preset.illustrationUrl,
-            titleColor: preset.titleColor,
-            headingFont: preset.headingFont,
-            selected: selectedThemePresetId === preset.id,
-        })),
-    ];
+    const options = useThemeRadioOptions(themePresets, selectedThemePresetId);
 
     return (
         <section>

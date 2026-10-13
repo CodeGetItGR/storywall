@@ -30,15 +30,17 @@ export function googleAdsInitScript(tagId: string): string {
 // The "Purchase" conversion action in the Google Ads account above.
 const PURCHASE_CONVERSION_LABEL = '2AceCLvk-ZcdEPye-vdE';
 
-export type GoogleAdsPurchase = Pick<OrderSummaryDto, 'id' | 'amountMinor' | 'currency'>;
+export type GoogleAdsPurchase = Pick<OrderSummaryDto, 'id' | 'amountMinor' | 'currency' | 'firstPurchase'>;
 
 // The order id lets Google drop a repeat of the same order, e.g. on a reload.
-// No amount (an order another host paid) sends the conversion without a value.
+// No amount (an order another host paid) sends the conversion without a value,
+// and an unknown first purchase sends no new_customer.
 export function trackGoogleAdsPurchase(tagId: string, purchase: GoogleAdsPurchase): void {
     window.gtag?.('event', 'conversion', {
         send_to: `${tagId}/${PURCHASE_CONVERSION_LABEL}`,
         transaction_id: purchase.id,
         ...(purchase.amountMinor !== null && { value: purchase.amountMinor / 100, currency: purchase.currency ?? 'EUR' }),
+        ...(typeof purchase.firstPurchase === 'boolean' && { new_customer: purchase.firstPurchase }),
     });
 }
 

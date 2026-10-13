@@ -8,7 +8,15 @@ import type { ProvisionEventForm } from '@/hooks/useProvisionEventForm';
 import type { ProvisionHost } from '@/lib/adminAccountProvisioning';
 import { routes } from '@/lib/routes';
 
-export function ProvisionEventSuccess({ form, host, showOpenEvent = false }: { form: ProvisionEventForm; host: ProvisionHost; showOpenEvent?: boolean }) {
+export function ProvisionEventSuccess({
+    form,
+    host,
+    showOpenEvent = false,
+}: {
+    form: ProvisionEventForm;
+    host: ProvisionHost;
+    showOpenEvent?: boolean;
+}) {
     const t = useTranslations('AdminPage.accounts.provision');
     if (!form.result) return null;
     const hostName = [host.firstName, host.lastName].filter(Boolean).join(' ') || host.email || t('unnamedHost');
@@ -24,6 +32,8 @@ export function ProvisionEventSuccess({ form, host, showOpenEvent = false }: { f
             <p className="mt-1 text-sm text-ink-muted">{t('hostedBy', { host: hostName })}</p>
             <div className="mt-6 w-full max-w-sm border-t border-border pt-5 text-left">
                 <p className="mb-4 text-sm text-ink-muted">{t('successBody', { plan: form.selectedPlan?.name ?? '' })}</p>
+                {/* Host email */}
+                {form.canNotifyHost ? <p className="mb-4 text-sm text-ink-muted">{t(form.hostEmailed ? 'hostEmailed' : 'hostNotEmailed')}</p> : null}
                 <AdminIdentifier label={t('eventId')} value={form.result.id} />
                 {showOpenEvent && (
                     <a

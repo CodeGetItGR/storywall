@@ -26,6 +26,7 @@ import type {
     LinkDiscountCodeRequestDto,
     MarkCollaborationEarningsPaidRequestDto,
     ModuleKey,
+    ModuleUsageResponseDto,
     NotificationSweepResponseDto,
     PaidServiceKind,
     PaidServiceResponseDto,
@@ -65,6 +66,8 @@ export const adminKeys = {
     costCalendarDayEvents: (date: string, page: number, size: number) => ['admin', 'metrics', 'calendar', date, 'events', page, size] as const,
     funnel: (since: string | null, until: string | null) => ['admin', 'metrics', 'funnel', since, until] as const,
     funnelCohorts: (weeks: number) => ['admin', 'metrics', 'funnel', 'cohorts', weeks] as const,
+    moduleUsage: (filters: AdminModuleUsageFilters) =>
+        ['admin', 'metrics', 'module-usage', filters.since, filters.until, filters.eventTypeKey, filters.planCode] as const,
     paidServices: (kind?: PaidServiceKind, includeArchived?: boolean) => ['admin', 'paid-services', kind ?? 'ALL', Boolean(includeArchived)] as const,
     collaborators: ['admin', 'collaborators'] as const,
     collaboratorCodes: (id: string) => ['admin', 'collaborators', id, 'codes'] as const,
@@ -269,6 +272,17 @@ export function useAdminFunnelCohorts(weeks: number) {
         queryKey: adminKeys.funnelCohorts(weeks),
         queryFn: () => api.get<FunnelCohortDto[]>(endpoints.admin.metrics.funnelCohorts(weeks)),
         placeholderData: keepPreviousData,
+    });
+}
+
+export type AdminModuleUsageFilters = { since: string | null; until: string | null; eventTypeKey: string; planCode: string };
+
+export function useAdminModuleUsage(filters: AdminModuleUsageFilters, options: { enabled?: boolean } = {}) {
+    return useQuery({
+        queryKey: adminKeys.moduleUsage(filters),
+        queryFn: () => api.get<ModuleUsageResponseDto>(endpoints.admin.metrics.moduleUsage(filters)),
+        placeholderData: keepPreviousData,
+        enabled: options.enabled ?? true,
     });
 }
 

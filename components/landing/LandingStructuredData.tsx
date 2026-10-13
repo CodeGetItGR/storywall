@@ -2,10 +2,10 @@ import { getLocale, getTranslations } from 'next-intl/server';
 
 import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
-import { absoluteUrl, OG_IMAGE_PATH, SITE_URL } from '@/lib/seo';
+import { absoluteUrl, OG_IMAGE_PATH, SITE_URL, SOCIAL_PROFILES } from '@/lib/seo';
 
-// Only facts that stay true without maintenance: name, URL, logo, description
-// and category. Pricing is indicative and comes from config, so no offers.
+// Only facts that stay true without maintenance: name, URL, logo, social
+// profiles, description and category. Pricing is indicative and comes from config, so no offers.
 export async function LandingStructuredData() {
     const locale = (await getLocale()) as Locale;
     const t = await getTranslations({ locale, namespace: 'LandingPage.meta' });
@@ -20,6 +20,7 @@ export async function LandingStructuredData() {
                 name: t('siteName'),
                 url: absoluteUrl('/'),
                 logo: absoluteUrl('/apple-icon.png'),
+                sameAs: SOCIAL_PROFILES.map(({ href }) => href),
             },
             {
                 '@type': 'WebSite',

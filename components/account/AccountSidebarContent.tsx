@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
+import { AccountInstallAppButton } from '@/components/account/AccountInstallAppButton';
 import { AccountLogoutButton } from '@/components/account/AccountLogoutButton';
 import { AccountSidebarLogo } from '@/components/account/AccountSidebarLogo';
 import { AccountSidebarNavLink } from '@/components/account/AccountSidebarNavLink';
@@ -86,6 +87,7 @@ export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => 
                             badgeCount={unreadCount}
                             onNavigateAction={onCloseAction}
                         />
+                        <AccountInstallAppButton />
                     </nav>
                 )}
 

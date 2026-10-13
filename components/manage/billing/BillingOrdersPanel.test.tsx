@@ -27,6 +27,7 @@ function order(overrides: Partial<OrderSummaryDto>): OrderSummaryDto {
         buyerType: 'CONSUMER',
         breakdown: null,
         paidByCaller: true,
+        firstPurchase: null,
         ...overrides,
     };
 }

@@ -14,6 +14,7 @@ export function useAccountsPanel() {
     const [createOpen, setCreateOpen] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState<UserResponseDto | null>(null);
     const [provisionAccount, setProvisionAccount] = useState<UserResponseDto | null>(null);
+    const [emailAccount, setEmailAccount] = useState<UserResponseDto | null>(null);
     const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const accountsQuery = useAdminAccounts({ page, size: PAGE_SIZE, query });
 
@@ -40,6 +41,11 @@ export function useAccountsPanel() {
         setProvisionAccount(account);
     }
 
+    function emailTo(account: UserResponseDto) {
+        setSelectedAccount(null);
+        setEmailAccount(account);
+    }
+
     return {
         page,
         setPage,
@@ -52,6 +58,9 @@ export function useAccountsPanel() {
         provisionAccount,
         setProvisionAccount,
         provisionFor,
+        emailAccount,
+        setEmailAccount,
+        emailTo,
         openAccount,
         accountsQuery,
     };

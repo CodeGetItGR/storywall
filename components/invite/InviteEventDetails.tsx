@@ -1,7 +1,7 @@
-import { CalendarDays, MapPin } from 'lucide-react';
+import { CalendarDays, type LucideIcon, MapPin } from 'lucide-react';
 import { useLocale } from 'next-intl';
 
-import { formatEventDateRange } from '@/lib/datetime';
+import { formatEventDateParts } from '@/lib/datetime';
 
 interface InviteEventDetailsProps {
     startAt: string | null | undefined;
@@ -13,27 +13,31 @@ interface InviteEventDetailsProps {
 // When and where the event is, on the invite page.
 export function InviteEventDetails({ startAt, endAt, timeZone, locationName }: InviteEventDetailsProps) {
     const locale = useLocale();
-    const when = formatEventDateRange(locale, startAt, endAt, timeZone);
+    const when = formatEventDateParts(locale, startAt, endAt, timeZone);
     const where = locationName?.trim() || null;
 
     if (!when && !where) return null;
 
     return (
-        <ul className="mb-5 space-y-2 text-sm text-ink">
+        <ul className="space-y-4">
             {/* When */}
-            {when && (
-                <li className="flex items-start gap-2.5">
-                    <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-ink-muted" aria-hidden="true" />
-                    <span>{when}</span>
-                </li>
-            )}
+            {when && <InviteDetailRow icon={CalendarDays} primary={when.date} secondary={when.time} />}
             {/* Where */}
-            {where && (
-                <li className="flex items-start gap-2.5">
-                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-ink-muted" aria-hidden="true" />
-                    <span>{where}</span>
-                </li>
-            )}
+            {where && <InviteDetailRow icon={MapPin} primary={where} />}
         </ul>
+    );
+}
+
+function InviteDetailRow({ icon: Icon, primary, secondary }: { icon: LucideIcon; primary: string; secondary?: string }) {
+    return (
+        <li className="flex items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface-muted text-ink-muted">
+                <Icon className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <span className="min-w-0">
+                <span className="block text-sm font-semibold text-ink">{primary}</span>
+                {secondary && <span className="block text-sm text-ink-muted">{secondary}</span>}
+            </span>
+        </li>
     );
 }

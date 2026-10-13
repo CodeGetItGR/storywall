@@ -2,26 +2,26 @@ import { Skeleton, SkeletonStatus } from '@/components/ui/skeleton';
 
 export function InviteSkeleton() {
     return (
-        <SkeletonStatus className="flex h-full min-h-screen flex-col overflow-hidden bg-background lg:flex-row">
-            {/* Cover */}
-            <Skeleton className="h-64 w-full shrink-0 rounded-none md:h-130 lg:h-auto lg:w-1/2" />
+        <SkeletonStatus className="mx-auto flex h-full min-h-screen w-full max-w-xl flex-col overflow-hidden bg-background md:px-6 md:pt-6">
+            {/* Hero */}
+            <Skeleton className="h-64 w-full shrink-0 rounded-none md:h-80 md:rounded-3xl" />
 
-            {/* Details */}
-            <div className="flex flex-1 flex-col items-center px-6 py-8 lg:w-1/2 lg:p-12">
-                <div className="flex w-full max-w-sm flex-col items-center lg:max-w-md">
-                    <div className="mb-6 flex flex-col items-center gap-3">
-                        <Skeleton className="h-7 w-7 rounded-full" />
-                        <Skeleton className="h-5 w-24 rounded-full" />
-                    </div>
-                    <div className="w-full space-y-2">
-                        <Skeleton className="h-3.5 w-full rounded-full" />
-                        <Skeleton className="h-3.5 w-4/5 rounded-full" />
-                    </div>
-                    <div className="mt-7 flex w-full flex-col gap-3">
-                        <Skeleton className="h-11 w-full rounded-full" />
-                        <Skeleton className="h-11 w-full rounded-full" />
-                    </div>
+            <div className="mx-auto flex w-full max-w-sm flex-1 flex-col px-6 pt-8 pb-8">
+                {/* Details */}
+                <div className="space-y-4">
+                    {[0, 1].map((row) => (
+                        <div key={row} className="flex items-center gap-3">
+                            <Skeleton className="h-10 w-10 shrink-0 rounded-xl" />
+                            <div className="flex-1 space-y-2">
+                                <Skeleton className="h-3.5 w-3/5 rounded-full" />
+                                <Skeleton className="h-3.5 w-2/5 rounded-full" />
+                            </div>
+                        </div>
+                    ))}
                 </div>
+
+                {/* Actions */}
+                <Skeleton className="mt-auto h-11 w-full rounded-full md:mt-8" />
             </div>
         </SkeletonStatus>
     );

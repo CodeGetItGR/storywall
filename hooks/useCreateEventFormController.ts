@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
@@ -42,8 +42,8 @@ import {
     resolveCreateEventType,
     visibleCreateEventSteps,
 } from '@/lib/createEventSteps';
-import { eventWindowFromLocalStart, getScheduleDatetimeLocalBounds, isDatetimeLocalAfter, isDatetimeLocalBefore } from '@/lib/datetime';
-import { projectCoverage } from '@/lib/eventCoverage';
+import { eventWindowFromLocalStart, formatDate, getScheduleDatetimeLocalBounds, isDatetimeLocalAfter, isDatetimeLocalBefore } from '@/lib/datetime';
+import { getLatestStartAt, projectCoverage } from '@/lib/eventCoverage';
 import { normalizeEventTypeSlug } from '@/lib/eventTypeSlug';
 import { liveInitialOptions, resolveInitialOption } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
@@ -54,6 +54,7 @@ export const CREATE_EVENT_FORM_ID = 'create-event-form';
 
 export function useCreateEventFormController(): CreateEventFormValue {
     const t = useTranslations('CreateEventPage');
+    const locale = useLocale();
     const router = useRouter();
     const searchParams = useSearchParams();
     const { isAuthenticated, user } = useAuth();
@@ -148,19 +149,18 @@ export function useCreateEventFormController(): CreateEventFormValue {
     const timezoneOptions = useMemo(() => getSupportedTimezones(), []);
     const isTimezoneValid = timezoneOptions.includes(timezone);
     // The server fills endAt (startAt + 24h) when it is omitted; the form only asks for a start.
-    const { startAtMin, startAtMax } = getScheduleDatetimeLocalBounds({ startAt, maxLeadDays: appConfig?.coverage.maxLeadDays });
+    // No event exists yet, so there is no server projection to read; estimate
+    // from the picked duration instead. Coverage runs from payment, not from the start.
+    const coverageIfPaidNow = useMemo(() => projectCoverage({ hostingMonths: selectedOption?.months }), [selectedOption?.months]);
+    const latestStartAt = getLatestStartAt(coverageIfPaidNow?.coverageEndsAt, appConfig?.coverage.minDaysAfterStart);
+    const { startAtMin, startAtMax } = getScheduleDatetimeLocalBounds({ startAt, latestStartAt });
     const scheduleError =
         startAt && isDatetimeLocalBefore(startAt, startAtMin)
             ? t('validation.startInPast')
-            : startAt && isDatetimeLocalAfter(startAt, startAtMax)
-              ? t('validation.startTooFarAhead')
+            : startAt && latestStartAt && isDatetimeLocalAfter(startAt, startAtMax)
+              ? t('validation.startTooFarAhead', { date: formatDate(locale, latestStartAt, { dateStyle: 'medium' }) })
               : null;
-    // No event exists yet, so there is no server projection to read; estimate
-    // from the start and the picked duration instead.
-    const projectedCoverage = useMemo(
-        () => (scheduleError ? null : projectCoverage({ startAt: startAt || null, hostingMonths: selectedOption?.months })),
-        [scheduleError, startAt, selectedOption?.months],
-    );
+    const projectedCoverage = scheduleError ? null : coverageIfPaidNow;
     const timezoneError = timezone && !isTimezoneValid ? t('validation.invalidTimezone') : null;
     const trimmedTitle = title.trim();
     const trimmedLocationName = locationName.trim();
@@ -275,6 +275,13 @@ export function useCreateEventFormController(): CreateEventFormValue {
         },
         [clearCheckoutCodePreview],
     );
+
+    // Closing the field drops the code with it, so no unseen discount stays applied.
+    const clearCheckoutCode = useCallback(() => {
+        setCheckoutCode('');
+        clearCheckoutCodePreview();
+        previewCreateEventCode.reset();
+    }, [clearCheckoutCodePreview, previewCreateEventCode]);
 
     const applyCheckoutCode = useCallback(async () => {
         const trimmedCode = checkoutCode.trim();
@@ -517,6 +524,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
         isCheckingCheckoutCode: previewCreateEventCode.isPending,
         onCheckoutCodeChange,
         applyCheckoutCode,
+        clearCheckoutCode,
 
         requestsImmediateStart: consent.requestsImmediateStart,
         acknowledgesWithdrawalTerms: consent.acknowledgesWithdrawalTerms,

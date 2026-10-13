@@ -1,8 +1,8 @@
 'use client';
 
-import { AlertTriangle, CalendarClock, Clock3, Loader2, LockKeyhole, Receipt } from 'lucide-react';
+import { AlertTriangle, Clock3, Receipt } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import type { ReactNode } from 'react';
+import { type ReactNode, useCallback } from 'react';
 
 import { ActivationDisclosures } from '@/components/checkout/ActivationDisclosures';
 import { ActivationEventSummary } from '@/components/checkout/ActivationEventSummary';
@@ -11,6 +11,8 @@ import { PartnerBrandingNotice } from '@/components/checkout/PartnerBrandingNoti
 import { PriceBreakdownSummary } from '@/components/checkout/PriceBreakdownSummary';
 import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
 import { EventOverviewPriceRow } from '@/components/event/create/EventOverviewPriceRow';
+import { DraftDeleteSection } from '@/components/manage/DraftDeleteSection';
+import { DraftPayBar } from '@/components/manage/DraftPayBar';
 import { DraftStartDateModal } from '@/components/manage/DraftStartDateModal';
 import { GiftAccountSetup } from '@/components/manage/GiftAccountSetup';
 import { TargetedSection } from '@/components/manage/TargetedSection';
@@ -27,11 +29,14 @@ import type {
     ProjectedCoverageDto,
 } from '@/lib/api/types';
 import { formatMoney, formatOptionalMoney } from '@/lib/billing';
+import { focusFirstUncheckedBox } from '@/lib/createEventSteps';
 import { GIFT_ACCOUNT_SECTION_ID } from '@/lib/manageSectionTargets';
 import { getOptionPriceDetails } from '@/lib/planTiers';
 
 // Shown where a price can't be worked out yet (the draft's duration is off sale).
 const UNKNOWN_AMOUNT = '—';
+// Wraps the consent boxes so the hint can take the host to the first unticked one.
+const DRAFT_CONSENT_ID = 'draft-checkout-consent';
 
 export function OverviewDraftPanel({
     eventId,
@@ -76,7 +81,6 @@ export function OverviewDraftPanel({
     themeSection?: ReactNode;
 }) {
     const t = useTranslations('ManagePage');
-    const tCommon = useTranslations('Common');
     const tCreate = useTranslations('CreateEventPage');
     const tCheckoutReview = useTranslations('CheckoutReviewPage');
     const tBilling = useTranslations('EventPlanSettingsPage');
@@ -89,8 +93,10 @@ export function OverviewDraftPanel({
     // Only the main host can be quoted, and only once there is a start date and a duration on sale.
     const { consent, partnerBranding, collaborationPreview, breakdown, handleCollaborationPreviewChange, submit, error, startPassed, isPending } =
         useDraftActivationCheckout(eventId, { quoteEnabled: canPay && canPurchase && Boolean(currentOption) && !duration.isSaving, startAt });
-    const startDate = useDraftStartDate(eventId, { startAt, endAt });
+    const startDate = useDraftStartDate(eventId, { startAt, endAt, coverageEndsAt: projectedCoverage?.coverageEndsAt ?? null });
     const canCheckout = canPurchase && Boolean(currentOption) && !duration.isSaving;
+    const consentReady = consent.consentSatisfied && partnerBranding.satisfied;
+    const showConsent = useCallback(() => focusFirstUncheckedBox(DRAFT_CONSENT_ID), []);
 
     // activationTotal already bundles the plan's own (non-collaboration-code) price with
     // whichever add-ons count toward activation (see useEventOverviewPlan). A collaboration
@@ -111,7 +117,7 @@ export function OverviewDraftPanel({
 
     return (
         <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-8">
-            {/* Left: event, pricing, collaboration code, consent */}
+            {/* Left: event, pricing, collaboration code */}
             <div className="flex flex-col gap-5">
                 {/* Status */}
                 <div className="flex items-start gap-3">
@@ -210,34 +216,15 @@ export function OverviewDraftPanel({
                 {canPay && (
                     <CollaborationCodeSection
                         key={duration.selectedOptionId}
+                        collapsible
                         eventId={eventId}
                         onPreviewChangeAction={handleCollaborationPreviewChange}
                         disabled={!canCheckout}
                     />
                 )}
 
-                {/* Partner credit */}
-                {canPay && partnerBranding.notice && (
-                    <PartnerBrandingNotice
-                        notice={partnerBranding.notice}
-                        accepted={partnerBranding.accepted}
-                        onChangeAction={partnerBranding.handleChange}
-                    />
-                )}
-
                 {/* Activation disclosures */}
                 {canPay && <ActivationDisclosures projectedCoverage={projectedCoverage} />}
-
-                {/* Withdrawal consent */}
-                {canPay && (
-                    <WithdrawalConsentSection
-                        requestsImmediateStart={consent.requestsImmediateStart}
-                        acknowledgesWithdrawalTerms={consent.acknowledgesWithdrawalTerms}
-                        staleTerms={consent.staleTerms}
-                        onRequestsImmediateStartChangeAction={consent.handleRequestsImmediateStartChange}
-                        onAcknowledgesWithdrawalTermsChangeAction={consent.handleAcknowledgesWithdrawalTermsChange}
-                    />
-                )}
 
                 {/* Gift account: like buying, only the main host may set it (4019 otherwise) */}
                 {wishlistAvailable && canPurchase && (
@@ -245,55 +232,49 @@ export function OverviewDraftPanel({
                         <GiftAccountSetup eventId={eventId} className="" />
                     </TargetedSection>
                 )}
+
+                {/* Delete: like buying, only the main host may */}
+                {canPurchase && <DraftDeleteSection eventId={eventId} />}
             </div>
 
-            {/* Right: payment action */}
-            <div className="rounded-2xl border border-border bg-surface-muted/40 p-5 lg:sticky lg:top-24">
-                <p className="text-xs font-semibold tracking-wide text-ink-faint uppercase">{tCreate('overview.dueNow')}</p>
-                <p className="mt-1 text-2xl font-bold text-primary-dark">{dueNowTotalLabel}</p>
-
-                {error && <p className="mt-3 text-sm text-rose-600">{error}</p>}
-
-                {/* Passed date: move it to pay */}
-                {startPassed && canPurchase && (
-                    <button
-                        type="button"
-                        onClick={startDate.open}
-                        className="mt-2 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-primary-dark underline underline-offset-2"
-                    >
-                        <CalendarClock className="h-4 w-4" aria-hidden="true" />
-                        {t('draft.startDate.action')}
-                    </button>
+            {/* Right: consent and the pay bar. Its box only exists on desktop, so on mobile the bar sticks over the whole panel. */}
+            <div className="contents lg:sticky lg:top-24 lg:block lg:rounded-2xl lg:border lg:border-border lg:bg-surface-muted/40 lg:p-5">
+                {/* Partner credit and withdrawal consent: right above the button they unlock */}
+                {canPay && (
+                    <div id={DRAFT_CONSENT_ID} className="flex flex-col gap-4 border-t border-border/70 pt-5 lg:border-0 lg:pt-0">
+                        {partnerBranding.notice && (
+                            <PartnerBrandingNotice
+                                notice={partnerBranding.notice}
+                                accepted={partnerBranding.accepted}
+                                onChangeAction={partnerBranding.handleChange}
+                                className=""
+                            />
+                        )}
+                        <WithdrawalConsentSection
+                            requestsImmediateStart={consent.requestsImmediateStart}
+                            acknowledgesWithdrawalTerms={consent.acknowledgesWithdrawalTerms}
+                            staleTerms={consent.staleTerms}
+                            onRequestsImmediateStartChangeAction={consent.handleRequestsImmediateStartChange}
+                            onAcknowledgesWithdrawalTermsChangeAction={consent.handleAcknowledgesWithdrawalTermsChange}
+                            className=""
+                        />
+                    </div>
                 )}
 
-                {/* Co-host note */}
-                {!canPurchase && <p className="mt-3 text-xs text-ink-muted">{tCommon('primaryHostOnly')}</p>}
-
-                <div className="mt-4">
-                    {canPay ? (
-                        <button
-                            type="button"
-                            onClick={submit}
-                            disabled={isPending || !canCheckout || !consent.consentSatisfied || !partnerBranding.satisfied}
-                            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                            {isPending ? (
-                                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                            ) : (
-                                <LockKeyhole className="h-4 w-4" aria-hidden="true" />
-                            )}
-                            {isPending ? t('draft.openingCheckout') : t('draft.payAndPublish')}
-                        </button>
-                    ) : (
-                        <button
-                            type="button"
-                            disabled
-                            className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ink px-4 text-sm font-semibold text-white opacity-40"
-                        >
-                            {t('draft.addStartDate')}
-                        </button>
-                    )}
-                </div>
+                {/* Pay bar */}
+                <DraftPayBar
+                    totalLabel={dueNowTotalLabel}
+                    error={error}
+                    startPassed={startPassed}
+                    canPurchase={canPurchase}
+                    canPay={canPay}
+                    payDisabled={isPending || !canCheckout || !consentReady}
+                    isPending={isPending}
+                    showConsentHint={canPay && canCheckout && !error && !consentReady}
+                    onShowConsentAction={showConsent}
+                    onPayAction={submit}
+                    onChangeDateAction={startDate.open}
+                />
             </div>
 
             {/* Move the date */}

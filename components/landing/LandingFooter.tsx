@@ -8,6 +8,7 @@ import { LandingNewsletter } from '@/components/landing/LandingNewsletter';
 import type { Locale } from '@/i18n/config';
 import { getForBusinessPath } from '@/i18n/publicLocale';
 import { routes } from '@/lib/routes';
+import { SOCIAL_PROFILES } from '@/lib/seo';
 
 // Every in-page anchor here must match an id rendered by a landing section.
 const EXPLORE_LINKS = [
@@ -30,15 +31,13 @@ const LEGAL_LINKS = [
 
 const COLUMN_HEADING = 'mb-5.5 text-[9px] font-black tracking-[0.16em] text-white/48';
 const COLUMN_ITEM = 'py-1.5 text-[13px] leading-[1.35] text-white';
+const COLUMN_LINK = `${COLUMN_ITEM} no-underline transition-[opacity,transform] duration-250 ease-[ease] hover:translate-x-0.75 hover:opacity-[0.62] motion-reduce:transition-none`;
 
 // anchorBase prefixes the in-page anchors when the footer renders on a page
 // other than the landing (e.g. '/el' turns '#faq' into '/el#faq').
 export async function LandingFooter({ anchorBase = '', topHref = TOP_HREF }: { anchorBase?: string; topHref?: string } = {}) {
     const t = await getTranslations('LandingPage.footer');
     const locale = (await getLocale()) as Locale;
-    // Social profiles have no destinations yet, so their labels render as plain
-    // text rather than dead links.
-    const socialLabels = t.raw('socialLinks') as string[];
 
     return (
         <footer className="overflow-hidden bg-[#262626] px-5 pt-14.5 pb-6 text-white min-[761px]:px-[5vw] min-[761px]:pt-18.5">
@@ -70,7 +69,7 @@ export async function LandingFooter({ anchorBase = '', topHref = TOP_HREF }: { a
                     <div className={COLUMN_HEADING}>{t('explore')}</div>
                     {EXPLORE_LINKS.map(({ key, href }) => (
                         <a
-                            className={`${COLUMN_ITEM} no-underline transition-[opacity,transform] duration-250 ease-[ease] hover:translate-x-0.75 hover:opacity-[0.62] motion-reduce:transition-none`}
+                            className={COLUMN_LINK}
                             href={`${anchorBase}${href}`}
                             key={key}
                         >
@@ -78,7 +77,7 @@ export async function LandingFooter({ anchorBase = '', topHref = TOP_HREF }: { a
                         </a>
                     ))}
                     <a
-                        className={`${COLUMN_ITEM} no-underline transition-[opacity,transform] duration-250 ease-[ease] hover:translate-x-0.75 hover:opacity-[0.62] motion-reduce:transition-none`}
+                        className={COLUMN_LINK}
                         href={getForBusinessPath(locale)}
                     >
                         {t('exploreLinks.forBusiness')}
@@ -87,10 +86,16 @@ export async function LandingFooter({ anchorBase = '', topHref = TOP_HREF }: { a
                 {/* Social */}
                 <div className="flex flex-col items-start">
                     <div className={COLUMN_HEADING}>{t('social')}</div>
-                    {socialLabels.map((label) => (
-                        <span className={COLUMN_ITEM} key={label}>
-                            {label}
-                        </span>
+                    {SOCIAL_PROFILES.map(({ key, href }) => (
+                        <a
+                            className={COLUMN_LINK}
+                            href={href}
+                            key={key}
+                            rel="noopener noreferrer"
+                            target="_blank"
+                        >
+                            {t(`socialLinks.${key}`)}
+                        </a>
                     ))}
                 </div>
             </div>

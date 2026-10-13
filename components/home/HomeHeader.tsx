@@ -18,7 +18,9 @@ export function HomeHeader() {
     return (
         <div className="flex items-center justify-between gap-4 py-2">
             {/* Brand */}
-            <Logo direction="row" iconClassName="h-9 w-auto sm:h-10" wordmarkClassName="h-7 w-auto sm:h-8" />
+            <Link href={routes.landing} className="rounded-lg">
+                <Logo direction="row" iconClassName="h-9 w-auto sm:h-10" wordmarkClassName="h-7 w-auto sm:h-8" />
+            </Link>
 
             {/* Actions */}
             <div className="flex shrink-0 items-center gap-3">

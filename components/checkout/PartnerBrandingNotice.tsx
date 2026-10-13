@@ -10,16 +10,19 @@ export function PartnerBrandingNotice({
     notice,
     accepted,
     onChangeAction,
+    className = 'rounded-lg border border-border bg-surface-muted/40 p-4',
 }: {
     notice: PartnerBrandingNoticeDto;
     accepted: boolean;
     onChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
+    // Defaults to its own card; pass a plain style when it sits inside another surface.
+    className?: string;
 }) {
     const t = useTranslations('CheckoutReviewPage.partnerBranding');
     const partner = notice.displayName;
 
     return (
-        <section className="rounded-lg border border-border bg-surface-muted/40 p-4" aria-labelledby="partner-branding-title">
+        <section className={className} aria-labelledby="partner-branding-title">
             {/* Notice */}
             <h2 id="partner-branding-title" className="text-base font-bold text-ink">
                 {t('title', { partner })}

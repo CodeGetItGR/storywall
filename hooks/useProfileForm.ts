@@ -163,7 +163,10 @@ export function useProfileForm() {
             if (getErrorCode(error) === ERROR_CODES.INVALID_CREDENTIALS) {
                 setPasswordFieldErrors({ ...fieldErrors, currentPassword: 'invalid' });
             }
-            if (getErrorCode(error) === ERROR_CODES.VALIDATION_FAILED && !fieldErrors.currentPassword && !fieldErrors.newPassword) {
+            if (
+                getErrorCode(error) === ERROR_CODES.ACCOUNT_HAS_NO_PASSWORD ||
+                (getErrorCode(error) === ERROR_CODES.VALIDATION_FAILED && !fieldErrors.currentPassword && !fieldErrors.newPassword)
+            ) {
                 setPasswordError('noPassword');
             } else {
                 setPasswordError(toErrorMessage(error, getErrorMessage(error)));

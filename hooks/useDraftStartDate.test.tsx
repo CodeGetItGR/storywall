@@ -14,8 +14,8 @@ const mocks = vi.hoisted(() => ({
     result: (): Promise<unknown> => Promise.resolve({}),
 }));
 
-vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
-vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: () => ({ data: { coverage: { maxLeadDays: 540 } } }) }));
+vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
+vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: () => ({ data: { coverage: { minDaysAfterStart: 30 } } }) }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'apiError' }));
 vi.mock('@/hooks/useEvent', () => ({
     useUpdateEvent: () => ({
@@ -43,7 +43,9 @@ describe('useDraftStartDate', () => {
     });
 
     it('moves the start and keeps the event length', async () => {
-        const { result } = renderHook(() => useDraftStartDate('event-1', { startAt: '2026-01-10T18:00:00Z', endAt: '2026-01-11T02:00:00Z' }));
+        const { result } = renderHook(() =>
+            useDraftStartDate('event-1', { startAt: '2026-01-10T18:00:00Z', endAt: '2026-01-11T02:00:00Z', coverageEndsAt: null }),
+        );
 
         act(() => result.current.open());
         const next = localIn(30);
@@ -57,7 +59,7 @@ describe('useDraftStartDate', () => {
     });
 
     it('refuses a start in the past without saving', async () => {
-        const { result } = renderHook(() => useDraftStartDate('event-1', { startAt: '2026-01-10T18:00:00Z', endAt: null }));
+        const { result } = renderHook(() => useDraftStartDate('event-1', { startAt: '2026-01-10T18:00:00Z', endAt: null, coverageEndsAt: null }));
 
         act(() => result.current.open());
         act(() => result.current.handleChange(localIn(-2)));
@@ -68,10 +70,22 @@ describe('useDraftStartDate', () => {
         expect(mocks.calls).toHaveLength(0);
     });
 
+    it('refuses a start that leaves too little coverage after it', async () => {
+        const coverageEndsAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString();
+        const { result } = renderHook(() => useDraftStartDate('event-1', { startAt: '2026-01-10T18:00:00Z', endAt: null, coverageEndsAt }));
+
+        act(() => result.current.open());
+        act(() => result.current.handleChange(localIn(31)));
+        await act(async () => result.current.handleSubmit(submitEvent));
+
+        expect(result.current.validationError).toBe('validation.startTooFarAhead');
+        expect(mocks.calls).toHaveLength(0);
+    });
+
     it('keeps the modal open and shows the server error', async () => {
         const refusal = new ApiError(400, { errorCode: 3032 });
         mocks.result = () => Promise.reject(refusal);
-        const { result } = renderHook(() => useDraftStartDate('event-1', { startAt: '2026-01-10T18:00:00Z', endAt: null }));
+        const { result } = renderHook(() => useDraftStartDate('event-1', { startAt: '2026-01-10T18:00:00Z', endAt: null, coverageEndsAt: null }));
 
         act(() => result.current.open());
         act(() => result.current.handleChange(localIn(10)));

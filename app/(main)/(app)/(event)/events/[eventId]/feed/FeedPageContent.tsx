@@ -9,17 +9,19 @@ import { useEffect, useRef, useState } from 'react';
 import { Banner } from '@/components/feed/Banner';
 import { ComposerCard } from '@/components/feed/ComposerCard';
 import { EventDescription } from '@/components/feed/EventDescription';
-import { EventInfo } from '@/components/feed/EventInfo';
+import { EventInfoSection } from '@/components/feed/EventInfoSection';
 import { EventSessionActionButtons } from '@/components/feed/EventSessionActionButtons';
 import { FeedEmptyState } from '@/components/feed/FeedEmptyState';
 import { FeedPostRenderer } from '@/components/feed/FeedPostRenderer';
 import { Header } from '@/components/feed/Header';
+import { HeOrShePromptCard } from '@/components/feed/HeOrShePromptCard';
 import { PartnerBrandingPromptModal } from '@/components/feed/partner/PartnerBrandingPromptModal';
 import { PartnerFeedCard } from '@/components/feed/partner/PartnerFeedCard';
 import { PostModal } from '@/components/feed/PostModal';
 import { PublishQueueCards } from '@/components/feed/PublishQueueCards';
 import { RsvpPrompt } from '@/components/feed/RsvpPrompt';
 import { StoriesRow } from '@/components/feed/StoriesRow';
+import { InstallAppBanner } from '@/components/pwa/InstallAppBanner';
 import { StoryModal } from '@/components/story/StoryModal';
 import { useGiftAccount, useHideMobileTabBarOnScroll } from '@/hooks';
 import { eventKeys } from '@/hooks/useEvent';
@@ -76,6 +78,8 @@ export function FeedPageContent() {
         <div className="mx-auto flex w-full flex-col lg:max-w-2xl">
             {/* Header */}
             <Header countdownTime={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0} eventId={eventId} />
+            {/* Install */}
+            <InstallAppBanner />
             {/* Hero */}
             <section className={'mt-3'}>
                 <Banner
@@ -105,11 +109,7 @@ export function FeedPageContent() {
 
             {/* Event details */}
             <section className="mt-3">
-                <EventInfo
-                    date={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0}
-                    place={event.location.name ?? event.location.address ?? ''}
-                    className="w-full px-4"
-                />
+                <EventInfoSection event={event} />
             </section>
 
             {/* Stories */}
@@ -138,6 +138,8 @@ export function FeedPageContent() {
                     >
                         <ComposerCard />
                         <PublishQueueCards />
+                        {/* Boy or Girl? prompt */}
+                        <HeOrShePromptCard eventId={eventId} eventType={event.eventType} enabled={moduleFlags.he_or_she} />
                         <div className="flex flex-col">
                             {posts.length === 0 ? (
                                 <FeedEmptyState />

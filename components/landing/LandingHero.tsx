@@ -158,12 +158,12 @@ export function LandingHero() {
                             <span aria-hidden="true" className={`inline-block h-[.85em] w-0.5 bg-[#ee9971] ${paused ? '' : 'animate-pulse'}`} />
                         </p>
                         <h1
-                            className="max-w-142.5 font-[Baskerville,Georgia,serif] text-[clamp(44px,13vw,64px)] leading-[.93] font-normal tracking-[-.06em] min-[761px]:text-[clamp(54px,3.45vw,70px)]"
+                            className="max-w-142.5 font-[Baskerville,Georgia,serif] text-[clamp(44px,13vw,64px)] leading-[.93] font-normal tracking-[-.06em] text-balance min-[761px]:text-[clamp(54px,3.45vw,70px)]"
                             id="sw-new-hero-title"
                         >
                             {title.map((line) => (
-                                <span className="block" key={line}>
-                                    {line}
+                                <span className="min-[761px]:block" key={line}>
+                                    {line}{' '}
                                 </span>
                             ))}
                         </h1>
@@ -175,21 +175,23 @@ export function LandingHero() {
                             />
                         </div>
                         <p className="mt-8 max-w-135 text-[clamp(18px,1.35vw,24px)] leading-[1.35]">
-                            {t('subtitleStart')} <strong>{t('subtitleStrong')}</strong> {t('subtitleEnd')}
-                            <br />
-                            {t('subtitleSecondLine')}
+                            <span className="block text-balance">
+                                {t('subtitleStart')} <strong>{t('subtitleStrong')}</strong> {t('subtitleEnd')}
+                            </span>
+                            <span className="block text-balance">{t('subtitleSecondLine')}</span>
                         </p>
-                        <p className="mt-5 flex flex-wrap gap-y-1 text-[clamp(11px,.8vw,13px)] leading-normal font-bold">
-                            {trustLine.map((item, index) => (
-                                <span className="whitespace-nowrap" key={item}>
-                                    {index > 0 && (
-                                        <span aria-hidden="true" className="mx-2 text-[#ee9971]">
+                        {/* Each dot sits before its item; the one starting a line is clipped off */}
+                        <p className="mt-5 overflow-hidden text-[clamp(11px,.8vw,13px)] leading-normal font-bold">
+                            <span className="-ml-5 flex flex-wrap gap-y-1">
+                                {trustLine.map((item) => (
+                                    <span className="whitespace-nowrap" key={item}>
+                                        <span aria-hidden="true" className="inline-block w-5 text-center text-[#ee9971]">
                                             ·
                                         </span>
-                                    )}
-                                    {item}
-                                </span>
-                            ))}
+                                        {item}
+                                    </span>
+                                ))}
+                            </span>
                         </p>
                     </div>
                     <LandingHeroVisual motionPaused={paused} />

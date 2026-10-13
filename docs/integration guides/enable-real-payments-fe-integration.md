@@ -59,7 +59,7 @@ provider that takes no money and sends no webhooks, meant for local/backend-only
 `MANUAL` that quietly assumes settlement is synchronous — the redirect back from checkout *feels* like
 completion when there's no real webhook race to expose the gap. That assumption breaks the moment
 `STRIPE` is live, where the webhook can land seconds after the redirect, or fail to land at all and
-get picked up by the reconciliation sweep ~15 minutes later instead.
+get picked up by the reconciliation sweep within about 10 minutes instead.
 
 So, concretely:
 
@@ -71,14 +71,23 @@ So, concretely:
   activation specifically, `status` only flips once the webhook (or the sweep, or an admin settle) has
   actually run.
 - **A timeout is not a failure.** If the poll times out, the correct state is "still processing," with
-  a way back to the event — never "payment failed." The reconciliation sweep will settle a lost
-  webhook within roughly `app.billing.reconcile-after-minutes` (15 by default).
+  a way back to the event — never "payment failed." While waiting, call
+  `POST /api/events/{eventId}/orders/{orderId}/sync` to have the backend check with Stripe now
+  (`billing-fe-guide.md` §6 step 5). Failing that, the reconciliation sweep runs every 5 minutes and
+  settles a lost webhook once the order is `app.billing.reconcile-after-minutes` old (5 by default).
 - **`/checkout/cancelled` leaves the event a `DRAFT`, unpaid.** Offer the checkout button again;
   nothing needs to be cleaned up or rolled back.
-- Test locally with `stripe listen --forward-to <host>/api/webhooks/stripe` (or point
+- Test locally with the Stripe CLI forwarding to the webhook endpoint (or point
   `BILLING_PROVIDER` at `STRIPE` in a shared dev/staging environment) rather than only against
   `MANUAL` — the manual provider cannot exercise the wait state at all, since nothing ever calls back
-  asynchronously.
+  asynchronously:
+
+  ```
+  stripe listen --forward-to localhost:8080/api/webhooks/payments/STRIPE --events checkout.session.completed,checkout.session.async_payment_succeeded,checkout.session.async_payment_failed,checkout.session.expired,charge.refunded,charge.dispute.created,charge.dispute.closed
+  ```
+
+  Put the `whsec_…` secret it prints in `STRIPE_WEBHOOK_SECRET` and restart the backend. It is not
+  the dashboard endpoint's secret; a mismatch rejects every delivery with 400.
 
 ## 4. The invariant to hold everywhere
 

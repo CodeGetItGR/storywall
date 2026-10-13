@@ -8,6 +8,7 @@ import { ThemeFontFace } from '@/components/event/ThemeFontFace';
 import { useInviteHero } from '@/hooks/useInviteHero';
 import type { EventThemeDto } from '@/lib/api/types';
 import { themeFontScopeProps } from '@/lib/eventTheme';
+import { cn } from '@/lib/utils';
 
 interface InviteLayoutProps {
     // The event's cover. Without one (and without an illustration) the column shows the app logo.
@@ -17,10 +18,12 @@ interface InviteLayoutProps {
     theme?: EventThemeDto | null;
     eventTitle: string;
     eventSubtitle?: string | null;
+    // The page's main buttons. On small screens they stay pinned to the bottom edge.
+    actions?: ReactNode;
     children: ReactNode;
 }
 
-export function InviteLayout({ coverImageSrc, coverImageAlt, theme, eventTitle, eventSubtitle, children }: InviteLayoutProps) {
+export function InviteLayout({ coverImageSrc, coverImageAlt, theme, eventTitle, eventSubtitle, actions, children }: InviteLayoutProps) {
     const { hero, handleIllustrationError } = useInviteHero(theme, coverImageSrc);
 
     return (
@@ -84,11 +87,22 @@ export function InviteLayout({ coverImageSrc, coverImageAlt, theme, eventTitle, 
                 </div>
             )}
 
-            <div className="flex flex-1 flex-col items-center overflow-y-auto px-6 py-8">
-                <div className="flex w-full max-w-sm flex-col items-center">
-                    {/* The logo column already shows it */}
-                    {hero.kind !== 'logo' && <Logo direction="col" iconClassName="h-7 w-auto" wordmarkClassName="h-5 w-auto" className="mb-6" />}
+            <div className="flex flex-1 flex-col overflow-y-auto">
+                <div className="mx-auto flex w-full max-w-sm flex-1 flex-col px-6 pt-8">
+                    {/* Body */}
                     <div className="w-full">{children}</div>
+
+                    {/* Actions */}
+                    {actions && (
+                        <div className="sticky bottom-0 -mx-6 mt-auto bg-background px-6 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] md:static md:mx-0 md:mt-8 md:px-0 md:pt-0 md:pb-0">
+                            {actions}
+                        </div>
+                    )}
+
+                    {/* Footer: the logo column already shows it */}
+                    {hero.kind !== 'logo' && (
+                        <Logo direction="row" iconClassName="h-5 w-auto" wordmarkClassName="h-3.5 w-auto" className={cn('justify-center gap-2 pb-8 opacity-70', actions ? 'pt-6 md:pt-10' : 'mt-auto pt-10')} />
+                    )}
                 </div>
             </div>
         </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import {
+    Baby,
     BookHeart,
     CalendarCheck,
     CalendarDays,
@@ -60,6 +61,8 @@ export function useToolsMenuItems(): ToolMenuItem[] {
         { key: 'gallery', href: routes.events.tools.gallery(activeEvent.id), icon: Images, moduleKey: 'gallery' },
         { key: 'wishbook', href: routes.events.tools.wishbook(activeEvent.id), icon: BookHeart, moduleKey: 'wishbook' },
         { key: 'gifts', href: routes.events.tools.gifts(activeEvent.id), icon: Gift, moduleKey: 'wishlist' },
+        // Not for demo visitors: the public demo's mock backend has no Boy or Girl? handlers (v1).
+        { key: 'heOrShe', href: routes.events.tools.heOrShe(activeEvent.id), icon: Baby, moduleKey: 'he_or_she' },
         { key: 'myRole', href: routes.events.feed(activeEvent.id, { sheet: ROLE_SHEET_VALUE }), icon: UserRound, moduleKey: 'member_roles' },
     ];
 
@@ -68,6 +71,7 @@ export function useToolsMenuItems(): ToolMenuItem[] {
         .filter((tool) => tool.key !== 'gallery' || isHost)
         .filter((tool) => tool.key !== 'gifts' || isHost || Boolean(giftAccount.data))
         .filter((tool) => tool.key !== 'myRole' || (!isDemoVisitor && canEditOwnRole(activeEvent, activeMember)))
+        .filter((tool) => tool.key !== 'heOrShe' || !isDemoVisitor)
         .filter((tool) => !isDeleted || tool.key === 'gallery' || tool.key === 'wishbook')
         .map((tool) => {
             const copyKey = tool.copyKey ?? tool.moduleKey;

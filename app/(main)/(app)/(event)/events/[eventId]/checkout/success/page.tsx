@@ -7,8 +7,9 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
 import { GoogleAdsTag } from '@/components/consent/GoogleAdsTag';
-import { billingKeys, useEventBilling } from '@/hooks/useBilling';
+import { billingKeys, useEventBilling, useOrderSync } from '@/hooks/useBilling';
 import { eventKeys } from '@/hooks/useEvent';
+import { useLeaveCheckoutOnBack } from '@/hooks/useLeaveCheckoutOnBack';
 import { myEventsKeys } from '@/hooks/useMyEvents';
 import { clearPendingCheckout, readPendingCheckout } from '@/lib/billing';
 import { routes } from '@/lib/routes';
@@ -42,6 +43,9 @@ export default function CheckoutSuccessPage() {
         () => (paid ? (billing.data?.orders.find((order) => order.id === orderId) ?? null) : null),
         [billing.data, orderId, paid],
     );
+    const exitHref = paid ? feedHref : routes.events.manage(eventId);
+    useOrderSync(eventId, orderId, !paid && !timedOut);
+    useLeaveCheckoutOnBack(exitHref);
     useEffect(() => {
         const timer = window.setTimeout(() => setTimedOut(true), 30000);
         return () => window.clearTimeout(timer);
@@ -85,7 +89,7 @@ export default function CheckoutSuccessPage() {
                 {/* Actions */}
                 <Link
                     className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white sm:w-auto"
-                    href={paid ? feedHref : routes.events.manage(eventId)}
+                    href={exitHref}
                 >
                     {paid ? t('backToEvent') : t('backToSetup')}
                 </Link>

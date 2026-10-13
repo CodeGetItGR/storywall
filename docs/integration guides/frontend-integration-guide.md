@@ -539,8 +539,9 @@ reference** for all of this. Summary of what it covers:
 - **Checkout**: `POST /api/events/{id}/checkout` (activation), `.../upgrade-checkout`,
   `.../storage-checkout` — all return `{ orderId, redirectUrl }`, redirect top-level to Stripe's
   hosted page, never an iframe/popup. **Landing on `/checkout/success` does not mean paid** — poll
-  `GET /api/events/{id}/billing` for the order's own status; a lost webhook is reconciled within ~15
-  minutes by a scheduled sweep.
+  `GET /api/events/{id}/billing` for the order's own status; `POST /api/events/{id}/orders/{orderId}/sync`
+  settles a paid order on the spot, and a lost webhook is reconciled within about 10 minutes by a
+  scheduled sweep.
 - **Withdrawal** (replaced the old refund request; this entry was stale until 2026-09-23): fully
   automated and **terminal**. The host asks, the server computes what is owed under Directive
   2011/83/EU from the three-line price split on each order, and either refunds immediately and

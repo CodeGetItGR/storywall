@@ -9,12 +9,14 @@ import InviteOnboardingBoundary from './InviteOnboardingBoundary';
 const mocks = vi.hoisted(() => ({
     replace: vi.fn(),
     accept: vi.fn(),
+    myEvents: { data: [] as { eventId: string }[] | undefined, isLoading: false },
 }));
 
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: mocks.replace }) }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ isAuthenticated: true, isBootstrapping: false }) }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'error copy' }));
+vi.mock('@/hooks/useMyEvents', () => ({ useMyEvents: () => mocks.myEvents }));
 vi.mock('@/hooks/useEventInvitations', () => ({
     useEventInvitationPreview: () => ({
         data: { inviteToken: 'tok', eventId: 'event-1', eventTitle: 'Party', expired: false, alreadyUsed: false, gift: null },
@@ -23,15 +25,24 @@ vi.mock('@/hooks/useEventInvitations', () => ({
     }),
     useAcceptEventInvitation: () => ({ mutateAsync: mocks.accept, isPending: false }),
 }));
-vi.mock('@/components/invite/InviteLayout', () => ({ InviteLayout: ({ children }: { children: ReactNode }) => <div>{children}</div> }));
+vi.mock('@/components/invite/InviteLayout', () => ({
+    InviteLayout: ({ children, actions }: { children: ReactNode; actions?: ReactNode }) => (
+        <div>
+            {children}
+            {actions}
+        </div>
+    ),
+}));
 vi.mock('@/components/invite/InviteOnboardingState', () => ({
-    InviteOnboardingState: ({ terminalState, content }: { terminalState: ReactNode; content: ReactNode }) => <div>{terminalState ?? content}</div>,
+    InviteOnboardingState: ({ isLoading, terminalState, content }: { isLoading: boolean; terminalState: ReactNode; content: ReactNode }) =>
+        isLoading ? <div>loading</div> : <div>{terminalState ?? content}</div>,
 }));
 
 describe('InviteOnboardingBoundary accepting as a signed-in user', () => {
     beforeEach(() => {
         mocks.replace.mockReset();
         mocks.accept.mockReset();
+        mocks.myEvents = { data: [], isLoading: false };
     });
     afterEach(cleanup);
 
@@ -39,7 +50,7 @@ describe('InviteOnboardingBoundary accepting as a signed-in user', () => {
         mocks.accept.mockResolvedValue({ eventId: 'event-1' });
         render(<InviteOnboardingBoundary token="tok" />);
 
-        fireEvent.click(screen.getByRole('button', { name: /haveAccount/ }));
+        fireEvent.click(screen.getByRole('button', { name: /join/ }));
 
         await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith('/events/event-1/feed'));
     });
@@ -49,7 +60,7 @@ describe('InviteOnboardingBoundary accepting as a signed-in user', () => {
         mocks.accept.mockRejectedValue(new ApiError(409, { status: 409, errorCode }));
         render(<InviteOnboardingBoundary token="tok" />);
 
-        fireEvent.click(screen.getByRole('button', { name: /haveAccount/ }));
+        fireEvent.click(screen.getByRole('button', { name: /join/ }));
 
         await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith('/events/event-1/feed'));
         expect(screen.queryByRole('alert')).not.toBeInTheDocument();
@@ -59,9 +70,25 @@ describe('InviteOnboardingBoundary accepting as a signed-in user', () => {
         mocks.accept.mockRejectedValue(new ApiError(409, { status: 409, errorCode: 5035 }));
         render(<InviteOnboardingBoundary token="tok" />);
 
-        fireEvent.click(screen.getByRole('button', { name: /haveAccount/ }));
+        fireEvent.click(screen.getByRole('button', { name: /join/ }));
 
         expect(await screen.findByRole('alert')).toHaveTextContent('error copy');
+        expect(mocks.replace).not.toHaveBeenCalled();
+    });
+
+    it('opens the feed straight away for an existing member', async () => {
+        mocks.myEvents = { data: [{ eventId: 'event-1' }], isLoading: false };
+        render(<InviteOnboardingBoundary token="tok" />);
+
+        await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith('/events/event-1/feed'));
+        expect(screen.queryByRole('button', { name: /join/ })).not.toBeInTheDocument();
+    });
+
+    it('holds the join button until memberships are known', () => {
+        mocks.myEvents = { data: undefined, isLoading: true };
+        render(<InviteOnboardingBoundary token="tok" />);
+
+        expect(screen.queryByRole('button', { name: /join/ })).not.toBeInTheDocument();
         expect(mocks.replace).not.toHaveBeenCalled();
     });
 });

@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { type SubmitEvent, useCallback, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
@@ -9,11 +9,13 @@ import { useUpdateEvent } from '@/hooks/useEvent';
 import {
     DEFAULT_EVENT_LENGTH_MS,
     eventWindowFromLocalStart,
+    formatDate,
     getScheduleDatetimeLocalBounds,
     isDatetimeLocalAfter,
     isDatetimeLocalBefore,
     toDatetimeLocalValue,
 } from '@/lib/datetime';
+import { getLatestStartAt } from '@/lib/eventCoverage';
 
 // The length the draft already has, so moving its start keeps the same end-to-start gap.
 function eventLengthMs(startAt: string | null, endAt: string | null): number {
@@ -25,10 +27,15 @@ function eventLengthMs(startAt: string | null, endAt: string | null): number {
 /**
  * Moving a draft's date from its overview (a draft host can't reach the schedule
  * tools): a start in the future, the end moved with it. Checkout answers 3035 once
- * the saved start has passed.
+ * the saved start has passed. `coverageEndsAt` is the draft's projected coverage
+ * end; the start must leave the configured days after it.
  */
-export function useDraftStartDate(eventId: string, { startAt, endAt }: { startAt: string | null; endAt: string | null }) {
+export function useDraftStartDate(
+    eventId: string,
+    { startAt, endAt, coverageEndsAt }: { startAt: string | null; endAt: string | null; coverageEndsAt: string | null },
+) {
     const t = useTranslations('CreateEventPage');
+    const locale = useLocale();
     const toErrorMessage = useApiErrorMessage();
     const { data: appConfig } = useAppConfig();
     const updateEvent = useUpdateEvent(eventId);
@@ -36,12 +43,13 @@ export function useDraftStartDate(eventId: string, { startAt, endAt }: { startAt
     const [value, setValue] = useState('');
     const [error, setError] = useState<string | null>(null);
 
-    const { startAtMin, startAtMax } = getScheduleDatetimeLocalBounds({ startAt: value, maxLeadDays: appConfig?.coverage.maxLeadDays });
+    const latestStartAt = getLatestStartAt(coverageEndsAt, appConfig?.coverage.minDaysAfterStart);
+    const { startAtMin, startAtMax } = getScheduleDatetimeLocalBounds({ startAt: value, latestStartAt });
     const validationError =
         value && isDatetimeLocalBefore(value, startAtMin)
             ? t('validation.startInPast')
-            : value && isDatetimeLocalAfter(value, startAtMax)
-              ? t('validation.startTooFarAhead')
+            : value && latestStartAt && isDatetimeLocalAfter(value, startAtMax)
+              ? t('validation.startTooFarAhead', { date: formatDate(locale, latestStartAt, { dateStyle: 'medium' }) })
               : null;
 
     const open = useCallback(() => {

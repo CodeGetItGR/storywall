@@ -12,8 +12,10 @@ import {
     isAccountRoute,
     isFeedRoute,
     isPathActive,
+    ShareInviteTab,
     TabLink,
 } from '@/components/layout/mobile-tab-bar';
+import { useInviteShare } from '@/hooks/useInviteShare';
 import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { useHasOpenOverlay } from '@/hooks/useOverlayPresence';
 import { usePinchZoomBox } from '@/hooks/usePinchZoomBox';
@@ -63,6 +65,7 @@ export function MobileTabBar() {
     const rsvpActive = rsvpTabAvailable && isPathActive(pathname, rsvpHref, searchParams);
     const hostItems = useHostMenuItems();
     const toolItems = useToolsMenuItems();
+    const inviteShare = useInviteShare();
     // The FAB only belongs on the feed itself: any open modal, sheet, viewer or
     // menu popover animates it off screen until the last one closes.
     const showComposerFab = isFeedRoute(pathname) && (canComposePost || canComposeStory || canComposeSong);
@@ -96,7 +99,7 @@ export function MobileTabBar() {
     if (!showEventNavigation) return null;
 
     const accountActive = accountOpen;
-    const railColumnCount = 1 + 1 + (playlistAvailable ? 1 : 0) + (rsvpTabAvailable ? 1 : 0) + (contextItems.length > 0 ? 1 : 0);
+    const railColumnCount = 1 + 1 + (playlistAvailable ? 1 : 0) + (rsvpTabAvailable ? 1 : 0) + (inviteShare.available ? 1 : 0) + (contextItems.length > 0 ? 1 : 0);
 
     return (
         <>
@@ -143,6 +146,13 @@ export function MobileTabBar() {
                         {rsvpTabAvailable && (
                             <div className="flex h-full items-center justify-center">
                                 <TabLink href={rsvpHref} icon="/icons/rsvp.png" label={moduleCopy('rsvp').name} active={rsvpActive} />
+                            </div>
+                        )}
+
+                        {/* Invite */}
+                        {inviteShare.available && (
+                            <div className="flex h-full items-center justify-center">
+                                <ShareInviteTab copied={inviteShare.copied} onShare={inviteShare.share} />
                             </div>
                         )}
 

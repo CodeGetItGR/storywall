@@ -13,6 +13,7 @@ import { InviteTerminalState } from '@/components/invite/InviteTerminalState';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
 import { useAcceptEventInvitation, useEventInvitationPreview } from '@/hooks/useEventInvitations';
+import { useInviteMemberRedirect } from '@/hooks/useInviteMemberRedirect';
 import { ApiError } from '@/lib/api/client';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import { inviteGiftFraming } from '@/lib/gift';
@@ -28,8 +29,9 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
     const coverMedia = preview?.coverMedia ?? null;
     const acceptInvitation = useAcceptEventInvitation();
     const [acceptError, setAcceptError] = useState<string | null>(null);
+    const isOpeningMemberFeed = useInviteMemberRedirect(preview?.eventId);
 
-    const isLoading = isPreviewLoading || isBootstrapping;
+    const isLoading = isPreviewLoading || isBootstrapping || isOpeningMemberFeed;
 
     async function handleAcceptAsExistingUser() {
         setAcceptError(null);
@@ -96,66 +98,68 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
                         theme={activePreview.theme}
                         eventTitle={activePreview.eventTitle}
                         eventSubtitle={activePreview.eventSubtitle}
-                    >
-                        {/* Gift */}
-                        {giftFraming && (
-                            <p className="mb-3 text-sm font-semibold text-ink">
-                                {t('gift', { giver: giftFraming.giverDisplayName, recipient: giftFraming.recipientLabel })}
-                            </p>
-                        )}
-
-                        {/* Details */}
-                        <InviteEventDetails
-                            startAt={activePreview.eventStartAt}
-                            endAt={activePreview.eventEndAt}
-                            timeZone={activePreview.eventTimezone}
-                            locationName={activePreview.eventLocationName}
-                        />
-
-                        {/* Description */}
-                        {activePreview.eventDescription && (
-                            <p className="mb-7 text-sm leading-relaxed text-ink-muted">{activePreview.eventDescription}</p>
-                        )}
-
-                        {acceptError && (
-                            <p role="alert" className="mb-3 text-xs text-red-500">
-                                {acceptError}
-                            </p>
-                        )}
-
-                        <div className="flex flex-col gap-3">
-                            {isAuthenticated ? (
-                                <button
-                                    type="button"
-                                    onClick={handleAcceptAsExistingUser}
-                                    disabled={acceptInvitation.isPending}
-                                    className="flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-                                >
-                                    {acceptInvitation.isPending ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                        <>
+                        actions={
+                            <div className="flex flex-col gap-3">
+                                {acceptError && (
+                                    <p role="alert" className="text-xs text-red-500">
+                                        {acceptError}
+                                    </p>
+                                )}
+                                {isAuthenticated ? (
+                                    <button
+                                        type="button"
+                                        onClick={handleAcceptAsExistingUser}
+                                        disabled={acceptInvitation.isPending}
+                                        className="flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                        {acceptInvitation.isPending ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                            <>
+                                                {t('join')}
+                                                <ArrowRight className="h-4 w-4" />
+                                            </>
+                                        )}
+                                    </button>
+                                ) : (
+                                    <>
+                                        <Link
+                                            href={loginHref}
+                                            className="flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
+                                        >
                                             {t('haveAccount')}
                                             <ArrowRight className="h-4 w-4" />
-                                        </>
-                                    )}
-                                </button>
-                            ) : (
-                                <>
-                                    <Link
-                                        href={loginHref}
-                                        className="flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
-                                    >
-                                        {t('haveAccount')}
-                                        <ArrowRight className="h-4 w-4" />
-                                    </Link>
-                                    <Link
-                                        href={registerHref}
-                                        className="flex w-full items-center justify-center gap-2 rounded-full bg-surface-muted py-3 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted/70"
-                                    >
-                                        {t('createAccount')}
-                                    </Link>
-                                </>
+                                        </Link>
+                                        <Link
+                                            href={registerHref}
+                                            className="flex w-full items-center justify-center gap-2 rounded-full bg-surface-muted py-3 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted/70"
+                                        >
+                                            {t('createAccount')}
+                                        </Link>
+                                    </>
+                                )}
+                            </div>
+                        }
+                    >
+                        <div className="space-y-6">
+                            {/* Gift */}
+                            {giftFraming && (
+                                <p className="text-sm font-semibold text-ink">
+                                    {t('gift', { giver: giftFraming.giverDisplayName, recipient: giftFraming.recipientLabel })}
+                                </p>
+                            )}
+
+                            {/* Details */}
+                            <InviteEventDetails
+                                startAt={activePreview.eventStartAt}
+                                endAt={activePreview.eventEndAt}
+                                timeZone={activePreview.eventTimezone}
+                                locationName={activePreview.eventLocationName}
+                            />
+
+                            {/* Description */}
+                            {activePreview.eventDescription && (
+                                <p className="text-sm leading-relaxed whitespace-pre-line text-ink-muted">{activePreview.eventDescription}</p>
                             )}
                         </div>
                     </InviteLayout>

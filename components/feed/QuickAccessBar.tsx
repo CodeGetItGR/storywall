@@ -1,7 +1,7 @@
 'use client';
 
 import type { LucideIcon } from 'lucide-react';
-import { BookHeart, Gift, Image, Images, MessageSquareText, Music4, Ticket } from 'lucide-react';
+import { Baby, BookHeart, Gift, Image, Images, MessageSquareText, Music4, Ticket } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
@@ -10,20 +10,21 @@ import { useGiftAccount } from '@/hooks/useGiftAccount';
 import { useModuleCopy } from '@/hooks/useModuleCopy';
 import type { ModuleKeyConvention } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
-import { useActiveEvent, useIsHost } from '@/providers/EventProvider';
+import { useActiveEvent, useContentAccessMode, useIsHost } from '@/providers/EventProvider';
 
 type QuickAccessItem = {
     moduleKey: ModuleKeyConvention;
     href: string;
     icon: LucideIcon;
     visible: boolean;
-    key: 'posts' | 'stories' | 'rsvp' | 'playlist' | 'gallery' | 'gifts' | 'wishbook';
+    key: 'posts' | 'stories' | 'rsvp' | 'playlist' | 'gallery' | 'gifts' | 'wishbook' | 'heOrShe';
 };
 
 export function QuickAccessBar() {
     const t = useTranslations('FeedQuickAccessBar');
     const activeEvent = useActiveEvent();
     const isHost = useIsHost();
+    const isDemoVisitor = useContentAccessMode() === 'demoVisitor';
     const giftAccount = useGiftAccount(activeEvent?.id ?? null);
     const moduleCopy = useModuleCopy(activeEvent?.eventType);
 
@@ -45,6 +46,7 @@ export function QuickAccessBar() {
             { moduleKey: 'gallery', href: routes.events.tools.gallery(eventId), icon: Images, visible: true, key: 'gallery' },
             { moduleKey: 'wishlist', href: routes.events.tools.gifts(eventId), icon: Gift, visible: true, key: 'gifts' },
             { moduleKey: 'wishbook', href: routes.events.tools.wishbook(eventId), icon: BookHeart, visible: true, key: 'wishbook' },
+            { moduleKey: 'he_or_she', href: routes.events.tools.heOrShe(eventId), icon: Baby, visible: true, key: 'heOrShe' },
         ];
 
         const availableModules = new Set(activeEvent.modules.filter((module) => module.isAvailable).map((module) => module.moduleKey));
@@ -56,10 +58,12 @@ export function QuickAccessBar() {
                 const item = quickAccessItems.find((entry) => entry.moduleKey === module.moduleKey && entry.visible);
                 if (item?.key === 'gifts' && !giftsVisibleToCurrentMember) return null;
                 if (item?.key === 'gallery' && !isHost) return null;
+                // Not in the public demo in v1: its mock backend has no handlers for it.
+                if (item?.key === 'heOrShe' && isDemoVisitor) return null;
                 return item && availableModules.has(item.moduleKey) ? item : null;
             })
             .filter((item): item is QuickAccessItem => !!item);
-    }, [activeEvent, giftAccount.data, isHost]);
+    }, [activeEvent, giftAccount.data, isDemoVisitor, isHost]);
 
     if (enabledItems.length === 0) {
         return null;

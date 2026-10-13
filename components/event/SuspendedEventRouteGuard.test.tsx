@@ -90,7 +90,7 @@ describe('SuspendedEventRouteGuard', () => {
         render(<SuspendedEventRouteGuard>page</SuspendedEventRouteGuard>);
         expect(screen.getByRole('heading', { name: 'title' })).toBeTruthy();
         expect(screen.queryByRole('link', { name: 'readRule' })).toBeNull();
-        expect(screen.getByText('redressWithoutContact')).toBeTruthy();
+        expect(screen.queryByText(/^redress/)).toBeNull();
     });
 
     it('leaves a route that does not name the event alone, even if the remembered event is suspended', () => {

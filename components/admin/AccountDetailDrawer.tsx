@@ -1,6 +1,6 @@
 'use client';
 
-import { ShoppingBag } from 'lucide-react';
+import { Mail, ShoppingBag } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { AccountAdminActions } from '@/components/admin/AccountAdminActions';
@@ -16,11 +16,13 @@ export function AccountDetailDrawer({
     account,
     onCloseAction,
     onProvisionAction,
+    onSendEmailAction,
     onAccountChangedAction,
 }: {
     account: UserResponseDto;
     onCloseAction: () => void;
     onProvisionAction: (account: UserResponseDto) => void;
+    onSendEmailAction: (account: UserResponseDto) => void;
     onAccountChangedAction: (account: UserResponseDto) => void;
 }) {
     const t = useTranslations('AdminPage.accounts.detail');
@@ -30,6 +32,10 @@ export function AccountDetailDrawer({
 
     function openOrders() {
         sendTo('orders', { buyerId: account.id, buyerLabel: account.email ?? displayName });
+    }
+
+    function sendEmail() {
+        onSendEmailAction(account);
     }
 
     return (
@@ -57,14 +63,26 @@ export function AccountDetailDrawer({
                     </div>
                     <AdminIdentifier label={t('accountId')} value={account.id} />
                 </dl>
-                <button
-                    type="button"
-                    onClick={openOrders}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-muted hover:text-ink hover:underline"
-                >
-                    <ShoppingBag className="h-3.5 w-3.5" />
-                    {t('orders')}
-                </button>
+                <div className="flex flex-wrap items-center gap-4">
+                    <button
+                        type="button"
+                        onClick={openOrders}
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-muted hover:text-ink hover:underline"
+                    >
+                        <ShoppingBag className="h-3.5 w-3.5" />
+                        {t('orders')}
+                    </button>
+                    {account.status !== 'DELETED' && account.email ? (
+                        <button
+                            type="button"
+                            onClick={sendEmail}
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-muted hover:text-ink hover:underline"
+                        >
+                            <Mail className="h-3.5 w-3.5" />
+                            {t('sendEmail')}
+                        </button>
+                    ) : null}
+                </div>
             </section>
 
             {/* Events */}

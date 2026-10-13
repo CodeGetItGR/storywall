@@ -31,6 +31,7 @@ export const EVENT_MODULE_KEYS = [
     'schedule',
     'member_roles',
     'theme',
+    'he_or_she',
 ] as const;
 // Use this (not the raw `ModuleKey` wire type below) whenever code branches on
 // a specific module — it's a closed set and catches typos at compile time.
@@ -331,8 +332,8 @@ export interface AppRsvpConfigDto {
 // Coverage-window constants — event-coverage-window-fe-integration.md. Added 2026-09-21.
 // Constants only; a given event's dates come from the event itself.
 export interface AppCoverageConfigDto {
-    // Furthest ahead startAt may be scheduled, in days from now (3032 past it).
-    maxLeadDays: number;
+    // Coverage that must remain after startAt; the latest start is coverage end minus this (3032 past it).
+    minDaysAfterStart: number;
     // endAt the server fills when a request omits it.
     defaultEventDurationHours: number;
 }
@@ -500,14 +501,21 @@ export interface AppConfigResponseDto {
     newsletter: AppNewsletterConfigDto;
     eventDeletion: AppEventDeletionConfigDto;
     betaFeedback: AppBetaFeedbackConfigDto;
+    errorTracking: AppErrorTrackingConfigDto;
 }
 
-// Bug reports and crash capture (beta-feedback-fe-integration.md). While
-// `enabled` is false both POST routes answer 409 / 5100.
+// Bug reports (beta-feedback-fe-integration.md). While `enabled` is false
+// POST /api/bug-reports answers 409 / 5100.
 export interface AppBetaFeedbackConfigDto {
     enabled: boolean;
     screenshotMaxBytes: number;
     screenshotMimeTypes: string[];
+}
+
+// Crash capture (error-tracking-fe-integration.md). While `enabled` is false
+// POST /api/error-events/client answers 409 / 5174.
+export interface AppErrorTrackingConfigDto {
+    enabled: boolean;
 }
 
 // GET /api/config → newsletter (newsletter-fe-integration §6). Describes the
@@ -808,6 +816,51 @@ export interface EventRequestDto {
 export interface AdminProvisionEventRequestDto {
     hostUserId: string;
     event: EventRequestDto;
+    // Emails the host a welcome; the server treats a missing value as true.
+    notifyHost?: boolean;
+}
+
+export type AdminEmailTemplateKey = 'PASSWORD_RESET' | 'PROVISIONED_HOST_WELCOME' | 'EMAIL_VERIFICATION' | 'CUSTOM';
+
+export type AdminEmailUnavailableReason =
+    | 'ACCOUNT_DELETED'
+    | 'NO_EMAIL'
+    | 'NOT_ACTIVE'
+    | 'NOT_PASSWORD_ACCOUNT'
+    | 'ALREADY_VERIFIED'
+    | 'NO_HOSTED_EVENTS';
+
+export interface AdminEmailTemplateDto {
+    key: AdminEmailTemplateKey;
+    available: boolean;
+    unavailableReason: AdminEmailUnavailableReason | null;
+}
+
+export interface AdminEmailRequestDto {
+    template: AdminEmailTemplateKey;
+    // Defaults to the account's saved language.
+    locale?: Locale;
+    eventId?: string;
+    subject?: string;
+    body?: string;
+}
+
+// The email as it will be delivered; token links hold a placeholder.
+export interface AdminEmailPreviewDto {
+    to: string;
+    subject: string;
+    html: string;
+    text: string;
+}
+
+export interface AdminWelcomePreviewRequestDto {
+    hostUserId: string;
+    title: string;
+    startAt?: string;
+    timezone?: string;
+    locationName?: string;
+    locationAddress?: string;
+    locale?: Locale;
 }
 
 export interface EventThemeFontDto {
@@ -1074,6 +1127,11 @@ export interface CheckoutResponseDto {
     buyerType: BuyerType;
     // The order's pinned breakdown: exactly what the payment page charges (2026-09-24).
     breakdown: PriceBreakdown;
+}
+
+// POST /api/events/{id}/orders/{orderId}/sync (billing-fe-guide.md §6 step 5, 2026-10-11).
+export interface OrderSyncResponseDto {
+    status: OrderStatus;
 }
 
 // Shared by activation and upgrade checkout — the consent Directive 2011/83/EU
@@ -1475,6 +1533,9 @@ export interface OrderSummaryDto {
     // event, false means the amounts, splits and breakdown are null: show "Gift"
     // and no Withdraw. Only null on internal views.
     paidByCaller: boolean | null;
+    // Added 2026-10-10: whether this is the first order the reading host ever
+    // paid, on any event. Null unless they paid this order and it is paid.
+    firstPurchase: boolean | null;
 }
 export interface EventAddonDto {
     code: string;
@@ -1973,6 +2034,61 @@ export interface FunnelCohortDto {
     engagedHost: number;
 }
 
+// --- Module usage (docs/module-usage-be-spec.md) ---
+
+/** The modules the usage dashboard reports on. `qr_links` is not a plan module: its base is every event in scope. */
+export type ModuleUsageModuleKey = 'posts' | 'gallery' | 'stories' | 'rsvp' | 'playlist' | 'schedule' | 'wishbook' | 'wishlist' | 'qr_links';
+
+export type ModuleUsageMetricKey =
+    | 'posts'
+    | 'comments'
+    | 'reactions'
+    | 'commentsPerPost'
+    | 'reactionsPerPost'
+    | 'eventsWithComments'
+    | 'eventsWithReactions'
+    | 'media'
+    | 'photoShare'
+    | 'videoShare'
+    | 'qrUploadShare'
+    | 'stories'
+    | 'responses'
+    | 'suggestions'
+    | 'votes'
+    | 'sessions'
+    | 'wishes'
+    | 'qrJoins'
+    | 'qrUploads';
+
+/** PER_EVENT and PER_POST carry `average` and `median`; SHARE carries `share` (0–1). */
+export type ModuleUsageMetricKind = 'PER_EVENT' | 'PER_POST' | 'SHARE';
+
+export interface ModuleUsageMetricDto {
+    key: ModuleUsageMetricKey;
+    kind: ModuleUsageMetricKind;
+    average: number | null;
+    median: number | null;
+    share: number | null;
+}
+
+export interface ModuleUsageRowDto {
+    moduleKey: ModuleUsageModuleKey;
+    /** True when fewer than `minEvents` events have the module on; every number below is then null and `metrics` empty. */
+    suppressed: boolean;
+    eventsWithModule: number | null;
+    /** Events with the module on that have at least one item (wishlist: bank details saved; qr_links: a link created). */
+    eventsUsed: number | null;
+    metrics: ModuleUsageMetricDto[];
+}
+
+/** GET /api/admin/metrics/module-usage?since&until&eventTypeKey&planCode — active, non-demo events created in range. */
+export interface ModuleUsageResponseDto {
+    minEvents: number;
+    /** Null when fewer than `minEvents` events match; every row is then suppressed. */
+    eventsInScope: number | null;
+    modules: ModuleUsageRowDto[];
+}
+
 export interface PlatformNewsletterMetricsDto {
     pending: number;
     confirmed: number;
@@ -2243,6 +2359,69 @@ export interface WishbookEntryResponseDto {
     canDelete: boolean;
     // Starred for the book (2026-10-06). Hosts get true/false; everyone else gets null.
     highlighted: boolean | null;
+}
+
+// Boy or Girl? quiz — module he_or_she, GENDER_REVEAL only (he-or-she-quiz-fe-integration.md).
+// The API uses HE/SHE; the labels are Boy/Girl.
+export type HeOrSheValue = 'HE' | 'SHE';
+export type QuizAnswerType = 'HE_SHE' | 'YES_NO' | 'CHOICE' | 'DATE' | 'TIME' | 'NUMBER' | 'FILL_GAP' | 'FREE_TEXT';
+
+export interface QuizOption {
+    id: string;
+    label: string;
+}
+
+export interface QuizQuestionDto {
+    id: string;
+    answerType: QuizAnswerType;
+    prompt: string;
+    // CHOICE only.
+    options: QuizOption[] | null;
+    sortOrder: number;
+}
+
+// GET /he-or-she; PUT /answers and PUT /settings return it too.
+export interface HeOrSheViewDto {
+    status: 'OPEN' | 'CLOSED';
+    // When voting closes. Closed is computed on read, so refetch when it passes.
+    closesAt: string | null;
+    canGuess: boolean;
+    myGuess: HeOrSheValue | null;
+    // Null for a member who hasn't voted while OPEN; never null for hosts or once CLOSED.
+    tally: { he: number; she: number } | null;
+    questions: QuizQuestionDto[];
+    // questionId -> canonical value.
+    myAnswers: Record<string, string>;
+}
+
+// PUT /answers: the caller's whole set. An extra question left out has its answer cleared.
+export interface HeOrSheAnswersRequestDto {
+    guess: HeOrSheValue;
+    answers: { questionId: string; value: string }[];
+}
+
+// PUT /settings (host). Null clears it, so voting stays open.
+export interface HeOrSheSettingsRequestDto {
+    closesAt: string | null;
+}
+
+export interface QuizQuestionRequestDto {
+    answerType: QuizAnswerType;
+    prompt: string;
+    options?: string[];
+}
+
+export interface QuizQuestionPatchDto {
+    prompt?: string;
+    // Send an option's id to keep it.
+    options?: { id?: string; label: string }[];
+    sortOrder?: number;
+}
+
+// GET /results (host): every answer by name. An empty answers[] means nobody answered it.
+export interface HeOrSheResultsDto {
+    main: { memberId: string; displayName: string; avatarUrl: string | null; guess: HeOrSheValue }[];
+    questions: { questionId: string; answers: { memberId: string; displayName: string; avatarUrl: string | null; value: string }[] }[];
 }
 
 // GET|POST /api/events/{eventId}/wishbook/book (wishbook-book-fe-integration.md).
@@ -3183,12 +3362,17 @@ export interface BugReportResponseDto {
 
 export type ErrorEventSource = 'BACKEND' | 'BACKGROUND' | 'CLIENT';
 
+// ?statusClass= on GET /api/error-events: 4xx or 5xx rows.
+export type ErrorEventStatusClass = 'CLIENT_ERROR' | 'SERVER_ERROR';
+
 // GET /api/error-events(/{id}) — admin only, newest lastSeenAt first. One row
 // groups every occurrence of the same error; `ref` is what a 500's errorRef holds.
 export interface ErrorEventResponseDto {
     id: string;
     ref: string;
     source: ErrorEventSource;
+    // The response status of a BACKEND row (4xx or 5xx); null for BACKGROUND and CLIENT.
+    httpStatus: number | null;
     errorType: string;
     message: string | null;
     stackTrace: string | null;

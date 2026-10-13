@@ -327,6 +327,14 @@ describe('isServiceValidationError', () => {
         expect(isServiceValidationError(new ApiError(400, { errorCode: 3001, detail: '', errors: {} }))).toBe(true);
     });
 
+    it('is a preset rejection with its own code', () => {
+        expect(
+            isServiceValidationError(new ApiError(400, { errorCode: 3097, detail: 'Πολύ σκούρο: 3,60:1', details: { ratio: 3.6, minimum: 4.5 } })),
+        ).toBe(true);
+        expect(isServiceValidationError(new ApiError(400, { errorCode: 3096, detail: 'Δεν υποστηρίζει θέματα.' }))).toBe(true);
+        expect(isServiceValidationError(new ApiError(400, { errorCode: 3091, detail: 'Λείπει το όνομα στα αγγλικά.' }))).toBe(true);
+    });
+
     it('is not a bean-validation 3001 (field errors), another code, or a network failure', () => {
         expect(isServiceValidationError(new ApiError(400, { errorCode: 3001, detail: 'One or more fields are invalid', errors: { key: 'x' } }))).toBe(
             false,

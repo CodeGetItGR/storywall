@@ -95,3 +95,12 @@ export function readCreateEventCheckout(run: string): CreateEventCheckout | null
         return null;
     }
 }
+
+// Brings the first unticked checkbox in the form into view and focuses it, so a
+// host who can't pay yet lands on the box still blocking them.
+export function focusFirstUncheckedBox(formId: string): void {
+    const box = document.getElementById(formId)?.querySelector<HTMLInputElement>('input[type="checkbox"]:not(:checked)');
+    if (!box) return;
+    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    box.focus({ preventScroll: true });
+}

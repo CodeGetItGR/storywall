@@ -6,11 +6,15 @@ import { useMemo, useState } from 'react';
 import { useAdminPlanTiers, useAdminPlatformEventTypes } from '@/hooks/useAdmin';
 import { useProvisionAdminEventMutation } from '@/hooks/useAdminAccounts';
 import { useAdminDurationPick } from '@/hooks/useAdminDurationPick';
+import { useWelcomeEmailPreview } from '@/hooks/useAdminEmails';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useAppConfig } from '@/hooks/useAppConfig';
+import { useThemePresetsForType } from '@/hooks/useEventTheme';
 import { eligibleProvisioningPlans, type ProvisionHost } from '@/lib/adminAccountProvisioning';
 import { getFieldErrors } from '@/lib/api/errors';
-import type { EventResponseDto, EventTypeConvention, EventVisibility } from '@/lib/api/types';
+import type { AdminWelcomePreviewRequestDto, EventResponseDto, EventTypeConvention, EventVisibility } from '@/lib/api/types';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
+import { effectiveThemePresetId } from '@/lib/createEventSteps';
 import { datetimeLocalValueToIso, getScheduleDatetimeLocalBounds, isDatetimeLocalBefore } from '@/lib/datetime';
 import { getCurrentTimezone, getSupportedTimezones } from '@/lib/timezones';
 
@@ -21,6 +25,9 @@ export type ProvisionEventOptions = {
     eventType?: EventTypeConvention;
     // Runs after the event is created, before the success step shows.
     onProvisioned?: (event: EventResponseDto) => Promise<unknown>;
+    // False hides "Email the host" (e.g. demo events, hosted by the admin's own demo account).
+    // It's also hidden when the host has no email address.
+    canNotifyHost?: boolean;
 };
 
 export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEventOptions = {}) {
@@ -30,6 +37,7 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
     const eventTypesQuery = useAdminPlatformEventTypes();
     const plansQuery = useAdminPlanTiers('EVENT');
     const provisionEvent = useProvisionAdminEventMutation();
+    const { data: appConfig } = useAppConfig();
 
     const [step, setStep] = useState<ProvisionEventStep>('event');
     const [eventType, setEventType] = useState<EventTypeConvention | ''>(options.eventType ?? '');
@@ -41,6 +49,13 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
     const [locationAddress, setLocationAddress] = useState('');
     const [mapsUrl, setMapsUrl] = useState('');
     const [visibility, setVisibility] = useState<EventVisibility>('PRIVATE');
+    const [description, setDescription] = useState('');
+    const [rsvpDeadline, setRsvpDeadline] = useState('');
+    const [themePresetId, setThemePresetId] = useState<string | null>(null);
+    // A host without an email address can't be emailed at all.
+    const canNotifyHost = (options.canNotifyHost ?? true) && Boolean(host.email);
+    const [notifyHostChoice, setNotifyHost] = useState(true);
+    const notifyHost = canNotifyHost && notifyHostChoice;
 
     const eventTypes = useMemo(
         () => (eventTypesQuery.data ?? []).filter((item) => item.isEnabled).toSorted((left, right) => left.sortOrder - right.sortOrder),
@@ -51,13 +66,21 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
     const selectedPlan = eligiblePlans.find((plan) => plan.code === planTierCode) ?? null;
     // Preselects the plan's shortest duration, which is what the server would pick.
     const duration = useAdminDurationPick(selectedPlan, { preselectShortest: true });
+    // Theme and RSVP deadline show only when the plan includes the module; the type is covered too,
+    // since a plan can't list a module its type doesn't support.
+    const planHasTheme = selectedPlan?.moduleKeys.includes('theme') ?? false;
+    const planHasRsvp = selectedPlan?.moduleKeys.includes('rsvp') ?? false;
+    const themePresetsQuery = useThemePresetsForType(planHasTheme ? selectedEventType : null);
+    const themePresets = planHasTheme ? themePresetsQuery.data : undefined;
+    const isThemeAvailable = planHasTheme && (themePresetsQuery.isLoading || (themePresets?.length ?? 0) > 0);
+    const selectedThemePresetId = effectiveThemePresetId(themePresetId, themePresets);
+    const selectedThemePreset = themePresets?.find((preset) => preset.id === selectedThemePresetId) ?? null;
     const timezoneOptions = useMemo(() => getSupportedTimezones(), []);
     const isTimezoneValid = timezoneOptions.includes(timezone);
     const { startAtMin, startAtMax } = getScheduleDatetimeLocalBounds({ startAt, endAt: '' });
-    const scheduleError =
-        startAt && isDatetimeLocalBefore(startAt, startAtMin)
-            ? tCreate('validation.startInPast')
-            : null;
+    const scheduleError = startAt && isDatetimeLocalBefore(startAt, startAtMin) ? tCreate('validation.startInPast') : null;
+    const rsvpDeadlineError =
+        planHasRsvp && rsvpDeadline && startAt && !isDatetimeLocalBefore(rsvpDeadline, startAt) ? t('rsvpDeadlineAfterStart') : null;
     const timezoneError = timezone && !isTimezoneValid ? tCreate('validation.invalidTimezone') : null;
     const fieldErrors = getFieldErrors(provisionEvent.error) ?? {};
     const canReview = Boolean(
@@ -67,9 +90,25 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
         startAt &&
         isTimezoneValid &&
         !scheduleError &&
+        !rsvpDeadlineError &&
         locationName.trim() &&
         locationAddress.trim(),
     );
+
+    // The welcome email as provisioning will send it. Built only on the review step, where the
+    // fields can't change, so it fetches once rather than on every keystroke.
+    const welcomePreviewRequest: AdminWelcomePreviewRequestDto | null =
+        step === 'review' && notifyHost && canReview
+            ? {
+                  hostUserId: host.id,
+                  title: title.trim(),
+                  startAt: datetimeLocalValueToIso(startAt) ?? undefined,
+                  timezone,
+                  locationName: locationName.trim() || undefined,
+                  locationAddress: locationAddress.trim() || undefined,
+              }
+            : null;
+    const welcomePreviewQuery = useWelcomeEmailPreview(welcomePreviewRequest);
 
     function fieldError(name: string) {
         return fieldErrors[`event.${name}`] ?? fieldErrors[name];
@@ -92,6 +131,7 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
 
         const startAtIso = datetimeLocalValueToIso(startAt);
         if (!startAtIso) return;
+        const rsvpDeadlineIso = planHasRsvp && rsvpDeadline ? (datetimeLocalValueToIso(rsvpDeadline) ?? undefined) : undefined;
 
         const initialSessionTitleKey = getCreateEventCatalogEntry(selectedEventType)?.initialSessionTitleKey;
         const initialSessionTitle = initialSessionTitleKey && tCreate.has(initialSessionTitleKey) ? tCreate(initialSessionTitleKey) : undefined;
@@ -99,8 +139,10 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
         try {
             const created = await provisionEvent.mutateAsync({
                 hostUserId: host.id,
+                notifyHost,
                 event: {
                     title: title.trim(),
+                    description: description.trim() || undefined,
                     eventType: selectedEventType,
                     planTierCode: selectedPlan.code,
                     coverageOptionId: duration.optionId || undefined,
@@ -112,6 +154,8 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
                     mapsUrl: mapsUrl.trim() || undefined,
                     brandingSettings: {},
                     initialSessionTitle,
+                    rsvpDeadline: rsvpDeadlineIso,
+                    themePresetId: selectedThemePresetId ?? undefined,
                 },
             });
             // A failure here is the caller's to show; the event itself was created.
@@ -129,6 +173,10 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
         setLocationName('');
         setLocationAddress('');
         setMapsUrl('');
+        setDescription('');
+        setRsvpDeadline('');
+        setThemePresetId(null);
+        setNotifyHost(true);
         provisionEvent.reset();
     }
 
@@ -162,6 +210,19 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
         setMapsUrl,
         visibility,
         setVisibility,
+        description,
+        setDescription,
+        descriptionMaxLength: appConfig?.contentLimits.eventDescriptionMaxLength ?? 2000,
+        planHasRsvp,
+        rsvpDeadline,
+        setRsvpDeadline,
+        rsvpDeadlineError,
+        isThemeAvailable,
+        themePresets: themePresets ?? [],
+        themePresetsQuery,
+        selectedThemePresetId,
+        selectedThemePreset,
+        setThemePresetId,
         startAtMin,
         startAtMax,
         scheduleError,
@@ -173,6 +234,15 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
         isPending: provisionEvent.isPending,
         error: provisionEvent.error ? toErrorMessage(provisionEvent.error, t('error')) : null,
         provisionAnother,
+        canNotifyHost,
+        notifyHost,
+        setNotifyHost,
+        // keepPreviousData would otherwise keep showing the last email once there is no request.
+        welcomePreview: welcomePreviewRequest ? (welcomePreviewQuery.data ?? null) : null,
+        isWelcomePreviewLoading: welcomePreviewRequest !== null && welcomePreviewQuery.isFetching,
+        welcomePreviewError: welcomePreviewRequest && welcomePreviewQuery.error ? toErrorMessage(welcomePreviewQuery.error) : null,
+        // What the success step reports: the choice that was submitted.
+        hostEmailed: Boolean(provisionEvent.data) && notifyHost,
     };
 }
 

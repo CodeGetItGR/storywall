@@ -45,6 +45,9 @@ export function DesktopNavRail() {
     const profileActive = isPathActive(pathname, routes.profile);
     const notificationsActive = isPathActive(pathname, routes.notifications);
 
+    // The avatar keeps its large picture and only its box shrinks, so the size change animates with the rail.
+    const avatarClassName = cn('ring-2 ring-white/40 transition-[width,height,font-size] duration-700 ease-out', !expanded && 'h-8 w-8 text-[11px]');
+
     function handleRailClick(event: MouseEvent<HTMLElement>) {
         if (event.target === event.currentTarget) {
             togglePinned();
@@ -64,19 +67,27 @@ export function DesktopNavRail() {
             )}
         >
             {/* Brand */}
-            <AccountSidebarLogo iconOnly={!expanded} className={expanded ? 'mb-8' : 'mx-auto mb-6'} />
+            <AccountSidebarLogo
+                iconOnly={!expanded}
+                className={cn('transition-[margin] duration-700 ease-out', expanded ? 'mb-8 ml-0' : 'mb-6 ml-3')}
+            />
 
             {/* Identity */}
-            <div className={cn('border-white/18 transition-[padding,border-color]', expanded ? 'border-b pb-6' : 'border-b-0 pb-0')}>
-                <div className={cn('flex items-center', expanded ? 'gap-4' : 'justify-center')}>
+            <div
+                className={cn(
+                    'border-b transition-[padding,border-color] duration-700 ease-out',
+                    expanded ? 'border-white/18 pb-6' : 'border-transparent pb-0',
+                )}
+            >
+                <div className={cn('flex items-center transition-[margin,gap] duration-700 ease-out', expanded ? 'ml-0 gap-4' : 'ml-3 gap-0')}>
                     {isDemoRoute ? (
                         <Avatar
                             src={authUser?.profilePictureUrl}
                             initials={getInitials(accountName)}
                             color="rgba(255, 255, 255, 0.14)"
-                            size={expanded ? 'xl' : 'sm'}
+                            size="xl"
                             alt={accountName}
-                            className="shrink-0 ring-2 ring-white/40 transition-shadow duration-700 ease-out"
+                            className={cn(avatarClassName, 'shrink-0')}
                         />
                     ) : (
                         <Link href={routes.profile} aria-label={tAccount('editProfile')} className="group relative shrink-0 rounded-full">
@@ -84,9 +95,9 @@ export function DesktopNavRail() {
                                 src={authUser?.profilePictureUrl}
                                 initials={getInitials(accountName)}
                                 color="rgba(255, 255, 255, 0.14)"
-                                size={expanded ? 'xl' : 'sm'}
+                                size="xl"
                                 alt={accountName}
-                                className={cn('ring-2 ring-white/40 transition-shadow duration-700 ease-out')}
+                                className={avatarClassName}
                             />
                             {expanded && (
                                 <span className="shadow-soft absolute right-0 bottom-0 flex h-6 w-6 items-center justify-center rounded-full bg-white text-primary ring-2 ring-primary transition-transform group-hover:scale-105 group-focus-visible:scale-105">
@@ -101,15 +112,24 @@ export function DesktopNavRail() {
                     </div>
                 </div>
 
-                {expanded && (
-                    <div className="mt-7 pl-20">
-                        <LanguageSwitcher variant="sidebar" />
+                {/* Language */}
+                <div
+                    inert={!expanded}
+                    className={cn(
+                        'grid transition-[grid-template-rows,opacity] duration-700 ease-out',
+                        expanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0',
+                    )}
+                >
+                    <div className="min-h-0 overflow-hidden">
+                        <div className="pt-7 pl-20">
+                            <LanguageSwitcher variant="sidebar" />
+                        </div>
                     </div>
-                )}
+                </div>
             </div>
 
             {/* Navigation */}
-            <div className={cn('no-scrollbar flex flex-1 flex-col gap-4 overflow-y-auto p-2', expanded ? 'mt-7 max-w-52' : 'mt-8')}>
+            <div className="mt-7 no-scrollbar flex flex-1 flex-col gap-4 overflow-y-auto p-2">
                 {showEventActions && homeHref && (
                     <DesktopAccountNavLink href={homeHref} icon={HomeIcon} label={t('items.home')} active={homeActive} expanded={expanded} />
                 )}

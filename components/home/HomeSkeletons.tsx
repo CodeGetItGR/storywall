@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 export const HOME_SECTION_CLASS_NAME = 'px-4 sm:px-8 lg:mx-auto lg:w-[clamp(32rem,40vw,42rem)] lg:px-0';
 
 export function EventQuickCardSkeleton() {
-    return <Skeleton className="h-62 w-44 shrink-0 rounded-lg lg:h-56 lg:w-40" />;
+    return <Skeleton className="h-72 w-52 shrink-0 rounded-lg" />;
 }
 
 export function EventQuickCardsSkeleton({ count = 3 }: { count?: number }) {

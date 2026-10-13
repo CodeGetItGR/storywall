@@ -70,17 +70,17 @@ export function getLaterDatetimeLocalValue(...values: Array<string | null | unde
 export function getScheduleDatetimeLocalBounds({
     startAt,
     endAt,
-    maxLeadDays,
+    latestStartAt,
     referenceDate = new Date(),
 }: {
     startAt?: string | null;
     endAt?: string | null;
-    // Furthest ahead the start may be scheduled, counted from `referenceDate`.
-    maxLeadDays?: number;
+    // Latest start the event's coverage allows, as an ISO instant (see getLatestStartAt).
+    latestStartAt?: string | null;
     referenceDate?: Date;
 }): { startAtMin: string; startAtMax?: string; endAtMin: string } {
     const nowAt = getCurrentDatetimeLocalValue(referenceDate);
-    const leadCap = maxLeadDays !== undefined ? addDatetimeLocalDuration(nowAt, { days: maxLeadDays }) : null;
+    const leadCap = latestStartAt ? toDatetimeLocalValue(latestStartAt) || null : null;
     const endCap = isDatetimeLocalAfter(endAt, nowAt) ? endAt : null;
     const startAtMax = getEarlierDatetimeLocalValue(leadCap, endCap) ?? undefined;
     const endAtMin = getLaterDatetimeLocalValue(nowAt, startAt) ?? nowAt;
@@ -215,34 +215,45 @@ export function joinDatetimeLocalValue(date: string, time: string): string {
     return date && time ? `${date}T${time}` : '';
 }
 
-const eventRangeFormat: Intl.DateTimeFormatOptions = {
-    weekday: 'long',
+const eventDateFormat: Intl.DateTimeFormatOptions = {
+    weekday: 'short',
     day: 'numeric',
-    month: 'long',
+    month: 'short',
     year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
 };
 
-// An event's start and end in its own time zone. A same-day event names the date once
-// ("Saturday, 12 June 2027, 18:00 – 23:00"); one that runs past midnight names both dates.
-export function formatEventDateRange(
+export interface EventDateParts {
+    date: string;
+    time: string;
+}
+
+// When an event runs, as a date line and a time line, in the event's time
+// zone. A same-day event names its date once; one that runs past midnight
+// names both.
+export function formatEventDateParts(
     locale: string,
     startAt: string | null | undefined,
     endAt: string | null | undefined,
     timeZone?: string | null,
-): string | null {
+): EventDateParts | null {
     const start = startAt ? parseDate(startAt) : null;
     if (!start) return null;
 
     const end = endAt ? parseDate(endAt) : null;
-    let format: Intl.DateTimeFormat;
+    let dateFormat: Intl.DateTimeFormat;
+    let timeFormat: Intl.DateTimeFormat;
     try {
-        format = dateTimeFormat(locale, { ...eventRangeFormat, timeZone: timeZone ?? undefined });
+        dateFormat = dateTimeFormat(locale, { ...eventDateFormat, timeZone: timeZone ?? undefined });
+        timeFormat = dateTimeFormat(locale, { ...defaultTimeFormat, timeZone: timeZone ?? undefined });
     } catch {
         // An unknown time zone name: show the times in the viewer's own.
-        format = dateTimeFormat(locale, eventRangeFormat);
+        dateFormat = dateTimeFormat(locale, eventDateFormat);
+        timeFormat = dateTimeFormat(locale, defaultTimeFormat);
     }
 
-    return end && end > start ? format.formatRange(start, end) : format.format(start);
+    if (!end || end <= start) return { date: dateFormat.format(start), time: timeFormat.format(start) };
+    if (dateFormat.format(start) === dateFormat.format(end)) {
+        return { date: dateFormat.format(start), time: timeFormat.formatRange(start, end) };
+    }
+    return { date: dateFormat.formatRange(start, end), time: `${timeFormat.format(start)} – ${timeFormat.format(end)}` };
 }
