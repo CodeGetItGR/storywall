@@ -7,6 +7,7 @@ import { getLocale } from 'next-intl/server';
 import { type ReactNode } from 'react';
 
 import { OverlayLeakProbe } from '@/components/dev/OverlayLeakProbe';
+import { SpeedInsightsReporter } from '@/components/layout/SpeedInsightsReporter';
 
 const geist = Geist({ subsets: ['latin'] });
 
@@ -36,7 +37,14 @@ export async function RootDocument({ children, messages }: RootDocumentProps) {
         <html lang={locale} className={`${geist.className} ${abhayaLibre.variable} ${alegreya.variable} h-dvh bg-background`}>
             <body className="h-(--visual-viewport-page-height) overflow-hidden overscroll-none antialiased">
                 <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
-                {process.env.NODE_ENV === 'production' ? <Analytics /> : <OverlayLeakProbe />}
+                {process.env.NODE_ENV === 'production' ? (
+                    <>
+                        <Analytics />
+                        <SpeedInsightsReporter />
+                    </>
+                ) : (
+                    <OverlayLeakProbe />
+                )}
             </body>
         </html>
     );
