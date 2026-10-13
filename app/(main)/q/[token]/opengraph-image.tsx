@@ -9,5 +9,6 @@ export const contentType = 'image/jpeg';
 type ImageProps = { params: Promise<{ token: string }> };
 
 export default async function OpenGraphImage({ params }: ImageProps) {
-    return eventOgImage(await getQrShareEvent((await params).token));
+    const { token } = await params;
+    return eventOgImage(await getQrShareEvent(token), () => getQrShareEvent(token, { fresh: true }));
 }
