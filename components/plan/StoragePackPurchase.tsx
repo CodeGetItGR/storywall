@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { AppLink } from '@/components/ui/AppLink';
 import { useStoragePurchasePaused } from '@/hooks/useBillingWithdrawals';
 import type { PurchaseBlock } from '@/hooks/usePurchaseBlock';
 import { useStoragePackSelection } from '@/hooks/useStoragePackSelection';
@@ -112,9 +112,9 @@ export function StoragePackPurchase({
 
                         {/* Buy */}
                         {paused ? null : canPurchase ? (
-                            <Link href={routes.events.checkoutReview(eventId, 'storage', { code: selectedService.code })} className={BUY_CLASS_NAME}>
+                            <AppLink href={routes.events.checkoutReview(eventId, 'storage', { code: selectedService.code })} className={BUY_CLASS_NAME}>
                                 {t('buy', { amount: priceLabel })}
-                            </Link>
+                            </AppLink>
                         ) : (
                             <span role="link" aria-disabled="true" className={cn(BUY_CLASS_NAME, 'cursor-not-allowed opacity-40')}>
                                 {t('buy', { amount: priceLabel })}

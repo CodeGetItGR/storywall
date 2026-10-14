@@ -1,10 +1,10 @@
 'use client';
 
 import { Bell, Menu } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { Logo } from '@/components/common/Logo';
+import { AppLink } from '@/components/ui/AppLink';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { routes } from '@/lib/routes';
 import { useAccountPanel } from '@/providers/AccountPanelProvider';
@@ -18,13 +18,13 @@ export function HomeHeader() {
     return (
         <div className="flex items-center justify-between gap-4 py-2">
             {/* Brand */}
-            <Link href={routes.landing} className="rounded-lg">
+            <AppLink href={routes.landing} className="rounded-lg">
                 <Logo direction="row" iconClassName="h-9 w-auto sm:h-10" wordmarkClassName="h-7 w-auto sm:h-8" />
-            </Link>
+            </AppLink>
 
             {/* Actions */}
             <div className="flex shrink-0 items-center gap-3">
-                <Link
+                <AppLink
                     href={routes.notifications}
                     aria-label={tNotifications('title')}
                     className="relative flex h-11 w-11 items-center justify-center lg:hidden"
@@ -35,7 +35,7 @@ export function HomeHeader() {
                             {unreadCount > 9 ? '9+' : unreadCount}
                         </span>
                     )}
-                </Link>
+                </AppLink>
                 <button
                     type="button"
                     onClick={openAccount}

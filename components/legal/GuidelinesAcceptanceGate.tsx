@@ -1,12 +1,12 @@
 'use client';
 
 import { Loader2, ScrollText } from 'lucide-react';
-import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { type ChangeEvent, createContext, type Dispatch, type ReactNode, type SetStateAction, useCallback, useContext, useState } from 'react';
 
 import { AcceptanceCheckboxes } from '@/components/legal/AcceptanceCheckboxes';
+import { AppLink } from '@/components/ui/AppLink';
 import { useAcceptGuidelines } from '@/hooks/useAcceptGuidelines';
 import { useAcceptTerms } from '@/hooks/useAcceptTerms';
 import { useAuth } from '@/hooks/useAuth';
@@ -137,14 +137,14 @@ export function GuidelinesAcceptanceGate({ children }: { children: ReactNode }) 
                         onAdultConfirmedChangeAction={onAdultConfirmedChange}
                     />
                 ) : (
-                    <Link
+                    <AppLink
                         href={routes.legal.communityGuidelines()}
                         target="_blank"
                         rel="noopener"
                         className="text-sm font-semibold text-ink underline"
                     >
                         {t('read')} <span className="sr-only">{t('opensInNewTab')}</span>
-                    </Link>
+                    </AppLink>
                 )}
 
                 {errorMessage && (

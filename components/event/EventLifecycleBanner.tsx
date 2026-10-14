@@ -1,10 +1,10 @@
 'use client';
 
 import { Clock3 } from 'lucide-react';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
+import { AppLink } from '@/components/ui/AppLink';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useIsHost, useRouteEventId } from '@/providers/EventProvider';
 
@@ -39,12 +39,12 @@ export function EventLifecycleBanner() {
                     </div>
                 </div>
                 {showAction && (
-                    <Link
+                    <AppLink
                         href={actionHref}
                         className="inline-flex min-h-10 w-full shrink-0 items-center justify-center rounded-full bg-background/80 px-3 py-2 text-xs font-semibold text-ink ring-1 ring-black/5 sm:w-auto"
                     >
                         {t(`${status}.action`)}
-                    </Link>
+                    </AppLink>
                 )}
             </div>
         </div>

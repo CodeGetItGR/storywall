@@ -1,6 +1,6 @@
 import { ChevronRight, MailCheck, MailQuestionMark, MailX } from 'lucide-react';
-import Link from 'next/link';
 
+import { AppLink } from '@/components/ui/AppLink';
 import type { EventRsvpSummaryDto } from '@/lib/api/types';
 import { formatCount } from '@/lib/format';
 import { routes } from '@/lib/routes';
@@ -20,13 +20,13 @@ export function RsvpSummarySection({ eventId, title, summary }: RsvpSummarySecti
 
     return (
         <div>
-            <Link
+            <AppLink
                 href={routes.events.tools.rsvp(eventId)}
                 className="group mb-2 flex items-center gap-1 text-sm font-semibold text-ink hover:text-ink-muted"
             >
                 {title}
                 <ChevronRight className="h-3.5 w-3.5 shrink-0 text-ink-faint transition-colors group-hover:text-ink-muted" aria-hidden="true" />
-            </Link>
+            </AppLink>
             <div className="flex justify-between rounded-md bg-surface-muted/70 px-3 py-2.5">
                 {rows.map(({ key, value, icon: Icon }) => (
                     <div key={key} className="flex items-center justify-between gap-2 text-sm">

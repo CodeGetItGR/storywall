@@ -27,7 +27,7 @@ vi.mock('@/hooks/useModuleCopy', () => {
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
 vi.mock('next/image', () => ({ default: () => null }));
 // BackButton steps back through the router when the previous page is in the app.
-vi.mock('next/navigation', () => ({ useRouter: () => ({ back: vi.fn() }) }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/events/e1', useRouter: () => ({ back: vi.fn() }) }));
 vi.mock('@/hooks/useAppConfig', () => ({
     useAppConfig: () => ({ data: { reportTargetTypes, modules: [], contentLimits: {} } }),
 }));

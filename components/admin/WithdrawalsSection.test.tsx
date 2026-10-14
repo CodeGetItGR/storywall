@@ -30,7 +30,7 @@ const row: WithdrawalAdminDto = {
 };
 
 // BackButton steps back through the router when the previous page is in the app.
-vi.mock('next/navigation', () => ({ useRouter: () => ({ back: vi.fn() }) }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/events/e1', useRouter: () => ({ back: vi.fn() }) }));
 
 vi.mock('@/hooks/useAdmin', () => ({
     useAdminWithdrawals: () => ({ data: [row], isLoading: false, isFetching: false, error: null, refetch: vi.fn() }),

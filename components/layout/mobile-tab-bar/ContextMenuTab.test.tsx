@@ -6,7 +6,7 @@ import { ContextMenuTab } from './ContextMenuTab';
 
 const mocks = vi.hoisted(() => ({ prefetch: vi.fn(), onItemClick: vi.fn() }));
 
-vi.mock('next/navigation', () => ({ useRouter: () => ({ prefetch: mocks.prefetch }) }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/events/e1', useRouter: () => ({ prefetch: mocks.prefetch }) }));
 
 const items = [
     { key: 'manage', href: '/events/e1/manage', icon: Settings, label: 'Manage' },

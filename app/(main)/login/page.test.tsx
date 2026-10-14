@@ -19,7 +19,7 @@ const mocks = vi.hoisted(() => ({
     oauthButtons: null as OAuthButtonsProps | null,
 }));
 
-vi.mock('next/navigation', () => ({ useSearchParams: () => new URLSearchParams() }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/login', useSearchParams: () => new URLSearchParams() }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ login: vi.fn(), oauth: mocks.oauth }) }));
 vi.mock('@/hooks/useAuthPageRedirect', () => ({ useAuthPageRedirect: () => ({ shouldRenderAuthPage: true }) }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'generic error' }));

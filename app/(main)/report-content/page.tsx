@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 
 import { ContentNoticeForm } from '@/components/contentNotice/ContentNoticeForm';
 import { LegalPageShell } from '@/components/legal/LegalPageShell';
+import { AppLink } from '@/components/ui/AppLink';
 import { routes } from '@/lib/routes';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -22,9 +22,9 @@ export default async function ReportContentPage() {
                 <p className="mt-2 text-sm text-ink-muted">
                     {t.rich('guidelines', {
                         link: (chunks) => (
-                            <Link className="underline" href={routes.legal.communityGuidelines()}>
+                            <AppLink className="underline" href={routes.legal.communityGuidelines()}>
                                 {chunks}
-                            </Link>
+                            </AppLink>
                         ),
                     })}
                 </p>

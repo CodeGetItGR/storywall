@@ -1,9 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { type ChangeEvent, type ReactNode, useId } from 'react';
 
+import { AppLink } from '@/components/ui/AppLink';
 import { routes } from '@/lib/routes';
 
 // The two boxes every new account ticks (register, the OAuth sign-up modal) and the
@@ -34,9 +34,9 @@ export function AcceptanceCheckboxes({
     const docLink = (href: string) =>
         function DocLink(chunks: ReactNode) {
             return (
-                <Link href={href} target="_blank" rel="noopener" className="font-semibold underline hover:text-ink">
+                <AppLink href={href} target="_blank" rel="noopener" className="font-semibold underline hover:text-ink">
                     {chunks} <span className="sr-only">{t('opensInNewTab')}</span>
-                </Link>
+                </AppLink>
             );
         };
     const links = {

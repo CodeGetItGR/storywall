@@ -1,12 +1,12 @@
 'use client';
 
 import { ChevronRight } from 'lucide-react';
-import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { HomeNextEventCountdown } from '@/components/home/HomeNextEventCountdown';
+import { AppLink } from '@/components/ui/AppLink';
 import Badge from '@/components/ui/badge';
 import type { EventGridItem } from '@/hooks/useEventGridItems';
 import { useRecentEventItems } from '@/hooks/useEventGridItems';
@@ -39,7 +39,7 @@ export function HomeNextEventCard({ items }: { items: EventGridItem[] }) {
             <h2 id="home-next-event-heading" className="px-1 text-xs font-semibold tracking-wide text-ink-faint uppercase">
                 {t('nextEvent.title')}
             </h2>
-            <Link
+            <AppLink
                 href={routes.events.feed(member.eventId)}
                 className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card/60 transition-colors hover:border-ink-muted"
             >
@@ -70,7 +70,7 @@ export function HomeNextEventCard({ items }: { items: EventGridItem[] }) {
                     </div>
                     <ChevronRight className="h-4 w-4 shrink-0 text-ink-faint transition-transform group-hover:translate-x-0.5" />
                 </div>
-            </Link>
+            </AppLink>
         </section>
     );
 }

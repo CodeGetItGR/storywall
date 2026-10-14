@@ -1,13 +1,13 @@
 'use client';
 
 import { ArrowRight, Pin } from 'lucide-react';
-import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import React, { useMemo } from 'react';
 import { PiMusicNotesPlusFill } from 'react-icons/pi';
 
 import { LightRay } from '@/components/feed/LightRay';
 import { CommentsList } from '@/components/feed/post/CommentsList';
+import { AppLink } from '@/components/ui/AppLink';
 import type { PostResponseDto } from '@/lib/api/types';
 import { formatPlaylistDigestContent } from '@/lib/feed/playlistDigest';
 import { dateTimeFormat } from '@/lib/format';
@@ -99,7 +99,7 @@ export function PlaylistDigestCard({ post }: PlaylistDigestCardProps) {
 
                 {/* Actions */}
                 <div className="relative z-10 mt-4 flex items-center justify-end">
-                    <Link
+                    <AppLink
                         href={routes.events.tools.playlist(post.eventId)}
                         className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/15 px-3 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-white/25"
                         aria-label={t('openPlaylist')}
@@ -107,7 +107,7 @@ export function PlaylistDigestCard({ post }: PlaylistDigestCardProps) {
                         <PiMusicNotesPlusFill className="h-4 w-4" aria-hidden="true" />
                         <span>{t('openPlaylist')}</span>
                         <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
-                    </Link>
+                    </AppLink>
                 </div>
             </div>
 

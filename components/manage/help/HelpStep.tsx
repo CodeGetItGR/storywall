@@ -1,6 +1,6 @@
 import { Check } from 'lucide-react';
-import Link from 'next/link';
 
+import { AppLink } from '@/components/ui/AppLink';
 import { cn } from '@/lib/utils';
 
 export interface HelpStepAction {
@@ -43,13 +43,13 @@ export function HelpStep({ index, title, body, complete, actions, isLast }: Help
                 <div className="flex flex-col items-baseline gap-x-2 gap-y-0.5 sm:flex-row">
                     <h3 className="text-sm font-semibold text-ink">{title}</h3>
                     {actions.map((action) => (
-                        <Link
+                        <AppLink
                             key={action.key}
                             href={action.href}
                             className="inline-flex min-h-6 items-center text-sm font-semibold text-primary underline decoration-primary/40 underline-offset-2 transition-colors hover:text-primary-dark focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:outline-none"
                         >
                             {action.label}
-                        </Link>
+                        </AppLink>
                     ))}
                 </div>
                 {body && <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">{body}</p>}
