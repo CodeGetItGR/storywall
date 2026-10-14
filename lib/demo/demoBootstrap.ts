@@ -5,7 +5,6 @@ import type { AppConfigResponseDto } from '@/lib/api/types';
 import { demoContentVersion, demoStorageKey, keepStoriesLive, swapMediaUrls } from '@/lib/demo/demoDb';
 import { registerDemoEventRoute } from '@/lib/demo/demoRouting';
 import { createDemoSession, type DemoSession } from '@/lib/demo/demoSession';
-import { createDemoHandlers } from '@/lib/demo/mockHandlers';
 import { startDemoMocking, startDemoWorker } from '@/lib/demo/mockWorker';
 import { fetchDemoSnapshot } from '@/lib/demo/snapshotClient';
 import { rebaseSnapshot } from '@/lib/demo/snapshotRebase';
@@ -40,10 +39,15 @@ export async function bootstrapDemo(
     queryClients: DemoQueryClients,
     signal: AbortSignal,
 ): Promise<DemoBootstrapResult> {
-    // None of the three waits on another, so they load at once.
+    // None of these waits on another, so they load at once. The handlers, and the msw code they
+    // bring, load here rather than with the page: nothing needs them before the snapshot is in.
     const workerStarted = startDemoWorker().then(
         () => true,
         () => false,
+    );
+    const handlersLoaded = import('@/lib/demo/mockHandlers').then(
+        ({ createDemoHandlers }) => createDemoHandlers,
+        () => null,
     );
     const [result, config] = await Promise.all([fetchDemoSnapshot(eventTypeKey), loadAppConfig(queryClients)]);
     if (result.kind === 'not-found' || result.kind === 'rate-limited') return { kind: result.kind };
@@ -58,6 +62,8 @@ export async function bootstrapDemo(
     keepStoriesLive(session.db);
 
     registerDemoEventRoute(session.eventId, eventTypeSlug);
+    const createDemoHandlers = await handlersLoaded;
+    if (!createDemoHandlers || signal.aborted) return { kind: 'failed' };
     try {
         await startDemoMocking(createDemoHandlers(session));
     } catch {
