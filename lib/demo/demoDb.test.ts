@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { MediaResponseDto } from '@/lib/api/types';
 import { buildFixtureSnapshot } from '@/lib/demo/__fixtures__/demoSnapshot';
@@ -22,6 +22,17 @@ describe('demo store', () => {
         expect(db.get('media', 'med-1')?.mediaUrl).toContain('sig=new');
         expect(db.get('posts', 'post-1')?.media[0].mediaUrl).toContain('sig=new');
         expect(db.get('events', snapshot.event.id)?.coverMedia?.mediaUrl).toContain('sig=new');
+    });
+
+    it('saves the store once for the whole swap', () => {
+        const snapshot = buildFixtureSnapshot();
+        const db = createDemoDb('WEDDING', snapshot, 'v1');
+        const setItem = vi.spyOn(Storage.prototype, 'setItem');
+
+        swapMediaUrls(db, { media: snapshot.media, members: snapshot.members });
+
+        expect(setItem).toHaveBeenCalledTimes(1);
+        setItem.mockRestore();
     });
 
     it('swaps persona picture URLs on members and every author by member id', () => {

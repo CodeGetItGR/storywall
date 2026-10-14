@@ -140,34 +140,37 @@ export function swapMediaUrls(db: DemoDb, fresh: Pick<DemoSnapshotDto, 'media' |
     const freshMedia = new Map(fresh.media.map((m) => [m.id, m]));
     const avatars = new Map(fresh.members.map((member) => [member.id, member.avatarUrl]));
 
-    for (const media of db.list('media')) {
-        if (freshMedia.has(media.id)) db.update('media', media.id, (m) => withFreshUrls(m, freshMedia));
-    }
-    for (const post of db.list('posts')) {
-        const staleMedia = post.media.some((m) => freshMedia.has(m.id));
-        const staleAvatar = hasStaleAvatar(post, avatars) || post.recentComments.some((c) => hasStaleAvatar(c, avatars));
-        if (staleMedia || staleAvatar) {
-            db.update('posts', post.id, (p) => ({
-                ...withFreshAvatar(p, avatars),
-                media: p.media.map((m) => withFreshUrls(m, freshMedia)),
-                recentComments: p.recentComments.map((c) => withFreshAvatar(c, avatars)),
-            }));
+    // One save for the whole swap: it touches nearly every record.
+    db.batch(() => {
+        for (const media of db.list('media')) {
+            if (freshMedia.has(media.id)) db.update('media', media.id, (m) => withFreshUrls(m, freshMedia));
         }
-    }
-    for (const event of db.list('events')) {
-        if (event.coverMedia && freshMedia.has(event.coverMedia.id)) {
-            db.update('events', event.id, (e) => ({ ...e, coverMedia: e.coverMedia && withFreshUrls(e.coverMedia, freshMedia) }));
+        for (const post of db.list('posts')) {
+            const staleMedia = post.media.some((m) => freshMedia.has(m.id));
+            const staleAvatar = hasStaleAvatar(post, avatars) || post.recentComments.some((c) => hasStaleAvatar(c, avatars));
+            if (staleMedia || staleAvatar) {
+                db.update('posts', post.id, (p) => ({
+                    ...withFreshAvatar(p, avatars),
+                    media: p.media.map((m) => withFreshUrls(m, freshMedia)),
+                    recentComments: p.recentComments.map((c) => withFreshAvatar(c, avatars)),
+                }));
+            }
         }
-    }
-    for (const member of db.list('members')) {
-        if (avatars.has(member.id)) db.update('members', member.id, (m) => ({ ...m, avatarUrl: avatars.get(m.id) ?? null }));
-    }
-    for (const comment of db.list('comments')) {
-        if (hasStaleAvatar(comment, avatars)) db.update('comments', comment.id, (c) => withFreshAvatar(c, avatars));
-    }
-    for (const story of db.list('stories')) {
-        if (hasStaleAvatar(story, avatars)) db.update('stories', story.id, (st) => withFreshAvatar(st, avatars));
-    }
+        for (const event of db.list('events')) {
+            if (event.coverMedia && freshMedia.has(event.coverMedia.id)) {
+                db.update('events', event.id, (e) => ({ ...e, coverMedia: e.coverMedia && withFreshUrls(e.coverMedia, freshMedia) }));
+            }
+        }
+        for (const member of db.list('members')) {
+            if (avatars.has(member.id)) db.update('members', member.id, (m) => ({ ...m, avatarUrl: avatars.get(m.id) ?? null }));
+        }
+        for (const comment of db.list('comments')) {
+            if (hasStaleAvatar(comment, avatars)) db.update('comments', comment.id, (c) => withFreshAvatar(c, avatars));
+        }
+        for (const story of db.list('stories')) {
+            if (hasStaleAvatar(story, avatars)) db.update('stories', story.id, (st) => withFreshAvatar(st, avatars));
+        }
+    });
 }
 
 const HOUR_MS = 3_600_000;
@@ -188,10 +191,12 @@ export function keepStoriesLive(db: DemoDb, now: Date = new Date()): void {
     const oldest = Math.max(0, ...ages.values());
     const scale = oldest > DEMO_STORY_WINDOW_MS ? DEMO_STORY_WINDOW_MS / oldest : 1;
 
-    for (const story of stories) {
-        const createdAtMs = nowMs - Math.round((ages.get(story.id) ?? 0) * scale);
-        const createdAt = new Date(createdAtMs).toISOString();
-        if (scale === 1 && Date.parse(story.expiresAt) > nowMs) continue;
-        db.update('stories', story.id, (s) => ({ ...s, createdAt, expiresAt: new Date(createdAtMs + STORY_LIFETIME_MS).toISOString() }));
-    }
+    db.batch(() => {
+        for (const story of stories) {
+            const createdAtMs = nowMs - Math.round((ages.get(story.id) ?? 0) * scale);
+            const createdAt = new Date(createdAtMs).toISOString();
+            if (scale === 1 && Date.parse(story.expiresAt) > nowMs) continue;
+            db.update('stories', story.id, (s) => ({ ...s, createdAt, expiresAt: new Date(createdAtMs + STORY_LIFETIME_MS).toISOString() }));
+        }
+    });
 }
