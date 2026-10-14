@@ -1,10 +1,10 @@
 'use client';
 
 import { AlertTriangle, ArrowLeft, RefreshCw } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
+import { AppLink } from '@/components/ui/AppLink';
 import { getErrorRef } from '@/lib/api/errors';
 
 type PageErrorStateProps = {
@@ -42,13 +42,13 @@ export function PageErrorState({ title, description, actionHref, actionLabel, on
                     </button>
                 )}
                 {actionHref && actionLabel && (
-                    <Link
+                    <AppLink
                         href={actionHref}
                         className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted"
                     >
                         <ArrowLeft className="h-4 w-4" />
                         {actionLabel}
-                    </Link>
+                    </AppLink>
                 )}
             </div>
 

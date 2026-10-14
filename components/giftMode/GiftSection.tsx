@@ -1,11 +1,11 @@
 'use client';
 
 import { CreditCard, Gift, Pencil, Printer } from 'lucide-react';
-import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { GiftDetailsModal } from '@/components/giftMode/GiftDetailsModal';
 import { GiftPinModal } from '@/components/giftMode/GiftPinModal';
+import { AppLink } from '@/components/ui/AppLink';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useGiftManagement } from '@/hooks/useGiftManagement';
 import type { GiftHandoverResponseDto } from '@/lib/api/types';
@@ -85,10 +85,10 @@ export function GiftSection({
                                     </button>
                                 )}
                                 {canPrintGiftCard(gift) && (
-                                    <Link href={routes.events.giftCard(eventId)} className={actionClass}>
+                                    <AppLink href={routes.events.giftCard(eventId)} className={actionClass}>
                                         <Printer className="h-4 w-4" aria-hidden="true" />
                                         {t('print')}
-                                    </Link>
+                                    </AppLink>
                                 )}
                                 {management.canEdit && (
                                     <button type="button" onClick={management.openDetails} className={actionClass}>

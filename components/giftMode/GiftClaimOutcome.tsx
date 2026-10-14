@@ -1,10 +1,10 @@
 'use client';
 
 import { Gift } from 'lucide-react';
-import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { Logo } from '@/components/common/Logo';
+import { AppLink } from '@/components/ui/AppLink';
 import type { GiftClaimResponseDto } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
 import { routes } from '@/lib/routes';
@@ -31,12 +31,12 @@ export function GiftClaimOutcome({ outcome, eventTitle }: { outcome: GiftClaimRe
             <p className="max-w-sm text-sm leading-relaxed text-ink-muted">{body}</p>
 
             {/* Next */}
-            <Link
+            <AppLink
                 href={routes.home}
                 className="mt-8 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
             >
                 {t('open')}
-            </Link>
+            </AppLink>
         </div>
     );
 }

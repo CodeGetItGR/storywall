@@ -1,18 +1,18 @@
 'use client';
 
 import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
 import type { ComponentPropsWithoutRef } from 'react';
 
+import { AppLink } from '@/components/ui/AppLink';
 import { useHistoryBackClick } from '@/hooks/useHistoryBackClick';
 import { cn } from '@/lib/utils';
 
 type BackButtonProps = {
-    href: ComponentPropsWithoutRef<typeof Link>['href'];
+    href: ComponentPropsWithoutRef<typeof AppLink>['href'];
     label: string;
     variant?: 'link' | 'icon';
     className?: string;
-    onClick?: ComponentPropsWithoutRef<typeof Link>['onClick'];
+    onClick?: ComponentPropsWithoutRef<typeof AppLink>['onClick'];
     // Go back to the previous page when it is in the app; href is only the fallback.
     historyBack?: boolean;
 };
@@ -22,7 +22,7 @@ export function BackButton({ href, label, variant = 'link', className, onClick, 
 
     if (variant === 'icon') {
         return (
-            <Link
+            <AppLink
                 href={href}
                 onClick={handleClick}
                 aria-label={label}
@@ -32,18 +32,18 @@ export function BackButton({ href, label, variant = 'link', className, onClick, 
                 )}
             >
                 <ArrowLeft className="h-5 w-5" />
-            </Link>
+            </AppLink>
         );
     }
 
     return (
-        <Link
+        <AppLink
             href={href}
             onClick={handleClick}
             className={cn('inline-flex min-h-10 items-center gap-1.5 text-xs font-semibold text-primary-dark', className)}
         >
             <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
             {label}
-        </Link>
+        </AppLink>
     );
 }

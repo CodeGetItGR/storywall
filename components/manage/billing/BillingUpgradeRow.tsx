@@ -1,9 +1,9 @@
 import { ChevronDown } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { PlanUpgradeModules } from '@/components/manage/billing/PlanUpgradeModules';
 import { DurationPicker } from '@/components/plan/DurationPicker';
+import { AppLink } from '@/components/ui/AppLink';
 import type { BillingUpgradeRow as BillingUpgradeRowData } from '@/hooks/useBillingUpgradeRows';
 import type { EventTypeConvention } from '@/lib/api/types';
 
@@ -79,13 +79,13 @@ export function BillingUpgradeRow({
             )}
 
             {/* Action */}
-            <Link
+            <AppLink
                 href={row.href}
                 aria-label={row.buttonAriaLabel}
                 className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:w-auto"
             >
                 {row.buttonLabel}
-            </Link>
+            </AppLink>
         </li>
     );
 }

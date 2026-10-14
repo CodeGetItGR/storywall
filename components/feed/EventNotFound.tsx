@@ -1,9 +1,9 @@
 'use client';
 
 import { HeartCrack } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+import { AppLink } from '@/components/ui/AppLink';
 import { useAuth } from '@/hooks/useAuth';
 import { routes } from '@/lib/routes';
 
@@ -24,12 +24,12 @@ export function EventNotFound() {
             </div>
             <h1 className="mb-3 text-2xl font-bold text-balance text-ink lg:text-3xl">{t('title')}</h1>
             <p className="mb-8 max-w-sm text-sm leading-relaxed text-ink-muted">{t('description')}</p>
-            <Link
+            <AppLink
                 href={href}
                 className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
             >
                 {cta}
-            </Link>
+            </AppLink>
         </div>
     );
 }

@@ -2,10 +2,10 @@
 
 import type { LucideIcon } from 'lucide-react';
 import { Baby, BookHeart, Gift, Image, Images, MessageSquareText, Music4, Ticket } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
+import { AppLink } from '@/components/ui/AppLink';
 import { useGiftAccount } from '@/hooks/useGiftAccount';
 import { useModuleCopy } from '@/hooks/useModuleCopy';
 import type { ModuleKeyConvention } from '@/lib/api/types';
@@ -79,7 +79,7 @@ export function QuickAccessBar() {
 
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
                     {enabledItems.map(({ key, moduleKey, href, icon: Icon }) => (
-                        <Link
+                        <AppLink
                             key={key}
                             href={href}
                             className="group flex items-center gap-3 rounded-2xl border border-border/70 bg-background/80 px-3 py-3 transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-[0_10px_24px_rgba(36,31,26,0.06)]"
@@ -91,7 +91,7 @@ export function QuickAccessBar() {
                                 <span className="block text-sm font-medium text-ink">{moduleCopy(moduleKey).name}</span>
                                 <span className="block text-xs text-ink-muted">{t(`items.${key}.subtitle`)}</span>
                             </span>
-                        </Link>
+                        </AppLink>
                     ))}
                 </div>
             </div>

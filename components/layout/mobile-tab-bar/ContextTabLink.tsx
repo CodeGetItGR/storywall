@@ -1,5 +1,4 @@
-import Link from 'next/link';
-
+import { AppLink } from '@/components/ui/AppLink';
 import { cn } from '@/lib/utils';
 
 import type { ContextNavItem } from './types';
@@ -14,7 +13,7 @@ export function ContextTabLink({ item, active, label }: ContextTabLinkProps) {
     const Icon = item.icon;
 
     return (
-        <Link
+        <AppLink
             href={item.href}
             className="flex min-w-12 flex-col items-center gap-0.5 px-3 py-1"
             aria-label={label}
@@ -28,6 +27,6 @@ export function ContextTabLink({ item, active, label }: ContextTabLinkProps) {
             >
                 <Icon className="h-5.5 w-5.5 text-ink transition-all duration-200" aria-hidden="true" />
             </span>
-        </Link>
+        </AppLink>
     );
 }

@@ -1,11 +1,11 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { MdLogout } from 'react-icons/md';
 
+import { AppLink } from '@/components/ui/AppLink';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsDemoRoute } from '@/hooks/useIsDemoRoute';
@@ -59,7 +59,7 @@ export function AccountLogoutButton({
 
     if (isDemoRoute) {
         return (
-            <Link
+            <AppLink
                 href={getPublicLandingPath(locale)}
                 aria-label={variant === 'sidebar' ? undefined : tDemo('exitDemo')}
                 onClick={onLogoutAction}
@@ -67,7 +67,7 @@ export function AccountLogoutButton({
             >
                 <MdLogout className={iconClassName} aria-hidden="true" />
                 {variant === 'sidebar' && tDemo('exitDemo')}
-            </Link>
+            </AppLink>
         );
     }
 

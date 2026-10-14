@@ -1,11 +1,11 @@
 'use client';
 
 import { ArrowRight, Loader2, Mail } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { AuthLoadingState } from '@/components/layout/AuthLoadingState';
+import { AppLink } from '@/components/ui/AppLink';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useContentLimits } from '@/hooks/useContentLimits';
 import { useForgotPassword } from '@/hooks/useForgotPassword';
@@ -70,9 +70,9 @@ export function ForgotPasswordPageContent() {
             )}
 
             {/* Back navigation */}
-            <Link href={routes.login} className="mt-6 block text-center text-xs font-semibold text-ink-muted hover:text-ink hover:underline">
+            <AppLink href={routes.login} className="mt-6 block text-center text-xs font-semibold text-ink-muted hover:text-ink hover:underline">
                 {t('signIn')}
-            </Link>
+            </AppLink>
         </AuthLayout>
     );
 }

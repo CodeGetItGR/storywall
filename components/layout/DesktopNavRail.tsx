@@ -1,7 +1,6 @@
 'use client';
 
 import { Bell, CalendarDays, Home as HomeIcon, Pencil, UserRound } from 'lucide-react';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
@@ -11,6 +10,7 @@ import { AccountSidebarLogo } from '@/components/account/AccountSidebarLogo';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { DesktopAccountNavLink } from '@/components/layout/DesktopAccountNavLink';
 import { isEventRoute, isPathActive } from '@/components/layout/mobile-tab-bar/utils';
+import { AppLink } from '@/components/ui/AppLink';
 import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useDesktopAccountSidebar } from '@/hooks/useDesktopAccountSidebar';
@@ -91,7 +91,7 @@ export function DesktopNavRail() {
                             className={cn(avatarClassName, 'shrink-0')}
                         />
                     ) : (
-                        <Link href={routes.profile} aria-label={tAccount('editProfile')} className="group relative shrink-0 rounded-full">
+                        <AppLink href={routes.profile} aria-label={tAccount('editProfile')} className="group relative shrink-0 rounded-full">
                             <Avatar
                                 src={authUser?.profilePictureUrl}
                                 initials={getInitials(accountName)}
@@ -105,7 +105,7 @@ export function DesktopNavRail() {
                                     <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                                 </span>
                             )}
-                        </Link>
+                        </AppLink>
                     )}
                     <div className={cn('min-w-0 transition-opacity', expanded ? 'opacity-100' : 'sr-only opacity-0')}>
                         <p className="truncate text-lg font-bold">{accountName}</p>

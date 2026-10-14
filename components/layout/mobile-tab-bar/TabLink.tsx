@@ -1,7 +1,7 @@
 import Image from 'next/image';
-import Link from 'next/link';
 import type { MouseEvent } from 'react';
 
+import { AppLink } from '@/components/ui/AppLink';
 import { cn } from '@/lib/utils';
 
 interface TabLinkProps {
@@ -14,7 +14,7 @@ interface TabLinkProps {
 
 export function TabLink({ href, icon, label, active, onClick }: TabLinkProps) {
     return (
-        <Link
+        <AppLink
             href={href}
             onClick={onClick}
             className="flex min-w-12 flex-col items-center gap-0.5 px-3 py-1"
@@ -37,6 +37,6 @@ export function TabLink({ href, icon, label, active, onClick }: TabLinkProps) {
                     unoptimized
                 />
             </span>
-        </Link>
+        </AppLink>
     );
 }

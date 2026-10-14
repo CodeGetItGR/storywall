@@ -1,9 +1,9 @@
 'use client';
 
 import { ArrowUpRight } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+import { AppLink } from '@/components/ui/AppLink';
 import { useActiveModuleCopy } from '@/hooks/useModuleCopy';
 import { cn } from '@/lib/utils';
 
@@ -43,13 +43,13 @@ export function UsagePanel({ title, planName, items, includedModuleKeys = [], ne
                 </div>
                 {nextPlanName &&
                     (upgradeHref ? (
-                        <Link
+                        <AppLink
                             href={upgradeHref}
                             className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary-light px-2.5 py-1 text-xs font-semibold text-primary-dark transition-opacity hover:opacity-90"
                         >
                             {t('upgradeTo', { plan: nextPlanName })}
                             <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
-                        </Link>
+                        </AppLink>
                     ) : (
                         <div className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary-light px-2.5 py-1 text-xs font-semibold text-primary-dark">
                             {t('upgradeTo', { plan: nextPlanName })}

@@ -1,7 +1,7 @@
 import { ChevronRight, Image as ImageIcon, Video } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+import { AppLink } from '@/components/ui/AppLink';
 import type { MediaSummaryDto } from '@/lib/api/types';
 import { formatCount } from '@/lib/format';
 import { routes } from '@/lib/routes';
@@ -16,13 +16,13 @@ export function MediaSummarySection({ eventId, summary }: MediaSummarySectionPro
 
     return (
         <div>
-            <Link
+            <AppLink
                 href={routes.events.tools.gallery(eventId)}
                 className="group mb-2 flex items-center gap-1 text-sm font-semibold text-ink hover:text-ink-muted"
             >
                 {t('title')}
                 <ChevronRight className="h-3.5 w-3.5 shrink-0 text-ink-faint transition-colors group-hover:text-ink-muted" aria-hidden="true" />
-            </Link>
+            </AppLink>
             <div className="flex gap-2">
                 <div className="flex flex-1 items-center justify-center gap-2 rounded-md bg-surface-muted/70 px-3 py-2.5">
                     <ImageIcon className="h-4 w-4 shrink-0 text-ink-faint" aria-hidden="true" />
