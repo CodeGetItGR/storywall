@@ -168,7 +168,13 @@ export function swapMediaUrls(db: DemoDb, fresh: Pick<DemoSnapshotDto, 'media' |
             if (hasStaleAvatar(comment, avatars)) db.update('comments', comment.id, (c) => withFreshAvatar(c, avatars));
         }
         for (const story of db.list('stories')) {
-            if (hasStaleAvatar(story, avatars)) db.update('stories', story.id, (st) => withFreshAvatar(st, avatars));
+            const staleMedia = !!story.media && freshMedia.has(story.media.id);
+            if (staleMedia || hasStaleAvatar(story, avatars)) {
+                db.update('stories', story.id, (st) => ({
+                    ...withFreshAvatar(st, avatars),
+                    media: st.media && withFreshUrls(st.media, freshMedia),
+                }));
+            }
         }
     });
 }
