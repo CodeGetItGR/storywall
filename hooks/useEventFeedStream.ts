@@ -4,6 +4,7 @@ import { type InfiniteData, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
 import { commentKeys } from '@/hooks/useComments';
+import { useIsDemoRoute } from '@/hooks/useIsDemoRoute';
 import { refreshFeedFirstPage } from '@/hooks/usePosts';
 import { api, ApiError } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -30,11 +31,13 @@ function retryAfterMs(error: unknown): number | null {
     return error instanceof ApiError && error.retryAfterSeconds !== undefined ? error.retryAfterSeconds * 1000 : null;
 }
 
+// The demo runs on local data: nothing ever changes on a server to stream.
 export function useEventFeedStream(eventId: string | null) {
     const queryClient = useQueryClient();
+    const isDemoRoute = useIsDemoRoute();
 
     useEffect(() => {
-        if (!eventId) return;
+        if (!eventId || isDemoRoute) return;
 
         let disposed = false;
         let evicted = false;
@@ -109,5 +112,5 @@ export function useEventFeedStream(eventId: string | null) {
             if (refreshTimer) clearTimeout(refreshTimer);
             stream?.close();
         };
-    }, [eventId, queryClient]);
+    }, [eventId, isDemoRoute, queryClient]);
 }

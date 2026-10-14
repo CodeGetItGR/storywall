@@ -9,6 +9,9 @@ import type { Page } from '@/lib/api/pagination';
 import type { PostResponseDto } from '@/lib/api/types';
 import { postKeys } from '@/lib/postQueries';
 
+const navigation = vi.hoisted(() => ({ pathname: '/events/event-1/feed' }));
+vi.mock('next/navigation', () => ({ usePathname: () => navigation.pathname }));
+
 const apiPost = vi.fn();
 const apiGet = vi.fn();
 vi.mock('@/lib/api/client', async (importOriginal) => {
@@ -50,6 +53,7 @@ async function flush() {
 
 beforeEach(() => {
     vi.useFakeTimers();
+    navigation.pathname = '/events/event-1/feed';
     apiPost.mockReset();
     apiGet.mockReset();
     FakeEventSource.instances = [];
@@ -68,6 +72,17 @@ describe('useEventFeedStream', () => {
         await flush();
         expect(apiPost).toHaveBeenCalledTimes(1);
         expect(FakeEventSource.instances[0].url).toContain('token=t1');
+    });
+
+    it('opens nothing in the demo', async () => {
+        navigation.pathname = '/demo/wedding/feed';
+        renderHook(() => useEventFeedStream('event-1'), { wrapper });
+        await flush();
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(60_000);
+        });
+        expect(apiPost).not.toHaveBeenCalled();
+        expect(FakeEventSource.instances).toHaveLength(0);
     });
 
     it('re-mints a token and reopens after a stream error', async () => {
