@@ -5,8 +5,10 @@ import { type ReactNode, use, useState } from 'react';
 
 import { DemoLoading } from '@/components/demo/DemoLoading';
 import { DemoShell } from '@/components/demo/DemoShell';
+import { DemoSnapshotEarlyRequest } from '@/components/demo/DemoSnapshotEarlyRequest';
 import { DemoUnavailable } from '@/components/demo/DemoUnavailable';
 import { useDemoSession } from '@/hooks/useDemoSession';
+import { demoEventTypeKeyFromSlug } from '@/lib/demo/demoEventTypes';
 import { makeQueryClient } from '@/lib/queryClient';
 
 // A client layout on purpose: the demo snapshot must be fetched from the visitor's browser
@@ -17,7 +19,14 @@ export default function DemoEventTypeLayout({ children, params }: { children: Re
     const [queryClient] = useState(makeQueryClient);
     const state = useDemoSession(eventType, queryClient);
 
-    if (state.kind === 'loading') return <DemoLoading />;
+    if (state.kind === 'loading') {
+        return (
+            <>
+                <DemoSnapshotEarlyRequest eventTypeKey={demoEventTypeKeyFromSlug(eventType)} />
+                <DemoLoading />
+            </>
+        );
+    }
     if (state.kind !== 'ready') return <DemoUnavailable reason={state.kind} />;
 
     return (

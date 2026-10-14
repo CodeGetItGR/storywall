@@ -1,10 +1,10 @@
-import Link from 'next/link';
 import { getLocale, getTranslations } from 'next-intl/server';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { CookieSettingsLink } from '@/components/consent/CookieSettingsLink';
 import { LandingMotionToggle } from '@/components/landing/LandingMotionToggle';
 import { LandingNewsletter } from '@/components/landing/LandingNewsletter';
+import { AppLink } from '@/components/ui/AppLink';
 import type { Locale } from '@/i18n/config';
 import { getForBusinessPath } from '@/i18n/publicLocale';
 import { loadLiveOccasions } from '@/lib/occasions/liveOccasions.server';
@@ -115,16 +115,16 @@ export async function LandingFooter({ anchorBase = '', topHref = TOP_HREF }: { a
             <div className="grid grid-cols-[1fr_auto] items-center gap-4 border-t border-white/16 pt-5.5 text-[9px] font-extrabold tracking-widest text-white/62 min-[761px]:grid-cols-[1fr_auto_1fr] min-[761px]:gap-6.5">
                 <span>{t('copyright')}</span>
                 <div className="col-span-2 row-start-2 flex flex-wrap gap-4.5 min-[761px]:col-span-1 min-[761px]:row-start-1">
-                    <Link className="text-white/62 no-underline hover:text-white" href={routes.legal.communityGuidelines()}>
+                    <AppLink className="text-white/62 no-underline hover:text-white" href={routes.legal.communityGuidelines()}>
                         {t('communityGuidelines')}
-                    </Link>
-                    <Link className="text-white/62 no-underline hover:text-white" href={routes.reportContent}>
+                    </AppLink>
+                    <AppLink className="text-white/62 no-underline hover:text-white" href={routes.reportContent}>
                         {t('reportContent')}
-                    </Link>
+                    </AppLink>
                     {LEGAL_LINKS.map(({ key, href }) => (
-                        <Link key={key} className="text-white/62 no-underline hover:text-white" href={href}>
+                        <AppLink key={key} className="text-white/62 no-underline hover:text-white" href={href}>
                             {t(`legalLinks.${key}`)}
-                        </Link>
+                        </AppLink>
                     ))}
                     <CookieSettingsLink className="text-white/62 hover:text-white" />
                 </div>

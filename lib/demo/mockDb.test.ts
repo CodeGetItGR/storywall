@@ -64,4 +64,29 @@ describe('createMockDb', () => {
         const reloaded = createMockDb('test:db', seed);
         expect(reloaded.list('widgets')).toEqual([{ id: 'w1', eventId: 'e1', label: 'seed' }]);
     });
+
+    it('batch() saves once, after every write inside it', () => {
+        const db = createMockDb('test:db', seed);
+        const setItem = vi.spyOn(Storage.prototype, 'setItem');
+
+        db.batch(() => {
+            db.update('widgets', 'w1', (widget) => ({ ...widget, label: 'changed' }));
+            db.batch(() => db.create('widgets', { id: 'w2', eventId: 'e1', label: 'added' }));
+            expect(setItem).not.toHaveBeenCalled();
+        });
+
+        expect(setItem).toHaveBeenCalledTimes(1);
+        setItem.mockRestore();
+        expect(createMockDb('test:db', seed).list('widgets').map((w) => w.label)).toEqual(['changed', 'added']);
+    });
+
+    it('batch() with no writes saves nothing', () => {
+        const db = createMockDb('test:db', seed);
+        const setItem = vi.spyOn(Storage.prototype, 'setItem');
+
+        db.batch(() => undefined);
+
+        expect(setItem).not.toHaveBeenCalled();
+        setItem.mockRestore();
+    });
 });

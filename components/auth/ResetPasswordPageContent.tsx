@@ -1,10 +1,10 @@
 'use client';
 
 import { Eye, EyeOff, Loader2, Lock, XCircle } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { AuthLayout } from '@/components/auth/AuthLayout';
+import { AppLink } from '@/components/ui/AppLink';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useContentLimits } from '@/hooks/useContentLimits';
 import { useResetPassword } from '@/hooks/useResetPassword';
@@ -99,9 +99,9 @@ export function ResetPasswordPageContent() {
             )}
 
             {/* Back navigation */}
-            <Link href={routes.login} className="mt-6 block text-center text-xs font-semibold text-ink-muted hover:text-ink hover:underline">
+            <AppLink href={routes.login} className="mt-6 block text-center text-xs font-semibold text-ink-muted hover:text-ink hover:underline">
                 {t('signIn')}
-            </Link>
+            </AppLink>
         </AuthLayout>
     );
 }

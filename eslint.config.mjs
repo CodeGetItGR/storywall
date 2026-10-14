@@ -48,10 +48,15 @@ export default defineConfig([
                         '@/components/reports',
                         '@/components/rsvp',
                         '@/components/story',
-                    ].map((name) => ({
-                        name,
-                        message: 'Import from the file that defines it (e.g. @/hooks/useAuth). Barrel imports ship every re-exported module.',
-                    })),
+                    ]
+                        .map((name) => ({
+                            name,
+                            message: 'Import from the file that defines it (e.g. @/hooks/useAuth). Barrel imports ship every re-exported module.',
+                        }))
+                        .concat({
+                            name: 'next/link',
+                            message: 'Use AppLink from @/components/ui/AppLink. It turns prefetching off inside the demo.',
+                        }),
                 },
             ],
 

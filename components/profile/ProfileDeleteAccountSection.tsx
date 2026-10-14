@@ -1,9 +1,9 @@
 'use client';
 
 import { Trash2 } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+import { AppLink } from '@/components/ui/AppLink';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useAccountDeletionFlow } from '@/hooks/useAccountDeletionFlow';
 import { useMe } from '@/hooks/useMe';
@@ -59,12 +59,12 @@ export function ProfileDeleteAccountSection() {
                                 <ul className="mt-2 flex flex-col gap-1">
                                     {flow.blockingEvents.map((event) => (
                                         <li key={event.eventId}>
-                                            <Link
+                                            <AppLink
                                                 href={routes.events.manage(event.eventId, { tab: 'danger' })}
                                                 className="font-semibold underline underline-offset-2"
                                             >
                                                 {event.title}
-                                            </Link>
+                                            </AppLink>
                                         </li>
                                     ))}
                                 </ul>

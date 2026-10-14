@@ -1,7 +1,6 @@
 'use client';
 
 import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react';
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React, { useCallback, useState } from 'react';
@@ -11,6 +10,7 @@ import { OAuthButtons } from '@/components/auth/OAuthButtons';
 import { OAuthSignupAcceptanceModal, type SignupAcceptance } from '@/components/auth/OAuthSignupAcceptanceModal';
 import { InviteEventCard } from '@/components/invite/InviteEventCard';
 import { AuthLoadingState } from '@/components/layout/AuthLoadingState';
+import { AppLink } from '@/components/ui/AppLink';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
@@ -176,12 +176,12 @@ export default function LoginPage() {
                 </FormFieldLabel>
 
                 {/* Password recovery */}
-                <Link
+                <AppLink
                     href={routes.forgotPassword}
                     className="-mt-2 self-end text-xs font-semibold text-ink-muted transition-colors hover:text-ink hover:underline"
                 >
                     {t('forgotPassword')}
-                </Link>
+                </AppLink>
 
                 {/* Feedback */}
                 {error && (
@@ -225,9 +225,9 @@ export default function LoginPage() {
 
             <p className="mt-6 text-center text-xs text-ink-muted">
                 {t('noAccount')}{' '}
-                <Link href={routes.auth.register({ invite: inviteToken, next: returnPath })} className="font-semibold text-ink hover:underline">
+                <AppLink href={routes.auth.register({ invite: inviteToken, next: returnPath })} className="font-semibold text-ink hover:underline">
                     {t('createAccountLink')}
-                </Link>
+                </AppLink>
             </p>
         </AuthLayout>
     );

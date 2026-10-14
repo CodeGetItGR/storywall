@@ -1,10 +1,10 @@
 'use client';
 
 import { ShieldAlert } from 'lucide-react';
-import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
 
+import { AppLink } from '@/components/ui/AppLink';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
 import { guidelinesRuleHref } from '@/lib/guidelinesRules';
@@ -72,9 +72,9 @@ export function SuspendedEventView({ event, billingHref = null }: { event: Event
                         <dt className={TERM}>{t('rule')}</dt>
                         <dd className="flex flex-wrap items-baseline gap-2 text-sm text-ink">
                             <span>{tStatement(`rules.${suspension.rule}`)}</span>
-                            <Link href={guidelinesRuleHref(suspension.rule)} className="font-semibold text-primary-dark underline">
+                            <AppLink href={guidelinesRuleHref(suspension.rule)} className="font-semibold text-primary-dark underline">
                                 {t('readRule')}
-                            </Link>
+                            </AppLink>
                         </dd>
                     </div>
                 ) : null}
@@ -98,14 +98,14 @@ export function SuspendedEventView({ event, billingHref = null }: { event: Event
 
             {/* The right of withdrawal stays open while suspended: primary host only */}
             {billingHref ? (
-                <Link href={billingHref} className="block text-sm font-semibold text-primary-dark underline">
+                <AppLink href={billingHref} className="block text-sm font-semibold text-primary-dark underline">
                     {t('billingLink')}
-                </Link>
+                </AppLink>
             ) : null}
 
-            <Link href={routes.home} className="inline-flex min-h-10 items-center rounded-md bg-ink px-4 text-sm font-semibold text-canvas">
+            <AppLink href={routes.home} className="inline-flex min-h-10 items-center rounded-md bg-ink px-4 text-sm font-semibold text-canvas">
                 {t('back')}
-            </Link>
+            </AppLink>
         </section>
     );
 }
