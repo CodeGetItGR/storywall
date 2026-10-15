@@ -8,7 +8,7 @@ import { useCookieSettingsDraft } from '@/hooks/useCookieSettingsDraft';
 
 export function CookieSettingsSheet() {
     const t = useTranslations('CookieConsent');
-    const { open, ads, setAds, saveDraft, close } = useCookieSettingsDraft();
+    const { open, ads, setAds, analytics, setAnalytics, saveDraft, close } = useCookieSettingsDraft();
 
     return (
         <Modal ariaLabel={t('settingsTitle')} closeLabel={t('close')} onClose={close} open={open} size="sm" variant="sheet">
@@ -19,6 +19,12 @@ export function CookieSettingsSheet() {
                 {/* Categories */}
                 <div className="mt-4 divide-y divide-border/70">
                     <CookieSwitchRow checked description={t('essentialBody')} disabled label={t('essentialLabel')} />
+                    <CookieSwitchRow
+                        checked={analytics}
+                        description={t('analyticsBody')}
+                        label={t('analyticsLabel')}
+                        onCheckedChange={setAnalytics}
+                    />
                     <CookieSwitchRow checked={ads} description={t('adsBody')} label={t('adsLabel')} onCheckedChange={setAds} />
                 </div>
 

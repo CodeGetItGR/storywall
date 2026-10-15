@@ -13,6 +13,14 @@ vi.mock('@/lib/googleAds', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@/lib/googleAds')>()),
     GOOGLE_ADS_ID: 'AW-TEST',
 }));
+vi.mock('@/lib/googleAnalytics', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@/lib/googleAnalytics')>()),
+    GA_MEASUREMENT_ID: 'G-TEST',
+}));
+vi.mock('next/navigation', () => ({
+    usePathname: () => '/',
+    useParams: () => ({}),
+}));
 // A plain marker in place of next/script, so the test can see what would load.
 vi.mock('next/script', () => ({
     default: ({ id, src }: { id: string; src?: string; children?: ReactNode }) => <span data-script={id} data-src={src} />,
@@ -34,13 +42,15 @@ function expireAll() {
 }
 
 function gtagScript() {
-    return document.querySelector('[data-script="google-ads-gtag"]');
+    return document.querySelector('[data-script="google-gtag"]');
 }
 
 describe('CookieConsent', () => {
     afterEach(() => {
         cleanup();
         expireAll();
+        delete window.gtag;
+        delete window.dataLayer;
     });
 
     it('asks when there is no choice and loads nothing yet', () => {
@@ -48,6 +58,7 @@ describe('CookieConsent', () => {
 
         expect(screen.getByRole('region', { name: 'bannerLabel' })).toBeInTheDocument();
         expect(gtagScript()).toBeNull();
+        expect(window.gtag).toBeUndefined();
     });
 
     it('loads the Google tag after Accept all', () => {
@@ -57,7 +68,7 @@ describe('CookieConsent', () => {
 
         expect(screen.queryByRole('region', { name: 'bannerLabel' })).toBeNull();
         expect(gtagScript()).toHaveAttribute('data-src', 'https://www.googletagmanager.com/gtag/js?id=AW-TEST');
-        expect(readConsent()?.ads).toBe(true);
+        expect(readConsent()).toMatchObject({ ads: true, analytics: true });
     });
 
     it('saves a refusal and loads nothing after Reject all', () => {
@@ -67,19 +78,31 @@ describe('CookieConsent', () => {
 
         expect(screen.queryByRole('region', { name: 'bannerLabel' })).toBeNull();
         expect(gtagScript()).toBeNull();
-        expect(readConsent()?.ads).toBe(false);
+        expect(readConsent()).toMatchObject({ ads: false, analytics: false });
+    });
+
+    it('loads the tag for Analytics alone', () => {
+        render(<CookieConsent />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'settings' }));
+        fireEvent.click(screen.getByRole('switch', { name: /analyticsLabel/ }));
+        act(() => fireEvent.click(screen.getByRole('button', { name: 'save' })));
+
+        expect(readConsent()).toMatchObject({ ads: false, analytics: true });
+        expect(gtagScript()).toHaveAttribute('data-src', 'https://www.googletagmanager.com/gtag/js?id=G-TEST');
     });
 
     it('stays quiet when a choice is already saved', () => {
-        writeConsent(false);
+        writeConsent({ ads: false, analytics: false });
         render(<CookieConsent />);
 
         expect(screen.queryByRole('region', { name: 'bannerLabel' })).toBeNull();
     });
 
     it('lets a saved yes be withdrawn from the settings link', () => {
-        writeConsent(true);
+        writeConsent({ ads: true, analytics: true });
         document.cookie = '_gcl_aw=GCL.1.abc; Path=/';
+        document.cookie = '_ga=GA1.1.123; Path=/';
         render(
             <>
                 <CookieConsent />
@@ -90,15 +113,19 @@ describe('CookieConsent', () => {
 
         fireEvent.click(screen.getByRole('button', { name: 'openSettings' }));
         const adsSwitch = screen.getByRole('switch', { name: /adsLabel/ });
+        const analyticsSwitch = screen.getByRole('switch', { name: /analyticsLabel/ });
         expect(adsSwitch).toHaveAttribute('aria-checked', 'true');
+        expect(analyticsSwitch).toHaveAttribute('aria-checked', 'true');
         expect(screen.getByRole('switch', { name: /essentialLabel/ })).toBeDisabled();
 
         fireEvent.click(adsSwitch);
+        fireEvent.click(analyticsSwitch);
         act(() => fireEvent.click(screen.getByRole('button', { name: 'save' })));
 
         expect(screen.queryByRole('dialog')).toBeNull();
-        expect(readConsent()?.ads).toBe(false);
+        expect(readConsent()).toMatchObject({ ads: false, analytics: false });
         expect(document.cookie).not.toContain('_gcl_aw');
+        expect(document.cookie).not.toContain('_ga=');
         expect(gtagScript()).toBeNull();
     });
 });
