@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useSyncExternalStore } from 'react';
 
-import { clearAdCookies, type Consent, CONSENT_COOKIE, readConsent, writeConsent } from '@/lib/consent';
+import { clearAdCookies, clearAnalyticsCookies, type Consent, CONSENT_COOKIE, type ConsentChoice, readConsent, writeConsent } from '@/lib/consent';
 
 // The banner, the settings sheet, the footer link and the Google tag sit in
 // distant branches, so the choice and the sheet's open state live in one small
@@ -44,9 +44,10 @@ function serverSettingsOpen() {
     return false;
 }
 
-function saveChoice(ads: boolean) {
-    writeConsent(ads);
-    if (!ads) clearAdCookies();
+function saveChoice(choice: ConsentChoice) {
+    writeConsent(choice);
+    if (!choice.ads) clearAdCookies();
+    if (!choice.analytics) clearAnalyticsCookies();
     settingsOpen = false;
     notify();
 }
@@ -57,7 +58,7 @@ export type CookieConsentState = {
     settingsOpen: boolean;
     acceptAll: () => void;
     rejectAll: () => void;
-    save: (ads: boolean) => void;
+    save: (choice: ConsentChoice) => void;
     openSettings: () => void;
     closeSettings: () => void;
 };
@@ -68,9 +69,9 @@ export function useCookieConsent(): CookieConsentState {
     // raw changes whenever the cookie does; readConsent does the parsing.
     const consent = useMemo(() => (raw === undefined ? undefined : readConsent()), [raw]);
 
-    const acceptAll = useCallback(() => saveChoice(true), []);
-    const rejectAll = useCallback(() => saveChoice(false), []);
-    const save = useCallback((ads: boolean) => saveChoice(ads), []);
+    const acceptAll = useCallback(() => saveChoice({ ads: true, analytics: true }), []);
+    const rejectAll = useCallback(() => saveChoice({ ads: false, analytics: false }), []);
+    const save = useCallback((choice: ConsentChoice) => saveChoice(choice), []);
     const openSettings = useCallback(() => {
         settingsOpen = true;
         notify();
