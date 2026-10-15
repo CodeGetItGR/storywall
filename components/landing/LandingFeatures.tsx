@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { LandingFeatureItem } from '@/components/landing/LandingFeatureItem';
 import { useLandingModuleGates } from '@/hooks/useLandingModuleGates';
 import { LANDING_FEATURE_MODULE_KEYS } from '@/lib/landingFeatureGates';
+import { landingSectionAttributes } from '@/lib/landingTracking';
 
 const FEATURE_ICONS = [
     '/landing/decor-05.webp',
@@ -33,6 +34,7 @@ export function LandingFeatures() {
         <section
             className="relative block bg-[radial-gradient(circle_at_15%_8%,rgba(150,48,118,0.18),transparent_38%),linear-gradient(180deg,#171419_0%,#101014_56%,#0b0b0f_100%)] pt-13 pr-5 pb-[clamp(58px,6vw,88px)] pl-5 text-white after:pointer-events-none after:absolute after:inset-x-0 after:-bottom-px after:h-12 after:bg-[linear-gradient(180deg,rgba(11,11,15,0),#0b0b0f)] after:content-[''] min-[761px]:grid min-[761px]:grid-cols-[1fr_2.1fr] min-[761px]:gap-x-[5vw] min-[761px]:gap-y-0 min-[761px]:bg-[radial-gradient(circle_at_18%_10%,rgba(150,48,118,0.2),transparent_34%),linear-gradient(180deg,#171419_0%,#111014_55%,#0b0b0f_100%)] min-[761px]:pt-20 min-[761px]:pr-[5vw] min-[761px]:pl-[5vw]"
             id="experience"
+            {...landingSectionAttributes('features')}
         >
             {/* Eyebrow + heading */}
             <div className="m-0 text-[13px] font-black tracking-[0.15em] text-white/62 uppercase min-[761px]:col-start-2 min-[761px]:row-start-1 min-[761px]:mb-5.5 min-[761px]:pt-0">

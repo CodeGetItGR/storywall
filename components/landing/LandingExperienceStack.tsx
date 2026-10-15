@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { LandingExperienceLayer } from '@/components/landing/LandingExperienceLayer';
 import { hostExperienceAssets, socialExperienceAssets } from '@/lib/landingExperienceMedia';
+import { landingSectionAttributes } from '@/lib/landingTracking';
 
 export function LandingExperienceStack() {
     const t = useTranslations('LandingPage.stack');
@@ -11,7 +12,7 @@ export function LandingExperienceStack() {
     const hostTitle = t.raw('hostTitle') as string[];
 
     return (
-        <section className="swx-stack">
+        <section className="swx-stack" {...landingSectionAttributes('social_host')}>
             {/* Chapter 01 — social side */}
             <LandingExperienceLayer
                 assets={socialExperienceAssets}

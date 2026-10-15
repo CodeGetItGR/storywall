@@ -230,6 +230,8 @@ export function LandingHeroVisual({ motionPaused }: { motionPaused: boolean }) {
                                 className="relative block h-auto w-full max-w-none [&+&]:-mt-px"
                                 height={2048}
                                 key={screenshot.src}
+                                // Eager so none pops in mid-scroll, low so they wait for the text, scripts and logo.
+                                fetchPriority="low"
                                 loading="eager"
                                 src={screenshot.src}
                                 width={screenshot.width}

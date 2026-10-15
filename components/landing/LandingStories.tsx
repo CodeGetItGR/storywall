@@ -6,6 +6,7 @@ import { LandingStoryThemes, type LandingStoryThemesCopy } from '@/components/la
 import type { Locale } from '@/i18n/config';
 import { landingStoryMedia } from '@/lib/landingMedia';
 import { getLandingThemes, type LandingTheme } from '@/lib/landingThemes';
+import { landingSectionAttributes } from '@/lib/landingTracking';
 import { loadLiveOccasions } from '@/lib/occasions/liveOccasions.server';
 
 export async function LandingStories() {
@@ -24,7 +25,11 @@ export async function LandingStories() {
     const occasions = await loadLiveOccasions();
 
     return (
-        <section className="platform bg-white py-17 min-[761px]:py-[clamp(90px,11vw,180px)]" id="platformStories">
+        <section
+            className="platform bg-white py-17 min-[761px]:py-[clamp(90px,11vw,180px)]"
+            id="platformStories"
+            {...landingSectionAttributes('stories')}
+        >
             {/* Eyebrow + heading */}
             <div className="section-intro px-5 min-[761px]:grid min-[761px]:grid-cols-[1fr_2.1fr] min-[761px]:items-start min-[761px]:gap-x-[6vw]">
                 <div className="eyebrow pt-2.5 text-[13px] leading-[1.4] font-extrabold tracking-[0.14em] uppercase min-[761px]:col-start-2 min-[761px]:row-start-1 min-[761px]:mb-5.5 min-[761px]:pt-0">
