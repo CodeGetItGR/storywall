@@ -6,6 +6,7 @@ import { LandingPricingCta } from '@/components/landing/LandingPricingCta';
 import { LandingPricingEventSelect } from '@/components/landing/LandingPricingEventSelect';
 import { MarketingPlanCard } from '@/components/plan/MarketingPlanCard';
 import { useLandingPricing } from '@/hooks/useLandingPricing';
+import { landingSectionAttributes } from '@/lib/landingTracking';
 import { cn } from '@/lib/utils';
 
 // Columns by card count from 761px up: fewer cards get a narrower, centered grid instead of an empty column.
@@ -26,6 +27,7 @@ export function LandingPricing() {
             aria-labelledby="landing-pricing-title"
             className="bg-white px-5 pt-16 pb-16 text-[#151313] min-[761px]:px-[clamp(24px,4vw,72px)] min-[761px]:pt-20 min-[761px]:pb-24"
             id="pricing"
+            {...landingSectionAttributes('pricing')}
         >
             {/* Pricing introduction */}
             <div className="mx-auto grid max-w-300 gap-x-[5vw] min-[761px]:grid-cols-[1fr_2fr]">

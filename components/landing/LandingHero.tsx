@@ -10,6 +10,7 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useAuth } from '@/hooks/useAuth';
 import { useLandingMobileMenu } from '@/hooks/useLandingMobileMenu';
 import { useLandingTypewriter } from '@/hooks/useLandingTypewriter';
+import { landingClickAttributes, landingNavTarget } from '@/lib/landingTracking';
 import { routes } from '@/lib/routes';
 import { useLandingMotion } from '@/providers/LandingMotionProvider';
 
@@ -22,6 +23,7 @@ function LandingHeroCta({ className, href, lines }: LandingHeroCtaProps) {
         <a
             className={`items-center justify-between gap-4 rounded-full bg-[linear-gradient(100deg,#ff6f93,#ff936a_52%,#ffd05b)] py-4.25 pr-4.5 pl-7.5 text-white shadow-[0_16px_32px_rgba(217,102,74,.15)] focus-ring transition-transform hover:-translate-y-0.5 focus-visible:outline-offset-4 min-[761px]:gap-2.5 min-[761px]:py-2.5 min-[761px]:pr-2.75 min-[761px]:pl-5 ${className}`}
             href={href}
+            {...landingClickAttributes({ event: 'create', placement: 'hero' })}
         >
             <span className="flex-1 text-center font-[Baskerville,Georgia,serif] text-[24px] leading-[1.02] tracking-tight min-[421px]:text-[clamp(25px,6.2vw,34px)] min-[761px]:text-[clamp(15px,1vw,19px)]">
                 {lines.map((line) => (
@@ -86,6 +88,7 @@ export function LandingHero() {
                                 className="focus-ring transition-opacity hover:opacity-60 focus-visible:outline-offset-4"
                                 href={NAV_HREFS[index]}
                                 key={label}
+                                {...landingClickAttributes({ event: 'nav', placement: 'header', target: landingNavTarget(NAV_HREFS[index]) })}
                             >
                                 {label}
                             </a>
@@ -93,7 +96,7 @@ export function LandingHero() {
                         {isSignedIn ? (
                             <LandingProfileBadge />
                         ) : (
-                            <a className="font-bold" href={routes.login}>
+                            <a className="font-bold" href={routes.login} {...landingClickAttributes({ event: 'login', placement: 'header' })}>
                                 {navLabels.at(-1)}
                             </a>
                         )}
@@ -124,14 +127,19 @@ export function LandingHero() {
                     ref={menuRef}
                 >
                     {mobileNavLabels.slice(0, -1).map((label, index) => (
-                        <a href={NAV_HREFS[index]} key={label} onClick={close}>
+                        <a
+                            href={NAV_HREFS[index]}
+                            key={label}
+                            onClick={close}
+                            {...landingClickAttributes({ event: 'nav', placement: 'mobile_menu', target: landingNavTarget(NAV_HREFS[index]) })}
+                        >
                             {label}
                         </a>
                     ))}
                     {isSignedIn ? (
                         <LandingProfileBadge />
                     ) : (
-                        <a href={routes.login} onClick={close}>
+                        <a href={routes.login} onClick={close} {...landingClickAttributes({ event: 'login', placement: 'mobile_menu' })}>
                             {mobileNavLabels.at(-1)}
                         </a>
                     )}

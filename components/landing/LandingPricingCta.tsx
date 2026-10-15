@@ -1,4 +1,5 @@
 import { type LandingPlan, pickedLandingDuration } from '@/lib/landingPricing';
+import { landingClickAttributes } from '@/lib/landingTracking';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
@@ -8,7 +9,7 @@ type LandingPricingCtaProps = { className?: string; label: string; eventType: st
 // One plan card's button: opens the creation form on its details step with the card's type, plan and
 // duration picked. The proxy sends signed-out visitors through login with this destination in `next`.
 export function LandingPricingCta({ className, label, eventType, plan, durationId }: LandingPricingCtaProps) {
-    const option = pickedLandingDuration(plan, durationId).id;
+    const { id: option, months } = pickedLandingDuration(plan, durationId);
 
     return (
         <a
@@ -17,6 +18,7 @@ export function LandingPricingCta({ className, label, eventType, plan, durationI
                 className,
             )}
             href={routes.events.new({ step: 'details', type: eventType, plan: plan.code, option })}
+            {...landingClickAttributes({ event: 'plan', plan: `${eventType}/${plan.code}`, months })}
         >
             <span>
                 {label}

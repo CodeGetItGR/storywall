@@ -1,5 +1,6 @@
 import { LandingThemeTile } from '@/components/landing/LandingThemeTile';
 import type { LandingTheme } from '@/lib/landingThemes';
+import { landingClickAttributes } from '@/lib/landingTracking';
 import { routes } from '@/lib/routes';
 
 export type LandingStoryThemesCopy = {
@@ -41,6 +42,7 @@ export function LandingStoryThemes({ copy, themes }: LandingStoryThemesProps) {
                 <a
                     className="flex min-h-14 w-full items-center justify-center gap-2.5 rounded-full bg-[linear-gradient(100deg,#ff6f93,#ff936a_52%,#ffb25b)] px-5 text-center text-[14px] leading-tight font-semibold text-white! no-underline shadow-[0_16px_32px_rgba(217,102,74,.15)] focus-ring transition-transform hover:-translate-y-0.5 focus-visible:outline-offset-4 motion-reduce:transition-none min-[761px]:w-auto min-[761px]:min-w-105 min-[761px]:text-[16px]"
                     href={routes.events.new()}
+                    {...landingClickAttributes({ event: 'create', placement: 'themes' })}
                 >
                     <span>{copy.cta}</span>
                     <span aria-hidden="true">→</span>

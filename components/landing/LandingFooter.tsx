@@ -7,6 +7,7 @@ import { LandingNewsletter } from '@/components/landing/LandingNewsletter';
 import { AppLink } from '@/components/ui/AppLink';
 import type { Locale } from '@/i18n/config';
 import { getForBusinessPath } from '@/i18n/publicLocale';
+import { landingSectionAttributes } from '@/lib/landingTracking';
 import { loadLiveOccasions } from '@/lib/occasions/liveOccasions.server';
 import { occasionPath } from '@/lib/occasions/occasions';
 import { routes } from '@/lib/routes';
@@ -46,7 +47,10 @@ export async function LandingFooter({ anchorBase = '', topHref = TOP_HREF }: { a
     const columns = occasions.length > 0 ? 'min-[761px]:grid-cols-[1.65fr_0.75fr_0.75fr_0.75fr]' : 'min-[761px]:grid-cols-[1.65fr_0.75fr_0.75fr]';
 
     return (
-        <footer className="overflow-hidden bg-[#262626] px-5 pt-14.5 pb-6 text-white min-[761px]:px-[5vw] min-[761px]:pt-18.5">
+        <footer
+            {...landingSectionAttributes('footer')}
+            className="overflow-hidden bg-[#262626] px-5 pt-14.5 pb-6 text-white min-[761px]:px-[5vw] min-[761px]:pt-18.5"
+        >
             <div
                 className={`grid grid-cols-2 gap-x-6.5 gap-y-10.5 border-b border-white/14 pb-13.5 ${columns} min-[761px]:gap-[5vw] min-[761px]:pb-19`}
             >
