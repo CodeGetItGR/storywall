@@ -82,9 +82,6 @@ export function LandingPricing() {
                     />
                 ))}
             </div>
-
-            {/* Verify notice */}
-            <p className="mx-auto mt-8 max-w-331 text-center text-[12px] text-[#151313]/65 min-[761px]:mt-12">{t('verifyNotice')}</p>
         </section>
     );
 }

@@ -32,9 +32,11 @@ describe('LandingHeroVisual', () => {
         ]);
     });
 
-    it('loads every feed screenshot up front so none pops in mid-scroll', () => {
+    it('loads every feed screenshot up front so none pops in mid-scroll, after the rest of the hero', () => {
         const { container } = render(<LandingHeroVisual motionPaused={false} />);
-        expect(feedScreenshots(container).map((image) => image.getAttribute('loading'))).toEqual(['eager', 'eager', 'eager']);
+        const screenshots = feedScreenshots(container);
+        expect(screenshots.map((image) => image.getAttribute('loading'))).toEqual(['eager', 'eager', 'eager']);
+        expect(screenshots.map((image) => image.getAttribute('fetchpriority'))).toEqual(['low', 'low', 'low']);
     });
 
     it('freezes the feed scroll only while landing motion is paused', () => {

@@ -9,12 +9,13 @@ export type LandingSection =
     'how_it_works' | 'stories' | 'demo' | 'social_host' | 'features' | 'feature_details' | 'pricing' | 'faq' | 'final_cta' | 'footer';
 
 export type LandingClick =
-    | { event: 'create' | 'demo' | 'login'; placement: LandingPlacement }
+    | { event: 'create' | 'plans' | 'demo' | 'login'; placement: LandingPlacement }
     | { event: 'nav'; placement: LandingPlacement; target: string }
     | { event: 'plan'; plan: string; months: number };
 
 const CLICK_EVENT_NAMES: Record<LandingClick['event'], string> = {
     create: 'Landing Create',
+    plans: 'Landing Plans',
     demo: 'Landing Demo',
     login: 'Landing Login',
     nav: 'Landing Nav',
