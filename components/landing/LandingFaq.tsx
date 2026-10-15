@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
 import { LandingFaqItem } from '@/components/landing/LandingFaqItem';
+import { landingSectionAttributes } from '@/lib/landingTracking';
 
 type FaqItem = [question: string, answer: string];
 
@@ -13,6 +14,7 @@ export async function LandingFaq() {
         <section
             className="relative block overflow-hidden bg-white px-5 pt-12 pb-14.5 font-[Arial,Helvetica,sans-serif] text-[#151313] min-[761px]:px-[clamp(24px,7vw,120px)] min-[761px]:pt-16 min-[761px]:pb-18"
             id="faq"
+            {...landingSectionAttributes('faq')}
         >
             <div className="mb-6.5 block w-full max-w-295 min-[761px]:mx-auto min-[761px]:mb-7.5 min-[761px]:grid min-[761px]:grid-cols-[auto_minmax(0,1fr)] min-[761px]:items-end min-[761px]:gap-x-10.5 min-[761px]:gap-y-2">
                 <h2 className="m-0 [font-family:var(--editorial)] text-[68px] leading-[0.82] font-normal tracking-[-0.065em] min-[761px]:col-start-1 min-[761px]:row-start-2 min-[761px]:text-[clamp(64px,6.5vw,104px)]">

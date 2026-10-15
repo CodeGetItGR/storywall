@@ -5550,19 +5550,12 @@
             "closeMenu": "Close menu",
             "nav": ["THE PLATFORM", "HOW IT WORKS", "FEATURES", "PLANS", "LOGIN"],
             "mobileNav": ["The platform", "How it works", "Features", "Plans", "Login"],
-            "kicker": "THE SOCIAL SPACE FOR EVERY",
-            "kickerStrong": "PRIVATE EVENT",
-            "title": ["Every moment", "becomes part of", "the story."],
-            "cta": ["Create your own", "StoryWall"],
-            "signedInCta": ["Create your own", "StoryWall"],
-            "subtitleStart": "A",
-            "subtitleStrong": "private social space",
-            "subtitleEnd": "for your event",
-            "subtitleSecondLine": "before, during and after.",
-            "eventTypesPrefix": "For",
-            "eventTypes": ["Weddings", "Baptisms", "Gender Reveals", "VIP Parties"],
-            "eventTypesLabel": "For weddings, baptisms, gender reveals and VIP parties",
-            "trustLine": ["No app", "From any phone", "Private", "Link or QR"]
+            "title": "All your guests' photos and videos, in one place.",
+            "subtitle": "Guests scan a QR code and share from their phone. No app.",
+            "eventTypes": "For weddings, baptisms and parties.",
+            "plansCta": "See plans",
+            "demoCta": "See the demo",
+            "signedInCta": "My StoryWall"
         },
         "howItWorks": {
             "eyebrow": "HOW IT WORKS",
@@ -5893,7 +5886,6 @@
             "photosLabel": "photos",
             "videosLabel": "videos",
             "storageNote": "Estimates assume files up to 5 MB per photo and video clips up to 15 seconds.",
-            "verifyNotice": "Verify your email before creating an event.",
             "note": "Prices shown are indicative and may change.",
             "guestsUpTo": "Up to {count} guests",
             "guestsUnlimited": "Unlimited guests",
@@ -5938,10 +5930,6 @@
                 [
                     "What happens after the event?",
                     "The story does not end when the event does. Keep sharing photos, videos, wishes, next-day moments, honeymoon memories, and thank-you posts."
-                ],
-                [
-                    "Can I make it fit my event?",
-                    "Yes. Shape StoryWall around the style and feeling of your event so it feels like part of the experience."
                 ],
                 [
                     "What kinds of events work with StoryWall?",

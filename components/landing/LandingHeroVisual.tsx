@@ -2,6 +2,8 @@ import { motion, type TargetAndTransition, useReducedMotion } from 'framer-motio
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { useLandingHeroFeedTravel } from '@/hooks/useLandingHeroFeedTravel';
+import { landingHeroImageSizes, landingHeroSpriteSizes } from '@/lib/landingHero';
+
 const HERO_SPRITES = [
     {
         src: '/landing/sw-scene-item-sw-post-1.webp',
@@ -171,6 +173,13 @@ const HERO_VISUAL_CLASS =
 const PHONE_WRAP_CLASS =
     'absolute aspect-[748/1541] left-[19.28%] top-[3.78%] w-[56.47%] z-[5] min-[761px]:left-[23.5%] min-[761px]:top-[5.21%] min-[761px]:w-[43.7%]';
 
+// Shares of the hero visual's width, phone then desktop, matching the classes around them.
+const PHONE_SHARE = [0.5647, 0.437] as const;
+// The screen insets 4.68% + 4.55% of the phone, and the feed track is 105.65% / 105.7% of the screen.
+const PHONE_FEED_SHARE = [PHONE_SHARE[0] * 0.9077 * 1.0565, PHONE_SHARE[1] * 0.9077 * 1.057] as const;
+const PHONE_SIZES = landingHeroImageSizes(...PHONE_SHARE);
+const PHONE_FEED_SIZES = landingHeroImageSizes(...PHONE_FEED_SHARE);
+
 const PHONE_FEED_TRACK_CLASS = 'motion-hero-feed-scroll absolute top-0 left-[-2.85%] w-[105.65%] will-change-transform min-[761px]:w-[105.7%]';
 
 // Stacked top to bottom: the event header, then two runs of posts.
@@ -204,10 +213,10 @@ export function LandingHeroVisual({ motionPaused }: { motionPaused: boolean }) {
                 transition={{ duration: Number.parseFloat(firstSprite.duration), ease: 'easeInOut', repeat: Infinity }}
             >
                 <ProtectedImage
-                    unoptimized
                     alt=""
                     className="h-auto w-full"
                     height={firstSprite.height}
+                    sizes={landingHeroSpriteSizes(firstSprite.posClass)}
                     src={firstSprite.src}
                     width={firstSprite.width}
                 />
@@ -225,12 +234,14 @@ export function LandingHeroVisual({ motionPaused }: { motionPaused: boolean }) {
                     <div className={PHONE_FEED_TRACK_CLASS} data-paused={motionPaused || undefined} ref={trackRef}>
                         {PHONE_FEED_SCREENSHOTS.map((screenshot) => (
                             <ProtectedImage
-                                unoptimized
                                 alt=""
                                 className="relative block h-auto w-full max-w-none [&+&]:-mt-px"
                                 height={2048}
                                 key={screenshot.src}
+                                // Eager so none pops in mid-scroll, low so they wait for the text, scripts and logo.
+                                fetchPriority="low"
                                 loading="eager"
+                                sizes={PHONE_FEED_SIZES}
                                 src={screenshot.src}
                                 width={screenshot.width}
                             />
@@ -238,10 +249,10 @@ export function LandingHeroVisual({ motionPaused }: { motionPaused: boolean }) {
                     </div>
                 </div>
                 <ProtectedImage
-                    unoptimized
                     alt=""
                     className="absolute inset-0 z-[2] h-auto w-full"
                     height={1541}
+                    sizes={PHONE_SIZES}
                     src="/landing/sw-phone-frame.webp"
                     width={748}
                 />
@@ -259,7 +270,14 @@ export function LandingHeroVisual({ motionPaused }: { motionPaused: boolean }) {
                         delay: Number.parseFloat(sprite.delay),
                     }}
                 >
-                    <ProtectedImage unoptimized alt="" className="h-auto w-full" height={sprite.height} src={sprite.src} width={sprite.width} />
+                    <ProtectedImage
+                        alt=""
+                        className="h-auto w-full"
+                        height={sprite.height}
+                        sizes={landingHeroSpriteSizes(sprite.posClass)}
+                        src={sprite.src}
+                        width={sprite.width}
+                    />
                 </motion.div>
             ))}
         </div>

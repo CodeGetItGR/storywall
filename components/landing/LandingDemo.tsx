@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { landingClickAttributes, landingSectionAttributes } from '@/lib/landingTracking';
 import { routes } from '@/lib/routes';
 
 const DEMO_BUTTON_CLASS =
@@ -14,6 +15,7 @@ export async function LandingDemo() {
         <section
             className="block overflow-hidden bg-[radial-gradient(circle_at_84%_66%,rgba(242,145,77,0.3)_0%,rgba(242,145,77,0.2)_16%,rgba(242,145,77,0.08)_30%,transparent_46%),radial-gradient(circle_at_82%_18%,rgba(255,255,255,0.34),transparent_34%),linear-gradient(135deg,#f7d9a8_0%,#f8d08f_26%,#f8c87f_52%,#f6be79_76%,#f4b879_100%)] px-5 pt-[58px] pb-[60px] text-[#151313] min-[761px]:grid min-[761px]:grid-cols-[0.5fr_1.42fr_0.92fr] min-[761px]:items-center min-[761px]:gap-[3vw] min-[761px]:px-[5vw] min-[761px]:pt-[68px] min-[761px]:pb-[74px]"
             id="demo"
+            {...landingSectionAttributes('demo')}
         >
             <div className="pt-3 text-[10px] font-black tracking-[0.15em] uppercase min-[761px]:col-start-1 min-[761px]:row-start-1 min-[761px]:mt-3 min-[761px]:self-start min-[761px]:pt-0">
                 {t('eyebrow')}
@@ -34,6 +36,7 @@ export async function LandingDemo() {
                         aria-label={t('cta')}
                         className={`${DEMO_BUTTON_CLASS} hidden min-h-[68px] pr-[30px] pl-[34px] text-[12px] tracking-[0.14em] min-[761px]:inline-flex min-[761px]:gap-6`}
                         href={routes.demo}
+                        {...landingClickAttributes({ event: 'demo', placement: 'demo' })}
                     >
                         <span>{t('button')}</span>
                         <span
@@ -63,6 +66,7 @@ export async function LandingDemo() {
                 aria-label={t('cta')}
                 className={`${DEMO_BUTTON_CLASS} mt-[26px] flex min-h-[70px] w-full gap-[22px] text-[12px] min-[761px]:hidden`}
                 href={routes.demo}
+                {...landingClickAttributes({ event: 'demo', placement: 'demo' })}
             >
                 <span>{t('button')}</span>
                 <span
