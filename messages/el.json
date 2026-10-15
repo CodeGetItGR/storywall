@@ -5685,7 +5685,7 @@
             "eventTypes": "Για γάμους, βαπτίσεις και πάρτι.",
             "plansCta": "Δες τα πακέτα",
             "demoCta": "Δες το demo",
-            "signedInCta": ["Ζήσε το δικό σου", "StoryWall"]
+            "signedInCta": "Το StoryWall μου"
         },
         "howItWorks": {
             "eyebrow": "ΠΩΣ ΛΕΙΤΟΥΡΓΕΙ",

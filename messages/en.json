@@ -5555,7 +5555,7 @@
             "eventTypes": "For weddings, baptisms and parties.",
             "plansCta": "See plans",
             "demoCta": "See the demo",
-            "signedInCta": ["Create your own", "StoryWall"]
+            "signedInCta": "My StoryWall"
         },
         "howItWorks": {
             "eyebrow": "HOW IT WORKS",
