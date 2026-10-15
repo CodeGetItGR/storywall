@@ -1,7 +1,10 @@
+import { useTranslations } from 'next-intl';
 import { ReactNode } from 'react';
 
 import { Logo } from '@/components/common/Logo';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { AppLink } from '@/components/ui/AppLink';
+import { routes } from '@/lib/routes';
 
 interface AuthLayoutProps {
     children: ReactNode;
@@ -9,17 +12,16 @@ interface AuthLayoutProps {
 }
 
 export function AuthLayout({ children, showLanguageSwitcher = false }: AuthLayoutProps) {
+    const t = useTranslations('Common');
+
     return (
         <div className="h-full overflow-y-auto bg-surface-muted/30">
             <div className="relative flex min-h-full flex-col items-center justify-center lg:h-full">
                 {/* Brand panel */}
                 <div className="relative flex shrink-0 items-center justify-center overflow-hidden py-5 lg:w-1/2 lg:py-0">
-                    <Logo
-                        direction="col"
-                        iconClassName="h-16 w-auto sm:h-18 lg:h-22"
-                        wordmarkClassName="h-9 w-auto sm:h-10 lg:h-12"
-                        className="relative"
-                    />
+                    <AppLink href={routes.landing} aria-label={t('home')} className="relative rounded-lg">
+                        <Logo direction="col" iconClassName="h-16 w-auto sm:h-18 lg:h-22" wordmarkClassName="h-9 w-auto sm:h-10 lg:h-12" />
+                    </AppLink>
                 </div>
 
                 {/* Language selection */}
