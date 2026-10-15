@@ -2,6 +2,7 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 
+import { AppleMark, GoogleCalendarMark, Microsoft365Mark, OutlookMark } from '@/components/feed/CalendarServiceMarks';
 import { Modal } from '@/components/ui/modal';
 import type { CalendarLinks } from '@/hooks/useAddToCalendar';
 import { formatDate } from '@/lib/datetime';
@@ -10,8 +11,10 @@ import { cn } from '@/lib/utils';
 
 const entryDateFormat: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' };
 
+const calendarMarkClassName = 'h-6 w-6 shrink-0';
+
 const calendarOptionClassName =
-    'flex min-h-12 w-full items-center rounded-2xl bg-surface-muted px-4 text-sm font-semibold text-ink focus-ring transition-colors hover:bg-surface-muted/70';
+    'flex min-h-12 w-full items-center gap-3 rounded-2xl bg-surface-muted px-4 text-sm font-semibold text-ink focus-ring transition-colors hover:bg-surface-muted/70';
 
 export function AddToCalendarSheet({
     open,
@@ -74,15 +77,19 @@ export function AddToCalendarSheet({
                 {links && (
                     <div className="mt-5 flex flex-col gap-2">
                         <a href={links.google} target="_blank" rel="noopener noreferrer" className={calendarOptionClassName}>
+                            <GoogleCalendarMark className={calendarMarkClassName} />
                             {t('calendarGoogle')}
                         </a>
                         <a href={links.apple} className={calendarOptionClassName}>
+                            <AppleMark className={calendarMarkClassName} />
                             {t('calendarApple')}
                         </a>
                         <a href={links.outlook} target="_blank" rel="noopener noreferrer" className={calendarOptionClassName}>
+                            <OutlookMark className={calendarMarkClassName} />
                             {t('calendarOutlook')}
                         </a>
                         <a href={links.microsoft365} target="_blank" rel="noopener noreferrer" className={calendarOptionClassName}>
+                            <Microsoft365Mark className={calendarMarkClassName} />
                             {t('calendarMicrosoft365')}
                         </a>
                     </div>
