@@ -32,7 +32,7 @@ export function LandingHero() {
     const navLabels = t.raw('nav') as string[];
     const mobileNavLabels = t.raw('mobileNav') as string[];
     const mainAction = landingHeroMainAction(isSignedIn);
-    const mainLabel = isSignedIn ? (t.raw('signedInCta') as string[]).join(' ') : t('plansCta');
+    const mainLabel = isSignedIn ? t('signedInCta') : t('plansCta');
 
     return (
         <section
