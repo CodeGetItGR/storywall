@@ -9,8 +9,14 @@ class InertResizeObserver {
     disconnect() {}
 }
 
+// The original file behind an image, whether served as is or through the Next.js resizer (`/_next/image?url=…`).
+function sourcePath(image: HTMLImageElement) {
+    const src = image.getAttribute('src') ?? '';
+    return src.startsWith('/_next/image') ? new URL(src, 'http://localhost').searchParams.get('url') : src;
+}
+
 function feedScreenshots(container: HTMLElement) {
-    return [...container.querySelectorAll('img')].filter((image) => image.getAttribute('src')?.includes('sw-phone-feed'));
+    return [...container.querySelectorAll('img')].filter((image) => sourcePath(image)?.includes('sw-phone-feed'));
 }
 
 beforeEach(() => {
@@ -25,11 +31,19 @@ afterEach(() => {
 describe('LandingHeroVisual', () => {
     it('stacks the feed screenshots with the event header first', () => {
         const { container } = render(<LandingHeroVisual motionPaused={false} />);
-        expect(feedScreenshots(container).map((image) => image.getAttribute('src'))).toEqual([
+        expect(feedScreenshots(container).map(sourcePath)).toEqual([
             '/landing/sw-phone-feed.webp',
             '/landing/sw-phone-feed-2.webp',
             '/landing/sw-phone-feed-3.webp',
         ]);
+    });
+
+    it('serves every hero image through the resizer with its drawn size', () => {
+        const { container } = render(<LandingHeroVisual motionPaused={false} />);
+        for (const image of container.querySelectorAll('img')) {
+            expect(image.getAttribute('src')).toMatch(/^\/_next\/image\?url=%2Flanding%2F/);
+            expect(image.getAttribute('sizes')).toMatch(/^\(min-width: 761px\) min\(/);
+        }
     });
 
     it('loads every feed screenshot up front so none pops in mid-scroll, after the rest of the hero', () => {

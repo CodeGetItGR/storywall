@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { preload } from 'react-dom';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { LandingHeroActions } from '@/components/landing/LandingHeroActions';
@@ -15,9 +16,14 @@ import { landingClickAttributes, landingNavTarget } from '@/lib/landingTracking'
 import { routes } from '@/lib/routes';
 import { useLandingMotion } from '@/providers/LandingMotionProvider';
 
+// Same file as the hero content's background class, which Tailwind needs written out in full.
+const HERO_BACKGROUND = '/landing/hero-background-v75.webp';
+
 const NAV_HREFS = ['#platformStories', '#howItWorks', '#experience', '#pricing'] as const;
 
 export function LandingHero() {
+    // A CSS background is found only once the stylesheet is applied; preloading starts it with the page.
+    preload(HERO_BACKGROUND, { as: 'image', fetchPriority: 'high' });
     const t = useTranslations('LandingPage.hero');
     const { isAuthenticated, isBootstrapping } = useAuth();
     const { isOpen, menuRef, toggleRef, close, toggle } = useLandingMobileMenu();
