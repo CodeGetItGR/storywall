@@ -1,21 +1,19 @@
 import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 
-import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { OccasionCtaLink } from '@/components/occasions/OccasionCtaLink';
 import type { Locale } from '@/i18n/config';
 import type { LandingImageAsset } from '@/lib/landingMedia';
 import type { Occasion } from '@/lib/occasions/occasions';
 
 type OccasionFinalCtaProps = {
-    alternatePaths: Record<Locale, string>;
     createHref: string;
     image: LandingImageAsset | null;
     locale: Locale;
     occasion: Occasion;
 };
 
-export async function OccasionFinalCta({ alternatePaths, createHref, image, locale, occasion }: OccasionFinalCtaProps) {
+export async function OccasionFinalCta({ createHref, image, locale, occasion }: OccasionFinalCtaProps) {
     const t = await getTranslations({ locale, namespace: `OccasionPages.${occasion.eventType}.finalCta` });
     const common = await getTranslations({ locale, namespace: 'OccasionPages.common' });
 
@@ -38,10 +36,6 @@ export async function OccasionFinalCta({ alternatePaths, createHref, image, loca
                     <OccasionCtaLink className="mt-8" href={createHref}>
                         {common('finalCta')}
                     </OccasionCtaLink>
-                </div>
-                {/* Language (mobile) */}
-                <div className="mt-8 min-[761px]:hidden">
-                    <LanguageSwitcher alternatePaths={alternatePaths} />
                 </div>
             </div>
         </section>

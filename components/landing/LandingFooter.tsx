@@ -5,6 +5,7 @@ import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { CookieSettingsLink } from '@/components/consent/CookieSettingsLink';
 import { LandingMotionToggle } from '@/components/landing/LandingMotionToggle';
 import { LandingNewsletter } from '@/components/landing/LandingNewsletter';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import type { Locale } from '@/i18n/config';
 import { getForBusinessPath } from '@/i18n/publicLocale';
 import { loadLiveOccasions } from '@/lib/occasions/liveOccasions.server';
@@ -35,8 +36,15 @@ const COLUMN_HEADING = 'mb-5.5 text-[9px] font-black tracking-[0.16em] text-whit
 const COLUMN_ITEM = 'py-1.5 text-[13px] leading-[1.35] text-white';
 const COLUMN_LINK = `${COLUMN_ITEM} no-underline transition-[opacity,transform] duration-250 ease-[ease] hover:translate-x-0.75 hover:opacity-[0.62] motion-reduce:transition-none`;
 
-// anchorBase prefixes the Explore anchors, so another page can point them at the homepage sections.
-export async function LandingFooter({ anchorBase = '', topHref = TOP_HREF }: { anchorBase?: string; topHref?: string } = {}) {
+type LandingFooterProps = {
+    // The page's own URL in each language; shows the language switch.
+    alternatePaths?: Record<Locale, string>;
+    // Prefixes the Explore anchors, so another page can point them at the homepage sections.
+    anchorBase?: string;
+    topHref?: string;
+};
+
+export async function LandingFooter({ alternatePaths, anchorBase = '', topHref = TOP_HREF }: LandingFooterProps = {}) {
     const t = await getTranslations('LandingPage.footer');
     const pages = await getTranslations('OccasionPages');
     const locale = (await getLocale()) as Locale;
@@ -64,6 +72,8 @@ export async function LandingFooter({ anchorBase = '', topHref = TOP_HREF }: { a
                         {t('lineTwo')}
                     </p>
                     <LandingMotionToggle className="mt-3 text-[13px] text-white/68" />
+                    {/* Language */}
+                    {alternatePaths ? <LanguageSwitcher alternatePaths={alternatePaths} className="mt-4" variant="sidebar" /> : null}
                     {/* Newsletter */}
                     <LandingNewsletter heading={t('newsletter')} headingClassName={COLUMN_HEADING} />
                 </div>

@@ -1,10 +1,10 @@
 import { getTranslations } from 'next-intl/server';
 
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { OccasionAccountLink } from '@/components/occasions/OccasionAccountLink';
 import { OccasionCtaLink } from '@/components/occasions/OccasionCtaLink';
 import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
-import { routes } from '@/lib/routes';
 
 type OccasionHeaderProps = { alternatePaths: Record<Locale, string>; createHref: string; locale: Locale };
 
@@ -21,9 +21,7 @@ export async function OccasionHeader({ alternatePaths, createHref, locale }: Occ
             {/* Actions */}
             <nav className="flex items-center gap-4 text-sm font-bold">
                 <LanguageSwitcher alternatePaths={alternatePaths} className="hidden min-[761px]:inline-flex" />
-                <a className="inline-flex min-h-11 items-center" href={routes.login}>
-                    {t('signIn')}
-                </a>
+                <OccasionAccountLink signInLabel={t('signIn')} />
                 {/* Create (desktop): on phones the hero button sits right below */}
                 <OccasionCtaLink className="hidden min-[761px]:inline-flex" href={createHref} size="sm">
                     {t('create')}

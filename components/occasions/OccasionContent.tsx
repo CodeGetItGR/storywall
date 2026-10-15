@@ -89,7 +89,6 @@ export function OccasionContent({ campaign, featureKeys, locale, occasion, previ
 
                 {/* Final call to action */}
                 <OccasionFinalCta
-                    alternatePaths={alternatePaths}
                     createHref={createHref}
                     image={media?.finalImage ?? null}
                     locale={locale}
@@ -100,7 +99,7 @@ export function OccasionContent({ campaign, featureKeys, locale, occasion, previ
                 <OccasionLinks locale={locale} occasion={occasion} />
 
                 {/* Footer */}
-                <LandingFooter anchorBase={getPublicLandingPath(locale)} />
+                <LandingFooter alternatePaths={alternatePaths} anchorBase={getPublicLandingPath(locale)} />
             </OccasionPageShell>
 
             {/* Cookie consent */}
