@@ -47,7 +47,6 @@ export function AppReviewDrawer({
             <div className="space-y-7">
                 {/* Review */}
                 <section className="space-y-2">
-                    <h3 className="text-xs font-bold tracking-wide text-ink-faint uppercase">{t('comment')}</h3>
                     <p className="font-mono text-xs text-ink-muted">{t('stars', { count: review.stars })}</p>
                     <p className="text-sm leading-6 break-words whitespace-pre-wrap text-ink">{review.comment ?? t('noComment')}</p>
                     <p className="text-sm text-ink-muted">

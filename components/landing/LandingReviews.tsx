@@ -45,7 +45,7 @@ export function LandingReviews() {
                                 />
                             ))}
                         </p>
-                        <blockquote className="m-0 text-[17px] leading-[1.45]">{review.comment}</blockquote>
+                        <blockquote className="m-0 text-[17px] leading-[1.45] whitespace-pre-wrap">{review.comment}</blockquote>
                         <p className="text-[13px] text-[rgb(21_19_19/70%)]">
                             {review.firstName} · {t(`role.${review.role}`)} · {eventTypeCopy(review.eventType).name}
                         </p>
