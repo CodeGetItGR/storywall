@@ -4,7 +4,7 @@ import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
 const BUTTON =
-    'flex h-12 items-center justify-between gap-2 rounded-full pr-1.5 pl-4 font-[Baskerville,Georgia,serif] text-[17px] leading-none tracking-tight whitespace-nowrap focus-ring transition-transform hover:-translate-y-0.5 focus-visible:outline-offset-4 motion-reduce:transition-none min-[761px]:h-13 min-[761px]:gap-5 min-[761px]:pr-2 min-[761px]:pl-6 min-[761px]:text-[18px]';
+    'flex h-12 items-center justify-between gap-2 rounded-full pr-1.5 pl-4 text-[17px] leading-none tracking-tight whitespace-nowrap focus-ring transition-transform hover:-translate-y-0.5 focus-visible:outline-offset-4 motion-reduce:transition-none min-[761px]:h-13 min-[761px]:gap-5 min-[761px]:pr-2 min-[761px]:pl-6 min-[761px]:text-[18px]';
 const ARROW = 'grid size-8 shrink-0 place-items-center rounded-full text-[18px] leading-none min-[761px]:size-9 min-[761px]:text-[22px]';
 
 type LandingHeroActionsProps = {
