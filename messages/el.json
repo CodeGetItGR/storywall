@@ -5278,7 +5278,7 @@
         }
     },
     "ReviewPrompt": {
-        "title": "Πώς σας φάνηκε το Storywall στο {eventTitle};",
+        "title": "Πώς σας φάνηκε το Storywall στην εκδήλωση «{eventTitle}»;",
         "rating": "Η βαθμολογία σας",
         "star": "{count, plural, one {# αστέρι} other {# αστέρια}}",
         "comment": "Σχόλιο (προαιρετικό)",

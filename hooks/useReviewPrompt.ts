@@ -21,6 +21,7 @@ export function useReviewPrompt(enabled: boolean) {
         queryFn: () => api.get<AppReviewPromptDto | null>(endpoints.me.reviewPrompt),
         enabled,
         staleTime: Infinity,
+        refetchOnWindowFocus: false,
         retry: false,
     });
 

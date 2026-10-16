@@ -19,7 +19,7 @@ export function ReviewStars({ value, onChangeAction }: { value: number | null; o
         <fieldset className="flex gap-1">
             <legend className="sr-only">{t('rating')}</legend>
             {REVIEW_STAR_VALUES.map((count) => (
-                <label key={count} className="cursor-pointer rounded-full p-1 focus-within:ring-2 focus-within:ring-primary">
+                <label key={count} className="cursor-pointer rounded-full p-1 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary">
                     <input
                         type="radio"
                         name="review-stars"
@@ -31,7 +31,7 @@ export function ReviewStars({ value, onChangeAction }: { value: number | null; o
                     />
                     <Star
                         aria-hidden
-                        className={cn('h-9 w-9 transition-colors', value !== null && count <= value ? 'fill-primary text-primary' : 'text-ink-faint')}
+                        className={cn('h-9 w-9 transition-colors', value !== null && count <= value ? 'fill-primary text-primary' : 'text-ink-muted')}
                     />
                 </label>
             ))}

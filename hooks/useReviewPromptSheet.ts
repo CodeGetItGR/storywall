@@ -20,6 +20,8 @@ export function useReviewPromptSheet() {
     const toErrorMessage = useApiErrorMessage();
     const onPromptSurface = Boolean(user) && user?.role !== 'ADMIN' && isReviewPromptRoute(pathname);
     const { prompt, submit, dismiss, forget } = useReviewPrompt(onPromptSurface);
+    const { mutate: submitReview, isPending, error: submitError } = submit;
+    const { mutate: dismissReview } = dismiss;
     const [open, setOpen] = useState(false);
     const [sent, setSent] = useState(false);
 
@@ -30,28 +32,30 @@ export function useReviewPromptSheet() {
 
     // Forget the prompt first, in the same update as closing: otherwise the
     // render-time check above would reopen the sheet while the dismiss is in flight.
+    // While the rating is on its way the sheet stays put.
     const close = useCallback(() => {
+        if (isPending) return;
         setOpen(false);
         if (!prompt) return;
         const { eventId } = prompt;
         forget();
-        if (!sent) dismiss.mutate(eventId);
-    }, [dismiss, forget, prompt, sent]);
+        if (!sent) dismissReview(eventId);
+    }, [dismissReview, forget, isPending, prompt, sent]);
 
     const send = useCallback(
         (values: ReviewFormValues) => {
             if (!prompt) return;
-            submit.mutate({ eventId: prompt.eventId, ...values }, { onSuccess: () => setSent(true) });
+            submitReview({ eventId: prompt.eventId, ...values }, { onSuccess: () => setSent(true) });
         },
-        [prompt, submit],
+        [prompt, submitReview],
     );
 
     return {
         prompt,
         open,
         sent,
-        isSending: submit.isPending,
-        error: submit.error ? toErrorMessage(submit.error) : null,
+        isSending: isPending,
+        error: submitError ? toErrorMessage(submitError) : null,
         close,
         send,
     };

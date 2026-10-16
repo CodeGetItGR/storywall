@@ -52,11 +52,14 @@ export function ReviewForm({
             ) : null}
 
             {/* Error */}
-            {error ? <p className="text-sm text-status-danger">{error}</p> : null}
+            {error ? (
+                <p role="alert" className="text-sm text-status-danger">{error}
+                </p>
+            ) : null}
 
             {/* Actions */}
             <div className="flex justify-end gap-2">
-                <Button type="button" variant="ghost" size="lg" onClick={onNotNowAction}>
+                <Button type="button" variant="ghost" size="lg" onClick={onNotNowAction} disabled={isSending}>
                     {t('notNow')}
                 </Button>
                 <Button type="submit" size="lg" disabled={!form.canSend || isSending}>
