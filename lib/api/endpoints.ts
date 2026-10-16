@@ -50,6 +50,9 @@ export const endpoints = {
         guidelinesAcceptance: '/api/me/guidelines-acceptance',
         termsAcceptance: '/api/me/terms-acceptance',
         newsletter: '/api/me/newsletter',
+        reviewPrompt: '/api/me/review-prompt',
+        reviews: '/api/me/reviews',
+        reviewsDismiss: '/api/me/reviews/dismiss',
         businessProfile: '/api/me/business-profile',
         dataExport: '/api/me/data-export',
         deletionRequestOtp: '/api/me/deletion-requests/otp',
@@ -449,6 +452,10 @@ export const endpoints = {
             list: '/api/admin/landing-categories',
             byId: (id: string) => `/api/admin/landing-categories/${id}`,
             eventTypes: (id: string) => `/api/admin/landing-categories/${id}/event-types`,
+        },
+        appReviews: {
+            list: '/api/admin/app-reviews',
+            byId: (id: string) => `/api/admin/app-reviews/${id}`,
         },
         users: {
             planTier: (userId: string) => `/api/admin/users/${userId}/plan-tier`,

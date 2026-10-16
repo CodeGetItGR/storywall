@@ -111,6 +111,7 @@ function makeConfig(): AppConfigResponseDto {
         reactionTypesByEventType: {},
         memberRolesByEventType: {},
         landingCategories: [],
+        landingReviews: [],
         rateLimits: [],
         reportTargetTypes: ['POST'],
         reportReasons: ['SPAM'],
