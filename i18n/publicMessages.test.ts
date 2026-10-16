@@ -80,7 +80,7 @@ describe('pickPublicMessages', () => {
             'NewsletterForm',
             'PartnerCard',
         ]);
-        expect(Object.keys(picked.LandingPage as object).sort()).toEqual(['featureDetails', 'features', 'hero', 'pricing', 'shell', 'stack']);
+        expect(Object.keys(picked.LandingPage as object).sort()).toEqual(['featureDetails', 'features', 'hero', 'pricing', 'reviews', 'shell', 'stack']);
         expect(picked.RootLayout).toBeUndefined();
     });
 });

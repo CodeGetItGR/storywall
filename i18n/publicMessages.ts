@@ -14,6 +14,7 @@ export const PUBLIC_CLIENT_NAMESPACES = [
     'LandingPage.shell',
     'LandingPage.features',
     'LandingPage.featureDetails',
+    'LandingPage.reviews',
     'LandingPage.pricing',
     'LandingPage.stack',
     'LanguageSwitcher',
