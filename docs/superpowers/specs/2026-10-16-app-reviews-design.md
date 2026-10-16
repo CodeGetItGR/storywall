@@ -1,0 +1,98 @@
+# App reviews — design
+
+Date: 2026-10-16
+
+## Goal
+
+Ask signed-in users (hosts and guests) once, after an event they took part in has ended, how Storywall was. Collect a star rating and optional comment. With explicit consent and admin approval, show selected reviews on the landing page.
+
+## Decisions
+
+- **Trigger:** an event the user hosted or joined has ended (`endAt` at least 12h in the past). No time-based trigger.
+- **Audience:** same prompt for hosts and guests; the role is stored with the review.
+- **Placement:** bottom sheet shown the next time the user opens the home or an event screen.
+- **Landing attribution:** first name · role · occasion (e.g. "Maria · Host · Wedding"). No surname or photo.
+- **Eligibility is owned by the backend**, so "ask once" holds across devices.
+
+## Backend (Spring, `guestwall-be`)
+
+### Table `app_review`
+
+| column | type | notes |
+| --- | --- | --- |
+| id | uuid | |
+| user_id | fk | |
+| event_id | fk | the event the prompt was about |
+| role | enum `HOST` / `GUEST` | role in that event at answer time |
+| stars | smallint, nullable | 1–5; null means dismissed |
+| comment | varchar(500), nullable | |
+| public_consent | boolean | false by default |
+| status | enum `PENDING` / `APPROVED` / `HIDDEN` | `PENDING` on create |
+| featured | boolean | shown on landing; only allowed when `APPROVED` and `public_consent` |
+| created_at | timestamp | |
+
+Unique on (`user_id`, `event_id`).
+
+### Prompt rule
+
+`GET /me/review-prompt` returns `{ eventId, eventName, role, occasion }` or `null` (204).
+
+Return an event when all hold:
+
+1. The user has no row with `stars` set (a user who rated is never asked again).
+2. The user has at most one dismissal row (`stars` null). If they have one, the candidate event must have `endAt` later than that dismissed event's `endAt`.
+3. The candidate is an event the user hosts or is an active member of, with `endAt <= now - 12h`, and no `app_review` row for (user, event).
+4. If several match, pick the one with the latest `endAt`.
+
+### Endpoints
+
+- `POST /me/reviews` `{ eventId, stars, comment?, publicConsent }` — validates the event is the user's eligible one; `publicConsent` is forced false unless `stars >= 4` and comment is non-empty.
+- `POST /me/reviews/dismiss` `{ eventId }`.
+- Admin: `GET /admin/reviews` (paginated, filter by status), `PATCH /admin/reviews/{id}` `{ status?, featured? }`.
+- Public: `GET /public/reviews` — `featured` reviews only, returning `{ id, stars, comment, firstName, role, occasion }`. `firstName` is the first token of the user's display name.
+
+## Frontend
+
+### Prompt
+
+- `lib/api` types + `reviewKeys` query key factory.
+- `hooks/useReviewPrompt.ts`: fetches `/me/review-prompt` after mount (no server prefetch — non-critical overlay); exposes `prompt`, `submit`, `dismiss`, state for sending / sent.
+- `components/review/`:
+  - `ReviewPromptSheet.tsx` — bottom sheet shell.
+  - `ReviewStars.tsx` — 1–5 star input, keyboard and screen-reader accessible.
+  - `ReviewForm.tsx` — stars, optional comment, consent checkbox.
+  - `ReviewSent.tsx` — short thank-you.
+- Consent checkbox ("Can we show this on our website?") appears only when stars ≥ 4 and the comment is not empty.
+- Shown on home and event screens only; never while the composer, camera, or an open post overlay is active. Closing the sheet calls dismiss.
+- Copy: "How was Storywall for {eventName}?" — all strings localized.
+
+### Admin
+
+- New "Reviews" section in the admin console sidebar.
+- Table rows: stars, role badge, occasion, consent badge, status pill, featured badge, date.
+- Drawer per review: full comment, status segmented control (Pending / Approved / Hidden), "Show on landing" switch (enabled only when approved and consented).
+
+### Landing
+
+- `components/landing/LandingReviews.tsx`, rendered server-side from `/public/reviews`, revalidated hourly.
+- Hidden when fewer than 3 featured reviews exist.
+- No review / AggregateRating structured data (self-serving reviews are not eligible for rich results).
+- Follows `docs/seo-guidelines.md`.
+
+## Error handling
+
+- Prompt fetch fails → no sheet, silently.
+- Submit fails → inline error in the sheet, keep the user's input, allow retry.
+- Landing fetch fails → section not rendered.
+
+## Testing
+
+- Backend: prompt rule (rated, one dismissal, later event after dismissal, second dismissal, 12h boundary, latest event wins), consent forcing, featured guard.
+- Frontend: `useReviewPrompt` states; form shows consent only at 4–5 stars with a comment; landing section hidden under 3 reviews.
+- Visual check of the sheet on mobile and desktop; admin panel on desktop.
+
+## Out of scope
+
+- Email prompts.
+- Different questions for hosts and guests.
+- Reviewer photos or editable display names.
