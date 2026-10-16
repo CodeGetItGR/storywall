@@ -2553,6 +2553,18 @@
         }
     },
     "AdminPage": {
+        "signupChannel": {
+            "INVITE": "Πρόσκληση",
+            "GIFT": "Δώρο",
+            "ADS": "Διαφημίσεις",
+            "SOCIAL": "Social media",
+            "EMAIL": "Email",
+            "PARTNER": "Συνεργάτης",
+            "SEARCH": "Αναζήτηση",
+            "OTHER_SITE": "Άλλος ιστότοπος",
+            "DIRECT": "Απευθείας",
+            "UNKNOWN": "Άγνωστο"
+        },
         "order": {
             "column": "Σειρά",
             "moveUp": "Μετακίνηση του {name} πάνω",
@@ -4783,6 +4795,22 @@
             }
         },
         "funnel": {
+            "source": {
+                "label": "Προέλευση",
+                "all": "Όλες οι προελεύσεις"
+            },
+            "channels": {
+                "title": "Ανά προέλευση",
+                "columns": {
+                    "channel": "Προέλευση",
+                    "signedUp": "Εγγραφές",
+                    "createdEvent": "Δημιούργησαν εκδήλωση",
+                    "paidHost": "Πλήρωσαν",
+                    "revenue": "Έσοδα"
+                },
+                "fewSignups": "Λίγες εγγραφές",
+                "empty": "Καμία εγγραφή σε αυτό το διάστημα."
+            },
             "title": "Ανάπτυξη",
             "loading": "Φόρτωση μετρήσεων ανάπτυξης...",
             "refresh": "Ανανέωση",

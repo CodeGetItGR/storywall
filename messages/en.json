@@ -2431,6 +2431,18 @@
         }
     },
     "AdminPage": {
+        "signupChannel": {
+            "INVITE": "Invite",
+            "GIFT": "Gift",
+            "ADS": "Ads",
+            "SOCIAL": "Social",
+            "EMAIL": "Email",
+            "PARTNER": "Partner",
+            "SEARCH": "Search",
+            "OTHER_SITE": "Other site",
+            "DIRECT": "Direct",
+            "UNKNOWN": "Unknown"
+        },
         "order": {
             "column": "Order",
             "moveUp": "Move {name} up",
@@ -3816,6 +3828,22 @@
             }
         },
         "funnel": {
+            "source": {
+                "label": "Source",
+                "all": "All sources"
+            },
+            "channels": {
+                "title": "By source",
+                "columns": {
+                    "channel": "Source",
+                    "signedUp": "Sign-ups",
+                    "createdEvent": "Created an event",
+                    "paidHost": "Paid",
+                    "revenue": "Revenue"
+                },
+                "fewSignups": "Few sign-ups",
+                "empty": "No sign-ups in this range."
+            },
             "title": "Growth",
             "loading": "Loading growth metrics...",
             "refresh": "Refresh",
