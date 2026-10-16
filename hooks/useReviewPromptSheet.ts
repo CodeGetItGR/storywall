@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useHasOpenOverlay } from '@/hooks/useOverlayPresence';
 import type { ReviewFormValues } from '@/hooks/useReviewForm';
 import { useReviewPrompt } from '@/hooks/useReviewPrompt';
+import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import { isReviewPromptRoute } from '@/lib/reviews';
 
 // Opens the sheet once, on home or an event feed, when nothing else is open.
@@ -32,22 +33,33 @@ export function useReviewPromptSheet() {
 
     // Forget the prompt first, in the same update as closing: otherwise the
     // render-time check above would reopen the sheet while the dismiss is in flight.
-    // While the rating is on its way the sheet stays put.
+    // The Modal ignores X, Esc and the backdrop while sending, so only Back gets here
+    // mid-send: hide the sheet and let the rating finish, without a dismissal.
     const close = useCallback(() => {
-        if (isPending) return;
         setOpen(false);
         if (!prompt) return;
         const { eventId } = prompt;
         forget();
-        if (!sent) dismissReview(eventId);
+        if (!sent && !isPending) dismissReview(eventId);
     }, [dismissReview, forget, isPending, prompt, sent]);
 
     const send = useCallback(
         (values: ReviewFormValues) => {
             if (!prompt) return;
-            submitReview({ eventId: prompt.eventId, ...values }, { onSuccess: () => setSent(true) });
+            submitReview(
+                { eventId: prompt.eventId, ...values },
+                {
+                    onSuccess: () => setSent(true),
+                    // Rated on another device already: nothing left to ask.
+                    onError: (error) => {
+                        if (getErrorCode(error) !== ERROR_CODES.APP_REVIEW_NOT_ELIGIBLE) return;
+                        setOpen(false);
+                        forget();
+                    },
+                },
+            );
         },
-        [prompt, submitReview],
+        [forget, prompt, submitReview],
     );
 
     return {
@@ -55,7 +67,7 @@ export function useReviewPromptSheet() {
         open,
         sent,
         isSending: isPending,
-        error: submitError ? toErrorMessage(submitError) : null,
+        error: submitError && getErrorCode(submitError) !== ERROR_CODES.APP_REVIEW_NOT_ELIGIBLE ? toErrorMessage(submitError) : null,
         close,
         send,
     };

@@ -4,7 +4,9 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useReviewPromptSheet } from '@/hooks/useReviewPromptSheet';
+import { ApiError } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
+import { ERROR_CODES } from '@/lib/api/errors';
 import type { AppReviewPromptDto } from '@/lib/api/types';
 
 const mocks = vi.hoisted(() => ({
@@ -94,15 +96,35 @@ describe('useReviewPromptSheet', () => {
         expect(dismissCalls()).toHaveLength(0);
     });
 
-    it('ignores close while the rating is being sent', async () => {
+    it('hides without a dismissal when closed (Back) while the rating is being sent', async () => {
         mocks.api.post.mockReturnValue(new Promise(() => {}));
         const { result } = renderHook(() => useReviewPromptSheet(), { wrapper });
         await waitFor(() => expect(result.current.open).toBe(true));
         act(() => result.current.send({ stars: 5, comment: null, publicConsent: false }));
         await waitFor(() => expect(result.current.isSending).toBe(true));
         act(() => result.current.close());
-        expect(result.current.open).toBe(true);
-        expect(result.current.prompt).toEqual(prompt);
+        expect(result.current.open).toBe(false);
+        expect(result.current.prompt).toBeNull();
         expect(dismissCalls()).toHaveLength(0);
+    });
+
+    it('closes quietly when the review was already answered elsewhere', async () => {
+        mocks.api.post.mockRejectedValue(new ApiError(400, { errorCode: ERROR_CODES.APP_REVIEW_NOT_ELIGIBLE, title: 'x', status: 400 }));
+        const { result } = renderHook(() => useReviewPromptSheet(), { wrapper });
+        await waitFor(() => expect(result.current.open).toBe(true));
+        act(() => result.current.send({ stars: 5, comment: null, publicConsent: false }));
+        await waitFor(() => expect(result.current.open).toBe(false));
+        expect(result.current.prompt).toBeNull();
+        expect(result.current.error).toBeNull();
+        expect(dismissCalls()).toHaveLength(0);
+    });
+
+    it('keeps the sheet open and shows other send errors', async () => {
+        mocks.api.post.mockRejectedValue(new ApiError(500, null));
+        const { result } = renderHook(() => useReviewPromptSheet(), { wrapper });
+        await waitFor(() => expect(result.current.open).toBe(true));
+        act(() => result.current.send({ stars: 5, comment: null, publicConsent: false }));
+        await waitFor(() => expect(result.current.error).toBe('error'));
+        expect(result.current.open).toBe(true);
     });
 });

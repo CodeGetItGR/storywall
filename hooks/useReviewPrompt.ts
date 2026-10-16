@@ -8,7 +8,7 @@ import { endpoints } from '@/lib/api/endpoints';
 import type { AppReviewPromptDto, AppReviewRequestDto } from '@/lib/api/types';
 
 export const reviewKeys = {
-    prompt: ['me', 'review-prompt'] as const,
+    prompt: ['review-prompt'] as const,
 };
 
 // GET /api/me/review-prompt: 204 parses to null. Not prefetched on the server:

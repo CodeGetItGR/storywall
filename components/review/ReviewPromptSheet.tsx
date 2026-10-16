@@ -27,7 +27,15 @@ export function ReviewPromptSheet({
     const t = useTranslations('ReviewPrompt');
 
     return (
-        <Modal ariaLabel={t('title', { eventTitle })} closeLabel={t('close')} onClose={onCloseAction} open={open} size="sm" variant="sheet">
+        <Modal
+            ariaLabel={t('title', { eventTitle })}
+            closeLabel={t('close')}
+            onClose={onCloseAction}
+            open={open}
+            size="sm"
+            variant="sheet"
+            closeDisabled={isSending}
+        >
             <Modal.Body className="p-5 sm:p-6">
                 {/* Content */}
                 {sent ? (
