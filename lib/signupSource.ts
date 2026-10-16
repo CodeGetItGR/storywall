@@ -134,6 +134,23 @@ export function withoutVisitSourceParam(href: string): string | null {
     return `${url.pathname}${url.search}${url.hash}`;
 }
 
+// A query string split into the carried src (decoded) and the rest, which keeps its exact encoding.
+// The proxy uses it so a login redirect puts the source on the login page, not in its return path.
+export function takeVisitSourceParam(search: string): { search: string; source: string | null } {
+    const prefix = `${VISIT_SOURCE_PARAM}=`;
+    const pairs = search.replace(/^\?/, '').split('&').filter(Boolean);
+    const carried = pairs.find((pair) => pair.startsWith(prefix));
+    if (!carried) return { search, source: null };
+    const rest = pairs.filter((pair) => pair !== carried);
+    let source: string | null;
+    try {
+        source = decodeURIComponent(carried.slice(prefix.length).replace(/\+/g, ' '));
+    } catch {
+        source = null;
+    }
+    return { search: rest.length ? `?${rest.join('&')}` : '', source };
+}
+
 // Where a click on a landing page should go instead, carrying the source: only a plain click on a
 // same-site link out of the landing pages. Null leaves the click alone.
 export function carryClickTarget(event: MouseEvent, origin: string, source: VisitSource | null): string | null {

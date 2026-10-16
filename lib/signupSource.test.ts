@@ -10,6 +10,7 @@ import {
     pickVisitSource,
     readVisitSourceCookie,
     rememberVisitSource,
+    takeVisitSourceParam,
     VISIT_SOURCE_COOKIE,
     type VisitSource,
     withoutVisitSourceParam,
@@ -124,6 +125,18 @@ describe('withoutVisitSourceParam', () => {
 
     it('is null when there is nothing to remove', () => {
         expect(withoutVisitSourceParam(`${ORIGIN}/events/new`)).toBeNull();
+    });
+});
+
+describe('takeVisitSourceParam', () => {
+    it('splits a carried src from the rest of the query', () => {
+        expect(takeVisitSourceParam('?type=wedding&src=%7B%7D&step=a%20b')).toEqual({ search: '?type=wedding&step=a%20b', source: '{}' });
+    });
+
+    it('leaves a query without src exactly as it was', () => {
+        expect(takeVisitSourceParam('?step=a%20b')).toEqual({ search: '?step=a%20b', source: null });
+        expect(takeVisitSourceParam('')).toEqual({ search: '', source: null });
+        expect(takeVisitSourceParam('?src=%7B%7D')).toEqual({ search: '', source: '{}' });
     });
 });
 
