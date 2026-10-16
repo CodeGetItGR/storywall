@@ -5,6 +5,7 @@ import { type ReactNode, useEffect, useState } from 'react';
 
 import { BetaFeedback } from '@/components/betaFeedback/BetaFeedback';
 import { GuidelinesAcceptanceGate, GuidelinesGateSignOutHold } from '@/components/legal/GuidelinesAcceptanceGate';
+import { SignupSourceTracker } from '@/components/layout/SignupSourceTracker';
 import { useAuth } from '@/hooks/useAuth';
 import { useInAppHistoryTracking } from '@/hooks/useInAppHistoryTracking';
 import { useIsDemoRoute } from '@/hooks/useIsDemoRoute';
@@ -75,6 +76,7 @@ export function AppProviders({ children, handoff = null }: { children: ReactNode
     return (
         <QueryClientProvider client={queryClient}>
             <AppConfigBootstrap />
+            <SignupSourceTracker />
             <AuthProvider handoff={handoff}>
                 <DemoRouteAuthScope>
                     <EventProvider>
