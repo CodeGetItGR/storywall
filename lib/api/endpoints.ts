@@ -319,21 +319,20 @@ export const endpoints = {
             timeline: (weeks: number) => `/api/admin/metrics/timeline?weeks=${encodeURIComponent(String(weeks))}`,
             costSummary: '/api/admin/metrics/cost-summary',
             funnel: (since?: string | null, until?: string | null, channel?: SignupChannel | null) => {
-                const params = new URLSearchParams();
-                if (since) params.set('since', since);
-                if (until) params.set('until', until);
-                if (channel) params.set('channel', channel);
-                const query = params.toString();
-                return `/api/admin/metrics/funnel${query ? `?${query}` : ''}`;
+                const params = [
+                    since ? `since=${encodeURIComponent(since)}` : null,
+                    until ? `until=${encodeURIComponent(until)}` : null,
+                    channel ? `channel=${channel}` : null,
+                ].filter(Boolean);
+                return `/api/admin/metrics/funnel${params.length ? `?${params.join('&')}` : ''}`;
             },
             funnelCohorts: (weeks: number, channel?: SignupChannel | null) =>
                 `/api/admin/metrics/funnel/cohorts?weeks=${encodeURIComponent(String(weeks))}${channel ? `&channel=${channel}` : ''}`,
             funnelChannels: (since?: string | null, until?: string | null) => {
-                const params = new URLSearchParams();
-                if (since) params.set('since', since);
-                if (until) params.set('until', until);
-                const query = params.toString();
-                return `/api/admin/metrics/funnel/channels${query ? `?${query}` : ''}`;
+                const params = [since ? `since=${encodeURIComponent(since)}` : null, until ? `until=${encodeURIComponent(until)}` : null].filter(
+                    Boolean,
+                );
+                return `/api/admin/metrics/funnel/channels${params.length ? `?${params.join('&')}` : ''}`;
             },
             moduleUsage: (filters: { since: string | null; until: string | null; eventTypeKey: string; planCode: string }) => {
                 const params = new URLSearchParams();
