@@ -1,26 +1,12 @@
 import '@/app/globals.css';
 
 import { Analytics } from '@vercel/analytics/next';
-import { Abhaya_Libre, Alegreya, Geist } from 'next/font/google';
 import { type AbstractIntlMessages, NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
 import { type ReactNode } from 'react';
 
 import { OverlayLeakProbe } from '@/components/dev/OverlayLeakProbe';
-
-const geist = Geist({ subsets: ['latin'] });
-
-const abhayaLibre = Abhaya_Libre({
-    variable: '--font-abhaya-libre',
-    subsets: ['latin'],
-    weight: ['400'],
-});
-
-const alegreya = Alegreya({
-    variable: '--font-alegreya',
-    subsets: ['latin'],
-    weight: ['400'],
-});
+import { rootFontClassName } from '@/components/layout/rootFonts';
 
 type RootDocumentProps = {
     children: ReactNode;
@@ -33,7 +19,7 @@ export async function RootDocument({ children, messages }: RootDocumentProps) {
     const locale = await getLocale();
 
     return (
-        <html lang={locale} className={`${geist.className} ${abhayaLibre.variable} ${alegreya.variable} h-dvh bg-background`}>
+        <html lang={locale} className={`${rootFontClassName} h-dvh bg-background`}>
             <body className="h-(--visual-viewport-page-height) overflow-hidden overscroll-none antialiased">
                 <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
                 {process.env.NODE_ENV === 'production' ? <Analytics /> : <OverlayLeakProbe />}

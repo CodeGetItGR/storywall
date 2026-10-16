@@ -1,0 +1,37 @@
+name: Chromatic
+
+on:
+    pull_request:
+        branches: [staging]
+    push:
+        branches: [staging]
+
+concurrency:
+    group: chromatic-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    chromatic:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  # Chromatic reads git history to find the baseline build.
+                  fetch-depth: 0
+
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 22
+                  cache: npm
+
+            - run: npm ci
+
+            - uses: chromaui/action@v18
+              with:
+                  projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+                  buildScriptName: build-storybook
+                  # Builds on staging become the accepted baseline for the next PRs.
+                  autoAcceptChanges: staging
+                  # Only snapshot stories whose files (or their imports) changed.
+                  onlyChanged: true
+                  exitZeroOnChanges: true
