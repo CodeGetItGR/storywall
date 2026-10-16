@@ -44,12 +44,12 @@ export function AppReviewsTable({ reviews, onOpenAction }: { reviews: AdminAppRe
                                 {formatDate(locale, review.createdAt, DATE_FORMAT)}
                             </td>
                             <td className="px-3 py-3.5 font-mono text-xs whitespace-nowrap text-ink">{t('stars', { count: review.stars })}</td>
-                            <td className="px-3 py-3.5">
+                            <td className="w-full max-w-0 px-3 py-3.5">
                                 <button
                                     type="button"
                                     data-review-id={review.id}
                                     onClick={handleOpen}
-                                    className="block max-w-md truncate text-left font-semibold text-ink hover:underline"
+                                    className="block w-full truncate text-left font-semibold text-ink hover:underline"
                                 >
                                     {review.comment ?? t('noComment')}
                                 </button>
@@ -59,7 +59,7 @@ export function AppReviewsTable({ reviews, onOpenAction }: { reviews: AdminAppRe
                                     {t(`role.${review.role}`)}
                                 </span>
                             </td>
-                            <td className="px-3 py-3.5 text-ink-muted">{eventTypeCopy(review.eventType).name}</td>
+                            <td className="px-3 py-3.5 whitespace-nowrap text-ink-muted">{eventTypeCopy(review.eventType).name}</td>
                             <td className="px-3 py-3.5">
                                 <span
                                     className={
@@ -72,7 +72,7 @@ export function AppReviewsTable({ reviews, onOpenAction }: { reviews: AdminAppRe
                                 </span>
                             </td>
                             <td className="px-5 py-3.5">
-                                <div className="flex flex-wrap gap-1.5">
+                                <div className="flex gap-1.5 whitespace-nowrap">
                                     <AppReviewStatusPill status={review.status} />
                                     {review.featured ? (
                                         <span className="inline-flex rounded-full bg-status-good-wash px-2.5 py-1 text-[11px] font-bold text-status-good">
