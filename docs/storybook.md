@@ -2,7 +2,8 @@
 
 - `npm run storybook` starts Storybook on http://localhost:6006.
 - `npm run build-storybook` builds it into `storybook-static/` (what Chromatic uploads).
-- Chromatic runs on every PR into `staging` (`.github/workflows/chromatic.yml`). It needs the `CHROMATIC_PROJECT_TOKEN` repo secret. Builds on `staging` are accepted automatically and become the baseline.
+- Chromatic runs only on PRs into `staging` that have the `chromatic` label and touch UI files (`.github/workflows/chromatic.yml`). Adding the label starts a build, and each push while it is on starts another. It needs the `CHROMATIC_PROJECT_TOKEN` repo secret.
+- Accept the changes in Chromatic on the PR before merging. Staging uses merge commits, so the accepted PR build stays the baseline for the next PRs.
 
 ## Writing stories
 
