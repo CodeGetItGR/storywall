@@ -758,6 +758,7 @@ export interface UserResponseDto {
     // confirmed being 18+; until then every write is 403 4020. Same nulls as above.
     termsAcceptanceRequired: boolean | null;
     currentTermsVersion: string | null;
+    signupSource?: SignupSourceDto | null;
 }
 
 export interface MeUpdateRequestDto {
@@ -2050,6 +2051,31 @@ export interface FunnelCohortDto {
     createdEvent: number;
     paidHost: number;
     engagedHost: number;
+}
+
+export type SignupChannel = 'INVITE' | 'GIFT' | 'ADS' | 'SOCIAL' | 'EMAIL' | 'PARTNER' | 'SEARCH' | 'OTHER_SITE' | 'DIRECT' | 'UNKNOWN';
+
+/**
+ * GET /api/admin/metrics/funnel/channels: accounts that signed up in the range, per channel. Revenue is
+ * provider-settled orders of any kind, all time, in minor units per currency.
+ */
+export interface FunnelChannelRowDto {
+    channel: SignupChannel;
+    signedUp: number;
+    createdEvent: number;
+    paidHost: number;
+    revenueMinorByCurrency: Record<string, number>;
+}
+
+// Where an account came from. Only on the admin user endpoints; null on /api/me.
+export interface SignupSourceDto {
+    channel: SignupChannel;
+    utmSource: string | null;
+    utmMedium: string | null;
+    utmCampaign: string | null;
+    adClick: boolean | null;
+    referrerHost: string | null;
+    landingPage: string | null;
 }
 
 // --- Module usage (docs/module-usage-be-spec.md) ---
