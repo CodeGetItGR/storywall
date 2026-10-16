@@ -53,6 +53,9 @@ export function AppReviewDrawer({
                     <p className="text-sm text-ink-muted">
                         {review.firstName} · {t(`role.${review.role}`)}
                     </p>
+                    <p className="text-sm text-ink-muted">
+                        {t('columns.consent')}: {review.publicConsent ? t('yes') : t('no')}
+                    </p>
                 </section>
 
                 {/* Status */}
@@ -70,7 +73,10 @@ export function AppReviewDrawer({
                 </section>
 
                 {/* Error */}
-                {error ? <p className="text-sm text-status-danger">{toErrorMessage(error)}</p> : null}
+                {error ? (
+                    <p role="alert" className="text-sm text-status-danger">{toErrorMessage(error)}
+                    </p>
+                ) : null}
 
                 {/* Identifiers */}
                 <section className="grid grid-cols-1 gap-4 border-t border-border pt-5 sm:grid-cols-2">

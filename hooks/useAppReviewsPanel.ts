@@ -3,30 +3,44 @@
 import { useCallback, useState } from 'react';
 
 import { useAdminAppReviews, usePatchAppReview } from '@/hooks/useAdminAppReviews';
-import type { AdminAppReviewPatchDto, AppReviewStatus } from '@/lib/api/types';
+import type { AdminAppReviewDto, AdminAppReviewPatchDto, AppReviewStatus } from '@/lib/api/types';
 
 export function useAppReviewsPanel() {
     const [page, setPage] = useState(0);
     const [status, setStatusFilter] = useState<AppReviewStatus | null>(null);
-    const [selectedId, setSelectedId] = useState<string | null>(null);
+    // The opened review, kept so the drawer survives its row leaving a filtered list.
+    const [snapshot, setSnapshot] = useState<AdminAppReviewDto | null>(null);
     const reviewsQuery = useAdminAppReviews(page, status);
     const patchMutation = usePatchAppReview();
-    const { mutate: patchReview } = patchMutation;
+    const { mutate: patchReview, reset: resetPatch } = patchMutation;
 
-    // The drawer shows the row from the current page, so it updates when the list refetches.
-    const selected = reviewsQuery.data?.content.find((review) => review.id === selectedId) ?? null;
+    // The list row is fresher than the snapshot, so it wins when present.
+    const selected = snapshot ? (reviewsQuery.data?.content.find((review) => review.id === snapshot.id) ?? snapshot) : null;
 
     const setStatus = useCallback((next: AppReviewStatus | null) => {
         setStatusFilter(next);
         setPage(0);
     }, []);
-    const openReview = useCallback((id: string) => setSelectedId(id), []);
-    const closeReview = useCallback(() => setSelectedId(null), []);
+    const rows = reviewsQuery.data?.content;
+    const openReview = useCallback(
+        (id: string) => {
+            const review = rows?.find((row) => row.id === id);
+            if (!review) return;
+            resetPatch();
+            setSnapshot(review);
+        },
+        [resetPatch, rows],
+    );
+    const closeReview = useCallback(() => {
+        resetPatch();
+        setSnapshot(null);
+    }, [resetPatch]);
     const patchSelected = useCallback(
         (patch: AdminAppReviewPatchDto) => {
-            if (selectedId) patchReview({ id: selectedId, patch });
+            if (!snapshot) return;
+            patchReview({ id: snapshot.id, patch }, { onSuccess: (updated) => setSnapshot(updated) });
         },
-        [patchReview, selectedId],
+        [patchReview, snapshot],
     );
 
     return {

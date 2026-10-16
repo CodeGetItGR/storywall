@@ -3729,7 +3729,6 @@
             "loading": "Loading reviews",
             "empty": "No reviews yet.",
             "count": "{count, plural, one {# review} other {# reviews}}",
-            "open": "Open review",
             "filter": "Status",
             "all": "All",
             "columns": {

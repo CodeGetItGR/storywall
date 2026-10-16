@@ -47,7 +47,6 @@ export function AppReviewsTable({ reviews, onOpenAction }: { reviews: AdminAppRe
                                     type="button"
                                     data-review-id={review.id}
                                     onClick={handleOpen}
-                                    aria-label={t('open')}
                                     className="block max-w-md truncate text-left font-semibold text-ink hover:underline"
                                 >
                                     {review.comment ?? t('noComment')}
@@ -59,7 +58,17 @@ export function AppReviewsTable({ reviews, onOpenAction }: { reviews: AdminAppRe
                                 </span>
                             </td>
                             <td className="px-3 py-3.5 text-ink-muted">{eventTypeCopy(review.eventType).name}</td>
-                            <td className="px-3 py-3.5 text-ink-muted">{review.publicConsent ? t('yes') : t('no')}</td>
+                            <td className="px-3 py-3.5">
+                                <span
+                                    className={
+                                        review.publicConsent
+                                            ? 'inline-flex rounded-full bg-status-good-wash px-2.5 py-1 text-[11px] font-bold text-status-good'
+                                            : 'inline-flex rounded-full bg-status-neutral-wash px-2.5 py-1 text-[11px] font-bold text-status-neutral'
+                                    }
+                                >
+                                    {review.publicConsent ? t('yes') : t('no')}
+                                </span>
+                            </td>
                             <td className="px-5 py-3.5">
                                 <div className="flex flex-wrap gap-1.5">
                                     <AppReviewStatusPill status={review.status} />

@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { type MouseEvent } from 'react';
+import { type MouseEvent, useId } from 'react';
 
 import type { AppReviewStatus } from '@/lib/api/types';
 import { APP_REVIEW_STATUSES } from '@/lib/reviews';
@@ -17,6 +17,7 @@ export function AppReviewStatusControl({
     onChangeAction: (status: AppReviewStatus) => void;
 }) {
     const t = useTranslations('AdminPage.appReviews');
+    const titleId = useId();
 
     function handleClick(event: MouseEvent<HTMLButtonElement>) {
         const next = event.currentTarget.dataset.status as AppReviewStatus;
@@ -25,8 +26,10 @@ export function AppReviewStatusControl({
 
     return (
         <div>
-            <p className="mb-2 text-sm font-bold text-ink">{t('statusTitle')}</p>
-            <div className="flex gap-1 rounded-lg bg-canvas p-1">
+            <p id={titleId} className="mb-2 text-sm font-bold text-ink">
+                {t('statusTitle')}
+            </p>
+            <div role="group" aria-labelledby={titleId} className="flex gap-1 rounded-lg bg-canvas p-1">
                 {APP_REVIEW_STATUSES.map((option) => (
                     <button
                         key={option}
