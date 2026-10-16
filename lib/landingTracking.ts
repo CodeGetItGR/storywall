@@ -1,7 +1,10 @@
 import { track } from '@vercel/analytics';
 
-// Landing page clicks and scroll depth, sent as Vercel Web Analytics custom events. The Pro plan keeps
-// at most two properties per event, so no event here carries more.
+import { trackAnalyticsEvent } from '@/lib/googleAnalytics';
+
+// Landing page clicks and scroll depth, sent as Vercel Web Analytics custom events and mirrored to
+// Google Analytics (only with the visitor's Analytics consent). Vercel's Pro plan keeps at most two
+// properties per event, so no event here carries more.
 
 export type LandingPlacement = 'header' | 'mobile_menu' | 'hero' | 'hero_band' | 'stories' | 'themes' | 'demo' | 'final_cta';
 
@@ -74,19 +77,25 @@ export function landingNavTarget(href: string): LandingSection | string {
     return NAV_TARGETS[href] ?? href.replace(/^#/, '');
 }
 
+// Google Analytics gets the same event under a snake_case name: 'Landing Plan' is landing_plan.
+function sendLandingEvent(name: string, properties: Record<string, string | number>) {
+    track(name, properties);
+    trackAnalyticsEvent(name.toLowerCase().replaceAll(' ', '_'), properties);
+}
+
 export function trackLandingClick(click: LandingClick) {
     const { event, ...properties } = click;
-    track(CLICK_EVENT_NAMES[event], properties);
+    sendLandingEvent(CLICK_EVENT_NAMES[event], properties);
 }
 
 export function trackLandingSection(section: LandingSection) {
-    track('Landing Section', { section });
+    sendLandingEvent('Landing Section', { section });
 }
 
 export function trackLandingFaq(position: number) {
-    track('Landing FAQ', { question: position });
+    sendLandingEvent('Landing FAQ', { question: position });
 }
 
 export function trackLandingLanguage(locale: string) {
-    track('Landing Language', { locale });
+    sendLandingEvent('Landing Language', { locale });
 }

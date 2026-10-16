@@ -1,3 +1,4 @@
+import { isGoogleTagConfigured } from '@/lib/googleTag';
 import { pageRoute } from '@/lib/vercelInsights';
 
 type RouteParams = Record<string, string | string[] | undefined>;
@@ -47,6 +48,18 @@ export function trackAnalyticsPageview(tagId: string, pageLocation: string, page
     const page = { page_location: pageLocation, page_referrer: pageReferrer };
     window.gtag?.('set', page);
     window.gtag?.('event', 'page_view', { send_to: tagId, ...page });
+}
+
+// A custom event, sent only while Analytics runs on this page with the
+// visitor's consent. Anywhere else it does nothing.
+export function trackAnalyticsEvent(name: string, params: Record<string, string | number>): void {
+    if (typeof window === 'undefined' || !GA_MEASUREMENT_ID) return;
+    if (!isGoogleTagConfigured(GA_MEASUREMENT_ID) || isAnalyticsDisabled(GA_MEASUREMENT_ID)) return;
+    window.gtag?.('event', name, { ...params, send_to: GA_MEASUREMENT_ID });
+}
+
+function isAnalyticsDisabled(tagId: string): boolean {
+    return (window as unknown as Record<string, unknown>)[`ga-disable-${tagId}`] === true;
 }
 
 // Google's own switch to stop the tag sending anything, used when the visitor
