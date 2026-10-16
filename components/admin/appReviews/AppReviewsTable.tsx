@@ -40,7 +40,9 @@ export function AppReviewsTable({ reviews, onOpenAction }: { reviews: AdminAppRe
                 <tbody>
                     {reviews.map((review) => (
                         <tr key={review.id} className="border-b border-border last:border-b-0 hover:bg-canvas/55">
-                            <td className="px-5 py-3.5 font-mono text-xs whitespace-nowrap text-ink-muted">{formatDate(locale, review.createdAt, DATE_FORMAT)}</td>
+                            <td className="px-5 py-3.5 font-mono text-xs whitespace-nowrap text-ink-muted">
+                                {formatDate(locale, review.createdAt, DATE_FORMAT)}
+                            </td>
                             <td className="px-3 py-3.5 font-mono text-xs whitespace-nowrap text-ink">{t('stars', { count: review.stars })}</td>
                             <td className="px-3 py-3.5">
                                 <button

@@ -57,7 +57,9 @@ export function AppReviewsPanel() {
                 {panel.reviewsQuery.error ? (
                     <p className="px-5 py-12 text-center text-sm text-status-danger">{toErrorMessage(panel.reviewsQuery.error)}</p>
                 ) : null}
-                {data && !panel.reviewsQuery.error && data.content.length === 0 ? <p className="px-5 py-14 text-center text-sm text-ink-muted">{t('empty')}</p> : null}
+                {data && !panel.reviewsQuery.error && data.content.length === 0 ? (
+                    <p className="px-5 py-14 text-center text-sm text-ink-muted">{t('empty')}</p>
+                ) : null}
                 {data && !panel.reviewsQuery.error && data.content.length > 0 ? (
                     <>
                         <AppReviewsTable reviews={data.content} onOpenAction={panel.openReview} />

@@ -53,7 +53,8 @@ export function ReviewForm({
 
             {/* Error */}
             {error ? (
-                <p role="alert" className="text-sm text-status-danger">{error}
+                <p role="alert" className="text-sm text-status-danger">
+                    {error}
                 </p>
             ) : null}
 

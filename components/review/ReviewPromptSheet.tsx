@@ -33,7 +33,13 @@ export function ReviewPromptSheet({
                 {sent ? (
                     <ReviewSent onCloseAction={onCloseAction} />
                 ) : (
-                    <ReviewForm eventTitle={eventTitle} isSending={isSending} error={error} onSubmitAction={onSendAction} onNotNowAction={onCloseAction} />
+                    <ReviewForm
+                        eventTitle={eventTitle}
+                        isSending={isSending}
+                        error={error}
+                        onSubmitAction={onSendAction}
+                        onNotNowAction={onCloseAction}
+                    />
                 )}
             </Modal.Body>
         </Modal>

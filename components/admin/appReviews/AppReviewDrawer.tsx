@@ -74,7 +74,8 @@ export function AppReviewDrawer({
 
                 {/* Error */}
                 {error ? (
-                    <p role="alert" className="text-sm text-status-danger">{toErrorMessage(error)}
+                    <p role="alert" className="text-sm text-status-danger">
+                        {toErrorMessage(error)}
                     </p>
                 ) : null}
 

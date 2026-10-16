@@ -30,8 +30,8 @@ export function usePatchAppReview() {
         mutationFn: ({ id, patch }: { id: string; patch: AdminAppReviewPatchDto }) =>
             api.patch<AdminAppReviewDto>(endpoints.admin.appReviews.byId(id), patch),
         onSuccess: () => {
-            void queryClient.invalidateQueries({ queryKey: adminAppReviewKeys.all });
             invalidatePublicConfig(queryClient);
+            return queryClient.invalidateQueries({ queryKey: adminAppReviewKeys.all });
         },
     });
 }
