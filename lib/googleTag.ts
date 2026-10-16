@@ -51,6 +51,11 @@ export function updateGoogleTagConsent({ ads, analytics }: ConsentChoice): void 
     });
 }
 
+export function isGoogleTagConfigured(tagId: string): boolean {
+    const gtag = window.gtag;
+    return Boolean(gtag && configuredIds.get(gtag)?.has(tagId));
+}
+
 export function configureGoogleTag(tagId: string, params?: Record<string, unknown>): void {
     const gtag = window.gtag;
     if (!gtag) return;
