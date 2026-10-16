@@ -1,8 +1,6 @@
 'use client';
 
 import { Bell, CalendarDays, Pencil, UserRound } from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import { AccountInstallAppButton } from '@/components/account/AccountInstallAppButton';
@@ -10,8 +8,10 @@ import { AccountLogoutButton } from '@/components/account/AccountLogoutButton';
 import { AccountSidebarLogo } from '@/components/account/AccountSidebarLogo';
 import { AccountSidebarNavLink } from '@/components/account/AccountSidebarNavLink';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { AppLink } from '@/components/ui/AppLink';
 import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsDemoRoute } from '@/hooks/useIsDemoRoute';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { getInitials } from '@/lib/format';
 import { routes } from '@/lib/routes';
@@ -19,12 +19,11 @@ import { routes } from '@/lib/routes';
 export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => void }) {
     const t = useTranslations('AccountDrawer');
     const { user } = useAuth();
-    const pathname = usePathname();
     const { data: unreadCount = 0 } = useUnreadNotificationCount();
     // These nav destinations (account-wide event list, plans, modules, profile edit) all
     // require a real signed-in session and have no demo equivalent — linking to them from
     // /demo would just dead-end the host on the real login page.
-    const isDemoRoute = pathname?.startsWith('/demo') ?? false;
+    const isDemoRoute = useIsDemoRoute();
     const accountName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.firstName || t('fallbackName');
 
     return (
@@ -45,7 +44,7 @@ export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => 
                                 className="ring-2 ring-white/40"
                             />
                         ) : (
-                            <Link
+                            <AppLink
                                 href={routes.profile}
                                 onClick={onCloseAction}
                                 aria-label={t('editProfile')}
@@ -61,7 +60,7 @@ export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => 
                                 <span className="shadow-soft absolute right-0 bottom-0 flex h-6 w-6 items-center justify-center rounded-full bg-white text-primary ring-2 ring-primary transition-transform group-hover:scale-105 group-focus-visible:scale-105">
                                     <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                                 </span>
-                            </Link>
+                            </AppLink>
                         )}
                         <div className="min-w-0">
                             <p className="truncate text-lg font-bold">{accountName}</p>

@@ -4,11 +4,12 @@ import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
-import { StoryHeader, StoryProgressBar } from '@/components/story';
 import { ScheduleStoryContent } from '@/components/story/ScheduleStoryContent';
 import { ScheduleStoryDateBadge } from '@/components/story/ScheduleStoryDateBadge';
 import { ScheduleStoryFrame } from '@/components/story/ScheduleStoryFrame';
 import { ScheduleStorySkeleton } from '@/components/story/ScheduleStorySkeleton';
+import { StoryHeader } from '@/components/story/StoryHeader';
+import { StoryProgressBar } from '@/components/story/StoryProgressBar';
 import { useEventSessions } from '@/hooks/useEventSessions';
 import { useActiveModuleCopy } from '@/hooks/useModuleCopy';
 import { routes } from '@/lib/routes';

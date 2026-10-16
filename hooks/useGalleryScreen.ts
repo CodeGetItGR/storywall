@@ -17,7 +17,7 @@ import { canReportContent } from '@/lib/contentPermissions';
 import { downloadBlob } from '@/lib/download';
 import { isEventDeleted, isEventWritable, readableModuleKeys } from '@/lib/eventLifecycle';
 import { formatBytes } from '@/lib/format';
-import { isMemberArchiveEnabled } from '@/lib/qrLinks';
+import { isGalleryOpenToGuests } from '@/lib/qrLinks';
 import { getUploadLimits } from '@/lib/uploadLimits';
 import { useActiveMember } from '@/providers/EventProvider';
 import { useMobileChromeActions } from '@/providers/MobileChromeProvider';
@@ -57,7 +57,10 @@ export function useGalleryScreen() {
 
     const galleryEnabled = readableModuleKeys(activeEvent).has('gallery');
     const isDeleted = isEventDeleted(activeEvent);
-    const canUpload = Boolean(eventId && activeMember && galleryEnabled && isEventWritable(activeEvent?.status) && !isDeleted);
+    // Guests who can open the page (see isGalleryOpenToGuests) only browse and download here; they
+    // upload through posts and the QR link.
+    const showUpload = isHost && !isDeleted;
+    const canUpload = Boolean(showUpload && eventId && activeMember && galleryEnabled && isEventWritable(activeEvent?.status));
     const selectedSize = useMemo(() => selectedFiles.reduce((sum, file) => sum + file.size, 0), [selectedFiles]);
     const maxArchiveSelectedItems = appConfig?.media.maxArchiveSelectedItems ?? 100;
     const maxArchivePartBytes = appConfig?.media.maxArchivePartBytes ?? 300 * 1024 * 1024;
@@ -73,7 +76,7 @@ export function useGalleryScreen() {
     const showArchiveDownload = isHost && galleryEnabled;
     // Guests of an event whose plan offers it get the prebuilt archive instead; the live download
     // above stays host-only (the backend 403s it for anyone else).
-    const showMemberArchive = !isHost && galleryEnabled && isMemberArchiveEnabled(activeEvent?.modules);
+    const showMemberArchive = !isHost && isGalleryOpenToGuests(activeEvent);
     // A host, or the member who uploaded it (the backend enforces the same rule). Deletes are not
     // plan-gated on the backend, so a file can still be cleared out after the gallery module is
     // gone — only a read-only or deleted event stops it.
@@ -347,6 +350,7 @@ export function useGalleryScreen() {
         isHost,
         isDeleted,
         galleryEnabled,
+        showUpload,
         canUpload,
         showArchiveDownload,
         showMemberArchive,

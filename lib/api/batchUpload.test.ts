@@ -3,6 +3,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { uploadInBatches } from '@/lib/api/batchUpload';
 import { ApiError } from '@/lib/api/client';
 import type { MediaBatchUploadResponseDto, MediaResponseDto } from '@/lib/api/types';
+import { shrinkImagesForUpload } from '@/lib/uploadImageResize';
+
+vi.mock('@/lib/uploadImageResize', () => ({ shrinkImagesForUpload: vi.fn() }));
 
 const MB = 1024 * 1024;
 
@@ -19,6 +22,20 @@ function stored(files: File[]): MediaBatchUploadResponseDto {
 const limits = { filesPerRequest: 10, requestFileBytes: 99 * MB };
 
 describe('uploadInBatches', () => {
+    // Splitting after shrinking: two 60 MB originals that would need two requests fit in one.
+    it("shrinks photos to the server's long edge before splitting them into requests", async () => {
+        const files = [makeFile('a.jpg', 60 * MB), makeFile('b.jpg', 60 * MB)];
+        const shrunk = [makeFile('a.jpg', 1 * MB), makeFile('b.jpg', 1 * MB)];
+        vi.mocked(shrinkImagesForUpload).mockResolvedValueOnce(shrunk);
+        const sendBatch = vi.fn((batch: File[]) => Promise.resolve(stored(batch)));
+
+        await uploadInBatches(files, { ...limits, imageMaxDimension: 2560 }, sendBatch);
+
+        expect(shrinkImagesForUpload).toHaveBeenCalledWith(files, 2560);
+        expect(sendBatch).toHaveBeenCalledTimes(1);
+        expect(sendBatch.mock.calls[0][0]).toEqual(shrunk);
+    });
+
     it('sends the files in requests under the byte budget and merges the outcome', async () => {
         const files = [makeFile('a.mp4', 60 * MB), makeFile('b.mp4', 60 * MB), makeFile('c.jpg', 5 * MB)];
         const sendBatch = vi.fn((batch: File[]) => Promise.resolve(stored(batch)));

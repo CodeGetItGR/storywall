@@ -1,12 +1,12 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
-import { GoogleAdsTag } from '@/components/consent/GoogleAdsTag';
+import { GoogleTag } from '@/components/consent/GoogleTag';
+import { AppLink } from '@/components/ui/AppLink';
 import { billingKeys, useEventBilling, useOrderSync } from '@/hooks/useBilling';
 import { eventKeys } from '@/hooks/useEvent';
 import { useLeaveCheckoutOnBack } from '@/hooks/useLeaveCheckoutOnBack';
@@ -87,16 +87,16 @@ export default function CheckoutSuccessPage() {
                 {orderId && <p className="mt-3 text-xs text-ink-faint">{t('orderId', { orderId })}</p>}
                 {paid && <p className="mt-4 text-sm font-medium text-ink-muted">{t('redirectCountdown', { seconds: secondsRemaining })}</p>}
                 {/* Actions */}
-                <Link
+                <AppLink
                     className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white sm:w-auto"
                     href={exitHref}
                 >
                     {paid ? t('backToEvent') : t('backToSetup')}
-                </Link>
+                </AppLink>
             </div>
             {!paid && isDraftEvent && <p className="mt-5 text-sm leading-relaxed text-ink-muted">{t('draftProcessingNote')}</p>}
             {/* Ad conversion tag, only with the visitor's consent */}
-            <GoogleAdsTag purchase={paidOrder} />
+            <GoogleTag purchase={paidOrder} />
         </main>
     );
 }

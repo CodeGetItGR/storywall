@@ -1,6 +1,7 @@
 import { type InfiniteData, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '@/hooks/useAuth';
+import { useIsDemoRoute } from '@/hooks/useIsDemoRoute';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
@@ -35,13 +36,15 @@ export function useNotifications() {
 }
 
 // GET /api/notifications/unread-count — the badge source, cheap enough to poll.
+// The demo has no inbox: its menus leave the bell out.
 export function useUnreadNotificationCount() {
     const { isAuthenticated } = useAuth();
+    const isDemoRoute = useIsDemoRoute();
 
     return useQuery({
         queryKey: notificationKeys.unreadCount,
         queryFn: () => api.get<NotificationUnreadCountDto>(endpoints.notifications.unreadCount),
-        enabled: isAuthenticated,
+        enabled: isAuthenticated && !isDemoRoute,
         ...NOTIFICATION_FRESHNESS,
         select: (data) => data.unreadCount ?? data.count ?? 0,
     });

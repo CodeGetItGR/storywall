@@ -48,6 +48,7 @@ export function EventTypePlansPane({ eventType, section }: { eventType: Platform
                     onSelectEventTypeAction={section.selectEventType}
                     canReorder={section.canReorder}
                     onMoveAction={section.movePlan}
+                    onReorderAction={section.reorderPlan}
                 />
             </section>
 

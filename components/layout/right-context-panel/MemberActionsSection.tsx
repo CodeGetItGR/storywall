@@ -1,6 +1,6 @@
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+import { AppLink } from '@/components/ui/AppLink';
 import { type ToolMenuItem } from '@/hooks/useToolsMenuItems';
 import { handleRoleSheetLinkClick } from '@/lib/myRoleSheetRequests';
 
@@ -20,7 +20,7 @@ export function MemberActionsSection({ items }: { items: ToolMenuItem[] }) {
             <p className="mb-2 text-sm font-semibold text-ink">{t('toolsTitle')}</p>
             <div className="space-y-1">
                 {items.map(({ key, href, icon: Icon, label }) => (
-                    <Link
+                    <AppLink
                         key={key}
                         href={href}
                         onClick={handleRoleSheetLinkClick}
@@ -28,7 +28,7 @@ export function MemberActionsSection({ items }: { items: ToolMenuItem[] }) {
                     >
                         <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
                         <span className="min-w-0 truncate">{label}</span>
-                    </Link>
+                    </AppLink>
                 ))}
             </div>
         </div>

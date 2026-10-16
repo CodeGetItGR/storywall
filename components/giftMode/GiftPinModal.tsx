@@ -1,9 +1,9 @@
 'use client';
 
 import { Printer } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+import { AppLink } from '@/components/ui/AppLink';
 import { Modal } from '@/components/ui/modal';
 import { routes } from '@/lib/routes';
 
@@ -48,13 +48,13 @@ export function GiftPinModal({
                         >
                             {t('done')}
                         </button>
-                        <Link
+                        <AppLink
                             href={routes.events.giftCard(eventId)}
                             className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-ink/90"
                         >
                             <Printer className="h-4 w-4" aria-hidden="true" />
                             {t('print')}
-                        </Link>
+                        </AppLink>
                     </div>
                 </div>
             </Modal.Body>

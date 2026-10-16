@@ -1,8 +1,8 @@
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import Section from '@/components/manage/Section';
 import { TargetedSection } from '@/components/manage/TargetedSection';
+import { AppLink } from '@/components/ui/AppLink';
 import { useCoverageExtensionSection } from '@/hooks/useCoverageExtensionSection';
 import type { EventStatus } from '@/lib/api/types';
 import { EXTEND_COVERAGE_SECTION_ID } from '@/lib/billing';
@@ -38,13 +38,13 @@ export function BillingExtensionSection({
                                     <p className="text-base font-bold text-ink">{row.monthsLabel}</p>
                                     <p className="mt-1 text-xs text-ink-muted">{row.endsAtLabel}</p>
                                 </div>
-                                <Link
+                                <AppLink
                                     href={row.href}
                                     aria-label={row.buttonAriaLabel}
                                     className="inline-flex min-h-11 w-full shrink-0 items-center justify-center rounded-full bg-primary px-5 text-sm font-semibold text-white tabular-nums transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:w-auto"
                                 >
                                     {row.buttonLabel}
-                                </Link>
+                                </AppLink>
                             </li>
                         ))}
                     </ul>

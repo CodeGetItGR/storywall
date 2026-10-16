@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
 import { AdminOrderArrows } from '@/components/admin/AdminOrderArrows';
+import { AdminSortableRow } from '@/components/admin/AdminSortableRow';
 import { PlanSharedGroupChip } from '@/components/admin/plans/PlanSharedGroupChip';
 import { type Visibility, visibilityOf } from '@/lib/adminVisibility';
 import type { PlanTierResponseDto, PlatformEventTypeResponseDto } from '@/lib/api/types';
@@ -53,7 +54,7 @@ export function PlanRow({
         .sort((left, right) => left - right);
 
     return (
-        <tr className="border-b border-border last:border-b-0 hover:bg-canvas/60">
+        <AdminSortableRow id={plan.id} name={plan.name} className="border-b border-border last:border-b-0 hover:bg-canvas/60">
             <td className="max-w-64 px-3 py-2">
                 <div className="flex items-center gap-2">
                     <p className="truncate font-semibold text-ink">{plan.name}</p>
@@ -112,6 +113,6 @@ export function PlanRow({
                     </button>
                 </div>
             </td>
-        </tr>
+        </AdminSortableRow>
     );
 }

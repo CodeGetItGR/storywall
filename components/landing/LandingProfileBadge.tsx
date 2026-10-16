@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+import { AppLink } from '@/components/ui/AppLink';
 import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { getInitials } from '@/lib/format';
@@ -15,13 +15,13 @@ export function LandingProfileBadge() {
     const accountName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.firstName || t('fallbackName');
 
     return (
-        <Link
+        <AppLink
             href={routes.home}
             aria-label={tHero('accountHomeLabel')}
             className="inline-flex items-center gap-2 text-xs font-bold whitespace-nowrap text-[#151313] transition-opacity hover:opacity-60"
         >
             <Avatar src={user?.profilePictureUrl} initials={getInitials(accountName)} size="sm" alt="" />
             <span>{accountName}</span>
-        </Link>
+        </AppLink>
     );
 }

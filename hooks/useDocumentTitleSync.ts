@@ -1,7 +1,7 @@
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 
-import { isEventRoute } from '@/components/layout/mobile-tab-bar';
+import { isEventRoute } from '@/components/layout/mobile-tab-bar/utils';
 import { useActiveEvent } from '@/providers/EventProvider';
 
 export function useDocumentTitleSync() {

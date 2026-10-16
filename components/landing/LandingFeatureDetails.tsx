@@ -3,6 +3,7 @@
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { LandingFeatureDetailCard } from '@/components/landing/LandingFeatureDetailCard';
 import { useLandingFeatureDetails } from '@/hooks/useLandingFeatureDetails';
+import { landingSectionAttributes } from '@/lib/landingTracking';
 
 export function LandingFeatureDetails() {
     const {
@@ -24,7 +25,11 @@ export function LandingFeatureDetails() {
     if (!activeDetail) return null;
 
     return (
-        <section aria-labelledby="landing-feature-details-title" className="bg-[#0b0b0f] px-0 py-0 text-white min-[761px]:px-[5vw] min-[761px]:py-16">
+        <section
+            aria-labelledby="landing-feature-details-title"
+            {...landingSectionAttributes('feature_details')}
+            className="bg-[#0b0b0f] px-0 py-0 text-white min-[761px]:px-[5vw] min-[761px]:py-16"
+        >
             {/* Desktop feature cards */}
             <div className="hidden min-[761px]:block">
                 {/* Feature introduction */}

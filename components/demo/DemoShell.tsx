@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 
 import { AccountPanelShell } from '@/components/account/AccountPanelShell';
 import { DemoBanner } from '@/components/demo/DemoBanner';
-import { MobileTabBar } from '@/components/layout';
+import { MobileTabBar } from '@/components/layout/MobileTabBar';
 import { useDemoMediaUrlRefresh } from '@/hooks/useDemoMediaUrlRefresh';
 import { useResetDemo } from '@/hooks/useResetDemo';
 import type { DemoSession } from '@/lib/demo/demoSession';

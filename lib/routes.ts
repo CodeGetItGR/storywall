@@ -1,4 +1,5 @@
 import type { RsvpReportType } from '@/lib/api/types';
+import { DEFAULT_DEMO_EVENT_TYPE_SLUG } from '@/lib/demo/demoEventTypes';
 import { demoEventBasePath } from '@/lib/demo/demoRouting';
 
 type RouteQueryValue = string | number | boolean | null | undefined;
@@ -35,15 +36,24 @@ export const routes = {
     verifyEmail: '/verify-email',
     forgotPassword: '/forgot-password',
     resetPassword: '/reset-password',
-    demo: '/demo',
-    demoEventType: (eventTypeSlug: string) => `/demo/${eventTypeSlug}`,
+    // Straight to the demo's feed: /demo and /demo/{slug} only redirect there, which costs a round trip.
+    demo: `/demo/${DEFAULT_DEMO_EVENT_TYPE_SLUG}/feed`,
+    demoEventType: (eventTypeSlug: string) => `/demo/${eventTypeSlug}/feed`,
     invite: '/invite',
     home: '/home',
     profile: '/profile',
     events: {
         // run: the wizard run the entry belongs to (see CREATE_EVENT_RUN_PARAM).
-        new: (params: { step?: string | null; run?: string | null; type?: string | null; plan?: string | null; option?: string | null } = {}) =>
-            withQuery('/events/new', params),
+        new: (
+            params: {
+                step?: string | null;
+                run?: string | null;
+                type?: string | null;
+                plan?: string | null;
+                option?: string | null;
+                code?: string | null;
+            } = {},
+        ) => withQuery('/events/new', params),
         manage: (eventId: string, params: { tab?: ManageTab | null; section?: string | null; cancelled?: boolean | null } = {}) =>
             withQuery(`${eventBasePath(eventId)}/manage`, params),
         // Share/join QR link management — pulled out of the Members section the
@@ -70,6 +80,8 @@ export const routes = {
             wishbook: (eventId: string) => `${eventBasePath(eventId)}/tools/wishbook`,
         },
         storySchedule: (eventId: string) => `${eventBasePath(eventId)}/story/schedule`,
+        // The .ics file for one calendar entry; no session = the event's own date.
+        calendar: (eventId: string, session?: string | null) => withQuery(`${eventBasePath(eventId)}/calendar`, { session }),
         location: (eventId: string, role?: 'main' | 'secondary' | null) => `${eventBasePath(eventId)}/location${role ? `/${role}` : ''}`,
         feed: (eventId: string, params: { post?: string | null; sheet?: 'role' | null } = {}) => withQuery(`${eventBasePath(eventId)}/feed`, params),
         settingsAddons: (eventId: string) => `${eventBasePath(eventId)}/settings/addons`,

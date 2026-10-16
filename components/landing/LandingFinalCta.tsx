@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { landingClickAttributes, landingSectionAttributes } from '@/lib/landingTracking';
 import { routes } from '@/lib/routes';
 
 export async function LandingFinalCta() {
@@ -11,6 +12,7 @@ export async function LandingFinalCta() {
         <section
             className="group block min-h-100 overflow-hidden bg-[#f5ab62] text-[#151313] min-[761px]:grid min-[761px]:max-h-none min-[761px]:min-h-0 min-[761px]:grid-cols-[44%_56%]"
             id="create"
+            {...landingSectionAttributes('final_cta')}
         >
             <div className="h-[78vw] min-h-80 overflow-hidden min-[761px]:h-180 min-[761px]:min-h-0">
                 <ProtectedImage
@@ -50,6 +52,7 @@ export async function LandingFinalCta() {
                 <a
                     className="motion-final-cta-btn mt-7 flex min-h-15 w-full items-center justify-between gap-7.5 rounded-full bg-white pr-5 pl-5.5 text-[11px] font-black tracking-[0.08em] text-[#151313] uppercase no-underline shadow-[0_12px_34px_rgba(21,19,19,0.1)] transition-transform duration-280 ease-[ease] hover:-translate-y-0.5 motion-reduce:transition-none min-[761px]:mt-8.5 min-[761px]:min-h-14.5 min-[761px]:w-max min-[761px]:justify-center min-[761px]:px-5.5 min-[761px]:text-[13px] min-[761px]:tracking-widest min-[761px]:shadow-none"
                     href={routes.events.new()}
+                    {...landingClickAttributes({ event: 'create', placement: 'final_cta' })}
                 >
                     <span>{t('cta')}</span>
                     <span

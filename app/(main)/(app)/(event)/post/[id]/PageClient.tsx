@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
 import { PostRedirectState } from '@/components/post/PostRedirectState';
-import { usePost } from '@/hooks';
+import { usePost } from '@/hooks/usePosts';
 import { ApiError } from '@/lib/api/client';
 import { routes } from '@/lib/routes';
 

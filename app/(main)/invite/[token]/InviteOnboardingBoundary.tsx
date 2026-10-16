@@ -1,7 +1,6 @@
 'use client';
 
 import { ArrowRight, Loader2 } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -10,6 +9,7 @@ import { InviteEventDetails } from '@/components/invite/InviteEventDetails';
 import { InviteLayout } from '@/components/invite/InviteLayout';
 import { InviteOnboardingState } from '@/components/invite/InviteOnboardingState';
 import { InviteTerminalState } from '@/components/invite/InviteTerminalState';
+import { AppLink } from '@/components/ui/AppLink';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
 import { useAcceptEventInvitation, useEventInvitationPreview } from '@/hooks/useEventInvitations';
@@ -65,12 +65,12 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
                     title={t('alreadyUsedInvite.title')}
                     description={t('alreadyUsedInvite.description')}
                     action={
-                        <Link
+                        <AppLink
                             href={routes.login}
                             className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
                         >
                             {t('haveAccount')}
-                        </Link>
+                        </AppLink>
                     }
                 />
             );
@@ -123,19 +123,19 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
                                     </button>
                                 ) : (
                                     <>
-                                        <Link
+                                        <AppLink
                                             href={loginHref}
                                             className="flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
                                         >
                                             {t('haveAccount')}
                                             <ArrowRight className="h-4 w-4" />
-                                        </Link>
-                                        <Link
+                                        </AppLink>
+                                        <AppLink
                                             href={registerHref}
                                             className="flex w-full items-center justify-center gap-2 rounded-full bg-surface-muted py-3 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted/70"
                                         >
                                             {t('createAccount')}
-                                        </Link>
+                                        </AppLink>
                                     </>
                                 )}
                             </div>

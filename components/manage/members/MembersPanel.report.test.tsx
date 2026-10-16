@@ -19,7 +19,6 @@ vi.mock('@/hooks/useModuleCopy', () => {
 });
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
 vi.mock('next/navigation', () => ({ useSearchParams: () => new URLSearchParams() }));
-vi.mock('@/hooks', () => ({ useAppConfig: () => ({ data: { reportTargetTypes: ['MEMBER'] } }) }));
 vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: () => ({ data: { reportTargetTypes: ['MEMBER'] } }) }));
 vi.mock('@/hooks/useBilling', () => ({ useUpgradeOptions: () => ({ data: [] }) }));
 vi.mock('@/hooks/useCoHostCapacity', () => ({
@@ -47,13 +46,11 @@ vi.mock('@/providers/EventProvider', () => ({
     useActiveMember: () => (activeMemberId ? { id: activeMemberId } : null),
     useActiveEvent: () => null,
 }));
-vi.mock('@/components/manage/invitations', () => ({
-    CoHostInvitationRow: () => null,
-    CreateCoHostInvitationForm: () => null,
-    ShareLanguageNote: () => null,
-}));
+vi.mock('@/components/manage/invitations/CoHostInvitationRow', () => ({ CoHostInvitationRow: () => null }));
+vi.mock('@/components/manage/invitations/CreateCoHostInvitationForm', () => ({ CreateCoHostInvitationForm: () => null }));
+vi.mock('@/components/manage/invitations/ShareLanguageNote', () => ({ ShareLanguageNote: () => null }));
 vi.mock('@/components/plan/UsagePanel', () => ({ UsagePanel: () => null }));
-vi.mock('@/components/reports', () => ({ ReportTargetModal: () => null }));
+vi.mock('@/components/reports/ReportTargetModal', () => ({ ReportTargetModal: () => null }));
 vi.mock('./CoHostManagementList', () => ({ CoHostManagementList: () => null }));
 
 function member(id: string, displayName: string, role: 'HOST' | 'ATTENDEE' = 'HOST', userId: string | null = `u-${id}`): EventMemberResponseDto {

@@ -2,21 +2,26 @@
 
 import { useTranslations } from 'next-intl';
 
+import { AdminSortableList } from '@/components/admin/AdminSortableList';
 import { MemberRoleRow } from '@/components/admin/memberRoles/MemberRoleRow';
 import type { MemberRoleCatalogDto } from '@/lib/api/types';
 import type { MoveDirection } from '@/lib/sortOrder';
+
+const roleIdOf = (role: MemberRoleCatalogDto) => role.id;
 
 export function MemberRolesTable({
     roles,
     hasAnyRoles,
     canReorder,
     onMoveAction,
+    onReorderAction,
     onEditAction,
 }: {
     roles: MemberRoleCatalogDto[];
     hasAnyRoles: boolean;
     canReorder: boolean;
     onMoveAction: (roleId: string, direction: MoveDirection) => void;
+    onReorderAction: (activeId: string, overId: string) => void;
     onEditAction: (roleId: string) => void;
 }) {
     const t = useTranslations('AdminPage.memberRoles');
@@ -38,17 +43,19 @@ export function MemberRolesTable({
                     </tr>
                 </thead>
                 <tbody>
-                    {roles.map((role, index) => (
-                        <MemberRoleRow
-                            key={role.id}
-                            role={role}
-                            isFirst={index === 0}
-                            isLast={index === roles.length - 1}
-                            canReorder={canReorder}
-                            onMoveAction={onMoveAction}
-                            onEditAction={onEditAction}
-                        />
-                    ))}
+                    <AdminSortableList ids={roles.map(roleIdOf)} disabled={!canReorder} onReorderAction={onReorderAction}>
+                        {roles.map((role, index) => (
+                            <MemberRoleRow
+                                key={role.id}
+                                role={role}
+                                isFirst={index === 0}
+                                isLast={index === roles.length - 1}
+                                canReorder={canReorder}
+                                onMoveAction={onMoveAction}
+                                onEditAction={onEditAction}
+                            />
+                        ))}
+                    </AdminSortableList>
                 </tbody>
             </table>
         </div>

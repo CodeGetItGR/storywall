@@ -1,7 +1,7 @@
-import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
 import Section from '@/components/manage/Section';
+import { AppLink } from '@/components/ui/AppLink';
 import type { BillingData } from '@/hooks/useEventBillingPanel';
 import { formatMoney } from '@/lib/billing';
 import { routes } from '@/lib/routes';
@@ -29,12 +29,12 @@ export function BillingAddonsSection({
             divider
             action={
                 canManage && (
-                    <Link
+                    <AppLink
                         href={routes.events.settingsAddons(eventId)}
                         className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full bg-surface-muted px-4 text-xs font-semibold text-ink"
                     >
                         {t(addons.length > 0 ? 'manageAction' : 'addStorage')}
-                    </Link>
+                    </AppLink>
                 )
             }
         >

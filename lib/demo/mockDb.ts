@@ -10,6 +10,8 @@ export interface MockDb<Schema extends Record<string, WithId>> {
     update<K extends keyof Schema>(collection: K, id: string, patch: (record: Schema[K]) => Schema[K]): Schema[K] | undefined;
     remove<K extends keyof Schema>(collection: K, id: string): void;
     reset(): void;
+    // Runs `changes` and saves once at the end, instead of after every write inside it.
+    batch(changes: () => void): void;
 }
 
 // What localStorage holds: the state plus the version of the seed it grew from.
@@ -53,8 +55,15 @@ export function createMockDb<Schema extends Record<string, WithId[]>>(
 ): MockDb<{ [K in keyof Schema]: Schema[K][number] }> {
     const { version = '', hydrate = (stored: Schema) => stored } = options;
     let state = loadState(storageKey, version, seed, hydrate);
+    // Each save writes the whole state, so writes inside a batch() only mark it unsaved.
+    let batchDepth = 0;
+    let unsaved = false;
 
     function persist() {
+        if (batchDepth > 0) {
+            unsaved = true;
+            return;
+        }
         saveState(storageKey, version, state);
     }
 
@@ -86,6 +95,18 @@ export function createMockDb<Schema extends Record<string, WithId[]>>(
         reset: () => {
             state = seed();
             persist();
+        },
+        batch: (changes) => {
+            batchDepth += 1;
+            try {
+                changes();
+            } finally {
+                batchDepth -= 1;
+                if (batchDepth === 0 && unsaved) {
+                    unsaved = false;
+                    persist();
+                }
+            }
         },
     };
 }

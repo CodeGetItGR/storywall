@@ -13,7 +13,9 @@ vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1', role: 'U
 vi.mock('@/hooks/useAdminDemoEventAccess', () => ({ useAdminDemoEventAccess: () => ({ isChecking: false, isAdminAllowed: false }) }));
 vi.mock('@/components/account/AccountPanelShell', () => ({ AccountPanelShell: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
 vi.mock('@/providers/AccountPanelProvider', () => ({ AccountPanelProvider: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
-vi.mock('@/components/layout', () => ({ AuthLoadingState: () => null, DesktopNavRail: () => null, MobileTabBar: () => null }));
+vi.mock('@/components/layout/AuthLoadingState', () => ({ AuthLoadingState: () => null }));
+vi.mock('@/components/layout/DesktopNavRail', () => ({ DesktopNavRail: () => null }));
+vi.mock('@/components/layout/MobileTabBar', () => ({ MobileTabBar: () => null }));
 
 afterEach(cleanup);
 

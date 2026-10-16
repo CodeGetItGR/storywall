@@ -2,7 +2,6 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail, User } from 'lucide-react';
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React, { ChangeEvent, useCallback, useState } from 'react';
@@ -14,6 +13,7 @@ import { RegisterNewsletterCheckbox } from '@/components/auth/RegisterNewsletter
 import { InviteEventCard } from '@/components/invite/InviteEventCard';
 import { AuthLoadingState } from '@/components/layout/AuthLoadingState';
 import { AcceptanceCheckboxes } from '@/components/legal/AcceptanceCheckboxes';
+import { AppLink } from '@/components/ui/AppLink';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppNewsletterConfig } from '@/hooks/useAppConfig';
@@ -308,9 +308,9 @@ export default function RegisterPage() {
 
             <p className="mt-6 text-center text-xs text-ink-muted">
                 {t('haveAccount')}{' '}
-                <Link href={routes.auth.login({ invite: inviteToken, next: returnPath })} className="font-semibold text-ink hover:underline">
+                <AppLink href={routes.auth.login({ invite: inviteToken, next: returnPath })} className="font-semibold text-ink hover:underline">
                     {t('signInLink')}
-                </Link>
+                </AppLink>
             </p>
         </AuthLayout>
     );

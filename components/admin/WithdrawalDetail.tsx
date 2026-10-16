@@ -102,7 +102,7 @@ export function WithdrawalDetail({
                 <p className="text-xs text-ink-muted">
                     {t(`withdrawals.status.${request.status}`)}
                     {decidedAt ? ` • ${decidedAt}` : ''}
-                    {request.decisionNote ? ` — ${request.decisionNote}` : ''}
+                    {request.decisionNote ? ` • ${request.decisionNote}` : ''}
                 </p>
             )}
 

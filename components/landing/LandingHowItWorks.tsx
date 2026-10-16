@@ -1,5 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
+import { landingSectionAttributes } from '@/lib/landingTracking';
+
 const STEP_ICONS = [
     // Create: a document with a plus
     <g key="create">
@@ -24,6 +26,7 @@ export async function LandingHowItWorks() {
             aria-labelledby="how-it-works-title"
             className="bg-white px-5 py-[34px] pb-[38px] text-[#151313] min-[761px]:px-[clamp(28px,5.5vw,96px)] min-[761px]:py-[clamp(30px,3.2vw,48px)]"
             id="howItWorks"
+            {...landingSectionAttributes('how_it_works')}
         >
             <div className="mx-auto grid max-w-[1480px] min-[761px]:grid-cols-[1.12fr_1fr_1fr_1.12fr]">
                 {/* Intro */}

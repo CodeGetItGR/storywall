@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
-import { absoluteUrl, buildLandingMetadata, landingLanguageAlternates, SITE_URL } from '@/lib/seo';
+import { OCCASIONS } from '@/lib/occasions/occasions';
+import { buildOccasionMetadata } from '@/lib/occasions/occasionSeo';
+import {
+    absoluteUrl,
+    buildForBusinessMetadata,
+    buildLandingMetadata,
+    forBusinessLanguageAlternates,
+    jsonLdHtml,
+    landingLanguageAlternates,
+    SITE_URL,
+} from '@/lib/seo';
 
 describe('absoluteUrl', () => {
     it('resolves paths against the site origin', () => {
@@ -34,5 +44,64 @@ describe('buildLandingMetadata', () => {
         expect(openGraph.url).toBe(metadata.alternates?.canonical);
         expect(openGraph.locale).toBe('el_GR');
         expect(openGraph.alternateLocale).toEqual(['en_US']);
+    });
+});
+
+describe('forBusinessLanguageAlternates', () => {
+    it('lists both partner URLs plus x-default on English', () => {
+        expect(forBusinessLanguageAlternates()).toEqual({
+            en: `${SITE_URL}/for-business`,
+            el: `${SITE_URL}/el/epaggelmaties`,
+            'x-default': `${SITE_URL}/for-business`,
+        });
+    });
+});
+
+describe('buildForBusinessMetadata', () => {
+    const copy = { title: 'T', description: 'D', siteName: 'StoryWall', imageAlt: 'A' };
+
+    it('gives each locale its own canonical and the shared alternates', () => {
+        const el = buildForBusinessMetadata('el', copy);
+        expect(el.alternates?.canonical).toBe(`${SITE_URL}/el/epaggelmaties`);
+        expect(el.alternates?.languages).toEqual(forBusinessLanguageAlternates());
+        expect(buildForBusinessMetadata('en', copy).alternates?.canonical).toBe(`${SITE_URL}/for-business`);
+    });
+
+    it('is indexable and keeps the Open Graph url on the canonical', () => {
+        const metadata = buildForBusinessMetadata('en', copy);
+        const openGraph = metadata.openGraph as { url?: string };
+        expect(metadata.robots).toEqual({ index: true, follow: true });
+        expect(openGraph.url).toBe(metadata.alternates?.canonical);
+    });
+
+    // The route's opengraph-image file sits in a route group, so Next serves it
+    // under a hashed URL and adds the tag itself. A hand-built URL would 404.
+    it('leaves the image to the route opengraph-image file', () => {
+        const metadata = buildForBusinessMetadata('en', copy);
+        expect((metadata.openGraph as { images?: unknown }).images).toBeUndefined();
+        expect((metadata.twitter as { images?: unknown }).images).toBeUndefined();
+    });
+});
+
+describe('jsonLdHtml', () => {
+    it('escapes < so copy cannot close the script tag', () => {
+        expect(jsonLdHtml({ a: '</script>' })).toBe('{"a":"\\u003c/script>"}');
+    });
+});
+
+describe('buildOccasionMetadata', () => {
+    const wedding = OCCASIONS.find((occasion) => occasion.eventType === 'WEDDING')!;
+    const copy = { title: 'T', description: 'D', siteName: 'StoryWall', imageAlt: 'A' };
+
+    it('uses the occasion page as canonical and lists both languages', () => {
+        const metadata = buildOccasionMetadata(wedding, 'el', copy);
+        expect(metadata.alternates?.canonical).toBe(`${SITE_URL}/el/gamos`);
+        expect(metadata.alternates?.languages).toEqual({
+            en: `${SITE_URL}/weddings`,
+            el: `${SITE_URL}/el/gamos`,
+            'x-default': `${SITE_URL}/weddings`,
+        });
+        expect((metadata.openGraph as { url?: string }).url).toBe(`${SITE_URL}/el/gamos`);
+        expect(metadata.robots).toEqual({ index: true, follow: true });
     });
 });

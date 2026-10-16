@@ -23,9 +23,9 @@ async function logoDataUri(): Promise<string> {
 
 // Google Fonts serves a TTF subset for just these characters when asked
 // without a browser user agent.
-async function loadTitleFont(text: string): Promise<ArrayBuffer | null> {
+async function loadTitleFont(text: string, weight: 400 | 700): Promise<ArrayBuffer | null> {
     try {
-        const cssUrl = `https://fonts.googleapis.com/css2?family=${TITLE_FONT}:wght@700&text=${encodeURIComponent(text)}`;
+        const cssUrl = `https://fonts.googleapis.com/css2?family=${TITLE_FONT}:wght@${weight}&text=${encodeURIComponent(text)}`;
         const css = await (await fetch(cssUrl)).text();
         const fontUrl = css.match(/src: url\((.+?)\) format\('(?:opentype|truetype)'\)/)?.[1];
         if (!fontUrl) return null;
@@ -102,10 +102,44 @@ export async function brandOgImage() {
     );
 }
 
+// The partner page's preview. Uses Alegreya for the text because the built-in
+// font has no Greek; falls back to the default font if Google Fonts is down.
+export async function forBusinessOgImage(copy: { eyebrow: string; headline: string }) {
+    const logoSrc = await logoDataUri();
+    const font = await loadTitleFont(`${copy.eyebrow}${copy.headline}`, 700);
+
+    return new ImageResponse(
+        <div
+            style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                padding: '72px 88px',
+                background: CANVAS,
+                color: INK,
+                fontFamily: font ? TITLE_FONT : 'sans-serif',
+            }}
+        >
+            {/* Logo */}
+            {/* eslint-disable-next-line @next/next/no-img-element -- next/image cannot render inside ImageResponse */}
+            <img alt="" height={64} src={logoSrc} width={268} />
+            {/* Headline */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                <div style={{ fontSize: 30, letterSpacing: 6, color: CORAL }}>{copy.eyebrow}</div>
+                <div style={{ fontSize: 84, lineHeight: 1.04, maxWidth: 1000 }}>{copy.headline}</div>
+            </div>
+        </div>,
+        { ...OG_IMAGE_SIZE, fonts: font ? [{ name: TITLE_FONT, data: font, weight: 700, style: 'normal' }] : undefined },
+    );
+}
+
 // Served as JPEG: a photo rendered to PNG runs past a megabyte, which some
-// messaging apps refuse to show as a preview.
-export async function eventOgImage(event: ShareEvent | null): Promise<Response> {
-    const image = await (event ? eventOgPng(event) : brandOgImage());
+// messaging apps refuse to show as a preview. `refresh` looks the event up
+// again past the cache, for when the cached cover link has expired.
+export async function eventOgImage(event: ShareEvent | null, refresh?: () => Promise<ShareEvent | null>): Promise<Response> {
+    const image = await (event ? eventOgPng(event, refresh) : brandOgImage());
     const png = await image.arrayBuffer();
     const jpeg = await sharp(Buffer.from(png)).jpeg({ quality: 82, mozjpeg: true }).toBuffer();
 
@@ -116,9 +150,20 @@ export async function eventOgImage(event: ShareEvent | null): Promise<Response> 
 
 // The event's cover photo with its name over it, or the name on the brand
 // canvas when there is no usable cover.
-async function eventOgPng(event: ShareEvent) {
-    const [logoSrc, coverSrc, font] = await Promise.all([logoDataUri(), loadCover(coverImageUrl(event.cover)), loadTitleFont(event.title)]);
+async function eventOgPng(event: ShareEvent, refresh?: () => Promise<ShareEvent | null>) {
+    const details = event.details ?? null;
+    const [logoSrc, cachedCoverSrc, font, detailsFont] = await Promise.all([
+        logoDataUri(),
+        loadCover(coverImageUrl(event.cover)),
+        loadTitleFont(event.title, 700),
+        details ? loadTitleFont(details, 400) : null,
+    ]);
+    const coverSrc = cachedCoverSrc ?? (event.cover && refresh ? await loadCover(coverImageUrl((await refresh())?.cover ?? null)) : null);
     const titleSize = event.title.length > 36 ? 64 : 84;
+    const fonts = [
+        ...(font ? [{ name: TITLE_FONT, data: font, weight: 700 as const, style: 'normal' as const }] : []),
+        ...(detailsFont ? [{ name: TITLE_FONT, data: detailsFont, weight: 400 as const, style: 'normal' as const }] : []),
+    ];
 
     return new ImageResponse(
         <div
@@ -185,19 +230,83 @@ async function eventOgPng(event: ShareEvent) {
                 </div>
             </div>
             {/* Title */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <div
+                    style={{
+                        display: 'block',
+                        fontFamily: font ? TITLE_FONT : 'sans-serif',
+                        fontWeight: 700,
+                        fontSize: titleSize,
+                        lineHeight: 1.05,
+                        maxWidth: 1040,
+                        lineClamp: 3,
+                    }}
+                >
+                    {event.title}
+                </div>
+                {/* When and where */}
+                {details && (
+                    <div
+                        style={{
+                            display: 'block',
+                            fontFamily: detailsFont ? TITLE_FONT : 'sans-serif',
+                            fontWeight: 400,
+                            fontSize: 34,
+                            lineHeight: 1.2,
+                            maxWidth: 1040,
+                            lineClamp: 2,
+                            color: coverSrc ? 'rgba(255,255,255,0.9)' : INK_MUTED,
+                        }}
+                    >
+                        {details}
+                    </div>
+                )}
+            </div>
+        </div>,
+        {
+            ...OG_IMAGE_SIZE,
+            fonts: fonts.length > 0 ? fonts : undefined,
+        },
+    );
+}
+
+// An occasion page's share image: the brand canvas with the occasion's H1.
+export async function occasionOgImage(title: string) {
+    const [logoSrc, font] = await Promise.all([logoDataUri(), loadTitleFont(title, 700)]);
+    const titleSize = title.length > 48 ? 64 : 80;
+
+    return new ImageResponse(
+        <div
+            style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                padding: '72px 88px',
+                background: CANVAS,
+                color: INK,
+                fontFamily: font ? TITLE_FONT : 'sans-serif',
+            }}
+        >
+            {/* Corner accent */}
             <div
                 style={{
-                    display: 'block',
-                    fontFamily: font ? TITLE_FONT : 'sans-serif',
-                    fontWeight: 700,
-                    fontSize: titleSize,
-                    lineHeight: 1.05,
-                    maxWidth: 1040,
-                    lineClamp: 3,
+                    position: 'absolute',
+                    right: -140,
+                    top: -140,
+                    width: 460,
+                    height: 460,
+                    borderRadius: 9999,
+                    background: CORAL,
+                    opacity: 0.16,
                 }}
-            >
-                {event.title}
-            </div>
+            />
+            {/* Logo */}
+            {/* eslint-disable-next-line @next/next/no-img-element -- next/image cannot render inside ImageResponse */}
+            <img alt="" height={64} src={logoSrc} width={268} />
+            {/* Title */}
+            <div style={{ display: 'flex', fontSize: titleSize, fontWeight: 700, lineHeight: 1.05, maxWidth: 1000 }}>{title}</div>
         </div>,
         {
             ...OG_IMAGE_SIZE,

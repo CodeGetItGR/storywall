@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { MediaSummarySection } from '@/components/layout/right-context-panel/MediaSummarySection';
@@ -6,6 +5,7 @@ import { QrLinksSection } from '@/components/layout/right-context-panel/QrLinksS
 import { RsvpSummarySection } from '@/components/layout/right-context-panel/RsvpSummarySection';
 import { WishbookSummarySection } from '@/components/layout/right-context-panel/WishbookSummarySection';
 import { UsagePanel } from '@/components/plan/UsagePanel';
+import { AppLink } from '@/components/ui/AppLink';
 import { type UseRightContextPanelResult } from '@/hooks/useRightContextPanel';
 import { formatBytes } from '@/lib/format';
 import { routes } from '@/lib/routes';
@@ -49,14 +49,14 @@ export function HostContextSections({ panel, showMembersUsage = true }: { panel:
                     <p className="mb-2 text-sm font-semibold text-ink">{t('hostActions')}</p>
                     <div>
                         {actionItems.map(({ key, href, icon: Icon, label }) => (
-                            <Link
+                            <AppLink
                                 key={key}
                                 href={href}
                                 className="group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
                             >
                                 <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
                                 <span className="min-w-0 truncate">{label}</span>
-                            </Link>
+                            </AppLink>
                         ))}
                     </div>
                 </div>

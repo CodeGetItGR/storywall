@@ -1,11 +1,11 @@
 'use client';
 
 import type { LucideIcon } from 'lucide-react';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { MouseEvent } from 'react';
 
-import { isPathActive } from '@/components/layout/mobile-tab-bar';
+import { isPathActive } from '@/components/layout/mobile-tab-bar/utils';
+import { AppLink } from '@/components/ui/AppLink';
 import { cn } from '@/lib/utils';
 
 interface AccountSidebarNavLinkProps {
@@ -28,7 +28,7 @@ export function AccountSidebarNavLink({ href, icon: Icon, label, badgeCount = 0,
     }
 
     return (
-        <Link
+        <AppLink
             href={href}
             onClick={handleClick}
             aria-current={active ? 'page' : undefined}
@@ -50,6 +50,6 @@ export function AccountSidebarNavLink({ href, icon: Icon, label, badgeCount = 0,
                     {badgeCount > 9 ? '9+' : badgeCount}
                 </span>
             )}
-        </Link>
+        </AppLink>
     );
 }

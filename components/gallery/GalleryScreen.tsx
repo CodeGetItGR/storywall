@@ -31,6 +31,7 @@ export function GalleryScreen() {
         isHost,
         isDeleted,
         galleryEnabled,
+        showUpload,
         canUpload,
         showArchiveDownload,
         showMemberArchive,
@@ -107,7 +108,7 @@ export function GalleryScreen() {
             }
         >
             {/* Upload */}
-            {!isDeleted && (
+            {showUpload && (
                 <GalleryUploadSection
                     canUpload={canUpload}
                     selectedFiles={selectedFiles}

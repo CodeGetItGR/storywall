@@ -1,10 +1,10 @@
 'use client';
 
 import { Plus } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback } from 'react';
 
+import { AppLink } from '@/components/ui/AppLink';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
@@ -24,7 +24,7 @@ export function HomeEmptyState({ canCreateEvent }: { canCreateEvent: boolean }) 
                 <h2 className="text-xl font-bold text-ink">{t('title')}</h2>
                 <p className="mt-2 max-w-xs text-sm text-ink-muted">{t('subtitle')}</p>
             </div>
-            <Link
+            <AppLink
                 href={canCreateEvent ? routes.events.new() : '#'}
                 aria-disabled={!canCreateEvent}
                 onClick={onClick}
@@ -34,7 +34,7 @@ export function HomeEmptyState({ canCreateEvent }: { canCreateEvent: boolean }) 
                     <Plus className="h-7 w-7 text-white" strokeWidth={2.2} />
                 </span>
                 <span className="text-sm font-semibold text-ink">{t('createEventCta')}</span>
-            </Link>
+            </AppLink>
         </div>
     );
 }

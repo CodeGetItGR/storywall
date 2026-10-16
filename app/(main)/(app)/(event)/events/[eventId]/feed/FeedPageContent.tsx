@@ -2,14 +2,13 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
 import { Banner } from '@/components/feed/Banner';
 import { ComposerCard } from '@/components/feed/ComposerCard';
 import { EventDescription } from '@/components/feed/EventDescription';
-import { EventInfo } from '@/components/feed/EventInfo';
+import { EventInfoSection } from '@/components/feed/EventInfoSection';
 import { EventSessionActionButtons } from '@/components/feed/EventSessionActionButtons';
 import { FeedEmptyState } from '@/components/feed/FeedEmptyState';
 import { FeedPostRenderer } from '@/components/feed/FeedPostRenderer';
@@ -23,9 +22,11 @@ import { RsvpPrompt } from '@/components/feed/RsvpPrompt';
 import { StoriesRow } from '@/components/feed/StoriesRow';
 import { InstallAppBanner } from '@/components/pwa/InstallAppBanner';
 import { StoryModal } from '@/components/story/StoryModal';
-import { useGiftAccount, useHideMobileTabBarOnScroll } from '@/hooks';
+import { AppLink } from '@/components/ui/AppLink';
 import { eventKeys } from '@/hooks/useEvent';
 import { useFeedItems } from '@/hooks/useFeedItems';
+import { useGiftAccount } from '@/hooks/useGiftAccount';
+import { useHideMobileTabBarOnScroll } from '@/hooks/useHideMobileTabBarOnScroll';
 import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { coverPhotoSettingsHref } from '@/lib/manageSectionTargets';
 import { routes } from '@/lib/routes';
@@ -94,13 +95,13 @@ export function FeedPageContent() {
                         <>
                             <EventSessionActionButtons event={event} />
                             {moduleFlags.wishlist && !gifts.isLoading && gifts.data && (
-                                <Link
+                                <AppLink
                                     href={routes.events.tools.gifts(eventId)}
                                     aria-label={giftName}
                                     className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-background/92 text-ink shadow-[0_8px_22px_rgba(36,31,26,0.18)] transition-transform hover:-translate-y-0.5"
                                 >
                                     <Image src="/icons/present.svg" alt="" width={22} height={22} className="h-5 w-5" unoptimized />
-                                </Link>
+                                </AppLink>
                             )}
                         </>
                     }
@@ -109,11 +110,7 @@ export function FeedPageContent() {
 
             {/* Event details */}
             <section className="mt-3">
-                <EventInfo
-                    date={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0}
-                    place={event.location.name ?? event.location.address ?? ''}
-                    className="w-full px-4"
-                />
+                <EventInfoSection event={event} />
             </section>
 
             {/* Stories */}

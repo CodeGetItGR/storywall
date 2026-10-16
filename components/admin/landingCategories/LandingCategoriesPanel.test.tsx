@@ -24,7 +24,7 @@ vi.mock('next-intl', () => ({
 }));
 vi.mock('@/hooks/useAdminLandingCategories', () => ({
     useAdminLandingCategories: () => state.categories,
-    useLandingCategoryMove: () => ({ move: state.move, isPending: false, error: null }),
+    useLandingCategoryMove: () => ({ move: state.move, reorder: vi.fn(), arrange: <T,>(list: T[]) => list, isPending: false, error: null }),
 }));
 vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: () => state.config }));
 vi.mock('@/hooks/useAdmin', () => ({ useAdminPlatformEventTypes: () => state.eventTypes }));

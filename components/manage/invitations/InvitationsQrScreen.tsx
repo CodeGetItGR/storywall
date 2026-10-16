@@ -4,7 +4,8 @@ import { QrCode } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
-import { QrLinkRow, ShareLanguageNote } from '@/components/manage/invitations';
+import { QrLinkRow } from '@/components/manage/invitations/QrLinkRow';
+import { ShareLanguageNote } from '@/components/manage/invitations/ShareLanguageNote';
 import { QrLinksListSkeleton } from '@/components/manage/ManageSkeletons';
 import { UsagePanel } from '@/components/plan/UsagePanel';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';

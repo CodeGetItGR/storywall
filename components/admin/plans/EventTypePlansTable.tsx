@@ -3,9 +3,12 @@
 import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
+import { AdminSortableList } from '@/components/admin/AdminSortableList';
 import { PlanRow } from '@/components/admin/plans/PlanRow';
 import type { PlanTierResponseDto, PlatformEventTypeResponseDto } from '@/lib/api/types';
 import type { MoveDirection } from '@/lib/sortOrder';
+
+const planIdOf = (plan: PlanTierResponseDto) => plan.id;
 
 export function EventTypePlansTable({
     plans,
@@ -16,6 +19,7 @@ export function EventTypePlansTable({
     onSelectEventTypeAction,
     canReorder,
     onMoveAction,
+    onReorderAction,
 }: {
     plans: PlanTierResponseDto[];
     allPlans: PlanTierResponseDto[];
@@ -25,6 +29,7 @@ export function EventTypePlansTable({
     onSelectEventTypeAction: (key: string) => void;
     canReorder: boolean;
     onMoveAction: (planId: string, direction: MoveDirection) => void;
+    onReorderAction: (activeId: string, overId: string) => void;
 }) {
     const tAdmin = useTranslations('AdminPage');
     const t = useTranslations('AdminPage.plans');
@@ -48,21 +53,23 @@ export function EventTypePlansTable({
                     </tr>
                 </thead>
                 <tbody>
-                    {plans.map((plan, index) => (
-                        <PlanRow
-                            key={plan.id}
-                            plan={plan}
-                            allPlans={allPlans}
-                            eventTypes={eventTypes}
-                            onEditClickAction={onEditClickAction}
-                            onDuplicateClickAction={onDuplicateClickAction}
-                            onSelectEventTypeAction={onSelectEventTypeAction}
-                            isFirst={index === 0}
-                            isLast={index === plans.length - 1}
-                            canReorder={canReorder}
-                            onMoveAction={onMoveAction}
-                        />
-                    ))}
+                    <AdminSortableList ids={plans.map(planIdOf)} disabled={!canReorder} onReorderAction={onReorderAction}>
+                        {plans.map((plan, index) => (
+                            <PlanRow
+                                key={plan.id}
+                                plan={plan}
+                                allPlans={allPlans}
+                                eventTypes={eventTypes}
+                                onEditClickAction={onEditClickAction}
+                                onDuplicateClickAction={onDuplicateClickAction}
+                                onSelectEventTypeAction={onSelectEventTypeAction}
+                                isFirst={index === 0}
+                                isLast={index === plans.length - 1}
+                                canReorder={canReorder}
+                                onMoveAction={onMoveAction}
+                            />
+                        ))}
+                    </AdminSortableList>
                 </tbody>
             </table>
         </div>

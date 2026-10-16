@@ -2,7 +2,7 @@
 
 import { type ReactNode } from 'react';
 
-import { RightContextPanel } from '@/components/layout';
+import { RightContextPanel } from '@/components/layout/RightContextPanel';
 import { LG_MEDIA_QUERY, useMediaQuery } from '@/hooks/useMediaQuery';
 import { useActiveEvent, useEventContextLoading } from '@/providers/EventProvider';
 

@@ -1,11 +1,11 @@
 'use client';
 
 import { ChevronRight, Trash2 } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback } from 'react';
 
 import { NOTIFICATION_SEVERITY_STYLES, NotificationSeverityIcon } from '@/components/notifications/NotificationSeverityIcon';
+import { AppLink } from '@/components/ui/AppLink';
 import { useDeleteNotification, useMarkNotificationRead } from '@/hooks/useNotifications';
 import type { NotificationResponseDto } from '@/lib/api/types';
 import { notificationCopyType, notificationCtaRoute, notificationSeverity, payloadString } from '@/lib/notifications';
@@ -84,9 +84,9 @@ export function NotificationRow({ notification }: { notification: NotificationRe
     return (
         <div className="group relative">
             {ctaRoute ? (
-                <Link href={ctaRoute} onClick={handleActivate} className={rowClass}>
+                <AppLink href={ctaRoute} onClick={handleActivate} className={rowClass}>
                     {content}
-                </Link>
+                </AppLink>
             ) : (
                 <button type="button" onClick={handleActivate} className={rowClass}>
                     {content}

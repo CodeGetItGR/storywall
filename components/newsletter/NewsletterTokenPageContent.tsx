@@ -1,11 +1,11 @@
 'use client';
 
 import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { NewsletterSubscribeForm } from '@/components/newsletter/NewsletterSubscribeForm';
+import { AppLink } from '@/components/ui/AppLink';
 import { useAppNewsletterConfig } from '@/hooks/useAppConfig';
 import { type NewsletterTokenAction, useNewsletterTokenAction } from '@/hooks/useNewsletter';
 
@@ -61,12 +61,12 @@ export function NewsletterTokenPageContent({ action }: { action: NewsletterToken
 
             {/* Next action */}
             {!isPending && (
-                <Link
+                <AppLink
                     href="/"
                     className="mt-7 flex w-full items-center justify-center rounded-full bg-surface-muted py-3 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted/70"
                 >
                     {t('home')}
-                </Link>
+                </AppLink>
             )}
         </AuthLayout>
     );

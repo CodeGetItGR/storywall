@@ -132,6 +132,18 @@ describe('contentSecurityPolicy', () => {
         expect(csp.get('frame-src')).toContain('https://www.googletagmanager.com');
     });
 
+    it('allows Google Analytics origins only when the measurement id is set', () => {
+        expect(contentSecurityPolicy(PRODUCTION)).not.toContain('google-analytics');
+
+        const csp = directives({ ...PRODUCTION, NEXT_PUBLIC_GA_MEASUREMENT_ID: 'G-1' });
+        expect(csp.get('script-src')).toContain('https://*.googletagmanager.com');
+        expect(csp.get('img-src')).toEqual(expect.arrayContaining(['https://*.google-analytics.com', 'https://*.googletagmanager.com']));
+        expect(csp.get('connect-src')).toEqual(
+            expect.arrayContaining(['https://*.google-analytics.com', 'https://*.analytics.google.com', 'https://*.googletagmanager.com']),
+        );
+        expect(csp.get('script-src')).not.toContain('https://www.googleadservices.com');
+    });
+
     it('is one header line', () => {
         expect(contentSecurityPolicy(PRODUCTION)).not.toMatch(/[\r\n]/);
     });

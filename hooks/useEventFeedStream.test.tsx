@@ -9,6 +9,9 @@ import type { Page } from '@/lib/api/pagination';
 import type { PostResponseDto } from '@/lib/api/types';
 import { postKeys } from '@/lib/postQueries';
 
+const navigation = vi.hoisted(() => ({ pathname: '/events/event-1/feed' }));
+vi.mock('next/navigation', () => ({ usePathname: () => navigation.pathname }));
+
 const apiPost = vi.fn();
 const apiGet = vi.fn();
 vi.mock('@/lib/api/client', async (importOriginal) => {
@@ -50,6 +53,7 @@ async function flush() {
 
 beforeEach(() => {
     vi.useFakeTimers();
+    navigation.pathname = '/events/event-1/feed';
     apiPost.mockReset();
     apiGet.mockReset();
     FakeEventSource.instances = [];
@@ -68,6 +72,17 @@ describe('useEventFeedStream', () => {
         await flush();
         expect(apiPost).toHaveBeenCalledTimes(1);
         expect(FakeEventSource.instances[0].url).toContain('token=t1');
+    });
+
+    it('opens nothing in the demo', async () => {
+        navigation.pathname = '/demo/wedding/feed';
+        renderHook(() => useEventFeedStream('event-1'), { wrapper });
+        await flush();
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(60_000);
+        });
+        expect(apiPost).not.toHaveBeenCalled();
+        expect(FakeEventSource.instances).toHaveLength(0);
     });
 
     it('re-mints a token and reopens after a stream error', async () => {
@@ -141,12 +156,77 @@ describe('useEventFeedStream', () => {
         await flush();
         expect(FakeEventSource.instances).toHaveLength(1);
 
-        act(() => FakeEventSource.instances[0].emit('error'));
+        act(() => {
+            FakeEventSource.instances[0].emit('open');
+            FakeEventSource.instances[0].emit('error');
+        });
         await act(async () => {
             await vi.advanceTimersByTimeAsync(1_000);
         });
         await flush();
         expect(FakeEventSource.instances).toHaveLength(2);
+    });
+
+    // A token that mints fine says nothing about the stream: production had a phone whose stream was
+    // refused every time (a CORS preflight) mint a token and retry every second until rate-limited.
+    it('backs off exponentially when the stream fails before it ever opens', async () => {
+        apiPost.mockResolvedValue({ token: 't' });
+        renderHook(() => useEventFeedStream('event-1'), { wrapper });
+        await flush();
+
+        for (const [index, delay] of [1_000, 2_000, 4_000, 8_000].entries()) {
+            act(() => FakeEventSource.instances[index].emit('error'));
+            await act(async () => {
+                await vi.advanceTimersByTimeAsync(delay - 100);
+            });
+            expect(apiPost).toHaveBeenCalledTimes(index + 1);
+            await act(async () => {
+                await vi.advanceTimersByTimeAsync(100);
+            });
+            await flush();
+            expect(apiPost).toHaveBeenCalledTimes(index + 2);
+        }
+    });
+
+    it('caps the stream backoff at thirty seconds', async () => {
+        apiPost.mockResolvedValue({ token: 't' });
+        renderHook(() => useEventFeedStream('event-1'), { wrapper });
+        await flush();
+
+        for (let index = 0; index < 8; index += 1) {
+            act(() => FakeEventSource.instances[index].emit('error'));
+            await act(async () => {
+                await vi.advanceTimersByTimeAsync(30_000);
+            });
+            await flush();
+        }
+        expect(apiPost).toHaveBeenCalledTimes(9);
+    });
+
+    it('reconnects after a second when a stream that was open drops', async () => {
+        apiPost.mockResolvedValue({ token: 't' });
+        renderHook(() => useEventFeedStream('event-1'), { wrapper });
+        await flush();
+        act(() => FakeEventSource.instances[0].emit('error'));
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(1_000);
+        });
+        await flush();
+        act(() => FakeEventSource.instances[1].emit('error'));
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(2_000);
+        });
+        await flush();
+
+        act(() => {
+            FakeEventSource.instances[2].emit('open');
+            FakeEventSource.instances[2].emit('error');
+        });
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(1_000);
+        });
+        await flush();
+        expect(apiPost).toHaveBeenCalledTimes(4);
     });
 
     it('honours Retry-After on 429', async () => {

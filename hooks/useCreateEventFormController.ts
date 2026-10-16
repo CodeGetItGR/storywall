@@ -30,6 +30,7 @@ import type {
 import { navigateToCheckout } from '@/lib/billing';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import {
+    CREATE_EVENT_CODE_PARAM,
     CREATE_EVENT_OPTION_PARAM,
     CREATE_EVENT_PLAN_PARAM,
     CREATE_EVENT_RUN_PARAM,
@@ -100,7 +101,8 @@ export function useCreateEventFormController(): CreateEventFormValue {
     // Checkout refused the draft because its start date has passed (3035).
     const [startPassed, setStartPassed] = useState(false);
     const updateDraft = useUpdateEvent(createdDraftEventId);
-    const [checkoutCode, setCheckoutCode] = useState('');
+    // A link may carry a discount code (?code=); the field opens with it filled (EventOverviewDiscountCode).
+    const [checkoutCode, setCheckoutCode] = useState(() => searchParams.get(CREATE_EVENT_CODE_PARAM)?.trim() ?? '');
     const [appliedCheckoutCode, setAppliedCheckoutCode] = useState<string | null>(null);
     const [checkoutCodePreview, setCheckoutCodePreview] = useState<CollaborationCodePreviewResponseDto | null>(null);
     const [checkoutCodeError, setCheckoutCodeError] = useState<string | null>(null);

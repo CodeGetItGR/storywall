@@ -7,7 +7,8 @@ import { BackButton } from '@/components/ui/BackButton';
 import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
 
-export function DemoBanner({ onResetAction }: { onResetAction: () => void }) {
+// Without onResetAction (the demo is still loading) the reset button's spot stays empty.
+export function DemoBanner({ onResetAction }: { onResetAction?: () => void }) {
     const t = useTranslations('Demo');
     const locale = useLocale() as Locale;
 
@@ -18,7 +19,7 @@ export function DemoBanner({ onResetAction }: { onResetAction: () => void }) {
             {/* Title */}
             <p className="min-w-0 flex-1 truncate text-center text-sm font-semibold text-ink">{t('title')}</p>
             {/* Reset */}
-            <ResetDemoButton onResetAction={onResetAction} />
+            {onResetAction ? <ResetDemoButton onResetAction={onResetAction} /> : <span className="h-9 w-9 shrink-0" aria-hidden="true" />}
         </header>
     );
 }

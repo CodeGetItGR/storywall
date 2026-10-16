@@ -94,6 +94,7 @@ export function MemberRolesPanel() {
                         hasAnyRoles={catalog.roles.length > 0}
                         canReorder={catalog.canReorder}
                         onMoveAction={catalog.moveRole}
+                        onReorderAction={catalog.reorderRole}
                         onEditAction={catalog.openEdit}
                     />
                 )}

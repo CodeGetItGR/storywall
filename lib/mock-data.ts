@@ -778,7 +778,7 @@ export const quizQuestions: QuizQuestion[] = [
     {
         id: 'q3',
         question: 'What song is Emma and James\'s "song"?',
-        options: ['Perfect — Ed Sheeran', 'Bloom — The Paper Kites', "Can't Help Falling in Love — Elvis", 'All of Me — John Legend'],
+        options: ['Perfect by Ed Sheeran', 'Bloom by The Paper Kites', "Can't Help Falling in Love by Elvis", 'All of Me by John Legend'],
         correct: 1,
         explanation: '"Bloom" by The Paper Kites was playing on their road trip to Big Sur when they said "I love you" for the first time.',
     },
@@ -794,7 +794,7 @@ export const quizQuestions: QuizQuestion[] = [
         question: 'What are the wedding colors?',
         options: ['White and sage green', 'Blush and gold', 'Terracotta and dusty rose', 'Ivory and champagne'],
         correct: 1,
-        explanation: 'Blush pinks and warm gold tones — romantic and timeless, just like them.',
+        explanation: 'Blush pinks and warm gold tones. Romantic and timeless, just like them.',
     },
 ];
 

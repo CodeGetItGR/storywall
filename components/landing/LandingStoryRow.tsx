@@ -1,6 +1,10 @@
+import type { ReactNode } from 'react';
+
 import { LandingStoryCopy, type LandingTextSegment } from '@/components/landing/LandingStoryCopy';
 import { LandingStoryGallery } from '@/components/landing/LandingStoryGallery';
+import type { Locale } from '@/i18n/config';
 import { type LandingStoryMedia } from '@/lib/landingMedia';
+import { type Occasion, occasionPath } from '@/lib/occasions/occasions';
 import { routes } from '@/lib/routes';
 
 export type LandingStoryCopyData = {
@@ -12,16 +16,24 @@ export type LandingStoryCopyData = {
 };
 
 type LandingStoryRowProps = {
+    // Extra content under the photo and copy, spanning the row (e.g. its event type's themes).
+    children?: ReactNode;
     copy: LandingStoryCopyData;
     demoLabel: string;
     index: number;
+    locale: Locale;
     media: LandingStoryMedia;
+    occasionLabel: string;
+    // Live occasion pages; a row links to its own when it is one of them.
+    occasions: readonly Occasion[];
 };
 
-export function LandingStoryRow({ copy, demoLabel, index, media }: LandingStoryRowProps) {
+export function LandingStoryRow({ children, copy, demoLabel, index, locale, media, occasionLabel, occasions }: LandingStoryRowProps) {
     const isOdd = index % 2 === 0;
     const wide = index === 0 || index === 4;
     const demo = media.demoEventTypeSlug ? { href: routes.demoEventType(media.demoEventTypeSlug), label: demoLabel } : undefined;
+    const occasion = occasions.find((candidate) => candidate.eventType === media.occasion);
+    const more = occasion ? { href: occasionPath(occasion, locale), label: occasionLabel } : undefined;
 
     return (
         <article
@@ -46,6 +58,7 @@ export function LandingStoryRow({ copy, demoLabel, index, media }: LandingStoryR
             >
                 <LandingStoryCopy
                     demo={demo}
+                    more={more}
                     paragraphSegments={copy.paragraphSegments}
                     tag={copy.tag}
                     titleSegments={copy.titleSegments}
@@ -58,6 +71,7 @@ export function LandingStoryRow({ copy, demoLabel, index, media }: LandingStoryR
                     ↗
                 </div>
             </div>
+            {children}
         </article>
     );
 }
