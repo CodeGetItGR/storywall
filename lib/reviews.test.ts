@@ -35,6 +35,11 @@ describe('landingReviewsFor', () => {
         expect(landingReviewsFor(reviews, 'el')).toEqual([]);
         expect(landingReviewsFor(undefined, 'en')).toEqual([]);
     });
+
+    it('shows at most six, in the order received', () => {
+        const reviews = Array.from({ length: 8 }, (_, i) => review(String(i + 1), 'en'));
+        expect(landingReviewsFor(reviews, 'en').map((r) => r.id)).toEqual(['1', '2', '3', '4', '5', '6']);
+    });
 });
 
 describe('adminAppReviewsPath', () => {

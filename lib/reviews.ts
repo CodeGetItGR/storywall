@@ -11,6 +11,8 @@ export const ADMIN_APP_REVIEWS_PAGE_SIZE = 50;
 const CONSENT_MIN_STARS = 4;
 // Fewer than this in the page's language and the landing section stays hidden.
 export const LANDING_REVIEWS_MIN = 3;
+// The landing section shows the newest few, not every featured review.
+export const LANDING_REVIEWS_MAX = 6;
 
 const EVENT_FEED_PATH = /^\/events\/[^/]+\/feed\/?$/;
 
@@ -25,7 +27,7 @@ export function isReviewPromptRoute(pathname: string): boolean {
 
 export function landingReviewsFor(reviews: AppLandingReviewDto[] | undefined, locale: string): AppLandingReviewDto[] {
     const inLocale = (reviews ?? []).filter((review) => review.locale === locale);
-    return inLocale.length >= LANDING_REVIEWS_MIN ? inLocale : [];
+    return inLocale.length >= LANDING_REVIEWS_MIN ? inLocale.slice(0, LANDING_REVIEWS_MAX) : [];
 }
 
 export function adminAppReviewsPath(page: number, status: AppReviewStatus | null): string {
