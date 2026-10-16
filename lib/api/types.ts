@@ -593,6 +593,16 @@ export interface AuthSessionDto {
     createdAt: string;
 }
 
+// Where a sign-up came from. Validated by Spring (400 if malformed); lib/signupSource.ts trims to the same caps.
+export interface VisitSourceDto {
+    utmSource: string | null;
+    utmMedium: string | null;
+    utmCampaign: string | null;
+    adClick: boolean;
+    referrerHost: string | null;
+    landingPage: string;
+}
+
 export interface RegisterRequestDto {
     email: string;
     password: string;
@@ -611,6 +621,8 @@ export interface RegisterRequestDto {
     // All-or-nothing: an invalid profile is a 400 and no account is created.
     // VIES may leave it PENDING, so read GET /api/me/business-profile afterwards.
     businessProfile?: BusinessProfileRequestDto | null;
+    // Saved on the account only when this request creates it.
+    visitSource?: VisitSourceDto;
 }
 
 export interface LoginRequestDto {
@@ -630,6 +642,8 @@ export interface OAuthLoginRequestDto {
     acceptedTermsVersion?: string;
     acceptedGuidelinesVersion?: string;
     adultConfirmed?: boolean;
+    // Saved on the account only when this request creates it.
+    visitSource?: VisitSourceDto;
 }
 
 // `details` of a 3044 response.
