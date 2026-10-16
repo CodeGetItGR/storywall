@@ -8,7 +8,7 @@ Ask signed-in users (hosts and guests) once, after an event they took part in ha
 
 ## Decisions
 
-- **Trigger:** an event the user hosted or joined has ended (`endAt` at least 12h in the past). No time-based trigger.
+- **Trigger:** an event the user hosted or joined has ended between 12h and 30 days ago. No time-based trigger.
 - **Audience:** same prompt for hosts and guests; the role is stored with the review.
 - **Placement:** bottom sheet shown the next time the user opens the home or an event screen.
 - **Landing attribution:** first name · role · occasion (e.g. "Maria · Host · Wedding"). No surname or photo.
@@ -24,7 +24,7 @@ Ask signed-in users (hosts and guests) once, after an event they took part in ha
 | column | type | notes |
 | --- | --- | --- |
 | id | uuid | |
-| user_id | fk, on delete cascade | |
+| user_id | fk, on delete cascade | accounts are soft-deleted, so anonymizing a user deletes their rows |
 | event_id | uuid, no FK | the event the prompt was about; no FK so the row outlives the event's purge |
 | event_type | varchar(50) | copied from the event |
 | event_end_at | timestamp | copied from the event; used by the dismissal rule |
@@ -47,7 +47,7 @@ Return an event when all hold:
 
 1. The user has no row with `stars` set (a user who rated is never asked again).
 2. The user has at most one dismissal row (`stars` null). If they have one, the candidate event must have `endAt` later than that dismissed event's `endAt`.
-3. The candidate is an event the user hosts or is an active member of, with `endAt <= now - 12h`, and no `app_review` row for (user, event).
+3. The candidate is an event the user hosts or is an active member of, with `now - 30d <= endAt <= now - 12h`, and no `app_review` row for (user, event).
 4. If several match, pick the one with the latest `endAt`.
 
 ### Endpoints
@@ -55,7 +55,7 @@ Return an event when all hold:
 - `POST /me/reviews` `{ eventId, stars, comment?, publicConsent }` — validates the event is the user's eligible one; `publicConsent` is forced false unless `stars >= 4` and comment is non-empty.
 - `POST /me/reviews/dismiss` `{ eventId }`.
 - Admin: `GET /admin/reviews` (paginated, filter by status), `PATCH /admin/reviews/{id}` `{ status?, featured? }`.
-- Public: `GET /api/config` gains `landingReviews` — up to 24 `featured` reviews, newest first, each `{ id, stars, comment, firstName, role, eventType, locale }`. `firstName` is the account's first name. Admin patches drop the config cache at once.
+- Public: `GET /api/config` gains `landingReviews` — up to 24 `featured` reviews from active accounts, newest first, each `{ id, stars, comment, firstName, role, eventType, locale }`. `firstName` is the account's first name. Admin patches drop the config cache at once.
 
 ## Frontend
 
@@ -81,7 +81,7 @@ Return an event when all hold:
 ### Landing
 
 - `components/landing/LandingReviews.tsx`, rendered from the config the landing page already prefetches.
-- Shows only reviews in the page's language; hidden when fewer than 3 of them exist.
+- Shows only reviews in the page's language, at most 6; hidden when fewer than 3 of them exist.
 - No review / AggregateRating structured data (self-serving reviews are not eligible for rich results).
 - Follows `docs/seo-guidelines.md`.
 
