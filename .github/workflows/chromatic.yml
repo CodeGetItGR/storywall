@@ -23,13 +23,13 @@ on:
             - postcss.config.mjs
             - .github/workflows/chromatic.yml
 
-concurrency:
-    group: chromatic-${{ github.ref }}
-    cancel-in-progress: true
-
 jobs:
     chromatic:
         if: contains(github.event.pull_request.labels.*.name, 'chromatic')
+        # Job-level, so runs the label check skips never cancel a real build.
+        concurrency:
+            group: chromatic-${{ github.ref }}
+            cancel-in-progress: true
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v7
