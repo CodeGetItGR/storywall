@@ -10,6 +10,7 @@ import { AccountStatusPill } from '@/components/admin/AccountStatusPill';
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminIdentifier } from '@/components/admin/AdminIdentifier';
 import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
+import { signupSourceDetail } from '@/lib/adminSignupSource';
 import type { UserResponseDto } from '@/lib/api/types';
 
 export function AccountDetailDrawer({
@@ -27,8 +28,10 @@ export function AccountDetailDrawer({
 }) {
     const t = useTranslations('AdminPage.accounts.detail');
     const tAccounts = useTranslations('AdminPage.accounts');
+    const tChannel = useTranslations('AdminPage.signupChannel');
     const { sendTo } = useAdminNavigation();
     const displayName = [account.firstName, account.lastName].filter(Boolean).join(' ') || tAccounts('unnamed');
+    const sourceDetail = account.signupSource ? signupSourceDetail(account.signupSource) : null;
 
     function openOrders() {
         sendTo('orders', { buyerId: account.id, buyerLabel: account.email ?? displayName });
@@ -61,6 +64,15 @@ export function AccountDetailDrawer({
                         <dt className="text-xs text-ink-faint">{t('provider')}</dt>
                         <dd className="mt-1 font-mono text-xs text-ink-muted">{account.authProvider}</dd>
                     </div>
+                    {account.signupSource && (
+                        <div className="col-span-2">
+                            <dt className="text-xs text-ink-faint">{t('source')}</dt>
+                            <dd className="mt-1 text-ink">
+                                <span className="font-semibold">{tChannel(account.signupSource.channel)}</span>
+                                {sourceDetail && <span className="font-mono text-xs text-ink-muted"> · {sourceDetail}</span>}
+                            </dd>
+                        </div>
+                    )}
                     <AdminIdentifier label={t('accountId')} value={account.id} />
                 </dl>
                 <div className="flex flex-wrap items-center gap-4">

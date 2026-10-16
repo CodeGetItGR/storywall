@@ -17,6 +17,7 @@ import { clientIpFrom, springAuth, SpringAuthError } from '@/lib/auth/springAuth
 import { occasionLocaleForPath } from '@/lib/occasions/occasions';
 import { routes } from '@/lib/routes';
 import { isSharedLinkPath, readShareLocale, SHARE_LOCALE_PARAM } from '@/lib/shareLinks';
+import { takeVisitSourceParam, VISIT_SOURCE_PARAM } from '@/lib/signupSource';
 
 // Explicit allowlist, not a denylist: every prefix listed here requires a
 // valid session, and everything else passes through untouched. A new
@@ -129,7 +130,11 @@ export async function proxy(request: NextRequest) {
 
     if (session.kind === 'signed-out') {
         const loginUrl = new URL(routes.login, request.url);
-        loginUrl.searchParams.set(AUTH_RETURN_PATH_PARAM, `${pathname}${request.nextUrl.search}`);
+        // A source carried from a landing page goes on the login page, so it is known before the
+        // account is created, not only once the visitor comes back to the return path.
+        const { search, source } = takeVisitSourceParam(request.nextUrl.search);
+        loginUrl.searchParams.set(AUTH_RETURN_PATH_PARAM, `${pathname}${search}`);
+        if (source) loginUrl.searchParams.set(VISIT_SOURCE_PARAM, source);
         const redirect = NextResponse.redirect(loginUrl);
         redirect.cookies.delete(AUTH_COOKIES.accessToken);
         redirect.cookies.delete(AUTH_COOKIES.refreshToken);

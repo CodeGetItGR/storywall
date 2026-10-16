@@ -3,7 +3,7 @@
 // since flipped every route; reconcile against Swagger (/v3/api-docs) if a
 // path here 404s.
 
-import type { RsvpReportType } from '@/lib/api/types';
+import type { RsvpReportType, SignupChannel } from '@/lib/api/types';
 
 export const endpoints = {
     betaFeedback: {
@@ -318,13 +318,22 @@ export const endpoints = {
                 `/api/admin/metrics/calendar/${encodeURIComponent(date)}/events?page=${encodeURIComponent(String(page))}&size=${encodeURIComponent(String(size))}`,
             timeline: (weeks: number) => `/api/admin/metrics/timeline?weeks=${encodeURIComponent(String(weeks))}`,
             costSummary: '/api/admin/metrics/cost-summary',
-            funnel: (since?: string | null, until?: string | null) => {
+            funnel: (since?: string | null, until?: string | null, channel?: SignupChannel | null) => {
+                const params = [
+                    since ? `since=${encodeURIComponent(since)}` : null,
+                    until ? `until=${encodeURIComponent(until)}` : null,
+                    channel ? `channel=${channel}` : null,
+                ].filter(Boolean);
+                return `/api/admin/metrics/funnel${params.length ? `?${params.join('&')}` : ''}`;
+            },
+            funnelCohorts: (weeks: number, channel?: SignupChannel | null) =>
+                `/api/admin/metrics/funnel/cohorts?weeks=${encodeURIComponent(String(weeks))}${channel ? `&channel=${channel}` : ''}`,
+            funnelChannels: (since?: string | null, until?: string | null) => {
                 const params = [since ? `since=${encodeURIComponent(since)}` : null, until ? `until=${encodeURIComponent(until)}` : null].filter(
                     Boolean,
                 );
-                return `/api/admin/metrics/funnel${params.length ? `?${params.join('&')}` : ''}`;
+                return `/api/admin/metrics/funnel/channels${params.length ? `?${params.join('&')}` : ''}`;
             },
-            funnelCohorts: (weeks: number) => `/api/admin/metrics/funnel/cohorts?weeks=${encodeURIComponent(String(weeks))}`,
             moduleUsage: (filters: { since: string | null; until: string | null; eventTypeKey: string; planCode: string }) => {
                 const params = new URLSearchParams();
                 if (filters.since) params.set('since', filters.since);

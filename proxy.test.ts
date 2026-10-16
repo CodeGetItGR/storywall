@@ -97,6 +97,14 @@ describe('proxy', () => {
         expect(location.searchParams.get('next')).toBe('/events/new?step=plan');
     });
 
+    it('moves a carried signup source from next onto the login page', async () => {
+        const src = encodeURIComponent('{"landingPage":"/"}');
+        const res = await proxy(request({}, `http://localhost/events/new?type=wedding&src=${src}`));
+        const location = new URL(res.headers.get('location') ?? '');
+        expect(location.searchParams.get('next')).toBe('/events/new?type=wedding');
+        expect(location.searchParams.get('src')).toBe('{"landingPage":"/"}');
+    });
+
     it('renders an English occasion page in English whatever the cookie says', async () => {
         const req = request({}, 'http://localhost/weddings');
         req.cookies.set(localeCookieName, 'el');
