@@ -13,6 +13,9 @@ Ask signed-in users (hosts and guests) once, after an event they took part in ha
 - **Placement:** bottom sheet shown the next time the user opens the home or an event screen.
 - **Landing attribution:** first name · role · occasion (e.g. "Maria · Host · Wedding"). No surname or photo.
 - **Eligibility is owned by the backend**, so "ask once" holds across devices.
+- **Admins are never asked.** Guest accounts no longer exist, so every member is a full account.
+- **Landing reviews come from `GET /api/config`** (`landingReviews`), like the pricing tabs, not a separate public endpoint.
+- **Language:** each review stores the reviewer's app locale; each landing page language shows only reviews in that language.
 
 ## Backend (Spring, `guestwall-be`)
 
@@ -21,8 +24,11 @@ Ask signed-in users (hosts and guests) once, after an event they took part in ha
 | column | type | notes |
 | --- | --- | --- |
 | id | uuid | |
-| user_id | fk | |
-| event_id | fk | the event the prompt was about |
+| user_id | fk, on delete cascade | |
+| event_id | uuid, no FK | the event the prompt was about; no FK so the row outlives the event's purge |
+| event_type | varchar(50) | copied from the event |
+| event_end_at | timestamp | copied from the event; used by the dismissal rule |
+| locale | varchar(10) | the reviewer's app locale at answer time |
 | role | enum `HOST` / `GUEST` | role in that event at answer time |
 | stars | smallint, nullable | 1–5; null means dismissed |
 | comment | varchar(500), nullable | |
@@ -49,7 +55,7 @@ Return an event when all hold:
 - `POST /me/reviews` `{ eventId, stars, comment?, publicConsent }` — validates the event is the user's eligible one; `publicConsent` is forced false unless `stars >= 4` and comment is non-empty.
 - `POST /me/reviews/dismiss` `{ eventId }`.
 - Admin: `GET /admin/reviews` (paginated, filter by status), `PATCH /admin/reviews/{id}` `{ status?, featured? }`.
-- Public: `GET /public/reviews` — `featured` reviews only, returning `{ id, stars, comment, firstName, role, occasion }`. `firstName` is the first token of the user's display name.
+- Public: `GET /api/config` gains `landingReviews` — up to 24 `featured` reviews, newest first, each `{ id, stars, comment, firstName, role, eventType, locale }`. `firstName` is the account's first name. Admin patches drop the config cache at once.
 
 ## Frontend
 
@@ -74,8 +80,8 @@ Return an event when all hold:
 
 ### Landing
 
-- `components/landing/LandingReviews.tsx`, rendered server-side from `/public/reviews`, revalidated hourly.
-- Hidden when fewer than 3 featured reviews exist.
+- `components/landing/LandingReviews.tsx`, rendered from the config the landing page already prefetches.
+- Shows only reviews in the page's language; hidden when fewer than 3 of them exist.
 - No review / AggregateRating structured data (self-serving reviews are not eligible for rich results).
 - Follows `docs/seo-guidelines.md`.
 
