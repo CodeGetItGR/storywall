@@ -33,13 +33,17 @@ who accepted analytics cookies, and it does not run inside the signed-in app.
 
 ### When
 
-On the first page load of a visit, on any route, only while the visitor is signed out. A UTM link
+On every page load, on any route (the first-visit rule below decides what is kept). A UTM link
 straight to `/register` is captured too.
 
 ### Where it is kept
 
 - **Page memory** (module state), always. It survives in-app navigation; the Google and Apple
   sign-in flows are popups, so a same-visit sign-up keeps it.
+- **In the link**, always. Going from a landing page (`app/(landing)`) into the app is a full page
+  load between root layouts, which loses page memory. So a plain click on a same-site link out of
+  the landing pages adds `src=<the source as JSON>` to the link. The app reads it, keeps it in page
+  memory and removes it from the address bar.
 - **`sw_src` cookie**, 30 days, `Path=/; SameSite=Lax; Secure` on https, written only while
   `consent.analytics === true`. Accepting analytics later in the visit writes the in-memory source.
   Withdrawing analytics consent deletes `sw_src` alongside the `_ga` cookies; page memory remains
@@ -50,6 +54,7 @@ straight to `/register` is captured too.
 - If a source is already in page memory or `sw_src`, a new capture does not replace it.
 - Exception: a visit whose page is `/gift/[token]` always replaces the stored source.
 - A load with our own origin as referrer and no `utm_*`/ad click is not a new capture.
+- A carried `src` is checked like any other input (same caps and patterns) and wins over the URL.
 
 ### Sending
 
@@ -61,10 +66,12 @@ unchanged.
 
 - `lib/signupSource.ts`: build a `VisitSource` from a URL and referrer, the first-visit/gift rules,
   cookie read/write/clear.
-- A hook mounted once in the `(main)` layout that captures on first load and writes the cookie when
-  consent allows.
+- A hook mounted in both root providers (`PublicProviders`, `AppProviders`) that captures on each
+  page, strips a carried `src`, writes the cookie when consent allows, and carries the source on
+  landing-page clicks.
 - `lib/consent.ts`: clear `sw_src` with the analytics cookies.
-- The register form and `OAuthButtons` add `visitSource` to their requests.
+- `lib/api/authClient.ts` adds `visitSource` to `register` and `oauth`, the single place both go
+  through.
 
 ## 2. Save and classify (Spring, guestwall-be)
 
@@ -79,7 +86,7 @@ Existing accounts stay null and read as `UNKNOWN`.
 
 ### Channels
 
-`SignupChannelClassifier`, a pure class. Values are compared lowercase; the first match wins.
+`SignupSourceRules`, a pure class. Values are compared lowercase; the first match wins.
 
 | # | Channel | Rule |
 |---|---|---|
@@ -96,8 +103,9 @@ Existing accounts stay null and read as `UNKNOWN`.
 
 ### Behaviour
 
-- `visitSource` is optional. An over-long or malformed field is dropped, never a 400; the account is
-  created as usual.
+- `visitSource` is optional. A malformed one (over-long field, control characters, a referrer that is
+  not a bare host, a landing page that is not a path) is rejected with a 400. The browser trims to
+  the same rules, so this only happens to tampered requests.
 - Register: classify and save on creation.
 - OAuth: classify and save only when the call creates the account; ignore it on a login.
 - Raw facts are kept so a later rule change can re-classify old rows with a migration.
@@ -150,7 +158,6 @@ badge.
 
 | Case | Result |
 |---|---|
-| Signed-in visitor | nothing captured |
 | OAuth login to an existing account | `visitSource` ignored |
 | Invite sign-up | `INVITE`, whatever was captured |
 | Gift page visit | replaces the stored source |
@@ -158,17 +165,18 @@ badge.
 | Declined cookies, sign-up on a later visit | `UNKNOWN` (accepted trade-off) |
 | UTM link straight to `/register` | captured |
 | Own-site referrer, e.g. after a reload | ignored |
-| Junk or over-long values | trimmed or dropped; sign-up succeeds |
+| Landing page → app link | source carried in `src`, removed on arrival |
+| Junk or over-long values | trimmed by the browser; a tampered request gets a 400 |
 | Accounts from before release | `UNKNOWN` |
 
 ## Testing
 
-- **Spring:** `SignupChannelClassifier` unit tests (each rule and the rule order); register and
-  OAuth tests (saved on creation only, malformed input dropped); Postgres tests for the `channel`
+- **Spring:** `SignupSourceRules` unit tests (each rule and the rule order); register and
+  OAuth tests (saved on creation only, malformed input gets a 400); Postgres tests for the `channel`
   filter and `/funnel/channels` next to `FunnelMetricsPostgresTest`.
 - **Front end:** `lib/signupSource.ts` tests (first visit wins, gift replaces, own-site referrer
-  ignored, cookie only with consent, cleared on withdrawal, field caps); request tests for the
-  register and OAuth routes; component tests for the filter, the table with the few-sign-ups tag
+  ignored, cookie only with consent, cleared on withdrawal, field caps); request-body tests for
+  `authClient` register and OAuth, the tracker hook (carry and strip `src`); component tests for the filter, the table with the few-sign-ups tag
   and the account line.
 - **Manual:** sign up locally from `?utm_source=instagram&utm_medium=social` once with cookies
   declined and once accepted; check the account drawer and the Funnel.
