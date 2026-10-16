@@ -109,6 +109,9 @@ describe('isLandingPath', () => {
         expect(isLandingPath('/for-business')).toBe(true);
         expect(isLandingPath('/el')).toBe(true);
         expect(isLandingPath('/el/wedding')).toBe(true);
+        // English occasion pages sit at the top level, without a locale.
+        expect(isLandingPath('/weddings')).toBe(true);
+        expect(isLandingPath('/baptisms')).toBe(true);
         expect(isLandingPath('/events/new')).toBe(false);
         expect(isLandingPath('/register')).toBe(false);
     });

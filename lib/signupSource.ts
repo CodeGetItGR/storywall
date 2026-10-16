@@ -1,4 +1,5 @@
-import { locales } from '@/i18n/config';
+import { defaultLocale, locales } from '@/i18n/config';
+import { OCCASIONS } from '@/lib/occasions/occasions';
 import { pageRoute } from '@/lib/vercelInsights';
 
 type RouteParams = Record<string, string | string[] | undefined>;
@@ -115,11 +116,14 @@ export function pickVisitSource(saved: VisitSource | null, incoming: VisitSource
     return saved;
 }
 
-// Pages under app/(landing). Leaving one for any other page is a full page load (another root layout).
+// Pages under app/(landing): `/`, `/for-business`, a locale's pages (`/el/...`) and the default
+// locale's occasion pages (`/weddings`). Leaving one for any other page is a full page load
+// (another root layout).
 export function isLandingPath(pathname: string): boolean {
     if (pathname === '/' || pathname === '/for-business') return true;
-    const first = pathname.split('/')[1];
-    return (locales as readonly string[]).includes(first);
+    const segments = pathname.split('/');
+    if ((locales as readonly string[]).includes(segments[1])) return true;
+    return segments.length === 2 && OCCASIONS.some((occasion) => occasion.slugs[defaultLocale] === segments[1]);
 }
 
 // The address without a carried src, for replacing the one in the address bar; null if it had none.
