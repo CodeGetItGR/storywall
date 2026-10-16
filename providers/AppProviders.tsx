@@ -4,8 +4,8 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { type ReactNode, useEffect, useState } from 'react';
 
 import { BetaFeedback } from '@/components/betaFeedback/BetaFeedback';
-import { GuidelinesAcceptanceGate, GuidelinesGateSignOutHold } from '@/components/legal/GuidelinesAcceptanceGate';
 import { SignupSourceTracker } from '@/components/layout/SignupSourceTracker';
+import { GuidelinesAcceptanceGate, GuidelinesGateSignOutHold } from '@/components/legal/GuidelinesAcceptanceGate';
 import { useAuth } from '@/hooks/useAuth';
 import { useInAppHistoryTracking } from '@/hooks/useInAppHistoryTracking';
 import { useIsDemoRoute } from '@/hooks/useIsDemoRoute';

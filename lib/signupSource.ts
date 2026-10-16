@@ -27,7 +27,6 @@ const AD_CLICK_PARAMS = ['gclid', 'gbraid', 'wbraid'];
 const GIFT_PAGE = '/gift/';
 const HOST_PATTERN = /^[a-z0-9.-]+$/;
 const PAGE_PATTERN = /^\/[\x21-\x7e]*$/;
-// eslint-disable-next-line no-control-regex
 const CONTROL_CHARACTERS = /[\u0000-\u001f\u007f]/g;
 
 function cleanText(value: unknown, max: number): string | null {
