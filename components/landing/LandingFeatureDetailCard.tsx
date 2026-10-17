@@ -4,12 +4,23 @@ type LandingFeatureDetailCardProps = {
     description: string;
     imageAlt: string;
     imagePath: string;
-    items: string[];
-    subtitle: string;
+    // An occasion feature has a title and description only.
+    items?: string[];
+    // Phone screenshots stay top-aligned; photos keep the lower crop.
+    objectPosition?: string;
+    subtitle?: string;
     title: string;
 };
 
-export function LandingFeatureDetailCard({ description, imageAlt, imagePath, items, subtitle, title }: LandingFeatureDetailCardProps) {
+export function LandingFeatureDetailCard({
+    description,
+    imageAlt,
+    imagePath,
+    items = [],
+    objectPosition = 'object-[center_65%]',
+    subtitle,
+    title,
+}: LandingFeatureDetailCardProps) {
     return (
         <article className="flex h-full flex-col overflow-hidden rounded-[24px] border border-white/10 bg-[#101014]">
             {/* Feature image: a landscape crop, kept low so the phone stays in frame */}
@@ -17,7 +28,7 @@ export function LandingFeatureDetailCard({ description, imageAlt, imagePath, ite
                 <ProtectedImage
                     unoptimized
                     alt={imageAlt}
-                    className="size-full object-cover object-[center_65%]"
+                    className={`size-full object-cover ${objectPosition}`}
                     height={900}
                     loading="lazy"
                     src={imagePath}
@@ -30,18 +41,20 @@ export function LandingFeatureDetailCard({ description, imageAlt, imagePath, ite
                 <h3 className="max-w-[19rem] text-[clamp(28px,2.4vw,40px)] leading-[0.9] font-(--editorial) tracking-[-0.045em] text-white">
                     {title}
                 </h3>
-                <p className="mt-4 text-[16px] leading-[1.35] font-black text-[#f2c66a]">{subtitle}</p>
+                {subtitle ? <p className="mt-4 text-[16px] leading-[1.35] font-black text-[#f2c66a]">{subtitle}</p> : null}
                 <p className="mt-3 text-[15px] leading-[1.55] text-white/82">{description}</p>
-                <ul className="mt-auto space-y-2.5 border-t border-white/14 pt-5 text-[13px] leading-[1.4] font-semibold text-white/90">
-                    {items.map((item) => (
-                        <li
-                            className="relative pl-4 before:absolute before:top-[0.48em] before:left-0 before:size-1 before:rounded-full before:bg-[#f2c66a] before:content-['']"
-                            key={item}
-                        >
-                            {item}
-                        </li>
-                    ))}
-                </ul>
+                {items.length > 0 ? (
+                    <ul className="mt-auto space-y-2.5 border-t border-white/14 pt-5 text-[13px] leading-[1.4] font-semibold text-white/90">
+                        {items.map((item) => (
+                            <li
+                                className="relative pl-4 before:absolute before:top-[0.48em] before:left-0 before:size-1 before:rounded-full before:bg-[#f2c66a] before:content-['']"
+                                key={item}
+                            >
+                                {item}
+                            </li>
+                        ))}
+                    </ul>
+                ) : null}
             </div>
         </article>
     );

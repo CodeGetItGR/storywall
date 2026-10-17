@@ -8,12 +8,15 @@ import { type LandingPricingEventType, useLandingPricingPlans } from '@/hooks/us
 
 // The landing pricing section's state: the event types to pick from, the one shown, and each
 // card's picked duration. Switching type drops the duration picks, so every card starts on its
-// plan's default.
-export function useLandingPricing() {
+// plan's default. preferredId (an occasion page's type) beats the config's default.
+export function useLandingPricing(preferredId: string | null = null) {
     const { groups, defaultEventTypeId } = useLandingPricingPlans();
     const eventTypes = useMemo(() => (groups ?? []).flatMap((group) => group.items), [groups]);
     const ids = useMemo(() => eventTypes.map((eventType) => eventType.id), [eventTypes]);
-    const { selectedId, selectEventType } = useLandingPricingEventType(ids, defaultEventTypeId);
+    const { selectedId, selectEventType } = useLandingPricingEventType(
+        ids,
+        preferredId !== null && ids.includes(preferredId) ? preferredId : defaultEventTypeId,
+    );
     const { picks, pickDuration, resetPicks } = useDurationPicks();
     const active = eventTypes.find((eventType) => eventType.id === selectedId) ?? null;
 
