@@ -21,8 +21,14 @@ guestwall-be#35).
 - **Placement:** its own "Visitors" sidebar item under Overview, after Growth.
 - **Source names:** our sign-up channels (Ads, Social, Search, Email, Partner, Other site, Direct),
   sorted by the same rules as sign-ups, so visitors and sign-ups line up per channel.
-- **How Spring talks to GA:** plain REST calls to the GA4 Data API with the existing `RestClient`
-  and a service-account token from `google-auth-library-oauth2-http`. No gRPC client.
+- **How Spring talks to GA:** plain REST calls to the GA4 Data API with `java.net.http.HttpClient`
+  (the same way `BrevoContactsClient` calls Brevo) and a service-account token from
+  `google-auth-library-oauth2-http`. No gRPC client.
+- **Landing pages send their real path to GA.** Until now every page view carried its route
+  pattern, so `/el` and `/weddings` both arrived as `/[slug]` and the Greek occasion pages as
+  `/[slug]/[occasion]`. Landing slugs are only locales and occasion names, never ids or tokens, so
+  landing pages now send the real path (`/el/gamos`); app pages keep their route pattern. Pages and
+  the language split count correctly from the day this ships.
 
 ## Limits to keep in mind
 
@@ -42,18 +48,19 @@ guestwall-be#35).
 
 | Setting | Env var | Meaning |
 |---|---|---|
-| `analytics.ga.property-id` | `GA_PROPERTY_ID` | the numeric GA4 property id |
-| `analytics.ga.credentials` | `GA_SERVICE_ACCOUNT_JSON` | the service account key JSON |
-| `analytics.ga.start-date` | `GA_START_DATE` | the day GA went live (ISO date); "all time" starts here |
+| `app.analytics.ga.property-id` | `GA_PROPERTY_ID` | the numeric GA4 property id |
+| `app.analytics.ga.credentials` | `GA_SERVICE_ACCOUNT_JSON` | the service account key JSON |
+| `app.analytics.ga.start-date` | `GA_START_DATE` | the day GA went live (ISO date); "all time" starts here |
+| `app.analytics.ga.time-zone` | `GA_TIME_ZONE` | the property's reporting time zone, default `Europe/Athens` |
 
-All three set → connected. Any missing → the endpoint answers `configured: false` and makes no GA
+The first three set → connected. Any missing → the endpoint answers `configured: false` and makes no GA
 call. Only production sets them; local and preview stay off.
 
 ### `GoogleAnalyticsClient`
 
-- Loads `GoogleCredentials` from the JSON once, scoped to
+- Loads `ServiceAccountCredentials` from the JSON on first use, scoped to
   `https://www.googleapis.com/auth/analytics.readonly`, and refreshes the token when needed.
-- `batchRunReports(List<ReportRequest>)` posts to
+- `batchRunReports(start, end, List<GaReportRequest>)` posts to
   `https://analyticsdata.googleapis.com/v1beta/properties/{id}:batchRunReports` (at most 5
   reports per call) and returns plain rows: dimension values and metric values as strings.
 - Timeouts: 5 s connect, 15 s read. No retries.
@@ -72,7 +79,10 @@ Every report uses the same date range (`since`..`until`, inclusive, in the prope
 | 4 | `landingPage`, `deviceCategory` | `sessions` | pages, language, device |
 | 5 | `eventName`, `customEvent:section`, `customEvent:placement`, `customEvent:plan`, `customEvent:question` | `eventCount`, `totalUsers` | landing events; filter `eventName` begins with `landing_` |
 
-Reports 1–5 go in one `batchRunReports` call. Rows are capped at 1000 per report (`limit`).
+Reports 1–4 go in one `batchRunReports` call. Report 5 goes in its own call: GA refuses a request
+that names an unregistered custom dimension with a 400, and until the four dimensions are
+registered the page shows everything except the landing events. Rows are capped at 1000 per
+report (`limit`).
 
 ### `GaSourceMapping`
 
@@ -84,7 +94,7 @@ Turns one GA `sessionSource` / `sessionMedium` pair into the `VisitSourceDto` th
 | `(none)` with source `(direct)` | nothing set → Direct |
 | `organic` | `referrerHost` = the source as a host (`google` → `google.com`) → Search |
 | `referral` | `referrerHost` = the source (`instagram.com`) → Social / Search / Other site |
-| `cpc`, `ppc`, `paid`, `display`, `paid_social` | `utmSource` = source, `utmMedium` = medium, `adClick` true for `google / cpc` → Ads |
+| `cpc`, `ppc`, `paid`, `display`, `paid_social` | `utmSource` = source, `utmMedium` = medium → Ads |
 | anything else (`email`, `social`, a campaign medium…) | `utmSource` = source, `utmMedium` = medium → whatever the rules say |
 | `(not set)` | Unknown |
 
@@ -94,11 +104,13 @@ Tested row by row against `SignupSourceRules`, so a rule change shows up in both
 
 - `visitors(since, until, fresh)`:
   - Not configured → `VisitorMetricsDto(configured = false)`, everything else empty.
-  - `since` null ("all time") → `analytics.ga.start-date`. `until` null → today.
+  - `since` null ("all time") or before `start-date` → `start-date`. `until` null → today. A range
+    that ends before `start-date` answers zeros without calling GA.
   - Runs the batch, then builds the DTO:
     - totals and the daily line from reports 1–2;
     - visits per channel from report 3 via `GaSourceMapping`, summed per channel;
-    - sign-ups per channel from `FunnelMetricsService.channels(since, until)` for the same range;
+    - sign-ups per channel from `FunnelMetricsService.channels(since, until)`, starting no earlier
+      than `start-date`, so the rate compares the same days;
     - landing pages from report 4: top 10 by visits, the rest summed as "Other";
     - language from report 4: a landing page under `/el` is Greek, everything else English;
     - device from report 4: `mobile` → Phone, `desktop` → Desktop, `tablet` → Tablet;
@@ -110,9 +122,12 @@ Tested row by row against `SignupSourceRules`, so a rule change shows up in both
 
 ### Endpoint
 
-`GET /api/admin/metrics/visitors?since=YYYY-MM-DD&until=YYYY-MM-DD&fresh=true` on
-`PlatformMetricsAdminController`, admin only like the other metrics. `since`/`until` optional,
-`fresh` defaults to false. GA failure → `503` with the standard error body.
+`GET /api/admin/metrics/visitors?since=…&until=…&fresh=true` on
+`PlatformMetricsAdminController`, admin only like the other metrics. `since` (inclusive) and
+`until` (exclusive) are optional `OffsetDateTime`s, exactly as on `/funnel`, so the page reuses the
+Funnel's range control as is. Spring turns them into GA dates in the property's time zone (`until`
+minus one instant). `fresh` defaults to false. GA failure → `503` with the new error code
+`GOOGLE_ANALYTICS_UNAVAILABLE` (9002).
 
 ### DTO
 
@@ -137,8 +152,8 @@ VisitorMetricsDto
 ### Tests
 
 - `GaSourceMappingTest`: every table row, run through `SignupSourceRules.classify`.
-- `GoogleAnalyticsClientTest` with `MockRestServiceServer`: request body shape, bearer token
-  header, 4xx/5xx/timeout → `GoogleAnalyticsUnavailableException`.
+- `GoogleAnalyticsClientTest` against a local `HttpServer`: request body shape, bearer token
+  header, error answer or no answer → `GoogleAnalyticsUnavailableException`.
 - `VisitorMetricsServiceTest`: not configured → no call; all time → start date; GA rows → DTO
   (top 10 + Other, language, device, landing groups, channel visits plus sign-ups); cache hit,
   `fresh` eviction, failure not cached.
@@ -157,9 +172,16 @@ VisitorMetricsDto
 - Client fetch only. The admin console picks its section from the URL hash, which the server never
   sees, so there is nothing to prefetch (the Funnel works the same way).
 
+### Real landing paths
+
+`analyticsPageLocation` in `lib/googleAnalytics.ts` keeps the real pathname when
+`isLandingPath(pathname)` (from `lib/signupSource.ts`) is true, and uses `pageRoute` otherwise.
+The query string rule is unchanged.
+
 ### Placement
 
-A "Visitors" item under Overview in the admin sidebar, after Growth, hash `#visitors`. The panel
+A "Visitors" item under Overview in the admin sidebar, after Growth, hash `#visitors`. Each block
+is a `FunnelGroup` with a new window tag, "By visit date". The panel
 is `components/admin/visitors/VisitorsPanel.tsx`, composed from small files in that folder; its
 logic lives in hooks (`useVisitorsDashboard`) and `lib/adminVisitors.ts`.
 
@@ -172,11 +194,12 @@ logic lives in hooks (`useVisitorsDashboard`) and `lib/adminVisitors.ts`.
 3. **Visitors over time:** a small daily line of visitors. No numbers around it that the totals
    already show.
 4. **By source:** table Channel · Visits · Sign-ups · Sign-ups per 100 visits, channel names from
-   `AdminPage.signupChannel`. A row with fewer than 50 visits gets a "Few visits" tag and no rate.
-5. **Pages:** top landing pages with visits (route patterns, "Other" last). Beside it two
+   `AdminPage.signupChannel`. A row with 1–49 visits gets a "Few visits" tag and no rate (Invite and Gift have no visits and
+   no tag).
+5. **Pages:** top landing pages with visits (real paths, "Other" last). Beside it two
    percentage bars: Greek / English and Phone / Desktop / Tablet.
 6. **Landing page:** four plain lists — how far visitors scroll (each section with the share of
-   landing visitors who reached it, in page order), button clicks per placement, plan clicks per
+   all visitors in the range who reached it, in page order), button clicks per placement, plan clicks per
    plan, FAQ opens per question. An empty list says "No data yet".
 
 At phone width the blocks stack and tables scroll inside their own box.
@@ -196,9 +219,8 @@ as text so the files keep their formatting.
 ### Tests
 
 - `lib/adminVisitors.test.ts`: rate per 100 visits, "Few visits" rule, section order, percentages.
-- `hooks/useAdminVisitors` test: key, endpoint, `fresh` on Refresh.
 - `VisitorsPanel.test.tsx` with fixtures: loaded, not connected, error and Retry, empty lists,
-  "Few visits" tag.
+  "Few visits" tag, `fresh=true` on Refresh.
 - Admin navigation test: the sidebar item opens `#visitors`.
 
 ## 3. Setup (done once by the owner)
