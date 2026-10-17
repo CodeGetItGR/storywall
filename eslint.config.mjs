@@ -123,6 +123,7 @@ export default defineConfig([
 
     globalIgnores([
         '.next/**',
+        'storybook-static/**',
         'node_modules/**',
         'coverage/**',
         'dist/**',
