@@ -18,6 +18,7 @@ import {
     Receipt,
     ShoppingBag,
     Smile,
+    Star,
     TicketPercent,
     TrendingUp,
     Type,
@@ -56,7 +57,8 @@ export type AdminTab =
     | 'accounts'
     | 'reports'
     | 'bugReports'
-    | 'errorEvents';
+    | 'errorEvents'
+    | 'appReviews';
 
 export type AdminTabItem = {
     key: AdminTab;
@@ -97,6 +99,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#reports': 'reports',
     '#bug-reports': 'bugReports',
     '#errors': 'errorEvents',
+    '#reviews': 'appReviews',
 };
 
 const TAB_TO_HASH: Record<AdminTab, string> = {
@@ -121,6 +124,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     reports: '#reports',
     bugReports: '#bug-reports',
     errorEvents: '#errors',
+    appReviews: '#reviews',
 };
 
 const AdminNavigationContext = createContext<
@@ -200,6 +204,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'plans', label: t('plans'), icon: CalendarDays },
             { key: 'paidServices', label: t('paidServices'), icon: PackagePlus },
             { key: 'discountCodes', label: t('discountCodes'), icon: TicketPercent },
+            { key: 'appReviews', label: t('appReviews'), icon: Star },
             { key: 'collaborations', label: t('collaborations'), icon: Handshake },
             { key: 'partnerCards', label: t('partnerCards'), icon: GalleryVerticalEnd },
             { key: 'reactionTypes', label: t('reactionTypes'), icon: Smile },

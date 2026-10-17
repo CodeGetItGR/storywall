@@ -9,7 +9,7 @@ import { trackAnalyticsEvent } from '@/lib/googleAnalytics';
 export type LandingPlacement = 'header' | 'mobile_menu' | 'hero' | 'hero_band' | 'stories' | 'themes' | 'demo' | 'final_cta';
 
 export type LandingSection =
-    'how_it_works' | 'stories' | 'demo' | 'social_host' | 'features' | 'feature_details' | 'pricing' | 'faq' | 'final_cta' | 'footer';
+    'how_it_works' | 'stories' | 'demo' | 'social_host' | 'features' | 'feature_details' | 'reviews' | 'pricing' | 'faq' | 'final_cta' | 'footer';
 
 export type LandingClick =
     | { event: 'create' | 'plans' | 'demo' | 'login'; placement: LandingPlacement }

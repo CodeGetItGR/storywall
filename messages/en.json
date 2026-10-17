@@ -2684,6 +2684,7 @@
             "signOutConfirmBody": "Please confirm before leaving the admin area."
         },
         "tabs": {
+            "appReviews": "Reviews",
             "events": "Events",
             "orders": "Orders",
             "metrics": "Metrics",
@@ -3735,6 +3736,43 @@
                 "resetTitle": "Reset {module} to default?",
                 "resetBody": "The default name and description show again everywhere for this event type."
             }
+        },
+        "appReviews": {
+            "title": "Reviews",
+            "loading": "Loading reviews",
+            "empty": "No reviews yet.",
+            "count": "{count, plural, one {# review} other {# reviews}}",
+            "filter": "Status",
+            "all": "All",
+            "columns": {
+                "received": "Received",
+                "rating": "Rating",
+                "comment": "Comment",
+                "role": "Role",
+                "occasion": "Occasion",
+                "consent": "Can show"
+            },
+            "stars": "{count} of 5",
+            "noComment": "No comment",
+            "yes": "Yes",
+            "no": "No",
+            "onLanding": "On landing",
+            "role": { "HOST": "Host", "GUEST": "Guest" },
+            "status": { "PENDING": "Pending", "APPROVED": "Approved", "HIDDEN": "Hidden" },
+            "statusHint": {
+                "PENDING": "Not checked yet.",
+                "APPROVED": "Checked. Can go on the landing page if the reviewer agreed.",
+                "HIDDEN": "Never shown on the website."
+            },
+            "detailTitle": "Review",
+            "close": "Close",
+            "statusTitle": "Status",
+            "featured": "Show on the landing page",
+            "featuredNeeds": "Needs Approved and the reviewer's OK.",
+            "language": "Language",
+            "reviewId": "Review ID",
+            "userId": "User ID",
+            "eventId": "Event ID"
         },
         "landingCategories": {
             "notice": "Tabs of the landing page's pricing section. A tab with no plan to show is hidden there.",
@@ -5245,6 +5283,17 @@
         "processing": "Processing video",
         "failed": "Video unavailable"
     },
+    "ReviewPrompt": {
+        "title": "How was Storywall for {eventTitle}?",
+        "rating": "Your rating",
+        "star": "{count, plural, one {# star} other {# stars}}",
+        "comment": "Comment (optional)",
+        "consent": "Can we show this on our website?",
+        "send": "Send",
+        "notNow": "Not now",
+        "close": "Close",
+        "sent": "Thanks for your rating."
+    },
     "BugReport": {
         "open": "Report a problem",
         "title": "Report a problem",
@@ -5365,6 +5414,8 @@
         "requestTooLarge": "The selected files are too large. Choose fewer files and try again.",
         "methodNotAllowed": "That action is not available here. Refresh and try again.",
         "invalidModuleKey": "One of the selected modules isn't available for this event type. Remove it and try again.",
+        "appReviewFeatureNotAllowed": "Only approved reviews that can be shown can go on the landing page.",
+        "appReviewNotEligible": "This review is no longer needed.",
         "authenticationRequired": "Please sign in to continue.",
         "accessDenied": "You don't have permission to do that.",
         "forbidden": "You don't have permission to do that.",
@@ -5561,6 +5612,11 @@
         "partnerBrandingNoticeOutdated": "The partner notice has changed. Please review it again."
     },
     "LandingPage": {
+        "reviews": {
+            "heading": "What people say",
+            "stars": "{count} out of 5 stars",
+            "role": { "HOST": "Host", "GUEST": "Guest" }
+        },
         "shell": {
             "pauseMotion": "Pause animations",
             "playMotion": "Play animations"

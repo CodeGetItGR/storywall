@@ -240,6 +240,58 @@ export interface AppLandingCategoryDto {
     eventTypeKeys: EventTypeConvention[];
 }
 
+export type AppReviewRole = 'HOST' | 'GUEST';
+export type AppReviewStatus = 'PENDING' | 'APPROVED' | 'HIDDEN';
+
+// GET /api/me/review-prompt → 200 with this, or 204 (null) when there is nothing to ask.
+export interface AppReviewPromptDto {
+    eventId: string;
+    eventTitle: string;
+    eventType: EventTypeConvention;
+    role: AppReviewRole;
+}
+
+// POST /api/me/reviews. The server drops publicConsent unless stars >= 4 and a comment is sent.
+export interface AppReviewRequestDto {
+    eventId: string;
+    stars: number;
+    comment: string | null;
+    publicConsent: boolean;
+}
+
+// GET/PATCH /api/admin/app-reviews. Ratings only, never dismissals.
+export interface AdminAppReviewDto {
+    id: string;
+    stars: number;
+    comment: string | null;
+    role: AppReviewRole;
+    eventType: EventTypeConvention;
+    eventId: string;
+    userId: string;
+    firstName: string;
+    locale: string;
+    publicConsent: boolean;
+    status: AppReviewStatus;
+    featured: boolean;
+    createdAt: string;
+}
+
+export interface AdminAppReviewPatchDto {
+    status?: AppReviewStatus;
+    featured?: boolean;
+}
+
+// GET /api/config → landingReviews. Featured, newest first; the page keeps its own locale's.
+export interface AppLandingReviewDto {
+    id: string;
+    stars: number;
+    comment: string;
+    firstName: string;
+    role: AppReviewRole;
+    eventType: EventTypeConvention;
+    locale: string;
+}
+
 // /api/admin/landing-categories (ADMIN). Hidden categories and disabled types included.
 export interface AdminLandingCategoryDto {
     id: string;
@@ -499,6 +551,7 @@ export interface AppConfigResponseDto {
     reactionTypesByEventType: Record<string, ReactionTypeResponseDto[]>;
     memberRolesByEventType: Record<string, MemberRoleCatalogDto[]>;
     landingCategories: AppLandingCategoryDto[];
+    landingReviews: AppLandingReviewDto[];
     rateLimits: AppRateLimitConfigDto[];
     reportTargetTypes: ReportTargetType[];
     reportReasons: ReportReason[];
