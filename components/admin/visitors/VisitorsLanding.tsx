@@ -19,10 +19,21 @@ export function VisitorsLanding({ landing, visitors }: { landing: VisitorMetrics
                 {t(`landing.events.${row.event}`)} <span className="ml-1 font-mono text-xs text-ink-faint">{row.placement}</span>
             </>
         ),
+        title: `${t(`landing.events.${row.event}`)} ${row.placement}`,
         count: row.count,
     }));
-    const plans = landing.plans.map((row) => ({ key: row.plan, label: <span className="font-mono text-xs">{row.plan}</span>, count: row.count }));
-    const faq = landing.faq.map((row) => ({ key: String(row.question), label: t('landing.questionNumber', { number: row.question }), count: row.count }));
+    const plans = landing.plans.map((row) => ({
+        key: row.plan,
+        label: <span className="font-mono text-xs">{row.plan}</span>,
+        title: row.plan,
+        count: row.count,
+    }));
+    const faq = landing.faq.map((row) => ({
+        key: String(row.question),
+        label: t('landing.questionNumber', { number: row.question }),
+        title: t('landing.questionNumber', { number: row.question }),
+        count: row.count,
+    }));
 
     return (
         <FunnelGroup title={t('landing.title')} window="visit">

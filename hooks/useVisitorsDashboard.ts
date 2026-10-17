@@ -1,7 +1,7 @@
 'use client';
 
 import { useLocale } from 'next-intl';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 
 import { useAdminVisitors, useRefreshAdminVisitors } from '@/hooks/useAdmin';
 import { useFunnelRange } from '@/hooks/useFunnelRange';
@@ -18,8 +18,12 @@ export function useVisitorsDashboard() {
     // When Spring asked GA, not when this page fetched: a cached answer can be up to an hour old.
     const updatedAt = data?.updatedAt ? dateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(new Date(data.updatedAt)) : null;
 
-    const { mutate } = refreshMutation;
-    const refresh = useCallback(() => mutate({ since, until }), [mutate, since, until]);
+    const { mutate, reset } = refreshMutation;
+    // A failed refresh belongs to the range it ran for.
+    useEffect(() => reset(), [reset, since, until]);
+    const refresh = useCallback(() => {
+        if (isValid) mutate({ since, until });
+    }, [isValid, mutate, since, until]);
 
     return {
         range,

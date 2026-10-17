@@ -114,4 +114,20 @@ describe('VisitorsPanel', () => {
 
         await waitFor(() => expect(apiGet).toHaveBeenLastCalledWith('/api/admin/metrics/visitors?fresh=true'));
     });
+
+    it('clears a failed Refresh when the range changes', async () => {
+        apiGet.mockImplementation((url: string) =>
+            url.includes('fresh=true') ? Promise.reject(new Error('503')) : Promise.resolve(visitorMetricsFixture()),
+        );
+        renderPanel();
+        await screen.findByText('2,400');
+
+        fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
+        expect(await screen.findByText("Couldn't load visitor numbers.")).toBeInTheDocument();
+
+        fireEvent.click(within(screen.getByRole('group', { name: 'Date range' })).getByRole('button', { name: 'Last 30 days' }));
+
+        await waitFor(() => expect(screen.queryByText("Couldn't load visitor numbers.")).not.toBeInTheDocument());
+        expect(await screen.findByText('2,400')).toBeInTheDocument();
+    });
 });
