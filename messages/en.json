@@ -6093,19 +6093,30 @@
         },
         "clients": {
             "heading": "What your couples get",
-            "steps": ["Guests scan one QR code. No app to install.", "Every photo and video lands in one place, live.", "The couple keeps it all. No chasing guests for photos afterwards."],
+            "steps": [
+                "Guests scan one QR code. No app to install.",
+                "Every photo and video lands in one place, live.",
+                "The couple keeps it all. No chasing guests for photos afterwards."
+            ],
             "disposable": "A simpler alternative to disposable cameras on the tables."
         },
         "occasions": {
             "WEDDING": { "name": "Weddings", "line": "From the ceremony to the last dance.", "alt": "Wedding reception at sunset" },
-            "BAPTISM": { "name": "Baptisms and christenings", "line": "The whole family's photos in one place.", "alt": "Family celebrating a baptism outside a church" }
+            "BAPTISM": {
+                "name": "Baptisms and christenings",
+                "line": "The whole family's photos in one place.",
+                "alt": "Family celebrating a baptism outside a church"
+            }
         },
         "benefits": {
             "heading": "What you get",
             "items": {
                 "discount": { "title": "A discount for your clients", "body": "Your own code gives your couples a better price." },
                 "earn": { "title": "Earn on every event", "body": "You earn commission each time a couple uses your code." },
-                "brand": { "title": "Your brand in front of every guest", "body": "Your card appears in the event feed. Guests planning their own wedding see who made this one happen." },
+                "brand": {
+                    "title": "Your brand in front of every guest",
+                    "body": "Your card appears in the event feed. Guests planning their own wedding see who made this one happen."
+                },
                 "portal": { "title": "Track your earnings", "body": "A private page shows your events and what you've earned." }
             },
             "cardCaption": "How your card looks in the event feed."
@@ -6151,11 +6162,20 @@
             "items": [
                 ["What does it cost to join?", "Nothing. Partnering is free."],
                 ["Can I join from outside Greece?", "Yes. Partners can be anywhere in the world."],
-                ["How do I get paid?", "By bank transfer in EUR to an IBAN account, against your invoice. Outside an IBAN country? Apply anyway and we'll work it out with you."],
+                [
+                    "How do I get paid?",
+                    "By bank transfer in EUR to an IBAN account, against your invoice. Outside an IBAN country? Apply anyway and we'll work it out with you."
+                ],
                 ["How do you know a couple came from me?", "They use your code when they set up their event."],
-                ["Does this compete with the photographer?", "No. Guests capture the moments a photographer can't be at. The professional photos stay the photographer's."],
+                [
+                    "Does this compete with the photographer?",
+                    "No. Guests capture the moments a photographer can't be at. The professional photos stay the photographer's."
+                ],
                 ["Can guests upload without an app?", "Yes. They scan the QR code and upload from their phone's browser."],
-                ["How do wedding planners collect guest photos with it?", "Put the QR code on the tables, the invitation or a sign. Guest photos collect on the live wall during the event."],
+                [
+                    "How do wedding planners collect guest photos with it?",
+                    "Put the QR code on the tables, the invitation or a sign. Guest photos collect on the live wall during the event."
+                ],
                 ["Which events does it cover?", "{occasions}."],
                 ["What happens after I apply?", "We review your application and reply by email."]
             ]
@@ -6501,14 +6521,7 @@
     },
     "OccasionPages": {
         "common": {
-            "nav": {
-                "home": "StoryWall home",
-                "signIn": "Sign in",
-                "create": "Create your StoryWall"
-            },
             "breadcrumbHome": "Home",
-            "timelineHeading": "Before, on the day, after",
-            "featuresHeading": "What you get",
             "features": {
                 "invitation": {
                     "title": "Digital invitation",
@@ -6552,19 +6565,10 @@
                 }
             },
             "demo": {
-                "heading": "See a real StoryWall",
                 "postsLabel": "Posts from guests",
                 "photosLabel": "Photos",
-                "wishesLabel": "Wishes",
-                "tryDemo": "Try the live demo"
+                "wishesLabel": "Wishes"
             },
-            "howItWorksHeading": "How it works",
-            "plans": {
-                "line": "Plans start with everything you need for one event.",
-                "link": "See plans"
-            },
-            "faqHeading": "Questions",
-            "finalCta": "Create your StoryWall",
             "linksHeading": "Other occasions",
             "linksHome": "All of StoryWall"
         },
@@ -6574,7 +6578,16 @@
             "meta": {
                 "title": "Wedding Website & Guest Photo Sharing | StoryWall",
                 "description": "One private wedding website for your invitation, RSVPs, guest photos by QR code, wishes and song requests. No app for guests to install.",
-                "imageAlt": "StoryWall for weddings"
+                "imageAlt": "StoryWall for weddings",
+                "keywords": [
+                    "wedding website",
+                    "digital wedding invitation",
+                    "wedding RSVP",
+                    "wedding photo sharing",
+                    "QR code wedding photos",
+                    "digital wedding guestbook",
+                    "wedding song requests"
+                ]
             },
             "hero": {
                 "h1": "Wedding website and guest photo sharing",
@@ -6586,7 +6599,8 @@
             },
             "themes": {
                 "eyebrow": "Wedding themes",
-                "heading": "Give your wedding StoryWall the theme that suits it."
+                "heading": "Give your wedding StoryWall the theme that suits it.",
+                "intro": "Sample themes for your wedding invitation and wall."
             },
             "timeline": [
                 {
@@ -6606,20 +6620,33 @@
                 }
             ],
             "story": {
-                "galleryLabel": "Photos from the wedding day",
-                "imageAlts": [
-                    "Bride getting ready with her bridesmaids",
-                    "Wedding ceremony in Santorini",
-                    "Wedding reception in Santorini"
+                "eyebrow": "Before, on the day, after",
+                "heading": ["Your whole wedding,", "in one place."],
+                "intro": "From the first invitation to the last dance, every guest adds to the same story.",
+                "rows": [
+                    {
+                        "galleryLabel": "Before the wedding",
+                        "imageAlts": [
+                            "Guest opening the wedding invitation on a phone",
+                            "Guest confirming the wedding RSVP",
+                            "Bachelor party in Santorini"
+                        ]
+                    },
+                    {
+                        "galleryLabel": "The wedding day",
+                        "imageAlts": ["Bride getting ready with her bridesmaids", "Wedding ceremony in Santorini", "Wedding reception in Santorini"]
+                    },
+                    {
+                        "galleryLabel": "After the wedding",
+                        "imageAlts": ["Guest writing a wish in the wedding guestbook", "Honeymoon in Paris"]
+                    }
                 ]
             },
             "scene": {
-                "title": [
-                    "Everyone shares",
-                    "the day."
-                ],
+                "title": ["Everyone shares", "the day."],
                 "copy": "Posts, stories, wishes and reactions from everyone at your wedding."
             },
+            "demoHeading": ["See a wedding", "StoryWall."],
             "features": {
                 "invitation": {
                     "title": "Digital wedding invitation",
@@ -6658,6 +6685,11 @@
                     "body": "Ceremony, reception, party and their times, step by step."
                 }
             },
+            "featuresIntro": {
+                "eyebrow": "Built for weddings",
+                "heading": "Everything your wedding needs, in one link."
+            },
+            "howItWorksHeading": ["Three steps.", "One wedding story."],
             "howItWorks": [
                 {
                     "title": "Create",
@@ -6702,18 +6734,30 @@
                     "a": "No. It collects the moments your guests capture, alongside your photographer's work."
                 }
             ],
+            "faqIntro": "What couples ask before they create their wedding StoryWall.",
             "finalCta": {
-                "heading": "Start your wedding StoryWall",
-                "body": "Set it up in a few minutes and share it with your guests today.",
+                "eyebrow": "Ready for the big day?",
+                "heading": ["Your wedding", "starts here."],
+                "copyStart": "Create your wedding StoryWall and share it with your guests",
+                "copyStrong": "in a few minutes.",
                 "imageAlt": "Wedding celebration in Santorini"
-            }
+            },
+            "pricingHeading": "Plans for your wedding."
         },
         "BAPTISM": {
             "name": "Baptisms",
             "meta": {
                 "title": "Digital Baptism Invitation & Photo Sharing | StoryWall",
                 "description": "A private page for your baptism or christening: invitation with maps, RSVPs, guest photos by QR code and a book of wishes for your child.",
-                "imageAlt": "StoryWall for baptisms"
+                "imageAlt": "StoryWall for baptisms",
+                "keywords": [
+                    "digital baptism invitation",
+                    "christening invitation",
+                    "baptism RSVP",
+                    "baptism photo sharing",
+                    "QR code christening photos",
+                    "baptism book of wishes"
+                ]
             },
             "hero": {
                 "h1": "Digital baptism invitation and photo sharing",
@@ -6721,11 +6765,61 @@
                 "lead": "From the invitation and the first wishes to the photos, posts and moments of the day.",
                 "promise": "Everything your people share, together in one StoryWall.",
                 "cta": "Create your baptism StoryWall",
-                "imageAlt": "Family and guests celebrating a baptism outside a church"
+                "imageAlt": "Family and guests celebrating a baptism outside a church",
+                "feed": {
+                    "title": "Eleni's baptism",
+                    "date": "June 14, 2027",
+                    "place": "Santorini",
+                    "stories": ["Your story", "Schedule", "Guests", "Moments"],
+                    "composer": "Share a memory…",
+                    "posts": [
+                        {
+                            "author": "Maria K.",
+                            "time": "2h ago",
+                            "caption": "The moment in the church. 🤍",
+                            "likes": 48,
+                            "replies": [
+                                {
+                                    "author": "Nikos P.",
+                                    "text": "So moving!"
+                                },
+                                {
+                                    "author": "Anna M.",
+                                    "text": "Beautiful!"
+                                }
+                            ]
+                        },
+                        {
+                            "author": "Kostas V.",
+                            "time": "3h ago",
+                            "caption": "The table is ready for little Eleni!",
+                            "likes": 36,
+                            "replies": [
+                                {
+                                    "author": "Sofia L.",
+                                    "text": "Cheers! 🥂"
+                                }
+                            ]
+                        },
+                        {
+                            "author": "Eleni T.",
+                            "time": "5h ago",
+                            "caption": "Outside the church with the whole family.",
+                            "likes": 52,
+                            "replies": [
+                                {
+                                    "author": "Petros D.",
+                                    "text": "What a day ☀️"
+                                }
+                            ]
+                        }
+                    ]
+                }
             },
             "themes": {
                 "eyebrow": "Baptism themes",
-                "heading": "Give your baptism StoryWall the theme that suits it."
+                "heading": "Give your baptism StoryWall the theme that suits it.",
+                "intro": "Sample themes for your baptism invitation and wall."
             },
             "timeline": [
                 {
@@ -6745,20 +6839,33 @@
                 }
             ],
             "story": {
-                "galleryLabel": "Photos from the baptism day",
-                "imageAlts": [
-                    "Baptism ceremony inside the church",
-                    "Baptism outside the church",
-                    "Baptism celebration at the table"
+                "eyebrow": "Before, on the day, after",
+                "heading": ["Your child's baptism,", "in one place."],
+                "intro": "From the invitation to the last wish, family and friends add to the same story.",
+                "rows": [
+                    {
+                        "galleryLabel": "Before the baptism",
+                        "imageAlts": ["Guest opening the baptism invitation on a phone", "Guest confirming the baptism RSVP"]
+                    },
+                    {
+                        "galleryLabel": "The baptism day",
+                        "imageAlts": [
+                            "Baptism ceremony inside the church",
+                            "Family and guests outside the church",
+                            "Baptism celebration at the table"
+                        ]
+                    },
+                    {
+                        "galleryLabel": "After the baptism",
+                        "imageAlts": ["Guest writing a wish for the child", "Family at the baptism table"]
+                    }
                 ]
             },
             "scene": {
-                "title": [
-                    "Everyone shares",
-                    "the day."
-                ],
+                "title": ["Everyone shares", "the day."],
                 "copy": "Posts, stories, wishes and reactions from everyone at the baptism."
             },
+            "demoHeading": ["See a baptism", "StoryWall."],
             "features": {
                 "invitation": {
                     "title": "Digital baptism invitation",
@@ -6797,6 +6904,11 @@
                     "body": "The church service, the reception and their times, step by step."
                 }
             },
+            "featuresIntro": {
+                "eyebrow": "Built for baptisms",
+                "heading": "Everything your baptism needs, in one link."
+            },
+            "howItWorksHeading": ["Three steps.", "One baptism story."],
             "howItWorks": [
                 {
                     "title": "Create",
@@ -6837,11 +6949,15 @@
                     "a": "It can. Send the link on its own, or add the QR code to your printed invitation."
                 }
             ],
+            "faqIntro": "What parents ask before they create their baptism StoryWall.",
             "finalCta": {
-                "heading": "Start your baptism StoryWall",
-                "body": "Set it up in a few minutes and send it to your guests.",
+                "eyebrow": "Ready for the big day?",
+                "heading": ["Your child's story", "starts here."],
+                "copyStart": "Create your baptism StoryWall and send it to your guests",
+                "copyStrong": "in a few minutes.",
                 "imageAlt": "Family and guests at the baptism table"
-            }
+            },
+            "pricingHeading": "Plans for your baptism."
         }
     }
 }

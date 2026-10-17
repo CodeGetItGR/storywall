@@ -6,6 +6,8 @@ import { LandingPricingCta } from '@/components/landing/LandingPricingCta';
 import { LandingPricingEventSelect } from '@/components/landing/LandingPricingEventSelect';
 import { MarketingPlanCard } from '@/components/plan/MarketingPlanCard';
 import { useLandingPricing } from '@/hooks/useLandingPricing';
+import type { EventTypeConvention } from '@/lib/api/types';
+import { eventTypeSlug } from '@/lib/eventTypeSlug';
 import { landingSectionAttributes } from '@/lib/landingTracking';
 import { cn } from '@/lib/utils';
 
@@ -16,9 +18,15 @@ const PLAN_GRID: Record<number, string> = {
     3: 'max-w-331 min-[761px]:grid-cols-3',
 };
 
-export function LandingPricing() {
+type LandingPricingProps = {
+    // An occasion page opens on its own event type, under its own heading.
+    eventType?: EventTypeConvention;
+    heading?: string;
+};
+
+export function LandingPricing({ eventType, heading }: LandingPricingProps) {
     const t = useTranslations('LandingPage.pricing');
-    const { groups, active, pickEventType, picks, pickDuration } = useLandingPricing();
+    const { groups, active, pickEventType, picks, pickDuration } = useLandingPricing(eventType ? eventTypeSlug(eventType) : null);
 
     if (!active) return null;
 
@@ -37,7 +45,7 @@ export function LandingPricing() {
                         className="mt-5 max-w-205 font-[Baskerville,Georgia,serif] text-[clamp(48px,11vw,88px)] leading-[.9] tracking-[-.055em] min-[761px]:mt-0"
                         id="landing-pricing-title"
                     >
-                        {t('heading')}
+                        {heading ?? t('heading')}
                     </h2>
                     <p className="mt-5 max-w-155 text-base leading-relaxed">{t('intro')}</p>
                 </div>

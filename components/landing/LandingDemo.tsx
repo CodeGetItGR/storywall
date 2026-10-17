@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import type { ReactNode } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { landingClickAttributes, landingSectionAttributes } from '@/lib/landingTracking';
@@ -7,9 +8,16 @@ import { routes } from '@/lib/routes';
 const DEMO_BUTTON_CLASS =
     'group flex-none items-center justify-center rounded-full bg-white px-[22px] text-[10px] font-black tracking-[0.14em] text-[#151313] uppercase shadow-[0_10px_28px_rgba(21,19,19,0.1)] transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-[3px] hover:shadow-[0_14px_34px_rgba(21,19,19,0.15)]';
 
-export async function LandingDemo() {
+type LandingDemoProps = {
+    // An occasion page's heading and demo link, and its server-rendered preview under the band.
+    children?: ReactNode;
+    heading?: string[];
+    href?: string;
+};
+
+export async function LandingDemo({ children, heading: headingOverride, href = routes.demo }: LandingDemoProps) {
     const t = await getTranslations('LandingPage.demo');
-    const heading = t.raw('heading') as string[];
+    const heading = headingOverride ?? (t.raw('heading') as string[]);
 
     return (
         <section
@@ -35,7 +43,7 @@ export async function LandingDemo() {
                     <a
                         aria-label={t('cta')}
                         className={`${DEMO_BUTTON_CLASS} hidden min-h-[68px] pr-[30px] pl-[34px] text-[12px] tracking-[0.14em] min-[761px]:inline-flex min-[761px]:gap-6`}
-                        href={routes.demo}
+                        href={href}
                         {...landingClickAttributes({ event: 'demo', placement: 'demo' })}
                     >
                         <span>{t('button')}</span>
@@ -65,7 +73,7 @@ export async function LandingDemo() {
             <a
                 aria-label={t('cta')}
                 className={`${DEMO_BUTTON_CLASS} mt-[26px] flex min-h-[70px] w-full gap-[22px] text-[12px] min-[761px]:hidden`}
-                href={routes.demo}
+                href={href}
                 {...landingClickAttributes({ event: 'demo', placement: 'demo' })}
             >
                 <span>{t('button')}</span>
@@ -76,6 +84,8 @@ export async function LandingDemo() {
                     ↗
                 </span>
             </a>
+            {/* Preview */}
+            {children ? <div className="min-[761px]:col-span-3">{children}</div> : null}
         </section>
     );
 }

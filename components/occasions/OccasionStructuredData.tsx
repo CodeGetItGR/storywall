@@ -1,10 +1,11 @@
 import { getTranslations } from 'next-intl/server';
 
-import type { OccasionFaqItem } from '@/components/occasions/OccasionFaq';
 import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
 import { type Occasion, occasionPath } from '@/lib/occasions/occasions';
 import { absoluteUrl, jsonLdHtml, SITE_URL } from '@/lib/seo';
+
+type OccasionFaqItem = { q: string; a: string };
 
 // The service for this occasion, a breadcrumb and the FAQ. No offers: prices come from config.
 export async function OccasionStructuredData({ locale, occasion }: { locale: Locale; occasion: Occasion }) {

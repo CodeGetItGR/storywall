@@ -37,3 +37,8 @@ export function pickDemoPreview(snapshot: DemoSnapshotDto): DemoPreview {
 
     return { posts, photos, wishes };
 }
+
+// An empty snapshot is left out rather than shown as an empty block.
+export function hasDemoPreviewContent(preview: DemoPreview): boolean {
+    return preview.posts.length > 0 || preview.photos.length > 0 || preview.wishes.length > 0;
+}

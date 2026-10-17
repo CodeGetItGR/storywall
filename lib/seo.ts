@@ -61,6 +61,8 @@ export type PageMetadataCopy = {
     description: string;
     siteName: string;
     imageAlt: string;
+    // The searches a page is written for (occasion pages).
+    keywords?: string[];
 };
 
 type IndexableMetadataInput = {
@@ -82,6 +84,7 @@ export function buildIndexableMetadata({ locale, path, languages, imagePath, cop
         metadataBase: new URL(SITE_URL),
         title: copy.title,
         description: copy.description,
+        ...(copy.keywords && { keywords: copy.keywords }),
         alternates: { canonical, languages },
         openGraph: {
             type: 'website',
