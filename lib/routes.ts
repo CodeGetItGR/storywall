@@ -120,3 +120,8 @@ export const routes = {
         register: (params: { invite?: string | null; email?: string | null; next?: string | null } = {}) => withQuery('/register', params),
     },
 } as const;
+
+// A real event's feed, /events/{eventId}/feed (not the demo's).
+export function isEventFeedPath(pathname: string | null): boolean {
+    return /^\/events\/[^/]+\/feed\/?$/.test(pathname ?? '');
+}

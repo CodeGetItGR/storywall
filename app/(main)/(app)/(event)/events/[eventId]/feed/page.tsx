@@ -6,7 +6,8 @@ import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList, type Page } from '@/lib/api/pagination';
 import { serverGet, serverModuleReadable } from '@/lib/api/serverFetch';
 import type { HeOrSheViewDto, PostResponseDto, StoryResponseDto } from '@/lib/api/types';
-import { prefetchAccessToken } from '@/lib/auth/serverEventContext';
+import { prefetchAccessToken, resolveServerEventDetail } from '@/lib/auth/serverEventContext';
+import { preloadBannerImage } from '@/lib/feed/bannerImage';
 import { postKeys, POSTS_PAGE_SIZE } from '@/lib/postQueries';
 import { makeQueryClient } from '@/lib/queryClient';
 
@@ -39,6 +40,13 @@ async function prefetchHeOrShe(queryClient: QueryClient, eventId: string, access
     }
 }
 
+// Starts the banner image, the feed's largest paint, with the page. The event detail is deduped with
+// events/[eventId]/layout.tsx.
+async function preloadBanner(eventId: string): Promise<void> {
+    const event = await resolveServerEventDetail(eventId);
+    if (event) preloadBannerImage(event);
+}
+
 async function prefetchStories(queryClient: QueryClient, eventId: string, accessToken: string): Promise<void> {
     try {
         if (!(await serverModuleReadable(eventId, 'stories', accessToken))) return;
@@ -59,6 +67,7 @@ export default async function Page({ params }: PageProps) {
 
     if (accessToken) {
         await Promise.all([
+            preloadBanner(eventId),
             prefetchPosts(queryClient, eventId, accessToken),
             prefetchHeOrShe(queryClient, eventId, accessToken),
             prefetchStories(queryClient, eventId, accessToken),
