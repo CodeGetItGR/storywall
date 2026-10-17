@@ -6,7 +6,8 @@
 
 import { ApiError } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
-import type { AuthSessionDto, OAuthLoginRequestDto, RegisterRequestDto } from '@/lib/api/types';
+import type { AuthSessionDto, OAuthLoginRequestDto, RegisterRequestDto, VisitSourceDto } from '@/lib/api/types';
+import { currentVisitSource } from '@/lib/signupSource';
 
 async function parseBody(res: Response): Promise<unknown> {
     const text = await res.text();
@@ -29,14 +30,20 @@ async function authRequest<T>(path: string, options: RequestInit = {}): Promise<
     return body as T;
 }
 
+// Sign-ups carry where the visitor came from; Spring keeps it only when the request creates the account.
+function withVisitSource<T extends object>(input: T): T & { visitSource?: VisitSourceDto } {
+    const visitSource = currentVisitSource();
+    return visitSource ? { ...input, visitSource } : input;
+}
+
 export const authClient = {
-    register: (input: RegisterRequestDto) => authRequest<AuthSessionDto>(endpoints.auth.register, { method: 'POST', body: JSON.stringify(input) }),
+    register: (input: RegisterRequestDto) => authRequest<AuthSessionDto>(endpoints.auth.register, { method: 'POST', body: JSON.stringify(withVisitSource(input)) }),
 
     login: (input: { email: string; password: string; inviteToken?: string }) =>
         authRequest<AuthSessionDto>(endpoints.auth.login, { method: 'POST', body: JSON.stringify(input) }),
 
     oauth: (provider: 'GOOGLE' | 'APPLE', input: OAuthLoginRequestDto) =>
-        authRequest<AuthSessionDto>(endpoints.auth.oauth(provider), { method: 'POST', body: JSON.stringify(input) }),
+        authRequest<AuthSessionDto>(endpoints.auth.oauth(provider), { method: 'POST', body: JSON.stringify(withVisitSource(input)) }),
 
     // Bootstrap/reactive-refresh: 401 means there's no re-derivable session
     // (no refresh cookie, no guest cookie, or both rejected) — not an error.

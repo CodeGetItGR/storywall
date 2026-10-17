@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { clearAdCookies, clearAnalyticsCookies, CONSENT_COOKIE, CONSENT_VERSION, readConsent, writeConsent } from '@/lib/consent';
+import { VISIT_SOURCE_COOKIE } from '@/lib/signupSource';
 
 function expireAll() {
     for (const part of document.cookie.split(';')) {
@@ -67,5 +68,13 @@ describe('clearAnalyticsCookies', () => {
         expect(document.cookie).not.toContain('_ga=');
         expect(document.cookie).not.toContain('_ga_ABC123');
         expect(document.cookie).toContain('_gcl_aw');
+    });
+
+    it('also removes the signup source, which is kept only with analytics consent', () => {
+        document.cookie = `${VISIT_SOURCE_COOKIE}=x; Path=/`;
+
+        clearAnalyticsCookies();
+
+        expect(document.cookie).not.toContain(`${VISIT_SOURCE_COOKIE}=`);
     });
 });

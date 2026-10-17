@@ -1,4 +1,4 @@
-import type { FunnelCohortDto, FunnelMetricsResponseDto } from '@/lib/api/types';
+import type { FunnelCohortDto, FunnelMetricsResponseDto, SignupChannel } from '@/lib/api/types';
 import { numberFormat } from '@/lib/format';
 
 export const FUNNEL_RANGE_PRESETS = ['ALL', 'LAST_30', 'LAST_90', 'THIS_YEAR', 'CUSTOM'] as const;
@@ -60,6 +60,12 @@ export function rateOf(part: number, whole: number): number | null {
 }
 
 export const EMPTY_VALUE = '—';
+
+// Every channel, in the order the source filter lists them.
+export const SIGNUP_CHANNELS = ['ADS', 'SOCIAL', 'SEARCH', 'EMAIL', 'PARTNER', 'OTHER_SITE', 'DIRECT', 'INVITE', 'GIFT', 'UNKNOWN'] as const satisfies readonly SignupChannel[];
+
+// Below this many sign-ups a channel's percentages say little, and its row is tagged.
+export const FEW_SIGNUPS = 20;
 
 export function formatRate(locale: string, ratio: number | null): string {
     if (ratio === null || !Number.isFinite(ratio)) return EMPTY_VALUE;
