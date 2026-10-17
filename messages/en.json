@@ -6564,11 +6564,6 @@
                     "body": "Guests guess before the reveal."
                 }
             },
-            "demo": {
-                "postsLabel": "Posts from guests",
-                "photosLabel": "Photos",
-                "wishesLabel": "Wishes"
-            },
             "linksHeading": "Other occasions",
             "linksHome": "All of StoryWall"
         },
@@ -6641,10 +6636,6 @@
                         "imageAlts": ["Guest writing a wish in the wedding guestbook", "Honeymoon in Paris"]
                     }
                 ]
-            },
-            "scene": {
-                "title": ["Everyone shares", "the day."],
-                "copy": "Posts, stories, wishes and reactions from everyone at your wedding."
             },
             "demoHeading": ["See a wedding", "StoryWall."],
             "features": {
@@ -6860,10 +6851,6 @@
                         "imageAlts": ["Guest writing a wish for the child", "Family at the baptism table"]
                     }
                 ]
-            },
-            "scene": {
-                "title": ["Everyone shares", "the day."],
-                "copy": "Posts, stories, wishes and reactions from everyone at the baptism."
             },
             "demoHeading": ["See a baptism", "StoryWall."],
             "features": {

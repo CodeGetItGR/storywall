@@ -6,12 +6,9 @@ import { LandingExperienceLayer } from '@/components/landing/LandingExperienceLa
 import { hostExperienceAssets, socialExperienceAssets } from '@/lib/landingExperienceMedia';
 import { landingSectionAttributes } from '@/lib/landingTracking';
 
-// An occasion page's own words for the social side.
-export type LandingSocialCopy = { copy: string; title: string[] };
-
-export function LandingExperienceStack({ social }: { social?: LandingSocialCopy }) {
+export function LandingExperienceStack() {
     const t = useTranslations('LandingPage.stack');
-    const socialTitle = social?.title ?? (t.raw('socialTitle') as string[]);
+    const socialTitle = t.raw('socialTitle') as string[];
     const hostTitle = t.raw('hostTitle') as string[];
 
     return (
@@ -21,7 +18,7 @@ export function LandingExperienceStack({ social }: { social?: LandingSocialCopy 
                 assets={socialExperienceAssets}
                 chapter={t('socialChapter')}
                 chapterCount="01 / 02"
-                copy={social?.copy ?? t('socialCopy')}
+                copy={t('socialCopy')}
                 title={socialTitle}
                 topbar={t('socialTopbar')}
             />

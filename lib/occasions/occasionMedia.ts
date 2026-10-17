@@ -16,38 +16,18 @@ export type OccasionHeroFeed = {
     cards: [OccasionPhoto, OccasionPhoto];
 };
 
-// `cover` crops to the frame; `position` picks which part of a tall screenshot stays in view.
-export type OccasionFeatureImage = LandingImageAsset & { position?: 'top' | 'bottom' };
-
 type OccasionMedia = {
     heroFeed: OccasionHeroFeed | null;
     // Before, on the day, after: same order as the timeline copy. Each is a gallery of photos.
     moments: [LandingImageAsset[], LandingImageAsset[], LandingImageAsset[]];
-    featureImages: Partial<Record<string, OccasionFeatureImage>>;
     finalImage: LandingImageAsset;
 };
 
 const asset = (name: string, width: number, height: number): LandingImageAsset => ({ src: `/landing/${name}.webp`, width, height });
 
 const INVITATION_PHOTO = asset('guest-viewing-the-storywall-invitation-on-a-phone', 700, 875);
-const QR_PHOTO = asset('guest-scanning-the-storywall-qr-code', 700, 875);
 const RSVP_PHOTO = asset('guest-confirming-the-storywall-rsvp', 700, 875);
 const WISH_PHOTO = asset('guest-sharing-a-wish-in-the-storywall-guestbook', 700, 875);
-
-const DEFAULT_FEATURE_IMAGES: Record<string, OccasionFeatureImage> = {
-    invitation: INVITATION_PHOTO,
-    posts: { ...asset('sw-phone-feed-3', 774, 2048), position: 'top' },
-    rsvp: RSVP_PHOTO,
-    playlist: { ...asset('sw-phone-feed-2', 820, 2048), position: 'bottom' },
-    stories: { ...asset('sw-phone-feed', 451, 2048), position: 'top' },
-    gallery: QR_PHOTO,
-    wishlist: asset('friends-and-family-celebrating-at-sunset', 1448, 1086),
-    wishbook: WISH_PHOTO,
-    schedule: asset('friends-and-family-celebrating-at-sunset', 1448, 1086),
-};
-
-// Shown for a feature with no image of its own.
-export const FALLBACK_FEATURE_IMAGE: OccasionFeatureImage = asset('friends-and-family-celebrating-at-sunset', 1448, 1086);
 
 const BAPTISM_CHURCH = asset('baptism-ceremony-inside-the-church', 1448, 1086);
 const BAPTISM_TABLE = asset('baptism-celebration-at-the-table', 1448, 1086);
@@ -66,10 +46,6 @@ const MEDIA: Partial<Record<EventTypeConvention, OccasionMedia>> = {
             ],
             [WISH_PHOTO, asset('05-honeymoon-paris', 1448, 1086)],
         ],
-        featureImages: {
-            schedule: asset('03-wedding-ceremony-santorini', 1536, 1024),
-            wishlist: asset('04-wedding-reception-santorini', 1536, 1024),
-        },
         finalImage: asset('storywall-final-cta-wedding-santorini', 1448, 1086),
     },
     BAPTISM: {
@@ -90,10 +66,6 @@ const MEDIA: Partial<Record<EventTypeConvention, OccasionMedia>> = {
             [BAPTISM_CHURCH, BAPTISM_OUTSIDE, BAPTISM_TABLE],
             [WISH_PHOTO, BAPTISM_TABLE],
         ],
-        featureImages: {
-            schedule: BAPTISM_CHURCH,
-            wishlist: BAPTISM_TABLE,
-        },
         finalImage: BAPTISM_TABLE,
     },
 };
@@ -101,8 +73,4 @@ const MEDIA: Partial<Record<EventTypeConvention, OccasionMedia>> = {
 // null → the occasion has no media yet; its page leaves out the photo sections.
 export function occasionMedia(eventType: EventTypeConvention): OccasionMedia | null {
     return MEDIA[eventType] ?? null;
-}
-
-export function occasionFeatureImage(eventType: EventTypeConvention, key: string): OccasionFeatureImage {
-    return MEDIA[eventType]?.featureImages[key] ?? DEFAULT_FEATURE_IMAGES[key] ?? FALLBACK_FEATURE_IMAGE;
 }

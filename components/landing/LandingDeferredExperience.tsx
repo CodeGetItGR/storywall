@@ -3,14 +3,13 @@
 import { lazy, Suspense, useRef } from 'react';
 
 import { RenderedSignal } from '@/components/common/RenderedSignal';
-import type { LandingSocialCopy } from '@/components/landing/LandingExperienceStack';
 import { useLandingDeferredRender } from '@/hooks/useLandingDeferredRender';
 
 const LandingExperienceStack = lazy(() =>
     import('@/components/landing/LandingExperienceStack').then((module) => ({ default: module.LandingExperienceStack })),
 );
 
-export function LandingDeferredExperience({ social }: { social?: LandingSocialCopy }) {
+export function LandingDeferredExperience() {
     const sectionRef = useRef<HTMLDivElement>(null);
     const { shouldRender, onRendered } = useLandingDeferredRender(sectionRef);
 
@@ -18,7 +17,7 @@ export function LandingDeferredExperience({ social }: { social?: LandingSocialCo
         <div className="min-h-px" ref={sectionRef}>
             {shouldRender ? (
                 <Suspense fallback={null}>
-                    <LandingExperienceStack social={social} />
+                    <LandingExperienceStack />
                     <RenderedSignal onRendered={onRendered} />
                 </Suspense>
             ) : null}

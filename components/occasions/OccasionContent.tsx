@@ -3,10 +3,9 @@ import '@/components/landing/landing.css';
 import { getTranslations } from 'next-intl/server';
 
 import { CookieConsent } from '@/components/consent/CookieConsent';
-import { LandingDeferredExperience } from '@/components/landing/LandingDeferredExperience';
 import { LandingDemo } from '@/components/landing/LandingDemo';
 import { LandingFaq } from '@/components/landing/LandingFaq';
-import { LandingFinalCta,type LandingFinalCtaCopy } from '@/components/landing/LandingFinalCta';
+import { LandingFinalCta, type LandingFinalCtaCopy } from '@/components/landing/LandingFinalCta';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 import { LandingHeroTransition } from '@/components/landing/LandingHeroTransition';
 import { LandingHowItWorks } from '@/components/landing/LandingHowItWorks';
@@ -23,7 +22,7 @@ import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
 import type { LandingTheme } from '@/lib/landingThemes';
 import type { OccasionCampaign } from '@/lib/occasions/campaigns';
-import { type DemoPreview, hasDemoPreviewContent } from '@/lib/occasions/demoPreview';
+import { demoCollage, type DemoPreview } from '@/lib/occasions/demoPreview';
 import { occasionCreateHref } from '@/lib/occasions/occasionLinks';
 import { occasionMedia } from '@/lib/occasions/occasionMedia';
 import { type Occasion, occasionAlternatePaths } from '@/lib/occasions/occasions';
@@ -53,6 +52,7 @@ export async function OccasionContent({ campaign, demoHref, featureKeys, locale,
     const createHref = occasionCreateHref(occasion, campaign);
     const alternatePaths = occasionAlternatePaths(occasion);
     const media = occasionMedia(occasion.eventType);
+    const collage = preview ? demoCollage(preview) : null;
     const finalCta = { ...(t.raw('finalCta') as Omit<LandingFinalCtaCopy, 'cta'>), cta: t('hero.cta') };
 
     return (
@@ -88,17 +88,16 @@ export async function OccasionContent({ campaign, demoHref, featureKeys, locale,
                     {demoHref ? <LandingHeroTransition href={demoHref} /> : null}
 
                     {/* Before, on the day, after */}
-                    {media ? <OccasionStory createHref={createHref} locale={locale} moments={media.moments} occasion={occasion} themes={themes} /> : null}
+                    {media ? (
+                        <OccasionStory createHref={createHref} locale={locale} moments={media.moments} occasion={occasion} themes={themes} />
+                    ) : null}
 
                     {/* Demo, with a server-rendered snapshot of it */}
                     {demoHref ? (
                         <LandingDemo heading={t.raw('demoHeading') as string[]} href={demoHref}>
-                            {preview && hasDemoPreviewContent(preview) ? <OccasionDemoPreview locale={locale} preview={preview} /> : null}
+                            {collage ? <OccasionDemoPreview collage={collage} /> : null}
                         </LandingDemo>
                     ) : null}
-
-                    {/* Social and host experience */}
-                    <LandingDeferredExperience social={{ title: t.raw('scene.title') as string[], copy: t('scene.copy') }} />
 
                     {/* Features */}
                     <OccasionFeatures featureKeys={featureKeys} locale={locale} occasion={occasion} />
