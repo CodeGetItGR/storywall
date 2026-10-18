@@ -2,7 +2,6 @@
 
 import { type ReactNode, useRef } from 'react';
 
-import { useLandingDocumentScroll } from '@/hooks/useLandingDocumentScroll';
 import { useLandingMotionPausedAttribute } from '@/hooks/useLandingMotionPausedAttribute';
 import { useLandingStoryInteractions } from '@/hooks/useLandingStoryInteractions';
 import type { OccasionThemeId } from '@/lib/occasions/themes';
@@ -13,7 +12,6 @@ type OccasionPageShellProps = { children: ReactNode; theme: OccasionThemeId | nu
 // visits would count as landing ones.
 export function OccasionPageShell({ children, theme }: OccasionPageShellProps) {
     const rootRef = useRef<HTMLElement>(null);
-    useLandingDocumentScroll();
     useLandingMotionPausedAttribute();
     // The story galleries: tap or hover a photo to open it.
     useLandingStoryInteractions(rootRef);

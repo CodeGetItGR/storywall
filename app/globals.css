@@ -294,14 +294,6 @@
         @apply bg-background text-foreground;
     }
 
-    body.landing-document-scroll {
-        height: auto !important;
-        min-height: 100dvh;
-        overflow-x: hidden !important;
-        overflow-y: auto !important;
-        overscroll-behavior: auto !important;
-    }
-
     /* While pinch-zoomed, a swipe a scroller can't use has to reach the
        viewport so the zoomed view can pan; contained scrollers would freeze it. */
     html[data-pinch-zoomed] * {
