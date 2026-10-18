@@ -447,16 +447,17 @@
             transform 680ms var(--motion-ease-enter);
     }
 
+    /* No transform or will-change: transform at rest. Either one makes this the containing block
+       for position: fixed, which pins the MobileTabBar to the body (it shrinks with the iOS
+       keyboard) instead of the screen. */
     .account-panel-page {
         border-radius: 0;
         box-shadow: none;
-        transform: translate3d(0, 0, 0) scale(1);
         transform-origin: left center;
         transition:
             transform 620ms var(--motion-ease-standard),
             border-radius 620ms var(--motion-ease-standard) 60ms,
             box-shadow 520ms var(--motion-ease-standard);
-        will-change: transform, border-radius, box-shadow;
     }
 
     .account-panel-page[data-open='true'] {
