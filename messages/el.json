@@ -988,6 +988,7 @@
         "deleteComment": "Διαγραφή σχολίου",
         "deleteCommentConfirmTitle": "Να διαγραφεί αυτό το σχόλιο;",
         "deleteCommentConfirmBody": "Αυτό το σχόλιο θα αφαιρεθεί για όλους και δεν μπορεί να αναιρεθεί.",
+        "cancel": "Ακύρωση",
         "deleteCommentFailed": "Δεν ήταν δυνατή η διαγραφή του σχολίου. Δοκιμάστε ξανά.",
         "reportComment": "Αναφορά σχολίου",
         "previousMedia": "Προηγούμενο",
