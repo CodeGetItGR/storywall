@@ -1,4 +1,5 @@
 import { isGoogleTagConfigured } from '@/lib/googleTag';
+import { isLandingPath } from '@/lib/signupSource';
 import { pageRoute } from '@/lib/vercelInsights';
 
 type RouteParams = Record<string, string | string[] | undefined>;
@@ -20,7 +21,9 @@ function isCampaignParam(name: string): boolean {
 }
 
 // The page under its route (`/events/[eventId]/checkout/success`), never an id
-// or token from the real URL, with only the campaign parameters kept.
+// or token from the real URL, with only the campaign parameters kept. Landing
+// pages keep their real path (`/el/gamos`): their slugs are only locales and
+// occasion names, and the admin Visitors section needs to tell them apart.
 export function analyticsPageLocation(href: string, params: RouteParams): string {
     const url = new URL(href);
     const kept = new URLSearchParams();
@@ -28,7 +31,8 @@ export function analyticsPageLocation(href: string, params: RouteParams): string
         if (isCampaignParam(name)) kept.append(name, value);
     });
     const query = kept.toString();
-    return `${url.origin}${pageRoute(url.pathname, params)}${query ? `?${query}` : ''}`;
+    const path = isLandingPath(url.pathname) ? url.pathname : pageRoute(url.pathname, params);
+    return `${url.origin}${path}${query ? `?${query}` : ''}`;
 }
 
 // A referrer on this site may be a page with a token in its URL, so it is cut

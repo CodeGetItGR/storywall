@@ -2120,6 +2120,34 @@ export interface FunnelChannelRowDto {
     revenueMinorByCurrency: Record<string, number>;
 }
 
+// GET /api/admin/metrics/visitors. Google Analytics numbers for the public pages over a range.
+export type VisitorLanguage = 'el' | 'en';
+export type VisitorDevice = 'PHONE' | 'DESKTOP' | 'TABLET';
+export type VisitorClickEvent = 'create' | 'plans' | 'demo' | 'login' | 'nav';
+
+export interface VisitorMetricsDto {
+    // False when Google Analytics isn't set up on this server; everything else is empty.
+    configured: boolean;
+    since: string | null;
+    until: string | null;
+    updatedAt: string | null;
+    visitors: number;
+    visits: number;
+    signups: number;
+    daily: { date: string; visitors: number; visits: number }[];
+    channels: { channel: SignupChannel; visits: number; signups: number }[];
+    // A null page is all the pages outside the top ten.
+    pages: { page: string | null; visits: number }[];
+    languages: { language: VisitorLanguage; visits: number }[];
+    devices: { device: VisitorDevice; visits: number }[];
+    landing: {
+        sections: { section: string; visitors: number }[];
+        clicks: { event: VisitorClickEvent; placement: string; count: number }[];
+        plans: { plan: string; count: number }[];
+        faq: { question: number; count: number }[];
+    };
+}
+
 // Where an account came from. Only on the admin user endpoints; null on /api/me.
 export interface SignupSourceDto {
     channel: SignupChannel;

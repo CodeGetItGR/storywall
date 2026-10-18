@@ -45,6 +45,7 @@ import type {
     ReactionTypeResponseDto,
     SignupChannel,
     UnprocessedWebhookDto,
+    VisitorMetricsDto,
     VoidCollaborationRedemptionRequestDto,
     WithdrawalAdminDto,
     WithdrawalReleaseDto,
@@ -69,6 +70,7 @@ export const adminKeys = {
     funnel: (since: string | null, until: string | null, channel: SignupChannel | null) => ['admin', 'metrics', 'funnel', since, until, channel] as const,
     funnelCohorts: (weeks: number, channel: SignupChannel | null) => ['admin', 'metrics', 'funnel', 'cohorts', weeks, channel] as const,
     funnelChannels: (since: string | null, until: string | null) => ['admin', 'metrics', 'funnel', 'channels', since, until] as const,
+    visitors: (since: string | null, until: string | null) => ['admin', 'metrics', 'visitors', since, until] as const,
     moduleUsage: (filters: AdminModuleUsageFilters) =>
         ['admin', 'metrics', 'module-usage', filters.since, filters.until, filters.eventTypeKey, filters.planCode] as const,
     paidServices: (kind?: PaidServiceKind, includeArchived?: boolean) => ['admin', 'paid-services', kind ?? 'ALL', Boolean(includeArchived)] as const,
@@ -285,6 +287,25 @@ export function useAdminFunnelChannels(since: string | null, until: string | nul
         queryFn: () => api.get<FunnelChannelRowDto[]>(endpoints.admin.metrics.funnelChannels(since, until)),
         placeholderData: keepPreviousData,
         enabled: options.enabled ?? true,
+    });
+}
+
+export function useAdminVisitors(since: string | null, until: string | null, options: { enabled?: boolean } = {}) {
+    return useQuery({
+        queryKey: adminKeys.visitors(since, until),
+        queryFn: () => api.get<VisitorMetricsDto>(endpoints.admin.metrics.visitors(since, until)),
+        placeholderData: keepPreviousData,
+        enabled: options.enabled ?? true,
+    });
+}
+
+// Spring caches the GA answer for an hour; Refresh asks GA again and puts the answer in the same key.
+export function useRefreshAdminVisitors() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ since, until }: { since: string | null; until: string | null }) =>
+            api.get<VisitorMetricsDto>(endpoints.admin.metrics.visitors(since, until, true)),
+        onSuccess: (data, { since, until }) => queryClient.setQueryData(adminKeys.visitors(since, until), data),
     });
 }
 

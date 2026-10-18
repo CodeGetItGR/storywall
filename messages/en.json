@@ -2431,6 +2431,70 @@
         }
     },
     "AdminPage": {
+        "visitors": {
+            "title": "Visitors",
+            "cookiesNote": "Counts only visitors who allowed analytics cookies.",
+            "notConfigured": "Google Analytics isn't connected.",
+            "error": "Couldn't load visitor numbers.",
+            "retry": "Retry",
+            "empty": "No data yet",
+            "totals": {
+                "title": "Totals",
+                "visitors": "Visitors",
+                "visits": "Visits",
+                "signups": "Sign-ups",
+                "per100": "Sign-ups per 100 visits"
+            },
+            "daily": {
+                "title": "Visitors over time",
+                "visitors": "Visitors"
+            },
+            "channels": {
+                "title": "By source",
+                "channel": "Source",
+                "visits": "Visits",
+                "signups": "Sign-ups",
+                "per100": "Sign-ups per 100 visits",
+                "fewVisits": "Few visits"
+            },
+            "pages": {
+                "title": "Pages",
+                "page": "Page",
+                "visits": "Visits",
+                "other": "Other",
+                "language": "Language",
+                "device": "Device"
+            },
+            "languages": {
+                "el": "Greek",
+                "en": "English"
+            },
+            "devices": {
+                "PHONE": "Phone",
+                "DESKTOP": "Desktop",
+                "TABLET": "Tablet"
+            },
+            "landing": {
+                "title": "Landing page",
+                "sections": "How far visitors scroll",
+                "clicks": "Button clicks",
+                "button": "Button",
+                "plans": "Plan clicks",
+                "plan": "Plan",
+                "count": "Clicks",
+                "faq": "FAQ opens",
+                "question": "Question",
+                "questionNumber": "Question {number}",
+                "opens": "Opens",
+                "events": {
+                    "create": "Create event",
+                    "plans": "See plans",
+                    "demo": "Try the demo",
+                    "login": "Log in",
+                    "nav": "Menu link"
+                }
+            }
+        },
         "signupChannel": {
             "INVITE": "Invite",
             "GIFT": "Gift",
@@ -2689,6 +2753,7 @@
             "orders": "Orders",
             "metrics": "Metrics",
             "funnel": "Growth",
+            "visitors": "Visitors",
             "moduleUsage": "Module usage",
             "costTracking": "Cost tracking",
             "plans": "Plans",
@@ -3904,7 +3969,8 @@
             "window": {
                 "signup": "By signup date",
                 "payment": "By payment date",
-                "none": "Ignores the date range"
+                "none": "Ignores the date range",
+                "visit": "By visit date"
             },
             "headline": {
                 "title": "Conversion",

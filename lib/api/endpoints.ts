@@ -337,6 +337,14 @@ export const endpoints = {
                 );
                 return `/api/admin/metrics/funnel/channels${params.length ? `?${params.join('&')}` : ''}`;
             },
+            visitors: (since?: string | null, until?: string | null, fresh = false) => {
+                const params = [
+                    since ? `since=${encodeURIComponent(since)}` : null,
+                    until ? `until=${encodeURIComponent(until)}` : null,
+                    fresh ? 'fresh=true' : null,
+                ].filter(Boolean);
+                return `/api/admin/metrics/visitors${params.length ? `?${params.join('&')}` : ''}`;
+            },
             moduleUsage: (filters: { since: string | null; until: string | null; eventTypeKey: string; planCode: string }) => {
                 const params = new URLSearchParams();
                 if (filters.since) params.set('since', filters.since);

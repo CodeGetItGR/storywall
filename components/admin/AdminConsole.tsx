@@ -24,6 +24,7 @@ import { PlatformMetricsPanel } from '@/components/admin/PlatformMetricsPanel';
 import { ReactionTypesCatalogPanel } from '@/components/admin/ReactionTypesCatalogPanel';
 import { ThemeFontsPanel } from '@/components/admin/themeFonts/ThemeFontsPanel';
 import { ThemePresetsPanel } from '@/components/admin/themePresets/ThemePresetsPanel';
+import { VisitorsPanel } from '@/components/admin/visitors/VisitorsPanel';
 import { WithdrawalsSection } from '@/components/admin/WithdrawalsSection';
 
 export function AdminConsole() {
@@ -34,6 +35,7 @@ export function AdminConsole() {
     // primary action) — the shared eyebrow/title block would just duplicate it.
     if (tab === 'metrics') return <PlatformMetricsPanel />;
     if (tab === 'funnel') return <FunnelPanel />;
+    if (tab === 'visitors') return <VisitorsPanel />;
     if (tab === 'moduleUsage') return <ModuleUsagePanel />;
     if (tab === 'paidServices') return <PaidServicesCatalogPanel />;
     if (tab === 'plans') return <PlansSection />;
