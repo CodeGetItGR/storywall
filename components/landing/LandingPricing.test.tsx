@@ -117,4 +117,20 @@ describe('LandingPricing', () => {
             '/events/new?step=details&type=baby-shower&plan=SHOWER&option=o',
         );
     });
+
+    it("shows only an occasion page's own type, with no picker, whatever ?event= says", () => {
+        window.history.replaceState(null, '', '/?event=reunion');
+        state.result = { groups: GROUPS, defaultEventTypeId: 'wedding' };
+        render(<LandingPricing eventType="BABY_SHOWER" />);
+
+        expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+        expect(cardNames()).toEqual(['SHOWER']);
+    });
+
+    it('renders nothing on an occasion page whose type has no plans', () => {
+        state.result = { groups: GROUPS, defaultEventTypeId: 'wedding' };
+        const { container } = render(<LandingPricing eventType="BAPTISM" />);
+
+        expect(container).toBeEmptyDOMElement();
+    });
 });
