@@ -5,18 +5,20 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
+import type { EventTypeConvention } from '@/lib/api/types';
 import { landingSectionAttributes } from '@/lib/landingTracking';
 import { landingReviewsFor, REVIEW_STAR_VALUES } from '@/lib/reviews';
 import { cn } from '@/lib/utils';
 
 // Featured reviews from GET /api/config (prefetched by LandingPage). No review
 // structured data: Google gives no rich results for reviews a site shows about itself.
-export function LandingReviews() {
+// An occasion page shows only reviews from its own event type.
+export function LandingReviews({ eventType }: { eventType?: EventTypeConvention }) {
     const t = useTranslations('LandingPage.reviews');
     const locale = useLocale();
     const { data: config } = useAppConfig();
     const eventTypeCopy = useLocalizedAppEventTypeCopy();
-    const reviews = landingReviewsFor(config?.landingReviews, locale);
+    const reviews = landingReviewsFor(config?.landingReviews, locale).filter((review) => !eventType || review.eventType === eventType);
 
     if (reviews.length === 0) return null;
 
