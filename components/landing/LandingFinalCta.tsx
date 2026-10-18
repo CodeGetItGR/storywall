@@ -8,7 +8,8 @@ export type LandingFinalCtaCopy = {
     copyStart: string;
     copyStrong: string;
     cta: string;
-    eyebrow: string;
+    // Left out on occasion pages.
+    eyebrow?: string;
     heading: string[];
     imageAlt: string;
 };
@@ -64,7 +65,9 @@ export async function LandingFinalCta({ copy, href = routes.events.new(), image 
                         />
                     </svg>
                 </div>
-                <div className="mb-3.5 text-[13px] font-black tracking-[0.17em] min-[761px]:mb-6.5 min-[761px]:text-[9px]">{eyebrow}</div>
+                {eyebrow ? (
+                    <div className="mb-3.5 text-[13px] font-black tracking-[0.17em] min-[761px]:mb-6.5 min-[761px]:text-[9px]">{eyebrow}</div>
+                ) : null}
                 <h2 className="m-0 max-w-205 [font-family:var(--editorial)] text-[clamp(50px,14vw,70px)] leading-[0.82] font-normal tracking-[-0.065em] min-[761px]:text-[clamp(72px,6.7vw,124px)] min-[761px]:leading-[0.78]">
                     {heading[0]}
                     <br />

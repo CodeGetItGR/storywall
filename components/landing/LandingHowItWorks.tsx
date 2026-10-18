@@ -18,7 +18,8 @@ const STEP_ICONS = [
 ] as const;
 
 export type LandingHowItWorksCopy = {
-    eyebrow: string;
+    // Left out on occasion pages.
+    eyebrow?: string;
     headingEnd: string;
     headingStart: string;
     steps: { description: string; title: string }[];
@@ -44,10 +45,11 @@ export async function LandingHowItWorks({ copy }: { copy?: LandingHowItWorksCopy
             <div className="mx-auto grid max-w-[1480px] min-[761px]:grid-cols-[1.12fr_1fr_1fr_1.12fr]">
                 {/* Intro */}
                 <div className="flex flex-col items-center justify-center text-center min-[761px]:relative min-[761px]:items-start min-[761px]:pr-[clamp(42px,4vw,72px)] min-[761px]:text-left min-[761px]:after:absolute min-[761px]:after:top-1/2 min-[761px]:after:right-[-8px] min-[761px]:after:-translate-y-1/2 min-[761px]:after:[font-family:var(--editorial)] min-[761px]:after:text-[clamp(62px,5.8vw,98px)] min-[761px]:after:leading-none min-[761px]:after:text-[rgba(222,127,131,0.14)] min-[761px]:after:content-['→']">
-                    <p className="mb-3 text-[10px] font-extrabold tracking-[0.16em]" id="how-it-works-title">
-                        {eyebrow}
-                    </p>
-                    <h2 className="m-0 max-w-full bg-[linear-gradient(90deg,#f2c764_0%,#f29a62_48%,#df7794_100%)] bg-clip-text [font-family:var(--editorial)] text-[40px] leading-[0.95] font-normal tracking-[-0.045em] text-transparent min-[761px]:max-w-[370px] min-[761px]:text-[clamp(34px,3.15vw,51px)] min-[761px]:leading-[0.92]">
+                    {eyebrow ? <p className="mb-3 text-[10px] font-extrabold tracking-[0.16em]">{eyebrow}</p> : null}
+                    <h2
+                        className="m-0 max-w-full bg-[linear-gradient(90deg,#f2c764_0%,#f29a62_48%,#df7794_100%)] bg-clip-text [font-family:var(--editorial)] text-[40px] leading-[0.95] font-normal tracking-[-0.045em] text-transparent min-[761px]:max-w-[370px] min-[761px]:text-[clamp(34px,3.15vw,51px)] min-[761px]:leading-[0.92]"
+                        id="how-it-works-title"
+                    >
                         {headingStart}
                         <br />
                         {headingEnd}

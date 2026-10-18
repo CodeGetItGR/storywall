@@ -31,19 +31,14 @@ export async function OccasionStory({ createHref, locale, moments, occasion, the
 
     return (
         <section className="platform bg-white py-17 min-[761px]:py-[clamp(90px,11vw,180px)]" {...landingSectionAttributes('stories')}>
-            {/* Eyebrow + heading */}
-            <div className="section-intro px-5 min-[761px]:grid min-[761px]:grid-cols-[1fr_2.1fr] min-[761px]:items-start min-[761px]:gap-x-[6vw]">
-                <div className="eyebrow pt-2.5 text-[13px] leading-[1.4] font-extrabold tracking-[0.14em] uppercase min-[761px]:col-start-2 min-[761px]:row-start-1 min-[761px]:mb-5.5 min-[761px]:pt-0">
-                    {t('story.eyebrow')}
-                </div>
-                <h2 className="m-0 [font-family:var(--editorial)] text-[clamp(48px,6.5vw,108px)] leading-[0.93] font-normal tracking-[-0.055em] text-ink min-[761px]:col-start-2 min-[761px]:row-start-2">
+            {/* Heading */}
+            <div className="px-5 min-[761px]:px-[clamp(22px,4vw,72px)]">
+                <h2 className="m-0 [font-family:var(--editorial)] text-[clamp(48px,6.5vw,108px)] leading-[0.93] font-normal tracking-[-0.055em] text-ink">
                     {heading[0]}
                     <br />
                     {heading[1]}
                 </h2>
-                <p className="mt-6 max-w-165 text-[clamp(16px,1.45vw,22px)] leading-[1.55] text-ink min-[761px]:col-start-2 min-[761px]:row-start-3 min-[761px]:mt-10.5">
-                    {t('story.intro')}
-                </p>
+                <p className="mt-6 max-w-165 text-[clamp(16px,1.45vw,22px)] leading-[1.55] text-ink min-[761px]:mt-10.5">{t('story.intro')}</p>
             </div>
 
             {/* Moments */}
@@ -74,10 +69,9 @@ export async function OccasionStory({ createHref, locale, moments, occasion, the
                                     <LandingStoryThemes
                                         copy={{
                                             cta: t('hero.cta'),
-                                            eyebrow: t('themes.eyebrow'),
                                             heading: t('themes.heading'),
                                             intro: t('themes.intro'),
-                                            listLabel: t('themes.eyebrow'),
+                                            listLabel: t('themes.heading'),
                                         }}
                                         href={createHref}
                                         themes={themes}
