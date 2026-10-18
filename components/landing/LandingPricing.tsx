@@ -19,7 +19,7 @@ const PLAN_GRID: Record<number, string> = {
 };
 
 type LandingPricingProps = {
-    // An occasion page opens on its own event type, under its own heading.
+    // An occasion page shows only its own event type's plans, with no picker, under its own heading.
     eventType?: EventTypeConvention;
     heading?: string;
 };
@@ -52,19 +52,27 @@ export function LandingPricing({ eventType, heading }: LandingPricingProps) {
             </div>
 
             {/* Event type */}
-            <div className="mx-auto mt-16 flex w-full max-w-110 flex-col min-[761px]:mt-20">
-                <LandingPricingEventSelect
-                    emptyLabel={t('eventTypeEmpty')}
-                    groups={groups}
-                    label={t('eventTypeLabel')}
-                    onValueChangeAction={pickEventType}
-                    searchPlaceholder={t('eventTypeSearch')}
-                    value={active}
-                />
-            </div>
+            {eventType ? null : (
+                <div className="mx-auto mt-16 flex w-full max-w-110 flex-col min-[761px]:mt-20">
+                    <LandingPricingEventSelect
+                        emptyLabel={t('eventTypeEmpty')}
+                        groups={groups}
+                        label={t('eventTypeLabel')}
+                        onValueChangeAction={pickEventType}
+                        searchPlaceholder={t('eventTypeSearch')}
+                        value={active}
+                    />
+                </div>
+            )}
 
             {/* Plans */}
-            <div className={cn('mx-auto mt-9 grid gap-5 min-[761px]:gap-[clamp(24px,3vw,52px)]', PLAN_GRID[Math.min(active.plans.length, 3)])}>
+            <div
+                className={cn(
+                    'mx-auto grid gap-5 min-[761px]:gap-[clamp(24px,3vw,52px)]',
+                    eventType ? 'mt-12 min-[761px]:mt-16' : 'mt-9',
+                    PLAN_GRID[Math.min(active.plans.length, 3)],
+                )}
+            >
                 {active.plans.map((plan, index) => (
                     <MarketingPlanCard
                         featured={index === 1}

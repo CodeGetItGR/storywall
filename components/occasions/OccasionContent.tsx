@@ -17,7 +17,7 @@ import { OccasionFeatures } from '@/components/occasions/OccasionFeatures';
 import { OccasionHero } from '@/components/occasions/OccasionHero';
 import { OccasionLinks } from '@/components/occasions/OccasionLinks';
 import { OccasionPageShell } from '@/components/occasions/OccasionPageShell';
-import { OccasionStory } from '@/components/occasions/OccasionStory';
+import { OccasionTimeline } from '@/components/occasions/OccasionTimeline';
 import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
 import type { LandingTheme } from '@/lib/landingThemes';
@@ -45,7 +45,7 @@ type OccasionContentProps = {
 type HowItWorksStep = { title: string; body: string };
 type FaqItem = { q: string; a: string };
 
-// The landing's sections, in its order, with the occasion's copy and photos.
+// The landing's sections with the occasion's copy and photos, plans right after the timeline.
 export async function OccasionContent({ campaign, demoHref, featureKeys, locale, occasion, preview, theme, themes }: OccasionContentProps) {
     const t = await getTranslations({ locale, namespace: `OccasionPages.${occasion.eventType}` });
     const landing = await getTranslations({ locale, namespace: 'LandingPage' });
@@ -88,10 +88,13 @@ export async function OccasionContent({ campaign, demoHref, featureKeys, locale,
                     {demoHref ? <LandingHeroTransition href={demoHref} /> : null}
 
                     {/* Before, on the day, after */}
-                    {media ? (
-                        <OccasionStory createHref={createHref} locale={locale} moments={media.moments} occasion={occasion} themes={themes} />
-                    ) : null}
+                    {media ? <OccasionTimeline locale={locale} moments={media.moments} occasion={occasion} themes={themes} /> : null}
+                </div>
 
+                {/* Plans for this occasion */}
+                <LandingPricing eventType={occasion.eventType} heading={t('pricingHeading')} />
+
+                <div className="landing-page">
                     {/* Demo, with a server-rendered snapshot of it */}
                     {demoHref ? (
                         <LandingDemo heading={t.raw('demoHeading') as string[]} href={demoHref}>
@@ -104,12 +107,7 @@ export async function OccasionContent({ campaign, demoHref, featureKeys, locale,
 
                     {/* Reviews from this occasion */}
                     <LandingReviews eventType={occasion.eventType} />
-                </div>
 
-                {/* Plans, opened on this occasion */}
-                <LandingPricing eventType={occasion.eventType} heading={t('pricingHeading')} />
-
-                <div className="landing-page">
                     {/* FAQ */}
                     <LandingFaq
                         copy={{

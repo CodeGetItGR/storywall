@@ -5916,8 +5916,6 @@
             ],
             "themes": {
                 "eyebrow": "BAPTISM THEMES",
-                "heading": "Give your baptism StoryWall the theme that suits it.",
-                "intro": "Sample themes, from minimal and classic to playful and fairytale.",
                 "listLabel": "Baptism themes",
                 "cta": "Create your own StoryWall"
             },
@@ -6659,9 +6657,7 @@
                 "imageAlt": "Wedding guests celebrating with photos shared on StoryWall"
             },
             "themes": {
-                "eyebrow": "Wedding themes",
-                "heading": "Give your wedding StoryWall the theme that suits it.",
-                "intro": "Sample themes for your wedding invitation and wall."
+                "eyebrow": "Wedding themes"
             },
             "timeline": [
                 {
@@ -6874,9 +6870,7 @@
                 }
             },
             "themes": {
-                "eyebrow": "Baptism themes",
-                "heading": "Give your baptism StoryWall the theme that suits it.",
-                "intro": "Sample themes for your baptism invitation and wall."
+                "eyebrow": "Baptism themes"
             },
             "timeline": [
                 {
