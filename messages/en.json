@@ -6657,7 +6657,6 @@
                 "imageAlt": "Wedding guests celebrating with photos shared on StoryWall"
             },
             "themes": {
-                "eyebrow": "Wedding themes",
                 "heading": "Give your wedding StoryWall the theme that suits it.",
                 "intro": "Sample themes for your wedding invitation and wall."
             },
@@ -6679,7 +6678,6 @@
                 }
             ],
             "story": {
-                "eyebrow": "Before, on the day, after",
                 "heading": ["Your whole wedding,", "in one place."],
                 "intro": "From the first invitation to the last dance, every guest adds to the same story.",
                 "rows": [
@@ -6741,7 +6739,6 @@
                 }
             },
             "featuresIntro": {
-                "eyebrow": "Built for weddings",
                 "heading": "Everything your wedding needs, in one link."
             },
             "howItWorksHeading": ["Three steps.", "One wedding story."],
@@ -6791,7 +6788,6 @@
             ],
             "faqIntro": "What couples ask before they create their wedding StoryWall.",
             "finalCta": {
-                "eyebrow": "Ready for the big day?",
                 "heading": ["Your wedding", "starts here."],
                 "copyStart": "Create your wedding StoryWall and share it with your guests",
                 "copyStrong": "in a few minutes.",
@@ -6872,7 +6868,6 @@
                 }
             },
             "themes": {
-                "eyebrow": "Baptism themes",
                 "heading": "Give your baptism StoryWall the theme that suits it.",
                 "intro": "Sample themes for your baptism invitation and wall."
             },
@@ -6894,7 +6889,6 @@
                 }
             ],
             "story": {
-                "eyebrow": "Before, on the day, after",
                 "heading": ["Your child's baptism,", "in one place."],
                 "intro": "From the invitation to the last wish, family and friends add to the same story.",
                 "rows": [
@@ -6956,7 +6950,6 @@
                 }
             },
             "featuresIntro": {
-                "eyebrow": "Built for baptisms",
                 "heading": "Everything your baptism needs, in one link."
             },
             "howItWorksHeading": ["Three steps.", "One baptism story."],
@@ -7002,7 +6995,6 @@
             ],
             "faqIntro": "What parents ask before they create their baptism StoryWall.",
             "finalCta": {
-                "eyebrow": "Ready for the big day?",
                 "heading": ["Your child's story", "starts here."],
                 "copyStart": "Create your baptism StoryWall and send it to your guests",
                 "copyStrong": "in a few minutes.",

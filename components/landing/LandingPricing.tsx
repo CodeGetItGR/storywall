@@ -11,12 +11,9 @@ import { eventTypeSlug } from '@/lib/eventTypeSlug';
 import { landingSectionAttributes } from '@/lib/landingTracking';
 import { cn } from '@/lib/utils';
 
-// Columns by card count from 761px up: fewer cards get a narrower, centered grid instead of an empty column.
-const PLAN_GRID: Record<number, string> = {
-    1: 'max-w-110',
-    2: 'max-w-221 min-[761px]:grid-cols-2',
-    3: 'max-w-331 min-[761px]:grid-cols-3',
-};
+// Width and columns by card count from 761px up: fewer cards get a narrower, centered grid instead of an empty column.
+const PLAN_WIDTH: Record<number, string> = { 1: 'max-w-110', 2: 'max-w-221', 3: 'max-w-331' };
+const PLAN_COLUMNS: Record<number, string> = { 1: '', 2: 'min-[761px]:grid-cols-2', 3: 'min-[761px]:grid-cols-3' };
 
 type LandingPricingProps = {
     // An occasion page shows only its own event type's plans, with no picker, under its own heading.
@@ -29,6 +26,7 @@ export function LandingPricing({ eventType, heading }: LandingPricingProps) {
     const { groups, active, pickEventType, picks, pickDuration } = useLandingPricing(eventType ? eventTypeSlug(eventType) : null);
 
     if (!active) return null;
+    const planCount = Math.min(active.plans.length, 3);
 
     return (
         <section
@@ -38,12 +36,15 @@ export function LandingPricing({ eventType, heading }: LandingPricingProps) {
             id="pricing"
             {...landingSectionAttributes('pricing')}
         >
-            {/* Pricing introduction */}
-            <div className="mx-auto grid max-w-300 gap-x-[5vw] min-[761px]:grid-cols-[1fr_2fr]">
-                <p className="text-[13px] font-black tracking-[.15em]">{t('eyebrow')}</p>
+            {/* Pricing introduction: an occasion page lines its heading up with the cards, with no eyebrow */}
+            <div className={cn('mx-auto grid', eventType ? PLAN_WIDTH[planCount] : 'max-w-300 gap-x-[5vw] min-[761px]:grid-cols-[1fr_2fr]')}>
+                {eventType ? null : <p className="text-[13px] font-black tracking-[.15em]">{t('eyebrow')}</p>}
                 <div>
                     <h2
-                        className="mt-5 max-w-205 font-[Baskerville,Georgia,serif] text-[clamp(48px,11vw,88px)] leading-[.9] tracking-[-.055em] min-[761px]:mt-0"
+                        className={cn(
+                            'font-[Baskerville,Georgia,serif] text-[clamp(48px,11vw,88px)] leading-[.9] tracking-[-.055em]',
+                            eventType ? 'text-balance' : 'mt-5 max-w-205 min-[761px]:mt-0',
+                        )}
                         id="landing-pricing-title"
                     >
                         {heading ?? t('heading')}
@@ -71,7 +72,8 @@ export function LandingPricing({ eventType, heading }: LandingPricingProps) {
                 className={cn(
                     'mx-auto grid gap-5 min-[761px]:gap-[clamp(24px,3vw,52px)]',
                     eventType ? 'mt-12 min-[761px]:mt-16' : 'mt-9',
-                    PLAN_GRID[Math.min(active.plans.length, 3)],
+                    PLAN_WIDTH[planCount],
+                    PLAN_COLUMNS[planCount],
                 )}
             >
                 {active.plans.map((plan, index) => (

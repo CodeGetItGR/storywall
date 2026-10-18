@@ -27,11 +27,10 @@ export async function OccasionFeatures({ featureKeys, locale, occasion }: Occasi
             id={OCCASION_SECTION_IDS.features}
             {...landingSectionAttributes('features')}
         >
-            {/* Eyebrow + heading */}
+            {/* Heading */}
             <div className="min-[761px]:mx-auto min-[761px]:max-w-170 min-[761px]:text-center">
-                <p className="m-0 text-[13px] font-black tracking-[0.15em] text-[#f2c66a] uppercase">{t('featuresIntro.eyebrow')}</p>
                 <h2
-                    className="mt-4 mb-0 [font-family:var(--editorial)] text-[clamp(40px,10vw,56px)] leading-[0.95] font-normal tracking-[-0.045em] min-[761px]:text-[clamp(44px,4vw,64px)]"
+                    className="m-0 [font-family:var(--editorial)] text-[clamp(40px,10vw,56px)] leading-[0.95] font-normal tracking-[-0.045em] text-balance min-[761px]:text-[clamp(44px,4vw,64px)]"
                     id="occasion-features-title"
                 >
                     {t('featuresIntro.heading')}

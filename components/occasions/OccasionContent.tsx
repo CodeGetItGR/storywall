@@ -77,7 +77,6 @@ export async function OccasionContent({ campaign, demoHref, featureKeys, locale,
                     {/* How it works */}
                     <LandingHowItWorks
                         copy={{
-                            eyebrow: landing('howItWorks.eyebrow'),
                             headingStart: (t.raw('howItWorksHeading') as string[])[0]!,
                             headingEnd: (t.raw('howItWorksHeading') as string[])[1]!,
                             steps: (t.raw('howItWorks') as HowItWorksStep[]).map((step) => ({ title: step.title, description: step.body })),
@@ -94,7 +93,7 @@ export async function OccasionContent({ campaign, demoHref, featureKeys, locale,
 
                     {/* Demo, with a server-rendered snapshot of it */}
                     {demoHref ? (
-                        <LandingDemo heading={t.raw('demoHeading') as string[]} href={demoHref}>
+                        <LandingDemo eyebrow={false} heading={t.raw('demoHeading') as string[]} href={demoHref}>
                             {collage ? <OccasionDemoPreview collage={collage} /> : null}
                         </LandingDemo>
                     ) : null}
