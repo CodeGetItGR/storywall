@@ -33,7 +33,8 @@ export function LandingPricing({ eventType, heading }: LandingPricingProps) {
     return (
         <section
             aria-labelledby="landing-pricing-title"
-            className="bg-white px-5 pt-16 pb-16 text-[#151313] min-[761px]:px-[clamp(24px,4vw,72px)] min-[761px]:pt-20 min-[761px]:pb-24"
+            // On an occasion page the plans follow white sections, so a paper tone sets them apart.
+            className={`${eventType ? 'bg-[#f4f0e8]' : 'bg-white'} px-5 pt-16 pb-16 text-[#151313] min-[761px]:px-[clamp(24px,4vw,72px)] min-[761px]:pt-20 min-[761px]:pb-24`}
             id="pricing"
             {...landingSectionAttributes('pricing')}
         >
