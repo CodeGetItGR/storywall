@@ -38,7 +38,7 @@ import {
     CREATE_EVENT_TYPE_PARAM,
     effectiveThemePresetId,
     isThemeStepAvailable,
-    parseCreateEventStep,
+    resolveCreateEventStep,
     rememberCreateEventCheckout,
     resolveCreateEventType,
     visibleCreateEventSteps,
@@ -117,11 +117,15 @@ export function useCreateEventFormController(): CreateEventFormValue {
         }, [createEvent]),
     );
 
-    const step = parseCreateEventStep(searchParams.get('step'));
     const run = searchParams.get(CREATE_EVENT_RUN_PARAM);
     // Public config should already contain only enabled rows. Keep the picker
     // fail-closed if a stale or malformed response includes a disabled type.
     const eventTypes = appConfig?.eventTypes.filter((eventType) => eventType.isEnabled) ?? [];
+    const step = resolveCreateEventStep(
+        searchParams.get('step'),
+        eventTypes.map((type) => type.eventTypeKey),
+        requestedTypeSlug,
+    );
     const modules = appConfig?.modules ?? [];
     const media = appConfig?.media ?? null;
 

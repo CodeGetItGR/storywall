@@ -21,21 +21,21 @@ const ACCENT_TOKEN_STYLES: Record<
     }
 > = {
     rose: {
-        selected: 'border-rose-300 bg-rose-50/55 shadow-[0_18px_45px_rgba(244,63,94,0.16)]',
+        selected: 'border-rose-500 bg-rose-50/55 ring-rose-500 shadow-[0_18px_45px_rgba(244,63,94,0.22)]',
         surface: 'hover:border-rose-200 hover:bg-rose-50/35',
     },
     sky: {
-        selected: 'border-sky-300 bg-sky-50/55 shadow-[0_18px_45px_rgba(14,165,233,0.16)]',
+        selected: 'border-sky-500 bg-sky-50/55 ring-sky-500 shadow-[0_18px_45px_rgba(14,165,233,0.22)]',
         surface: 'hover:border-sky-200 hover:bg-sky-50/35',
     },
     amber: {
-        selected: 'border-amber-300 bg-amber-50/55 shadow-[0_18px_45px_rgba(245,158,11,0.16)]',
+        selected: 'border-amber-500 bg-amber-50/55 ring-amber-500 shadow-[0_18px_45px_rgba(245,158,11,0.22)]',
         surface: 'hover:border-amber-200 hover:bg-amber-50/35',
     },
 };
 
 const FALLBACK_STYLE = {
-    selected: 'border-primary bg-primary-light/45 shadow-[0_18px_45px_rgba(15,23,42,0.12)]',
+    selected: 'border-primary bg-primary-light/45 ring-primary shadow-[0_18px_45px_rgba(15,23,42,0.16)]',
     surface: 'hover:border-primary/30 hover:bg-primary-light/25',
 };
 
@@ -74,7 +74,10 @@ export function EventTypeStep() {
                             className={cn(
                                 'group relative flex min-h-56 flex-col justify-end overflow-hidden rounded-lg border bg-card p-5 text-left transition duration-200 hover:-translate-y-0.5',
                                 backgroundImageSrc && 'text-white',
-                                isSelected ? cn('border-2', style.selected) : cn('border-border shadow-sm', !backgroundImageSrc && style.surface),
+                                // A ring outside the card, so the pick shows against a photo as well as a plain card.
+                                isSelected
+                                    ? cn('border-2 ring-2 ring-offset-2 ring-offset-background', style.selected)
+                                    : cn('border-border shadow-sm', !backgroundImageSrc && style.surface),
                             )}
                         >
                             {/* Background */}
