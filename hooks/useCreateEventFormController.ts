@@ -38,8 +38,8 @@ import {
     CREATE_EVENT_TYPE_PARAM,
     effectiveThemePresetId,
     isThemeStepAvailable,
-    resolveCreateEventStep,
     rememberCreateEventCheckout,
+    resolveCreateEventStep,
     resolveCreateEventType,
     visibleCreateEventSteps,
 } from '@/lib/createEventSteps';
