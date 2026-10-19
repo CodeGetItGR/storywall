@@ -1,12 +1,21 @@
 'use client';
 
-import { useAppConfig } from '@/hooks/useAppConfig';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
+
+import { APP_CONFIG_STALE_TIME, appConfigKeys, fetchAppConfig } from '@/hooks/useAppConfig';
 import { useIsDemoRoute } from '@/hooks/useIsDemoRoute';
 
+// Warms the config cache after mount. Subscribing during render would create the query before a
+// page's HydrationBoundary, which then hydrates it only in an effect: never on the server.
 export function AppConfigBootstrap() {
+    const queryClient = useQueryClient();
     const isDemoRoute = useIsDemoRoute();
-    // /demo loads config into its own query cache while it starts (see lib/demo/demoBootstrap.ts),
-    // so the root bootstrap stays off there.
-    useAppConfig({ enabled: !isDemoRoute });
+
+    useEffect(() => {
+        if (isDemoRoute) return;
+        void queryClient.prefetchQuery({ queryKey: appConfigKeys.all, queryFn: fetchAppConfig, staleTime: APP_CONFIG_STALE_TIME });
+    }, [isDemoRoute, queryClient]);
+
     return null;
 }
