@@ -5853,7 +5853,7 @@
             ]
         },
         "transition": {
-            "label": "StoryWall demo",
+            "label": "Demo του StoryWall",
             "slogan": "Μπες στην εμπειρία του",
             "brand": "StoryWall.",
             "cta": "ΔΕΣ ΤΟ DEMO"
@@ -5872,13 +5872,13 @@
                         "Από τις πρώτες προετοιμασίες μέχρι το honeymoon, κάθε στιγμή γίνεται μέρος της.",
                         "Posts, φωτογραφίες, ευχές και αντιδράσεις από όλους όσους τη ζουν μαζί σας."
                     ],
-                    "galleryLabel": "Wedding story moments mobile",
+                    "galleryLabel": "Στιγμές γάμου",
                     "imageAlts": [
-                        "Bachelor celebration with friends in Santorini",
-                        "Bride preparation with bridesmaids in Santorini",
-                        "Wedding ceremony in Santorini",
-                        "Wedding reception in Santorini",
-                        "Honeymoon in Paris"
+                        "Πάρτι νύφης με φίλους στη Σαντορίνη",
+                        "Η νύφη ετοιμάζεται με τις φίλες της στη Σαντορίνη",
+                        "Γαμήλια τελετή στη Σαντορίνη",
+                        "Γαμήλια δεξίωση στη Σαντορίνη",
+                        "Ταξίδι του μέλιτος στο Παρίσι"
                     ],
                     "titleSegments": [
                         {
@@ -5924,8 +5924,8 @@
                         "Από την πρόσκληση και τις πρώτες ευχές μέχρι τις φωτογραφίες, τα posts και τις στιγμές της ημέρας.",
                         "Όλα όσα μοιράστηκαν οι άνθρωποί σας, συγκεντρωμένα σε ένα StoryWall."
                     ],
-                    "galleryLabel": "Story moments for section 2",
-                    "imageAlts": ["Baptism outside the church", "Baptism ceremony inside the church", "Baptism celebration at the table"],
+                    "galleryLabel": "Στιγμές βάπτισης",
+                    "imageAlts": ["Βάπτιση έξω από την εκκλησία", "Η τελετή της βάπτισης μέσα στην εκκλησία", "Γιορτή βάπτισης στο τραπέζι"],
                     "titleSegments": [
                         {
                             "text": "Μία βάπτιση γεμάτη ",
@@ -5958,11 +5958,11 @@
                         "Από την προσμονή πριν το reveal μέχρι τη μεγάλη αποκάλυψη.",
                         "Φωτογραφίες, videos, αντιδράσεις και ευχές από όλους όσους μοιράζονται τη στιγμή μαζί σας."
                     ],
-                    "galleryLabel": "Story moments for section 3",
+                    "galleryLabel": "Στιγμές από gender reveal",
                     "imageAlts": [
-                        "Gender reveal box opening with blue balloons and confetti",
-                        "Pregnant couple at a baby boy celebration",
-                        "Friends and family celebrating at sunset"
+                        "Άνοιγμα κουτιού gender reveal με μπλε μπαλόνια και κομφετί",
+                        "Ζευγάρι που περιμένει αγοράκι, σε γιορτή για το μωρό",
+                        "Φίλοι και οικογένεια γιορτάζουν στο ηλιοβασίλεμα"
                     ],
                     "titleSegments": [
                         {
@@ -6005,11 +6005,11 @@
                     "tag": "VIP & SOCIAL PARTIES",
                     "title": ["Για", "private events", "που γίνονται κάτι περισσότερο από ένα party."],
                     "paragraphs": ["Το party αποκτά τον δικό του ιδιωτικό social χώρο, γεμάτο στιγμές, reactions και backstage περιεχόμενο."],
-                    "galleryLabel": "Story moments for section 4",
+                    "galleryLabel": "Στιγμές από VIP πάρτι",
                     "imageAlts": [
-                        "Close-up selfie of stylish guests and influencers celebrating at an elegant VIP party",
-                        "Stylish guests dancing at an elegant VIP social party at night",
-                        "Guests mingling with champagne at an elegant formal VIP social event"
+                        "Selfie καλοντυμένων καλεσμένων και influencers σε κομψό VIP πάρτι",
+                        "Καλοντυμένοι καλεσμένοι χορεύουν σε κομψό VIP πάρτι το βράδυ",
+                        "Καλεσμένοι με σαμπάνια σε κομψή VIP εκδήλωση"
                     ],
                     "titleSegments": [
                         {
@@ -6080,8 +6080,8 @@
             "copyEnd": "όπως θα το ζήσουν οι καλεσμένοι σου.",
             "cta": "Άνοιξε το demo του StoryWall",
             "button": "ΑΝΟΙΞΕ ΤΟ DEMO",
-            "imageAlt": "StoryWall demo preview with two angled smartphones showing the app interface",
-            "previewLabel": "StoryWall mobile preview"
+            "imageAlt": "Προεπισκόπηση του StoryWall σε δύο κινητά",
+            "previewLabel": "Προεπισκόπηση του StoryWall στο κινητό"
         },
         "stack": {
             "socialTopbar": "CHAPTER 01 · SOCIAL SIDE",
