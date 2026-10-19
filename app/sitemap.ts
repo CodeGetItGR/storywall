@@ -1,13 +1,14 @@
 import type { MetadataRoute } from 'next';
 
 import { defaultLocale, locales } from '@/i18n/config';
-import { getForBusinessPath, getPublicLandingPath } from '@/i18n/publicLocale';
+import { getForBusinessPath, getPublicLandingPath, getQrWeddingPath } from '@/i18n/publicLocale';
 import { loadLiveOccasions } from '@/lib/occasions/liveOccasions.server';
 import { occasionLanguageAlternates, occasionPath } from '@/lib/occasions/occasions';
-import { absoluteUrl, forBusinessLanguageAlternates, landingLanguageAlternates } from '@/lib/seo';
+import { loadQrWeddingPageLive } from '@/lib/qrWeddingPage.server';
+import { absoluteUrl, forBusinessLanguageAlternates, landingLanguageAlternates, qrWeddingLanguageAlternates } from '@/lib/seo';
 import { showsUnreleasedPages } from '@/lib/unreleasedPages';
 
-// Only the public landing, partner and occasion pages are indexable. Every other route is
+// Only the public landing, wedding QR, partner and occasion pages are indexable. Every other route is
 // either behind a session or a tokenised guest link, so it stays out on purpose.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const landingLanguages = landingLanguageAlternates();
@@ -16,6 +17,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: 'weekly',
         priority: 1,
         alternates: { languages: landingLanguages },
+    }));
+
+    const qrWeddingLanguages = qrWeddingLanguageAlternates();
+    const qrWedding: MetadataRoute.Sitemap = ((await loadQrWeddingPageLive(defaultLocale)) ? locales : []).map((locale) => ({
+        url: absoluteUrl(getQrWeddingPath(locale)),
+        changeFrequency: 'weekly',
+        priority: 0.8,
+        alternates: { languages: qrWeddingLanguages },
     }));
 
     const forBusinessLanguages = forBusinessLanguageAlternates();
@@ -36,5 +45,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }));
     });
 
-    return [...landing, ...forBusiness, ...occasions];
+    return [...landing, ...qrWedding, ...forBusiness, ...occasions];
 }
