@@ -1,4 +1,5 @@
 import { defaultLocale, locales } from '@/i18n/config';
+import { isQrWeddingPath } from '@/i18n/publicLocale';
 import { OCCASIONS } from '@/lib/occasions/occasions';
 import { pageRoute } from '@/lib/vercelInsights';
 
@@ -116,11 +117,11 @@ export function pickVisitSource(saved: VisitSource | null, incoming: VisitSource
     return saved;
 }
 
-// Pages under app/(landing): `/`, `/for-business`, a locale's pages (`/el/...`) and the default
-// locale's occasion pages (`/weddings`). Leaving one for any other page is a full page load
+// Pages under app/(landing): `/`, `/for-business`, `/wedding-qr-code`, a locale's pages (`/el/...`) and
+// the default locale's occasion pages (`/weddings`). Leaving one for any other page is a full page load
 // (another root layout).
 export function isLandingPath(pathname: string): boolean {
-    if (pathname === '/' || pathname === '/for-business') return true;
+    if (pathname === '/' || pathname === '/for-business' || isQrWeddingPath(pathname)) return true;
     const segments = pathname.split('/');
     if ((locales as readonly string[]).includes(segments[1])) return true;
     return segments.length === 2 && OCCASIONS.some((occasion) => occasion.slugs[defaultLocale] === segments[1]);
