@@ -1,9 +1,10 @@
 # Vendors in the event — design
 
 Date: 2026-10-19
-Status: approved in conversation, awaiting written review
+Status: approved
 Scope: phase 1 of the partner collaboration program. Later phases are listed at the end and are out of scope here.
 Shared proposal (Greek, for the business partner): https://claude.ai/artifact/Y1Vi45cxDBz1w9uVVcpdjK
+Implementation plans: [backend](../plans/2026-10-19-vendors-in-the-event-backend.md), then [frontend](../plans/2026-10-19-vendors-in-the-event-frontend.md)
 
 ## Goal
 
