@@ -64,6 +64,7 @@ describe('PageHydrationBoundary', () => {
         expect(html).toContain('1 types');
     });
 
+    // In the app a full load still fetches it once: the page streams in (loading.tsx) after the providers mount.
     it('shows the config in the first client render without asking for it again', async () => {
         const renders: string[] = [];
 
