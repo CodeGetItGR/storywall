@@ -39,6 +39,14 @@ describe('getPostRegisterRedirectPath', () => {
         expect(getPostRegisterRedirectPath('USER', true)).toBe('/feed');
     });
 
+    it("sends an invited account to the invited event's feed", () => {
+        expect(getPostRegisterRedirectPath('USER', true, '/events/event-1/feed')).toBe('/events/event-1/feed');
+    });
+
+    it('ignores the return path without an invite', () => {
+        expect(getPostRegisterRedirectPath('USER', false, '/events/event-1/feed')).toBe('/home');
+    });
+
     it('keeps the admin landing page for an administrator', () => {
         expect(getPostRegisterRedirectPath('ADMIN', false)).toBe('/admin');
     });

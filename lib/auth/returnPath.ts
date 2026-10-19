@@ -40,8 +40,10 @@ export function getPostAuthRedirectPath(role: PlatformRole, returnPath: string |
 
 // A brand-new account has nothing to show in a feed unless it was invited
 // to an event, so it lands on home (which also explains email verification).
-// `next` is deliberately not consulted here.
-export function getPostRegisterRedirectPath(role: PlatformRole, hasInvite: boolean): string {
+// `next` is only followed with an invite: the invite page sets it to that
+// event's feed, since bare /feed opens whichever event is active.
+export function getPostRegisterRedirectPath(role: PlatformRole, hasInvite: boolean, returnPath: string | null = null): string {
     if (role === 'ADMIN') return routes.admin;
-    return hasInvite ? routes.feed : routes.home;
+    if (!hasInvite) return routes.home;
+    return getSafeReturnPath(returnPath) ?? routes.feed;
 }
