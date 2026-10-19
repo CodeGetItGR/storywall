@@ -33,9 +33,18 @@ export function buildReturnPath(pathname: string, search: string): string {
     return search.startsWith('?') ? `${pathname}${search}` : `${pathname}?${search}`;
 }
 
+function isAdminPath(path: string): boolean {
+    const pathname = new URL(path, APP_ORIGIN).pathname;
+    return pathname === routes.admin || pathname.startsWith(`${routes.admin}/`);
+}
+
+// An admin whose session ended on an admin page comes back with `next` still
+// pointing there; anyone else signing in on that tab goes to the feed.
 export function getPostAuthRedirectPath(role: PlatformRole, returnPath: string | null): string {
     if (role === 'ADMIN') return routes.admin;
-    return getSafeReturnPath(returnPath) ?? routes.feed;
+    const safePath = getSafeReturnPath(returnPath);
+    if (!safePath || isAdminPath(safePath)) return routes.feed;
+    return safePath;
 }
 
 // A brand-new account has nothing to show in a feed unless it was invited
