@@ -108,6 +108,8 @@ describe('isLandingPath', () => {
     it('knows the pages under app/(landing)', () => {
         expect(isLandingPath('/')).toBe(true);
         expect(isLandingPath('/for-business')).toBe(true);
+        expect(isLandingPath('/wedding-qr-code')).toBe(true);
+        expect(isLandingPath('/el/qr-code-gamou')).toBe(true);
         expect(isLandingPath('/el')).toBe(true);
         expect(isLandingPath('/el/wedding')).toBe(true);
         // English occasion pages sit at the top level, without a locale.

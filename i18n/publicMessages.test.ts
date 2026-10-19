@@ -15,6 +15,7 @@ const ENTRY_FILES = [
     'components/landing/LandingPage.tsx',
     'components/forBusiness/ForBusinessPage.tsx',
     'components/occasions/OccasionPage.tsx',
+    'components/qrWedding/QrWeddingPage.tsx',
 ];
 
 function resolveImport(specifier: string): string | null {

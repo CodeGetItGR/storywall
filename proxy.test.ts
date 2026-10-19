@@ -214,4 +214,16 @@ describe('proxy partner page locale', () => {
         expect(res.status).toBe(200);
         expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('en');
     });
+
+    it('renders /el/qr-code-gamou in Greek for an English browser', async () => {
+        const res = await proxy(partnerRequest('http://localhost/el/qr-code-gamou', 'en-US'));
+        expect(res.status).toBe(200);
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('el');
+    });
+
+    it('renders /wedding-qr-code in English for a Greek browser, without redirecting', async () => {
+        const res = await proxy(partnerRequest('http://localhost/wedding-qr-code', 'el-GR'));
+        expect(res.status).toBe(200);
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('en');
+    });
 });
