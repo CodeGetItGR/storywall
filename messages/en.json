@@ -6117,7 +6117,8 @@
                 "features": "Features",
                 "plans": "Plans",
                 "faq": "FAQ",
-                "forBusiness": "For professionals"
+                "forBusiness": "For professionals",
+                "qrWedding": "Wedding QR code"
             },
             "social": "SOCIAL",
             "socialLinks": {
@@ -7001,6 +7002,83 @@
                 "imageAlt": "Family and guests at the baptism table"
             },
             "pricingHeading": "Plans for your baptism."
+        }
+    },
+    "QrWeddingPage": {
+        "name": "Wedding QR code",
+        "meta": {
+            "title": "Wedding QR Code for Guest Photos | StoryWall",
+            "description": "Guests scan your wedding QR code and upload photos and videos to one shared album. No app, no sign-up. Included in every plan.",
+            "keywords": [
+                "wedding QR code",
+                "QR code for wedding photos",
+                "QR code upload wedding photos",
+                "wedding photo sharing",
+                "shared wedding album",
+                "guest photo app"
+            ]
+        },
+        "nav": {
+            "guide": "GUIDE",
+            "guideMobile": "Guide"
+        },
+        "hero": {
+            "h1": "Wedding QR code for guest photos",
+            "headline": "One QR code on the tables. <b>Every guest photo in one album.</b>",
+            "lead": "Guests scan with their phone camera and upload photos and videos. No app, no account.",
+            "included": "The QR code is included in every plan.",
+            "cta": "Create your wedding QR code"
+        },
+        "howItWorksHeading": ["One QR code.", "The whole wedding."],
+        "howItWorks": [
+            { "title": "Create", "body": "Set up your wedding's StoryWall in a few minutes." },
+            { "title": "Print the QR code", "body": "Put it on the tables, at the entrance or at the bar." },
+            { "title": "Guests upload", "body": "They scan with their phone camera and add photos and videos." }
+        ],
+        "guide": {
+            "what": {
+                "title": "What is a wedding QR code?",
+                "body": "A code you place around your venue. Guests scan it with their phone camera and upload photos and videos to one shared album, so you see every guest's photos in one place."
+            },
+            "where": {
+                "title": "Where to put the QR code at your wedding",
+                "places": [
+                    "At the reception entrance",
+                    "On every table",
+                    "At the bar",
+                    "Next to the photo booth",
+                    "On your thank-you cards, for photos that come in later"
+                ]
+            },
+            "sign": {
+                "title": "What to write on the QR sign",
+                "intro": "Pick one for under the QR code:",
+                "texts": [
+                    "\"Scan to share your photos from our wedding!\"",
+                    "\"Got a great shot? Scan the code and share it with us.\"",
+                    "\"Our day through your eyes. Upload your photos and videos here.\""
+                ],
+                "tip": "If some guests don't read English, add a line in their language."
+            }
+        },
+        "pricingHeading": "How much does a wedding QR code cost?",
+        "faqIntro": "What couples ask about the wedding QR code.",
+        "faq": [
+            { "q": "Do guests need an app or an account?", "a": "No. They scan the code and upload from their phone's browser." },
+            { "q": "Can guests upload videos too?", "a": "Yes. The same QR code takes photos and videos." },
+            { "q": "Who can see the photos?", "a": "Only the people you invite. Your wedding album is private." },
+            { "q": "Can I download all the photos?", "a": "Yes. In the album, select as many as you like and download them." },
+            {
+                "q": "How long can guests keep uploading?",
+                "a": "As long as your StoryWall is online. Your plan sets how long, and you can extend it."
+            },
+            { "q": "Will older guests manage?", "a": "Yes. They open the camera, scan and tap upload." }
+        ],
+        "finalCta": {
+            "heading": ["Your wedding QR code,", "ready in minutes."],
+            "copyStart": "Create your wedding's StoryWall and print the QR code",
+            "copyStrong": "for the tables.",
+            "imageAlt": "Wedding celebration in Santorini"
         }
     }
 }
