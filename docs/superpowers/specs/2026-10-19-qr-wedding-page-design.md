@@ -43,26 +43,27 @@ Production today has two indexable URLs (the landing in each language). Nothing 
 | `/en/wedding-qr-code` | 308 → `/wedding-qr-code` |
 | `/en/qr-code-gamou`, `/el/wedding-qr-code`, any other mix | 404 |
 
-- `lib/qrWeddingPage.ts` (new): `QR_WEDDING_PATHS: Record<Locale, string>`, `getQrWeddingPath(locale)`, `isQrWeddingPath(pathname)`, `qrWeddingLanguageAlternates()` (both languages plus `x-default` → the English URL), mirroring the partner page's helpers in `i18n/publicLocale.ts` and `lib/seo.ts`.
+- URL helpers sit next to the partner page's in `i18n/publicLocale.ts`: `QR_WEDDING_PATHS: Record<Locale, string>`, `getQrWeddingPath(locale)`, `isQrWeddingPath(pathname)`. SEO helpers sit in `lib/seo.ts`: `qrWeddingLanguageAlternates()` (both languages plus `x-default` → the English URL) and `buildQrWeddingMetadata()`.
+- `lib/qrWeddingPage.ts` (new): the `qrWeddingPageLive(config)` gate, the guide's section id and the create link. `lib/qrWeddingPage.server.ts` (new): `loadQrWeddingPageLive()` for the sitemap and footer, which fails open like `loadLiveOccasions`.
 - Greek route: `app/(landing)/[slug]/qr-code-gamou/page.tsx`, rendering only when `slug === 'el'`, like `[slug]/epaggelmaties/page.tsx`.
 - English route: `app/(landing)/wedding-qr-code/page.tsx`, like `for-business/page.tsx`.
 - The `/en/wedding-qr-code` redirect lives in `app/(landing)/[slug]/[occasion]/page.tsx`, next to the existing `/en/<occasion>` redirect.
-- `proxy.ts`: `publicPageLocale` (or the proxy's lookup) returns each URL's own locale, so the page renders in its language for every visitor and crawler.
-- `publicTwinPath` maps each QR URL to the other, so the language switcher swaps pages.
+- `proxy.ts`: `publicPageLocale` returns each URL's own locale, so the page renders in its language for every visitor and crawler.
+- The hero passes `QR_WEDDING_PATHS` to `LandingHeader` as `alternatePaths`, so the language switcher swaps pages, as on occasion pages. `publicTwinPath` does not change.
 - `isLandingPath` in `lib/signupSource.ts` includes `/wedding-qr-code` (`/el/...` is already covered), so the visit source and analytics page path work from both pages.
 
 ## SEO plumbing
 
-- Metadata: `buildIndexableMetadata` with the page's own title, description and keywords, `qrWeddingLanguageAlternates()` and `imagePath: OG_IMAGE_PATH`.
+- Metadata: `buildQrWeddingMetadata` (on `buildIndexableMetadata`) with the page's own title, description and keywords, `qrWeddingLanguageAlternates()` and `imagePath: OG_IMAGE_PATH`. The site name and image alt come from `LandingPage.meta`, since the share image is the landing's.
 - Sitemap: both URLs with their alternates, `changeFrequency: 'weekly'`, `priority: 0.8`, listed only while WEDDING is enabled (same source as the page gate).
-- Structured data (`components/qrWedding/QrWeddingStructuredData.tsx`): Organization reference, `Service` (name, description, url, inLanguage, provider), `BreadcrumbList` (home → this page) and `FAQPage` from the FAQ copy.
+- Structured data (`components/qrWedding/QrWeddingStructuredData.tsx`): Organization reference, `Service` (name, description, url, inLanguage, provider), `BreadcrumbList` (home → this page) and `FAQPage` from the FAQ copy. The graph comes from a shared `servicePageGraph()` in `lib/structuredData.ts`, which the occasion pages move onto too (same output).
 - Internal links: a footer link on the landing, occasion and QR pages ("QR γάμου" / "Wedding QR code"), next to the partner link.
 
 ## Page
 
 `components/qrWedding/QrWeddingPage.tsx` is the server entry: it prefetches `/api/config` into the query cache (like `OccasionPage`), applies the WEDDING gate and composes the sections. Sections reuse landing components where they exist.
 
-1. **Hero** (`QrWeddingHero`, new; same frame as `OccasionHero`): `LandingHeader` with the language alternates, the keyword h1, a headline, a lead sentence, the "included in every plan" line, the create button (`routes.events.new({ type: 'wedding' })` via `occasionCreateHref`), and the wedding phone visual from `occasionMedia('WEDDING')`.
+1. **Hero** (`QrWeddingHero`, new): `LandingHeader` with the language alternates and links to how it works, the guide, plans and FAQ; the keyword h1, a headline, a lead sentence, the "included in every plan" line, the create button (`routes.events.new({ type: 'wedding' })`), and the landing's phone visual (WEDDING has no hero feed of its own). The frame is a shared `KeywordHero` extracted from `OccasionHero`, which then renders through it with the same output.
 2. **How it works**: `LandingHowItWorks` with the page's three steps.
 3. **Guide** (`QrWeddingGuide`, new, server component): three question headings (h2) with short answers. "Where to put it" is a short list; "What to write on the sign" shows three ready-to-copy texts and one tip.
 4. **Pricing**: `LandingPricing eventType="WEDDING"` with the heading "Πόσο κοστίζει το QR γάμου;" / "How much does a wedding QR code cost?". The hero line answers it; the cards show the prices.
@@ -96,7 +97,9 @@ Copy lives in a new `QrWeddingPage` namespace in `messages/el.json` and `message
     - «Τραβήξατε κάτι ωραίο; Σκανάρετε το QR και μοιραστείτε το μαζί μας.»
     - «Η δική σας ματιά στη μέρα μας. Ανεβάστε φωτογραφίες και βίντεο.»
     - Tip: Αν έχετε καλεσμένους από το εξωτερικό, γράψτε το και στα αγγλικά.
+- **Header link to the guide:** Οδηγός
 - **Pricing heading:** Πόσο κοστίζει το QR γάμου;
+- **FAQ intro:** Όσα ρωτούν τα ζευγάρια για το QR γάμου.
 - **FAQ:**
   - Χρειάζονται εφαρμογή ή λογαριασμό οι καλεσμένοι; — Όχι. Σκανάρουν το QR και ανεβάζουν από τον browser του κινητού.
   - Ανεβαίνουν και βίντεο; — Ναι. Από το ίδιο QR ανεβαίνουν φωτογραφίες και βίντεο.
@@ -129,7 +132,9 @@ Copy lives in a new `QrWeddingPage` namespace in `messages/el.json` and `message
     - "Got a great shot? Scan the code and share it with us."
     - "Our day through your eyes. Upload your photos and videos here."
     - Tip: If some guests don't read English, add a line in their language.
+- **Header link to the guide:** Guide
 - **Pricing heading:** How much does a wedding QR code cost?
+- **FAQ intro:** What couples ask about the wedding QR code.
 - **FAQ:**
   - Do guests need an app or an account? — No. They scan the code and upload from their phone's browser.
   - Can guests upload videos too? — Yes. The same QR code takes photos and videos.
@@ -147,14 +152,15 @@ Copy lives in a new `QrWeddingPage` namespace in `messages/el.json` and `message
    - en: `Guest photos with a QR code, no app | StoryWall` — "Guests scan a QR code and upload photos and videos from their phone, for weddings, baptisms and parties. No app needed."
    The landing keeps the broad message; the QR page owns "QR γάμου", so the two don't compete for it.
 2. **FAQPage schema**: `LandingStructuredData` adds a `FAQPage` built from `LandingPage.faq.items`.
-3. **Pricing in the server HTML**: production `/el` has no `id="pricing"` section in its HTML. Find why the server render returns null (likely `useLandingPricing`'s `active` on the server) and make the default event type's cards render on the server. Confirm with `curl`.
-4. **Greek alt text**: the two English `imageAlt` values in `messages/el.json` (demo preview, wedding couple) get Greek text.
+3. **Pricing in the server HTML**: production `/el` has no `id="pricing"` section in its HTML, and neither do occasion pages. Cause: `AppConfigBootstrap` sits above every page and calls `useAppConfig()` during render, so the config query already exists (empty) when the page's `HydrationBoundary` renders. TanStack Query hydrates existing queries only in an effect, which never runs on the server, so `LandingPricing` renders null there. Fix: the bootstrap prefetches the config in an effect instead of subscribing during render. Confirm with `curl` and check the browser console for hydration warnings.
+4. **Greek alt text**: the two English `imageAlt` values in `messages/el.json` (demo preview, wedding couple) get Greek text: "Προεπισκόπηση του StoryWall σε δύο κινητά" and "Νιόπαντρο ζευγάρι σε γαμήλια γιορτή σε ελληνικό νησί".
 5. **Footer link** to the QR page, as above.
 
 ## Testing
 
-- Unit: `lib/qrWeddingPage.ts` helpers; `publicPageLocale`/proxy locale for both URLs; `publicTwinPath` both ways; `isLandingPath('/wedding-qr-code')`; sitemap lists both URLs with alternates and drops them when WEDDING is off; landing structured data contains the FAQ.
-- `i18n/publicMessages.test.ts` still passes (no new client namespaces).
+- Unit: the URL, SEO and gate helpers; `publicPageLocale`/proxy locale for both URLs; `isLandingPath('/wedding-qr-code')`; the `/en/wedding-qr-code` redirect; sitemap lists both URLs with alternates and drops them when WEDDING is off; footer link; `servicePageGraph`; `KeywordHero`; the guide; landing structured data contains the FAQ; `AppConfigBootstrap` leaves a prefetched config readable in a server render.
+- Copy: same keys in both languages, title ≤ 60 and description ≤ 160 characters, the main search in the title and h1, at least five FAQ questions, never "free"/"δωρεάν", a title no other page uses.
+- `i18n/publicMessages.test.ts` walks the new page and still passes (no new client namespaces).
 - Local `curl` on both URLs: 200, exactly one `<h1>`, the canonical, hreflang for both languages plus x-default, no `noindex`, the FAQPage JSON-LD, plan prices (`€`) in the HTML. Same checks on `/` and `/el` for the landing fixes. `/en/wedding-qr-code` returns 308.
 - Visual: both pages at 375 px (primary) and desktop.
 - `tsc`, lint and the test suite pass.
