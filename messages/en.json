@@ -7032,7 +7032,7 @@
         "howItWorksHeading": ["One QR code.", "The whole wedding."],
         "howItWorks": [
             { "title": "Create", "body": "Set up your wedding's StoryWall in a few minutes." },
-            { "title": "Print the QR code", "body": "Put it on the tables, at the entrance or at the bar." },
+            { "title": "Print the QR code", "body": "Print it and place it around the venue." },
             { "title": "Guests upload", "body": "They scan with their phone camera and add photos and videos." }
         ],
         "guide": {
