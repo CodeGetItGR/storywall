@@ -5818,8 +5818,8 @@
             "playMotion": "Έναρξη κινήσεων"
         },
         "meta": {
-            "title": "StoryWall | Ένα ιδιωτικό social space για το event σου",
-            "description": "Μοιράσου φωτογραφίες, ευχές και στιγμές με τους καλεσμένους σου πριν, κατά τη διάρκεια και μετά τον γάμο, τη βάπτιση ή το πάρτι σου. Χωρίς app.",
+            "title": "Φωτογραφίες καλεσμένων με QR, χωρίς app | StoryWall",
+            "description": "Οι καλεσμένοι σκανάρουν ένα QR και ανεβάζουν φωτογραφίες και βίντεο από το κινητό, για γάμο, βάπτιση ή πάρτι. Χωρίς εφαρμογή.",
             "siteName": "StoryWall",
             "imageAlt": "StoryWall, το social space για κάθε private event"
         },
@@ -6080,7 +6080,7 @@
             "copyEnd": "όπως θα το ζήσουν οι καλεσμένοι σου.",
             "cta": "Άνοιξε το demo του StoryWall",
             "button": "ΑΝΟΙΞΕ ΤΟ DEMO",
-            "imageAlt": "StoryWall demo preview with two angled smartphones showing the app interface",
+            "imageAlt": "Προεπισκόπηση του StoryWall σε δύο κινητά",
             "previewLabel": "StoryWall mobile preview"
         },
         "stack": {
@@ -6233,7 +6233,7 @@
             ]
         },
         "finalCta": {
-            "imageAlt": "Joyful newlywed couple walking through a Greek island wedding celebration",
+            "imageAlt": "Νιόπαντρο ζευγάρι σε γαμήλια γιορτή σε ελληνικό νησί",
             "eyebrow": "READY TO MAKE IT YOURS?",
             "heading": ["Η ιστορία σου", "ξεκινάει εδώ."],
             "copy": "Δημιούργησε το δικό σου StoryWall και δώσε στο event σου έναν χώρο που συνεχίζει να ζει πριν, κατά τη διάρκεια και μετά.",
