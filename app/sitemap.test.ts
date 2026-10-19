@@ -10,6 +10,14 @@ import { forBusinessLanguageAlternates, landingLanguageAlternates, qrWeddingLang
 describe('sitemap', () => {
     afterEach(() => {
         vi.unstubAllEnvs();
+        serverPublicConfigGet.mockReset();
+    });
+
+    // While the site builds, a second identical fetch waits for the first one's cache write.
+    it('reads the config once', async () => {
+        serverPublicConfigGet.mockResolvedValue({ eventTypes: [{ eventTypeKey: 'WEDDING', isEnabled: true }] });
+        await sitemap();
+        expect(serverPublicConfigGet).toHaveBeenCalledTimes(1);
     });
 
     it('lists the landing, wedding QR, partner and every enabled ready occasion page', async () => {
