@@ -104,7 +104,7 @@ export default function RegisterPage() {
                 acceptedTermsVersion: termsVersion.data,
                 adultConfirmed: true,
             });
-            navigateAfterSignIn(getPostRegisterRedirectPath(auth.role, Boolean(inviteToken)));
+            navigateAfterSignIn(getPostRegisterRedirectPath(auth.role, Boolean(inviteToken), returnPath));
         } catch (err) {
             if (isVersionMismatchError(err)) {
                 await resetAfterVersionChange();
@@ -126,9 +126,9 @@ export default function RegisterPage() {
                 acceptedTermsVersion: termsVersion.data,
                 adultConfirmed: true,
             });
-            navigateAfterSignIn(getPostRegisterRedirectPath(auth.role, Boolean(inviteToken)));
+            navigateAfterSignIn(getPostRegisterRedirectPath(auth.role, Boolean(inviteToken), returnPath));
         },
-        [inviteToken, oauth, navigateAfterSignIn, guidelinesVersion.data, termsVersion.data],
+        [inviteToken, oauth, navigateAfterSignIn, guidelinesVersion.data, termsVersion.data, returnPath],
     );
 
     const handleOAuthError = useCallback(
