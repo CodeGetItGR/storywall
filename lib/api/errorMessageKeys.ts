@@ -91,6 +91,13 @@ export type ApiErrorMessageKey =
     | 'membershipClaimEmailMismatch'
     | 'notificationNotYours'
     | 'sessionNotYours'
+    | 'vendorCapabilityMissing'
+    | 'vendorAccessEnded'
+    | 'vendorCannotRsvp'
+    | 'vendorLimitReached'
+    | 'vendorIsHost'
+    | 'alreadyAVendor'
+    | 'partnerApplicationPending'
     | 'eventHostAlreadyCoHost'
     | 'eventHostLastHost'
     | 'eventHostAlreadyPrimary'
@@ -575,6 +582,13 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.MEMBERSHIP_CLAIM_EMAIL_MISMATCH]: 'membershipClaimEmailMismatch',
     [ERROR_CODES.NOTIFICATION_NOT_YOURS]: 'notificationNotYours',
     [ERROR_CODES.SESSION_NOT_YOURS]: 'sessionNotYours',
+    [ERROR_CODES.VENDOR_CAPABILITY_MISSING]: 'vendorCapabilityMissing',
+    [ERROR_CODES.VENDOR_ACCESS_ENDED]: 'vendorAccessEnded',
+    [ERROR_CODES.VENDOR_CANNOT_RSVP]: 'vendorCannotRsvp',
+    [ERROR_CODES.VENDOR_LIMIT_REACHED]: 'vendorLimitReached',
+    [ERROR_CODES.VENDOR_IS_HOST]: 'vendorIsHost',
+    [ERROR_CODES.ALREADY_A_VENDOR]: 'alreadyAVendor',
+    [ERROR_CODES.PARTNER_APPLICATION_PENDING]: 'partnerApplicationPending',
 } satisfies Record<KnownApiErrorCode, ApiErrorMessageKey>;
 
 export function getApiErrorMessageKey(code: number | string | undefined): ApiErrorMessageKey | undefined {

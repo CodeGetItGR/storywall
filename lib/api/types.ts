@@ -33,6 +33,7 @@ export const EVENT_MODULE_KEYS = [
     'theme',
     'he_or_she',
     'quiz_polls',
+    'vendors',
 ] as const;
 // Use this (not the raw `ModuleKey` wire type below) whenever code branches on
 // a specific module — it's a closed set and catches typos at compile time.
@@ -47,7 +48,7 @@ export type MediaTypeConvention = 'IMAGE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT';
 // Each context needs its own module: GALLERY → gallery, STORY → stories,
 // POST → posts (plan-owned-modules-fe-integration.md §4).
 // COVER needs no module and works on a DRAFT, but only a host may send it.
-export type MediaUploadContext = 'GALLERY' | 'STORY' | 'POST' | 'COVER';
+export type MediaUploadContext = 'GALLERY' | 'STORY' | 'POST' | 'COVER' | 'PRO';
 export type MediaStatus = 'PROCESSING' | 'READY' | 'FAILED';
 export type MediaArchiveVariant = 'DISPLAY' | 'ORIGINAL';
 export type PlanScope = 'ACCOUNT' | 'EVENT';
@@ -1080,6 +1081,86 @@ export interface PartnerBrandingDto {
     placement: PartnerBrandingPlacementDto;
 }
 
+// --- Vendors in the event ---
+
+export type VendorCapability = 'PRO_ALBUM' | 'SCHEDULE_EDIT' | 'ANNOUNCE' | 'RSVP_REPORT' | 'QR_READ' | 'SONG_REQUESTS';
+export type MediaCollection = 'GUEST' | 'PRO';
+// Why a vendor's tools are off. Null in VendorMeDto while they are open.
+export type VendorToolsOff = 'MODULE_OFF' | 'TYPE_NOT_ALLOWED' | 'ACCESS_ENDED';
+
+// GET /api/events/{eventId}/vendors/links — host only. Build the URL with routes.inviteToken.
+// The backend also sends createdAt (the first creation time, unchanged by a reset): not typed here, never shown.
+export interface VendorLinkDto {
+    vendorType: PartnerRole;
+    inviteToken: string;
+}
+
+// GET /api/events/{eventId}/vendors — any member. The two flags come only for hosts and for the vendor's own row.
+export interface VendorRowDto {
+    id: string;
+    memberId: string | null;
+    vendorType: PartnerRole;
+    // Null for a host's view of a vendor who hasn't filled in their profile yet.
+    businessName: string | null;
+    link: string | null;
+    logoUrl: string | null;
+    joinedAt: string;
+    hiddenByHost?: boolean;
+    optedOut?: boolean;
+}
+
+// GET /api/events/{eventId}/vendors/me — 404 when the caller is not a vendor of the event.
+export interface VendorMeDto {
+    vendorId: string;
+    vendorType: PartnerRole;
+    // Empty while the tools are off. A tool is open when accessOpen is true and this contains it.
+    capabilities: VendorCapability[];
+    // Null when the vendors module is off for the event.
+    accessEndsAt: string | null;
+    accessOpen: boolean;
+    profileComplete: boolean;
+    showPartnerPrompt: boolean;
+    // Set only for types with the Pro album, and still set while the tools are off. The allowance can be 0.
+    proStorageBytes: number | null;
+    proUsedBytes: number | null;
+    // The caller's own list flags (their row is not in the guest list while hidden).
+    optedOut: boolean;
+    hiddenByHost: boolean;
+    toolsOff: VendorToolsOff | null;
+}
+
+// PATCH /api/events/{eventId}/vendors/{vendorId}: a host sends hiddenByHost, the vendor sends optedOut. Exactly one.
+export interface VendorPatchDto {
+    hiddenByHost?: boolean;
+    optedOut?: boolean;
+}
+
+// GET/PUT /api/me/vendor-profile — GET is 404 until the first save.
+export interface VendorProfileDto {
+    businessName: string;
+    vendorType: PartnerRole;
+    link: string;
+    logoUrl: string | null;
+    partnerPromptDismissed: boolean;
+}
+
+export interface VendorProfileRequestDto {
+    businessName: string;
+    vendorType: PartnerRole;
+    link: string;
+}
+
+export interface ProCreditDto {
+    // Null when the vendor has no profile.
+    businessName: string | null;
+    vendorType: PartnerRole;
+}
+
+// PATCH /api/events/{eventId}/playlist-suggestions/{id}/played -> PlaylistSuggestionLeaderboardDto (rank 0).
+export interface PlaylistPlayedRequestDto {
+    played: boolean;
+}
+
 // The notice a couple accepts: at checkout for a branded partner's code, or as the host prompt.
 export interface PartnerBrandingNoticeDto {
     displayName: string;
@@ -1247,6 +1328,8 @@ export interface CollaborationCodePreviewResponseDto {
     breakdown: PriceBreakdown;
     // Set only when the code's partner has feed branding: the notice the couple must accept to use it.
     partnerBranding: PartnerBrandingNoticeDto | null;
+    // True when the partner will be emailed a vendor link for this event. Show the offer line only with partnerBranding.
+    vendorOffer?: boolean;
 }
 export interface PartnerPortalTotalDto {
     currency: string;
@@ -2693,6 +2776,9 @@ export interface EventInvitationPreviewDto {
     // Added 2026-09-27: null on a normal event. While claimed is false the
     // honorees may not know yet, so guest-facing copy must not spoil it.
     gift: GiftFramingDto | null;
+    // A vendor link's type ("You're invited as the photographer."); null on every other link. On a vendor
+    // link alreadyUsed means the event holds as many vendors as its plan allows.
+    vendorType?: PartnerRole | null;
 }
 
 export interface EventMemberRequestDto {
@@ -3006,6 +3092,10 @@ export interface MediaResponseDto {
     metadata: MediaMetadata;
     createdAt: string;
     deletedAt: string | null;
+    // GUEST unless a vendor uploaded it to the Pro album.
+    collection?: MediaCollection;
+    // The vendor credit on a Pro item; null on guest items.
+    proCredit?: ProCreditDto | null;
 }
 
 // Rows uploaded before 2026-09-24 may lack uploadContext; the backend treats
@@ -3070,6 +3160,9 @@ export interface EventUsageResponseDto {
     memberCount: number;
     memberLimit: number | null;
     memberPercent: number;
+    // The Pro album allowance from the vendors module, and the bytes Pro items use. 0 without the module.
+    proStorageBytes?: number;
+    proUsedBytes?: number;
 }
 
 // POST /api/events/{eventId}/storage-checkout — host, ACTIVE only (billing-fe-guide §7b).
@@ -3112,6 +3205,8 @@ export interface AuthorDto {
     // the member_roles module is off for the event.
     roleKey: string | null;
     customRole: string | null;
+    // Set while the author is a vendor of this event; null for everyone else. On posts and comments only, never on stories.
+    vendorType?: PartnerRole | null;
 }
 
 export interface PostResponseDto {
@@ -3266,6 +3361,8 @@ export interface PlaylistVoteResponseDto extends PlaylistVoteRequestDto {
 
 export interface PlaylistSuggestionLeaderboardDto extends Omit<PlaylistSuggestionResponseDto, 'myVote'> {
     rank: number;
+    // When the host or DJ marked it played; null while unplayed. Ranking ignores it.
+    playedAt?: string | null;
 }
 
 export interface PostMediaRequestDto {
