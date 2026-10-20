@@ -3926,6 +3926,7 @@
                     "otherKeys": "Άλλες ρυθμίσεις (JSON)",
                     "invalidJson": "Εισάγετε ένα αντικείμενο JSON.",
                     "invalidNumber": "Εισάγετε ακέραιο αριθμό τουλάχιστον {min}.",
+                    "invalidNumberRange": "Εισάγετε ακέραιο αριθμό από {min} έως {max}.",
                     "confirmTitle": "Αποθήκευση αλλαγών στην ενότητα {module} για το πλάνο {plan};",
                     "included": "Περιλαμβάνεται",
                     "yes": "Ναι",

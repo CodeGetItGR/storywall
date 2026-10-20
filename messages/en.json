@@ -3799,6 +3799,7 @@
                     "otherKeys": "Other settings (JSON)",
                     "invalidJson": "Enter a JSON object.",
                     "invalidNumber": "Enter a whole number of at least {min}.",
+                    "invalidNumberRange": "Enter a whole number from {min} to {max}.",
                     "confirmTitle": "Save changes to {module} for {plan}?",
                     "included": "Included",
                     "yes": "Yes",

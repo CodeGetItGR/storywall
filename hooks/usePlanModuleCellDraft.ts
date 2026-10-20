@@ -10,6 +10,7 @@ import type { PlanTierResponseDto } from '@/lib/api/types';
 import {
     type ConfigChange,
     type ConfigObject,
+    isValidNumberDraft,
     knownConfigFields,
     knownDraftFromConfig,
     limitedKeysFromDraft,
@@ -50,12 +51,13 @@ export function usePlanModuleCellDraft({ cell, plan, onSavedAction }: { cell: Ed
         const errors: Record<string, string> = {};
         for (const field of fields) {
             if (field.type !== 'number') continue;
-            // Unlimited counts have no number to check; "Up to" needs a valid one.
-            if (!limitedKeys.includes(field.key)) continue;
-            const text = (knownDraft[field.key] ?? '').trim();
-            const value = Number(text);
-            if (!text || !Number.isInteger(value) || (field.min !== undefined && value < field.min)) {
-                errors[field.key] = t('plans.grid.cell.invalidNumber', { min: field.min ?? 0 });
+            // Unlimited counts have no number to check; "Up to" and required fields need a valid one.
+            if (!field.required && !limitedKeys.includes(field.key)) continue;
+            if (!isValidNumberDraft(field, knownDraft[field.key] ?? '')) {
+                errors[field.key] =
+                    field.max === undefined
+                        ? t('plans.grid.cell.invalidNumber', { min: field.min ?? 0 })
+                        : t('plans.grid.cell.invalidNumberRange', { min: field.min ?? 0, max: field.max });
             }
         }
         return errors;

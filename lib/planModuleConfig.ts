@@ -4,7 +4,15 @@ import type { EventModuleResponseDto, ModuleKey, PlanTierResponseDto } from '@/l
 // control in the plan grid (AdminPage.plans.grid.cell.fields.<key>); anything
 // else stays editable through the collapsed Advanced JSON field, so a new key
 // works before it gets a control here. `hint` adds fieldHints.<key> under it.
-export type KnownConfigField = { key: string; type: 'number'; min?: number } | { key: string; type: 'boolean'; hint?: boolean };
+// A `required` number has no "Unlimited": the server wants the key with a value
+// (a blank would drop it), so the grid shows a plain number input. `max` mirrors
+// the server's upper bound.
+export type KnownConfigField =
+    { key: string; type: 'number'; min?: number; max?: number; required?: boolean } | { key: string; type: 'boolean'; hint?: boolean };
+
+// The vendors config PATCH replaces the whole map and refuses anything else:
+// whole numbers of 0 to 2^31-1 (bytes: 0 to the largest exact JS integer, the server allows more).
+const INT32_MAX = 2_147_483_647;
 
 const KNOWN_CONFIG_FIELDS: Record<string, KnownConfigField[]> = {
     schedule: [{ key: 'maxSections', type: 'number', min: 1 }],
@@ -14,7 +22,21 @@ const KNOWN_CONFIG_FIELDS: Record<string, KnownConfigField[]> = {
     ],
     co_hosts: [{ key: 'maxCoHosts', type: 'number', min: 0 }],
     member_roles: [{ key: 'allowCustom', type: 'boolean', hint: true }],
+    // allowedTypes (a list of vendor types) stays in the Advanced JSON; it rides along as an unknown key.
+    vendors: [
+        { key: 'maxVendors', type: 'number', min: 0, max: INT32_MAX, required: true },
+        { key: 'accessDaysAfterEvent', type: 'number', min: 0, max: INT32_MAX, required: true },
+        { key: 'proStorageBytes', type: 'number', min: 0, max: Number.MAX_SAFE_INTEGER, required: true },
+    ],
 };
+
+// Whether a number draft is a whole number inside the field's range.
+export function isValidNumberDraft(field: Extract<KnownConfigField, { type: 'number' }>, text: string): boolean {
+    const trimmed = text.trim();
+    if (!trimmed) return false;
+    const value = Number(trimmed);
+    return Number.isInteger(value) && (field.min === undefined || value >= field.min) && (field.max === undefined || value <= field.max);
+}
 
 export type ConfigObject = Record<string, unknown>;
 
