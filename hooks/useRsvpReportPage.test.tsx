@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useRsvpReportPage } from '@/hooks/useRsvpReportPage';
 
+const route = vi.hoisted(() => ({ isHost: true }));
 const mocks = vi.hoisted(() => ({
     push: vi.fn(),
     download: vi.fn(),
@@ -19,7 +20,7 @@ vi.mock('next-intl', () => ({
 }));
 
 vi.mock('@/components/routing/EventRouteGate', () => ({
-    useEventRouteContext: () => ({ eventId: 'e1' }),
+    useEventRouteContext: () => ({ eventId: 'e1', isHost: route.isHost }),
 }));
 
 vi.mock('@/hooks/useRsvps', () => ({
@@ -38,6 +39,7 @@ describe('useRsvpReportPage', () => {
         vi.clearAllMocks();
         moduleReadable.mockReturnValue(true);
         fromParam = null;
+        route.isHost = true;
     });
 
     it('closes to the Manage RSVP Reports sub-tab by default, never back()', () => {
@@ -64,6 +66,23 @@ describe('useRsvpReportPage', () => {
         result.current.onClose();
 
         expect(mocks.push).toHaveBeenCalledWith('/events/e1/manage?tab=rsvp&section=reports');
+    });
+
+    it('lets only hosts download the PDF', () => {
+        route.isHost = true;
+        expect(renderHook(() => useRsvpReportPage('FULL_LIST')).result.current.canDownload).toBe(true);
+        route.isHost = false;
+        expect(renderHook(() => useRsvpReportPage('FULL_LIST')).result.current.canDownload).toBe(false);
+    });
+
+    it('closes back to the vendor page for ?from=vendor', () => {
+        fromParam = 'vendor';
+        const { result } = renderHook(() => useRsvpReportPage('FULL_LIST'));
+
+        result.current.onClose();
+
+        expect(mocks.push).toHaveBeenCalledWith('/events/e1/tools/vendors/me');
+        expect(result.current.closeHref).toBe('/events/e1/tools/vendors/me');
     });
 
     it('downloads the current report type', () => {

@@ -10,7 +10,7 @@ import type { RsvpReportType } from '@/lib/api/types';
 import { resolveRsvpReportCloseHref } from '@/lib/rsvpReport';
 
 export function useRsvpReportPage(reportType: RsvpReportType) {
-    const { eventId } = useEventRouteContext();
+    const { eventId, isHost } = useEventRouteContext();
     const router = useRouter();
     const searchParams = useSearchParams();
     const t = useTranslations('ManagePage.rsvpReports');
@@ -24,15 +24,19 @@ export function useRsvpReportPage(reportType: RsvpReportType) {
     // Always navigate to the Reports sub-tab instead of router.back(): history.length
     // also counts entries from other sites, so "go back" can leave the app entirely.
     // Returns to wherever the report was opened from (see resolveRsvpReportCloseHref).
+    const closeHref = resolveRsvpReportCloseHref(eventId, searchParams.get('from'));
     const onClose = useCallback(() => {
-        router.push(resolveRsvpReportCloseHref(eventId, searchParams.get('from')));
-    }, [eventId, router, searchParams]);
+        router.push(closeHref);
+    }, [closeHref, router]);
 
     return {
         eventId,
         isModuleReadable,
         report,
         isError,
+        // The PDF export is host-only: a planner gets 403 from it.
+        canDownload: isHost,
+        closeHref,
         isDownloading: downloadingType !== null,
         downloadError,
         onPrint,

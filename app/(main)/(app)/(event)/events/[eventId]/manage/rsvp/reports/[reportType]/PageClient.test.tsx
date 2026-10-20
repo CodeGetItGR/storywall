@@ -18,7 +18,19 @@ vi.mock('@/components/manage/rsvp/RsvpReportScreen', () => ({
 }));
 
 vi.mock('@/components/routing/EventRouteGate', () => ({
-    EventRouteGate: ({ children }: { children: React.ReactNode }) => children,
+    EventRouteGate: ({
+        allowVendorCapability,
+        requireHost,
+        children,
+    }: {
+        allowVendorCapability?: string;
+        requireHost?: boolean;
+        children: React.ReactNode;
+    }) => (
+        <div data-capability={allowVendorCapability} data-host={String(requireHost)}>
+            {children}
+        </div>
+    ),
 }));
 
 describe('RsvpReportPage (PageClient)', () => {
@@ -42,5 +54,14 @@ describe('RsvpReportPage (PageClient)', () => {
         render(<RsvpReportPage />);
 
         expect(mocks.notFound).not.toHaveBeenCalled();
+    });
+
+    it('opens to planners with the RSVP report capability', () => {
+        mocks.useParams.mockReturnValue({ reportType: 'FULL_LIST' });
+
+        const { container } = render(<RsvpReportPage />);
+
+        expect(container.firstElementChild?.getAttribute('data-capability')).toBe('RSVP_REPORT');
+        expect(container.firstElementChild?.getAttribute('data-host')).toBe('true');
     });
 });

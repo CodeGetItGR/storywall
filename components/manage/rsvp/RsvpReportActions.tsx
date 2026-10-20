@@ -6,11 +6,13 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 
 export function RsvpReportActions({
+    canDownload,
     isDownloading,
     onPrint,
     onDownload,
     onClose,
 }: {
+    canDownload: boolean;
     isDownloading: boolean;
     onPrint: () => void;
     onDownload: () => void;
@@ -24,10 +26,12 @@ export function RsvpReportActions({
                 <Printer aria-hidden="true" />
                 {t('print')}
             </Button>
-            <Button variant="outline" size="lg" onClick={onDownload} disabled={isDownloading}>
-                {isDownloading ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Download aria-hidden="true" />}
-                {t('downloadPdf')}
-            </Button>
+            {canDownload && (
+                <Button variant="outline" size="lg" onClick={onDownload} disabled={isDownloading}>
+                    {isDownloading ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Download aria-hidden="true" />}
+                    {t('downloadPdf')}
+                </Button>
+            )}
             <Button variant="ghost" size="lg" onClick={onClose}>
                 <X aria-hidden="true" />
                 {t('close')}
