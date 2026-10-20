@@ -10,16 +10,28 @@ const mocks = vi.hoisted(() => ({
     replace: vi.fn(),
     accept: vi.fn(),
     myEvents: { data: [] as { eventId: string }[] | undefined, isLoading: false },
+    preview: {
+        inviteToken: 'tok',
+        eventId: 'event-1',
+        eventTitle: 'Party',
+        expired: false,
+        alreadyUsed: false,
+        gift: null,
+        vendorType: null as string | null,
+    },
 }));
 
-vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
+vi.mock('next-intl', () => ({
+    useTranslations: (ns?: string) => (key: string) => (ns === 'Vendors.invite' ? `vendor:${key}` : key),
+    useLocale: () => 'en',
+}));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: mocks.replace }) }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ isAuthenticated: true, isBootstrapping: false }) }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'error copy' }));
 vi.mock('@/hooks/useMyEvents', () => ({ useMyEvents: () => mocks.myEvents }));
 vi.mock('@/hooks/useEventInvitations', () => ({
     useEventInvitationPreview: () => ({
-        data: { inviteToken: 'tok', eventId: 'event-1', eventTitle: 'Party', expired: false, alreadyUsed: false, gift: null },
+        data: mocks.preview,
         isLoading: false,
         error: null,
     }),
@@ -43,6 +55,8 @@ describe('InviteOnboardingBoundary accepting as a signed-in user', () => {
         mocks.replace.mockReset();
         mocks.accept.mockReset();
         mocks.myEvents = { data: [], isLoading: false };
+        mocks.preview.vendorType = null;
+        mocks.preview.alreadyUsed = false;
     });
     afterEach(cleanup);
 
@@ -89,6 +103,57 @@ describe('InviteOnboardingBoundary accepting as a signed-in user', () => {
         render(<InviteOnboardingBoundary token="tok" />);
 
         expect(screen.queryByRole('button', { name: /join/ })).not.toBeInTheDocument();
+        expect(mocks.replace).not.toHaveBeenCalled();
+    });
+});
+
+describe('InviteOnboardingBoundary on a vendor link', () => {
+    beforeEach(() => {
+        mocks.replace.mockReset();
+        mocks.accept.mockReset();
+        mocks.myEvents = { data: [], isLoading: false };
+        mocks.preview.vendorType = 'PHOTOGRAPHER';
+        mocks.preview.alreadyUsed = false;
+    });
+    afterEach(cleanup);
+
+    it('says which vendor the link is for', () => {
+        render(<InviteOnboardingBoundary token="tok" />);
+        expect(screen.getByText('vendor:PHOTOGRAPHER')).toBeInTheDocument();
+    });
+
+    it('lets an existing guest join as the vendor instead of sending them to the feed', async () => {
+        mocks.myEvents = { data: [{ eventId: 'event-1' }], isLoading: false };
+        mocks.accept.mockResolvedValue({ eventId: 'event-1' });
+        render(<InviteOnboardingBoundary token="tok" />);
+        expect(mocks.replace).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByRole('button', { name: /join/ }));
+        await waitFor(() => expect(mocks.accept).toHaveBeenCalledWith('tok'));
+        expect(mocks.replace).toHaveBeenCalledWith('/events/event-1/feed');
+    });
+
+    // alreadyUsed means the event is full; a vendor reopening their own link still gets in.
+    it('still offers Join when the event holds all its vendors', () => {
+        mocks.preview.alreadyUsed = true;
+        render(<InviteOnboardingBoundary token="tok" />);
+        expect(screen.getByRole('button', { name: /join/ })).toBeInTheDocument();
+    });
+
+    it('shows the reason when a new vendor does not fit (409/5177)', async () => {
+        mocks.preview.alreadyUsed = true;
+        mocks.accept.mockRejectedValue(new ApiError(409, { status: 409, errorCode: 5177 }));
+        render(<InviteOnboardingBoundary token="tok" />);
+        fireEvent.click(screen.getByRole('button', { name: /join/ }));
+        expect(await screen.findByRole('alert')).toHaveTextContent('error copy');
+        expect(mocks.replace).not.toHaveBeenCalled();
+    });
+
+    it('shows the reason when a host opens the link (409/5178)', async () => {
+        mocks.myEvents = { data: [{ eventId: 'event-1' }], isLoading: false };
+        mocks.accept.mockRejectedValue(new ApiError(409, { status: 409, errorCode: 5178 }));
+        render(<InviteOnboardingBoundary token="tok" />);
+        fireEvent.click(screen.getByRole('button', { name: /join/ }));
+        expect(await screen.findByRole('alert')).toHaveTextContent('error copy');
         expect(mocks.replace).not.toHaveBeenCalled();
     });
 });

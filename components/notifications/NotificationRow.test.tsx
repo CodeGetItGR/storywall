@@ -61,4 +61,21 @@ describe('NotificationRow', () => {
         expect(screen.getByText(messages.NotificationsPage.generic.title)).toBeInTheDocument();
         expect(screen.queryByRole('link')).not.toBeInTheDocument();
     });
+
+    it('fills the VENDOR_JOINED fallback with the business and the type', () => {
+        renderRow({
+            ...reportOutcome,
+            id: 'n-3',
+            type: 'VENDOR_JOINED',
+            category: null,
+            severity: null,
+            title: null,
+            body: null,
+            ctaTarget: 'EVENT_VENDORS',
+            ctaParams: { eventId: 'e-1' },
+            payload: { businessName: 'Studio X', vendorType: 'PHOTOGRAPHER' },
+        });
+
+        expect(screen.getByText('Studio X joined as Photographer')).toBeInTheDocument();
+    });
 });

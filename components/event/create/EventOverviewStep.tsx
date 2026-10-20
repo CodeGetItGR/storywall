@@ -109,6 +109,7 @@ export function EventOverviewStep() {
                         notice={partnerBrandingNotice}
                         accepted={partnerBrandingAccepted}
                         onChangeAction={onPartnerBrandingChangeAction}
+                        vendorOffer={Boolean(appliedCheckoutCode && checkoutCodePreview?.vendorOffer)}
                     />
                 </div>
             )}

@@ -10,11 +10,14 @@ export function PartnerBrandingNotice({
     notice,
     accepted,
     onChangeAction,
+    vendorOffer = false,
     className = 'rounded-lg border border-border bg-surface-muted/40 p-4',
 }: {
     notice: PartnerBrandingNoticeDto;
     accepted: boolean;
     onChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
+    // The code's preview says the partner will be sent a vendor link for this event.
+    vendorOffer?: boolean;
     // Defaults to its own card; pass a plain style when it sits inside another surface.
     className?: string;
 }) {
@@ -28,6 +31,7 @@ export function PartnerBrandingNotice({
                 {t('title', { partner })}
             </h2>
             <p className="mt-1 text-sm leading-relaxed text-ink-muted">{t('body', { partner })}</p>
+            {vendorOffer && <p className="mt-1 text-sm leading-relaxed text-ink-muted">{t('vendorOffer', { partner })}</p>}
 
             {/* Acceptance */}
             <label className="mt-3 flex items-start gap-2.5 text-sm">
