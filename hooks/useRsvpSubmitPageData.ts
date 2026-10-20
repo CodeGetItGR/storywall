@@ -29,7 +29,8 @@ export function useRsvpSubmitPageData() {
     const isHost = useIsHost();
     const isContextLoading = useEventContextLoading();
     // Vendors don't RSVP. A host is never a vendor, so the host skips the role request.
-    const isVendor = Boolean(useMyVendorRole(isHost ? null : eventId).data);
+    const vendorRole = useMyVendorRole(isHost ? null : eventId);
+    const isVendor = Boolean(vendorRole.data);
     const rsvpAvailability = useRsvpAvailability();
 
     const presetAttending = searchParams.get('attending');
@@ -73,6 +74,7 @@ export function useRsvpSubmitPageData() {
         eventId,
         eventType: activeEvent?.eventType ?? null,
         isVendor,
+        isVendorRoleLoading: vendorRole.isLoading,
         onBackToWall: handleBackToWall,
         rsvpAvailability,
     };

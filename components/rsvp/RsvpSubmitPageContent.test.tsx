@@ -6,6 +6,7 @@ import { RsvpSubmitPageContent, type RsvpSubmitPageData } from '@/components/rsv
 vi.mock('@/components/rsvp/RsvpSubmitFormContent', () => ({ RsvpSubmitFormContent: () => <div>form</div> }));
 vi.mock('@/components/rsvp/RsvpSubmittedContent', () => ({ RsvpSubmittedContent: () => <div>submitted</div> }));
 vi.mock('@/components/rsvp/RsvpUnavailableState', () => ({ RsvpUnavailableState: () => <div>unavailable</div> }));
+vi.mock('@/components/rsvp/RsvpSkeletons', () => ({ RsvpSubmitPageSkeleton: () => <div>skeleton</div> }));
 vi.mock('@/components/rsvp/RsvpHeader', () => ({ RsvpHeader: () => <div>header</div> }));
 vi.mock('next-intl', () => ({ useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}` }));
 
@@ -20,6 +21,7 @@ function data(overrides: Record<string, unknown> = {}) {
         hasExistingRsvp: false,
         sessionAnswersError: null,
         isVendor: false,
+        isVendorRoleLoading: false,
         ...overrides,
     } as unknown as RsvpSubmitPageData;
 }
@@ -28,6 +30,13 @@ describe('RsvpSubmitPageContent', () => {
     it('shows the form for a guest', () => {
         render(<RsvpSubmitPageContent data={data()} />);
         expect(screen.getByText('form')).toBeTruthy();
+    });
+
+    it('shows the loading state, not the form, while the vendor role is loading', () => {
+        render(<RsvpSubmitPageContent data={data({ isVendorRoleLoading: true })} />);
+        expect(screen.getByText('skeleton')).toBeTruthy();
+        expect(screen.queryByText('form')).toBeNull();
+        expect(screen.queryByText('ApiErrors.vendorCannotRsvp')).toBeNull();
     });
 
     it('shows one line instead of the form for a vendor', () => {

@@ -1,3 +1,4 @@
+import { RsvpSubmitPageSkeleton } from '@/components/rsvp/RsvpSkeletons';
 import { RsvpSubmitFormContent } from '@/components/rsvp/RsvpSubmitFormContent';
 import { RsvpSubmittedContent } from '@/components/rsvp/RsvpSubmittedContent';
 import { RsvpUnavailableState } from '@/components/rsvp/RsvpUnavailableState';
@@ -7,6 +8,11 @@ import { computeShowConfirmation, type useRsvpSubmitPageData } from '@/hooks/use
 export type RsvpSubmitPageData = ReturnType<typeof useRsvpSubmitPageData>;
 
 export function RsvpSubmitPageContent({ data }: { data: RsvpSubmitPageData }) {
+    // Whether this is a vendor is not known yet: no form until it is, so a vendor never sees it flash.
+    if (data.isVendorRoleLoading) {
+        return <RsvpSubmitPageSkeleton />;
+    }
+
     if (data.rsvpAvailability.isUnavailable && data.eventId) {
         return (
             <RsvpUnavailableState
