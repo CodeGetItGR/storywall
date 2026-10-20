@@ -1121,7 +1121,7 @@
         "noGuestsYet": "No guests have joined yet. Share an invite to get started.",
         "draft": {
             "delete": {
-                "action": "Delete draft",
+                "action": "Delete event",
                 "title": "Delete this draft?",
                 "body": "The draft and its details are deleted. This can't be undone."
             },
@@ -1134,6 +1134,7 @@
             "addStartDate": "Add a start date to publish",
             "retryIn": "Try again in {seconds}s",
             "durationUnavailable": "This duration is no longer available. Choose another one.",
+            "durationTooShort": "Some durations don't cover the event date.",
             "selectedAddons": {
                 "title": "Selected add-ons",
                 "body": "Chosen during event creation. Add-ons can't be changed until after publishing."
