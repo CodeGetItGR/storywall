@@ -1,16 +1,4 @@
-import type {
-    Comment,
-    GiftItem,
-    Notification,
-    PlaylistItem,
-    Post,
-    QuizQuestion,
-    RSVPGuest,
-    ScheduleEvent,
-    Story,
-    User,
-    WishbookEntry,
-} from './types';
+import type { Comment, GiftItem, Notification, PlaylistItem, Post, RSVPGuest, ScheduleEvent, Story, User, WishbookEntry } from './types';
 
 // ── Users ─────────────────────────────────────────────────
 export const CURRENT_USER_ID = 'u1';
@@ -756,45 +744,6 @@ export const playlist: PlaylistItem[] = [
         requestedFor: 'reception',
         votes: 28,
         voted: false,
-    },
-];
-
-// ── Quiz ───────────────────────────────────────────────────
-export const quizQuestions: QuizQuestion[] = [
-    {
-        id: 'q1',
-        question: 'Where did Emma and James have their first date?',
-        options: ['Golden Gate Park', 'A rooftop bar in SoMa', 'A pasta class in North Beach', 'Dolores Park picnic'],
-        correct: 2,
-        explanation: 'They bonded over burning garlic bread on their very first date at a pasta-making class!',
-    },
-    {
-        id: 'q2',
-        question: 'How long did James plan the proposal before actually doing it?',
-        options: ['2 weeks', '3 months', '6 months', 'Over a year'],
-        correct: 3,
-        explanation: "James was secretly planning the vineyard proposal for over a year, consulting Emma's mum the whole time!",
-    },
-    {
-        id: 'q3',
-        question: 'What song is Emma and James\'s "song"?',
-        options: ['Perfect by Ed Sheeran', 'Bloom by The Paper Kites', "Can't Help Falling in Love by Elvis", 'All of Me by John Legend'],
-        correct: 1,
-        explanation: '"Bloom" by The Paper Kites was playing on their road trip to Big Sur when they said "I love you" for the first time.',
-    },
-    {
-        id: 'q4',
-        question: 'What country is the honeymoon destination?',
-        options: ['Greece', 'Italy', 'Japan', 'France'],
-        correct: 1,
-        explanation: "The Amalfi Coast, Italy! Emma's dream destination since she was 12.",
-    },
-    {
-        id: 'q5',
-        question: 'What are the wedding colors?',
-        options: ['White and sage green', 'Blush and gold', 'Terracotta and dusty rose', 'Ivory and champagne'],
-        correct: 1,
-        explanation: 'Blush pinks and warm gold tones. Romantic and timeless, just like them.',
     },
 ];
 

@@ -10,6 +10,7 @@ import {
     Images,
     LayoutDashboard,
     type LucideIcon,
+    MessageCircleQuestion,
     QrCode,
     Ticket,
     UserRound,
@@ -63,6 +64,8 @@ export function useToolsMenuItems(): ToolMenuItem[] {
         { key: 'gifts', href: routes.events.tools.gifts(activeEvent.id), icon: Gift, moduleKey: 'wishlist' },
         // Not for demo visitors: the public demo's mock backend has no Boy or Girl? handlers (v1).
         { key: 'heOrShe', href: routes.events.tools.heOrShe(activeEvent.id), icon: Baby, moduleKey: 'he_or_she' },
+        // Not for demo visitors either: no mock handlers for Quiz & Polls.
+        { key: 'quizPolls', href: routes.events.tools.quiz(activeEvent.id), icon: MessageCircleQuestion, moduleKey: 'quiz_polls' },
         { key: 'myRole', href: routes.events.feed(activeEvent.id, { sheet: ROLE_SHEET_VALUE }), icon: UserRound, moduleKey: 'member_roles' },
     ];
 
@@ -71,7 +74,7 @@ export function useToolsMenuItems(): ToolMenuItem[] {
         .filter((tool) => tool.key !== 'gallery' || isHost || isGalleryOpenToGuests(activeEvent))
         .filter((tool) => tool.key !== 'gifts' || isHost || Boolean(giftAccount.data))
         .filter((tool) => tool.key !== 'myRole' || (!isDemoVisitor && canEditOwnRole(activeEvent, activeMember)))
-        .filter((tool) => tool.key !== 'heOrShe' || !isDemoVisitor)
+        .filter((tool) => (tool.key !== 'heOrShe' && tool.key !== 'quizPolls') || !isDemoVisitor)
         .filter((tool) => !isDeleted || tool.key === 'gallery' || tool.key === 'wishbook')
         .map((tool) => {
             const copyKey = tool.copyKey ?? tool.moduleKey;

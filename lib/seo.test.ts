@@ -6,9 +6,11 @@ import {
     absoluteUrl,
     buildForBusinessMetadata,
     buildLandingMetadata,
+    buildQrWeddingMetadata,
     forBusinessLanguageAlternates,
     jsonLdHtml,
     landingLanguageAlternates,
+    qrWeddingLanguageAlternates,
     SITE_URL,
 } from '@/lib/seo';
 
@@ -80,6 +82,35 @@ describe('buildForBusinessMetadata', () => {
         const metadata = buildForBusinessMetadata('en', copy);
         expect((metadata.openGraph as { images?: unknown }).images).toBeUndefined();
         expect((metadata.twitter as { images?: unknown }).images).toBeUndefined();
+    });
+});
+
+describe('qrWeddingLanguageAlternates', () => {
+    it('lists both wedding QR URLs and sends x-default to the English one', () => {
+        expect(qrWeddingLanguageAlternates()).toEqual({
+            en: `${SITE_URL}/wedding-qr-code`,
+            el: `${SITE_URL}/el/qr-code-gamou`,
+            'x-default': `${SITE_URL}/wedding-qr-code`,
+        });
+    });
+});
+
+describe('buildQrWeddingMetadata', () => {
+    const copy = { title: 'T', description: 'D', siteName: 'StoryWall', imageAlt: 'A', keywords: ['QR γάμου'] };
+
+    it('gives each locale its own canonical and the shared alternates', () => {
+        const el = buildQrWeddingMetadata('el', copy);
+        expect(el.alternates?.canonical).toBe(`${SITE_URL}/el/qr-code-gamou`);
+        expect(el.alternates?.languages).toEqual(qrWeddingLanguageAlternates());
+        expect(buildQrWeddingMetadata('en', copy).alternates?.canonical).toBe(`${SITE_URL}/wedding-qr-code`);
+    });
+
+    it('is indexable, keeps its keywords and uses the default share image', () => {
+        const metadata = buildQrWeddingMetadata('el', copy);
+        const openGraph = metadata.openGraph as { images?: { url: string }[] };
+        expect(metadata.robots).toEqual({ index: true, follow: true });
+        expect(metadata.keywords).toEqual(['QR γάμου']);
+        expect(openGraph.images?.[0]?.url).toBe(`${SITE_URL}/opengraph-image`);
     });
 });
 

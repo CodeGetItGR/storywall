@@ -32,6 +32,7 @@ export const EVENT_MODULE_KEYS = [
     'member_roles',
     'theme',
     'he_or_she',
+    'quiz_polls',
 ] as const;
 // Use this (not the raw `ModuleKey` wire type below) whenever code branches on
 // a specific module — it's a closed set and catches typos at compile time.
@@ -238,6 +239,58 @@ export interface AppLandingCategoryDto {
     description: LocalizedText;
     isDefault: boolean;
     eventTypeKeys: EventTypeConvention[];
+}
+
+export type AppReviewRole = 'HOST' | 'GUEST';
+export type AppReviewStatus = 'PENDING' | 'APPROVED' | 'HIDDEN';
+
+// GET /api/me/review-prompt → 200 with this, or 204 (null) when there is nothing to ask.
+export interface AppReviewPromptDto {
+    eventId: string;
+    eventTitle: string;
+    eventType: EventTypeConvention;
+    role: AppReviewRole;
+}
+
+// POST /api/me/reviews. The server drops publicConsent unless stars >= 4 and a comment is sent.
+export interface AppReviewRequestDto {
+    eventId: string;
+    stars: number;
+    comment: string | null;
+    publicConsent: boolean;
+}
+
+// GET/PATCH /api/admin/app-reviews. Ratings only, never dismissals.
+export interface AdminAppReviewDto {
+    id: string;
+    stars: number;
+    comment: string | null;
+    role: AppReviewRole;
+    eventType: EventTypeConvention;
+    eventId: string;
+    userId: string;
+    firstName: string;
+    locale: string;
+    publicConsent: boolean;
+    status: AppReviewStatus;
+    featured: boolean;
+    createdAt: string;
+}
+
+export interface AdminAppReviewPatchDto {
+    status?: AppReviewStatus;
+    featured?: boolean;
+}
+
+// GET /api/config → landingReviews. Featured, newest first; the page keeps its own locale's.
+export interface AppLandingReviewDto {
+    id: string;
+    stars: number;
+    comment: string;
+    firstName: string;
+    role: AppReviewRole;
+    eventType: EventTypeConvention;
+    locale: string;
 }
 
 // /api/admin/landing-categories (ADMIN). Hidden categories and disabled types included.
@@ -499,6 +552,7 @@ export interface AppConfigResponseDto {
     reactionTypesByEventType: Record<string, ReactionTypeResponseDto[]>;
     memberRolesByEventType: Record<string, MemberRoleCatalogDto[]>;
     landingCategories: AppLandingCategoryDto[];
+    landingReviews: AppLandingReviewDto[];
     rateLimits: AppRateLimitConfigDto[];
     reportTargetTypes: ReportTargetType[];
     reportReasons: ReportReason[];
@@ -842,12 +896,7 @@ export interface AdminProvisionEventRequestDto {
 export type AdminEmailTemplateKey = 'PASSWORD_RESET' | 'PROVISIONED_HOST_WELCOME' | 'EMAIL_VERIFICATION' | 'CUSTOM';
 
 export type AdminEmailUnavailableReason =
-    | 'ACCOUNT_DELETED'
-    | 'NO_EMAIL'
-    | 'NOT_ACTIVE'
-    | 'NOT_PASSWORD_ACCOUNT'
-    | 'ALREADY_VERIFIED'
-    | 'NO_HOSTED_EVENTS';
+    'ACCOUNT_DELETED' | 'NO_EMAIL' | 'NOT_ACTIVE' | 'NOT_PASSWORD_ACCOUNT' | 'ALREADY_VERIFIED' | 'NO_HOSTED_EVENTS';
 
 export interface AdminEmailTemplateDto {
     key: AdminEmailTemplateKey;
@@ -2067,6 +2116,34 @@ export interface FunnelChannelRowDto {
     revenueMinorByCurrency: Record<string, number>;
 }
 
+// GET /api/admin/metrics/visitors. Google Analytics numbers for the public pages over a range.
+export type VisitorLanguage = 'el' | 'en';
+export type VisitorDevice = 'PHONE' | 'DESKTOP' | 'TABLET';
+export type VisitorClickEvent = 'create' | 'plans' | 'demo' | 'login' | 'nav';
+
+export interface VisitorMetricsDto {
+    // False when Google Analytics isn't set up on this server; everything else is empty.
+    configured: boolean;
+    since: string | null;
+    until: string | null;
+    updatedAt: string | null;
+    visitors: number;
+    visits: number;
+    signups: number;
+    daily: { date: string; visitors: number; visits: number }[];
+    channels: { channel: SignupChannel; visits: number; signups: number }[];
+    // A null page is all the pages outside the top ten.
+    pages: { page: string | null; visits: number }[];
+    languages: { language: VisitorLanguage; visits: number }[];
+    devices: { device: VisitorDevice; visits: number }[];
+    landing: {
+        sections: { section: string; visitors: number }[];
+        clicks: { event: VisitorClickEvent; placement: string; count: number }[];
+        plans: { plan: string; count: number }[];
+        faq: { question: number; count: number }[];
+    };
+}
+
 // Where an account came from. Only on the admin user endpoints; null on /api/me.
 export interface SignupSourceDto {
     channel: SignupChannel;
@@ -2466,6 +2543,84 @@ export interface QuizQuestionPatchDto {
 export interface HeOrSheResultsDto {
     main: { memberId: string; displayName: string; avatarUrl: string | null; guess: HeOrSheValue }[];
     questions: { questionId: string; answers: { memberId: string; displayName: string; avatarUrl: string | null; value: string }[] }[];
+}
+
+// Quiz & Polls — module quiz_polls, WEDDING and BAPTISM only (quiz-polls-fe-integration.md).
+// Same answer types and canonical values as Boy or Girl?.
+export type QuizQuestionKind = 'QUIZ' | 'POLL';
+
+export interface QuizPollsTallyEntry {
+    value: string;
+    count: number;
+}
+
+export interface QuizPollsQuestion {
+    id: string;
+    kind: QuizQuestionKind;
+    // QUIZ: CHOICE, YES_NO or HE_SHE only.
+    answerType: QuizAnswerType;
+    prompt: string;
+    options: QuizOption[] | null;
+    sortOrder: number;
+    myAnswer: string | null;
+    // QUIZ only: hosts always, everyone once CLOSED. CHOICE: an option id.
+    correctValue: string | null;
+    // Most given first, never names. POLL: hosts, members who answered it, everyone once CLOSED.
+    // QUIZ: hosts and once CLOSED.
+    tally: QuizPollsTallyEntry[] | null;
+}
+
+export interface QuizPollsLeaderboardEntry {
+    rank: number;
+    memberId: string;
+    displayName: string;
+    avatarUrl: string | null;
+    correct: number;
+}
+
+// GET /quiz-polls; answer writes, PUT /settings and POST /close return it too.
+export interface QuizPollsViewDto {
+    status: 'OPEN' | 'CLOSED';
+    // Closed is computed on read, so refetch when it passes.
+    closesAt: string | null;
+    canAnswer: boolean;
+    // The two sides of a HE_SHE question; null shows the event type's default.
+    heLabel: string | null;
+    sheLabel: string | null;
+    questions: QuizPollsQuestion[];
+    // Once CLOSED, never for hosts, null with no QUIZ questions.
+    myScore: { correct: number; total: number } | null;
+    // Hosts always, everyone once CLOSED, null with no QUIZ questions.
+    leaderboard: QuizPollsLeaderboardEntry[] | null;
+}
+
+// PUT /settings (host): a replace. Allowed while CLOSED, so a future time or null reopens.
+export interface QuizPollsSettingsRequestDto {
+    closesAt: string | null;
+    heLabel: string | null;
+    sheLabel: string | null;
+}
+
+// POST /questions (host). correctValue: QUIZ only, required; CHOICE names the option by its label.
+export interface QuizPollsQuestionRequestDto {
+    kind: QuizQuestionKind;
+    answerType: QuizAnswerType;
+    prompt: string;
+    options?: string[];
+    correctValue?: string;
+}
+
+// PATCH /questions/{id} (host). Kind and type never change.
+export interface QuizPollsQuestionPatchDto {
+    prompt?: string;
+    options?: { id?: string; label: string }[];
+    sortOrder?: number;
+    correctValue?: string;
+}
+
+// GET /results (host): every answer by name.
+export interface QuizPollsResultsDto {
+    questions: HeOrSheResultsDto['questions'];
 }
 
 // GET|POST /api/events/{eventId}/wishbook/book (wishbook-book-fe-integration.md).

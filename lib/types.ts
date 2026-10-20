@@ -96,14 +96,6 @@ export interface PlaylistItem {
     voted?: boolean;
 }
 
-export interface QuizQuestion {
-    id: string;
-    question: string;
-    options: string[];
-    correct: number;
-    explanation: string;
-}
-
 export interface WishbookEntry {
     id: string;
     userId: string;

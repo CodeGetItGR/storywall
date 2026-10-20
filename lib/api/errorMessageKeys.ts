@@ -18,6 +18,8 @@ export type ApiErrorMessageKey =
     | 'addonLockedWhileActive'
     | 'addonNotActive'
     | 'alreadyLinked'
+    | 'appReviewFeatureNotAllowed'
+    | 'appReviewNotEligible'
     | 'betaFeedbackDisabled'
     | 'authenticationRequired'
     | 'checkoutAmountBelowMinimum'
@@ -300,6 +302,8 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.ADDON_LOCKED_WHILE_ACTIVE]: 'addonLockedWhileActive',
     [ERROR_CODES.ADDON_NOT_ACTIVE]: 'addonNotActive',
     [ERROR_CODES.ALREADY_LINKED]: 'alreadyLinked',
+    [ERROR_CODES.APP_REVIEW_FEATURE_NOT_ALLOWED]: 'appReviewFeatureNotAllowed',
+    [ERROR_CODES.APP_REVIEW_NOT_ELIGIBLE]: 'appReviewNotEligible',
     [ERROR_CODES.CHECKOUT_AMOUNT_BELOW_MINIMUM]: 'checkoutAmountBelowMinimum',
     [ERROR_CODES.CHECKOUT_SESSION_UNRESOLVED]: 'checkoutSessionUnresolved',
     [ERROR_CODES.CO_HOST_INVITE_NOT_YOURS]: 'coHostInviteNotYours',

@@ -6,6 +6,7 @@ import {
     CalendarDays,
     ChartNoAxesCombined,
     Flag,
+    Footprints,
     GalleryVerticalEnd,
     Handshake,
     LayoutGrid,
@@ -18,6 +19,7 @@ import {
     Receipt,
     ShoppingBag,
     Smile,
+    Star,
     TicketPercent,
     TrendingUp,
     Type,
@@ -38,6 +40,7 @@ import { pushPageEntry } from '@/lib/overlayHistory';
 export type AdminTab =
     | 'metrics'
     | 'funnel'
+    | 'visitors'
     | 'moduleUsage'
     | 'costTracking'
     | 'plans'
@@ -56,7 +59,8 @@ export type AdminTab =
     | 'accounts'
     | 'reports'
     | 'bugReports'
-    | 'errorEvents';
+    | 'errorEvents'
+    | 'appReviews';
 
 export type AdminTabItem = {
     key: AdminTab;
@@ -84,6 +88,7 @@ export type AdminFocus = {
 const HASH_TO_TAB: Record<string, AdminTab> = {
     '#metrics': 'metrics',
     '#funnel': 'funnel',
+    '#visitors': 'visitors',
     '#module-usage': 'moduleUsage',
     '#cost-tracking': 'costTracking',
     '#paid-services': 'paidServices',
@@ -97,11 +102,13 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#reports': 'reports',
     '#bug-reports': 'bugReports',
     '#errors': 'errorEvents',
+    '#reviews': 'appReviews',
 };
 
 const TAB_TO_HASH: Record<AdminTab, string> = {
     metrics: '#metrics',
     funnel: '#funnel',
+    visitors: '#visitors',
     moduleUsage: '#module-usage',
     costTracking: '#cost-tracking',
     plans: PLANS_HASH_ROOT,
@@ -121,6 +128,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     reports: '#reports',
     bugReports: '#bug-reports',
     errorEvents: '#errors',
+    appReviews: '#reviews',
 };
 
 const AdminNavigationContext = createContext<
@@ -195,11 +203,13 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
         () => [
             { key: 'metrics', label: t('metrics'), icon: BarChart3 },
             { key: 'funnel', label: t('funnel'), icon: TrendingUp },
+            { key: 'visitors', label: t('visitors'), icon: Footprints },
             { key: 'moduleUsage', label: t('moduleUsage'), icon: LayoutGrid },
             { key: 'costTracking', label: t('costTracking'), icon: ChartNoAxesCombined },
             { key: 'plans', label: t('plans'), icon: CalendarDays },
             { key: 'paidServices', label: t('paidServices'), icon: PackagePlus },
             { key: 'discountCodes', label: t('discountCodes'), icon: TicketPercent },
+            { key: 'appReviews', label: t('appReviews'), icon: Star },
             { key: 'collaborations', label: t('collaborations'), icon: Handshake },
             { key: 'partnerCards', label: t('partnerCards'), icon: GalleryVerticalEnd },
             { key: 'reactionTypes', label: t('reactionTypes'), icon: Smile },

@@ -51,7 +51,7 @@ export function LandingStoryCopy({ demo, more, paragraphSegments, tag, titleSegm
             {/* Demo link */}
             {demo ? (
                 <a
-                    className="mt-6 inline-flex items-center gap-3 rounded-full bg-[linear-gradient(135deg,#d27b9b_0%,#e78274_28%,#f4905f_58%,#fcba63_100%)] px-6 py-3.5 shadow-[0_16px_32px_rgba(217,102,74,.15)] text-[11px] font-black tracking-[0.08em] text-white! uppercase no-underline focus-ring transition-transform hover:-translate-y-0.5 focus-visible:outline-offset-4 motion-reduce:transition-none min-[761px]:mt-[clamp(20px,2vw,30px)] min-[761px]:px-7 min-[761px]:text-[13px] min-[761px]:tracking-widest"
+                    className="mt-6 inline-flex items-center gap-3 rounded-full bg-[linear-gradient(135deg,#d27b9b_0%,#e78274_28%,#f4905f_58%,#fcba63_100%)] px-6 py-3.5 text-[11px] font-black tracking-[0.08em] text-white! uppercase no-underline shadow-[0_16px_32px_rgba(217,102,74,.15)] focus-ring transition-transform hover:-translate-y-0.5 focus-visible:outline-offset-4 motion-reduce:transition-none min-[761px]:mt-[clamp(20px,2vw,30px)] min-[761px]:px-7 min-[761px]:text-[13px] min-[761px]:tracking-widest"
                     href={demo.href}
                     {...landingClickAttributes({ event: 'demo', placement: 'stories' })}
                 >
@@ -63,7 +63,10 @@ export function LandingStoryCopy({ demo, more, paragraphSegments, tag, titleSegm
             ) : null}
             {/* Occasion page link */}
             {more ? (
-                <a className="mt-4 ml-1 inline-block text-[13px] font-bold text-[var(--ink)] underline underline-offset-4 min-[761px]:ml-5" href={more.href}>
+                <a
+                    className="mt-4 ml-1 inline-block text-[13px] font-bold text-[var(--ink)] underline underline-offset-4 min-[761px]:ml-5"
+                    href={more.href}
+                >
                     {more.label}
                 </a>
             ) : null}

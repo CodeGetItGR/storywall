@@ -37,3 +37,26 @@ export function pickDemoPreview(snapshot: DemoSnapshotDto): DemoPreview {
 
     return { posts, photos, wishes };
 }
+
+// Small tiles beside the lead photo: a full 2×2 block, or one row when a wish fills the second.
+const COLLAGE_TILES = 4;
+const COLLAGE_TILES_WITH_WISH = 2;
+
+export type DemoCollage = {
+    lead: { photo: DemoPreviewPhoto; post: DemoPreviewPost | null };
+    tiles: DemoPreviewPhoto[];
+    wish: DemoPreviewWish | null;
+};
+
+// One photo wall from the snapshot: a lead photo (with its post when there is one), a few more
+// photos and a wish. null when the snapshot has no photo to lead with.
+export function demoCollage(preview: DemoPreview): DemoCollage | null {
+    const post = preview.posts[0] ?? null;
+    const leadPhoto = post?.photo ?? preview.photos[0];
+    if (!leadPhoto) return null;
+    const wish = preview.wishes[0] ?? null;
+    const others = [...preview.posts.slice(1).map((candidate) => candidate.photo), ...preview.photos].filter(
+        (photo, index, all) => photo.src !== leadPhoto.src && all.findIndex((other) => other.src === photo.src) === index,
+    );
+    return { lead: { photo: leadPhoto, post }, tiles: others.slice(0, wish ? COLLAGE_TILES_WITH_WISH : COLLAGE_TILES), wish };
+}

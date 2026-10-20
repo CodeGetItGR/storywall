@@ -23,10 +23,28 @@ export function isForBusinessPath(pathname: string | null): boolean {
     return locales.some((locale) => FOR_BUSINESS_PATHS[locale] === pathname);
 }
 
+// The wedding QR page, one URL per language. Same rules as the partner page's slugs.
+export const QR_WEDDING_PATHS: Record<Locale, string> = {
+    en: '/wedding-qr-code',
+    el: '/el/qr-code-gamou',
+};
+
+export function getQrWeddingPath(locale: Locale): string {
+    return QR_WEDDING_PATHS[locale];
+}
+
+export function isQrWeddingPath(pathname: string | null): boolean {
+    return locales.some((locale) => QR_WEDDING_PATHS[locale] === pathname);
+}
+
 // The language a public page is written in, read from its URL alone so
 // crawlers get the same language as visitors. Null for every other path.
 export function publicPageLocale(pathname: string): Locale | null {
-    return locales.find((locale) => pathname === getPublicLandingPath(locale) || pathname === FOR_BUSINESS_PATHS[locale]) ?? null;
+    return (
+        locales.find(
+            (locale) => pathname === getPublicLandingPath(locale) || pathname === FOR_BUSINESS_PATHS[locale] || pathname === QR_WEDDING_PATHS[locale],
+        ) ?? null
+    );
 }
 
 // The same public page in another language; null when the page has no twin.

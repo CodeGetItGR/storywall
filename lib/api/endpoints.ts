@@ -50,6 +50,9 @@ export const endpoints = {
         guidelinesAcceptance: '/api/me/guidelines-acceptance',
         termsAcceptance: '/api/me/terms-acceptance',
         newsletter: '/api/me/newsletter',
+        reviewPrompt: '/api/me/review-prompt',
+        reviews: '/api/me/reviews',
+        reviewsDismiss: '/api/me/reviews/dismiss',
         businessProfile: '/api/me/business-profile',
         dataExport: '/api/me/data-export',
         deletionRequestOtp: '/api/me/deletion-requests/otp',
@@ -139,6 +142,14 @@ export const endpoints = {
         heOrSheQuestions: (eventId: string) => `/api/events/${eventId}/he-or-she/questions`,
         heOrSheQuestion: (eventId: string, questionId: string) => `/api/events/${eventId}/he-or-she/questions/${questionId}`,
         heOrSheResults: (eventId: string) => `/api/events/${eventId}/he-or-she/results`,
+        // Quiz & Polls (module quiz_polls, quiz-polls-fe-integration.md).
+        quizPolls: (eventId: string) => `/api/events/${eventId}/quiz-polls`,
+        quizPollsAnswer: (eventId: string, questionId: string) => `/api/events/${eventId}/quiz-polls/questions/${questionId}/answer`,
+        quizPollsSettings: (eventId: string) => `/api/events/${eventId}/quiz-polls/settings`,
+        quizPollsClose: (eventId: string) => `/api/events/${eventId}/quiz-polls/close`,
+        quizPollsQuestions: (eventId: string) => `/api/events/${eventId}/quiz-polls/questions`,
+        quizPollsQuestion: (eventId: string, questionId: string) => `/api/events/${eventId}/quiz-polls/questions/${questionId}`,
+        quizPollsResults: (eventId: string) => `/api/events/${eventId}/quiz-polls/results`,
         checkout: (eventId: string) => `/api/events/${eventId}/checkout`,
         partnerBrandingAcceptance: (eventId: string) => `/api/events/${eventId}/partner-branding/acceptance`,
         partnerBrandingDecline: (eventId: string) => `/api/events/${eventId}/partner-branding/decline`,
@@ -334,6 +345,14 @@ export const endpoints = {
                 );
                 return `/api/admin/metrics/funnel/channels${params.length ? `?${params.join('&')}` : ''}`;
             },
+            visitors: (since?: string | null, until?: string | null, fresh = false) => {
+                const params = [
+                    since ? `since=${encodeURIComponent(since)}` : null,
+                    until ? `until=${encodeURIComponent(until)}` : null,
+                    fresh ? 'fresh=true' : null,
+                ].filter(Boolean);
+                return `/api/admin/metrics/visitors${params.length ? `?${params.join('&')}` : ''}`;
+            },
             moduleUsage: (filters: { since: string | null; until: string | null; eventTypeKey: string; planCode: string }) => {
                 const params = new URLSearchParams();
                 if (filters.since) params.set('since', filters.since);
@@ -458,6 +477,10 @@ export const endpoints = {
             list: '/api/admin/landing-categories',
             byId: (id: string) => `/api/admin/landing-categories/${id}`,
             eventTypes: (id: string) => `/api/admin/landing-categories/${id}/event-types`,
+        },
+        appReviews: {
+            list: '/api/admin/app-reviews',
+            byId: (id: string) => `/api/admin/app-reviews/${id}`,
         },
         users: {
             planTier: (userId: string) => `/api/admin/users/${userId}/plan-tier`,

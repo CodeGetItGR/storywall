@@ -3,13 +3,15 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
 import { absoluteUrl, jsonLdHtml, OG_IMAGE_PATH, SITE_URL, SOCIAL_PROFILES } from '@/lib/seo';
+import { faqPageNode } from '@/lib/structuredData';
 
-// Only facts that stay true without maintenance: name, URL, logo, social
-// profiles, description and category. Pricing is indicative and comes from config, so no offers.
+// Only facts that stay true without maintenance: name, URL, logo, social profiles, description, category and the FAQ. Pricing is indicative and comes from config, so no offers.
 export async function LandingStructuredData() {
     const locale = (await getLocale()) as Locale;
     const t = await getTranslations({ locale, namespace: 'LandingPage.meta' });
     const url = absoluteUrl(getPublicLandingPath(locale));
+    const faq = await getTranslations({ locale, namespace: 'LandingPage.faq' });
+    const faqItems = (faq.raw('items') as [string, string][]).map(([q, a]) => ({ q, a }));
 
     const graph = {
         '@context': 'https://schema.org',
@@ -41,6 +43,7 @@ export async function LandingStructuredData() {
                 inLanguage: locale,
                 publisher: { '@id': `${SITE_URL}/#organization` },
             },
+            faqPageNode(faqItems),
         ],
     };
 

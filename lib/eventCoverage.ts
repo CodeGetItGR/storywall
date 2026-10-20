@@ -65,3 +65,24 @@ export function getLatestStartAt(coverageEndsAt: string | null | undefined, minD
     ends.setUTCDate(ends.getUTCDate() - minDaysAfterStart);
     return ends.toISOString();
 }
+
+/**
+ * Whether paying now for `months` of coverage leaves `minDaysAfterStart` of it
+ * after `startAt` (3032 otherwise). True while the start or the setting is unknown,
+ * so nothing is blocked before the server can answer.
+ */
+export function coverageFitsStart({
+    startAt,
+    months,
+    minDaysAfterStart,
+    referenceDate = new Date(),
+}: {
+    startAt: string | null;
+    months: number;
+    minDaysAfterStart: number | undefined;
+    referenceDate?: Date;
+}): boolean {
+    const latestStartAt = getLatestStartAt(projectCoverage({ hostingMonths: months, referenceDate })?.coverageEndsAt, minDaysAfterStart);
+    if (!startAt || !latestStartAt) return true;
+    return Date.parse(startAt) <= Date.parse(latestStartAt);
+}

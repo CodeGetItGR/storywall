@@ -13,31 +13,13 @@ import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormConte
 
 // accentToken is a BE-owned design token (see event-type-voice-pack-fe-integration.md);
 // this is the only place that maps it to actual Tailwind classes.
-const ACCENT_TOKEN_STYLES: Record<
-    EventTypeAccentToken,
-    {
-        selected: string;
-        surface: string;
-    }
-> = {
-    rose: {
-        selected: 'border-rose-300 bg-rose-50/55 shadow-[0_18px_45px_rgba(244,63,94,0.16)]',
-        surface: 'hover:border-rose-200 hover:bg-rose-50/35',
-    },
-    sky: {
-        selected: 'border-sky-300 bg-sky-50/55 shadow-[0_18px_45px_rgba(14,165,233,0.16)]',
-        surface: 'hover:border-sky-200 hover:bg-sky-50/35',
-    },
-    amber: {
-        selected: 'border-amber-300 bg-amber-50/55 shadow-[0_18px_45px_rgba(245,158,11,0.16)]',
-        surface: 'hover:border-amber-200 hover:bg-amber-50/35',
-    },
+const ACCENT_TOKEN_STYLES: Record<EventTypeAccentToken, string> = {
+    rose: 'hover:border-rose-200 hover:bg-rose-50/35',
+    sky: 'hover:border-sky-200 hover:bg-sky-50/35',
+    amber: 'hover:border-amber-200 hover:bg-amber-50/35',
 };
 
-const FALLBACK_STYLE = {
-    selected: 'border-primary bg-primary-light/45 shadow-[0_18px_45px_rgba(15,23,42,0.12)]',
-    surface: 'hover:border-primary/30 hover:bg-primary-light/25',
-};
+const FALLBACK_STYLE = 'hover:border-primary/30 hover:bg-primary-light/25';
 
 export function EventTypeStep() {
     const t = useTranslations('CreateEventPage');
@@ -58,7 +40,7 @@ export function EventTypeStep() {
             {/* Event Types */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {eventTypes.map((type) => {
-                    const style = ACCENT_TOKEN_STYLES[type.accentToken] ?? FALLBACK_STYLE;
+                    const surfaceStyle = ACCENT_TOKEN_STYLES[type.accentToken] ?? FALLBACK_STYLE;
                     const isSelected = type.eventTypeKey === selectedEventType;
                     const copy = eventTypeCopy(type.eventTypeKey);
                     // An admin-uploaded image wins over the built-in one.
@@ -72,9 +54,11 @@ export function EventTypeStep() {
                             onClick={handleClick}
                             aria-pressed={isSelected}
                             className={cn(
-                                'group relative flex min-h-56 flex-col justify-end overflow-hidden rounded-lg border bg-card p-5 text-left transition duration-200 hover:-translate-y-0.5',
-                                backgroundImageSrc && 'text-white',
-                                isSelected ? cn('border-2', style.selected) : cn('border-border shadow-sm', !backgroundImageSrc && style.surface),
+                                'group relative flex min-h-56 flex-col justify-end overflow-hidden rounded-lg border border-border bg-card p-5 text-left shadow-sm transition duration-200 hover:-translate-y-0.5',
+                                backgroundImageSrc ? 'text-white' : surfaceStyle,
+                                // The other types fade out, so the picked one stands on its own.
+                                !isSelected &&
+                                    'opacity-55 grayscale hover:opacity-100 hover:grayscale-0 focus-visible:opacity-100 focus-visible:grayscale-0',
                             )}
                         >
                             {/* Background */}
