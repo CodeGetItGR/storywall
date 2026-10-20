@@ -13,11 +13,13 @@ const FIELD =
     'mt-1.5 min-h-12 w-full rounded-xl border border-[#151313]/20 bg-white px-4 text-base outline-none focus:border-[#151313]/60 aria-invalid:border-red-600';
 const LABEL = 'block text-sm font-semibold';
 
-type Props = { countries: CountryOption[]; defaultCountry: string };
+export type ApplyFormDefaults = Partial<Record<'name' | 'businessName' | 'role' | 'email' | 'link', string>>;
 
-export function ForBusinessApplyForm({ countries, defaultCountry }: Props) {
+type Props = { countries: CountryOption[]; defaultCountry: string; defaults?: ApplyFormDefaults; search?: string };
+
+export function ForBusinessApplyForm({ countries, defaultCountry, defaults, search }: Props) {
     const t = useTranslations('ForBusinessPage.apply');
-    const form = useForBusinessApplication();
+    const form = useForBusinessApplication({ search });
 
     if (form.isSent) {
         return (
@@ -34,7 +36,15 @@ export function ForBusinessApplyForm({ countries, defaultCountry }: Props) {
             {/* Identity */}
             <label className={LABEL}>
                 {t('fields.name')}
-                <input name="name" required maxLength={200} autoComplete="name" className={FIELD} aria-invalid={!!fieldError('name')} />
+                <input
+                    name="name"
+                    required
+                    maxLength={200}
+                    autoComplete="name"
+                    defaultValue={defaults?.name}
+                    className={FIELD}
+                    aria-invalid={!!fieldError('name')}
+                />
                 {fieldError('name') && <span className="mt-1 block text-xs text-red-600">{fieldError('name')}</span>}
             </label>
             <label className={LABEL}>
@@ -44,6 +54,7 @@ export function ForBusinessApplyForm({ countries, defaultCountry }: Props) {
                     required
                     maxLength={200}
                     autoComplete="organization"
+                    defaultValue={defaults?.businessName}
                     className={FIELD}
                     aria-invalid={!!fieldError('businessName')}
                 />
@@ -51,7 +62,7 @@ export function ForBusinessApplyForm({ countries, defaultCountry }: Props) {
             </label>
             <label className={LABEL}>
                 {t('fields.role')}
-                <select name="role" required defaultValue="" className={FIELD} aria-invalid={!!fieldError('role')}>
+                <select name="role" required defaultValue={defaults?.role ?? ''} className={FIELD} aria-invalid={!!fieldError('role')}>
                     <option value="" disabled>
                         {t('rolePlaceholder')}
                     </option>
@@ -71,6 +82,7 @@ export function ForBusinessApplyForm({ countries, defaultCountry }: Props) {
                     required
                     maxLength={254}
                     autoComplete="email"
+                    defaultValue={defaults?.email}
                     className={FIELD}
                     aria-invalid={!!fieldError('email')}
                 />
@@ -78,7 +90,15 @@ export function ForBusinessApplyForm({ countries, defaultCountry }: Props) {
             </label>
             <label className={LABEL}>
                 {t('fields.link')}
-                <input name="link" required maxLength={500} autoComplete="url" className={FIELD} aria-invalid={!!fieldError('link')} />
+                <input
+                    name="link"
+                    required
+                    maxLength={500}
+                    autoComplete="url"
+                    defaultValue={defaults?.link}
+                    className={FIELD}
+                    aria-invalid={!!fieldError('link')}
+                />
                 {fieldError('link') && <span className="mt-1 block text-xs text-red-600">{fieldError('link')}</span>}
             </label>
             <label className={LABEL}>
