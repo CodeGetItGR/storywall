@@ -7299,6 +7299,7 @@
             "link": "Website or Instagram",
             "linkHint": "https://… or @handle",
             "logo": "Logo (optional)",
+            "logoChoose": "Choose logo",
             "logoRemove": "Remove logo",
             "save": "Save",
             "later": "Later",

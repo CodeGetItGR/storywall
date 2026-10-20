@@ -18,6 +18,7 @@ const form = vi.hoisted(() => ({
         handleSubmit: vi.fn((event: { preventDefault: () => void }) => event.preventDefault()),
     },
 }));
+vi.mock('@/components/vendors/VendorLogo', () => ({ VendorLogo: () => null }));
 vi.mock('@/hooks/useVendorProfileForm', () => ({ useVendorProfileForm: () => form.value }));
 
 afterEach(cleanup);
@@ -31,9 +32,10 @@ describe('VendorProfileSheet', () => {
         expect(screen.getAllByRole('option')).toHaveLength(8);
     });
 
-    it('takes jpeg, png, webp and gif logos', () => {
+    it('picks a logo through a button, with the allowed image types', () => {
         render(<VendorProfileSheet open profile={null} defaultType="MUSIC" onCloseAction={vi.fn()} />);
-        const input = screen.getByLabelText(/Vendors\.profile\.logo$/) as HTMLInputElement;
+        expect(screen.getByRole('button', { name: 'Vendors.profile.logoChoose' })).toBeTruthy();
+        const input = document.querySelector('input[type="file"]') as HTMLInputElement;
         expect(input.accept).toBe('image/jpeg,image/png,image/webp,image/gif');
     });
 

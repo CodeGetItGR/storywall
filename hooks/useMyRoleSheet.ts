@@ -4,6 +4,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useRolePromptOnce } from '@/hooks/useRolePromptOnce';
+import { useMyVendorRole } from '@/hooks/useVendors';
 import { canEditOwnRole, memberHasRole, ROLE_SHEET_PARAM, ROLE_SHEET_VALUE, withoutRoleSheetParam } from '@/lib/memberRoles';
 import { subscribeMyRoleSheetRequests } from '@/lib/myRoleSheetRequests';
 import { replacePageUrl } from '@/lib/overlayHistory';
@@ -48,8 +49,11 @@ export function useMyRoleSheet() {
 
     const feedPath = activeEvent ? routes.events.feed(activeEvent.id) : null;
     const noRole = member ? !memberHasRole(member) : false;
+    // Vendors have their own profile sheet, so they never get the guest role prompt (nor a flash while we find out).
+    const vendorRole = useMyVendorRole(activeEvent?.id ?? null);
+    const isGuestOnly = !vendorRole.isLoading && !vendorRole.data;
     useRolePromptOnce({
-        active: enabled && feedPath !== null && pathname === feedPath && !open && !pending && !requested && noRole,
+        active: enabled && feedPath !== null && pathname === feedPath && !open && !pending && !requested && noRole && isGuestOnly,
         memberId: member?.id ?? null,
         onPromptAction: openSheet,
     });

@@ -7,13 +7,13 @@ import { useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { Modal } from '@/components/ui/modal';
+import { VendorLogoField } from '@/components/vendors/VendorLogoField';
 import { useVendorProfileForm } from '@/hooks/useVendorProfileForm';
 import type { PartnerRole, VendorProfileDto } from '@/lib/api/types';
 import { VENDOR_BUSINESS_NAME_MAX, VENDOR_LINK_MAX, VENDOR_TYPES } from '@/lib/vendors';
 
 const INPUT_CLASS =
     'min-h-11 w-full rounded-2xl border border-border/70 bg-background px-4 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10';
-const LOGO_ACCEPT = 'image/jpeg,image/png,image/webp,image/gif';
 
 // Mounted only while open, so useVendorProfileForm always starts from the latest profile.
 export function VendorProfileSheet({
@@ -35,8 +35,6 @@ export function VendorProfileSheet({
     const handleNameChange = useCallback((event: ChangeEvent<HTMLInputElement>) => setField('businessName', event.target.value), [setField]);
     const handleTypeChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => setField('vendorType', event.target.value), [setField]);
     const handleLinkChange = useCallback((event: ChangeEvent<HTMLInputElement>) => setField('link', event.target.value), [setField]);
-    const handleLogoChange = useCallback((event: ChangeEvent<HTMLInputElement>) => setLogo(event.target.files?.[0] ?? null), [setLogo]);
-    const handleRemoveLogoChange = useCallback((event: ChangeEvent<HTMLInputElement>) => setRemoveLogo(event.target.checked), [setRemoveLogo]);
 
     return (
         <Modal open={open} onClose={onCloseAction} variant="sheet" size="sm" closeDisabled={form.isSaving} ariaLabel={t('title')}>
@@ -99,17 +97,15 @@ export function VendorProfileSheet({
                     </div>
 
                     {/* Logo */}
-                    <div>
-                        <FormFieldLabel label={t('logo')}>
-                            <input type="file" accept={LOGO_ACCEPT} className="text-sm text-ink-muted" onChange={handleLogoChange} />
-                        </FormFieldLabel>
-                        {profile?.logoUrl && !form.logo && (
-                            <label className="mt-2 flex items-center gap-2 text-sm text-ink">
-                                <input type="checkbox" checked={form.removeLogo} onChange={handleRemoveLogoChange} />
-                                {t('logoRemove')}
-                            </label>
-                        )}
-                    </div>
+                    <VendorLogoField
+                        file={form.logo}
+                        currentLogoUrl={profile?.logoUrl ?? null}
+                        removeLogo={form.removeLogo}
+                        name={form.values.businessName}
+                        disabled={form.isSaving}
+                        setLogo={setLogo}
+                        setRemoveLogo={setRemoveLogo}
+                    />
 
                     {/* Error */}
                     {form.error && (
