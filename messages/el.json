@@ -7176,9 +7176,9 @@
     "Vendors": {
         "profile": {
             "errors": {
-                "businessNameRequired": "Πρόσθεσε το όνομα της επιχείρησής σου.",
-                "businessNameTooLong": "Χρησιμοποίησε το πολύ {max} χαρακτήρες.",
-                "linkInvalid": "Βάλε σύνδεσμο που ξεκινά με https:// ή ένα @handle."
+                "businessNameRequired": "Προσθέστε το όνομα της επιχείρησής σας.",
+                "businessNameTooLong": "Χρησιμοποιήστε το πολύ {max} χαρακτήρες.",
+                "linkInvalid": "Βάλτε σύνδεσμο που ξεκινά με https:// ή ένα @handle."
             }
         }
     }
