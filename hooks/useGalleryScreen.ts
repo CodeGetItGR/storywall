@@ -82,7 +82,8 @@ export function useGalleryScreen() {
 
     const { filesPerRequest: maxFiles, imageBytes: maxImageBytes, videoBytes: maxVideoBytes } = getUploadLimits(appConfig?.media);
     // Every event keeps photo originals; videos are never re-encoded, so they have no separate original.
-    const canDownloadOriginal = isHost && selectedMedia !== null && selectedMedia.mediaType !== 'VIDEO';
+    // Pro items have no full-quality download yet (phase 2).
+    const canDownloadOriginal = isHost && selectedMedia !== null && selectedMedia.mediaType !== 'VIDEO' && selectedMedia.collection !== 'PRO';
     const showArchiveDownload = isHost && galleryEnabled && album === 'GUEST';
     // Guests of an event whose plan offers it get the prebuilt archive instead; the live download
     // above stays host-only (the backend 403s it for anyone else).

@@ -348,6 +348,23 @@ describe('useGalleryScreen Pro album', () => {
         mocks.exitSelectionMode.mockReset();
     });
 
+    it('offers the original download for a guest photo but not for a Pro photo', () => {
+        mocks.isHost = true;
+        mocks.activeEvent = { status: 'ACTIVE', deletedAt: null };
+        mocks.activeMember = { id: 'host' };
+        mocks.media = [{ ...photo('https://cdn/a.jpg'), id: 'guest-1' }];
+        mocks.proMedia = [{ ...photo('https://cdn/pro.jpg'), id: 'pro-1', collection: 'PRO' }];
+        const { result } = renderHook(() => useGalleryScreen());
+        act(() => result.current.handleMediaClick('guest-1'));
+        expect(result.current.canDownloadOriginal).toBe(true);
+
+        mocks.album = 'PRO';
+        const pro = renderHook(() => useGalleryScreen());
+        act(() => pro.result.current.handleMediaClick('pro-1'));
+        expect(pro.result.current.canDownloadOriginal).toBe(false);
+        expect(pro.result.current.canDeleteMedia).toBe(true);
+    });
+
     it('has no tabs while the event has no Pro items', () => {
         const { result } = renderHook(() => useGalleryScreen());
         expect(result.current.showAlbumTabs).toBe(false);
