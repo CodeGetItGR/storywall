@@ -30,14 +30,14 @@ export async function fetchMyVendorRole(eventId: string): Promise<VendorMeDto | 
     }
 }
 
+// No module gate: the backend answers with toolsOff MODULE_OFF while the module is off, and the screens need that.
 export function useMyVendorRole(eventId: string | null) {
     const { isAuthenticated } = useAuth();
-    const vendorsReadable = useModuleReadable(eventId, 'vendors');
 
     return useQuery({
         queryKey: vendorKeys.me(eventId ?? ''),
         queryFn: () => fetchMyVendorRole(eventId!),
-        enabled: Boolean(eventId) && isAuthenticated && vendorsReadable,
+        enabled: Boolean(eventId) && isAuthenticated,
     });
 }
 

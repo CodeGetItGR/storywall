@@ -96,11 +96,24 @@ describe('useMyVendorRole', () => {
         await waitFor(() => expect(result.current.isError).toBe(true));
     });
 
-    it('does not ask without the module or an event', () => {
-        readable.vendors = false;
-        renderHook(() => useMyVendorRole('e1'), { wrapper: wrapperFor(newClient()) });
-        readable.vendors = true;
+    it('does not ask without an event', () => {
         renderHook(() => useMyVendorRole(null), { wrapper: wrapperFor(newClient()) });
+        expect(apiGet).not.toHaveBeenCalled();
+    });
+
+    it('still asks while the module is off and returns the MODULE_OFF role', async () => {
+        readable.vendors = false;
+        const off = { ...ME, capabilities: [], accessEndsAt: null, accessOpen: false, toolsOff: 'MODULE_OFF' };
+        apiGet.mockResolvedValue(off);
+        const { result } = renderHook(() => useMyVendorRole('e1'), { wrapper: wrapperFor(newClient()) });
+        await waitFor(() => expect(result.current.data).toEqual(off));
+        expect(apiGet).toHaveBeenCalledWith('/api/events/e1/vendors/me');
+    });
+
+    it('does not ask for the list or links while the module is off', () => {
+        readable.vendors = false;
+        renderHook(() => useEventVendors('e1'), { wrapper: wrapperFor(newClient()) });
+        renderHook(() => useVendorLinks('e1', true), { wrapper: wrapperFor(newClient()) });
         expect(apiGet).not.toHaveBeenCalled();
     });
 });
