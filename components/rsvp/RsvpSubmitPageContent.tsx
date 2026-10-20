@@ -1,6 +1,7 @@
 import { RsvpSubmitFormContent } from '@/components/rsvp/RsvpSubmitFormContent';
 import { RsvpSubmittedContent } from '@/components/rsvp/RsvpSubmittedContent';
 import { RsvpUnavailableState } from '@/components/rsvp/RsvpUnavailableState';
+import { RsvpVendorNotice } from '@/components/rsvp/RsvpVendorNotice';
 import { computeShowConfirmation, type useRsvpSubmitPageData } from '@/hooks/useRsvpSubmitPageData';
 
 export type RsvpSubmitPageData = ReturnType<typeof useRsvpSubmitPageData>;
@@ -14,6 +15,10 @@ export function RsvpSubmitPageContent({ data }: { data: RsvpSubmitPageData }) {
                 body={data.rsvpAvailability.unavailableBody}
             />
         );
+    }
+
+    if (data.isVendor) {
+        return <RsvpVendorNotice backHref={data.backHref} />;
     }
 
     // A first-time RSVP whose session answers failed to save already has an

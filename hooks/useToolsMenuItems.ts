@@ -93,31 +93,35 @@ export function useToolsMenuItems(): ToolMenuItem[] {
         { key: 'liveRequests', href: routes.events.tools.playlistLive(activeEvent.id), icon: ListMusic },
     ];
 
-    return toolDefinitions
-        .filter((tool) => !tool.moduleKey || availableModules.has(tool.moduleKey))
-        .filter((tool) => tool.key !== 'gallery' || isHost || isGalleryOpenToGuests(activeEvent))
-        .filter((tool) => tool.key !== 'gifts' || isHost || Boolean(giftAccount.data))
-        // A vendor's chip shows their vendor type, so they have no guest role to pick.
-        .filter((tool) => tool.key !== 'myRole' || (!isDemoVisitor && me === null && canEditOwnRole(activeEvent, activeMember)))
-        .filter((tool) => (tool.key !== 'heOrShe' && tool.key !== 'quizPolls') || !isDemoVisitor)
-        .filter((tool) => tool.key !== 'vendors' || hasVendorsListed)
-        .filter((tool) => tool.key !== 'vendorMe' || me !== null)
-        .filter((tool) => tool.key !== 'announcement' || hasVendorCapability(me, 'ANNOUNCE'))
-        .filter((tool) => tool.key !== 'rsvpReport' || (availableModules.has('rsvp') && hasVendorCapability(me, 'RSVP_REPORT')))
-        .filter((tool) => tool.key !== 'vendorQr' || hasVendorCapability(me, 'QR_READ'))
-        .filter((tool) => tool.key !== 'liveRequests' || (availableModules.has('playlist') && hasVendorCapability(me, 'SONG_REQUESTS')))
-        .filter((tool) => !isDeleted || tool.key === 'gallery' || tool.key === 'wishbook')
-        .map((tool) => {
-            const copyKey = tool.copyKey ?? tool.moduleKey;
-            const copy = copyKey && copyKey !== 'member_roles' ? moduleCopy(copyKey) : null;
-            return {
-                key: tool.key,
-                href: tool.href,
-                icon: tool.icon,
-                label: copy?.name ?? t(`items.${tool.key}.label`),
-                description: copy?.description ?? t(`items.${tool.key}.description`),
-            };
-        });
+    return (
+        toolDefinitions
+            .filter((tool) => !tool.moduleKey || availableModules.has(tool.moduleKey))
+            .filter((tool) => tool.key !== 'gallery' || isHost || isGalleryOpenToGuests(activeEvent))
+            .filter((tool) => tool.key !== 'gifts' || isHost || Boolean(giftAccount.data))
+            // A vendor's chip shows their vendor type, so they have no guest role to pick.
+            .filter((tool) => tool.key !== 'myRole' || (!isDemoVisitor && me === null && canEditOwnRole(activeEvent, activeMember)))
+            .filter((tool) => (tool.key !== 'heOrShe' && tool.key !== 'quizPolls') || !isDemoVisitor)
+            // Vendors don't RSVP.
+            .filter((tool) => tool.key !== 'rsvp' || me === null)
+            .filter((tool) => tool.key !== 'vendors' || hasVendorsListed)
+            .filter((tool) => tool.key !== 'vendorMe' || me !== null)
+            .filter((tool) => tool.key !== 'announcement' || hasVendorCapability(me, 'ANNOUNCE'))
+            .filter((tool) => tool.key !== 'rsvpReport' || (availableModules.has('rsvp') && hasVendorCapability(me, 'RSVP_REPORT')))
+            .filter((tool) => tool.key !== 'vendorQr' || hasVendorCapability(me, 'QR_READ'))
+            .filter((tool) => tool.key !== 'liveRequests' || (availableModules.has('playlist') && hasVendorCapability(me, 'SONG_REQUESTS')))
+            .filter((tool) => !isDeleted || tool.key === 'gallery' || tool.key === 'wishbook')
+            .map((tool) => {
+                const copyKey = tool.copyKey ?? tool.moduleKey;
+                const copy = copyKey && copyKey !== 'member_roles' ? moduleCopy(copyKey) : null;
+                return {
+                    key: tool.key,
+                    href: tool.href,
+                    icon: tool.icon,
+                    label: copy?.name ?? t(`items.${tool.key}.label`),
+                    description: copy?.description ?? t(`items.${tool.key}.description`),
+                };
+            })
+    );
 }
 
 /** The host's own administrative destinations. The dashboard is one

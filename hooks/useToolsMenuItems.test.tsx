@@ -10,13 +10,21 @@ const mocks = vi.hoisted(() => ({
     accessMode: 'standard',
 }));
 
-const vendor = vi.hoisted(() => ({ me: null as Record<string, unknown> | null, list: [] as unknown[], meEventId: undefined as string | null | undefined }));
+const vendor = vi.hoisted(() => ({
+    me: null as Record<string, unknown> | null,
+    list: [] as unknown[],
+    meEventId: undefined as string | null | undefined,
+    listEventId: undefined as string | null | undefined,
+}));
 vi.mock('@/hooks/useVendors', () => ({
     useMyVendorRole: (eventId: string | null) => {
         vendor.meEventId = eventId;
         return { data: vendor.me };
     },
-    useEventVendors: () => ({ data: vendor.list }),
+    useEventVendors: (eventId: string | null) => {
+        vendor.listEventId = eventId;
+        return { data: vendor.list };
+    },
 }));
 
 vi.mock('@/hooks/useModuleCopy', () => {
@@ -174,7 +182,7 @@ describe('useHostMenuItems', () => {
     });
 
     it('lists manage, both QR pages, announcement and help for a live event', () => {
-        mocks.activeEvent = event();
+        mocks.activeEvent = withoutModule('vendors');
         const { result } = renderHook(() => useHostMenuItems());
         expect(result.current.map((item) => item.key)).toEqual(['manage', 'galleryQr', 'invitationsQr', 'announcement', 'help']);
     });
@@ -191,7 +199,7 @@ describe('useHostMenuItems', () => {
 
 function vendorEvent() {
     const base = event();
-    const extra = ['vendors', 'playlist'].map((moduleKey) => ({ moduleKey, isEnabled: true, isAvailable: true, configuration: {} }));
+    const extra = ['vendors', 'playlist', 'posts'].map((moduleKey) => ({ moduleKey, isEnabled: true, isAvailable: true, configuration: {} }));
     return { ...base, modules: [...(base.modules as object[]), ...extra] };
 }
 
@@ -280,6 +288,12 @@ describe('vendor tools in the menu', () => {
         mocks.isHost = false;
         renderHook(() => useToolsMenuItems());
         expect(vendor.meEventId).toBe('event-1');
+    });
+
+    it('leaves RSVP out for a vendor and keeps it for a guest', () => {
+        expect(keysNow()).toContain('rsvp');
+        vendor.me = role('MUSIC', ['SONG_REQUESTS']);
+        expect(keysNow()).not.toContain('rsvp');
     });
 
     it('shows the vendor list once one vendor is listed', () => {

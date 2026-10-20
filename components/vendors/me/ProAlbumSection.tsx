@@ -56,7 +56,7 @@ export function ProAlbumSection({
             ) : (
                 <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                     {album.items.map((item) => (
-                        <ProAlbumItem key={item.id} item={item} onDeleteAction={album.requestDelete} />
+                        <ProAlbumItem key={item.id} item={item} canDelete={canUpload} onDeleteAction={album.requestDelete} />
                     ))}
                 </ul>
             )}

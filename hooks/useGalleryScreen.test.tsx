@@ -17,6 +17,8 @@ const mocks = vi.hoisted(() => ({
     writable: true,
     hasNextPage: false,
     deleteMedia: vi.fn<(id: string) => Promise<void>>(),
+    vendorRole: null as { accessOpen: boolean; capabilities: string[] } | null,
+    vendorRoleEventId: undefined as string | null | undefined,
 }));
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
@@ -55,6 +57,12 @@ vi.mock('@/hooks/useMedia', () => ({
     useDeleteMedia: () => ({ mutateAsync: mocks.deleteMedia, isPending: false }),
     useUploadMediaBatch: () => ({}),
 }));
+vi.mock('@/hooks/useVendors', () => ({
+    useMyVendorRole: (eventId: string | null) => {
+        mocks.vendorRoleEventId = eventId;
+        return { data: mocks.vendorRole };
+    },
+}));
 vi.mock('@/hooks/useGalleryAlbum', () => ({ useGalleryAlbum: () => ({ album: mocks.album, setAlbum: mocks.setAlbum }) }));
 vi.mock('@/lib/eventLifecycle', () => ({
     isEventDeleted: (event: { deletedAt: string | null } | null) => Boolean(event?.deletedAt),
@@ -86,6 +94,8 @@ describe('useGalleryScreen', () => {
         mocks.setAlbum.mockReset();
         mocks.exitSelectionMode.mockReset();
         mocks.deleteMedia.mockReset();
+        mocks.vendorRole = null;
+        mocks.vendorRoleEventId = undefined;
     });
 
     // The viewer used to hold a copy of the item it opened with, so the list's
@@ -169,6 +179,44 @@ describe('useGalleryScreen', () => {
             mocks.activeMember = { id: 'me' };
             mocks.writable = false;
             expect(openItem('me').result.current.canDeleteMedia).toBe(false);
+        });
+    });
+
+    describe('canDeleteMedia for Pro items', () => {
+        function openPro(uploaderMemberId: string | null) {
+            mocks.proMedia = [{ ...photo('https://cdn/pro.jpg'), id: 'pro-1', collection: 'PRO', uploaderMemberId }];
+            mocks.album = 'PRO';
+            const hook = renderHook(() => useGalleryScreen());
+            act(() => hook.result.current.handleMediaClick('pro-1'));
+            return hook;
+        }
+
+        it('lets the vendor delete their own item while their Pro tools are open', () => {
+            mocks.activeMember = { id: 'me' };
+            mocks.vendorRole = { accessOpen: true, capabilities: ['PRO_ALBUM'] };
+            expect(openPro('me').result.current.canDeleteMedia).toBe(true);
+        });
+
+        it('stops the vendor once their Pro tools are closed', () => {
+            mocks.activeMember = { id: 'me' };
+            mocks.vendorRole = { accessOpen: false, capabilities: [] };
+            expect(openPro('me').result.current.canDeleteMedia).toBe(false);
+        });
+
+        it('keeps a host able to delete, and never asks for the host role', () => {
+            mocks.isHost = true;
+            mocks.activeMember = { id: 'host' };
+            expect(openPro('someone').result.current.canDeleteMedia).toBe(true);
+            expect(mocks.vendorRoleEventId).toBeNull();
+        });
+
+        it('keeps the guest rule for a guest item even when the vendor role is closed', () => {
+            mocks.activeMember = { id: 'me' };
+            mocks.vendorRole = { accessOpen: false, capabilities: [] };
+            mocks.media = [{ ...photo('https://r2.example/a.jpg'), uploaderMemberId: 'me' }];
+            const hook = renderHook(() => useGalleryScreen());
+            act(() => hook.result.current.handleMediaClick('media-1'));
+            expect(hook.result.current.canDeleteMedia).toBe(true);
         });
     });
 

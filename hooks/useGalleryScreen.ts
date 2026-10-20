@@ -12,6 +12,7 @@ import { useGalleryAlbum } from '@/hooks/useGalleryAlbum';
 import { useGallerySelection } from '@/hooks/useGallerySelection';
 import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
 import { useDeleteMedia, useEventMedia, useOriginalMedia, useUploadMediaBatch } from '@/hooks/useMedia';
+import { useMyVendorRole } from '@/hooks/useVendors';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { MediaCollection } from '@/lib/api/types';
@@ -21,6 +22,7 @@ import { isEventDeleted, isEventWritable, readableModuleKeys } from '@/lib/event
 import { formatBytes } from '@/lib/format';
 import { isGalleryOpenToGuests } from '@/lib/qrLinks';
 import { getUploadLimits } from '@/lib/uploadLimits';
+import { hasVendorCapability } from '@/lib/vendors';
 import { useActiveMember } from '@/providers/EventProvider';
 import { useMobileChromeActions } from '@/providers/MobileChromeProvider';
 
@@ -62,6 +64,8 @@ export function useGalleryScreen() {
     const uploadMediaBatch = useUploadMediaBatch();
     const originalMedia = useOriginalMedia();
     const deleteMedia = useDeleteMedia(eventId ?? '');
+    // A host is never a vendor, so the host skips the role request.
+    const vendorRole = useMyVendorRole(isHost ? null : eventId);
     const { data: appConfig } = useAppConfig();
 
     const galleryEnabled = readableModuleKeys(activeEvent).has('gallery');
@@ -92,8 +96,10 @@ export function useGalleryScreen() {
     // plan-gated on the backend, so a file can still be cleared out after the gallery module is
     // gone — only a read-only or deleted event stops it.
     const isUploader = Boolean(activeMember && selectedMedia?.uploaderMemberId === activeMember.id);
+    // A vendor deletes their own Pro items only while their Pro tools are open (the backend asks for PRO_ALBUM access).
+    const canDeleteOwn = isUploader && (selectedMedia?.collection !== 'PRO' || hasVendorCapability(vendorRole.data, 'PRO_ALBUM'));
     const canDeleteMedia =
-        (isHost || isUploader) &&
+        (isHost || canDeleteOwn) &&
         selectedMedia !== null &&
         isEventWritable(activeEvent?.status) &&
         !isDeleted &&

@@ -9,7 +9,7 @@ import { canEditOwnRole, memberHasRole, ROLE_SHEET_PARAM, ROLE_SHEET_VALUE, with
 import { subscribeMyRoleSheetRequests } from '@/lib/myRoleSheetRequests';
 import { replacePageUrl } from '@/lib/overlayHistory';
 import { routes } from '@/lib/routes';
-import { useActiveEvent, useActiveMember, useContentAccessMode, useEventContextLoading } from '@/providers/EventProvider';
+import { useActiveEvent, useActiveMember, useContentAccessMode, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 
 // The member's own role sheet. Chip taps open it through
 // requestMyRoleSheet, with no URL change. ?sheet=role (tools menu, links) is a
@@ -23,18 +23,25 @@ export function useMyRoleSheet() {
     const member = useActiveMember();
     const isLoading = useEventContextLoading();
     const isDemoVisitor = useContentAccessMode() === 'demoVisitor';
+    const isHost = useIsHost();
 
-    const enabled = !isDemoVisitor && canEditOwnRole(activeEvent, member);
+    const canPickRole = !isDemoVisitor && canEditOwnRole(activeEvent, member);
+    // Vendors have their own profile sheet, so they never get the guest role sheet or prompt (nor a flash while we find out).
+    // A host is never a vendor, and a role that cannot be picked needs no answer, so neither asks.
+    const vendorRole = useMyVendorRole(isHost || !canPickRole ? null : (activeEvent?.id ?? null));
+    const isGuestOnly = !vendorRole.isLoading && !vendorRole.data;
+    const enabled = canPickRole && isGuestOnly;
     const requested = searchParams.get(ROLE_SHEET_PARAM) === ROLE_SHEET_VALUE;
     const [open, setOpen] = useState(false);
     const [pending, setPending] = useState(false);
 
     useEffect(() => {
-        if (!requested || isLoading) return;
+        // The trigger waits for the vendor check, so a vendor's link is dropped instead of opening the guest sheet.
+        if (!requested || isLoading || vendorRole.isLoading) return;
         replacePageUrl(withoutRoleSheetParam(pathname, searchParams.toString()));
         // eslint-disable-next-line react-hooks/set-state-in-effect -- The trigger param is consumed once; open after it leaves the URL.
         if (enabled) setPending(true);
-    }, [enabled, isLoading, pathname, requested, searchParams]);
+    }, [enabled, isLoading, pathname, requested, searchParams, vendorRole.isLoading]);
 
     useEffect(() => {
         if (!pending || requested) return;
@@ -49,11 +56,8 @@ export function useMyRoleSheet() {
 
     const feedPath = activeEvent ? routes.events.feed(activeEvent.id) : null;
     const noRole = member ? !memberHasRole(member) : false;
-    // Vendors have their own profile sheet, so they never get the guest role prompt (nor a flash while we find out).
-    const vendorRole = useMyVendorRole(activeEvent?.id ?? null);
-    const isGuestOnly = !vendorRole.isLoading && !vendorRole.data;
     useRolePromptOnce({
-        active: enabled && feedPath !== null && pathname === feedPath && !open && !pending && !requested && noRole && isGuestOnly,
+        active: enabled && feedPath !== null && pathname === feedPath && !open && !pending && !requested && noRole,
         memberId: member?.id ?? null,
         onPromptAction: openSheet,
     });

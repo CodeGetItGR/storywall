@@ -8,8 +8,16 @@ import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { Button } from '@/components/ui/button';
 import type { MediaResponseDto } from '@/lib/api/types';
 
-// One of the vendor's own Pro items, with its delete button.
-export function ProAlbumItem({ item, onDeleteAction }: { item: MediaResponseDto; onDeleteAction: (mediaId: string) => void }) {
+// One of the vendor's own Pro items, with its delete button while their Pro tools are open.
+export function ProAlbumItem({
+    item,
+    canDelete,
+    onDeleteAction,
+}: {
+    item: MediaResponseDto;
+    canDelete: boolean;
+    onDeleteAction: (mediaId: string) => void;
+}) {
     const t = useTranslations('Vendors');
     const previewUrl = item.thumbnailUrl ?? item.mediaUrl;
     const handleDelete = useCallback(() => onDeleteAction(item.id), [item.id, onDeleteAction]);
@@ -21,9 +29,18 @@ export function ProAlbumItem({ item, onDeleteAction }: { item: MediaResponseDto;
             ) : (
                 <Video className="absolute inset-0 m-auto size-6 text-ink-muted" aria-hidden="true" />
             )}
-            <Button type="button" variant="secondary" size="icon-sm" onClick={handleDelete} aria-label={t('me.proDelete')} className="absolute right-1 top-1">
-                <Trash2 aria-hidden="true" />
-            </Button>
+            {canDelete && (
+                <Button
+                    type="button"
+                    variant="secondary"
+                    size="icon-sm"
+                    onClick={handleDelete}
+                    aria-label={t('me.proDelete')}
+                    className="absolute top-1 right-1"
+                >
+                    <Trash2 aria-hidden="true" />
+                </Button>
+            )}
         </li>
     );
 }

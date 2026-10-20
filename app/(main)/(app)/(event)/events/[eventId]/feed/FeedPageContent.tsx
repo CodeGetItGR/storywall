@@ -29,6 +29,7 @@ import { useFeedItems } from '@/hooks/useFeedItems';
 import { useGiftAccount } from '@/hooks/useGiftAccount';
 import { useHideMobileTabBarOnScroll } from '@/hooks/useHideMobileTabBarOnScroll';
 import { useModuleCopy } from '@/hooks/useModuleCopy';
+import { useRsvpPromptVisible } from '@/hooks/useRsvpPromptVisible';
 import { coverPhotoSettingsHref } from '@/lib/manageSectionTargets';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
@@ -47,7 +48,7 @@ export function FeedPageContent() {
     const refetchedIllustration = useRef<string | null>(null);
     const [storyId, setStoryId] = useState<string | null>(null);
     const [pageLoaded, setPageLoaded] = useState(false);
-    const shouldShowRSVP = moduleFlags.rsvp && !isHost && currentMemberRsvpId === null;
+    const shouldShowRSVP = useRsvpPromptVisible({ eventId, isHost, rsvpAvailable: moduleFlags.rsvp, rsvpId: currentMemberRsvpId });
 
     useEffect(() => {
         const markLoaded = () => setPageLoaded(true);
