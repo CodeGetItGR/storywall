@@ -263,6 +263,10 @@
                 "label": "Boy or Girl?",
                 "description": "Guess before the reveal"
             },
+            "quizPolls": {
+                "label": "Quiz & Polls",
+                "description": "Answer and vote"
+            },
             "rsvp": {
                 "label": "RSVP",
                 "description": "Confirm your attendance"
@@ -2332,26 +2336,84 @@
             "noAnswers": "No answers yet."
         }
     },
-    "QuizPage": {
+    "QuizPollsPage": {
+        "unavailableTitle": "Not available",
+        "unavailableBody": "This isn't available on this event's current plan.",
+        "loadError": "Couldn't load this page",
+        "retry": "Try again",
         "backToTools": "Back",
-        "title": "Couple Quiz",
-        "resultsTitle": "Couple Quiz: Results",
-        "quizComplete": "Quiz complete!",
-        "tryAgain": "Try again",
-        "reviewYourAnswers": "Review your answers",
-        "correctAnswer": "Correct: {answer}",
-        "yourAnswerVsCorrect": "Your answer: {yourAnswer}. Correct: {correctAnswer}",
-        "skipped": "Skipped",
-        "questionCounter": "Question {current} of {total}",
-        "correct": "Correct!",
-        "notQuite": "Not quite",
-        "seeResults": "See Results",
-        "nextQuestion": "Next Question",
-        "grades": {
-            "perfect": "Perfect score! You clearly know them inside out.",
-            "excellent": "Excellent! You know Emma & James really well.",
-            "good": "Pretty good! You've been paying attention.",
-            "okay": "Not bad! Maybe catch up with them at the wedding."
+        "closesOn": "Closes on {date}",
+        "closed": "Closed",
+        "kinds": {
+            "QUIZ": "Quiz",
+            "POLL": "Poll"
+        },
+        "edit": "Edit",
+        "yes": "Yes",
+        "no": "No",
+        "sides": {
+            "groom": "Groom",
+            "bride": "Bride",
+            "dad": "Dad",
+            "mum": "Mum"
+        },
+        "send": "Send",
+        "yourAnswer": "Your answer: {answer}",
+        "resultsAtClose": "Results show when it closes.",
+        "rightAnswer": "Right answer: {answer}",
+        "votes": "{count, plural, =0 {No votes yet} one {# vote} other {# votes}}",
+        "showAnswers": "Show answers",
+        "hideAnswers": "Hide answers",
+        "noAnswers": "No answers yet.",
+        "questionsTitle": "Questions",
+        "addQuestion": "Add question",
+        "questionLimit": "You can add up to {max} questions.",
+        "noQuestions": "No questions yet.",
+        "score": "You got {correct} of {total} right",
+        "leaderboardTitle": "Leaderboard",
+        "you": "{name} (you)",
+        "rightCount": "{count, plural, one {# right} other {# right}}",
+        "host": {
+            "settingsTitle": "Settings",
+            "closesAt": "Closes at",
+            "closesAtHint": "Leave empty to keep it open.",
+            "sidesTitle": "Names for He/She questions",
+            "save": "Save",
+            "cancel": "Cancel",
+            "closeNow": "Close now",
+            "closeConfirmTitle": "Close now?",
+            "closeConfirmBody": "Guests can't answer anymore, and everyone sees the results.",
+            "closeConfirmAction": "Close",
+            "newQuestion": "New question",
+            "editQuestion": "Edit question",
+            "kind": "Kind",
+            "kindHints": {
+                "QUIZ": "Has a right answer. Guests get a score.",
+                "POLL": "No right answer. Guests vote."
+            },
+            "type": "Answer type",
+            "types": {
+                "HE_SHE": "{he} or {she}",
+                "YES_NO": "Yes or no",
+                "CHOICE": "Choices",
+                "DATE": "Date",
+                "TIME": "Time",
+                "NUMBER": "Number",
+                "FILL_GAP": "Fill the gap",
+                "FREE_TEXT": "Free text"
+            },
+            "prompt": "Question",
+            "fillGapHint": "Use ___ where the answer goes.",
+            "options": "Choices",
+            "option": "Choice {number}",
+            "addOption": "Add choice",
+            "removeOption": "Remove choice {number}",
+            "optionsLocked": "Guests have answered, so choices can't be added or removed.",
+            "rightAnswer": "Right answer",
+            "deleteQuestion": "Delete question",
+            "deleteConfirmTitle": "Delete this question?",
+            "deleteConfirmBody": "Its answers are deleted too.",
+            "deleteConfirmAction": "Delete"
         }
     },
     "RSVPPage": {
@@ -5117,6 +5179,9 @@
             "heOrShe": {
                 "subtitle": "Guess before the reveal"
             },
+            "quizPolls": {
+                "subtitle": "Answer and vote"
+            },
             "posts": {
                 "label": "Posts",
                 "subtitle": "Read the wall"
@@ -5173,6 +5238,10 @@
         "he_or_she": {
             "name": "Boy or Girl?",
             "description": "Guests guess before the reveal."
+        },
+        "quiz_polls": {
+            "name": "Quiz & Polls",
+            "description": "A quiz about you and polls for your guests."
         },
         "posts": {
             "name": "Posts",
@@ -6628,6 +6697,10 @@
                 "he_or_she": {
                     "title": "Boy or Girl?",
                     "body": "Guests guess before the reveal."
+                },
+                "quiz_polls": {
+                    "title": "Quiz & Polls",
+                    "body": "A quiz about you and polls for your guests."
                 }
             },
             "linksHeading": "Other occasions",

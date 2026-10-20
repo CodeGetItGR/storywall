@@ -32,6 +32,7 @@ export const EVENT_MODULE_KEYS = [
     'member_roles',
     'theme',
     'he_or_she',
+    'quiz_polls',
 ] as const;
 // Use this (not the raw `ModuleKey` wire type below) whenever code branches on
 // a specific module — it's a closed set and catches typos at compile time.
@@ -895,12 +896,7 @@ export interface AdminProvisionEventRequestDto {
 export type AdminEmailTemplateKey = 'PASSWORD_RESET' | 'PROVISIONED_HOST_WELCOME' | 'EMAIL_VERIFICATION' | 'CUSTOM';
 
 export type AdminEmailUnavailableReason =
-    | 'ACCOUNT_DELETED'
-    | 'NO_EMAIL'
-    | 'NOT_ACTIVE'
-    | 'NOT_PASSWORD_ACCOUNT'
-    | 'ALREADY_VERIFIED'
-    | 'NO_HOSTED_EVENTS';
+    'ACCOUNT_DELETED' | 'NO_EMAIL' | 'NOT_ACTIVE' | 'NOT_PASSWORD_ACCOUNT' | 'ALREADY_VERIFIED' | 'NO_HOSTED_EVENTS';
 
 export interface AdminEmailTemplateDto {
     key: AdminEmailTemplateKey;
@@ -2547,6 +2543,84 @@ export interface QuizQuestionPatchDto {
 export interface HeOrSheResultsDto {
     main: { memberId: string; displayName: string; avatarUrl: string | null; guess: HeOrSheValue }[];
     questions: { questionId: string; answers: { memberId: string; displayName: string; avatarUrl: string | null; value: string }[] }[];
+}
+
+// Quiz & Polls — module quiz_polls, WEDDING and BAPTISM only (quiz-polls-fe-integration.md).
+// Same answer types and canonical values as Boy or Girl?.
+export type QuizQuestionKind = 'QUIZ' | 'POLL';
+
+export interface QuizPollsTallyEntry {
+    value: string;
+    count: number;
+}
+
+export interface QuizPollsQuestion {
+    id: string;
+    kind: QuizQuestionKind;
+    // QUIZ: CHOICE, YES_NO or HE_SHE only.
+    answerType: QuizAnswerType;
+    prompt: string;
+    options: QuizOption[] | null;
+    sortOrder: number;
+    myAnswer: string | null;
+    // QUIZ only: hosts always, everyone once CLOSED. CHOICE: an option id.
+    correctValue: string | null;
+    // Most given first, never names. POLL: hosts, members who answered it, everyone once CLOSED.
+    // QUIZ: hosts and once CLOSED.
+    tally: QuizPollsTallyEntry[] | null;
+}
+
+export interface QuizPollsLeaderboardEntry {
+    rank: number;
+    memberId: string;
+    displayName: string;
+    avatarUrl: string | null;
+    correct: number;
+}
+
+// GET /quiz-polls; answer writes, PUT /settings and POST /close return it too.
+export interface QuizPollsViewDto {
+    status: 'OPEN' | 'CLOSED';
+    // Closed is computed on read, so refetch when it passes.
+    closesAt: string | null;
+    canAnswer: boolean;
+    // The two sides of a HE_SHE question; null shows the event type's default.
+    heLabel: string | null;
+    sheLabel: string | null;
+    questions: QuizPollsQuestion[];
+    // Once CLOSED, never for hosts, null with no QUIZ questions.
+    myScore: { correct: number; total: number } | null;
+    // Hosts always, everyone once CLOSED, null with no QUIZ questions.
+    leaderboard: QuizPollsLeaderboardEntry[] | null;
+}
+
+// PUT /settings (host): a replace. Allowed while CLOSED, so a future time or null reopens.
+export interface QuizPollsSettingsRequestDto {
+    closesAt: string | null;
+    heLabel: string | null;
+    sheLabel: string | null;
+}
+
+// POST /questions (host). correctValue: QUIZ only, required; CHOICE names the option by its label.
+export interface QuizPollsQuestionRequestDto {
+    kind: QuizQuestionKind;
+    answerType: QuizAnswerType;
+    prompt: string;
+    options?: string[];
+    correctValue?: string;
+}
+
+// PATCH /questions/{id} (host). Kind and type never change.
+export interface QuizPollsQuestionPatchDto {
+    prompt?: string;
+    options?: { id?: string; label: string }[];
+    sortOrder?: number;
+    correctValue?: string;
+}
+
+// GET /results (host): every answer by name.
+export interface QuizPollsResultsDto {
+    questions: HeOrSheResultsDto['questions'];
 }
 
 // GET|POST /api/events/{eventId}/wishbook/book (wishbook-book-fe-integration.md).
