@@ -49,7 +49,7 @@ export function RsvpReportScreen({ reportType }: { reportType: RsvpReportType })
 
             {/* Report */}
             {page.report ? (
-                <RsvpReportView report={page.report} />
+                <RsvpReportView report={page.report} showPhone={page.showPhone} />
             ) : page.isError ? (
                 <p className="text-sm text-rose-600">{t('loadFailed')}</p>
             ) : (

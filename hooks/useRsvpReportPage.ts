@@ -36,6 +36,8 @@ export function useRsvpReportPage(reportType: RsvpReportType) {
         isError,
         // The PDF export is host-only: a planner gets 403 from it.
         canDownload: isHost,
+        // A planner sees the report without phone numbers.
+        showPhone: isHost,
         closeHref,
         isDownloading: downloadingType !== null,
         downloadError,

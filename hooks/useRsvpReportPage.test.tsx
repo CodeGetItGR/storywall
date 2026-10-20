@@ -75,6 +75,13 @@ describe('useRsvpReportPage', () => {
         expect(renderHook(() => useRsvpReportPage('FULL_LIST')).result.current.canDownload).toBe(false);
     });
 
+    it('shows the phone column to hosts only', () => {
+        route.isHost = true;
+        expect(renderHook(() => useRsvpReportPage('FULL_LIST')).result.current.showPhone).toBe(true);
+        route.isHost = false;
+        expect(renderHook(() => useRsvpReportPage('FULL_LIST')).result.current.showPhone).toBe(false);
+    });
+
     it('closes back to the vendor page for ?from=vendor', () => {
         fromParam = 'vendor';
         const { result } = renderHook(() => useRsvpReportPage('FULL_LIST'));

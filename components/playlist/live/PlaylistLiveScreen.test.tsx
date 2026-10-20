@@ -16,10 +16,12 @@ vi.mock('@/components/tools/ModulePageShell', () => ({
 }));
 vi.mock('@/components/routing/EventRouteGate', () => ({ useEventRouteContext: () => ({ eventId: 'e1', activeEvent: { id: 'e1' }, isHost: false }) }));
 const live = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
+vi.mock('@/components/tools/ModuleUnavailableState', () => ({ ModuleUnavailableState: ({ title }: { title: string }) => <p>{title}</p> }));
 vi.mock('@/hooks/usePlaylistLive', () => ({ usePlaylistLive: () => live.value }));
 
 beforeEach(() => {
     live.value = {
+        isReadable: true,
         rows: [
             { id: 's1', title: 'One', artist: 'A', rank: 1, upvoteCount: 3, downvoteCount: 0, playedAt: null, comment: 'For Maria' },
             { id: 's2', title: 'Two', artist: null, rank: 2, upvoteCount: 1, downvoteCount: 0, playedAt: '2027-07-12T21:00:00Z' },
@@ -53,6 +55,14 @@ describe('PlaylistLiveScreen', () => {
         expect(screen.getByText('live.notLive')).toBeTruthy();
         expect(screen.getAllByRole('listitem')).toHaveLength(2);
         expect(screen.queryByRole('button', { name: /live\.mark/ })).toBeNull();
+    });
+
+    it('shows the unavailable state, not the list, when the playlist module is off', () => {
+        live.value = { ...live.value, isReadable: false, rows: [], canMark: false };
+        render(<PlaylistLiveScreen />);
+        expect(screen.getByText('disabledTitle')).toBeTruthy();
+        expect(screen.queryByText('live.notLive')).toBeNull();
+        expect(screen.queryByText('live.empty')).toBeNull();
     });
 
     it('shows the error from a failed mark', () => {

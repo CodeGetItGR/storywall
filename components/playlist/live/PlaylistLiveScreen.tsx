@@ -7,13 +7,28 @@ import { PlaylistLiveRow } from '@/components/playlist/live/PlaylistLiveRow';
 import { PlaylistListSkeleton } from '@/components/playlist/PlaylistSkeletons';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
+import { ModuleUnavailableState } from '@/components/tools/ModuleUnavailableState';
 import { usePlaylistLive } from '@/hooks/usePlaylistLive';
 import { routes } from '@/lib/routes';
 
 export function PlaylistLiveScreen() {
     const t = useTranslations('Vendors');
+    const tPlaylist = useTranslations('PlaylistPage');
     const { eventId } = useEventRouteContext();
     const live = usePlaylistLive(eventId);
+
+    if (!live.isReadable) {
+        return (
+            <ModuleUnavailableState
+                backHref={routes.events.feed(eventId)}
+                backLabel={tPlaylist('backToFeed')}
+                body={tPlaylist('disabledBody')}
+                icon={ListMusic}
+                iconClassName="text-violet-500"
+                title={tPlaylist('disabledTitle')}
+            />
+        );
+    }
 
     return (
         <ModulePageShell

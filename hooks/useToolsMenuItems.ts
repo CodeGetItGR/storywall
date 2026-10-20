@@ -54,7 +54,7 @@ export function useToolsMenuItems(): ToolMenuItem[] {
     const giftAccount = useGiftAccount(routeEventId);
     // A host is never a vendor, so the host skips the role request.
     const vendorRole = useMyVendorRole(isHost ? null : routeEventId);
-    const vendorList = useEventVendors(routeEventId);
+    const vendorList = useEventVendors(isHost ? null : routeEventId);
     const availableModules = readableModuleKeys(activeEvent);
     const moduleCopy = useModuleCopy(activeEvent?.eventType);
 
@@ -135,7 +135,9 @@ export function useHostMenuItems(): ToolMenuItem[] {
     if (!activeEvent || activeEvent.suspended) return [];
 
     const galleryQrEnabled = isGalleryQrFeatureEnabled(activeEvent.modules);
-    const vendorsOn = readableModuleKeys(activeEvent).has('vendors');
+    const readableModules = readableModuleKeys(activeEvent);
+    const vendorsOn = readableModules.has('vendors');
+    const postsOn = readableModules.has('posts');
     const isDraft = activeEvent.status === 'DRAFT';
     // Deleted events keep the manage page (deletion notice + billing) and nothing else.
     const isDeleted = isEventDeleted(activeEvent);
@@ -145,7 +147,7 @@ export function useHostMenuItems(): ToolMenuItem[] {
         { key: 'galleryQr', href: routes.events.tools.galleryQr(activeEvent.id), icon: QrCode, hidden: isDeleted || !galleryQrEnabled },
         { key: 'invitationsQr', href: routes.events.invitationsQr(activeEvent.id), icon: Ticket, hidden: isDeleted || isDraft },
         { key: 'vendors', href: routes.events.manageVendors(activeEvent.id), icon: Store, hidden: isDeleted || isDraft || !vendorsOn },
-        { key: 'announcement', href: routes.events.tools.announcement(activeEvent.id), icon: Megaphone, hidden: isDeleted || isDraft },
+        { key: 'announcement', href: routes.events.tools.announcement(activeEvent.id), icon: Megaphone, hidden: isDeleted || isDraft || !postsOn },
         { key: 'help', href: routes.events.manage(activeEvent.id, { tab: 'help' }), icon: HelpCircle, hidden: isDeleted },
     ];
 

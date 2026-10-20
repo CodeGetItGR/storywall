@@ -5614,7 +5614,7 @@
         "memberArchiveNotEnabled": "Members of this event can't download all photos and videos.",
         "postMediaLimitExceeded": "This post already has the maximum number of photos.",
         "postPinNotHost": "Only hosts can pin posts.",
-        "announcementNotHost": "Only hosts can post announcements.",
+        "announcementNotHost": "Only hosts and planners can post announcements.",
         "storyExpiryOutOfRange": "A story can last up to 24 hours.",
         "storyLiveLimitReached": "You have reached the story limit. Older stories expire after 24 hours, or delete one to post another.",
         "storyMediaAlreadyLive": "This photo or video is already in one of your stories.",
@@ -7249,7 +7249,6 @@
             "title": "Vendors",
             "back": "Back",
             "empty": "No vendors yet.",
-            "hidden": "Hidden",
             "open": "Open {name}"
         },
         "me": {
@@ -7257,7 +7256,6 @@
             "back": "Back",
             "notVendor": "You're not a vendor in this event.",
             "accessUntil": "Your tools work until {date}.",
-            "accessEnded": "Your tools for this event have stopped.",
             "toolsOff": {
                 "MODULE_OFF": "Vendor tools aren't part of this event's plan right now.",
                 "TYPE_NOT_ALLOWED": "This event's plan doesn't include tools for your type.",

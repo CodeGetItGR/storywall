@@ -290,6 +290,15 @@ describe('vendor tools in the menu', () => {
         expect(vendor.meEventId).toBe('event-1');
     });
 
+    it('does not ask a host for the vendor list', () => {
+        mocks.isHost = true;
+        renderHook(() => useToolsMenuItems());
+        expect(vendor.listEventId).toBeNull();
+        mocks.isHost = false;
+        renderHook(() => useToolsMenuItems());
+        expect(vendor.listEventId).toBe('event-1');
+    });
+
     it('leaves RSVP out for a vendor and keeps it for a guest', () => {
         expect(keysNow()).toContain('rsvp');
         vendor.me = role('MUSIC', ['SONG_REQUESTS']);
@@ -345,6 +354,11 @@ describe('vendor entries in the host menu', () => {
         mocks.activeEvent = vendorEvent();
         const keys = renderHook(() => useHostMenuItems()).result.current.map((item) => item.key);
         expect(keys).toEqual(expect.arrayContaining(['vendors', 'announcement']));
+    });
+
+    it('hides Announcement when the posts module is off', () => {
+        mocks.activeEvent = withoutModule('posts');
+        expect(renderHook(() => useHostMenuItems()).result.current.map((item) => item.key)).not.toContain('announcement');
     });
 
     it('has no Vendors entry without the module, and neither entry on a draft', () => {

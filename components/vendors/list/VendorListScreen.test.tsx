@@ -9,11 +9,9 @@ vi.mock('next-intl', () => ({
 vi.mock('@/components/tools/ModulePageShell', () => ({ ModulePageShell: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
 vi.mock('@/components/routing/EventRouteGate', () => ({ useEventRouteContext: () => ({ eventId: 'e1', activeEvent: { id: 'e1' }, isHost: false }) }));
 const list = vi.hoisted(() => ({ data: [] as unknown[], isLoading: false }));
-const me = vi.hoisted(() => ({ data: null as null | { vendorId: string } }));
 const recordClick = vi.fn();
 vi.mock('@/hooks/useVendors', () => ({
     useEventVendors: () => list,
-    useMyVendorRole: () => me,
     useRecordVendorClick: () => recordClick,
 }));
 
@@ -33,7 +31,6 @@ function row(overrides: Record<string, unknown> = {}) {
 beforeEach(() => {
     recordClick.mockReset();
     list.isLoading = false;
-    me.data = null;
     list.data = [row()];
 });
 afterEach(cleanup);
@@ -48,13 +45,6 @@ describe('VendorListScreen', () => {
         expect(screen.getByText('types.PHOTOGRAPHER')).toBeTruthy();
         fireEvent.click(link);
         expect(recordClick).toHaveBeenCalledWith('v1');
-    });
-
-    it('does not record a click on the caller\'s own row', () => {
-        me.data = { vendorId: 'v1' };
-        render(<VendorListScreen />);
-        fireEvent.click(screen.getByRole('link', { name: 'list.open:{"name":"Studio X"}' }));
-        expect(recordClick).not.toHaveBeenCalled();
     });
 
     it('lists rows in vendor type order', () => {

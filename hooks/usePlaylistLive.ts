@@ -5,6 +5,7 @@ import { useCallback, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useEvent } from '@/hooks/useEvent';
+import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { playlistKeys, usePlaylistLeaderboard } from '@/hooks/usePlaylist';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -20,6 +21,7 @@ export function usePlaylistLive(eventId: string) {
     const queryClient = useQueryClient();
     const { data: event } = useEvent(eventId);
     const leaderboard = usePlaylistLeaderboard(eventId, true, { refetchInterval: PLAYLIST_LIVE_REFRESH_MS });
+    const isReadable = useModuleReadable(eventId, 'playlist');
     const [error, setError] = useState<string | null>(null);
 
     const markPlayed = useMutation({
@@ -42,6 +44,7 @@ export function usePlaylistLive(eventId: string) {
     );
 
     return {
+        isReadable,
         rows: leaderboard.data ?? [],
         isLoading: leaderboard.isLoading,
         error,
