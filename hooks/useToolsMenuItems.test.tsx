@@ -185,7 +185,13 @@ describe('useHostMenuItems', () => {
 
 function vendorEvent() {
     const base = event();
-    return { ...base, modules: [...(base.modules as object[]), { moduleKey: 'vendors', isEnabled: true, isAvailable: true, configuration: {} }] };
+    const extra = ['vendors', 'playlist'].map((moduleKey) => ({ moduleKey, isEnabled: true, isAvailable: true, configuration: {} }));
+    return { ...base, modules: [...(base.modules as object[]), ...extra] };
+}
+
+function withoutModule(moduleKey: string) {
+    const base = vendorEvent();
+    return { ...base, modules: (base.modules as { moduleKey: string }[]).filter((module) => module.moduleKey !== moduleKey) };
 }
 
 function role(type: string, capabilities: string[], accessOpen = true) {
@@ -278,14 +284,29 @@ describe('vendor tools in the menu', () => {
         expect(keysNow()).toContain('vendors');
     });
 
-    it('shows nothing vendor-related without the module', () => {
+    it('keeps the vendor page and drops the tools while the module is off', () => {
         mocks.activeEvent = event();
-        vendor.me = role('MUSIC', ['SONG_REQUESTS']);
+        // The backend sends no capabilities while the tools are off.
+        vendor.me = role('MUSIC', []);
         vendor.list = [{ id: 'v1', businessName: 'Studio X', hiddenByHost: false, optedOut: false }];
         const keys = keysNow();
+        expect(keys).toContain('vendorMe');
         expect(keys).not.toContain('vendors');
-        expect(keys).not.toContain('vendorMe');
         expect(keys).not.toContain('liveRequests');
+    });
+
+    it('leaves the RSVP report out when the RSVP module is off', () => {
+        vendor.me = role('PLANNER', ['ANNOUNCE', 'QR_READ', 'RSVP_REPORT', 'SCHEDULE_EDIT']);
+        mocks.activeEvent = withoutModule('rsvp');
+        const keys = keysNow();
+        expect(keys).not.toContain('rsvpReport');
+        expect(keys).toContain('announcement');
+    });
+
+    it('leaves live requests out when the playlist module is off', () => {
+        vendor.me = role('MUSIC', ['SONG_REQUESTS']);
+        mocks.activeEvent = withoutModule('playlist');
+        expect(keysNow()).not.toContain('liveRequests');
     });
 });
 

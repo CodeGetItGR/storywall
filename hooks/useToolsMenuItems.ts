@@ -66,7 +66,8 @@ export function useToolsMenuItems(): ToolMenuItem[] {
     const isDeleted = isEventDeleted(activeEvent);
 
     const vendorsOn = availableModules.has('vendors');
-    const me = vendorsOn ? (vendorRole.data ?? null) : null;
+    // The vendor page stays while the module is off: it says the tools are closed.
+    const me = vendorRole.data ?? null;
     const hasVendorsListed = vendorsOn && listedVendors(vendorList.data ?? []).length > 0;
 
     // copyKey: the module whose event-type name and description label the tool.
@@ -100,9 +101,9 @@ export function useToolsMenuItems(): ToolMenuItem[] {
         .filter((tool) => tool.key !== 'vendors' || hasVendorsListed)
         .filter((tool) => tool.key !== 'vendorMe' || me !== null)
         .filter((tool) => tool.key !== 'announcement' || hasVendorCapability(me, 'ANNOUNCE'))
-        .filter((tool) => tool.key !== 'rsvpReport' || hasVendorCapability(me, 'RSVP_REPORT'))
+        .filter((tool) => tool.key !== 'rsvpReport' || (availableModules.has('rsvp') && hasVendorCapability(me, 'RSVP_REPORT')))
         .filter((tool) => tool.key !== 'vendorQr' || hasVendorCapability(me, 'QR_READ'))
-        .filter((tool) => tool.key !== 'liveRequests' || hasVendorCapability(me, 'SONG_REQUESTS'))
+        .filter((tool) => tool.key !== 'liveRequests' || (availableModules.has('playlist') && hasVendorCapability(me, 'SONG_REQUESTS')))
         .filter((tool) => !isDeleted || tool.key === 'gallery' || tool.key === 'wishbook')
         .map((tool) => {
             const copyKey = tool.copyKey ?? tool.moduleKey;
