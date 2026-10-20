@@ -7161,5 +7161,14 @@
             "copyStrong": "for the tables.",
             "imageAlt": "Wedding celebration in Santorini"
         }
+    },
+    "Vendors": {
+        "profile": {
+            "errors": {
+                "businessNameRequired": "Add your business name.",
+                "businessNameTooLong": "Use at most {max} characters.",
+                "linkInvalid": "Use a link starting with https:// or an @handle."
+            }
+        }
     }
 }
