@@ -7285,6 +7285,8 @@
             "proChoose": "Επιλογή φωτογραφιών ή βίντεο",
             "proUpload": "Ανέβασμα {count, plural, one {# αρχείου} other {# αρχείων}}",
             "proUploaded": "Ανέβηκαν.",
+            "proUploadFailed": "{count, plural, one {# αρχείο δεν ανέβηκε.} other {# αρχεία δεν ανέβηκαν.}}",
+            "proMore": "Περισσότερα",
             "proEmpty": "Δεν έχετε ανεβάσει τίποτα ακόμη.",
             "proDelete": "Διαγραφή",
             "proDeleteTitle": "Διαγραφή αυτού του αρχείου;",

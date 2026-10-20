@@ -14,6 +14,7 @@ import {
     vendorApplySearch,
     vendorInviteUrl,
     vendorLinkHref,
+    vendorToolLinks,
 } from '@/lib/vendors';
 
 function me(overrides: Partial<VendorMeDto> = {}): VendorMeDto {
@@ -178,5 +179,28 @@ describe('hasProAllowance', () => {
         expect(hasProAllowance({ proStorageBytes: 0 })).toBe(false);
         expect(hasProAllowance({})).toBe(false);
         expect(hasProAllowance(null)).toBe(false);
+    });
+});
+
+describe('vendorToolLinks', () => {
+    it('lists a planner’s four tools in a fixed order', () => {
+        expect(vendorToolLinks('e1', me()).map((tool) => tool.key)).toEqual(['schedule', 'announcement', 'rsvpReport', 'qr']);
+        expect(vendorToolLinks('e1', me()).find((tool) => tool.key === 'rsvpReport')?.href).toBe('/events/e1/manage/rsvp/reports/FULL_LIST?from=vendor');
+    });
+
+    it('gives the DJ the live list and a photographer nothing (their tool is on the page)', () => {
+        expect(vendorToolLinks('e1', me({ vendorType: 'MUSIC', capabilities: ['SONG_REQUESTS'] })).map((tool) => tool.key)).toEqual(['liveRequests']);
+        expect(vendorToolLinks('e1', me({ vendorType: 'PHOTOGRAPHER', capabilities: ['PRO_ALBUM'] }))).toEqual([]);
+    });
+
+    it('lists nothing once access has closed', () => {
+        expect(vendorToolLinks('e1', me({ accessOpen: false }))).toEqual([]);
+    });
+
+    it('leaves out tools whose module is off', () => {
+        expect(vendorToolLinks('e1', me(), new Set(['gallery'])).map((tool) => tool.key)).toEqual(['schedule', 'announcement', 'qr']);
+        expect(vendorToolLinks('e1', me({ vendorType: 'MUSIC', capabilities: ['SONG_REQUESTS'] }), new Set(['playlist'])).map((tool) => tool.key)).toEqual([
+            'liveRequests',
+        ]);
     });
 });

@@ -83,3 +83,26 @@ export function vendorLinkHref(link: string | null | undefined): string | null {
 export function hasProAllowance(usage: Pick<EventUsageResponseDto, 'proStorageBytes'> | null | undefined): boolean {
     return (usage?.proStorageBytes ?? 0) > 0;
 }
+
+export type VendorToolKey = 'schedule' | 'announcement' | 'rsvpReport' | 'qr' | 'liveRequests';
+
+// The vendor page's tool links, in this order. The Pro album is on the page itself, so it has no link.
+// moduleKey: the module the tool's screen needs (the tools menu hides it the same way).
+const VENDOR_TOOLS: { key: VendorToolKey; capability: VendorCapability; moduleKey?: string; href: (eventId: string) => string }[] = [
+    { key: 'schedule', capability: 'SCHEDULE_EDIT', href: (eventId) => routes.events.tools.schedule(eventId) },
+    { key: 'announcement', capability: 'ANNOUNCE', href: (eventId) => routes.events.tools.announcement(eventId) },
+    { key: 'rsvpReport', capability: 'RSVP_REPORT', moduleKey: 'rsvp', href: (eventId) => routes.events.rsvpReport(eventId, 'FULL_LIST', 'vendor') },
+    { key: 'qr', capability: 'QR_READ', href: (eventId) => routes.events.invitationsQr(eventId) },
+    { key: 'liveRequests', capability: 'SONG_REQUESTS', moduleKey: 'playlist', href: (eventId) => routes.events.tools.playlistLive(eventId) },
+];
+
+// Without readableModules every open tool is listed; with it, tools whose module is off are left out.
+export function vendorToolLinks(
+    eventId: string,
+    me: VendorMeDto,
+    readableModules?: ReadonlySet<string>,
+): { key: VendorToolKey; href: string }[] {
+    return VENDOR_TOOLS.filter((tool) => hasVendorCapability(me, tool.capability))
+        .filter((tool) => !readableModules || !tool.moduleKey || readableModules.has(tool.moduleKey))
+        .map((tool) => ({ key: tool.key, href: tool.href(eventId) }));
+}

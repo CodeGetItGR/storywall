@@ -7274,6 +7274,8 @@
             "proChoose": "Choose photos or videos",
             "proUpload": "Upload {count, plural, one {# file} other {# files}}",
             "proUploaded": "Uploaded.",
+            "proUploadFailed": "{count, plural, one {# file didn't upload.} other {# files didn't upload.}}",
+            "proMore": "Show more",
             "proEmpty": "Nothing uploaded yet.",
             "proDelete": "Delete",
             "proDeleteTitle": "Delete this item?",
