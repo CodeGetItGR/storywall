@@ -125,6 +125,12 @@ describe('useToolsMenuItems', () => {
         expect(item?.href).toBe('/events/event-1/feed?sheet=role');
     });
 
+    it('hides My role for a vendor', () => {
+        mocks.activeEvent = withRoles();
+        vendor.me = role('PHOTOGRAPHER', ['PRO_ALBUM']);
+        expect(renderHook(() => useToolsMenuItems()).result.current.map((tool) => tool.key)).not.toContain('myRole');
+    });
+
     it('hides My role for featured members and draft events', () => {
         mocks.activeEvent = withRoles();
         mocks.activeMember = { id: 'm1', isFeatured: true };

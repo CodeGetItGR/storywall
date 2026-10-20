@@ -96,7 +96,8 @@ export function useToolsMenuItems(): ToolMenuItem[] {
         .filter((tool) => !tool.moduleKey || availableModules.has(tool.moduleKey))
         .filter((tool) => tool.key !== 'gallery' || isHost || isGalleryOpenToGuests(activeEvent))
         .filter((tool) => tool.key !== 'gifts' || isHost || Boolean(giftAccount.data))
-        .filter((tool) => tool.key !== 'myRole' || (!isDemoVisitor && canEditOwnRole(activeEvent, activeMember)))
+        // A vendor's chip shows their vendor type, so they have no guest role to pick.
+        .filter((tool) => tool.key !== 'myRole' || (!isDemoVisitor && me === null && canEditOwnRole(activeEvent, activeMember)))
         .filter((tool) => (tool.key !== 'heOrShe' && tool.key !== 'quizPolls') || !isDemoVisitor)
         .filter((tool) => tool.key !== 'vendors' || hasVendorsListed)
         .filter((tool) => tool.key !== 'vendorMe' || me !== null)
