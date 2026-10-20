@@ -1,4 +1,4 @@
-import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+import { dehydrate } from '@tanstack/react-query';
 
 import { appConfigKeys } from '@/hooks/useAppConfig';
 import { planTiersByEventTypeKeys } from '@/hooks/usePlanTiersForEventType';
@@ -9,6 +9,7 @@ import { prefetchAccessToken } from '@/lib/auth/serverEventContext';
 import { CREATE_EVENT_TYPE_PARAM, resolveCreateEventType } from '@/lib/createEventSteps';
 import { normalizeEventTypeSlug } from '@/lib/eventTypeSlug';
 import { makeQueryClient } from '@/lib/queryClient';
+import { PageHydrationBoundary } from '@/providers/PageHydrationBoundary';
 
 import CreateEventPage from './PageClient';
 
@@ -36,8 +37,8 @@ export default async function Page({ searchParams }: PageProps) {
     }
 
     return (
-        <HydrationBoundary state={dehydrate(queryClient)}>
+        <PageHydrationBoundary state={dehydrate(queryClient)}>
             <CreateEventPage />
-        </HydrationBoundary>
+        </PageHydrationBoundary>
     );
 }

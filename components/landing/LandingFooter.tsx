@@ -6,10 +6,11 @@ import { LandingMotionToggle } from '@/components/landing/LandingMotionToggle';
 import { LandingNewsletter } from '@/components/landing/LandingNewsletter';
 import { AppLink } from '@/components/ui/AppLink';
 import type { Locale } from '@/i18n/config';
-import { getForBusinessPath } from '@/i18n/publicLocale';
+import { getForBusinessPath, getQrWeddingPath } from '@/i18n/publicLocale';
 import { landingSectionAttributes } from '@/lib/landingTracking';
 import { loadLiveOccasions } from '@/lib/occasions/liveOccasions.server';
 import { occasionPath } from '@/lib/occasions/occasions';
+import { loadQrWeddingPageLive } from '@/lib/qrWeddingPage.server';
 import { routes } from '@/lib/routes';
 import { SOCIAL_PROFILES } from '@/lib/seo';
 import { showsUnreleasedPages } from '@/lib/unreleasedPages';
@@ -43,6 +44,7 @@ export async function LandingFooter({ anchorBase = '', topHref = TOP_HREF }: { a
     const pages = await getTranslations('OccasionPages');
     const locale = (await getLocale()) as Locale;
     const occasions = await loadLiveOccasions();
+    const showsQrWedding = await loadQrWeddingPageLive();
     const showsForBusiness = showsUnreleasedPages();
     const columns = occasions.length > 0 ? 'min-[761px]:grid-cols-[1.65fr_0.75fr_0.75fr_0.75fr]' : 'min-[761px]:grid-cols-[1.65fr_0.75fr_0.75fr]';
 
@@ -84,6 +86,11 @@ export async function LandingFooter({ anchorBase = '', topHref = TOP_HREF }: { a
                             {t(`exploreLinks.${key}`)}
                         </a>
                     ))}
+                    {showsQrWedding && (
+                        <a className={COLUMN_LINK} href={getQrWeddingPath(locale)}>
+                            {t('exploreLinks.qrWedding')}
+                        </a>
+                    )}
                     {showsForBusiness && (
                         <a className={COLUMN_LINK} href={getForBusinessPath(locale)}>
                             {t('exploreLinks.forBusiness')}

@@ -1125,7 +1125,7 @@
         "noGuestsYet": "No guests have joined yet. Share an invite to get started.",
         "draft": {
             "delete": {
-                "action": "Delete draft",
+                "action": "Delete event",
                 "title": "Delete this draft?",
                 "body": "The draft and its details are deleted. This can't be undone."
             },
@@ -1138,6 +1138,7 @@
             "addStartDate": "Add a start date to publish",
             "retryIn": "Try again in {seconds}s",
             "durationUnavailable": "This duration is no longer available. Choose another one.",
+            "durationTooShort": "Some durations don't cover the event date.",
             "selectedAddons": {
                 "title": "Selected add-ons",
                 "body": "Chosen during event creation. Add-ons can't be changed until after publishing."
@@ -5757,8 +5758,8 @@
             "playMotion": "Play animations"
         },
         "meta": {
-            "title": "StoryWall | A private social space for your event",
-            "description": "Share photos, wishes and moments with your guests before, during and after your wedding, baptism or party. No app needed.",
+            "title": "Guest photos with a QR code, no app | StoryWall",
+            "description": "Guests scan a QR code and upload photos and videos from their phone, for weddings, baptisms and parties. No app needed.",
             "siteName": "StoryWall",
             "imageAlt": "StoryWall, the social space for every private event"
         },
@@ -6186,7 +6187,8 @@
                 "features": "Features",
                 "plans": "Plans",
                 "faq": "FAQ",
-                "forBusiness": "For professionals"
+                "forBusiness": "For professionals",
+                "qrWedding": "Wedding QR code"
             },
             "social": "SOCIAL",
             "socialLinks": {
@@ -6730,7 +6732,8 @@
                 "imageAlt": "Wedding guests celebrating with photos shared on StoryWall"
             },
             "themes": {
-                "eyebrow": "Wedding themes"
+                "heading": "Give your wedding StoryWall the theme that suits it.",
+                "intro": "Sample themes for your wedding invitation and wall."
             },
             "timeline": [
                 {
@@ -6750,7 +6753,6 @@
                 }
             ],
             "story": {
-                "eyebrow": "Before, on the day, after",
                 "heading": ["Your whole wedding,", "in one place."],
                 "intro": "From the first invitation to the last dance, every guest adds to the same story.",
                 "rows": [
@@ -6812,7 +6814,6 @@
                 }
             },
             "featuresIntro": {
-                "eyebrow": "Built for weddings",
                 "heading": "Everything your wedding needs, in one link."
             },
             "howItWorksHeading": ["Three steps.", "One wedding story."],
@@ -6862,7 +6863,6 @@
             ],
             "faqIntro": "What couples ask before they create their wedding StoryWall.",
             "finalCta": {
-                "eyebrow": "Ready for the big day?",
                 "heading": ["Your wedding", "starts here."],
                 "copyStart": "Create your wedding StoryWall and share it with your guests",
                 "copyStrong": "in a few minutes.",
@@ -6943,7 +6943,8 @@
                 }
             },
             "themes": {
-                "eyebrow": "Baptism themes"
+                "heading": "Give your baptism StoryWall the theme that suits it.",
+                "intro": "Sample themes for your baptism invitation and wall."
             },
             "timeline": [
                 {
@@ -6963,7 +6964,6 @@
                 }
             ],
             "story": {
-                "eyebrow": "Before, on the day, after",
                 "heading": ["Your child's baptism,", "in one place."],
                 "intro": "From the invitation to the last wish, family and friends add to the same story.",
                 "rows": [
@@ -7025,7 +7025,6 @@
                 }
             },
             "featuresIntro": {
-                "eyebrow": "Built for baptisms",
                 "heading": "Everything your baptism needs, in one link."
             },
             "howItWorksHeading": ["Three steps.", "One baptism story."],
@@ -7071,13 +7070,89 @@
             ],
             "faqIntro": "What parents ask before they create their baptism StoryWall.",
             "finalCta": {
-                "eyebrow": "Ready for the big day?",
                 "heading": ["Your child's story", "starts here."],
                 "copyStart": "Create your baptism StoryWall and send it to your guests",
                 "copyStrong": "in a few minutes.",
                 "imageAlt": "Family and guests at the baptism table"
             },
             "pricingHeading": "Plans for your baptism."
+        }
+    },
+    "QrWeddingPage": {
+        "name": "Wedding QR code",
+        "meta": {
+            "title": "Wedding QR Code for Guest Photos | StoryWall",
+            "description": "Guests scan your wedding QR code and upload photos and videos to one shared album. No app, no sign-up. Included in every plan.",
+            "keywords": [
+                "wedding QR code",
+                "QR code for wedding photos",
+                "QR code upload wedding photos",
+                "wedding photo sharing",
+                "shared wedding album",
+                "guest photo app"
+            ]
+        },
+        "nav": {
+            "guide": "GUIDE",
+            "guideMobile": "Guide"
+        },
+        "hero": {
+            "h1": "Wedding QR code for guest photos",
+            "headline": "One QR code on the tables. <b>Every guest photo in one album.</b>",
+            "lead": "Guests scan with their phone camera and upload photos and videos. No app, no account.",
+            "included": "The QR code is included in every plan.",
+            "cta": "Create your wedding QR code"
+        },
+        "howItWorksHeading": ["One QR code.", "The whole wedding."],
+        "howItWorks": [
+            { "title": "Create", "body": "Set up your wedding's StoryWall in a few minutes." },
+            { "title": "Print the QR code", "body": "Print it and place it around the venue." },
+            { "title": "Guests upload", "body": "They scan with their phone camera and add photos and videos." }
+        ],
+        "guide": {
+            "what": {
+                "title": "What is a wedding QR code?",
+                "body": "A code you place around your venue. Guests scan it with their phone camera and upload photos and videos to one shared album, so you see every guest's photos in one place."
+            },
+            "where": {
+                "title": "Where to put the QR code at your wedding",
+                "places": [
+                    "At the reception entrance",
+                    "On every table",
+                    "At the bar",
+                    "Next to the photo booth",
+                    "On your thank-you cards, for photos that come in later"
+                ]
+            },
+            "sign": {
+                "title": "What to write on the QR sign",
+                "intro": "Pick one for under the QR code:",
+                "texts": [
+                    "\"Scan to share your photos from our wedding!\"",
+                    "\"Got a great shot? Scan the code and share it with us.\"",
+                    "\"Our day through your eyes. Upload your photos and videos here.\""
+                ],
+                "tip": "If some guests don't read English, add a line in their language."
+            }
+        },
+        "pricingHeading": "How much does a wedding QR code cost?",
+        "faqIntro": "What couples ask about the wedding QR code.",
+        "faq": [
+            { "q": "Do guests need an app or an account?", "a": "No. They scan the code and upload from their phone's browser." },
+            { "q": "Can guests upload videos too?", "a": "Yes. The same QR code takes photos and videos." },
+            { "q": "Who can see the photos?", "a": "Only the people you invite. Your wedding album is private." },
+            { "q": "Can I download all the photos?", "a": "Yes. In the album, select as many as you like and download them." },
+            {
+                "q": "How long can guests keep uploading?",
+                "a": "As long as your StoryWall is online. Your plan sets how long, and you can extend it."
+            },
+            { "q": "Will older guests manage?", "a": "Yes. They open the camera, scan and tap upload." }
+        ],
+        "finalCta": {
+            "heading": ["Your wedding QR code,", "ready in minutes."],
+            "copyStart": "Create your wedding's StoryWall and print the QR code",
+            "copyStrong": "for the tables.",
+            "imageAlt": "Wedding celebration in Santorini"
         }
     }
 }

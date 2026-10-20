@@ -83,8 +83,10 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
     const activePreview = terminalState ? null : preview;
 
     const giftFraming = inviteGiftFraming(activePreview?.gift);
-    const loginHref = routes.auth.login({ invite: token, email: activePreview?.email });
-    const registerHref = routes.auth.register({ invite: token, email: activePreview?.email });
+    // Straight to this event's feed after signing in: bare /feed opens whichever event is active.
+    const eventFeedPath = activePreview ? routes.events.feed(activePreview.eventId) : null;
+    const loginHref = routes.auth.login({ invite: token, email: activePreview?.email, next: eventFeedPath });
+    const registerHref = routes.auth.register({ invite: token, email: activePreview?.email, next: eventFeedPath });
 
     return (
         <InviteOnboardingState
