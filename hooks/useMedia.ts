@@ -7,7 +7,7 @@ import { uploadInBatches } from '@/lib/api/batchUpload';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
-import type { MediaBatchUploadResponseDto, MediaResponseDto, MediaUploadContext, OriginalMediaUrlDto } from '@/lib/api/types';
+import type { MediaBatchUploadResponseDto, MediaCollection, MediaResponseDto, MediaUploadContext, OriginalMediaUrlDto } from '@/lib/api/types';
 import { sendUploadWithBusyRetry } from '@/lib/api/uploadRetry';
 import { LIVE_CONTENT_STALE_TIME } from '@/lib/queryClient';
 import { shrinkImageForUpload } from '@/lib/uploadImageResize';
@@ -15,24 +15,39 @@ import { getUploadLimits } from '@/lib/uploadLimits';
 
 export const mediaKeys = {
     list: (eventId: string) => ['events', eventId, 'media'] as const,
+    // Under list(), so every gallery invalidation (uploads, deletes) refreshes the Pro album too.
+    proList: (eventId: string) => ['events', eventId, 'media', 'PRO'] as const,
     detail: (id: string) => ['medias', id] as const,
 };
 
 export const MEDIA_PAGE_SIZE = 30;
 
+export function mediaListKey(eventId: string, collection: MediaCollection) {
+    return collection === 'PRO' ? mediaKeys.proList(eventId) : mediaKeys.list(eventId);
+}
+
+// The guest URL stays exactly as before the Pro album, so its cache and prefetch are unchanged.
+export function mediaListPath(eventId: string, collection: MediaCollection, page: number): string {
+    const path = `${endpoints.events.media(eventId)}?page=${page}&size=${MEDIA_PAGE_SIZE}`;
+    return collection === 'PRO' ? `${path}&collection=PRO` : path;
+}
+
 // GET /api/events/{eventId}/media — any event member. Paginated, newest first.
 // Refetched once per signing window so the presigned URLs it holds never expire.
-export function useEventMedia(eventId: string | null) {
+// The Pro album needs the vendors module as well as the gallery (the backend refuses it otherwise).
+export function useEventMedia(eventId: string | null, collection: MediaCollection = 'GUEST') {
     const { isAuthenticated } = useAuth();
     const galleryReadable = useModuleReadable(eventId, 'gallery');
+    const vendorsReadable = useModuleReadable(eventId, 'vendors');
     const refetchInterval = usePresignedUrlRefreshMs();
+    const collectionReadable = collection === 'GUEST' || vendorsReadable;
 
     return useInfiniteQuery({
-        queryKey: mediaKeys.list(eventId ?? ''),
-        queryFn: ({ pageParam }) => api.get<Page<MediaResponseDto>>(`${endpoints.events.media(eventId!)}?page=${pageParam}&size=${MEDIA_PAGE_SIZE}`),
+        queryKey: mediaListKey(eventId ?? '', collection),
+        queryFn: ({ pageParam }) => api.get<Page<MediaResponseDto>>(mediaListPath(eventId!, collection, pageParam)),
         initialPageParam: 0,
         getNextPageParam: (lastPage) => (lastPage.page.number + 1 < lastPage.page.totalPages ? lastPage.page.number + 1 : undefined),
-        enabled: Boolean(eventId) && isAuthenticated && galleryReadable,
+        enabled: Boolean(eventId) && isAuthenticated && galleryReadable && collectionReadable,
         staleTime: LIVE_CONTENT_STALE_TIME,
         refetchInterval,
     });
