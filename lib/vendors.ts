@@ -70,3 +70,11 @@ export function proStorageState(usedBytes: number | null | undefined, allowanceB
 export function sortByVendorType<T extends { vendorType: PartnerRole }>(rows: readonly T[]): T[] {
     return [...rows].sort((a, b) => VENDOR_TYPES.indexOf(a.vendorType) - VENDOR_TYPES.indexOf(b.vendorType));
 }
+
+// The outgoing link for a stored profile link: https as is, an @handle on Instagram.
+export function vendorLinkHref(link: string | null | undefined): string | null {
+    if (!link) return null;
+    const value = link.trim();
+    if (!isValidVendorLink(value)) return null;
+    return value.startsWith('@') ? `https://instagram.com/${value.slice(1)}` : value;
+}

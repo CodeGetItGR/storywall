@@ -12,6 +12,7 @@ import {
     VENDOR_TYPES,
     vendorApplySearch,
     vendorInviteUrl,
+    vendorLinkHref,
 } from '@/lib/vendors';
 
 function me(overrides: Partial<VendorMeDto> = {}): VendorMeDto {
@@ -152,5 +153,20 @@ describe('sortByVendorType', () => {
         const rows = [{ vendorType: 'MUSIC' as const }, { vendorType: 'PLANNER' as const }, { vendorType: 'PHOTOGRAPHER' as const }];
         expect(sortByVendorType(rows).map((row) => row.vendorType)).toEqual(['PLANNER', 'PHOTOGRAPHER', 'MUSIC']);
         expect(rows[0].vendorType).toBe('MUSIC');
+    });
+});
+
+describe('vendorLinkHref', () => {
+    it('opens https links as they are and handles on Instagram', () => {
+        expect(vendorLinkHref('https://studio.gr')).toBe('https://studio.gr');
+        expect(vendorLinkHref('@studio.x')).toBe('https://instagram.com/studio.x');
+        expect(vendorLinkHref('  @studio.x ')).toBe('https://instagram.com/studio.x');
+    });
+
+    it('opens nothing for anything else', () => {
+        expect(vendorLinkHref('javascript:alert(1)')).toBeNull();
+        expect(vendorLinkHref('http://studio.gr')).toBeNull();
+        expect(vendorLinkHref('')).toBeNull();
+        expect(vendorLinkHref(null)).toBeNull();
     });
 });
