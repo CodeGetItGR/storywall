@@ -39,6 +39,7 @@ vi.mock('@/components/feed/RsvpPrompt', () => ({ RsvpPrompt: () => null }));
 vi.mock('@/components/feed/StoriesRow', () => ({ StoriesRow: () => null }));
 vi.mock('@/components/pwa/InstallAppBanner', () => ({ InstallAppBanner: () => null }));
 vi.mock('@/components/story/StoryModal', () => ({ StoryModal: () => null }));
+vi.mock('@/components/vendors/VendorProfilePrompt', () => ({ VendorProfilePrompt: () => null }));
 
 afterEach(cleanup);
 

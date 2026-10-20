@@ -23,6 +23,7 @@ import { StoriesRow } from '@/components/feed/StoriesRow';
 import { InstallAppBanner } from '@/components/pwa/InstallAppBanner';
 import { StoryModal } from '@/components/story/StoryModal';
 import { AppLink } from '@/components/ui/AppLink';
+import { VendorProfilePrompt } from '@/components/vendors/VendorProfilePrompt';
 import { eventKeys } from '@/hooks/useEvent';
 import { useFeedItems } from '@/hooks/useFeedItems';
 import { useGiftAccount } from '@/hooks/useGiftAccount';
@@ -168,6 +169,9 @@ export function FeedPageContent() {
 
             {/* Partner card prompt */}
             {isHost && <PartnerBrandingPromptModal eventId={eventId} prompt={event.partnerBrandingPrompt} />}
+
+            {/* Vendor profile prompt */}
+            {!isHost && <VendorProfilePrompt eventId={eventId} />}
         </div>
     );
 }
