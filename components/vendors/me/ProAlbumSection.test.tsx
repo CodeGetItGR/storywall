@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ProAlbumSection } from '@/components/vendors/me/ProAlbumSection';
 
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string, values?: Record<string, unknown>) => (values ? `${key}:${JSON.stringify(values)}` : key) }));
-vi.mock('@/components/vendors/ProStorageMeter', () => ({ ProStorageMeter: () => <p>meter</p> }));
+vi.mock('@/components/vendors/ProStorageMeter', () => ({ ProStorageMeter: ({ hideLabel }: { hideLabel?: boolean }) => <p>{hideLabel ? 'meter without label' : 'meter'}</p> }));
 vi.mock('@/components/common/ProtectedImage', () => ({ ProtectedImage: ({ alt }: { alt: string }) => <span>{alt}</span> }));
 const album = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
 vi.mock('@/hooks/useProAlbum', () => ({ useProAlbum: () => album.value }));
@@ -32,7 +32,8 @@ afterEach(cleanup);
 describe('ProAlbumSection', () => {
     it('shows the meter, the own items and asks before deleting', () => {
         render(<ProAlbumSection eventId="e1" usedBytes={10} allowanceBytes={100} canUpload />);
-        expect(screen.getByText('meter')).toBeTruthy();
+        // The section title names the meter, so its own label is hidden.
+        expect(screen.getByText('meter without label')).toBeTruthy();
         expect(screen.getByText('a.jpg')).toBeTruthy();
         fireEvent.click(screen.getByRole('button', { name: 'me.proDelete' }));
         expect(album.value.requestDelete).toHaveBeenCalledWith('mine');

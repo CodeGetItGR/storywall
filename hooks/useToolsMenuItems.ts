@@ -68,7 +68,8 @@ export function useToolsMenuItems(): ToolMenuItem[] {
     const vendorsOn = availableModules.has('vendors');
     // The vendor page stays while the module is off: it says the tools are closed.
     const me = vendorRole.data ?? null;
-    const hasVendorsListed = vendorsOn && listedVendors(vendorList.data ?? []).length > 0;
+    // The host reaches the vendor list from the host menu (Manage → Vendors), so the guest-facing entry is not repeated.
+    const hasVendorsListed = !isHost && vendorsOn && listedVendors(vendorList.data ?? []).length > 0;
 
     // copyKey: the module whose event-type name and description label the tool.
     const toolDefinitions: { key: string; href: string; icon: LucideIcon; moduleKey?: string; copyKey?: string }[] = [

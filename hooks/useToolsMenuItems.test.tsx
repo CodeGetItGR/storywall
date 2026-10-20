@@ -290,6 +290,12 @@ describe('vendor tools in the menu', () => {
         expect(keysNow()).toContain('vendors');
     });
 
+    it('leaves the vendor list out for a host, who has it in the host menu', () => {
+        mocks.isHost = true;
+        vendor.list = [{ id: 'v1', businessName: 'Studio X', hiddenByHost: false, optedOut: false }];
+        expect(keysNow()).not.toContain('vendors');
+    });
+
     it('keeps the vendor page and drops the tools while the module is off', () => {
         mocks.activeEvent = event();
         // The backend sends no capabilities while the tools are off.

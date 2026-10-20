@@ -31,7 +31,7 @@ export function ProAlbumSection({
             </h2>
 
             {/* Meter */}
-            <ProStorageMeter usedBytes={usedBytes} allowanceBytes={allowanceBytes} />
+            <ProStorageMeter usedBytes={usedBytes} allowanceBytes={allowanceBytes} hideLabel />
 
             {/* Upload */}
             {canUpload && (

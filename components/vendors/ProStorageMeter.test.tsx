@@ -16,6 +16,16 @@ describe('ProStorageMeter', () => {
         expect(screen.queryByText(/^over:/)).toBeNull();
     });
 
+    it('shows its label by default and can hide it while keeping the accessible name', () => {
+        const { rerender } = render(<ProStorageMeter usedBytes={20} allowanceBytes={100} />);
+        expect(screen.getByText('label')).toBeTruthy();
+
+        rerender(<ProStorageMeter usedBytes={20} allowanceBytes={100} hideLabel />);
+        expect(screen.queryByText('label')).toBeNull();
+        expect(screen.getByRole('meter').getAttribute('aria-label')).toBe('label');
+        expect(screen.getByText('value:{"used":"20B","total":"100B"}')).toBeTruthy();
+    });
+
     it('is full with no overflow line at the allowance', () => {
         render(<ProStorageMeter usedBytes={100} allowanceBytes={100} />);
         expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('100');
