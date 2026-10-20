@@ -4,6 +4,7 @@ import type { VendorMeDto } from '@/lib/api/types';
 import { SITE_URL } from '@/lib/seo';
 import {
     capabilitiesOfType,
+    hasProAllowance,
     hasVendorCapability,
     isValidVendorLink,
     listedVendors,
@@ -168,5 +169,14 @@ describe('vendorLinkHref', () => {
         expect(vendorLinkHref('http://studio.gr')).toBeNull();
         expect(vendorLinkHref('')).toBeNull();
         expect(vendorLinkHref(null)).toBeNull();
+    });
+});
+
+describe('hasProAllowance', () => {
+    it('is true only when the usage carries a Pro allowance', () => {
+        expect(hasProAllowance({ proStorageBytes: 5 })).toBe(true);
+        expect(hasProAllowance({ proStorageBytes: 0 })).toBe(false);
+        expect(hasProAllowance({})).toBe(false);
+        expect(hasProAllowance(null)).toBe(false);
     });
 });

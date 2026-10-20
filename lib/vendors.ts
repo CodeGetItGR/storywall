@@ -1,4 +1,4 @@
-import type { PartnerRole, VendorCapability, VendorMeDto, VendorRowDto } from '@/lib/api/types';
+import type { EventUsageResponseDto, PartnerRole, VendorCapability, VendorMeDto, VendorRowDto } from '@/lib/api/types';
 import { APPLICATION_ROLES } from '@/lib/forBusinessApplication';
 import { routes } from '@/lib/routes';
 import { absoluteUrl } from '@/lib/seo';
@@ -77,4 +77,9 @@ export function vendorLinkHref(link: string | null | undefined): string | null {
     const value = link.trim();
     if (!isValidVendorLink(value)) return null;
     return value.startsWith('@') ? `https://instagram.com/${value.slice(1)}` : value;
+}
+
+// The vendors module gives this plan a Pro album allowance (0 or absent without the module).
+export function hasProAllowance(usage: Pick<EventUsageResponseDto, 'proStorageBytes'> | null | undefined): boolean {
+    return (usage?.proStorageBytes ?? 0) > 0;
 }
