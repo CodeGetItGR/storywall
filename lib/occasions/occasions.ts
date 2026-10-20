@@ -1,5 +1,5 @@
 import { defaultLocale, type Locale, locales } from '@/i18n/config';
-import type { EventTypeConvention } from '@/lib/api/types';
+import type { AppConfigResponseDto, EventTypeConvention } from '@/lib/api/types';
 import { absoluteUrl } from '@/lib/seo';
 import { showsUnreleasedPages } from '@/lib/unreleasedPages';
 
@@ -33,6 +33,11 @@ export function readyOccasions(): Occasion[] {
 // matching the page gate.
 export function liveOccasions(enabled: ReadonlySet<EventTypeConvention> | null): Occasion[] {
     return readyOccasions().filter((occasion) => !enabled || enabled.has(occasion.eventType));
+}
+
+// The same, from the event types the config enables. Unknown (config failed) → every ready occasion.
+export function liveOccasionsInConfig(config: AppConfigResponseDto | null): Occasion[] {
+    return liveOccasions(config ? new Set(config.eventTypes.filter((type) => type.isEnabled).map((type) => type.eventTypeKey)) : null);
 }
 
 export function findReadyOccasion(locale: Locale, slug: string): Occasion | null {

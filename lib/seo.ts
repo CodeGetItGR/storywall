@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 import { defaultLocale, type Locale, locales } from '@/i18n/config';
-import { getForBusinessPath, getPublicLandingPath } from '@/i18n/publicLocale';
+import { getForBusinessPath, getPublicLandingPath, getQrWeddingPath } from '@/i18n/publicLocale';
 
 // Single source for the production origin. Canonicals, alternates, the
 // sitemap and structured data all build absolute URLs from it, so it must
@@ -49,6 +49,14 @@ export function forBusinessLanguageAlternates(): Record<string, string> {
     const languages: Record<string, string> = {};
     for (const locale of locales) languages[locale] = absoluteUrl(getForBusinessPath(locale));
     languages['x-default'] = absoluteUrl(getForBusinessPath(defaultLocale));
+    return languages;
+}
+
+// Same shape again for the wedding QR page.
+export function qrWeddingLanguageAlternates(): Record<string, string> {
+    const languages: Record<string, string> = {};
+    for (const locale of locales) languages[locale] = absoluteUrl(getQrWeddingPath(locale));
+    languages['x-default'] = absoluteUrl(getQrWeddingPath(defaultLocale));
     return languages;
 }
 
@@ -122,6 +130,17 @@ export function buildForBusinessMetadata(locale: Locale, copy: PageMetadataCopy)
         locale,
         path: getForBusinessPath(locale),
         languages: forBusinessLanguageAlternates(),
+        copy,
+    });
+}
+
+// The wedding QR page shares the landing's OG image.
+export function buildQrWeddingMetadata(locale: Locale, copy: PageMetadataCopy): Metadata {
+    return buildIndexableMetadata({
+        locale,
+        path: getQrWeddingPath(locale),
+        languages: qrWeddingLanguageAlternates(),
+        imagePath: OG_IMAGE_PATH,
         copy,
     });
 }

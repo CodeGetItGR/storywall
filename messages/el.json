@@ -5819,8 +5819,8 @@
             "playMotion": "Έναρξη κινήσεων"
         },
         "meta": {
-            "title": "StoryWall | Ένα ιδιωτικό social space για το event σου",
-            "description": "Μοιράσου φωτογραφίες, ευχές και στιγμές με τους καλεσμένους σου πριν, κατά τη διάρκεια και μετά τον γάμο, τη βάπτιση ή το πάρτι σου. Χωρίς app.",
+            "title": "Φωτογραφίες καλεσμένων με QR, χωρίς app | StoryWall",
+            "description": "Οι καλεσμένοι σκανάρουν ένα QR και ανεβάζουν φωτογραφίες και βίντεο από το κινητό, για γάμο, βάπτιση ή πάρτι. Χωρίς εφαρμογή.",
             "siteName": "StoryWall",
             "imageAlt": "StoryWall, το social space για κάθε private event"
         },
@@ -5854,7 +5854,7 @@
             ]
         },
         "transition": {
-            "label": "StoryWall demo",
+            "label": "Demo του StoryWall",
             "slogan": "Μπες στην εμπειρία του",
             "brand": "StoryWall.",
             "cta": "ΔΕΣ ΤΟ DEMO"
@@ -5873,13 +5873,13 @@
                         "Από τις πρώτες προετοιμασίες μέχρι το honeymoon, κάθε στιγμή γίνεται μέρος της.",
                         "Posts, φωτογραφίες, ευχές και αντιδράσεις από όλους όσους τη ζουν μαζί σας."
                     ],
-                    "galleryLabel": "Wedding story moments mobile",
+                    "galleryLabel": "Στιγμές γάμου",
                     "imageAlts": [
-                        "Bachelor celebration with friends in Santorini",
-                        "Bride preparation with bridesmaids in Santorini",
-                        "Wedding ceremony in Santorini",
-                        "Wedding reception in Santorini",
-                        "Honeymoon in Paris"
+                        "Πάρτι νύφης με φίλους στη Σαντορίνη",
+                        "Η νύφη ετοιμάζεται με τις φίλες της στη Σαντορίνη",
+                        "Γαμήλια τελετή στη Σαντορίνη",
+                        "Γαμήλια δεξίωση στη Σαντορίνη",
+                        "Ταξίδι του μέλιτος στο Παρίσι"
                     ],
                     "titleSegments": [
                         {
@@ -5925,8 +5925,8 @@
                         "Από την πρόσκληση και τις πρώτες ευχές μέχρι τις φωτογραφίες, τα posts και τις στιγμές της ημέρας.",
                         "Όλα όσα μοιράστηκαν οι άνθρωποί σας, συγκεντρωμένα σε ένα StoryWall."
                     ],
-                    "galleryLabel": "Story moments for section 2",
-                    "imageAlts": ["Baptism outside the church", "Baptism ceremony inside the church", "Baptism celebration at the table"],
+                    "galleryLabel": "Στιγμές βάπτισης",
+                    "imageAlts": ["Βάπτιση έξω από την εκκλησία", "Η τελετή της βάπτισης μέσα στην εκκλησία", "Γιορτή βάπτισης στο τραπέζι"],
                     "titleSegments": [
                         {
                             "text": "Μία βάπτιση γεμάτη ",
@@ -5959,11 +5959,11 @@
                         "Από την προσμονή πριν το reveal μέχρι τη μεγάλη αποκάλυψη.",
                         "Φωτογραφίες, videos, αντιδράσεις και ευχές από όλους όσους μοιράζονται τη στιγμή μαζί σας."
                     ],
-                    "galleryLabel": "Story moments for section 3",
+                    "galleryLabel": "Στιγμές από gender reveal",
                     "imageAlts": [
-                        "Gender reveal box opening with blue balloons and confetti",
-                        "Pregnant couple at a baby boy celebration",
-                        "Friends and family celebrating at sunset"
+                        "Άνοιγμα κουτιού gender reveal με μπλε μπαλόνια και κομφετί",
+                        "Ζευγάρι που περιμένει αγοράκι, σε γιορτή για το μωρό",
+                        "Φίλοι και οικογένεια γιορτάζουν στο ηλιοβασίλεμα"
                     ],
                     "titleSegments": [
                         {
@@ -6006,11 +6006,11 @@
                     "tag": "VIP & SOCIAL PARTIES",
                     "title": ["Για", "private events", "που γίνονται κάτι περισσότερο από ένα party."],
                     "paragraphs": ["Το party αποκτά τον δικό του ιδιωτικό social χώρο, γεμάτο στιγμές, reactions και backstage περιεχόμενο."],
-                    "galleryLabel": "Story moments for section 4",
+                    "galleryLabel": "Στιγμές από VIP πάρτι",
                     "imageAlts": [
-                        "Close-up selfie of stylish guests and influencers celebrating at an elegant VIP party",
-                        "Stylish guests dancing at an elegant VIP social party at night",
-                        "Guests mingling with champagne at an elegant formal VIP social event"
+                        "Selfie καλοντυμένων καλεσμένων και influencers σε κομψό VIP πάρτι",
+                        "Καλοντυμένοι καλεσμένοι χορεύουν σε κομψό VIP πάρτι το βράδυ",
+                        "Καλεσμένοι με σαμπάνια σε κομψή VIP εκδήλωση"
                     ],
                     "titleSegments": [
                         {
@@ -6081,8 +6081,8 @@
             "copyEnd": "όπως θα το ζήσουν οι καλεσμένοι σου.",
             "cta": "Άνοιξε το demo του StoryWall",
             "button": "ΑΝΟΙΞΕ ΤΟ DEMO",
-            "imageAlt": "StoryWall demo preview with two angled smartphones showing the app interface",
-            "previewLabel": "StoryWall mobile preview"
+            "imageAlt": "Προεπισκόπηση του StoryWall σε δύο κινητά",
+            "previewLabel": "Προεπισκόπηση του StoryWall στο κινητό"
         },
         "stack": {
             "socialTopbar": "CHAPTER 01 · SOCIAL SIDE",
@@ -6234,7 +6234,7 @@
             ]
         },
         "finalCta": {
-            "imageAlt": "Joyful newlywed couple walking through a Greek island wedding celebration",
+            "imageAlt": "Νιόπαντρο ζευγάρι σε γαμήλια γιορτή σε ελληνικό νησί",
             "eyebrow": "READY TO MAKE IT YOURS?",
             "heading": ["Η ιστορία σου", "ξεκινάει εδώ."],
             "copy": "Δημιούργησε το δικό σου StoryWall και δώσε στο event σου έναν χώρο που συνεχίζει να ζει πριν, κατά τη διάρκεια και μετά.",
@@ -6255,7 +6255,8 @@
                 "features": "Δυνατότητες",
                 "plans": "Πακέτα",
                 "faq": "FAQ",
-                "forBusiness": "Για επαγγελματίες"
+                "forBusiness": "Για επαγγελματίες",
+                "qrWedding": "QR γάμου"
             },
             "social": "SOCIAL",
             "socialLinks": {
@@ -7012,6 +7013,84 @@
                 "imageAlt": "Οικογένεια και καλεσμένοι στο τραπέζι της βάπτισης"
             },
             "pricingHeading": "Πακέτα για τη βάπτιση."
+        }
+    },
+    "QrWeddingPage": {
+        "name": "QR γάμου",
+        "meta": {
+            "title": "QR Code Γάμου για Φωτογραφίες Καλεσμένων | StoryWall",
+            "description": "Οι καλεσμένοι σκανάρουν το QR γάμου και ανεβάζουν φωτογραφίες και βίντεο σε ένα κοινό άλμπουμ. Χωρίς εφαρμογή. Περιλαμβάνεται σε κάθε πακέτο.",
+            "keywords": [
+                "QR γάμου",
+                "QR code γάμου",
+                "QR code για φωτογραφίες γάμου",
+                "QR code για γάμο",
+                "QR code για ανέβασμα φωτογραφιών",
+                "φωτογραφίες γάμου από καλεσμένους",
+                "κοινό άλμπουμ γάμου"
+            ]
+        },
+        "nav": {
+            "guide": "ΟΔΗΓΟΣ",
+            "guideMobile": "Οδηγός"
+        },
+        "hero": {
+            "h1": "QR γάμου για φωτογραφίες καλεσμένων",
+            "headline": "Ένα QR στα τραπέζια. <b>Όλες οι φωτογραφίες σε ένα άλμπουμ.</b>",
+            "lead": "Οι καλεσμένοι σκανάρουν και ανεβάζουν φωτογραφίες και βίντεο από το κινητό τους. Χωρίς εφαρμογή, χωρίς λογαριασμό.",
+            "included": "Το QR γάμου περιλαμβάνεται σε κάθε πακέτο.",
+            "cta": "Φτιάξε το QR του γάμου σου"
+        },
+        "howItWorksHeading": ["Ένα QR.", "Όλος ο γάμος."],
+        "howItWorks": [
+            { "title": "Δημιούργησε", "body": "Φτιάξε το StoryWall του γάμου σου σε λίγα λεπτά." },
+            { "title": "Τύπωσε το QR", "body": "Τύπωσέ το και βάλ' το στον χώρο." },
+            { "title": "Οι καλεσμένοι ανεβάζουν", "body": "Σκανάρουν με την κάμερα του κινητού και ανεβάζουν φωτογραφίες και βίντεο." }
+        ],
+        "guide": {
+            "what": {
+                "title": "Τι είναι το QR γάμου;",
+                "body": "Ένας κωδικός που βάζεις στον χώρο του γάμου. Οι καλεσμένοι τον σκανάρουν με την κάμερα του κινητού και ανεβάζουν φωτογραφίες και βίντεο σε ένα κοινό άλμπουμ. Εσύ τα βλέπεις όλα σε ένα σημείο."
+            },
+            "where": {
+                "title": "Πού να βάλετε το QR στον γάμο;",
+                "places": [
+                    "Στην είσοδο της δεξίωσης",
+                    "Πάνω σε κάθε τραπέζι",
+                    "Στο μπαρ",
+                    "Δίπλα στο photo booth",
+                    "Στο ευχαριστήριο, για όσους στείλουν φωτογραφίες αργότερα"
+                ]
+            },
+            "sign": {
+                "title": "Τι να γράψετε στην πινακίδα;",
+                "intro": "Γράψτε ένα από αυτά κάτω από το QR:",
+                "texts": [
+                    "«Σκανάρετε και ανεβάστε τις φωτογραφίες σας από τον γάμο μας!»",
+                    "«Τραβήξατε κάτι ωραίο; Σκανάρετε το QR και μοιραστείτε το μαζί μας.»",
+                    "«Η δική σας ματιά στη μέρα μας. Ανεβάστε φωτογραφίες και βίντεο.»"
+                ],
+                "tip": "Αν έχετε καλεσμένους από το εξωτερικό, γράψτε το και στα αγγλικά."
+            }
+        },
+        "pricingHeading": "Πόσο κοστίζει το QR γάμου;",
+        "faqIntro": "Όσα ρωτούν τα ζευγάρια για το QR γάμου.",
+        "faq": [
+            { "q": "Χρειάζονται εφαρμογή ή λογαριασμό οι καλεσμένοι;", "a": "Όχι. Σκανάρουν το QR και ανεβάζουν από τον browser του κινητού." },
+            { "q": "Ανεβαίνουν και βίντεο;", "a": "Ναι. Από το ίδιο QR ανεβαίνουν φωτογραφίες και βίντεο." },
+            { "q": "Ποιος βλέπει τις φωτογραφίες;", "a": "Μόνο όσοι προσκαλείς. Το άλμπουμ του γάμου σου είναι ιδιωτικό." },
+            { "q": "Μπορώ να κατεβάσω όλες τις φωτογραφίες;", "a": "Ναι. Στο άλμπουμ διαλέγεις πολλές μαζί και τις κατεβάζεις." },
+            {
+                "q": "Μέχρι πότε ανεβάζουν οι καλεσμένοι;",
+                "a": "Όσο το StoryWall σου είναι online. Το πακέτο ορίζει για πόσο και μπορείς να το επεκτείνεις."
+            },
+            { "q": "Θα τα καταφέρουν οι μεγαλύτεροι καλεσμένοι;", "a": "Ναι. Ανοίγουν την κάμερα, σκανάρουν και πατούν ανέβασμα." }
+        ],
+        "finalCta": {
+            "heading": ["Το QR του γάμου σου,", "έτοιμο σε λίγα λεπτά."],
+            "copyStart": "Φτιάξε το StoryWall του γάμου σου και τύπωσε το QR",
+            "copyStrong": "για τα τραπέζια.",
+            "imageAlt": "Γαμήλια γιορτή στη Σαντορίνη"
         }
     }
 }
