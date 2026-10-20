@@ -51,6 +51,12 @@ describe('notificationCtaRoute', () => {
         );
     });
 
+    it('sends VENDOR_JOINED to Manage → Vendors', () => {
+        expect(notificationCtaRoute(notification({ type: 'VENDOR_JOINED', ctaTarget: 'EVENT_VENDORS', ctaParams: { eventId: 'e1' } }))).toBe(
+            '/events/e1/manage/vendors',
+        );
+    });
+
     it('hides the CTA for a target this app does not know', () => {
         expect(
             notificationCtaRoute(notification({ ctaTarget: 'SOMETHING_NEW' as NotificationResponseDto['ctaTarget'], ctaParams: { eventId: 'e' } })),

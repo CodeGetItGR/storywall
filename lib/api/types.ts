@@ -731,7 +731,7 @@ export type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 // 2026-09-04: ctaRoute (a literal path) is gone, replaced by ctaTarget + ctaParams — the app
 // resolves the route itself. Closed but growable set; treat an unrecognized value defensively.
 // See docs/integration guides/notification-cta-target-fe-integration.md.
-export type NotificationCtaTarget = 'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS' | 'EVENT_COVERAGE_EXTEND' | 'EVENT_WISHBOOK';
+export type NotificationCtaTarget = 'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS' | 'EVENT_COVERAGE_EXTEND' | 'EVENT_WISHBOOK' | 'EVENT_VENDORS';
 
 export interface NotificationResponseDto {
     id: string;

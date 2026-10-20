@@ -58,6 +58,10 @@ describe('resolveRsvpReportCloseHref', () => {
         expect(resolveRsvpReportCloseHref('e1', 'tools')).toBe('/events/e1/tools/rsvp?section=reports');
     });
 
+    it('returns a vendor to their vendor page', () => {
+        expect(resolveRsvpReportCloseHref('e1', 'vendor')).toBe('/events/e1/tools/vendors/me');
+    });
+
     it('returns to Manage for null, the default origin', () => {
         expect(resolveRsvpReportCloseHref('e1', null)).toBe('/events/e1/manage?tab=rsvp&section=reports');
     });
