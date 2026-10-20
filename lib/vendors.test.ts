@@ -8,6 +8,7 @@ import {
     isValidVendorLink,
     listedVendors,
     proStorageState,
+    sortByVendorType,
     VENDOR_TYPES,
     vendorApplySearch,
     vendorInviteUrl,
@@ -143,5 +144,13 @@ describe('proStorageState', () => {
         expect(proStorageState(2 * GB, undefined)).toEqual({ state: 'over', percent: 100, overflowBytes: 2 * GB });
         expect(proStorageState(null, null)).toEqual({ state: 'at', percent: 100, overflowBytes: 0 });
         expect(proStorageState(undefined, 5 * GB)).toEqual({ state: 'below', percent: 0, overflowBytes: 0 });
+    });
+});
+
+describe('sortByVendorType', () => {
+    it('orders rows like VENDOR_TYPES and leaves the input as it was', () => {
+        const rows = [{ vendorType: 'MUSIC' as const }, { vendorType: 'PLANNER' as const }, { vendorType: 'PHOTOGRAPHER' as const }];
+        expect(sortByVendorType(rows).map((row) => row.vendorType)).toEqual(['PLANNER', 'PHOTOGRAPHER', 'MUSIC']);
+        expect(rows[0].vendorType).toBe('MUSIC');
     });
 });

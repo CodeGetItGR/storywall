@@ -65,3 +65,8 @@ export function proStorageState(usedBytes: number | null | undefined, allowanceB
     if (used === allowance) return { state: 'at', percent: 100, overflowBytes: 0 };
     return { state: 'below', percent: Math.round((used / allowance) * 100), overflowBytes: 0 };
 }
+
+// A copy of the rows in VENDOR_TYPES order.
+export function sortByVendorType<T extends { vendorType: PartnerRole }>(rows: readonly T[]): T[] {
+    return [...rows].sort((a, b) => VENDOR_TYPES.indexOf(a.vendorType) - VENDOR_TYPES.indexOf(b.vendorType));
+}
