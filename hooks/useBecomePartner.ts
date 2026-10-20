@@ -1,16 +1,18 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 
-import type { ApplyFormDefaults } from '@/components/forBusiness/ForBusinessApplyForm';
 import { useAuth } from '@/hooks/useAuth';
-import { useDismissPartnerPrompt, useVendorProfile } from '@/hooks/useVendorProfile';
+import { isEventVendorKey, useDismissPartnerPrompt, useVendorProfile } from '@/hooks/useVendorProfile';
+import type { ApplyFormDefaults } from '@/lib/forBusinessApplication';
 import { vendorApplySearch } from '@/lib/vendors';
 
 // The vendor page's partner prompt: the sheet's starting values, its attribution and the dismissal.
 export function useBecomePartner() {
     const { user } = useAuth();
     const { data: profile } = useVendorProfile();
+    const queryClient = useQueryClient();
     const dismissPrompt = useDismissPartnerPrompt();
     const [sheetOpen, setSheetOpen] = useState(false);
     const vendorType = profile?.vendorType ?? 'OTHER';
@@ -32,7 +34,11 @@ export function useBecomePartner() {
     );
 
     const openSheet = useCallback(() => setSheetOpen(true), []);
-    const closeSheet = useCallback(() => setSheetOpen(false), []);
+    // A sent application ends the prompt on the server; refresh only once the sheet is closed, so the "Thanks" stays visible.
+    const closeSheet = useCallback(() => {
+        setSheetOpen(false);
+        queryClient.invalidateQueries({ predicate: (query) => isEventVendorKey(query.queryKey) });
+    }, [queryClient]);
     const { mutateAsync: dismissAsync } = dismissPrompt;
     const dismiss = useCallback(async () => {
         try {

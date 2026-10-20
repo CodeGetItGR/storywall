@@ -3,10 +3,10 @@
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
-import { type ApplyFormDefaults, ForBusinessApplyForm } from '@/components/forBusiness/ForBusinessApplyForm';
+import { ForBusinessApplyForm } from '@/components/forBusiness/ForBusinessApplyForm';
 import { Modal } from '@/components/ui/modal';
 import type { Locale } from '@/i18n/config';
-import { countryOptions, defaultCountryCode } from '@/lib/forBusinessApplication';
+import { type ApplyFormDefaults, countryOptions, defaultCountryCode } from '@/lib/forBusinessApplication';
 
 export function BecomePartnerSheet({
     open,

@@ -5,15 +5,13 @@ import { useTranslations } from 'next-intl';
 
 import { PRIMARY_BUTTON } from '@/components/forBusiness/forBusinessStyles';
 import { useForBusinessApplication } from '@/hooks/useForBusinessApplication';
-import { APPLICATION_ROLES, type CountryOption } from '@/lib/forBusinessApplication';
+import { APPLICATION_ROLES, type ApplyFormDefaults, type CountryOption } from '@/lib/forBusinessApplication';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
 const FIELD =
     'mt-1.5 min-h-12 w-full rounded-xl border border-[#151313]/20 bg-white px-4 text-base outline-none focus:border-[#151313]/60 aria-invalid:border-red-600';
 const LABEL = 'block text-sm font-semibold';
-
-export type ApplyFormDefaults = Partial<Record<'name' | 'businessName' | 'role' | 'email' | 'link', string>>;
 
 type Props = { countries: CountryOption[]; defaultCountry: string; defaults?: ApplyFormDefaults; search?: string };
 

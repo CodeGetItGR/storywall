@@ -22,7 +22,7 @@ async function fetchVendorProfile(): Promise<VendorProfileDto | null> {
 
 // Every event's vendor list and "me" carry the profile (name, logo, profileComplete, the partner
 // prompt), so a change refreshes them all. Matches the keys in vendorKeys: ['events', id, 'vendors', ...].
-function isEventVendorKey(queryKey: readonly unknown[]): boolean {
+export function isEventVendorKey(queryKey: readonly unknown[]): boolean {
     return queryKey[0] === 'events' && queryKey[2] === 'vendors';
 }
 
