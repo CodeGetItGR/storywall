@@ -30,14 +30,20 @@ async function authRequest<T>(path: string, options: RequestInit = {}): Promise<
     return body as T;
 }
 
+// Off until the backend that accepts visitSource is live: the deployed one refuses the whole
+// sign-up (400 3002) because of the unknown field. Turn back on once it is deployed.
+const SEND_VISIT_SOURCE = false;
+
 // Sign-ups carry where the visitor came from; Spring keeps it only when the request creates the account.
 function withVisitSource<T extends object>(input: T): T & { visitSource?: VisitSourceDto } {
+    if (!SEND_VISIT_SOURCE) return input;
     const visitSource = currentVisitSource();
     return visitSource ? { ...input, visitSource } : input;
 }
 
 export const authClient = {
-    register: (input: RegisterRequestDto) => authRequest<AuthSessionDto>(endpoints.auth.register, { method: 'POST', body: JSON.stringify(withVisitSource(input)) }),
+    register: (input: RegisterRequestDto) =>
+        authRequest<AuthSessionDto>(endpoints.auth.register, { method: 'POST', body: JSON.stringify(withVisitSource(input)) }),
 
     login: (input: { email: string; password: string; inviteToken?: string }) =>
         authRequest<AuthSessionDto>(endpoints.auth.login, { method: 'POST', body: JSON.stringify(input) }),
