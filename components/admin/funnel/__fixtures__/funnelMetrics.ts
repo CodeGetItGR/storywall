@@ -1,4 +1,4 @@
-import type { FunnelCohortDto, FunnelMetricsResponseDto } from '@/lib/api/types';
+import type { FunnelChannelRowDto, FunnelCohortDto, FunnelMetricsResponseDto } from '@/lib/api/types';
 
 export function funnelMetricsFixture(overrides: Partial<FunnelMetricsResponseDto> = {}): FunnelMetricsResponseDto {
     return {
@@ -140,4 +140,12 @@ export function noEndedPaidEventsFixture(): FunnelMetricsResponseDto {
             medianUploads: null,
         },
     });
+}
+
+export function funnelChannelsFixture(): FunnelChannelRowDto[] {
+    return [
+        { channel: 'SOCIAL', signedUp: 420, createdEvent: 160, paidHost: 48, revenueMinorByCurrency: { EUR: 336000 } },
+        { channel: 'ADS', signedUp: 12, createdEvent: 5, paidHost: 2, revenueMinorByCurrency: { EUR: 14000 } },
+        { channel: 'UNKNOWN', signedUp: 808, createdEvent: 300, paidHost: 136, revenueMinorByCurrency: {} },
+    ];
 }

@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -37,5 +37,20 @@ describe('DurationPicker', () => {
     it('falls back to the generic label when none is linked', () => {
         renderPicker();
         expect(screen.getByRole('radiogroup', { name: 'Duration' })).toBeInTheDocument();
+    });
+
+    it('shows a disabled option but does not pick it', () => {
+        const onChange = vi.fn();
+        render(
+            <NextIntlClientProvider locale="en" messages={messages}>
+                <DurationPicker options={options} value="d9" onChangeAction={onChange} disabledOptionIds={['d6']} />
+            </NextIntlClientProvider>,
+        );
+
+        const disabledOption = screen.getByRole('radio', { name: '6 months' });
+        expect(disabledOption).toBeDisabled();
+        fireEvent.click(disabledOption);
+        expect(onChange).not.toHaveBeenCalled();
+        expect(screen.getByRole('radio', { name: '9 months' })).toBeEnabled();
     });
 });

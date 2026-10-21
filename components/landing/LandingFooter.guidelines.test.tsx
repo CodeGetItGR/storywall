@@ -12,6 +12,9 @@ vi.mock('@/components/landing/LandingMotionToggle', () => ({ LandingMotionToggle
 vi.mock('@/components/landing/LandingNewsletter', () => ({ LandingNewsletter: () => null }));
 vi.mock('@/components/consent/CookieSettingsLink', () => ({ CookieSettingsLink: () => <button type="button">cookieSettings</button> }));
 
+const qrWeddingLive = vi.hoisted(() => vi.fn(async () => true));
+vi.mock('@/lib/qrWeddingPage.server', () => ({ loadQrWeddingPageLive: () => qrWeddingLive() }));
+
 describe('LandingFooter', () => {
     afterEach(() => {
         cleanup();
@@ -61,12 +64,26 @@ describe('LandingFooter', () => {
         expect(screen.getByRole('link', { name: 'exploreLinks.forBusiness' })).toHaveAttribute('href', '/el/epaggelmaties');
     });
 
+    it('links to the wedding QR page in the page language', async () => {
+        render(await LandingFooter());
+
+        expect(screen.getByRole('link', { name: 'exploreLinks.qrWedding' })).toHaveAttribute('href', '/el/qr-code-gamou');
+    });
+
+    it('leaves out the wedding QR link while weddings are off', async () => {
+        qrWeddingLive.mockResolvedValueOnce(false);
+        render(await LandingFooter());
+
+        expect(screen.queryByRole('link', { name: 'exploreLinks.qrWedding' })).not.toBeInTheDocument();
+    });
+
     it('leaves out the partner and occasion links on the production site before launch', async () => {
         vi.stubEnv('VERCEL_ENV', 'production');
         render(await LandingFooter());
 
         expect(screen.queryByRole('link', { name: 'exploreLinks.forBusiness' })).not.toBeInTheDocument();
         expect(screen.queryByText('occasions')).not.toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'exploreLinks.qrWedding' })).toBeInTheDocument();
     });
 
     it('points the anchors back at the landing when rendered elsewhere', async () => {

@@ -9,6 +9,14 @@ describe('analyticsPageLocation', () => {
         );
     });
 
+    it('keeps the real path of a landing page', () => {
+        expect(analyticsPageLocation('https://storywall.gr/el/gamos?utm_source=ig', { slug: 'el', occasion: 'gamos' })).toBe(
+            'https://storywall.gr/el/gamos?utm_source=ig',
+        );
+        expect(analyticsPageLocation('https://storywall.gr/weddings', { slug: 'weddings' })).toBe('https://storywall.gr/weddings');
+        expect(analyticsPageLocation('https://storywall.gr/el', { slug: 'el' })).toBe('https://storywall.gr/el');
+    });
+
     it('keeps campaign parameters and drops the rest', () => {
         expect(analyticsPageLocation('https://storywall.gr/?utm_source=google&session_id=cs_1&gclid=abc', {})).toBe(
             'https://storywall.gr/?utm_source=google&gclid=abc',

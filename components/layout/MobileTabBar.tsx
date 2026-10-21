@@ -11,6 +11,7 @@ import { ShareInviteTab } from '@/components/layout/mobile-tab-bar/ShareInviteTa
 import { TabLink } from '@/components/layout/mobile-tab-bar/TabLink';
 import type { ContextNavItem } from '@/components/layout/mobile-tab-bar/types';
 import { isAccountRoute, isFeedRoute, isPathActive } from '@/components/layout/mobile-tab-bar/utils';
+import { useHideMobileTabBarWhileTyping } from '@/hooks/useHideMobileTabBarWhileTyping';
 import { useInviteShare } from '@/hooks/useInviteShare';
 import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { useHasOpenOverlay } from '@/hooks/useOverlayPresence';
@@ -37,6 +38,7 @@ export function MobileTabBar() {
     const { isComposerFabHidden, isMobileTabBarHidden } = useMobileChrome();
     const hasOpenOverlay = useHasOpenOverlay();
     const pinchZoomBox = usePinchZoomBox();
+    useHideMobileTabBarWhileTyping();
     const activeEvent = useActiveEvent();
     const moduleCopy = useModuleCopy(activeEvent?.eventType);
     const isHost = useIsHost();

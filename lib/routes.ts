@@ -60,11 +60,13 @@ export const routes = {
         // same way the gallery upload code lives on its own page, linked from a
         // compact pointer instead of an embedded panel.
         invitationsQr: (eventId: string) => `${eventBasePath(eventId)}/manage/qr`,
+        // The host's vendor links and joined vendors (vendors spec 2026-10-19); VENDOR_JOINED links here.
+        manageVendors: (eventId: string) => `${eventBasePath(eventId)}/manage/vendors`,
         // The printable gift claim card.
         giftCard: (eventId: string) => `${eventBasePath(eventId)}/manage/gift/card`,
         // `from` records where the report was opened from so Close (useRsvpReportPage)
         // can return there; omitted (manage) is the default and carries no param.
-        rsvpReport: (eventId: string, reportType: RsvpReportType, from?: 'tools') =>
+        rsvpReport: (eventId: string, reportType: RsvpReportType, from?: 'tools' | 'vendor') =>
             withQuery(`${eventBasePath(eventId)}/manage/rsvp/reports/${reportType}`, { from }),
         tools: {
             rsvp: (eventId: string, params: { section?: string | null } = {}) => withQuery(`${eventBasePath(eventId)}/tools/rsvp`, params),
@@ -78,6 +80,10 @@ export const routes = {
             gifts: (eventId: string) => `${eventBasePath(eventId)}/tools/gifts`,
             schedule: (eventId: string, params: { section?: string | null } = {}) => withQuery(`${eventBasePath(eventId)}/tools/schedule`, params),
             wishbook: (eventId: string) => `${eventBasePath(eventId)}/tools/wishbook`,
+            vendors: (eventId: string) => `${eventBasePath(eventId)}/tools/vendors`,
+            vendorMe: (eventId: string) => `${eventBasePath(eventId)}/tools/vendors/me`,
+            playlistLive: (eventId: string) => `${eventBasePath(eventId)}/tools/playlist/live`,
+            announcement: (eventId: string) => `${eventBasePath(eventId)}/tools/announcement`,
         },
         storySchedule: (eventId: string) => `${eventBasePath(eventId)}/story/schedule`,
         // The .ics file for one calendar entry; no session = the event's own date.
@@ -120,3 +126,8 @@ export const routes = {
         register: (params: { invite?: string | null; email?: string | null; next?: string | null } = {}) => withQuery('/register', params),
     },
 } as const;
+
+// A real event's feed, /events/{eventId}/feed (not the demo's).
+export function isEventFeedPath(pathname: string | null): boolean {
+    return /^\/events\/[^/]+\/feed\/?$/.test(pathname ?? '');
+}

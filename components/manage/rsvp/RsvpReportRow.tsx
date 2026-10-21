@@ -13,7 +13,7 @@ export function RsvpReportRow({ eventId, reportType, origin }: { eventId: string
 
     return (
         <AppLink
-            href={routes.events.rsvpReport(eventId, reportType, origin === 'tools' ? 'tools' : undefined)}
+            href={routes.events.rsvpReport(eventId, reportType, origin === 'manage' ? undefined : origin)}
             className="flex w-full items-center justify-between gap-3 rounded-xl border border-border px-3.5 py-2.5 text-left transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
             <span className="min-w-0">

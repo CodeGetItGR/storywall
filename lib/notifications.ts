@@ -11,6 +11,7 @@ const CTA_ROUTES: Record<NotificationCtaTarget, (params: Record<string, string>)
     EVENT_GUESTS: (p) => routes.events.invitationsQr(p.eventId),
     EVENT_COVERAGE_EXTEND: (p) => routes.events.manage(p.eventId, { tab: 'billing', section: EXTEND_COVERAGE_SECTION_ID }),
     EVENT_WISHBOOK: (p) => routes.events.tools.wishbook(p.eventId),
+    EVENT_VENDORS: (p) => routes.events.manageVendors(p.eventId),
 };
 
 export function notificationCtaRoute(notification: NotificationResponseDto): string | null {

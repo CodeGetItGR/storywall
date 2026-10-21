@@ -1,9 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import type { ChangeEvent } from 'react';
 
+import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { AdminLimitControl } from '@/components/admin/AdminLimitControl';
 import { AdminSwitch } from '@/components/admin/AdminSwitch';
+import { PlanModuleStorageField } from '@/components/admin/plans/PlanModuleStorageField';
 import type { KnownConfigField } from '@/lib/planModuleConfig';
 
 export function PlanModuleConfigField({
@@ -33,6 +36,10 @@ export function PlanModuleConfigField({
         onLimitValueChangeAction(field.key, next);
     }
 
+    function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
+        onLimitValueChangeAction(field.key, event.currentTarget.value);
+    }
+
     function handleSwitchChange(next: boolean) {
         onSwitchChangeAction(field.key, next);
     }
@@ -47,6 +54,29 @@ export function PlanModuleConfigField({
                     onCheckedChangeAction={handleSwitchChange}
                 />
             </div>
+        );
+    }
+
+    if (field.storage) {
+        return <PlanModuleStorageField label={t(`fields.${field.key}`)} value={value} error={error} onChangeAction={handleValueChange} />;
+    }
+
+    if (field.required) {
+        // A number the server always needs: no "Unlimited", just the value.
+        return (
+            <AdminField label={t(`fields.${field.key}`)} hint={error}>
+                <input
+                    type="number"
+                    inputMode="numeric"
+                    min={field.min ?? 0}
+                    max={field.max}
+                    step={1}
+                    value={value}
+                    onChange={handleInputChange}
+                    aria-invalid={Boolean(error)}
+                    className={adminInputClass('font-mono')}
+                />
+            </AdminField>
         );
     }
 

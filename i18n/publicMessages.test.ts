@@ -15,6 +15,7 @@ const ENTRY_FILES = [
     'components/landing/LandingPage.tsx',
     'components/forBusiness/ForBusinessPage.tsx',
     'components/occasions/OccasionPage.tsx',
+    'components/qrWedding/QrWeddingPage.tsx',
 ];
 
 function resolveImport(specifier: string): string | null {
@@ -80,7 +81,15 @@ describe('pickPublicMessages', () => {
             'NewsletterForm',
             'PartnerCard',
         ]);
-        expect(Object.keys(picked.LandingPage as object).sort()).toEqual(['featureDetails', 'features', 'hero', 'pricing', 'shell', 'stack']);
+        expect(Object.keys(picked.LandingPage as object).sort()).toEqual([
+            'featureDetails',
+            'features',
+            'hero',
+            'pricing',
+            'reviews',
+            'shell',
+            'stack',
+        ]);
         expect(picked.RootLayout).toBeUndefined();
     });
 });

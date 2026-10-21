@@ -13,5 +13,6 @@ export async function getOccasionMetadata(occasion: Occasion, locale: Locale): P
         description: t('description'),
         siteName: common('siteName'),
         imageAlt: t('imageAlt'),
+        keywords: t.raw('keywords') as string[],
     });
 }

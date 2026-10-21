@@ -4,7 +4,7 @@ import path from 'node:path';
 import type { AbstractIntlMessages } from 'next-intl';
 import { describe, expect, it } from 'vitest';
 
-import { APP_OMITTED_NAMESPACES, pickAppMessages } from '@/i18n/appMessages';
+import { APP_KEPT_PARTS, APP_OMITTED_NAMESPACES, pickAppMessages } from '@/i18n/appMessages';
 import elCatalog from '@/messages/el.json';
 import enCatalog from '@/messages/en.json';
 
@@ -66,11 +66,13 @@ describe('APP_OMITTED_NAMESPACES', () => {
         const readers = [...sources]
             // appMessages.ts names them only to leave them out.
             .filter(([file]) => !/\.test\.tsx?$/.test(file) && file !== path.join(ROOT, 'i18n', 'appMessages.ts'))
-            .flatMap(([file, source]) =>
-                APP_OMITTED_NAMESPACES.filter((namespace) => new RegExp(`['"\`]${namespace}[.'"\`]`).test(source)).map(
+            .flatMap(([file, source]) => {
+                // The parts the app keeps may be read.
+                const read = APP_KEPT_PARTS.reduce((rest, part) => rest.replaceAll(part, ''), source);
+                return APP_OMITTED_NAMESPACES.filter((namespace) => new RegExp(`['"\`]${namespace}[.'"\`]`).test(read)).map(
                     (namespace) => `${namespace} in ${path.relative(ROOT, file)}`,
-                ),
-            );
+                );
+            });
         expect(readers).toEqual([]);
     });
 
@@ -83,12 +85,16 @@ describe('APP_OMITTED_NAMESPACES', () => {
 });
 
 describe('pickAppMessages', () => {
-    it('drops only the omitted namespaces', () => {
+    it('drops only the omitted namespaces, except the parts the app keeps', () => {
         const picked = pickAppMessages(en);
-        const expected = Object.keys(en).filter((namespace) => !(APP_OMITTED_NAMESPACES as readonly string[]).includes(namespace));
+        const kept = APP_KEPT_PARTS.map((part) => part.split('.')[0]);
+        const expected = Object.keys(en).filter(
+            (namespace) => !(APP_OMITTED_NAMESPACES as readonly string[]).includes(namespace) || kept.includes(namespace),
+        );
 
         expect(Object.keys(picked).sort()).toEqual(expected.sort());
         expect(picked.Common).toBe(en.Common);
         expect(en.AdminPage).toBeDefined();
+        expect(picked.ForBusinessPage).toEqual({ apply: (en.ForBusinessPage as AbstractIntlMessages).apply });
     });
 });

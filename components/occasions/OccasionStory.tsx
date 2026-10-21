@@ -1,74 +1,84 @@
-import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
+import { Fragment } from 'react';
 
-import { LandingStoryGallery } from '@/components/landing/LandingStoryGallery';
-import { OccasionFloats } from '@/components/occasions/OccasionFloats';
-import { OccasionSectionHeading } from '@/components/occasions/OccasionSectionHeading';
+import { LandingStoryRow } from '@/components/landing/LandingStoryRow';
+import { LandingStoryThemes } from '@/components/landing/LandingStoryThemes';
 import type { Locale } from '@/i18n/config';
-import type { OccasionMomentMedia } from '@/lib/occasions/occasionMedia';
+import type { LandingImageAsset } from '@/lib/landingMedia';
+import type { LandingTheme } from '@/lib/landingThemes';
+import { landingSectionAttributes } from '@/lib/landingTracking';
 import type { Occasion } from '@/lib/occasions/occasions';
 
 type Step = { title: string; heading: string; body: string };
+type StoryRowCopy = { galleryLabel: string; imageAlts: string[] };
 
-type OccasionStoryProps = { locale: Locale; moments: readonly OccasionMomentMedia[]; occasion: Occasion };
+type OccasionStoryProps = {
+    createHref: string;
+    locale: Locale;
+    // Before, on the day, after: a gallery each.
+    moments: readonly LandingImageAsset[][];
+    occasion: Occasion;
+    // Shown under the first row; null or empty leaves them out.
+    themes: LandingTheme[] | null;
+};
 
-// Before, on the day, after: one row per moment, photo and copy alternating sides.
-export async function OccasionStory({ locale, moments, occasion }: OccasionStoryProps) {
-    const common = await getTranslations({ locale, namespace: 'OccasionPages.common' });
+// Before, on the day, after, as the landing's story rows: photos on one side, copy on the other.
+export async function OccasionStory({ createHref, locale, moments, occasion, themes }: OccasionStoryProps) {
     const t = await getTranslations({ locale, namespace: `OccasionPages.${occasion.eventType}` });
     const steps = t.raw('timeline') as Step[];
+    const rows = t.raw('story.rows') as StoryRowCopy[];
+    const heading = t.raw('story.heading') as string[];
 
     return (
-        <section className="px-5 py-14 min-[761px]:px-[5vw] min-[761px]:py-24">
+        <section className="platform bg-white py-17 min-[761px]:py-[clamp(90px,11vw,180px)]" {...landingSectionAttributes('stories')}>
             {/* Heading */}
-            <OccasionSectionHeading>{common('timelineHeading')}</OccasionSectionHeading>
+            <div className="px-5 min-[761px]:px-[clamp(22px,4vw,72px)]">
+                <h2 className="m-0 [font-family:var(--editorial)] text-[clamp(48px,6.5vw,108px)] leading-[0.93] font-normal tracking-[-0.055em] text-ink">
+                    {heading[0]}
+                    <br />
+                    {heading[1]}
+                </h2>
+                <p className="mt-6 max-w-165 text-[clamp(16px,1.45vw,22px)] leading-[1.55] text-ink min-[761px]:mt-10.5">{t('story.intro')}</p>
+            </div>
 
             {/* Moments */}
-            <div className="mt-10 flex flex-col gap-20 min-[761px]:mt-16 min-[761px]:gap-32">
+            <div className="showcase story-list mt-12.5 min-[761px]:mt-[clamp(80px,10vw,150px)]">
                 {steps.map((step, index) => {
-                    const media = moments[index];
-                    const flipped = index % 2 === 1;
+                    const gallery = moments[index] ?? [];
                     return (
-                        <article
-                            className="story-row grid items-center gap-10 min-[761px]:grid-cols-2 min-[761px]:gap-[6vw]"
-                            data-row={index}
-                            key={step.title}
-                        >
-                            {/* Visual */}
-                            {media ? (
-                                <div className={`occasion-reveal relative ${flipped ? 'min-[761px]:order-2' : ''}`}>
-                                    {'gallery' in media ? (
-                                        <div className="relative aspect-[4/3] overflow-hidden rounded-[28px] shadow-[0_30px_60px_-30px_rgba(21,19,19,0.45)]">
-                                            <LandingStoryGallery
-                                                alts={t.raw('story.imageAlts') as string[]}
-                                                ariaLabel={t('story.galleryLabel')}
-                                                images={media.gallery}
-                                                rowIndex={index}
-                                            />
-                                        </div>
-                                    ) : (
-                                        <Image
-                                            alt=""
-                                            className="mx-auto aspect-[4/5] h-auto w-full max-w-110 rounded-[28px] object-cover shadow-[0_30px_60px_-30px_rgba(21,19,19,0.45)]"
-                                            height={media.photo.height}
-                                            sizes="(min-width: 761px) 40vw, 90vw"
-                                            src={media.photo.src}
-                                            width={media.photo.width}
-                                        />
-                                    )}
-                                    <OccasionFloats floats={media.floats} />
+                        <Fragment key={step.title}>
+                            <LandingStoryRow
+                                copy={{
+                                    galleryLabel: rows[index]!.galleryLabel,
+                                    imageAlts: rows[index]!.imageAlts,
+                                    paragraphSegments: [[{ text: step.body }]],
+                                    tag: step.title,
+                                    titleSegments: [{ text: step.heading }],
+                                }}
+                                demoLabel=""
+                                index={index}
+                                locale={locale}
+                                media={{ gallery, main: gallery[0]! }}
+                                occasionLabel=""
+                                occasions={[]}
+                            />
+
+                            {/* Themes, after the first row with the page's side padding: the row's photo runs to the edge */}
+                            {index === 0 && themes && themes.length > 0 ? (
+                                <div className="pb-6 min-[761px]:px-[clamp(22px,4vw,72px)] min-[761px]:pb-[clamp(42px,5vw,78px)]">
+                                    <LandingStoryThemes
+                                        copy={{
+                                            cta: t('hero.cta'),
+                                            heading: t('themes.heading'),
+                                            intro: t('themes.intro'),
+                                            listLabel: t('themes.heading'),
+                                        }}
+                                        href={createHref}
+                                        themes={themes}
+                                    />
                                 </div>
                             ) : null}
-
-                            {/* Copy */}
-                            <div className="occasion-reveal [--reveal-delay:120ms]">
-                                <p className="occasion-label m-0 text-xs font-black tracking-[0.18em] uppercase min-[761px]:text-[13px]">{step.title}</p>
-                                <h3 className="mt-4 mb-0 max-w-[16ch] [font-family:var(--editorial)] text-[clamp(32px,9vw,44px)] leading-[1.02] font-normal tracking-[-0.035em] text-balance min-[761px]:text-[clamp(44px,4.2vw,68px)]">
-                                    {step.heading}
-                                </h3>
-                                <p className="mt-5 mb-0 max-w-120 text-base leading-[1.6] text-pretty text-[#3d3836] min-[761px]:text-[17px]">{step.body}</p>
-                            </div>
-                        </article>
+                        </Fragment>
                     );
                 })}
             </div>

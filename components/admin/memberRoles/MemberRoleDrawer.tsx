@@ -10,7 +10,6 @@ import { AdminSwitch } from '@/components/admin/AdminSwitch';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useMemberRoleDrawer } from '@/hooks/useMemberRoleDrawer';
 import type { Locale } from '@/i18n/config';
-import { getErrorMessage } from '@/lib/api/errors';
 import type { MemberRoleCatalogDto } from '@/lib/api/types';
 
 const FORM_ID = 'member-role-form';
@@ -32,47 +31,55 @@ export function MemberRoleDrawer({
     const locale = useLocale() as Locale;
     const form = useMemberRoleDrawer({ role, eventTypeKey, sortOrder, onDoneAction: onCloseAction });
     const roleName = role ? role.label[locale] || role.label.en : '';
-    const keyHint = form.failure?.kind === 'keyTaken' ? t('keyTaken') : form.errors.roleKey ? t('keyInvalid') : undefined;
 
     const footer = (
-        <div className="flex items-center justify-between gap-2">
-            {/* Retire or restore */}
-            <div>
-                {role && !role.retired && (
-                    <button
-                        type="button"
-                        onClick={form.requestRetire}
-                        className="h-9 rounded-md px-3 text-sm font-semibold text-status-danger hover:bg-canvas"
-                    >
-                        {t('retire')}
-                    </button>
-                )}
-                {role?.retired && (
-                    <button
-                        type="button"
-                        onClick={form.restore}
-                        disabled={form.isRetiring}
-                        className="h-9 rounded-md px-3 text-sm font-semibold text-ink hover:bg-canvas disabled:opacity-50"
-                    >
-                        {t('restore')}
-                    </button>
-                )}
-            </div>
+        <div className="flex w-full flex-col gap-3">
+            {/* Error */}
+            {form.failureMessage && (
+                <p role="alert" className="rounded-lg bg-status-danger-wash px-3 py-2 text-sm text-status-danger">
+                    {form.failureMessage}
+                </p>
+            )}
 
-            {/* Save */}
-            <div className="flex gap-2">
-                <button type="button" onClick={onCloseAction} className="h-9 rounded-md px-3 text-sm font-semibold text-ink-muted hover:text-ink">
-                    {t('cancel')}
-                </button>
-                <button
-                    type="submit"
-                    form={FORM_ID}
-                    disabled={form.isSaving || form.failure?.kind === 'notFound'}
-                    className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-bold text-white disabled:opacity-50"
-                >
-                    {form.isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
-                    {t('save')}
-                </button>
+            <div className="flex items-center justify-between gap-2">
+                {/* Retire or restore */}
+                <div>
+                    {role && !role.retired && (
+                        <button
+                            type="button"
+                            onClick={form.requestRetire}
+                            className="h-9 rounded-md px-3 text-sm font-semibold text-status-danger hover:bg-canvas"
+                        >
+                            {t('retire')}
+                        </button>
+                    )}
+                    {role?.retired && (
+                        <button
+                            type="button"
+                            onClick={form.restore}
+                            disabled={form.isRetiring}
+                            className="h-9 rounded-md px-3 text-sm font-semibold text-ink hover:bg-canvas disabled:opacity-50"
+                        >
+                            {t('restore')}
+                        </button>
+                    )}
+                </div>
+
+                {/* Save */}
+                <div className="flex gap-2">
+                    <button type="button" onClick={onCloseAction} className="h-9 rounded-md px-3 text-sm font-semibold text-ink-muted hover:text-ink">
+                        {t('cancel')}
+                    </button>
+                    <button
+                        type="submit"
+                        form={FORM_ID}
+                        disabled={form.isSaving || form.failure?.kind === 'notFound'}
+                        className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-bold text-white disabled:opacity-50"
+                    >
+                        {form.isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
+                        {t('save')}
+                    </button>
+                </div>
             </div>
         </div>
     );
@@ -81,28 +88,9 @@ export function MemberRoleDrawer({
         <>
             <AdminDrawer open onClose={onCloseAction} title={role ? roleName : t('createTitle')} closeLabel={t('close')} footer={footer}>
                 <form id={FORM_ID} onSubmit={form.handleSubmit} className="space-y-4" noValidate>
-                    {/* Error */}
-                    {form.failure?.kind === 'notFound' && <p className="text-sm text-status-danger">{t('notFound')}</p>}
-                    {form.failure?.kind === 'other' && <p className="text-sm text-status-danger">{getErrorMessage(form.failure.error)}</p>}
-
                     {/* Identity */}
                     <AdminField label={t('eventType')}>
                         <p className="text-sm text-ink">{eventTypeName}</p>
-                    </AdminField>
-                    <AdminField label={t('key')} required={form.isCreate} hint={keyHint}>
-                        {form.isCreate ? (
-                            <input
-                                name="roleKey"
-                                value={form.draft.roleKey}
-                                onChange={form.handleFieldChange}
-                                maxLength={50}
-                                autoComplete="off"
-                                aria-invalid={Boolean(keyHint)}
-                                className={adminInputClass('font-mono')}
-                            />
-                        ) : (
-                            <p className="font-mono text-sm text-ink">{form.draft.roleKey}</p>
-                        )}
                     </AdminField>
 
                     {/* Labels */}

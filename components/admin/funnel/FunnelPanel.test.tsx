@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
     emptyFunnelMetricsFixture,
+    funnelChannelsFixture,
     funnelCohortsFixture,
     funnelMetricsFixture,
     noEndedPaidEventsFixture,
@@ -26,9 +27,11 @@ class InertResizeObserver {
 }
 
 function serve(metrics: FunnelMetricsResponseDto) {
-    apiGet.mockImplementation((path: string) =>
-        Promise.resolve(path.startsWith('/api/admin/metrics/funnel/cohorts') ? funnelCohortsFixture() : metrics),
-    );
+    apiGet.mockImplementation((path: string) => {
+        if (path.startsWith('/api/admin/metrics/funnel/cohorts')) return Promise.resolve(funnelCohortsFixture());
+        if (path.startsWith('/api/admin/metrics/funnel/channels')) return Promise.resolve(funnelChannelsFixture());
+        return Promise.resolve(metrics);
+    });
 }
 
 function renderPanel() {
@@ -159,5 +162,26 @@ describe('FunnelPanel', () => {
             ),
         );
         process.env.TZ = originalTz;
+    });
+
+    it('lists sign-ups by source and tags channels with few sign-ups', async () => {
+        serve(funnelMetricsFixture());
+        renderPanel();
+
+        const table = await screen.findByRole('table', { name: 'By source' });
+        expect(within(table).getByText('Social')).toBeInTheDocument();
+        expect(within(table).getByText('€3,360.00')).toBeInTheDocument();
+        expect(within(table).getAllByText('Few sign-ups')).toHaveLength(1);
+    });
+
+    it('asks for one channel when a source is picked', async () => {
+        serve(funnelMetricsFixture());
+        renderPanel();
+        await screen.findByRole('table', { name: 'By source' });
+
+        fireEvent.change(screen.getByLabelText('Source'), { target: { value: 'SOCIAL' } });
+
+        await waitFor(() => expect(apiGet).toHaveBeenCalledWith(expect.stringMatching(/^\/api\/admin\/metrics\/funnel\?.*channel=SOCIAL/)));
+        expect(apiGet).toHaveBeenCalledWith(expect.stringMatching(/^\/api\/admin\/metrics\/funnel\/cohorts\?weeks=12&channel=SOCIAL$/));
     });
 });

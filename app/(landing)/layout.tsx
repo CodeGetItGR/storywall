@@ -18,7 +18,7 @@ export function generateMetadata(): Promise<Metadata> {
 // set below can then never follow them into the app.
 export default async function LandingLayout({ children }: Readonly<{ children: ReactNode }>) {
     return (
-        <RootDocument messages={pickPublicMessages(await getMessages())}>
+        <RootDocument documentScroll messages={pickPublicMessages(await getMessages())}>
             <PublicProviders>{children}</PublicProviders>
         </RootDocument>
     );

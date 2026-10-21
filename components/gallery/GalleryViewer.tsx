@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { PresignedVideo } from '@/components/common/PresignedVideo';
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { VideoFailureDetail } from '@/components/common/VideoFailureDetail';
+import { ProCreditLine } from '@/components/vendors/ProCreditLine';
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 import { useImageZoomPan } from '@/hooks/useImageZoomPan';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
@@ -306,6 +307,8 @@ export function GalleryViewer({
                         </div>
                     )}
                 </div>
+                {/* Credit */}
+                <ProCreditLine credit={media.proCredit} mediaType={media.mediaType} className="text-white/85" />
                 {/* Viewer actions */}
                 {(canDownloadOriginal || canDelete || canReport) && (
                     <div className="flex items-center gap-2">

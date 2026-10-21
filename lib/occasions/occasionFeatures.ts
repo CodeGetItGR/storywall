@@ -6,9 +6,26 @@ import { bySortOrder } from '@/lib/sortOrder';
 // Part of every event, whatever the plan.
 export const OCCASION_CORE_FEATURES = ['invitation'] as const;
 
-// Modules the features overview leaves out: internal ones, plan details, and
+// Modules the features overview leaves out: internal ones, plan details, vendors (hired help, not a guest feature), and
 // `theme`, which has its own row.
-export const OCCASION_HIDDEN_MODULES: ReadonlySet<string> = new Set(['member_roles', 'co_hosts', 'theme']);
+export const OCCASION_HIDDEN_MODULES: ReadonlySet<string> = new Set(['member_roles', 'co_hosts', 'theme', 'vendors']);
+
+// The landing's feature icons, by feature key.
+const FEATURE_ICONS: Record<string, string> = {
+    invitation: '/landing/decor-10.webp',
+    posts: '/landing/decor-05.webp',
+    rsvp: '/landing/decor-13.webp',
+    playlist: '/landing/decor-12.webp',
+    stories: '/landing/decor-06.webp',
+    gallery: '/landing/decor-14.webp',
+    wishlist: '/landing/decor-17.webp',
+    wishbook: '/landing/decor-15.webp',
+    schedule: '/landing/decor-11.webp',
+};
+
+export function occasionFeatureIcon(key: string): string {
+    return FEATURE_ICONS[key] ?? '/landing/decor-05.webp';
+}
 
 // Every key a features overview can show; each has generic copy under OccasionPages.common.features.
 export const OCCASION_FEATURE_KEYS: readonly string[] = [

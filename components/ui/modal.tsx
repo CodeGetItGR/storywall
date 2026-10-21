@@ -27,6 +27,8 @@ interface ModalProps {
     closeButtonPosition?: 'left' | 'right';
     dismissOnBack?: boolean;
     showCloseButton?: boolean;
+    /** While true (e.g. a save in flight), Esc, the backdrop and the close button don't dismiss. Back still does: owners must cope. */
+    closeDisabled?: boolean;
     /** 'overStory' lifts the dialog above the full-screen story viewer (z-60). */
     layer?: 'default' | 'overStory';
 }
@@ -43,6 +45,7 @@ export function Modal({
     closeButtonPosition = 'right',
     dismissOnBack = true,
     showCloseButton = true,
+    closeDisabled = false,
     layer = 'default',
 }: ModalProps) {
     const isFull = size === 'full';
@@ -53,9 +56,10 @@ export function Modal({
 
     const onOpenChange = useCallback(
         (nextOpen: boolean) => {
+            if (!nextOpen && closeDisabled) return;
             if (!nextOpen) requestClose();
         },
-        [requestClose],
+        [closeDisabled, requestClose],
     );
 
     return (
@@ -105,7 +109,7 @@ export function Modal({
                     )}
                 >
                     {/* Close */}
-                    {showCloseButton && (
+                    {showCloseButton && !closeDisabled && (
                         <Dialog.Close
                             aria-label={closeLabel}
                             className={cn(

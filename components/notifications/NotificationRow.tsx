@@ -13,6 +13,7 @@ import { cn, timeAgoParts } from '@/lib/utils';
 
 export function NotificationRow({ notification }: { notification: NotificationResponseDto }) {
     const t = useTranslations('NotificationsPage');
+    const tVendors = useTranslations('Vendors');
     const markRead = useMarkNotificationRead();
     const deleteNotification = useDeleteNotification();
 
@@ -36,15 +37,16 @@ export function NotificationRow({ notification }: { notification: NotificationRe
     const copyType = notificationCopyType(notification);
     const titleKey = `types.${copyType}.title`;
     const bodyKey = `types.${copyType}.body`;
-    const title = notification.title ?? (t.has(titleKey) ? t(titleKey) : t('generic.title'));
-    const body =
-        notification.body ??
-        (t.has(bodyKey)
-            ? t(bodyKey, {
-                  over: payloadString(notification, 'overFormatted') ?? '',
-                  dueDate: payloadString(notification, 'dueDate') ?? '',
-              })
-            : null);
+    const vendorType = payloadString(notification, 'vendorType');
+    // Copy values every fallback can use; a key that doesn't need one ignores it.
+    const copyValues = {
+        business: payloadString(notification, 'businessName') ?? '',
+        type: vendorType && tVendors.has(`types.${vendorType}`) ? tVendors(`types.${vendorType}`) : '',
+        over: payloadString(notification, 'overFormatted') ?? '',
+        dueDate: payloadString(notification, 'dueDate') ?? '',
+    };
+    const title = notification.title ?? (t.has(titleKey) ? t(titleKey, copyValues) : t('generic.title'));
+    const body = notification.body ?? (t.has(bodyKey) ? t(bodyKey, copyValues) : null);
 
     const decisionNote = payloadString(notification, 'decisionNote');
     const timeAgo = timeAgoParts(notification.createdAt);

@@ -9,6 +9,7 @@ import { EventRecordSection } from '@/components/admin/events/EventRecordSection
 import { EventRestrictionBanner } from '@/components/admin/events/EventRestrictionBanner';
 import { EventSummaryHeader } from '@/components/admin/events/EventSummaryHeader';
 import { EventUsageSection } from '@/components/admin/events/EventUsageSection';
+import { EventVendorsSection } from '@/components/admin/events/EventVendorsSection';
 import { useEventDetailOverlays } from '@/hooks/useEventDetailOverlays';
 import type { AdminEventDetailDto } from '@/lib/api/types';
 
@@ -18,6 +19,8 @@ import type { AdminEventDetailDto } from '@/lib/api/types';
 export function EventDetail({ event }: { event: AdminEventDetailDto }) {
     const overlays = useEventDetailOverlays();
     const editable = !event.suspension?.closedAt;
+    // Only events whose plan has the vendors module ask for the list.
+    const hasVendors = event.modules.some((module) => module.moduleKey === 'vendors' && module.enabled);
 
     return (
         <div className="max-w-6xl space-y-5">
@@ -50,6 +53,8 @@ export function EventDetail({ event }: { event: AdminEventDetailDto }) {
                 <div className="space-y-5">
                     <EventPlanSection plan={event.plan} editable={editable} onChangeAction={overlays.openPlan} />
                     <EventHostsSection hosts={event.hosts} />
+                    {/* Vendors */}
+                    {hasVendors && <EventVendorsSection eventId={event.id} />}
                     <EventRecordSection event={event} />
                 </div>
             </div>

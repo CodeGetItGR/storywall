@@ -4,9 +4,35 @@ import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { landingClickAttributes, landingSectionAttributes } from '@/lib/landingTracking';
 import { routes } from '@/lib/routes';
 
-export async function LandingFinalCta() {
+export type LandingFinalCtaCopy = {
+    copyStart: string;
+    copyStrong: string;
+    cta: string;
+    // Left out on occasion pages.
+    eyebrow?: string;
+    heading: string[];
+    imageAlt: string;
+};
+
+type LandingFinalCtaProps = {
+    // An occasion page's own copy, photo and create link.
+    copy?: LandingFinalCtaCopy;
+    href?: string;
+    image?: { height: number; src: string; width: number };
+};
+
+const DEFAULT_IMAGE = { src: '/landing/storywall-final-cta-wedding-santorini.webp', width: 1448, height: 1086 };
+
+export async function LandingFinalCta({ copy, href = routes.events.new(), image = DEFAULT_IMAGE }: LandingFinalCtaProps) {
     const t = await getTranslations('LandingPage.finalCta');
-    const heading = t.raw('heading') as string[];
+    const { copyStart, copyStrong, cta, eyebrow, heading, imageAlt } = copy ?? {
+        copyStart: t('copyStart'),
+        copyStrong: t('copyStrong'),
+        cta: t('cta'),
+        eyebrow: t('eyebrow'),
+        heading: t.raw('heading') as string[],
+        imageAlt: t('imageAlt'),
+    };
 
     return (
         <section
@@ -17,11 +43,10 @@ export async function LandingFinalCta() {
             <div className="h-[78vw] min-h-80 overflow-hidden min-[761px]:h-180 min-[761px]:min-h-0">
                 <ProtectedImage
                     unoptimized
-                    alt={t('imageAlt')}
-                    data-filename="storywall-final-cta-wedding-santorini.webp"
-                    src="/landing/storywall-final-cta-wedding-santorini.webp"
-                    width={1448}
-                    height={1086}
+                    alt={imageAlt}
+                    src={image.src}
+                    width={image.width}
+                    height={image.height}
                     loading="lazy"
                     className="block h-full w-full object-cover object-[50%_40%] contrast-[.98] saturate-[.96] transition-transform duration-1200 ease-[cubic-bezier(0.22,0.61,0.36,1)] group-hover:scale-[1.025] motion-reduce:transition-none min-[761px]:object-[50%_42%]"
                 />
@@ -40,21 +65,23 @@ export async function LandingFinalCta() {
                         />
                     </svg>
                 </div>
-                <div className="mb-3.5 text-[13px] font-black tracking-[0.17em] min-[761px]:mb-6.5 min-[761px]:text-[9px]">{t('eyebrow')}</div>
+                {eyebrow ? (
+                    <div className="mb-3.5 text-[13px] font-black tracking-[0.17em] min-[761px]:mb-6.5 min-[761px]:text-[9px]">{eyebrow}</div>
+                ) : null}
                 <h2 className="m-0 max-w-205 [font-family:var(--editorial)] text-[clamp(50px,14vw,70px)] leading-[0.82] font-normal tracking-[-0.065em] min-[761px]:text-[clamp(72px,6.7vw,124px)] min-[761px]:leading-[0.78]">
                     {heading[0]}
                     <br />
                     <strong className="font-bold">{heading[1]}</strong>
                 </h2>
                 <p className="mt-4.5 max-w-[92%] text-sm leading-[1.55] text-[#151313] min-[761px]:mt-8.5 min-[761px]:max-w-140 min-[761px]:text-base">
-                    {t('copyStart')} <strong className="font-bold">{t('copyStrong')}</strong>
+                    {copyStart} <strong className="font-bold">{copyStrong}</strong>
                 </p>
                 <a
                     className="motion-final-cta-btn mt-7 flex min-h-15 w-full items-center justify-between gap-7.5 rounded-full bg-white pr-5 pl-5.5 text-[11px] font-black tracking-[0.08em] text-[#151313] uppercase no-underline shadow-[0_12px_34px_rgba(21,19,19,0.1)] transition-transform duration-280 ease-[ease] hover:-translate-y-0.5 motion-reduce:transition-none min-[761px]:mt-8.5 min-[761px]:min-h-14.5 min-[761px]:w-max min-[761px]:justify-center min-[761px]:px-5.5 min-[761px]:text-[13px] min-[761px]:tracking-widest min-[761px]:shadow-none"
-                    href={routes.events.new()}
+                    href={href}
                     {...landingClickAttributes({ event: 'create', placement: 'final_cta' })}
                 >
-                    <span>{t('cta')}</span>
+                    <span>{cta}</span>
                     <span
                         aria-hidden="true"
                         className="motion-final-cta-arrow inline-block text-[22px] transition-transform duration-280 ease-[ease] group-hover:translate-x-0.75 group-hover:-translate-y-0.75 min-[761px]:inline-flex min-[761px]:items-center min-[761px]:justify-center min-[761px]:text-[21px] min-[761px]:leading-none"

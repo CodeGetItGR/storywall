@@ -1,6 +1,8 @@
 // The visitor's cookie choice. Read only in the browser so the landing page
 // stays static; the server never sees or depends on it.
 
+import { VISIT_SOURCE_COOKIE } from '@/lib/signupSource';
+
 export type ConsentChoice = {
     ads: boolean;
     analytics: boolean;
@@ -65,8 +67,10 @@ export function clearAdCookies(): void {
     clearCookiesStartingWith(AD_COOKIE_PREFIX);
 }
 
+// Google Analytics' cookies, and the signup source, which is kept only with analytics consent.
 export function clearAnalyticsCookies(): void {
     clearCookiesStartingWith(ANALYTICS_COOKIE_PREFIX);
+    clearCookiesStartingWith(VISIT_SOURCE_COOKIE);
 }
 
 function clearCookiesStartingWith(prefix: string): void {
