@@ -80,6 +80,10 @@ describe('siteNoticeAreaFor', () => {
         expect(siteNoticeAreaFor({ ...event, isEventLoading: true })).toBe('PENDING');
     });
 
+    it('shows only EVERYWHERE notices on a post page, whose event the URL does not name', () => {
+        expect(siteNoticeAreaFor({ ...base, pathname: '/post/p1' })).toBe('PENDING');
+    });
+
     it('uses HOST on the signed-in app pages without an event', () => {
         for (const pathname of ['/home', '/profile', '/notifications', '/feed', '/events/new']) {
             expect(siteNoticeAreaFor({ ...base, pathname })).toBe('HOST');

@@ -61,6 +61,8 @@ export function siteNoticeAreaFor({
         if (isEventLoading) return 'PENDING';
         return isHost ? 'HOST' : 'GUEST';
     }
+    // A post page belongs to an event the URL doesn't name, so the viewer's role there is unknown.
+    if (underPrefix(pathname, '/post')) return 'PENDING';
     if (underPrefix(pathname, '/invite')) return 'GUEST';
     if (APP_PREFIXES.some((prefix) => underPrefix(pathname, prefix))) return 'HOST';
     return 'PUBLIC';
