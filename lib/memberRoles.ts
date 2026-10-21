@@ -53,7 +53,6 @@ export function activeRoleCount(catalog: MemberRoleCatalog, eventTypeKey: string
 }
 
 // Admin catalog rules (member-roles-fe-integration.md §9).
-const ROLE_KEY_PATTERN = /^[A-Z][A-Z0-9_]{1,49}$/;
 const ROLE_LABEL_MAX = 40;
 const ROLE_EMOJI_MAX = 16;
 
@@ -61,7 +60,6 @@ export type RoleStatusFilter = 'ALL' | 'ACTIVE' | 'RETIRED';
 export const ROLE_STATUS_FILTERS: RoleStatusFilter[] = ['ALL', 'ACTIVE', 'RETIRED'];
 
 export type MemberRoleDraft = {
-    roleKey: string;
     labelEn: string;
     labelEl: string;
     // The wishbook book's section heading for this role: both or neither.
@@ -73,15 +71,7 @@ export type MemberRoleDraft = {
     hostOnly: boolean;
 };
 
-export type MemberRoleDraftErrors = Partial<Record<'roleKey' | 'labelEn' | 'labelEl' | 'sectionEn' | 'sectionEl' | 'emoji' | 'maxHolders', true>>;
-
-export function normalizeRoleKeyInput(value: string): string {
-    return value.toUpperCase().replace(/\s+/g, '_');
-}
-
-export function isValidRoleKey(roleKey: string): boolean {
-    return ROLE_KEY_PATTERN.test(roleKey);
-}
+export type MemberRoleDraftErrors = Partial<Record<'labelEn' | 'labelEl' | 'sectionEn' | 'sectionEl' | 'emoji' | 'maxHolders', true>>;
 
 function isValidLabel(label: string): boolean {
     const trimmed = label.trim();
@@ -96,7 +86,6 @@ function isValidCap(text: string): boolean {
 export function draftFromRole(role: MemberRoleCatalogDto | null): MemberRoleDraft {
     const maxHolders = role?.maxHolders ?? null;
     return {
-        roleKey: role?.roleKey ?? '',
         labelEn: role?.label.en ?? '',
         labelEl: role?.label.el ?? '',
         sectionEn: role?.sectionLabel?.en ?? '',
@@ -108,9 +97,8 @@ export function draftFromRole(role: MemberRoleCatalogDto | null): MemberRoleDraf
     };
 }
 
-export function validateRoleDraft(draft: MemberRoleDraft, isCreate: boolean): MemberRoleDraftErrors {
+export function validateRoleDraft(draft: MemberRoleDraft): MemberRoleDraftErrors {
     const errors: MemberRoleDraftErrors = {};
-    if (isCreate && !isValidRoleKey(draft.roleKey)) errors.roleKey = true;
     if (!isValidLabel(draft.labelEn)) errors.labelEn = true;
     if (!isValidLabel(draft.labelEl)) errors.labelEl = true;
     // The server takes exactly en and el, each 1 to 40 characters, or no section title at all.
@@ -126,7 +114,6 @@ export function validateRoleDraft(draft: MemberRoleDraft, isCreate: boolean): Me
 export function buildCreatePayload(draft: MemberRoleDraft, eventTypeKey: string, sortOrder: number): MemberRoleCatalogRequestDto {
     const payload: MemberRoleCatalogRequestDto = {
         eventTypeKey,
-        roleKey: draft.roleKey,
         label: { en: draft.labelEn.trim(), el: draft.labelEl.trim() },
         sortOrder,
     };
@@ -173,7 +160,7 @@ export function filterRoles(roles: MemberRoleCatalogDto[], search: string, statu
         if (status === 'ACTIVE' && role.retired) return false;
         if (status === 'RETIRED' && !role.retired) return false;
         if (!needle) return true;
-        return [role.roleKey, role.label.en, role.label.el].some((text) => text.toLocaleLowerCase(locale).includes(needle));
+        return [role.label.en, role.label.el].some((text) => text.toLocaleLowerCase(locale).includes(needle));
     });
 }
 

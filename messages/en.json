@@ -4494,7 +4494,7 @@
         "memberRoles": {
             "create": "New role",
             "eventType": "Event type",
-            "search": "Search by label or key",
+            "search": "Search by label",
             "filters": {
                 "ALL": "All",
                 "ACTIVE": "Active",
@@ -4502,7 +4502,6 @@
             },
             "columns": {
                 "role": "Role",
-                "key": "Key",
                 "limit": "Limit",
                 "status": "Status",
                 "order": "Order"
@@ -4522,9 +4521,6 @@
                 "createTitle": "New role",
                 "close": "Close",
                 "eventType": "Event type",
-                "key": "Key",
-                "keyInvalid": "Use 2 to 50 capital letters, digits or underscores, starting with a letter.",
-                "keyTaken": "A role with this key already exists.",
                 "labelEn": "English label",
                 "labelEl": "Greek label",
                 "labelInvalid": "Enter 1 to 40 characters.",
@@ -5631,7 +5627,6 @@
         "inviteCodeTaken": "This invite code is already in use. Choose a different one.",
         "coHostAlreadyMember": "This person is already a member. Make them a co-host from the members list.",
         "memberIsHost": "This member is a host. Remove their host role first.",
-        "memberRoleKeyTaken": "A role with this key already exists for this event type.",
         "reactionTypeCodeTaken": "A reaction with this code already exists for this event type.",
         "blockedTermExists": "This term is already blocked.",
         "paidServiceCodeTaken": "A service with this code already exists.",
