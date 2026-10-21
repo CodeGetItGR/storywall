@@ -8,7 +8,6 @@ vi.mock('@/lib/api/serverFetch', () => ({ serverPublicCachedGet: vi.fn(), server
 
 const preview = {
     eventStartAt: '2026-11-14T18:00:00+02:00',
-    eventEndAt: '2026-11-14T23:00:00+02:00',
     eventTimezone: 'Europe/Athens',
     eventLocationName: ' Villa Rosa ',
 };
@@ -19,12 +18,12 @@ function details(...args: Parameters<typeof formatShareDetails>) {
 }
 
 describe('formatShareDetails', () => {
-    it('joins the date, the times and the venue in the event time zone', () => {
-        expect(details('en', preview)).toBe('Sat, Nov 14, 2026 · 6:00 – 11:00 PM · Villa Rosa');
+    it('joins the date, the start time and the venue in the event time zone', () => {
+        expect(details('en', preview)).toBe('Sat, Nov 14, 2026 · 6:00 PM · Villa Rosa');
     });
 
     it('leaves out a missing venue', () => {
-        expect(details('en', { ...preview, eventLocationName: null })).toBe('Sat, Nov 14, 2026 · 6:00 – 11:00 PM');
+        expect(details('en', { ...preview, eventLocationName: null })).toBe('Sat, Nov 14, 2026 · 6:00 PM');
     });
 
     it('shows only the venue when the date is unreadable', () => {
