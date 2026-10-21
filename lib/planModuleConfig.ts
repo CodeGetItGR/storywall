@@ -1,3 +1,4 @@
+import { STORAGE_UNITS, storageBytesToInput, storageInputToBytes, type StorageUnit } from '@/lib/adminPlanForm';
 import type { EventModuleResponseDto, ModuleKey, PlanTierResponseDto } from '@/lib/api/types';
 
 // The per-plan module config keys the backend documents. Each gets a labelled
@@ -6,9 +7,11 @@ import type { EventModuleResponseDto, ModuleKey, PlanTierResponseDto } from '@/l
 // works before it gets a control here. `hint` adds fieldHints.<key> under it.
 // A `required` number has no "Unlimited": the server wants the key with a value
 // (a blank would drop it), so the grid shows a plain number input. `max` mirrors
-// the server's upper bound.
+// the server's upper bound. A `storage` number is bytes on the wire but edited as
+// an amount and an MB/GB/TB unit; its draft holds both ("5 GB").
 export type KnownConfigField =
-    { key: string; type: 'number'; min?: number; max?: number; required?: boolean } | { key: string; type: 'boolean'; hint?: boolean };
+    | { key: string; type: 'number'; min?: number; max?: number; required?: boolean; storage?: boolean }
+    | { key: string; type: 'boolean'; hint?: boolean };
 
 // The vendors config PATCH replaces the whole map and refuses anything else:
 // whole numbers of 0 to 2^31-1 (bytes: 0 to the largest exact JS integer, the server allows more).
@@ -26,12 +29,42 @@ const KNOWN_CONFIG_FIELDS: Record<string, KnownConfigField[]> = {
     vendors: [
         { key: 'maxVendors', type: 'number', min: 0, max: INT32_MAX, required: true },
         { key: 'accessDaysAfterEvent', type: 'number', min: 0, max: INT32_MAX, required: true },
-        { key: 'proStorageBytes', type: 'number', min: 0, max: Number.MAX_SAFE_INTEGER, required: true },
+        { key: 'proStorageBytes', type: 'number', min: 0, max: Number.MAX_SAFE_INTEGER, required: true, storage: true },
     ],
 };
 
-// Whether a number draft is a whole number inside the field's range.
+// A storage field's draft: the amount and unit the admin sees, e.g. "5 GB".
+export function storageDraft(amount: string, unit: StorageUnit): string {
+    return `${amount.trim()} ${unit}`;
+}
+
+export function splitStorageDraft(text: string): { amount: string; unit: StorageUnit } {
+    // Split on the last space: a cleared amount leaves " GB".
+    const index = text.lastIndexOf(' ');
+    if (index < 0) return { amount: text.trim(), unit: 'GB' };
+    const unit = text.slice(index + 1);
+    return { amount: text.slice(0, index).trim(), unit: STORAGE_UNITS.includes(unit as StorageUnit) ? (unit as StorageUnit) : 'GB' };
+}
+
+function storageDraftFromBytes(value: unknown): string {
+    if (typeof value !== 'number') return '';
+    const { amount, unit } = storageBytesToInput(value);
+    return storageDraft(amount, unit);
+}
+
+function storageDraftToBytes(text: string): number | null {
+    const { amount, unit } = splitStorageDraft(text);
+    const bytes = storageInputToBytes(amount, unit);
+    return bytes === null || Number.isNaN(bytes) ? null : bytes;
+}
+
+// Whether a number draft is a whole number inside the field's range. A storage
+// amount may have decimals; the bytes it comes to must fit the range.
 export function isValidNumberDraft(field: Extract<KnownConfigField, { type: 'number' }>, text: string): boolean {
+    if (field.storage) {
+        const bytes = storageDraftToBytes(text);
+        return bytes !== null && (field.min === undefined || bytes >= field.min) && (field.max === undefined || bytes <= field.max);
+    }
     const trimmed = text.trim();
     if (!trimmed) return false;
     const value = Number(trimmed);
@@ -111,13 +144,24 @@ export function parseConfigJson(text: string): ParsedConfigJson {
 
 // Known fields are edited as strings (input values); this turns them back into
 // typed values and merges the untouched unknown keys. A blank number means "unset".
-export function mergeConfigDraft(moduleKey: ModuleKey, knownDraft: Record<string, string>, unknown: ConfigObject): ConfigObject {
+// An untouched storage draft keeps `before`'s exact bytes, which its rounded amount may not.
+export function mergeConfigDraft(
+    moduleKey: ModuleKey,
+    knownDraft: Record<string, string>,
+    unknown: ConfigObject,
+    before: ConfigObject = {},
+): ConfigObject {
     const merged: ConfigObject = { ...unknown };
     for (const field of knownConfigFields(moduleKey)) {
         const raw = knownDraft[field.key];
         if (field.type === 'boolean') {
             if (raw === 'true') merged[field.key] = true;
             else if (raw === 'false') merged[field.key] = false;
+            continue;
+        }
+        if (field.storage) {
+            const bytes = raw === storageDraftFromBytes(before[field.key]) ? before[field.key] : storageDraftToBytes(raw ?? '');
+            if (typeof bytes === 'number') merged[field.key] = bytes;
             continue;
         }
         const text = (raw ?? '').trim();
@@ -132,7 +176,8 @@ export function knownDraftFromConfig(moduleKey: ModuleKey, config: ConfigObject)
     const draft: Record<string, string> = {};
     for (const field of knownConfigFields(moduleKey)) {
         const value = config[field.key];
-        draft[field.key] = value === undefined || value === null ? '' : String(value);
+        if (field.type === 'number' && field.storage) draft[field.key] = storageDraftFromBytes(value);
+        else draft[field.key] = value === undefined || value === null ? '' : String(value);
     }
     return draft;
 }
@@ -171,7 +216,7 @@ export function limitedKeysFromDraft(moduleKey: ModuleKey, draft: Record<string,
 export type ConfigValueLabels = {
     field: (key: string) => string;
     unlimited: string;
-    upTo: (count: number) => string;
+    upTo: (count: number | string) => string;
     on: string;
     off: string;
     none: string;
@@ -186,7 +231,8 @@ export function readableConfigChanges(moduleKey: ModuleKey, before: ConfigObject
         if (!field) return change;
         const describe = (value: unknown) => {
             if (field.type === 'boolean') return value === true ? labels.on : labels.off;
-            return typeof value === 'number' ? labels.upTo(value) : labels.unlimited;
+            if (typeof value !== 'number') return labels.unlimited;
+            return labels.upTo(field.storage ? storageDraftFromBytes(value) : value);
         };
         return { key: labels.field(field.key), before: describe(before[field.key]), after: describe(after[field.key]) };
     });

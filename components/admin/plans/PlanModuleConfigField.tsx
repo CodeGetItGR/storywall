@@ -6,6 +6,7 @@ import type { ChangeEvent } from 'react';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { AdminLimitControl } from '@/components/admin/AdminLimitControl';
 import { AdminSwitch } from '@/components/admin/AdminSwitch';
+import { PlanModuleStorageField } from '@/components/admin/plans/PlanModuleStorageField';
 import type { KnownConfigField } from '@/lib/planModuleConfig';
 
 export function PlanModuleConfigField({
@@ -54,6 +55,10 @@ export function PlanModuleConfigField({
                 />
             </div>
         );
+    }
+
+    if (field.storage) {
+        return <PlanModuleStorageField label={t(`fields.${field.key}`)} value={value} error={error} onChangeAction={handleValueChange} />;
     }
 
     if (field.required) {

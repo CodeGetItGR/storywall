@@ -3926,6 +3926,7 @@
                     "invalidJson": "Εισάγετε ένα αντικείμενο JSON.",
                     "invalidNumber": "Εισάγετε ακέραιο αριθμό τουλάχιστον {min}.",
                     "invalidNumberRange": "Εισάγετε ακέραιο αριθμό από {min} έως {max}.",
+                    "invalidStorage": "Εισάγετε μέγεθος 0 ή μεγαλύτερο.",
                     "confirmTitle": "Αποθήκευση αλλαγών στην ενότητα {module} για το πλάνο {plan};",
                     "included": "Περιλαμβάνεται",
                     "yes": "Ναι",
@@ -3934,7 +3935,7 @@
                     "fields": {
                         "maxVendors": "Συντελεστές",
                         "accessDaysAfterEvent": "Ημέρες εργαλείων μετά την εκδήλωση",
-                        "proStorageBytes": "Pro χώρος (bytes)",
+                        "proStorageBytes": "Pro χώρος",
                         "maxSections": "Ενότητες προγράμματος",
                         "maxCoHosts": "Συνδιοργανωτές",
                         "qrUploadEnabled": "Ανέβασμα με QR",

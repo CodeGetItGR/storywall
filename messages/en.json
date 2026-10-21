@@ -3799,6 +3799,7 @@
                     "invalidJson": "Enter a JSON object.",
                     "invalidNumber": "Enter a whole number of at least {min}.",
                     "invalidNumberRange": "Enter a whole number from {min} to {max}.",
+                    "invalidStorage": "Enter a size of 0 or more.",
                     "confirmTitle": "Save changes to {module} for {plan}?",
                     "included": "Included",
                     "yes": "Yes",
@@ -3807,7 +3808,7 @@
                     "fields": {
                         "maxVendors": "Vendors",
                         "accessDaysAfterEvent": "Tool days after the event",
-                        "proStorageBytes": "Pro storage (bytes)",
+                        "proStorageBytes": "Pro storage",
                         "maxSections": "Schedule sections",
                         "maxCoHosts": "Co-hosts",
                         "qrUploadEnabled": "Guest QR upload",

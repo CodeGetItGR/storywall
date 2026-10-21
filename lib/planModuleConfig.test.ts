@@ -13,6 +13,7 @@ import {
     parseConfigJson,
     readableConfigChanges,
     splitConfig,
+    splitStorageDraft,
 } from '@/lib/planModuleConfig';
 
 describe('knownConfigFields', () => {
@@ -69,7 +70,7 @@ describe('vendors config fields', () => {
         expect(knownConfigFields('vendors')).toEqual([
             { key: 'maxVendors', type: 'number', min: 0, max: INT32_MAX, required: true },
             { key: 'accessDaysAfterEvent', type: 'number', min: 0, max: INT32_MAX, required: true },
-            { key: 'proStorageBytes', type: 'number', min: 0, max: Number.MAX_SAFE_INTEGER, required: true },
+            { key: 'proStorageBytes', type: 'number', min: 0, max: Number.MAX_SAFE_INTEGER, required: true, storage: true },
         ]);
     });
 
@@ -86,9 +87,27 @@ describe('vendors config fields', () => {
         expect(mergeConfigDraft('vendors', draft, unknown)).toEqual({ ...config, maxVendors: 8 });
     });
 
-    it('writes bytes exactly as typed, with no unit conversion', () => {
-        const draft = { maxVendors: '1', accessDaysAfterEvent: '1', proStorageBytes: '5368709120' };
-        expect(mergeConfigDraft('vendors', draft, { allowedTypes: [] }).proStorageBytes).toBe(5368709120);
+    it('edits storage as an amount and a unit', () => {
+        expect(knownDraftFromConfig('vendors', { proStorageBytes: 5368709120 }).proStorageBytes).toBe('5 GB');
+        expect(splitStorageDraft('5 GB')).toEqual({ amount: '5', unit: 'GB' });
+        expect(splitStorageDraft(' TB')).toEqual({ amount: '', unit: 'TB' });
+        const draft = { maxVendors: '1', accessDaysAfterEvent: '1', proStorageBytes: '512 MB' };
+        expect(mergeConfigDraft('vendors', draft, { allowedTypes: [] }).proStorageBytes).toBe(512 * 1024 ** 2);
+    });
+
+    it('keeps exact bytes when the rounded storage amount is untouched', () => {
+        const config = { proStorageBytes: 1500000000 };
+        const draft = knownDraftFromConfig('vendors', config);
+        expect(draft.proStorageBytes).toBe('1.4 GB');
+        expect(mergeConfigDraft('vendors', draft, {}, config).proStorageBytes).toBe(1500000000);
+    });
+
+    it('accepts a storage amount of 0 or more', () => {
+        const field = knownConfigFields('vendors')[2] as Extract<ReturnType<typeof knownConfigFields>[number], { type: 'number' }>;
+        expect(isValidNumberDraft(field, '0 MB')).toBe(true);
+        expect(isValidNumberDraft(field, '1.5 GB')).toBe(true);
+        expect(isValidNumberDraft(field, ' GB')).toBe(false);
+        expect(isValidNumberDraft(field, '-1 GB')).toBe(false);
     });
 });
 
@@ -180,7 +199,7 @@ describe('readableConfigChanges', () => {
     const labels = {
         field: (key: string) => `field:${key}`,
         unlimited: 'Unlimited',
-        upTo: (count: number) => `Up to ${count}`,
+        upTo: (count: number | string) => `Up to ${count}`,
         on: 'On',
         off: 'Off',
         none: 'None',
@@ -192,6 +211,12 @@ describe('readableConfigChanges', () => {
         ]);
         expect(readableConfigChanges('member_roles', {}, { allowCustom: true }, labels)).toEqual([
             { key: 'field:allowCustom', before: 'Off', after: 'On' },
+        ]);
+    });
+
+    it('describes storage in its unit', () => {
+        expect(readableConfigChanges('vendors', { proStorageBytes: 5368709120 }, { proStorageBytes: 1024 ** 4 }, labels)).toEqual([
+            { key: 'field:proStorageBytes', before: 'Up to 5 GB', after: 'Up to 1 TB' },
         ]);
     });
 

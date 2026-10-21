@@ -56,6 +56,13 @@ describe('usePlanModuleCellDraft with the vendors module', () => {
         expect(body.defaultConfig).toEqual({ maxVendors: 5, accessDaysAfterEvent: 30, proStorageBytes: 5368709120, allowedTypes: ['MUSIC'] });
     });
 
+    it('sends storage in bytes', async () => {
+        await saveAfter((draft) => draft.handleLimitValueChange('proStorageBytes', '10 GB'));
+
+        const [, body] = apiPatch.mock.calls[0] as [string, { defaultConfig: Record<string, unknown> }];
+        expect(body.defaultConfig).toEqual({ ...VENDORS_CONFIG, proStorageBytes: 10 * 1024 ** 3 });
+    });
+
     it('does not save a blank or out-of-range number', () => {
         const { result } = renderHook(() => usePlanModuleCellDraft({ cell, plan, onSavedAction: vi.fn() }), { wrapper });
         act(() => result.current.handleLimitValueChange('accessDaysAfterEvent', ''));
