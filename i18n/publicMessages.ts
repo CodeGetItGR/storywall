@@ -18,6 +18,7 @@ export const PUBLIC_CLIENT_NAMESPACES = [
     'LandingPage.pricing',
     'LandingPage.stack',
     'LanguageSwitcher',
+    'SiteNotice',
     'Modules',
     'Durations',
     'AccountDrawer',
