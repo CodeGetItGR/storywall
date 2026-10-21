@@ -40,7 +40,9 @@ export function usePlanModuleCellDraft({ cell, plan, onSavedAction }: { cell: Ed
     const initialSplit = useMemo(() => splitConfig(cell.moduleKey, cell.config), [cell.config, cell.moduleKey]);
     const [included, setIncluded] = useState(cell.kind === 'included');
     const [knownDraft, setKnownDraft] = useState<Record<string, string>>(() => knownDraftFromConfig(cell.moduleKey, cell.config));
-    const [limitedKeys, setLimitedKeys] = useState<string[]>(() => limitedKeysFromDraft(cell.moduleKey, knownDraftFromConfig(cell.moduleKey, cell.config)));
+    const [limitedKeys, setLimitedKeys] = useState<string[]>(() =>
+        limitedKeysFromDraft(cell.moduleKey, knownDraftFromConfig(cell.moduleKey, cell.config)),
+    );
     const [jsonText, setJsonText] = useState(() => (Object.keys(initialSplit.unknown).length ? JSON.stringify(initialSplit.unknown, null, 2) : ''));
     const [pending, setPending] = useState<PendingCellSave | null>(null);
 
@@ -54,10 +56,11 @@ export function usePlanModuleCellDraft({ cell, plan, onSavedAction }: { cell: Ed
             // Unlimited counts have no number to check; "Up to" and required fields need a valid one.
             if (!field.required && !limitedKeys.includes(field.key)) continue;
             if (!isValidNumberDraft(field, knownDraft[field.key] ?? '')) {
-                errors[field.key] =
-                    field.max === undefined
-                        ? t('plans.grid.cell.invalidNumber', { min: field.min ?? 0 })
-                        : t('plans.grid.cell.invalidNumberRange', { min: field.min ?? 0, max: field.max });
+                errors[field.key] = field.storage
+                    ? t('plans.grid.cell.invalidStorage')
+                    : field.max === undefined
+                      ? t('plans.grid.cell.invalidNumber', { min: field.min ?? 0 })
+                      : t('plans.grid.cell.invalidNumberRange', { min: field.min ?? 0, max: field.max });
             }
         }
         return errors;
@@ -66,8 +69,8 @@ export function usePlanModuleCellDraft({ cell, plan, onSavedAction }: { cell: Ed
     const jsonError = parsedJson.ok ? null : t('plans.grid.cell.invalidJson');
 
     const configAfter = useMemo(
-        () => mergeConfigDraft(cell.moduleKey, knownDraft, parsedJson.ok ? parsedJson.value : initialSplit.unknown),
-        [cell.moduleKey, initialSplit.unknown, knownDraft, parsedJson],
+        () => mergeConfigDraft(cell.moduleKey, knownDraft, parsedJson.ok ? parsedJson.value : initialSplit.unknown, cell.config),
+        [cell.config, cell.moduleKey, initialSplit.unknown, knownDraft, parsedJson],
     );
     const changes = useMemo(
         () =>
@@ -95,7 +98,10 @@ export function usePlanModuleCellDraft({ cell, plan, onSavedAction }: { cell: Ed
     );
     const handleLimitValueChange = useCallback((key: string, value: string) => setKnownDraft((current) => ({ ...current, [key]: value })), []);
     // An untouched switch for a missing key stays missing on save; a touched one writes true or false.
-    const handleSwitchChange = useCallback((key: string, checked: boolean) => setKnownDraft((current) => ({ ...current, [key]: String(checked) })), []);
+    const handleSwitchChange = useCallback(
+        (key: string, checked: boolean) => setKnownDraft((current) => ({ ...current, [key]: String(checked) })),
+        [],
+    );
     const handleJsonChange = useCallback((event: ChangeEvent<HTMLTextAreaElement>) => setJsonText(event.currentTarget.value), []);
     const handleIncludedChange = useCallback((next: boolean) => setIncluded(next), []);
 
