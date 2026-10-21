@@ -30,7 +30,14 @@ describe('siteNoticeForm', () => {
             endsAt: null,
             active: true,
         });
-        const offer = requestOfForm({ ...filled, where: 'choose', areas: ['PUBLIC', 'HOST'], linkUrl: '/pricing', linkLabelEn: 'See plans', linkLabelEl: 'Πακέτα' });
+        const offer = requestOfForm({
+            ...filled,
+            where: 'choose',
+            areas: ['PUBLIC', 'HOST'],
+            linkUrl: '/pricing',
+            linkLabelEn: 'See plans',
+            linkLabelEl: 'Πακέτα',
+        });
         expect(offer.areas).toEqual(['PUBLIC', 'HOST']);
         expect(offer.linkLabel).toEqual({ en: 'See plans', el: 'Πακέτα' });
     });
