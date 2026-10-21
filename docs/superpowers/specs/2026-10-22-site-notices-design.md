@@ -1,7 +1,20 @@
 # Site notices — design
 
 Date: 2026-10-22
-Status: approved design, pending implementation plan
+Status: approved design; plans in `docs/superpowers/plans/2026-10-22-site-notices-{backend,frontend}.md`
+
+## Changes made while planning
+
+These replace the matching parts below:
+- **Storage:** messages and link labels are stored as JSON maps (`message`, `link_label`, keyed `en`/`el`), not as separate columns.
+- **Paths:** `/api/admin/site-notices` (GET, POST, PUT `{id}`, DELETE `{id}`) and public `GET /api/public/site-notices`.
+- **Dismissals:** kept in a cookie (`site_notice_dismissed`, newest 20 `id:version` keys, one year), not localStorage. The layouts read it on the server, so a closed notice never flashes on load.
+- **Mounting:**
+  - The bar mounts once per root layout. `(landing)` uses `PUBLIC`.
+  - `(main)` wraps the whole page in a frame and works out the area from the path, sign-in state and event role (`siteNoticeAreaFor` in `lib/siteNotices.ts`). Event pages use `PENDING`, which shows only `EVERYWHERE` notices, until the role is known.
+  - Story and slideshow views need no code, because their full-screen overlays cover the bar.
+  - The fixed desktop nav rail moves down by `--site-notice-h`.
+- **Admin hooks:** in `hooks/useAdminSiteNotices.ts`, next to the other admin hooks.
 
 ## Goal
 
