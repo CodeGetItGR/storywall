@@ -9,10 +9,10 @@ import messages from '@/messages/en.json';
 const header = { eventTitle: 'Anna & Nikos', eventTypeName: 'Wedding', eventDate: '2026-10-11', generatedAt: '2026-09-25T10:00:00Z' };
 const totals = { responses: 3, people: 4, adults: 3, children: 1 };
 
-function renderReport(report: RsvpReportDto) {
+function renderReport(report: RsvpReportDto, showPhone?: boolean) {
     return render(
         <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
-            <RsvpReportView report={report} />
+            <RsvpReportView report={report} showPhone={showPhone} />
         </NextIntlClientProvider>,
     );
 }
@@ -108,6 +108,35 @@ describe('RsvpReportView', () => {
         expect(within(table).getByText('Maria')).toBeTruthy();
         expect(within(table).getByText('Vegetarian')).toBeTruthy();
         expect(screen.queryByText('Attendance by category')).toBeNull();
+    });
+
+    it('shows the phone column to a host and leaves it out for a planner', () => {
+        const report: RsvpReportDto = {
+            reportType: 'FULL_LIST',
+            header,
+            totals,
+            categories: null,
+            sessions: null,
+            groups: [
+                {
+                    label: 'Attending',
+                    attending: true,
+                    comingSessionIds: [],
+                    noAnswerSessionIds: [],
+                    responses: 1,
+                    people: 1,
+                    rows: [{ rsvpId: 'x', name: 'Maria', phone: '6900000000', adults: 1, children: 0, notes: null }],
+                },
+            ],
+        };
+
+        renderReport(report, true);
+        expect(within(screen.getAllByRole('table')[0]).getByText('Phone')).toBeTruthy();
+        cleanup();
+
+        renderReport(report, false);
+        expect(within(screen.getAllByRole('table')[0]).queryByText('Phone')).toBeNull();
+        expect(screen.queryByText(/6900000000/)).toBeNull();
     });
 
     it('says so when a list is empty', () => {

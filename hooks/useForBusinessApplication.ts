@@ -12,7 +12,8 @@ import { type ApplicationError, applicationRequestFromFormData, toApplicationErr
 
 // The partner apply form. UTM params are read at submit time from the address
 // bar, so the page needs no useSearchParams (and no client-render bailout).
-export function useForBusinessApplication() {
+// The vendor "Become a partner" sheet passes its own `search` instead.
+export function useForBusinessApplication({ search }: { search?: string } = {}) {
     const locale = useLocale();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSent, setIsSent] = useState(false);
@@ -28,7 +29,7 @@ export function useForBusinessApplication() {
             setIsSubmitting(true);
 
             try {
-                const body = applicationRequestFromFormData(new FormData(event.currentTarget), { locale, search: window.location.search });
+                const body = applicationRequestFromFormData(new FormData(event.currentTarget), { locale, search: search ?? window.location.search });
                 await api.publicPost<PartnerApplicationResponseDto>(endpoints.partnerProgram.applications, body);
                 setIsSent(true);
             } catch (submitError) {
@@ -38,7 +39,7 @@ export function useForBusinessApplication() {
                 setIsSubmitting(false);
             }
         },
-        [isSubmitting, locale],
+        [isSubmitting, locale, search],
     );
 
     return { error, fieldErrors, handleSubmit, isSent, isSubmitting };

@@ -5,6 +5,7 @@ import { useCallback, useEffect } from 'react';
 import { useRsvpAvailability } from '@/hooks/useRsvpAvailability';
 import { useRsvpForm } from '@/hooks/useRsvpForm';
 import { setMemberRsvpIdInCaches } from '@/hooks/useRsvps';
+import { useMyVendorRole } from '@/hooks/useVendors';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useActiveMember, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 
@@ -27,6 +28,9 @@ export function useRsvpSubmitPageData() {
     const rsvpId = activeMember?.rsvpId ?? null;
     const isHost = useIsHost();
     const isContextLoading = useEventContextLoading();
+    // Vendors don't RSVP. A host is never a vendor, so the host skips the role request.
+    const vendorRole = useMyVendorRole(isHost ? null : eventId);
+    const isVendor = Boolean(vendorRole.data);
     const rsvpAvailability = useRsvpAvailability();
 
     const presetAttending = searchParams.get('attending');
@@ -69,6 +73,8 @@ export function useRsvpSubmitPageData() {
         backHref,
         eventId,
         eventType: activeEvent?.eventType ?? null,
+        isVendor,
+        isVendorRoleLoading: vendorRole.isLoading,
         onBackToWall: handleBackToWall,
         rsvpAvailability,
     };

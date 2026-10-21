@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { eventKeys } from '@/hooks/useEvent';
 import { eventMemberKeys } from '@/hooks/useEventMembers';
 import { myEventsKeys } from '@/hooks/useMyEvents';
+import { isEventVendorKey } from '@/hooks/useVendorProfile';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
@@ -90,6 +91,9 @@ export function useAcceptEventInvitation() {
                 queryClient.invalidateQueries({ queryKey: myEventsKeys.all }),
                 member && queryClient.invalidateQueries({ queryKey: eventKeys.detail(member.eventId), exact: true }),
                 member && queryClient.invalidateQueries({ queryKey: eventMemberKeys.list(member.eventId) }),
+                // A guest who joins through a vendor link becomes a vendor in this tab: the vendor menu and sheet need the role at once.
+                member &&
+                    queryClient.invalidateQueries({ predicate: (query) => isEventVendorKey(query.queryKey) && query.queryKey[1] === member.eventId }),
             ]),
     });
 }

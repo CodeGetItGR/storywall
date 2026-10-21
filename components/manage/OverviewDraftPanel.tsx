@@ -263,6 +263,7 @@ export function OverviewDraftPanel({
                                 notice={partnerBranding.notice}
                                 accepted={partnerBranding.accepted}
                                 onChangeAction={partnerBranding.handleChange}
+                                vendorOffer={Boolean(collaborationPreview?.vendorOffer)}
                                 className=""
                             />
                         )}

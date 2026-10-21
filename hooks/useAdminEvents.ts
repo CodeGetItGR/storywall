@@ -15,12 +15,14 @@ import type {
     AdminStorageGrantRequestDto,
     EventUsageResponseDto,
     ModerationDecisionDto,
+    VendorRowDto,
 } from '@/lib/api/types';
 
 export const adminEventKeys = {
     all: ['admin', 'events'] as const,
     list: (filters: AdminEventFilters, page: number, size: number) => ['admin', 'events', 'list', filters, page, size] as const,
     detail: (eventId: string) => ['admin', 'events', 'detail', eventId] as const,
+    vendors: (eventId: string) => ['admin', 'events', 'detail', eventId, 'vendors'] as const,
 };
 
 // Rows carry hosts' names and emails: nothing is kept once the screen showing them is gone.
@@ -42,6 +44,16 @@ export function useAdminEvent(eventId: string | null) {
         queryFn: () => api.get<AdminEventDetailDto>(endpoints.admin.events.byId(eventId ?? '')),
         enabled: Boolean(eventId),
         retry: false,
+        ...NO_RETENTION,
+    });
+}
+
+// GET /api/admin/events/{eventId}/vendors — admins only, read-only.
+export function useAdminEventVendors(eventId: string | null) {
+    return useQuery({
+        queryKey: adminEventKeys.vendors(eventId ?? ''),
+        queryFn: () => api.get<VendorRowDto[]>(endpoints.admin.events.vendors(eventId ?? '')),
+        enabled: Boolean(eventId),
         ...NO_RETENTION,
     });
 }

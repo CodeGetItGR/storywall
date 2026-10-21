@@ -7,7 +7,7 @@ import { reportSectionKey } from '@/lib/rsvpReport';
 
 import { RsvpReportGroup } from './RsvpReportGroup';
 
-export function RsvpReportGroups({ groups }: { groups: RsvpReportGroupDto[] }) {
+export function RsvpReportGroups({ groups, showPhone }: { groups: RsvpReportGroupDto[]; showPhone: boolean }) {
     const t = useTranslations('ManagePage.rsvpReport');
 
     return (
@@ -18,7 +18,7 @@ export function RsvpReportGroups({ groups }: { groups: RsvpReportGroupDto[] }) {
             {groups.length === 0 ? (
                 <p className="text-sm text-ink-muted">{t('empty')}</p>
             ) : (
-                groups.map((group) => <RsvpReportGroup key={reportSectionKey(group)} group={group} />)
+                groups.map((group) => <RsvpReportGroup key={reportSectionKey(group)} group={group} showPhone={showPhone} />)
             )}
         </section>
     );

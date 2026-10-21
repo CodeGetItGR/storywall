@@ -57,6 +57,9 @@ export const endpoints = {
         dataExport: '/api/me/data-export',
         deletionRequestOtp: '/api/me/deletion-requests/otp',
         deletionRequests: '/api/me/deletion-requests',
+        vendorProfile: '/api/me/vendor-profile',
+        vendorProfileLogo: '/api/me/vendor-profile/logo',
+        vendorProfileDismissPartnerPrompt: '/api/me/vendor-profile/dismiss-partner-prompt',
     },
 
     contentNotices: { submit: '/api/content-notices' },
@@ -176,6 +179,14 @@ export const endpoints = {
         stories: (eventId: string) => `/api/events/${eventId}/stories`,
         playlistSuggestions: (eventId: string) => `/api/events/${eventId}/playlist-suggestions`,
         playlistSuggestionsLeaderboard: (eventId: string) => `/api/events/${eventId}/playlist-suggestions/leaderboard`,
+        playlistSuggestionPlayed: (eventId: string, id: string) => `/api/events/${eventId}/playlist-suggestions/${id}/played`,
+        // Vendors in the event.
+        vendors: (eventId: string) => `/api/events/${eventId}/vendors`,
+        vendorLinks: (eventId: string) => `/api/events/${eventId}/vendors/links`,
+        vendorLinkReset: (eventId: string, vendorType: string) => `/api/events/${eventId}/vendors/links/${encodeURIComponent(vendorType)}/reset`,
+        vendorMe: (eventId: string) => `/api/events/${eventId}/vendors/me`,
+        vendorById: (eventId: string, vendorId: string) => `/api/events/${eventId}/vendors/${vendorId}`,
+        vendorClicks: (eventId: string, vendorId: string) => `/api/events/${eventId}/vendors/${vendorId}/clicks`,
     },
 
     // Public preview; the claim needs a verified, non-guest account.
@@ -508,6 +519,7 @@ export const endpoints = {
             addon: (eventId: string, code: string) => `/api/admin/events/${eventId}/addons/${encodeURIComponent(code)}`,
             collaborationRedemptionVoid: (eventId: string) => `/api/admin/events/${eventId}/collaboration-redemption/void`,
             partnerBranding: (eventId: string) => `/api/admin/events/${eventId}/partner-branding`,
+            vendors: (eventId: string) => `/api/admin/events/${eventId}/vendors`,
         },
     },
 

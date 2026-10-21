@@ -6,7 +6,7 @@ import { EventRouteGate } from '@/components/routing/EventRouteGate';
 
 export default function InvitationsQrPage() {
     return (
-        <EventRouteGate requireHost fallback={<InvitationsQrPageSkeleton />}>
+        <EventRouteGate requireHost allowVendorCapability="QR_READ" fallback={<InvitationsQrPageSkeleton />}>
             <InvitationsQrScreen />
         </EventRouteGate>
     );

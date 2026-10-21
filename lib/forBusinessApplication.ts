@@ -4,7 +4,16 @@ import { isRateLimitedError } from '@/lib/api/errors';
 import type { PartnerApplicationRequestDto, PartnerRole } from '@/lib/api/types';
 
 // The order the role select shows them in.
-export const APPLICATION_ROLES: readonly PartnerRole[] = ['PLANNER', 'VENUE', 'PHOTOGRAPHER', 'VIDEOGRAPHER', 'DECORATION', 'CATERING', 'MUSIC', 'OTHER'];
+export const APPLICATION_ROLES: readonly PartnerRole[] = [
+    'PLANNER',
+    'VENUE',
+    'PHOTOGRAPHER',
+    'VIDEOGRAPHER',
+    'DECORATION',
+    'CATERING',
+    'MUSIC',
+    'OTHER',
+];
 
 // ISO 3166-1 alpha-2, every officially assigned code.
 // prettier-ignore
@@ -86,3 +95,6 @@ export function toApplicationError(error: unknown): ApplicationError {
     if (error instanceof ApiError && error.status === 400) return 'invalid';
     return 'failed';
 }
+
+// Starting values for the apply form's text fields and role select.
+export type ApplyFormDefaults = Partial<Record<'name' | 'businessName' | 'role' | 'email' | 'link', string>>;

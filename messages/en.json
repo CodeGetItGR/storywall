@@ -230,6 +230,14 @@
             "song": "Song"
         },
         "hostMenu": {
+            "vendors": {
+                "label": "Vendors",
+                "description": "Invite links and who joined."
+            },
+            "announcement": {
+                "label": "Announcement",
+                "description": "Post a message for everyone."
+            },
             "manage": {
                 "label": "Dashboard",
                 "description": "Overview of your event"
@@ -259,6 +267,30 @@
     },
     "ToolsMenu": {
         "items": {
+            "vendors": {
+                "label": "Vendors",
+                "description": "Who's working at the event."
+            },
+            "vendorMe": {
+                "label": "Your vendor page",
+                "description": "Your tools and how guests see you."
+            },
+            "announcement": {
+                "label": "Announcement",
+                "description": "Post a message for everyone."
+            },
+            "rsvpReport": {
+                "label": "RSVP report",
+                "description": "Who's coming."
+            },
+            "vendorQr": {
+                "label": "Share links",
+                "description": "Print the event's QR codes."
+            },
+            "liveRequests": {
+                "label": "Live requests",
+                "description": "Songs guests asked for."
+            },
             "heOrShe": {
                 "label": "Boy or Girl?",
                 "description": "Guess before the reveal"
@@ -813,6 +845,10 @@
             "title": "You have a new update"
         },
         "types": {
+            "VENDOR_JOINED": {
+                "title": "{business} joined as {type}",
+                "body": "They can now use their tools in your event."
+            },
             "WITHDRAWAL_REFUNDED": {
                 "title": "Your withdrawal was processed",
                 "body": "The event has been taken offline and the refund was issued."
@@ -1788,6 +1824,7 @@
             "invalid": "Your VAT number couldn't be confirmed, so this purchase is made as a consumer."
         },
         "partnerBranding": {
+            "vendorOffer": "We'll send {partner} a link to join your event as a vendor.",
             "title": "Code from {partner}",
             "body": "This discount is offered by {partner}, a StoryWall partner. In return, {partner} will be credited on your event: a small card with their name, logo, a short description and a link to their website will appear between the posts in your event's feed, visible to your guests. The card stays for as long as your event is online and can't be removed. We don't share your details or your guests' details with {partner}. We only count how many times the card is tapped.",
             "accept": "I agree that {partner} will be credited on my event in return for this discount.",
@@ -3762,12 +3799,16 @@
                     "otherKeys": "Other settings (JSON)",
                     "invalidJson": "Enter a JSON object.",
                     "invalidNumber": "Enter a whole number of at least {min}.",
+                    "invalidNumberRange": "Enter a whole number from {min} to {max}.",
                     "confirmTitle": "Save changes to {module} for {plan}?",
                     "included": "Included",
                     "yes": "Yes",
                     "no": "No",
                     "noChanges": "No changes yet.",
                     "fields": {
+                        "maxVendors": "Vendors",
+                        "accessDaysAfterEvent": "Tool days after the event",
+                        "proStorageBytes": "Pro storage (bytes)",
                         "maxSections": "Schedule sections",
                         "maxCoHosts": "Co-hosts",
                         "qrUploadEnabled": "Guest QR upload",
@@ -5573,7 +5614,7 @@
         "memberArchiveNotEnabled": "Members of this event can't download all photos and videos.",
         "postMediaLimitExceeded": "This post already has the maximum number of photos.",
         "postPinNotHost": "Only hosts can pin posts.",
-        "announcementNotHost": "Only hosts can post announcements.",
+        "announcementNotHost": "Only hosts and planners can post announcements.",
         "storyExpiryOutOfRange": "A story can last up to 24 hours.",
         "storyLiveLimitReached": "You have reached the story limit. Older stories expire after 24 hours, or delete one to post another.",
         "storyMediaAlreadyLive": "This photo or video is already in one of your stories.",
@@ -5653,6 +5694,13 @@
         "membershipClaimEmailMismatch": "This invitation is for a different email address.",
         "notificationNotYours": "This notification isn't yours.",
         "sessionNotYours": "This session belongs to another account.",
+        "vendorCapabilityMissing": "This tool isn't part of your role.",
+        "vendorAccessEnded": "Your tools for this event have ended.",
+        "vendorCannotRsvp": "Vendors don't RSVP.",
+        "vendorLimitReached": "This event has all the vendors it can take.",
+        "vendorIsHost": "You host this event, so you can't join it as a vendor.",
+        "alreadyAVendor": "You're already a vendor in this event.",
+        "partnerApplicationPending": "We already have your application. We'll reply by email.",
         "themeFontConversionUnavailable": "Fonts in TTF or OTF format can't be converted right now. Upload a WOFF2 file, or try again later.",
         "wishbookEmpty": "There are no messages yet, so there is nothing to put in a book.",
         "wishbookBookRendererUnavailable": "The book can't be created right now. Please try again later.",
@@ -7153,6 +7201,164 @@
             "copyStart": "Create your wedding's StoryWall and print the QR code",
             "copyStrong": "for the tables.",
             "imageAlt": "Wedding celebration in Santorini"
+        }
+    },
+    "Vendors": {
+        "types": {
+            "PLANNER": "Planner",
+            "VENUE": "Venue",
+            "PHOTOGRAPHER": "Photographer",
+            "VIDEOGRAPHER": "Videographer",
+            "DECORATION": "Decoration",
+            "CATERING": "Catering",
+            "MUSIC": "Music",
+            "OTHER": "Vendor"
+        },
+        "manage": {
+            "title": "Vendors",
+            "back": "Back",
+            "unavailable": "Vendors aren't part of this event's plan.",
+            "linksTitle": "Invite links",
+            "linksEmpty": "Links appear once the event is live.",
+            "copy": "Copy link",
+            "copied": "Copied",
+            "share": "Share",
+            "qr": "QR code",
+            "reset": "Reset link",
+            "resetTitle": "Reset the {type} link?",
+            "resetBody": "The old link stops working. Vendors who joined stay.",
+            "resetConfirm": "Reset link",
+            "resetCancel": "Keep link",
+            "joinedTitle": "Joined",
+            "joinedEmpty": "No vendors yet.",
+            "noProfile": "No details yet",
+            "hidden": "Hidden",
+            "sheetJoined": "Joined {date}",
+            "hide": "Hide from list",
+            "show": "Show in list",
+            "optedOut": "They chose not to appear in the list.",
+            "remove": "Remove",
+            "removeTitle": "Remove {name}?",
+            "removeBody": "They leave the event and lose their tools.",
+            "removeConfirm": "Remove",
+            "removeCancel": "Cancel",
+            "close": "Close",
+            "qrTitle": "{type} link"
+        },
+        "list": {
+            "title": "Vendors",
+            "back": "Back",
+            "empty": "No vendors yet.",
+            "open": "Open {name}"
+        },
+        "me": {
+            "title": "Your vendor page",
+            "back": "Back",
+            "notVendor": "You're not a vendor in this event.",
+            "accessUntil": "Your tools work until {date}.",
+            "toolsOff": {
+                "MODULE_OFF": "Vendor tools aren't part of this event's plan right now.",
+                "TYPE_NOT_ALLOWED": "This event's plan doesn't include tools for your type.",
+                "ACCESS_ENDED": "Your tools for this event have stopped."
+            },
+            "toolsTitle": "Your tools",
+            "tools": {
+                "schedule": "Schedule",
+                "announcement": "Announcement",
+                "rsvpReport": "RSVP report",
+                "qr": "Share links",
+                "liveRequests": "Live requests"
+            },
+            "proTitle": "Pro album",
+            "proChoose": "Choose photos or videos",
+            "proUpload": "Upload {count, plural, one {# file} other {# files}}",
+            "proUploaded": "Uploaded.",
+            "proUploadFailed": "{count, plural, one {# file didn't upload.} other {# files didn't upload.}}",
+            "proMore": "Show more",
+            "proEmpty": "Nothing uploaded yet.",
+            "proDelete": "Delete",
+            "proDeleteTitle": "Delete this item?",
+            "proDeleteBody": "It's removed from the Pro album.",
+            "proDeleteConfirm": "Delete",
+            "proDeleteCancel": "Keep",
+            "listingTitle": "Vendor list",
+            "listingSwitch": "Show me in the vendor list",
+            "listingHiddenByHost": "The host hid you from the list.",
+            "profileTitle": "Your details",
+            "profileEdit": "Edit"
+        },
+        "meter": {
+            "label": "Pro album",
+            "value": "{used} / {total}",
+            "over": "{over} more uses event storage."
+        },
+        "profile": {
+            "title": "Your business",
+            "body": "Guests see this in the vendor list.",
+            "businessName": "Business name",
+            "type": "What you do",
+            "link": "Website or Instagram",
+            "linkHint": "https://… or @handle",
+            "logo": "Logo (optional)",
+            "logoChoose": "Choose logo",
+            "logoRemove": "Remove logo",
+            "save": "Save",
+            "later": "Later",
+            "errors": {
+                "businessNameRequired": "Add your business name.",
+                "businessNameTooLong": "Use at most {max} characters.",
+                "linkInvalid": "Use a link starting with https:// or an @handle."
+            },
+            "sectionTitle": "Vendor details",
+            "edit": "Edit"
+        },
+        "partner": {
+            "promptTitle": "Become a StoryWall partner",
+            "promptBody": "Get a discount code for your clients and appear on their events.",
+            "promptApply": "Apply",
+            "promptDismiss": "Don't show again",
+            "sheetTitle": "Apply to partner"
+        },
+        "invite": {
+            "PLANNER": "You're invited as the planner.",
+            "VENUE": "You're invited as the venue.",
+            "PHOTOGRAPHER": "You're invited as the photographer.",
+            "VIDEOGRAPHER": "You're invited as the videographer.",
+            "DECORATION": "You're invited as the decorator.",
+            "CATERING": "You're invited as the caterer.",
+            "MUSIC": "You're invited as the DJ or band.",
+            "OTHER": "You're invited as a vendor."
+        },
+        "credit": {
+            "photo": "Photo: {name}",
+            "video": "Video: {name}"
+        },
+        "gallery": {
+            "guests": "Guests",
+            "pro": "Pro"
+        },
+        "live": {
+            "title": "Live requests",
+            "back": "Back",
+            "empty": "No requests yet.",
+            "notLive": "You can mark songs as played while the event is live.",
+            "played": "Played",
+            "markPlayed": "Mark {title} played",
+            "markUnplayed": "Mark {title} not played",
+            "votes": "{count, plural, one {# vote} other {# votes}}",
+            "open": "Live list"
+        },
+        "announcement": {
+            "title": "Announcement",
+            "back": "Back",
+            "label": "Message",
+            "send": "Post",
+            "empty": "Write a message first."
+        },
+        "admin": {
+            "title": "Vendors",
+            "empty": "No vendors.",
+            "joined": "Joined {date}"
         }
     }
 }

@@ -14,7 +14,15 @@ vi.mock('next-intl', () => ({ useLocale: () => 'en' }));
 
 function submitEvent(): SubmitEvent<HTMLFormElement> {
     const form = document.createElement('form');
-    for (const [name, value] of Object.entries({ name: 'Ann', businessName: 'Ann Events', role: 'PLANNER', email: 'ann@x.com', link: '@ann', countryCode: 'US', website: '' })) {
+    for (const [name, value] of Object.entries({
+        name: 'Ann',
+        businessName: 'Ann Events',
+        role: 'PLANNER',
+        email: 'ann@x.com',
+        link: '@ann',
+        countryCode: 'US',
+        website: '',
+    })) {
         const input = document.createElement('input');
         input.name = name;
         input.value = value;
@@ -42,5 +50,35 @@ describe('useForBusinessApplication', () => {
         await act(() => result.current.handleSubmit(submitEvent()));
         expect(result.current.isSent).toBe(false);
         expect(result.current.error).toBe('exists');
+    });
+
+    it('sends the given attribution instead of the address bar', async () => {
+        window.history.replaceState(null, '', '/en/for-business?utm_source=google');
+        post.mockResolvedValue({ id: 'a1' });
+        const { result } = renderHook(() => useForBusinessApplication({ search: '?utm_source=storywall-vendor&utm_medium=MUSIC' }));
+        await act(() => result.current.handleSubmit(submitEvent()));
+        expect(post).toHaveBeenCalledWith(
+            '/api/public/partner-applications',
+            expect.objectContaining({ utmSource: 'storywall-vendor', utmMedium: 'MUSIC' }),
+        );
+    });
+
+    it('still reads the address bar by default', async () => {
+        window.history.replaceState(null, '', '/en/for-business?utm_source=google');
+        post.mockResolvedValue({ id: 'a1' });
+        const { result } = renderHook(() => useForBusinessApplication());
+        await act(() => result.current.handleSubmit(submitEvent()));
+        expect(post).toHaveBeenCalledWith('/api/public/partner-applications', expect.objectContaining({ utmSource: 'google', utmMedium: null }));
+    });
+
+    it('names an existing application (409) and the rate limit (429) from the vendor sheet', async () => {
+        const { result } = renderHook(() => useForBusinessApplication({ search: '?utm_source=storywall-vendor&utm_medium=MUSIC' }));
+        post.mockRejectedValueOnce(new ApiError(409, null));
+        await act(() => result.current.handleSubmit(submitEvent()));
+        expect(result.current.error).toBe('exists');
+        post.mockRejectedValueOnce(new ApiError(429, null));
+        await act(() => result.current.handleSubmit(submitEvent()));
+        expect(result.current.error).toBe('rateLimited');
+        expect(result.current.isSent).toBe(false);
     });
 });

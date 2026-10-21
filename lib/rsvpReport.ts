@@ -37,12 +37,13 @@ export function reportSectionKey(section: RsvpReportCategoryDto | RsvpReportGrou
 
 // Which screen RsvpTab (and its Reports list) is rendered from, so a report
 // link can carry it back for Close (see resolveRsvpReportCloseHref).
-export type RsvpReportOrigin = 'manage' | 'tools';
+export type RsvpReportOrigin = 'manage' | 'tools' | 'vendor';
 
 // Where a report page's Close (useRsvpReportPage) sends the host, based on the
 // `from` search param the report link carried (see routes.events.rsvpReport).
 // An allowlist: anything but the known origins falls back to Manage.
 export function resolveRsvpReportCloseHref(eventId: string, from: string | null): string {
     if (from === 'tools') return routes.events.tools.rsvp(eventId, { section: 'reports' });
+    if (from === 'vendor') return routes.events.tools.vendorMe(eventId);
     return routes.events.manage(eventId, { tab: 'rsvp', section: 'reports' });
 }

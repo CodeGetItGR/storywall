@@ -6,6 +6,10 @@ import type { MediaResponseDto } from '@/lib/api/types';
 
 const mocks = vi.hoisted(() => ({
     media: [] as MediaResponseDto[],
+    proMedia: [] as MediaResponseDto[],
+    album: 'GUEST' as 'GUEST' | 'PRO',
+    setAlbum: vi.fn(),
+    exitSelectionMode: vi.fn(),
     isHost: false,
     activeEvent: null as { status: string; deletedAt: string | null; modules?: unknown[] } | null,
     activeMember: null as { id: string } | null,
@@ -13,6 +17,8 @@ const mocks = vi.hoisted(() => ({
     writable: true,
     hasNextPage: false,
     deleteMedia: vi.fn<(id: string) => Promise<void>>(),
+    vendorRole: null as { accessOpen: boolean; capabilities: string[] } | null,
+    vendorRoleEventId: undefined as string | null | undefined,
 }));
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
@@ -23,12 +29,25 @@ vi.mock('@/components/routing/EventRouteGate', () => ({
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'error' }));
 vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: () => ({ data: { media: {}, reportTargetTypes: mocks.reportTargetTypes } }) }));
 vi.mock('@/hooks/useGallerySelection', () => ({
-    useGallerySelection: () => ({ consumeLongPressClick: () => false, selectionMode: false, selectedItems: [], selectedCount: 0 }),
+    useGallerySelection: () => ({
+        consumeLongPressClick: () => false,
+        selectionMode: false,
+        selectedItems: [],
+        selectedCount: 0,
+        exitSelectionMode: mocks.exitSelectionMode,
+    }),
 }));
 vi.mock('@/hooks/useInfiniteScrollSentinel', () => ({ useInfiniteScrollSentinel: () => vi.fn() }));
 vi.mock('@/hooks/useMedia', () => ({
-    useEventMedia: () => ({
-        data: { pages: [{ content: mocks.media }] },
+    useEventMedia: (_eventId: string, collection = 'GUEST') => ({
+        data: {
+            pages: [
+                {
+                    content: collection === 'PRO' ? mocks.proMedia : mocks.media,
+                    page: { number: 0, totalPages: 1, totalElements: collection === 'PRO' ? mocks.proMedia.length : mocks.media.length, size: 30 },
+                },
+            ],
+        },
         isLoading: false,
         fetchNextPage: vi.fn(),
         hasNextPage: mocks.hasNextPage,
@@ -38,6 +57,13 @@ vi.mock('@/hooks/useMedia', () => ({
     useDeleteMedia: () => ({ mutateAsync: mocks.deleteMedia, isPending: false }),
     useUploadMediaBatch: () => ({}),
 }));
+vi.mock('@/hooks/useVendors', () => ({
+    useMyVendorRole: (eventId: string | null) => {
+        mocks.vendorRoleEventId = eventId;
+        return { data: mocks.vendorRole };
+    },
+}));
+vi.mock('@/hooks/useGalleryAlbum', () => ({ useGalleryAlbum: () => ({ album: mocks.album, setAlbum: mocks.setAlbum }) }));
 vi.mock('@/lib/eventLifecycle', () => ({
     isEventDeleted: (event: { deletedAt: string | null } | null) => Boolean(event?.deletedAt),
     isEventWritable: () => mocks.writable,
@@ -63,7 +89,13 @@ describe('useGalleryScreen', () => {
         mocks.reportTargetTypes = ['MEDIA'];
         mocks.writable = true;
         mocks.hasNextPage = false;
+        mocks.proMedia = [];
+        mocks.album = 'GUEST';
+        mocks.setAlbum.mockReset();
+        mocks.exitSelectionMode.mockReset();
         mocks.deleteMedia.mockReset();
+        mocks.vendorRole = null;
+        mocks.vendorRoleEventId = undefined;
     });
 
     // The viewer used to hold a copy of the item it opened with, so the list's
@@ -147,6 +179,44 @@ describe('useGalleryScreen', () => {
             mocks.activeMember = { id: 'me' };
             mocks.writable = false;
             expect(openItem('me').result.current.canDeleteMedia).toBe(false);
+        });
+    });
+
+    describe('canDeleteMedia for Pro items', () => {
+        function openPro(uploaderMemberId: string | null) {
+            mocks.proMedia = [{ ...photo('https://cdn/pro.jpg'), id: 'pro-1', collection: 'PRO', uploaderMemberId }];
+            mocks.album = 'PRO';
+            const hook = renderHook(() => useGalleryScreen());
+            act(() => hook.result.current.handleMediaClick('pro-1'));
+            return hook;
+        }
+
+        it('lets the vendor delete their own item while their Pro tools are open', () => {
+            mocks.activeMember = { id: 'me' };
+            mocks.vendorRole = { accessOpen: true, capabilities: ['PRO_ALBUM'] };
+            expect(openPro('me').result.current.canDeleteMedia).toBe(true);
+        });
+
+        it('stops the vendor once their Pro tools are closed', () => {
+            mocks.activeMember = { id: 'me' };
+            mocks.vendorRole = { accessOpen: false, capabilities: [] };
+            expect(openPro('me').result.current.canDeleteMedia).toBe(false);
+        });
+
+        it('keeps a host able to delete, and never asks for the host role', () => {
+            mocks.isHost = true;
+            mocks.activeMember = { id: 'host' };
+            expect(openPro('someone').result.current.canDeleteMedia).toBe(true);
+            expect(mocks.vendorRoleEventId).toBeNull();
+        });
+
+        it('keeps the guest rule for a guest item even when the vendor role is closed', () => {
+            mocks.activeMember = { id: 'me' };
+            mocks.vendorRole = { accessOpen: false, capabilities: [] };
+            mocks.media = [{ ...photo('https://r2.example/a.jpg'), uploaderMemberId: 'me' }];
+            const hook = renderHook(() => useGalleryScreen());
+            act(() => hook.result.current.handleMediaClick('media-1'));
+            expect(hook.result.current.canDeleteMedia).toBe(true);
         });
     });
 
@@ -310,5 +380,74 @@ describe('useGalleryScreen', () => {
             act(() => result.current.closeMemberArchive());
             expect(result.current.memberArchiveOpen).toBe(false);
         });
+    });
+});
+
+describe('useGalleryScreen Pro album', () => {
+    afterEach(() => {
+        cleanup();
+        mocks.isHost = false;
+        mocks.activeEvent = null;
+        mocks.activeMember = null;
+        mocks.media = [];
+        mocks.proMedia = [];
+        mocks.album = 'GUEST';
+        mocks.setAlbum.mockReset();
+        mocks.exitSelectionMode.mockReset();
+    });
+
+    it('offers the original download for a guest photo but not for a Pro photo', () => {
+        mocks.isHost = true;
+        mocks.activeEvent = { status: 'ACTIVE', deletedAt: null };
+        mocks.activeMember = { id: 'host' };
+        mocks.media = [{ ...photo('https://cdn/a.jpg'), id: 'guest-1' }];
+        mocks.proMedia = [{ ...photo('https://cdn/pro.jpg'), id: 'pro-1', collection: 'PRO' }];
+        const { result } = renderHook(() => useGalleryScreen());
+        act(() => result.current.handleMediaClick('guest-1'));
+        expect(result.current.canDownloadOriginal).toBe(true);
+
+        mocks.album = 'PRO';
+        const pro = renderHook(() => useGalleryScreen());
+        act(() => pro.result.current.handleMediaClick('pro-1'));
+        expect(pro.result.current.canDownloadOriginal).toBe(false);
+        expect(pro.result.current.canDeleteMedia).toBe(true);
+    });
+
+    it('has no tabs while the event has no Pro items', () => {
+        const { result } = renderHook(() => useGalleryScreen());
+        expect(result.current.showAlbumTabs).toBe(false);
+        expect(result.current.album).toBe('GUEST');
+    });
+
+    it('shows the tabs and the Pro items on the Pro tab, without upload or selection', () => {
+        mocks.isHost = true;
+        mocks.activeEvent = { status: 'ACTIVE', deletedAt: null };
+        mocks.activeMember = { id: 'host' };
+        mocks.proMedia = [{ ...photo('https://cdn/pro.jpg'), id: 'pro-1' }];
+        mocks.album = 'PRO';
+        const { result } = renderHook(() => useGalleryScreen());
+        expect(result.current.showAlbumTabs).toBe(true);
+        expect(result.current.album).toBe('PRO');
+        expect(result.current.media.map((item) => item.id)).toEqual(['pro-1']);
+        expect(result.current.showUpload).toBe(false);
+        expect(result.current.showArchiveDownload).toBe(false);
+        expect(result.current.showGalleryActions).toBe(false);
+    });
+
+    it('falls back to the guest album when ?album=pro has nothing to show', () => {
+        mocks.album = 'PRO';
+        const { result } = renderHook(() => useGalleryScreen());
+        expect(result.current.album).toBe('GUEST');
+    });
+
+    it('leaves selection and the open item when the tab changes', () => {
+        mocks.media = [photo('https://cdn/a.jpg')];
+        mocks.proMedia = [{ ...photo('https://cdn/pro.jpg'), id: 'pro-1' }];
+        const { result } = renderHook(() => useGalleryScreen());
+        act(() => result.current.handleMediaClick('media-1'));
+        act(() => result.current.selectAlbum('PRO'));
+        expect(mocks.exitSelectionMode).toHaveBeenCalled();
+        expect(mocks.setAlbum).toHaveBeenCalledWith('PRO');
+        expect(result.current.selectedMedia).toBeNull();
     });
 });
