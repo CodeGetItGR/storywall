@@ -478,10 +478,10 @@ export interface MemberRoleCatalogDto {
     sectionLabel: { en: string; el: string } | null;
 }
 
-// POST /api/admin/member-roles. roleKey and eventTypeKey can't change later.
+// POST /api/admin/member-roles. The server builds roleKey from label.en; it and
+// eventTypeKey can't change later.
 export interface MemberRoleCatalogRequestDto {
     eventTypeKey: string;
-    roleKey: string;
     label: { en: string; el: string };
     sectionLabel?: { en: string; el: string };
     emoji?: string | null;

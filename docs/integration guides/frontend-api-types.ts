@@ -1264,8 +1264,7 @@ interface ThemePresetPatchDto {
 /** POST /api/admin/member-roles (ADMIN). */
 interface MemberRoleCatalogRequestDto {
   eventTypeKey: string;
-  roleKey: string;                       // ^[A-Z][A-Z0-9_]{1,49}$, immutable
-  label: Record<'en' | 'el', string>;    // exactly these two keys, each 1-40 after trimming
+  label: Record<'en' | 'el', string>;    // exactly these two keys, each 1-40 after trimming. 2026-10-21: roleKey is generated from label.en and no longer sent
   sectionLabel?: Record<'en' | 'el', string> | null; // 2026-10-06, optional wishbook-book section title; when sent, same rule as label
   emoji?: string | null;                 // max 16
   maxHolders?: number | null;            // >= 1

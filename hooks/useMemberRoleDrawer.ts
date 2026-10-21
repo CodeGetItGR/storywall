@@ -1,27 +1,19 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { type ChangeEvent, useCallback, useMemo, useState } from 'react';
 
 import { adminMemberRoleKeys, useCreateMemberRole, usePatchMemberRole, useSetMemberRoleRetired } from '@/hooks/useAdminMemberRoles';
-import { ApiError } from '@/lib/api/client';
+import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { isNotFoundError } from '@/lib/api/errors';
 import type { MemberRoleCatalogDto } from '@/lib/api/types';
-import {
-    buildCreatePayload,
-    buildPatchPayload,
-    draftFromRole,
-    type MemberRoleDraft,
-    normalizeRoleKeyInput,
-    validateRoleDraft,
-} from '@/lib/memberRoles';
+import { buildCreatePayload, buildPatchPayload, draftFromRole, type MemberRoleDraft, validateRoleDraft } from '@/lib/memberRoles';
 
-export type MemberRoleDrawerError = { kind: 'keyTaken' } | { kind: 'notFound' } | { kind: 'other'; error: unknown };
+export type MemberRoleDrawerError = { kind: 'notFound' } | { kind: 'other'; error: unknown };
 
-// 409 on create is a duplicate key (shown on the key field); 404 means another
-// admin's change removed the role from under this drawer.
-function classifyError(error: unknown, isCreate: boolean): MemberRoleDrawerError {
-    if (isCreate && error instanceof ApiError && error.status === 409) return { kind: 'keyTaken' };
+// 404 means another admin's change removed the role from under this drawer.
+function classifyError(error: unknown): MemberRoleDrawerError {
     if (isNotFoundError(error)) return { kind: 'notFound' };
     return { kind: 'other', error };
 }
@@ -37,7 +29,8 @@ export function useMemberRoleDrawer({
     sortOrder: number;
     onDoneAction: () => void;
 }) {
-    const isCreate = role === null;
+    const t = useTranslations('AdminPage.memberRoles.drawer');
+    const apiErrorMessage = useApiErrorMessage();
     const queryClient = useQueryClient();
     const create = useCreateMemberRole();
     const patch = usePatchMemberRole();
@@ -48,21 +41,23 @@ export function useMemberRoleDrawer({
     const [confirmingRetire, setConfirmingRetire] = useState(false);
     const [failure, setFailure] = useState<MemberRoleDrawerError | null>(null);
 
-    const errors = useMemo(() => validateRoleDraft(draft, isCreate), [draft, isCreate]);
+    const errors = useMemo(() => validateRoleDraft(draft), [draft]);
     const shownErrors = submitted ? errors : {};
+    // Shown in the footer next to Save, so it stays in view however far the form is scrolled.
+    const failureMessage = failure?.kind === 'notFound' ? t('notFound') : failure?.kind === 'other' ? apiErrorMessage(failure.error) : null;
 
     const fail = useCallback(
         (error: unknown) => {
-            const classified = classifyError(error, isCreate);
+            const classified = classifyError(error);
             if (classified.kind === 'notFound') void queryClient.invalidateQueries({ queryKey: adminMemberRoleKeys.all });
             setFailure(classified);
         },
-        [isCreate, queryClient],
+        [queryClient],
     );
 
     const handleFieldChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.currentTarget;
-        setDraft((current) => ({ ...current, [name]: name === 'roleKey' ? normalizeRoleKeyInput(value) : value }));
+        setDraft((current) => ({ ...current, [name]: value }));
     }, []);
     const handleLimitModeChange = useCallback(
         (limited: boolean) => setDraft((current) => ({ ...current, limited, maxHolders: limited ? current.maxHolders || '1' : '' })),
@@ -113,10 +108,10 @@ export function useMemberRoleDrawer({
     const restore = useCallback(() => setRetired(false), [setRetired]);
 
     return {
-        isCreate,
         draft,
         errors: shownErrors,
         failure,
+        failureMessage,
         confirmingRetire,
         isSaving: create.isPending || patch.isPending,
         isRetiring: retire.isPending,

@@ -104,7 +104,6 @@ export type ApiErrorMessageKey =
     | 'inviteCodeTaken'
     | 'coHostAlreadyMember'
     | 'memberIsHost'
-    | 'memberRoleKeyTaken'
     | 'reactionTypeCodeTaken'
     | 'blockedTermExists'
     | 'paidServiceCodeTaken'
@@ -519,7 +518,6 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.INVITE_CODE_TAKEN]: 'inviteCodeTaken',
     [ERROR_CODES.CO_HOST_ALREADY_MEMBER]: 'coHostAlreadyMember',
     [ERROR_CODES.MEMBER_IS_HOST]: 'memberIsHost',
-    [ERROR_CODES.MEMBER_ROLE_KEY_TAKEN]: 'memberRoleKeyTaken',
     [ERROR_CODES.REACTION_TYPE_CODE_TAKEN]: 'reactionTypeCodeTaken',
     [ERROR_CODES.BLOCKED_TERM_EXISTS]: 'blockedTermExists',
     [ERROR_CODES.PAID_SERVICE_CODE_TAKEN]: 'paidServiceCodeTaken',
