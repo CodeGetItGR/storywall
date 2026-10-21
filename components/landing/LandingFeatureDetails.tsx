@@ -30,19 +30,21 @@ export function LandingFeatureDetails() {
             {...landingSectionAttributes('feature_details')}
             className="bg-[#0b0b0f] px-0 py-0 text-white min-[761px]:px-[5vw] min-[761px]:py-16"
         >
+            {/* Feature introduction — one heading for both layouts */}
+            <div className="px-5 pt-6 min-[761px]:mx-auto min-[761px]:max-w-155 min-[761px]:px-0 min-[761px]:pt-0 min-[761px]:text-center">
+                <p className="text-[11px] leading-[1.05] font-black tracking-[0.15em] text-[#f2c66a] uppercase min-[761px]:text-[13px] min-[761px]:leading-normal">
+                    {t('eyebrow')}
+                </p>
+                <h2
+                    className="mt-4 text-[40px] leading-[0.95] font-(--editorial) tracking-[-0.055em] min-[761px]:text-[clamp(42px,4vw,62px)] min-[761px]:tracking-[-0.045em]"
+                    id="landing-feature-details-title"
+                >
+                    {t('heading')}
+                </h2>
+            </div>
+
             {/* Desktop feature cards */}
             <div className="hidden min-[761px]:block">
-                {/* Feature introduction */}
-                <div className="mx-auto max-w-155 text-center">
-                    <p className="text-[13px] font-black tracking-[0.15em] text-[#f2c66a] uppercase">{t('eyebrow')}</p>
-                    <h2
-                        className="mt-4 text-[clamp(42px,4vw,62px)] leading-[0.95] font-(--editorial) tracking-[-0.045em]"
-                        id="landing-feature-details-title"
-                    >
-                        {t('heading')}
-                    </h2>
-                </div>
-
                 {/* Feature cards */}
                 <div
                     aria-label={t('label')}
@@ -56,21 +58,6 @@ export function LandingFeatureDetails() {
 
             {/* Mobile feature panel — gold reads better than the default ring on this near-black surface */}
             <div className="overflow-hidden bg-[#0b0b0f] [--marketing-focus-ring:#f2c66a] min-[761px]:hidden">
-                {/* Feature introduction */}
-                <div className="px-5 pt-6 min-[761px]:grid min-[761px]:grid-cols-12 min-[761px]:gap-x-10 min-[761px]:px-12 min-[761px]:pt-12">
-                    <div className="min-[761px]:col-span-5">
-                        <p className="text-[11px] leading-[1.05] font-black tracking-[0.15em] text-[#f2c66a] uppercase min-[761px]:text-[13px]">
-                            {t('eyebrow')}
-                        </p>
-                    </div>
-                    <h2
-                        className="mt-4 text-[clamp(40px,4.4vw,68px)] leading-[0.95] font-(--editorial) tracking-[-0.055em] min-[761px]:col-span-7 min-[761px]:mt-0"
-                        id="landing-feature-details-title"
-                    >
-                        {t('heading')}
-                    </h2>
-                </div>
-
                 {/* Feature navigation */}
                 <div
                     aria-label={t('label')}
