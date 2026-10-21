@@ -79,12 +79,12 @@ export async function getInviteShareEvent(token: string, options: ShareLookupOpt
 }
 
 // The date, time and venue in the event's own time zone, so a server running
-// in UTC still shows the times the host picked.
+// in UTC still shows the times the host picked. Only the start, as on the invite page.
 export function formatShareDetails(
     locale: string,
-    preview: Pick<EventInvitationPreviewDto, 'eventStartAt' | 'eventEndAt' | 'eventTimezone' | 'eventLocationName'>,
+    preview: Pick<EventInvitationPreviewDto, 'eventStartAt' | 'eventTimezone' | 'eventLocationName'>,
 ): string | null {
-    const when = formatEventDateParts(locale, preview.eventStartAt, preview.eventEndAt, preview.eventTimezone);
+    const when = formatEventDateParts(locale, preview.eventStartAt, null, preview.eventTimezone);
     const parts = [when?.date, when?.time, preview.eventLocationName?.trim()].filter(Boolean);
     return parts.length > 0 ? parts.join(' · ') : null;
 }

@@ -161,7 +161,6 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
                             {/* Details */}
                             <InviteEventDetails
                                 startAt={activePreview.eventStartAt}
-                                endAt={activePreview.eventEndAt}
                                 timeZone={activePreview.eventTimezone}
                                 locationName={activePreview.eventLocationName}
                             />
