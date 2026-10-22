@@ -11,7 +11,7 @@ These replace the matching parts below:
 - **Dismissals:** kept in a cookie (`site_notice_dismissed`, newest 20 `id:version` keys, one year), not localStorage. The layouts read it on the server, so a closed notice never flashes on load.
 - **Mounting:**
   - The bar mounts once per root layout. `(landing)` uses `PUBLIC`.
-  - `(main)` wraps the whole page in a frame and works out the area from the path, sign-in state and event role (`siteNoticeAreaFor` in `lib/siteNotices.ts`). Event pages use `PENDING`, which shows only `EVERYWHERE` notices, until the role is known.
+  - `(main)` wraps the whole page in a frame and works out the area from the path, sign-in state and event role (`siteNoticeAreaFor` in `lib/siteNotices.ts`). Event pages use `PENDING`, which shows only `EVERYWHERE` notices, until the role is known. Pages whose area depends on sign-in (app, event, invite and post pages) also use `PENDING` until the session is known, since the server render has no session. Post pages stay on `PENDING`, because the URL doesn't name the event.
   - Story and slideshow views need no code, because their full-screen overlays cover the bar.
   - The fixed desktop nav rail moves down by `--site-notice-h`.
 - **Admin hooks:** in `hooks/useAdminSiteNotices.ts`, next to the other admin hooks.
