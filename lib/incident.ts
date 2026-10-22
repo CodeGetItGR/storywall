@@ -1,7 +1,7 @@
 // Incident switch: while on, every page shows the incident banner and the app
-// refuses purchases and uploads before they reach Spring. Flip back to false
-// once the incident is over.
-export const INCIDENT_MODE = true;
+// refuses purchases and uploads before they reach Spring. Set to true to pause
+// them during an incident.
+export const INCIDENT_MODE = false;
 
 // Checkout POSTs that start a payment: activation, upgrade, storage pack, extension.
 const PURCHASE_PATH = /\/(upgrade-|storage-|extension-)?checkout$/;
@@ -22,7 +22,12 @@ function carriesFile(body: unknown): boolean {
     return false;
 }
 
-export function isPausedRequest(method: string | undefined, path: string, body: unknown): boolean {
-    if (!INCIDENT_MODE || method !== 'POST') return false;
+// Whether a request is a purchase or an upload, regardless of the switch.
+export function isPurchaseOrUpload(method: string | undefined, path: string, body: unknown): boolean {
+    if (method !== 'POST') return false;
     return carriesFile(body) || isPurchasePath(path);
+}
+
+export function isPausedRequest(method: string | undefined, path: string, body: unknown): boolean {
+    return INCIDENT_MODE && isPurchaseOrUpload(method, path, body);
 }

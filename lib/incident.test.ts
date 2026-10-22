@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { isPausedRequest, isPurchasePath } from '@/lib/incident';
+import { INCIDENT_MODE, isPausedRequest, isPurchaseOrUpload, isPurchasePath } from '@/lib/incident';
 
 vi.unmock('@/lib/incident');
 
@@ -25,20 +25,32 @@ describe('isPurchasePath', () => {
     });
 });
 
+describe('isPurchaseOrUpload', () => {
+    it('matches a checkout POST', () => {
+        expect(isPurchaseOrUpload('POST', '/api/events/e1/checkout', '{}')).toBe(true);
+    });
+
+    it('matches a multipart POST carrying a file', () => {
+        expect(isPurchaseOrUpload('POST', '/api/events/e1/media', formWith(new Blob(['x'])))).toBe(true);
+    });
+
+    it('skips a multipart POST without a file', () => {
+        expect(isPurchaseOrUpload('POST', '/api/beta-feedback/bug-reports', formWith('text'))).toBe(false);
+    });
+
+    it('skips reads', () => {
+        expect(isPurchaseOrUpload('GET', '/api/events/e1/checkout', undefined)).toBe(false);
+    });
+});
+
 describe('isPausedRequest', () => {
-    it('refuses a checkout POST', () => {
+    it.runIf(!INCIDENT_MODE)('lets purchases and uploads through while the switch is off', () => {
+        expect(isPausedRequest('POST', '/api/events/e1/checkout', '{}')).toBe(false);
+        expect(isPausedRequest('POST', '/api/events/e1/media', formWith(new Blob(['x'])))).toBe(false);
+    });
+
+    it.runIf(INCIDENT_MODE)('refuses purchases and uploads while the switch is on', () => {
         expect(isPausedRequest('POST', '/api/events/e1/checkout', '{}')).toBe(true);
-    });
-
-    it('refuses a multipart POST carrying a file', () => {
         expect(isPausedRequest('POST', '/api/events/e1/media', formWith(new Blob(['x'])))).toBe(true);
-    });
-
-    it('lets a multipart POST without a file through', () => {
-        expect(isPausedRequest('POST', '/api/beta-feedback/bug-reports', formWith('text'))).toBe(false);
-    });
-
-    it('lets reads through', () => {
-        expect(isPausedRequest('GET', '/api/events/e1/checkout', undefined)).toBe(false);
     });
 });
