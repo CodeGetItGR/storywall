@@ -26,6 +26,17 @@ describe('SiteNoticeBanner', () => {
         expect(screen.getByRole('link', { name: 'See plans' })).not.toHaveAttribute('target');
     });
 
+    it('treats an upper-case https link as external and drops any other scheme', () => {
+        const { rerender } = render(
+            <SiteNoticeBanner tone="INFO" message="m" link={{ href: 'HTTPS://partner.example.com', label: 'Partner' }} onDismiss={null} />,
+        );
+        expect(screen.getByRole('link', { name: 'Partner' })).toHaveAttribute('target', '_blank');
+        rerender(<SiteNoticeBanner tone="INFO" message="m" link={{ href: 'javascript:alert(1)', label: 'Bad' }} onDismiss={null} />);
+        expect(screen.queryByRole('link')).toBeNull();
+        rerender(<SiteNoticeBanner tone="INFO" message="m" link={{ href: '//evil.example.com', label: 'Bad' }} onDismiss={null} />);
+        expect(screen.queryByRole('link')).toBeNull();
+    });
+
     it('shows a close button only when it can be closed', () => {
         const onDismiss = vi.fn();
         const { rerender } = render(<SiteNoticeBanner tone="INFO" message="m" link={null} onDismiss={null} />);

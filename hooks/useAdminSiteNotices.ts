@@ -8,8 +8,9 @@ import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { AdminSiteNoticeDto, AdminSiteNoticeRequestDto } from '@/lib/api/types';
 
-// Admin site notices (/api/admin/site-notices). Every write refetches the list and the live notices,
-// so the admin sees their own bar change at once (other visitors within about a minute).
+// Admin site notices (/api/admin/site-notices). Every write refetches the list and the live notices.
+// The live list is cached for a minute on the server, so a change reaches the bar, the admin's own
+// included, within about a minute.
 
 export const adminSiteNoticeKeys = {
     all: ['admin', 'site-notices'] as const,

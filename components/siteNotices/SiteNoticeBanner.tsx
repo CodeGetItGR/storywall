@@ -18,7 +18,12 @@ const TONE_STYLE: Record<SiteNoticeTone, { className: string; iconClassName: str
 };
 
 function isExternal(href: string) {
-    return href.startsWith('https://');
+    return /^https:\/\//i.test(href);
+}
+
+// Spring already checks links; this keeps any other scheme out of the href if one slips through.
+function isSitePath(href: string) {
+    return href.startsWith('/') && !href.startsWith('//') && !href.includes('\\');
 }
 
 // One notice line. Presentational: the admin drawer's preview renders it too.
@@ -52,11 +57,11 @@ export function SiteNoticeBanner({
                                 <a href={link.href} target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-2">
                                     {link.label}
                                 </a>
-                            ) : (
+                            ) : isSitePath(link.href) ? (
                                 <AppLink href={link.href} className="font-semibold underline underline-offset-2">
                                     {link.label}
                                 </AppLink>
-                            )}
+                            ) : null}
                         </>
                     )}
                 </span>
