@@ -12,13 +12,15 @@ const DEMO_BUTTON_CLASS =
 type LandingDemoProps = {
     // An occasion page's heading and demo link, and its server-rendered preview under the band.
     children?: ReactNode;
+    // An occasion page's own sentence in place of the landing's.
+    copy?: string;
     // false drops the eyebrow and its column, so the heading starts on the left.
     eyebrow?: boolean;
     heading?: string[];
     href?: string;
 };
 
-export async function LandingDemo({ children, eyebrow = true, heading: headingOverride, href = routes.demo }: LandingDemoProps) {
+export async function LandingDemo({ children, copy, eyebrow = true, heading: headingOverride, href = routes.demo }: LandingDemoProps) {
     const t = await getTranslations('LandingPage.demo');
     const heading = headingOverride ?? (t.raw('heading') as string[]);
 
@@ -46,9 +48,13 @@ export async function LandingDemo({ children, eyebrow = true, heading: headingOv
                 </h2>
                 <div className="mt-[26px] block border-t border-[#151313]/18 pt-6 min-[761px]:mt-[34px] min-[761px]:flex min-[761px]:flex-col min-[761px]:items-start min-[761px]:gap-[22px] min-[761px]:pt-[26px]">
                     <p className="m-0 max-w-[92%] text-[18px] leading-[1.5] text-[#151313] min-[761px]:max-w-[760px] min-[761px]:text-[clamp(22px,1.4vw,28px)] min-[761px]:leading-[1.45]">
-                        {t('copyStart')} <strong>{t('copyDemo')}</strong> {t('copyMiddle')} <strong>{t('copyBrand')}</strong>
-                        <br />
-                        {t('copyEnd')}
+                        {copy ?? (
+                            <>
+                                {t('copyStart')} <strong>{t('copyDemo')}</strong> {t('copyMiddle')} <strong>{t('copyBrand')}</strong>
+                                <br />
+                                {t('copyEnd')}
+                            </>
+                        )}
                     </p>
                     <a
                         aria-label={t('cta')}

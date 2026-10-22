@@ -19,9 +19,10 @@ type LandingPricingProps = {
     // An occasion page shows only its own event type's plans, with no picker, under its own heading.
     eventType?: EventTypeConvention;
     heading?: string;
+    intro?: string;
 };
 
-export function LandingPricing({ eventType, heading }: LandingPricingProps) {
+export function LandingPricing({ eventType, heading, intro }: LandingPricingProps) {
     const t = useTranslations('LandingPage.pricing');
     const { groups, active, pickEventType, picks, pickDuration } = useLandingPricing(eventType ? eventTypeSlug(eventType) : null);
 
@@ -49,7 +50,7 @@ export function LandingPricing({ eventType, heading }: LandingPricingProps) {
                     >
                         {heading ?? t('heading')}
                     </h2>
-                    <p className="mt-5 max-w-155 text-base leading-relaxed">{t('intro')}</p>
+                    <p className="mt-5 max-w-155 text-base leading-relaxed">{intro ?? t('intro')}</p>
                 </div>
             </div>
 

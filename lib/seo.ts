@@ -29,6 +29,14 @@ export function absoluteUrl(path: string): string {
 // nothing worth finding in search.
 export const NO_INDEX: Metadata['robots'] = { index: false, follow: true };
 
+// Staging serves the same pages under another host and must never be indexed. app/robots.ts
+// blocks it too; this tag covers a page a crawler reaches anyway.
+export const STAGING_NO_INDEX: Metadata['robots'] = { index: false, follow: false };
+
+export function isStagingSite(): boolean {
+    return process.env.NEXT_PUBLIC_APP_ENV === 'staging';
+}
+
 // The page's own URL, so a `?version=` copy of a legal page counts as the page itself.
 export function canonicalAlternates(path: string): Metadata['alternates'] {
     return { canonical: absoluteUrl(path) };
@@ -110,7 +118,7 @@ export function buildIndexableMetadata({ locale, path, languages, imagePath, cop
             description: copy.description,
             ...(images && { images }),
         },
-        robots: { index: true, follow: true },
+        robots: isStagingSite() ? STAGING_NO_INDEX : { index: true, follow: true },
     };
 }
 
