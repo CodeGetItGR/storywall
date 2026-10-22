@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { OCCASIONS } from '@/lib/occasions/occasions';
 import { buildOccasionMetadata } from '@/lib/occasions/occasionSeo';
@@ -111,6 +111,15 @@ describe('buildQrWeddingMetadata', () => {
         expect(metadata.robots).toEqual({ index: true, follow: true });
         expect(metadata.keywords).toEqual(['QR γάμου']);
         expect(openGraph.images?.[0]?.url).toBe(`${SITE_URL}/opengraph-image`);
+    });
+
+    it('is never indexed on staging', () => {
+        vi.stubEnv('NEXT_PUBLIC_APP_ENV', 'staging');
+        try {
+            expect(buildQrWeddingMetadata('el', copy).robots).toEqual({ index: false, follow: false });
+        } finally {
+            vi.unstubAllEnvs();
+        }
     });
 });
 

@@ -6823,6 +6823,7 @@
                 ]
             },
             "demoHeading": ["See a wedding", "StoryWall."],
+            "demoCopy": "See how StoryWall works through a real wedding example. Explore the online invitation, posts, stories and photos the way your guests will see them.",
             "features": {
                 "invitation": {
                     "title": "Digital wedding invitation",
@@ -6881,42 +6882,50 @@
             ],
             "faq": [
                 {
-                    "q": "Do guests need to install an app?",
-                    "a": "No. Everything opens in the phone's browser from the invitation link or the QR code."
+                    "q": "What is a StoryWall wedding website?",
+                    "a": "StoryWall is a private social space for your wedding. It brings together an online invitation, RSVPs, posts, stories, guest photos and a digital guestbook, depending on the plan you choose."
                 },
                 {
-                    "q": "How do guests upload photos at the reception?",
-                    "a": "They scan the QR code on the table and pick photos or videos. Uploading through the QR code doesn't need an account."
+                    "q": "How does the online wedding invitation work?",
+                    "a": "You create your wedding StoryWall and send the link to your guests. They complete a short sign-up and get access to the invitation and the available features."
                 },
                 {
-                    "q": "Can older guests use it?",
-                    "a": "Yes. They open a link or scan a code, the same as any website."
+                    "q": "How do I collect wedding photos with a QR code?",
+                    "a": "Place the QR code on the reception tables. Guests scan it and upload photos and videos with no app or sign-up. Everything is gathered in a separate collection."
                 },
                 {
-                    "q": "Who can see our photos?",
-                    "a": "Only the people you invite. Your StoryWall is private and isn't listed anywhere."
+                    "q": "Do guests need to download an app?",
+                    "a": "No. StoryWall works straight from the phone's browser, with nothing to install."
                 },
                 {
-                    "q": "How long does it stay online?",
-                    "a": "Your plan sets how long your event stays open. You can extend it from your event's settings."
+                    "q": "How does the wedding RSVP work?",
+                    "a": "Guests confirm they're coming online through StoryWall, and you can follow all their replies in one place."
                 },
                 {
-                    "q": "Can it replace the paper invitation?",
-                    "a": "Yes. Many couples send the link instead, or add the QR code to their printed invitation."
+                    "q": "Who can see the photos and posts?",
+                    "a": "StoryWall is private. Only invited guests who have signed up can see the social feed. Photos uploaded by QR code are gathered in a separate collection."
                 },
                 {
-                    "q": "Does it replace our photographer?",
-                    "a": "No. It collects the moments your guests capture, alongside your photographer's work."
+                    "q": "Can I download all the photos after the wedding?",
+                    "a": "Yes. You can download the photos and videos collected on StoryWall in their original resolution."
+                },
+                {
+                    "q": "How long does StoryWall stay active?",
+                    "a": "You can choose a 3- or 6-month plan. It starts on the purchase date and can be renewed."
+                },
+                {
+                    "q": "Does StoryWall replace the wedding photographer?",
+                    "a": "No. It complements professional photography by gathering the candid moments your guests capture."
                 }
             ],
             "faqIntro": "What couples ask before they create their wedding StoryWall.",
             "finalCta": {
                 "heading": ["Your wedding", "starts here."],
-                "copyStart": "Create your wedding StoryWall and share it with your guests",
-                "copyStrong": "in a few minutes.",
+                "copyStart": "Create your own StoryWall with an online invitation, photos and memories to share with the people you love.",
                 "imageAlt": "Wedding celebration in Santorini"
             },
-            "pricingHeading": "Plans for your wedding."
+            "pricingHeading": "Plans for your wedding.",
+            "pricingIntro": "Choose the StoryWall that fits your wedding. From the private social feed to the online invitation, RSVPs and photo collection."
         },
         "BAPTISM": {
             "name": "Baptisms",

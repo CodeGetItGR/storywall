@@ -93,7 +93,12 @@ export async function OccasionContent({ campaign, demoHref, featureKeys, locale,
 
                     {/* Demo, with a server-rendered snapshot of it */}
                     {demoHref ? (
-                        <LandingDemo eyebrow={false} heading={t.raw('demoHeading') as string[]} href={demoHref}>
+                        <LandingDemo
+                            copy={t.has('demoCopy') ? t('demoCopy') : undefined}
+                            eyebrow={false}
+                            heading={t.raw('demoHeading') as string[]}
+                            href={demoHref}
+                        >
                             {collage ? <OccasionDemoPreview collage={collage} /> : null}
                         </LandingDemo>
                     ) : null}
@@ -106,7 +111,11 @@ export async function OccasionContent({ campaign, demoHref, featureKeys, locale,
                 </div>
 
                 {/* Plans, opened on this occasion */}
-                <LandingPricing eventType={occasion.eventType} heading={t('pricingHeading')} />
+                <LandingPricing
+                    eventType={occasion.eventType}
+                    heading={t('pricingHeading')}
+                    intro={t.has('pricingIntro') ? t('pricingIntro') : undefined}
+                />
 
                 <div className="landing-page">
                     {/* FAQ */}
