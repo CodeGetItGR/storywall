@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { useImageDropInput } from '@/hooks/useImageDropInput';
+import { INCIDENT_MODE } from '@/lib/incident';
 import { cn } from '@/lib/utils';
 
 type ImageDropInputProps = {
@@ -15,7 +16,8 @@ type ImageDropInputProps = {
 };
 
 // A single-image picker: click or drop into the area, with a preview once picked.
-export function ImageDropInput({ name, accept, required, disabled }: ImageDropInputProps) {
+export function ImageDropInput({ name, accept, required, disabled: disabledProp }: ImageDropInputProps) {
+    const disabled = disabledProp || INCIDENT_MODE;
     const t = useTranslations('ImageDropInput');
     const { inputRef, file, previewUrl, isDragActive, handleChange, handleDragOver, handleDragLeave, handleDrop, clear } = useImageDropInput();
 

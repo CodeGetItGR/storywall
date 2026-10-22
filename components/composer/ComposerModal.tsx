@@ -6,10 +6,12 @@ import { useTranslations } from 'next-intl';
 
 import { AddImageButton } from '@/components/composer/AddImageButton';
 import { ComposerModeToggle } from '@/components/composer/ComposerModeToggle';
+import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
 import { AddSongForm } from '@/components/playlist/AddSongForm';
 import { Modal } from '@/components/ui/modal';
 import type { ComposerController } from '@/hooks/useComposerController';
 import { useUploadAccept } from '@/hooks/useUploadAccept';
+import { INCIDENT_MODE } from '@/lib/incident';
 import { STORY_FILTER_PRESETS } from '@/lib/story/storyFilters';
 import { cn } from '@/lib/utils';
 
@@ -151,12 +153,15 @@ export function ComposerModal({
 
                         {(sizeError || countError) && <p className="text-xs text-destructive">{sizeError ?? countError}</p>}
 
+                        {/* Incident note */}
+                        <IncidentPausedNote />
+
                         {/* Actions */}
                         <div className="flex items-center justify-between gap-2">
                             <AddImageButton
                                 aria-label={t('addMedia')}
                                 onClick={handlePickPhotos}
-                                disabled={!canComposePost || images.length >= maxImages}
+                                disabled={INCIDENT_MODE || !canComposePost || images.length >= maxImages}
                             />
                             <input
                                 ref={fileRef}

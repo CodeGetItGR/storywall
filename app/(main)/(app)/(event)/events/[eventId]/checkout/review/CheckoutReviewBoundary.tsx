@@ -8,6 +8,7 @@ import { type ChangeEvent, useCallback, useMemo, useState } from 'react';
 import { CheckoutReviewSkeleton } from '@/components/checkout/CheckoutSkeletons';
 import { PriceBreakdownSummary } from '@/components/checkout/PriceBreakdownSummary';
 import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
+import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
 import { BackButton } from '@/components/ui/BackButton';
 import { PageErrorState } from '@/components/ui/PageErrorState';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
@@ -21,6 +22,7 @@ import { useResetOnBfcacheRestore } from '@/hooks/useResetOnBfcacheRestore';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import { formatBillingDate, formatMoney, navigateToCheckout } from '@/lib/billing';
 import { isCheckoutConsentSatisfied } from '@/lib/businessProfile';
+import { INCIDENT_MODE } from '@/lib/incident';
 import { scopedPlans } from '@/lib/planTiers';
 import { type CheckoutIntent, routes } from '@/lib/routes';
 import { linkedUpgradeDuration } from '@/lib/upgradeOptions';
@@ -336,10 +338,11 @@ export default function CheckoutReviewBoundary() {
             {/* Checkout action */}
             {!coverageEnded && (
                 <div className="mt-8">
+                    <IncidentPausedNote className="mb-3" />
                     <button
                         type="button"
                         onClick={continueToCheckout}
-                        disabled={!valid || lines.length === 0 || isPending || !consentSatisfied || !canPurchase}
+                        disabled={INCIDENT_MODE || !valid || lines.length === 0 || isPending || !consentSatisfied || !canPurchase}
                         className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-ink px-6 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
                     >
                         {isPending ? (
