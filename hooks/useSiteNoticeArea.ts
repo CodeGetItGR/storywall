@@ -8,9 +8,9 @@ import { useEventContextLoading, useIsHost, useRouteEventId } from '@/providers/
 
 export function useSiteNoticeArea(): SiteNoticeViewArea | null {
     const pathname = usePathname();
-    const { user } = useAuth();
+    const { user, isBootstrapping } = useAuth();
     const routeEventId = useRouteEventId();
     const isHost = useIsHost();
     const isEventLoading = useEventContextLoading();
-    return siteNoticeAreaFor({ pathname, isSignedIn: Boolean(user), routeEventId, isHost, isEventLoading });
+    return siteNoticeAreaFor({ pathname, isSignedIn: Boolean(user), isAuthLoading: isBootstrapping, routeEventId, isHost, isEventLoading });
 }

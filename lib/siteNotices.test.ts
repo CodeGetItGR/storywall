@@ -63,7 +63,7 @@ describe('pickSiteNotice', () => {
 });
 
 describe('siteNoticeAreaFor', () => {
-    const base = { isSignedIn: true, routeEventId: null, isHost: false, isEventLoading: false };
+    const base = { isSignedIn: true, isAuthLoading: false, routeEventId: null, isHost: false, isEventLoading: false };
 
     it('hides the bar in the demo', () => {
         expect(siteNoticeAreaFor({ ...base, pathname: '/demo/wedding' })).toBeNull();
@@ -93,6 +93,16 @@ describe('siteNoticeAreaFor', () => {
     it('treats the invite page as GUEST when signed in and PUBLIC otherwise', () => {
         expect(siteNoticeAreaFor({ ...base, pathname: '/invite/abc' })).toBe('GUEST');
         expect(siteNoticeAreaFor({ ...base, isSignedIn: false, pathname: '/invite/abc' })).toBe('PUBLIC');
+    });
+
+    it('shows only EVERYWHERE notices while sign-in is unknown, on pages whose area depends on it', () => {
+        const loading = { ...base, isSignedIn: false, isAuthLoading: true };
+        for (const pathname of ['/home', '/invite/abc', '/post/p1']) {
+            expect(siteNoticeAreaFor({ ...loading, pathname })).toBe('PENDING');
+        }
+        expect(siteNoticeAreaFor({ ...loading, pathname: '/events/e1/feed', routeEventId: 'e1' })).toBe('PENDING');
+        expect(siteNoticeAreaFor({ ...loading, pathname: '/login' })).toBe('PUBLIC');
+        expect(siteNoticeAreaFor({ ...loading, pathname: '/admin' })).toBe('ADMIN');
     });
 
     it('uses PUBLIC everywhere else, and for signed-out visitors on app paths', () => {

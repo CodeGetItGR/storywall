@@ -44,19 +44,29 @@ function underPrefix(pathname: string, prefix: string): boolean {
 export function siteNoticeAreaFor({
     pathname,
     isSignedIn,
+    isAuthLoading,
     routeEventId,
     isHost,
     isEventLoading,
 }: {
     pathname: string;
     isSignedIn: boolean;
+    isAuthLoading: boolean;
     routeEventId: string | null;
     isHost: boolean;
     isEventLoading: boolean;
 }): SiteNoticeViewArea | null {
     if (isDemoPath(pathname)) return null;
     if (underPrefix(pathname, '/admin')) return 'ADMIN';
-    if (!isSignedIn) return 'PUBLIC';
+    const signedInArea = signedInAreaFor(pathname, routeEventId, isHost, isEventLoading);
+    if (signedInArea === 'PUBLIC') return 'PUBLIC';
+    // Until the session is known (the server render, the first paint), a page whose area depends on
+    // it shows only EVERYWHERE notices, so a guest never sees a host-only offer for a moment.
+    if (isAuthLoading) return 'PENDING';
+    return isSignedIn ? signedInArea : 'PUBLIC';
+}
+
+function signedInAreaFor(pathname: string, routeEventId: string | null, isHost: boolean, isEventLoading: boolean): SiteNoticeViewArea {
     if (routeEventId) {
         if (isEventLoading) return 'PENDING';
         return isHost ? 'HOST' : 'GUEST';
