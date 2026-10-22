@@ -7101,38 +7101,50 @@
             ],
             "faq": [
                 {
-                    "q": "Do guests need to install an app?",
-                    "a": "No. The invitation and the QR code open in the phone's browser."
+                    "q": "What is a StoryWall baptism website?",
+                    "a": "StoryWall is a private social space for the baptism. It brings together posts, stories and guest photos and, depending on the plan, an online invitation, RSVPs and a digital guestbook."
+                },
+                {
+                    "q": "How does the online baptism invitation work?",
+                    "a": "You send the link to your guests, who complete a short sign-up to see the invitation and the baptism details."
+                },
+                {
+                    "q": "How do I collect baptism photos with a QR code?",
+                    "a": "Guests scan the QR code and upload photos and videos with no sign-up or app. Everything is saved in a separate collection."
+                },
+                {
+                    "q": "Do guests need an app?",
+                    "a": "No. StoryWall works in the phone's browser, with nothing to install."
                 },
                 {
                     "q": "Can grandparents use it easily?",
-                    "a": "Yes. They tap a link or scan a code. Nothing to install."
+                    "a": "Yes. They just open the link or scan the QR code. There's no app to install."
                 },
                 {
-                    "q": "Who can see the photos of our child?",
-                    "a": "Only the guests you invite. Your StoryWall is private."
+                    "q": "Who sees our child's photos?",
+                    "a": "The social feed is private and open to signed-up guests. The QR photo collection is a separate feature."
                 },
                 {
-                    "q": "How long does it stay online?",
-                    "a": "Your plan sets how long your event stays open. You can extend it from your event's settings."
+                    "q": "Can we keep the photos and wishes?",
+                    "a": "Yes. You can download the photos and videos in their original resolution. The wishes stay in the guestbook while the event is active."
                 },
                 {
-                    "q": "Can we keep the wishes?",
-                    "a": "Yes. The book of wishes stays with the event, together with the photos."
+                    "q": "Does StoryWall replace the printed baptism invitation?",
+                    "a": "Yes. You can use only the online invitation or pair it with a printed one."
                 },
                 {
-                    "q": "Does it replace the paper invitation?",
-                    "a": "It can. Send the link on its own, or add the QR code to your printed invitation."
+                    "q": "How long does StoryWall stay active?",
+                    "a": "It depends on the plan you choose and starts on the purchase date. It can be renewed."
                 }
             ],
             "faqIntro": "What parents ask before they create their baptism StoryWall.",
             "finalCta": {
                 "heading": ["Your child's story", "starts here."],
-                "copyStart": "Create your baptism StoryWall and send it to your guests",
-                "copyStrong": "in a few minutes.",
+                "copyStart": "Create your own StoryWall and bring together the online invitation, the photos and the best memories of the baptism.",
                 "imageAlt": "Family and guests at the baptism table"
             },
-            "pricingHeading": "Plans for your baptism."
+            "pricingHeading": "Plans for your baptism.",
+            "pricingIntro": "Choose the StoryWall that fits your child's baptism. From posts and photos to the online invitation, RSVPs and the digital guestbook."
         }
     },
     "QrWeddingPage": {
