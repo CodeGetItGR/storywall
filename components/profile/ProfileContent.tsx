@@ -19,6 +19,7 @@ import { useProfileForm } from '@/hooks/useProfileForm';
 import { useProfilePictureUpload } from '@/hooks/useProfilePictureUpload';
 import { useUploadAccept } from '@/hooks/useUploadAccept';
 import { getInitials } from '@/lib/format';
+import { INCIDENT_MODE } from '@/lib/incident';
 import { routes } from '@/lib/routes';
 
 export function ProfileContent() {
@@ -51,7 +52,11 @@ export function ProfileContent() {
                 >
                     {/* Identity */}
                     <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-                        <label htmlFor="profile-picture-input" className="group relative cursor-pointer self-start">
+                        <label
+                            htmlFor="profile-picture-input"
+                            aria-disabled={INCIDENT_MODE}
+                            className="group relative cursor-pointer self-start aria-disabled:pointer-events-none"
+                        >
                             <Avatar
                                 src={form.profilePictureUrl}
                                 initials={getInitials(displayName)}
@@ -71,6 +76,7 @@ export function ProfileContent() {
                             type="file"
                             accept={uploadAccept.profilePicture}
                             className="sr-only"
+                            disabled={INCIDENT_MODE}
                             onChange={picture.handleFileChange}
                         />
                         <div className="min-w-0">

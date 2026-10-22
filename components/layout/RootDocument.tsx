@@ -6,7 +6,9 @@ import { getLocale } from 'next-intl/server';
 import { type ReactNode } from 'react';
 
 import { OverlayLeakProbe } from '@/components/dev/OverlayLeakProbe';
+import { IncidentBanner } from '@/components/incident/IncidentBanner';
 import { VercelInsights } from '@/components/layout/VercelInsights';
+import { INCIDENT_MODE } from '@/lib/incident';
 
 const geist = Geist({ subsets: ['latin'] });
 
@@ -42,10 +44,14 @@ export async function RootDocument({ children, messages, documentScroll = false 
                 className={
                     documentScroll
                         ? 'min-h-dvh overflow-x-hidden overflow-y-auto antialiased'
-                        : 'h-(--visual-viewport-page-height) overflow-hidden overscroll-none antialiased'
+                        : 'flex h-(--visual-viewport-page-height) flex-col overflow-hidden overscroll-none antialiased'
                 }
             >
-                <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
+                {/* Incident */}
+                {INCIDENT_MODE && <IncidentBanner />}
+                <NextIntlClientProvider messages={messages}>
+                    {documentScroll ? children : <div className="relative min-h-0 flex-1">{children}</div>}
+                </NextIntlClientProvider>
                 {process.env.NODE_ENV === 'production' ? <VercelInsights /> : <OverlayLeakProbe />}
             </body>
         </html>

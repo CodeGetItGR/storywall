@@ -5491,7 +5491,12 @@
         "close": "Close",
         "sent": "Thanks, the team will look at it."
     },
+    "Incident": {
+        "banner": "We're experiencing an incident. Purchases and uploads are temporarily disabled.",
+        "paused": "Unavailable during the incident."
+    },
     "ApiErrors": {
+        "incidentPaused": "Purchases and uploads are temporarily disabled.",
         "accountDeleteAdmin": "Admin accounts can't be deleted. Ask another admin to remove your admin role first.",
         "accountDeleteHasHostedEvents": "Delete the events you host, or hand them to a co-host, before deleting your account.",
         "accountDeleteOtpExpired": "The confirmation code has expired.",

@@ -8,6 +8,7 @@ import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { useUploadAccept } from '@/hooks/useUploadAccept';
+import { INCIDENT_MODE } from '@/lib/incident';
 
 type ProfilePictureDialogProps = {
     open: boolean;
@@ -42,7 +43,7 @@ export function ProfilePictureDialog({ open, previewUrl, error, isUploading, onF
                         </div>
                         <label
                             htmlFor="profile-picture-dialog-input"
-                            aria-disabled={isUploading}
+                            aria-disabled={isUploading || INCIDENT_MODE}
                             className="cursor-pointer text-sm font-medium text-primary hover:underline aria-disabled:pointer-events-none aria-disabled:opacity-50"
                         >
                             {t('chooseAnother')}
@@ -52,7 +53,7 @@ export function ProfilePictureDialog({ open, previewUrl, error, isUploading, onF
                             type="file"
                             accept={uploadAccept.profilePicture}
                             className="sr-only"
-                            disabled={isUploading}
+                            disabled={isUploading || INCIDENT_MODE}
                             onChange={onFileChange}
                         />
                     </div>
