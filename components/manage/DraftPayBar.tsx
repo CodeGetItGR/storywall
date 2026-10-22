@@ -3,6 +3,9 @@
 import { CalendarClock, Loader2, LockKeyhole } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
+import { INCIDENT_MODE } from '@/lib/incident';
+
 const ACTION_CLASS =
     'inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-ink px-5 text-center text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 lg:w-full';
 
@@ -64,6 +67,9 @@ export function DraftPayBar({
                 </button>
             )}
 
+            {/* Incident note */}
+            <IncidentPausedNote className="mb-2" />
+
             {/* Co-host note */}
             {!canPurchase && <p className="mb-2 text-xs text-ink-muted">{tCommon('primaryHostOnly')}</p>}
 
@@ -80,8 +86,12 @@ export function DraftPayBar({
                         {t('draft.startDate.action')}
                     </button>
                 ) : canPay ? (
-                    <button type="button" onClick={onPayAction} disabled={payDisabled} className={ACTION_CLASS}>
-                        {isPending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <LockKeyhole className="h-4 w-4" aria-hidden="true" />}
+                    <button type="button" onClick={onPayAction} disabled={payDisabled || INCIDENT_MODE} className={ACTION_CLASS}>
+                        {isPending ? (
+                            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                        ) : (
+                            <LockKeyhole className="h-4 w-4" aria-hidden="true" />
+                        )}
                         {isPending ? t('draft.openingCheckout') : t('draft.payAndPublish')}
                     </button>
                 ) : (

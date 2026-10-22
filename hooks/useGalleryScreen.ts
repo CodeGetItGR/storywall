@@ -20,6 +20,7 @@ import { canReportContent } from '@/lib/contentPermissions';
 import { downloadBlob } from '@/lib/download';
 import { isEventDeleted, isEventWritable, readableModuleKeys } from '@/lib/eventLifecycle';
 import { formatBytes } from '@/lib/format';
+import { INCIDENT_MODE } from '@/lib/incident';
 import { isGalleryOpenToGuests } from '@/lib/qrLinks';
 import { getUploadLimits } from '@/lib/uploadLimits';
 import { hasVendorCapability } from '@/lib/vendors';
@@ -74,7 +75,7 @@ export function useGalleryScreen() {
     // upload through posts and the QR link.
     // The Pro album has no upload, selection or archive here: vendors upload from their vendor page.
     const showUpload = isHost && !isDeleted && album === 'GUEST';
-    const canUpload = Boolean(showUpload && eventId && activeMember && galleryEnabled && isEventWritable(activeEvent?.status));
+    const canUpload = !INCIDENT_MODE && Boolean(showUpload && eventId && activeMember && galleryEnabled && isEventWritable(activeEvent?.status));
     const selectedSize = useMemo(() => selectedFiles.reduce((sum, file) => sum + file.size, 0), [selectedFiles]);
     const maxArchiveSelectedItems = appConfig?.media.maxArchiveSelectedItems ?? 100;
     const maxArchivePartBytes = appConfig?.media.maxArchivePartBytes ?? 300 * 1024 * 1024;

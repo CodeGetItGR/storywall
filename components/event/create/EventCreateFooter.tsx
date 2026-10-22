@@ -5,6 +5,8 @@ import { useTranslations } from 'next-intl';
 
 import { EventOverviewConsentHint } from '@/components/event/create/EventOverviewConsentHint';
 import { EventOverviewError } from '@/components/event/create/EventOverviewError';
+import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
+import { INCIDENT_MODE } from '@/lib/incident';
 import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 
 export function EventCreateFooter() {
@@ -104,6 +106,7 @@ export function EventCreateFooter() {
                 {/* Overview error and consent hint */}
                 {step === 'overview' && <EventOverviewError />}
                 {step === 'overview' && <EventOverviewConsentHint />}
+                {step === 'overview' && <IncidentPausedNote className="mb-2 text-center" />}
 
                 {step === 'overview' && (
                     <div className="flex gap-3">
@@ -118,7 +121,7 @@ export function EventCreateFooter() {
                         <button
                             form={formId}
                             type="submit"
-                            disabled={isSubmitPending || !isEmailVerified || !consentSatisfied}
+                            disabled={INCIDENT_MODE || isSubmitPending || !isEmailVerified || !consentSatisfied}
                             className="flex min-h-11 flex-2 items-center justify-center gap-2 rounded-full text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:opacity-40"
                         >
                             {isSubmitPending ? <Loader2 className="h-4 w-4 animate-spin" /> : t('submitAndPay')}

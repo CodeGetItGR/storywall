@@ -6,6 +6,11 @@ import { DurationPicker } from '@/components/plan/DurationPicker';
 import { AppLink } from '@/components/ui/AppLink';
 import type { BillingUpgradeRow as BillingUpgradeRowData } from '@/hooks/useBillingUpgradeRows';
 import type { EventTypeConvention } from '@/lib/api/types';
+import { INCIDENT_MODE } from '@/lib/incident';
+import { cn } from '@/lib/utils';
+
+const ACTION_CLASS_NAME =
+    'mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:w-auto';
 
 // The landing plan card's look (tracked name, gradient serif price, underlined
 // durations, ✓ list), laid out inline as a row.
@@ -79,13 +84,15 @@ export function BillingUpgradeRow({
             )}
 
             {/* Action */}
-            <AppLink
-                href={row.href}
-                aria-label={row.buttonAriaLabel}
-                className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:w-auto"
-            >
-                {row.buttonLabel}
-            </AppLink>
+            {INCIDENT_MODE ? (
+                <span role="link" aria-disabled="true" className={cn(ACTION_CLASS_NAME, 'cursor-not-allowed opacity-40')}>
+                    {row.buttonLabel}
+                </span>
+            ) : (
+                <AppLink href={row.href} aria-label={row.buttonAriaLabel} className={ACTION_CLASS_NAME}>
+                    {row.buttonLabel}
+                </AppLink>
+            )}
         </li>
     );
 }

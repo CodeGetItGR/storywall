@@ -7,12 +7,14 @@ import { type ChangeEvent, type MouseEvent, type PointerEvent as ReactPointerEve
 
 import { FilterNameOverlay } from '@/components/composer/FilterNameOverlay';
 import { PostImageFilterPicker } from '@/components/composer/PostImageFilterPicker';
+import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
 import { StoryVideo } from '@/components/story/StoryVideo';
 import { Modal } from '@/components/ui/modal';
 import { useStoryCameraController } from '@/hooks/useStoryCameraController';
 import type { StoryComposerController } from '@/hooks/useStoryComposerController';
 import { useStoryFilterSwipe } from '@/hooks/useStoryFilterSwipe';
 import { useUploadAccept } from '@/hooks/useUploadAccept';
+import { INCIDENT_MODE } from '@/lib/incident';
 import { STORY_FILTER_PRESETS, type StoryFilterPreset } from '@/lib/story/storyFilters';
 import { cn } from '@/lib/utils';
 
@@ -127,7 +129,7 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
         capture,
         switchCamera,
     } = useStoryCameraController(isOpen && showCamera, handleCapturedFile);
-    const canAdd = items.length < maxItems && !isBusy;
+    const canAdd = !INCIDENT_MODE && items.length < maxItems && !isBusy;
 
     function handleRemoveClick(event: MouseEvent<HTMLButtonElement>) {
         const key = event.currentTarget.dataset.storyKey;
@@ -319,6 +321,7 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                             {activeItem.error ?? error}
                                         </p>
                                     )}
+                                    <IncidentPausedNote className="rounded-md bg-black/55 px-3 py-2 text-amber-200 backdrop-blur-md" />
                                     <button
                                         type="submit"
                                         disabled={!canSubmit}

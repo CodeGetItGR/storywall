@@ -4,6 +4,8 @@ import { ImagePlus, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type React from 'react';
 
+import { INCIDENT_MODE } from '@/lib/incident';
+
 type BugReportScreenshotFieldProps = {
     accept: string;
     disabled: boolean;
@@ -49,7 +51,7 @@ export function BugReportScreenshotField({
                 <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-dashed border-border px-3 text-sm text-ink-muted hover:text-ink has-disabled:cursor-not-allowed has-disabled:opacity-60">
                     <ImagePlus className="h-4 w-4" aria-hidden="true" />
                     {t('addScreenshot', { size: maxMegabytes })}
-                    <input type="file" accept={accept} onChange={onChangeAction} disabled={disabled} className="sr-only" />
+                    <input type="file" accept={accept} onChange={onChangeAction} disabled={disabled || INCIDENT_MODE} className="sr-only" />
                 </label>
             )}
 
