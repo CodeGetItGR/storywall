@@ -1,6 +1,7 @@
 import { defaultLocale, locales } from '@/i18n/config';
 import { endpoints } from '@/lib/api/endpoints';
 import type { AuthSessionDto, ProblemDetail, RecentErrorDto } from '@/lib/api/types';
+import { reportApiNetworkError, reportApiResponse } from '@/lib/apiHealth';
 import { clearSession, getAccessToken, setSession, subscribeAuthState } from '@/lib/auth/tokenStore';
 import { redactApiPath } from '@/lib/betaFeedback/routeTemplates';
 import { demoActAsHeaders } from '@/lib/demo/demoActAs';
@@ -198,10 +199,27 @@ function jsonContentType(body: RequestInit['body']): Record<string, string> {
     return typeof body === 'string' ? { 'Content-Type': 'application/json' } : {};
 }
 
+// Every request to Spring goes through here so lib/apiHealth.ts can tell an outage from a bad
+// request. An abort (navigation, a cancelled query) and an offline browser say nothing about Spring.
+async function trackedFetch(url: string, init: RequestInit): Promise<Response> {
+    const inBrowser = typeof window !== 'undefined';
+    let res: Response;
+    try {
+        res = await fetch(url, init);
+    } catch (error) {
+        const aborted = error instanceof DOMException && error.name === 'AbortError';
+        const offline = inBrowser && navigator.onLine === false;
+        if (inBrowser && !aborted && !offline) reportApiNetworkError();
+        throw error;
+    }
+    if (inBrowser) reportApiResponse(res.status);
+    return res;
+}
+
 // Bare fetch straight to Spring with no auth header and no retry-on-401 —
 // used by api.publicGet for the handful of endpoints that don't require auth.
 async function rawFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
-    const res = await fetch(`${API_BASE_URL}${path}`, {
+    const res = await trackedFetch(`${API_BASE_URL}${path}`, {
         ...options,
         headers: {
             ...jsonContentType(options.body),
@@ -223,7 +241,7 @@ async function rawFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
 // anonymous QR media-upload endpoints, which take the scanned QR token
 // itself as the credential instead of a bearer token.
 async function rawPostForm<T>(path: string, formData: FormData, options: RequestInit = {}): Promise<T> {
-    const res = await fetch(`${API_BASE_URL}${path}`, {
+    const res = await trackedFetch(`${API_BASE_URL}${path}`, {
         ...options,
         method: 'POST',
         body: formData,
@@ -246,7 +264,7 @@ async function apiFetchResponse(path: string, options: ApiFetchOptions = {}): Pr
     const { allowNotModified, skipAuthRetry, ...init } = options;
     const accessToken = getAccessToken();
 
-    const res = await fetch(`${API_BASE_URL}${path}`, {
+    const res = await trackedFetch(`${API_BASE_URL}${path}`, {
         ...init,
         headers: {
             ...jsonContentType(init.body),

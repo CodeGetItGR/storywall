@@ -320,6 +320,43 @@ export interface AdminLandingCategoryEventTypesDto {
     moveFromOtherCategory?: boolean;
 }
 
+// Site notices (spec 2026-10-22-site-notices-design). Both locales travel; the client picks one.
+export type SiteNoticeTone = 'INFO' | 'OFFER' | 'WARNING' | 'CRITICAL';
+export type SiteNoticeArea = 'EVERYWHERE' | 'PUBLIC' | 'HOST' | 'GUEST' | 'ADMIN';
+export type SiteNoticeStatus = 'LIVE' | 'SCHEDULED' | 'ENDED' | 'OFF';
+
+export interface SiteNoticeLiveDto {
+    id: string;
+    version: number;
+    tone: SiteNoticeTone;
+    message: LocalizedText;
+    linkUrl: string | null;
+    linkLabel: LocalizedText;
+    areas: SiteNoticeArea[];
+    dismissible: boolean;
+    startsAt: string | null;
+    createdAt: string;
+}
+
+export interface AdminSiteNoticeDto extends SiteNoticeLiveDto {
+    endsAt: string | null;
+    active: boolean;
+    status: SiteNoticeStatus;
+    updatedAt: string;
+}
+
+export interface AdminSiteNoticeRequestDto {
+    tone: SiteNoticeTone;
+    message: LocalizedText;
+    linkUrl: string | null;
+    linkLabel: LocalizedText | null;
+    areas: SiteNoticeArea[];
+    dismissible: boolean;
+    startsAt: string | null;
+    endsAt: string | null;
+    active: boolean;
+}
+
 export type EventTypeAccentToken = 'rose' | 'sky' | 'amber';
 
 export interface AppEventTypeResponseDto {
