@@ -1,8 +1,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { preload } from 'react-dom';
 
+import { HeroBackground } from '@/components/landing/HeroBackground';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { LandingHeroActions } from '@/components/landing/LandingHeroActions';
 import { LandingHeroVisual } from '@/components/landing/LandingHeroVisual';
@@ -10,14 +10,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { landingHeroMainAction } from '@/lib/landingHero';
 import { useLandingMotion } from '@/providers/LandingMotionProvider';
 
-// Same file as the hero content's background class, which Tailwind needs written out in full.
-const HERO_BACKGROUND = '/landing/hero-background-v75.webp';
-
 const NAV_HREFS = ['#platformStories', '#howItWorks', '#experience', '#pricing'] as const;
 
 export function LandingHero() {
-    // A CSS background is found only once the stylesheet is applied; preloading starts it with the page.
-    preload(HERO_BACKGROUND, { as: 'image', fetchPriority: 'high' });
     const t = useTranslations('LandingPage.hero');
     const { isAuthenticated, isBootstrapping } = useAuth();
     const { paused } = useLandingMotion();
@@ -42,7 +37,9 @@ export function LandingHero() {
             />
 
             {/* Hero content */}
-            <div className="relative bg-[url('/landing/hero-background-v75.webp')] bg-cover bg-center pt-6 pb-21.5 min-[421px]:max-[760px]:pt-10.75 min-[761px]:min-h-[calc(100svh-112px)] min-[761px]:py-0">
+            <div className="relative pt-6 pb-21.5 min-[421px]:max-[760px]:pt-10.75 min-[761px]:min-h-[calc(100svh-112px)] min-[761px]:py-0">
+                {/* Background */}
+                <HeroBackground />
                 <div className="relative mx-auto grid w-[calc(100%-40px)] max-w-305 grid-cols-1 items-center min-[761px]:min-h-[calc(100svh-112px)] min-[761px]:w-[calc(100%-64px)] min-[761px]:grid-cols-2">
                     <div className="relative z-20 self-center min-[761px]:py-2.5">
                         {/* Title */}
