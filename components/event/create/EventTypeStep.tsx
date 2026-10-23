@@ -54,11 +54,10 @@ export function EventTypeStep() {
                             onClick={handleClick}
                             aria-pressed={isSelected}
                             className={cn(
-                                'group relative flex min-h-56 flex-col justify-end overflow-hidden rounded-lg border border-border bg-card p-5 text-left shadow-sm transition duration-200 hover:-translate-y-0.5',
+                                'group relative flex min-h-56 flex-col justify-end overflow-hidden rounded-lg border border-border bg-card p-5 text-left transition duration-200 active:scale-[0.98]',
                                 backgroundImageSrc ? 'text-white' : surfaceStyle,
-                                // The other types fade out, so the picked one stands on its own.
-                                !isSelected &&
-                                    'opacity-55 grayscale hover:opacity-100 hover:grayscale-0 focus-visible:opacity-100 focus-visible:grayscale-0',
+                                // The picked type lifts off the grid.
+                                isSelected ? '-translate-y-1 shadow-xl' : 'shadow-sm hover:-translate-y-0.5',
                             )}
                         >
                             {/* Background */}
@@ -73,11 +72,15 @@ export function EventTypeStep() {
                                     />
                                     <span className="absolute inset-0 bg-black/10" />
                                     <span className="absolute inset-x-0 bottom-0 h-3/4 bg-linear-to-t from-black/90 via-black/55 to-transparent" />
+                                    {/* Veil: the other types darken but keep their colors, so they still read as choices */}
+                                    {!isSelected && (
+                                        <span className="absolute inset-0 bg-black/45 transition-opacity duration-200 group-hover:opacity-0 group-focus-visible:opacity-0" />
+                                    )}
                                 </>
                             )}
                             {isSelected && (
-                                <span className="absolute top-4 right-4 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-ink text-white shadow-sm">
-                                    <Check className="h-4 w-4" />
+                                <span className="absolute top-4 right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-white shadow-md">
+                                    <Check className="h-5 w-5" strokeWidth={3} />
                                 </span>
                             )}
                             {/* Name */}
