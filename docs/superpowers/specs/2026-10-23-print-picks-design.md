@@ -3,6 +3,7 @@
 Date: 2026-10-23
 Status: approved
 Scope: vendor services (shared infra), phase 1 host print picks, phase 2 guest print picks. Builds on [Vendors in the event](2026-10-19-vendors-in-the-event-design.md), whose "Pro album" row deferred picks and full-quality download to a later phase.
+Plans: [backend](../plans/2026-10-23-print-picks-backend.md), [frontend](../plans/2026-10-23-print-picks-frontend.md). Where they settle a name or an endpoint, the plans win.
 
 ## Goal
 
@@ -37,7 +38,7 @@ Every pick shows a price (or that the photographer sets one), so nobody assumes 
 
 Built with phase 1, because host picks use it.
 
-- **Data:** `vendor_services`: `id`, `vendor_profile_id`, `kind` (`PRINT`, `OTHER`), `label` (max 40), `price_cents`, `currency` (`EUR` only for now), `sort_order`, `created_at`, `updated_at`. Account-level, like the profile.
+- **Data:** `vendor_service_items`: `id`, `user_id` (the profile's key), `kind` (`PRINT`, `OTHER`), `label` (max 40), `price_cents`, `currency` (`EUR` only for now), `sort_order`, `created_at`, `updated_at`. Account-level, like the profile.
 - **Kinds by type:** `PRINT` is offered to `PHOTOGRAPHER` profiles only. `OTHER` is in the enum for later phases (planner packages, music sets) and is not shown in any UI yet.
 - **Editing:** a "Services" section on the vendor page, shown only to approved partners. Compact read-only rows (label, price). "Add size" and a row tap open a focused sheet, with delete inside the sheet behind a confirmation modal.
 - **Non-partners:** the section shows one line, "Approved partners can list prices.", with the existing "Become a partner" sheet.
@@ -65,16 +66,16 @@ Built with phase 1, because host picks use it.
 - `VendorCapability.PRINT_PICKS(EnumSet.of(PHOTOGRAPHER))`, mirrored in `CAPABILITY_TYPES` in `lib/vendors.ts`.
 - **Data:**
   - `print_lists`: `id`, `event_id`, `event_vendor_id` (the photographer), `owner_member_id`, `owner_kind` (`HOST`, `GUEST`), `status` (`OPEN`, `SENT`), `sent_at`, `contact_email`, `contact_phone`, `created_at`, `updated_at`. One `OPEN` host list per event and photographer (unique partial index).
-  - `print_list_items`: `id`, `print_list_id`, `media_id`, `vendor_service_id` (nullable: no size), `copies` (1–99), `unit_price_cents` and `size_label` (copied on send, null while open; the host list is never sent, so it always shows the current prices), `removed_at` (set when the photo is deleted). Unique on `print_list_id` + `media_id`.
+  - `print_list_items`: `id`, `print_list_id`, `media_id`, `vendor_service_id` (nullable: no size), `copies` (1–99), `unit_price_cents` and `size_label` (copied on send, null while open; the host list is never sent, so it always shows the current prices). A photo deleted from the gallery shows as removed (read from `media.deleted_at`). Unique on `print_list_id` + `media_id`.
   - `event_vendors.host_prints_included` (int, default 0).
-- **Rules:** items must be `READY` image media of the same event, not deleted. Every write checks the deadline (`VENDOR_ACCESS_ENDED` after it). Deleting a photo sets `removed_at` on its items (soft delete, so the photographer sees "1 photo removed").
+- **Rules:** items must be `READY` image media of the same event, not deleted. Every write checks the deadline (`VENDOR_ACCESS_ENDED` after it). A deleted photo stays on the list as removed, so the photographer sees "1 photo removed".
 - **Endpoints (proposed, final names in the backend plan):**
   - `GET`/`PUT`/`DELETE /api/me/vendor-profile/services[/{id}]`: approved partners only (`PARTNER_REQUIRED` otherwise).
   - `GET /api/events/{eventId}/print-lists/host?vendorId=`: host or the photographer (`requireHostOrVendor(…, PRINT_PICKS)`). The list, items, the photographer's sizes and `includedCount`.
   - `POST`/`PATCH`/`DELETE /api/events/{eventId}/print-lists/host/items`: host only. Add many (`{ vendorId, mediaIds }`), change size/copies, remove.
   - `PATCH /api/events/{eventId}/vendors/me/prints-included`: the photographer.
   - `GET /api/events/{eventId}/print-lists/{listId}/archive?part=`: the photographer. Reuses `MediaArchiveService`'s selected path with the `ORIGINAL` variant when the event keeps originals, else `DISPLAY`, plus `prints.txt`.
-  - `GET /api/events/{eventId}/vendors` rows gain `printSizes` (label, price) for photographers, so the host's sheet can show prices.
+  - `GET /api/events/{eventId}/print-picks`: any member. The photographers who can receive picks now, their sizes and prices, and the guest scope (replaces adding `printSizes` to the vendor rows).
 - **Reminder:** a daily job finds host lists with items whose photographer's `accessEndsAt` is 3 days away and sends one notice (`PRINT_PICKS_ENDING`), recorded so it is sent once.
 - **Audit:** host list created, photographer download started. No personal data.
 - **Export and deletion:** `MeDataExportService` includes services and print lists. Deleting an account removes its services and its open lists; sent lists keep items but drop contact fields.
@@ -95,7 +96,7 @@ Built with phase 1, because host picks use it.
 ### Plan and host settings
 
 - **Plan key:** the `vendors` module config gains `guestPrintPicks`: `OFF`, `OWN`, `ANY` (missing reads as `OFF`, like the other keys). Proposed defaults: Basic `OFF`, Plus `OWN`, Pro `ANY`. Admin plan editing shows it as one segmented control with a one-line caption, per the admin design rules.
-- **Host setting:** `events.guest_print_picks` (`OFF`, `OWN`, `ANY`, default `OFF`), capped by the plan. In Manage → Vendors, one segmented control: "Off", "Their own photos", "Any photo". It is shown only when a photographer has at least one `PRINT` service.
+- **Host setting:** `event_print_settings.guest_scope` (`OFF`, `OWN`, `ANY`, default `OFF`), capped by the plan; the event detail returns the effective value as `guestPrintScope`. While it is not `OFF`, guests can open the gallery even without the member archive. In Manage → Vendors, one segmented control: "Off", "Their own photos", "Any photo". It is shown only when a photographer has at least one `PRINT` service.
 
 ### Guest
 
@@ -113,13 +114,13 @@ Built with phase 1, because host picks use it.
 ### Backend (phase 2)
 
 - Reuses `print_lists` with `owner_kind = GUEST`. Several `SENT` lists per guest, one `OPEN` list per guest and photographer.
-- **Rules:** `OWN` allows only media the guest uploaded. `ANY` allows any `GUEST`- or `PRO`-collection photo the guest can see. The photographer needs at least one `PRINT` service and approved-partner status at send time (`PRINT_PRICES_MISSING` otherwise). A `SENT` list is immutable except `removed_at` from photo deletion.
+- **Rules:** `OWN` allows only media the guest uploaded. `ANY` allows any `GUEST`- or `PRO`-collection photo the guest can see. The photographer needs at least one `PRINT` service and approved-partner status at send time (`PRINT_PRICES_MISSING` otherwise). A `SENT` list is immutable (a deleted photo shows as removed).
 - **Endpoints (proposed):**
   - `GET /api/events/{eventId}/print-lists/mine?vendorId=`: the guest's open and sent lists.
   - `POST`/`PATCH`/`DELETE /api/events/{eventId}/print-lists/mine/items`.
   - `POST /api/events/{eventId}/print-lists/mine/send` `{ vendorId, phone? }`.
   - `GET /api/events/{eventId}/print-lists/guests`: the photographer. Sent lists with contact fields.
-  - `PATCH /api/events/{eventId}/settings/guest-print-picks`: host.
+  - `PATCH /api/events/{eventId}/print-picks/guest-scope` `{ scope }`: host.
 - **Rate limits:** send is limited per guest (e.g. 10 per day) so a guest can't flood the photographer's email.
 - **Audit:** guest list sent (no contact data in the audit row).
 
@@ -128,7 +129,7 @@ Built with phase 1, because host picks use it.
 - `usePrintLists.ts` gains `useMyPrintLists`, `useSendPrintList`, `useGuestPrintLists`.
 - `components/gallery/print/`: `PrintSendSheet.tsx`, `SentListRow.tsx`.
 - `components/vendors/me/`: `GuestPrintLists.tsx`, `GuestPrintListRow.tsx`.
-- `components/manage/vendors/GuestPrintPicksControl.tsx`.
+- `components/vendors/manage/GuestPrintPicksControl.tsx`.
 - Prefetch the guest's lists on the gallery page and the photographer's guest lists on the vendor page.
 
 ## Legal
@@ -166,6 +167,6 @@ No new routes. The gallery and vendor pages are event pages, already private and
 ## Out of scope
 
 - Payment, invoices and print fulfilment in the app.
-- Services for other vendor types, the partner card's services view and partner pages (they reuse `vendor_services` later).
+- Services for other vendor types, the partner card's services view and partner pages (they reuse `vendor_service_items` later).
 - Video picks.
 - Prices in currencies other than EUR.
