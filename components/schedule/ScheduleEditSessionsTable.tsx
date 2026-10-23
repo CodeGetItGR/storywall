@@ -72,6 +72,7 @@ export function ScheduleEditSessionsTable({
                         key={row.definition?.role ?? row.session?.id}
                         definition={row.definition}
                         session={row.session}
+                        eventType={event.eventType}
                         canWrite={canWrite}
                         canAddSession={canAddSession}
                         deleteDisabled={deleteDisabled}

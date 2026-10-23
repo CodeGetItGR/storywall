@@ -1,0 +1,14 @@
+<svg width="54" height="74" viewBox="0 0 54 74" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M27 2.2C13.6 2.2 3.4 12.6 3.4 25.6C3.4 39.2 14.2 50.6 27 50.6C39.8 50.6 50.6 39.2 50.6 25.6C50.6 12.6 40.4 2.2 27 2.2Z" stroke="url(#paint0_linear_balloon)" stroke-width="4.4" stroke-linejoin="round"/>
+<path d="M27 50.6L22.6 56.8H31.4L27 50.6Z" stroke="url(#paint0_linear_balloon)" stroke-width="4.4" stroke-linejoin="round"/>
+<path d="M27 56.8C23.2 60 30.8 63.2 27 66.4C24.6 68.4 26.2 70.4 28 71.6" stroke="url(#paint0_linear_balloon)" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M14 23.6C14.8 17.2 19.4 12.4 25.4 11.2" stroke="url(#paint0_linear_balloon)" stroke-width="4.4" stroke-linecap="round"/>
+<defs>
+<linearGradient id="paint0_linear_balloon" x1="-0.65" y1="-0.66" x2="54.6" y2="46.6" gradientUnits="userSpaceOnUse">
+<stop offset="0.2" stop-color="#C777B1"/>
+<stop offset="0.43" stop-color="#E48279"/>
+<stop offset="0.54" stop-color="#F2885C"/>
+<stop offset="0.99" stop-color="#FEC463"/>
+</linearGradient>
+</defs>
+</svg>

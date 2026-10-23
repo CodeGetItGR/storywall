@@ -1125,6 +1125,24 @@
             },
             "BAPTISM": {
                 "title": "Τελετή"
+            },
+            "SOCIAL_EVENT": {
+                "title": "Εκδήλωση"
+            },
+            "BIRTHDAY": {
+                "title": "Πάρτι"
+            },
+            "PRIVATE_PARTY": {
+                "title": "Πάρτι"
+            },
+            "GENDER_REVEAL": {
+                "title": "Πάρτι"
+            },
+            "BABY_SHOWER": {
+                "title": "Πάρτι"
+            },
+            "REUNION": {
+                "title": "Συνάντηση"
             }
         },
         "secondarySessions": {
