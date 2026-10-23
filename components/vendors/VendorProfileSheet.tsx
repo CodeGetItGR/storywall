@@ -10,12 +10,13 @@ import { Modal } from '@/components/ui/modal';
 import { VendorLogoField } from '@/components/vendors/VendorLogoField';
 import { useVendorProfileForm } from '@/hooks/useVendorProfileForm';
 import type { PartnerRole, VendorProfileDto } from '@/lib/api/types';
-import { VENDOR_BUSINESS_NAME_MAX, VENDOR_LINK_MAX, VENDOR_TYPES } from '@/lib/vendors';
+import { VENDOR_BUSINESS_NAME_MAX, VENDOR_LINK_MAX } from '@/lib/vendors';
 
 const INPUT_CLASS =
     'min-h-11 w-full rounded-2xl border border-border/70 bg-background px-4 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10';
 
 // Mounted only while open, so useVendorProfileForm always starts from the latest profile.
+// No type field: a vendor's type comes from the event link they joined with.
 export function VendorProfileSheet({
     open,
     profile,
@@ -28,12 +29,10 @@ export function VendorProfileSheet({
     onCloseAction: () => void;
 }) {
     const t = useTranslations('Vendors.profile');
-    const tTypes = useTranslations('Vendors.types');
     const form = useVendorProfileForm({ profile, defaultType, onSaved: onCloseAction });
     const { setField, setLogo, setRemoveLogo } = form;
 
     const handleNameChange = useCallback((event: ChangeEvent<HTMLInputElement>) => setField('businessName', event.target.value), [setField]);
-    const handleTypeChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => setField('vendorType', event.target.value), [setField]);
     const handleLinkChange = useCallback((event: ChangeEvent<HTMLInputElement>) => setField('link', event.target.value), [setField]);
 
     return (
@@ -64,17 +63,6 @@ export function VendorProfileSheet({
                             </p>
                         )}
                     </div>
-
-                    {/* Type */}
-                    <FormFieldLabel label={t('type')}>
-                        <select className={INPUT_CLASS} value={form.values.vendorType} onChange={handleTypeChange}>
-                            {VENDOR_TYPES.map((type) => (
-                                <option key={type} value={type}>
-                                    {tTypes(type)}
-                                </option>
-                            ))}
-                        </select>
-                    </FormFieldLabel>
 
                     {/* Link */}
                     <div>

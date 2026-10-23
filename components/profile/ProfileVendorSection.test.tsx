@@ -18,11 +18,11 @@ describe('ProfileVendorSection', () => {
         expect(container.textContent).toBe('');
     });
 
-    it('shows the business, type and link with an edit action', () => {
+    it('shows the business and link, without a type, with an edit action', () => {
         profile.data = { businessName: 'Studio X', vendorType: 'PHOTOGRAPHER', link: '@studio.x', logoUrl: null, partnerPromptDismissed: false };
         render(<ProfileVendorSection />);
         expect(screen.getByText('Studio X')).toBeTruthy();
-        expect(screen.getByText('Vendors.types.PHOTOGRAPHER')).toBeTruthy();
+        expect(screen.queryByText('Vendors.types.PHOTOGRAPHER')).toBeNull();
         expect(screen.getByText('@studio.x')).toBeTruthy();
         expect(screen.getByRole('button', { name: 'Vendors.profile.edit' })).toBeTruthy();
     });

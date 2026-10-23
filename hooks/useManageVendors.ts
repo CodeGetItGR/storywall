@@ -3,44 +3,20 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
-import { useEventVendors, usePatchVendor, useRemoveVendor, useResetVendorLink, useVendorLinks } from '@/hooks/useVendors';
-import type { PartnerRole } from '@/lib/api/types';
-import { sortByVendorType } from '@/lib/vendors';
+import { useEventVendors, usePatchVendor, useRemoveVendor } from '@/hooks/useVendors';
 
-// Manage → Vendors: the links, the joined vendors, the open sheet and the two confirmations.
+// Manage → Vendors: the joined vendors, the open vendor's sheet and its remove confirmation. The links live in useVendorInvite.
 export function useManageVendors(eventId: string) {
     const toErrorMessage = useApiErrorMessage();
-    const linksQuery = useVendorLinks(eventId, true);
     const vendorsQuery = useEventVendors(eventId);
-    const resetLink = useResetVendorLink(eventId);
     const patchVendor = usePatchVendor(eventId);
     const removeVendor = useRemoveVendor(eventId);
-    const [resetType, setResetType] = useState<PartnerRole | null>(null);
-    const [qrType, setQrType] = useState<PartnerRole | null>(null);
     const [openVendorId, setOpenVendorId] = useState<string | null>(null);
     const [removeOpen, setRemoveOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const links = useMemo(() => sortByVendorType(linksQuery.data ?? []), [linksQuery.data]);
     const vendors = useMemo(() => vendorsQuery.data ?? [], [vendorsQuery.data]);
     const selectedVendor = vendors.find((vendor) => vendor.id === openVendorId) ?? null;
-    const qrLink = links.find((link) => link.vendorType === qrType) ?? null;
-
-    const requestReset = useCallback((type: PartnerRole) => {
-        setError(null);
-        setResetType(type);
-    }, []);
-    const cancelReset = useCallback(() => setResetType(null), []);
-    const confirmReset = useCallback(async () => {
-        if (!resetType) return;
-        try {
-            await resetLink.mutateAsync(resetType);
-        } catch (resetError) {
-            setError(toErrorMessage(resetError));
-        } finally {
-            setResetType(null);
-        }
-    }, [resetLink, resetType, toErrorMessage]);
 
     const openVendor = useCallback((vendorId: string) => {
         setError(null);
@@ -76,31 +52,19 @@ export function useManageVendors(eventId: string) {
         }
     }, [removeVendor, selectedVendor, toErrorMessage]);
 
-    const openQr = useCallback((type: PartnerRole) => setQrType(type), []);
-    const closeQr = useCallback(() => setQrType(null), []);
-
     return {
-        links,
         vendors,
-        isLoading: linksQuery.isLoading || vendorsQuery.isLoading,
+        isLoading: vendorsQuery.isLoading,
         selectedVendor,
-        resetType,
         removeOpen,
-        qrLink,
         error,
-        isResetting: resetLink.isPending,
         isPatching: patchVendor.isPending,
         isRemoving: removeVendor.isPending,
-        requestReset,
-        cancelReset,
-        confirmReset,
         openVendor,
         closeVendor,
         toggleHidden,
         requestRemove,
         cancelRemove,
         confirmRemove,
-        openQr,
-        closeQr,
     };
 }

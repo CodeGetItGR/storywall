@@ -12,7 +12,6 @@ import { useVendorProfile } from '@/hooks/useVendorProfile';
 // Only for people who have joined an event as a vendor; edits show on every event's vendor list.
 export function ProfileVendorSection() {
     const t = useTranslations('Vendors.profile');
-    const tTypes = useTranslations('Vendors.types');
     const { data: profile } = useVendorProfile();
     const [editing, setEditing] = useState(false);
     const openEditor = useCallback(() => setEditing(true), []);
@@ -39,7 +38,6 @@ export function ProfileVendorSection() {
                 <VendorLogo logoUrl={profile.logoUrl} name={profile.businessName} />
                 <div className="min-w-0 text-sm">
                     <p className="truncate font-semibold text-ink">{profile.businessName}</p>
-                    <p className="text-ink-muted">{tTypes(profile.vendorType)}</p>
                     {profile.link && <p className="truncate text-ink-muted">{profile.link}</p>}
                 </div>
             </div>
