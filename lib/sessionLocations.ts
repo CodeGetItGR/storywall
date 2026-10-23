@@ -3,7 +3,7 @@ import { formatDate, formatTimeRange } from '@/lib/datetime';
 import { sortSessions } from '@/lib/eventSessions';
 
 export type SessionLocationRole = 'main' | 'secondary';
-export type SessionLocationKind = 'church' | 'venue' | 'generic';
+export type SessionLocationKind = 'church' | 'venue' | 'celebration' | 'generic';
 
 export type SessionLocationIcon = {
     kind: 'image' | 'map-pin';
@@ -29,6 +29,8 @@ export type SessionLocationWhen = {
 type SemanticLocationKind = Exclude<SessionLocationKind, 'generic'>;
 
 const DEFAULT_LOCATION_KIND: SessionLocationKind = 'generic';
+// Every event type has a main session; only the ones listed below hold it in a church.
+const DEFAULT_MAIN_KIND: SemanticLocationKind = 'celebration';
 
 const ROLE_KIND_BY_EVENT_TYPE: Partial<Record<EventTypeConvention, Partial<Record<SessionLocationRole, SemanticLocationKind>>>> = {
     BAPTISM: {
@@ -44,13 +46,14 @@ const ROLE_KIND_BY_EVENT_TYPE: Partial<Record<EventTypeConvention, Partial<Recor
 const LOCATION_ICONS: Record<SessionLocationKind, SessionLocationIcon> = {
     church: { kind: 'image', src: '/icons/church.svg' },
     venue: { kind: 'image', src: '/icons/cocktail.svg' },
+    celebration: { kind: 'image', src: '/icons/balloon.svg' },
     generic: { kind: 'map-pin' },
 };
 
-function resolveLocationKind(eventType: EventTypeConvention, role: SessionLocationRole | null): SessionLocationKind {
+export function resolveLocationKind(eventType: EventTypeConvention, role: SessionLocationRole | null): SessionLocationKind {
     if (!role) return DEFAULT_LOCATION_KIND;
 
-    return ROLE_KIND_BY_EVENT_TYPE[eventType]?.[role] ?? DEFAULT_LOCATION_KIND;
+    return ROLE_KIND_BY_EVENT_TYPE[eventType]?.[role] ?? (role === 'main' ? DEFAULT_MAIN_KIND : DEFAULT_LOCATION_KIND);
 }
 
 function getSessionForRole(sessions: EventSessionResponseDto[], role: SessionLocationRole | null): EventSessionResponseDto | null {

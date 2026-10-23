@@ -5,16 +5,17 @@ import { useTranslations } from 'next-intl';
 
 import { ScheduleSessionCard } from '@/app/(main)/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleSessionCard';
 import { ScheduleTimelineItem } from '@/app/(main)/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleTimelineItem';
-import type { EventSessionResponseDto } from '@/lib/api/types';
+import type { EventSessionResponseDto, EventTypeConvention } from '@/lib/api/types';
 import { formatDate, formatTimeRange } from '@/lib/datetime';
 import { buildScheduleDays } from '@/lib/eventSessions';
 
 interface ScheduleSessionsListProps {
     sessions: EventSessionResponseDto[];
+    eventType?: EventTypeConvention;
     locale: string;
 }
 
-export function ScheduleSessionsList({ sessions, locale }: ScheduleSessionsListProps) {
+export function ScheduleSessionsList({ sessions, eventType, locale }: ScheduleSessionsListProps) {
     const t = useTranslations('SchedulePage');
     const { days, unscheduled } = buildScheduleDays(sessions);
 
@@ -33,6 +34,7 @@ export function ScheduleSessionsList({ sessions, locale }: ScheduleSessionsListP
                             <ScheduleTimelineItem
                                 key={session.id}
                                 session={session}
+                                eventType={eventType}
                                 time={formatTimeRange(locale, session.startAt, session.endAt, t('timeTba'))}
                                 isLast={index === daySessions.length - 1}
                             />
@@ -51,7 +53,7 @@ export function ScheduleSessionsList({ sessions, locale }: ScheduleSessionsListP
 
                     <div className="flex flex-col gap-4">
                         {unscheduled.map((session) => (
-                            <ScheduleSessionCard key={session.id} session={session} />
+                            <ScheduleSessionCard key={session.id} session={session} eventType={eventType} />
                         ))}
                     </div>
                 </section>

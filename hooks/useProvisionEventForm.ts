@@ -13,7 +13,7 @@ import { useThemePresetsForType } from '@/hooks/useEventTheme';
 import { eligibleProvisioningPlans, type ProvisionHost } from '@/lib/adminAccountProvisioning';
 import { getFieldErrors } from '@/lib/api/errors';
 import type { AdminWelcomePreviewRequestDto, EventResponseDto, EventTypeConvention, EventVisibility } from '@/lib/api/types';
-import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
+import { getInitialSessionTitleKey } from '@/lib/createEventCatalog';
 import { effectiveThemePresetId } from '@/lib/createEventSteps';
 import { datetimeLocalValueToIso, getScheduleDatetimeLocalBounds, isDatetimeLocalBefore } from '@/lib/datetime';
 import { getCurrentTimezone, getSupportedTimezones } from '@/lib/timezones';
@@ -133,8 +133,8 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
         if (!startAtIso) return;
         const rsvpDeadlineIso = planHasRsvp && rsvpDeadline ? (datetimeLocalValueToIso(rsvpDeadline) ?? undefined) : undefined;
 
-        const initialSessionTitleKey = getCreateEventCatalogEntry(selectedEventType)?.initialSessionTitleKey;
-        const initialSessionTitle = initialSessionTitleKey && tCreate.has(initialSessionTitleKey) ? tCreate(initialSessionTitleKey) : undefined;
+        const initialSessionTitleKey = getInitialSessionTitleKey(selectedEventType);
+        const initialSessionTitle = tCreate.has(initialSessionTitleKey) ? tCreate(initialSessionTitleKey) : undefined;
 
         try {
             const created = await provisionEvent.mutateAsync({

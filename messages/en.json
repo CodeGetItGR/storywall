@@ -999,6 +999,24 @@
             },
             "BAPTISM": {
                 "title": "Ceremony"
+            },
+            "SOCIAL_EVENT": {
+                "title": "Event"
+            },
+            "BIRTHDAY": {
+                "title": "Party"
+            },
+            "PRIVATE_PARTY": {
+                "title": "Party"
+            },
+            "GENDER_REVEAL": {
+                "title": "Party"
+            },
+            "BABY_SHOWER": {
+                "title": "Party"
+            },
+            "REUNION": {
+                "title": "Reunion"
             }
         },
         "secondarySessions": {

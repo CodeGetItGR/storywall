@@ -218,7 +218,7 @@ export function ScheduleScreen() {
             ) : sessions.length === 0 ? (
                 <ScheduleEmptyState isHost={canEdit} canWrite={canWrite} canAddSession={canAddSession} onAddSession={openCreateEditor} />
             ) : (
-                <ScheduleSessionsList sessions={sessions} locale={locale} />
+                <ScheduleSessionsList sessions={sessions} eventType={activeEvent?.eventType} locale={locale} />
             )}
 
             {canManageSchedule && (
