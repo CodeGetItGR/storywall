@@ -5824,10 +5824,10 @@
             "playMotion": "Play animations"
         },
         "meta": {
-            "title": "Guest photos with a QR code, no app | StoryWall",
-            "description": "Guests scan a QR code and upload photos and videos from their phone, for weddings, baptisms and parties. No app needed.",
+            "title": "Digital invitations and guest photos with a QR | StoryWall",
+            "description": "Digital invitations with RSVP and guest photos with a QR code, for weddings, baptisms and parties. Guests upload from their phone, no app needed.",
             "siteName": "StoryWall",
-            "imageAlt": "StoryWall guest photo sharing with a QR code"
+            "imageAlt": "StoryWall digital invitations and guest photo sharing with a QR code"
         },
         "hero": {
             "homeLabel": "StoryWall home",
@@ -5838,8 +5838,8 @@
             "closeMenu": "Close menu",
             "nav": ["THE PLATFORM", "HOW IT WORKS", "FEATURES", "PLANS", "LOGIN"],
             "mobileNav": ["The platform", "How it works", "Features", "Plans", "Login"],
-            "title": "All your guests' wedding and event photos, in one place.",
-            "subtitle": "Guests scan a QR code and share from their phone. No app.",
+            "title": "Digital invitations and guest photos, in one place.",
+            "subtitle": "A digital invitation with RSVP for your wedding or baptism. Guests upload photos from their phone with a QR code. No app.",
             "eventTypes": "For weddings, baptisms and parties.",
             "plansCta": "See plans",
             "demoCta": "See the demo",
