@@ -24,12 +24,12 @@ vi.mock('@/hooks/useVendorProfileForm', () => ({ useVendorProfileForm: () => for
 afterEach(cleanup);
 
 describe('VendorProfileSheet', () => {
-    it('shows the fields, the field error, and every type', () => {
+    it('shows the fields and the field error, without a type picker', () => {
         render(<VendorProfileSheet open profile={null} defaultType="MUSIC" onCloseAction={vi.fn()} />);
         expect(screen.getByLabelText(/Vendors\.profile\.businessName/)).toBeTruthy();
         expect(screen.getByLabelText(/Vendors\.profile\.link/)).toBeTruthy();
         expect(screen.getByText('required')).toBeTruthy();
-        expect(screen.getAllByRole('option')).toHaveLength(8);
+        expect(screen.queryByRole('combobox')).toBeNull();
     });
 
     it('picks a logo through a button, with the allowed image types', () => {
