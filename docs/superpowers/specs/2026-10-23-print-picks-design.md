@@ -1,7 +1,7 @@
 # Print picks — design
 
 Date: 2026-10-23
-Status: draft, in review
+Status: approved
 Scope: vendor services (shared infra), phase 1 host print picks, phase 2 guest print picks. Builds on [Vendors in the event](2026-10-19-vendors-in-the-event-design.md), whose "Pro album" row deferred picks and full-quality download to a later phase.
 
 ## Goal
