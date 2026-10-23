@@ -6,6 +6,8 @@ import { useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback, useMemo, useState } from 'react';
 
 import { AdminOrderArrows } from '@/components/admin/AdminOrderArrows';
+import { AdminSortableList } from '@/components/admin/AdminSortableList';
+import { AdminSortableRow } from '@/components/admin/AdminSortableRow';
 import { ModuleEditDrawer } from '@/components/admin/ModuleEditDrawer';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { usePlatformModuleMove } from '@/hooks/useAdminReorder';
@@ -13,6 +15,8 @@ import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { PlatformModuleResponseDto } from '@/lib/api/types';
 import { bySortOrder } from '@/lib/sortOrder';
 import { cn } from '@/lib/utils';
+
+const moduleKeyOf = (module: PlatformModuleResponseDto) => module.moduleKey;
 
 export function ModuleRegistryPanel() {
     const t = useTranslations('AdminPage');
@@ -24,6 +28,7 @@ export function ModuleRegistryPanel() {
     const [selectedModule, setSelectedModule] = useState<PlatformModuleResponseDto | null>(null);
     const modules = useMemo(() => [...modulesResult.data].sort(bySortOrder), [modulesResult.data]);
     const move = usePlatformModuleMove(modules);
+    const rows = move.arrange(modules);
 
     function closeEditor() {
         setSelectedModule(null);
@@ -66,53 +71,60 @@ export function ModuleRegistryPanel() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {modules.map((module, index) => (
-                                    <tr key={module.moduleKey} className="border-b border-border last:border-b-0 hover:bg-canvas/60">
-                                        <td className="max-w-96 px-4 py-2.5">
-                                            <p className="truncate font-semibold text-ink">{module.name}</p>
-                                            {module.description && <p className="truncate text-[11px] text-ink-faint">{module.description}</p>}
-                                        </td>
-                                        <td className="px-3 py-2.5">
-                                            <span
-                                                className={cn(
-                                                    'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold',
-                                                    module.isEnabled
-                                                        ? 'bg-status-good-wash text-status-good'
-                                                        : 'bg-status-neutral-wash text-status-neutral',
-                                                )}
-                                            >
+                                <AdminSortableList ids={rows.map(moduleKeyOf)} disabled={move.isPending} onReorderAction={move.reorder}>
+                                    {rows.map((module, index) => (
+                                        <AdminSortableRow
+                                            key={module.moduleKey}
+                                            id={module.moduleKey}
+                                            name={module.name}
+                                            className="border-b border-border last:border-b-0 hover:bg-canvas/60"
+                                        >
+                                            <td className="max-w-96 px-4 py-2.5">
+                                                <p className="truncate font-semibold text-ink">{module.name}</p>
+                                                {module.description && <p className="truncate text-[11px] text-ink-faint">{module.description}</p>}
+                                            </td>
+                                            <td className="px-3 py-2.5">
                                                 <span
                                                     className={cn(
-                                                        'h-1.5 w-1.5 rounded-full',
-                                                        module.isEnabled ? 'bg-status-good' : 'bg-status-neutral',
+                                                        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold',
+                                                        module.isEnabled
+                                                            ? 'bg-status-good-wash text-status-good'
+                                                            : 'bg-status-neutral-wash text-status-neutral',
                                                     )}
+                                                >
+                                                    <span
+                                                        className={cn(
+                                                            'h-1.5 w-1.5 rounded-full',
+                                                            module.isEnabled ? 'bg-status-good' : 'bg-status-neutral',
+                                                        )}
+                                                    />
+                                                    {module.isEnabled ? t('modules.enabled') : t('modules.disabled')}
+                                                </span>
+                                            </td>
+                                            <td className="px-3 py-2.5">
+                                                <AdminOrderArrows
+                                                    id={module.moduleKey}
+                                                    name={module.name}
+                                                    isFirst={index === 0}
+                                                    isLast={index === modules.length - 1}
+                                                    disabled={move.isPending}
+                                                    onMoveAction={move.move}
                                                 />
-                                                {module.isEnabled ? t('modules.enabled') : t('modules.disabled')}
-                                            </span>
-                                        </td>
-                                        <td className="px-3 py-2.5">
-                                            <AdminOrderArrows
-                                                id={module.moduleKey}
-                                                name={module.name}
-                                                isFirst={index === 0}
-                                                isLast={index === modules.length - 1}
-                                                disabled={move.isPending}
-                                                onMoveAction={move.move}
-                                            />
-                                        </td>
-                                        <td className="px-3 py-2.5 text-right">
-                                            <button
-                                                type="button"
-                                                data-module-key={module.moduleKey}
-                                                onClick={handleEditClick}
-                                                aria-label={t('modules.edit')}
-                                                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-canvas hover:text-ink"
-                                            >
-                                                <Pencil className="h-3.5 w-3.5" />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
+                                            </td>
+                                            <td className="px-3 py-2.5 text-right">
+                                                <button
+                                                    type="button"
+                                                    data-module-key={module.moduleKey}
+                                                    onClick={handleEditClick}
+                                                    aria-label={t('modules.edit')}
+                                                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-canvas hover:text-ink"
+                                                >
+                                                    <Pencil className="h-3.5 w-3.5" />
+                                                </button>
+                                            </td>
+                                        </AdminSortableRow>
+                                    ))}
+                                </AdminSortableList>
                             </tbody>
                         </table>
                     </div>

@@ -4,7 +4,8 @@ import { QrCode } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
-import { QrLinkRow, ShareLanguageNote } from '@/components/manage/invitations';
+import { QrLinkRow } from '@/components/manage/invitations/QrLinkRow';
+import { ShareLanguageNote } from '@/components/manage/invitations/ShareLanguageNote';
 import { QrLinksListSkeleton } from '@/components/manage/ManageSkeletons';
 import { UsagePanel } from '@/components/plan/UsagePanel';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
@@ -22,16 +23,19 @@ import { routes } from '@/lib/routes';
 export function InvitationsQrScreen() {
     const t = useTranslations('ManagePage');
     const tPage = useTranslations('InvitationsQrPage');
-    const { activeEvent, eventId } = useEventRouteContext();
+    const { activeEvent, eventId, isHost } = useEventRouteContext();
+    // A planner (QR_READ) sees the links only: stats, usage, upgrades and edits stay with hosts.
+    const hostEventId = isHost ? eventId : null;
     const { data: qrLinks = [], isLoading: qrLinksLoading } = useEventQrLinks(eventId);
-    const { data: qrLinkStats = [], isLoading: statsLoading } = useEventQrLinkStats(eventId);
-    const { data: eventUsage = null, isLoading: usageLoading } = useEventUsage(eventId);
+    const { data: qrLinkStats = [], isLoading: statsLoading } = useEventQrLinkStats(hostEventId);
+    const { data: eventUsage = null, isLoading: usageLoading } = useEventUsage(hostEventId);
     const isPrimaryHost = useIsPrimaryHost();
-    const { data: upgradeOptions = [], isLoading: upgradesLoading } = useUpgradeOptions(eventId, isPrimaryHost);
+    const { data: upgradeOptions = [], isLoading: upgradesLoading } = useUpgradeOptions(eventId, isHost && isPrimaryHost);
     const { data: appConfig } = useAppConfig();
     const [limitNotice, setLimitNotice] = useState<string | null>(null);
 
-    const canWrite = isEventWritable(activeEvent?.status);
+    const isWritable = isEventWritable(activeEvent?.status);
+    const canWrite = isHost && isWritable;
     const memberLimit = eventUsage?.memberLimit ?? null;
     const memberCount = eventUsage?.memberCount ?? 0;
     const isFull = memberLimit !== null && memberCount >= memberLimit;
@@ -80,7 +84,7 @@ export function InvitationsQrScreen() {
 
                     <p className="mb-3 text-xs text-ink-muted">{t('qr.summary', { count: shareQrLinks.length })}</p>
 
-                    {!canWrite && (
+                    {isHost && !isWritable && (
                         <p className="mb-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('qr.readOnly')}</p>
                     )}
 

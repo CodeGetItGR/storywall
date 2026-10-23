@@ -4,7 +4,9 @@ import { BarChart3, FileText, List } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
-import { RsvpListPanel, RsvpReportsPanel, RsvpStatsPanel } from '@/components/manage/rsvp';
+import { RsvpListPanel } from '@/components/manage/rsvp/RsvpListPanel';
+import { RsvpReportsPanel } from '@/components/manage/rsvp/RsvpReportsPanel';
+import { RsvpStatsPanel } from '@/components/manage/rsvp/RsvpStatsPanel';
 import { type SubTabItem, SubTabs } from '@/components/ui/SubTabs';
 import type { RosterMember, RosterRsvp } from '@/hooks/useRsvpRoster';
 import { useRsvpSubTab } from '@/hooks/useRsvpSubTab';

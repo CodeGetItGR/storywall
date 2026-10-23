@@ -1,4 +1,5 @@
 import type { RsvpReportType } from '@/lib/api/types';
+import { DEFAULT_DEMO_EVENT_TYPE_SLUG } from '@/lib/demo/demoEventTypes';
 import { demoEventBasePath } from '@/lib/demo/demoRouting';
 
 type RouteQueryValue = string | number | boolean | null | undefined;
@@ -35,26 +36,37 @@ export const routes = {
     verifyEmail: '/verify-email',
     forgotPassword: '/forgot-password',
     resetPassword: '/reset-password',
-    demo: '/demo',
-    demoEventType: (eventTypeSlug: string) => `/demo/${eventTypeSlug}`,
+    // Straight to the demo's feed: /demo and /demo/{slug} only redirect there, which costs a round trip.
+    demo: `/demo/${DEFAULT_DEMO_EVENT_TYPE_SLUG}/feed`,
+    demoEventType: (eventTypeSlug: string) => `/demo/${eventTypeSlug}/feed`,
     invite: '/invite',
     home: '/home',
     profile: '/profile',
     events: {
         // run: the wizard run the entry belongs to (see CREATE_EVENT_RUN_PARAM).
-        new: (params: { step?: string | null; run?: string | null; type?: string | null; plan?: string | null; option?: string | null } = {}) =>
-            withQuery('/events/new', params),
+        new: (
+            params: {
+                step?: string | null;
+                run?: string | null;
+                type?: string | null;
+                plan?: string | null;
+                option?: string | null;
+                code?: string | null;
+            } = {},
+        ) => withQuery('/events/new', params),
         manage: (eventId: string, params: { tab?: ManageTab | null; section?: string | null; cancelled?: boolean | null } = {}) =>
             withQuery(`${eventBasePath(eventId)}/manage`, params),
         // Share/join QR link management — pulled out of the Members section the
         // same way the gallery upload code lives on its own page, linked from a
         // compact pointer instead of an embedded panel.
         invitationsQr: (eventId: string) => `${eventBasePath(eventId)}/manage/qr`,
+        // The host's vendor links and joined vendors (vendors spec 2026-10-19); VENDOR_JOINED links here.
+        manageVendors: (eventId: string) => `${eventBasePath(eventId)}/manage/vendors`,
         // The printable gift claim card.
         giftCard: (eventId: string) => `${eventBasePath(eventId)}/manage/gift/card`,
         // `from` records where the report was opened from so Close (useRsvpReportPage)
         // can return there; omitted (manage) is the default and carries no param.
-        rsvpReport: (eventId: string, reportType: RsvpReportType, from?: 'tools') =>
+        rsvpReport: (eventId: string, reportType: RsvpReportType, from?: 'tools' | 'vendor') =>
             withQuery(`${eventBasePath(eventId)}/manage/rsvp/reports/${reportType}`, { from }),
         tools: {
             rsvp: (eventId: string, params: { section?: string | null } = {}) => withQuery(`${eventBasePath(eventId)}/tools/rsvp`, params),
@@ -68,6 +80,10 @@ export const routes = {
             gifts: (eventId: string) => `${eventBasePath(eventId)}/tools/gifts`,
             schedule: (eventId: string, params: { section?: string | null } = {}) => withQuery(`${eventBasePath(eventId)}/tools/schedule`, params),
             wishbook: (eventId: string) => `${eventBasePath(eventId)}/tools/wishbook`,
+            vendors: (eventId: string) => `${eventBasePath(eventId)}/tools/vendors`,
+            vendorMe: (eventId: string) => `${eventBasePath(eventId)}/tools/vendors/me`,
+            playlistLive: (eventId: string) => `${eventBasePath(eventId)}/tools/playlist/live`,
+            announcement: (eventId: string) => `${eventBasePath(eventId)}/tools/announcement`,
         },
         storySchedule: (eventId: string) => `${eventBasePath(eventId)}/story/schedule`,
         // The .ics file for one calendar entry; no session = the event's own date.
@@ -110,3 +126,8 @@ export const routes = {
         register: (params: { invite?: string | null; email?: string | null; next?: string | null } = {}) => withQuery('/register', params),
     },
 } as const;
+
+// A real event's feed, /events/{eventId}/feed (not the demo's).
+export function isEventFeedPath(pathname: string | null): boolean {
+    return /^\/events\/[^/]+\/feed\/?$/.test(pathname ?? '');
+}

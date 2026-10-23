@@ -1,7 +1,7 @@
 import { ChevronRight, Images, QrCode } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+import { AppLink } from '@/components/ui/AppLink';
 import type { QrLinkResponseDto } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 
@@ -28,7 +28,7 @@ export function QrLinksSection({ eventId, showGallery, galleryQrLink, showInvita
             <p className="mb-2 text-sm font-semibold text-ink">{t('title')}</p>
             <div className="space-y-1.5">
                 {showGallery && (
-                    <Link
+                    <AppLink
                         href={routes.events.tools.galleryQr(eventId)}
                         className="group flex items-center gap-2 rounded-md bg-surface-muted/70 px-3 py-2.5"
                     >
@@ -38,10 +38,10 @@ export function QrLinksSection({ eventId, showGallery, galleryQrLink, showInvita
                             className="h-3.5 w-3.5 shrink-0 text-ink-faint transition-colors group-hover:text-ink-muted"
                             aria-hidden="true"
                         />
-                    </Link>
+                    </AppLink>
                 )}
                 {showInvitations && (
-                    <Link
+                    <AppLink
                         href={routes.events.invitationsQr(eventId)}
                         className="group flex items-center gap-2 rounded-md bg-surface-muted/70 px-3 py-2.5"
                     >
@@ -53,7 +53,7 @@ export function QrLinksSection({ eventId, showGallery, galleryQrLink, showInvita
                             className="h-3.5 w-3.5 shrink-0 text-ink-faint transition-colors group-hover:text-ink-muted"
                             aria-hidden="true"
                         />
-                    </Link>
+                    </AppLink>
                 )}
             </div>
         </div>

@@ -10,3 +10,8 @@ export function registerDemoEventRoute(eventId: string, eventTypeSlug: string): 
 export function demoEventBasePath(eventId: string): string | null {
     return demoBasePaths.get(eventId) ?? null;
 }
+
+// /demo and every page under it.
+export function isDemoPath(pathname: string | null): boolean {
+    return pathname === '/demo' || (pathname?.startsWith('/demo/') ?? false);
+}

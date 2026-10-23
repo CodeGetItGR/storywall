@@ -19,6 +19,9 @@ export const appConfigKeys = {
     all: ['app-config'] as const,
 };
 
+export const APP_CONFIG_STALE_TIME = 5 * 60 * 1000;
+export const APP_CONFIG_GC_TIME = 30 * 60 * 1000;
+
 // After an admin edit that changes public config: refetch it here and drop the
 // server-cached copy the landing page renders from.
 export function invalidatePublicConfig(queryClient: QueryClient): void {
@@ -40,8 +43,8 @@ export function useAppConfig(options: { enabled?: boolean } = {}) {
     return useQuery({
         queryKey: appConfigKeys.all,
         queryFn: fetchAppConfig,
-        staleTime: 5 * 60 * 1000,
-        gcTime: 30 * 60 * 1000,
+        staleTime: APP_CONFIG_STALE_TIME,
+        gcTime: APP_CONFIG_GC_TIME,
         enabled: options.enabled ?? true,
     });
 }

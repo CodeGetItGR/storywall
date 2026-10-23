@@ -1,13 +1,13 @@
 'use client';
 
 import { Heart, Plus } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { HomeHorizontalScroller } from '@/components/home/HomeHorizontalScroller';
 import { EventQuickCardSkeleton, EventQuickCardsSkeleton } from '@/components/home/HomeSkeletons';
+import { AppLink } from '@/components/ui/AppLink';
 import type { EventGridItem } from '@/hooks/useEventGridItems';
 import { useEventQuickCard } from '@/hooks/useEventQuickCard';
 import type { EventCardStatus } from '@/lib/eventLifecycle';
@@ -25,7 +25,7 @@ function EventQuickCard(item: EventGridItem) {
     const { href, coverUrl, title, detailLabel, status, statusLabel, dateLabel } = useEventQuickCard(item);
 
     return (
-        <Link
+        <AppLink
             href={href}
             className="group relative h-72 w-52 shrink-0 overflow-hidden rounded-lg bg-surface-muted transition-transform hover:-translate-y-0.5"
         >
@@ -61,7 +61,7 @@ function EventQuickCard(item: EventGridItem) {
                     </p>
                 ) : null}
             </div>
-        </Link>
+        </AppLink>
     );
 }
 
@@ -93,7 +93,7 @@ export function EventsQuickRow({
                 <h2 id="home-events-heading" className="text-xs font-semibold tracking-wide text-ink-faint uppercase">
                     {tEvents('yourEvents')}
                 </h2>
-                <Link
+                <AppLink
                     href={canCreateEvent ? routes.events.new() : '#'}
                     aria-disabled={!canCreateEvent}
                     onClick={onNewEventClick}
@@ -104,7 +104,7 @@ export function EventsQuickRow({
                 >
                     <Plus className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
                     <span>{t('newEvent')}</span>
-                </Link>
+                </AppLink>
             </div>
 
             {/* Event shortcuts */}

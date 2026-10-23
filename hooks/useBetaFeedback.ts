@@ -1,11 +1,11 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
 import { useCallback, useState } from 'react';
 
 import { useAppBetaFeedbackConfig, useAppErrorTrackingEnabled } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { useCrashReporter } from '@/hooks/useCrashReporter';
+import { useIsDemoRoute } from '@/hooks/useIsDemoRoute';
 import { useRouteTemplateSync } from '@/hooks/useRouteTemplateSync';
 import { useRouteEventId } from '@/providers/EventProvider';
 
@@ -18,7 +18,7 @@ export function useBetaFeedback() {
     const config = useAppBetaFeedbackConfig();
     const errorTrackingEnabled = useAppErrorTrackingEnabled();
     const { user } = useAuth();
-    const isDemoRoute = usePathname()?.startsWith('/demo') ?? false;
+    const isDemoRoute = useIsDemoRoute();
     const eventId = useRouteEventId();
     const [open, setOpen] = useState(false);
 

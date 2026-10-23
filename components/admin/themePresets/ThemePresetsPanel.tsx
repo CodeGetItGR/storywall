@@ -87,6 +87,7 @@ export function ThemePresetsPanel() {
                         eventTypeLabels={catalog.eventTypeLabels}
                         canReorder={catalog.canReorder}
                         onMoveAction={catalog.movePreset}
+                        onReorderAction={catalog.reorderPreset}
                         onEditAction={catalog.openEdit}
                     />
                 )}

@@ -65,6 +65,27 @@ describe('GalleryPage (server)', () => {
         expect(mocks.serverGet).not.toHaveBeenCalled();
     });
 
+    it("seeds a guest's gallery when members get the download", async () => {
+        mocks.resolveServerEventContext.mockResolvedValue({ ...hostContext, isHost: false });
+        mocks.resolveServerEventDetail.mockResolvedValue({
+            ...liveEvent,
+            modules: [{ moduleKey: 'gallery', isAvailable: true, isEnabled: true, configuration: { memberArchiveAfterEnd: true } }],
+        });
+
+        expect(seededQueries(await visit())).toEqual([{ key: ['events', 'e1', 'media'], data: { pages: [firstPage], pageParams: [0] } }]);
+    });
+
+    it('prefetches nothing without a session', async () => {
+        mocks.resolveServerEventContext.mockResolvedValue(null);
+        mocks.resolveServerEventDetail.mockResolvedValue({
+            ...liveEvent,
+            modules: [{ moduleKey: 'gallery', isAvailable: true, isEnabled: true, configuration: { memberArchiveAfterEnd: true } }],
+        });
+
+        expect(seededQueries(await visit())).toEqual([]);
+        expect(mocks.serverGet).not.toHaveBeenCalled();
+    });
+
     it("prefetches nothing when the plan doesn't include the gallery", async () => {
         mocks.resolveServerEventDetail.mockResolvedValue({ ...liveEvent, modules: [{ moduleKey: 'gallery', isAvailable: false, isEnabled: true }] });
 
@@ -83,5 +104,35 @@ describe('GalleryPage (server)', () => {
         mocks.serverGet.mockRejectedValue(new Error('Server prefetch failed'));
 
         expect(seededQueries(await visit())).toEqual([]);
+    });
+
+    describe('with the Pro album', () => {
+        const vendors = { moduleKey: 'vendors', isAvailable: true, isEnabled: true, configuration: {} };
+
+        it('also seeds the Pro first page when the vendors module is on', async () => {
+            mocks.resolveServerEventDetail.mockResolvedValue({ ...liveEvent, modules: [...liveEvent.modules, vendors] });
+
+            expect(seededQueries(await visit())).toEqual([
+                { key: ['events', 'e1', 'media'], data: { pages: [firstPage], pageParams: [0] } },
+                { key: ['events', 'e1', 'media', 'PRO'], data: { pages: [firstPage], pageParams: [0] } },
+            ]);
+            expect(mocks.serverGet).toHaveBeenCalledWith('/api/events/e1/media?page=0&size=30', 'token-1');
+            expect(mocks.serverGet).toHaveBeenCalledWith('/api/events/e1/media?page=0&size=30&collection=PRO', 'token-1');
+        });
+
+        it('fetches only the guest page without the vendors module', async () => {
+            await visit();
+
+            expect(mocks.serverGet).toHaveBeenCalledTimes(1);
+        });
+
+        it('keeps the guest page when the Pro page fails', async () => {
+            mocks.resolveServerEventDetail.mockResolvedValue({ ...liveEvent, modules: [...liveEvent.modules, vendors] });
+            mocks.serverGet.mockImplementation((path: string) =>
+                path.includes('collection=PRO') ? Promise.reject(new Error('Pro prefetch failed')) : Promise.resolve(firstPage),
+            );
+
+            expect(seededQueries(await visit())).toEqual([{ key: ['events', 'e1', 'media'], data: { pages: [firstPage], pageParams: [0] } }]);
+        });
     });
 });

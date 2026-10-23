@@ -96,6 +96,26 @@ describe('proxy', () => {
         expect(location.pathname).toBe('/login');
         expect(location.searchParams.get('next')).toBe('/events/new?step=plan');
     });
+
+    it('moves a carried signup source from next onto the login page', async () => {
+        const src = encodeURIComponent('{"landingPage":"/"}');
+        const res = await proxy(request({}, `http://localhost/events/new?type=wedding&src=${src}`));
+        const location = new URL(res.headers.get('location') ?? '');
+        expect(location.searchParams.get('next')).toBe('/events/new?type=wedding');
+        expect(location.searchParams.get('src')).toBe('{"landingPage":"/"}');
+    });
+
+    it('renders an English occasion page in English whatever the cookie says', async () => {
+        const req = request({}, 'http://localhost/weddings');
+        req.cookies.set(localeCookieName, 'el');
+        const res = await proxy(req);
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('en');
+    });
+
+    it('renders a Greek occasion page in Greek', async () => {
+        const res = await proxy(request({}, 'http://localhost/el/gamos'));
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('el');
+    });
 });
 
 describe('proxy landing locale', () => {
@@ -175,5 +195,35 @@ describe('proxy shared link locale', () => {
     it('ignores the parameter outside shared links', async () => {
         const res = await proxy(sharedLinkRequest('http://localhost/login?lang=el'));
         expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBeNull();
+    });
+});
+
+describe('proxy partner page locale', () => {
+    function partnerRequest(url: string, acceptLanguage: string) {
+        return new NextRequest(url, { headers: { 'accept-language': acceptLanguage } });
+    }
+
+    it('renders /el/epaggelmaties in Greek for an English browser', async () => {
+        const res = await proxy(partnerRequest('http://localhost/el/epaggelmaties', 'en-US'));
+        expect(res.status).toBe(200);
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('el');
+    });
+
+    it('renders /for-business in English for a Greek browser, without redirecting', async () => {
+        const res = await proxy(partnerRequest('http://localhost/for-business', 'el-GR'));
+        expect(res.status).toBe(200);
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('en');
+    });
+
+    it('renders /el/qr-code-gamou in Greek for an English browser', async () => {
+        const res = await proxy(partnerRequest('http://localhost/el/qr-code-gamou', 'en-US'));
+        expect(res.status).toBe(200);
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('el');
+    });
+
+    it('renders /wedding-qr-code in English for a Greek browser, without redirecting', async () => {
+        const res = await proxy(partnerRequest('http://localhost/wedding-qr-code', 'el-GR'));
+        expect(res.status).toBe(200);
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('en');
     });
 });

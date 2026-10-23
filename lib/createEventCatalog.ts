@@ -26,6 +26,11 @@ const CREATE_EVENT_CATALOG: Partial<Record<EventTypeConvention, CreateEventCatal
     },
 };
 
+// Every event type gets a main session; types without a catalog entry use initialSessions.<type>.title.
+export function getInitialSessionTitleKey(eventType: EventTypeConvention): string {
+    return CREATE_EVENT_CATALOG[eventType]?.initialSessionTitleKey ?? `initialSessions.${eventType}.title`;
+}
+
 export function getCreateEventCatalogEntry(eventType: EventTypeConvention): CreateEventCatalogEntry | undefined {
     return CREATE_EVENT_CATALOG[eventType];
 }

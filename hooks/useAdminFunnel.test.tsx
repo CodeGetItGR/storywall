@@ -24,14 +24,16 @@ beforeEach(() => {
 
 describe('funnel query keys', () => {
     it('nest under the metrics key so a metrics refresh covers them', () => {
-        expect(adminKeys.funnel(null, null).slice(0, 2)).toEqual(adminKeys.metrics);
-        expect(adminKeys.funnelCohorts(12).slice(0, 2)).toEqual(adminKeys.metrics);
-        expect(adminKeys.funnel('a', 'b')).not.toEqual(adminKeys.funnel('a', null));
+        expect(adminKeys.funnel(null, null, null).slice(0, 2)).toEqual(adminKeys.metrics);
+        expect(adminKeys.funnelCohorts(12, null).slice(0, 2)).toEqual(adminKeys.metrics);
+        expect(adminKeys.funnelChannels(null, null).slice(0, 2)).toEqual(adminKeys.metrics);
+        expect(adminKeys.funnel('a', 'b', null)).not.toEqual(adminKeys.funnel('a', null, null));
+        expect(adminKeys.funnel('a', 'b', 'SOCIAL')).not.toEqual(adminKeys.funnel('a', 'b', null));
     });
 
     it('are refreshed by invalidating the metrics key', async () => {
         const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-        const { result } = renderHook(() => [useAdminFunnel(null, null), useAdminFunnelCohorts(26)] as const, { wrapper: wrapperFor(client) });
+        const { result } = renderHook(() => [useAdminFunnel(null, null, null), useAdminFunnelCohorts(26, null)] as const, { wrapper: wrapperFor(client) });
         await waitFor(() => expect(result.current[0].isSuccess && result.current[1].isSuccess).toBe(true));
 
         apiGet.mockClear();
@@ -45,7 +47,7 @@ describe('funnel query keys', () => {
 describe('useAdminFunnel', () => {
     it('does not call the backend for an invalid range', () => {
         const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-        renderHook(() => useAdminFunnel('2026-02-01T00:00:00Z', '2026-01-01T00:00:00Z', { enabled: false }), { wrapper: wrapperFor(client) });
+        renderHook(() => useAdminFunnel('2026-02-01T00:00:00Z', '2026-01-01T00:00:00Z', null, { enabled: false }), { wrapper: wrapperFor(client) });
         expect(apiGet).not.toHaveBeenCalled();
     });
 });

@@ -1,7 +1,7 @@
 import { ChevronRight } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+import { AppLink } from '@/components/ui/AppLink';
 import type { WishbookEntryResponseDto } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 
@@ -17,13 +17,13 @@ export function WishbookSummarySection({ eventId, title, entries, total }: Wishb
 
     return (
         <div>
-            <Link
+            <AppLink
                 href={routes.events.tools.wishbook(eventId)}
                 className="group mb-2 flex items-center gap-1 text-sm font-semibold text-ink hover:text-ink-muted"
             >
                 {title}
                 <ChevronRight className="h-3.5 w-3.5 shrink-0 text-ink-faint transition-colors group-hover:text-ink-muted" aria-hidden="true" />
-            </Link>
+            </AppLink>
             <div className="space-y-2">
                 {total === 0 ? (
                     <p className="rounded-md bg-surface-muted/70 px-3 py-2.5 text-sm text-ink-faint">{t('empty')}</p>

@@ -1,13 +1,14 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { MdLogout } from 'react-icons/md';
 
+import { AppLink } from '@/components/ui/AppLink';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsDemoRoute } from '@/hooks/useIsDemoRoute';
 import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
 import { routes } from '@/lib/routes';
@@ -25,7 +26,7 @@ export function AccountLogoutButton({
     const locale = useLocale() as Locale;
     const router = useRouter();
     // The demo has no real session to end; leaving it is the exit.
-    const isDemoRoute = usePathname()?.startsWith('/demo') ?? false;
+    const isDemoRoute = useIsDemoRoute();
     const { logout } = useAuth();
     const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -58,7 +59,7 @@ export function AccountLogoutButton({
 
     if (isDemoRoute) {
         return (
-            <Link
+            <AppLink
                 href={getPublicLandingPath(locale)}
                 aria-label={variant === 'sidebar' ? undefined : tDemo('exitDemo')}
                 onClick={onLogoutAction}
@@ -66,7 +67,7 @@ export function AccountLogoutButton({
             >
                 <MdLogout className={iconClassName} aria-hidden="true" />
                 {variant === 'sidebar' && tDemo('exitDemo')}
-            </Link>
+            </AppLink>
         );
     }
 

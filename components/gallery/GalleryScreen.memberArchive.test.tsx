@@ -27,7 +27,7 @@ vi.mock('@/components/gallery/GalleryArchiveDownloadModal', () => ({ GalleryArch
 vi.mock('@/components/gallery/GalleryMediaGrid', () => ({ GalleryMediaGrid: () => null }));
 vi.mock('@/components/gallery/GallerySelectionActions', () => ({ GallerySelectionActions: () => null }));
 vi.mock('@/components/gallery/GallerySelectionBar', () => ({ GallerySelectionBar: () => null }));
-vi.mock('@/components/gallery/GalleryUploadSection', () => ({ GalleryUploadSection: () => null }));
+vi.mock('@/components/gallery/GalleryUploadSection', () => ({ GalleryUploadSection: () => <div data-testid="upload-section" /> }));
 vi.mock('@/components/gallery/MemberArchiveModal', () => ({
     MemberArchiveModal: function MemberArchiveModal() {
         useEffect(() => {
@@ -46,6 +46,7 @@ vi.mock('@/hooks/useGalleryScreen', () => ({
         isHost: mocks.isHost,
         isDeleted: false,
         galleryEnabled: true,
+        showUpload: mocks.isHost,
         canUpload: false,
         showArchiveDownload: mocks.isHost,
         showMemberArchive: mocks.showMemberArchive,
@@ -87,6 +88,13 @@ describe('GalleryScreen member archive', () => {
         render(<GalleryScreen />);
 
         expect(screen.queryByRole('button', { name: /downloadGallery/ })).toBeNull();
+        expect(screen.getByTestId('upload-section')).toBeTruthy();
+    });
+
+    it('gives a guest no upload box', () => {
+        render(<GalleryScreen />);
+
+        expect(screen.queryByTestId('upload-section')).toBeNull();
     });
 
     // A fresh modal per opening, so an error from the last visit is not shown again.

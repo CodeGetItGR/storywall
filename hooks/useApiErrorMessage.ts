@@ -16,6 +16,7 @@ import {
     isRateLimitedError,
 } from '@/lib/api/errors';
 import { formatDate } from '@/lib/datetime';
+import { INCIDENT_PAUSED_ERROR_CODE } from '@/lib/incident';
 
 // Codes whose backend detail beats our fixed copy: it arrives in the user's language (the client
 // sends Accept-Language) and is more specific (the missing letters, the file's actual size, the
@@ -40,6 +41,7 @@ export function useApiErrorMessage() {
 
     const describe = useCallback(
         (error: unknown, fallback?: string): string => {
+            if (getErrorCode(error) === INCIDENT_PAUSED_ERROR_CODE) return t('incidentPaused');
             if (getErrorCode(error) === ERROR_CODES.EVENT_NOT_ACTIVE) return t('eventNotActive');
             if (getErrorCode(error) === ERROR_CODES.COLLABORATION_CODE_NOT_VALID) return getErrorMessage(error, t('collaborationCodeNotValid'));
             if (getErrorCode(error) === ERROR_CODES.HOST_TRANSFER_WITHDRAWAL_OPEN) {
@@ -54,7 +56,9 @@ export function useApiErrorMessage() {
             if (getErrorCode(error) === ERROR_CODES.MEDIA_ARCHIVE_DOWNLOADS_IN_PROGRESS) return t('mediaArchiveDownloadsInProgress');
             if (getErrorCode(error) === ERROR_CODES.MEDIA_ARCHIVE_DAILY_LIMIT_REACHED) {
                 const seconds = getRetryAfterSeconds(error);
-                return seconds ? t('mediaArchiveDailyLimitReachedWithWait', { hours: Math.ceil(seconds / 3600) }) : t('mediaArchiveDailyLimitReached');
+                return seconds
+                    ? t('mediaArchiveDailyLimitReachedWithWait', { hours: Math.ceil(seconds / 3600) })
+                    : t('mediaArchiveDailyLimitReached');
             }
 
             if (isRateLimitedError(error)) {

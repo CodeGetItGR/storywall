@@ -2,7 +2,6 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
@@ -23,10 +22,14 @@ import { RsvpPrompt } from '@/components/feed/RsvpPrompt';
 import { StoriesRow } from '@/components/feed/StoriesRow';
 import { InstallAppBanner } from '@/components/pwa/InstallAppBanner';
 import { StoryModal } from '@/components/story/StoryModal';
-import { useGiftAccount, useHideMobileTabBarOnScroll } from '@/hooks';
+import { AppLink } from '@/components/ui/AppLink';
+import { VendorProfilePrompt } from '@/components/vendors/VendorProfilePrompt';
 import { eventKeys } from '@/hooks/useEvent';
 import { useFeedItems } from '@/hooks/useFeedItems';
+import { useGiftAccount } from '@/hooks/useGiftAccount';
+import { useHideMobileTabBarOnScroll } from '@/hooks/useHideMobileTabBarOnScroll';
 import { useModuleCopy } from '@/hooks/useModuleCopy';
+import { useRsvpPromptVisible } from '@/hooks/useRsvpPromptVisible';
 import { coverPhotoSettingsHref } from '@/lib/manageSectionTargets';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
@@ -45,7 +48,7 @@ export function FeedPageContent() {
     const refetchedIllustration = useRef<string | null>(null);
     const [storyId, setStoryId] = useState<string | null>(null);
     const [pageLoaded, setPageLoaded] = useState(false);
-    const shouldShowRSVP = moduleFlags.rsvp && !isHost && currentMemberRsvpId === null;
+    const shouldShowRSVP = useRsvpPromptVisible({ eventId, isHost, rsvpAvailable: moduleFlags.rsvp, rsvpId: currentMemberRsvpId });
 
     useEffect(() => {
         const markLoaded = () => setPageLoaded(true);
@@ -94,13 +97,13 @@ export function FeedPageContent() {
                         <>
                             <EventSessionActionButtons event={event} />
                             {moduleFlags.wishlist && !gifts.isLoading && gifts.data && (
-                                <Link
+                                <AppLink
                                     href={routes.events.tools.gifts(eventId)}
                                     aria-label={giftName}
                                     className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-background/92 text-ink shadow-[0_8px_22px_rgba(36,31,26,0.18)] transition-transform hover:-translate-y-0.5"
                                 >
                                     <Image src="/icons/present.svg" alt="" width={22} height={22} className="h-5 w-5" unoptimized />
-                                </Link>
+                                </AppLink>
                             )}
                         </>
                     }
@@ -167,6 +170,9 @@ export function FeedPageContent() {
 
             {/* Partner card prompt */}
             {isHost && <PartnerBrandingPromptModal eventId={eventId} prompt={event.partnerBrandingPrompt} />}
+
+            {/* Vendor profile prompt */}
+            {!isHost && <VendorProfilePrompt eventId={eventId} />}
         </div>
     );
 }

@@ -1,13 +1,14 @@
 'use client';
 
-import { Music, Plus } from 'lucide-react';
+import { ListMusic, Music, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { PiMusicNotesPlusDuotone } from 'react-icons/pi';
 
-import { PlaylistItemRow } from '@/components/playlist';
+import { PlaylistItemRow } from '@/components/playlist/PlaylistItemRow';
 import { PlaylistListSkeleton } from '@/components/playlist/PlaylistSkeletons';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
+import { AppLink } from '@/components/ui/AppLink';
 import { useActiveModuleCopy } from '@/hooks/useModuleCopy';
 import type { PlaylistSuggestionResponseDto } from '@/lib/api/types';
 import { PLAYLIST_TOP_RANK_COUNT, shouldShowPlaylistTopRanks } from '@/lib/playlistRanking';
@@ -21,6 +22,8 @@ interface PlaylistContentProps {
     suggestions: PlaylistSuggestionResponseDto[];
     suggestionsLoading: boolean;
     showTitleIcon?: boolean;
+    // Hosts and DJs get a link to the live list.
+    showLiveLink?: boolean;
 }
 
 export function PlaylistContent({
@@ -31,8 +34,10 @@ export function PlaylistContent({
     suggestions,
     suggestionsLoading,
     showTitleIcon = false,
+    showLiveLink = false,
 }: PlaylistContentProps) {
     const t = useTranslations('PlaylistPage');
+    const tVendors = useTranslations('Vendors');
     const playlistCopy = useActiveModuleCopy('playlist');
     const showTopRanks = shouldShowPlaylistTopRanks(suggestions);
 
@@ -46,17 +51,33 @@ export function PlaylistContent({
             backLabel={t('backToFeed')}
             backHref={routes.events.feed(eventId)}
             action={
-                suggestions.length > 0 ? (
-                    <button
-                        type="button"
-                        onClick={onSuggest}
-                        disabled={!canSuggest}
-                        aria-label={t('suggestASong')}
-                        className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold text-white transition-all bg-gradient-brand hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                        <Plus className="h-4 w-4" />
-                        {t('suggest')}
-                    </button>
+                showLiveLink || suggestions.length > 0 ? (
+                    <div className="flex items-center gap-2">
+                        {/* Live list */}
+                        {showLiveLink && (
+                            <AppLink
+                                href={routes.events.tools.playlistLive(eventId)}
+                                className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-semibold text-ink focus-ring"
+                            >
+                                <ListMusic className="h-4 w-4" aria-hidden="true" />
+                                {tVendors('live.open')}
+                            </AppLink>
+                        )}
+
+                        {/* Suggest */}
+                        {suggestions.length > 0 && (
+                            <button
+                                type="button"
+                                onClick={onSuggest}
+                                disabled={!canSuggest}
+                                aria-label={t('suggestASong')}
+                                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold text-white transition-all bg-gradient-brand hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                <Plus className="h-4 w-4" />
+                                {t('suggest')}
+                            </button>
+                        )}
+                    </div>
                 ) : undefined
             }
         >

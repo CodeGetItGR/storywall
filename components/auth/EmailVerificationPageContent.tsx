@@ -1,10 +1,10 @@
 'use client';
 
 import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { AuthLayout } from '@/components/auth/AuthLayout';
+import { AppLink } from '@/components/ui/AppLink';
 import { useVerifyEmail } from '@/hooks/useVerifyEmail';
 import { routes } from '@/lib/routes';
 
@@ -33,12 +33,12 @@ export function EmailVerificationPageContent() {
 
             {/* Next action */}
             {!isPending && (
-                <Link
+                <AppLink
                     href={routes.login}
                     className="mt-7 flex w-full items-center justify-center rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
                 >
                     {t('signIn')}
-                </Link>
+                </AppLink>
             )}
         </AuthLayout>
     );

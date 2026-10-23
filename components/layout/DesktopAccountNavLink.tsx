@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
-import Link from 'next/link';
 
+import { AppLink } from '@/components/ui/AppLink';
 import { cn } from '@/lib/utils';
 
 export function DesktopAccountNavLink({
@@ -22,7 +22,7 @@ export function DesktopAccountNavLink({
     const badge = badgeCount > 9 ? '9+' : String(badgeCount);
 
     return (
-        <Link
+        <AppLink
             href={href}
             aria-current={active ? 'page' : undefined}
             aria-label={expanded ? undefined : label}
@@ -57,6 +57,6 @@ export function DesktopAccountNavLink({
                     {badge}
                 </span>
             )}
-        </Link>
+        </AppLink>
     );
 }

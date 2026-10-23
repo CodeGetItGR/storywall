@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 import { defaultLocale, type Locale, locales } from '@/i18n/config';
-import { getPublicLandingPath } from '@/i18n/publicLocale';
+import { getForBusinessPath, getPublicLandingPath, getQrWeddingPath } from '@/i18n/publicLocale';
 
 // Single source for the production origin. Canonicals, alternates, the
 // sitemap and structured data all build absolute URLs from it, so it must
@@ -29,6 +29,14 @@ export function absoluteUrl(path: string): string {
 // nothing worth finding in search.
 export const NO_INDEX: Metadata['robots'] = { index: false, follow: true };
 
+// Staging serves the same pages under another host and must never be indexed. app/robots.ts
+// blocks it too; this tag covers a page a crawler reaches anyway.
+export const STAGING_NO_INDEX: Metadata['robots'] = { index: false, follow: false };
+
+export function isStagingSite(): boolean {
+    return process.env.NEXT_PUBLIC_APP_ENV === 'staging';
+}
+
 // The page's own URL, so a `?version=` copy of a legal page counts as the page itself.
 export function canonicalAlternates(path: string): Metadata['alternates'] {
     return { canonical: absoluteUrl(path) };
@@ -44,29 +52,56 @@ export function landingLanguageAlternates(): Record<string, string> {
     return languages;
 }
 
+// Same shape as the landing's: every partner URL plus x-default on the default locale.
+export function forBusinessLanguageAlternates(): Record<string, string> {
+    const languages: Record<string, string> = {};
+    for (const locale of locales) languages[locale] = absoluteUrl(getForBusinessPath(locale));
+    languages['x-default'] = absoluteUrl(getForBusinessPath(defaultLocale));
+    return languages;
+}
+
+// Same shape again for the wedding QR page.
+export function qrWeddingLanguageAlternates(): Record<string, string> {
+    const languages: Record<string, string> = {};
+    for (const locale of locales) languages[locale] = absoluteUrl(getQrWeddingPath(locale));
+    languages['x-default'] = absoluteUrl(getQrWeddingPath(defaultLocale));
+    return languages;
+}
+
 export function ogLocale(locale: Locale): string {
     return locale === 'el' ? 'el_GR' : 'en_US';
 }
 
-type LandingMetadataCopy = {
+export type PageMetadataCopy = {
     title: string;
     description: string;
     siteName: string;
     imageAlt: string;
+    // The searches a page is written for (occasion pages).
+    keywords?: string[];
 };
 
-export function buildLandingMetadata(locale: Locale, copy: LandingMetadataCopy): Metadata {
-    const canonical = absoluteUrl(getPublicLandingPath(locale));
-    const image = { url: absoluteUrl(OG_IMAGE_PATH), ...OG_IMAGE_SIZE, alt: copy.imageAlt };
+type IndexableMetadataInput = {
+    locale: Locale;
+    path: string;
+    languages: Record<string, string>;
+    // Left out when the route has its own opengraph-image file: Next adds that
+    // one itself, under a URL only it knows (route groups get a hash suffix).
+    imagePath?: string;
+    copy: PageMetadataCopy;
+};
+
+// An indexable public page with a self-referential canonical and its language twins.
+export function buildIndexableMetadata({ locale, path, languages, imagePath, copy }: IndexableMetadataInput): Metadata {
+    const canonical = absoluteUrl(path);
+    const images = imagePath ? [{ url: absoluteUrl(imagePath), ...OG_IMAGE_SIZE, alt: copy.imageAlt }] : undefined;
 
     return {
         metadataBase: new URL(SITE_URL),
         title: copy.title,
         description: copy.description,
-        alternates: {
-            canonical,
-            languages: landingLanguageAlternates(),
-        },
+        ...(copy.keywords && { keywords: copy.keywords }),
+        alternates: { canonical, languages },
         openGraph: {
             type: 'website',
             url: canonical,
@@ -75,14 +110,50 @@ export function buildLandingMetadata(locale: Locale, copy: LandingMetadataCopy):
             description: copy.description,
             locale: ogLocale(locale),
             alternateLocale: locales.filter((other) => other !== locale).map(ogLocale),
-            images: [image],
+            ...(images && { images }),
         },
         twitter: {
             card: 'summary_large_image',
             title: copy.title,
             description: copy.description,
-            images: [image],
+            ...(images && { images }),
         },
-        robots: { index: true, follow: true },
+        robots: isStagingSite() ? STAGING_NO_INDEX : { index: true, follow: true },
     };
+}
+
+export function buildLandingMetadata(locale: Locale, copy: PageMetadataCopy): Metadata {
+    return buildIndexableMetadata({
+        locale,
+        path: getPublicLandingPath(locale),
+        languages: landingLanguageAlternates(),
+        imagePath: OG_IMAGE_PATH,
+        copy,
+    });
+}
+
+// The partner page's OG image is the opengraph-image.tsx in its own route folder.
+export function buildForBusinessMetadata(locale: Locale, copy: PageMetadataCopy): Metadata {
+    return buildIndexableMetadata({
+        locale,
+        path: getForBusinessPath(locale),
+        languages: forBusinessLanguageAlternates(),
+        copy,
+    });
+}
+
+// The wedding QR page shares the landing's OG image.
+export function buildQrWeddingMetadata(locale: Locale, copy: PageMetadataCopy): Metadata {
+    return buildIndexableMetadata({
+        locale,
+        path: getQrWeddingPath(locale),
+        languages: qrWeddingLanguageAlternates(),
+        imagePath: OG_IMAGE_PATH,
+        copy,
+    });
+}
+
+// JSON-LD for a <script> tag: `<` is escaped so a `</script>` in copy can't close it.
+export function jsonLdHtml(data: unknown): string {
+    return JSON.stringify(data).replace(/</g, '\\u003c');
 }

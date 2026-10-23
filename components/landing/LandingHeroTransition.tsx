@@ -1,8 +1,10 @@
 import { getTranslations } from 'next-intl/server';
 
+import { landingClickAttributes } from '@/lib/landingTracking';
 import { routes } from '@/lib/routes';
 
-export async function LandingHeroTransition() {
+// An occasion page links to its own demo.
+export async function LandingHeroTransition({ href = routes.demo }: { href?: string }) {
     const t = await getTranslations('LandingPage.transition');
 
     return (
@@ -17,7 +19,8 @@ export async function LandingHeroTransition() {
                 </div>
                 <a
                     className="group flex min-h-12.5 flex-none items-center gap-2.5 rounded-full bg-white py-0 pr-3.75 pl-4.25 font-[Arial,Helvetica,sans-serif] text-[10px] leading-normal font-black tracking-widest whitespace-nowrap text-[#151313] no-underline transition-[transform,box-shadow] duration-280 ease-[ease] hover:-translate-y-px hover:shadow-[0_12px_28px_rgba(217,102,74,.18)] motion-reduce:transition-none min-[421px]:min-h-13.5 min-[421px]:gap-3.25 min-[421px]:pr-4.5 min-[421px]:pl-5.25 min-[421px]:text-[11px] min-[761px]:min-h-17 min-[761px]:gap-5.5 min-[761px]:pr-7 min-[761px]:pl-8 min-[761px]:text-[13px] min-[761px]:tracking-[0.13em]"
-                    href={routes.demo}
+                    href={href}
+                    {...landingClickAttributes({ event: 'demo', placement: 'hero_band' })}
                 >
                     <span>{t('cta')}</span>
                     <span

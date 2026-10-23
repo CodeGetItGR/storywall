@@ -87,6 +87,51 @@ describe('api proactive refresh', () => {
     });
 });
 
+// A Content-Type of application/json isn't CORS-safelisted, so on a GET it cost a preflight
+// round trip to Spring for nothing.
+describe('api request headers', () => {
+    beforeEach(() => {
+        clearSession();
+    });
+
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
+    function stubJsonResponse() {
+        const fetchMock = vi.fn(async () => new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } }));
+        vi.stubGlobal('fetch', fetchMock);
+        return fetchMock;
+    }
+
+    function sentContentType(fetchMock: ReturnType<typeof stubJsonResponse>, call = 0): string | undefined {
+        const init = fetchMock.mock.calls[call] as unknown as [string, RequestInit];
+        return (init[1].headers as Record<string, string>)['Content-Type'];
+    }
+
+    it('sends no Content-Type on a request without a body', async () => {
+        const fetchMock = stubJsonResponse();
+
+        await api.get('/api/me');
+        await api.publicGet('/api/config');
+        await api.del('/api/posts/p1');
+
+        expect(sentContentType(fetchMock, 0)).toBeUndefined();
+        expect(sentContentType(fetchMock, 1)).toBeUndefined();
+        expect(sentContentType(fetchMock, 2)).toBeUndefined();
+    });
+
+    it('labels a JSON body as JSON', async () => {
+        const fetchMock = stubJsonResponse();
+
+        await api.post('/api/posts', { content: 'hi' });
+        await api.publicPost('/api/newsletter', { email: 'a@b.c' });
+
+        expect(sentContentType(fetchMock, 0)).toBe('application/json');
+        expect(sentContentType(fetchMock, 1)).toBe('application/json');
+    });
+});
+
 describe('api.publicPostForm', () => {
     afterEach(() => {
         vi.unstubAllGlobals();

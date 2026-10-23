@@ -1,16 +1,18 @@
 'use client';
 
 import { QueryClientProvider } from '@tanstack/react-query';
-import { usePathname } from 'next/navigation';
 import { type ReactNode, useEffect, useState } from 'react';
 
 import { BetaFeedback } from '@/components/betaFeedback/BetaFeedback';
+import { SignupSourceTracker } from '@/components/layout/SignupSourceTracker';
 import { GuidelinesAcceptanceGate, GuidelinesGateSignOutHold } from '@/components/legal/GuidelinesAcceptanceGate';
 import { useAuth } from '@/hooks/useAuth';
 import { useInAppHistoryTracking } from '@/hooks/useInAppHistoryTracking';
+import { useIsDemoRoute } from '@/hooks/useIsDemoRoute';
 import { meQueryKey } from '@/hooks/useMe';
 import { useVisualViewportSync } from '@/hooks/useVisualViewportSync';
 import type { SessionHandoff } from '@/lib/auth/sessionHandoff';
+import { unregisterSiteWideDemoWorker } from '@/lib/demo/mockWorker';
 import { refreshEventOn4015 } from '@/lib/eventSuspension';
 import { reopenAcceptanceGate } from '@/lib/guidelinesAcceptance';
 import { startPwaInstallListening } from '@/lib/pwaInstall';
@@ -18,6 +20,7 @@ import { makeQueryClient } from '@/lib/queryClient';
 import { AppConfigBootstrap } from '@/providers/AppConfigBootstrap';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { ComposerProvider } from '@/providers/ComposerProvider';
+import { DemoRouteAuthScope } from '@/providers/demo/DemoRouteAuthScope';
 import { DocumentTitleSync } from '@/providers/DocumentTitleSync';
 import { EventProvider } from '@/providers/EventProvider';
 import { MobileChromeProvider } from '@/providers/MobileChromeProvider';
@@ -43,7 +46,7 @@ function AccountComposerProvider({ children }: { children: ReactNode }) {
 // handoff: the session the server already holds on a full page load of a
 // signed-in page (see app/(main)/layout.tsx); null everywhere else.
 export function AppProviders({ children, handoff = null }: { children: ReactNode; handoff?: SessionHandoff | null }) {
-    const isDemoRoute = usePathname()?.startsWith('/demo') ?? false;
+    const isDemoRoute = useIsDemoRoute();
     useVisualViewportSync();
     useInAppHistoryTracking();
     const [queryClient] = useState(() => {
@@ -56,6 +59,8 @@ export function AppProviders({ children, handoff = null }: { children: ReactNode
     useEffect(() => reopenAcceptanceGate(queryClient), [queryClient]);
     useEffect(() => refreshEventOn4015(queryClient), [queryClient]);
     useEffect(() => startPwaInstallListening(), []);
+    // A visitor who opened the demo before its worker was scoped to /demo/ still has it on every page.
+    useEffect(() => void unregisterSiteWideDemoWorker(), []);
     const chrome = (
         <MobileChromeProvider>
             <ModalProvider>
@@ -71,14 +76,17 @@ export function AppProviders({ children, handoff = null }: { children: ReactNode
     return (
         <QueryClientProvider client={queryClient}>
             <AppConfigBootstrap />
+            <SignupSourceTracker />
             <AuthProvider handoff={handoff}>
-                <EventProvider>
-                    <DocumentTitleSync />
-                    <BetaFeedback />
-                    <GuidelinesGateSignOutHold>
-                        {isDemoRoute ? chrome : <AccountComposerProvider>{chrome}</AccountComposerProvider>}
-                    </GuidelinesGateSignOutHold>
-                </EventProvider>
+                <DemoRouteAuthScope>
+                    <EventProvider>
+                        <DocumentTitleSync />
+                        <BetaFeedback />
+                        <GuidelinesGateSignOutHold>
+                            {isDemoRoute ? chrome : <AccountComposerProvider>{chrome}</AccountComposerProvider>}
+                        </GuidelinesGateSignOutHold>
+                    </EventProvider>
+                </DemoRouteAuthScope>
             </AuthProvider>
         </QueryClientProvider>
     );

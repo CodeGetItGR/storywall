@@ -21,6 +21,7 @@ import type {
     DiscountCodeRequestDto,
     DiscountCodeResponseDto,
     EventDashboardRowDto,
+    FunnelChannelRowDto,
     FunnelCohortDto,
     FunnelMetricsResponseDto,
     LinkDiscountCodeRequestDto,
@@ -42,7 +43,9 @@ import type {
     PlatformModulePatchDto,
     PlatformModuleResponseDto,
     ReactionTypeResponseDto,
+    SignupChannel,
     UnprocessedWebhookDto,
+    VisitorMetricsDto,
     VoidCollaborationRedemptionRequestDto,
     WithdrawalAdminDto,
     WithdrawalReleaseDto,
@@ -64,8 +67,10 @@ export const adminKeys = {
     costTimeline: (weeks: number) => ['admin', 'metrics', 'timeline', weeks] as const,
     costCalendar: (since: string, until: string) => ['admin', 'metrics', 'calendar', since, until] as const,
     costCalendarDayEvents: (date: string, page: number, size: number) => ['admin', 'metrics', 'calendar', date, 'events', page, size] as const,
-    funnel: (since: string | null, until: string | null) => ['admin', 'metrics', 'funnel', since, until] as const,
-    funnelCohorts: (weeks: number) => ['admin', 'metrics', 'funnel', 'cohorts', weeks] as const,
+    funnel: (since: string | null, until: string | null, channel: SignupChannel | null) => ['admin', 'metrics', 'funnel', since, until, channel] as const,
+    funnelCohorts: (weeks: number, channel: SignupChannel | null) => ['admin', 'metrics', 'funnel', 'cohorts', weeks, channel] as const,
+    funnelChannels: (since: string | null, until: string | null) => ['admin', 'metrics', 'funnel', 'channels', since, until] as const,
+    visitors: (since: string | null, until: string | null) => ['admin', 'metrics', 'visitors', since, until] as const,
     moduleUsage: (filters: AdminModuleUsageFilters) =>
         ['admin', 'metrics', 'module-usage', filters.since, filters.until, filters.eventTypeKey, filters.planCode] as const,
     paidServices: (kind?: PaidServiceKind, includeArchived?: boolean) => ['admin', 'paid-services', kind ?? 'ALL', Boolean(includeArchived)] as const,
@@ -257,21 +262,50 @@ export function useAdminCostTimeline(weeks: number) {
     });
 }
 
-// GET /api/admin/metrics/funnel - conversion funnel for accounts that signed up in the range.
-export function useAdminFunnel(since: string | null, until: string | null, options: { enabled?: boolean } = {}) {
+// GET /api/admin/metrics/funnel - conversion funnel for accounts that signed up in the range, optionally from one channel.
+export function useAdminFunnel(since: string | null, until: string | null, channel: SignupChannel | null, options: { enabled?: boolean } = {}) {
     return useQuery({
-        queryKey: adminKeys.funnel(since, until),
-        queryFn: () => api.get<FunnelMetricsResponseDto>(endpoints.admin.metrics.funnel(since, until)),
+        queryKey: adminKeys.funnel(since, until, channel),
+        queryFn: () => api.get<FunnelMetricsResponseDto>(endpoints.admin.metrics.funnel(since, until, channel)),
         placeholderData: keepPreviousData,
         enabled: options.enabled ?? true,
     });
 }
 
-export function useAdminFunnelCohorts(weeks: number) {
+export function useAdminFunnelCohorts(weeks: number, channel: SignupChannel | null) {
     return useQuery({
-        queryKey: adminKeys.funnelCohorts(weeks),
-        queryFn: () => api.get<FunnelCohortDto[]>(endpoints.admin.metrics.funnelCohorts(weeks)),
+        queryKey: adminKeys.funnelCohorts(weeks, channel),
+        queryFn: () => api.get<FunnelCohortDto[]>(endpoints.admin.metrics.funnelCohorts(weeks, channel)),
         placeholderData: keepPreviousData,
+    });
+}
+
+// GET /api/admin/metrics/funnel/channels - the signup range split by where accounts came from.
+export function useAdminFunnelChannels(since: string | null, until: string | null, options: { enabled?: boolean } = {}) {
+    return useQuery({
+        queryKey: adminKeys.funnelChannels(since, until),
+        queryFn: () => api.get<FunnelChannelRowDto[]>(endpoints.admin.metrics.funnelChannels(since, until)),
+        placeholderData: keepPreviousData,
+        enabled: options.enabled ?? true,
+    });
+}
+
+export function useAdminVisitors(since: string | null, until: string | null, options: { enabled?: boolean } = {}) {
+    return useQuery({
+        queryKey: adminKeys.visitors(since, until),
+        queryFn: () => api.get<VisitorMetricsDto>(endpoints.admin.metrics.visitors(since, until)),
+        placeholderData: keepPreviousData,
+        enabled: options.enabled ?? true,
+    });
+}
+
+// Spring caches the GA answer for an hour; Refresh asks GA again and puts the answer in the same key.
+export function useRefreshAdminVisitors() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ since, until }: { since: string | null; until: string | null }) =>
+            api.get<VisitorMetricsDto>(endpoints.admin.metrics.visitors(since, until, true)),
+        onSuccess: (data, { since, until }) => queryClient.setQueryData(adminKeys.visitors(since, until), data),
     });
 }
 

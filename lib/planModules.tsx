@@ -7,6 +7,7 @@ import {
     HelpCircle,
     Images,
     Mail,
+    MessageCircleQuestion,
     MessageSquareText,
     Music,
     Palette,
@@ -39,6 +40,7 @@ const moduleIcons: Record<string, ComponentType<{ className?: string }>> = {
     co_hosts: UserCog,
     named_invites: Mail,
     he_or_she: Baby,
+    quiz_polls: MessageCircleQuestion,
 };
 
 const moduleFallbacks: Record<string, { name: string; description: string }> = {
@@ -87,6 +89,10 @@ const moduleFallbacks: Record<string, { name: string; description: string }> = {
         name: 'Boy or Girl?',
         description: 'Guests guess before the reveal.',
     },
+    quiz_polls: {
+        name: 'Quiz & Polls',
+        description: 'A quiz about you and polls for your guests.',
+    },
 };
 
 export type ModuleMeta = {
@@ -95,6 +101,10 @@ export type ModuleMeta = {
     description: string;
     Icon: ComponentType<{ className?: string }>;
 };
+
+export function getModuleIcon(moduleKey: string): ComponentType<{ className?: string }> {
+    return moduleIcons[moduleKey] ?? HelpCircle;
+}
 
 export function getModuleMeta(moduleKey: string, modules: PlatformModuleResponseDto[]): ModuleMeta {
     const module_ = modules.find((item) => item.moduleKey === moduleKey);
@@ -105,7 +115,7 @@ export function getModuleMeta(moduleKey: string, modules: PlatformModuleResponse
         key: moduleKey,
         name: module_?.name ?? fallback?.name ?? moduleKey,
         description: description && description !== PLAN_COMPARISON_EMPTY ? description : (fallback?.description ?? 'Included in this plan.'),
-        Icon: moduleIcons[moduleKey] ?? HelpCircle,
+        Icon: getModuleIcon(moduleKey),
     };
 }
 

@@ -5,16 +5,13 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
-import {
-    ComposerFab,
-    type ContextNavItem,
-    ContextNavSlot,
-    isAccountRoute,
-    isFeedRoute,
-    isPathActive,
-    ShareInviteTab,
-    TabLink,
-} from '@/components/layout/mobile-tab-bar';
+import { ComposerFab } from '@/components/layout/mobile-tab-bar/ComposerFab';
+import { ContextNavSlot } from '@/components/layout/mobile-tab-bar/ContextNavSlot';
+import { ShareInviteTab } from '@/components/layout/mobile-tab-bar/ShareInviteTab';
+import { TabLink } from '@/components/layout/mobile-tab-bar/TabLink';
+import type { ContextNavItem } from '@/components/layout/mobile-tab-bar/types';
+import { isAccountRoute, isFeedRoute, isPathActive } from '@/components/layout/mobile-tab-bar/utils';
+import { useHideMobileTabBarWhileTyping } from '@/hooks/useHideMobileTabBarWhileTyping';
 import { useInviteShare } from '@/hooks/useInviteShare';
 import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { useHasOpenOverlay } from '@/hooks/useOverlayPresence';
@@ -41,6 +38,7 @@ export function MobileTabBar() {
     const { isComposerFabHidden, isMobileTabBarHidden } = useMobileChrome();
     const hasOpenOverlay = useHasOpenOverlay();
     const pinchZoomBox = usePinchZoomBox();
+    useHideMobileTabBarWhileTyping();
     const activeEvent = useActiveEvent();
     const moduleCopy = useModuleCopy(activeEvent?.eventType);
     const isHost = useIsHost();
@@ -99,7 +97,8 @@ export function MobileTabBar() {
     if (!showEventNavigation) return null;
 
     const accountActive = accountOpen;
-    const railColumnCount = 1 + 1 + (playlistAvailable ? 1 : 0) + (rsvpTabAvailable ? 1 : 0) + (inviteShare.available ? 1 : 0) + (contextItems.length > 0 ? 1 : 0);
+    const railColumnCount =
+        1 + 1 + (playlistAvailable ? 1 : 0) + (rsvpTabAvailable ? 1 : 0) + (inviteShare.available ? 1 : 0) + (contextItems.length > 0 ? 1 : 0);
 
     return (
         <>

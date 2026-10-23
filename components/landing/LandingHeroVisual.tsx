@@ -1,7 +1,10 @@
 import { motion, type TargetAndTransition, useReducedMotion } from 'framer-motion';
+import type { ReactNode } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { useLandingHeroFeedTravel } from '@/hooks/useLandingHeroFeedTravel';
+import { landingHeroImageSizes, landingHeroSpriteSizes } from '@/lib/landingHero';
+
 const HERO_SPRITES = [
     {
         src: '/landing/sw-scene-item-sw-post-1.webp',
@@ -171,6 +174,13 @@ const HERO_VISUAL_CLASS =
 const PHONE_WRAP_CLASS =
     'absolute aspect-[748/1541] left-[19.28%] top-[3.78%] w-[56.47%] z-[5] min-[761px]:left-[23.5%] min-[761px]:top-[5.21%] min-[761px]:w-[43.7%]';
 
+// Shares of the hero visual's width, phone then desktop, matching the classes around them.
+const PHONE_SHARE = [0.5647, 0.437] as const;
+// The screen insets 4.68% + 4.55% of the phone, and the feed track is 105.65% / 105.7% of the screen.
+const PHONE_FEED_SHARE = [PHONE_SHARE[0] * 0.9077 * 1.0565, PHONE_SHARE[1] * 0.9077 * 1.057] as const;
+const PHONE_SIZES = landingHeroImageSizes(...PHONE_SHARE);
+const PHONE_FEED_SIZES = landingHeroImageSizes(...PHONE_FEED_SHARE);
+
 const PHONE_FEED_TRACK_CLASS = 'motion-hero-feed-scroll absolute top-0 left-[-2.85%] w-[105.65%] will-change-transform min-[761px]:w-[105.7%]';
 
 // Stacked top to bottom: the event header, then two runs of posts.
@@ -190,7 +200,17 @@ const HERO_SPRITE_MOTION = {
     'motion-hero-heart-float': { x: [-2, 5, -2], y: [3, -10, 3], rotate: [-1.2, 1.8, -1.2], scale: [0.985, 1.03, 0.985] },
 } satisfies Record<(typeof HERO_SPRITES)[number]['motionClass'], TargetAndTransition>;
 
-export function LandingHeroVisual({ motionPaused }: { motionPaused: boolean }) {
+// The floating post that sits on the phone's right, after the first one.
+const SECOND_POST_SRC = '/landing/sw-scene-item-sw-post-2.webp';
+
+type LandingHeroVisualProps = {
+    motionPaused: boolean;
+    // An occasion page's own phone feed and two post cards, in place of the wedding screenshots.
+    feed?: ReactNode;
+    posts?: readonly [ReactNode, ReactNode];
+};
+
+export function LandingHeroVisual({ motionPaused, feed, posts }: LandingHeroVisualProps) {
     const reduceMotion = useReducedMotion();
     const { screenRef, trackRef } = useLandingHeroFeedTravel();
     const [firstSprite, ...restSprites] = HERO_SPRITES;
@@ -203,14 +223,18 @@ export function LandingHeroVisual({ motionPaused }: { motionPaused: boolean }) {
                 className={firstSprite.posClass}
                 transition={{ duration: Number.parseFloat(firstSprite.duration), ease: 'easeInOut', repeat: Infinity }}
             >
-                <ProtectedImage
-                    unoptimized
-                    alt=""
-                    className="h-auto w-full"
-                    height={firstSprite.height}
-                    src={firstSprite.src}
-                    width={firstSprite.width}
-                />
+                {posts ? (
+                    posts[0]
+                ) : (
+                    <ProtectedImage
+                        alt=""
+                        className="h-auto w-full"
+                        height={firstSprite.height}
+                        sizes={landingHeroSpriteSizes(firstSprite.posClass)}
+                        src={firstSprite.src}
+                        width={firstSprite.width}
+                    />
+                )}
             </motion.div>
             {/* Phone feed */}
             <motion.div
@@ -223,25 +247,28 @@ export function LandingHeroVisual({ motionPaused }: { motionPaused: boolean }) {
                     ref={screenRef}
                 >
                     <div className={PHONE_FEED_TRACK_CLASS} data-paused={motionPaused || undefined} ref={trackRef}>
-                        {PHONE_FEED_SCREENSHOTS.map((screenshot) => (
-                            <ProtectedImage
-                                unoptimized
-                                alt=""
-                                className="relative block h-auto w-full max-w-none [&+&]:-mt-px"
-                                height={2048}
-                                key={screenshot.src}
-                                loading="eager"
-                                src={screenshot.src}
-                                width={screenshot.width}
-                            />
-                        ))}
+                        {feed ??
+                            PHONE_FEED_SCREENSHOTS.map((screenshot) => (
+                                <ProtectedImage
+                                    alt=""
+                                    className="relative block h-auto w-full max-w-none [&+&]:-mt-px"
+                                    height={2048}
+                                    key={screenshot.src}
+                                    // Eager so none pops in mid-scroll, low so they wait for the text, scripts and logo.
+                                    fetchPriority="low"
+                                    loading="eager"
+                                    sizes={PHONE_FEED_SIZES}
+                                    src={screenshot.src}
+                                    width={screenshot.width}
+                                />
+                            ))}
                     </div>
                 </div>
                 <ProtectedImage
-                    unoptimized
                     alt=""
                     className="absolute inset-0 z-[2] h-auto w-full"
                     height={1541}
+                    sizes={PHONE_SIZES}
                     src="/landing/sw-phone-frame.webp"
                     width={748}
                 />
@@ -259,7 +286,18 @@ export function LandingHeroVisual({ motionPaused }: { motionPaused: boolean }) {
                         delay: Number.parseFloat(sprite.delay),
                     }}
                 >
-                    <ProtectedImage unoptimized alt="" className="h-auto w-full" height={sprite.height} src={sprite.src} width={sprite.width} />
+                    {posts && sprite.src === SECOND_POST_SRC ? (
+                        posts[1]
+                    ) : (
+                        <ProtectedImage
+                            alt=""
+                            className="h-auto w-full"
+                            height={sprite.height}
+                            sizes={landingHeroSpriteSizes(sprite.posClass)}
+                            src={sprite.src}
+                            width={sprite.width}
+                        />
+                    )}
                 </motion.div>
             ))}
         </div>

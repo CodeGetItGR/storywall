@@ -4,6 +4,7 @@ import { Pencil } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { AdminOrderArrows } from '@/components/admin/AdminOrderArrows';
+import { AdminSortableRow } from '@/components/admin/AdminSortableRow';
 import type { Locale } from '@/i18n/config';
 import type { MemberRoleCatalogDto } from '@/lib/api/types';
 import type { MoveDirection } from '@/lib/sortOrder';
@@ -34,7 +35,7 @@ export function MemberRoleRow({
     }
 
     return (
-        <tr className="border-b border-border/70 last:border-b-0">
+        <AdminSortableRow id={role.id} name={label} className="border-b border-border/70 last:border-b-0">
             {/* Role */}
             <td className="px-3 py-2.5 text-sm font-semibold text-ink">
                 {role.emoji && <span className="mr-1.5">{role.emoji}</span>}
@@ -75,6 +76,6 @@ export function MemberRoleRow({
                     <Pencil className="h-4 w-4" />
                 </button>
             </td>
-        </tr>
+        </AdminSortableRow>
     );
 }

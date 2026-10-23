@@ -1,7 +1,6 @@
 'use client';
 
 import { ArrowRight, Loader2 } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -10,6 +9,7 @@ import { InviteEventDetails } from '@/components/invite/InviteEventDetails';
 import { InviteLayout } from '@/components/invite/InviteLayout';
 import { InviteOnboardingState } from '@/components/invite/InviteOnboardingState';
 import { InviteTerminalState } from '@/components/invite/InviteTerminalState';
+import { AppLink } from '@/components/ui/AppLink';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
 import { useAcceptEventInvitation, useEventInvitationPreview } from '@/hooks/useEventInvitations';
@@ -21,6 +21,7 @@ import { routes } from '@/lib/routes';
 
 export default function InviteOnboardingBoundary({ token }: { token: string }) {
     const t = useTranslations('InviteOnboardingPage');
+    const tVendors = useTranslations('Vendors.invite');
     const router = useRouter();
     const toErrorMessage = useApiErrorMessage();
 
@@ -29,7 +30,8 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
     const coverMedia = preview?.coverMedia ?? null;
     const acceptInvitation = useAcceptEventInvitation();
     const [acceptError, setAcceptError] = useState<string | null>(null);
-    const isOpeningMemberFeed = useInviteMemberRedirect(preview?.eventId);
+    // A vendor link promotes an existing guest, so a member who opens one stays to press Join (vendors spec 2026-10-19).
+    const isOpeningMemberFeed = useInviteMemberRedirect(preview?.vendorType ? null : preview?.eventId);
 
     const isLoading = isPreviewLoading || isBootstrapping || isOpeningMemberFeed;
 
@@ -59,18 +61,20 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
             return <InviteTerminalState title={t('expiredInvite.title')} description={t('expiredInvite.description')} />;
         }
 
-        if (preview.alreadyUsed) {
+        // On a vendor link alreadyUsed means the event holds all its vendors: a vendor reopening their own link
+        // still gets in, and a new one is told so by the join (409/5177), so the link is not closed here.
+        if (preview.alreadyUsed && !preview.vendorType) {
             return (
                 <InviteTerminalState
                     title={t('alreadyUsedInvite.title')}
                     description={t('alreadyUsedInvite.description')}
                     action={
-                        <Link
+                        <AppLink
                             href={routes.login}
                             className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
                         >
                             {t('haveAccount')}
-                        </Link>
+                        </AppLink>
                     }
                 />
             );
@@ -83,8 +87,10 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
     const activePreview = terminalState ? null : preview;
 
     const giftFraming = inviteGiftFraming(activePreview?.gift);
-    const loginHref = routes.auth.login({ invite: token, email: activePreview?.email });
-    const registerHref = routes.auth.register({ invite: token, email: activePreview?.email });
+    // Straight to this event's feed after signing in: bare /feed opens whichever event is active.
+    const eventFeedPath = activePreview ? routes.events.feed(activePreview.eventId) : null;
+    const loginHref = routes.auth.login({ invite: token, email: activePreview?.email, next: eventFeedPath });
+    const registerHref = routes.auth.register({ invite: token, email: activePreview?.email, next: eventFeedPath });
 
     return (
         <InviteOnboardingState
@@ -123,19 +129,19 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
                                     </button>
                                 ) : (
                                     <>
-                                        <Link
+                                        <AppLink
                                             href={loginHref}
                                             className="flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
                                         >
                                             {t('haveAccount')}
                                             <ArrowRight className="h-4 w-4" />
-                                        </Link>
-                                        <Link
+                                        </AppLink>
+                                        <AppLink
                                             href={registerHref}
                                             className="flex w-full items-center justify-center gap-2 rounded-full bg-surface-muted py-3 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted/70"
                                         >
                                             {t('createAccount')}
-                                        </Link>
+                                        </AppLink>
                                     </>
                                 )}
                             </div>
@@ -149,10 +155,12 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
                                 </p>
                             )}
 
+                            {/* Vendor */}
+                            {activePreview.vendorType && <p className="text-sm font-semibold text-ink">{tVendors(activePreview.vendorType)}</p>}
+
                             {/* Details */}
                             <InviteEventDetails
                                 startAt={activePreview.eventStartAt}
-                                endAt={activePreview.eventEndAt}
                                 timeZone={activePreview.eventTimezone}
                                 locationName={activePreview.eventLocationName}
                             />

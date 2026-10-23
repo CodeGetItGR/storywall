@@ -1,11 +1,11 @@
 'use client';
 
 import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
 
 import BillingTab from '@/app/(main)/(app)/(event)/events/[eventId]/manage/BillingTab';
+import { AppLink } from '@/components/ui/AppLink';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { isEventDeleted } from '@/lib/eventLifecycle';
 
@@ -23,10 +23,10 @@ export function SuspendedEventBilling({ event, backHref }: { event: EventDetailR
 
     return (
         <section aria-labelledby="suspended-billing-title" className="mx-auto w-full max-w-2xl space-y-6 px-4 py-10">
-            <Link href={backHref} className="inline-flex items-center gap-1 text-sm font-semibold text-ink-muted hover:text-ink">
+            <AppLink href={backHref} className="inline-flex items-center gap-1 text-sm font-semibold text-ink-muted hover:text-ink">
                 <ArrowLeft className="h-4 w-4" aria-hidden="true" />
                 {t('billingBack')}
-            </Link>
+            </AppLink>
 
             {/* Heading */}
             <div className="space-y-1">

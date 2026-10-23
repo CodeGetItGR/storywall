@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle, Clock3, Receipt } from 'lucide-react';
+import { AlertTriangle, CalendarClock, Clock3, Receipt } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { type ReactNode, useCallback } from 'react';
 
@@ -89,12 +89,13 @@ export function OverviewDraftPanel({
     const canPay = Boolean(startAt);
     const planActivation = currentPlan && currentOption ? getOptionPriceDetails(currentPlan, currentOption) : null;
 
-    const duration = useDraftDuration({ eventId, options: durationOptions, currentOptionId: savedOptionId });
-    // Only the main host can be quoted, and only once there is a start date and a duration on sale.
+    const duration = useDraftDuration({ eventId, options: durationOptions, currentOptionId: savedOptionId, startAt });
+    // Checkout needs the main host, a duration on sale that covers the start, and no duration save in flight.
+    const canCheckout = canPurchase && Boolean(currentOption) && !duration.isSaving && !duration.selectedTooShort;
+    // Only quoted once there is a start date too.
     const { consent, partnerBranding, collaborationPreview, breakdown, handleCollaborationPreviewChange, submit, error, startPassed, isPending } =
-        useDraftActivationCheckout(eventId, { quoteEnabled: canPay && canPurchase && Boolean(currentOption) && !duration.isSaving, startAt });
+        useDraftActivationCheckout(eventId, { quoteEnabled: canPay && canCheckout, startAt });
     const startDate = useDraftStartDate(eventId, { startAt, endAt, coverageEndsAt: projectedCoverage?.coverageEndsAt ?? null });
-    const canCheckout = canPurchase && Boolean(currentOption) && !duration.isSaving;
     const consentReady = consent.consentSatisfied && partnerBranding.satisfied;
     const showConsent = useCallback(() => focusFirstUncheckedBox(DRAFT_CONSENT_ID), []);
 
@@ -173,8 +174,23 @@ export function OverviewDraftPanel({
                                     value={duration.selectedOptionId}
                                     onChangeAction={duration.changeDuration}
                                     disabled={!canPurchase || duration.isSaving}
+                                    disabledOptionIds={duration.tooShortOptionIds}
                                     className="mt-2"
                                 />
+                                {/* Durations too short for the date */}
+                                {canPurchase && duration.tooShortOptionIds.length > 0 && (
+                                    <div className="mt-2 flex flex-wrap items-center gap-x-3 text-xs">
+                                        <p className="text-ink-muted">{t('draft.durationTooShort')}</p>
+                                        <button
+                                            type="button"
+                                            onClick={startDate.open}
+                                            className="inline-flex min-h-8 items-center gap-1 font-semibold text-primary-dark underline underline-offset-2"
+                                        >
+                                            <CalendarClock className="h-3.5 w-3.5" aria-hidden="true" />
+                                            {t('draft.startDate.action')}
+                                        </button>
+                                    </div>
+                                )}
                                 {durationUnavailable && <p className="mt-2 text-xs font-semibold text-amber-700">{t('draft.durationUnavailable')}</p>}
                                 {duration.error && <p className="mt-2 text-xs text-rose-600">{duration.error}</p>}
                             </EventOverviewPriceRow>
@@ -247,6 +263,7 @@ export function OverviewDraftPanel({
                                 notice={partnerBranding.notice}
                                 accepted={partnerBranding.accepted}
                                 onChangeAction={partnerBranding.handleChange}
+                                vendorOffer={Boolean(collaborationPreview?.vendorOffer)}
                                 className=""
                             />
                         )}

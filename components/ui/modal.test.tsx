@@ -1,11 +1,15 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { Modal } from '@/components/ui/modal';
 
-vi.mock('@/hooks/useOverlayHistory', () => ({ useOverlayHistory: () => ({ requestClose: vi.fn() }) }));
+const requestClose = vi.hoisted(() => vi.fn());
+vi.mock('@/hooks/useOverlayHistory', () => ({ useOverlayHistory: () => ({ requestClose }) }));
 
-afterEach(cleanup);
+afterEach(() => {
+    cleanup();
+    requestClose.mockClear();
+});
 
 function layers() {
     const popup = screen.getByRole('dialog');
@@ -40,5 +44,31 @@ describe('Modal layer', () => {
         expect(popup.className).not.toContain('z-50');
         expect(backdrop?.className).toContain('z-70');
         expect(backdrop?.className).not.toContain('z-50');
+    });
+});
+
+describe('Modal closeDisabled', () => {
+    it('hides the close button and ignores Escape while disabled', () => {
+        render(
+            <Modal open onClose={vi.fn()} ariaLabel="d" closeLabel="Close" closeDisabled>
+                <div>content</div>
+            </Modal>,
+        );
+
+        expect(screen.queryByRole('button', { name: 'Close' })).toBeNull();
+        fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
+        expect(requestClose).not.toHaveBeenCalled();
+    });
+
+    it('closes on Escape when not disabled', () => {
+        render(
+            <Modal open onClose={vi.fn()} ariaLabel="d" closeLabel="Close">
+                <div>content</div>
+            </Modal>,
+        );
+
+        expect(screen.getByRole('button', { name: 'Close' })).toBeTruthy();
+        fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
+        expect(requestClose).toHaveBeenCalled();
     });
 });

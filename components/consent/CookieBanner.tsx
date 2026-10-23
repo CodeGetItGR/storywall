@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+import { AppLink } from '@/components/ui/AppLink';
 import { useCookieConsent } from '@/hooks/useCookieConsent';
 import { routes } from '@/lib/routes';
 
@@ -26,9 +26,9 @@ export function CookieBanner() {
             {/* Message */}
             <p className="text-sm leading-relaxed text-ink-muted">
                 {t('message')}{' '}
-                <Link className="font-semibold text-ink underline underline-offset-2" href={routes.legal.cookies()}>
+                <AppLink className="font-semibold text-ink underline underline-offset-2" href={routes.legal.cookies()}>
                     {t('policyLink')}
-                </Link>
+                </AppLink>
             </p>
             {/* Actions */}
             <div className="mt-4 flex flex-wrap gap-2">

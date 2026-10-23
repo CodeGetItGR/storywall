@@ -1,9 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { SessionLocationIcon } from '@/components/session-location/SessionLocationIcon';
+import { AppLink } from '@/components/ui/AppLink';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 import { resolveSessionLocationIcon } from '@/lib/sessionLocations';
@@ -28,24 +28,24 @@ export function EventSessionActionButtons({ event }: EventSessionActionButtonsPr
             {/* Session actions */}
             <div className={'flex flex-col gap-4'}>
                 {mainSession && (
-                    <Link
+                    <AppLink
                         href={routes.events.location(event.id, 'main')}
                         aria-label={t('mainSession')}
                         title={t('mainSession')}
                         className={sessionButtonClassName}
                     >
                         <SessionLocationIcon icon={resolveSessionLocationIcon(event.eventType, 'main')} size="sm" className={'mb-1'} />
-                    </Link>
+                    </AppLink>
                 )}
                 {secondarySession && (
-                    <Link
+                    <AppLink
                         href={routes.events.location(event.id, 'secondary')}
                         aria-label={t('secondarySession')}
                         title={t('secondarySession')}
                         className={sessionButtonClassName}
                     >
                         <SessionLocationIcon icon={resolveSessionLocationIcon(event.eventType, 'secondary')} size="sm" />
-                    </Link>
+                    </AppLink>
                 )}
             </div>
         </>

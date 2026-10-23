@@ -52,7 +52,7 @@ A new route that fits none of these, or whose kind is unclear, is a **BLOCKER** 
 Full plan: the "Occasion pages roadmap" doc. Rules that apply when building them:
 
 - One page per occasion, per language, using the slugs in the roadmap doc. Slugs are in the page's language and never change once live.
-- **BLOCKER:** an occasion page only goes live once that event type is enabled in the app and has a working demo in that language. No half-empty pages.
+- **BLOCKER:** an occasion page only goes live once its copy is marked ready in code and its event type is enabled in the app. It is hidden (404, out of the sitemap and out of every link) while the type is off. No half-empty pages: without a demo, the page leaves out the demo preview instead of showing an empty one.
 - **BLOCKER:** the demo preview on an occasion page is server-rendered (static images or a server-rendered snapshot), not the live MSW demo. The live demo stays noindex and is linked as "Try the demo".
 - **BLOCKER:** each page has its own copy written for that occasion and its searches. Swapping only the occasion name in a shared template counts as duplicate content.
 - Each page has: an h1 with the main keyword, a short intro, how it works (QR → guests upload → live wall), the static demo preview, features relevant to that occasion, an FAQ (with `FAQPage` JSON-LD), and one clear CTA to sign up.

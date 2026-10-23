@@ -1,4 +1,4 @@
-import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+import { dehydrate } from '@tanstack/react-query';
 
 import { ProfileContent } from '@/components/profile/ProfileContent';
 import { appConfigKeys } from '@/hooks/useAppConfig';
@@ -9,6 +9,7 @@ import { prefetchAccessToken } from '@/lib/auth/serverEventContext';
 import { businessProfileKeys } from '@/lib/businessProfile';
 import { newsletterKeys } from '@/lib/newsletter';
 import { makeQueryClient } from '@/lib/queryClient';
+import { PageHydrationBoundary } from '@/providers/PageHydrationBoundary';
 
 // Prefetches the newsletter status and business profile so those sections
 // render without a loading state. Guests get a 403 here and fall through silently,
@@ -38,8 +39,8 @@ export default async function ProfilePage() {
     }
 
     return (
-        <HydrationBoundary state={dehydrate(queryClient)}>
+        <PageHydrationBoundary state={dehydrate(queryClient)}>
             <ProfileContent />
-        </HydrationBoundary>
+        </PageHydrationBoundary>
     );
 }

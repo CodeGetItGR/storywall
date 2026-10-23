@@ -284,7 +284,7 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
         http.patch(`${API_BASE_URL}/api/me`, () => HttpResponse.json(me())),
         http.get(`${API_BASE_URL}/api/me/events`, () => HttpResponse.json(db.list('members').filter((m) => m.id === viewerMemberId))),
 
-        // --- Live feed stream: nothing to stream in a local demo. 404 stops the hook's retries. ---
+        // --- Live feed stream: useEventFeedStream skips the demo. If anything still asks, 404 stops its retries. ---
         http.post(`${API_BASE_URL}/api/events/:eventId/stream-token`, () => new HttpResponse(null, { status: 404 })),
 
         // --- Event detail and settings ---

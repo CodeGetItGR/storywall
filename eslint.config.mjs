@@ -25,6 +25,42 @@ export default defineConfig([
             'simple-import-sort/exports': 'error',
 
             /*
+             * No barrel files. Importing one pulls every module it re-exports
+             * into the page's JavaScript, used or not. Import the file that
+             * defines the thing instead.
+             */
+            'no-restricted-imports': [
+                'error',
+                {
+                    paths: [
+                        '@/hooks',
+                        '@/components/account',
+                        '@/components/feed',
+                        '@/components/feed/post',
+                        '@/components/home',
+                        '@/components/landing',
+                        '@/components/layout',
+                        '@/components/layout/mobile-tab-bar',
+                        '@/components/manage/invitations',
+                        '@/components/manage/members',
+                        '@/components/manage/rsvp',
+                        '@/components/playlist',
+                        '@/components/reports',
+                        '@/components/rsvp',
+                        '@/components/story',
+                    ]
+                        .map((name) => ({
+                            name,
+                            message: 'Import from the file that defines it (e.g. @/hooks/useAuth). Barrel imports ship every re-exported module.',
+                        }))
+                        .concat({
+                            name: 'next/link',
+                            message: 'Use AppLink from @/components/ui/AppLink. It turns prefetching off inside the demo.',
+                        }),
+                },
+            ],
+
+            /*
              * Ban inline arrow/bind functions passed as JSX props (e.g.
              * onClick={() => ...}). They create a new function every render,
              * defeat memoization, and push logic into markup. Extract a
@@ -85,5 +121,16 @@ export default defineConfig([
      */
     prettierConfig,
 
-    globalIgnores(['.next/**', 'node_modules/**', 'coverage/**', 'dist/**', 'out/**', 'next-env.d.ts', '.worktrees/**', '.claude/**', 'docs/**', 'public/mockServiceWorker.js']),
+    globalIgnores([
+        '.next/**',
+        'node_modules/**',
+        'coverage/**',
+        'dist/**',
+        'out/**',
+        'next-env.d.ts',
+        '.worktrees/**',
+        '.claude/**',
+        'docs/**',
+        'public/mockServiceWorker.js',
+    ]),
 ]);

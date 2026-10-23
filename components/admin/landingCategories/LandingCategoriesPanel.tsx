@@ -5,6 +5,8 @@ import { useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback, useMemo, useRef, useState } from 'react';
 
 import { AdminOrderArrows } from '@/components/admin/AdminOrderArrows';
+import { AdminSortableList } from '@/components/admin/AdminSortableList';
+import { AdminSortableRow } from '@/components/admin/AdminSortableRow';
 import { LandingCategoryDrawer } from '@/components/admin/landingCategories/LandingCategoryDrawer';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useAdminPlatformEventTypes } from '@/hooks/useAdmin';
@@ -25,6 +27,8 @@ type DrawerState = { open: boolean; category: AdminLandingCategoryDto | null; to
 
 // The landing page's pricing tabs (spec 2026-10-06-landing-categories-design.md §6). Warnings run
 // the landing's own builder on the public config, so they say what the landing actually shows.
+const categoryIdOf = (category: AdminLandingCategoryDto) => category.id;
+
 export function LandingCategoriesPanel() {
     const t = useTranslations('AdminPage');
     const localizedText = useLocalizedText();
@@ -34,6 +38,7 @@ export function LandingCategoriesPanel() {
     const categories = useMemo(() => [...(categoriesQuery.data ?? [])].sort(bySortOrder), [categoriesQuery.data]);
     const eventTypes = useMemo(() => [...(eventTypesQuery.data ?? NO_EVENT_TYPES)].sort(bySortOrder), [eventTypesQuery.data]);
     const move = useLandingCategoryMove(categories);
+    const rows = move.arrange(categories);
     const [drawer, setDrawer] = useState<DrawerState>({ open: false, category: null, token: 0 });
     const nextToken = useRef(0);
 
@@ -90,77 +95,93 @@ export function LandingCategoriesPanel() {
 
                 {categories.length > 0 && (
                     <ul className="divide-y divide-border">
-                        {categories.map((category, index) => {
-                            // Nothing to warn about until the public config is in: an empty one would
-                            // read as "no enabled type" on every row.
-                            const warnings = config.data
-                                ? landingCategoryWarnings(category, config.data.planTiers, config.data.eventTypes, config.data.memberRolesByEventType)
-                                : null;
-                            const name = localizedText(category.name);
-                            return (
-                                <li key={category.id} className="flex items-start gap-3 px-4 py-3 hover:bg-canvas/60">
-                                    <div className="min-w-0 flex-1 space-y-1.5">
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <span data-testid="landing-category-name" className="truncate font-semibold text-ink">
-                                                {name}
-                                            </span>
-                                            {category.isDefault && (
-                                                <span className={`${PILL} bg-status-good-wash text-status-good`}>
-                                                    {t('landingCategories.defaultPill')}
-                                                </span>
-                                            )}
-                                            {!category.isVisible && (
-                                                <span className={`${PILL} bg-status-neutral-wash text-status-neutral`}>
-                                                    {t('landingCategories.hiddenPill')}
-                                                </span>
-                                            )}
-                                        </div>
-                                        {category.eventTypeKeys.length > 0 && (
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {category.eventTypeKeys.map((key) => (
-                                                    <span key={key} className="rounded-md border border-border px-2 py-0.5 text-xs text-ink-muted">
-                                                        {eventTypeName(key)}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        )}
-                                        {warnings?.noEnabledType && (
-                                            <p className="text-xs text-status-warn">{t('landingCategories.warnNoEnabledType')}</p>
-                                        )}
-                                        {warnings && !warnings.noEnabledType && warnings.noVisiblePlan && (
-                                            <p className="text-xs text-status-warn">{t('landingCategories.warnNoVisiblePlan')}</p>
-                                        )}
-                                        {warnings?.driftedGroups.map((group) => (
-                                            <p key={group.sharedGroupKey} className="text-xs text-status-warn">
-                                                {t('landingCategories.warnDrifted', {
-                                                    plans: group.planCodes.join(', '),
-                                                    fields: group.differingFields
-                                                        .map((field) => t(`landingCategories.driftFields.${field}`))
-                                                        .join(', '),
-                                                })}
-                                            </p>
-                                        ))}
-                                    </div>
-                                    <AdminOrderArrows
+                        <AdminSortableList ids={rows.map(categoryIdOf)} disabled={move.isPending} onReorderAction={move.reorder}>
+                            {rows.map((category, index) => {
+                                // Nothing to warn about until the public config is in: an empty one would
+                                // read as "no enabled type" on every row.
+                                const warnings = config.data
+                                    ? landingCategoryWarnings(
+                                          category,
+                                          config.data.planTiers,
+                                          config.data.eventTypes,
+                                          config.data.memberRolesByEventType,
+                                      )
+                                    : null;
+                                const name = localizedText(category.name);
+                                return (
+                                    <AdminSortableRow
+                                        key={category.id}
                                         id={category.id}
                                         name={name}
-                                        isFirst={index === 0}
-                                        isLast={index === categories.length - 1}
-                                        disabled={move.isPending}
-                                        onMoveAction={move.move}
-                                    />
-                                    <button
-                                        type="button"
-                                        data-category-id={category.id}
-                                        onClick={handleEditClick}
-                                        aria-label={`${t('eventTypes.edit')} ${name}`}
-                                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-canvas hover:text-ink"
+                                        as="li"
+                                        className="flex items-start gap-3 px-4 py-3 hover:bg-canvas/60"
                                     >
-                                        <Pencil className="h-3.5 w-3.5" />
-                                    </button>
-                                </li>
-                            );
-                        })}
+                                        <div className="min-w-0 flex-1 space-y-1.5">
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <span data-testid="landing-category-name" className="truncate font-semibold text-ink">
+                                                    {name}
+                                                </span>
+                                                {category.isDefault && (
+                                                    <span className={`${PILL} bg-status-good-wash text-status-good`}>
+                                                        {t('landingCategories.defaultPill')}
+                                                    </span>
+                                                )}
+                                                {!category.isVisible && (
+                                                    <span className={`${PILL} bg-status-neutral-wash text-status-neutral`}>
+                                                        {t('landingCategories.hiddenPill')}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {category.eventTypeKeys.length > 0 && (
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {category.eventTypeKeys.map((key) => (
+                                                        <span
+                                                            key={key}
+                                                            className="rounded-md border border-border px-2 py-0.5 text-xs text-ink-muted"
+                                                        >
+                                                            {eventTypeName(key)}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            {warnings?.noEnabledType && (
+                                                <p className="text-xs text-status-warn">{t('landingCategories.warnNoEnabledType')}</p>
+                                            )}
+                                            {warnings && !warnings.noEnabledType && warnings.noVisiblePlan && (
+                                                <p className="text-xs text-status-warn">{t('landingCategories.warnNoVisiblePlan')}</p>
+                                            )}
+                                            {warnings?.driftedGroups.map((group) => (
+                                                <p key={group.sharedGroupKey} className="text-xs text-status-warn">
+                                                    {t('landingCategories.warnDrifted', {
+                                                        plans: group.planCodes.join(', '),
+                                                        fields: group.differingFields
+                                                            .map((field) => t(`landingCategories.driftFields.${field}`))
+                                                            .join(', '),
+                                                    })}
+                                                </p>
+                                            ))}
+                                        </div>
+                                        <AdminOrderArrows
+                                            id={category.id}
+                                            name={name}
+                                            isFirst={index === 0}
+                                            isLast={index === categories.length - 1}
+                                            disabled={move.isPending}
+                                            onMoveAction={move.move}
+                                        />
+                                        <button
+                                            type="button"
+                                            data-category-id={category.id}
+                                            onClick={handleEditClick}
+                                            aria-label={`${t('eventTypes.edit')} ${name}`}
+                                            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-canvas hover:text-ink"
+                                        >
+                                            <Pencil className="h-3.5 w-3.5" />
+                                        </button>
+                                    </AdminSortableRow>
+                                );
+                            })}
+                        </AdminSortableList>
                     </ul>
                 )}
             </section>

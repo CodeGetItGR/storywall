@@ -54,7 +54,7 @@ export function useThemePresetsCatalog() {
 
     return {
         presets,
-        visiblePresets,
+        visiblePresets: move.arrange(visiblePresets),
         eventTypes,
         eventTypeLabels,
         search,
@@ -71,5 +71,6 @@ export function useThemePresetsCatalog() {
         openEdit,
         closeDrawer,
         movePreset: move.move,
+        reorderPreset: move.reorder,
     };
 }

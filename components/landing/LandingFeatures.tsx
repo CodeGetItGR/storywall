@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { LandingFeatureItem } from '@/components/landing/LandingFeatureItem';
 import { useLandingModuleGates } from '@/hooks/useLandingModuleGates';
 import { LANDING_FEATURE_MODULE_KEYS } from '@/lib/landingFeatureGates';
+import { landingSectionAttributes } from '@/lib/landingTracking';
 
 const FEATURE_ICONS = [
     '/landing/decor-05.webp',
@@ -33,6 +34,7 @@ export function LandingFeatures() {
         <section
             className="relative block bg-[radial-gradient(circle_at_15%_8%,rgba(150,48,118,0.18),transparent_38%),linear-gradient(180deg,#171419_0%,#101014_56%,#0b0b0f_100%)] pt-13 pr-5 pb-[clamp(58px,6vw,88px)] pl-5 text-white after:pointer-events-none after:absolute after:inset-x-0 after:-bottom-px after:h-12 after:bg-[linear-gradient(180deg,rgba(11,11,15,0),#0b0b0f)] after:content-[''] min-[761px]:grid min-[761px]:grid-cols-[1fr_2.1fr] min-[761px]:gap-x-[5vw] min-[761px]:gap-y-0 min-[761px]:bg-[radial-gradient(circle_at_18%_10%,rgba(150,48,118,0.2),transparent_34%),linear-gradient(180deg,#171419_0%,#111014_55%,#0b0b0f_100%)] min-[761px]:pt-20 min-[761px]:pr-[5vw] min-[761px]:pl-[5vw]"
             id="experience"
+            {...landingSectionAttributes('features')}
         >
             {/* Eyebrow + heading */}
             <div className="m-0 text-[13px] font-black tracking-[0.15em] text-white/62 uppercase min-[761px]:col-start-2 min-[761px]:row-start-1 min-[761px]:mb-5.5 min-[761px]:pt-0">
@@ -53,7 +55,7 @@ export function LandingFeatures() {
                         className="pointer-events-none absolute top-0 right-0 bottom-3 z-3 hidden w-8.5 bg-[linear-gradient(270deg,#0b0b0f_0%,rgba(11,11,15,0)_100%)] max-[760px]:block"
                     />
                     <div
-                        className="sw-feature-track flex [touch-action:pan-x] snap-none items-start gap-4.5 overflow-x-auto overflow-y-hidden scroll-auto px-5 pt-2 pb-5 [-webkit-overflow-scrolling:touch] min-[761px]:w-full min-[761px]:max-w-none min-[761px]:flex-wrap min-[761px]:justify-center min-[761px]:gap-[clamp(34px,3vw,48px)_clamp(24px,2.2vw,34px)] min-[761px]:overflow-visible min-[761px]:px-0 min-[761px]:py-0"
+                        className="sw-feature-track flex [touch-action:pan-x_pan-y] snap-none items-start gap-4.5 overflow-x-auto overflow-y-hidden scroll-auto px-5 pt-2 pb-5 [-webkit-overflow-scrolling:touch] min-[761px]:w-full min-[761px]:max-w-none min-[761px]:flex-wrap min-[761px]:justify-center min-[761px]:gap-[clamp(34px,3vw,48px)_clamp(24px,2.2vw,34px)] min-[761px]:overflow-visible min-[761px]:px-0 min-[761px]:py-0"
                         aria-label={t('label')}
                         role="list"
                     >

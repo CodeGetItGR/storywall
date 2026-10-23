@@ -6,12 +6,15 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { AuthorRoleChip } from '@/components/memberRoles/AuthorRoleChip';
-import { ReportTargetModal } from '@/components/reports';
-import { StoryCaptionBar, StoryHeader, StoryProgressBar } from '@/components/story';
+import { ReportTargetModal } from '@/components/reports/ReportTargetModal';
+import { StoryCaptionBar } from '@/components/story/StoryCaptionBar';
+import { StoryHeader } from '@/components/story/StoryHeader';
+import { StoryProgressBar } from '@/components/story/StoryProgressBar';
 import { StoryVideo } from '@/components/story/StoryVideo';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useStoryModal } from '@/hooks/useStoryModal';
 import { formatTime } from '@/lib/datetime';
+import { STORY_IMAGE_SIZES } from '@/lib/stories';
 
 type StoryModalProps = {
     open: boolean;
@@ -126,7 +129,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                                     alt={t('userStory', { name: authorName })}
                                     fill
                                     className="object-contain"
-                                    sizes="100vw"
+                                    sizes={STORY_IMAGE_SIZES}
                                     preload
                                     onLoad={handleMediaLoaded}
                                     onError={handleMediaError}

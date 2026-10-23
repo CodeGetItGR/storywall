@@ -1,0 +1,108 @@
+import type { DehydratedState } from '@tanstack/react-query';
+import type { ReactElement } from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const serverGet = vi.fn();
+const serverGetOrNull = vi.fn();
+vi.mock('@/lib/api/serverFetch', () => ({
+    serverGet: (...args: unknown[]) => serverGet(...args),
+    serverGetOrNull: (...args: unknown[]) => serverGetOrNull(...args),
+}));
+const ctx = vi.hoisted(() => ({ context: null as null | { accessToken: string; isHost: boolean }, event: null as unknown }));
+vi.mock('@/lib/auth/serverEventContext', () => ({
+    resolveServerEventContext: async () => ctx.context,
+    resolveServerEventDetail: async () => ctx.event,
+}));
+vi.mock('./PageClient', () => ({ default: () => null }));
+
+import Page from './page';
+
+const moduleOf = (moduleKey: string) => ({ moduleKey, isEnabled: true, isAvailable: true, configuration: {} });
+const VENDOR_EVENT = {
+    id: 'e1',
+    status: 'ACTIVE',
+    deletedAt: null,
+    modules: [moduleOf('vendors'), moduleOf('gallery')],
+};
+const PHOTOGRAPHER = { vendorId: 'v1', vendorType: 'PHOTOGRAPHER', capabilities: ['PRO_ALBUM'], accessOpen: true };
+const PROFILE = { businessName: 'Studio X', vendorType: 'PHOTOGRAPHER', link: '@studio.x', logoUrl: null, partnerPromptDismissed: false };
+
+function visit() {
+    return Page({ params: Promise.resolve({ eventId: 'e1' }) });
+}
+
+function seededKeys(element: ReactElement) {
+    const { state } = element.props as { state: DehydratedState };
+    return state.queries.map((query) => query.queryKey);
+}
+
+function answer(me: unknown) {
+    serverGetOrNull.mockImplementation(async (path: string) => (path.endsWith('/vendors/me') ? me : PROFILE));
+}
+
+beforeEach(() => {
+    serverGet.mockReset();
+    serverGetOrNull.mockReset();
+    ctx.context = { accessToken: 'tok', isHost: false };
+    ctx.event = VENDOR_EVENT;
+});
+
+describe('vendor page prefetch', () => {
+    it('fetches the role, the profile and, for a photographer, the Pro first page', async () => {
+        answer(PHOTOGRAPHER);
+        serverGet.mockResolvedValue({ content: [], page: { number: 0, totalPages: 0, totalElements: 0, size: 30 } });
+        const element = await visit();
+        expect(serverGetOrNull).toHaveBeenCalledWith('/api/events/e1/vendors/me', 'tok');
+        expect(serverGetOrNull).toHaveBeenCalledWith('/api/me/vendor-profile', 'tok');
+        expect(serverGet).toHaveBeenCalledWith('/api/events/e1/media?page=0&size=30&collection=PRO', 'tok');
+        expect(seededKeys(element)).toEqual(
+            expect.arrayContaining([
+                ['events', 'e1', 'vendors', 'me'],
+                ['me', 'vendor-profile'],
+                ['events', 'e1', 'media', 'PRO'],
+            ]),
+        );
+    });
+
+    it('skips the Pro page for other types, and without the gallery or vendors module', async () => {
+        answer({ ...PHOTOGRAPHER, vendorType: 'MUSIC', capabilities: ['SONG_REQUESTS'] });
+        await visit();
+        answer(PHOTOGRAPHER);
+        ctx.event = { ...VENDOR_EVENT, modules: [moduleOf('vendors')] };
+        await visit();
+        ctx.event = { ...VENDOR_EVENT, modules: [moduleOf('gallery')] };
+        await visit();
+        expect(serverGet).not.toHaveBeenCalled();
+    });
+
+    it('still fetches the role and profile with the vendors module off', async () => {
+        answer({ ...PHOTOGRAPHER, capabilities: [], accessOpen: false, toolsOff: 'MODULE_OFF' });
+        ctx.event = { ...VENDOR_EVENT, modules: [] };
+        await visit();
+        expect(serverGetOrNull).toHaveBeenCalledWith('/api/events/e1/vendors/me', 'tok');
+        expect(serverGetOrNull).toHaveBeenCalledWith('/api/me/vendor-profile', 'tok');
+        expect(serverGet).not.toHaveBeenCalled();
+    });
+
+    it('stops after the role for someone who is not a vendor', async () => {
+        serverGetOrNull.mockResolvedValue(null);
+        const element = await visit();
+        expect(serverGetOrNull).toHaveBeenCalledTimes(1);
+        expect(serverGet).not.toHaveBeenCalled();
+        expect(seededKeys(element)).toEqual([['events', 'e1', 'vendors', 'me']]);
+    });
+
+    it('fetches nothing for a host or on an in-app navigation', async () => {
+        ctx.context = { accessToken: 'tok', isHost: true };
+        await visit();
+        ctx.context = null;
+        await visit();
+        expect(serverGetOrNull).not.toHaveBeenCalled();
+        expect(serverGet).not.toHaveBeenCalled();
+    });
+
+    it('still renders when Spring fails', async () => {
+        serverGetOrNull.mockRejectedValue(new Error('down'));
+        await expect(visit()).resolves.toBeTruthy();
+    });
+});

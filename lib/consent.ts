@@ -1,19 +1,27 @@
 // The visitor's cookie choice. Read only in the browser so the landing page
 // stays static; the server never sees or depends on it.
 
-export type Consent = {
-    v: number;
+import { VISIT_SOURCE_COOKIE } from '@/lib/signupSource';
+
+export type ConsentChoice = {
     ads: boolean;
+    analytics: boolean;
+};
+
+export type Consent = ConsentChoice & {
+    v: number;
     at: string;
 };
 
 export const CONSENT_COOKIE = 'sw_consent';
 // Bump to ask everyone again, e.g. when a new optional category is added.
-export const CONSENT_VERSION = 1;
+export const CONSENT_VERSION = 2;
 // Six months, then the banner asks again.
 const CONSENT_MAX_AGE_SECONDS = 60 * 60 * 24 * 182;
 // Google Ads' click and conversion cookies.
 const AD_COOKIE_PREFIX = '_gcl_';
+// Google Analytics' visitor and session cookies (_ga, _ga_<id>).
+const ANALYTICS_COOKIE_PREFIX = '_ga';
 
 function readCookie(name: string): string | null {
     for (const part of document.cookie.split(';')) {
@@ -31,15 +39,16 @@ export function readConsent(): Consent | null {
 
     try {
         const parsed = JSON.parse(decodeURIComponent(raw)) as Partial<Consent>;
-        if (parsed.v !== CONSENT_VERSION || typeof parsed.ads !== 'boolean' || typeof parsed.at !== 'string') return null;
-        return { v: parsed.v, ads: parsed.ads, at: parsed.at };
+        if (parsed.v !== CONSENT_VERSION || typeof parsed.ads !== 'boolean' || typeof parsed.analytics !== 'boolean' || typeof parsed.at !== 'string')
+            return null;
+        return { v: parsed.v, ads: parsed.ads, analytics: parsed.analytics, at: parsed.at };
     } catch {
         return null;
     }
 }
 
-export function writeConsent(ads: boolean): Consent {
-    const consent: Consent = { v: CONSENT_VERSION, ads, at: new Date().toISOString() };
+export function writeConsent({ ads, analytics }: ConsentChoice): Consent {
+    const consent: Consent = { v: CONSENT_VERSION, ads, analytics, at: new Date().toISOString() };
     const secure = window.location.protocol === 'https:' ? '; Secure' : '';
     document.cookie = `${CONSENT_COOKIE}=${encodeURIComponent(JSON.stringify(consent))}; Max-Age=${CONSENT_MAX_AGE_SECONDS}; Path=/; SameSite=Lax${secure}`;
     return consent;
@@ -55,12 +64,22 @@ function cookieDomains(hostname: string): string[] {
 }
 
 export function clearAdCookies(): void {
+    clearCookiesStartingWith(AD_COOKIE_PREFIX);
+}
+
+// Google Analytics' cookies, and the signup source, which is kept only with analytics consent.
+export function clearAnalyticsCookies(): void {
+    clearCookiesStartingWith(ANALYTICS_COOKIE_PREFIX);
+    clearCookiesStartingWith(VISIT_SOURCE_COOKIE);
+}
+
+function clearCookiesStartingWith(prefix: string): void {
     if (typeof document === 'undefined') return;
 
     const names = document.cookie
         .split(';')
         .map((part) => part.trim().split('=')[0])
-        .filter((name) => name.startsWith(AD_COOKIE_PREFIX));
+        .filter((name) => name.startsWith(prefix));
 
     for (const name of names) {
         const expired = `${name}=; Max-Age=0; Path=/`;

@@ -49,9 +49,7 @@ const ROLE: MemberRoleCatalogDto = {
 
 function state(overrides: Record<string, unknown> = {}) {
     drawerState.current = {
-        isCreate: false,
         draft: {
-            roleKey: 'BEST_MAN',
             labelEn: 'Best man',
             labelEl: 'Κουμπάρος',
             sectionEn: '',
@@ -63,6 +61,7 @@ function state(overrides: Record<string, unknown> = {}) {
         },
         errors: {},
         failure: null,
+        failureMessage: null,
         confirmingRetire: false,
         isSaving: false,
         isRetiring: false,
@@ -84,10 +83,13 @@ function renderDrawer(role: MemberRoleCatalogDto | null = ROLE) {
 }
 
 describe('MemberRoleDrawer', () => {
-    it('shows the key read-only when editing', () => {
+    it('never shows or asks for the role key', () => {
         state();
         renderDrawer();
-        expect(screen.getByText('BEST_MAN')).toBeTruthy();
+        expect(screen.queryByText('BEST_MAN')).toBeNull();
+        expect(screen.getAllByRole('textbox')).toHaveLength(5);
+        cleanup();
+        renderDrawer(null);
         expect(screen.getAllByRole('textbox')).toHaveLength(5);
     });
 
@@ -131,14 +133,16 @@ describe('MemberRoleDrawer', () => {
         expect(screen.queryByRole('button', { name: 'retire' })).toBeNull();
     });
 
-    it('shows key taken on the key field', () => {
-        state({ isCreate: true, failure: { kind: 'keyTaken' } });
+    it('shows a failed save as an alert in the footer, next to save', () => {
+        state({ failure: { kind: 'other', error: new Error('x') }, failureMessage: 'Something went wrong.' });
         renderDrawer(null);
-        expect(screen.getByText('keyTaken')).toBeTruthy();
+        const alert = screen.getByRole('alert');
+        expect(alert.textContent).toBe('Something went wrong.');
+        expect(alert.parentElement?.contains(screen.getByRole('button', { name: 'save' }))).toBe(true);
     });
 
     it('shows not found and disables save', () => {
-        state({ failure: { kind: 'notFound' } });
+        state({ failure: { kind: 'notFound' }, failureMessage: 'notFound' });
         renderDrawer();
         expect(screen.getByText('notFound')).toBeTruthy();
         expect((screen.getByRole('button', { name: 'save' }) as HTMLButtonElement).disabled).toBe(true);

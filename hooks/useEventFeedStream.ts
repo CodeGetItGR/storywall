@@ -4,6 +4,7 @@ import { type InfiniteData, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
 import { commentKeys } from '@/hooks/useComments';
+import { useIsDemoRoute } from '@/hooks/useIsDemoRoute';
 import { refreshFeedFirstPage } from '@/hooks/usePosts';
 import { api, ApiError } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -30,18 +31,22 @@ function retryAfterMs(error: unknown): number | null {
     return error instanceof ApiError && error.retryAfterSeconds !== undefined ? error.retryAfterSeconds * 1000 : null;
 }
 
+// The demo runs on local data: nothing ever changes on a server to stream.
 export function useEventFeedStream(eventId: string | null) {
     const queryClient = useQueryClient();
+    const isDemoRoute = useIsDemoRoute();
 
     useEffect(() => {
-        if (!eventId) return;
+        if (!eventId || isDemoRoute) return;
 
         let disposed = false;
         let evicted = false;
         let stream: EventSource | null = null;
         let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
         let refreshTimer: ReturnType<typeof setTimeout> | null = null;
-        let failedMints = 0;
+        // Attempts in a row that never reached an open stream: a refused mint, or a stream that
+        // errored before opening. Minting a token proves nothing about the stream itself.
+        let failures = 0;
 
         // A refresh already waiting will see this change too.
         function scheduleRefresh() {
@@ -59,7 +64,11 @@ export function useEventFeedStream(eventId: string | null) {
             for (const post of posts) void queryClient.invalidateQueries({ queryKey: commentKeys.list(post.id), exact: true });
         }
 
-        function scheduleReconnect(delayMs = RECONNECT_DELAY_MS) {
+        function backoffMs() {
+            return Math.min(RECONNECT_DELAY_MS * 2 ** (failures - 1), MAX_RECONNECT_DELAY_MS);
+        }
+
+        function scheduleReconnect(delayMs: number) {
             if (disposed || evicted) return;
             if (reconnectTimer) clearTimeout(reconnectTimer);
             reconnectTimer = setTimeout(() => void open(), delayMs);
@@ -69,8 +78,10 @@ export function useEventFeedStream(eventId: string | null) {
             try {
                 const { token } = await api.post<EventStreamTokenDto>(endpoints.events.streamToken(eventId!));
                 if (disposed) return;
-                failedMints = 0;
                 stream = new EventSource(api.url(endpoints.events.stream(eventId!, token)));
+                stream.addEventListener('open', () => {
+                    failures = 0;
+                });
                 stream.addEventListener('changed', scheduleRefresh);
                 // The member opened too many streams on this event (other tabs,
                 // other devices) and the server dropped this one, the oldest.
@@ -84,13 +95,13 @@ export function useEventFeedStream(eventId: string | null) {
                 stream.addEventListener('error', () => {
                     stream?.close();
                     stream = null;
-                    scheduleReconnect();
+                    failures += 1;
+                    scheduleReconnect(backoffMs());
                 });
             } catch (error) {
                 if (isPermanentFailure(error)) return;
-                failedMints += 1;
-                const backoff = Math.min(RECONNECT_DELAY_MS * 2 ** (failedMints - 1), MAX_RECONNECT_DELAY_MS);
-                scheduleReconnect(retryAfterMs(error) ?? backoff);
+                failures += 1;
+                scheduleReconnect(retryAfterMs(error) ?? backoffMs());
             }
         }
 
@@ -101,5 +112,5 @@ export function useEventFeedStream(eventId: string | null) {
             if (refreshTimer) clearTimeout(refreshTimer);
             stream?.close();
         };
-    }, [eventId, queryClient]);
+    }, [eventId, isDemoRoute, queryClient]);
 }

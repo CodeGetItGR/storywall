@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-export type FunnelWindow = 'signup' | 'payment' | 'none';
+export type FunnelWindow = 'signup' | 'payment' | 'visit' | 'none';
 
 export function FunnelWindowTag({ window }: { window: FunnelWindow }) {
     const t = useTranslations('AdminPage.funnel.window');

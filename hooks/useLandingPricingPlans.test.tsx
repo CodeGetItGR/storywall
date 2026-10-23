@@ -90,6 +90,7 @@ function makeConfig(): AppConfigResponseDto {
             acceptedProfilePictureMimeTypes: [],
             maxImagePixels: 0,
             defaultStoryLifetimeHours: 24,
+            maxImageDimension: 2560,
         },
         pagination: { defaultPageSize: 20, maxPageSize: 50 },
         planTiers: [
@@ -110,6 +111,7 @@ function makeConfig(): AppConfigResponseDto {
         reactionTypesByEventType: {},
         memberRolesByEventType: {},
         landingCategories: [],
+        landingReviews: [],
         rateLimits: [],
         reportTargetTypes: ['POST'],
         reportReasons: ['SPAM'],

@@ -67,6 +67,10 @@ describe('funnel endpoints', () => {
         );
         expect(endpoints.admin.metrics.funnel('a b', 'c')).toBe('/api/admin/metrics/funnel?since=a%20b&until=c');
         expect(endpoints.admin.metrics.funnelCohorts(26)).toBe('/api/admin/metrics/funnel/cohorts?weeks=26');
+        expect(endpoints.admin.metrics.funnel('a', null, 'SOCIAL')).toBe('/api/admin/metrics/funnel?since=a&channel=SOCIAL');
+        expect(endpoints.admin.metrics.funnelCohorts(26, 'ADS')).toBe('/api/admin/metrics/funnel/cohorts?weeks=26&channel=ADS');
+        expect(endpoints.admin.metrics.funnelChannels()).toBe('/api/admin/metrics/funnel/channels');
+        expect(endpoints.admin.metrics.funnelChannels('a b', 'c')).toBe('/api/admin/metrics/funnel/channels?since=a%20b&until=c');
     });
 });
 

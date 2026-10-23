@@ -10,7 +10,8 @@ import { RsvpReportTiles } from './RsvpReportTiles';
 
 // The report as the host sees it on screen and on paper. Every number is the
 // backend's: this only draws the sections the report type fills in.
-export function RsvpReportView({ report }: { report: RsvpReportDto }) {
+// The phone column is for hosts: a planner gets reports without phone numbers.
+export function RsvpReportView({ report, showPhone = true }: { report: RsvpReportDto; showPhone?: boolean }) {
     return (
         <div className="flex flex-col gap-8">
             {/* Header */}
@@ -26,7 +27,7 @@ export function RsvpReportView({ report }: { report: RsvpReportDto }) {
             {report.sessions && <RsvpReportSessions sessions={report.sessions} />}
 
             {/* Guest list */}
-            {report.groups && <RsvpReportGroups groups={report.groups} />}
+            {report.groups && <RsvpReportGroups groups={report.groups} showPhone={showPhone} />}
         </div>
     );
 }

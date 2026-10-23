@@ -1,6 +1,7 @@
 import { getErrorCodeName, getErrorMessage } from '@/lib/api/errors';
 import type { MediaBatchUploadResponseDto } from '@/lib/api/types';
 import { sendUploadWithBusyRetry, type UploadRetryOptions } from '@/lib/api/uploadRetry';
+import { shrinkImagesForUpload } from '@/lib/uploadImageResize';
 import { splitUploadBatches, type UploadLimits } from '@/lib/uploadLimits';
 
 // Sends a multi-file upload as as many batch requests as the size and count
@@ -9,14 +10,16 @@ import { splitUploadBatches, type UploadLimits } from '@/lib/uploadLimits';
 // fails outright after earlier ones went through doesn't throw away what was
 // stored: its files and the unsent rest are reported in `failed` under that
 // error's code, so a retry resends only them. A failure of the first request
-// (nothing stored yet), or an abort, is thrown as before.
+// (nothing stored yet), or an abort, is thrown as before. Photos are first shrunk to
+// `imageMaxDimension` when it is given (see lib/uploadImageResize.ts).
 export async function uploadInBatches(
     files: File[],
-    limits: Pick<UploadLimits, 'filesPerRequest' | 'requestFileBytes'>,
+    limits: Pick<UploadLimits, 'filesPerRequest' | 'requestFileBytes'> & Partial<Pick<UploadLimits, 'imageMaxDimension'>>,
     sendBatch: (files: File[]) => Promise<MediaBatchUploadResponseDto>,
     options: UploadRetryOptions = {},
 ): Promise<MediaBatchUploadResponseDto> {
-    const batches = splitUploadBatches(files, limits);
+    const toSend = limits.imageMaxDimension ? await shrinkImagesForUpload(files, limits.imageMaxDimension) : files;
+    const batches = splitUploadBatches(toSend, limits);
     const merged: MediaBatchUploadResponseDto = { created: [], failed: [] };
 
     for (let index = 0; index < batches.length; index += 1) {

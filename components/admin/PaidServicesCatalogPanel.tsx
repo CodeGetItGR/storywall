@@ -9,6 +9,8 @@ import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { AdminOrderArrows } from '@/components/admin/AdminOrderArrows';
 import { AdminSection } from '@/components/admin/AdminSection';
+import { AdminSortableList } from '@/components/admin/AdminSortableList';
+import { AdminSortableRow } from '@/components/admin/AdminSortableRow';
 import { AdminStatTile } from '@/components/admin/AdminStatTile';
 import { PaidServiceDrawer, type Visibility, visibilityOf } from '@/components/admin/PaidServiceDrawer';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
@@ -35,6 +37,8 @@ const STATUS_PILL: Record<Visibility, string> = {
     HIDDEN: 'bg-status-warn-wash text-status-warn',
     ARCHIVED: 'bg-status-neutral-wash text-status-neutral',
 };
+
+const serviceIdOf = (service: PaidServiceResponseDto) => service.id;
 
 export function PaidServicesCatalogPanel() {
     const t = useTranslations('AdminPage.paidServices');
@@ -102,6 +106,7 @@ export function PaidServicesCatalogPanel() {
     const move = usePaidServiceMove(servicesOfKind);
     // Arrows move a service among the whole of one kind, so they need one kind picked and nothing else hidden.
     const canReorder = kindFilter !== 'ALL' && statusFilter === 'ALL' && !search.trim() && !move.isPending;
+    const visibleRows = move.arrange(visibleServices);
 
     // Adjusting during render rather than in an effect: the prefilled id has to be
     // on screen the moment the panel opens, not one paint later.
@@ -272,64 +277,71 @@ export function PaidServicesCatalogPanel() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {visibleServices.map((service, index) => {
-                                    const status = visibilityOf(service);
-                                    const planNames =
-                                        service.planTierIds.length === 0
-                                            ? t('allPlans')
-                                            : service.planTierIds.map((id) => plansById.get(id) ?? id).join(', ');
-                                    return (
-                                        <tr key={service.id} className="border-b border-border last:border-b-0 hover:bg-canvas/60">
-                                            <td className="max-w-64 px-4 py-2.5">
-                                                <p className="truncate font-semibold text-ink">{service.name}</p>
-                                                <p className="truncate font-mono text-[11px] text-ink-faint">{service.code}</p>
-                                            </td>
-                                            <td className="px-3 py-2.5 text-ink-muted">{t(`kinds.${service.kind}`)}</td>
-                                            <td className="px-3 py-2.5">
-                                                <p className="font-mono text-ink">
-                                                    {formatMoney(locale, service.priceAmountMinor, service.priceCurrency)}
-                                                </p>
-                                                <p className="text-[11px] text-ink-faint">{t('fields.billingPeriodOnceShort')}</p>
-                                            </td>
-                                            <td className="max-w-56 truncate px-3 py-2.5 text-ink-muted" title={planNames}>
-                                                {planNames}
-                                            </td>
-                                            <td className="px-3 py-2.5">
-                                                <span
-                                                    className={cn(
-                                                        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold',
-                                                        STATUS_PILL[status],
-                                                    )}
-                                                >
-                                                    <span className={cn('h-1.5 w-1.5 rounded-full', STATUS_DOT[status])} />
-                                                    {t(`status.${status}`)}
-                                                </span>
-                                            </td>
-                                            <td className="px-3 py-2.5">
-                                                <AdminOrderArrows
-                                                    id={service.id}
-                                                    name={service.name}
-                                                    isFirst={index === 0}
-                                                    isLast={index === visibleServices.length - 1}
-                                                    disabled={!canReorder}
-                                                    disabledHint={kindFilter === 'ALL' ? tAdmin('order.pickKind') : undefined}
-                                                    onMoveAction={move.move}
-                                                />
-                                            </td>
-                                            <td className="px-3 py-2.5 text-right">
-                                                <button
-                                                    type="button"
-                                                    data-service-id={service.id}
-                                                    onClick={handleEditClick}
-                                                    aria-label={t('edit')}
-                                                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-canvas hover:text-ink"
-                                                >
-                                                    <Pencil className="h-3.5 w-3.5" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
+                                <AdminSortableList ids={visibleRows.map(serviceIdOf)} disabled={!canReorder} onReorderAction={move.reorder}>
+                                    {visibleRows.map((service, index) => {
+                                        const status = visibilityOf(service);
+                                        const planNames =
+                                            service.planTierIds.length === 0
+                                                ? t('allPlans')
+                                                : service.planTierIds.map((id) => plansById.get(id) ?? id).join(', ');
+                                        return (
+                                            <AdminSortableRow
+                                                key={service.id}
+                                                id={service.id}
+                                                name={service.name}
+                                                className="border-b border-border last:border-b-0 hover:bg-canvas/60"
+                                            >
+                                                <td className="max-w-64 px-4 py-2.5">
+                                                    <p className="truncate font-semibold text-ink">{service.name}</p>
+                                                    <p className="truncate font-mono text-[11px] text-ink-faint">{service.code}</p>
+                                                </td>
+                                                <td className="px-3 py-2.5 text-ink-muted">{t(`kinds.${service.kind}`)}</td>
+                                                <td className="px-3 py-2.5">
+                                                    <p className="font-mono text-ink">
+                                                        {formatMoney(locale, service.priceAmountMinor, service.priceCurrency)}
+                                                    </p>
+                                                    <p className="text-[11px] text-ink-faint">{t('fields.billingPeriodOnceShort')}</p>
+                                                </td>
+                                                <td className="max-w-56 truncate px-3 py-2.5 text-ink-muted" title={planNames}>
+                                                    {planNames}
+                                                </td>
+                                                <td className="px-3 py-2.5">
+                                                    <span
+                                                        className={cn(
+                                                            'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold',
+                                                            STATUS_PILL[status],
+                                                        )}
+                                                    >
+                                                        <span className={cn('h-1.5 w-1.5 rounded-full', STATUS_DOT[status])} />
+                                                        {t(`status.${status}`)}
+                                                    </span>
+                                                </td>
+                                                <td className="px-3 py-2.5">
+                                                    <AdminOrderArrows
+                                                        id={service.id}
+                                                        name={service.name}
+                                                        isFirst={index === 0}
+                                                        isLast={index === visibleServices.length - 1}
+                                                        disabled={!canReorder}
+                                                        disabledHint={kindFilter === 'ALL' ? tAdmin('order.pickKind') : undefined}
+                                                        onMoveAction={move.move}
+                                                    />
+                                                </td>
+                                                <td className="px-3 py-2.5 text-right">
+                                                    <button
+                                                        type="button"
+                                                        data-service-id={service.id}
+                                                        onClick={handleEditClick}
+                                                        aria-label={t('edit')}
+                                                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-canvas hover:text-ink"
+                                                    >
+                                                        <Pencil className="h-3.5 w-3.5" />
+                                                    </button>
+                                                </td>
+                                            </AdminSortableRow>
+                                        );
+                                    })}
+                                </AdminSortableList>
                             </tbody>
                         </table>
                     </div>

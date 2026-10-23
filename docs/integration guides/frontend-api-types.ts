@@ -1264,8 +1264,7 @@ interface ThemePresetPatchDto {
 /** POST /api/admin/member-roles (ADMIN). */
 interface MemberRoleCatalogRequestDto {
   eventTypeKey: string;
-  roleKey: string;                       // ^[A-Z][A-Z0-9_]{1,49}$, immutable
-  label: Record<'en' | 'el', string>;    // exactly these two keys, each 1-40 after trimming
+  label: Record<'en' | 'el', string>;    // exactly these two keys, each 1-40 after trimming. 2026-10-21: roleKey is generated from label.en and no longer sent
   sectionLabel?: Record<'en' | 'el', string> | null; // 2026-10-06, optional wishbook-book section title; when sent, same rule as label
   emoji?: string | null;                 // max 16
   maxHolders?: number | null;            // >= 1
@@ -1921,6 +1920,7 @@ interface AppMediaConfigDto {
   acceptedMimeTypes: string[];    // added 2026-09-27 — gallery/story/post/cover uploads; detected from the bytes, HEIC rejected
   acceptedProfilePictureMimeTypes: string[]; // added 2026-09-27 — images only
   maxImagePixels: number;         // added 2026-09-27 — width x height; larger is 3016 MEDIA_IMAGE_TOO_MANY_PIXELS
+  maxImageDimension: number;      // added 2026-10-13 — long edge (px) every image is downscaled to; shrink larger photos to it before upload
   defaultStoryLifetimeHours: number; // added 2026-09-27 — a story posted without expiresAt lives this long
 }
 

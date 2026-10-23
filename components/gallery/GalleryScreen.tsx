@@ -1,6 +1,6 @@
 'use client';
 
-import { Download, Images, MousePointer2 } from 'lucide-react';
+import { Camera, Download, Images, MousePointer2, Users } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { GalleryArchiveDownloadModal } from '@/components/gallery/GalleryArchiveDownloadModal';
@@ -15,6 +15,7 @@ import { ModuleNotice } from '@/components/tools/ModuleNotice';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { Button } from '@/components/ui/button';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
+import { SubTabs } from '@/components/ui/SubTabs';
 import { useGalleryScreen } from '@/hooks/useGalleryScreen';
 import { useActiveModuleCopy } from '@/hooks/useModuleCopy';
 import { formatDate } from '@/lib/datetime';
@@ -23,6 +24,7 @@ import { routes } from '@/lib/routes';
 
 export function GalleryScreen() {
     const t = useTranslations('GalleryPage');
+    const tVendors = useTranslations('Vendors.gallery');
     const galleryCopy = useActiveModuleCopy('gallery');
     const locale = useLocale();
     const {
@@ -31,6 +33,10 @@ export function GalleryScreen() {
         isHost,
         isDeleted,
         galleryEnabled,
+        album,
+        showAlbumTabs,
+        selectAlbum,
+        showUpload,
         canUpload,
         showArchiveDownload,
         showMemberArchive,
@@ -106,8 +112,21 @@ export function GalleryScreen() {
                 </>
             }
         >
+            {/* Album tabs */}
+            {showAlbumTabs && (
+                <SubTabs
+                    className="mb-4"
+                    tabs={[
+                        { key: 'GUEST', label: tVendors('guests'), icon: Users },
+                        { key: 'PRO', label: tVendors('pro'), icon: Camera },
+                    ]}
+                    active={album}
+                    onSelectAction={selectAlbum}
+                />
+            )}
+
             {/* Upload */}
-            {!isDeleted && (
+            {showUpload && (
                 <GalleryUploadSection
                     canUpload={canUpload}
                     selectedFiles={selectedFiles}

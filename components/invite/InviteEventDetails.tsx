@@ -5,15 +5,15 @@ import { formatEventDateParts } from '@/lib/datetime';
 
 interface InviteEventDetailsProps {
     startAt: string | null | undefined;
-    endAt: string | null | undefined;
     timeZone: string | null | undefined;
     locationName: string | null | undefined;
 }
 
-// When and where the event is, on the invite page.
-export function InviteEventDetails({ startAt, endAt, timeZone, locationName }: InviteEventDetailsProps) {
+// When and where the event is, on the invite page. Only the start is shown: the
+// end is a server default the host rarely sets, so guests found it confusing.
+export function InviteEventDetails({ startAt, timeZone, locationName }: InviteEventDetailsProps) {
     const locale = useLocale();
-    const when = formatEventDateParts(locale, startAt, endAt, timeZone);
+    const when = formatEventDateParts(locale, startAt, null, timeZone);
     const where = locationName?.trim() || null;
 
     if (!when && !where) return null;

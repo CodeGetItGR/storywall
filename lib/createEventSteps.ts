@@ -9,6 +9,17 @@ export function parseCreateEventStep(value: string | null): CreateEventStep {
     return CREATE_EVENT_STEPS.find((step) => step === value) ?? 'type';
 }
 
+// The step the wizard shows: the one in the link, else the plan step when the link already names an
+// enabled event type (occasion pages link with ?type=), else the type step.
+export function resolveCreateEventStep(
+    stepParam: string | null,
+    enabledTypes: readonly EventTypeConvention[],
+    requestedSlug: string | null,
+): CreateEventStep {
+    if (stepParam === null && requestedSlug && enabledTypes.some((type) => eventTypeSlug(type) === requestedSlug)) return 'plan';
+    return parseCreateEventStep(stepParam);
+}
+
 // The steps the host walks through: the theme step only when there is something to pick.
 export function visibleCreateEventSteps(themeStepAvailable: boolean): CreateEventStep[] {
     return themeStepAvailable ? CREATE_EVENT_STEPS : CREATE_EVENT_STEPS.filter((step) => step !== 'theme');
@@ -44,6 +55,8 @@ export const CREATE_EVENT_TYPE_PARAM = 'type';
 // The plan (its code) and duration (its coverage option id) a link opens the wizard with.
 export const CREATE_EVENT_PLAN_PARAM = 'plan';
 export const CREATE_EVENT_OPTION_PARAM = 'option';
+// A discount code a link opens the wizard with (e.g. an occasion page campaign).
+export const CREATE_EVENT_CODE_PARAM = 'code';
 
 // The wizard's event type among the enabled ones: the one picked, else the one the link asked for,
 // else WEDDING, else the first. WEDDING while the enabled types haven't loaded.

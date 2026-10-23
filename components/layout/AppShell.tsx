@@ -5,8 +5,11 @@ import { type ReactNode, useEffect } from 'react';
 
 import { AccountPanelShell } from '@/components/account/AccountPanelShell';
 import { DemoActAsBar } from '@/components/demo/DemoActAsBar';
-import { AuthLoadingState, DesktopNavRail, MobileTabBar } from '@/components/layout';
-import { isAccountRoute } from '@/components/layout/mobile-tab-bar';
+import { AuthLoadingState } from '@/components/layout/AuthLoadingState';
+import { DesktopNavRail } from '@/components/layout/DesktopNavRail';
+import { isAccountRoute } from '@/components/layout/mobile-tab-bar/utils';
+import { MobileTabBar } from '@/components/layout/MobileTabBar';
+import { ReviewPrompt } from '@/components/review/ReviewPrompt';
 import { useAdminDemoEventAccess } from '@/hooks/useAdminDemoEventAccess';
 import { useAuth } from '@/hooks/useAuth';
 import { routes } from '@/lib/routes';
@@ -56,6 +59,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <div className="grid min-h-full grid-cols-1 *:w-full lg:max-w-none">{children}</div>
             </main>
             <MobileTabBar />
+            {/* Review prompt */}
+            <ReviewPrompt />
         </div>
     );
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { defaultLocale, type Locale, localeCookieMaxAge, localeCookieName, locales } from '@/i18n/config';
-import { getPublicLandingPath } from '@/i18n/publicLocale';
+import { defaultLocale, type Locale, localeCookieMaxAge, localeCookieName } from '@/i18n/config';
+import { getPublicLandingPath, publicPageLocale } from '@/i18n/publicLocale';
 import { PUBLIC_LOCALE_HEADER } from '@/i18n/publicMessages';
 import { resolveLocale } from '@/i18n/resolveLocale';
 import {
@@ -14,8 +14,10 @@ import {
 } from '@/lib/auth/authCookies';
 import { AUTH_RETURN_PATH_PARAM } from '@/lib/auth/returnPath';
 import { clientIpFrom, springAuth, SpringAuthError } from '@/lib/auth/springAuth';
+import { occasionLocaleForPath } from '@/lib/occasions/occasions';
 import { routes } from '@/lib/routes';
 import { isSharedLinkPath, readShareLocale, SHARE_LOCALE_PARAM } from '@/lib/shareLinks';
+import { takeVisitSourceParam, VISIT_SOURCE_PARAM } from '@/lib/signupSource';
 
 // Explicit allowlist, not a denylist: every prefix listed here requires a
 // valid session, and everything else passes through untouched. A new
@@ -108,7 +110,7 @@ export async function proxy(request: NextRequest) {
         if (redirect) return redirect;
     }
 
-    const publicLocale = pathname === '/' ? defaultLocale : locales.find((locale) => pathname === `/${locale}`);
+    const publicLocale = publicPageLocale(pathname) ?? occasionLocaleForPath(pathname);
     if (publicLocale) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(PUBLIC_LOCALE_HEADER, publicLocale);
@@ -128,7 +130,11 @@ export async function proxy(request: NextRequest) {
 
     if (session.kind === 'signed-out') {
         const loginUrl = new URL(routes.login, request.url);
-        loginUrl.searchParams.set(AUTH_RETURN_PATH_PARAM, `${pathname}${request.nextUrl.search}`);
+        // A source carried from a landing page goes on the login page, so it is known before the
+        // account is created, not only once the visitor comes back to the return path.
+        const { search, source } = takeVisitSourceParam(request.nextUrl.search);
+        loginUrl.searchParams.set(AUTH_RETURN_PATH_PARAM, `${pathname}${search}`);
+        if (source) loginUrl.searchParams.set(VISIT_SOURCE_PARAM, source);
         const redirect = NextResponse.redirect(loginUrl);
         redirect.cookies.delete(AUTH_COOKIES.accessToken);
         redirect.cookies.delete(AUTH_COOKIES.refreshToken);

@@ -3,25 +3,33 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { LandingMoreStories, type LandingMoreStory } from '@/components/landing/LandingMoreStories';
 import { type LandingStoryCopyData, LandingStoryRow } from '@/components/landing/LandingStoryRow';
 import { LandingStoryThemes, type LandingStoryThemesCopy } from '@/components/landing/LandingStoryThemes';
+import type { Locale } from '@/i18n/config';
 import { landingStoryMedia } from '@/lib/landingMedia';
 import { getLandingThemes, type LandingTheme } from '@/lib/landingThemes';
+import { landingSectionAttributes } from '@/lib/landingTracking';
+import { loadLiveOccasions } from '@/lib/occasions/liveOccasions.server';
 
 export async function LandingStories() {
+    const locale = (await getLocale()) as Locale;
     const t = await getTranslations('LandingPage.stories');
     const heading = t.raw('heading') as string[];
     const rows = t.raw('rows') as LandingStoryCopyData[];
     const moreStories = t.raw('moreStories') as LandingMoreStory[];
     const themesCopy = t.raw('themes') as LandingStoryThemesCopy;
-    const locale = await getLocale();
     // Rows are fixed, so the theme lists can be fetched side by side; null for a row without themes.
     const rowThemes = await Promise.all(
         landingStoryMedia.map((media): Promise<LandingTheme[] | null> | null =>
             media.themeEventType ? getLandingThemes(media.themeEventType, locale) : null,
         ),
     );
+    const occasions = await loadLiveOccasions();
 
     return (
-        <section className="platform bg-white py-17 min-[761px]:py-[clamp(90px,11vw,180px)]" id="platformStories">
+        <section
+            className="platform bg-white py-17 min-[761px]:py-[clamp(90px,11vw,180px)]"
+            id="platformStories"
+            {...landingSectionAttributes('stories')}
+        >
             {/* Eyebrow + heading */}
             <div className="section-intro px-5 min-[761px]:grid min-[761px]:grid-cols-[1fr_2.1fr] min-[761px]:items-start min-[761px]:gap-x-[6vw]">
                 <div className="eyebrow pt-2.5 text-[13px] leading-[1.4] font-extrabold tracking-[0.14em] uppercase min-[761px]:col-start-2 min-[761px]:row-start-1 min-[761px]:mb-5.5 min-[761px]:pt-0">
@@ -41,7 +49,16 @@ export async function LandingStories() {
                 {rows.map((copy, index) => {
                     const themes = rowThemes[index];
                     return (
-                        <LandingStoryRow copy={copy} demoLabel={t('openDemo')} index={index} key={copy.tag} media={landingStoryMedia[index]}>
+                        <LandingStoryRow
+                            copy={copy}
+                            demoLabel={t('openDemo')}
+                            index={index}
+                            key={copy.tag}
+                            locale={locale}
+                            media={landingStoryMedia[index]}
+                            occasionLabel={t('occasionLink')}
+                            occasions={occasions}
+                        >
                             {/* Themes */}
                             {themes && themes.length > 0 && <LandingStoryThemes copy={themesCopy} themes={themes} />}
                         </LandingStoryRow>

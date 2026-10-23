@@ -1,7 +1,7 @@
 import { Calendar, CalendarPlus, ChevronRight, MapPin } from 'lucide-react';
-import Link from 'next/link';
 import { useLocale } from 'next-intl';
 
+import { AppLink } from '@/components/ui/AppLink';
 import { formatDate } from '@/lib/datetime';
 import { cn } from '@/lib/utils';
 
@@ -69,12 +69,12 @@ export function EventInfo({
             {/* Place */}
             {place &&
                 (placeHref ? (
-                    <Link
+                    <AppLink
                         href={placeHref}
                         className="-mx-1 flex min-w-0 items-center gap-1 rounded-md px-1 py-1 alegreya-light text-[1rem] focus-ring transition-opacity hover:opacity-70"
                     >
                         {placeContent}
-                    </Link>
+                    </AppLink>
                 ) : (
                     <div className="flex min-w-0 items-center gap-1 alegreya-light text-[1rem]">{placeContent}</div>
                 ))}

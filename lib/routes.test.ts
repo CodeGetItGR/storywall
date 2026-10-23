@@ -6,6 +6,12 @@ import { routes } from '@/lib/routes';
 const DEMO_EVENT_ID = 'evt-demo-wedding';
 registerDemoEventRoute(DEMO_EVENT_ID, 'wedding');
 
+describe('routes.events.new', () => {
+    it('carries a discount code', () => {
+        expect(routes.events.new({ type: 'wedding', code: 'SUMMER27' })).toBe('/events/new?type=wedding&code=SUMMER27');
+    });
+});
+
 describe('routes.events for a registered demo event id', () => {
     it('feed() resolves under /demo instead of /events/{id}', () => {
         expect(routes.events.feed(DEMO_EVENT_ID)).toBe('/demo/wedding/feed');
@@ -53,5 +59,16 @@ describe('routes.events for a registered demo event id', () => {
 
     it('leaves unregistered event ids on /events/{id}', () => {
         expect(routes.events.feed('evt-real')).toBe('/events/evt-real/feed');
+    });
+});
+
+// /demo and /demo/{slug} only redirect to the feed, so links skip that round trip.
+describe('demo entry links', () => {
+    it('open the default demo on its feed', () => {
+        expect(routes.demo).toBe('/demo/wedding/feed');
+    });
+
+    it("open an event type's demo on its feed", () => {
+        expect(routes.demoEventType('baby-shower')).toBe('/demo/baby-shower/feed');
     });
 });

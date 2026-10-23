@@ -13,7 +13,7 @@ export default function RsvpReportPage() {
     if (!isRsvpReportType(reportType)) notFound();
 
     return (
-        <EventRouteGate requireHost fallback={<RsvpReportScreenSkeleton />}>
+        <EventRouteGate requireHost allowVendorCapability="RSVP_REPORT" fallback={<RsvpReportScreenSkeleton />}>
             <RsvpReportScreen reportType={reportType} />
         </EventRouteGate>
     );

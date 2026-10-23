@@ -4,6 +4,7 @@ import type { AuthSessionDto, ProblemDetail, RecentErrorDto } from '@/lib/api/ty
 import { clearSession, getAccessToken, setSession, subscribeAuthState } from '@/lib/auth/tokenStore';
 import { redactApiPath } from '@/lib/betaFeedback/routeTemplates';
 import { demoActAsHeaders } from '@/lib/demo/demoActAs';
+import { INCIDENT_PAUSED_ERROR_CODE, isPausedRequest } from '@/lib/incident';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 
@@ -192,13 +193,24 @@ function failedResponseError(method: string | undefined, path: string, res: Resp
     return error;
 }
 
+// Refused here, never sent, while the incident switch pauses purchases and uploads (lib/incident.ts).
+function throwIfPaused(method: string | undefined, path: string, body: unknown): void {
+    if (isPausedRequest(method, path, body)) throw new ApiError(403, { errorCode: INCIDENT_PAUSED_ERROR_CODE });
+}
+
+// Only a JSON body is labelled. The header isn't CORS-safelisted, so on a request
+// without a body it would only cost a preflight round trip to Spring.
+function jsonContentType(body: RequestInit['body']): Record<string, string> {
+    return typeof body === 'string' ? { 'Content-Type': 'application/json' } : {};
+}
+
 // Bare fetch straight to Spring with no auth header and no retry-on-401 —
 // used by api.publicGet for the handful of endpoints that don't require auth.
 async function rawFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
     const res = await fetch(`${API_BASE_URL}${path}`, {
         ...options,
         headers: {
-            'Content-Type': 'application/json',
+            ...jsonContentType(options.body),
             'Accept-Language': getClientLocale(),
             ...options.headers,
         },
@@ -217,6 +229,7 @@ async function rawFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
 // anonymous QR media-upload endpoints, which take the scanned QR token
 // itself as the credential instead of a bearer token.
 async function rawPostForm<T>(path: string, formData: FormData, options: RequestInit = {}): Promise<T> {
+    throwIfPaused('POST', path, formData);
     const res = await fetch(`${API_BASE_URL}${path}`, {
         ...options,
         method: 'POST',
@@ -238,13 +251,13 @@ async function rawPostForm<T>(path: string, formData: FormData, options: Request
 
 async function apiFetchResponse(path: string, options: ApiFetchOptions = {}): Promise<Response> {
     const { allowNotModified, skipAuthRetry, ...init } = options;
+    throwIfPaused(init.method, path, init.body);
     const accessToken = getAccessToken();
-    const isFormData = init.body instanceof FormData;
 
     const res = await fetch(`${API_BASE_URL}${path}`, {
         ...init,
         headers: {
-            ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+            ...jsonContentType(init.body),
             'Accept-Language': getClientLocale(),
             ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
             ...demoActAsHeaders(init.method, path),

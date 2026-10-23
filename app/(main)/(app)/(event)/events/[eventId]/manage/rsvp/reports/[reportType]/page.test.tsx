@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
     resolveServerEventContext: vi.fn(),
     resolveServerEventDetail: vi.fn(),
     serverGet: vi.fn(),
+    serverGetOrNull: vi.fn(),
 }));
 
 vi.mock('next/navigation', () => ({
@@ -20,7 +21,7 @@ vi.mock('@/lib/auth/serverEventContext', () => ({
     resolveServerEventDetail: mocks.resolveServerEventDetail,
 }));
 
-vi.mock('@/lib/api/serverFetch', () => ({ serverGet: mocks.serverGet }));
+vi.mock('@/lib/api/serverFetch', () => ({ serverGet: mocks.serverGet, serverGetOrNull: mocks.serverGetOrNull }));
 vi.mock('@/i18n/serverLocale', () => ({ getServerLocale: async () => 'en' }));
 vi.mock('./PageClient', () => ({ default: () => null }));
 
@@ -44,6 +45,7 @@ describe('RsvpReportPage (server)', () => {
         mocks.resolveServerEventContext.mockReset().mockResolvedValue(hostContext);
         mocks.resolveServerEventDetail.mockReset().mockResolvedValue(liveEvent);
         mocks.serverGet.mockReset().mockResolvedValue({ rows: [] });
+        mocks.serverGetOrNull.mockReset().mockResolvedValue(null);
     });
 
     it('404s on an invalid report type before resolving the event context', async () => {
@@ -64,10 +66,34 @@ describe('RsvpReportPage (server)', () => {
         expect(seededKeys(await visit())).toEqual([['events', 'e1', 'rsvps', 'report', 'STATISTICS', 'en']]);
     });
 
-    it('prefetches nothing for a guest', async () => {
+    it('asks a host nothing about vendors', async () => {
+        await visit();
+
+        expect(mocks.serverGetOrNull).not.toHaveBeenCalled();
+    });
+
+    it('prefetches no report for a guest, only the fact that they are not a vendor', async () => {
         mocks.resolveServerEventContext.mockResolvedValue({ ...hostContext, isHost: false });
 
-        expect(seededKeys(await visit())).toEqual([]);
+        expect(seededKeys(await visit())).toEqual([['events', 'e1', 'vendors', 'me']]);
+        expect(mocks.serverGet).not.toHaveBeenCalled();
+    });
+
+    it('prefetches the report for a planner whose RSVP report tool is open', async () => {
+        mocks.resolveServerEventContext.mockResolvedValue({ ...hostContext, isHost: false });
+        mocks.serverGetOrNull.mockResolvedValue({ vendorType: 'PLANNER', capabilities: ['RSVP_REPORT'], accessOpen: true });
+
+        expect(seededKeys(await visit())).toEqual([
+            ['events', 'e1', 'vendors', 'me'],
+            ['events', 'e1', 'rsvps', 'report', 'STATISTICS', 'en'],
+        ]);
+    });
+
+    it('prefetches no report for a planner whose access has ended', async () => {
+        mocks.resolveServerEventContext.mockResolvedValue({ ...hostContext, isHost: false });
+        mocks.serverGetOrNull.mockResolvedValue({ vendorType: 'PLANNER', capabilities: [], accessOpen: false });
+
+        expect(seededKeys(await visit())).toEqual([['events', 'e1', 'vendors', 'me']]);
         expect(mocks.serverGet).not.toHaveBeenCalled();
     });
 

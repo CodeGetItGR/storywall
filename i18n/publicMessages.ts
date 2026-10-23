@@ -14,6 +14,7 @@ export const PUBLIC_CLIENT_NAMESPACES = [
     'LandingPage.shell',
     'LandingPage.features',
     'LandingPage.featureDetails',
+    'LandingPage.reviews',
     'LandingPage.pricing',
     'LandingPage.stack',
     'LanguageSwitcher',
@@ -21,7 +22,9 @@ export const PUBLIC_CLIENT_NAMESPACES = [
     'Durations',
     'AccountDrawer',
     'NewsletterForm',
+    'ForBusinessPage.apply',
     'CookieConsent',
+    'PartnerCard',
 ] as const;
 
 function readPath(messages: AbstractIntlMessages, segments: string[]): AbstractIntlMessages | string | undefined {

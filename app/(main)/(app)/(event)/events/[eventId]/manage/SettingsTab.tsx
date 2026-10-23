@@ -27,6 +27,7 @@ import {
 } from '@/lib/datetime';
 import { getLatestStartAt } from '@/lib/eventCoverage';
 import { getEventEndPresets } from '@/lib/eventEndPresets';
+import { INCIDENT_MODE } from '@/lib/incident';
 import { COVER_PHOTO_SECTION_ID } from '@/lib/manageSectionTargets';
 import { cn } from '@/lib/utils';
 
@@ -38,13 +39,14 @@ const settingsFormId = 'event-settings-form';
 export default function SettingsTab({
     event,
     canWrite,
-    canUploadCover = canWrite,
+    canUploadCover: canUploadCoverProp = canWrite,
 }: {
     event: EventDetailResponseDto;
     canWrite: boolean;
     canUploadCover?: boolean;
 }) {
     const t = useTranslations('ManagePage');
+    const canUploadCover = canUploadCoverProp && !INCIDENT_MODE;
     const tCreateEvent = useTranslations('CreateEventPage');
     const locale = useLocale();
     const toErrorMessage = useApiErrorMessage();

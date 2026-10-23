@@ -1,9 +1,9 @@
 'use client';
 
 import { Download, Images } from 'lucide-react';
-import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { AppLink } from '@/components/ui/AppLink';
 import type { EventScheduleDto } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
 import { getCoverageStatus } from '@/lib/eventCoverage';
@@ -42,13 +42,13 @@ export function CoverageStatusStrip({ eventId, schedule }: { eventId: string; sc
             </span>
             {/* Download CTA (final month) */}
             {isClosing && (
-                <Link
+                <AppLink
                     href={routes.events.tools.gallery(eventId)}
                     className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-primary px-3.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
                 >
                     <Download className="h-3.5 w-3.5" aria-hidden="true" />
                     {t('download')}
-                </Link>
+                </AppLink>
             )}
         </div>
     );

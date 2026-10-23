@@ -1,9 +1,9 @@
 'use client';
 
 import { ArrowRight, Loader2 } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+import { AppLink } from '@/components/ui/AppLink';
 import type { GiftClaim } from '@/hooks/useGiftClaim';
 import { GIFT_PIN_LENGTH } from '@/lib/gift';
 
@@ -18,16 +18,16 @@ export function GiftClaimForm({ claim }: { claim: GiftClaim }) {
         return (
             <div className="flex flex-col gap-3">
                 {/* Sign in */}
-                <Link href={claim.loginHref} className={primaryClass}>
+                <AppLink href={claim.loginHref} className={primaryClass}>
                     {t('signIn')}
                     <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
-                <Link
+                </AppLink>
+                <AppLink
                     href={claim.registerHref}
                     className="flex w-full items-center justify-center gap-2 rounded-full bg-surface-muted py-3 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted/70"
                 >
                     {t('register')}
-                </Link>
+                </AppLink>
             </div>
         );
     }

@@ -32,6 +32,8 @@ export const EVENT_MODULE_KEYS = [
     'member_roles',
     'theme',
     'he_or_she',
+    'quiz_polls',
+    'vendors',
 ] as const;
 // Use this (not the raw `ModuleKey` wire type below) whenever code branches on
 // a specific module — it's a closed set and catches typos at compile time.
@@ -46,7 +48,7 @@ export type MediaTypeConvention = 'IMAGE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT';
 // Each context needs its own module: GALLERY → gallery, STORY → stories,
 // POST → posts (plan-owned-modules-fe-integration.md §4).
 // COVER needs no module and works on a DRAFT, but only a host may send it.
-export type MediaUploadContext = 'GALLERY' | 'STORY' | 'POST' | 'COVER';
+export type MediaUploadContext = 'GALLERY' | 'STORY' | 'POST' | 'COVER' | 'PRO';
 export type MediaStatus = 'PROCESSING' | 'READY' | 'FAILED';
 export type MediaArchiveVariant = 'DISPLAY' | 'ORIGINAL';
 export type PlanScope = 'ACCOUNT' | 'EVENT';
@@ -85,6 +87,8 @@ export interface AppMediaConfigDto {
     acceptedMimeTypes: string[];
     acceptedProfilePictureMimeTypes: string[];
     maxImagePixels: number; // width x height; 3016 past it
+    // Added 2026-10-13. Long edge (px) the server downscales every image to; photos are shrunk to it before upload.
+    maxImageDimension: number;
     defaultStoryLifetimeHours: number;
 }
 
@@ -238,6 +242,58 @@ export interface AppLandingCategoryDto {
     eventTypeKeys: EventTypeConvention[];
 }
 
+export type AppReviewRole = 'HOST' | 'GUEST';
+export type AppReviewStatus = 'PENDING' | 'APPROVED' | 'HIDDEN';
+
+// GET /api/me/review-prompt → 200 with this, or 204 (null) when there is nothing to ask.
+export interface AppReviewPromptDto {
+    eventId: string;
+    eventTitle: string;
+    eventType: EventTypeConvention;
+    role: AppReviewRole;
+}
+
+// POST /api/me/reviews. The server drops publicConsent unless stars >= 4 and a comment is sent.
+export interface AppReviewRequestDto {
+    eventId: string;
+    stars: number;
+    comment: string | null;
+    publicConsent: boolean;
+}
+
+// GET/PATCH /api/admin/app-reviews. Ratings only, never dismissals.
+export interface AdminAppReviewDto {
+    id: string;
+    stars: number;
+    comment: string | null;
+    role: AppReviewRole;
+    eventType: EventTypeConvention;
+    eventId: string;
+    userId: string;
+    firstName: string;
+    locale: string;
+    publicConsent: boolean;
+    status: AppReviewStatus;
+    featured: boolean;
+    createdAt: string;
+}
+
+export interface AdminAppReviewPatchDto {
+    status?: AppReviewStatus;
+    featured?: boolean;
+}
+
+// GET /api/config → landingReviews. Featured, newest first; the page keeps its own locale's.
+export interface AppLandingReviewDto {
+    id: string;
+    stars: number;
+    comment: string;
+    firstName: string;
+    role: AppReviewRole;
+    eventType: EventTypeConvention;
+    locale: string;
+}
+
 // /api/admin/landing-categories (ADMIN). Hidden categories and disabled types included.
 export interface AdminLandingCategoryDto {
     id: string;
@@ -275,6 +331,8 @@ export interface AppEventTypeResponseDto {
     sortOrder: number;
     // Admin-uploaded card image for the create-event picker; null → no uploaded image.
     imageUrl: string | null;
+    // GET /api/demo/{eventTypeKey} would answer 200 right now (app-config-fe-integration.md, 2026-10-02).
+    hasDemo: boolean;
 }
 
 export interface EventTypeVoicePack {
@@ -420,10 +478,10 @@ export interface MemberRoleCatalogDto {
     sectionLabel: { en: string; el: string } | null;
 }
 
-// POST /api/admin/member-roles. roleKey and eventTypeKey can't change later.
+// POST /api/admin/member-roles. The server builds roleKey from label.en; it and
+// eventTypeKey can't change later.
 export interface MemberRoleCatalogRequestDto {
     eventTypeKey: string;
-    roleKey: string;
     label: { en: string; el: string };
     sectionLabel?: { en: string; el: string };
     emoji?: string | null;
@@ -495,6 +553,7 @@ export interface AppConfigResponseDto {
     reactionTypesByEventType: Record<string, ReactionTypeResponseDto[]>;
     memberRolesByEventType: Record<string, MemberRoleCatalogDto[]>;
     landingCategories: AppLandingCategoryDto[];
+    landingReviews: AppLandingReviewDto[];
     rateLimits: AppRateLimitConfigDto[];
     reportTargetTypes: ReportTargetType[];
     reportReasons: ReportReason[];
@@ -589,6 +648,16 @@ export interface AuthSessionDto {
     createdAt: string;
 }
 
+// Where a sign-up came from. Validated by Spring (400 if malformed); lib/signupSource.ts trims to the same caps.
+export interface VisitSourceDto {
+    utmSource: string | null;
+    utmMedium: string | null;
+    utmCampaign: string | null;
+    adClick: boolean;
+    referrerHost: string | null;
+    landingPage: string;
+}
+
 export interface RegisterRequestDto {
     email: string;
     password: string;
@@ -607,6 +676,8 @@ export interface RegisterRequestDto {
     // All-or-nothing: an invalid profile is a 400 and no account is created.
     // VIES may leave it PENDING, so read GET /api/me/business-profile afterwards.
     businessProfile?: BusinessProfileRequestDto | null;
+    // Saved on the account only when this request creates it.
+    visitSource?: VisitSourceDto;
 }
 
 export interface LoginRequestDto {
@@ -626,6 +697,8 @@ export interface OAuthLoginRequestDto {
     acceptedTermsVersion?: string;
     acceptedGuidelinesVersion?: string;
     adultConfirmed?: boolean;
+    // Saved on the account only when this request creates it.
+    visitSource?: VisitSourceDto;
 }
 
 // `details` of a 3044 response.
@@ -658,7 +731,7 @@ export type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 // 2026-09-04: ctaRoute (a literal path) is gone, replaced by ctaTarget + ctaParams — the app
 // resolves the route itself. Closed but growable set; treat an unrecognized value defensively.
 // See docs/integration guides/notification-cta-target-fe-integration.md.
-export type NotificationCtaTarget = 'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS' | 'EVENT_COVERAGE_EXTEND' | 'EVENT_WISHBOOK';
+export type NotificationCtaTarget = 'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS' | 'EVENT_COVERAGE_EXTEND' | 'EVENT_WISHBOOK' | 'EVENT_VENDORS';
 
 export interface NotificationResponseDto {
     id: string;
@@ -740,6 +813,7 @@ export interface UserResponseDto {
     // confirmed being 18+; until then every write is 403 4020. Same nulls as above.
     termsAcceptanceRequired: boolean | null;
     currentTermsVersion: string | null;
+    signupSource?: SignupSourceDto | null;
 }
 
 export interface MeUpdateRequestDto {
@@ -823,12 +897,7 @@ export interface AdminProvisionEventRequestDto {
 export type AdminEmailTemplateKey = 'PASSWORD_RESET' | 'PROVISIONED_HOST_WELCOME' | 'EMAIL_VERIFICATION' | 'CUSTOM';
 
 export type AdminEmailUnavailableReason =
-    | 'ACCOUNT_DELETED'
-    | 'NO_EMAIL'
-    | 'NOT_ACTIVE'
-    | 'NOT_PASSWORD_ACCOUNT'
-    | 'ALREADY_VERIFIED'
-    | 'NO_HOSTED_EVENTS';
+    'ACCOUNT_DELETED' | 'NO_EMAIL' | 'NOT_ACTIVE' | 'NOT_PASSWORD_ACCOUNT' | 'ALREADY_VERIFIED' | 'NO_HOSTED_EVENTS';
 
 export interface AdminEmailTemplateDto {
     key: AdminEmailTemplateKey;
@@ -1012,6 +1081,86 @@ export interface PartnerBrandingDto {
     placement: PartnerBrandingPlacementDto;
 }
 
+// --- Vendors in the event ---
+
+export type VendorCapability = 'PRO_ALBUM' | 'SCHEDULE_EDIT' | 'ANNOUNCE' | 'RSVP_REPORT' | 'QR_READ' | 'SONG_REQUESTS';
+export type MediaCollection = 'GUEST' | 'PRO';
+// Why a vendor's tools are off. Null in VendorMeDto while they are open.
+export type VendorToolsOff = 'MODULE_OFF' | 'TYPE_NOT_ALLOWED' | 'ACCESS_ENDED';
+
+// GET /api/events/{eventId}/vendors/links — host only. Build the URL with routes.inviteToken.
+// The backend also sends createdAt (the first creation time, unchanged by a reset): not typed here, never shown.
+export interface VendorLinkDto {
+    vendorType: PartnerRole;
+    inviteToken: string;
+}
+
+// GET /api/events/{eventId}/vendors — any member. The two flags come only for hosts and for the vendor's own row.
+export interface VendorRowDto {
+    id: string;
+    memberId: string | null;
+    vendorType: PartnerRole;
+    // Null for a host's view of a vendor who hasn't filled in their profile yet.
+    businessName: string | null;
+    link: string | null;
+    logoUrl: string | null;
+    joinedAt: string;
+    hiddenByHost?: boolean;
+    optedOut?: boolean;
+}
+
+// GET /api/events/{eventId}/vendors/me — 404 when the caller is not a vendor of the event.
+export interface VendorMeDto {
+    vendorId: string;
+    vendorType: PartnerRole;
+    // Empty while the tools are off. A tool is open when accessOpen is true and this contains it.
+    capabilities: VendorCapability[];
+    // Null when the vendors module is off for the event.
+    accessEndsAt: string | null;
+    accessOpen: boolean;
+    profileComplete: boolean;
+    showPartnerPrompt: boolean;
+    // Set only for types with the Pro album, and still set while the tools are off. The allowance can be 0.
+    proStorageBytes: number | null;
+    proUsedBytes: number | null;
+    // The caller's own list flags (their row is not in the guest list while hidden).
+    optedOut: boolean;
+    hiddenByHost: boolean;
+    toolsOff: VendorToolsOff | null;
+}
+
+// PATCH /api/events/{eventId}/vendors/{vendorId}: a host sends hiddenByHost, the vendor sends optedOut. Exactly one.
+export interface VendorPatchDto {
+    hiddenByHost?: boolean;
+    optedOut?: boolean;
+}
+
+// GET/PUT /api/me/vendor-profile — GET is 404 until the first save.
+export interface VendorProfileDto {
+    businessName: string;
+    vendorType: PartnerRole;
+    link: string;
+    logoUrl: string | null;
+    partnerPromptDismissed: boolean;
+}
+
+export interface VendorProfileRequestDto {
+    businessName: string;
+    vendorType: PartnerRole;
+    link: string;
+}
+
+export interface ProCreditDto {
+    // Null when the vendor has no profile.
+    businessName: string | null;
+    vendorType: PartnerRole;
+}
+
+// PATCH /api/events/{eventId}/playlist-suggestions/{id}/played -> PlaylistSuggestionLeaderboardDto (rank 0).
+export interface PlaylistPlayedRequestDto {
+    played: boolean;
+}
+
 // The notice a couple accepts: at checkout for a branded partner's code, or as the host prompt.
 export interface PartnerBrandingNoticeDto {
     displayName: string;
@@ -1068,6 +1217,41 @@ export interface PartnerBrandingVariantRowDto {
     clicks: number;
     clicksPerEvent: number; // 0 when events is 0
     clicksPerCardSlot: number; // 0 when cardSlots is 0
+}
+
+// --- Public partner program (2026-10-10-business-partner-landing-design.md) ---
+
+// GET /api/public/partner-program — public, the same for everyone.
+export interface PartnerProgramSummaryDto {
+    foundingSpotsTotal: number;
+    // Never negative; 0 once every founding spot is taken.
+    foundingSpotsLeft: number;
+}
+
+// POST /api/public/partner-applications — public.
+// 201 PartnerApplicationResponseDto; 400 field errors; 409 a pending application
+// already exists for this email; 429 rate limited per IP.
+export interface PartnerApplicationRequestDto {
+    name: string;
+    businessName: string;
+    role: PartnerRole;
+    email: string;
+    // A website URL or an @handle.
+    link: string;
+    // ISO 3166-1 alpha-2.
+    countryCode: string;
+    phone: string | null;
+    locale: string;
+    consent: true;
+    utmSource: string | null;
+    utmMedium: string | null;
+    utmCampaign: string | null;
+    // Honeypot: always '' from a person. Spring answers 201 and stores nothing when it isn't.
+    website: string;
+}
+
+export interface PartnerApplicationResponseDto {
+    id: string;
 }
 
 // Why a StoryWall is suspended. ground, rule and explanation are null if the decision row was deleted.
@@ -1144,6 +1328,8 @@ export interface CollaborationCodePreviewResponseDto {
     breakdown: PriceBreakdown;
     // Set only when the code's partner has feed branding: the notice the couple must accept to use it.
     partnerBranding: PartnerBrandingNoticeDto | null;
+    // True when the partner will be emailed a vendor link for this event. Show the offer line only with partnerBranding.
+    vendorOffer?: boolean;
 }
 export interface PartnerPortalTotalDto {
     currency: string;
@@ -1999,6 +2185,59 @@ export interface FunnelCohortDto {
     engagedHost: number;
 }
 
+export type SignupChannel = 'INVITE' | 'GIFT' | 'ADS' | 'SOCIAL' | 'EMAIL' | 'PARTNER' | 'SEARCH' | 'OTHER_SITE' | 'DIRECT' | 'UNKNOWN';
+
+/**
+ * GET /api/admin/metrics/funnel/channels: accounts that signed up in the range, per channel. Revenue is
+ * provider-settled orders of any kind, all time, in minor units per currency.
+ */
+export interface FunnelChannelRowDto {
+    channel: SignupChannel;
+    signedUp: number;
+    createdEvent: number;
+    paidHost: number;
+    revenueMinorByCurrency: Record<string, number>;
+}
+
+// GET /api/admin/metrics/visitors. Google Analytics numbers for the public pages over a range.
+export type VisitorLanguage = 'el' | 'en';
+export type VisitorDevice = 'PHONE' | 'DESKTOP' | 'TABLET';
+export type VisitorClickEvent = 'create' | 'plans' | 'demo' | 'login' | 'nav';
+
+export interface VisitorMetricsDto {
+    // False when Google Analytics isn't set up on this server; everything else is empty.
+    configured: boolean;
+    since: string | null;
+    until: string | null;
+    updatedAt: string | null;
+    visitors: number;
+    visits: number;
+    signups: number;
+    daily: { date: string; visitors: number; visits: number }[];
+    channels: { channel: SignupChannel; visits: number; signups: number }[];
+    // A null page is all the pages outside the top ten.
+    pages: { page: string | null; visits: number }[];
+    languages: { language: VisitorLanguage; visits: number }[];
+    devices: { device: VisitorDevice; visits: number }[];
+    landing: {
+        sections: { section: string; visitors: number }[];
+        clicks: { event: VisitorClickEvent; placement: string; count: number }[];
+        plans: { plan: string; count: number }[];
+        faq: { question: number; count: number }[];
+    };
+}
+
+// Where an account came from. Only on the admin user endpoints; null on /api/me.
+export interface SignupSourceDto {
+    channel: SignupChannel;
+    utmSource: string | null;
+    utmMedium: string | null;
+    utmCampaign: string | null;
+    adClick: boolean | null;
+    referrerHost: string | null;
+    landingPage: string | null;
+}
+
 // --- Module usage (docs/module-usage-be-spec.md) ---
 
 /** The modules the usage dashboard reports on. `qr_links` is not a plan module: its base is every event in scope. */
@@ -2389,6 +2628,84 @@ export interface HeOrSheResultsDto {
     questions: { questionId: string; answers: { memberId: string; displayName: string; avatarUrl: string | null; value: string }[] }[];
 }
 
+// Quiz & Polls — module quiz_polls, WEDDING and BAPTISM only (quiz-polls-fe-integration.md).
+// Same answer types and canonical values as Boy or Girl?.
+export type QuizQuestionKind = 'QUIZ' | 'POLL';
+
+export interface QuizPollsTallyEntry {
+    value: string;
+    count: number;
+}
+
+export interface QuizPollsQuestion {
+    id: string;
+    kind: QuizQuestionKind;
+    // QUIZ: CHOICE, YES_NO or HE_SHE only.
+    answerType: QuizAnswerType;
+    prompt: string;
+    options: QuizOption[] | null;
+    sortOrder: number;
+    myAnswer: string | null;
+    // QUIZ only: hosts always, everyone once CLOSED. CHOICE: an option id.
+    correctValue: string | null;
+    // Most given first, never names. POLL: hosts, members who answered it, everyone once CLOSED.
+    // QUIZ: hosts and once CLOSED.
+    tally: QuizPollsTallyEntry[] | null;
+}
+
+export interface QuizPollsLeaderboardEntry {
+    rank: number;
+    memberId: string;
+    displayName: string;
+    avatarUrl: string | null;
+    correct: number;
+}
+
+// GET /quiz-polls; answer writes, PUT /settings and POST /close return it too.
+export interface QuizPollsViewDto {
+    status: 'OPEN' | 'CLOSED';
+    // Closed is computed on read, so refetch when it passes.
+    closesAt: string | null;
+    canAnswer: boolean;
+    // The two sides of a HE_SHE question; null shows the event type's default.
+    heLabel: string | null;
+    sheLabel: string | null;
+    questions: QuizPollsQuestion[];
+    // Once CLOSED, never for hosts, null with no QUIZ questions.
+    myScore: { correct: number; total: number } | null;
+    // Hosts always, everyone once CLOSED, null with no QUIZ questions.
+    leaderboard: QuizPollsLeaderboardEntry[] | null;
+}
+
+// PUT /settings (host): a replace. Allowed while CLOSED, so a future time or null reopens.
+export interface QuizPollsSettingsRequestDto {
+    closesAt: string | null;
+    heLabel: string | null;
+    sheLabel: string | null;
+}
+
+// POST /questions (host). correctValue: QUIZ only, required; CHOICE names the option by its label.
+export interface QuizPollsQuestionRequestDto {
+    kind: QuizQuestionKind;
+    answerType: QuizAnswerType;
+    prompt: string;
+    options?: string[];
+    correctValue?: string;
+}
+
+// PATCH /questions/{id} (host). Kind and type never change.
+export interface QuizPollsQuestionPatchDto {
+    prompt?: string;
+    options?: { id?: string; label: string }[];
+    sortOrder?: number;
+    correctValue?: string;
+}
+
+// GET /results (host): every answer by name.
+export interface QuizPollsResultsDto {
+    questions: HeOrSheResultsDto['questions'];
+}
+
 // GET|POST /api/events/{eventId}/wishbook/book (wishbook-book-fe-integration.md).
 // downloadUrl only when READY; it's presigned and expires, so fetch GET again right before downloading.
 export type WishbookBookStatus = 'QUEUED' | 'RUNNING' | 'READY' | 'FAILED';
@@ -2459,6 +2776,9 @@ export interface EventInvitationPreviewDto {
     // Added 2026-09-27: null on a normal event. While claimed is false the
     // honorees may not know yet, so guest-facing copy must not spoil it.
     gift: GiftFramingDto | null;
+    // A vendor link's type ("You're invited as the photographer."); null on every other link. On a vendor
+    // link alreadyUsed means the event holds as many vendors as its plan allows.
+    vendorType?: PartnerRole | null;
 }
 
 export interface EventMemberRequestDto {
@@ -2772,6 +3092,10 @@ export interface MediaResponseDto {
     metadata: MediaMetadata;
     createdAt: string;
     deletedAt: string | null;
+    // GUEST unless a vendor uploaded it to the Pro album.
+    collection?: MediaCollection;
+    // The vendor credit on a Pro item; null on guest items.
+    proCredit?: ProCreditDto | null;
 }
 
 // Rows uploaded before 2026-09-24 may lack uploadContext; the backend treats
@@ -2836,6 +3160,9 @@ export interface EventUsageResponseDto {
     memberCount: number;
     memberLimit: number | null;
     memberPercent: number;
+    // The Pro album allowance from the vendors module, and the bytes Pro items use. 0 without the module.
+    proStorageBytes?: number;
+    proUsedBytes?: number;
 }
 
 // POST /api/events/{eventId}/storage-checkout — host, ACTIVE only (billing-fe-guide §7b).
@@ -2878,6 +3205,8 @@ export interface AuthorDto {
     // the member_roles module is off for the event.
     roleKey: string | null;
     customRole: string | null;
+    // Set while the author is a vendor of this event; null for everyone else. On posts and comments only, never on stories.
+    vendorType?: PartnerRole | null;
 }
 
 export interface PostResponseDto {
@@ -3032,6 +3361,8 @@ export interface PlaylistVoteResponseDto extends PlaylistVoteRequestDto {
 
 export interface PlaylistSuggestionLeaderboardDto extends Omit<PlaylistSuggestionResponseDto, 'myVote'> {
     rank: number;
+    // When the host or DJ marked it played; null while unplayed. Ranking ignores it.
+    playedAt?: string | null;
 }
 
 export interface PostMediaRequestDto {

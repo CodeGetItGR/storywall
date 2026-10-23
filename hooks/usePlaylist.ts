@@ -82,7 +82,8 @@ export function usePlaylistVotes(suggestionId: string | null, enabled = true) {
     });
 }
 
-export function usePlaylistLeaderboard(eventId: string | null, enabled = true) {
+// refetchInterval: poll while the tab is visible (TanStack pauses it in a hidden tab). Default: no polling.
+export function usePlaylistLeaderboard(eventId: string | null, enabled = true, options: { refetchInterval?: number } = {}) {
     const { isAuthenticated } = useAuth();
     const playlistReadable = useModuleReadable(eventId, 'playlist');
 
@@ -93,6 +94,7 @@ export function usePlaylistLeaderboard(eventId: string | null, enabled = true) {
         },
         enabled: Boolean(eventId) && enabled && isAuthenticated && playlistReadable,
         staleTime: LIVE_CONTENT_STALE_TIME,
+        refetchInterval: options.refetchInterval,
     });
 }
 

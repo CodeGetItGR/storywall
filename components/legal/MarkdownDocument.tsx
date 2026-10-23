@@ -1,6 +1,6 @@
-import Link from 'next/link';
 import { Fragment } from 'react';
 
+import { AppLink } from '@/components/ui/AppLink';
 import { type MarkdownBlock, type MarkdownInline, parseMarkdown } from '@/lib/markdown';
 import { cn } from '@/lib/utils';
 
@@ -20,9 +20,9 @@ function InlinePart({ part }: { part: MarkdownInline }) {
     if (!part.href) return text;
     if (part.href.startsWith('/')) {
         return (
-            <Link href={part.href} className={LINK_CLASS_NAME}>
+            <AppLink href={part.href} className={LINK_CLASS_NAME}>
                 {text}
-            </Link>
+            </AppLink>
         );
     }
     return (
