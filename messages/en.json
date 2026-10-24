@@ -5373,6 +5373,28 @@
         "includedModules": "Included modules"
     },
     "GalleryPage": {
+        "print": {
+            "action": "Print",
+            "picked": "Picked for print",
+            "pill": "Prints · {count}",
+            "added": "{count, plural, one {# photo added to prints} other {# photos added to prints}}",
+            "skippedNotPrintable": "Some items can't be printed, so they were left out.",
+            "alreadyPicked": "Already on your prints.",
+            "sheetTitle": "Prints",
+            "for": "For {name}",
+            "empty": "No photos picked yet.",
+            "size": "Size",
+            "copies": "Copies",
+            "fewer": "One copy fewer",
+            "more": "One copy more",
+            "remove": "Remove",
+            "removed": "Photo removed",
+            "included": "{used} of {included} included",
+            "beyond": "{count} more",
+            "noPrice": "Your photographer sets the price",
+            "photographerUnnamed": "Photographer",
+            "close": "Close"
+        },
         "backToTools": "Back",
         "hostSubtitle": "Guest uploads are stored here without creating feed posts, so you can review and download them later.",
         "downloadGallery": "Download all",

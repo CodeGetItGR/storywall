@@ -10,23 +10,30 @@ import { GallerySelectionBar } from '@/components/gallery/GallerySelectionBar';
 import { GalleryUploadSection } from '@/components/gallery/GalleryUploadSection';
 import { GalleryViewer } from '@/components/gallery/GalleryViewer';
 import { MemberArchiveModal } from '@/components/gallery/MemberArchiveModal';
+import { PrintPill } from '@/components/gallery/print/PrintPill';
+import { PrintSheet } from '@/components/gallery/print/PrintSheet';
 import { ReportTargetModal } from '@/components/reports/ReportTargetModal';
+import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { ModuleNotice } from '@/components/tools/ModuleNotice';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { Button } from '@/components/ui/button';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { SubTabs } from '@/components/ui/SubTabs';
+import { useGalleryPrint, usePrintAvailability } from '@/hooks/useGalleryPrint';
 import { useGalleryScreen } from '@/hooks/useGalleryScreen';
 import { useActiveModuleCopy } from '@/hooks/useModuleCopy';
 import { formatDate } from '@/lib/datetime';
 import { isMemberArchiveEnabled } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
+import { cn } from '@/lib/utils';
 
 export function GalleryScreen() {
     const t = useTranslations('GalleryPage');
     const tVendors = useTranslations('Vendors.gallery');
     const galleryCopy = useActiveModuleCopy('gallery');
     const locale = useLocale();
+    const { eventId: routeEventId, isHost: isRouteHost } = useEventRouteContext();
+    const printAvailability = usePrintAvailability(routeEventId, isRouteHost);
     const {
         activeEvent,
         eventId,
@@ -41,6 +48,8 @@ export function GalleryScreen() {
         showArchiveDownload,
         showMemberArchive,
         showGalleryActions,
+        canSelect,
+        canDownloadSelection,
         selectedFiles,
         selectedSize,
         uploadNotice,
@@ -93,7 +102,17 @@ export function GalleryScreen() {
         enterSelectionMode,
         exitSelectionMode,
         closeMedia,
-    } = useGalleryScreen();
+    } = useGalleryScreen({ printAvailable: printAvailability.available });
+    const print = useGalleryPrint({
+        eventId: routeEventId,
+        isHost: isRouteHost,
+        available: printAvailability.available,
+        photographers: printAvailability.photographers,
+        media,
+        selectedIds: gallerySelection.selectedIds,
+        viewerMedia: selectedMedia,
+        onAdded: exitSelectionMode,
+    });
     const deletionDate = activeEvent?.deletionScheduledFor ? formatDate(locale, activeEvent.deletionScheduledFor, { dateStyle: 'long' }) : null;
 
     return (
@@ -151,6 +170,9 @@ export function GalleryScreen() {
                                 mediaCount={media.length}
                                 canDownloadSelected={canDownloadSelected}
                                 downloadHint={selectionTooLargeHint}
+                                canDownload={canDownloadSelection}
+                                onPrintSelected={print.available ? print.addSelected : undefined}
+                                isPrinting={print.isAdding}
                                 onSelectAll={gallerySelection.selectAll}
                                 onDownloadSelected={downloadSelectedMedia}
                                 onExitSelection={exitSelectionMode}
@@ -168,19 +190,22 @@ export function GalleryScreen() {
                                     <MousePointer2 className="h-3.5 w-3.5" />
                                     {t('selectPhotos')}
                                 </Button>
-                                {showArchiveDownload && (
-                                    <Button
-                                        type="button"
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={openArchiveDownload}
-                                        disabled={!media.length}
-                                        className="inline-flex rounded-full border-border bg-background px-3 text-xs font-semibold text-ink-muted hover:text-ink"
-                                    >
-                                        <Download className="h-3.5 w-3.5" />
-                                        {t('downloadGallery')}
-                                    </Button>
-                                )}
+                                <div className="flex gap-2">
+                                    {print.pickCount > 0 && <PrintPill count={print.pickCount} onOpenAction={print.openSheet} />}
+                                    {showArchiveDownload && (
+                                        <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={openArchiveDownload}
+                                            disabled={!media.length}
+                                            className="inline-flex rounded-full border-border bg-background px-3 text-xs font-semibold text-ink-muted hover:text-ink"
+                                        >
+                                            <Download className="h-3.5 w-3.5" />
+                                            {t('downloadGallery')}
+                                        </Button>
+                                    )}
+                                </div>
                             </div>
                         )}
                     </div>
@@ -202,7 +227,7 @@ export function GalleryScreen() {
             </section>
 
             {/* Selection bar */}
-            {isHost && (
+            {canSelect && (
                 <GallerySelectionBar
                     visible={gallerySelection.selectionMode}
                     selectedCount={gallerySelection.selectedCount}
@@ -210,6 +235,9 @@ export function GalleryScreen() {
                     canDownloadSelected={canDownloadSelected}
                     downloadHint={selectionTooLargeHint}
                     isDownloadingSelection={isDownloadingSelection}
+                    canDownload={canDownloadSelection}
+                    onPrintSelected={print.available ? print.addSelected : undefined}
+                    isPrinting={print.isAdding}
                     onSelectAll={gallerySelection.selectAll}
                     onDownloadSelected={downloadSelectedMedia}
                     onExitSelection={exitSelectionMode}
@@ -219,12 +247,18 @@ export function GalleryScreen() {
 
             {/* Gallery */}
             {selectionDownloadError && <p className="mb-3 text-xs text-rose-600">{selectionDownloadError}</p>}
+            {!print.sheetOpen && (print.notice || print.error) && (
+                <p role="status" className={cn('mb-3 text-xs', print.error ? 'text-rose-600' : 'text-ink-muted')}>
+                    {print.error ?? print.notice}
+                </p>
+            )}
             <GalleryMediaGrid
                 isLoading={isLoadingMedia}
                 isFetchingNextPage={isFetchingNextPage}
                 items={media}
                 selectedIds={gallerySelection.selectedIds}
                 selectionMode={gallerySelection.selectionMode}
+                printedIds={print.available ? print.pickedIds : undefined}
                 loadMoreRef={loadMoreRef}
                 onMediaClick={handleMediaClick}
                 onMediaPointerDown={handleMediaPointerDown}
@@ -244,6 +278,7 @@ export function GalleryScreen() {
                 reportOpen={reportOpen}
                 originalError={originalError}
                 isDownloadingOriginal={originalMedia.isPending}
+                printToggle={print.viewerToggle}
                 hasPrevious={hasPreviousMedia}
                 hasNext={hasNextMedia}
                 onClose={closeMedia}
@@ -253,6 +288,22 @@ export function GalleryScreen() {
                 onPrevious={showPreviousMedia}
                 onNext={showNextMedia}
             />
+
+            {/* Prints */}
+            {print.available && (
+                <PrintSheet
+                    open={print.sheetOpen}
+                    photographers={print.photographers}
+                    photographer={print.photographer}
+                    items={print.items}
+                    totals={print.totals}
+                    error={print.error}
+                    onSelectPhotographerAction={print.selectPhotographer}
+                    onUpdateItemAction={print.updateItem}
+                    onRemoveItemAction={print.deleteItem}
+                    onCloseAction={print.closeSheet}
+                />
+            )}
 
             {/* Media report */}
             {selectedMedia && canReportMedia && (

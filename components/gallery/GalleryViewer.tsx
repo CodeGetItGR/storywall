@@ -8,6 +8,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { PresignedVideo } from '@/components/common/PresignedVideo';
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { VideoFailureDetail } from '@/components/common/VideoFailureDetail';
+import type { PrintToggle } from '@/components/gallery/print/PrintToggleButton';
+import { PrintToggleButton } from '@/components/gallery/print/PrintToggleButton';
 import { ProCreditLine } from '@/components/vendors/ProCreditLine';
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 import { useImageZoomPan } from '@/hooks/useImageZoomPan';
@@ -26,6 +28,8 @@ interface GalleryViewerProps {
     reportOpen: boolean;
     originalError: string | null;
     isDownloadingOriginal: boolean;
+    /** The print pick button for the open photo; absent while print picks are unavailable. */
+    printToggle?: PrintToggle | null;
     hasPrevious: boolean;
     hasNext: boolean;
     onClose: () => void;
@@ -44,6 +48,7 @@ export function GalleryViewer({
     reportOpen,
     originalError,
     isDownloadingOriginal,
+    printToggle,
     hasPrevious,
     hasNext,
     onClose,
@@ -310,8 +315,9 @@ export function GalleryViewer({
                 {/* Credit */}
                 <ProCreditLine credit={media.proCredit} mediaType={media.mediaType} className="text-white/85" />
                 {/* Viewer actions */}
-                {(canDownloadOriginal || canDelete || canReport) && (
+                {(printToggle || canDownloadOriginal || canDelete || canReport) && (
                     <div className="flex items-center gap-2">
+                        {printToggle && <PrintToggleButton toggle={printToggle} />}
                         {canDownloadOriginal && (
                             <button
                                 type="button"
@@ -346,6 +352,11 @@ export function GalleryViewer({
                     </div>
                 )}
                 {originalError && <p className="text-xs text-rose-200">{originalError}</p>}
+                {printToggle?.error && (
+                    <p role="alert" className="text-xs text-rose-200">
+                        {printToggle.error}
+                    </p>
+                )}
             </div>
         </div>
     );
