@@ -21,10 +21,11 @@ type ViewerToggleInput = {
 // The viewer's pick button: adds the open photo, or takes it off. It keeps its own error so none shows behind the open viewer.
 export function usePrintViewerToggle({ eventId, vendorId, available, viewerMedia, items, add, removeAsync, pending }: ViewerToggleInput) {
     const toErrorMessage = useApiErrorMessage();
-    const error = useScopedMessage(eventId, vendorId);
+    const viewerId = viewerMedia?.id ?? null;
+    // The error belongs to the photo it happened on.
+    const error = useScopedMessage(`${eventId}|${vendorId ?? ''}|${viewerId ?? ''}`);
     const { set: setError } = error;
     const viewerItem = viewerMedia ? items.find((item) => item.mediaId === viewerMedia.id && !item.removed) : undefined;
-    const viewerId = viewerMedia?.id ?? null;
     const viewerItemId = viewerItem?.id ?? null;
 
     const onToggle = useCallback(async () => {

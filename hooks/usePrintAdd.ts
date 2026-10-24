@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAddHostPrintItems } from '@/hooks/usePrintLists';
@@ -27,10 +27,20 @@ export function usePrintAdd({ eventId, vendorId, media, selectedIds, pickedIds, 
     const toErrorMessage = useApiErrorMessage();
     const { mutateAsync: addAsync, isPending: isAdding } = useAddHostPrintItems(eventId);
     const inFlight = useRef(false);
-    const notice = useScopedMessage(eventId, vendorId, PRINT_NOTICE_MS);
-    const error = useScopedMessage(eventId, vendorId);
+    const scope = `${eventId}|${vendorId ?? ''}`;
+    const notice = useScopedMessage(scope, PRINT_NOTICE_MS);
+    const error = useScopedMessage(scope);
     const { set: setNotice } = notice;
     const { set: setError } = error;
+
+    // A new selection ends the notice for good, so it does not come back when the selection is cleared.
+    const [seenSelection, setSeenSelection] = useState<Set<string> | null>(null);
+    if (selectedIds.size > 0 && seenSelection !== selectedIds) {
+        setSeenSelection(selectedIds);
+        if (notice.text) setNotice(null);
+    } else if (selectedIds.size === 0 && seenSelection !== null) {
+        setSeenSelection(null);
+    }
 
     // Returns the error message, or null when the add worked or was ignored.
     const add = useCallback(
@@ -70,8 +80,7 @@ export function usePrintAdd({ eventId, vendorId, media, selectedIds, pickedIds, 
         add,
         addSelected,
         isAdding,
-        // A new selection ends the notice early.
-        notice: selectedIds.size > 0 ? null : notice.text,
+        notice: notice.text,
         error: error.text,
         setError,
     };

@@ -58,9 +58,15 @@ export function useHostPrintList(eventId: string | null, vendorId: string | null
 const itemMutationKey = (listKey: QueryKey) => [...listKey, 'item'] as const;
 const addMutationKey = (eventId: string) => ['events', eventId, 'print-lists', 'host', 'add'] as const;
 
-// Writes to one host list that are running now: item edits on it, and adds (to any list of the event, which is the safe side).
+// Writes to one list that are running now: item edits on it, and adds to it (a host list key ends with its photographer).
 function writesRunning(queryClient: QueryClient, eventId: string, listKey: QueryKey): number {
-    return queryClient.isMutating({ mutationKey: itemMutationKey(listKey) }) + queryClient.isMutating({ mutationKey: addMutationKey(eventId) });
+    return (
+        queryClient.isMutating({ mutationKey: itemMutationKey(listKey) }) +
+        queryClient.isMutating({
+            mutationKey: addMutationKey(eventId),
+            predicate: (mutation) => (mutation.state.variables as { vendorId?: string } | undefined)?.vendorId === listKey[4],
+        })
+    );
 }
 
 // A photographer whose access has ended must stop being offered.
@@ -80,12 +86,13 @@ export function useAddHostPrintItems(eventId: string) {
             const key = printListKeys.host(eventId, body.vendorId);
             // A fetch started before the add would land after it and hide the new picks.
             await queryClient.cancelQueries({ queryKey: key, exact: true });
-            // Another write still running (this one is counted too) would be overwritten by this list: refetch instead.
-            if (writesRunning(queryClient, eventId, key) > 1) {
-                await queryClient.invalidateQueries({ queryKey: key, exact: true });
-                return;
-            }
-            queryClient.setQueryData(key, list);
+            // This write is counted too. With another write running, that one reconciles the list when it ends.
+            if (writesRunning(queryClient, eventId, key) === 1) queryClient.setQueryData(key, list);
+        },
+        // The last write to end re-reads the list: an earlier answer may not carry the others' changes.
+        onSettled: (_list, _error, body) => {
+            const key = printListKeys.host(eventId, body.vendorId);
+            if (writesRunning(queryClient, eventId, key) === 1) return queryClient.invalidateQueries({ queryKey: key, exact: true });
         },
         onError: (error) => refreshContextIfAccessEnded(queryClient, eventId, error),
     });

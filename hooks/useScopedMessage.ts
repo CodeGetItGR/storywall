@@ -2,11 +2,12 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-type Scoped = { text: string; eventId: string; vendorId: string | null };
+type Scoped = { text: string; scope: string };
 
-// A message that belongs to one event and photographer: it reads as null once either changes, with no reset effect.
-// With autoClearMs the message also goes away by itself, and the clock restarts when it is set anew.
-export function useScopedMessage(eventId: string, vendorId: string | null, autoClearMs?: number) {
+// A message that belongs to one scope (an event and photographer, say). Once the scope changes it is cleared,
+// so it does not come back when the scope does. With autoClearMs it also goes away by itself;
+// the clock restarts when it is set anew.
+export function useScopedMessage(scope: string, autoClearMs?: number) {
     const [message, setMessage] = useState<Scoped | null>(null);
 
     useEffect(() => {
@@ -15,7 +16,9 @@ export function useScopedMessage(eventId: string, vendorId: string | null, autoC
         return () => clearTimeout(timer);
     }, [message, autoClearMs]);
 
-    const set = useCallback((text: string | null) => setMessage(text === null ? null : { text, eventId, vendorId }), [eventId, vendorId]);
-    const text = message && message.eventId === eventId && message.vendorId === vendorId ? message.text : null;
-    return { text, set };
+    // Forget a message from another scope during render, as useGalleryScreen does for its report dialog.
+    if (message && message.scope !== scope) setMessage(null);
+
+    const set = useCallback((text: string | null) => setMessage(text === null ? null : { text, scope }), [scope]);
+    return { text: message && message.scope === scope ? message.text : null, set };
 }

@@ -257,11 +257,11 @@ describe('usePrintLists overlapping writes', () => {
         const removing = remove.result.current.mutateAsync('i2');
         await waitFor(() => expect(queryClient.isMutating()).toBe(1));
         await act(() => add.result.current.mutateAsync({ vendorId: 'v1', mediaIds: ['m9'] }));
-        // The add's list was not written over the removal; the list is stale until it is read again.
+        // The add's list was not written over the removal; the removal reconciles the list when it ends.
         expect(queryClient.getQueryData<PrintListDto>(hostKey)?.items.map((item) => item.id)).toEqual(['i1', 'i3']);
-        expect(queryClient.getQueryState(hostKey)?.isInvalidated).toBe(true);
         pendingRemoval.resolve({ ...twoItems, items: [twoItems.items[0], twoItems.items[2]] });
-        await removing;
+        await act(() => removing);
+        expect(queryClient.getQueryState(hostKey)?.isInvalidated).toBe(true);
     });
 
     it('does not write a removal answer over an add still running', async () => {
@@ -278,6 +278,41 @@ describe('usePrintLists overlapping writes', () => {
         expect(queryClient.getQueryData<PrintListDto>(hostKey)?.items.map((item) => item.id)).toEqual(['i1', 'i3']);
         pendingAdd.resolve(twoItems);
         await adding;
+    });
+
+    it('refetches when an edit ends first and the add answers without it', async () => {
+        const { queryClient, wrapper } = setup();
+        queryClient.setQueryData(hostKey, twoItems);
+        const pendingAdd = deferred<PrintListDto>();
+        api.post.mockReturnValue(pendingAdd.promise);
+        api.patch.mockResolvedValue({ ...twoItems, items: twoItems.items.map((item) => (item.id === 'i1' ? { ...item, copies: 4 } : item)) });
+        const patch = renderHook(() => usePatchPrintItem('e1', hostKey), { wrapper });
+        const add = renderHook(() => useAddHostPrintItems('e1'), { wrapper });
+        const adding = add.result.current.mutateAsync({ vendorId: 'v1', mediaIds: ['m9'] });
+        await waitFor(() => expect(queryClient.isMutating()).toBe(1));
+        await act(() => patch.result.current.mutateAsync({ itemId: 'i1', patch: { copies: 4 } }));
+        // The edit ended while the add ran, so it left the final write to the add.
+        pendingAdd.resolve(twoItems);
+        await act(() => adding);
+        expect(queryClient.getQueryState(hostKey)?.isInvalidated).toBe(true);
+    });
+
+    it('does not let a running add for another photographer block an edit', async () => {
+        const { queryClient, wrapper } = setup();
+        queryClient.setQueryData(hostKey, twoItems);
+        const pendingAdd = deferred<PrintListDto>();
+        api.post.mockReturnValue(pendingAdd.promise);
+        const serverList = { ...twoItems, items: twoItems.items.map((item) => (item.id === 'i1' ? { ...item, copies: 4 } : item)) };
+        api.patch.mockResolvedValue(serverList);
+        const patch = renderHook(() => usePatchPrintItem('e1', hostKey), { wrapper });
+        const add = renderHook(() => useAddHostPrintItems('e1'), { wrapper });
+        const adding = add.result.current.mutateAsync({ vendorId: 'v2', mediaIds: ['m9'] });
+        await waitFor(() => expect(queryClient.isMutating()).toBe(1));
+        await act(() => patch.result.current.mutateAsync({ itemId: 'i1', patch: { copies: 4 } }));
+        expect(queryClient.getQueryData(hostKey)).toEqual(serverList);
+        expect(queryClient.getQueryState(hostKey)?.isInvalidated).toBe(true);
+        pendingAdd.resolve(list);
+        await act(() => adding);
     });
 
     it('refreshes the context when the photographer access has ended', async () => {

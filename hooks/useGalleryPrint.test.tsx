@@ -177,7 +177,7 @@ describe('useGalleryPrint', () => {
         expect(setup({ viewerMedia: media[0], available: false }).result.current.viewerToggle).toBeNull();
     });
 
-    it('fades the notice after four seconds, and drops it when a new selection starts', async () => {
+    it('fades the notice after four seconds, and a new selection ends it for good', async () => {
         const { result, rerender } = setup({ selectedIds: new Set(['m2']) });
         api.post.mockResolvedValue(listOf([item('i1', 'm1'), item('i2', 'm2')]));
         vi.useFakeTimers();
@@ -187,11 +187,39 @@ describe('useGalleryPrint', () => {
         rerender({ selectedIds: new Set(['m3']) });
         expect(result.current.notice).toBeNull();
         rerender({ selectedIds: new Set() });
+        expect(result.current.notice).toBeNull();
+
+        rerender({ selectedIds: new Set(['m3']) });
+        api.post.mockResolvedValue(listOf([item('i1', 'm1'), item('i2', 'm2'), item('i3', 'm3')]));
+        await act(() => result.current.addSelected());
+        rerender({ selectedIds: new Set() });
         expect(result.current.notice).toBe('added:1');
         act(() => vi.advanceTimersByTime(3999));
         expect(result.current.notice).toBe('added:1');
         act(() => vi.advanceTimersByTime(1));
         expect(result.current.notice).toBeNull();
+    });
+
+    it('does not bring a photographer error back when returning to them', async () => {
+        const { result } = setup({ selectedIds: new Set(['m2']) });
+        api.post.mockRejectedValue(new ApiError(500, {}, 'boom'));
+        await act(() => result.current.addSelected());
+        expect(result.current.error).toBe('mapped:boom');
+        act(() => result.current.selectPhotographer('v2'));
+        expect(result.current.error).toBeNull();
+        act(() => result.current.selectPhotographer('v1'));
+        expect(result.current.error).toBeNull();
+    });
+
+    it('keeps the viewer toggle error to its photo', async () => {
+        const { result, rerender } = setup({ viewerMedia: media[1] });
+        api.post.mockRejectedValue(new ApiError(500, {}, 'boom'));
+        await act(() => result.current.viewerToggle!.onToggle());
+        expect(result.current.viewerToggle?.error).toBe('mapped:boom');
+        rerender({ viewerMedia: media[2] });
+        expect(result.current.viewerToggle?.error).toBeNull();
+        rerender({ viewerMedia: media[1] });
+        expect(result.current.viewerToggle?.error).toBeNull();
     });
 
     it('does not carry a notice over to another photographer', async () => {
