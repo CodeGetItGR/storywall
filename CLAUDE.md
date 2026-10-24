@@ -98,3 +98,10 @@
 ## SEO
 
 - Every new or changed route follows [docs/seo-guidelines.md](docs/seo-guidelines.md). Before handing work back, check it against that file and list any rule it breaks as a **BLOCKER** in your reply and in the PR description. Do not merge with an open SEO blocker unless the user signs off.
+- Landing and marketing copy is off-limits. Never change the text of the landing page, the for-business page, occasion pages, or their metadata (title, description, alt text, structured data) unless the user explicitly asks for that exact change. Do not reword, "improve", shorten, or translate it as a side effect of other work.
+- When the user does ask for a landing copy change, first point out how it may affect SEO (target keywords, title and description length, overlap with another page's title or keywords, hreflang parity between Greek and English) and confirm before applying it.
+
+## Images
+
+- Every image everywhere must have real alt text. This is a hard requirement with no exceptions: `<img>`, `next/image`, `ProtectedImage`, avatars, logos, icons drawn as images, stickers, background art, and Open Graph images. Never ship `alt=""`, and never leave `alt` optional on a component that renders an image.
+- Alt text is user-facing copy: localize it, and keep it short and specific to what the image shows (e.g. "Photo by Maria", "Wedding theme preview"). Never use filler like "image" or "photo".
