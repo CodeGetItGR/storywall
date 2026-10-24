@@ -50,6 +50,9 @@ export function useHostPrintList(eventId: string | null, vendorId: string | null
     });
 }
 
+// Patches and removals on one list share this key, so the last one running can tell it is the last.
+const itemMutationKey = (listKey: QueryKey) => [...listKey, 'item'] as const;
+
 export function useAddHostPrintItems(eventId: string) {
     const queryClient = useQueryClient();
 
@@ -59,13 +62,15 @@ export function useAddHostPrintItems(eventId: string) {
             const key = printListKeys.host(eventId, body.vendorId);
             // A fetch started before the add would land after it and hide the new picks.
             await queryClient.cancelQueries({ queryKey: key, exact: true });
+            // An item edit still running would be overwritten by this list: refetch once it is done instead.
+            if (queryClient.isMutating({ mutationKey: itemMutationKey(key) }) > 0) {
+                await queryClient.invalidateQueries({ queryKey: key, exact: true });
+                return;
+            }
             queryClient.setQueryData(key, list);
         },
     });
 }
-
-// Patches and removals on one list share this key, so the last one running can tell it is the last.
-const itemMutationKey = (listKey: QueryKey) => [...listKey, 'item'] as const;
 
 function updateItem(queryClient: QueryClient, listKey: QueryKey, itemId: string, fields: Partial<ItemFields>) {
     queryClient.setQueryData<PrintListDto>(listKey, (list) =>

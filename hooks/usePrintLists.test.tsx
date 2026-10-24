@@ -105,6 +105,22 @@ function deferred<T>() {
 describe('usePrintLists item edits', () => {
     beforeEach(() => vi.clearAllMocks());
 
+    it('refetches instead of overwriting an item edit still running after an add', async () => {
+        const { queryClient, wrapper } = setup();
+        queryClient.setQueryData(hostKey, twoItems);
+        const pendingPatch = deferred<PrintListDto>();
+        api.patch.mockReturnValue(pendingPatch.promise);
+        api.post.mockResolvedValue(list);
+        const patch = renderHook(() => usePatchPrintItem('e1', hostKey), { wrapper });
+        const add = renderHook(() => useAddHostPrintItems('e1'), { wrapper });
+        const editing = patch.result.current.mutateAsync({ itemId: 'i1', patch: { copies: 4 } });
+        await waitFor(() => expect(queryClient.isMutating()).toBe(1));
+        await act(() => add.result.current.mutateAsync({ vendorId: 'v1', mediaIds: ['m9'] }));
+        expect(queryClient.getQueryData<PrintListDto>(hostKey)?.items).toHaveLength(3);
+        pendingPatch.resolve(twoItems);
+        await editing;
+    });
+
     it('keeps the later change when two patches overlap', async () => {
         const { queryClient, wrapper } = setup();
         queryClient.setQueryData(hostKey, twoItems);
@@ -207,6 +223,15 @@ describe('usePrintLists download', () => {
         await act(() => result.current.mutateAsync({ listId: 'l1', part: 2, fileStem: 'prints-host' }));
         expect(api.download).toHaveBeenCalledWith('/api/events/e1/print-lists/l1/archive?part=2');
         expect(download.downloadBlob).toHaveBeenCalledWith(blob, 'prints-host-2.zip');
+    });
+
+    it('refreshes the manifest when the part is gone', async () => {
+        api.download.mockRejectedValue(new ApiError(400, { errorCode: 3019 }));
+        const { queryClient, wrapper } = setup();
+        const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+        const { result } = renderHook(() => useDownloadPrintListPart('e1'), { wrapper });
+        await act(() => result.current.mutateAsync({ listId: 'l1', part: 3, fileStem: 'prints-host' }).catch(() => undefined));
+        expect(invalidate).toHaveBeenCalledWith({ queryKey: printListKeys.archive('e1', 'l1'), exact: true });
     });
 
     it('falls back to a stem-based name', async () => {
