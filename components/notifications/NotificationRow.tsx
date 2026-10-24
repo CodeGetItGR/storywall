@@ -8,7 +8,7 @@ import { NOTIFICATION_SEVERITY_STYLES, NotificationSeverityIcon } from '@/compon
 import { AppLink } from '@/components/ui/AppLink';
 import { useDeleteNotification, useMarkNotificationRead } from '@/hooks/useNotifications';
 import type { NotificationResponseDto } from '@/lib/api/types';
-import { notificationCopyType, notificationCtaRoute, notificationSeverity, payloadNumber, payloadString } from '@/lib/notifications';
+import { notificationCopyType, notificationCtaRoute, notificationSeverity, payloadCount, payloadString } from '@/lib/notifications';
 import { cn, timeAgoParts } from '@/lib/utils';
 
 export function NotificationRow({ notification }: { notification: NotificationResponseDto }) {
@@ -44,7 +44,7 @@ export function NotificationRow({ notification }: { notification: NotificationRe
         type: vendorType && tVendors.has(`types.${vendorType}`) ? tVendors(`types.${vendorType}`) : '',
         over: payloadString(notification, 'overFormatted') ?? '',
         dueDate: payloadString(notification, 'dueDate') ?? '',
-        count: payloadNumber(notification, 'count') ?? Number(payloadString(notification, 'count') ?? 0),
+        count: payloadCount(notification, 'count'),
         closesDate: payloadString(notification, 'closesDate') ?? '',
         guestName: payloadString(notification, 'guestName') ?? '',
         total: payloadString(notification, 'total') ?? '',

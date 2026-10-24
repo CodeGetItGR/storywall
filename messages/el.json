@@ -976,7 +976,7 @@
             },
             "PRINT_LIST_SENT": {
                 "title": "Ο/Η {guestName} έστειλε λίστα εκτυπώσεων",
-                "body": "{count} εκτυπώσεις, {total}."
+                "body": "{count, plural, one {# εκτύπωση} other {# εκτυπώσεις}}, {total}."
             },
             "WITHDRAWAL_REFUNDED": {
                 "title": "Η υπαναχώρησή σας ολοκληρώθηκε",

@@ -79,3 +79,10 @@ export function payloadBoolean(notification: NotificationResponseDto, key: strin
     const value = notification.payload?.[key];
     return typeof value === 'boolean' ? value : null;
 }
+
+// A count for plural copy: always a finite number, 0 when missing or not numeric.
+export function payloadCount(notification: NotificationResponseDto, key: string): number {
+    const value = notification.payload?.[key];
+    const count = typeof value === 'string' && value.trim() !== '' ? Number(value) : value;
+    return typeof count === 'number' && Number.isFinite(count) ? count : 0;
+}

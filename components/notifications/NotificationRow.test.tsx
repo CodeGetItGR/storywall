@@ -91,12 +91,12 @@ describe('NotificationRow', () => {
             ctaParams: { eventId: 'e-1' },
         };
 
-        renderRow({ ...ending, id: 'n-4', payload: { count: 1, closesDate: '12 Jul 2027', closesAt: '2027-07-12T21:00:00Z' } });
-        expect(screen.getByText('Print picks close on 12 Jul 2027 (Athens time)')).toBeInTheDocument();
+        renderRow({ ...ending, id: 'n-4', payload: { count: 1, closesDate: '2027-07-12 21:00', closesAt: '2027-07-12T21:00:00Z' } });
+        expect(screen.getByText('Print picks close on 2027-07-12 21:00 (Athens time)')).toBeInTheDocument();
         expect(screen.getByText('Download the photo the host picked.')).toBeInTheDocument();
         cleanup();
 
-        renderRow({ ...ending, id: 'n-5', payload: { count: 5, closesDate: '12 Jul 2027', closesAt: '2027-07-12T21:00:00Z' } });
+        renderRow({ ...ending, id: 'n-5', payload: { count: 5, closesDate: '2027-07-12 21:00', closesAt: '2027-07-12T21:00:00Z' } });
         expect(screen.getByText('Download the 5 photos the host picked.')).toBeInTheDocument();
     });
 
@@ -111,10 +111,10 @@ describe('NotificationRow', () => {
             body: null,
             ctaTarget: 'EVENT_VENDOR_PAGE',
             ctaParams: { eventId: 'e-1' },
-            payload: { count: 3, guestName: 'Maria', total: '€9.00' },
+            payload: { count: 1, guestName: 'Maria', total: '€9.00' },
         });
 
         expect(screen.getByText('Maria sent a print list')).toBeInTheDocument();
-        expect(screen.getByText('3 prints, €9.00.')).toBeInTheDocument();
+        expect(screen.getByText('1 print, €9.00.')).toBeInTheDocument();
     });
 });

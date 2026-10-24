@@ -854,7 +854,7 @@
             },
             "PRINT_LIST_SENT": {
                 "title": "{guestName} sent a print list",
-                "body": "{count} prints, {total}."
+                "body": "{count, plural, one {# print} other {# prints}}, {total}."
             },
             "WITHDRAWAL_REFUNDED": {
                 "title": "Your withdrawal was processed",

@@ -758,7 +758,7 @@ Expected: FAIL.
             },
             "PRINT_LIST_SENT": {
                 "title": "{guestName} sent a print list",
-                "body": "{count} prints, {total}."
+                "body": "{count, plural, one {# print} other {# prints}}, {total}."
             },
 ```
 
@@ -771,7 +771,7 @@ Expected: FAIL.
             },
             "PRINT_LIST_SENT": {
                 "title": "Ο/Η {guestName} έστειλε λίστα εκτυπώσεων",
-                "body": "{count} εκτυπώσεις, {total}."
+                "body": "{count, plural, one {# εκτύπωση} other {# εκτυπώσεις}}, {total}."
             },
 ```
 
