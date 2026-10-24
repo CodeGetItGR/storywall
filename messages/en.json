@@ -848,6 +848,14 @@
                 "title": "{business} joined as {type}",
                 "body": "They can now use their tools in your event."
             },
+            "PRINT_PICKS_ENDING": {
+                "title": "Print picks close on {closesDate} (Athens time)",
+                "body": "{count, plural, one {Download the photo the host picked.} other {Download the # photos the host picked.}}"
+            },
+            "PRINT_LIST_SENT": {
+                "title": "{guestName} sent a print list",
+                "body": "{count} prints, {total}."
+            },
             "WITHDRAWAL_REFUNDED": {
                 "title": "Your withdrawal was processed",
                 "body": "The event has been taken offline and the refund was issued."

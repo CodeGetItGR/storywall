@@ -194,6 +194,10 @@ describe('vendorToolLinks', () => {
         expect(vendorToolLinks('e1', me({ vendorType: 'PHOTOGRAPHER', capabilities: ['PRO_ALBUM'] }))).toEqual([]);
     });
 
+    it('adds no link for print picks (it is a section of the vendor page)', () => {
+        expect(vendorToolLinks('e1', me({ vendorType: 'PHOTOGRAPHER', capabilities: ['PRO_ALBUM', 'PRINT_PICKS'] }))).toEqual([]);
+    });
+
     it('lists nothing once access has closed', () => {
         expect(vendorToolLinks('e1', me({ accessOpen: false }))).toEqual([]);
     });

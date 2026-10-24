@@ -57,6 +57,14 @@ describe('notificationCtaRoute', () => {
         );
     });
 
+    it('sends the print notices to the vendor page', () => {
+        for (const type of ['PRINT_PICKS_ENDING', 'PRINT_LIST_SENT']) {
+            expect(notificationCtaRoute(notification({ type, ctaTarget: 'EVENT_VENDOR_PAGE', ctaParams: { eventId: 'e1' } }))).toBe(
+                '/events/e1/tools/vendors/me',
+            );
+        }
+    });
+
     it('hides the CTA for a target this app does not know', () => {
         expect(
             notificationCtaRoute(notification({ ctaTarget: 'SOMETHING_NEW' as NotificationResponseDto['ctaTarget'], ctaParams: { eventId: 'e' } })),
