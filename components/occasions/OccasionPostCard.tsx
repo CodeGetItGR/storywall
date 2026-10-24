@@ -1,10 +1,13 @@
 import { Heart, MessageCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import type { OccasionPhoto } from '@/lib/occasions/occasionMedia';
 
 // A tilted post card beside the hero phone, drawn like the landing's wedding post cutouts.
 export function OccasionPostCard({ avatar, photo, tilt }: { avatar: OccasionPhoto; photo: OccasionPhoto; tilt: 'left' | 'right' }) {
+    const t = useTranslations('ImageAlt');
+
     return (
         <div
             className={`[container-type:inline-size] rounded-[7%/9%] bg-[#fbf9f6] p-[5%] shadow-[0_24px_40px_-18px_rgba(70,38,24,0.35)] ${tilt === 'left' ? '-rotate-6' : 'rotate-6'}`}
@@ -12,7 +15,7 @@ export function OccasionPostCard({ avatar, photo, tilt }: { avatar: OccasionPhot
             {/* Author */}
             <div className="mb-[4cqw] flex items-center gap-[3cqw]">
                 <ProtectedImage
-                    alt=""
+                    alt={t('profilePhoto')}
                     className="size-[11cqw] rounded-full object-cover"
                     height={avatar.height}
                     sizes="40px"
@@ -27,7 +30,7 @@ export function OccasionPostCard({ avatar, photo, tilt }: { avatar: OccasionPhot
             </div>
             {/* Photo */}
             <ProtectedImage
-                alt=""
+                alt={t('guestPhoto')}
                 className="aspect-[4/3] w-full rounded-[4cqw] object-cover"
                 height={photo.height}
                 sizes="(min-width: 761px) 260px, 40vw"

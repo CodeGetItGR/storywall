@@ -18,7 +18,7 @@ vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLo
 vi.mock('@/hooks/useThemePicker', () => ({ useThemePicker: () => picker.current }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'Could not save.' }));
 vi.mock('@/components/common/ProtectedImage', () => ({
-    ProtectedImage: ({ src, onError }: { src: string; onError?: () => void }) => <img data-testid="art" src={src} alt="" onError={onError} />,
+    ProtectedImage: ({ src, alt, onError }: { src: string; alt: string; onError?: () => void }) => <img data-testid="art" src={src} alt={alt} onError={onError} />,
 }));
 
 const PRESET = {

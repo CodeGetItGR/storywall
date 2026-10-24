@@ -7,7 +7,7 @@ export function LandingThemeTile({ theme }: { theme: LandingTheme }) {
             {/* Swatch */}
             <div className="relative aspect-square overflow-hidden rounded-[13px]" style={{ backgroundColor: theme.backgroundColor }}>
                 <ProtectedImage
-                    alt=""
+                    alt={theme.name}
                     className="object-contain"
                     fill
                     loading="lazy"

@@ -11,6 +11,7 @@ import { EVENT_TYPE_IMAGE_ACCEPT, type EventTypeCardImage } from '@/hooks/useEve
 
 export function EventTypeImageField({ image }: { image: EventTypeCardImage }) {
     const t = useTranslations('AdminPage');
+    const tAlt = useTranslations('ImageAlt');
     const describeError = useApiErrorMessage();
     const isBusy = image.isUploading || image.isRemoving;
 
@@ -21,7 +22,7 @@ export function EventTypeImageField({ image }: { image: EventTypeCardImage }) {
                 <div className="space-y-3">
                     {image.imageUrl && (
                         <div className="relative aspect-video w-full max-w-80 overflow-hidden rounded-md border border-border bg-canvas">
-                            <ProtectedImage src={image.imageUrl} alt="" fill sizes="320px" className="object-cover" />
+                            <ProtectedImage src={image.imageUrl} alt={tAlt('eventTypeImage')} fill sizes="320px" className="object-cover" />
                         </div>
                     )}
                     <div className="flex flex-wrap items-center gap-2">

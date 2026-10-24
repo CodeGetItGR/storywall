@@ -43,6 +43,7 @@ export function ComposerModal({
     textareaRef,
 }: ComposerController) {
     const t = useTranslations('ComposerCard');
+    const tAlt = useTranslations('ImageAlt');
     const uploadAccept = useUploadAccept();
 
     return (
@@ -118,7 +119,7 @@ export function ComposerModal({
                                                 <>
                                                     <Image
                                                         src={img.previewUrl}
-                                                        alt=""
+                                                        alt={tAlt('photoPreview')}
                                                         fill
                                                         className="object-cover"
                                                         sizes="200px"

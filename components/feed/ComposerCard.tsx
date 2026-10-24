@@ -12,6 +12,7 @@ import { useComposer } from '@/providers/ComposerProvider';
 
 export function ComposerCard() {
     const t = useTranslations('ComposerCard');
+    const tAlt = useTranslations('ImageAlt');
     // Shows who the post will be authored as (a demo persona, for an admin).
     const { member: activeMember, isPersona } = usePostingAsMember();
     const profile = useAuth();
@@ -29,7 +30,7 @@ export function ComposerCard() {
             <div className="w-full rounded-2xl bg-card/95 p-1">
                 {/* Compose row */}
                 <div className="flex items-center gap-3">
-                    <Avatar src={avatarUrl} initials={initials} size="md" alt={activeMember?.displayName} />
+                    <Avatar src={avatarUrl} initials={initials} size="md" alt={activeMember?.displayName ?? tAlt('profilePhoto')} />
                     <button
                         type="button"
                         onClick={openPostComposer}

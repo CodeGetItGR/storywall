@@ -32,7 +32,7 @@ function EventQuickCard(item: EventGridItem) {
             {coverUrl ? (
                 <ProtectedImage
                     src={coverUrl}
-                    alt=""
+                    alt={title}
                     fill
                     className="object-cover transition-transform duration-300 group-hover:scale-[1.04]"
                     sizes="208px"

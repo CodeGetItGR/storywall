@@ -99,10 +99,9 @@ export function FeedPageContent() {
                             {moduleFlags.wishlist && !gifts.isLoading && gifts.data && (
                                 <AppLink
                                     href={routes.events.tools.gifts(eventId)}
-                                    aria-label={giftName}
                                     className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-background/92 text-ink shadow-[0_8px_22px_rgba(36,31,26,0.18)] transition-transform hover:-translate-y-0.5"
                                 >
-                                    <Image src="/icons/present.svg" alt="" width={22} height={22} className="h-5 w-5" unoptimized />
+                                    <Image src="/icons/present.svg" alt={giftName} width={22} height={22} className="h-5 w-5" unoptimized />
                                 </AppLink>
                             )}
                         </>

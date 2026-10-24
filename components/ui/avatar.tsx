@@ -30,7 +30,7 @@ interface AvatarProps {
     color?: string;
     size?: AvatarSize;
     className?: string;
-    alt?: string;
+    alt: string;
 }
 
 export default function Avatar({ src, initials = '?', color = '#ff7a59', size = 'md', className, alt }: AvatarProps) {
@@ -41,12 +41,12 @@ export default function Avatar({ src, initials = '?', color = '#ff7a59', size = 
         return (
             <div
                 role="img"
-                aria-label={alt ?? initials}
+                aria-label={alt}
                 className={cn('relative shrink-0 overflow-hidden rounded-full select-none', sizeMap[size], className)}
             >
                 <ProtectedImage
                     src={src}
-                    alt=""
+                    alt={alt}
                     fill
                     className="object-cover"
                     sizes={`${sizePx[size]}px`}
@@ -60,7 +60,7 @@ export default function Avatar({ src, initials = '?', color = '#ff7a59', size = 
     return (
         <div
             role="img"
-            aria-label={alt ?? initials}
+            aria-label={alt}
             className={cn('flex shrink-0 items-center justify-center rounded-full font-semibold text-white select-none', sizeMap[size], className)}
             style={{ backgroundColor: color }}
         >
