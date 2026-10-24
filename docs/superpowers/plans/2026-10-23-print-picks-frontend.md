@@ -321,7 +321,7 @@ describe('printable media', () => {
     const photo = { id: 'p', mediaType: 'IMAGE' } as MediaResponseDto;
     const video = { id: 'v', mediaType: 'VIDEO' } as MediaResponseDto;
 
-    it('accepts photos and refuses videos', () => {
+    it('accepts ready photos and refuses everything else', () => {
         expect(isPrintable(photo)).toBe(true);
         expect(isPrintable(video)).toBe(false);
         expect(printableIds([photo, video], new Set(['p', 'v']))).toEqual({ ids: ['p'], skipped: 1 });
@@ -396,11 +396,11 @@ export function printTotals(items: readonly PrintListItemDto[], included: number
     return { prints, included, beyond: Math.max(0, prints - (included ?? 0)), priceCents: hasPrices ? priceCents : null, hasPrices };
 }
 
-export function isPrintable(media: Pick<MediaResponseDto, 'mediaType'>): boolean {
-    return media.mediaType !== 'VIDEO';
+export function isPrintable(media: Pick<MediaResponseDto, 'mediaType' | 'status'>): boolean {
+    return media.mediaType === 'IMAGE' && media.status === 'READY';
 }
 
-// The selected photos that can go on a print list, and how many videos were left out.
+// The selected photos that can go on a print list, and how many other items were left out.
 export function printableIds(media: readonly MediaResponseDto[], selected: ReadonlySet<string>): { ids: string[]; skipped: number } {
     const chosen = media.filter((item) => selected.has(item.id));
     const ids = chosen.filter(isPrintable).map((item) => item.id);
@@ -1000,7 +1000,7 @@ export function useGalleryPrint({ eventId, isHost, available, photographers, med
             setNotice(null);
             try {
                 if (mediaIds.length) await addItems.mutateAsync({ vendorId, mediaIds });
-                setNotice(skipped ? t('videosSkipped') : t('added', { count: mediaIds.length }));
+                setNotice(skipped ? t('skippedNotPrintable') : t('added', { count: mediaIds.length }));
                 onAdded();
             } catch (addError) {
                 setError(toErrorMessage(addError));
@@ -1111,7 +1111,7 @@ Load the `design:design-system` skill before this task (existing product surface
             "picked": "Picked for print",
             "pill": "Prints · {count}",
             "added": "{count, plural, one {# photo added to prints} other {# photos added to prints}}",
-            "videosSkipped": "Videos can't be printed, so they were left out.",
+            "skippedNotPrintable": "Some items can't be printed, so they were left out.",
             "sheetTitle": "Prints",
             "for": "For {name}",
             "empty": "No photos picked yet.",
@@ -1137,7 +1137,7 @@ Load the `design:design-system` skill before this task (existing product surface
             "picked": "Επιλεγμένη για εκτύπωση",
             "pill": "Εκτυπώσεις · {count}",
             "added": "{count, plural, one {Προστέθηκε # φωτογραφία στις εκτυπώσεις} other {Προστέθηκαν # φωτογραφίες στις εκτυπώσεις}}",
-            "videosSkipped": "Τα βίντεο δεν εκτυπώνονται, γι' αυτό παραλείφθηκαν.",
+            "skippedNotPrintable": "Κάποια αρχεία δεν εκτυπώνονται, γι' αυτό παραλείφθηκαν.",
             "sheetTitle": "Εκτυπώσεις",
             "for": "Για {name}",
             "empty": "Δεν έχετε επιλέξει ακόμη φωτογραφίες.",
@@ -3033,7 +3033,7 @@ Scope filter for `OWN`: in `addSelected`, keep only the caller's uploads before 
     );
 ```
 
-Check the uploader field name on `MediaResponseDto` (`uploaderMemberId` or `uploader.memberId`) and use it. `printableIds` gets an optional filter: change its signature to `printableIds(media, selected, allow: (item) => boolean = () => true)` and count refused photos in `skipped` (update its test with one `allow` case). The notice: `skipped ? (guestScope === 'OWN' && !isHost ? t('ownOnly') : t('videosSkipped')) : t('added', …)`.
+Check the uploader field name on `MediaResponseDto` (`uploaderMemberId` or `uploader.memberId`) and use it. `printableIds` gets an optional filter: change its signature to `printableIds(media, selected, allow: (item) => boolean = () => true)` and count refused photos in `skipped` (update its test with one `allow` case). The notice: `skipped ? (guestScope === 'OWN' && !isHost ? t('ownOnly') : t('skippedNotPrintable')) : t('added', …)`.
 
 The viewer toggle: `available && viewerMedia && isPrintable(viewerMedia) && allowed(viewerMedia)`.
 

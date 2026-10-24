@@ -20,7 +20,7 @@ Every pick shows a price (or that the photographer sets one), so nobody assumes 
 | Who can price | Approved partners only: an active `Collaborator` whose contact email matches the vendor's account email (the same match `VendorService.showPartnerPrompt` uses). Other vendors have no services list. |
 | Print sizes | A `PRINT` service is one size with a price per copy (EUR). Each pick has a size and a number of copies. Default: the first size, 1 copy. |
 | Which vendors | `PHOTOGRAPHER` only, through a new capability `PRINT_PICKS`. |
-| Which media | Photos only. The print action is hidden for videos. |
+| Which media | Ready photos only (type IMAGE, status READY). The print action is hidden for anything else. |
 | Files | Best available: the original when the event has the "keep originals" add-on, the stored copy otherwise (longest side 2560px, JPEG quality 0.82, fine up to about 20x30 cm). |
 | Deadline | The vendor access window. Lists can change until `accessEndsAt`, then freeze, and the photographer's access ends with it. |
 | Two photographers | Every list is addressed to one photographer and uses their sizes. With one photographer, nothing extra shows. With two, the host and guests choose whose list they are building. |
@@ -49,7 +49,7 @@ Built with phase 1, because host picks use it.
 
 ### Host
 
-- **Gallery multi-select:** a "Print" action next to Download in `GallerySelectionBar` (mobile) and `GallerySelectionActions` (desktop). It adds the selected photos to the host's list, 1 copy at the default size. Videos in the selection are skipped, with a short line saying so.
+- **Gallery multi-select:** a "Print" action next to Download in `GallerySelectionBar` (mobile) and `GallerySelectionActions` (desktop). It adds the selected photos to the host's list, 1 copy at the default size. Items that can't be printed (videos, other files, photos still processing) are skipped, with one short line: "Some items can't be printed, so they were left out."
 - **Photo viewer:** a "Print" toggle on a photo (`GalleryViewer`). Picked photos get a small print badge in the grid.
 - **Prints sheet:** opened from a "Prints · 12" pill in the gallery header when the list has items. A list of thumbnails with size and copies per row, a remove control per row, and a total line: "12 of 40 included · 3 more · €9.00". With two photographers, a switch at the top chooses the list.
 - **Host and photographer gating:** the actions appear only while the event has a `PHOTOGRAPHER` vendor whose access window is open and the Vendors module is on.
@@ -155,7 +155,7 @@ No new routes. The gallery and vendor pages are event pages, already private and
 ### Frontend (Vitest)
 
 - `lib/printPicks.ts` totals: included, beyond included, no sizes.
-- Selection bar shows "Print" only with the gate open; skips videos with the hint.
+- Selection bar shows "Print" only with the gate open; skips items that can't be printed, with the hint.
 - Prints sheet: rows, size/copies change, remove, two-photographer switch.
 - Vendor page: Prints section shown only with `PRINT_PICKS`; Services section partner-only.
 - Guest send flow: confirm step, locked list after send, new list.
