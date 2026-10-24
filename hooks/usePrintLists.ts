@@ -21,6 +21,11 @@ export const printListKeys = {
     archive: (eventId: string, listId: string) => ['events', eventId, 'print-lists', 'archive', listId] as const,
 };
 
+// Every print query of every event: the context and all lists (archive manifests included, they carry list contents).
+export function isEventPrintKey(queryKey: QueryKey): boolean {
+    return queryKey[0] === 'events' && (queryKey[2] === 'print-picks' || queryKey[2] === 'print-lists');
+}
+
 export type PrintItemPatch = { sizeId?: string; copies?: number };
 
 type ItemFields = Pick<PrintListItemDto, 'copies' | 'sizeId' | 'sizeLabel' | 'unitPriceCents'>;
