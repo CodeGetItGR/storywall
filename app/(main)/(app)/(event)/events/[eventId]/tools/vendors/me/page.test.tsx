@@ -106,3 +106,45 @@ describe('vendor page prefetch', () => {
         await expect(visit()).resolves.toBeTruthy();
     });
 });
+
+describe('vendor page print prefetch', () => {
+    const PRINTER = { ...PHOTOGRAPHER, capabilities: ['PRINT_PICKS'], approvedPartner: true };
+    const SERVICES = [{ id: 's1', kind: 'PRINT', label: '10x15', priceCents: 100, sortOrder: 0 }];
+
+    beforeEach(() => {
+        serverGet.mockImplementation(async (path: string) => {
+            if (path.endsWith('/print-picks')) return { photographers: [] };
+            if (path.includes('/print-lists/host')) return { id: 'l1', items: [] };
+            return SERVICES;
+        });
+    });
+
+    it('seeds the context, the own host list and the sizes', async () => {
+        answer(PRINTER);
+        const keys = seededKeys(await visit());
+        expect(serverGet).toHaveBeenCalledWith('/api/events/e1/print-lists/host?vendorId=v1', 'tok');
+        expect(keys).toEqual(
+            expect.arrayContaining([
+                ['events', 'e1', 'print-picks'],
+                ['events', 'e1', 'print-lists', 'host', 'v1'],
+                ['me', 'vendor-profile', 'services'],
+            ]),
+        );
+    });
+
+    it('skips prints without the capability and sizes without approval', async () => {
+        answer({ ...PRINTER, capabilities: [], approvedPartner: false });
+        await visit();
+        expect(serverGet).not.toHaveBeenCalledWith(expect.stringContaining('print-'), expect.anything());
+        expect(serverGet).not.toHaveBeenCalledWith('/api/me/vendor-profile/services', expect.anything());
+    });
+
+    it('keeps the profile when a print request fails', async () => {
+        answer(PRINTER);
+        serverGet.mockImplementation(async (path: string) => {
+            if (path.includes('media')) return { content: [], page: 0 };
+            throw new Error('down');
+        });
+        expect(seededKeys(await visit())).toEqual(expect.arrayContaining([['me', 'vendor-profile']]));
+    });
+});
