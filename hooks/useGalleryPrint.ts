@@ -40,12 +40,28 @@ export function useGalleryPrint({ eventId, isHost, available, photographers, med
     const { mutateAsync: patchAsync } = usePatchPrintItem(eventId, listKey);
     const { mutateAsync: removeAsync, isPending: isRemoving } = useRemovePrintItem(eventId, listKey);
 
+    // A failed read must not look like "nothing picked yet". A refetch that fails keeps the data it had.
+    const isLoadingList = list.isLoading;
+    const listFailed = Boolean(list.error) && !list.data;
     const items = useMemo(() => list.data?.items ?? [], [list.data?.items]);
     const pickedIds = useMemo(() => pickedMediaIds(items), [items]);
-    const totals = useMemo(() => printTotals(items, isHost ? (photographer?.hostPrintsIncluded ?? 0) : null), [items, isHost, photographer?.hostPrintsIncluded]);
+    const totals = useMemo(
+        () => printTotals(items, isHost ? (photographer?.hostPrintsIncluded ?? 0) : null),
+        [items, isHost, photographer?.hostPrintsIncluded],
+    );
 
     const { add, addSelected, isAdding, notice, error, setError } = usePrintAdd({ eventId, vendorId, media, selectedIds, pickedIds, onAdded });
-    const viewerToggle = usePrintViewerToggle({ eventId, vendorId, available, viewerMedia, items, add, removeAsync, pending: isAdding || isRemoving });
+    const viewerToggle = usePrintViewerToggle({
+        eventId,
+        vendorId,
+        available,
+        viewerMedia,
+        items,
+        add,
+        removeAsync,
+        pending: isAdding || isRemoving,
+        disabled: isLoadingList || listFailed,
+    });
 
     const updateItem = useCallback(
         async (itemId: string, patch: PrintItemPatch) => {
@@ -92,6 +108,9 @@ export function useGalleryPrint({ eventId, isHost, available, photographers, med
         updateItem,
         deleteItem,
         notice,
-        error,
+        // An action's error, else why the list could not be read.
+        error: error ?? (listFailed ? toErrorMessage(list.error) : null),
+        isLoadingList,
+        listFailed,
     };
 }

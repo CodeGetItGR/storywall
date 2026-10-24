@@ -7,6 +7,7 @@ import { PhotographerSwitch } from '@/components/gallery/print/PhotographerSwitc
 import { PrintRow } from '@/components/gallery/print/PrintRow';
 import { PrintTotal } from '@/components/gallery/print/PrintTotal';
 import { Modal } from '@/components/ui/modal';
+import { VendorRowsSkeleton } from '@/components/vendors/VendorsSkeletons';
 import type { PrintItemPatch, PrintListItemDto, PrintPhotographerDto } from '@/lib/api/types';
 import type { PrintTotals } from '@/lib/printPicks';
 
@@ -18,6 +19,8 @@ export function PrintSheet({
     items,
     totals,
     error,
+    isLoading = false,
+    loadFailed = false,
     readOnly,
     footer,
     onSelectPhotographerAction,
@@ -31,6 +34,9 @@ export function PrintSheet({
     items: PrintListItemDto[];
     totals: PrintTotals;
     error: string | null;
+    // The list is being read, or could not be: neither is "no photos picked yet".
+    isLoading?: boolean;
+    loadFailed?: boolean;
     readOnly?: boolean;
     footer?: ReactNode;
     onSelectPhotographerAction: (vendorId: string) => void;
@@ -52,12 +58,20 @@ export function PrintSheet({
                 {/* Photographer */}
                 {photographer && (
                     <div className="mt-3">
-                        <PhotographerSwitch photographers={photographers} activeId={photographer.vendorId} onSelectAction={onSelectPhotographerAction} />
+                        <PhotographerSwitch
+                            photographers={photographers}
+                            activeId={photographer.vendorId}
+                            onSelectAction={onSelectPhotographerAction}
+                        />
                     </div>
                 )}
 
                 {/* Picks */}
-                {items.length === 0 ? (
+                {loadFailed ? null : isLoading ? (
+                    <div className="mt-3">
+                        <VendorRowsSkeleton rows={2} />
+                    </div>
+                ) : items.length === 0 ? (
                     <p className="mt-4 text-sm text-ink-muted">{t('empty')}</p>
                 ) : (
                     <ul className="mt-3 divide-y divide-border">

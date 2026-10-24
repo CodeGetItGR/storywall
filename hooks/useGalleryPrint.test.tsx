@@ -28,7 +28,8 @@ const photographer = (vendorId: string): PrintPhotographerDto => ({
 });
 const photographers = [photographer('v1'), photographer('v2')];
 
-const photo = (id: string, overrides: Partial<MediaResponseDto> = {}) => ({ id, mediaType: 'IMAGE', status: 'READY', ...overrides }) as MediaResponseDto;
+const photo = (id: string, overrides: Partial<MediaResponseDto> = {}) =>
+    ({ id, mediaType: 'IMAGE', status: 'READY', ...overrides }) as MediaResponseDto;
 const media = [photo('m1'), photo('m2'), photo('m3'), photo('clip', { mediaType: 'VIDEO' })];
 
 const item = (id: string, mediaId: string): PrintListItemDto => ({
@@ -170,6 +171,27 @@ describe('useGalleryPrint', () => {
         await act(() => result.current.viewerToggle!.onToggle());
         expect(result.current.viewerToggle?.error).toBe('mapped:boom');
         expect(result.current.error).toBeNull();
+    });
+
+    it('reports a loading list, and turns the viewer toggle off until it is known', () => {
+        const { result } = setup({ viewerMedia: media[1] });
+        expect(result.current.isLoadingList).toBe(false);
+        expect(result.current.viewerToggle?.disabled).toBe(false);
+        // Another photographer: nothing cached yet, so the read is in flight.
+        api.get.mockReturnValue(new Promise(() => undefined));
+        act(() => result.current.selectPhotographer('v2'));
+        expect(result.current.isLoadingList).toBe(true);
+        expect(result.current.viewerToggle?.disabled).toBe(true);
+    });
+
+    it('reports a failed list read as an error, not as an empty list', async () => {
+        const { result } = setup({ viewerMedia: media[1] });
+        api.get.mockRejectedValue(new ApiError(500, {}, 'down'));
+        act(() => result.current.selectPhotographer('v2'));
+        await waitFor(() => expect(result.current.listFailed).toBe(true));
+        expect(result.current.items).toEqual([]);
+        expect(result.current.error).toBe('mapped:down');
+        expect(result.current.viewerToggle?.disabled).toBe(true);
     });
 
     it('has no viewer toggle for a video or when prints are unavailable', () => {

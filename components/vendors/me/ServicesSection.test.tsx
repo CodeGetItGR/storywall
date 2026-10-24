@@ -87,7 +87,7 @@ describe('ServicesSection', () => {
                 onEditAction={vi.fn()}
             />,
         );
-        expect(screen.getByText('Approved partners can list prices.')).toBeInTheDocument();
+        expect(screen.getByText('Only approved partners can list prices.')).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Add size' })).not.toBeInTheDocument();
     });
 

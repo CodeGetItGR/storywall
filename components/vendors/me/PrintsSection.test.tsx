@@ -68,6 +68,13 @@ describe('PrintsSection', () => {
         expect(screen.queryByText(/of 1 included/)).not.toBeInTheDocument();
     });
 
+    it('says no price is set, not that the photographer sets it, when a size has no price', () => {
+        const unpriced = [{ ...items[0], sizeId: null, sizeLabel: null, unitPriceCents: null }];
+        renderSection({ included: 0, items: unpriced, totals: printTotals(unpriced, 0) });
+        expect(screen.getByText('2 more · No price set')).toBeInTheDocument();
+        expect(screen.queryByText(/Your photographer sets the price/)).not.toBeInTheDocument();
+    });
+
     it('shows no total line when the package covers every copy', () => {
         renderSection({ included: 5, totals: printTotals(items, 5) });
         expect(screen.queryByText(/more/)).not.toBeInTheDocument();

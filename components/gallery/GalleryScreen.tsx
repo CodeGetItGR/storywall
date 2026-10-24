@@ -247,7 +247,9 @@ export function GalleryScreen() {
             {/* Gallery */}
             {selectionDownloadError && <p className="mb-3 text-xs text-rose-600">{selectionDownloadError}</p>}
             {/* Print notice — the status region stays mounted so a new message is announced */}
-            <div role="status">{!print.sheetOpen && !print.error && print.notice && <p className="mb-3 text-xs text-ink-muted">{print.notice}</p>}</div>
+            <div role="status">
+                {!print.sheetOpen && !print.error && print.notice && <p className="mb-3 text-xs text-ink-muted">{print.notice}</p>}
+            </div>
             {!print.sheetOpen && print.error && (
                 <p role="alert" className="mb-3 text-xs text-rose-600">
                     {print.error}
@@ -299,6 +301,8 @@ export function GalleryScreen() {
                     items={print.items}
                     totals={print.totals}
                     error={print.error}
+                    isLoading={print.isLoadingList}
+                    loadFailed={print.listFailed}
                     onSelectPhotographerAction={print.selectPhotographer}
                     onUpdateItemAction={print.updateItem}
                     onRemoveItemAction={print.deleteItem}

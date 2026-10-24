@@ -15,7 +15,7 @@ export type PrintTotals = {
     included: number | null;
     // Copies the host or guest pays for.
     beyond: number;
-    // Null unless every live item has a price (or the list is empty).
+    // Null unless the list has live items and every one has a price.
     priceCents: number | null;
     // Equals priceCents !== null.
     hasPrices: boolean;
@@ -51,6 +51,11 @@ export function printableIds(media: readonly MediaResponseDto[], selected: Reado
 
 export function pickedMediaIds(items: readonly PrintListItemDto[]): Set<string> {
     return new Set(items.filter((item) => !item.removed).map((item) => item.mediaId));
+}
+
+// What the download is built from: the live picks, their copies and sizes. Equal while nothing the zip depends on changes.
+export function printListSignature(items: readonly PrintListItemDto[]): string {
+    return items.map((item) => `${item.id}:${item.copies}:${item.removed ? 1 : 0}:${item.sizeId ?? ''}`).join('|');
 }
 
 export function centsToEuroInput(cents: number): string {

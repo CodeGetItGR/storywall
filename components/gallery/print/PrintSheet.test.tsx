@@ -99,6 +99,18 @@ describe('PrintSheet', () => {
         expect(screen.getByRole('alert')).toHaveTextContent('Something went wrong');
     });
 
+    it('shows a skeleton, not the empty state, while the list loads', () => {
+        renderSheet({ items: [], totals: printTotals([], 1), isLoading: true });
+        expect(screen.getByRole('status')).toBeInTheDocument();
+        expect(screen.queryByText('No photos picked yet.')).not.toBeInTheDocument();
+    });
+
+    it('shows the error, not the empty state, when the list could not be read', () => {
+        renderSheet({ items: [], totals: printTotals([], 1), loadFailed: true, error: 'Something went wrong' });
+        expect(screen.getByRole('alert')).toHaveTextContent('Something went wrong');
+        expect(screen.queryByText('No photos picked yet.')).not.toBeInTheDocument();
+    });
+
     it('shows the empty state without a total', () => {
         renderSheet({ items: [], totals: printTotals([], 1) });
         expect(screen.getByText('No photos picked yet.')).toBeInTheDocument();
@@ -107,7 +119,12 @@ describe('PrintSheet', () => {
 
     it('leaves out the included part when the photographer includes none', () => {
         const none = [{ ...items[0] }];
-        renderSheet({ photographers: [photographers[0]], photographer: { ...photographers[0], hostPrintsIncluded: 0 }, items: none, totals: printTotals(none, 0) });
+        renderSheet({
+            photographers: [photographers[0]],
+            photographer: { ...photographers[0], hostPrintsIncluded: 0 },
+            items: none,
+            totals: printTotals(none, 0),
+        });
         expect(screen.queryByText(/included/)).not.toBeInTheDocument();
         expect(screen.getByText(/^2 more · /)).toBeInTheDocument();
     });

@@ -3,8 +3,10 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { vendorKeys } from '@/hooks/useVendors';
 import { ApiError } from '@/lib/api/client';
 import type { PrintListDto, PrintListItemDto } from '@/lib/api/types';
+import { LIVE_CONTENT_STALE_TIME } from '@/lib/queryClient';
 
 const api = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn(), patch: vi.fn(), del: vi.fn(), download: vi.fn() }));
 vi.mock('@/lib/api/client', async (original) => ({ ...(await original<typeof import('@/lib/api/client')>()), api }));
@@ -21,6 +23,7 @@ import {
     useHostPrintList,
     usePatchPrintItem,
     usePrintListManifest,
+    usePrintPicksContext,
     useRemovePrintItem,
     useSetPrintsIncluded,
 } from '@/hooks/usePrintLists';
@@ -197,7 +200,7 @@ describe('usePrintLists item edits', () => {
         const { result } = renderHook(() => useSetPrintsIncluded('e1'), { wrapper });
         await act(() => result.current.mutateAsync(40));
         expect(api.patch).toHaveBeenCalledWith('/api/events/e1/vendors/me/prints-included', { count: 40 });
-        expect(invalidate).toHaveBeenCalledWith({ queryKey: printListKeys.context('e1') });
+        expect(invalidate).toHaveBeenCalledWith({ queryKey: printListKeys.context('e1'), exact: true });
     });
 });
 
@@ -321,7 +324,10 @@ describe('usePrintLists overlapping writes', () => {
         queryClient.setQueryData(mineKey, twoItems);
         const pendingAdd = deferred<PrintListDto>();
         api.post.mockReturnValue(pendingAdd.promise);
-        const serverList = { ...twoItems, items: twoItems.items.map((item) => (item.id === 'i1' ? { ...item, copies: 4, sizeLabel: '13x18' } : item)) };
+        const serverList = {
+            ...twoItems,
+            items: twoItems.items.map((item) => (item.id === 'i1' ? { ...item, copies: 4, sizeLabel: '13x18' } : item)),
+        };
         api.patch.mockResolvedValue(serverList);
         const patch = renderHook(() => usePatchPrintItem('e1', mineKey), { wrapper });
         const add = renderHook(() => useAddHostPrintItems('e1'), { wrapper });
@@ -339,6 +345,82 @@ describe('usePrintLists overlapping writes', () => {
         api.post.mockRejectedValue(new ApiError(403, { errorCode: 4033 }));
         const { result } = renderHook(() => useAddHostPrintItems('e1'), { wrapper });
         await act(() => result.current.mutateAsync({ vendorId: 'v1', mediaIds: ['m1'] }).catch(() => undefined));
+        expect(queryClient.getQueryState(printListKeys.context('e1'))?.isInvalidated).toBe(true);
+    });
+});
+
+describe('usePrintLists stale context', () => {
+    beforeEach(() => vi.clearAllMocks());
+
+    it('keeps the context fresh only for a short while', async () => {
+        api.get.mockResolvedValue({ guestScope: 'OFF', photographers: [] });
+        const { queryClient, wrapper } = setup();
+        renderHook(() => usePrintPicksContext('e1'), { wrapper });
+        await waitFor(() => expect(api.get).toHaveBeenCalled());
+        const observer = queryClient.getQueryCache().find({ queryKey: printListKeys.context('e1') });
+        expect(observer?.observers[0].options.staleTime).toBe(LIVE_CONTENT_STALE_TIME);
+    });
+
+    it('refreshes the context when a size edit is refused as invalid', async () => {
+        const { queryClient, wrapper } = setup();
+        queryClient.setQueryData(printListKeys.host('e1', 'v1'), list);
+        queryClient.setQueryData(printListKeys.context('e1'), { guestScope: 'OFF', photographers: [] });
+        api.patch.mockRejectedValue(new ApiError(400, { errorCode: 3001 }));
+        const { result } = renderHook(() => usePatchPrintItem('e1', printListKeys.host('e1', 'v1')), { wrapper });
+        await act(() => result.current.mutateAsync({ itemId: 'i1', patch: { sizeId: 's1' } }).catch(() => undefined));
+        expect(queryClient.getQueryState(printListKeys.context('e1'))?.isInvalidated).toBe(true);
+    });
+
+    it('leaves the context alone for an unrelated edit failure', async () => {
+        const { queryClient, wrapper } = setup();
+        queryClient.setQueryData(printListKeys.host('e1', 'v1'), list);
+        queryClient.setQueryData(printListKeys.context('e1'), { guestScope: 'OFF', photographers: [] });
+        api.patch.mockRejectedValue(new ApiError(500, null));
+        const { result } = renderHook(() => usePatchPrintItem('e1', printListKeys.host('e1', 'v1')), { wrapper });
+        await act(() => result.current.mutateAsync({ itemId: 'i1', patch: { copies: 2 } }).catch(() => undefined));
+        expect(queryClient.getQueryState(printListKeys.context('e1'))?.isInvalidated).toBe(false);
+    });
+
+    it('refreshes the context when an add finds the prices gone', async () => {
+        const { queryClient, wrapper } = setup();
+        queryClient.setQueryData(printListKeys.context('e1'), { guestScope: 'OFF', photographers: [] });
+        api.post.mockRejectedValue(new ApiError(409, { errorCode: 5181 }));
+        const { result } = renderHook(() => useAddHostPrintItems('e1'), { wrapper });
+        await act(() => result.current.mutateAsync({ vendorId: 'v1', mediaIds: ['m1'] }).catch(() => undefined));
+        expect(queryClient.getQueryState(printListKeys.context('e1'))?.isInvalidated).toBe(true);
+    });
+
+    it('refreshes the context when reading the host list finds the access ended', async () => {
+        const { queryClient, wrapper } = setup();
+        queryClient.setQueryData(printListKeys.context('e1'), { guestScope: 'OFF', photographers: [] });
+        api.get.mockRejectedValue(new ApiError(403, { errorCode: 4033 }));
+        renderHook(() => useHostPrintList('e1', 'v1', true), { wrapper });
+        await waitFor(() => expect(queryClient.getQueryState(printListKeys.context('e1'))?.isInvalidated).toBe(true));
+    });
+});
+
+describe('usePrintLists photographer access ended', () => {
+    beforeEach(() => vi.clearAllMocks());
+
+    it('refreshes the vendor page and the context when setting prints included is refused', async () => {
+        const { queryClient, wrapper } = setup();
+        queryClient.setQueryData(vendorKeys.me('e1'), { vendorId: 'v1' });
+        queryClient.setQueryData(printListKeys.context('e1'), { guestScope: 'OFF', photographers: [] });
+        api.patch.mockRejectedValue(new ApiError(403, { errorCode: 4033 }));
+        const { result } = renderHook(() => useSetPrintsIncluded('e1'), { wrapper });
+        await act(() => result.current.mutateAsync(10).catch(() => undefined));
+        expect(queryClient.getQueryState(vendorKeys.me('e1'))?.isInvalidated).toBe(true);
+        expect(queryClient.getQueryState(printListKeys.context('e1'))?.isInvalidated).toBe(true);
+    });
+
+    it('refreshes the vendor page and the context when a download is refused', async () => {
+        const { queryClient, wrapper } = setup();
+        queryClient.setQueryData(vendorKeys.me('e1'), { vendorId: 'v1' });
+        queryClient.setQueryData(printListKeys.context('e1'), { guestScope: 'OFF', photographers: [] });
+        api.download.mockRejectedValue(new ApiError(403, { errorCode: 4033 }));
+        const { result } = renderHook(() => useDownloadPrintListPart('e1'), { wrapper });
+        await act(() => result.current.mutateAsync({ listId: 'l1', part: 1, fileStem: 'prints-host' }).catch(() => undefined));
+        expect(queryClient.getQueryState(vendorKeys.me('e1'))?.isInvalidated).toBe(true);
         expect(queryClient.getQueryState(printListKeys.context('e1'))?.isInvalidated).toBe(true);
     });
 });

@@ -16,10 +16,12 @@ type ViewerToggleInput = {
     add: (mediaIds: string[], skipped: number) => Promise<string | null>;
     removeAsync: (itemId: string) => Promise<unknown>;
     pending: boolean;
+    // The list is not known (loading or unreadable), so the photo can't be said to be picked or not.
+    disabled: boolean;
 };
 
 // The viewer's pick button: adds the open photo, or takes it off. It keeps its own error so none shows behind the open viewer.
-export function usePrintViewerToggle({ eventId, vendorId, available, viewerMedia, items, add, removeAsync, pending }: ViewerToggleInput) {
+export function usePrintViewerToggle({ eventId, vendorId, available, viewerMedia, items, add, removeAsync, pending, disabled }: ViewerToggleInput) {
     const toErrorMessage = useApiErrorMessage();
     const viewerId = viewerMedia?.id ?? null;
     // The error belongs to the photo it happened on.
@@ -44,5 +46,5 @@ export function usePrintViewerToggle({ eventId, vendorId, available, viewerMedia
 
     // Only on photos, while print picks are available.
     if (!available || !viewerMedia || !isPrintable(viewerMedia)) return null;
-    return { picked: Boolean(viewerItem), pending, error: error.text, onToggle };
+    return { picked: Boolean(viewerItem), pending, disabled, error: error.text, onToggle };
 }

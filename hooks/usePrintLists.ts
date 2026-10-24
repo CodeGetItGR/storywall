@@ -1,9 +1,11 @@
 'use client';
 
 import { type QueryClient, type QueryKey, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { useModuleReadable } from '@/hooks/useModuleReadable';
+import { vendorKeys } from '@/hooks/useVendors';
 import { attachmentFilename } from '@/lib/adminOrders';
 import { api, ApiError } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -37,6 +39,8 @@ export function usePrintPicksContext(eventId: string | null) {
         queryKey: printListKeys.context(eventId ?? ''),
         queryFn: () => api.get<PrintPicksContextDto>(endpoints.events.printPicks(eventId!)),
         enabled: Boolean(eventId) && isAuthenticated && vendorsReadable,
+        // The photographer, another account, changes sizes and the package while the host has this open.
+        staleTime: LIVE_CONTENT_STALE_TIME,
     });
 }
 
@@ -44,13 +48,22 @@ export function usePrintPicksContext(eventId: string | null) {
 export function useHostPrintList(eventId: string | null, vendorId: string | null, enabled: boolean) {
     const { isAuthenticated } = useAuth();
 
-    return useQuery({
+    const queryClient = useQueryClient();
+    const query = useQuery({
         queryKey: printListKeys.host(eventId ?? '', vendorId ?? ''),
         queryFn: () => api.get<PrintListDto>(endpoints.events.hostPrintList(eventId!, vendorId!)),
         enabled: Boolean(eventId && vendorId) && enabled && isAuthenticated,
         // The photographer reads the list the host edits.
         staleTime: LIVE_CONTENT_STALE_TIME,
     });
+
+    // A read refused because the photographer's access ended: the context must stop offering them.
+    const { error } = query;
+    useEffect(() => {
+        if (eventId && error) void refreshContextIfStale(queryClient, eventId, error, ACCESS_ENDED_ONLY);
+    }, [queryClient, eventId, error]);
+
+    return query;
 }
 
 // Patches and removals on one list share this key, and adds count with them (see writesRunning),
@@ -64,16 +77,36 @@ function writesRunning(queryClient: QueryClient, eventId: string, listKey: Query
         queryClient.isMutating({ mutationKey: itemMutationKey(listKey) }) +
         queryClient.isMutating({
             mutationKey: addMutationKey(eventId),
-            predicate: (mutation) => listKey[3] === 'host' && (mutation.state.variables as { vendorId?: string } | undefined)?.vendorId === listKey[4],
+            predicate: (mutation) =>
+                listKey[3] === 'host' && (mutation.state.variables as { vendorId?: string } | undefined)?.vendorId === listKey[4],
         })
     );
 }
 
-// A photographer whose access has ended must stop being offered.
-function refreshContextIfAccessEnded(queryClient: QueryClient, eventId: string, error: unknown) {
-    if (getErrorCode(error) === ERROR_CODES.VENDOR_ACCESS_ENDED) {
+const ACCESS_ENDED_ONLY: ReadonlySet<number> = new Set([ERROR_CODES.VENDOR_ACCESS_ENDED]);
+
+// What a write is refused with when the context it was built from is out of date: the photographer's access ended,
+// or their sizes or package changed under the host.
+const CONTEXT_STALE_CODES: ReadonlySet<number> = new Set([
+    ERROR_CODES.VENDOR_ACCESS_ENDED,
+    ERROR_CODES.VALIDATION_FAILED,
+    ERROR_CODES.PRINT_PRICES_MISSING,
+    ERROR_CODES.PRINT_PICKS_UNAVAILABLE,
+]);
+
+// A photographer whose access has ended must stop being offered, and changed sizes must show.
+function refreshContextIfStale(queryClient: QueryClient, eventId: string, error: unknown, codes: ReadonlySet<number> = CONTEXT_STALE_CODES) {
+    const code = getErrorCode(error);
+    if (typeof code === 'number' && codes.has(code)) {
         return queryClient.invalidateQueries({ queryKey: printListKeys.context(eventId), exact: true });
     }
+}
+
+// On the photographer's own page the access state is on their vendor record too.
+function refreshAfterAccessEnded(queryClient: QueryClient, eventId: string, error: unknown) {
+    if (getErrorCode(error) !== ERROR_CODES.VENDOR_ACCESS_ENDED) return;
+    void refreshContextIfStale(queryClient, eventId, error, ACCESS_ENDED_ONLY);
+    return queryClient.invalidateQueries({ queryKey: vendorKeys.me(eventId), exact: true });
 }
 
 export function useAddHostPrintItems(eventId: string) {
@@ -94,7 +127,7 @@ export function useAddHostPrintItems(eventId: string) {
             const key = printListKeys.host(eventId, body.vendorId);
             if (writesRunning(queryClient, eventId, key) === 1) return queryClient.invalidateQueries({ queryKey: key, exact: true });
         },
-        onError: (error) => refreshContextIfAccessEnded(queryClient, eventId, error),
+        onError: (error) => refreshContextIfStale(queryClient, eventId, error),
     });
 }
 
@@ -132,7 +165,7 @@ export function usePatchPrintItem(eventId: string, listKey: QueryKey) {
         // Undo only this change: a whole-list snapshot could bring back a pick another mutation already removed.
         onError: (error, { itemId }, context) => {
             if (context) updateItem(queryClient, listKey, itemId, context.previous);
-            return refreshContextIfAccessEnded(queryClient, eventId, error);
+            return refreshContextIfStale(queryClient, eventId, error);
         },
         // The server's list carries the new size's label and price. An answer must not overwrite a later change still running.
         onSuccess: (list) => {
@@ -163,7 +196,7 @@ export function useRemovePrintItem(eventId: string, listKey: QueryKey) {
         },
         // Put back only this pick, where it was. A 404 means it is already gone, so the removal stands.
         onError: (error, _itemId, context) => {
-            void refreshContextIfAccessEnded(queryClient, eventId, error);
+            void refreshContextIfStale(queryClient, eventId, error, ACCESS_ENDED_ONLY);
             if (error instanceof ApiError && error.status === 404) return;
             const removed = context?.removed;
             if (!removed) return;
@@ -189,7 +222,8 @@ export function useSetPrintsIncluded(eventId: string) {
 
     return useMutation({
         mutationFn: (count: number) => api.patch<void>(endpoints.events.vendorPrintsIncluded(eventId), { count }),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: printListKeys.context(eventId) }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: printListKeys.context(eventId), exact: true }),
+        onError: (error) => refreshAfterAccessEnded(queryClient, eventId, error),
     });
 }
 
@@ -217,6 +251,7 @@ export function useDownloadPrintListPart(eventId: string) {
         },
         // The list changed since the manifest was read: show the current parts.
         onError: (error, { listId }) => {
+            void refreshAfterAccessEnded(queryClient, eventId, error);
             if (getErrorCode(error) === ERROR_CODES.MEDIA_ARCHIVE_PART_NOT_FOUND) {
                 return queryClient.invalidateQueries({ queryKey: printListKeys.archive(eventId, listId), exact: true });
             }

@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { cn } from '@/lib/utils';
 
-export type PrintToggle = { picked: boolean; pending: boolean; error: string | null; onToggle: () => void };
+export type PrintToggle = { picked: boolean; pending: boolean; disabled: boolean; error: string | null; onToggle: () => void };
 
 // The viewer's pick button, styled like the other actions in the viewer's row.
 export function PrintToggleButton({ toggle }: { toggle: PrintToggle }) {
@@ -15,7 +15,7 @@ export function PrintToggleButton({ toggle }: { toggle: PrintToggle }) {
         <button
             type="button"
             onClick={toggle.onToggle}
-            disabled={toggle.pending}
+            disabled={toggle.pending || toggle.disabled}
             aria-pressed={toggle.picked}
             className={cn(
                 'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold disabled:opacity-50',

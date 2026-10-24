@@ -50,7 +50,11 @@ describe('useVendorPrintsSection', () => {
         expect(invalidate).not.toHaveBeenCalled();
         rerender();
         expect(invalidate).not.toHaveBeenCalled();
-        mocks.hostList.value = list(2);
+        // A refetch that finds the same picks (a focus refetch) leaves the parts alone.
+        mocks.hostList.value = list(2, [{ ...item }]);
+        rerender();
+        expect(invalidate).not.toHaveBeenCalled();
+        mocks.hostList.value = list(3, [{ ...item, copies: 3 }]);
         rerender();
         expect(invalidate).toHaveBeenCalledTimes(1);
         expect(invalidate).toHaveBeenCalledWith({ queryKey: ['archive', 'e1', 'l1'], exact: true });

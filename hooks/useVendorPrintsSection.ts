@@ -13,7 +13,7 @@ import {
     useSetPrintsIncluded,
 } from '@/hooks/usePrintLists';
 import type { VendorMeDto } from '@/lib/api/types';
-import { printTotals } from '@/lib/printPicks';
+import { printListSignature, printTotals } from '@/lib/printPicks';
 import { hasVendorCapability } from '@/lib/vendors';
 
 // The photographer's Prints section: the host list, what the package includes, and the download.
@@ -41,16 +41,17 @@ export function useVendorPrintsSection(eventId: string, me: VendorMeDto | null) 
 
     // The parts depend on the list: a pick added past a part boundary must not be left out of the download.
     // The first load of a list already reads fresh parts; only a later change to the same list refreshes them.
-    const listUpdatedAt = hostList.dataUpdatedAt;
-    const seen = useRef<{ listId: string | null; updatedAt: number }>({ listId: null, updatedAt: 0 });
+    // A refetch that finds nothing changed (a focus refetch) leaves the parts alone.
+    const contentSignature = useMemo(() => printListSignature(items), [items]);
+    const seen = useRef<{ listId: string | null; signature: string }>({ listId: null, signature: '' });
     useEffect(() => {
         if (!listId) return;
         const previous = seen.current;
-        seen.current = { listId, updatedAt: listUpdatedAt };
-        if (previous.listId === listId && previous.updatedAt !== listUpdatedAt) {
+        seen.current = { listId, signature: contentSignature };
+        if (previous.listId === listId && previous.signature !== contentSignature) {
             void queryClient.invalidateQueries({ queryKey: printListKeys.archive(eventId, listId), exact: true });
         }
-    }, [queryClient, eventId, listId, listUpdatedAt]);
+    }, [queryClient, eventId, listId, contentSignature]);
 
     const saveIncluded = useCallback(
         async (count: number) => {

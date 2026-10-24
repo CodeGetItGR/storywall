@@ -90,7 +90,7 @@ export function PrintsSection({
             {/* Total and download */}
             {!listFailed && totals.prints > 0 && (
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                    {!includedFailed && <PrintTotal totals={totals} withIncluded={false} />}
+                    {!includedFailed && <PrintTotal totals={totals} withIncluded={false} noPriceLabel={t('noPrice')} />}
                     <div className="flex flex-wrap gap-2">
                         {isLoadingParts && (
                             <Button type="button" size="lg" disabled>
