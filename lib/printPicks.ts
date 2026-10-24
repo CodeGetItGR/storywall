@@ -12,8 +12,9 @@ export type PrintTotals = {
     included: number | null;
     // Copies the host or guest pays for.
     beyond: number;
-    // Null when the photographer has no sizes.
+    // Null unless every live item has a price (or the list is empty).
     priceCents: number | null;
+    // Equals priceCents !== null.
     hasPrices: boolean;
 };
 
@@ -42,7 +43,7 @@ export function isPrintable(media: Pick<MediaResponseDto, 'mediaType' | 'status'
 export function printableIds(media: readonly MediaResponseDto[], selected: ReadonlySet<string>): { ids: string[]; skipped: number } {
     const chosen = media.filter((item) => selected.has(item.id));
     const ids = chosen.filter(isPrintable).map((item) => item.id);
-    return { ids, skipped: chosen.length - ids.length };
+    return { ids, skipped: selected.size - ids.length };
 }
 
 export function pickedMediaIds(items: readonly PrintListItemDto[]): Set<string> {
@@ -55,6 +56,7 @@ export function centsToEuroInput(cents: number): string {
 
 // "3.5", "3,50" → 350. Null for anything that is not a price of 0 to 1,000 euros with up to 2 decimals.
 export function euroInputToCents(text: string): number | null {
+    // Deliberate: replaces only the first comma, so the regex rejects a second one ("1.000,00").
     const normalized = text.trim().replace(',', '.');
     if (!/^\d+(\.\d{1,2})?$/.test(normalized)) return null;
     const cents = Math.round(Number(normalized) * 100);

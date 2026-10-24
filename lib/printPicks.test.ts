@@ -47,6 +47,16 @@ describe('printTotals', () => {
         expect(printTotals([], null)).toMatchObject({ prints: 0, priceCents: null, hasPrices: false });
     });
 
+    it('does not let a removed item use included copies or add to the price', () => {
+        const items = [item({ removed: true, copies: 5 }), item({ id: 'i2', copies: 2 })];
+        expect(printTotals(items, 1)).toMatchObject({ prints: 2, beyond: 1, priceCents: 300 });
+    });
+
+    it('ignores the price of a removed item', () => {
+        const items = [item({ removed: true, unitPriceCents: null }), item({ id: 'i2' })];
+        expect(printTotals(items, null)).toMatchObject({ priceCents: 300, hasPrices: true });
+    });
+
     it('skips removed photos', () => {
         expect(printTotals([item({ removed: true }), item({ id: 'i2' })], null).prints).toBe(1);
     });
@@ -68,6 +78,10 @@ describe('printable media', () => {
         expect(printableIds([photo, video], new Set(['p', 'v']))).toEqual({ ids: ['p'], skipped: 1 });
     });
 
+    it('counts unprintable and unloaded selected ids as skipped', () => {
+        expect(printableIds([photo, processing], new Set(['p', 'x', 'gone']))).toEqual({ ids: ['p'], skipped: 2 });
+    });
+
     it('refuses photos that are not ready and non-photo media', () => {
         expect(isPrintable(processing)).toBe(false);
         expect(isPrintable(audio)).toBe(false);
@@ -86,10 +100,14 @@ describe('euro input', () => {
         expect(euroInputToCents('3.5')).toBe(350);
         expect(euroInputToCents('3,50')).toBe(350);
         expect(euroInputToCents('0')).toBe(0);
+        expect(euroInputToCents('0.29')).toBe(29);
+        expect(euroInputToCents('1000')).toBe(100000);
+        expect(euroInputToCents(' 3,5 ')).toBe(350);
     });
 
     it('refuses what is not a price', () => {
         expect(euroInputToCents('')).toBeNull();
+        for (const text of ['.5', '5.', '1.000,00', '1e2']) expect(euroInputToCents(text)).toBeNull();
         expect(euroInputToCents('-1')).toBeNull();
         expect(euroInputToCents('3.555')).toBeNull();
         expect(euroInputToCents('1000.01')).toBeNull();
