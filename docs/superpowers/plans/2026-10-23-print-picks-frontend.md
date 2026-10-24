@@ -540,6 +540,7 @@ import { type QueryKey, useMutation, useQuery, useQueryClient } from '@tanstack/
 
 import { useAuth } from '@/hooks/useAuth';
 import { useModuleReadable } from '@/hooks/useModuleReadable';
+import { attachmentFilename } from '@/lib/adminOrders';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { PrintListArchiveManifestDto, PrintListDto, PrintPicksContextDto } from '@/lib/api/types';
@@ -551,6 +552,7 @@ export const printListKeys = {
     host: (eventId: string, vendorId: string) => ['events', eventId, 'print-lists', 'host', vendorId] as const,
     mine: (eventId: string, vendorId: string) => ['events', eventId, 'print-lists', 'mine', vendorId] as const,
     guests: (eventId: string) => ['events', eventId, 'print-lists', 'guests'] as const,
+    archive: (eventId: string, listId: string) => ['events', eventId, 'print-lists', 'archive', listId] as const,
 };
 
 export type PrintItemPatch = { sizeId?: string; copies?: number };
@@ -640,16 +642,25 @@ export function useSetPrintsIncluded(eventId: string) {
     });
 }
 
-// The photographer downloads one list: every part of the manifest, one after the other.
-export function useDownloadPrintList(eventId: string) {
+// The parts of one list's zip. Empty `parts` means nothing to download. Photographer only.
+export function usePrintListManifest(eventId: string | null, listId: string | null) {
+    const { isAuthenticated } = useAuth();
+
+    return useQuery({
+        queryKey: printListKeys.archive(eventId ?? '', listId ?? ''),
+        queryFn: () => api.get<PrintListArchiveManifestDto>(endpoints.events.printListArchiveManifest(eventId!, listId!)),
+        enabled: Boolean(eventId && listId) && isAuthenticated,
+        retry: false,
+    });
+}
+
+// Downloads one part of a list's zip under the server's file name (fileStem is the fallback).
+export function useDownloadPrintListPart(eventId: string) {
     return useMutation({
-        mutationFn: async ({ listId, fileStem }: { listId: string; fileStem: string }) => {
-            const manifest = await api.get<PrintListArchiveManifestDto>(endpoints.events.printListArchiveManifest(eventId, listId));
-            for (const { part } of manifest.parts) {
-                const response = await api.download(endpoints.events.printListArchive(eventId, listId, part));
-                const suffix = manifest.parts.length > 1 ? `-${part}` : '';
-                downloadBlob(await response.blob(), `${fileStem}${suffix}.zip`);
-            }
+        mutationFn: async ({ listId, part, fileStem }: { listId: string; part: number; fileStem: string }) => {
+            const response = await api.download(endpoints.events.printListArchive(eventId, listId, part));
+            const blob = await response.blob();
+            downloadBlob(blob, attachmentFilename(response.headers.get('Content-Disposition'), `${fileStem}-${part}.zip`));
         },
     });
 }
@@ -1672,7 +1683,8 @@ Load the `design:design-system` skill before this task.
             "save": "Save",
             "cancel": "Cancel",
             "hostEmpty": "The host hasn't picked photos yet.",
-            "downloadAll": "Download all",
+            "download": "Download",
+            "downloadPart": "Part {part} of {total}",
             "downloading": "Downloading…",
             "removedCount": "{count, plural, one {# photo removed} other {# photos removed}}",
             "noSize": "No size",
@@ -1713,7 +1725,8 @@ Load the `design:design-system` skill before this task.
             "save": "Αποθήκευση",
             "cancel": "Ακύρωση",
             "hostEmpty": "Οι διοργανωτές δεν έχουν επιλέξει ακόμη φωτογραφίες.",
-            "downloadAll": "Λήψη όλων",
+            "download": "Λήψη",
+            "downloadPart": "Κομμάτι {part} από {total}",
             "downloading": "Λήψη…",
             "removedCount": "{count, plural, one {Αφαιρέθηκε # φωτογραφία} other {Αφαιρέθηκαν # φωτογραφίες}}",
             "noSize": "Χωρίς μέγεθος",
@@ -1751,7 +1764,7 @@ Load the `design:design-system` skill before this task.
 import { useCallback, useMemo, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
-import { useDownloadPrintList, useHostPrintList, usePrintPicksContext, useSetPrintsIncluded } from '@/hooks/usePrintLists';
+import { useDownloadPrintListPart, useHostPrintList, usePrintListManifest, usePrintPicksContext, useSetPrintsIncluded } from '@/hooks/usePrintLists';
 import type { VendorMeDto } from '@/lib/api/types';
 import { printTotals } from '@/lib/printPicks';
 import { hasVendorCapability } from '@/lib/vendors';
@@ -1764,7 +1777,9 @@ export function useVendorPrintsSection(eventId: string, me: VendorMeDto | null) 
     const vendorId = me?.vendorId ?? null;
     const hostList = useHostPrintList(eventId, vendorId, open);
     const setIncluded = useSetPrintsIncluded(eventId);
-    const download = useDownloadPrintList(eventId);
+    const listId = hostList.data?.id ?? null;
+    const manifest = usePrintListManifest(open ? eventId : null, listId);
+    const download = useDownloadPrintListPart(eventId);
     const [includedOpen, setIncludedOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -1786,16 +1801,18 @@ export function useVendorPrintsSection(eventId: string, me: VendorMeDto | null) 
         [setIncluded, toErrorMessage],
     );
 
-    const downloadHost = useCallback(async () => {
-        const listId = hostList.data?.id;
-        if (!listId) return;
-        setError(null);
-        try {
-            await download.mutateAsync({ listId, fileStem: 'prints-host' });
-        } catch (downloadError) {
-            setError(toErrorMessage(downloadError));
-        }
-    }, [download, hostList.data?.id, toErrorMessage]);
+    const downloadHostPart = useCallback(
+        async (part: number) => {
+            if (!listId) return;
+            setError(null);
+            try {
+                await download.mutateAsync({ listId, part, fileStem: 'prints-host' });
+            } catch (downloadError) {
+                setError(toErrorMessage(downloadError));
+            }
+        },
+        [download, listId, toErrorMessage],
+    );
 
     return {
         open,
@@ -1805,9 +1822,10 @@ export function useVendorPrintsSection(eventId: string, me: VendorMeDto | null) 
         items,
         removedCount: hostList.data?.removedCount ?? 0,
         totals,
-        canDownload: Boolean(hostList.data?.id) && totals.prints > 0,
-        isDownloading: download.isPending,
-        downloadHost,
+        // 0 when nothing is ready to download; 1 shows a single Download button, more show one button per part.
+        partCount: manifest.data?.parts.length ?? 0,
+        downloadingPart: download.isPending ? (download.variables?.part ?? null) : null,
+        downloadHostPart,
         includedOpen,
         openIncluded: useCallback(() => setIncludedOpen(true), []),
         closeIncluded: useCallback(() => setIncludedOpen(false), []),
@@ -1947,31 +1965,40 @@ const items = [{ id: 'i1', mediaId: 'm1', media: null, removed: false, sizeId: '
 
 describe('PrintsSection', () => {
     it('shows the included count, the host picks, the total and the download', () => {
-        const onDownloadAction = vi.fn();
+        const onDownloadPartAction = vi.fn();
         renderWithIntl(
             <PrintsSection
                 included={1}
                 items={items}
                 removedCount={1}
                 totals={printTotals(items, 1)}
-                canDownload
-                isDownloading={false}
+                partCount={1}
+                downloadingPart={null}
                 isLoading={false}
                 error={null}
                 onEditIncludedAction={vi.fn()}
-                onDownloadAction={onDownloadAction}
+                onDownloadPartAction={onDownloadPartAction}
             />,
         );
         expect(screen.getByText('Prints included for the host')).toBeInTheDocument();
         expect(screen.getByText('13x18 · 2 copies')).toBeInTheDocument();
         expect(screen.getByText('1 photo removed')).toBeInTheDocument();
-        fireEvent.click(screen.getByRole('button', { name: 'Download all' }));
-        expect(onDownloadAction).toHaveBeenCalled();
+        fireEvent.click(screen.getByRole('button', { name: 'Download' }));
+        expect(onDownloadPartAction).toHaveBeenCalledWith(1);
+    });
+
+    it('offers one button per part when the zip has several', () => {
+        const onDownloadPartAction = vi.fn();
+        renderWithIntl(
+            <PrintsSection included={1} items={items} removedCount={0} totals={printTotals(items, 1)} partCount={2} downloadingPart={null} isLoading={false} error={null} onEditIncludedAction={vi.fn()} onDownloadPartAction={onDownloadPartAction} />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Part 2 of 2' }));
+        expect(onDownloadPartAction).toHaveBeenCalledWith(2);
     });
 
     it('says when the host has picked nothing', () => {
         renderWithIntl(
-            <PrintsSection included={0} items={[]} removedCount={0} totals={printTotals([], 0)} canDownload={false} isDownloading={false} isLoading={false} error={null} onEditIncludedAction={vi.fn()} onDownloadAction={vi.fn()} />,
+            <PrintsSection included={0} items={[]} removedCount={0} totals={printTotals([], 0)} partCount={0} downloadingPart={null} isLoading={false} error={null} onEditIncludedAction={vi.fn()} onDownloadPartAction={vi.fn()} />,
         );
         expect(screen.getByText("The host hasn't picked photos yet.")).toBeInTheDocument();
     });
@@ -2037,25 +2064,25 @@ export function PrintsSection({
     items,
     removedCount,
     totals,
-    canDownload,
-    isDownloading,
+    partCount,
+    downloadingPart,
     isLoading,
     error,
     tabs,
     onEditIncludedAction,
-    onDownloadAction,
+    onDownloadPartAction,
 }: {
     included: number;
     items: PrintListItemDto[];
     removedCount: number;
     totals: PrintTotals;
-    canDownload: boolean;
-    isDownloading: boolean;
+    partCount: number;
+    downloadingPart: number | null;
     isLoading: boolean;
     error: string | null;
     tabs?: ReactNode;
     onEditIncludedAction: () => void;
-    onDownloadAction: () => void;
+    onDownloadPartAction: (part: number) => void;
 }) {
     const t = useTranslations('Vendors.prints');
     const live = items.filter((item) => !item.removed);
@@ -2097,10 +2124,14 @@ export function PrintsSection({
             {totals.prints > 0 && (
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <PrintTotal totals={totals} />
-                    <Button type="button" size="lg" onClick={onDownloadAction} disabled={!canDownload || isDownloading}>
-                        {isDownloading ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Download aria-hidden="true" />}
-                        {isDownloading ? t('downloading') : t('downloadAll')}
-                    </Button>
+                    <div className="flex flex-wrap gap-2">
+                        {Array.from({ length: partCount }, (_, index) => index + 1).map((part) => (
+                            <Button key={part} type="button" size="lg" onClick={() => onDownloadPartAction(part)} disabled={downloadingPart !== null}>
+                                {downloadingPart === part ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Download aria-hidden="true" />}
+                                {downloadingPart === part ? t('downloading') : partCount === 1 ? t('download') : t('downloadPart', { part, total: partCount })}
+                            </Button>
+                        ))}
+                    </div>
                 </div>
             )}
 
@@ -2395,12 +2426,12 @@ After `{/* Tools */}` and before `{/* Pro album */}`:
                             items={prints.items}
                             removedCount={prints.removedCount}
                             totals={prints.totals}
-                            canDownload={prints.canDownload}
-                            isDownloading={prints.isDownloading}
+                            partCount={prints.partCount}
+                            downloadingPart={prints.downloadingPart}
                             isLoading={prints.isLoading}
                             error={prints.error}
                             onEditIncludedAction={prints.openIncluded}
-                            onDownloadAction={prints.downloadHost}
+                            onDownloadPartAction={prints.downloadHostPart}
                         />
                     )}
 ```
@@ -2550,7 +2581,7 @@ Expected: all green.
 
 With the backend Part A running locally and the user's local test login (ask for it), on :3000:
 - Host on mobile (375 px): select photos → Print; viewer toggle; grid badges; the Prints pill and sheet; two photographers (add a second photographer vendor through a vendor link) and the switch.
-- Photographer on mobile and desktop: the Prints section, the included sheet, the Print sizes section and its sheet with delete confirmation, Download all (the zip holds `prints.txt`).
+- Photographer on mobile and desktop: the Prints section, the included sheet, the Print sizes section and its sheet with delete confirmation, Download (one button per part; part 1 holds `prints.txt`).
 - Check that nothing overlaps the mobile selection bar and the floating desktop bar with the extra Print button.
 
 - [ ] **Step 3: SEO**
@@ -3347,11 +3378,11 @@ el:
 In `useVendorPrintsSection`: `const [tab, setTab] = useState<'HOST' | 'GUEST'>('HOST');`, `const guests = useGuestPrintLists(eventId, open);`, and
 
 ```ts
-    const downloadGuest = useCallback(
-        async (listId: string) => {
+    const downloadGuestPart = useCallback(
+        async (listId: string, part: number) => {
             setError(null);
             try {
-                await download.mutateAsync({ listId, fileStem: `prints-guest-${listId.slice(0, 8)}` });
+                await download.mutateAsync({ listId, part, fileStem: `prints-guest-${listId.slice(0, 8)}` });
             } catch (downloadError) {
                 setError(toErrorMessage(downloadError));
             }
@@ -3360,7 +3391,7 @@ In `useVendorPrintsSection`: `const [tab, setTab] = useState<'HOST' | 'GUEST'>('
     );
 ```
 
-Return `tab`, `selectTab: setTab`, `guestLists: guests.data ?? []`, `isLoadingGuests: guests.isLoading`, `downloadGuest`, `downloadingListId` (track `download.variables?.listId` while pending).
+Return `tab`, `selectTab: setTab`, `guestLists: guests.data ?? []`, `isLoadingGuests: guests.isLoading`, `downloadGuestPart`, `downloadingPart` (`{ listId, part }` from `download.variables` while pending, else null). Each guest row reads its own manifest: `GuestPrintListRow` takes `eventId` and sets `const partCount = usePrintListManifest(eventId, list.id).data?.parts.length ?? 0;` (`GuestPrintLists` passes `eventId` through). It renders the same buttons as `PrintsSection` (one `Download`, or `Part n of N` per part, none for 0).
 
 Only show the tabs when the guest scope could be on (`context.data?.guestScope !== 'OFF'` or there are guest lists already): return `showTabs`.
 
@@ -3380,7 +3411,7 @@ import { formatMoney } from '@/lib/billing';
 import { formatDate } from '@/lib/datetime';
 
 // One sent guest list: who, how to reach them, what and how much.
-export function GuestPrintListRow({ list, isDownloading, onDownloadAction }: { list: PrintListDto; isDownloading: boolean; onDownloadAction: (listId: string) => void }) {
+export function GuestPrintListRow({ eventId, list, downloadingPart, onDownloadPartAction }: { eventId: string; list: PrintListDto; downloadingPart: number | null; onDownloadPartAction: (listId: string, part: number) => void }) {
     const t = useTranslations('Vendors.prints');
     const locale = useLocale();
     const prints = list.items.filter((item) => !item.removed).reduce((sum, item) => sum + item.copies, 0);
@@ -3412,10 +3443,14 @@ export function GuestPrintListRow({ list, isDownloading, onDownloadAction }: { l
                         total: formatMoney(locale, list.totalCents ?? 0, 'EUR'),
                     })}
                 </p>
-                <Button type="button" variant="outline" size="lg" onClick={() => list.id && onDownloadAction(list.id)} disabled={isDownloading}>
-                    {isDownloading ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Download aria-hidden="true" />}
-                    {t('download')}
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                    {Array.from({ length: partCount }, (_, index) => index + 1).map((part) => (
+                        <Button key={part} type="button" variant="outline" size="lg" onClick={() => list.id && onDownloadPartAction(list.id, part)} disabled={downloadingPart !== null}>
+                            {downloadingPart === part ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Download aria-hidden="true" />}
+                            {partCount === 1 ? t('download') : t('downloadPart', { part, total: partCount })}
+                        </Button>
+                    ))}
+                </div>
             </div>
             {list.removedCount > 0 && <p className="text-xs text-ink-muted">{t('removedCount', { count: list.removedCount })}</p>}
         </li>
@@ -3436,7 +3471,7 @@ import type { PrintListDto } from '@/lib/api/types';
 
 // Sent guest lists, newest first. The spec groups by guest; one row per list already carries the guest's name,
 // and a guest with two lists gets two rows next to each other only if they sent them back to back.
-export function GuestPrintLists({ lists, isLoading, downloadingListId, onDownloadAction }: { lists: PrintListDto[]; isLoading: boolean; downloadingListId: string | null; onDownloadAction: (listId: string) => void }) {
+export function GuestPrintLists({ eventId, lists, isLoading, downloadingPart, onDownloadPartAction }: { eventId: string; lists: PrintListDto[]; isLoading: boolean; downloadingPart: { listId: string; part: number } | null; onDownloadPartAction: (listId: string, part: number) => void }) {
     const t = useTranslations('Vendors.prints');
 
     if (isLoading) return <VendorRowsSkeleton rows={3} />;
@@ -3445,7 +3480,7 @@ export function GuestPrintLists({ lists, isLoading, downloadingListId, onDownloa
     return (
         <ul className="divide-y divide-border">
             {lists.map((list) => (
-                <GuestPrintListRow key={list.id} list={list} isDownloading={downloadingListId === list.id} onDownloadAction={onDownloadAction} />
+                <GuestPrintListRow key={list.id} eventId={eventId} list={list} downloadingPart={downloadingPart?.listId === list.id ? downloadingPart.part : null} onDownloadPartAction={onDownloadPartAction} />
             ))}
         </ul>
     );
@@ -3656,6 +3691,6 @@ Tell the user Part B is ready for a PR into `staging`, with the open item from T
 
 ## Self-review (done while writing)
 
-- Spec coverage: services UI partner-only (A8), PRINT_PICKS (A5), photos only (A2, A7), Print in selection bar and actions (A7), viewer toggle and grid badge (A7), Prints pill and sheet with total line (A7), two photographers (A6, A7), no-price wording (A2, A7), vendor Prints section with included sheet and Download all (A8), prefetch (A9, B3, B4, B5), notices (A5), gallery opens to guests (B1), guest scope filter (B3), send step with consent and phone (B3), sent lists and new list (B3), host control (B4), Guests tab with contact and removed count (B5), admin segmented control (B6), legal (B7).
+- Spec coverage: services UI partner-only (A8), PRINT_PICKS (A5), photos only (A2, A7), Print in selection bar and actions (A7), viewer toggle and grid badge (A7), Prints pill and sheet with total line (A7), two photographers (A6, A7), no-price wording (A2, A7), vendor Prints section with included sheet and per-part Download (A8), prefetch (A9, B3, B4, B5), notices (A5), gallery opens to guests (B1), guest scope filter (B3), send step with consent and phone (B3), sent lists and new list (B3), host control (B4), Guests tab with contact and removed count (B5), admin segmented control (B6), legal (B7).
 - Gap kept open on purpose and flagged: sent lists visible for 30 days after access ends (B3 Step 5) needs a small backend addition.
 - Decision flagged to the user: included prints counted in list order (Decision 3).
