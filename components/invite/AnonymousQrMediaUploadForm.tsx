@@ -28,6 +28,7 @@ interface AnonymousQrMediaUploadFormProps {
 
 export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadFormProps) {
     const t = useTranslations('QrCodePage');
+    const tAlt = useTranslations('ImageAlt');
     const uploadAccept = useUploadAccept();
     const toErrorMessage = useApiErrorMessage();
     const uploadBatch = useUploadQrMediaBatch();
@@ -213,7 +214,7 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
                                         <Video className="absolute bottom-1 left-1 h-3.5 w-3.5 text-white drop-shadow" aria-hidden="true" />
                                     </>
                                 ) : (
-                                    <ProtectedImage src={preview.url} alt="" fill className="object-cover" sizes="80px" unoptimized />
+                                    <ProtectedImage src={preview.url} alt={tAlt('photoPreview')} fill className="object-cover" sizes="80px" unoptimized />
                                 )}
                                 <button
                                     type="button"

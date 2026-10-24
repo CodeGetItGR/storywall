@@ -34,7 +34,7 @@ export function QuizResults({ view, memberId }: { view: QuizPollsViewDto; member
                             return (
                                 <li key={entry.memberId} className={cn('flex items-center gap-3 px-4 py-2.5', isMe && 'bg-primary-light/60')}>
                                     <span className="w-6 shrink-0 text-center text-sm font-semibold text-ink-muted tabular-nums">{entry.rank}</span>
-                                    <Avatar size="xs" src={entry.avatarUrl} initials={getInitials(entry.displayName)} alt="" />
+                                    <Avatar size="xs" src={entry.avatarUrl} initials={getInitials(entry.displayName)} alt={entry.displayName} />
                                     <span className="min-w-0 flex-1 truncate text-sm text-ink">
                                         {isMe ? t('you', { name: entry.displayName }) : entry.displayName}
                                     </span>

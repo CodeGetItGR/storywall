@@ -48,6 +48,7 @@ export default function SettingsTab({
     const t = useTranslations('ManagePage');
     const canUploadCover = canUploadCoverProp && !INCIDENT_MODE;
     const tCreateEvent = useTranslations('CreateEventPage');
+    const tAlt = useTranslations('ImageAlt');
     const locale = useLocale();
     const toErrorMessage = useApiErrorMessage();
     const { data: appConfig } = useAppConfig();
@@ -257,7 +258,7 @@ export default function SettingsTab({
                     <TargetedSection id={COVER_PHOTO_SECTION_ID} className="mt-1.5">
                         {coverPreview ? (
                             <div className="relative aspect-21/9 overflow-hidden rounded-2xl bg-surface-muted">
-                                <ProtectedImage src={coverPreview} alt="" fill className="object-cover" sizes="700px" loading="lazy" />
+                                <ProtectedImage src={coverPreview} alt={tAlt('eventCover')} fill className="object-cover" sizes="700px" loading="lazy" />
                                 {isUploading && (
                                     <div className="absolute inset-0 flex items-center justify-center bg-ink/40">
                                         <Loader2 className="h-6 w-6 animate-spin text-white" />
