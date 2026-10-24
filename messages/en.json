@@ -4887,6 +4887,10 @@
                     "loading": "Loading options...",
                     "all": "All events",
                     "more": "+{count}"
+                },
+                "warnings": {
+                    "high": "This is a high discount.",
+                    "belowMinimum": "Checkout won't work for {plans}. The price drops below the minimum charge."
                 }
             },
             "linkCode": {

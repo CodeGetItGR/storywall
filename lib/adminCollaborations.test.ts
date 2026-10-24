@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+    codedOptionPriceMinor,
     collaboratorRequestFromFormData,
     collaboratorRequestWithStatus,
     earningCodeText,
@@ -8,13 +9,14 @@ import {
     filterEarnings,
     formatCurrencyAmounts,
     owedAmounts,
+    plansBelowChargeMinimum,
     shortId,
     sortCodesActiveFirst,
     sortCollaboratorsByName,
     sumByCurrency,
     voidableEarningIds,
 } from '@/lib/adminCollaborations';
-import type { CollaborationCodeResponseDto, CollaborationEarningResponseDto, CollaboratorResponseDto } from '@/lib/api/types';
+import type { CollaborationCodeResponseDto, CollaborationEarningResponseDto, CollaboratorResponseDto, PlanTierResponseDto } from '@/lib/api/types';
 
 function collaborator(overrides: Partial<CollaboratorResponseDto> = {}): CollaboratorResponseDto {
     return {
@@ -240,5 +242,93 @@ describe('collaboratorRequestWithStatus', () => {
             notes: 'Renewed',
             status: 'SUSPENDED',
         });
+    });
+});
+
+function eventPlan(overrides: Partial<PlanTierResponseDto> = {}): PlanTierResponseDto {
+    return {
+        id: 'p1',
+        code: 'BASIC',
+        scope: 'EVENT',
+        name: 'Basic',
+        description: null,
+        sortOrder: 0,
+        isDefault: false,
+        isAssignable: true,
+        isPublic: true,
+        isGiftable: false,
+        storageBytes: null,
+        maxMembers: null,
+        priceAmountMinor: null,
+        priceCurrency: 'EUR',
+        billingPeriod: null,
+        discountPercent: null,
+        discountLabel: null,
+        discountStartsAt: null,
+        discountEndsAt: null,
+        moduleKeys: [],
+        paidModules: null,
+        moduleConfigs: null,
+        eventTypeKey: 'WEDDING',
+        sharedGroupKey: null,
+        initialOptions: [{ id: 'o1', kind: 'INITIAL', months: 12, priceAmountMinor: 900, promoPriceAmountMinor: null, sortOrder: 0, active: true }],
+        extensionOptions: [],
+        ...overrides,
+    } as PlanTierResponseDto;
+}
+
+const NOW = new Date('2026-10-24T12:00:00Z');
+const EVERYWHERE = { eventTypeKeys: [], planTierCodes: [] };
+
+describe('codedOptionPriceMinor', () => {
+    it('takes the code off the list price, truncating the discount', () => {
+        const plan = eventPlan();
+        expect(codedOptionPriceMinor(plan, plan.initialOptions[0], 95, NOW)).toBe(45);
+    });
+
+    it('stacks an open plan promotion with the code, capped at 99', () => {
+        const plan = eventPlan({ discountPercent: 50 });
+        expect(codedOptionPriceMinor(plan, plan.initialOptions[0], 20, NOW)).toBe(270);
+        expect(codedOptionPriceMinor(plan, plan.initialOptions[0], 90, NOW)).toBe(9);
+    });
+
+    it('ignores a promotion outside its window', () => {
+        const plan = eventPlan({ discountPercent: 50, discountEndsAt: '2026-10-01T00:00:00Z' });
+        expect(codedOptionPriceMinor(plan, plan.initialOptions[0], 10, NOW)).toBe(810);
+    });
+
+    it('takes the code off a promo price', () => {
+        const plan = eventPlan({
+            initialOptions: [
+                { id: 'o1', kind: 'INITIAL', months: 12, priceAmountMinor: 900, promoPriceAmountMinor: 600, sortOrder: 0, active: true },
+            ],
+        });
+        expect(codedOptionPriceMinor(plan, plan.initialOptions[0], 50, NOW)).toBe(300);
+    });
+});
+
+describe('plansBelowChargeMinimum', () => {
+    it('lists a plan the code pushes under the minimum charge', () => {
+        expect(plansBelowChargeMinimum([eventPlan()], 95, EVERYWHERE, NOW).map((plan) => plan.code)).toEqual(['BASIC']);
+        expect(plansBelowChargeMinimum([eventPlan()], 90, EVERYWHERE, NOW)).toEqual([]);
+    });
+
+    it('leaves out plans the code is restricted away from', () => {
+        expect(plansBelowChargeMinimum([eventPlan()], 95, { eventTypeKeys: ['BAPTISM'], planTierCodes: [] }, NOW)).toEqual([]);
+        expect(plansBelowChargeMinimum([eventPlan()], 95, { eventTypeKeys: [], planTierCodes: ['PREMIUM'] }, NOW)).toEqual([]);
+    });
+
+    it('leaves out archived plans, retired durations and prices already under the minimum', () => {
+        expect(plansBelowChargeMinimum([eventPlan({ isAssignable: false })], 95, EVERYWHERE, NOW)).toEqual([]);
+        const retired = eventPlan({
+            initialOptions: [
+                { id: 'o1', kind: 'INITIAL', months: 12, priceAmountMinor: 900, promoPriceAmountMinor: null, sortOrder: 0, active: false },
+            ],
+        });
+        expect(plansBelowChargeMinimum([retired], 95, EVERYWHERE, NOW)).toEqual([]);
+        const free = eventPlan({
+            initialOptions: [{ id: 'o1', kind: 'INITIAL', months: 12, priceAmountMinor: 0, promoPriceAmountMinor: null, sortOrder: 0, active: true }],
+        });
+        expect(plansBelowChargeMinimum([free], 95, EVERYWHERE, NOW)).toEqual([]);
     });
 });
