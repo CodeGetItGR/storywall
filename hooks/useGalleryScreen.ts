@@ -120,7 +120,9 @@ export function useGalleryScreen({ printAvailable = false }: { printAvailable?: 
     const reportOpen = reportMediaId !== null && reportMediaId === selectedMedia?.id && canReportMedia;
     // Forget a dialog that can no longer show, so it doesn't come back when its item or permission does.
     if (reportMediaId !== null && !reportOpen) setReportMediaId(null);
+    // Only the guest album downloads as a selection; print picks also select in the Pro album.
     const canDownloadSelected =
+        canDownloadSelection &&
         gallerySelection.selectedCount > 0 &&
         gallerySelection.selectedCount <= maxArchiveSelectedItems &&
         selectedArchiveSize <= maxArchivePartBytes &&

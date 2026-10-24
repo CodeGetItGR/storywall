@@ -793,6 +793,8 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 ### Task A6: Gallery print state — `useGalleryPrint` and the `useGalleryScreen` flag
 
+> **As built (supersedes the code below where they differ):** the hook is split into `usePrintPhotographer` (choice, fallback, memoized list key), `usePrintAdd` (add, `addSelected`, in-flight guard, notice, error) and `usePrintViewerToggle` (own error on `viewerToggle.error`), composed by `useGalleryPrint` with the sheet state; `useScopedMessage` ties notices and errors to the event and photographer. The notice counts only newly added photos, says `alreadyPicked` when none were new, fades after 4 s and ends when a new selection starts. Adds and item edits share one "last write wins" rule in `usePrintLists.ts`; `VENDOR_ACCESS_ENDED` refreshes the context. `canDownloadSelected` in `useGalleryScreen` also requires `canDownloadSelection`. The `alreadyPicked` copy is listed in Task A7 Step 1.
+
 **Files:**
 - Create: `hooks/useGalleryPrint.ts`
 - Modify: `hooks/useGalleryScreen.ts`
@@ -994,6 +996,7 @@ Load the `design:design-system` skill before this task (existing product surface
             "pill": "Prints · {count}",
             "added": "{count, plural, one {# photo added to prints} other {# photos added to prints}}",
             "skippedNotPrintable": "Some items can't be printed, so they were left out.",
+            "alreadyPicked": "Already on your prints.",
             "sheetTitle": "Prints",
             "for": "For {name}",
             "empty": "No photos picked yet.",
@@ -1020,6 +1023,7 @@ Load the `design:design-system` skill before this task (existing product surface
             "pill": "Εκτυπώσεις · {count}",
             "added": "{count, plural, one {Προστέθηκε # φωτογραφία στις εκτυπώσεις} other {Προστέθηκαν # φωτογραφίες στις εκτυπώσεις}}",
             "skippedNotPrintable": "Κάποια αρχεία δεν εκτυπώνονται, γι' αυτό παραλείφθηκαν.",
+            "alreadyPicked": "Υπάρχουν ήδη στις εκτυπώσεις σας.",
             "sheetTitle": "Εκτυπώσεις",
             "for": "Για {name}",
             "empty": "Δεν έχετε επιλέξει ακόμη φωτογραφίες.",

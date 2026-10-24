@@ -1,12 +1,14 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
-import { printListKeys, useAddHostPrintItems, useHostPrintList, usePatchPrintItem, usePrintPicksContext, useRemovePrintItem } from '@/hooks/usePrintLists';
-import type { MediaResponseDto, PrintItemPatch, PrintListItemDto } from '@/lib/api/types';
-import { isPrintable, pickedMediaIds, printableIds, printTotals } from '@/lib/printPicks';
+import { usePrintAdd } from '@/hooks/usePrintAdd';
+import { useHostPrintList, usePatchPrintItem, usePrintPicksContext, useRemovePrintItem } from '@/hooks/usePrintLists';
+import { usePrintPhotographer } from '@/hooks/usePrintPhotographer';
+import { usePrintViewerToggle } from '@/hooks/usePrintViewerToggle';
+import type { MediaResponseDto, PrintItemPatch } from '@/lib/api/types';
+import { pickedMediaIds, printTotals } from '@/lib/printPicks';
 
 // Whether the gallery offers print picks to the caller, read before useGalleryScreen
 // so the screen knows who may select. Part A: hosts with an open photographer.
@@ -29,84 +31,44 @@ type GalleryPrintInput = {
 
 // The gallery's print list: whose list, what is on it, and the actions on it.
 export function useGalleryPrint({ eventId, isHost, available, photographers, media, selectedIds, viewerMedia, onAdded }: GalleryPrintInput) {
-    const t = useTranslations('GalleryPage.print');
     const toErrorMessage = useApiErrorMessage();
-    const [chosenVendorId, setChosenVendorId] = useState<string | null>(null);
     const [sheetOpen, setSheetOpen] = useState(false);
-    const [notice, setNotice] = useState<string | null>(null);
-    const [error, setError] = useState<string | null>(null);
 
-    // The first photographer unless the caller switched; a photographer who left falls back to the first.
-    const photographer = photographers.find((p) => p.vendorId === chosenVendorId) ?? photographers[0] ?? null;
-    const vendorId = photographer?.vendorId ?? null;
-    const listKey = printListKeys.host(eventId, vendorId ?? '');
+    const { photographer, vendorId, listKey, selectPhotographer } = usePrintPhotographer(eventId, photographers);
+    // isHost stays in the gate: Part B adds guests, whose list comes from another query.
     const list = useHostPrintList(eventId, vendorId, available && isHost);
-    const addItems = useAddHostPrintItems(eventId);
-    const patchItem = usePatchPrintItem(eventId, listKey);
-    const removeItem = useRemovePrintItem(eventId, listKey);
+    const { mutateAsync: patchAsync } = usePatchPrintItem(eventId, listKey);
+    const { mutateAsync: removeAsync, isPending: isRemoving } = useRemovePrintItem(eventId, listKey);
 
     const items = useMemo(() => list.data?.items ?? [], [list.data?.items]);
     const pickedIds = useMemo(() => pickedMediaIds(items), [items]);
     const totals = useMemo(() => printTotals(items, isHost ? (photographer?.hostPrintsIncluded ?? 0) : null), [items, isHost, photographer?.hostPrintsIncluded]);
-    const viewerItem: PrintListItemDto | undefined = viewerMedia ? items.find((item) => item.mediaId === viewerMedia.id && !item.removed) : undefined;
 
-    const add = useCallback(
-        async (mediaIds: string[], skipped: number) => {
-            if (!vendorId) return;
-            setError(null);
-            setNotice(null);
-            try {
-                if (mediaIds.length) await addItems.mutateAsync({ vendorId, mediaIds });
-                setNotice(skipped ? t('skippedNotPrintable') : t('added', { count: mediaIds.length }));
-                onAdded();
-            } catch (addError) {
-                setError(toErrorMessage(addError));
-            }
-        },
-        [addItems, onAdded, t, toErrorMessage, vendorId],
-    );
-
-    const addSelected = useCallback(() => {
-        const { ids, skipped } = printableIds(media, selectedIds);
-        return add(ids, skipped);
-    }, [add, media, selectedIds]);
-
-    const toggleViewer = useCallback(async () => {
-        if (!viewerMedia) return;
-        if (viewerItem) {
-            setError(null);
-            try {
-                await removeItem.mutateAsync(viewerItem.id);
-            } catch (removeError) {
-                setError(toErrorMessage(removeError));
-            }
-            return;
-        }
-        await add([viewerMedia.id], 0);
-    }, [add, removeItem, toErrorMessage, viewerItem, viewerMedia]);
+    const { add, addSelected, isAdding, notice, error, setError } = usePrintAdd({ eventId, vendorId, media, selectedIds, pickedIds, onAdded });
+    const viewerToggle = usePrintViewerToggle({ eventId, vendorId, available, viewerMedia, items, add, removeAsync, pending: isAdding || isRemoving });
 
     const updateItem = useCallback(
         async (itemId: string, patch: PrintItemPatch) => {
             setError(null);
             try {
-                await patchItem.mutateAsync({ itemId, patch });
+                await patchAsync({ itemId, patch });
             } catch (patchError) {
                 setError(toErrorMessage(patchError));
             }
         },
-        [patchItem, toErrorMessage],
+        [patchAsync, setError, toErrorMessage],
     );
 
     const deleteItem = useCallback(
         async (itemId: string) => {
             setError(null);
             try {
-                await removeItem.mutateAsync(itemId);
+                await removeAsync(itemId);
             } catch (removeError) {
                 setError(toErrorMessage(removeError));
             }
         },
-        [removeItem, toErrorMessage],
+        [removeAsync, setError, toErrorMessage],
     );
 
     const openSheet = useCallback(() => setSheetOpen(true), []);
@@ -116,7 +78,7 @@ export function useGalleryPrint({ eventId, isHost, available, photographers, med
         available,
         photographers,
         photographer,
-        selectPhotographer: setChosenVendorId,
+        selectPhotographer,
         items,
         pickedIds,
         totals,
@@ -125,9 +87,8 @@ export function useGalleryPrint({ eventId, isHost, available, photographers, med
         openSheet,
         closeSheet,
         addSelected,
-        isAdding: addItems.isPending,
-        // The viewer toggle: only on photos, while print picks are available.
-        viewerToggle: available && viewerMedia && isPrintable(viewerMedia) ? { picked: Boolean(viewerItem), pending: addItems.isPending || removeItem.isPending, onToggle: toggleViewer } : null,
+        isAdding,
+        viewerToggle,
         updateItem,
         deleteItem,
         notice,

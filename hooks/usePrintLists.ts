@@ -53,25 +53,41 @@ export function useHostPrintList(eventId: string | null, vendorId: string | null
     });
 }
 
-// Patches and removals on one list share this key, so the last one running can tell it is the last.
+// Patches and removals on one list share this key, and adds count with them (see writesRunning),
+// so the last write running can tell it is the last.
 const itemMutationKey = (listKey: QueryKey) => [...listKey, 'item'] as const;
+const addMutationKey = (eventId: string) => ['events', eventId, 'print-lists', 'host', 'add'] as const;
+
+// Writes to one host list that are running now: item edits on it, and adds (to any list of the event, which is the safe side).
+function writesRunning(queryClient: QueryClient, eventId: string, listKey: QueryKey): number {
+    return queryClient.isMutating({ mutationKey: itemMutationKey(listKey) }) + queryClient.isMutating({ mutationKey: addMutationKey(eventId) });
+}
+
+// A photographer whose access has ended must stop being offered.
+function refreshContextIfAccessEnded(queryClient: QueryClient, eventId: string, error: unknown) {
+    if (getErrorCode(error) === ERROR_CODES.VENDOR_ACCESS_ENDED) {
+        return queryClient.invalidateQueries({ queryKey: printListKeys.context(eventId), exact: true });
+    }
+}
 
 export function useAddHostPrintItems(eventId: string) {
     const queryClient = useQueryClient();
 
     return useMutation({
+        mutationKey: addMutationKey(eventId),
         mutationFn: (body: { vendorId: string; mediaIds: string[] }) => api.post<PrintListDto>(endpoints.events.hostPrintItems(eventId), body),
         onSuccess: async (list, body) => {
             const key = printListKeys.host(eventId, body.vendorId);
             // A fetch started before the add would land after it and hide the new picks.
             await queryClient.cancelQueries({ queryKey: key, exact: true });
-            // An item edit still running would be overwritten by this list: refetch once it is done instead.
-            if (queryClient.isMutating({ mutationKey: itemMutationKey(key) }) > 0) {
+            // Another write still running (this one is counted too) would be overwritten by this list: refetch instead.
+            if (writesRunning(queryClient, eventId, key) > 1) {
                 await queryClient.invalidateQueries({ queryKey: key, exact: true });
                 return;
             }
             queryClient.setQueryData(key, list);
         },
+        onError: (error) => refreshContextIfAccessEnded(queryClient, eventId, error),
     });
 }
 
@@ -86,7 +102,7 @@ export function usePatchPrintItem(eventId: string, listKey: QueryKey) {
     const queryClient = useQueryClient();
     const mutationKey = itemMutationKey(listKey);
     // This mutation still counts as mutating while its own callbacks run.
-    const isLast = () => queryClient.isMutating({ mutationKey }) === 1;
+    const isLast = () => writesRunning(queryClient, eventId, listKey) === 1;
 
     return useMutation({
         mutationKey,
@@ -107,8 +123,9 @@ export function usePatchPrintItem(eventId: string, listKey: QueryKey) {
             return { previous };
         },
         // Undo only this change: a whole-list snapshot could bring back a pick another mutation already removed.
-        onError: (_error, { itemId }, context) => {
+        onError: (error, { itemId }, context) => {
             if (context) updateItem(queryClient, listKey, itemId, context.previous);
+            return refreshContextIfAccessEnded(queryClient, eventId, error);
         },
         // The server's list carries the new size's label and price. An answer must not overwrite a later change still running.
         onSuccess: (list) => {
@@ -123,7 +140,7 @@ export function usePatchPrintItem(eventId: string, listKey: QueryKey) {
 export function useRemovePrintItem(eventId: string, listKey: QueryKey) {
     const queryClient = useQueryClient();
     const mutationKey = itemMutationKey(listKey);
-    const isLast = () => queryClient.isMutating({ mutationKey }) === 1;
+    const isLast = () => writesRunning(queryClient, eventId, listKey) === 1;
 
     return useMutation({
         mutationKey,
@@ -139,6 +156,7 @@ export function useRemovePrintItem(eventId: string, listKey: QueryKey) {
         },
         // Put back only this pick, where it was. A 404 means it is already gone, so the removal stands.
         onError: (error, _itemId, context) => {
+            void refreshContextIfAccessEnded(queryClient, eventId, error);
             if (error instanceof ApiError && error.status === 404) return;
             const removed = context?.removed;
             if (!removed) return;

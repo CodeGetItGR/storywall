@@ -242,3 +242,50 @@ describe('usePrintLists download', () => {
         expect(download.downloadBlob).toHaveBeenCalledWith(expect.any(Blob), 'prints-host-1.zip');
     });
 });
+
+describe('usePrintLists overlapping writes', () => {
+    beforeEach(() => vi.clearAllMocks());
+
+    it('refetches instead of overwriting a removal still running after an add', async () => {
+        const { queryClient, wrapper } = setup();
+        queryClient.setQueryData(hostKey, twoItems);
+        const pendingRemoval = deferred<PrintListDto>();
+        api.del.mockReturnValue(pendingRemoval.promise);
+        api.post.mockResolvedValue(list);
+        const remove = renderHook(() => useRemovePrintItem('e1', hostKey), { wrapper });
+        const add = renderHook(() => useAddHostPrintItems('e1'), { wrapper });
+        const removing = remove.result.current.mutateAsync('i2');
+        await waitFor(() => expect(queryClient.isMutating()).toBe(1));
+        await act(() => add.result.current.mutateAsync({ vendorId: 'v1', mediaIds: ['m9'] }));
+        // The add's list was not written over the removal; the list is stale until it is read again.
+        expect(queryClient.getQueryData<PrintListDto>(hostKey)?.items.map((item) => item.id)).toEqual(['i1', 'i3']);
+        expect(queryClient.getQueryState(hostKey)?.isInvalidated).toBe(true);
+        pendingRemoval.resolve({ ...twoItems, items: [twoItems.items[0], twoItems.items[2]] });
+        await removing;
+    });
+
+    it('does not write a removal answer over an add still running', async () => {
+        const { queryClient, wrapper } = setup();
+        queryClient.setQueryData(hostKey, twoItems);
+        const pendingAdd = deferred<PrintListDto>();
+        api.post.mockReturnValue(pendingAdd.promise);
+        api.del.mockResolvedValue({ ...list, items: [] });
+        const remove = renderHook(() => useRemovePrintItem('e1', hostKey), { wrapper });
+        const add = renderHook(() => useAddHostPrintItems('e1'), { wrapper });
+        const adding = add.result.current.mutateAsync({ vendorId: 'v1', mediaIds: ['m9'] });
+        await waitFor(() => expect(queryClient.isMutating()).toBe(1));
+        await act(() => remove.result.current.mutateAsync('i2'));
+        expect(queryClient.getQueryData<PrintListDto>(hostKey)?.items.map((item) => item.id)).toEqual(['i1', 'i3']);
+        pendingAdd.resolve(twoItems);
+        await adding;
+    });
+
+    it('refreshes the context when the photographer access has ended', async () => {
+        const { queryClient, wrapper } = setup();
+        queryClient.setQueryData(printListKeys.context('e1'), { guestScope: 'OFF', photographers: [] });
+        api.post.mockRejectedValue(new ApiError(403, { errorCode: 4033 }));
+        const { result } = renderHook(() => useAddHostPrintItems('e1'), { wrapper });
+        await act(() => result.current.mutateAsync({ vendorId: 'v1', mediaIds: ['m1'] }).catch(() => undefined));
+        expect(queryClient.getQueryState(printListKeys.context('e1'))?.isInvalidated).toBe(true);
+    });
+});
