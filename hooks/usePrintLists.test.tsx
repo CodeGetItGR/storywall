@@ -321,7 +321,7 @@ describe('usePrintLists overlapping writes', () => {
         queryClient.setQueryData(mineKey, twoItems);
         const pendingAdd = deferred<PrintListDto>();
         api.post.mockReturnValue(pendingAdd.promise);
-        const serverList = { ...twoItems, items: twoItems.items.map((item) => (item.id === 'i1' ? { ...item, copies: 4 } : item)) };
+        const serverList = { ...twoItems, items: twoItems.items.map((item) => (item.id === 'i1' ? { ...item, copies: 4, sizeLabel: '13x18' } : item)) };
         api.patch.mockResolvedValue(serverList);
         const patch = renderHook(() => usePatchPrintItem('e1', mineKey), { wrapper });
         const add = renderHook(() => useAddHostPrintItems('e1'), { wrapper });
