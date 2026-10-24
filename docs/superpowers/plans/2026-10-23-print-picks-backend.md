@@ -64,6 +64,7 @@ The spec left names and some mechanics to the plan. Settled here (items 1–4 ch
 15. Locks (Task A5 review): writes that create a list or change its item count take the event row lock, then `PrintListRepository.lockById`; PATCH/DELETE of one item resolve the list id with `PrintListItemRepository.findListIdByIdAndEventId`, take only the list lock, then load the item. Never take the list lock before the event lock. Guest list writes (B3, including send) follow the same order.
 16. Reminder copy (user decision 2026-10-24, Task A7 review): the reminder shows the close date and time instead of "in 3 days", because it can go out later than 3 days before. Title `Print picks close on {closesDate} (Athens time)`, body keys `notification.print.ending.body.one` / `.body.many`; payload `count`, `closesDate` (Athens, `yyyy-MM-dd HH:mm`, like `StorageTrimNotifier`), `closesAt` (ISO instant). The Task A7 copy below is superseded by this.
 17. Greek host word (user decision 2026-10-24): Greek copy says διοργανωτής (pl. διοργανωτές), never οικοδεσπότης. `print.sheet.host=Διοργανωτής`; reminder bodies end "…που επέλεξε ο διοργανωτής." Older Greek strings in the tasks below are superseded.
+18. Count wording (2026-10-24): every notification body with a count uses one/many keys (`.body.one` / `.body.many`, chosen by `count == 1`), as the reminder does. `PRINT_LIST_SENT` therefore stores `notification.print.sent.body.one` or `.many`; update its notifier and test to pick the key.
 
 ## File structure
 
@@ -4898,14 +4899,16 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 ```properties
 notification.print.sent.title={guestName} sent a print list
-notification.print.sent.body={count} prints, {total}.
+notification.print.sent.body.one=1 print, {total}.
+notification.print.sent.body.many={count} prints, {total}.
 ```
 
 `messages_el.properties`:
 
 ```properties
 notification.print.sent.title=Ο/Η {guestName} έστειλε λίστα εκτυπώσεων
-notification.print.sent.body={count} εκτυπώσεις, {total}.
+notification.print.sent.body.one=1 εκτύπωση, {total}.
+notification.print.sent.body.many={count} εκτυπώσεις, {total}.
 ```
 
 - [ ] **Step 2: Write the failing test**
