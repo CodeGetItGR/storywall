@@ -315,6 +315,24 @@ describe('usePrintLists overlapping writes', () => {
         await act(() => adding);
     });
 
+    it('does not let a running host add block an edit on a guest list of the same photographer', async () => {
+        const { queryClient, wrapper } = setup();
+        const mineKey = printListKeys.mine('e1', 'v1');
+        queryClient.setQueryData(mineKey, twoItems);
+        const pendingAdd = deferred<PrintListDto>();
+        api.post.mockReturnValue(pendingAdd.promise);
+        const serverList = { ...twoItems, items: twoItems.items.map((item) => (item.id === 'i1' ? { ...item, copies: 4 } : item)) };
+        api.patch.mockResolvedValue(serverList);
+        const patch = renderHook(() => usePatchPrintItem('e1', mineKey), { wrapper });
+        const add = renderHook(() => useAddHostPrintItems('e1'), { wrapper });
+        const adding = add.result.current.mutateAsync({ vendorId: 'v1', mediaIds: ['m9'] });
+        await waitFor(() => expect(queryClient.isMutating()).toBe(1));
+        await act(() => patch.result.current.mutateAsync({ itemId: 'i1', patch: { copies: 4 } }));
+        expect(queryClient.getQueryData(mineKey)).toEqual(serverList);
+        pendingAdd.resolve(list);
+        await act(() => adding);
+    });
+
     it('refreshes the context when the photographer access has ended', async () => {
         const { queryClient, wrapper } = setup();
         queryClient.setQueryData(printListKeys.context('e1'), { guestScope: 'OFF', photographers: [] });

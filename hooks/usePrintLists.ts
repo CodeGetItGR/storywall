@@ -58,13 +58,13 @@ export function useHostPrintList(eventId: string | null, vendorId: string | null
 const itemMutationKey = (listKey: QueryKey) => [...listKey, 'item'] as const;
 const addMutationKey = (eventId: string) => ['events', eventId, 'print-lists', 'host', 'add'] as const;
 
-// Writes to one list that are running now: item edits on it, and adds to it (a host list key ends with its photographer).
+// Writes to one list that are running now: item edits on it, and adds to it (adds only touch host lists, whose key is [..., 'host', vendorId]).
 function writesRunning(queryClient: QueryClient, eventId: string, listKey: QueryKey): number {
     return (
         queryClient.isMutating({ mutationKey: itemMutationKey(listKey) }) +
         queryClient.isMutating({
             mutationKey: addMutationKey(eventId),
-            predicate: (mutation) => (mutation.state.variables as { vendorId?: string } | undefined)?.vendorId === listKey[4],
+            predicate: (mutation) => listKey[3] === 'host' && (mutation.state.variables as { vendorId?: string } | undefined)?.vendorId === listKey[4],
         })
     );
 }
