@@ -8,7 +8,7 @@ import { attachmentFilename } from '@/lib/adminOrders';
 import { api, ApiError } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
-import type { PrintListArchiveManifestDto, PrintListDto, PrintListItemDto, PrintPicksContextDto } from '@/lib/api/types';
+import type { PrintItemPatch, PrintListArchiveManifestDto, PrintListDto, PrintListItemDto, PrintPicksContextDto } from '@/lib/api/types';
 import { downloadBlob } from '@/lib/download';
 import { LIVE_CONTENT_STALE_TIME } from '@/lib/queryClient';
 
@@ -25,8 +25,6 @@ export const printListKeys = {
 export function isEventPrintKey(queryKey: QueryKey): boolean {
     return queryKey[0] === 'events' && (queryKey[2] === 'print-picks' || queryKey[2] === 'print-lists');
 }
-
-export type PrintItemPatch = { sizeId?: string; copies?: number };
 
 type ItemFields = Pick<PrintListItemDto, 'copies' | 'sizeId' | 'sizeLabel' | 'unitPriceCents'>;
 

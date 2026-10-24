@@ -1211,6 +1211,9 @@ export interface PrintListDto {
     items: PrintListItemDto[];
 }
 
+// PATCH of one print pick: size, copies, or both.
+export type PrintItemPatch = { sizeId?: string; copies?: number };
+
 export interface PrintListArchiveManifestDto {
     parts: { part: number; itemCount: number; bytes: number }[];
 }
