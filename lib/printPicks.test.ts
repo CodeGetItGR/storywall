@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { MediaResponseDto, PrintListItemDto } from '@/lib/api/types';
-import { centsToEuroInput, euroInputToCents, isPrintable, pickedMediaIds, printableIds, printTotals } from '@/lib/printPicks';
+import { centsToEuroInput, euroInputToCents, isPrintable, pickedMediaIds, printableIds, printTotalParts, printTotals } from '@/lib/printPicks';
 
 function item(overrides: Partial<PrintListItemDto> = {}): PrintListItemDto {
     return {
@@ -111,5 +111,34 @@ describe('euro input', () => {
         expect(euroInputToCents('-1')).toBeNull();
         expect(euroInputToCents('3.555')).toBeNull();
         expect(euroInputToCents('1000.01')).toBeNull();
+    });
+});
+
+describe('printTotalParts', () => {
+    it('lists the package, the copies beyond it and their price', () => {
+        expect(printTotalParts(printTotals([item({ copies: 3, unitPriceCents: 300 })], 1))).toEqual([
+            { key: 'included', used: 1, included: 1 },
+            { key: 'beyond', count: 2 },
+            { key: 'price', cents: 600 },
+        ]);
+    });
+
+    it('leaves out the package when none is included', () => {
+        expect(printTotalParts(printTotals([item({ copies: 2, unitPriceCents: 300 })], 0))).toEqual([
+            { key: 'beyond', count: 2 },
+            { key: 'price', cents: 600 },
+        ]);
+        expect(printTotalParts(printTotals([item({ copies: 2, unitPriceCents: 300 })], null))).toHaveLength(2);
+    });
+
+    it('shows only the package while it covers every copy', () => {
+        expect(printTotalParts(printTotals([item({ copies: 1 })], 5))).toEqual([{ key: 'included', used: 1, included: 5 }]);
+    });
+
+    it('has an unknown price when a size has none', () => {
+        expect(printTotalParts(printTotals([item({ copies: 1, unitPriceCents: null })], 0))).toEqual([
+            { key: 'beyond', count: 1 },
+            { key: 'price', cents: null },
+        ]);
     });
 });

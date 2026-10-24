@@ -23,6 +23,8 @@ const items: PrintListItemDto[] = [
     { id: 'i2', mediaId: 'm2', media: null, removed: true, sizeId: 's1', sizeLabel: '13x18', unitPriceCents: 300, copies: 1 },
 ];
 
+const size13 = photographers[0].sizes[0];
+
 function renderSheet(overrides: Partial<Parameters<typeof PrintSheet>[0]> = {}) {
     const props = {
         open: true,
@@ -73,5 +75,40 @@ describe('PrintSheet', () => {
         renderSheet({ photographers: [photographers[1]], photographer: photographers[1], items: unpriced, totals: printTotals(unpriced, 0) });
         expect(screen.getByText(/Your photographer sets the price/)).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Lens & Light' })).not.toBeInTheDocument();
+    });
+
+    it('changes the size of a pick', () => {
+        const twoSizes = { ...photographers[0], sizes: [size13, { id: 's2', label: '20x30', priceCents: 600, currency: 'EUR' }] };
+        const props = renderSheet({ photographers: [twoSizes], photographer: twoSizes });
+        fireEvent.change(screen.getByRole('combobox', { name: 'Size' }), { target: { value: 's2' } });
+        expect(props.onUpdateItemAction).toHaveBeenCalledWith('i1', { sizeId: 's2' });
+    });
+
+    it('shows a placeholder when the pick has no size, and every size can be chosen', () => {
+        const unsized = [{ ...items[0], sizeId: null, sizeLabel: null, unitPriceCents: null }];
+        const props = renderSheet({ items: unsized, totals: printTotals(unsized, 1) });
+        const select = screen.getByRole('combobox', { name: 'Size' }) as HTMLSelectElement;
+        expect(select.value).toBe('');
+        expect(screen.getByRole('option', { name: 'Size' })).toBeDisabled();
+        fireEvent.change(select, { target: { value: 's1' } });
+        expect(props.onUpdateItemAction).toHaveBeenCalledWith('i1', { sizeId: 's1' });
+    });
+
+    it('shows an error as an alert', () => {
+        renderSheet({ error: 'Something went wrong' });
+        expect(screen.getByRole('alert')).toHaveTextContent('Something went wrong');
+    });
+
+    it('shows the empty state without a total', () => {
+        renderSheet({ items: [], totals: printTotals([], 1) });
+        expect(screen.getByText('No photos picked yet.')).toBeInTheDocument();
+        expect(screen.queryByText(/included/)).not.toBeInTheDocument();
+    });
+
+    it('leaves out the included part when the photographer includes none', () => {
+        const none = [{ ...items[0] }];
+        renderSheet({ photographers: [photographers[0]], photographer: { ...photographers[0], hostPrintsIncluded: 0 }, items: none, totals: printTotals(none, 0) });
+        expect(screen.queryByText(/included/)).not.toBeInTheDocument();
+        expect(screen.getByText(/^2 more · /)).toBeInTheDocument();
     });
 });

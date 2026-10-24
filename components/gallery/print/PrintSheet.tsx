@@ -41,7 +41,7 @@ export function PrintSheet({
     const t = useTranslations('GalleryPage.print');
 
     return (
-        <Modal open={open} onClose={onCloseAction} variant="sheet" size="sm" closeLabel={t('close')}>
+        <Modal open={open} onClose={onCloseAction} variant="sheet" size="sm" ariaLabel={t('sheetTitle')} closeLabel={t('close')}>
             <Modal.Body className="px-5 pt-5 pb-6">
                 {/* Header */}
                 <h2 className="pr-8 text-base font-bold text-ink">{t('sheetTitle')}</h2>

@@ -25,7 +25,6 @@ import { useActiveModuleCopy } from '@/hooks/useModuleCopy';
 import { formatDate } from '@/lib/datetime';
 import { isMemberArchiveEnabled } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
-import { cn } from '@/lib/utils';
 
 export function GalleryScreen() {
     const t = useTranslations('GalleryPage');
@@ -247,9 +246,11 @@ export function GalleryScreen() {
 
             {/* Gallery */}
             {selectionDownloadError && <p className="mb-3 text-xs text-rose-600">{selectionDownloadError}</p>}
-            {!print.sheetOpen && (print.notice || print.error) && (
-                <p role="status" className={cn('mb-3 text-xs', print.error ? 'text-rose-600' : 'text-ink-muted')}>
-                    {print.error ?? print.notice}
+            {/* Print notice — the status region stays mounted so a new message is announced */}
+            <div role="status">{!print.sheetOpen && !print.error && print.notice && <p className="mb-3 text-xs text-ink-muted">{print.notice}</p>}</div>
+            {!print.sheetOpen && print.error && (
+                <p role="alert" className="mb-3 text-xs text-rose-600">
+                    {print.error}
                 </p>
             )}
             <GalleryMediaGrid

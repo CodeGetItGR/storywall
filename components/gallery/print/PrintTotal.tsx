@@ -3,17 +3,22 @@
 import { useLocale, useTranslations } from 'next-intl';
 
 import { formatMoney } from '@/lib/billing';
-import type { PrintTotals } from '@/lib/printPicks';
+import type { PrintTotalPart, PrintTotals } from '@/lib/printPicks';
+import { printTotalParts } from '@/lib/printPicks';
+
+// Print sizes are priced in euros only: the backend gives every size the EUR default and its requests carry no currency.
+const PRINT_CURRENCY = 'EUR';
 
 // "12 of 40 included · 3 more · €9.00" for a host, "3 more · €9.00" for a guest.
 export function PrintTotal({ totals }: { totals: PrintTotals }) {
     const t = useTranslations('GalleryPage.print');
     const locale = useLocale();
-    const parts = [
-        totals.included !== null && t('included', { used: Math.min(totals.prints, totals.included), included: totals.included }),
-        totals.beyond > 0 && t('beyond', { count: totals.beyond }),
-        totals.beyond > 0 && (totals.priceCents === null ? t('noPrice') : formatMoney(locale, totals.priceCents, 'EUR')),
-    ].filter(Boolean);
 
-    return <p className="text-sm font-semibold text-ink">{parts.join(' · ')}</p>;
+    function partText(part: PrintTotalPart): string {
+        if (part.key === 'included') return t('included', { used: part.used, included: part.included });
+        if (part.key === 'beyond') return t('beyond', { count: part.count });
+        return part.cents === null ? t('noPrice') : formatMoney(locale, part.cents, PRINT_CURRENCY);
+    }
+
+    return <p className="text-sm font-semibold text-ink">{printTotalParts(totals).map(partText).join(' · ')}</p>;
 }

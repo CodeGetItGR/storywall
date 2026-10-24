@@ -25,6 +25,8 @@ export function PrintRow({
 }) {
     const t = useTranslations('GalleryPage.print');
     const { media } = item;
+    // A size the photographer no longer offers (or none) shows a placeholder, so every real size can be chosen.
+    const sizeValue = sizes.some((size) => size.id === item.sizeId) ? (item.sizeId ?? '') : '';
 
     function handleSizeChange(event: ChangeEvent<HTMLSelectElement>) {
         onUpdateAction(item.id, { sizeId: event.currentTarget.value });
@@ -66,11 +68,14 @@ export function PrintRow({
                         {sizes.length > 0 && (
                             <select
                                 aria-label={t('size')}
-                                value={item.sizeId ?? ''}
+                                value={sizeValue}
                                 onChange={handleSizeChange}
                                 disabled={disabled}
                                 className="min-h-10 rounded-lg border border-border bg-background px-2 text-sm"
                             >
+                                <option value="" disabled>
+                                    {t('size')}
+                                </option>
                                 {sizes.map((size) => (
                                     <option key={size.id} value={size.id}>
                                         {size.label}

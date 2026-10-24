@@ -62,3 +62,18 @@ export function euroInputToCents(text: string): number | null {
     const cents = Math.round(Number(normalized) * 100);
     return cents <= PRICE_MAX_CENTS ? cents : null;
 }
+
+export type PrintTotalPart = { key: 'included'; used: number; included: number } | { key: 'beyond'; count: number } | { key: 'price'; cents: number | null };
+
+// The segments of the total line, in order: the package (only when the photographer includes prints),
+// the copies beyond it and what they cost.
+export function printTotalParts(totals: PrintTotals): PrintTotalPart[] {
+    const parts: PrintTotalPart[] = [];
+    if (totals.included !== null && totals.included > 0) {
+        parts.push({ key: 'included', used: Math.min(totals.prints, totals.included), included: totals.included });
+    }
+    if (totals.beyond > 0) {
+        parts.push({ key: 'beyond', count: totals.beyond }, { key: 'price', cents: totals.priceCents });
+    }
+    return parts;
+}

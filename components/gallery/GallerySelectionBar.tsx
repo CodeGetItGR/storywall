@@ -3,6 +3,8 @@
 import { ArrowUp, Download, Loader2, Printer } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { cn } from '@/lib/utils';
+
 interface GallerySelectionBarProps {
     visible: boolean;
     selectedCount: number;
@@ -70,10 +72,13 @@ export function GallerySelectionBar({
                                 type="button"
                                 onClick={onPrintSelected}
                                 disabled={!selectedCount || isPrinting}
-                                aria-label={tPrint('action')}
-                                className="flex min-h-9 items-center gap-3.5 rounded-full bg-ink px-3 text-xs font-semibold text-white disabled:opacity-50"
+                                className={cn(
+                                    'flex min-h-9 items-center gap-3.5 rounded-full px-3 text-xs font-semibold disabled:opacity-50',
+                                    canDownload ? 'bg-surface-muted text-ink' : 'bg-ink text-white',
+                                )}
                             >
                                 {isPrinting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Printer className="h-3.5 w-3.5" />}
+                                <span className="sr-only">{tPrint('action')}</span>
                                 {!canDownload && <span className="text-center text-xs font-semibold text-white">{selectedCount}</span>}
                             </button>
                         )}
@@ -119,7 +124,10 @@ export function GallerySelectionBar({
                                 type="button"
                                 onClick={onPrintSelected}
                                 disabled={!selectedCount || isPrinting}
-                                className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-ink px-3 text-xs font-semibold text-white disabled:opacity-50"
+                                className={cn(
+                                    'inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold disabled:opacity-50',
+                                    canDownload ? 'bg-surface-muted text-ink' : 'bg-ink text-white',
+                                )}
                             >
                                 {isPrinting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Printer className="h-3.5 w-3.5" />}
                                 {tPrint('action')}
