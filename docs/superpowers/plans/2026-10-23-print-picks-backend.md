@@ -59,6 +59,11 @@ The spec left names and some mechanics to the plan. Settled here (items 1–4 ch
 10. The reminder is sent once per photographer and event through `NotificationEmitter`'s dedupe key `print.ending:vendor:{eventVendorId}`; no extra column.
 11. `guestPrintPicks` is an optional key of the vendors module config (missing reads `OFF`), so admin edits that do not send it keep working.
 12. Deleting an account clears the contact fields and the owner name of that user's sent guest lists, deletes their open lists, and deletes the `PRINT_LIST_SENT` notifications that carry their name. Their services go with the profile (`ON DELETE CASCADE`).
+13. Guests never see, or send to, a photographer the host hid (`hiddenByHost`) or who opted out of the vendor list (`optedOut`); hosts still pick for every open photographer (user decision 2026-10-24). Part B applies it in the context endpoint's guest branch and in every guest list endpoint's photographer check (`PrintPicksAccess`).
+14. After review of Task A5: `PrintListMapper.toDto(list, items, withContact, livePrices)` takes a fourth argument. Open lists show live sizes and prices only when the photographer is an approved partner (`ApprovedPartners.isApproved`); sent lists use their copied values either way. A non-partner's sizes are never applied (no default size, a `sizeId` is refused). Every later `mapper.toDto(…)` call in this plan passes that flag.
+15. Locks (Task A5 review): writes that create a list or change its item count take the event row lock, then `PrintListRepository.lockById`; PATCH/DELETE of one item resolve the list id with `PrintListItemRepository.findListIdByIdAndEventId`, take only the list lock, then load the item. Never take the list lock before the event lock. Guest list writes (B3, including send) follow the same order.
+16. Reminder copy (user decision 2026-10-24, Task A7 review): the reminder shows the close date and time instead of "in 3 days", because it can go out later than 3 days before. Title `Print picks close on {closesDate} (Athens time)`, body keys `notification.print.ending.body.one` / `.body.many`; payload `count`, `closesDate` (Athens, `yyyy-MM-dd HH:mm`, like `StorageTrimNotifier`), `closesAt` (ISO instant). The Task A7 copy below is superseded by this.
+17. Greek host word (user decision 2026-10-24): Greek copy says διοργανωτής (pl. διοργανωτές), never οικοδεσπότης. `print.sheet.host=Διοργανωτής`; reminder bodies end "…που επέλεξε ο διοργανωτής." Older Greek strings in the tasks below are superseded.
 
 ## File structure
 
@@ -156,7 +161,7 @@ CREATE TABLE vendor_service_items (
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT chk_vendor_service_items_kind CHECK (kind IN ('PRINT', 'OTHER')),
-    CONSTRAINT chk_vendor_service_items_price CHECK (price_cents BETWEEN 0 AND 10000000),
+    CONSTRAINT chk_vendor_service_items_price CHECK (price_cents BETWEEN 0 AND 100000),
     CONSTRAINT chk_vendor_service_items_currency CHECK (currency = 'EUR')
 );
 CREATE INDEX idx_vendor_service_items_user ON vendor_service_items (user_id, kind, sort_order);
@@ -1102,7 +1107,7 @@ import jakarta.validation.constraints.Size;
 public record VendorServiceItemRequestDto(
         @NotNull VendorServiceKind kind,
         @NotBlank @Size(max = 40) String label,
-        @NotNull @Min(0) @Max(10_000_000) Integer priceCents,
+        @NotNull @Min(0) @Max(100_000) Integer priceCents,
         @Min(0) @Max(999) Integer sortOrder) {
 }
 ```
@@ -4299,6 +4304,8 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Modify: `MAIN/service/vendor/VendorAuditWriter.java`
 - Test: `TEST/controller/print/GuestPrintListTest.java`
 
+Visibility (decision 13): the guest gate refuses a photographer with `hiddenByHost` or `optedOut` (`PRINT_PICKS_UNAVAILABLE`), and the context endpoint's guest branch drops them. Add a test for each.
+
 - [ ] **Step 1: Write the DTOs**
 
 `MAIN/dto/print/MyPrintListsDto.java`:
@@ -4738,7 +4745,7 @@ public class GuestPrintListService {
             item.setServiceItem(size);
             item.setSizeLabel(size.getLabel());
             item.setUnitPriceCents(size.getPriceCents());
-            total += size.getPriceCents() * item.getCopies();
+            total = Math.addExact(total, Math.multiplyExact(size.getPriceCents(), item.getCopies()));
             itemRepository.save(item);
         }
         open.setStatus(PrintListStatus.SENT);
@@ -4815,6 +4822,7 @@ public class GuestPrintListService {
         list.setEventVendor(gate.photographer());
         list.setOwnerKind(PrintListOwnerKind.GUEST);
         list.setOwnerMember(gate.member());
+        list.setOwnerUser(gate.member().getUser());
         return list;
     }
 }
@@ -5069,7 +5077,10 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 **Files:**
 - Modify: `MAIN/service/user/deletion/UserAnonymizer.java`
 - Modify: `MAIN/dto/user/export/UserDataExportDto.java`, `MAIN/service/user/export/MeDataExportService.java`
+- Modify: `MAIN/service/event/EventMemberService.java` (member removal, see below)
 - Test: `TEST/service/print/PrintPicksAccountDataTest.java`
+
+Lists find their owner through `print_lists.owner_user_id` (added in Task A1 after review), not through the membership, because `EventMemberService` hard-deletes members and `owner_member_id` then goes to NULL. Also, when a member is removed from an event, delete their `OPEN` guest lists in the same transaction, before the member row is deleted (`printListRepository.deleteByOwnerMember_IdAndStatus(memberId, PrintListStatus.OPEN)`), so no unreachable open list is left behind; their `SENT` lists stay with the photographer. Add test cases `removingAMemberDeletesTheirOpenListAndKeepsSentOnes` and `aSentListIsStillFoundByAccountAfterTheMemberIsDeleted` (delete the member, then `findByOwnerUserId` still returns the list and account deletion clears its contact fields).
 
 - [ ] **Step 1: Write the failing test**
 

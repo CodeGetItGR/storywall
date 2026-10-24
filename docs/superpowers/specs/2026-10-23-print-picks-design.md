@@ -30,6 +30,7 @@ Every pick shows a price (or that the photographer sets one), so nobody assumes 
 | Guest scope | Per plan: off, own uploads, or any photo. The host chooses within the plan's limit. |
 | Guest contact | On send, the guest confirms that their email (and an optional phone) is shared with that photographer. |
 | Who sees guest lists | Only the photographer. The host never sees them and cannot remove a guest's pick. |
+| Hidden photographers | Guests never see or send to a photographer the host hid or who opted out of the vendor list. Hosts still pick for every open photographer. |
 | Without prices | Guest picks need a photographer with at least one `PRINT` service. Host picks still work without one: copies only, no size, "Your photographer sets the price". |
 | Notifications | The photographer gets an in-app notice and an email for each guest list sent. One reminder 3 days before access ends if the host has picks. No notice per host change. |
 | Limits | 100 photos per list, the same as `media.archive.max-selected-items`. Up to 8 `PRINT` services per profile. |
@@ -76,7 +77,7 @@ Built with phase 1, because host picks use it.
   - `PATCH /api/events/{eventId}/vendors/me/prints-included`: the photographer.
   - `GET /api/events/{eventId}/print-lists/{listId}/archive?part=`: the photographer. Reuses `MediaArchiveService`'s selected path with the `ORIGINAL` variant when the event keeps originals, else `DISPLAY`, plus `prints.txt`.
   - `GET /api/events/{eventId}/print-picks`: any member. The photographers who can receive picks now, their sizes and prices, and the guest scope (replaces adding `printSizes` to the vendor rows).
-- **Reminder:** a daily job finds host lists with items whose photographer's `accessEndsAt` is 3 days away and sends one notice (`PRINT_PICKS_ENDING`), recorded so it is sent once.
+- **Reminder:** a daily job finds host lists with items whose photographer's `accessEndsAt` is 3 days away and sends one notice (`PRINT_PICKS_ENDING`), recorded so it is sent once. The notice shows the close date and time (Athens time), not "in 3 days", since it can go out later.
 - **Audit:** host list created, photographer download started. No personal data.
 - **Export and deletion:** `MeDataExportService` includes services and print lists. Deleting an account removes its services and its open lists; sent lists keep items but drop contact fields.
 

@@ -346,7 +346,7 @@ describe('euro input', () => {
         expect(euroInputToCents('')).toBeNull();
         expect(euroInputToCents('-1')).toBeNull();
         expect(euroInputToCents('3.555')).toBeNull();
-        expect(euroInputToCents('100001')).toBeNull();
+        expect(euroInputToCents('1000.01')).toBeNull();
     });
 });
 ```
@@ -367,7 +367,7 @@ import type { MediaResponseDto, PrintListItemDto } from '@/lib/api/types';
 export const PRINT_LIST_MAX_ITEMS = 100;
 export const PRINT_SIZES_MAX = 8;
 export const PRINT_COPIES_MAX = 99;
-const PRICE_MAX_CENTS = 10_000_000;
+const PRICE_MAX_CENTS = 100_000;
 
 export type PrintTotals = {
     prints: number;
@@ -415,7 +415,7 @@ export function centsToEuroInput(cents: number): string {
     return (cents / 100).toFixed(2);
 }
 
-// "3.5", "3,50" → 350. Null for anything that is not a price of 0 to 100,000 euros with up to 2 decimals.
+// "3.5", "3,50" → 350. Null for anything that is not a price of 0 to 1,000 euros with up to 2 decimals.
 export function euroInputToCents(text: string): number | null {
     const normalized = text.trim().replace(',', '.');
     if (!/^\d+(\.\d{1,2})?$/.test(normalized)) return null;
@@ -871,8 +871,8 @@ Expected: FAIL.
 
 ```json
             "PRINT_PICKS_ENDING": {
-                "title": "Print picks close in 3 days",
-                "body": "The host picked {count} photos for print. Download them before your access ends."
+                "title": "Print picks close on {closesDate} (Athens time)",
+                "body": "{count, plural, one {Download the photo the host picked.} other {Download the # photos the host picked.}}"
             },
             "PRINT_LIST_SENT": {
                 "title": "{guestName} sent a print list",
@@ -884,8 +884,8 @@ Expected: FAIL.
 
 ```json
             "PRINT_PICKS_ENDING": {
-                "title": "Οι επιλογές για εκτύπωση κλείνουν σε 3 ημέρες",
-                "body": "Οι οικοδεσπότες επέλεξαν {count} φωτογραφίες για εκτύπωση. Κατεβάστε τες πριν λήξει η πρόσβασή σας."
+                "title": "Οι επιλογές για εκτύπωση κλείνουν στις {closesDate} (ώρα Αθήνας)",
+                "body": "{count, plural, one {Κατεβάστε τη φωτογραφία που επέλεξε ο διοργανωτής.} other {Κατεβάστε τις # φωτογραφίες που επέλεξε ο διοργανωτής.}}"
             },
             "PRINT_LIST_SENT": {
                 "title": "Ο/Η {guestName} έστειλε λίστα εκτυπώσεων",
@@ -893,7 +893,7 @@ Expected: FAIL.
             },
 ```
 
-Check in `components/notifications/NotificationRow.tsx` how a type's fallback reads its payload (the `VENDOR_JOINED` test fills `{business}` and `{type}`); the backend payload keys are `count`, `guestName` and `total`, which match the placeholders above.
+Check in `components/notifications/NotificationRow.tsx` how a type's fallback reads its payload (the `VENDOR_JOINED` test fills `{business}` and `{type}`); the backend payload keys are `count`, `closesDate` (already formatted, Athens time) and `closesAt` (ISO instant) for `PRINT_PICKS_ENDING`, and `count`, `guestName` and `total` for `PRINT_LIST_SENT`. The fallback's `copyValues` is a fixed list (`business`, `type`, `over`, `dueDate`): add `count`, `closesDate`, `guestName` and `total` to it so these placeholders render, and add a `NotificationRow` test that a `PRINT_PICKS_ENDING` with null title/body renders the date and the singular and plural bodies. The backend copy matches these strings (keys `notification.print.ending.title`, `.body.one`, `.body.many`).
 
 - [ ] **Step 3: Run the tests**
 
@@ -1705,14 +1705,14 @@ Load the `design:design-system` skill before this task.
 ```json
         "prints": {
             "title": "Εκτυπώσεις",
-            "included": "Εκτυπώσεις που περιλαμβάνονται για τους οικοδεσπότες",
+            "included": "Εκτυπώσεις που περιλαμβάνονται για τους διοργανωτές",
             "includedValue": "{count}",
             "includedEdit": "Αλλαγή",
-            "includedSheetTitle": "Εκτυπώσεις που περιλαμβάνονται για τους οικοδεσπότες",
+            "includedSheetTitle": "Εκτυπώσεις που περιλαμβάνονται για τους διοργανωτές",
             "includedLabel": "Αριθμός εκτυπώσεων",
             "save": "Αποθήκευση",
             "cancel": "Ακύρωση",
-            "hostEmpty": "Οι οικοδεσπότες δεν έχουν επιλέξει ακόμη φωτογραφίες.",
+            "hostEmpty": "Οι διοργανωτές δεν έχουν επιλέξει ακόμη φωτογραφίες.",
             "downloadAll": "Λήψη όλων",
             "downloading": "Λήψη…",
             "removedCount": "{count, plural, one {Αφαιρέθηκε # φωτογραφία} other {Αφαιρέθηκαν # φωτογραφίες}}",
@@ -3335,7 +3335,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 el:
 
 ```json
-            "tabHost": "Οικοδεσπότες",
+            "tabHost": "Διοργανωτές",
             "tabGuests": "Καλεσμένοι",
             "guestsEmpty": "Κανένας καλεσμένος δεν έχει στείλει ακόμη λίστα.",
             "guestRow": "{date} · {prints, plural, one {# εκτύπωση} other {# εκτυπώσεις}} · {total}",
@@ -3557,7 +3557,7 @@ Messages under `AdminPage.plans.grid.cell` (en):
                 },
 ```
 
-and in `fields`: `"guestPrintPicks": "Guest prints"`, in `fieldHints`: `"guestPrintPicks": "What guests may pick for print. Hosts choose up to this."`. el: `"OFF": "Ανενεργό"`, `"OWN": "Δικές τους φωτογραφίες"`, `"ANY": "Οποιαδήποτε φωτογραφία"`, field `"Εκτυπώσεις καλεσμένων"`, hint `"Τι μπορούν να επιλέξουν οι καλεσμένοι για εκτύπωση. Οι οικοδεσπότες επιλέγουν έως αυτό."`.
+and in `fields`: `"guestPrintPicks": "Guest prints"`, in `fieldHints`: `"guestPrintPicks": "What guests may pick for print. Hosts choose up to this."`. el: `"OFF": "Ανενεργό"`, `"OWN": "Δικές τους φωτογραφίες"`, `"ANY": "Οποιαδήποτε φωτογραφία"`, field `"Εκτυπώσεις καλεσμένων"`, hint `"Τι μπορούν να επιλέξουν οι καλεσμένοι για εκτύπωση. Οι διοργανωτές επιλέγουν έως αυτό."`.
 
 `components/admin/plans/PlanModuleChoiceField.tsx` — the console's segmented control, styled like `VisibilitySegmentedControl` (same token classes, so it matches the admin reference design):
 
