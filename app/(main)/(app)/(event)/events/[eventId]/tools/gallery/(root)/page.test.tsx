@@ -180,6 +180,28 @@ describe('GalleryPage (server)', () => {
             ]);
         });
 
+        it('keeps the context when the host list fails', async () => {
+            withVendors();
+            mocks.serverGet.mockImplementation((path: string) => {
+                if (path.endsWith('/print-picks')) return Promise.resolve(printContext);
+                if (path.includes('/print-lists/host')) return Promise.reject(new Error('down'));
+                return Promise.resolve(firstPage);
+            });
+
+            const seeded = seededQueries(await visit());
+            expect(seeded).toContainEqual({ key: ['events', 'e1', 'print-picks'], data: printContext });
+            expect(seeded.some((query) => query.key.includes('print-lists'))).toBe(false);
+        });
+
+        it('asks for no host list without photographers', async () => {
+            withVendors();
+            mocks.serverGet.mockImplementation((path: string) => Promise.resolve(path.endsWith('/print-picks') ? { photographers: [] } : firstPage));
+
+            const seeded = seededQueries(await visit());
+            expect(seeded).toContainEqual({ key: ['events', 'e1', 'print-picks'], data: { photographers: [] } });
+            expect(mocks.serverGet).not.toHaveBeenCalledWith(expect.stringContaining('print-lists'), expect.anything());
+        });
+
         it('skips prints for a guest and without the vendors module', async () => {
             answerPrints();
             await visit();

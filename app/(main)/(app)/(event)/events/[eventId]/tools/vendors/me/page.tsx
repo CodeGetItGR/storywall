@@ -35,14 +35,16 @@ export default async function Page({ params }: PageProps) {
                 const modules = readableModuleKeys(event);
                 // The same gating as the page's Pro section: the type has the album and both modules are readable.
                 const withPro = capabilitiesOfType(me.vendorType).includes('PRO_ALBUM') && modules.has('vendors') && modules.has('gallery');
-                // The same gates as useVendorPrintsSection (PRINT_PICKS open) and useVendorServicesSection (approved photographer).
+                // The same gates as useVendorPrintsSection (PRINT_PICKS open; the context also needs the vendors module readable) and useVendorServicesSection (approved photographer).
                 const withPrints = hasVendorCapability(me, 'PRINT_PICKS');
                 const withServices = me.vendorType === 'PHOTOGRAPHER' && me.approvedPartner;
                 const [profile, proFirstPage, printContext, hostList, services] = await Promise.all([
                     serverGetOrNull<VendorProfileDto>(endpoints.me.vendorProfile, context.accessToken),
                     withPro ? serverGet<ApiPage<MediaResponseDto>>(mediaListPath(eventId, 'PRO', 0), context.accessToken) : Promise.resolve(null),
                     // A failed print read must not drop the profile: the client fetches these itself.
-                    withPrints ? serverGet<PrintPicksContextDto>(endpoints.events.printPicks(eventId), context.accessToken).catch(() => null) : null,
+                    withPrints && modules.has('vendors')
+                        ? serverGet<PrintPicksContextDto>(endpoints.events.printPicks(eventId), context.accessToken).catch(() => null)
+                        : null,
                     withPrints
                         ? serverGet<PrintListDto>(endpoints.events.hostPrintList(eventId, me.vendorId), context.accessToken).catch(() => null)
                         : null,
