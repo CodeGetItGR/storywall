@@ -6,26 +6,42 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { Button } from '@/components/ui/button';
+import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { PartnerPromptCard } from '@/components/vendors/me/PartnerPromptCard';
+import { PrintsIncludedSheet } from '@/components/vendors/me/PrintsIncludedSheet';
+import { PrintsSection } from '@/components/vendors/me/PrintsSection';
 import { ProAlbumSection } from '@/components/vendors/me/ProAlbumSection';
+import { ServiceSheet } from '@/components/vendors/me/ServiceSheet';
+import { ServicesSection } from '@/components/vendors/me/ServicesSection';
 import { VendorListingSection } from '@/components/vendors/me/VendorListingSection';
 import { VendorToolLinks } from '@/components/vendors/me/VendorToolLinks';
 import { VendorLogo } from '@/components/vendors/VendorLogo';
 import { VendorProfileSheet } from '@/components/vendors/VendorProfileSheet';
 import { VendorRowsSkeleton } from '@/components/vendors/VendorsSkeletons';
 import { useVendorMePage } from '@/hooks/useVendorMePage';
+import { useVendorPrintsSection } from '@/hooks/useVendorPrintsSection';
+import { useVendorServicesSection } from '@/hooks/useVendorServicesSection';
 import { formatDate } from '@/lib/datetime';
 import { routes } from '@/lib/routes';
 
 export function VendorMeScreen() {
     const t = useTranslations('Vendors');
+    const tServices = useTranslations('Vendors.services');
     const locale = useLocale();
     const { eventId } = useEventRouteContext();
     const page = useVendorMePage(eventId);
     const { me, profile } = page;
+    const prints = useVendorPrintsSection(eventId, me);
+    const services = useVendorServicesSection(me);
 
     return (
-        <ModulePageShell maxWidth="2xl" title={t('me.title')} icon={BriefcaseBusiness} backLabel={t('me.back')} backHref={routes.events.feed(eventId)}>
+        <ModulePageShell
+            maxWidth="2xl"
+            title={t('me.title')}
+            icon={BriefcaseBusiness}
+            backLabel={t('me.back')}
+            backHref={routes.events.feed(eventId)}
+        >
             {page.isLoading ? (
                 <VendorRowsSkeleton />
             ) : !me ? (
@@ -36,11 +52,32 @@ export function VendorMeScreen() {
                     {me.toolsOff ? (
                         <p className="text-sm text-ink-muted">{t(`me.toolsOff.${me.toolsOff}`)}</p>
                     ) : (
-                        me.accessEndsAt && <p className="text-sm text-ink-muted">{t('me.accessUntil', { date: formatDate(locale, me.accessEndsAt, { dateStyle: 'long' }) })}</p>
+                        me.accessEndsAt && (
+                            <p className="text-sm text-ink-muted">
+                                {t('me.accessUntil', { date: formatDate(locale, me.accessEndsAt, { dateStyle: 'long' }) })}
+                            </p>
+                        )
                     )}
 
                     {/* Tools */}
                     {page.tools.length > 0 && <VendorToolLinks tools={page.tools} />}
+
+                    {/* Prints */}
+                    {prints.open && (
+                        <PrintsSection
+                            included={prints.included}
+                            items={prints.items}
+                            removedCount={prints.removedCount}
+                            totals={prints.totals}
+                            partCount={prints.partCount}
+                            isLoadingParts={prints.isLoadingParts}
+                            downloadingPart={prints.downloadingPart}
+                            isLoading={prints.isLoading}
+                            error={prints.includedOpen ? null : prints.error}
+                            onEditIncludedAction={prints.openIncluded}
+                            onDownloadPartAction={prints.downloadHostPart}
+                        />
+                    )}
 
                     {/* Pro album */}
                     {page.hasProAlbum && (
@@ -85,6 +122,19 @@ export function VendorMeScreen() {
                         )}
                     </section>
 
+                    {/* Services */}
+                    {services.visible && (
+                        <ServicesSection
+                            approved={services.approved}
+                            sizes={services.sizes}
+                            canAdd={services.canAdd}
+                            isLoading={services.isLoading}
+                            error={services.editing ? null : services.error}
+                            onAddAction={services.openNew}
+                            onEditAction={services.openEdit}
+                        />
+                    )}
+
                     {/* Partner */}
                     {page.showPartnerPrompt && <PartnerPromptCard />}
                 </div>
@@ -92,6 +142,44 @@ export function VendorMeScreen() {
 
             {/* Details sheet */}
             {page.profileOpen && me && <VendorProfileSheet open profile={profile} defaultType={me.vendorType} onCloseAction={page.closeProfile} />}
+
+            {/* Prints included sheet */}
+            {prints.open && (
+                <PrintsIncludedSheet
+                    key={prints.includedOpen ? 'open' : 'closed'}
+                    open={prints.includedOpen}
+                    initial={prints.included}
+                    isSaving={prints.isSavingIncluded}
+                    error={prints.error}
+                    onSaveAction={prints.saveIncluded}
+                    onCloseAction={prints.closeIncluded}
+                />
+            )}
+
+            {/* Service sheet */}
+            {services.editing && (
+                <ServiceSheet
+                    key={services.editing === 'new' ? 'new' : services.editing.id}
+                    item={services.editing}
+                    isSaving={services.isSaving}
+                    error={services.error}
+                    onSaveAction={services.save}
+                    onDeleteAction={services.requestDelete}
+                    onCloseAction={services.close}
+                />
+            )}
+
+            {/* Service delete confirmation */}
+            <ConfirmActionModal
+                open={services.confirmDelete}
+                onCloseAction={services.cancelDelete}
+                onConfirmAction={services.confirmRemove}
+                title={tServices('deleteTitle')}
+                body={tServices('deleteBody')}
+                confirmLabel={tServices('deleteConfirm')}
+                cancelLabel={tServices('cancel')}
+                isConfirming={services.isDeleting}
+            />
         </ModulePageShell>
     );
 }

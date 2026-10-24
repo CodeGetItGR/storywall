@@ -7281,6 +7281,43 @@
         }
     },
     "Vendors": {
+        "prints": {
+            "title": "Prints",
+            "included": "Prints included for the host",
+            "includedValue": "{count}",
+            "includedEdit": "Change",
+            "includedSheetTitle": "Prints included for the host",
+            "includedLabel": "Number of prints",
+            "save": "Save",
+            "cancel": "Cancel",
+            "hostEmpty": "The host hasn't picked photos yet.",
+            "download": "Download",
+            "downloadPart": "Part {part} of {total}",
+            "downloading": "Downloading…",
+            "removedCount": "{count, plural, one {# photo removed} other {# photos removed}}",
+            "noSize": "No size",
+            "copies": "{count, plural, one {# copy} other {# copies}}"
+        },
+        "services": {
+            "title": "Print sizes",
+            "partnerOnly": "Approved partners can list prices.",
+            "empty": "No sizes yet.",
+            "add": "Add size",
+            "sheetAdd": "Add size",
+            "sheetEdit": "Edit size",
+            "label": "Size",
+            "labelPlaceholder": "13x18",
+            "price": "Price per copy (€)",
+            "priceInvalid": "Enter a price like 3.50.",
+            "labelRequired": "Enter a size.",
+            "save": "Save",
+            "cancel": "Cancel",
+            "delete": "Delete size",
+            "deleteTitle": "Delete this size?",
+            "deleteBody": "Picks at this size keep their place, without a size.",
+            "deleteConfirm": "Delete",
+            "limit": "You can list up to 8 sizes."
+        },
         "types": {
             "PLANNER": "Planner",
             "VENUE": "Venue",
