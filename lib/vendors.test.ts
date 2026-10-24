@@ -31,6 +31,7 @@ function me(overrides: Partial<VendorMeDto> = {}): VendorMeDto {
         optedOut: false,
         hiddenByHost: false,
         toolsOff: null,
+        approvedPartner: false,
         ...overrides,
     };
 }
@@ -70,7 +71,7 @@ describe('capabilitiesOfType', () => {
     });
 
     it('gives photographers and videographers the Pro album', () => {
-        expect(capabilitiesOfType('PHOTOGRAPHER')).toEqual(['PRO_ALBUM']);
+        expect(capabilitiesOfType('PHOTOGRAPHER')).toEqual(['PRO_ALBUM', 'PRINT_PICKS']);
         expect(capabilitiesOfType('VIDEOGRAPHER')).toEqual(['PRO_ALBUM']);
     });
 

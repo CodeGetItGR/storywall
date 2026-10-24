@@ -94,6 +94,14 @@ export type ApiErrorMessageKey =
     | 'vendorCapabilityMissing'
     | 'vendorAccessEnded'
     | 'vendorCannotRsvp'
+    | 'printItemInvalid'
+    | 'partnerRequired'
+    | 'printPicksUnavailable'
+    | 'printPricesMissing'
+    | 'printListLocked'
+    | 'printListFull'
+    | 'vendorServiceLimitReached'
+    | 'printListEmpty'
     | 'vendorLimitReached'
     | 'vendorIsHost'
     | 'alreadyAVendor'
@@ -583,6 +591,14 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.VENDOR_CAPABILITY_MISSING]: 'vendorCapabilityMissing',
     [ERROR_CODES.VENDOR_ACCESS_ENDED]: 'vendorAccessEnded',
     [ERROR_CODES.VENDOR_CANNOT_RSVP]: 'vendorCannotRsvp',
+    [ERROR_CODES.PRINT_ITEM_INVALID]: 'printItemInvalid',
+    [ERROR_CODES.PARTNER_REQUIRED]: 'partnerRequired',
+    [ERROR_CODES.PRINT_PICKS_UNAVAILABLE]: 'printPicksUnavailable',
+    [ERROR_CODES.PRINT_PRICES_MISSING]: 'printPricesMissing',
+    [ERROR_CODES.PRINT_LIST_LOCKED]: 'printListLocked',
+    [ERROR_CODES.PRINT_LIST_FULL]: 'printListFull',
+    [ERROR_CODES.VENDOR_SERVICE_LIMIT_REACHED]: 'vendorServiceLimitReached',
+    [ERROR_CODES.PRINT_LIST_EMPTY]: 'printListEmpty',
     [ERROR_CODES.VENDOR_LIMIT_REACHED]: 'vendorLimitReached',
     [ERROR_CODES.VENDOR_IS_HOST]: 'vendorIsHost',
     [ERROR_CODES.ALREADY_A_VENDOR]: 'alreadyAVendor',
