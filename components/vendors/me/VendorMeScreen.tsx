@@ -74,7 +74,8 @@ export function VendorMeScreen() {
                             downloadingPart={prints.downloadingPart}
                             isLoading={prints.isLoading}
                             isLoadingIncluded={prints.isLoadingIncluded}
-                            loadFailed={prints.loadFailed}
+                            listFailed={prints.listFailed}
+                            includedFailed={prints.includedFailed}
                             error={prints.sectionError}
                             onEditIncludedAction={prints.openIncluded}
                             onDownloadPartAction={prints.downloadHostPart}

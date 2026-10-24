@@ -15,6 +15,15 @@ function changeEvent(value: string) {
 }
 
 describe('usePrintsIncludedForm', () => {
+    it('shows no error while typing, only after a submit', () => {
+        const { result } = renderHook(() => usePrintsIncludedForm({ initial: 1, onSave: vi.fn() }));
+        act(() => result.current.handleChange(changeEvent('abc')));
+        expect(result.current.canSubmit).toBe(false);
+        expect(result.current.error).toBeNull();
+        act(() => result.current.handleSubmit(submitEvent()));
+        expect(result.current.error).toBe('includedInvalid:{"max":9999}');
+    });
+
     it('starts from the saved count with no error', () => {
         const { result } = renderHook(() => usePrintsIncludedForm({ initial: 12, onSave: vi.fn() }));
         expect(result.current.value).toBe('12');
@@ -35,8 +44,8 @@ describe('usePrintsIncludedForm', () => {
         const { result } = renderHook(() => usePrintsIncludedForm({ initial: 1, onSave }));
         act(() => result.current.handleChange(changeEvent(text)));
         expect(result.current.canSubmit).toBe(false);
-        expect(result.current.error).toBe('includedInvalid:{"max":9999}');
         act(() => result.current.handleSubmit(submitEvent()));
+        expect(result.current.error).toBe('includedInvalid:{"max":9999}');
         expect(onSave).not.toHaveBeenCalled();
     });
 

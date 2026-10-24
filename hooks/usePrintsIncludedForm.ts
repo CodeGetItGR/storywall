@@ -11,7 +11,8 @@ export function usePrintsIncludedForm({ initial, onSave }: { initial: number; on
     const t = useTranslations('Vendors.prints');
     const [value, setValue] = useState(String(initial));
     const trimmed = value.trim();
-    const canSubmit = /^\d{1,4}$/.test(trimmed);
+    const [submitted, setSubmitted] = useState(false);
+    const canSubmit = /^\d+$/.test(trimmed) && Number(trimmed) <= PRINTS_INCLUDED_MAX;
 
     const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
         setValue(event.currentTarget.value);
@@ -20,15 +21,16 @@ export function usePrintsIncludedForm({ initial, onSave }: { initial: number; on
     const handleSubmit = useCallback(
         (event: SubmitEvent<HTMLFormElement>) => {
             event.preventDefault();
+            setSubmitted(true);
             if (canSubmit) onSave(Number(trimmed));
         },
-        [canSubmit, onSave, trimmed],
+        [canSubmit, onSave, setSubmitted, trimmed],
     );
 
     return {
         value,
         handleChange,
-        error: canSubmit ? null : t('includedInvalid', { max: PRINTS_INCLUDED_MAX }),
+        error: !submitted || canSubmit ? null : t('includedInvalid', { max: PRINTS_INCLUDED_MAX }),
         canSubmit,
         handleSubmit,
     };

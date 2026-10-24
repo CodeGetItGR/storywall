@@ -54,6 +54,14 @@ describe('useVendorServicesSection', () => {
         expect(result.current.sheetError).toBe('msg:gone');
     });
 
+    it('keeps showing the sizes it has when a refetch fails', () => {
+        mocks.services.value = { data: [size], isLoading: false, isError: true, error: 'refetch' };
+        const { result } = renderHook(() => useVendorServicesSection(me));
+        expect(result.current.loadFailed).toBe(false);
+        expect(result.current.sizes).toHaveLength(1);
+        expect(result.current.sectionError).toBeNull();
+    });
+
     it('reports a failed read in the section, not while a sheet is open', () => {
         mocks.services.value = { data: undefined, isLoading: false, isError: true, error: 'down' };
         const { result } = renderHook(() => useVendorServicesSection(me));

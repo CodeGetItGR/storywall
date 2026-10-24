@@ -85,7 +85,10 @@ export function useVendorPrintsSection(eventId: string, me: VendorMeDto | null) 
     );
 
     // A failed read must not look like "nothing yet" or "0 included".
-    const loadError = hostList.error ?? context.error;
+    // Only a read with nothing to show counts as failed: a refetch that fails keeps the data it had.
+    const listFailed = Boolean(hostList.error) && !hostList.data;
+    const includedFailed = Boolean(context.error) && !context.data;
+    const loadError = (listFailed ? hostList.error : null) ?? (includedFailed ? context.error : null);
     const sectionError = includedOpen
         ? null
         : (downloadError ?? (loadError ? toErrorMessage(loadError) : null) ?? (manifest.error ? toErrorMessage(manifest.error) : null));
@@ -94,7 +97,8 @@ export function useVendorPrintsSection(eventId: string, me: VendorMeDto | null) 
         open,
         isLoading: hostList.isLoading,
         isLoadingIncluded: context.isLoading,
-        loadFailed: Boolean(loadError),
+        listFailed,
+        includedFailed,
         included,
         items,
         removedCount: hostList.data?.removedCount ?? 0,

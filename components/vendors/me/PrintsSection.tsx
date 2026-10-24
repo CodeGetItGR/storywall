@@ -23,7 +23,8 @@ export function PrintsSection({
     isLoadingParts,
     isLoading,
     isLoadingIncluded,
-    loadFailed,
+    listFailed,
+    includedFailed,
     error,
     onEditIncludedAction,
     onDownloadPartAction,
@@ -37,7 +38,8 @@ export function PrintsSection({
     isLoadingParts: boolean;
     isLoading: boolean;
     isLoadingIncluded: boolean;
-    loadFailed: boolean;
+    listFailed: boolean;
+    includedFailed: boolean;
     error: string | null;
     onEditIncludedAction: () => void;
     onDownloadPartAction: (part: number) => void;
@@ -55,7 +57,7 @@ export function PrintsSection({
             </h2>
 
             {/* Included: the one place the package size shows */}
-            {!loadFailed && (
+            {!includedFailed && (
                 <div className="flex items-center justify-between gap-3">
                     <p className="text-sm text-ink-muted">{t('included')}</p>
                     {isLoadingIncluded ? (
@@ -72,7 +74,7 @@ export function PrintsSection({
             )}
 
             {/* Host picks */}
-            {loadFailed ? null : isLoading ? (
+            {listFailed ? null : isLoading ? (
                 <VendorRowsSkeleton rows={3} />
             ) : live.length === 0 ? (
                 <p className="text-sm text-ink-muted">{t('hostEmpty')}</p>
@@ -83,12 +85,12 @@ export function PrintsSection({
                     ))}
                 </ul>
             )}
-            {!loadFailed && removedCount > 0 && <p className="text-xs text-ink-muted">{t('removedCount', { count: removedCount })}</p>}
+            {!listFailed && removedCount > 0 && <p className="text-xs text-ink-muted">{t('removedCount', { count: removedCount })}</p>}
 
             {/* Total and download */}
-            {!loadFailed && totals.prints > 0 && (
+            {!listFailed && totals.prints > 0 && (
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                    <PrintTotal totals={totals} withIncluded={false} />
+                    {!includedFailed && <PrintTotal totals={totals} withIncluded={false} />}
                     <div className="flex flex-wrap gap-2">
                         {isLoadingParts && (
                             <Button type="button" size="lg" disabled>

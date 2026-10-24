@@ -70,7 +70,7 @@ export function PrintsIncludedSheet({
                         <Button type="button" variant="ghost" size="lg" onClick={onCloseAction}>
                             {t('cancel')}
                         </Button>
-                        <Button type="submit" size="lg" disabled={!form.canSubmit || isSaving}>
+                        <Button type="submit" size="lg" disabled={isSaving}>
                             {t('save')}
                         </Button>
                     </div>

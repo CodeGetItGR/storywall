@@ -31,7 +31,8 @@ function renderSection(overrides: Partial<Parameters<typeof PrintsSection>[0]> =
         isLoadingParts: false,
         isLoading: false,
         isLoadingIncluded: false,
-        loadFailed: false,
+        listFailed: false,
+        includedFailed: false,
         error: null,
         onEditIncludedAction: vi.fn(),
         onDownloadPartAction: vi.fn(),
@@ -102,11 +103,18 @@ describe('PrintsSection', () => {
         expect(screen.queryByRole('button', { name: 'Download' })).not.toBeInTheDocument();
     });
 
-    it('shows the error instead of an empty list or a count when the read failed', () => {
-        renderSection({ loadFailed: true, error: 'Nope', included: 0, items: [], totals: printTotals([], 0) });
+    it('shows the error instead of an empty list when the list read failed', () => {
+        renderSection({ listFailed: true, error: 'Nope', items: [], totals: printTotals([], 0) });
         expect(screen.getByRole('alert')).toHaveTextContent('Nope');
         expect(screen.queryByText("The host hasn't picked photos yet.")).not.toBeInTheDocument();
+    });
+
+    it('hides only the included row when the package read failed', () => {
+        renderSection({ includedFailed: true, error: 'Nope', included: 0, totals: printTotals(items, 0) });
         expect(screen.queryByRole('button', { name: 'Change prints included for the host' })).not.toBeInTheDocument();
+        expect(screen.getByText('13x18 · 2 copies')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Download' })).toBeInTheDocument();
+        expect(screen.queryByText(/more/)).not.toBeInTheDocument();
     });
 
     it('shows an error as an alert', () => {

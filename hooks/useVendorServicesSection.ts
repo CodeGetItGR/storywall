@@ -21,6 +21,8 @@ export function useVendorServicesSection(me: VendorMeDto | null) {
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [sheetError, setSheetError] = useState<string | null>(null);
 
+    // Only a read with nothing to show counts as failed: a refetch that fails keeps the data it had.
+    const loadFailed = Boolean(services.error) && !services.data;
     const sizes = (services.data ?? []).filter((item) => item.kind === 'PRINT');
 
     const save = useCallback(
@@ -71,7 +73,7 @@ export function useVendorServicesSection(me: VendorMeDto | null) {
         approved,
         isLoading: services.isLoading,
         // A failed read must not look like "No sizes yet."
-        loadFailed: services.isError,
+        loadFailed,
         sizes,
         canAdd: sizes.length < PRINT_SIZES_MAX,
         editing,
@@ -86,7 +88,7 @@ export function useVendorServicesSection(me: VendorMeDto | null) {
         confirmRemove,
         isDeleting: remove.isPending,
         // The section shows the load error (not while a sheet is open); the sheet shows its own save and delete errors.
-        sectionError: editing || !services.error ? null : toErrorMessage(services.error),
+        sectionError: editing || !loadFailed ? null : toErrorMessage(services.error),
         sheetError,
     };
 }

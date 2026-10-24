@@ -86,8 +86,28 @@ describe('useVendorPrintsSection', () => {
     it('reports a failed read instead of an empty list or 0 included', () => {
         mocks.hostList.value = { data: undefined, dataUpdatedAt: 0, isLoading: false, error: 'down' };
         const { result } = renderHook(() => useVendorPrintsSection('e1', me));
-        expect(result.current.loadFailed).toBe(true);
+        expect(result.current.listFailed).toBe(true);
+        expect(result.current.includedFailed).toBe(false);
         expect(result.current.sectionError).toBe('msg:down');
+    });
+
+    it('fails only the included row when the context read failed', () => {
+        mocks.context.value = { data: undefined, isLoading: false, error: 'ctx' };
+        const { result } = renderHook(() => useVendorPrintsSection('e1', me));
+        expect(result.current.includedFailed).toBe(true);
+        expect(result.current.listFailed).toBe(false);
+        expect(result.current.sectionError).toBe('msg:ctx');
+    });
+
+    it('keeps showing the data it has when a refetch fails', () => {
+        mocks.hostList.value = { ...list(1), error: 'refetch' };
+        mocks.context.value = { data: { photographers: [{ vendorId: 'v1', hostPrintsIncluded: 5 }] }, isLoading: false, error: 'refetch' };
+        const { result } = renderHook(() => useVendorPrintsSection('e1', me));
+        expect(result.current.listFailed).toBe(false);
+        expect(result.current.includedFailed).toBe(false);
+        expect(result.current.items).toHaveLength(1);
+        expect(result.current.included).toBe(5);
+        expect(result.current.sectionError).toBeNull();
     });
 
     it('reports a failed manifest', () => {
