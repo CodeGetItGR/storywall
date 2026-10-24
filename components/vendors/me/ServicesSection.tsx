@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ServiceRow } from '@/components/vendors/me/ServiceRow';
 import { VendorRowsSkeleton } from '@/components/vendors/VendorsSkeletons';
 import type { VendorServiceItemDto } from '@/lib/api/types';
+import { PRINT_SIZES_MAX } from '@/lib/printPicks';
 
 // Print sizes as compact rows; a row opens the edit sheet. Non-partners get one line.
 export function ServicesSection({
@@ -14,6 +15,7 @@ export function ServicesSection({
     sizes,
     canAdd,
     isLoading,
+    loadFailed,
     error,
     onAddAction,
     onEditAction,
@@ -22,6 +24,7 @@ export function ServicesSection({
     sizes: VendorServiceItemDto[];
     canAdd: boolean;
     isLoading: boolean;
+    loadFailed: boolean;
     error: string | null;
     onAddAction: () => void;
     onEditAction: (item: VendorServiceItemDto) => void;
@@ -46,7 +49,7 @@ export function ServicesSection({
             {/* Sizes */}
             {!approved ? (
                 <p className="text-sm text-ink-muted">{t('partnerOnly')}</p>
-            ) : isLoading ? (
+            ) : loadFailed ? null : isLoading ? (
                 <VendorRowsSkeleton rows={2} />
             ) : sizes.length === 0 ? (
                 <p className="text-sm text-ink-muted">{t('empty')}</p>
@@ -57,7 +60,7 @@ export function ServicesSection({
                     ))}
                 </ul>
             )}
-            {approved && !canAdd && <p className="text-xs text-ink-muted">{t('limit')}</p>}
+            {approved && !canAdd && <p className="text-xs text-ink-muted">{t('limit', { max: PRINT_SIZES_MAX })}</p>}
 
             {/* Error */}
             {error && (

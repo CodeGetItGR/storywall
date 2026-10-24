@@ -10,7 +10,7 @@ import { printTotalParts } from '@/lib/printPicks';
 const PRINT_CURRENCY = 'EUR';
 
 // "12 of 40 included · 3 more · €9.00" for a host, "3 more · €9.00" for a guest.
-export function PrintTotal({ totals }: { totals: PrintTotals }) {
+export function PrintTotal({ totals, withIncluded = true }: { totals: PrintTotals; withIncluded?: boolean }) {
     const t = useTranslations('GalleryPage.print');
     const locale = useLocale();
 
@@ -20,5 +20,8 @@ export function PrintTotal({ totals }: { totals: PrintTotals }) {
         return part.cents === null ? t('noPrice') : formatMoney(locale, part.cents, PRINT_CURRENCY);
     }
 
-    return <p className="text-sm font-semibold text-ink">{printTotalParts(totals).map(partText).join(' · ')}</p>;
+    const parts = printTotalParts(totals, { withIncluded });
+    if (parts.length === 0) return null;
+
+    return <p className="text-sm font-semibold text-ink">{parts.map(partText).join(' · ')}</p>;
 }

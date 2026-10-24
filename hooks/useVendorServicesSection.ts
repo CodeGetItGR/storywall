@@ -19,20 +19,20 @@ export function useVendorServicesSection(me: VendorMeDto | null) {
     // null: closed; 'new': adding; an item: editing it.
     const [editing, setEditing] = useState<VendorServiceItemDto | 'new' | null>(null);
     const [confirmDelete, setConfirmDelete] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [sheetError, setSheetError] = useState<string | null>(null);
 
     const sizes = (services.data ?? []).filter((item) => item.kind === 'PRINT');
 
     const save = useCallback(
         async (label: string, priceCents: number) => {
-            setError(null);
+            setSheetError(null);
             try {
                 if (editing === 'new') await create.mutateAsync({ kind: 'PRINT', label, priceCents });
                 else if (editing)
                     await update.mutateAsync({ id: editing.id, body: { kind: 'PRINT', label, priceCents, sortOrder: editing.sortOrder } });
                 setEditing(null);
-            } catch (saveError) {
-                setError(toErrorMessage(saveError));
+            } catch (error) {
+                setSheetError(toErrorMessage(error));
             }
         },
         [create, editing, toErrorMessage, update],
@@ -40,26 +40,29 @@ export function useVendorServicesSection(me: VendorMeDto | null) {
 
     const confirmRemove = useCallback(async () => {
         if (!editing || editing === 'new') return;
-        setError(null);
+        setSheetError(null);
         try {
             await remove.mutateAsync(editing.id);
             setConfirmDelete(false);
             setEditing(null);
-        } catch (removeError) {
+        } catch (error) {
             setConfirmDelete(false);
-            setError(toErrorMessage(removeError));
+            setSheetError(toErrorMessage(error));
         }
     }, [editing, remove, toErrorMessage]);
 
     const openNew = useCallback(() => {
-        setError(null);
+        setSheetError(null);
         setEditing('new');
     }, []);
     const openEdit = useCallback((item: VendorServiceItemDto) => {
-        setError(null);
+        setSheetError(null);
         setEditing(item);
     }, []);
-    const close = useCallback(() => setEditing(null), []);
+    const close = useCallback(() => {
+        setSheetError(null);
+        setEditing(null);
+    }, []);
     const requestDelete = useCallback(() => setConfirmDelete(true), []);
     const cancelDelete = useCallback(() => setConfirmDelete(false), []);
 
@@ -67,6 +70,8 @@ export function useVendorServicesSection(me: VendorMeDto | null) {
         visible: isPhotographer,
         approved,
         isLoading: services.isLoading,
+        // A failed read must not look like "No sizes yet."
+        loadFailed: services.isError,
         sizes,
         canAdd: sizes.length < PRINT_SIZES_MAX,
         editing,
@@ -80,6 +85,8 @@ export function useVendorServicesSection(me: VendorMeDto | null) {
         cancelDelete,
         confirmRemove,
         isDeleting: remove.isPending,
-        error,
+        // The section shows the load error (not while a sheet is open); the sheet shows its own save and delete errors.
+        sectionError: editing || !services.error ? null : toErrorMessage(services.error),
+        sheetError,
     };
 }

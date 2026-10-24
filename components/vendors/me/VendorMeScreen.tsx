@@ -73,7 +73,9 @@ export function VendorMeScreen() {
                             isLoadingParts={prints.isLoadingParts}
                             downloadingPart={prints.downloadingPart}
                             isLoading={prints.isLoading}
-                            error={prints.includedOpen ? null : prints.error}
+                            isLoadingIncluded={prints.isLoadingIncluded}
+                            loadFailed={prints.loadFailed}
+                            error={prints.sectionError}
                             onEditIncludedAction={prints.openIncluded}
                             onDownloadPartAction={prints.downloadHostPart}
                         />
@@ -129,7 +131,8 @@ export function VendorMeScreen() {
                             sizes={services.sizes}
                             canAdd={services.canAdd}
                             isLoading={services.isLoading}
-                            error={services.editing ? null : services.error}
+                            loadFailed={services.loadFailed}
+                            error={services.sectionError}
                             onAddAction={services.openNew}
                             onEditAction={services.openEdit}
                         />
@@ -150,7 +153,7 @@ export function VendorMeScreen() {
                     open={prints.includedOpen}
                     initial={prints.included}
                     isSaving={prints.isSavingIncluded}
-                    error={prints.error}
+                    error={prints.sheetError}
                     onSaveAction={prints.saveIncluded}
                     onCloseAction={prints.closeIncluded}
                 />
@@ -162,7 +165,7 @@ export function VendorMeScreen() {
                     key={services.editing === 'new' ? 'new' : services.editing.id}
                     item={services.editing}
                     isSaving={services.isSaving}
-                    error={services.error}
+                    error={services.sheetError}
                     onSaveAction={services.save}
                     onDeleteAction={services.requestDelete}
                     onCloseAction={services.close}

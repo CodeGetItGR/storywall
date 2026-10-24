@@ -4,7 +4,10 @@ import type { MediaResponseDto, PrintListItemDto } from '@/lib/api/types';
 export const PRINT_LIST_MAX_ITEMS = 100;
 export const PRINT_SIZES_MAX = 8;
 export const PRINT_COPIES_MAX = 99;
-const PRICE_MAX_CENTS = 100_000;
+export const PRICE_MAX_CENTS = 100_000;
+// Label of a print size (VendorServiceItemRequestDto) and the prints a package can include for the host (PrintsIncludedRequestDto).
+export const PRINT_SIZE_LABEL_MAX = 40;
+export const PRINTS_INCLUDED_MAX = 9999;
 
 export type PrintTotals = {
     prints: number;
@@ -63,13 +66,21 @@ export function euroInputToCents(text: string): number | null {
     return cents <= PRICE_MAX_CENTS ? cents : null;
 }
 
-export type PrintTotalPart = { key: 'included'; used: number; included: number } | { key: 'beyond'; count: number } | { key: 'price'; cents: number | null };
+// Why a price text is not accepted: not a price at all, or above the limit. Null when it is fine.
+export function euroInputError(text: string): 'invalid' | 'tooHigh' | null {
+    const normalized = text.trim().replace(',', '.');
+    if (!/^\d+(\.\d{1,2})?$/.test(normalized)) return 'invalid';
+    return Math.round(Number(normalized) * 100) > PRICE_MAX_CENTS ? 'tooHigh' : null;
+}
+
+export type PrintTotalPart =
+    { key: 'included'; used: number; included: number } | { key: 'beyond'; count: number } | { key: 'price'; cents: number | null };
 
 // The segments of the total line, in order: the package (only when the photographer includes prints),
-// the copies beyond it and what they cost.
-export function printTotalParts(totals: PrintTotals): PrintTotalPart[] {
+// the copies beyond it and what they cost. withIncluded: false leaves the package out, for a page that shows it elsewhere.
+export function printTotalParts(totals: PrintTotals, { withIncluded = true }: { withIncluded?: boolean } = {}): PrintTotalPart[] {
     const parts: PrintTotalPart[] = [];
-    if (totals.included !== null && totals.included > 0) {
+    if (withIncluded && totals.included !== null && totals.included > 0) {
         parts.push({ key: 'included', used: Math.min(totals.prints, totals.included), included: totals.included });
     }
     if (totals.beyond > 0) {

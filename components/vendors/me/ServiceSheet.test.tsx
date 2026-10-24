@@ -16,8 +16,8 @@ function renderIntl(ui: ReactElement) {
     );
 }
 
-function renderSheet(item: Parameters<typeof ServiceSheet>[0]['item']) {
-    const props = { item, isSaving: false, error: null, onSaveAction: vi.fn(), onDeleteAction: vi.fn(), onCloseAction: vi.fn() };
+function renderSheet(item: Parameters<typeof ServiceSheet>[0]['item'], overrides: Partial<Parameters<typeof ServiceSheet>[0]> = {}) {
+    const props = { item, isSaving: false, error: null, onSaveAction: vi.fn(), onDeleteAction: vi.fn(), onCloseAction: vi.fn(), ...overrides };
     renderIntl(<ServiceSheet {...props} />);
     return props;
 }
@@ -34,19 +34,43 @@ describe('ServiceSheet', () => {
         expect(screen.queryByRole('button', { name: 'Delete size' })).not.toBeInTheDocument();
     });
 
-    it('does not save without a size or with a bad price', () => {
+    it('does not save without a size and links each message to its field', () => {
         const props = renderSheet('new');
-        fireEvent.change(screen.getByLabelText('Price per copy (€)'), { target: { value: '1001' } });
+        fireEvent.change(screen.getByLabelText('Price per copy (€)'), { target: { value: 'abc' } });
         fireEvent.click(screen.getByRole('button', { name: 'Save' }));
         expect(props.onSaveAction).not.toHaveBeenCalled();
-        expect(screen.getByText('Enter a size.')).toBeInTheDocument();
-        expect(screen.getByText('Enter a price like 3.50.')).toBeInTheDocument();
+        const label = screen.getByLabelText('Size');
+        const price = screen.getByLabelText('Price per copy (€)');
+        expect(label).toHaveAttribute('aria-invalid', 'true');
+        expect(label).toHaveAccessibleDescription('Enter a size.');
+        expect(price).toHaveAttribute('aria-invalid', 'true');
+        expect(price).toHaveAccessibleDescription('Enter a price like 3.50.');
     });
 
-    it('edits a size and asks to delete it', () => {
+    it('says when the price is above the limit', () => {
+        const props = renderSheet(size);
+        fireEvent.change(screen.getByLabelText('Price per copy (€)'), { target: { value: '1500' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+        expect(props.onSaveAction).not.toHaveBeenCalled();
+        expect(screen.getByText('Enter a price up to €1,000.00.')).toBeInTheDocument();
+    });
+
+    it('turns Save off while saving', () => {
+        renderSheet(size, { isSaving: true });
+        expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+    });
+
+    it('edits a size, asks to delete it and can be cancelled', () => {
         const props = renderSheet(size);
         expect(screen.getByLabelText('Price per copy (€)')).toHaveValue('3.50');
         fireEvent.click(screen.getByRole('button', { name: 'Delete size' }));
         expect(props.onDeleteAction).toHaveBeenCalled();
+        fireEvent.click(screen.getAllByRole('button', { name: 'Cancel' }).at(-1)!);
+        expect(props.onCloseAction).toHaveBeenCalled();
+    });
+
+    it('shows the save error as an alert', () => {
+        renderSheet(size, { error: 'Nope' });
+        expect(screen.getByRole('alert')).toHaveTextContent('Nope');
     });
 });

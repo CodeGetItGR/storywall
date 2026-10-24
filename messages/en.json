@@ -7284,8 +7284,8 @@
         "prints": {
             "title": "Prints",
             "included": "Prints included for the host",
-            "includedValue": "{count}",
-            "includedEdit": "Change",
+            "includedEditLabel": "Change prints included for the host",
+            "includedInvalid": "Enter a whole number from 0 to {max}.",
             "includedSheetTitle": "Prints included for the host",
             "includedLabel": "Number of prints",
             "save": "Save",
@@ -7309,6 +7309,7 @@
             "labelPlaceholder": "13x18",
             "price": "Price per copy (€)",
             "priceInvalid": "Enter a price like 3.50.",
+            "priceTooHigh": "Enter a price up to {max}.",
             "labelRequired": "Enter a size.",
             "save": "Save",
             "cancel": "Cancel",
@@ -7316,7 +7317,7 @@
             "deleteTitle": "Delete this size?",
             "deleteBody": "Picks at this size keep their place, without a size.",
             "deleteConfirm": "Delete",
-            "limit": "You can list up to 8 sizes."
+            "limit": "You can list up to {max} sizes."
         },
         "types": {
             "PLANNER": "Planner",

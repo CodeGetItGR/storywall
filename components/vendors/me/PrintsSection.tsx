@@ -1,10 +1,11 @@
 'use client';
 
 import { Download, Pencil } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 
 import { PrintTotal } from '@/components/gallery/print/PrintTotal';
 import { Button } from '@/components/ui/button';
+import { Skeleton, SkeletonStatus } from '@/components/ui/skeleton';
 import { PrintListReadRow } from '@/components/vendors/me/PrintListReadRow';
 import { PrintPartButton } from '@/components/vendors/me/PrintPartButton';
 import { VendorRowsSkeleton } from '@/components/vendors/VendorsSkeletons';
@@ -21,6 +22,8 @@ export function PrintsSection({
     downloadingPart,
     isLoadingParts,
     isLoading,
+    isLoadingIncluded,
+    loadFailed,
     error,
     onEditIncludedAction,
     onDownloadPartAction,
@@ -33,11 +36,14 @@ export function PrintsSection({
     downloadingPart: number | null;
     isLoadingParts: boolean;
     isLoading: boolean;
+    isLoadingIncluded: boolean;
+    loadFailed: boolean;
     error: string | null;
     onEditIncludedAction: () => void;
     onDownloadPartAction: (part: number) => void;
 }) {
     const t = useTranslations('Vendors.prints');
+    const format = useFormatter();
     const live = items.filter((item) => !item.removed);
     const parts = Array.from({ length: partCount }, (_, index) => index + 1);
 
@@ -48,18 +54,25 @@ export function PrintsSection({
                 {t('title')}
             </h2>
 
-            {/* Included */}
-            <div className="flex items-center justify-between gap-3">
-                <p className="text-sm text-ink-muted">{t('included')}</p>
-                <Button type="button" variant="outline" size="lg" onClick={onEditIncludedAction}>
-                    <span className="font-mono">{t('includedValue', { count: included })}</span>
-                    <Pencil aria-hidden="true" />
-                    <span className="sr-only">{t('includedEdit')}</span>
-                </Button>
-            </div>
+            {/* Included: the one place the package size shows */}
+            {!loadFailed && (
+                <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm text-ink-muted">{t('included')}</p>
+                    {isLoadingIncluded ? (
+                        <SkeletonStatus>
+                            <Skeleton className="h-11 w-20 rounded-lg" />
+                        </SkeletonStatus>
+                    ) : (
+                        <Button type="button" variant="outline" size="lg" aria-label={t('includedEditLabel')} onClick={onEditIncludedAction}>
+                            <span className="font-mono">{format.number(included)}</span>
+                            <Pencil aria-hidden="true" />
+                        </Button>
+                    )}
+                </div>
+            )}
 
             {/* Host picks */}
-            {isLoading ? (
+            {loadFailed ? null : isLoading ? (
                 <VendorRowsSkeleton rows={3} />
             ) : live.length === 0 ? (
                 <p className="text-sm text-ink-muted">{t('hostEmpty')}</p>
@@ -70,12 +83,12 @@ export function PrintsSection({
                     ))}
                 </ul>
             )}
-            {removedCount > 0 && <p className="text-xs text-ink-muted">{t('removedCount', { count: removedCount })}</p>}
+            {!loadFailed && removedCount > 0 && <p className="text-xs text-ink-muted">{t('removedCount', { count: removedCount })}</p>}
 
             {/* Total and download */}
-            {totals.prints > 0 && (
+            {!loadFailed && totals.prints > 0 && (
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                    <PrintTotal totals={totals} />
+                    <PrintTotal totals={totals} withIncluded={false} />
                     <div className="flex flex-wrap gap-2">
                         {isLoadingParts && (
                             <Button type="button" size="lg" disabled>

@@ -22,7 +22,16 @@ describe('ServicesSection', () => {
     it('lists sizes with prices and opens one to edit', () => {
         const onEditAction = vi.fn();
         renderIntl(
-            <ServicesSection approved sizes={[size]} canAdd isLoading={false} error={null} onAddAction={vi.fn()} onEditAction={onEditAction} />,
+            <ServicesSection
+                approved
+                sizes={[size]}
+                canAdd
+                isLoading={false}
+                loadFailed={false}
+                error={null}
+                onAddAction={vi.fn()}
+                onEditAction={onEditAction}
+            />,
         );
         fireEvent.click(screen.getByRole('button', { name: /13x18/ }));
         expect(onEditAction).toHaveBeenCalledWith(size);
@@ -31,7 +40,18 @@ describe('ServicesSection', () => {
 
     it('adds a size', () => {
         const onAddAction = vi.fn();
-        renderIntl(<ServicesSection approved sizes={[]} canAdd isLoading={false} error={null} onAddAction={onAddAction} onEditAction={vi.fn()} />);
+        renderIntl(
+            <ServicesSection
+                approved
+                sizes={[]}
+                canAdd
+                isLoading={false}
+                loadFailed={false}
+                error={null}
+                onAddAction={onAddAction}
+                onEditAction={vi.fn()}
+            />,
+        );
         expect(screen.getByText('No sizes yet.')).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: 'Add size' }));
         expect(onAddAction).toHaveBeenCalled();
@@ -39,7 +59,16 @@ describe('ServicesSection', () => {
 
     it('turns Add off at the limit and says why', () => {
         renderIntl(
-            <ServicesSection approved sizes={[size]} canAdd={false} isLoading={false} error={null} onAddAction={vi.fn()} onEditAction={vi.fn()} />,
+            <ServicesSection
+                approved
+                sizes={[size]}
+                canAdd={false}
+                isLoading={false}
+                loadFailed={false}
+                error={null}
+                onAddAction={vi.fn()}
+                onEditAction={vi.fn()}
+            />,
         );
         expect(screen.getByRole('button', { name: 'Add size' })).toBeDisabled();
         expect(screen.getByText('You can list up to 8 sizes.')).toBeInTheDocument();
@@ -47,14 +76,34 @@ describe('ServicesSection', () => {
 
     it('shows one line to vendors who are not approved partners', () => {
         renderIntl(
-            <ServicesSection approved={false} sizes={[]} canAdd isLoading={false} error={null} onAddAction={vi.fn()} onEditAction={vi.fn()} />,
+            <ServicesSection
+                approved={false}
+                sizes={[]}
+                canAdd
+                isLoading={false}
+                loadFailed={false}
+                error={null}
+                onAddAction={vi.fn()}
+                onEditAction={vi.fn()}
+            />,
         );
         expect(screen.getByText('Approved partners can list prices.')).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Add size' })).not.toBeInTheDocument();
     });
 
     it('shows an error as an alert', () => {
-        renderIntl(<ServicesSection approved sizes={[size]} canAdd isLoading={false} error="Nope" onAddAction={vi.fn()} onEditAction={vi.fn()} />);
+        renderIntl(
+            <ServicesSection
+                approved
+                sizes={[size]}
+                canAdd
+                isLoading={false}
+                loadFailed={false}
+                error="Nope"
+                onAddAction={vi.fn()}
+                onEditAction={vi.fn()}
+            />,
+        );
         expect(screen.getByRole('alert')).toHaveTextContent('Nope');
     });
 });
