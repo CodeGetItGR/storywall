@@ -1143,9 +1143,9 @@ export interface VendorServiceItemDto {
     sortOrder: number;
 }
 
-// The backend calls this VendorServiceItemRequestDto. Only PRINT is accepted for now; OTHER is reserved.
+// Only PRINT is accepted for now; OTHER is reserved.
 // Label max 40, price 0..100000 cents, sortOrder 0..999.
-export interface VendorServiceItemRequest {
+export interface VendorServiceItemRequestDto {
     kind: VendorServiceKind;
     label: string;
     priceCents: number;
@@ -1165,6 +1165,7 @@ export interface PrintPhotographerDto {
     vendorId: string;
     businessName: string | null;
     logoUrl: string | null;
+    // Never null: only open photographers are listed.
     accessEndsAt: string;
     // Hosts and the photographer themself; null for guests.
     hostPrintsIncluded: number | null;

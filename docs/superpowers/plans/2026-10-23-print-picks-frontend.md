@@ -97,7 +97,7 @@ export interface VendorServiceItemDto {
     sortOrder: number;
 }
 
-export interface VendorServiceItemRequest {
+export interface VendorServiceItemRequestDto {
     kind: VendorServiceKind;
     label: string;
     priceCents: number;
@@ -746,7 +746,7 @@ import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tansta
 import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
-import type { VendorServiceItemDto, VendorServiceItemRequest } from '@/lib/api/types';
+import type { VendorServiceItemDto, VendorServiceItemRequestDto } from '@/lib/api/types';
 
 export const vendorServiceKeys = {
     mine: ['me', 'vendor-profile', 'services'] as const,
@@ -775,7 +775,7 @@ export function useCreateVendorService() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (body: VendorServiceItemRequest) => api.post<VendorServiceItemDto>(endpoints.me.vendorServices, body),
+        mutationFn: (body: VendorServiceItemRequestDto) => api.post<VendorServiceItemDto>(endpoints.me.vendorServices, body),
         onSuccess: () => refresh(queryClient),
     });
 }
@@ -784,7 +784,7 @@ export function useUpdateVendorService() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ id, body }: { id: string; body: VendorServiceItemRequest }) => api.put<VendorServiceItemDto>(endpoints.me.vendorService(id), body),
+        mutationFn: ({ id, body }: { id: string; body: VendorServiceItemRequestDto }) => api.put<VendorServiceItemDto>(endpoints.me.vendorService(id), body),
         onSuccess: () => refresh(queryClient),
     });
 }
