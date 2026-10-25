@@ -1,7 +1,7 @@
 import { createTranslator, type Messages } from 'next-intl';
 import { describe, expect, it } from 'vitest';
 
-import { occasionFaqEntries, type OccasionFaqEntry } from '@/lib/occasions/occasionFaq';
+import { occasionFaqEntries, type OccasionFaqEntry, occasionFaqLinkHref } from '@/lib/occasions/occasionFaq';
 import type { OccasionPriceValues } from '@/lib/occasions/occasionPrice';
 import { readyOccasions } from '@/lib/occasions/occasions';
 import el from '@/messages/el.json';
@@ -38,5 +38,13 @@ describe('occasionFaqEntries', () => {
             const entries = occasionFaqEntries(t.raw('faq') as OccasionFaqEntry[], (key) => t(key, NONE));
             for (const entry of entries) expect(entry.a).not.toMatch(/[{}<>]/);
         }
+    });
+});
+
+describe('occasionFaqLinkHref', () => {
+    it('links to the plans, and to the QR page only while it is live', () => {
+        expect(occasionFaqLinkHref('pricing', null)).toBe('#pricing');
+        expect(occasionFaqLinkHref('qr', '/el/qr-code-gamou')).toBe('/el/qr-code-gamou');
+        expect(occasionFaqLinkHref('qr', null)).toBeNull();
     });
 });
