@@ -33,7 +33,7 @@ Run it in the background and open `http://localhost:4599/storywall-gamos-2.html`
 | Extra optional props on shared components | Beyond the spec's list: `LandingHeader.className` (transparent over the wedding hero), `LandingHeroVisual.className` (the design sizes the hero visual differently), `LandingHowItWorks` step description as `ReactNode` (bold words), `LandingDemo` `phones` / `previewLabel` / string `eyebrow` / `ReactNode` copy, `LandingFinalCta.centered` + `ReactNode` cta, `LandingFaq.centered` + `group` and `ReactNode` answers, `LandingPricing.kicker`, `OccasionPageShell.className`. All optional; the main landing and baptism render exactly as before. Task 22 updates the spec's "Shared components gain only…" line. |
 | Brand marks | Viber, WhatsApp and Messenger from `react-icons/fa` (already a dependency; inline SVG). Email is lucide `Mail`; SMS is a small text badge. |
 | Hero links | The hero's demo link reuses `LandingPage.hero.demoCta`. `occasionHeaderLinks()` builds the header links for both the wedding hero and `OccasionHero`, and adds FAQ. |
-| Real copy in tests | `test/intlServerMock.ts` makes `getTranslations` serve the real `messages/*.json`, so section tests assert on the design's words. |
+| Real copy in tests | `components/occasions/wedding/__fixtures__/intlServerMock.ts` makes `getTranslations` serve the real `messages/*.json`, so section tests assert on the design's words. |
 | QR links | Why StoryWall step 1 and FAQ 3 link to the QR wedding page only while `qrWeddingPageLive(config)` is true; otherwise the text shows without a link. |
 | Phone mocks | `MockPhone` has a fixed 9 / 19.5 screen that is a size container, and a bezel sized in `cqw`, so every screen scales with its phone. |
 | Shared section frame | `WeddingWrap` (width and gutters) and `WeddingSectionHead` (kicker, two-line heading, intro) are shared by Why, Private and Features. |
@@ -59,7 +59,7 @@ Run it in the background and open `http://localhost:4599/storywall-gamos-2.html`
 | `lib/occasions/weddingCopy.test.ts` | ICU strings render with and without prices, in both languages. |
 | `hooks/useMarqueeMotion.ts` (+ test) | Framer `x` loop for the photo marquee; pauses on hover, motion toggle and reduced motion. |
 | `lib/occasions/occasionSections.test.ts` | `occasionHeaderLinks()` builds the same links for both heroes. |
-| `test/intlServerMock.ts` | `next-intl/server` mock that serves the real messages, for server component tests. |
+| `components/occasions/wedding/__fixtures__/intlServerMock.ts` | `next-intl/server` mock that serves the real messages, for server component tests. |
 
 **New — UI** (`components/occasions/wedding/`)
 
@@ -2997,7 +2997,7 @@ git commit -m "feat(occasions): wedding landing copy in Greek and English"
 Every drawn screen and card is a server component sized in `cqw` (container widths), so it scales like a picture. Icons inside a mock that is `aria-hidden` need no `aria-hidden` of their own.
 
 **Files:**
-- Create: `test/intlServerMock.ts`
+- Create: `components/occasions/wedding/__fixtures__/intlServerMock.ts`
 - Create: `components/occasions/wedding/mock/MockPhoto.tsx`
 - Create: `components/occasions/wedding/mock/MockPhone.tsx`
 - Create: `components/occasions/wedding/mock/MockStatusBar.tsx`
@@ -3008,7 +3008,7 @@ Every drawn screen and card is a server component sized in `cqw` (container widt
 
 - [ ] **Step 1: Write the test helper**
 
-Wedding section tests render the real Greek copy, so a wrong key or a broken ICU string fails a test. `test/intlServerMock.ts`:
+Wedding section tests render the real Greek copy, so a wrong key or a broken ICU string fails a test. `components/occasions/wedding/__fixtures__/intlServerMock.ts`:
 
 ```ts
 import { createTranslator, type Messages } from 'next-intl';
@@ -3019,8 +3019,8 @@ import en from '@/messages/en.json';
 const MESSAGES: Record<string, Messages> = { el, en };
 
 // next-intl/server's getTranslations over the real messages, so a server component test reads the
-// page's own copy. In a test file: vi.mock('next-intl/server', () => import('@/test/intlServerMock'));
-// A call without a locale reads Greek.
+// page's own copy. A call without a locale reads Greek. In a test file:
+// vi.mock('next-intl/server', () => import('@/components/occasions/wedding/__fixtures__/intlServerMock'));
 export async function getTranslations(options: string | { locale?: string; namespace?: string }) {
     const { locale = 'el', namespace } = typeof options === 'string' ? { namespace: options } : options;
     return createTranslator({ locale, messages: MESSAGES[locale]!, namespace });
@@ -3334,8 +3334,8 @@ Expected: PASS (5 tests).
 - [ ] **Step 10: Lint and commit**
 
 ```bash
-npx eslint test components/occasions/wedding/mock components/occasions/OccasionCommentCard.tsx
-git add test/intlServerMock.ts components/occasions/wedding/mock components/occasions/OccasionCommentCard.tsx
+npx eslint components/occasions/wedding/__fixtures__ components/occasions/wedding/mock components/occasions/OccasionCommentCard.tsx
+git add components/occasions/wedding/__fixtures__/intlServerMock.ts components/occasions/wedding/mock components/occasions/OccasionCommentCard.tsx
 git commit -m "feat(occasions): drawn phone, photo, icon and comment card parts"
 ```
 
@@ -3864,7 +3864,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { WeddingHero } from '@/components/occasions/wedding/WeddingHero';
 import type { OccasionPriceValues } from '@/lib/occasions/occasionPrice';
 
-vi.mock('next-intl/server', () => import('@/test/intlServerMock'));
+vi.mock('next-intl/server', () => import('@/components/occasions/wedding/__fixtures__/intlServerMock'));
 // The header needs auth and the client intl provider, the visual the motion provider; both are
 // covered by their own tests.
 vi.mock('@/components/landing/LandingHeader', () => ({ LandingHeader: () => <header /> }));
@@ -4234,7 +4234,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { WeddingWhy } from '@/components/occasions/wedding/WeddingWhy';
 import { LandingMotionProvider } from '@/providers/LandingMotionProvider';
 
-vi.mock('next-intl/server', () => import('@/test/intlServerMock'));
+vi.mock('next-intl/server', () => import('@/components/occasions/wedding/__fixtures__/intlServerMock'));
 
 // The marquee reads the landing's motion toggle.
 async function renderWhy(qrHref: string | null = '/el/qr-code-gamou') {
@@ -4719,7 +4719,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { WeddingRsvp } from '@/components/occasions/wedding/WeddingRsvp';
 
-vi.mock('next-intl/server', () => import('@/test/intlServerMock'));
+vi.mock('next-intl/server', () => import('@/components/occasions/wedding/__fixtures__/intlServerMock'));
 
 afterEach(cleanup);
 
@@ -5384,7 +5384,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { WeddingPrivate } from '@/components/occasions/wedding/WeddingPrivate';
 import { WEDDING_PRIVATE_ICONS } from '@/lib/occasions/weddingFeatures';
 
-vi.mock('next-intl/server', () => import('@/test/intlServerMock'));
+vi.mock('next-intl/server', () => import('@/components/occasions/wedding/__fixtures__/intlServerMock'));
 
 afterEach(cleanup);
 
@@ -5509,7 +5509,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { WeddingFeatures } from '@/components/occasions/wedding/WeddingFeatures';
 
-vi.mock('next-intl/server', () => import('@/test/intlServerMock'));
+vi.mock('next-intl/server', () => import('@/components/occasions/wedding/__fixtures__/intlServerMock'));
 
 afterEach(cleanup);
 
@@ -5938,7 +5938,7 @@ import { loadOccasionDemoPreview } from '@/lib/occasions/demoPreview.server';
 import { findOccasion } from '@/lib/occasions/occasions';
 import { routes } from '@/lib/routes';
 
-vi.mock('next-intl/server', () => import('@/test/intlServerMock'));
+vi.mock('next-intl/server', () => import('@/components/occasions/wedding/__fixtures__/intlServerMock'));
 vi.mock('@/lib/api/serverFetch', () => ({ serverPublicConfigGet: vi.fn() }));
 vi.mock('@/lib/occasions/demoPreview.server', () => ({ loadOccasionDemoPreview: vi.fn(async () => null) }));
 vi.mock('@/lib/landingThemes', () => ({ getLandingThemes: vi.fn(async () => []) }));
