@@ -284,30 +284,30 @@ describe('useGalleryPrint', () => {
         expect(result.current.pickCount).toBe(0);
     });
 
-describe('useGalleryPrint with several lists', () => {
-    beforeEach(() => vi.clearAllMocks());
+    describe('useGalleryPrint with several lists', () => {
+        beforeEach(() => vi.clearAllMocks());
 
-    const hostPaths = () => api.get.mock.calls.map((call) => String(call[0]));
+        const hostPaths = () => api.get.mock.calls.map((call) => String(call[0]));
 
-    it('reads a single list once', async () => {
-        const { result } = setup({ photographers: [photographer('v1')] });
-        await waitFor(() => expect(result.current.showPill).toBe(true));
-        expect(hostPaths().filter((path) => path.includes('vendorId=v1')).length).toBeLessThanOrEqual(1);
+        it('reads a single list once', async () => {
+            const { result } = setup({ photographers: [photographer('v1')] });
+            await waitFor(() => expect(result.current.showPill).toBe(true));
+            expect(hostPaths().filter((path) => path.includes('vendorId=v1')).length).toBeLessThanOrEqual(1);
+        });
+
+        it('leaves the error alone when a list that is not selected fails, and the pill follows the selected list', async () => {
+            const { result, queryClient } = setup({}, () =>
+                api.get.mockImplementation(async (path: string) => {
+                    if (path.includes('v2')) throw new ApiError(500, {}, 'down');
+                    return listOf([item('i1', 'm1')]);
+                }),
+            );
+            await waitFor(() => expect(hostPaths().some((path) => path.includes('v2'))).toBe(true));
+            await waitFor(() => expect(queryClient.getQueryState(printListKeys.host('e1', 'v2'))?.status).toBe('error'));
+            expect(result.current.listFailed).toBe(false);
+            expect(result.current.error).toBeNull();
+            expect(result.current.pickCount).toBe(1);
+            expect(result.current.showPill).toBe(true);
+        });
     });
-
-    it('leaves the error alone when a list that is not selected fails, and the pill follows the selected list', async () => {
-        const { result, queryClient } = setup({}, () =>
-            api.get.mockImplementation(async (path: string) => {
-                if (path.includes('v2')) throw new ApiError(500, {}, 'down');
-                return listOf([item('i1', 'm1')]);
-            }),
-        );
-        await waitFor(() => expect(hostPaths().some((path) => path.includes('v2'))).toBe(true));
-        await waitFor(() => expect(queryClient.getQueryState(printListKeys.host('e1', 'v2'))?.status).toBe('error'));
-        expect(result.current.listFailed).toBe(false);
-        expect(result.current.error).toBeNull();
-        expect(result.current.pickCount).toBe(1);
-        expect(result.current.showPill).toBe(true);
-    });
-});
 });

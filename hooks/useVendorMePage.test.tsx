@@ -118,22 +118,22 @@ describe('useVendorMePage', () => {
         expect(result.current.tools).toEqual([]);
     });
 
-describe('useVendorMePage profileStatus', () => {
-    beforeEach(() => {
-        role.data = DJ;
-        event.value = eventWith('vendors');
-    });
+    describe('useVendorMePage profileStatus', () => {
+        beforeEach(() => {
+            role.data = DJ;
+            event.value = eventWith('vendors');
+        });
 
-    it.each([
-        ['saved', { isSuccess: true, isError: false, fetchStatus: 'idle', data: savedProfile }, 'ready'],
-        ['not saved yet', { isSuccess: true, isError: false, fetchStatus: 'idle', data: null }, 'missing'],
-        ['loading', { isSuccess: false, isError: false, fetchStatus: 'fetching', data: undefined }, 'loading'],
-        ['failed read', { isSuccess: false, isError: true, fetchStatus: 'idle', data: undefined }, 'ready'],
-        ['not enabled', { isSuccess: false, isError: false, fetchStatus: 'idle', data: undefined }, 'ready'],
-    ])('is %s', (_name, query, expected) => {
-        profileQuery.value = query;
-        const { result } = renderHook(() => useVendorMePage('e1'));
-        expect(result.current.profileStatus).toBe(expected);
+        it.each([
+            ['saved', { isSuccess: true, isError: false, fetchStatus: 'idle', data: savedProfile }, 'ready'],
+            ['not saved yet', { isSuccess: true, isError: false, fetchStatus: 'idle', data: null }, 'missing'],
+            ['loading', { isSuccess: false, isError: false, fetchStatus: 'fetching', data: undefined }, 'loading'],
+            ['failed read', { isSuccess: false, isError: true, fetchStatus: 'idle', data: undefined }, 'ready'],
+            ['not enabled', { isSuccess: false, isError: false, fetchStatus: 'idle', data: undefined }, 'ready'],
+        ])('is %s', (_name, query, expected) => {
+            profileQuery.value = query;
+            const { result } = renderHook(() => useVendorMePage('e1'));
+            expect(result.current.profileStatus).toBe(expected);
+        });
     });
-});
 });
