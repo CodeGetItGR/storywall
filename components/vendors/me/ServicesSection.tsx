@@ -55,6 +55,8 @@ export function ServicesSection({
                 <p className="text-sm text-ink-muted">{t('partnerOnly')}</p>
             ) : loadFailed ? null : isLoading ? (
                 <VendorRowsSkeleton rows={2} />
+            ) : needsProfile ? (
+                <p className="text-sm text-ink-muted">{t('profileFirst')}</p>
             ) : sizes.length === 0 ? (
                 <p className="text-sm text-ink-muted">{t('empty')}</p>
             ) : (
@@ -64,7 +66,6 @@ export function ServicesSection({
                     ))}
                 </ul>
             )}
-            {approved && needsProfile && <p className="text-sm text-ink-muted">{t('profileFirst')}</p>}
             {approved && !canAdd && <p className="text-xs text-ink-muted">{t('limit', { max: PRINT_SIZES_MAX })}</p>}
 
             {/* Error */}

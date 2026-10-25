@@ -26,7 +26,7 @@ beforeEach(() => {
 describe('useVendorServicesSection', () => {
     it('keeps a save error in the sheet and out of the section', async () => {
         mocks.create.mockRejectedValue('boom');
-        const { result } = renderHook(() => useVendorServicesSection(me));
+        const { result } = renderHook(() => useVendorServicesSection(me, 'ready'));
         act(() => result.current.openNew());
         await act(() => result.current.save('10x15', 200));
         expect(result.current.sheetError).toBe('msg:boom');
@@ -36,7 +36,7 @@ describe('useVendorServicesSection', () => {
 
     it('clears the sheet error when the sheet closes', async () => {
         mocks.create.mockRejectedValue('boom');
-        const { result } = renderHook(() => useVendorServicesSection(me));
+        const { result } = renderHook(() => useVendorServicesSection(me, 'ready'));
         act(() => result.current.openNew());
         await act(() => result.current.save('10x15', 200));
         act(() => result.current.close());
@@ -46,7 +46,7 @@ describe('useVendorServicesSection', () => {
 
     it('keeps a failed delete in the sheet', async () => {
         mocks.remove.mockRejectedValue('gone');
-        const { result } = renderHook(() => useVendorServicesSection(me));
+        const { result } = renderHook(() => useVendorServicesSection(me, 'ready'));
         act(() => result.current.openEdit(size));
         act(() => result.current.requestDelete());
         await act(() => result.current.confirmRemove());
@@ -56,7 +56,7 @@ describe('useVendorServicesSection', () => {
 
     it('keeps showing the sizes it has when a refetch fails', () => {
         mocks.services.value = { data: [size], isLoading: false, isError: true, error: 'refetch' };
-        const { result } = renderHook(() => useVendorServicesSection(me));
+        const { result } = renderHook(() => useVendorServicesSection(me, 'ready'));
         expect(result.current.loadFailed).toBe(false);
         expect(result.current.sizes).toHaveLength(1);
         expect(result.current.sectionError).toBeNull();
@@ -64,7 +64,7 @@ describe('useVendorServicesSection', () => {
 
     it('reports a failed read in the section, not while a sheet is open', () => {
         mocks.services.value = { data: undefined, isLoading: false, isError: true, error: 'down' };
-        const { result } = renderHook(() => useVendorServicesSection(me));
+        const { result } = renderHook(() => useVendorServicesSection(me, 'ready'));
         expect(result.current.loadFailed).toBe(true);
         expect(result.current.sectionError).toBe('msg:down');
         act(() => result.current.openNew());

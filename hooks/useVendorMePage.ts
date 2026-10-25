@@ -6,10 +6,8 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useVendorProfile } from '@/hooks/useVendorProfile';
 import { useMyVendorRole, usePatchVendor } from '@/hooks/useVendors';
 import { readableModuleKeys } from '@/lib/eventLifecycle';
-import { capabilitiesOfType, hasVendorCapability, vendorToolLinks } from '@/lib/vendors';
+import { capabilitiesOfType, hasVendorCapability, vendorProfileStatus, vendorToolLinks } from '@/lib/vendors';
 import { useActiveEvent } from '@/providers/EventProvider';
-
-export type ProfileStatus = 'loading' | 'missing' | 'ready';
 
 // The vendor page: role, tools, the list switch and the details sheet.
 // The page is not gated on the vendors module: with it off, the vendor still sees their own
@@ -44,7 +42,7 @@ export function useVendorMePage(eventId: string) {
         isLoading: role.isLoading,
         profile: profile.data ?? null,
         // The read is null until the first save.
-        profileStatus: (profile.isSuccess ? (profile.data ? 'ready' : 'missing') : 'loading') as ProfileStatus,
+        profileStatus: vendorProfileStatus(profile),
         tools: me ? vendorToolLinks(eventId, me, modules) : [],
         // The type has a Pro album at all (capabilities is empty while the tools are off); the Pro list needs the gallery and vendors modules.
         // The section stays after the access window so past uploads remain visible; canUploadPro closes the upload.

@@ -24,4 +24,19 @@ describe('PrintToggleButton', () => {
         expect(button).toHaveTextContent('action');
         expect(button).not.toHaveTextContent('picked');
     });
+
+    it('shows a check icon when picked and the printer when not', () => {
+        const { container, rerender } = render(<PrintToggleButton toggle={{ ...toggle, picked: true }} />);
+        expect(container.querySelector('svg.lucide-check')).not.toBeNull();
+        expect(container.querySelector('svg.lucide-printer')).toBeNull();
+        rerender(<PrintToggleButton toggle={toggle} />);
+        expect(container.querySelector('svg.lucide-printer')).not.toBeNull();
+    });
+
+    it('is disabled with a spinner while pending', () => {
+        const { container } = render(<PrintToggleButton toggle={{ ...toggle, picked: true, pending: true }} />);
+        expect(screen.getByRole('button')).toBeDisabled();
+        expect(container.querySelector('svg.animate-spin')).not.toBeNull();
+        expect(container.querySelector('svg.lucide-check')).toBeNull();
+    });
 });

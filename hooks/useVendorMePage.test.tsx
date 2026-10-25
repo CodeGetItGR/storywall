@@ -10,11 +10,12 @@ vi.mock('@/hooks/useVendors', () => ({
     useMyVendorRole: () => role,
     usePatchVendor: () => ({ mutateAsync: patch, isPending: false }),
 }));
-vi.mock('@/hooks/useVendorProfile', () => ({
-    useVendorProfile: () => ({ data: { businessName: 'DJ Nik', vendorType: 'MUSIC', link: '@djnik', logoUrl: null, partnerPromptDismissed: false } }),
-}));
+const profileQuery = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
+vi.mock('@/hooks/useVendorProfile', () => ({ useVendorProfile: () => profileQuery.value }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'failed' }));
 vi.mock('@/providers/EventProvider', () => ({ useActiveEvent: () => event.value }));
+
+const savedProfile = { businessName: 'DJ Nik', vendorType: 'MUSIC', link: '@djnik', logoUrl: null, partnerPromptDismissed: false };
 
 const DJ = {
     vendorId: 'v1',
@@ -116,4 +117,23 @@ describe('useVendorMePage', () => {
         const { result } = renderHook(() => useVendorMePage('e1'));
         expect(result.current.tools).toEqual([]);
     });
+
+describe('useVendorMePage profileStatus', () => {
+    beforeEach(() => {
+        role.data = DJ;
+        event.value = eventWith('vendors');
+    });
+
+    it.each([
+        ['saved', { isSuccess: true, isError: false, fetchStatus: 'idle', data: savedProfile }, 'ready'],
+        ['not saved yet', { isSuccess: true, isError: false, fetchStatus: 'idle', data: null }, 'missing'],
+        ['loading', { isSuccess: false, isError: false, fetchStatus: 'fetching', data: undefined }, 'loading'],
+        ['failed read', { isSuccess: false, isError: true, fetchStatus: 'idle', data: undefined }, 'ready'],
+        ['not enabled', { isSuccess: false, isError: false, fetchStatus: 'idle', data: undefined }, 'ready'],
+    ])('is %s', (_name, query, expected) => {
+        profileQuery.value = query;
+        const { result } = renderHook(() => useVendorMePage('e1'));
+        expect(result.current.profileStatus).toBe(expected);
+    });
+});
 });

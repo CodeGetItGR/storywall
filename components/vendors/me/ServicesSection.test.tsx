@@ -134,6 +134,7 @@ describe('ServicesSection', () => {
         );
         expect(screen.queryByRole('button', { name: 'Add size' })).not.toBeInTheDocument();
         expect(screen.getByText('Fill in your details first.')).toBeInTheDocument();
+        expect(screen.queryByText('No sizes yet.')).not.toBeInTheDocument();
     });
 
     it('turns Add off without the line while the profile loads', () => {
