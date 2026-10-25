@@ -6805,14 +6805,15 @@
                 }
             },
             "linksHeading": "Other occasions",
-            "linksHome": "All of StoryWall"
+            "linksHome": "All of StoryWall",
+            "breadcrumbLabel": "Breadcrumb"
         },
         "campaigns": {},
         "WEDDING": {
             "name": "Weddings",
             "meta": {
-                "title": "Wedding Website & Guest Photo Sharing | StoryWall",
-                "description": "One private wedding website for your invitation, RSVPs, guest photos by QR code, wishes and song requests. No app for guests to install.",
+                "title": "Wedding Website & Digital Invitation | StoryWall",
+                "description": "A wedding website with your digital invitation, RSVPs, schedule, maps and guest photos. No app for guests to install.{range, select, none {} other { From {from}.}}",
                 "imageAlt": "StoryWall for weddings",
                 "keywords": [
                     "wedding website",
@@ -6825,160 +6826,349 @@
                 ]
             },
             "hero": {
-                "h1": "Wedding website and guest photo sharing",
-                "headline": "A wedding full of moments <b>worth keeping.</b>",
-                "lead": "From the invitation and RSVPs to the photos, posts and wishes from the day.",
-                "promise": "Everything your people share, together in one StoryWall.",
+                "h1": "Digital wedding invitation & <em>wedding website</em>",
                 "cta": "Create your wedding StoryWall",
-                "imageAlt": "Wedding guests celebrating with photos shared on StoryWall"
+                "breadcrumb": "Weddings",
+                "kicker": "THE SOCIAL FOR <b>YOUR WEDDING</b>",
+                "subtitle": "A wedding full of moments worth keeping.",
+                "body": "Make your own wedding website with a digital invitation, RSVPs, a schedule and maps. On the day, guests upload their photos, and everything stays in your own private StoryWall.",
+                "trust": ["No app", "Private", "One link"],
+                "trustPrice": "From {from}"
             },
-            "themes": {
-                "heading": "Give your wedding StoryWall the theme that suits it.",
-                "intro": "Sample themes for your wedding invitation and wall."
-            },
-            "timeline": [
-                {
-                    "title": "Before",
-                    "heading": "One link with everything.",
-                    "body": "Guests get one link with the date, schedule and maps. They RSVP, suggest songs and follow the plans."
-                },
-                {
-                    "title": "On the day",
-                    "heading": "Every guest becomes a photographer.",
-                    "body": "Guests scan the QR code on the tables and add photos and videos. No app, no account needed to upload."
-                },
-                {
-                    "title": "After",
-                    "heading": "The day stays with you.",
-                    "body": "Photos, stories and wishes stay together, from the preparations to the honeymoon."
-                }
-            ],
-            "story": {
-                "heading": ["Your whole wedding,", "in one place."],
-                "intro": "From the first invitation to the last dance, every guest adds to the same story.",
-                "rows": [
-                    {
-                        "galleryLabel": "Before the wedding",
-                        "imageAlts": [
-                            "Guest opening the wedding invitation on a phone",
-                            "Guest confirming the wedding RSVP",
-                            "Bachelor party in Santorini"
-                        ]
-                    },
-                    {
-                        "galleryLabel": "The wedding day",
-                        "imageAlts": ["Bride getting ready with her bridesmaids", "Wedding ceremony in Santorini", "Wedding reception in Santorini"]
-                    },
-                    {
-                        "galleryLabel": "After the wedding",
-                        "imageAlts": ["Guest writing a wish in the wedding guestbook", "Honeymoon in Paris"]
-                    }
-                ]
-            },
-            "demoHeading": ["See a wedding", "StoryWall."],
-            "demoCopy": "See how StoryWall works through a real wedding example. Explore the online invitation, posts, stories and photos the way your guests will see them.",
             "features": {
                 "invitation": {
-                    "title": "Digital wedding invitation",
-                    "body": "Date, schedule, ceremony and reception with maps, all on your guests' phones."
+                    "title": "Digital invitation",
+                    "body": "Send the invitation with one link, with the date, venues, schedule and maps."
                 },
                 "posts": {
-                    "title": "Posts from your guests",
-                    "body": "Guests share messages, photos and reactions on your wedding wall."
+                    "title": "Posts & reactions",
+                    "body": "Photos, messages, comments and reactions on your private wedding wall."
                 },
                 "rsvp": {
-                    "title": "Online wedding RSVP",
-                    "body": "Guests answer from the link. You see who is coming, with notes and plus-ones, in one list."
+                    "title": "Wedding RSVP",
+                    "body": "Guests confirm they are coming and you see every answer together."
                 },
                 "playlist": {
-                    "title": "Wedding song requests",
-                    "body": "Guests suggest the songs they want to hear, so the DJ knows the room before the party."
+                    "title": "Song requests",
+                    "body": "Guests suggest their favourite songs for the party."
                 },
                 "stories": {
-                    "title": "Stories from the day",
-                    "body": "Short stories from guests and hosts, as the moments happen."
+                    "title": "Wedding stories",
+                    "body": "Candid moments from the preparations, the ceremony and the reception."
                 },
                 "gallery": {
-                    "title": "QR code wedding photos",
-                    "body": "Put the QR code on the tables. Guests scan it and add their photos and videos straight from the camera roll."
+                    "title": "Guest photos",
+                    "body": "Guests scan a QR code and upload photos and videos, with no sign-up."
                 },
                 "wishlist": {
-                    "title": "Wedding gift account",
-                    "body": "Share your gift account next to the invitation, for guests who want to send a gift."
+                    "title": "Gift list / bank details",
+                    "body": "Share your gift list details discreetly."
                 },
                 "wishbook": {
-                    "title": "Digital wedding guestbook",
-                    "body": "Guests leave their wishes in one book you can keep and read again."
+                    "title": "Guestbook",
+                    "body": "Wishes from the people you love, in one digital keepsake book."
                 },
                 "schedule": {
                     "title": "Wedding schedule",
-                    "body": "Ceremony, reception, party and their times, step by step."
+                    "body": "Ceremony and reception times and venues, so everyone knows where and when."
+                },
+                "quiz_polls": {
+                    "title": "Quiz & polls",
+                    "body": "A quiz about the two of you and polls for your guests."
                 }
             },
-            "featuresIntro": {
-                "heading": "Everything your wedding needs, in one link."
-            },
-            "howItWorksHeading": ["Three steps.", "One wedding story."],
-            "howItWorks": [
-                {
-                    "title": "Create",
-                    "body": "Pick a plan and add your date, venues and schedule."
-                },
-                {
-                    "title": "Share",
-                    "body": "Send the invitation link and print the QR code for the tables."
-                },
-                {
-                    "title": "The story begins",
-                    "body": "Guests RSVP, post and add photos. Everything lands in one private feed."
-                }
-            ],
             "faq": [
                 {
                     "q": "What is a StoryWall wedding website?",
-                    "a": "StoryWall is a private social space for your wedding. It brings together an online invitation, RSVPs, posts, stories, guest photos and a digital guestbook, depending on the plan you choose."
+                    "a": "StoryWall is a private social space for your wedding. It brings together a digital invitation, RSVPs, posts, stories, photos from your guests and a digital guestbook, depending on the plan you choose."
                 },
                 {
-                    "q": "How does the online wedding invitation work?",
-                    "a": "You create your wedding StoryWall and send the link to your guests. They complete a short sign-up and get access to the invitation and the available features."
+                    "q": "How does the digital wedding invitation work?",
+                    "a": "You create your wedding StoryWall and send the link to your guests. They sign up quickly to see the invitation and the wedding wall. Uploading photos through the QR code needs no sign-up."
                 },
                 {
-                    "q": "How do I collect wedding photos with a QR code?",
-                    "a": "Place the QR code on the reception tables. Guests scan it and upload photos and videos with no app or sign-up. Everything is gathered in a separate collection."
+                    "q": "How do I collect my guests' photos?",
+                    "a": "Put the QR code on the reception tables. Guests scan it and upload photos and videos with no app and no sign-up. Everything gathers in a separate collection.",
+                    "link": {
+                        "to": "qr",
+                        "label": "About wedding QR codes"
+                    }
                 },
                 {
                     "q": "Do guests need to download an app?",
-                    "a": "No. StoryWall works straight from the phone's browser, with nothing to install."
+                    "a": "No. StoryWall opens straight in the phone's browser, from the link or the QR code, with nothing to install."
                 },
                 {
                     "q": "How does the wedding RSVP work?",
-                    "a": "Guests confirm they're coming online through StoryWall, and you can follow all their replies in one place."
+                    "a": "Guests confirm through StoryWall, and you see every answer together in one place."
                 },
                 {
                     "q": "Who can see the photos and posts?",
-                    "a": "StoryWall is private. Only invited guests who have signed up can see the social feed. Photos uploaded by QR code are gathered in a separate collection."
+                    "a": "StoryWall is private. Only guests who have signed up see the wedding wall. Photos uploaded through the QR code gather in a separate collection."
                 },
                 {
                     "q": "Can I download all the photos after the wedding?",
-                    "a": "Yes. You can download the photos and videos collected on StoryWall in their original resolution."
+                    "a": "Yes. You download the photos and videos gathered on StoryWall in their original resolution."
                 },
                 {
                     "q": "How long does StoryWall stay active?",
-                    "a": "You can choose a 3- or 6-month plan. It starts on the purchase date and can be renewed."
+                    "a": "You choose 3 or 6 months. It starts on the day you buy it, and you can renew it."
                 },
                 {
                     "q": "Does StoryWall replace the wedding photographer?",
-                    "a": "No. It complements professional photography by gathering the candid moments your guests capture."
+                    "a": "No. Your photographer captures the official moments. StoryWall gathers the candid moments your guests capture."
+                },
+                {
+                    "q": "How much does a StoryWall wedding website cost?",
+                    "a": "{range, select, span {Wedding plans start at {from} ({fromName}) and go up to {to} ({toName}), depending on the number of guests and the features you need.} single {The wedding plan costs {from} ({fromName}).} other {The price depends on the number of guests and the features you need.}}",
+                    "link": {
+                        "to": "pricing",
+                        "label": "See the plans"
+                    }
+                },
+                {
+                    "q": "How do I send the digital invitation to my guests?",
+                    "a": "The invitation is a link. Send it wherever you like: WhatsApp, Messenger, Viber, email or text message."
+                },
+                {
+                    "q": "Digital or printed wedding invitation?",
+                    "a": "They work well together. Many couples keep printed invitations for parents, the wedding party and close family, and send the digital one to every guest for RSVPs, maps and the schedule."
+                },
+                {
+                    "q": "Can I change details after sending it?",
+                    "a": "Yes. Changes show up right away, so guests always see the latest version of the invitation."
+                },
+                {
+                    "q": "Does it work for weddings outside Greece?",
+                    "a": "Yes. StoryWall works online, so you use it the same way for a wedding anywhere. Prices are in euros."
                 }
             ],
-            "faqIntro": "What couples ask before they create their wedding StoryWall.",
+            "faqIntro": "What couples ask about digital wedding invitations and wedding websites.",
             "finalCta": {
                 "heading": ["Your wedding", "starts here."],
-                "copyStart": "Create your own StoryWall with an online invitation, photos and memories to share with the people you love.",
-                "imageAlt": "Wedding celebration in Santorini"
+                "copyStart": "Create your own StoryWall with a digital invitation, photos and memories",
+                "imageAlt": "Wedding celebration in Santorini",
+                "eyebrow": "YOUR WEDDING ON STORYWALL",
+                "copyStrong": "to share with the people you love.",
+                "cta": "Create your <b>StoryWall</b>"
             },
-            "pricingHeading": "Plans for your wedding.",
-            "pricingIntro": "Choose the StoryWall that fits your wedding. From the private social feed to the online invitation, RSVPs and photo collection."
+            "how": {
+                "kicker": "HOW IT WORKS",
+                "heading": ["Three steps.", "One wedding story."],
+                "steps": [
+                    {
+                        "title": "Create",
+                        "body": "Pick a plan and build your wedding website with the date, venues and schedule, <b>in a few minutes.</b>"
+                    },
+                    {
+                        "title": "Share",
+                        "body": "Send the <b>digital invitation</b> with one link, and the <b>QR code</b> for collecting photos. <b>No app.</b>"
+                    },
+                    {
+                        "title": "The story begins",
+                        "body": "Guests confirm they are coming, share posts and stories and <b>upload photos from the wedding.</b>"
+                    }
+                ]
+            },
+            "why": {
+                "kicker": "WHY STORYWALL",
+                "heading": ["Your wedding photos", "should not get lost on 100 phones."],
+                "without": {
+                    "label": "WITHOUT STORYWALL",
+                    "bubbles": ["Send them to me too! 🙏", "Who has the video?"],
+                    "items": [
+                        "“Send me the photos too!”",
+                        "Photos on 100 different phones",
+                        "Wishes lost in WhatsApp and Messenger",
+                        "Public posts anyone can see"
+                    ]
+                },
+                "with": {
+                    "label": "WITH STORYWALL · ALL IN ONE PLACE",
+                    "subtitle": "From the preparations and the wedding day to the honeymoon.",
+                    "qrAlt": "A guest scans the StoryWall QR code on a wedding table",
+                    "steps": [
+                        {
+                            "title": "Scan",
+                            "body": "The QR on the table, with the phone camera."
+                        },
+                        {
+                            "title": "Upload",
+                            "body": "Photos and videos. <b>No app.</b>"
+                        },
+                        {
+                            "title": "All together",
+                            "body": "In your StoryWall, <b>in original quality.</b>"
+                        }
+                    ],
+                    "photoAlt": "{moment}, a photo by {name}, {role}",
+                    "marquee": [
+                        {
+                            "name": "Ioanna",
+                            "role": "bride's friend",
+                            "moment": "Dress preparations"
+                        },
+                        {
+                            "name": "Maria",
+                            "role": "bride's friend",
+                            "moment": "Night out"
+                        },
+                        {
+                            "name": "Kostas",
+                            "role": "groom's friend",
+                            "moment": "A toast at the taverna"
+                        },
+                        {
+                            "name": "Sofia",
+                            "role": "bride's friend",
+                            "moment": "Dancing at the party"
+                        },
+                        {
+                            "name": "Petros",
+                            "role": "groom's friend",
+                            "moment": "The groom's crew"
+                        },
+                        {
+                            "name": "Eleni",
+                            "role": "bride's mother",
+                            "moment": "Getting the bride ready"
+                        },
+                        {
+                            "name": "Anna",
+                            "role": "bride's friend",
+                            "moment": "Guests at the church"
+                        },
+                        {
+                            "name": "Giorgos",
+                            "role": "best man",
+                            "moment": "The newlyweds arrive"
+                        },
+                        {
+                            "name": "Ioanna",
+                            "role": "maid of honour",
+                            "moment": "A tender moment for the newlyweds"
+                        },
+                        {
+                            "name": "Nikos",
+                            "role": "groom's friend",
+                            "moment": "First dance"
+                        },
+                        {
+                            "name": "Katerina",
+                            "role": "cousin",
+                            "moment": "Dancing at the reception"
+                        },
+                        {
+                            "name": "Nefeli",
+                            "role": "bride",
+                            "moment": "The bride's morning"
+                        },
+                        {
+                            "name": "Nefeli",
+                            "role": "bride",
+                            "moment": "Trip to Paris"
+                        },
+                        {
+                            "name": "Orestis",
+                            "role": "groom",
+                            "moment": "Arriving in Paris"
+                        }
+                    ],
+                    "example": "EXAMPLE · ONE WEDDING ON STORYWALL",
+                    "stats": [
+                        {
+                            "value": "248",
+                            "label": "PHOTOS"
+                        },
+                        {
+                            "value": "36",
+                            "label": "VIDEOS"
+                        },
+                        {
+                            "value": "64",
+                            "label": "WISHES"
+                        },
+                        {
+                            "value": "86",
+                            "label": "GUESTS"
+                        }
+                    ],
+                    "chips": [
+                        "Every photo in one place",
+                        "Uploaded with one QR, no app",
+                        "A guestbook you download as a PDF",
+                        "Private, for your guests only"
+                    ]
+                }
+            },
+            "rsvp": {
+                "heading": ["Stop wondering who is coming.", "Every answer in one place."],
+                "intro": "With StoryWall, your guests reply easily and you stay in full control, from the invitation to the guest list.",
+                "alts": {
+                    "both": "Without StoryWall, replies arrive scattered across WhatsApp, Messenger, Viber, email and text. With StoryWall everything is organised: an RSVP form, a guest list and stats.",
+                    "without": "Without StoryWall: replies arrive scattered across WhatsApp, Messenger, Viber, email and text.",
+                    "with": "With StoryWall: an RSVP form, a guest list and stats, all organised."
+                },
+                "checklist": {
+                    "pill": "ALL ANSWERS",
+                    "items": [
+                        {
+                            "title": "Every answer in one place",
+                            "body": "From WhatsApp, Messenger, Viber, email and text."
+                        },
+                        {
+                            "title": "Who is coming",
+                            "body": "See at a glance who confirmed."
+                        },
+                        {
+                            "title": "Plus-ones & children",
+                            "body": "Know the exact number of guests."
+                        },
+                        {
+                            "title": "Quick and simple",
+                            "body": "Guests reply in one click from the invitation."
+                        }
+                    ]
+                }
+            },
+            "private": {
+                "kicker": "FOR GUESTS ONLY",
+                "heading": ["A private social full of moments.", "For you and your people."],
+                "intro": "Guests upload photos, write wishes and comment. It all stays between you.",
+                "cards": [
+                    {
+                        "title": "Private wall",
+                        "body": "Only people with your wedding link can get in. It is not public and does not show up on Google."
+                    },
+                    {
+                        "title": "You manage it",
+                        "body": "See who joins and what gets posted, all in one place. You can add a co-host too."
+                    },
+                    {
+                        "title": "Guest roles",
+                        "body": "Bride, groom, wedding party, family: everyone shows up with their role."
+                    },
+                    {
+                        "title": "Download in original quality",
+                        "body": "Download every photo and video from the wedding, and the guestbook as a PDF."
+                    }
+                ]
+            },
+            "demo": {
+                "kicker": "DEMO",
+                "heading": ["See a wedding", "StoryWall."],
+                "copy": "See the invitation, posts, stories and photos<br></br>the way <b>your guests will see them.</b>",
+                "imageAlt": "Wedding StoryWall demo on two phones"
+            },
+            "featuresHead": {
+                "kicker": "FEATURES",
+                "heading": ["Your own wedding website,", "with everything you need."]
+            },
+            "pricing": {
+                "kicker": "PLANS",
+                "heading": "Plans for your wedding.",
+                "intro": "Choose a plan and a duration that fit your needs."
+            }
         },
         "BAPTISM": {
             "name": "Baptisms",

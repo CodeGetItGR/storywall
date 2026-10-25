@@ -11,7 +11,7 @@ import { getPublicLandingPath } from '@/i18n/publicLocale';
 import type { OccasionCampaign } from '@/lib/occasions/campaigns';
 import type { OccasionHeroFeed } from '@/lib/occasions/occasionMedia';
 import type { Occasion } from '@/lib/occasions/occasions';
-import { OCCASION_SECTION_IDS } from '@/lib/occasions/occasionSections';
+import { occasionHeaderLinks } from '@/lib/occasions/occasionSections';
 
 type OccasionHeroProps = {
     alternatePaths: Record<Locale, string>;
@@ -31,12 +31,7 @@ export async function OccasionHero({ alternatePaths, campaign, createHref, demoH
     const c = campaign?.hero ? await getTranslations({ locale, namespace: `OccasionPages.campaigns.${campaign.id}` }) : null;
     const nav = landing.raw('hero.nav') as string[];
     const mobileNav = landing.raw('hero.mobileNav') as string[];
-    const links = [
-        { href: `#${OCCASION_SECTION_IDS.howItWorks}`, label: nav[1]!, mobileLabel: mobileNav[1]! },
-        { href: `#${OCCASION_SECTION_IDS.features}`, label: nav[2]!, mobileLabel: mobileNav[2]! },
-        { href: `#${OCCASION_SECTION_IDS.pricing}`, label: nav[3]!, mobileLabel: mobileNav[3]! },
-        { href: `#${OCCASION_SECTION_IDS.faq}`, label: landing('faq.eyebrow'), mobileLabel: landing('faq.eyebrow') },
-    ];
+    const links = occasionHeaderLinks(nav, mobileNav, landing('faq.eyebrow'));
     const cover = campaign?.hero?.image ?? feed?.cover;
 
     return (
@@ -49,7 +44,8 @@ export async function OccasionHero({ alternatePaths, campaign, createHref, demoH
                     mainLabel={c ? c('cta') : t('cta')}
                 />
             }
-            h1={t('h1')}
+            // The wedding h1 marks its gradient words with <em>; this hero shows plain text.
+            h1={t.markup('h1', { em: (chunks) => chunks })}
             header={
                 <LandingHeader
                     alternatePaths={alternatePaths}
