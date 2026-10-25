@@ -5819,7 +5819,7 @@
             "phone": "Phone showing a StoryWall feed",
             "feedHeader": "Wedding event page in StoryWall on a phone",
             "feedPosts": "Wedding photos shared by guests in the StoryWall feed",
-            "feedMorePosts": "More guest wedding photos and comments in the StoryWall feed",
+            "feedMorePosts": "More wedding photos and comments in the StoryWall feed",
             "guestPost": "Guest post with an event photo",
             "weddingPost": "Guest post with a wedding photo",
             "partyPost": "Guest post with a party photo",
@@ -6168,14 +6168,14 @@
                     "subtitle": "One invitation. Every detail.",
                     "description": "StoryWall's digital invitation brings every event detail together in one clear, easy experience before the day arrives.",
                     "items": ["Date, schedule, locations, maps, and more", "Instant access on mobile", "Everything stays up to date"],
-                    "imageAlt": "Guest viewing a digital invitation on her phone"
+                    "imageAlt": "Guest viewing a digital wedding invitation on her phone"
                 },
                 {
                     "title": "QR PHOTO UPLOAD",
                     "subtitle": "Every guest. A different point of view.",
                     "description": "Guests scan the QR code and upload photos and videos directly to StoryWall as the moments happen.",
                     "items": ["Upload with one simple scan", "No app or sign-up needed", "Photos and videos ready to download"],
-                    "imageAlt": "Guest scanning the event QR code to upload photos"
+                    "imageAlt": "Wedding QR code for photos: a guest scans it and uploads from their phone"
                 },
                 {
                     "title": "RSVP",
