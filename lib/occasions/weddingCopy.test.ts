@@ -3,9 +3,9 @@ import { describe, expect, it } from 'vitest';
 
 import type { OccasionFaqEntry } from '@/lib/occasions/occasionFaq';
 import type { OccasionPriceValues } from '@/lib/occasions/occasionPrice';
-import type { WeddingFeedPost, WeddingMarqueeCopy, WeddingRsvpReplyCopy } from '@/lib/occasions/weddingCopy';
+import type { WeddingMarqueeCopy } from '@/lib/occasions/weddingCopy';
 import { WEDDING_FEATURE_ORDER } from '@/lib/occasions/weddingFeatures';
-import { WEDDING_HERO_MEDIA, WEDDING_MARQUEE, WEDDING_RSVP_AVATARS } from '@/lib/occasions/weddingMedia';
+import { WEDDING_MARQUEE } from '@/lib/occasions/weddingMedia';
 import el from '@/messages/el.json';
 import en from '@/messages/en.json';
 
@@ -63,9 +63,7 @@ describe.each([
     });
 
     it('matches the photo map one to one', () => {
-        expect((t.raw('hero.feed.posts') as WeddingFeedPost[]).length).toBe(WEDDING_HERO_MEDIA.posts.length);
         expect((t.raw('why.with.marquee') as WeddingMarqueeCopy[]).length).toBe(WEDDING_MARQUEE.length);
-        expect((t.raw('rsvp.without.replies') as WeddingRsvpReplyCopy[]).length).toBe(WEDDING_RSVP_AVATARS.length);
     });
 
     it('has copy for every feature in the design', () => {

@@ -13,20 +13,23 @@ vi.mock('next-intl/server', () => ({
 afterEach(cleanup);
 
 describe('LandingDemo', () => {
-    it('shows an occasion kicker over the heading and its own phones, labelled once', async () => {
+    it("shows an occasion kicker over the heading and the occasion's name for the picture", async () => {
         render(
             await LandingDemo({
                 copy: <span>own copy</span>,
                 eyebrow: 'DEMO',
                 heading: ['See a wedding', 'StoryWall.'],
-                phones: <div>two phones</div>,
-                previewLabel: 'Wedding demo on two phones',
+                imageAlt: 'Wedding demo on two phones',
             }),
         );
         expect(screen.getByText('DEMO')).toBeInTheDocument();
         expect(screen.getByText('own copy')).toBeInTheDocument();
-        expect(screen.getByRole('img', { name: 'Wedding demo on two phones' })).toHaveTextContent('two phones');
-        expect(document.querySelector('img')).toBeNull();
+        expect(screen.getByRole('img', { name: 'Wedding demo on two phones' })).toBeInTheDocument();
+    });
+
+    it("names the picture with the landing's own alt by default", async () => {
+        render(await LandingDemo({}));
+        expect(screen.getByRole('img', { name: 'imageAlt' })).toBeInTheDocument();
     });
 });
 

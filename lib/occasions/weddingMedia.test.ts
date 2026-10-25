@@ -3,14 +3,7 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import {
-    WEDDING_DEMO_MEDIA,
-    WEDDING_HERO_MEDIA,
-    WEDDING_MARQUEE,
-    WEDDING_QR_PHOTO,
-    WEDDING_RSVP_AVATARS,
-    WEDDING_WITHOUT_PHOTOS,
-} from '@/lib/occasions/weddingMedia';
+import { WEDDING_MARQUEE, WEDDING_QR_PHOTO, WEDDING_RSVP_PICTURES, WEDDING_WITHOUT_PHOTOS } from '@/lib/occasions/weddingMedia';
 
 // Every { src } anywhere in the maps.
 function sources(value: unknown): string[] {
@@ -23,22 +16,16 @@ function sources(value: unknown): string[] {
 }
 
 describe('wedding media', () => {
-    it('points every photo at a file in public/', () => {
-        const all = sources([
-            WEDDING_HERO_MEDIA,
-            WEDDING_DEMO_MEDIA,
-            WEDDING_MARQUEE,
-            WEDDING_QR_PHOTO,
-            WEDDING_RSVP_AVATARS,
-            WEDDING_WITHOUT_PHOTOS,
-        ]);
-        expect(all.length).toBeGreaterThan(60);
-        for (const src of new Set(all)) expect(existsSync(path.join(process.cwd(), 'public', src)), src).toBe(true);
+    it('points every picture at a WebP file in public/', () => {
+        const all = sources([WEDDING_MARQUEE, WEDDING_QR_PHOTO, WEDDING_RSVP_PICTURES, WEDDING_WITHOUT_PHOTOS]);
+        expect(all.length).toBeGreaterThan(30);
+        for (const src of new Set(all)) {
+            expect(src, src).toMatch(/\.webp$/);
+            expect(existsSync(path.join(process.cwd(), 'public', src)), src).toBe(true);
+        }
     });
 
-    it('has a photo set for each of the nine hero posts and the fourteen marquee tiles', () => {
-        expect(WEDDING_HERO_MEDIA.posts).toHaveLength(9);
+    it('has a photo and an avatar for each of the fourteen marquee tiles', () => {
         expect(WEDDING_MARQUEE).toHaveLength(14);
-        expect(WEDDING_RSVP_AVATARS).toHaveLength(5);
     });
 });

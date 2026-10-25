@@ -1,23 +1,14 @@
 import { getTranslations } from 'next-intl/server';
 
 import { RsvpChecklist } from '@/components/occasions/wedding/rsvp/RsvpChecklist';
-import { RsvpComparison } from '@/components/occasions/wedding/rsvp/RsvpComparison';
-import { RsvpWith } from '@/components/occasions/wedding/rsvp/RsvpWith';
-import { RsvpWithout } from '@/components/occasions/wedding/rsvp/RsvpWithout';
+import { RsvpPictures } from '@/components/occasions/wedding/rsvp/RsvpPictures';
 import type { Locale } from '@/i18n/config';
-import type {
-    WeddingCardCopy,
-    WeddingRsvpFormCopy,
-    WeddingRsvpGuestCopy,
-    WeddingRsvpReplyCopy,
-    WeddingRsvpStatsCopy,
-} from '@/lib/occasions/weddingCopy';
+import type { WeddingCardCopy } from '@/lib/occasions/weddingCopy';
 
 // RSVP: replies scattered across apps against StoryWall's form, list and stats, on a pink panel.
 export async function WeddingRsvp({ locale }: { locale: Locale }) {
     const t = await getTranslations({ locale, namespace: 'OccasionPages.WEDDING.rsvp' });
     const heading = t.raw('heading') as [string, string];
-    const host = { couple: t('with.couple'), dashboard: t('with.dashboard'), module: t('with.module') };
 
     return (
         <section aria-labelledby="wedding-rsvp-title" className="bg-white pt-5.5 pb-15 font-[Arial,Helvetica,sans-serif] text-[#151313]">
@@ -35,28 +26,9 @@ export async function WeddingRsvp({ locale }: { locale: Locale }) {
                     </h2>
                     <p className="mx-auto mt-5.5 mb-0 max-w-160 text-[clamp(16px,1.45vw,19px)] leading-[1.55] text-[#6f6a64]">{t('intro')}</p>
                 </div>
-                {/* Comparison and points */}
+                {/* Pictures and points */}
                 <div className="grid grid-cols-1 items-stretch gap-[clamp(14px,1.8vw,26px)] min-[901px]:grid-cols-[minmax(0,1022fr)_minmax(0,370fr)]">
-                    <RsvpComparison
-                        after={
-                            <RsvpWith
-                                caption={t('with.caption')}
-                                form={t.raw('with.form') as WeddingRsvpFormCopy}
-                                host={host}
-                                list={t.raw('with.list') as WeddingRsvpGuestCopy[]}
-                                pill={t('with.pill')}
-                                stats={t.raw('with.stats') as WeddingRsvpStatsCopy}
-                            />
-                        }
-                        before={
-                            <RsvpWithout
-                                caption={t('without.caption')}
-                                pill={t('without.pill')}
-                                replies={t.raw('without.replies') as WeddingRsvpReplyCopy[]}
-                            />
-                        }
-                        label={t('label')}
-                    />
+                    <RsvpPictures alts={{ both: t('alts.both'), with: t('alts.with'), without: t('alts.without') }} />
                     <RsvpChecklist items={t.raw('checklist.items') as WeddingCardCopy[]} pill={t('checklist.pill')} />
                 </div>
             </div>

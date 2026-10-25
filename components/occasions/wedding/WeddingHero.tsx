@@ -2,18 +2,13 @@ import { getTranslations } from 'next-intl/server';
 import { Fragment } from 'react';
 
 import { LandingHeader } from '@/components/landing/LandingHeader';
-import { OccasionCommentCard } from '@/components/occasions/OccasionCommentCard';
 import { OccasionHeroVisual } from '@/components/occasions/OccasionHeroVisual';
-import { OccasionPostCard } from '@/components/occasions/OccasionPostCard';
-import { WeddingPhoneFeed } from '@/components/occasions/wedding/feed/WeddingPhoneFeed';
 import { WeddingHeroActions } from '@/components/occasions/wedding/WeddingHeroActions';
 import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
 import type { OccasionCampaign } from '@/lib/occasions/campaigns';
 import type { OccasionPriceValues } from '@/lib/occasions/occasionPrice';
 import { occasionHeaderLinks } from '@/lib/occasions/occasionSections';
-import type { WeddingHeroFeedCopy, WeddingMockCopy } from '@/lib/occasions/weddingCopy';
-import { WEDDING_HERO_MEDIA } from '@/lib/occasions/weddingMedia';
 
 // The design's background: pink top left, gold top right, coral at the bottom, on white.
 const SECTION_CLASS =
@@ -41,15 +36,13 @@ export async function WeddingHero({ alternatePaths, campaign, createHref, demoHr
     const t = await getTranslations({ locale, namespace: 'OccasionPages.WEDDING' });
     const common = await getTranslations({ locale, namespace: 'OccasionPages.common' });
     const landing = await getTranslations({ locale, namespace: 'LandingPage' });
-    // A campaign may swap the body, the CTA label and the feed's cover. The h1 always stays the keyword.
+    // A campaign may swap the body and the CTA label. The h1 always stays the keyword.
     const c = campaign?.hero ? await getTranslations({ locale, namespace: `OccasionPages.campaigns.${campaign.id}` }) : null;
     const nav = landing.raw('hero.nav') as string[];
     const mobileNav = landing.raw('hero.mobileNav') as string[];
     const home = getPublicLandingPath(locale);
     // "From 119€" only when config gave a price.
     const trust = [...(t.raw('hero.trust') as string[]), ...(price.range === 'none' ? [] : [t('hero.trustPrice', price)])];
-    const media = { ...WEDDING_HERO_MEDIA, cover: campaign?.hero?.image ?? WEDDING_HERO_MEDIA.cover };
-    const [leftCard, rightCard] = media.cards;
 
     return (
         <section className={SECTION_CLASS}>
@@ -123,25 +116,8 @@ export async function WeddingHero({ alternatePaths, campaign, createHref, demoHr
                         </p>
                     </div>
 
-                    {/* Visual: the phone feed, two post cards and two comment cards */}
-                    <OccasionHeroVisual
-                        className={VISUAL_CLASS}
-                        comments={[
-                            <OccasionCommentCard faces={media.comments[0]} key="heart" variant="heart" />,
-                            <OccasionCommentCard faces={media.comments[1]} key="avatar" variant="avatar" />,
-                        ]}
-                        feed={
-                            <WeddingPhoneFeed
-                                copy={t.raw('hero.feed') as WeddingHeroFeedCopy}
-                                media={media}
-                                mock={t.raw('mock') as WeddingMockCopy}
-                            />
-                        }
-                        posts={[
-                            <OccasionPostCard avatar={leftCard.author} key="left" photo={leftCard.photo} tilt="left" />,
-                            <OccasionPostCard avatar={rightCard.author} key="right" photo={rightCard.photo} tilt="right" />,
-                        ]}
-                    />
+                    {/* Visual: the landing's phone feed and floating cards */}
+                    <OccasionHeroVisual className={VISUAL_CLASS} />
                 </div>
             </div>
         </section>

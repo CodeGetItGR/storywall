@@ -7,13 +7,12 @@ import { useLandingMotion } from '@/providers/LandingMotionProvider';
 
 type OccasionHeroVisualProps = {
     className?: string;
-    comments?: readonly [ReactNode, ReactNode];
     feed?: ReactNode;
     posts?: readonly [ReactNode, ReactNode];
 };
 
-// The landing's phone and floating cards; an occasion with its own photos passes its feed and cards.
-export function OccasionHeroVisual({ className, comments, feed, posts }: OccasionHeroVisualProps) {
+// The landing's phone and floating posts; an occasion with its own photos passes its feed and cards.
+export function OccasionHeroVisual({ className, feed, posts }: OccasionHeroVisualProps) {
     const { paused } = useLandingMotion();
-    return <LandingHeroVisual className={className} comments={comments} feed={feed} motionPaused={paused} posts={posts} />;
+    return <LandingHeroVisual className={className} feed={feed} motionPaused={paused} posts={posts} />;
 }

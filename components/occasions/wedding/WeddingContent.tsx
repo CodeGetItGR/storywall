@@ -13,7 +13,6 @@ import { LandingReviews } from '@/components/landing/LandingReviews';
 import { OccasionCampaignBanner } from '@/components/occasions/OccasionCampaignBanner';
 import { OccasionLinks } from '@/components/occasions/OccasionLinks';
 import { OccasionPageShell } from '@/components/occasions/OccasionPageShell';
-import { WeddingDemoPhones } from '@/components/occasions/wedding/WeddingDemoPhones';
 import { WeddingFaqAnswer } from '@/components/occasions/wedding/WeddingFaqAnswer';
 import { WeddingFeatures } from '@/components/occasions/wedding/WeddingFeatures';
 import { WeddingHero } from '@/components/occasions/wedding/WeddingHero';
@@ -29,7 +28,6 @@ import { occasionCreateHref } from '@/lib/occasions/occasionLinks';
 import type { OccasionPriceValues } from '@/lib/occasions/occasionPrice';
 import { type Occasion, occasionAlternatePaths } from '@/lib/occasions/occasions';
 import type { OccasionThemeId } from '@/lib/occasions/themes';
-import type { WeddingDemoFeedCopy, WeddingDemoProfileCopy, WeddingMockCopy } from '@/lib/occasions/weddingCopy';
 import { WEDDING_FINAL_CTA_IMAGE } from '@/lib/occasions/weddingMedia';
 import { LandingMotionProvider } from '@/providers/LandingMotionProvider';
 
@@ -105,22 +103,14 @@ export async function WeddingContent({ campaign, demoHref, featureKeys, locale, 
                 {/* Private social */}
                 <WeddingPrivate locale={locale} />
 
-                {/* Demo, drawn in HTML */}
+                {/* Demo */}
                 {demoHref ? (
                     <LandingDemo
                         copy={t.rich('demo.copy', { b: bold, br: () => <br /> })}
                         eyebrow={t('demo.kicker')}
                         heading={t.raw('demo.heading') as string[]}
                         href={demoHref}
-                        phones={
-                            <WeddingDemoPhones
-                                feed={t.raw('demo.feed') as WeddingDemoFeedCopy}
-                                locale={locale}
-                                mock={t.raw('mock') as WeddingMockCopy}
-                                profile={t.raw('demo.profile') as WeddingDemoProfileCopy}
-                            />
-                        }
-                        previewLabel={t('demo.previewLabel')}
+                        imageAlt={t('demo.imageAlt')}
                     />
                 ) : null}
 

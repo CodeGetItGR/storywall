@@ -223,31 +223,16 @@ const HERO_SPRITE_MOTION = {
 // The floating post that sits on the phone's right, after the first one.
 const SECOND_POST_SRC = '/landing/sw-scene-item-sw-post-2.webp';
 
-// The two comment cutouts an occasion page can replace, in order.
-const COMMENT_INDEX: Record<string, 0 | 1> = {
-    '/landing/sw-scene-item-sw-comment-1.webp': 0,
-    '/landing/sw-scene-item-sw-comment-2.webp': 1,
-};
-
-// An occasion's own card for a cutout, if it passes one.
-function spriteOverride(src: string, posts?: readonly [ReactNode, ReactNode], comments?: readonly [ReactNode, ReactNode]): ReactNode {
-    if (posts && src === SECOND_POST_SRC) return posts[1];
-    const comment = COMMENT_INDEX[src];
-    return comments && comment !== undefined ? comments[comment] : null;
-}
-
 type LandingHeroVisualProps = {
     motionPaused: boolean;
     // Replaces the landing's size and place in its hero grid.
     className?: string;
-    // An occasion page's own phone feed, two post cards and two comment cards, in place of the
-    // wedding screenshots and cutouts.
-    comments?: readonly [ReactNode, ReactNode];
+    // An occasion page's own phone feed and two post cards, in place of the wedding screenshots.
     feed?: ReactNode;
     posts?: readonly [ReactNode, ReactNode];
 };
 
-export function LandingHeroVisual({ motionPaused, className, comments, feed, posts }: LandingHeroVisualProps) {
+export function LandingHeroVisual({ motionPaused, className, feed, posts }: LandingHeroVisualProps) {
     const t = useTranslations('LandingPage.imageAlts');
     const reduceMotion = useReducedMotion();
     const { screenRef, trackRef } = useLandingHeroFeedTravel();
@@ -324,7 +309,9 @@ export function LandingHeroVisual({ motionPaused, className, comments, feed, pos
                         delay: Number.parseFloat(sprite.delay),
                     }}
                 >
-                    {spriteOverride(sprite.src, posts, comments) ?? (
+                    {posts && sprite.src === SECOND_POST_SRC ? (
+                        posts[1]
+                    ) : (
                         <ProtectedImage
                             alt={t(sprite.alt)}
                             className="h-auto w-full"

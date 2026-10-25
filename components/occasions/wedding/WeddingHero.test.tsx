@@ -1,26 +1,15 @@
 import { cleanup, render, screen, within } from '@testing-library/react';
-import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { WeddingHero } from '@/components/occasions/wedding/WeddingHero';
 import type { OccasionPriceValues } from '@/lib/occasions/occasionPrice';
 
 vi.mock('next-intl/server', () => import('@/components/occasions/wedding/__fixtures__/intlServerMock'));
-// The parts read their alt text with useTranslations.
-vi.mock('next-intl', async (importOriginal) =>
-    (await import('@/components/occasions/wedding/__fixtures__/intlClientMock')).withGreekMessages(await importOriginal()),
-);
 // The header needs auth and the client intl provider, the visual the motion provider; both are
 // covered by their own tests.
 vi.mock('@/components/landing/LandingHeader', () => ({ LandingHeader: () => <header /> }));
 vi.mock('@/components/occasions/OccasionHeroVisual', () => ({
-    OccasionHeroVisual: ({ comments, feed, posts }: { comments: ReactNode[]; feed: ReactNode; posts: ReactNode[] }) => (
-        <div data-testid="visual">
-            {feed}
-            {posts}
-            {comments}
-        </div>
-    ),
+    OccasionHeroVisual: ({ className }: { className?: string }) => <div className={className} data-testid="visual" />,
 }));
 
 const SPAN: OccasionPriceValues = { range: 'span', from: '119€', fromName: 'START', to: '259€', toName: 'SIGNATURE' };
@@ -74,12 +63,8 @@ describe('WeddingHero', () => {
         expect(screen.queryByRole('link', { name: /Δες το demo/ })).toBeNull();
     });
 
-    it('draws the phone feed and the cards beside it', async () => {
+    it("shows the landing's phone and cards, placed as in the design", async () => {
         render(await hero());
-        const visual = screen.getByTestId('visual');
-        expect(within(visual).getByText('James & Olivia')).toBeInTheDocument();
-        expect(within(visual).getAllByRole('article')).toHaveLength(9);
-        // 9 posts' photos and faces, plus the two post cards' and the three comment faces.
-        expect(visual.querySelectorAll('[class*="aspect-[705/360]"], [class*="aspect-[557/300]"]')).toHaveLength(2);
+        expect(screen.getByTestId('visual')).toHaveClass('w-[min(115%,510px)]', 'min-[901px]:w-[min(860px,54vw)]');
     });
 });

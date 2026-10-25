@@ -1,13 +1,9 @@
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { WeddingRsvp } from '@/components/occasions/wedding/WeddingRsvp';
 
 vi.mock('next-intl/server', () => import('@/components/occasions/wedding/__fixtures__/intlServerMock'));
-// The parts read their alt text with useTranslations.
-vi.mock('next-intl', async (importOriginal) =>
-    (await import('@/components/occasions/wedding/__fixtures__/intlClientMock')).withGreekMessages(await importOriginal()),
-);
 
 afterEach(cleanup);
 
@@ -17,19 +13,13 @@ describe('WeddingRsvp', () => {
         expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Μην αναρωτιέσαι ποιος θα έρθει. Όλες οι απαντήσεις σε ένα μέρος.');
     });
 
-    it('draws the comparison as one picture with a localized name', async () => {
+    it('shows both halves in one wide picture, and each half on its own for phones', async () => {
         render(await WeddingRsvp({ locale: 'el' }));
-        const picture = screen.getByRole('img', { name: /^Χωρίς StoryWall οι απαντήσεις έρχονται διάσπαρτα/ });
-        for (const name of ['Κατερίνα', 'Πέτρος', 'Μαρία', 'Θεοδώρα', 'Γιώργος']) expect(within(picture).getByText(name)).toBeInTheDocument();
-        expect(within(picture).getByText('Νάντια Ευθυμίου')).toBeInTheDocument();
-        expect(within(picture).getByText('Υποβολή RSVP')).toBeInTheDocument();
-        expect(within(picture).getByText('265 ημέρες απομένουν · 15 Ιουλίου 2027')).toBeInTheDocument();
-    });
-
-    it('marks a no in red and a yes in green', async () => {
-        render(await WeddingRsvp({ locale: 'el' }));
-        expect(within(screen.getByText('Πέτρος').closest('li')!).getByText('Όχι')).toHaveClass('text-[#d93a32]');
-        expect(within(screen.getByText('Κατερίνα').closest('li')!).getByText('Ναι, 2 άτομα')).toHaveClass('text-[#2a6834]');
+        const wide = screen.getByRole('img', { name: /^Χωρίς StoryWall οι απαντήσεις έρχονται διάσπαρτα/ });
+        expect(wide).toHaveClass('hidden', 'min-[761px]:block');
+        expect(wide.getAttribute('src')).toContain('wedding-rsvp-replies-without-and-with.webp');
+        expect(screen.getByRole('img', { name: /^Χωρίς StoryWall: οι απαντήσεις/ }).parentElement).toHaveClass('min-[761px]:hidden');
+        expect(screen.getByRole('img', { name: /^Με StoryWall: φόρμα RSVP/ }).getAttribute('src')).toContain('wedding-rsvp-replies-with.webp');
     });
 
     it('lists the four points beside the picture', async () => {
