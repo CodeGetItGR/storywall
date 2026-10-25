@@ -3,6 +3,7 @@ import type { OccasionPhoto } from '@/lib/occasions/occasionMedia';
 import { cn } from '@/lib/utils';
 
 type MockPhotoProps = {
+    alt: string;
     className?: string;
     // The hero feed loads its photos at once, so none pops in while the feed scrolls.
     loading?: 'eager' | 'lazy';
@@ -10,11 +11,11 @@ type MockPhotoProps = {
     sizes: string;
 };
 
-// A photo inside a drawn screen or card: decorative, cropped to its frame, fetched after the page text.
-export function MockPhoto({ className, loading = 'lazy', photo, sizes }: MockPhotoProps) {
+// A photo inside a drawn screen or card, cropped to its frame and fetched after the page text.
+export function MockPhoto({ alt, className, loading = 'lazy', photo, sizes }: MockPhotoProps) {
     return (
         <ProtectedImage
-            alt=""
+            alt={alt}
             className={cn('object-cover', className)}
             fetchPriority="low"
             height={photo.height}

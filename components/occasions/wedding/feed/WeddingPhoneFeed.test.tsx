@@ -1,11 +1,16 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { createTranslator, type Messages } from 'next-intl';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { WeddingPhoneFeed } from '@/components/occasions/wedding/feed/WeddingPhoneFeed';
 import type { WeddingHeroFeedCopy, WeddingMockCopy } from '@/lib/occasions/weddingCopy';
 import { WEDDING_HERO_MEDIA } from '@/lib/occasions/weddingMedia';
 import el from '@/messages/el.json';
+
+// The parts read their alt text with useTranslations.
+vi.mock('next-intl', async (importOriginal) =>
+    (await import('@/components/occasions/wedding/__fixtures__/intlClientMock')).withGreekMessages(await importOriginal()),
+);
 
 const t = createTranslator({ locale: 'el', messages: el as Messages, namespace: 'OccasionPages.WEDDING' });
 const copy = t.raw('hero.feed') as WeddingHeroFeedCopy;
@@ -50,5 +55,11 @@ describe('WeddingPhoneFeed', () => {
             expect(photo).toHaveAttribute('loading', 'eager');
             expect(photo).toHaveAttribute('fetchpriority', 'low');
         }
+    });
+
+    it('names every image, each post photo by who took it', () => {
+        const { container } = renderFeed();
+        for (const image of container.querySelectorAll('img')) expect(image.getAttribute('alt')).toBeTruthy();
+        expect(screen.getAllByRole('img', { name: `Φωτογραφία από ${copy.posts[0]!.author}` }).length).toBeGreaterThan(0);
     });
 });

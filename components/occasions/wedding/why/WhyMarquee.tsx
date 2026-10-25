@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 // One copy of the tiles crosses the screen in this many seconds.
 const MARQUEE_SECONDS = 48;
 
-export type WhyMarqueeTile = WeddingMarqueeCopy & { alt: string; avatar: OccasionPhoto; photo: OccasionPhoto };
+export type WhyMarqueeTile = WeddingMarqueeCopy & { alt: string; avatar: OccasionPhoto; avatarAlt: string; photo: OccasionPhoto };
 
 // One copy of the tiles. The copy that only closes the loop is hidden from assistive tech.
 function Tiles({ hidden = false, tiles }: { hidden?: boolean; tiles: WhyMarqueeTile[] }) {
@@ -24,7 +24,7 @@ function Tiles({ hidden = false, tiles }: { hidden?: boolean; tiles: WhyMarqueeT
                     key={tile.photo.src}
                 >
                     <ProtectedImage
-                        alt={hidden ? '' : tile.alt}
+                        alt={tile.alt}
                         className="size-full object-cover"
                         height={tile.photo.height}
                         loading="lazy"
@@ -37,7 +37,7 @@ function Tiles({ hidden = false, tiles }: { hidden?: boolean; tiles: WhyMarqueeT
                         aria-hidden="true"
                         className="absolute inset-x-2.5 bottom-2.5 flex items-center gap-2 rounded-full bg-white/94 py-1.5 pr-3 pl-1.5 text-[12px]"
                     >
-                        <MockPhoto className="size-7 flex-none rounded-full" photo={tile.avatar} sizes="28px" />
+                        <MockPhoto alt={tile.avatarAlt} className="size-7 flex-none rounded-full" photo={tile.avatar} sizes="28px" />
                         <span className="truncate">
                             <b>{tile.name}</b> · {tile.role}
                         </span>

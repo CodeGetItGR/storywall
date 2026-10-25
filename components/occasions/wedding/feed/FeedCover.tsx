@@ -1,4 +1,5 @@
 import { CalendarDays, Church, Gift, MapPin, Martini } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { MockPhoto } from '@/components/occasions/wedding/mock/MockPhoto';
 import type { OccasionPhoto } from '@/lib/occasions/occasionMedia';
@@ -18,11 +19,19 @@ type FeedCoverProps = {
 // The event's cover with the couple's names and the venue, drinks and gifts buttons, then the date
 // and place.
 export function FeedCover({ date, loading, photo, place, title }: FeedCoverProps) {
+    const t = useTranslations('ImageAlt');
+
     return (
         <>
             {/* Cover */}
             <div className="relative mx-[2.6cqw] overflow-hidden rounded-[5cqw]">
-                <MockPhoto className="block aspect-[16/9] w-full" loading={loading} photo={photo} sizes="(min-width: 901px) 360px, 62vw" />
+                <MockPhoto
+                    alt={t('eventCoverOf', { name: title })}
+                    className="block aspect-[16/9] w-full"
+                    loading={loading}
+                    photo={photo}
+                    sizes="(min-width: 901px) 360px, 62vw"
+                />
                 <p className="absolute inset-x-0 bottom-0 m-0 bg-[linear-gradient(to_top,rgba(0,0,0,0.45),transparent)] px-[5cqw] pt-[10cqw] pb-[4cqw] [font-family:var(--editorial)] text-[6.2cqw] leading-none text-white">
                     {title}
                 </p>

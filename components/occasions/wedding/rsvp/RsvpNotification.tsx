@@ -1,4 +1,5 @@
 import { Check, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { MockPhoto } from '@/components/occasions/wedding/mock/MockPhoto';
 import { type RsvpApp, RsvpAppMark } from '@/components/occasions/wedding/rsvp/RsvpAppMark';
@@ -18,6 +19,8 @@ type RsvpNotificationProps = {
 
 // One reply as it lands on the couple's phone: the app, the guest, when, and the answer.
 export function RsvpNotification({ app, avatar, badgeClassName, className, copy }: RsvpNotificationProps) {
+    const t = useTranslations('ImageAlt');
+
     return (
         <li
             className={cn(
@@ -30,7 +33,12 @@ export function RsvpNotification({ app, avatar, badgeClassName, className, copy 
                 <RsvpAppMark app={app} />
             </span>
             {/* Guest */}
-            <MockPhoto className="size-[13.4cqw] shrink-0 rounded-full border-[0.6cqw] border-white" photo={avatar} sizes="64px" />
+            <MockPhoto
+                alt={t('profilePhotoOf', { name: copy.name })}
+                className="size-[13.4cqw] shrink-0 rounded-full border-[0.6cqw] border-white"
+                photo={avatar}
+                sizes="64px"
+            />
             <div className="min-w-0">
                 <p className="m-0 text-[3.6cqw] leading-tight font-medium">{copy.name}</p>
                 <p className="m-0 mt-[0.6cqw] text-[2.7cqw] leading-tight text-[#151313]/55">{copy.time}</p>

@@ -21,6 +21,7 @@ type WeddingWhyProps = {
 // Why StoryWall: the photos lost without it, then the same wedding with it.
 export async function WeddingWhy({ locale, qrHref }: WeddingWhyProps) {
     const t = await getTranslations({ locale, namespace: 'OccasionPages.WEDDING.why' });
+    const imageAlt = await getTranslations({ locale, namespace: 'ImageAlt' });
     const bold = (chunks: ReactNode) => <strong className="font-bold">{chunks}</strong>;
     const steps = (t.raw('with.steps') as { title: string }[]).map((step, index) => ({
         title: step.title,
@@ -30,6 +31,7 @@ export async function WeddingWhy({ locale, qrHref }: WeddingWhyProps) {
         ...copy,
         ...WEDDING_MARQUEE[index]!,
         alt: t('with.photoAlt', copy),
+        avatarAlt: imageAlt('profilePhotoOf', { name: copy.name }),
     }));
 
     return (

@@ -1,4 +1,5 @@
 import { Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
 import { MockPhoto } from '@/components/occasions/wedding/mock/MockPhoto';
@@ -30,6 +31,7 @@ function Story({ children, label }: { children: ReactNode; label: string }) {
 
 // The stories row: your own story, the schedule's date, then three stories from the day.
 export function FeedStories({ badge, labels, loading, stories, viewer }: FeedStoriesProps) {
+    const t = useTranslations('ImageAlt');
     const items = [
         { label: labels.guests, photo: stories[0] },
         { label: labels.moments, photo: stories[1] },
@@ -41,7 +43,7 @@ export function FeedStories({ badge, labels, loading, stories, viewer }: FeedSto
             {/* Your story */}
             <Story label={labels.own}>
                 <span className="relative block rounded-full bg-[#f3e3d8] p-[0.7cqw]">
-                    <MockPhoto className={CIRCLE} loading={loading} photo={viewer} sizes="72px" />
+                    <MockPhoto alt={t('profilePhoto')} className={CIRCLE} loading={loading} photo={viewer} sizes="72px" />
                     <span className="absolute right-0 bottom-0 grid size-[5.4cqw] place-items-center rounded-full border-[0.6cqw] border-white bg-[#ff765f] text-white">
                         <Plus className="size-[3.4cqw]" strokeWidth={3} />
                     </span>
@@ -61,7 +63,7 @@ export function FeedStories({ badge, labels, loading, stories, viewer }: FeedSto
             {items.map((item) => (
                 <Story key={item.label} label={item.label}>
                     <span className={RING}>
-                        <MockPhoto className={CIRCLE} loading={loading} photo={item.photo} sizes="72px" />
+                        <MockPhoto alt={item.label} className={CIRCLE} loading={loading} photo={item.photo} sizes="72px" />
                     </span>
                 </Story>
             ))}

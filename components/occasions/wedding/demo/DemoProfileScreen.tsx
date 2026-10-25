@@ -1,4 +1,5 @@
 import { ArrowLeft, Calendar, Camera, CreditCard, Layers, LogOut, Pencil } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { MockPhoto } from '@/components/occasions/wedding/mock/MockPhoto';
 import type { Locale } from '@/i18n/config';
@@ -17,12 +18,19 @@ type DemoProfileScreenProps = { copy: WeddingDemoProfileCopy; locale: Locale; ph
 
 // The guest's menu on the brand gradient, with the Profile panel sliding in over its right side.
 export function DemoProfileScreen({ copy, locale, photo }: DemoProfileScreenProps) {
+    const t = useTranslations('ImageAlt');
+
     return (
         <div className="absolute inset-0 bg-[linear-gradient(165deg,#ef5f8a_0%,#f47a76_42%,#f6995d_100%)] text-white">
             {/* Account */}
             <div className="flex w-[64%] items-center gap-[4cqw] pt-[30cqw] pr-[3cqw] pl-[8cqw]">
                 <span className="relative shrink-0">
-                    <MockPhoto className="block size-[18cqw] rounded-full border-[0.8cqw] border-white" photo={photo} sizes="80px" />
+                    <MockPhoto
+                        alt={t('profilePhotoOf', { name: copy.name })}
+                        className="block size-[18cqw] rounded-full border-[0.8cqw] border-white"
+                        photo={photo}
+                        sizes="80px"
+                    />
                     <span className="absolute -right-[0.6cqw] bottom-0 grid size-[6cqw] place-items-center rounded-full border-[0.6cqw] border-white bg-[#ff765f]">
                         <Pencil className="size-[2.8cqw]" strokeWidth={2.4} />
                     </span>
@@ -69,7 +77,7 @@ export function DemoProfileScreen({ copy, locale, photo }: DemoProfileScreenProp
                 <p className="m-0 mt-[6cqw] text-[5cqw] font-bold">{copy.title}</p>
                 <div className="mt-[4cqw] rounded-[4cqw] border border-[#151313]/8 p-[4cqw]">
                     <span className="relative block w-fit">
-                        <MockPhoto className="block size-[17cqw] rounded-full" photo={photo} sizes="64px" />
+                        <MockPhoto alt={t('profilePhotoOf', { name: copy.panelName })} className="block size-[17cqw] rounded-full" photo={photo} sizes="64px" />
                         <span className="absolute right-0 bottom-0 grid size-[5.4cqw] place-items-center rounded-full bg-[#ff765f] text-white">
                             <Camera className="size-[3cqw]" strokeWidth={2} />
                         </span>

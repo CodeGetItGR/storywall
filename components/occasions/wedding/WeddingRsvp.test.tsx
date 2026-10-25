@@ -4,6 +4,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { WeddingRsvp } from '@/components/occasions/wedding/WeddingRsvp';
 
 vi.mock('next-intl/server', () => import('@/components/occasions/wedding/__fixtures__/intlServerMock'));
+// The parts read their alt text with useTranslations.
+vi.mock('next-intl', async (importOriginal) =>
+    (await import('@/components/occasions/wedding/__fixtures__/intlClientMock')).withGreekMessages(await importOriginal()),
+);
 
 afterEach(cleanup);
 

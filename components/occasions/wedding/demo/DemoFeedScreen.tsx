@@ -22,7 +22,7 @@ export function DemoFeedScreen({ copy, media, mock }: DemoFeedScreenProps) {
             <div className="border-t border-[#151313]/8 px-[2.6cqw] pt-[3.5cqw]">
                 <FeedPostAuthor face={media.post.author} name={copy.author} time={copy.time} />
                 <div className="mt-[2.6cqw]">
-                    <FeedPostPhotos photos={media.post.photos} />
+                    <FeedPostPhotos author={copy.author} photos={media.post.photos} />
                 </div>
             </div>
             {/* Add */}

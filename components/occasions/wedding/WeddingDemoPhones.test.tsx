@@ -1,11 +1,16 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { createTranslator, type Messages } from 'next-intl';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { WeddingDemoPhones } from '@/components/occasions/wedding/WeddingDemoPhones';
 import type { Locale } from '@/i18n/config';
 import type { WeddingDemoFeedCopy, WeddingDemoProfileCopy, WeddingMockCopy } from '@/lib/occasions/weddingCopy';
 import el from '@/messages/el.json';
+
+// The parts read their alt text with useTranslations.
+vi.mock('next-intl', async (importOriginal) =>
+    (await import('@/components/occasions/wedding/__fixtures__/intlClientMock')).withGreekMessages(await importOriginal()),
+);
 
 const t = createTranslator({ locale: 'el', messages: el as Messages, namespace: 'OccasionPages.WEDDING' });
 

@@ -6,6 +6,10 @@ import { WeddingHero } from '@/components/occasions/wedding/WeddingHero';
 import type { OccasionPriceValues } from '@/lib/occasions/occasionPrice';
 
 vi.mock('next-intl/server', () => import('@/components/occasions/wedding/__fixtures__/intlServerMock'));
+// The parts read their alt text with useTranslations.
+vi.mock('next-intl', async (importOriginal) =>
+    (await import('@/components/occasions/wedding/__fixtures__/intlClientMock')).withGreekMessages(await importOriginal()),
+);
 // The header needs auth and the client intl provider, the visual the motion provider; both are
 // covered by their own tests.
 vi.mock('@/components/landing/LandingHeader', () => ({ LandingHeader: () => <header /> }));

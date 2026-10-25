@@ -1,5 +1,5 @@
 import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { OccasionCommentCard } from '@/components/occasions/OccasionCommentCard';
 import { GradientIcon } from '@/components/occasions/wedding/mock/GradientIcon';
@@ -7,15 +7,20 @@ import { MockPhone } from '@/components/occasions/wedding/mock/MockPhone';
 import { MockPhoto } from '@/components/occasions/wedding/mock/MockPhoto';
 import { MockTabBar } from '@/components/occasions/wedding/mock/MockTabBar';
 
+// The comment card reads its alt text with useTranslations.
+vi.mock('next-intl', async (importOriginal) =>
+    (await import('@/components/occasions/wedding/__fixtures__/intlClientMock')).withGreekMessages(await importOriginal()),
+);
+
 const FACE = { src: '/landing/wedding/wedding-guest-woman-sun-hat.webp', width: 320, height: 320, position: '50% 20%' };
 
 afterEach(cleanup);
 
 describe('wedding mocks', () => {
-    it('draws a decorative photo, cropped where the map says, after the page text', () => {
-        const { container } = render(<MockPhoto className="size-10" photo={FACE} sizes="40px" />);
+    it('draws a photo with its alt, cropped where the map says, after the page text', () => {
+        const { container } = render(<MockPhoto alt="Φωτογραφία καλεσμένου" className="size-10" photo={FACE} sizes="40px" />);
         const image = container.querySelector('img')!;
-        expect(image).toHaveAttribute('alt', '');
+        expect(image).toHaveAttribute('alt', 'Φωτογραφία καλεσμένου');
         expect(image).toHaveAttribute('loading', 'lazy');
         expect(image).toHaveAttribute('fetchpriority', 'low');
         expect(image.style.objectPosition).toBe('50% 20%');
@@ -44,7 +49,7 @@ describe('wedding mocks', () => {
 
     it('draws each comment card with its own faces', () => {
         const { container: heart } = render(<OccasionCommentCard faces={[FACE, FACE]} variant="heart" />);
-        expect(heart.querySelectorAll('img')).toHaveLength(2);
+        expect(screen.getAllByRole('img', { name: 'Φωτογραφία προφίλ καλεσμένου' })).toHaveLength(2);
         expect(heart.firstElementChild).toHaveClass('aspect-[705/360]');
         const { container: avatar } = render(<OccasionCommentCard faces={[FACE]} variant="avatar" />);
         expect(avatar.querySelectorAll('img')).toHaveLength(1);

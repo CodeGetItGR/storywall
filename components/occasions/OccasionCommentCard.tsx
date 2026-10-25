@@ -1,4 +1,5 @@
 import { Heart } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import type { OccasionPhoto } from '@/lib/occasions/occasionMedia';
@@ -16,9 +17,11 @@ const SHAPE = {
 type OccasionCommentCardProps = { faces: readonly OccasionPhoto[]; variant: keyof typeof SHAPE };
 
 function Face({ className, photo }: { className: string; photo: OccasionPhoto }) {
+    const t = useTranslations('LandingPage.imageAlts');
+
     return (
         <ProtectedImage
-            alt=""
+            alt={t('guestAvatar')}
             className={cn('rounded-full border-[0.9cqw] border-[#fbf9f6] object-cover', className)}
             height={photo.height}
             sizes="48px"

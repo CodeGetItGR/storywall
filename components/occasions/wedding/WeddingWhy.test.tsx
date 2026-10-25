@@ -5,6 +5,10 @@ import { WeddingWhy } from '@/components/occasions/wedding/WeddingWhy';
 import { LandingMotionProvider } from '@/providers/LandingMotionProvider';
 
 vi.mock('next-intl/server', () => import('@/components/occasions/wedding/__fixtures__/intlServerMock'));
+// The parts read their alt text with useTranslations.
+vi.mock('next-intl', async (importOriginal) =>
+    (await import('@/components/occasions/wedding/__fixtures__/intlClientMock')).withGreekMessages(await importOriginal()),
+);
 
 // The marquee reads the landing's motion toggle.
 async function renderWhy(qrHref: string | null = '/el/qr-code-gamou') {

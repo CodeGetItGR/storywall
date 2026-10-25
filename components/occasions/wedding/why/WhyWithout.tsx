@@ -1,3 +1,5 @@
+import { useTranslations } from 'next-intl';
+
 import { MockPhoto } from '@/components/occasions/wedding/mock/MockPhoto';
 import type { OccasionPhoto } from '@/lib/occasions/occasionMedia';
 import { cn } from '@/lib/utils';
@@ -20,6 +22,8 @@ type WhyWithoutProps = {
 
 // "Without StoryWall": three grey photos with two chat bubbles, then what goes wrong.
 export function WhyWithout({ bubbles, items, label, photos }: WhyWithoutProps) {
+    const t = useTranslations('ImageAlt');
+
     return (
         <div className="rounded-[30px] bg-[#f2f1ef] px-5 py-6 min-[861px]:px-8.5 min-[861px]:py-7">
             <p className={cn(WHY_LABEL_CLASS, 'text-[#8a857f]')}>{label}</p>
@@ -28,6 +32,7 @@ export function WhyWithout({ bubbles, items, label, photos }: WhyWithoutProps) {
                 <div aria-hidden="true" className="relative h-55 min-[861px]:h-62.5">
                     {photos.map((photo, index) => (
                         <MockPhoto
+                            alt={t('guestPhoto')}
                             className={cn(
                                 'absolute h-40 w-[31%] rounded-[14px] shadow-[0_14px_30px_-14px_rgba(0,0,0,0.4)] brightness-95 grayscale-60 min-[861px]:h-47.5',
                                 SCATTER[index],
