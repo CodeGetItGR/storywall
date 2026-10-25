@@ -7282,9 +7282,8 @@
     },
     "Vendors": {
         "prints": {
-            "title": "Prints",
+            "title": "Print order",
             "included": "Prints included for the host",
-            "includedEditLabel": "Change prints included for the host",
             "includedInvalid": "Enter a whole number from 0 to {max}.",
             "includedSheetTitle": "Prints included for the host",
             "includedLabel": "Number of prints",
@@ -7300,7 +7299,7 @@
             "copies": "{count, plural, one {# copy} other {# copies}}"
         },
         "services": {
-            "title": "Print sizes",
+            "title": "Print prices",
             "partnerOnly": "Only approved partners can list prices.",
             "profileFirst": "Fill in your details first.",
             "empty": "No sizes yet.",
@@ -7400,11 +7399,12 @@
             "proDeleteBody": "It's removed from the Pro album.",
             "proDeleteConfirm": "Delete",
             "proDeleteCancel": "Keep",
-            "listingTitle": "Vendor list",
             "listingSwitch": "Show me in the vendor list",
             "listingHiddenByHost": "The host hid you from the list.",
             "profileTitle": "Your details",
-            "profileEdit": "Edit"
+            "profileEdit": "Edit",
+            "groupEvent": "For this event",
+            "groupSettings": "Your settings"
         },
         "meter": {
             "label": "Pro album",

@@ -1,20 +1,18 @@
 'use client';
 
-import { Download, Pencil } from 'lucide-react';
-import { useFormatter, useTranslations } from 'next-intl';
+import { Download } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { PrintTotal } from '@/components/gallery/print/PrintTotal';
 import { Button } from '@/components/ui/button';
-import { Skeleton, SkeletonStatus } from '@/components/ui/skeleton';
 import { PrintListReadRow } from '@/components/vendors/me/PrintListReadRow';
 import { PrintPartButton } from '@/components/vendors/me/PrintPartButton';
 import { VendorRowsSkeleton } from '@/components/vendors/VendorsSkeletons';
 import type { PrintListItemDto } from '@/lib/api/types';
 import type { PrintTotals } from '@/lib/printPicks';
 
-// The photographer's Prints section: what the package includes, the host's picks, the total and the download.
+// The photographer's print order: the host's picks, the total against the package and the download.
 export function PrintsSection({
-    included,
     items,
     removedCount,
     totals,
@@ -26,10 +24,8 @@ export function PrintsSection({
     listFailed,
     includedFailed,
     error,
-    onEditIncludedAction,
     onDownloadPartAction,
 }: {
-    included: number;
     items: PrintListItemDto[];
     removedCount: number;
     totals: PrintTotals;
@@ -41,37 +37,18 @@ export function PrintsSection({
     listFailed: boolean;
     includedFailed: boolean;
     error: string | null;
-    onEditIncludedAction: () => void;
     onDownloadPartAction: (part: number) => void;
 }) {
     const t = useTranslations('Vendors.prints');
-    const format = useFormatter();
     const live = items.filter((item) => !item.removed);
     const parts = Array.from({ length: partCount }, (_, index) => index + 1);
 
     return (
         <section aria-labelledby="vendor-prints-title" className="flex flex-col gap-4">
             {/* Header */}
-            <h2 id="vendor-prints-title" className="text-sm font-semibold text-ink">
+            <h3 id="vendor-prints-title" className="text-sm font-semibold text-ink">
                 {t('title')}
-            </h2>
-
-            {/* Included: the one place the package size shows */}
-            {!includedFailed && (
-                <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm text-ink-muted">{t('included')}</p>
-                    {isLoadingIncluded ? (
-                        <SkeletonStatus>
-                            <Skeleton className="h-11 w-20 rounded-lg" />
-                        </SkeletonStatus>
-                    ) : (
-                        <Button type="button" variant="outline" size="lg" aria-label={t('includedEditLabel')} onClick={onEditIncludedAction}>
-                            <span className="tabular-nums">{format.number(included)}</span>
-                            <Pencil aria-hidden="true" />
-                        </Button>
-                    )}
-                </div>
-            )}
+            </h3>
 
             {/* Host picks */}
             {listFailed ? null : isLoading ? (
@@ -90,7 +67,7 @@ export function PrintsSection({
             {/* Total and download */}
             {!listFailed && totals.prints > 0 && (
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                    {!includedFailed && <PrintTotal totals={totals} withIncluded={false} noPriceLabel={t('noPrice')} />}
+                    {!includedFailed && !isLoadingIncluded && <PrintTotal totals={totals} noPriceLabel={t('noPrice')} />}
                     <div className="flex flex-wrap gap-2">
                         {isLoadingParts && (
                             <Button type="button" size="lg" disabled>

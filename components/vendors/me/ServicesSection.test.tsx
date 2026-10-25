@@ -155,4 +155,46 @@ describe('ServicesSection', () => {
         expect(screen.getByRole('button', { name: 'Add size' })).toBeDisabled();
         expect(screen.queryByText('Fill in your details first.')).not.toBeInTheDocument();
     });
+
+    it('puts the included row above the sizes in one list', () => {
+        renderIntl(
+            <ServicesSection
+                approved
+                sizes={[size]}
+                canAdd
+                needsProfile={false}
+                profileLoading={false}
+                isLoading={false}
+                loadFailed={false}
+                error={null}
+                includedRow={<li>included row</li>}
+                onAddAction={vi.fn()}
+                onEditAction={vi.fn()}
+            />,
+        );
+        const rows = screen.getAllByRole('listitem');
+        expect(rows).toHaveLength(2);
+        expect(rows[0]).toHaveTextContent('included row');
+        expect(rows[1]).toHaveTextContent('13x18');
+    });
+
+    it('keeps the included row while the sizes wait for the details', () => {
+        renderIntl(
+            <ServicesSection
+                approved
+                sizes={[]}
+                canAdd
+                needsProfile
+                profileLoading={false}
+                isLoading={false}
+                loadFailed={false}
+                error={null}
+                includedRow={<li>included row</li>}
+                onAddAction={vi.fn()}
+                onEditAction={vi.fn()}
+            />,
+        );
+        expect(screen.getByText('included row')).toBeInTheDocument();
+        expect(screen.getByText('Fill in your details first.')).toBeInTheDocument();
+    });
 });

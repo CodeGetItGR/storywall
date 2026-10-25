@@ -22,7 +22,6 @@ function renderIntl(ui: ReactElement) {
 
 function renderSection(overrides: Partial<Parameters<typeof PrintsSection>[0]> = {}) {
     const props = {
-        included: 1,
         items,
         removedCount: 0,
         totals: printTotals(items, 1),
@@ -34,7 +33,6 @@ function renderSection(overrides: Partial<Parameters<typeof PrintsSection>[0]> =
         listFailed: false,
         includedFailed: false,
         error: null,
-        onEditIncludedAction: vi.fn(),
         onDownloadPartAction: vi.fn(),
         ...overrides,
     };
@@ -53,38 +51,29 @@ describe('PrintsSection', () => {
         expect(props.onDownloadPartAction).toHaveBeenCalledWith(1);
     });
 
-    it('shows the included count once, formatted, on the Change button', () => {
-        const props = renderSection({ included: 1200, totals: printTotals(items, 1200) });
-        const change = screen.getByRole('button', { name: 'Change prints included for the host' });
-        expect(change).toHaveTextContent('1,200');
-        expect(screen.queryByText(/included$/)).not.toBeInTheDocument();
-        fireEvent.click(change);
-        expect(props.onEditIncludedAction).toHaveBeenCalled();
-    });
-
-    it('leaves the included part out of the total line', () => {
-        renderSection({ included: 1, totals: printTotals(items, 1) });
-        expect(screen.getByText('1 more · €3.00')).toBeInTheDocument();
-        expect(screen.queryByText(/of 1 included/)).not.toBeInTheDocument();
+    it('shows the total against the package, with no way to change the package here', () => {
+        renderSection({ totals: printTotals(items, 1) });
+        expect(screen.getByText('1 of 1 included · 1 more · €3.00')).toBeInTheDocument();
+        expect(screen.getAllByRole('button')).toHaveLength(1);
     });
 
     it('says no price is set, not that the photographer sets it, when a size has no price', () => {
         const unpriced = [{ ...items[0], sizeId: null, sizeLabel: null, unitPriceCents: null }];
-        renderSection({ included: 0, items: unpriced, totals: printTotals(unpriced, 0) });
+        renderSection({ items: unpriced, totals: printTotals(unpriced, 0) });
         expect(screen.getByText('2 more · No price set')).toBeInTheDocument();
         expect(screen.queryByText(/Your photographer sets the price/)).not.toBeInTheDocument();
     });
 
-    it('shows no total line when the package covers every copy', () => {
-        renderSection({ included: 5, totals: printTotals(items, 5) });
-        expect(screen.queryByText(/more/)).not.toBeInTheDocument();
+    it('shows only the included part when the package covers every copy', () => {
+        renderSection({ totals: printTotals(items, 5) });
+        expect(screen.getByText('2 of 5 included')).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Download' })).toBeInTheDocument();
     });
 
-    it('shows a skeleton instead of the count while the package loads', () => {
+    it('holds the total back while the package loads', () => {
         renderSection({ isLoadingIncluded: true });
-        expect(screen.queryByRole('button', { name: 'Change prints included for the host' })).not.toBeInTheDocument();
-        expect(screen.getByRole('status')).toBeInTheDocument();
+        expect(screen.queryByText(/included/)).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Download' })).toBeInTheDocument();
     });
 
     it('shows a disabled Download while the parts load', () => {
@@ -105,7 +94,7 @@ describe('PrintsSection', () => {
     });
 
     it('says when the host has picked nothing', () => {
-        renderSection({ included: 0, items: [], totals: printTotals([], 0), partCount: 0 });
+        renderSection({ items: [], totals: printTotals([], 0), partCount: 0 });
         expect(screen.getByText("The host hasn't picked photos yet.")).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Download' })).not.toBeInTheDocument();
     });
@@ -116,9 +105,8 @@ describe('PrintsSection', () => {
         expect(screen.queryByText("The host hasn't picked photos yet.")).not.toBeInTheDocument();
     });
 
-    it('hides only the included row when the package read failed', () => {
-        renderSection({ includedFailed: true, error: 'Nope', included: 0, totals: printTotals(items, 0) });
-        expect(screen.queryByRole('button', { name: 'Change prints included for the host' })).not.toBeInTheDocument();
+    it('hides only the total when the package read failed', () => {
+        renderSection({ includedFailed: true, error: 'Nope', totals: printTotals(items, 0) });
         expect(screen.getByText('13x18 · 2 copies')).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Download' })).toBeInTheDocument();
         expect(screen.queryByText(/more/)).not.toBeInTheDocument();
