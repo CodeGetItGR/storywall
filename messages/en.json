@@ -5817,9 +5817,9 @@
         "imageAlts": {
             "heroBackground": "Soft pastel background with sparkles",
             "phone": "Phone showing a StoryWall feed",
-            "feedHeader": "Event header in a StoryWall wedding feed",
-            "feedPosts": "Guest posts in a StoryWall wedding feed",
-            "feedMorePosts": "More guest posts in a StoryWall wedding feed",
+            "feedHeader": "Wedding event page in StoryWall on a phone",
+            "feedPosts": "Wedding photos shared by guests in the StoryWall feed",
+            "feedMorePosts": "More guest wedding photos and comments in the StoryWall feed",
             "guestPost": "Guest post with an event photo",
             "weddingPost": "Guest post with a wedding photo",
             "partyPost": "Guest post with a party photo",
@@ -5912,11 +5912,11 @@
                     ],
                     "galleryLabel": "Wedding moments",
                     "imageAlts": [
-                        "Bachelor celebration with friends in Santorini",
-                        "Bride preparation with bridesmaids in Santorini",
-                        "Wedding ceremony in Santorini",
-                        "Wedding reception in Santorini",
-                        "Honeymoon in Paris"
+                        "Bachelorette party with friends in Santorini before the wedding",
+                        "Bride getting ready with her bridesmaids for a wedding in Santorini",
+                        "Wedding ceremony under a flower arch in Santorini",
+                        "Bride and groom dancing with guests at a wedding reception in Santorini",
+                        "Newlyweds on their honeymoon in Paris at sunset"
                     ],
                     "titleSegments": [
                         {
@@ -5963,7 +5963,7 @@
                         "Everything your people share, gathered in one StoryWall."
                     ],
                     "galleryLabel": "Baptism moments",
-                    "imageAlts": ["Baptism outside the church", "Baptism ceremony inside the church", "Baptism celebration at the table"],
+                    "imageAlts": ["Family celebrating a baptism outside a church on a Greek island", "Priest baptizing a baby in the font during an Orthodox baptism", "Family and guests at the baptism table by the sea"],
                     "titleSegments": [
                         {
                             "text": "A baptism full of ",
@@ -5998,9 +5998,9 @@
                     ],
                     "galleryLabel": "Gender reveal moments",
                     "imageAlts": [
-                        "Gender reveal box opening with blue balloons and confetti",
-                        "Pregnant couple at a baby boy celebration",
-                        "Friends and family celebrating at sunset"
+                        "Gender reveal party: opening a box of blue balloons and confetti",
+                        "Expecting couple at a baby shower for a boy",
+                        "Friends and family at a baby shower at sunset"
                     ],
                     "titleSegments": [
                         {
@@ -6045,9 +6045,9 @@
                     "paragraphs": ["Give your party its own private social space, full of moments, reactions, and behind-the-scenes memories."],
                     "galleryLabel": "Private event moments",
                     "imageAlts": [
-                        "Close-up selfie of stylish guests and influencers celebrating at an elegant VIP party",
-                        "Stylish guests dancing at an elegant VIP social party at night",
-                        "Guests mingling with champagne at an elegant formal VIP social event"
+                        "Guests taking a selfie at an elegant VIP party",
+                        "Guests dancing at an elegant VIP party at night",
+                        "Guests with champagne at a formal VIP event"
                     ],
                     "titleSegments": [
                         {
@@ -6096,14 +6096,17 @@
             "moreStories": [
                 {
                     "label": "BIRTHDAYS",
+                    "alt": "Friends celebrating at a birthday party",
                     "text": "Your night, your friends, and every moment gathered in one StoryWall."
                 },
                 {
                     "label": "BABY SHOWERS",
+                    "alt": "Family and friends at a baby shower",
                     "text": "A sweet story before the big arrival, filled with wishes, photos, and moments with your people."
                 },
                 {
                     "label": "ENGAGEMENT PARTIES",
+                    "alt": "Couple celebrating at their engagement party",
                     "text": "The beginning of forever deserves its own space, from the first cheers to the last photo."
                 }
             ]
@@ -6165,28 +6168,28 @@
                     "subtitle": "One invitation. Every detail.",
                     "description": "StoryWall's digital invitation brings every event detail together in one clear, easy experience before the day arrives.",
                     "items": ["Date, schedule, locations, maps, and more", "Instant access on mobile", "Everything stays up to date"],
-                    "imageAlt": "Guest viewing a StoryWall invitation on a phone"
+                    "imageAlt": "Guest viewing a digital invitation on her phone"
                 },
                 {
                     "title": "QR PHOTO UPLOAD",
                     "subtitle": "Every guest. A different point of view.",
                     "description": "Guests scan the QR code and upload photos and videos directly to StoryWall as the moments happen.",
                     "items": ["Upload with one simple scan", "No app or sign-up needed", "Photos and videos ready to download"],
-                    "imageAlt": "Guest scanning a StoryWall QR code"
+                    "imageAlt": "Guest scanning the event QR code to upload photos"
                 },
                 {
                     "title": "RSVP",
                     "subtitle": "Know who's coming.",
                     "description": "Guests confirm their attendance directly in StoryWall, giving you a clear picture before the event.",
                     "items": ["Instant attendance confirmation", "Reports and statistics", "Every response in one place"],
-                    "imageAlt": "Guest confirming attendance in StoryWall"
+                    "imageAlt": "Guest confirming attendance (RSVP) on his phone"
                 },
                 {
                     "title": "GUESTBOOK",
                     "subtitle": "Every wish stays.",
                     "description": "Messages, thoughts, and wishes come together in a modern digital guestbook.",
                     "items": ["Wishes from every guest", "A digital keepsake that lasts", "Download a PDF to save or print"],
-                    "imageAlt": "Guest sharing a wish in the StoryWall guestbook"
+                    "imageAlt": "Guest writing a wish in the digital guestbook at the reception"
                 }
             ]
         },
@@ -6267,7 +6270,7 @@
             ]
         },
         "finalCta": {
-            "imageAlt": "Joyful newlywed couple walking through a Greek island wedding celebration",
+            "imageAlt": "Bride and groom walking through their guests at a wedding in Santorini",
             "eyebrow": "READY TO MAKE IT YOURS?",
             "heading": ["Your story", "starts here."],
             "copy": "Create your StoryWall and give your event a space that keeps living before, during, and after.",
@@ -6337,11 +6340,11 @@
             "disposable": "A simpler alternative to disposable cameras on the tables."
         },
         "occasions": {
-            "WEDDING": { "name": "Weddings", "line": "From the ceremony to the last dance.", "alt": "Wedding reception at sunset" },
+            "WEDDING": { "name": "Weddings", "line": "From the ceremony to the last dance.", "alt": "Bride and groom dancing with guests at a wedding reception in Santorini" },
             "BAPTISM": {
                 "name": "Baptisms and christenings",
                 "line": "The whole family's photos in one place.",
-                "alt": "Family celebrating a baptism outside a church"
+                "alt": "Family celebrating a baptism outside a church on a Greek island"
             }
         },
         "benefits": {
@@ -6860,18 +6863,18 @@
                     {
                         "galleryLabel": "Before the wedding",
                         "imageAlts": [
-                            "Guest opening the wedding invitation on a phone",
-                            "Guest confirming the wedding RSVP",
-                            "Bachelor party in Santorini"
+                            "Guest opening the digital wedding invitation on her phone",
+                            "Guest confirming the wedding RSVP on his phone",
+                            "Bachelorette party with friends in Santorini"
                         ]
                     },
                     {
                         "galleryLabel": "The wedding day",
-                        "imageAlts": ["Bride getting ready with her bridesmaids", "Wedding ceremony in Santorini", "Wedding reception in Santorini"]
+                        "imageAlts": ["Bride getting ready with her bridesmaids before the wedding", "Wedding ceremony under a flower arch in Santorini", "Bride and groom dancing at the wedding reception in Santorini"]
                     },
                     {
                         "galleryLabel": "After the wedding",
-                        "imageAlts": ["Guest writing a wish in the wedding guestbook", "Honeymoon in Paris"]
+                        "imageAlts": ["Guest writing a wish in the digital wedding guestbook", "Newlyweds on their honeymoon in Paris"]
                     }
                 ]
             },
@@ -6975,7 +6978,7 @@
             "finalCta": {
                 "heading": ["Your wedding", "starts here."],
                 "copyStart": "Create your own StoryWall with an online invitation, photos and memories to share with the people you love.",
-                "imageAlt": "Wedding celebration in Santorini"
+                "imageAlt": "Bride and groom walking through their guests at a Santorini wedding"
             },
             "pricingHeading": "Plans for your wedding.",
             "pricingIntro": "Choose the StoryWall that fits your wedding. From the private social feed to the online invitation, RSVPs and photo collection."
@@ -7079,19 +7082,19 @@
                 "rows": [
                     {
                         "galleryLabel": "Before the baptism",
-                        "imageAlts": ["Guest opening the baptism invitation on a phone", "Guest confirming the baptism RSVP"]
+                        "imageAlts": ["Guest opening the digital baptism invitation on her phone", "Guest confirming the baptism RSVP on his phone"]
                     },
                     {
                         "galleryLabel": "The baptism day",
                         "imageAlts": [
-                            "Baptism ceremony inside the church",
-                            "Family and guests outside the church",
-                            "Baptism celebration at the table"
+                            "Priest baptizing a baby in the font inside the church",
+                            "Family and guests celebrating a baptism outside the church",
+                            "Baptism party at a table by the sea"
                         ]
                     },
                     {
                         "galleryLabel": "After the baptism",
-                        "imageAlts": ["Guest writing a wish for the child", "Family at the baptism table"]
+                        "imageAlts": ["Guest writing a wish for the child in the digital guestbook", "Family celebrating at the baptism table"]
                     }
                 ]
             },
@@ -7194,7 +7197,7 @@
             "finalCta": {
                 "heading": ["Your child's story", "starts here."],
                 "copyStart": "Create your own StoryWall and bring together the online invitation, the photos and the best memories of the baptism.",
-                "imageAlt": "Family and guests at the baptism table"
+                "imageAlt": "Family and guests at the baptism table by the sea"
             },
             "pricingHeading": "Plans for your baptism.",
             "pricingIntro": "Choose the StoryWall that fits your child's baptism. From posts and photos to the online invitation, RSVPs and the digital guestbook."

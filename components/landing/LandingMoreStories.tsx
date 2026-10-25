@@ -1,7 +1,7 @@
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { landingMoreStoryMedia } from '@/lib/landingMedia';
 
-export type LandingMoreStory = { label: string; text: string };
+export type LandingMoreStory = { label: string; alt: string; text: string };
 
 type LandingMoreStoriesProps = {
     ariaLabel: string;
@@ -40,7 +40,7 @@ export function LandingMoreStories({ ariaLabel, eyebrow, heading, stories }: Lan
                     >
                         <ProtectedImage
                             unoptimized
-                            alt={story.label}
+                            alt={story.alt}
                             className="absolute inset-0 h-full w-full object-cover brightness-[0.76] grayscale transition-[filter,transform] duration-650 ease-[cubic-bezier(0.2,0.75,0.2,1)] group-aria-pressed:brightness-100 group-aria-pressed:grayscale-0 min-[761px]:brightness-[0.78] min-[761px]:hover:scale-[1.01] min-[761px]:hover:brightness-100 min-[761px]:hover:grayscale-0"
                             height={1}
                             src={landingMoreStoryMedia[index].src}
