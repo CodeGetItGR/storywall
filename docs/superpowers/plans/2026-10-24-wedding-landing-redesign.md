@@ -710,7 +710,7 @@ git commit -m "feat(occasions): live price values for occasion copy"
 `lib/occasions/occasionFaq.test.ts`:
 
 ```ts
-import { type AbstractIntlMessages, createTranslator } from 'next-intl';
+import { createTranslator, type Messages } from 'next-intl';
 import { describe, expect, it } from 'vitest';
 
 import { type OccasionFaqEntry, occasionFaqEntries } from '@/lib/occasions/occasionFaq';
@@ -741,7 +741,7 @@ describe('occasionFaqEntries', () => {
             const t = createTranslator({
                 locale,
                 // Untyped, so a namespace built from the event type is accepted.
-                messages: messages as AbstractIntlMessages,
+                messages: messages as Messages,
                 namespace: `OccasionPages.${occasion.eventType}`,
                 onError: (error) => {
                     throw error;
@@ -2008,7 +2008,7 @@ The new keys are added next to the old ones, and the keys both layouts read keep
 `lib/occasions/weddingCopy.test.ts`:
 
 ```ts
-import { type AbstractIntlMessages, createTranslator } from 'next-intl';
+import { createTranslator, type Messages } from 'next-intl';
 import { describe, expect, it } from 'vitest';
 
 import type { OccasionFaqEntry } from '@/lib/occasions/occasionFaq';
@@ -2033,7 +2033,7 @@ describe.each([
     const t = createTranslator({
         locale,
         // Untyped, so a namespace built at runtime is accepted.
-        messages: messages as AbstractIntlMessages,
+        messages: messages as Messages,
         namespace: 'OccasionPages.WEDDING',
         onError: (error) => {
             throw error;
@@ -3006,12 +3006,12 @@ Every drawn screen and card is a server component sized in `cqw` (container widt
 Wedding section tests render the real Greek copy, so a wrong key or a broken ICU string fails a test. `test/intlServerMock.ts`:
 
 ```ts
-import { type AbstractIntlMessages, createTranslator } from 'next-intl';
+import { createTranslator, type Messages } from 'next-intl';
 
 import el from '@/messages/el.json';
 import en from '@/messages/en.json';
 
-const MESSAGES: Record<string, AbstractIntlMessages> = { el, en };
+const MESSAGES: Record<string, Messages> = { el, en };
 
 // next-intl/server's getTranslations over the real messages, so a server component test reads the
 // page's own copy. In a test file: vi.mock('next-intl/server', () => import('@/test/intlServerMock'));
@@ -3356,7 +3356,7 @@ The feed copies the design's screenshot (crop: `$SP/crops/feed1-top.png`, `feed2
 
 ```tsx
 import { cleanup, render, screen } from '@testing-library/react';
-import { type AbstractIntlMessages, createTranslator } from 'next-intl';
+import { createTranslator, type Messages } from 'next-intl';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { WeddingPhoneFeed } from '@/components/occasions/wedding/feed/WeddingPhoneFeed';
@@ -3364,7 +3364,7 @@ import type { WeddingHeroFeedCopy, WeddingMockCopy } from '@/lib/occasions/weddi
 import { WEDDING_HERO_MEDIA } from '@/lib/occasions/weddingMedia';
 import el from '@/messages/el.json';
 
-const t = createTranslator({ locale: 'el', messages: el as AbstractIntlMessages, namespace: 'OccasionPages.WEDDING' });
+const t = createTranslator({ locale: 'el', messages: el as Messages, namespace: 'OccasionPages.WEDDING' });
 const copy = t.raw('hero.feed') as WeddingHeroFeedCopy;
 const mock = t.raw('mock') as WeddingMockCopy;
 
@@ -5634,7 +5634,7 @@ The design's demo picture (crop: `$SP/crops/demo.png`, 1115×1120 in the origina
 
 ```tsx
 import { cleanup, render, screen } from '@testing-library/react';
-import { type AbstractIntlMessages, createTranslator } from 'next-intl';
+import { createTranslator, type Messages } from 'next-intl';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { WeddingDemoPhones } from '@/components/occasions/wedding/WeddingDemoPhones';
@@ -5642,7 +5642,7 @@ import type { Locale } from '@/i18n/config';
 import type { WeddingDemoFeedCopy, WeddingDemoProfileCopy, WeddingMockCopy } from '@/lib/occasions/weddingCopy';
 import el from '@/messages/el.json';
 
-const t = createTranslator({ locale: 'el', messages: el as AbstractIntlMessages, namespace: 'OccasionPages.WEDDING' });
+const t = createTranslator({ locale: 'el', messages: el as Messages, namespace: 'OccasionPages.WEDDING' });
 
 function renderPhones(locale: Locale = 'el') {
     return render(

@@ -12,7 +12,8 @@ export async function occasionShareImageResponse(locale: Locale, slug: string): 
     const occasion = findReadyOccasion(locale, slug);
     if (!occasion) return new Response(null, { status: 404 });
     const t = await getTranslations({ locale, namespace: `OccasionPages.${occasion.eventType}.hero` });
-    const image = await occasionOgImage(t('h1'));
+    // The wedding h1 marks its gradient words with <em>; the image shows plain text.
+    const image = await occasionOgImage(t.markup('h1', { em: (chunks) => chunks }));
     image.headers.set('Cache-Control', 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800');
     return image;
 }
