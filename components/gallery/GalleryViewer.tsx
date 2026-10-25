@@ -316,7 +316,7 @@ export function GalleryViewer({
                 <ProCreditLine credit={media.proCredit} mediaType={media.mediaType} className="text-white/85" />
                 {/* Viewer actions */}
                 {(printToggle || canDownloadOriginal || canDelete || canReport) && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center justify-center gap-2 px-4">
                         {printToggle && <PrintToggleButton toggle={printToggle} />}
                         {canDownloadOriginal && (
                             <button
