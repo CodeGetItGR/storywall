@@ -39,6 +39,7 @@ export function NoticeItemPicker({
 }) {
     const t = useTranslations('AdminPage.moderation.notices');
     const tTypes = useTranslations('AdminPage.moderation.types');
+    const tAlt = useTranslations('ImageAlt');
     const locale = useLocale();
     const toErrorMessage = useApiErrorMessage();
     const [type, setType] = useState<ReportTargetType>('MEDIA');
@@ -155,7 +156,7 @@ export function NoticeItemPicker({
                                                     // eslint-disable-next-line @next/next/no-img-element
                                                     <img
                                                         src={item.thumbnailUrl}
-                                                        alt=""
+                                                        alt={tAlt('reportedContent')}
                                                         className="aspect-square w-full rounded-md border border-border object-cover"
                                                     />
                                                 ) : null}

@@ -26,6 +26,7 @@ interface StoriesRowProps {
 export function StoriesRow({ eventId, onOpenStoryAction }: StoriesRowProps) {
     const storiesName = useActiveModuleCopy('stories').name;
     const tAvatar = useTranslations('StoryAvatar');
+    const tAlt = useTranslations('ImageAlt');
     // The "your story" slot follows who new stories are posted as (a demo persona, for an admin).
     const { member: activeMember } = usePostingAsMember();
     const memberAvatarUrl = useMemberAvatarUrl();
@@ -60,7 +61,7 @@ export function StoriesRow({ eventId, onOpenStoryAction }: StoriesRowProps) {
                             initials={initialsFromName(activeMember?.displayName ?? '?')}
                             color={avatarColorFromId(activeMember?.id ?? 'current-member')}
                             size="xl"
-                            alt={activeMember?.displayName}
+                            alt={activeMember?.displayName ?? tAlt('profilePhoto')}
                         />
                         <span className="absolute right-0 bottom-0 flex h-5 w-5 items-center justify-center rounded-full border-2 border-background bg-primary text-white">
                             <Plus className="h-3 w-3" strokeWidth={3} aria-hidden="true" />

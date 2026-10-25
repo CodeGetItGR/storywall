@@ -1,4 +1,5 @@
 import { motion, type TargetAndTransition, useReducedMotion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
@@ -9,6 +10,7 @@ import { cn } from '@/lib/utils';
 const HERO_SPRITES = [
     {
         src: '/landing/sw-scene-item-sw-post-1.webp',
+        alt: 'weddingPost',
         width: 696,
         height: 612,
         posClass:
@@ -19,6 +21,7 @@ const HERO_SPRITES = [
     },
     {
         src: '/landing/sw-scene-item-sw-post-2.webp',
+        alt: 'weddingPost',
         width: 624,
         height: 677,
         posClass:
@@ -29,6 +32,7 @@ const HERO_SPRITES = [
     },
     {
         src: '/landing/sw-scene-item-sw-comment-1.webp',
+        alt: 'guestComment',
         width: 705,
         height: 360,
         posClass:
@@ -39,6 +43,7 @@ const HERO_SPRITES = [
     },
     {
         src: '/landing/sw-scene-item-sw-comment-2.webp',
+        alt: 'guestComment',
         width: 557,
         height: 300,
         posClass:
@@ -49,6 +54,7 @@ const HERO_SPRITES = [
     },
     {
         src: '/landing/sw-scene-item-sw-love.webp',
+        alt: 'heartEyes',
         width: 441,
         height: 440,
         posClass:
@@ -59,6 +65,7 @@ const HERO_SPRITES = [
     },
     {
         src: '/landing/sw-scene-item-sw-happy.webp',
+        alt: 'tearsOfJoy',
         width: 240,
         height: 281,
         posClass:
@@ -69,6 +76,7 @@ const HERO_SPRITES = [
     },
     {
         src: '/landing/sw-scene-item-sw-fire.webp',
+        alt: 'fire',
         width: 165,
         height: 231,
         posClass:
@@ -79,6 +87,7 @@ const HERO_SPRITES = [
     },
     {
         src: '/landing/sw-scene-item-sw-flash.webp',
+        alt: 'sparkle',
         width: 124,
         height: 181,
         posClass:
@@ -89,6 +98,7 @@ const HERO_SPRITES = [
     },
     {
         src: '/landing/sw-scene-item-sw-glasses.webp',
+        alt: 'champagne',
         width: 253,
         height: 331,
         posClass:
@@ -99,6 +109,7 @@ const HERO_SPRITES = [
     },
     {
         src: '/landing/sw-scene-item-sw-note.webp',
+        alt: 'musicNote',
         width: 241,
         height: 324,
         posClass:
@@ -109,6 +120,7 @@ const HERO_SPRITES = [
     },
     {
         src: '/landing/sw-scene-item-sw-celebrate.webp',
+        alt: 'partyPopper',
         width: 171,
         height: 269,
         posClass:
@@ -119,6 +131,7 @@ const HERO_SPRITES = [
     },
     {
         src: '/landing/sw-scene-item-sw-heart-1.webp',
+        alt: 'heart',
         width: 111,
         height: 155,
         posClass:
@@ -129,6 +142,7 @@ const HERO_SPRITES = [
     },
     {
         src: '/landing/sw-scene-item-sw-heart-2.webp',
+        alt: 'heart',
         width: 167,
         height: 219,
         posClass:
@@ -139,6 +153,7 @@ const HERO_SPRITES = [
     },
     {
         src: '/landing/sw-scene-item-sw-heart-3.webp',
+        alt: 'heart',
         width: 200,
         height: 243,
         posClass:
@@ -149,6 +164,7 @@ const HERO_SPRITES = [
     },
     {
         src: '/landing/sw-scene-item-sw-heart-4.webp',
+        alt: 'heart',
         width: 108,
         height: 153,
         posClass:
@@ -159,6 +175,7 @@ const HERO_SPRITES = [
     },
     {
         src: '/landing/sw-scene-item-sw-heart-5.webp',
+        alt: 'heart',
         width: 127,
         height: 176,
         posClass:
@@ -188,9 +205,9 @@ const PHONE_FEED_TRACK_CLASS = 'motion-hero-feed-scroll absolute top-0 left-[-2.
 
 // Stacked top to bottom: the event header, then two runs of posts.
 const PHONE_FEED_SCREENSHOTS = [
-    { src: '/landing/sw-phone-feed.webp', width: 451 },
-    { src: '/landing/sw-phone-feed-2.webp', width: 820 },
-    { src: '/landing/sw-phone-feed-3.webp', width: 774 },
+    { src: '/landing/sw-phone-feed.webp', width: 451, alt: 'feedHeader' },
+    { src: '/landing/sw-phone-feed-2.webp', width: 820, alt: 'feedPosts' },
+    { src: '/landing/sw-phone-feed-3.webp', width: 774, alt: 'feedMorePosts' },
 ] as const;
 
 const HERO_SPRITE_MOTION = {
@@ -231,12 +248,13 @@ type LandingHeroVisualProps = {
 };
 
 export function LandingHeroVisual({ motionPaused, className, comments, feed, posts }: LandingHeroVisualProps) {
+    const t = useTranslations('LandingPage.imageAlts');
     const reduceMotion = useReducedMotion();
     const { screenRef, trackRef } = useLandingHeroFeedTravel();
     const [firstSprite, ...restSprites] = HERO_SPRITES;
 
     return (
-        <div aria-hidden="true" className={cn(HERO_VISUAL_BASE_CLASS, className ?? HERO_VISUAL_PLACEMENT_CLASS)}>
+        <div className={cn(HERO_VISUAL_BASE_CLASS, className ?? HERO_VISUAL_PLACEMENT_CLASS)}>
             {/* Floating social post */}
             <motion.div
                 animate={reduceMotion ? undefined : HERO_SPRITE_MOTION[firstSprite.motionClass]}
@@ -247,7 +265,7 @@ export function LandingHeroVisual({ motionPaused, className, comments, feed, pos
                     posts[0]
                 ) : (
                     <ProtectedImage
-                        alt=""
+                        alt={t(firstSprite.alt)}
                         className="h-auto w-full"
                         height={firstSprite.height}
                         sizes={landingHeroSpriteSizes(firstSprite.posClass)}
@@ -270,7 +288,7 @@ export function LandingHeroVisual({ motionPaused, className, comments, feed, pos
                         {feed ??
                             PHONE_FEED_SCREENSHOTS.map((screenshot) => (
                                 <ProtectedImage
-                                    alt=""
+                                    alt={t(screenshot.alt)}
                                     className="relative block h-auto w-full max-w-none [&+&]:-mt-px"
                                     height={2048}
                                     key={screenshot.src}
@@ -285,7 +303,7 @@ export function LandingHeroVisual({ motionPaused, className, comments, feed, pos
                     </div>
                 </div>
                 <ProtectedImage
-                    alt=""
+                    alt={t('phone')}
                     className="absolute inset-0 z-[2] h-auto w-full"
                     height={1541}
                     sizes={PHONE_SIZES}
@@ -308,7 +326,7 @@ export function LandingHeroVisual({ motionPaused, className, comments, feed, pos
                 >
                     {spriteOverride(sprite.src, posts, comments) ?? (
                         <ProtectedImage
-                            alt=""
+                            alt={t(sprite.alt)}
                             className="h-auto w-full"
                             height={sprite.height}
                             sizes={landingHeroSpriteSizes(sprite.posClass)}

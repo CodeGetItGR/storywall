@@ -12,7 +12,7 @@ export function PartnerCredit({ content }: { content: PartnerBrandingCardContent
                 newTabLabel={content.newTabLabel}
                 className="mx-auto flex min-h-11 w-fit max-w-full items-center gap-2 rounded-full px-2 text-xs text-ink-muted transition-colors hover:text-ink"
             >
-                <PartnerLogo src={content.logoUrl} size={24} />
+                <PartnerLogo src={content.logoUrl} alt={content.name} size={24} />
                 <PartnerCardLabel partnerLabel={content.partnerLabel} roleLabel={content.roleLabel} className="shrink-0" />
                 <span className="min-w-0 truncate font-semibold text-ink">{content.name}</span>
             </PartnerCardLink>

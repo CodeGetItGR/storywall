@@ -65,7 +65,7 @@ export function EventTypeStep() {
                                 <>
                                     <ProtectedImage
                                         src={backgroundImageSrc}
-                                        alt=""
+                                        alt={copy.name}
                                         fill
                                         sizes="(min-width: 640px) 320px, 100vw"
                                         className="object-cover transition duration-300 group-hover:scale-105"
