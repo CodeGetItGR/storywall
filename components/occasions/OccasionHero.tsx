@@ -49,7 +49,8 @@ export async function OccasionHero({ alternatePaths, campaign, createHref, demoH
                     mainLabel={c ? c('cta') : t('cta')}
                 />
             }
-            h1={t('h1')}
+            // The wedding h1 marks its gradient words with <em>; this hero shows plain text.
+            h1={t.markup('h1', { em: (chunks) => chunks })}
             header={
                 <LandingHeader
                     alternatePaths={alternatePaths}
