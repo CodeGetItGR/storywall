@@ -10,7 +10,7 @@ vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
 vi.mock('@/hooks/useEventInvitations', () => ({ useEventInvitationPreview: () => preview }));
 vi.mock('@/components/common/ProtectedImage', () => ({
     // eslint-disable-next-line @next/next/no-img-element
-    ProtectedImage: ({ src, onError }: { src: string; onError?: () => void }) => <img data-testid="thumb" src={src} alt="" onError={onError} />,
+    ProtectedImage: ({ src, alt, onError }: { src: string; alt: string; onError?: () => void }) => <img data-testid="thumb" src={src} alt={alt} onError={onError} />,
 }));
 
 function invite(overrides: Partial<EventInvitationPreviewDto> = {}): EventInvitationPreviewDto {

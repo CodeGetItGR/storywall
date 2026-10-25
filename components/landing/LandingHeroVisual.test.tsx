@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { LandingHeroVisual } from '@/components/landing/LandingHeroVisual';
 
+vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
+
 class InertResizeObserver {
     observe() {}
     unobserve() {}

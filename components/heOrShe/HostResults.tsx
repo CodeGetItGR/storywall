@@ -32,7 +32,7 @@ export function HostResults({ questions, results }: { questions: QuizQuestionDto
                         <ul className="divide-y divide-border/60 overflow-hidden rounded-2xl bg-surface-muted/60">
                             {question.answers.map((answer) => (
                                 <li key={answer.memberId} className="flex items-start gap-3 px-4 py-2.5">
-                                    <Avatar size="xs" src={answer.avatarUrl} initials={getInitials(answer.displayName)} alt="" />
+                                    <Avatar size="xs" src={answer.avatarUrl} initials={getInitials(answer.displayName)} alt={answer.displayName} />
                                     <div className="min-w-0">
                                         <p className="text-xs font-semibold text-ink-muted">{answer.displayName}</p>
                                         <p className="text-sm whitespace-pre-line text-ink">{answer.text}</p>
@@ -58,7 +58,7 @@ function PeopleList({ title, people, titleClassName }: { title: string; people: 
                 <ul className="space-y-2">
                     {people.map((person) => (
                         <li key={person.memberId} className="flex items-center gap-2 text-sm text-ink">
-                            <Avatar size="xs" src={person.avatarUrl} initials={getInitials(person.displayName)} alt="" />
+                            <Avatar size="xs" src={person.avatarUrl} initials={getInitials(person.displayName)} alt={person.displayName} />
                             <span className="truncate">{person.displayName}</span>
                         </li>
                     ))}

@@ -15,6 +15,7 @@ interface GiftAccountDetailsProps {
 
 export function GiftAccountDetails({ account, onEditAction }: GiftAccountDetailsProps) {
     const t = useTranslations('GiftsPage');
+    const tAlt = useTranslations('ImageAlt');
     const formattedIban = formatIban(account.iban);
     const { copied, copy } = useCopyText(formattedIban);
     const note = account.note?.trim() || t('accountSubtitle');
@@ -23,7 +24,7 @@ export function GiftAccountDetails({ account, onEditAction }: GiftAccountDetails
         <div className="flex min-h-[calc(100dvh-9.25rem)] flex-col lg:min-h-[calc(100dvh-4.25rem)]">
             {/* Hero */}
             <section className="flex flex-col items-center px-2 pt-4 text-center">
-                <Image src="/icons/present.svg" alt="" width={80} height={80} preload className="h-20 w-20" unoptimized />
+                <Image src="/icons/present.svg" alt={tAlt('gift')} width={80} height={80} preload className="h-20 w-20" unoptimized />
                 <p className="mt-3 w-full text-base leading-6 whitespace-pre-line text-ink-muted">{note}</p>
             </section>
 
