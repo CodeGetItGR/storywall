@@ -62,7 +62,7 @@ export async function WeddingHero({ alternatePaths, campaign, createHref, demoHr
                     <div className="relative z-20">
                         {/* Breadcrumb */}
                         <nav aria-label={common('breadcrumbLabel')} className="mb-3.5 ml-1 min-[768px]:mb-4.5">
-                            <ol className="m-0 flex list-none items-center gap-2 p-0 text-[11px] font-bold tracking-[0.06em] text-[#151313]/55 uppercase">
+                            <ol className="m-0 flex list-none items-center gap-2 p-0 text-[11px] leading-[normal] font-bold tracking-[0.06em] text-[#151313]/55 uppercase">
                                 <li>
                                     <a className="text-[#151313] no-underline hover:underline" href={home}>
                                         StoryWall

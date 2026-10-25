@@ -37,7 +37,7 @@ export async function WeddingWhy({ locale, qrHref }: WeddingWhyProps) {
     return (
         <section
             aria-labelledby="wedding-why-title"
-            className="bg-white py-17.5 font-[Arial,Helvetica,sans-serif] text-[#151313] min-[861px]:pt-22.5 min-[861px]:pb-25"
+            className="bg-white py-17.5 font-[Arial,Helvetica,sans-serif] leading-[normal] text-[#151313] min-[861px]:pt-22.5 min-[861px]:pb-25"
         >
             <WeddingWrap>
                 {/* Heading */}

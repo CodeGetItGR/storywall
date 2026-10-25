@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { OccasionFaqEntry } from '@/lib/occasions/occasionFaq';
 import type { OccasionPriceValues } from '@/lib/occasions/occasionPrice';
-import type { WeddingMarqueeCopy } from '@/lib/occasions/weddingCopy';
+import { splitInTwoLines, type WeddingMarqueeCopy } from '@/lib/occasions/weddingCopy';
 import { WEDDING_FEATURE_ORDER } from '@/lib/occasions/weddingFeatures';
 import { WEDDING_MARQUEE } from '@/lib/occasions/weddingMedia';
 import el from '@/messages/el.json';
@@ -68,5 +68,16 @@ describe.each([
 
     it('has copy for every feature in the design', () => {
         expect(Object.keys(t.raw('features') as Record<string, unknown>).sort()).toEqual([...WEDDING_FEATURE_ORDER].sort());
+    });
+});
+
+describe('splitInTwoLines', () => {
+    it('splits at the space nearest the middle', () => {
+        expect(splitInTwoLines('Φτιάξε το StoryWall σου')).toEqual(['Φτιάξε το', 'StoryWall σου']);
+        expect(splitInTwoLines('Create your wedding StoryWall')).toEqual(['Create your', 'wedding StoryWall']);
+    });
+
+    it('keeps one word on one line', () => {
+        expect(splitInTwoLines('Start')).toEqual(['Start']);
     });
 });

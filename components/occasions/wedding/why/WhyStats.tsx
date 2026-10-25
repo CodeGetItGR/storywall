@@ -23,7 +23,7 @@ export function WhyStats({ chips, example, stats }: WhyStatsProps) {
             <ul className="m-0 mt-6.5 flex list-none flex-wrap justify-center gap-2 px-2 min-[601px]:gap-2.5 min-[601px]:px-5">
                 {chips.map((chip) => (
                     <li
-                        className="rounded-full bg-white px-4 py-2.5 text-[11px] leading-[1.4] font-semibold min-[601px]:text-[13px] min-[601px]:leading-normal"
+                        className="rounded-full bg-white px-4 py-2.5 text-[11px] leading-[1.4] font-semibold min-[601px]:text-[13px] min-[601px]:leading-[normal]"
                         key={chip}
                     >
                         <span aria-hidden="true">✓ </span>

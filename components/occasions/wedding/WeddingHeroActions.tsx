@@ -1,4 +1,5 @@
 import { landingClickAttributes } from '@/lib/landingTracking';
+import { splitInTwoLines } from '@/lib/occasions/weddingCopy';
 
 const CREATE =
     'focus-ring inline-flex min-h-14.5 items-center gap-3 rounded-full bg-[linear-gradient(100deg,#ff6f93_0%,#ff936a_52%,#ffd05b_100%)] py-1.75 pr-2 pl-5 [font-family:var(--editorial)] text-[16px] leading-[1.05] text-white no-underline shadow-[0_18px_38px_-16px_rgba(255,111,147,0.55)] transition-transform hover:-translate-y-0.5 focus-visible:outline-offset-4 motion-reduce:transition-none min-[768px]:min-h-18.5 min-[768px]:gap-4 min-[768px]:py-2.5 min-[768px]:pr-2.75 min-[768px]:pl-7 min-[768px]:text-[19px]';
@@ -18,12 +19,23 @@ type WeddingHeroActionsProps = {
 
 // The hero's gradient create button and the demo link.
 export function WeddingHeroActions({ createHref, createLabel, demoHref, demoLabel }: WeddingHeroActionsProps) {
+    const [firstLine, secondLine] = splitInTwoLines(createLabel);
+
     return (
         <div className="mt-6 flex flex-wrap items-center gap-[15px] min-[768px]:mt-7.5 min-[768px]:gap-x-5.5 min-[768px]:gap-y-3.5">
             {/* Create */}
             <a className={CREATE} href={createHref} {...landingClickAttributes({ event: 'create', placement: 'hero' })}>
-                {/* Two balanced lines, as in the design */}
-                <span className="max-w-[8.5em] text-balance">{createLabel}</span>
+                {/* Two lines, as in the design; the box hugs the longer one */}
+                <span>
+                    {secondLine ? (
+                        <>
+                            {firstLine} <br />
+                            {secondLine}
+                        </>
+                    ) : (
+                        firstLine
+                    )}
+                </span>
                 <span aria-hidden="true" className={CREATE_ARROW}>
                     ↗
                 </span>

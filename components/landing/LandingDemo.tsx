@@ -32,7 +32,12 @@ export async function LandingDemo({ children, copy, eyebrow = true, heading: hea
         <section
             className={cn(
                 'block overflow-hidden bg-[radial-gradient(circle_at_84%_66%,rgba(242,145,77,0.3)_0%,rgba(242,145,77,0.2)_16%,rgba(242,145,77,0.08)_30%,transparent_46%),radial-gradient(circle_at_82%_18%,rgba(255,255,255,0.34),transparent_34%),linear-gradient(135deg,#f7d9a8_0%,#f8d08f_26%,#f8c87f_52%,#f6be79_76%,#f4b879_100%)] px-5 pt-[58px] pb-[60px] text-[#151313] min-[761px]:grid min-[761px]:items-center min-[761px]:gap-[3vw] min-[761px]:px-[5vw] min-[761px]:pt-[68px] min-[761px]:pb-[74px]',
-                eyebrow !== false ? 'min-[761px]:grid-cols-[0.5fr_1.42fr_0.92fr]' : 'min-[761px]:grid-cols-[1.42fr_0.92fr]',
+                // With a kicker the columns keep their shares and the picture overflows its own, as in the occasion design.
+                kicker
+                    ? 'min-[761px]:grid-cols-[minmax(0,0.5fr)_minmax(0,1.42fr)_minmax(0,0.92fr)] min-[761px]:gap-y-0'
+                    : eyebrow
+                      ? 'min-[761px]:grid-cols-[0.5fr_1.42fr_0.92fr]'
+                      : 'min-[761px]:grid-cols-[1.42fr_0.92fr]',
             )}
             id="demo"
             {...landingSectionAttributes('demo')}
@@ -96,7 +101,7 @@ export async function LandingDemo({ children, copy, eyebrow = true, heading: hea
                 aria-label={t('previewLabel')}
                 className={cn(
                     'flex items-center justify-center min-[761px]:col-start-[-2] min-[761px]:self-center min-[761px]:justify-self-end min-[761px]:pr-2',
-                    kicker ? 'min-[761px]:row-[1/span_2]' : 'min-[761px]:row-start-1',
+                    kicker ? 'mt-7 mb-0.5 min-[761px]:row-[1/span_2] min-[761px]:my-0' : 'min-[761px]:row-start-1',
                 )}
             >
                 <ProtectedImage
