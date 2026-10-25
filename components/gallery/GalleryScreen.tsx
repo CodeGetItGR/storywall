@@ -190,7 +190,7 @@ export function GalleryScreen() {
                                     {t('selectPhotos')}
                                 </Button>
                                 <div className="flex gap-2">
-                                    {print.pickCount > 0 && <PrintPill count={print.pickCount} onOpenAction={print.openSheet} />}
+                                    {print.showPill && <PrintPill count={print.pickCount} onOpenAction={print.openSheet} />}
                                     {showArchiveDownload && (
                                         <Button
                                             type="button"

@@ -66,7 +66,7 @@ export function PrintsSection({
                         </SkeletonStatus>
                     ) : (
                         <Button type="button" variant="outline" size="lg" aria-label={t('includedEditLabel')} onClick={onEditIncludedAction}>
-                            <span className="font-mono">{format.number(included)}</span>
+                            <span className="tabular-nums">{format.number(included)}</span>
                             <Pencil aria-hidden="true" />
                         </Button>
                     )}

@@ -6,6 +6,7 @@ import { GalleryScreen } from '@/components/gallery/GalleryScreen';
 const mocks = vi.hoisted(() => ({
     available: true,
     pickCount: 2,
+    showPill: true,
     selectionMode: false,
     canDownloadSelection: false,
     sheetOpen: false,
@@ -51,6 +52,7 @@ vi.mock('@/hooks/useGalleryPrint', () => ({
     useGalleryPrint: () => ({
         available: mocks.available,
         pickCount: mocks.pickCount,
+        showPill: mocks.showPill,
         pickedIds: new Set(['m1', 'm2']),
         sheetOpen: mocks.sheetOpen,
         openSheet: mocks.openSheet,
@@ -101,6 +103,7 @@ describe('GalleryScreen print picks', () => {
         cleanup();
         mocks.available = true;
         mocks.pickCount = 2;
+        mocks.showPill = true;
         mocks.selectionMode = false;
         mocks.canDownloadSelection = false;
         mocks.sheetOpen = false;
@@ -115,8 +118,15 @@ describe('GalleryScreen print picks', () => {
         expect(screen.getByTestId('grid')).toHaveAttribute('data-printed', '2');
     });
 
+    it('keeps the pill with a count of 0 while another list has picks', () => {
+        mocks.pickCount = 0;
+        render(<GalleryScreen />);
+        expect(screen.getByRole('button', { name: 'pill' })).toBeInTheDocument();
+    });
+
     it('has no pill without picks', () => {
         mocks.pickCount = 0;
+        mocks.showPill = false;
         render(<GalleryScreen />);
         expect(screen.queryByRole('button', { name: 'pill' })).not.toBeInTheDocument();
     });

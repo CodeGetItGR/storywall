@@ -1,6 +1,6 @@
 'use client';
 
-import { Loader2, Printer } from 'lucide-react';
+import { Check, Loader2, Printer } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { cn } from '@/lib/utils';
@@ -17,13 +17,20 @@ export function PrintToggleButton({ toggle }: { toggle: PrintToggle }) {
             onClick={toggle.onToggle}
             disabled={toggle.pending || toggle.disabled}
             aria-pressed={toggle.picked}
+            aria-label={toggle.picked ? t('picked') : undefined}
             className={cn(
-                'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold disabled:opacity-50',
+                'inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold disabled:opacity-50',
                 toggle.picked ? 'bg-white text-ink' : 'bg-black/50 text-white',
             )}
         >
-            {toggle.pending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Printer className="h-4 w-4" aria-hidden="true" />}
-            {toggle.picked ? t('picked') : t('action')}
+            {toggle.pending ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+            ) : toggle.picked ? (
+                <Check className="h-4 w-4" aria-hidden="true" />
+            ) : (
+                <Printer className="h-4 w-4" aria-hidden="true" />
+            )}
+            {t('action')}
         </button>
     );
 }

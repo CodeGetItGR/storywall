@@ -32,7 +32,7 @@ export function VendorMeScreen() {
     const page = useVendorMePage(eventId);
     const { me, profile } = page;
     const prints = useVendorPrintsSection(eventId, me);
-    const services = useVendorServicesSection(me);
+    const services = useVendorServicesSection(me, page.profileStatus);
 
     return (
         <ModulePageShell
@@ -131,6 +131,8 @@ export function VendorMeScreen() {
                             approved={services.approved}
                             sizes={services.sizes}
                             canAdd={services.canAdd}
+                            needsProfile={services.needsProfile}
+                            profileLoading={services.profileLoading}
                             isLoading={services.isLoading}
                             loadFailed={services.loadFailed}
                             error={services.sectionError}

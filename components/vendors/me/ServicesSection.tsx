@@ -14,6 +14,8 @@ export function ServicesSection({
     approved,
     sizes,
     canAdd,
+    needsProfile,
+    profileLoading,
     isLoading,
     loadFailed,
     error,
@@ -23,6 +25,8 @@ export function ServicesSection({
     approved: boolean;
     sizes: VendorServiceItemDto[];
     canAdd: boolean;
+    needsProfile: boolean;
+    profileLoading: boolean;
     isLoading: boolean;
     loadFailed: boolean;
     error: string | null;
@@ -38,8 +42,8 @@ export function ServicesSection({
                 <h2 id="vendor-services-title" className="text-sm font-semibold text-ink">
                     {t('title')}
                 </h2>
-                {approved && (
-                    <Button type="button" variant="outline" size="lg" onClick={onAddAction} disabled={!canAdd}>
+                {approved && !needsProfile && (
+                    <Button type="button" variant="outline" size="lg" onClick={onAddAction} disabled={!canAdd || profileLoading}>
                         <Plus aria-hidden="true" />
                         {t('add')}
                     </Button>
@@ -60,6 +64,7 @@ export function ServicesSection({
                     ))}
                 </ul>
             )}
+            {approved && needsProfile && <p className="text-sm text-ink-muted">{t('profileFirst')}</p>}
             {approved && !canAdd && <p className="text-xs text-ink-muted">{t('limit', { max: PRINT_SIZES_MAX })}</p>}
 
             {/* Error */}

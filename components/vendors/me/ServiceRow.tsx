@@ -17,7 +17,7 @@ export function ServiceRow({ size, onEditAction }: { size: VendorServiceItemDto;
         <li>
             <button type="button" onClick={handleClick} className="flex min-h-12 w-full items-center justify-between gap-3 py-2 text-left text-sm">
                 <span className="truncate text-ink">{size.label}</span>
-                <span className="font-mono text-ink-muted">{formatMoney(locale, size.priceCents, size.currency)}</span>
+                <span className="tabular-nums text-ink-muted">{formatMoney(locale, size.priceCents, size.currency)}</span>
             </button>
         </li>
     );

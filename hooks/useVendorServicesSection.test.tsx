@@ -70,4 +70,16 @@ describe('useVendorServicesSection', () => {
         act(() => result.current.openNew());
         expect(result.current.sectionError).toBeNull();
     });
+
+    it('needs the profile before sizes can be added, and not while it loads', () => {
+        const missing = renderHook(() => useVendorServicesSection(me, 'missing'));
+        expect(missing.result.current.needsProfile).toBe(true);
+        expect(missing.result.current.profileLoading).toBe(false);
+        const loading = renderHook(() => useVendorServicesSection(me, 'loading'));
+        expect(loading.result.current.needsProfile).toBe(false);
+        expect(loading.result.current.profileLoading).toBe(true);
+        const ready = renderHook(() => useVendorServicesSection(me, 'ready'));
+        expect(ready.result.current.needsProfile).toBe(false);
+        expect(ready.result.current.profileLoading).toBe(false);
+    });
 });

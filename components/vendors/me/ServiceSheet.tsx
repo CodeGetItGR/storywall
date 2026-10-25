@@ -70,7 +70,7 @@ export function ServiceSheet({
                                 inputMode="decimal"
                                 aria-invalid={form.priceError ? true : undefined}
                                 aria-describedby={form.priceError ? priceErrorId : undefined}
-                                className="min-h-11 rounded-lg border border-border bg-background px-3 font-mono"
+                                className="min-h-11 rounded-lg border border-border bg-background px-3 tabular-nums"
                             />
                         </label>
                         {form.priceError && (

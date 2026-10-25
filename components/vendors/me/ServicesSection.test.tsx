@@ -26,6 +26,8 @@ describe('ServicesSection', () => {
                 approved
                 sizes={[size]}
                 canAdd
+                needsProfile={false}
+                profileLoading={false}
                 isLoading={false}
                 loadFailed={false}
                 error={null}
@@ -45,6 +47,8 @@ describe('ServicesSection', () => {
                 approved
                 sizes={[]}
                 canAdd
+                needsProfile={false}
+                profileLoading={false}
                 isLoading={false}
                 loadFailed={false}
                 error={null}
@@ -63,6 +67,8 @@ describe('ServicesSection', () => {
                 approved
                 sizes={[size]}
                 canAdd={false}
+                needsProfile={false}
+                profileLoading={false}
                 isLoading={false}
                 loadFailed={false}
                 error={null}
@@ -80,6 +86,8 @@ describe('ServicesSection', () => {
                 approved={false}
                 sizes={[]}
                 canAdd
+                needsProfile={false}
+                profileLoading={false}
                 isLoading={false}
                 loadFailed={false}
                 error={null}
@@ -97,6 +105,8 @@ describe('ServicesSection', () => {
                 approved
                 sizes={[size]}
                 canAdd
+                needsProfile={false}
+                profileLoading={false}
                 isLoading={false}
                 loadFailed={false}
                 error="Nope"
@@ -105,5 +115,43 @@ describe('ServicesSection', () => {
             />,
         );
         expect(screen.getByRole('alert')).toHaveTextContent('Nope');
+    });
+
+    it('asks for the details first when there is no profile', () => {
+        renderIntl(
+            <ServicesSection
+                approved
+                sizes={[]}
+                canAdd
+                needsProfile
+                profileLoading={false}
+                isLoading={false}
+                loadFailed={false}
+                error={null}
+                onAddAction={vi.fn()}
+                onEditAction={vi.fn()}
+            />,
+        );
+        expect(screen.queryByRole('button', { name: 'Add size' })).not.toBeInTheDocument();
+        expect(screen.getByText('Fill in your details first.')).toBeInTheDocument();
+    });
+
+    it('turns Add off without the line while the profile loads', () => {
+        renderIntl(
+            <ServicesSection
+                approved
+                sizes={[]}
+                canAdd
+                needsProfile={false}
+                profileLoading
+                isLoading={false}
+                loadFailed={false}
+                error={null}
+                onAddAction={vi.fn()}
+                onEditAction={vi.fn()}
+            />,
+        );
+        expect(screen.getByRole('button', { name: 'Add size' })).toBeDisabled();
+        expect(screen.queryByText('Fill in your details first.')).not.toBeInTheDocument();
     });
 });

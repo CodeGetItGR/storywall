@@ -50,7 +50,7 @@ export function PrintsIncludedSheet({
                                 onChange={form.handleChange}
                                 aria-invalid={form.error ? true : undefined}
                                 aria-describedby={form.error ? errorId : undefined}
-                                className="min-h-11 rounded-lg border border-border bg-background px-3 font-mono"
+                                className="min-h-11 rounded-lg border border-border bg-background px-3 tabular-nums"
                             />
                         </label>
                         {form.error && (

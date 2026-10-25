@@ -59,11 +59,12 @@ const listOf = (items: PrintListItemDto[]): PrintListDto => ({
 type Props = Partial<Parameters<typeof useGalleryPrint>[0]>;
 
 // A host list that already holds m1.
-function setup(initial: Props = {}) {
+function setup(initial: Props = {}, prepare?: () => void) {
     const current = listOf([item('i1', 'm1')]);
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
     queryClient.setQueryData(printListKeys.host('e1', 'v1'), current);
     api.get.mockResolvedValue(current);
+    prepare?.();
     const onAdded = vi.fn();
     const wrapper = ({ children }: { children: ReactNode }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
     const view = renderHook(
@@ -185,8 +186,13 @@ describe('useGalleryPrint', () => {
     });
 
     it('reports a failed list read as an error, not as an empty list', async () => {
-        const { result } = setup({ viewerMedia: media[1] });
-        api.get.mockRejectedValue(new ApiError(500, {}, 'down'));
+        // The other photographer's list is read at mount too, so it fails from the start.
+        const { result } = setup({ viewerMedia: media[1] }, () =>
+            api.get.mockImplementation(async (path: string) => {
+                if (path.includes('v2')) throw new ApiError(500, {}, 'down');
+                return listOf([item('i1', 'm1')]);
+            }),
+        );
         act(() => result.current.selectPhotographer('v2'));
         await waitFor(() => expect(result.current.listFailed).toBe(true));
         expect(result.current.items).toEqual([]);
@@ -252,5 +258,29 @@ describe('useGalleryPrint', () => {
         expect(result.current.notice).toBe('added:1');
         act(() => result.current.selectPhotographer('v2'));
         expect(result.current.notice).toBeNull();
+    });
+
+    it('keeps the pill while the other photographer list has prints', async () => {
+        const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+        queryClient.setQueryData(printListKeys.host('e1', 'v1'), listOf([]));
+        queryClient.setQueryData(printListKeys.host('e1', 'v2'), listOf([item('i9', 'm3')]));
+        api.get.mockImplementation(async (path: string) => (path.includes('v2') ? listOf([item('i9', 'm3')]) : listOf([])));
+        const wrapper = ({ children }: { children: ReactNode }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+        const { result } = renderHook(
+            () =>
+                useGalleryPrint({
+                    eventId: 'e1',
+                    isHost: true,
+                    available: true,
+                    photographers,
+                    media,
+                    selectedIds: new Set<string>(),
+                    viewerMedia: null,
+                    onAdded: vi.fn(),
+                }),
+            { wrapper },
+        );
+        await waitFor(() => expect(result.current.showPill).toBe(true));
+        expect(result.current.pickCount).toBe(0);
     });
 });

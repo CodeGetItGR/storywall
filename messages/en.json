@@ -7302,6 +7302,7 @@
         "services": {
             "title": "Print sizes",
             "partnerOnly": "Only approved partners can list prices.",
+            "profileFirst": "Fill in your details first.",
             "empty": "No sizes yet.",
             "add": "Add size",
             "sheetAdd": "Add size",

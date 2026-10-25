@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { usePrintAdd } from '@/hooks/usePrintAdd';
-import { useHostPrintList, usePatchPrintItem, usePrintPicksContext, useRemovePrintItem } from '@/hooks/usePrintLists';
+import { useHostPrintList, useHostPrintLists, usePatchPrintItem, usePrintPicksContext, useRemovePrintItem } from '@/hooks/usePrintLists';
 import { usePrintPhotographer } from '@/hooks/usePrintPhotographer';
 import { usePrintViewerToggle } from '@/hooks/usePrintViewerToggle';
 import type { MediaResponseDto, PrintItemPatch } from '@/lib/api/types';
@@ -37,6 +37,10 @@ export function useGalleryPrint({ eventId, isHost, available, photographers, med
     const { photographer, vendorId, listKey, selectPhotographer } = usePrintPhotographer(eventId, photographers);
     // isHost stays in the gate: Part B adds guests, whose list comes from another query.
     const list = useHostPrintList(eventId, vendorId, available && isHost);
+    // The pill stays while any photographer's list has prints, so the host can reach the other one.
+    const vendorIds = useMemo(() => photographers.map((p) => p.vendorId), [photographers]);
+    const allLists = useHostPrintLists(eventId, vendorIds, available && isHost);
+    const showPill = allLists.some((query) => printTotals(query.data?.items ?? [], null).prints > 0);
     const { mutateAsync: patchAsync } = usePatchPrintItem(eventId, listKey);
     const { mutateAsync: removeAsync, isPending: isRemoving } = useRemovePrintItem(eventId, listKey);
 
@@ -99,6 +103,7 @@ export function useGalleryPrint({ eventId, isHost, available, photographers, med
         pickedIds,
         totals,
         pickCount: totals.prints,
+        showPill,
         sheetOpen,
         openSheet,
         closeSheet,

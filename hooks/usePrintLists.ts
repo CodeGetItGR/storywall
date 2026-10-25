@@ -1,6 +1,6 @@
 'use client';
 
-import { type QueryClient, type QueryKey, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { type QueryClient, type QueryKey, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
@@ -64,6 +64,20 @@ export function useHostPrintList(eventId: string | null, vendorId: string | null
     }, [queryClient, eventId, error]);
 
     return query;
+}
+
+// Every photographer's host list, for what the gallery shows before one is chosen. Same keys as useHostPrintList, so the chosen one is shared.
+export function useHostPrintLists(eventId: string | null, vendorIds: readonly string[], enabled: boolean) {
+    const { isAuthenticated } = useAuth();
+
+    return useQueries({
+        queries: vendorIds.map((vendorId) => ({
+            queryKey: printListKeys.host(eventId ?? '', vendorId),
+            queryFn: () => api.get<PrintListDto>(endpoints.events.hostPrintList(eventId!, vendorId)),
+            enabled: Boolean(eventId) && enabled && isAuthenticated,
+            staleTime: LIVE_CONTENT_STALE_TIME,
+        })),
+    });
 }
 
 // Patches and removals on one list share this key, and adds count with them (see writesRunning),
