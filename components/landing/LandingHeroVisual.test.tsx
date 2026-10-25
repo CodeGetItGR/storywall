@@ -61,4 +61,20 @@ describe('LandingHeroVisual', () => {
         rerender(<LandingHeroVisual motionPaused={false} />);
         expect(track).not.toHaveAttribute('data-paused');
     });
+
+    it("draws an occasion's own comment cards in place of the comment cutouts", () => {
+        const { container } = render(
+            <LandingHeroVisual comments={[<p key="first">first comment</p>, <p key="second">second comment</p>]} motionPaused={false} />,
+        );
+        expect(container).toHaveTextContent('first comment');
+        expect(container).toHaveTextContent('second comment');
+        expect([...container.querySelectorAll('img')].map(sourcePath).filter((src) => src?.includes('sw-comment'))).toEqual([]);
+    });
+
+    it('takes its size and place from the page when given', () => {
+        const { container } = render(<LandingHeroVisual className="w-10" motionPaused={false} />);
+        const root = container.firstElementChild;
+        expect(root).toHaveClass('w-10', 'aspect-[1136/1204]');
+        expect(root).not.toHaveClass('w-[137vw]');
+    });
 });

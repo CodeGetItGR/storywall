@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { useLandingHeroFeedTravel } from '@/hooks/useLandingHeroFeedTravel';
 import { landingHeroImageSizes, landingHeroSpriteSizes } from '@/lib/landingHero';
+import { cn } from '@/lib/utils';
 
 const HERO_SPRITES = [
     {
@@ -168,8 +169,10 @@ const HERO_SPRITES = [
     },
 ] as const;
 
-const HERO_VISUAL_CLASS =
-    'pointer-events-none relative z-10 order-2 left-[3.7vw] mt-[42px] aspect-[1136/1204] w-[137vw] max-w-none justify-self-center self-center min-[761px]:order-none min-[761px]:left-auto min-[761px]:m-0 min-[761px]:w-[min(780px,43vw)] min-[761px]:justify-self-start';
+const HERO_VISUAL_BASE_CLASS = 'pointer-events-none relative z-10 aspect-[1136/1204] max-w-none';
+// The landing's size and place in its hero grid; an occasion page may pass its own.
+const HERO_VISUAL_PLACEMENT_CLASS =
+    'order-2 left-[3.7vw] mt-[42px] w-[137vw] justify-self-center self-center min-[761px]:order-none min-[761px]:left-auto min-[761px]:m-0 min-[761px]:w-[min(780px,43vw)] min-[761px]:justify-self-start';
 
 const PHONE_WRAP_CLASS =
     'absolute aspect-[748/1541] left-[19.28%] top-[3.78%] w-[56.47%] z-[5] min-[761px]:left-[23.5%] min-[761px]:top-[5.21%] min-[761px]:w-[43.7%]';
@@ -203,20 +206,37 @@ const HERO_SPRITE_MOTION = {
 // The floating post that sits on the phone's right, after the first one.
 const SECOND_POST_SRC = '/landing/sw-scene-item-sw-post-2.webp';
 
+// The two comment cutouts an occasion page can replace, in order.
+const COMMENT_INDEX: Record<string, 0 | 1> = {
+    '/landing/sw-scene-item-sw-comment-1.webp': 0,
+    '/landing/sw-scene-item-sw-comment-2.webp': 1,
+};
+
+// An occasion's own card for a cutout, if it passes one.
+function spriteOverride(src: string, posts?: readonly [ReactNode, ReactNode], comments?: readonly [ReactNode, ReactNode]): ReactNode {
+    if (posts && src === SECOND_POST_SRC) return posts[1];
+    const comment = COMMENT_INDEX[src];
+    return comments && comment !== undefined ? comments[comment] : null;
+}
+
 type LandingHeroVisualProps = {
     motionPaused: boolean;
-    // An occasion page's own phone feed and two post cards, in place of the wedding screenshots.
+    // Replaces the landing's size and place in its hero grid.
+    className?: string;
+    // An occasion page's own phone feed, two post cards and two comment cards, in place of the
+    // wedding screenshots and cutouts.
+    comments?: readonly [ReactNode, ReactNode];
     feed?: ReactNode;
     posts?: readonly [ReactNode, ReactNode];
 };
 
-export function LandingHeroVisual({ motionPaused, feed, posts }: LandingHeroVisualProps) {
+export function LandingHeroVisual({ motionPaused, className, comments, feed, posts }: LandingHeroVisualProps) {
     const reduceMotion = useReducedMotion();
     const { screenRef, trackRef } = useLandingHeroFeedTravel();
     const [firstSprite, ...restSprites] = HERO_SPRITES;
 
     return (
-        <div aria-hidden="true" className={HERO_VISUAL_CLASS}>
+        <div aria-hidden="true" className={cn(HERO_VISUAL_BASE_CLASS, className ?? HERO_VISUAL_PLACEMENT_CLASS)}>
             {/* Floating social post */}
             <motion.div
                 animate={reduceMotion ? undefined : HERO_SPRITE_MOTION[firstSprite.motionClass]}
@@ -286,9 +306,7 @@ export function LandingHeroVisual({ motionPaused, feed, posts }: LandingHeroVisu
                         delay: Number.parseFloat(sprite.delay),
                     }}
                 >
-                    {posts && sprite.src === SECOND_POST_SRC ? (
-                        posts[1]
-                    ) : (
+                    {spriteOverride(sprite.src, posts, comments) ?? (
                         <ProtectedImage
                             alt=""
                             className="h-auto w-full"
