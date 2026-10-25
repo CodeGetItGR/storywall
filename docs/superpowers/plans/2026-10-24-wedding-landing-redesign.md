@@ -1939,8 +1939,8 @@ Expected: FAIL, `Failed to resolve import "@/hooks/useMarqueeMotion"`.
 ```ts
 'use client';
 
-import { type MotionValue, useAnimationFrame, useMotionValue, useReducedMotion, useTransform } from 'framer-motion';
-import { useState } from 'react';
+import { type MotionValue, useAnimationFrame, useMotionValue, useReducedMotion } from 'framer-motion';
+import { useRef, useState } from 'react';
 
 import { useLandingMotion } from '@/providers/LandingMotionProvider';
 
@@ -1958,24 +1958,29 @@ export function useMarqueeMotion(duration: number): MarqueeMotion {
     const reduceMotion = useReducedMotion();
     const { paused } = useLandingMotion();
     const [hovered, setHovered] = useState(false);
-    const progress = useMotionValue(0);
-    const x = useTransform(progress, (value) => `${value === 0 ? 0 : -50 * value}%`);
+    // Share of one copy travelled, 0 to 1. x is set in the same frame (useTransform would lag one frame).
+    const progress = useRef(0);
+    const x = useMotionValue('0%');
     const still = Boolean(reduceMotion) || paused;
 
     useAnimationFrame((_, delta) => {
         if (still) {
-            if (progress.get() !== 0) progress.set(0);
+            if (progress.current !== 0) {
+                progress.current = 0;
+                x.set('0%');
+            }
             return;
         }
         if (hovered) return;
-        progress.set((progress.get() + delta / (duration * 1000)) % 1);
+        progress.current = (progress.current + delta / (duration * 1000)) % 1;
+        x.set(`${progress.current === 0 ? 0 : -50 * progress.current}%`);
     });
 
     return { still, x, onPointerEnter: () => setHovered(true), onPointerLeave: () => setHovered(false) };
 }
 ```
 
-(`value === 0 ? 0 : …` keeps `0%` instead of `-0%`.)
+(`progress.current === 0 ? 0 : …` keeps `0%` instead of `-0%`.)
 
 - [ ] **Step 4: Run the test**
 
