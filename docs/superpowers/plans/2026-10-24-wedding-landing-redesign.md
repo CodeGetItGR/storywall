@@ -10,6 +10,8 @@
 
 **Spec:** [docs/superpowers/specs/2026-10-24-wedding-landing-redesign-design.md](../specs/2026-10-24-wedding-landing-redesign-design.md)
 
+**Update 2026-10-25:** the owner chose the design's own pictures over the HTML mocks. The hero feed and cards (Tasks 11–12), the drawn RSVP comparison (Task 15) and the demo phones (Task 18) were built, then removed with their copy; the generated photos from Task 2 went with them. The hero and the demo now show the landing's pictures, and the RSVP and QR blocks show the design's Greek pictures until English ones arrive. The spec describes what shipped.
+
 **Design file (reference for every visual check):** `C:\Users\User\Downloads\storywall-gamos-2.html`. Its stripped copy and extracted images live in the session scratchpad: `C:\Users\User\AppData\Local\Temp\claude\C--Users-User-WebstormProjects-storywall--claude-worktrees-wedding-landing-page-spec-aeadd7\ed2da06d-369a-4cff-9cc9-f104d38fc9c3\scratchpad\design\` (`stripped.html`, `images\img_<hash>.<ext>`). Below, `$SP` means that scratchpad folder and `$WT` means the worktree `C:\Users\User\WebstormProjects\storywall\.claude\worktrees\wedding-landing-page-spec-aeadd7`.
 
 To view the design in the browser pane, serve the original file's folder (a `file://` URL does not open there):
