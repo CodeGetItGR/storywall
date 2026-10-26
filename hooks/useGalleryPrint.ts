@@ -37,10 +37,10 @@ export function useGalleryPrint({ eventId, isHost, available, photographers, med
     const { photographer, vendorId, listKey, selectPhotographer } = usePrintPhotographer(eventId, photographers);
     // isHost stays in the gate: Part B adds guests, whose list comes from another query.
     const list = useHostPrintList(eventId, vendorId, available && isHost);
-    // The pill stays while any photographer's list has prints, so the host can reach the other one.
+    // The pill counts every photographer's list, so it never reads 0 while another list has prints.
     const vendorIds = useMemo(() => photographers.map((p) => p.vendorId), [photographers]);
     const allLists = useHostPrintLists(eventId, vendorIds, available && isHost);
-    const showPill = allLists.some((query) => printTotals(query.data?.items ?? [], null).prints > 0);
+    const pickCount = allLists.reduce((sum, query) => sum + printTotals(query.data?.items ?? [], null).prints, 0);
     const { mutateAsync: patchAsync } = usePatchPrintItem(eventId, listKey);
     const { mutateAsync: removeAsync, isPending: isRemoving } = useRemovePrintItem(eventId, listKey);
 
@@ -54,7 +54,16 @@ export function useGalleryPrint({ eventId, isHost, available, photographers, med
         [items, isHost, photographer?.hostPrintsIncluded],
     );
 
-    const { add, addSelected, isAdding, notice, error, setError } = usePrintAdd({ eventId, vendorId, media, selectedIds, pickedIds, onAdded });
+    const photographerName = photographers.length > 1 ? (photographer?.businessName ?? '') : null;
+    const { add, addSelected, isAdding, notice, error, setError } = usePrintAdd({
+        eventId,
+        vendorId,
+        media,
+        selectedIds,
+        pickedIds,
+        photographerName,
+        onAdded,
+    });
     const viewerToggle = usePrintViewerToggle({
         eventId,
         vendorId,
@@ -102,8 +111,8 @@ export function useGalleryPrint({ eventId, isHost, available, photographers, med
         items,
         pickedIds,
         totals,
-        pickCount: totals.prints,
-        showPill,
+        pickCount,
+        showPill: pickCount > 0,
         sheetOpen,
         openSheet,
         closeSheet,

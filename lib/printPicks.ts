@@ -8,6 +8,8 @@ export const PRICE_MAX_CENTS = 100_000;
 // Label of a print size (VendorServiceItemRequestDto) and the prints a package can include for the host (PrintsIncludedRequestDto).
 export const PRINT_SIZE_LABEL_MAX = 40;
 export const PRINTS_INCLUDED_MAX = 9999;
+// Print sizes are priced in euros only: the backend gives every size the EUR default and its requests carry no currency.
+export const PRINT_CURRENCY = 'EUR';
 
 export type PrintTotals = {
     prints: number;

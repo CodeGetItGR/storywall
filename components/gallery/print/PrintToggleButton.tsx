@@ -19,7 +19,7 @@ export function PrintToggleButton({ toggle }: { toggle: PrintToggle }) {
             aria-pressed={toggle.picked}
             aria-label={toggle.picked ? t('picked') : undefined}
             className={cn(
-                'inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold disabled:opacity-50',
+                'inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap disabled:opacity-50',
                 toggle.picked ? 'bg-white text-ink' : 'bg-black/50 text-white',
             )}
         >

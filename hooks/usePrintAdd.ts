@@ -18,11 +18,13 @@ type PrintAddInput = {
     media: MediaResponseDto[];
     selectedIds: Set<string>;
     pickedIds: Set<string>;
+    // Named in the notice when the host has more than one photographer, so it is clear whose list grew ('' when unnamed).
+    photographerName: string | null;
     onAdded: () => void;
 };
 
 // Adding photos to the host list: the notice, the error and a guard against a second add while one is running.
-export function usePrintAdd({ eventId, vendorId, media, selectedIds, pickedIds, onAdded }: PrintAddInput) {
+export function usePrintAdd({ eventId, vendorId, media, selectedIds, pickedIds, photographerName, onAdded }: PrintAddInput) {
     const t = useTranslations('GalleryPage.print');
     const toErrorMessage = useApiErrorMessage();
     const { mutateAsync: addAsync, isPending: isAdding } = useAddHostPrintItems(eventId);
@@ -58,7 +60,13 @@ export function usePrintAdd({ eventId, vendorId, media, selectedIds, pickedIds, 
                     added = list.items.filter((item) => !item.removed && wanted.has(item.mediaId) && !pickedIds.has(item.mediaId)).length;
                 }
                 if (skipped) setNotice(t('skippedNotPrintable'));
-                else if (mediaIds.length) setNotice(added ? t('added', { count: added }) : t('alreadyPicked'));
+                else if (mediaIds.length && !added) setNotice(t('alreadyPicked'));
+                else if (mediaIds.length)
+                    setNotice(
+                        photographerName === null
+                            ? t('added', { count: added })
+                            : t('addedFor', { count: added, name: photographerName || t('photographerUnnamed') }),
+                    );
                 onAdded();
                 return null;
             } catch (addError) {
@@ -67,7 +75,7 @@ export function usePrintAdd({ eventId, vendorId, media, selectedIds, pickedIds, 
                 inFlight.current = false;
             }
         },
-        [addAsync, onAdded, pickedIds, setError, setNotice, t, toErrorMessage, vendorId],
+        [addAsync, onAdded, photographerName, pickedIds, setError, setNotice, t, toErrorMessage, vendorId],
     );
 
     const addSelected = useCallback(async () => {

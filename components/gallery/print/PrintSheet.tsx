@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 
 import { PhotographerSwitch } from '@/components/gallery/print/PhotographerSwitch';
 import { PrintRow } from '@/components/gallery/print/PrintRow';
-import { PrintTotal } from '@/components/gallery/print/PrintTotal';
+import { PrintTotalRows } from '@/components/gallery/print/PrintTotalRows';
 import { Modal } from '@/components/ui/modal';
 import { VendorRowsSkeleton } from '@/components/vendors/VendorsSkeletons';
 import type { PrintItemPatch, PrintListItemDto, PrintPhotographerDto } from '@/lib/api/types';
@@ -51,18 +51,16 @@ export function PrintSheet({
             <Modal.Body className="px-5 pt-5 pb-6">
                 {/* Header */}
                 <h2 className="pr-8 text-base font-bold text-ink">{t('sheetTitle')}</h2>
-                {photographer && photographers.length < 2 && (
-                    <p className="text-sm text-ink-muted">{t('for', { name: photographer.businessName ?? t('photographerUnnamed') })}</p>
-                )}
 
-                {/* Photographer */}
+                {/* Photographer: the switch (two or more), then who sees this list */}
                 {photographer && (
-                    <div className="mt-3">
+                    <div className="mt-3 flex flex-col gap-2">
                         <PhotographerSwitch
                             photographers={photographers}
                             activeId={photographer.vendorId}
                             onSelectAction={onSelectPhotographerAction}
                         />
+                        <p className="text-sm text-ink-muted">{t('seenBy', { name: photographer.businessName ?? t('photographerUnnamed') })}</p>
                     </div>
                 )}
 
@@ -87,24 +85,20 @@ export function PrintSheet({
                         ))}
                     </ul>
                 )}
-
-                {/* Total */}
-                {totals.prints > 0 && (
-                    <div className="mt-4">
-                        <PrintTotal totals={totals} />
-                    </div>
-                )}
-
-                {/* Error */}
-                {error && (
-                    <p role="alert" className="mt-3 text-sm text-rose-600">
-                        {error}
-                    </p>
-                )}
-
-                {/* Footer */}
-                {footer}
             </Modal.Body>
+
+            {/* Total, error and footer: pinned under the list */}
+            {(totals.prints > 0 || error || footer) && (
+                <div className="flex flex-col gap-3 border-t border-border px-5 pt-3 pb-5">
+                    {totals.prints > 0 && <PrintTotalRows totals={totals} />}
+                    {error && (
+                        <p role="alert" className="text-sm text-rose-600">
+                            {error}
+                        </p>
+                    )}
+                    {footer}
+                </div>
+            )}
         </Modal>
     );
 }

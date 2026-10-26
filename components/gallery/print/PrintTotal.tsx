@@ -4,10 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { formatMoney } from '@/lib/billing';
 import type { PrintTotalPart, PrintTotals } from '@/lib/printPicks';
-import { printTotalParts } from '@/lib/printPicks';
-
-// Print sizes are priced in euros only: the backend gives every size the EUR default and its requests carry no currency.
-const PRINT_CURRENCY = 'EUR';
+import { PRINT_CURRENCY, printTotalParts } from '@/lib/printPicks';
 
 // "12 of 40 included · 3 more · €9.00" for a host, "3 more · €9.00" for a guest.
 // noPriceLabel replaces the host's "your photographer sets the price" on the photographer's own page.

@@ -106,6 +106,14 @@ describe('useGalleryPrint', () => {
         expect(onAdded).toHaveBeenCalledTimes(1);
         // The caller clears the selection after an add; the notice shows once it is empty.
         rerender({ selectedIds: new Set() });
+        expect(result.current.notice).toBe('addedFor:1');
+    });
+
+    it('leaves the photographer out of the notice when there is only one', async () => {
+        const { result, rerender } = setup({ photographers: [photographer('v1')], selectedIds: new Set(['m2']) });
+        api.post.mockResolvedValue(listOf([item('i1', 'm1'), item('i2', 'm2')]));
+        await act(() => result.current.addSelected());
+        rerender({ photographers: [photographer('v1')], selectedIds: new Set() });
         expect(result.current.notice).toBe('added:1');
     });
 
@@ -211,7 +219,7 @@ describe('useGalleryPrint', () => {
         vi.useFakeTimers();
         await act(() => result.current.addSelected());
         rerender({ selectedIds: new Set() });
-        expect(result.current.notice).toBe('added:1');
+        expect(result.current.notice).toBe('addedFor:1');
         rerender({ selectedIds: new Set(['m3']) });
         expect(result.current.notice).toBeNull();
         rerender({ selectedIds: new Set() });
@@ -221,9 +229,9 @@ describe('useGalleryPrint', () => {
         api.post.mockResolvedValue(listOf([item('i1', 'm1'), item('i2', 'm2'), item('i3', 'm3')]));
         await act(() => result.current.addSelected());
         rerender({ selectedIds: new Set() });
-        expect(result.current.notice).toBe('added:1');
+        expect(result.current.notice).toBe('addedFor:1');
         act(() => vi.advanceTimersByTime(3999));
-        expect(result.current.notice).toBe('added:1');
+        expect(result.current.notice).toBe('addedFor:1');
         act(() => vi.advanceTimersByTime(1));
         expect(result.current.notice).toBeNull();
     });
@@ -255,12 +263,12 @@ describe('useGalleryPrint', () => {
         api.post.mockResolvedValue(listOf([item('i1', 'm1'), item('i2', 'm2')]));
         await act(() => result.current.addSelected());
         rerender({ selectedIds: new Set() });
-        expect(result.current.notice).toBe('added:1');
+        expect(result.current.notice).toBe('addedFor:1');
         act(() => result.current.selectPhotographer('v2'));
         expect(result.current.notice).toBeNull();
     });
 
-    it('keeps the pill while the other photographer list has prints', async () => {
+    it('counts every photographer list on the pill', async () => {
         const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
         queryClient.setQueryData(printListKeys.host('e1', 'v1'), listOf([]));
         queryClient.setQueryData(printListKeys.host('e1', 'v2'), listOf([item('i9', 'm3')]));
@@ -281,7 +289,7 @@ describe('useGalleryPrint', () => {
             { wrapper },
         );
         await waitFor(() => expect(result.current.showPill).toBe(true));
-        expect(result.current.pickCount).toBe(0);
+        expect(result.current.pickCount).toBe(1);
     });
 
     describe('useGalleryPrint with several lists', () => {
@@ -295,7 +303,7 @@ describe('useGalleryPrint', () => {
             expect(hostPaths().filter((path) => path.includes('vendorId=v1')).length).toBeLessThanOrEqual(1);
         });
 
-        it('leaves the error alone when a list that is not selected fails, and the pill follows the selected list', async () => {
+        it('leaves the error alone when a list that is not selected fails, and the pill counts the lists it could read', async () => {
             const { result, queryClient } = setup({}, () =>
                 api.get.mockImplementation(async (path: string) => {
                     if (path.includes('v2')) throw new ApiError(500, {}, 'down');
