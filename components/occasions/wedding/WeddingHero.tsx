@@ -56,7 +56,8 @@ export async function WeddingHero({ alternatePaths, campaign, createHref, demoHr
                 mobileLoginLabel={mobileNav.at(-1)!}
             />
 
-            <div className="pt-6.5 pb-9 min-[421px]:pt-0 min-[768px]:pt-1.5 min-[768px]:pb-10 min-[901px]:pt-9.5 min-[901px]:pb-22.5">
+            {/* Body: on phones the bottom padding makes room for the phone and cards hanging about 25vw below the visual */}
+            <div className="pt-6.5 pb-[calc(25.5vw+16px)] min-[421px]:pt-0 min-[761px]:pb-9 min-[768px]:pt-1.5 min-[768px]:pb-10 min-[901px]:pt-9.5 min-[901px]:pb-22.5">
                 <div className="mx-auto grid w-[calc(100%-40px)] grid-cols-1 items-center min-[768px]:w-[min(1220px,calc(100%-64px))] min-[768px]:gap-[clamp(20px,3vw,48px)] min-[901px]:grid-cols-2">
                     {/* Copy */}
                     <div className="relative z-20">
