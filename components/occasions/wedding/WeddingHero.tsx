@@ -2,8 +2,8 @@ import { getTranslations } from 'next-intl/server';
 import { Fragment } from 'react';
 
 import { LandingHeader } from '@/components/landing/LandingHeader';
+import { OccasionHeroActions } from '@/components/occasions/OccasionHeroActions';
 import { OccasionHeroVisual } from '@/components/occasions/OccasionHeroVisual';
-import { WeddingHeroActions } from '@/components/occasions/wedding/WeddingHeroActions';
 import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
 import type { OccasionCampaign } from '@/lib/occasions/campaigns';
@@ -26,7 +26,7 @@ type WeddingHeroProps = {
     alternatePaths: Record<Locale, string>;
     campaign: OccasionCampaign | null;
     createHref: string;
-    // null: no wedding demo; the hero shows the create button only.
+    // null: no wedding demo; the hero shows the main button only.
     demoHref: string | null;
     locale: Locale;
     price: OccasionPriceValues;
@@ -95,11 +95,12 @@ export async function WeddingHero({ alternatePaths, campaign, createHref, demoHr
                             {c ? c('lead') : t('hero.body')}
                         </p>
                         {/* Actions */}
-                        <WeddingHeroActions
+                        <OccasionHeroActions
                             createHref={createHref}
                             createLabel={c ? c('cta') : t('hero.cta')}
                             demoHref={demoHref}
                             demoLabel={landing('hero.demoCta')}
+                            plansLabel={landing('hero.plansCta')}
                         />
                         {/* Trust line */}
                         <p className="mt-4.25 mb-0 flex flex-wrap gap-y-1.25 text-[10px] leading-[1.4] font-bold tracking-[0.035em] text-[#151313]/66 min-[768px]:mt-6 min-[768px]:ml-1 min-[768px]:gap-y-1.75 min-[768px]:text-[11px] min-[768px]:leading-[1.25]">

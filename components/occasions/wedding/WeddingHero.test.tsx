@@ -4,7 +4,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { WeddingHero } from '@/components/occasions/wedding/WeddingHero';
 import type { OccasionPriceValues } from '@/lib/occasions/occasionPrice';
 
+const auth = vi.hoisted(() => ({ isAuthenticated: false, isBootstrapping: false }));
+
 vi.mock('next-intl/server', () => import('@/components/occasions/wedding/__fixtures__/intlServerMock'));
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => auth }));
 // The header needs auth and the client intl provider, the visual the motion provider; both are
 // covered by their own tests.
 vi.mock('@/components/landing/LandingHeader', () => ({ LandingHeader: () => <header /> }));
@@ -27,7 +30,10 @@ function hero(overrides: Partial<Parameters<typeof WeddingHero>[0]> = {}) {
     });
 }
 
-afterEach(cleanup);
+afterEach(() => {
+    cleanup();
+    auth.isAuthenticated = false;
+});
 
 describe('WeddingHero', () => {
     it('has one h1, the keyword', async () => {
@@ -54,13 +60,26 @@ describe('WeddingHero', () => {
         expect(screen.queryByText(/€/)).toBeNull();
     });
 
-    it('links to create, and to the demo when there is one', async () => {
+    it('shows signed-out visitors the plans first, and the demo when there is one', async () => {
         render(await hero());
-        expect(screen.getByRole('link', { name: /Φτιάξε το StoryWall σου/ })).toHaveAttribute('href', '/events/new?type=wedding');
-        expect(screen.getByRole('link', { name: /Δες το demo/ })).toHaveAttribute('href', '/demo/wedding/feed');
+        expect(screen.getByRole('link', { name: 'Δες τα πακέτα' })).toHaveAttribute('href', '#pricing');
+        expect(screen.queryByRole('link', { name: /Φτιάξε το StoryWall σου/ })).toBeNull();
+        expect(screen.getByRole('link', { name: 'Δες το demo' })).toHaveAttribute('href', '/demo/wedding/feed');
         cleanup();
         render(await hero({ demoHref: null }));
-        expect(screen.queryByRole('link', { name: /Δες το demo/ })).toBeNull();
+        expect(screen.queryByRole('link', { name: 'Δες το demo' })).toBeNull();
+    });
+
+    it('sends signed-in visitors straight to create', async () => {
+        auth.isAuthenticated = true;
+        render(await hero());
+        expect(screen.getByRole('link', { name: 'Φτιάξε το StoryWall σου' })).toHaveAttribute('href', '/events/new?type=wedding');
+        expect(screen.queryByRole('link', { name: 'Δες τα πακέτα' })).toBeNull();
+    });
+
+    it('draws its buttons without arrows', async () => {
+        render(await hero());
+        expect(screen.queryByText(/[↗↓]/)).toBeNull();
     });
 
     it("shows the landing's phone and cards, placed as in the design", async () => {
