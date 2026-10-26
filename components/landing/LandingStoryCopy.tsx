@@ -64,7 +64,7 @@ export function LandingStoryCopy({ demo, more, paragraphSegments, tag, titleSegm
             {/* Occasion page link */}
             {more ? (
                 <a
-                    className="mt-4 ml-1 inline-block text-[13px] font-bold text-[var(--ink)] underline underline-offset-4 min-[761px]:ml-5"
+                    className="mt-4 ml-1 inline-block text-[13px] font-bold text-[var(--ink)] underline! underline-offset-4 min-[761px]:ml-5"
                     href={more.href}
                 >
                     {more.label}
