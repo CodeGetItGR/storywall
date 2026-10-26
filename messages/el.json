@@ -6047,7 +6047,12 @@
             "mobileNav": ["Η Πλατφόρμα", "Πώς λειτουργεί", "Δυνατότητες", "Πακέτα", "Σύνδεση"],
             "title": "Ηλεκτρονικό προσκλητήριο και φωτογραφίες καλεσμένων σε ένα μέρος.",
             "subtitle": "Ψηφιακή πρόσκληση με RSVP για τον γάμο ή τη βάπτισή σου. Οι καλεσμένοι ανεβάζουν φωτογραφίες με ένα QR από το κινητό τους. Χωρίς app.",
-            "eventTypes": "Για γάμους, βαπτίσεις και πάρτι.",
+            "kicker": "ΤΟ SOCIAL ΓΙΑ ΚΑΘΕ <strong>PRIVATE EVENT</strong>",
+            "typewriter": {
+                "prefix": "Για",
+                "words": ["Γάμο", "Βάπτιση", "Gender Reveal", "VIP Parties"],
+                "label": "Για Γάμο, Βάπτιση, Gender Reveal και VIP Parties"
+            },
             "plansCta": "Δες τα πακέτα",
             "demoCta": "Δες το demo",
             "signedInCta": "Το StoryWall μου"

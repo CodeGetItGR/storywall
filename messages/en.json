@@ -5917,7 +5917,12 @@
             "mobileNav": ["The platform", "How it works", "Features", "Plans", "Login"],
             "title": "Digital invitations and guest photos, in one place.",
             "subtitle": "A digital invitation with RSVP for your wedding or baptism. Guests upload photos from their phone with a QR code. No app.",
-            "eventTypes": "For weddings, baptisms and parties.",
+            "kicker": "THE SOCIAL FOR EVERY <strong>PRIVATE EVENT</strong>",
+            "typewriter": {
+                "prefix": "For",
+                "words": ["Weddings", "Baptisms", "Gender Reveals", "VIP Parties"],
+                "label": "For Weddings, Baptisms, Gender Reveals and VIP Parties"
+            },
             "plansCta": "See plans",
             "demoCta": "See the demo",
             "signedInCta": "My StoryWall"
