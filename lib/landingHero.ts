@@ -18,6 +18,12 @@ export function landingHeroMainAction(isSignedIn: boolean): LandingHeroMainActio
         : { href: LANDING_PRICING_HASH, arrow: '↓', click: { event: 'plans', placement: 'hero' } };
 }
 
+// An occasion page's hero: signed-out visitors see the plans first, signed-in visitors go straight to
+// creating that occasion's StoryWall.
+export function occasionHeroMainAction(isSignedIn: boolean, createHref: string): LandingHeroMainAction {
+    return isSignedIn ? { href: createHref, arrow: '↗', click: { event: 'create', placement: 'hero' } } : landingHeroMainAction(false);
+}
+
 // The hero visual is 137vw wide on phones and min(780px, 43vw) from 761px up (HERO_VISUAL_CLASS in
 // LandingHeroVisual). Each image inside it takes a share of that width.
 const HERO_VISUAL_PHONE_VW = 137;

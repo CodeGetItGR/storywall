@@ -6,6 +6,7 @@ import {
     landingHeroMainAction,
     landingHeroSpriteSizes,
     nextTypewriterStep,
+    occasionHeroMainAction,
     TYPEWRITER_START,
 } from '@/lib/landingHero';
 import { routes } from '@/lib/routes';
@@ -22,6 +23,20 @@ describe('landingHeroMainAction', () => {
     it('sends signed-in visitors to their account', () => {
         expect(landingHeroMainAction(true)).toEqual({
             href: routes.home,
+            arrow: '↗',
+            click: { event: 'create', placement: 'hero' },
+        });
+    });
+});
+
+describe('occasionHeroMainAction', () => {
+    it('sends signed-out visitors to the plans on the page', () => {
+        expect(occasionHeroMainAction(false, '/events/new?type=wedding')).toEqual(landingHeroMainAction(false));
+    });
+
+    it('sends signed-in visitors to create the occasion', () => {
+        expect(occasionHeroMainAction(true, '/events/new?type=wedding')).toEqual({
+            href: '/events/new?type=wedding',
             arrow: '↗',
             click: { event: 'create', placement: 'hero' },
         });
