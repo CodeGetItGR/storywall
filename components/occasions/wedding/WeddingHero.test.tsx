@@ -34,7 +34,7 @@ describe('WeddingHero', () => {
         render(await hero());
         const headings = screen.getAllByRole('heading', { level: 1 });
         expect(headings).toHaveLength(1);
-        expect(headings[0]).toHaveTextContent('Ηλεκτρονικό προσκλητήριο & ιστοσελίδα γάμου');
+        expect(headings[0]).toHaveTextContent('Ηλεκτρονικό προσκλητήριο γάμου & ιστοσελίδα γάμου');
         expect(headings[0]!.querySelector('em')).toHaveTextContent('ιστοσελίδα γάμου');
     });
 

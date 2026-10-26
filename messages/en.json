@@ -5943,10 +5943,10 @@
             "heading": ["For weddings, baptisms", "and every celebration."],
             "intro": "StoryWall brings people, moments, and memories into one private social space, before, during, and after your event.",
             "openDemo": "Open the demo",
-            "occasionLink": "Learn more",
             "rows": [
                 {
                     "tag": "WEDDING",
+                    "occasionLink": "Digital wedding invitation",
                     "title": ["Your wedding is more than one day.", "It is a story."],
                     "paragraphs": [
                         "From the first preparations to the honeymoon, every moment becomes part of it.",
@@ -5999,34 +5999,47 @@
                 },
                 {
                     "tag": "BAPTISM",
-                    "title": ["A baptism full of", "moments worth keeping."],
+                    "occasionLink": "Digital baptism invitation",
+                    "title": ["Your child's first big celebration.", "And everyone was there."],
                     "paragraphs": [
-                        "From the invitation and first wishes to the photos, posts, and moments of the day.",
-                        "Everything your people share, gathered in one StoryWall."
+                        "From the church to the last dance, your guests share what they captured.",
+                        "Photos, videos and wishes from everyone celebrating with you."
                     ],
                     "galleryLabel": "Baptism moments",
                     "imageAlts": ["Baptism outside the church", "Baptism ceremony inside the church", "Baptism celebration at the table"],
                     "titleSegments": [
                         {
-                            "text": "A baptism full of ",
-                            "strong": false
+                            "text": "Your child's first big celebration.",
+                            "strong": true
                         },
                         {
-                            "text": "moments worth keeping.",
-                            "strong": true
+                            "text": " And everyone was there.",
+                            "strong": false
                         }
                     ],
                     "paragraphSegments": [
                         [
                             {
-                                "text": "From the invitation and first wishes to the photos, posts, and moments of the day.",
+                                "text": "From the church to the last dance, your guests share what they captured.",
                                 "strong": false
                             }
                         ],
                         [
                             {
-                                "text": "Everything your people share, gathered in one StoryWall.",
+                                "text": "Photos, videos",
                                 "strong": true
+                            },
+                            {
+                                "text": " and ",
+                                "strong": false
+                            },
+                            {
+                                "text": "wishes",
+                                "strong": true
+                            },
+                            {
+                                "text": " from everyone celebrating with you.",
+                                "strong": false
                             }
                         ]
                     ]
