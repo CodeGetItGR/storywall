@@ -109,6 +109,13 @@ describe('GalleryPage (server)', () => {
     describe('with the Pro album', () => {
         const vendors = { moduleKey: 'vendors', isAvailable: true, isEnabled: true, configuration: {} };
 
+        beforeEach(() => {
+            // Print requests are covered below; here they fail so only the media is seeded.
+            mocks.serverGet.mockImplementation((path: string) =>
+                path.includes('print-') ? Promise.reject(new Error('down')) : Promise.resolve(firstPage),
+            );
+        });
+
         it('also seeds the Pro first page when the vendors module is on', async () => {
             mocks.resolveServerEventDetail.mockResolvedValue({ ...liveEvent, modules: [...liveEvent.modules, vendors] });
 
@@ -129,10 +136,84 @@ describe('GalleryPage (server)', () => {
         it('keeps the guest page when the Pro page fails', async () => {
             mocks.resolveServerEventDetail.mockResolvedValue({ ...liveEvent, modules: [...liveEvent.modules, vendors] });
             mocks.serverGet.mockImplementation((path: string) =>
-                path.includes('collection=PRO') ? Promise.reject(new Error('Pro prefetch failed')) : Promise.resolve(firstPage),
+                path.includes('collection=PRO') || path.includes('print-')
+                    ? Promise.reject(new Error('Pro prefetch failed'))
+                    : Promise.resolve(firstPage),
             );
 
             expect(seededQueries(await visit())).toEqual([{ key: ['events', 'e1', 'media'], data: { pages: [firstPage], pageParams: [0] } }]);
+        });
+    });
+
+    describe('with print picks', () => {
+        const vendors = { moduleKey: 'vendors', isAvailable: true, isEnabled: true, configuration: {} };
+        const printContext = { photographers: [{ vendorId: 'v1' }, { vendorId: 'v2' }] };
+        const hostList = { id: 'l1', items: [] };
+        const withVendors = () => mocks.resolveServerEventDetail.mockResolvedValue({ ...liveEvent, modules: [...liveEvent.modules, vendors] });
+        const answerPrints = () =>
+            mocks.serverGet.mockImplementation((path: string) => {
+                if (path.endsWith('/print-picks')) return Promise.resolve(printContext);
+                if (path.includes('/print-lists/host')) return Promise.resolve(hostList);
+                return Promise.resolve(firstPage);
+            });
+
+        it("seeds a host's context and the first photographer's list", async () => {
+            withVendors();
+            answerPrints();
+
+            const seeded = seededQueries(await visit());
+            expect(seeded).toContainEqual({ key: ['events', 'e1', 'print-picks'], data: printContext });
+            expect(seeded).toContainEqual({ key: ['events', 'e1', 'print-lists', 'host', 'v1'], data: hostList });
+            expect(mocks.serverGet).toHaveBeenCalledWith('/api/events/e1/print-lists/host?vendorId=v1', 'token-1');
+            expect(mocks.serverGet).not.toHaveBeenCalledWith(expect.stringContaining('vendorId=v2'), expect.anything());
+        });
+
+        it('keeps the media pages when the print requests fail', async () => {
+            withVendors();
+            mocks.serverGet.mockImplementation((path: string) =>
+                path.includes('print-') ? Promise.reject(new Error('down')) : Promise.resolve(firstPage),
+            );
+
+            expect(seededQueries(await visit()).map((query) => query.key)).toEqual([
+                ['events', 'e1', 'media'],
+                ['events', 'e1', 'media', 'PRO'],
+            ]);
+        });
+
+        it('keeps the context when the host list fails', async () => {
+            withVendors();
+            mocks.serverGet.mockImplementation((path: string) => {
+                if (path.endsWith('/print-picks')) return Promise.resolve(printContext);
+                if (path.includes('/print-lists/host')) return Promise.reject(new Error('down'));
+                return Promise.resolve(firstPage);
+            });
+
+            const seeded = seededQueries(await visit());
+            expect(seeded).toContainEqual({ key: ['events', 'e1', 'print-picks'], data: printContext });
+            expect(seeded.some((query) => query.key.includes('print-lists'))).toBe(false);
+        });
+
+        it('asks for no host list without photographers', async () => {
+            withVendors();
+            mocks.serverGet.mockImplementation((path: string) => Promise.resolve(path.endsWith('/print-picks') ? { photographers: [] } : firstPage));
+
+            const seeded = seededQueries(await visit());
+            expect(seeded).toContainEqual({ key: ['events', 'e1', 'print-picks'], data: { photographers: [] } });
+            expect(mocks.serverGet).not.toHaveBeenCalledWith(expect.stringContaining('print-lists'), expect.anything());
+        });
+
+        it('skips prints for a guest and without the vendors module', async () => {
+            answerPrints();
+            await visit();
+            withVendors();
+            mocks.resolveServerEventContext.mockResolvedValue({ ...hostContext, isHost: false });
+            mocks.resolveServerEventDetail.mockResolvedValue({
+                ...liveEvent,
+                modules: [{ ...liveEvent.modules[0], configuration: { memberArchiveAfterEnd: true } }, vendors],
+            });
+            await visit();
+
+            expect(mocks.serverGet).not.toHaveBeenCalledWith(expect.stringContaining('print-'), expect.anything());
         });
     });
 });

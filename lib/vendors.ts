@@ -3,6 +3,16 @@ import { APPLICATION_ROLES } from '@/lib/forBusinessApplication';
 import { routes } from '@/lib/routes';
 import { absoluteUrl } from '@/lib/seo';
 
+// Whether the signed-in vendor's own details exist: 'missing' only once the read succeeded with nothing.
+// A failed read or a read that never runs counts as 'ready', so the backend's refusal is what the vendor sees.
+export type ProfileStatus = 'loading' | 'missing' | 'ready';
+
+export function vendorProfileStatus(query: { isSuccess: boolean; isError: boolean; fetchStatus: string; data?: unknown }): ProfileStatus {
+    if (query.isSuccess) return query.data ? 'ready' : 'missing';
+    if (query.isError || query.fetchStatus === 'idle') return 'ready';
+    return 'loading';
+}
+
 // One order everywhere vendor types are listed: the partner application's.
 export const VENDOR_TYPES: readonly PartnerRole[] = APPLICATION_ROLES;
 
@@ -21,6 +31,7 @@ const CAPABILITY_TYPES: Record<VendorCapability, readonly PartnerRole[]> = {
     RSVP_REPORT: ['PLANNER'],
     QR_READ: ['PLANNER'],
     SONG_REQUESTS: ['MUSIC'],
+    PRINT_PICKS: ['PHOTOGRAPHER'],
 };
 
 export function capabilitiesOfType(type: PartnerRole): VendorCapability[] {

@@ -848,6 +848,14 @@
                 "title": "{business} joined as {type}",
                 "body": "They can now use their tools in your event."
             },
+            "PRINT_PICKS_ENDING": {
+                "title": "Print picks close on {closesDate} (Athens time)",
+                "body": "{count, plural, one {Download the photo the host picked.} other {Download the # photos the host picked.}}"
+            },
+            "PRINT_LIST_SENT": {
+                "title": "{guestName} sent a print list",
+                "body": "{count, plural, one {# print} other {# prints}}, {total}."
+            },
             "WITHDRAWAL_REFUNDED": {
                 "title": "Your withdrawal was processed",
                 "body": "The event has been taken offline and the refund was issued."
@@ -5365,6 +5373,32 @@
         "includedModules": "Included modules"
     },
     "GalleryPage": {
+        "print": {
+            "action": "Print",
+            "picked": "Picked for print",
+            "pill": "Prints · {count}",
+            "added": "{count, plural, one {# photo added to prints} other {# photos added to prints}}",
+            "addedFor": "{count, plural, one {# photo added for {name}} other {# photos added for {name}}}",
+            "skippedNotPrintable": "Some items can't be printed, so they were left out.",
+            "alreadyPicked": "Already on your prints.",
+            "sheetTitle": "Prints",
+            "seenBy": "{name} sees this list.",
+            "empty": "Tap Select in the gallery, then Print.",
+            "size": "Size",
+            "sizeOption": "{label} · {price}",
+            "copies": "Copies",
+            "fewer": "One copy fewer",
+            "more": "One copy more",
+            "remove": "Remove",
+            "removed": "Photo removed",
+            "included": "{used} of {included} included",
+            "includedLabel": "Included",
+            "includedValue": "{used} of {included}",
+            "beyond": "{count} more",
+            "noPrice": "Your photographer sets the price",
+            "photographerUnnamed": "Photographer",
+            "close": "Close"
+        },
         "backToTools": "Back",
         "hostSubtitle": "Guest uploads are stored here without creating feed posts, so you can review and download them later.",
         "downloadGallery": "Download all",
@@ -5715,6 +5749,14 @@
         "vendorCapabilityMissing": "This tool isn't part of your role.",
         "vendorAccessEnded": "Your tools for this event have ended.",
         "vendorCannotRsvp": "Vendors don't RSVP.",
+        "printItemInvalid": "Only photos can be printed.",
+        "partnerRequired": "Only approved partners can list prices.",
+        "printPicksUnavailable": "You can't pick this photo for print.",
+        "printPricesMissing": "The photographer hasn't set print prices yet.",
+        "printListLocked": "This list was sent and can't change.",
+        "printListFull": "A list holds up to {max} photos.",
+        "vendorServiceLimitReached": "You can list up to {max} sizes.",
+        "printListEmpty": "Pick at least one photo first.",
         "vendorLimitReached": "This event has all the vendors it can take.",
         "vendorIsHost": "You host this event, so you can't join it as a vendor.",
         "alreadyAVendor": "You're already a vendor in this event.",
@@ -7468,6 +7510,45 @@
         }
     },
     "Vendors": {
+        "prints": {
+            "title": "Print order",
+            "included": "Prints included for the host",
+            "includedInvalid": "Enter a whole number from 0 to {max}.",
+            "includedSheetTitle": "Prints included for the host",
+            "includedLabel": "Number of prints",
+            "save": "Save",
+            "cancel": "Cancel",
+            "hostEmpty": "The host hasn't picked photos yet.",
+            "noPrice": "No price set",
+            "download": "Download",
+            "downloadPart": "Part {part} of {total}",
+            "downloading": "Downloading…",
+            "removedCount": "{count, plural, one {# photo removed} other {# photos removed}}",
+            "noSize": "No size",
+            "copies": "{count, plural, one {# copy} other {# copies}}"
+        },
+        "services": {
+            "title": "Print prices",
+            "partnerOnly": "Only approved partners can list prices.",
+            "profileFirst": "Fill in your details first.",
+            "empty": "No sizes yet.",
+            "add": "Add size",
+            "sheetAdd": "Add size",
+            "sheetEdit": "Edit size",
+            "label": "Size",
+            "labelPlaceholder": "13x18",
+            "price": "Price per copy (€)",
+            "priceInvalid": "Enter a price like 3.50.",
+            "priceTooHigh": "Enter a price up to {max}.",
+            "labelRequired": "Enter a size.",
+            "save": "Save",
+            "cancel": "Cancel",
+            "delete": "Delete size",
+            "deleteTitle": "Delete this size?",
+            "deleteBody": "Picks at this size keep their place, without a size.",
+            "deleteConfirm": "Delete",
+            "limit": "You can list up to {max} sizes."
+        },
         "types": {
             "PLANNER": "Planner",
             "VENUE": "Venue",
@@ -7547,11 +7628,12 @@
             "proDeleteBody": "It's removed from the Pro album.",
             "proDeleteConfirm": "Delete",
             "proDeleteCancel": "Keep",
-            "listingTitle": "Vendor list",
             "listingSwitch": "Show me in the vendor list",
             "listingHiddenByHost": "The host hid you from the list.",
             "profileTitle": "Your details",
-            "profileEdit": "Edit"
+            "profileEdit": "Edit",
+            "groupEvent": "For this event",
+            "groupSettings": "Your settings"
         },
         "meter": {
             "label": "Pro album",

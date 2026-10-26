@@ -102,6 +102,13 @@ describe('useApiErrorMessage', () => {
         );
     });
 
+    it('names the print list and print size limits', () => {
+        expect(describeIn('en', new ApiError(400, { errorCode: 5183 }))).toBe('A list holds up to 100 photos.');
+        expect(describeIn('el', new ApiError(400, { errorCode: 5183 }))).toBe('Μια λίστα χωράει έως 100 φωτογραφίες.');
+        expect(describeIn('en', new ApiError(400, { errorCode: 5184 }))).toBe('You can list up to 8 sizes.');
+        expect(describeIn('el', new ApiError(400, { errorCode: 5184 }))).toBe('Μπορείτε να ορίσετε έως 8 μεγέθη.');
+    });
+
     // Every fallback the mapper can pick exists in both languages.
     it('has the same ApiErrors keys in en and el', () => {
         const enKeys = Object.keys(en.ApiErrors).sort();
