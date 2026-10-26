@@ -22,6 +22,14 @@ describe('WeddingRsvp', () => {
         expect(screen.getByRole('img', { name: /^Με StoryWall: φόρμα RSVP/ }).getAttribute('src')).toContain('wedding-rsvp-replies-with.webp');
     });
 
+    it('shows the English pictures on the English page', async () => {
+        render(await WeddingRsvp({ locale: 'en' }));
+        expect(screen.getByRole('img', { name: /^Without StoryWall, RSVPs arrive/ }).getAttribute('src')).toContain(
+            'wedding-rsvp-replies-without-and-with-en.webp',
+        );
+        expect(screen.getByRole('img', { name: /^With StoryWall: RSVP form/ }).getAttribute('src')).toContain('wedding-rsvp-replies-with-en.webp');
+    });
+
     it('lists the four points beside the picture', async () => {
         render(await WeddingRsvp({ locale: 'el' }));
         expect(screen.getByText('ΟΛΕΣ ΟΙ ΑΠΑΝΤΗΣΕΙΣ')).toBeInTheDocument();

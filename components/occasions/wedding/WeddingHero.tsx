@@ -61,7 +61,7 @@ export async function WeddingHero({ alternatePaths, campaign, createHref, demoHr
                     {/* Copy */}
                     <div className="relative z-20">
                         {/* Breadcrumb */}
-                        <nav aria-label={common('breadcrumbLabel')} className="mb-3.5 ml-1 min-[768px]:mb-4.5">
+                        <nav aria-label={common('breadcrumbLabel')} className="mb-3.5 min-[768px]:mb-4.5 min-[768px]:ml-1">
                             <ol className="m-0 flex list-none items-center gap-2 p-0 text-[11px] leading-[normal] font-bold tracking-[0.06em] text-[#151313]/55 uppercase">
                                 <li>
                                     <a className="text-[#151313] no-underline hover:underline" href={home}>
@@ -77,7 +77,7 @@ export async function WeddingHero({ alternatePaths, campaign, createHref, demoHr
                             {t.rich('hero.kicker', { b: (chunks) => <strong className="font-bold">{chunks}</strong> })}
                         </p>
                         {/* Title */}
-                        <h1 className="m-0 [font-family:var(--editorial)] text-[clamp(37px,9vw,45px)] leading-[1.02] font-normal tracking-[-0.045em] min-[768px]:text-[clamp(50px,5.2vw,92px)] min-[768px]:leading-[0.91] min-[768px]:tracking-[-0.055em]">
+                        <h1 className="m-0 [font-family:var(--editorial)] text-[clamp(37px,9vw,45px)] leading-[1.1] font-normal tracking-[-0.045em] min-[768px]:text-[clamp(50px,5.2vw,92px)] min-[768px]:leading-[0.91] min-[768px]:tracking-[-0.055em]">
                             {t.rich('hero.h1', {
                                 em: (chunks) => (
                                     <em className="[background-image:var(--brand-gradient)] bg-clip-text text-transparent italic min-[768px]:pr-[0.06em]">
