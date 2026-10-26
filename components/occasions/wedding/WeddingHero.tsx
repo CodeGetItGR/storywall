@@ -12,12 +12,12 @@ import { occasionHeaderLinks } from '@/lib/occasions/occasionSections';
 
 // The design's background: pink top left, gold top right, coral at the bottom, on white.
 const SECTION_CLASS =
-    'relative bg-white bg-[radial-gradient(42%_52%_at_12%_18%,rgba(248,154,176,0.28),transparent_70%),radial-gradient(40%_50%_at_92%_22%,rgba(252,186,99,0.3),transparent_70%),radial-gradient(50%_60%_at_70%_100%,rgba(255,118,95,0.16),transparent_70%)] text-[#151313]';
+    'relative overflow-x-clip bg-white bg-[radial-gradient(42%_52%_at_12%_18%,rgba(248,154,176,0.28),transparent_70%),radial-gradient(40%_50%_at_92%_22%,rgba(252,186,99,0.3),transparent_70%),radial-gradient(50%_60%_at_70%_100%,rgba(255,118,95,0.16),transparent_70%)] text-[#151313]';
 
-// The landing's hero visual, sized and placed as in the design: 115% of the column under 768 px,
+// The landing's hero visual: as wide as the landing's phone under 768 px (the section clips the overflow),
 // overlapping the copy column's edge from 768 to 900, half the grid from 901 up.
 const VISUAL_CLASS = [
-    'left-1/2 mt-5.5 w-[min(115%,510px)] -translate-x-1/2',
+    'left-1/2 mt-5.5 ml-[3.7vw] w-[137vw] -translate-x-1/2',
     'min-[768px]:left-0 min-[768px]:mt-2.5 min-[768px]:ml-[max(-20px_-_9vw,50%_-_310px)] min-[768px]:w-[min(620px,118vw)] min-[768px]:translate-x-[3%]',
     'min-[901px]:my-[-3%] min-[901px]:ml-0 min-[901px]:w-[min(860px,54vw)] min-[901px]:justify-self-center',
 ].join(' ');
@@ -99,7 +99,7 @@ export async function WeddingHero({ alternatePaths, campaign, createHref, demoHr
                             createHref={createHref}
                             createLabel={c ? c('cta') : t('hero.cta')}
                             demoHref={demoHref}
-                            demoLabel={landing('hero.demoCta')}
+                            demoLabel={common('heroDemo')}
                             plansLabel={landing('hero.plansCta')}
                         />
                         {/* Trust line */}

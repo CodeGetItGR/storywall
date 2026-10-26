@@ -64,10 +64,10 @@ describe('WeddingHero', () => {
         render(await hero());
         expect(screen.getByRole('link', { name: 'Δες τα πακέτα' })).toHaveAttribute('href', '#pricing');
         expect(screen.queryByRole('link', { name: /Φτιάξε το StoryWall σου/ })).toBeNull();
-        expect(screen.getByRole('link', { name: 'Δες το demo' })).toHaveAttribute('href', '/demo/wedding/feed');
+        expect(screen.getByRole('link', { name: 'Demo' })).toHaveAttribute('href', '/demo/wedding/feed');
         cleanup();
         render(await hero({ demoHref: null }));
-        expect(screen.queryByRole('link', { name: 'Δες το demo' })).toBeNull();
+        expect(screen.queryByRole('link', { name: 'Demo' })).toBeNull();
     });
 
     it('sends signed-in visitors straight to create', async () => {
@@ -84,6 +84,6 @@ describe('WeddingHero', () => {
 
     it("shows the landing's phone and cards, placed as in the design", async () => {
         render(await hero());
-        expect(screen.getByTestId('visual')).toHaveClass('w-[min(115%,510px)]', 'min-[901px]:w-[min(860px,54vw)]');
+        expect(screen.getByTestId('visual')).toHaveClass('w-[137vw]', 'min-[901px]:w-[min(860px,54vw)]');
     });
 });

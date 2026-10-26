@@ -26,6 +26,7 @@ type OccasionHeroProps = {
 
 export async function OccasionHero({ alternatePaths, campaign, createHref, demoHref, feed, locale, occasion }: OccasionHeroProps) {
     const t = await getTranslations({ locale, namespace: `OccasionPages.${occasion.eventType}.hero` });
+    const common = await getTranslations({ locale, namespace: 'OccasionPages.common' });
     const landing = await getTranslations({ locale, namespace: 'LandingPage' });
     // A campaign may swap the sentence, CTA label and the feed's cover. The H1 always stays the keyword.
     const c = campaign?.hero ? await getTranslations({ locale, namespace: `OccasionPages.campaigns.${campaign.id}` }) : null;
@@ -41,7 +42,7 @@ export async function OccasionHero({ alternatePaths, campaign, createHref, demoH
                     createHref={createHref}
                     createLabel={c ? c('cta') : t('cta')}
                     demoHref={demoHref}
-                    demoLabel={landing('hero.demoCta')}
+                    demoLabel={common('heroDemo')}
                     plansLabel={landing('hero.plansCta')}
                 />
             }

@@ -6818,6 +6818,7 @@
     "OccasionPages": {
         "common": {
             "breadcrumbHome": "Home",
+            "heroDemo": "Demo",
             "features": {
                 "invitation": {
                     "title": "Digital invitation",

@@ -12,17 +12,9 @@ type OccasionHeroActionsProps = {
     plansLabel: string;
 };
 
-// The occasion hero's buttons: the plans (or create, once signed in) and the demo, without arrows.
+// The occasion hero's buttons: the plans (or create, once signed in) and the demo, as plain buttons.
 export function OccasionHeroActions({ createHref, createLabel, demoHref, demoLabel, plansLabel }: OccasionHeroActionsProps) {
     const { main, label } = useOccasionHeroMainAction(createHref, { create: createLabel, plans: plansLabel });
 
-    return (
-        <LandingHeroActions
-            arrows={false}
-            demoHref={demoHref ?? undefined}
-            demoLabel={demoHref ? demoLabel : undefined}
-            main={main}
-            mainLabel={label}
-        />
-    );
+    return <LandingHeroActions plain demoHref={demoHref ?? undefined} demoLabel={demoHref ? demoLabel : undefined} main={main} mainLabel={label} />;
 }
