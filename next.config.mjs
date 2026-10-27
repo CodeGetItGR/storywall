@@ -1,5 +1,6 @@
 import { execSync } from 'node:child_process';
 
+import { withSentryConfig } from '@sentry/nextjs/config';
 import createNextIntlPlugin from 'next-intl/plugin';
 
 import { securityHeaderRules } from './lib/security/securityHeaders.mjs';
@@ -46,6 +47,8 @@ const LANDING_PEXELS_PHOTO_IDS = ['33635247', '9215433', '9901279', '15141416', 
 const nextConfig = {
     env: {
         NEXT_PUBLIC_APP_VERSION: resolveAppVersion(),
+        // Sentry's environment tag: "staging" on the staging deployment, else Vercel's environment.
+        NEXT_PUBLIC_SENTRY_ENVIRONMENT: process.env.NEXT_PUBLIC_APP_ENV || process.env.VERCEL_ENV || 'development',
     },
     typescript: {
         ignoreBuildErrors: true,
@@ -84,4 +87,15 @@ const nextConfig = {
     },
 };
 
-export default withNextIntl(nextConfig);
+export default withSentryConfig(withNextIntl(nextConfig), {
+    org: process.env.SENTRY_ORG,
+    project: process.env.SENTRY_PROJECT,
+    // Uploads source maps when set (the Vercel build); without it the build skips the upload.
+    authToken: process.env.SENTRY_AUTH_TOKEN,
+    silent: !process.env.CI,
+    widenClientFileUpload: true,
+    // Browser events go through this route on our own domain, so ad blockers and the CSP let them through.
+    // proxy.ts leaves it out of its matcher.
+    tunnelRoute: '/monitoring',
+    telemetry: false,
+});
