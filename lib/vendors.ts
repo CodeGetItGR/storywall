@@ -90,6 +90,20 @@ export function vendorLinkHref(link: string | null | undefined): string | null {
     return value.startsWith('@') ? `https://instagram.com/${value.slice(1)}` : value;
 }
 
+export type VendorLinkKind = 'instagram' | 'website';
+
+// What the guest list's button names: Instagram for a handle or an instagram.com link, else Website.
+export function vendorLinkKind(link: string | null | undefined): VendorLinkKind | null {
+    const href = vendorLinkHref(link);
+    if (!href) return null;
+    try {
+        const host = new URL(href).hostname.replace(/^www\./, '');
+        return host === 'instagram.com' ? 'instagram' : 'website';
+    } catch {
+        return 'website';
+    }
+}
+
 // The vendors module gives this plan a Pro album allowance (0 or absent without the module).
 export function hasProAllowance(usage: Pick<EventUsageResponseDto, 'proStorageBytes'> | null | undefined): boolean {
     return (usage?.proStorageBytes ?? 0) > 0;
@@ -108,11 +122,7 @@ const VENDOR_TOOLS: { key: VendorToolKey; capability: VendorCapability; moduleKe
 ];
 
 // Without readableModules every open tool is listed; with it, tools whose module is off are left out.
-export function vendorToolLinks(
-    eventId: string,
-    me: VendorMeDto,
-    readableModules?: ReadonlySet<string>,
-): { key: VendorToolKey; href: string }[] {
+export function vendorToolLinks(eventId: string, me: VendorMeDto, readableModules?: ReadonlySet<string>): { key: VendorToolKey; href: string }[] {
     return VENDOR_TOOLS.filter((tool) => hasVendorCapability(me, tool.capability))
         .filter((tool) => !readableModules || !tool.moduleKey || readableModules.has(tool.moduleKey))
         .map((tool) => ({ key: tool.key, href: tool.href(eventId) }));

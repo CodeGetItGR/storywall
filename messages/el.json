@@ -7705,7 +7705,10 @@
             "title": "Συντελεστές",
             "back": "Πίσω",
             "empty": "Δεν υπάρχουν ακόμη συντελεστές.",
-            "open": "Άνοιγμα {name}"
+            "instagram": "Instagram",
+            "website": "Ιστότοπος",
+            "instagramOf": "{name} στο Instagram",
+            "websiteOf": "Ιστότοπος: {name}"
         },
         "me": {
             "title": "Η σελίδα μου",

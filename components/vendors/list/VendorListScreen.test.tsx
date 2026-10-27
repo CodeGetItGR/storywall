@@ -36,9 +36,10 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('VendorListScreen', () => {
-    it('shows name, type and an outgoing link that records a click', () => {
+    it('shows name, type and an Instagram button that records a click', () => {
         render(<VendorListScreen />);
-        const link = screen.getByRole('link', { name: 'list.open:{"name":"Studio X"}' });
+        const link = screen.getByRole('link', { name: 'list.instagramOf:{"name":"Studio X"}' });
+        expect(link.textContent).toBe('list.instagram');
         expect(link.getAttribute('href')).toBe('https://instagram.com/studio.x');
         expect(link.getAttribute('target')).toBe('_blank');
         expect(link.getAttribute('rel')).toContain('noopener');
@@ -55,10 +56,19 @@ describe('VendorListScreen', () => {
         ];
         render(<VendorListScreen />);
         expect(screen.getAllByRole('link').map((link) => link.getAttribute('aria-label'))).toEqual([
-            'list.open:{"name":"Plans"}',
-            'list.open:{"name":"Studio X"}',
-            'list.open:{"name":"Beats"}',
+            'list.instagramOf:{"name":"Plans"}',
+            'list.instagramOf:{"name":"Studio X"}',
+            'list.instagramOf:{"name":"Beats"}',
         ]);
+    });
+
+    it('names a web link as the website, and leaves the row itself unlinked', () => {
+        list.data = [row({ link: 'https://studio.gr' })];
+        render(<VendorListScreen />);
+        const link = screen.getByRole('link', { name: 'list.websiteOf:{"name":"Studio X"}' });
+        expect(link.getAttribute('href')).toBe('https://studio.gr');
+        expect(link.textContent).toBe('list.website');
+        expect(link.contains(screen.getByText('Studio X'))).toBe(false);
     });
 
     it('shows a row without a usable link as plain text', () => {
