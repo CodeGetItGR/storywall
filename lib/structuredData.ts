@@ -24,8 +24,9 @@ type ServicePageGraphInput = {
     faq: FaqEntry[];
 };
 
-// A page about one service: the organization, the service, a breadcrumb and the FAQ. No offers: prices come from config.
+// A page about one service: the organization, the page, the service, a breadcrumb and the FAQ. No offers: prices come from config.
 export function servicePageGraph({ locale, url, name, title, description, home, faq }: ServicePageGraphInput) {
+    const breadcrumbId = `${url}#breadcrumb`;
     return {
         '@context': 'https://schema.org',
         '@graph': [
@@ -37,6 +38,16 @@ export function servicePageGraph({ locale, url, name, title, description, home, 
                 logo: absoluteUrl('/apple-icon.png'),
             },
             {
+                '@type': 'WebPage',
+                '@id': `${url}#webpage`,
+                url,
+                name: title,
+                description,
+                inLanguage: locale,
+                publisher: { '@id': ORGANIZATION_ID },
+                breadcrumb: { '@id': breadcrumbId },
+            },
+            {
                 '@type': 'Service',
                 name: title,
                 description,
@@ -46,6 +57,7 @@ export function servicePageGraph({ locale, url, name, title, description, home, 
             },
             {
                 '@type': 'BreadcrumbList',
+                '@id': breadcrumbId,
                 itemListElement: [
                     { '@type': 'ListItem', position: 1, name: home.name, item: home.url },
                     { '@type': 'ListItem', position: 2, name, item: url },

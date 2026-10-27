@@ -1,8 +1,6 @@
 import type { ReactNode } from 'react';
-import { preload } from 'react-dom';
 
-// Same file as the hero content's background class, which Tailwind needs written out in full.
-const HERO_BACKGROUND = '/landing/hero-background-v75.webp';
+import { HeroBackground } from '@/components/landing/HeroBackground';
 
 type KeywordHeroProps = {
     actions: ReactNode;
@@ -18,15 +16,15 @@ type KeywordHeroProps = {
 
 // The hero of a page written for one search: occasion pages and the wedding QR page.
 export function KeywordHero({ actions, h1, header, headline, lead, note, visual }: KeywordHeroProps) {
-    preload(HERO_BACKGROUND, { as: 'image', fetchPriority: 'high' });
-
     return (
         <section aria-labelledby="keyword-hero-title" className="relative isolate overflow-hidden bg-white text-[#151313] min-[761px]:min-h-svh">
             {/* Header */}
             {header}
 
             {/* Hero content */}
-            <div className="relative bg-[url('/landing/hero-background-v75.webp')] bg-cover bg-center pt-6 pb-21.5 min-[421px]:max-[760px]:pt-10.75 min-[761px]:min-h-[calc(100svh-112px)] min-[761px]:py-0">
+            <div className="relative pt-6 pb-21.5 min-[421px]:max-[760px]:pt-10.75 min-[761px]:min-h-[calc(100svh-112px)] min-[761px]:py-0">
+                {/* Background */}
+                <HeroBackground />
                 <div className="relative mx-auto grid w-[calc(100%-40px)] max-w-305 grid-cols-1 items-center min-[761px]:min-h-[calc(100svh-112px)] min-[761px]:w-[calc(100%-64px)] min-[761px]:grid-cols-2">
                     <div className="relative z-20 self-center min-[761px]:py-2.5">
                         {/* Keyword: the page's h1 */}

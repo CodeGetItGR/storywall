@@ -2,6 +2,7 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 
+import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
 import { AppLink } from '@/components/ui/AppLink';
 import { useStoragePurchasePaused } from '@/hooks/useBillingWithdrawals';
 import type { PurchaseBlock } from '@/hooks/usePurchaseBlock';
@@ -10,6 +11,7 @@ import { useEventUsage } from '@/hooks/useUsage';
 import type { PaidServiceResponseDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
 import { formatBytes } from '@/lib/format';
+import { INCIDENT_MODE } from '@/lib/incident';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
@@ -30,7 +32,7 @@ export function StoragePackPurchase({
     const t = useTranslations('EventPlanSettingsPage.storagePacks');
     const tCommon = useTranslations('Common');
     const locale = useLocale();
-    const canPurchase = purchaseBlock === null;
+    const canPurchase = purchaseBlock === null && !INCIDENT_MODE;
     const usage = useEventUsage(eventId);
     const { selectedService, handleSelect } = useStoragePackSelection(services);
     // A whole-event withdrawal under review pauses pack purchases.
@@ -62,7 +64,12 @@ export function StoragePackPurchase({
                 )}
 
                 {/* Why buying is disabled */}
-                {purchaseBlock && <p className="mt-3 text-xs text-ink-muted">{tCommon(purchaseBlock === 'demo' ? 'demoPurchaseDisabled' : 'primaryHostOnly')}</p>}
+                {purchaseBlock && (
+                    <p className="mt-3 text-xs text-ink-muted">{tCommon(purchaseBlock === 'demo' ? 'demoPurchaseDisabled' : 'primaryHostOnly')}</p>
+                )}
+
+                {/* Incident note */}
+                <IncidentPausedNote className="mt-3" />
 
                 {/* Paused while a withdrawal is under review */}
                 {paused && <p className="mt-3 text-xs text-ink-muted">{t('paused')}</p>}
@@ -112,7 +119,10 @@ export function StoragePackPurchase({
 
                         {/* Buy */}
                         {paused ? null : canPurchase ? (
-                            <AppLink href={routes.events.checkoutReview(eventId, 'storage', { code: selectedService.code })} className={BUY_CLASS_NAME}>
+                            <AppLink
+                                href={routes.events.checkoutReview(eventId, 'storage', { code: selectedService.code })}
+                                className={BUY_CLASS_NAME}
+                            >
                                 {t('buy', { amount: priceLabel })}
                             </AppLink>
                         ) : (

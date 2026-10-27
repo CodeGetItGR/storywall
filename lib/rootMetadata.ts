@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { SITE_URL } from '@/lib/seo';
+import { isStagingSite, SITE_URL, STAGING_NO_INDEX } from '@/lib/seo';
 
 // Shared by both root layouts, app/(landing) and app/(main).
 export const rootViewport: Viewport = {
@@ -19,5 +19,7 @@ export async function getRootMetadata(): Promise<Metadata> {
         metadataBase: new URL(SITE_URL),
         title: t('title'),
         description: t('description'),
+        // Pages with their own robots replace this; buildIndexableMetadata does the same on staging.
+        ...(isStagingSite() && { robots: STAGING_NO_INDEX }),
     };
 }

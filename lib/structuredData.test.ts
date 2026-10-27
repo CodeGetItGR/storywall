@@ -42,9 +42,23 @@ describe('servicePageGraph', () => {
         });
     });
 
+    it('describes the page itself, published by StoryWall', () => {
+        expect(graph['@graph']).toContainEqual({
+            '@type': 'WebPage',
+            '@id': `${url}#webpage`,
+            url,
+            name: 'T',
+            description: 'D',
+            inLanguage: 'el',
+            publisher: { '@id': `${SITE_URL}/#organization` },
+            breadcrumb: { '@id': `${url}#breadcrumb` },
+        });
+    });
+
     it('leads the breadcrumb from home to the page', () => {
         expect(graph['@graph']).toContainEqual({
             '@type': 'BreadcrumbList',
+            '@id': `${url}#breadcrumb`,
             itemListElement: [
                 { '@type': 'ListItem', position: 1, name: 'Αρχική', item: `${SITE_URL}/el` },
                 { '@type': 'ListItem', position: 2, name: 'QR γάμου', item: url },

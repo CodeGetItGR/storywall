@@ -18,13 +18,13 @@ export function PartnerFeatureCard({ content }: { content: PartnerBrandingCardCo
                 {/* Cover */}
                 <div className="relative aspect-[16/9] w-full bg-surface-muted">
                     {content.coverUrl && (
-                        <ProtectedImage src={content.coverUrl} alt="" fill sizes="(min-width: 1024px) 672px, 100vw" className="object-cover" />
+                        <ProtectedImage src={content.coverUrl} alt={content.name} fill sizes="(min-width: 1024px) 672px, 100vw" className="object-cover" />
                     )}
                 </div>
 
                 {/* Partner */}
                 <div className="flex items-center gap-3 px-4 pt-3">
-                    <PartnerLogo src={content.logoUrl} size={40} />
+                    <PartnerLogo src={content.logoUrl} alt={content.name} size={40} />
                     <div className="min-w-0">
                         <PartnerCardLabel partnerLabel={content.partnerLabel} roleLabel={content.roleLabel} />
                         <p className="truncate text-sm font-bold text-ink">{content.name}</p>

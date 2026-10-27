@@ -43,6 +43,7 @@ function renderRow(props: Partial<Parameters<typeof ScheduleEditSessionRow>[0]>)
             <ScheduleEditSessionRow
                 definition={null}
                 session={null}
+                eventType="WEDDING"
                 canWrite
                 canAddSession
                 deleteDisabled={false}
@@ -83,5 +84,27 @@ describe('ScheduleEditSessionRow', () => {
         renderRow({ definition: secondaryDefinition });
 
         expect(screen.getByText('No venue session has been added yet.')).toBeInTheDocument();
+    });
+
+    it('marks a non-church main session with a party icon, not a church', () => {
+        const { container } = render(
+            <NextIntlClientProvider locale="en" messages={messages}>
+                <ScheduleEditSessionRow
+                    definition={null}
+                    session={aSession({ title: 'Party', isMain: true })}
+                    eventType="BIRTHDAY"
+                    canWrite
+                    canAddSession
+                    deleteDisabled={false}
+                    locale="en"
+                    onCreateManagedSession={vi.fn()}
+                    onEditSession={vi.fn()}
+                    onDeleteSession={vi.fn()}
+                />
+            </NextIntlClientProvider>,
+        );
+
+        expect(container.querySelector('.lucide-party-popper')).not.toBeNull();
+        expect(container.querySelector('.lucide-church')).toBeNull();
     });
 });

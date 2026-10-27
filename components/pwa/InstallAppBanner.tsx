@@ -9,6 +9,7 @@ import { useInstallBanner } from '@/hooks/useInstallBanner';
 
 export function InstallAppBanner() {
     const t = useTranslations('InstallApp');
+    const tAlt = useTranslations('ImageAlt');
     const { state, dismiss, install, iosGuideOpen, closeIosGuide } = useInstallBanner();
 
     if (state === 'hidden') return null;
@@ -23,7 +24,7 @@ export function InstallAppBanner() {
             ) : (
                 /* Offer */
                 <div className="flex items-center gap-3 rounded-2xl bg-surface-muted py-2 pr-2 pl-3">
-                    <Image src="/pwa/icon-192.png" alt="" width={36} height={36} className="h-9 w-9 shrink-0 rounded-lg" unoptimized />
+                    <Image src="/pwa/icon-192.png" alt={tAlt('appIcon')} width={36} height={36} className="h-9 w-9 shrink-0 rounded-lg" unoptimized />
                     <p className="min-w-0 flex-1 text-sm font-semibold text-ink">{t('banner.title')}</p>
                     <button
                         type="button"

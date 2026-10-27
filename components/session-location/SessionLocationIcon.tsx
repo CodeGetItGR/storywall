@@ -2,6 +2,7 @@
 
 import { MapPin } from 'lucide-react';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 import type { SessionLocationIcon as SessionLocationIconModel } from '@/lib/sessionLocations';
 
@@ -12,6 +13,7 @@ type SessionLocationIconProps = {
 };
 
 export function SessionLocationIcon({ icon, size = 'lg', className }: SessionLocationIconProps) {
+    const t = useTranslations('ImageAlt');
     const dimensions = size === 'lg' ? 'h-20 w-20' : 'h-5 w-5';
 
     if (icon.kind === 'map-pin') {
@@ -21,10 +23,9 @@ export function SessionLocationIcon({ icon, size = 'lg', className }: SessionLoc
     return (
         <Image
             src={icon.src ?? ''}
-            alt=""
+            alt={t('location')}
             width={size === 'lg' ? 80 : 18}
             height={size === 'lg' ? 80 : 18}
-            aria-hidden="true"
             unoptimized
             className={className}
         />

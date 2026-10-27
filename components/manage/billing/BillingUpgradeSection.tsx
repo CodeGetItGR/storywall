@@ -1,5 +1,6 @@
 import { useTranslations } from 'next-intl';
 
+import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
 import { BillingUpgradeRow } from '@/components/manage/billing/BillingUpgradeRow';
 import Section from '@/components/manage/Section';
 import { useBillingUpgradeRows } from '@/hooks/useBillingUpgradeRows';
@@ -26,6 +27,9 @@ export function BillingUpgradeSection({
 
     return (
         <Section title={t('compare.upgradeOptions')} divider>
+            {/* Incident note */}
+            <IncidentPausedNote className="mb-3" />
+
             {/* Plans */}
             <ul className="divide-y divide-ink/10">
                 {rows.map((row) => (

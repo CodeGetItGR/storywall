@@ -12,15 +12,18 @@ export function VendorToolLinks({ tools }: { tools: { key: VendorToolKey; href: 
     return (
         <section aria-labelledby="vendor-tools-title">
             {/* Title */}
-            <h2 id="vendor-tools-title" className="text-sm font-semibold text-ink">
+            <h3 id="vendor-tools-title" className="text-sm font-semibold text-ink">
                 {t('me.toolsTitle')}
-            </h2>
+            </h3>
 
             {/* Links */}
             <ul className="mt-1 divide-y divide-border">
                 {tools.map((tool) => (
                     <li key={tool.key}>
-                        <AppLink href={tool.href} className="flex min-h-12 items-center justify-between gap-3 py-3 text-sm font-semibold text-ink focus-ring">
+                        <AppLink
+                            href={tool.href}
+                            className="flex min-h-12 items-center justify-between gap-3 py-3 text-sm font-semibold text-ink focus-ring"
+                        >
                             {t(`me.tools.${tool.key}`)}
                             <ChevronRight className="size-4 text-ink-muted" aria-hidden="true" />
                         </AppLink>

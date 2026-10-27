@@ -2,7 +2,7 @@ import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { cn } from '@/lib/utils';
 
 // Without a logo (the admin preview) it keeps its place as a neutral circle.
-export function PartnerLogo({ src, size, className }: { src: string | null; size: number; className?: string }) {
+export function PartnerLogo({ src, alt, size, className }: { src: string | null; alt: string; size: number; className?: string }) {
     return (
         <span
             className={cn(
@@ -12,7 +12,7 @@ export function PartnerLogo({ src, size, className }: { src: string | null; size
             )}
             style={{ width: size, height: size }}
         >
-            {src && <ProtectedImage src={src} alt="" fill sizes={`${size}px`} className="object-contain" />}
+            {src && <ProtectedImage src={src} alt={alt} fill sizes={`${size}px`} className="object-contain" />}
         </span>
     );
 }

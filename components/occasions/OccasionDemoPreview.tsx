@@ -1,9 +1,11 @@
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 import type { DemoCollage } from '@/lib/occasions/demoPreview';
 
 // A server-rendered photo wall from the occasion's demo, under the demo band's link to the live one.
 export function OccasionDemoPreview({ collage }: { collage: DemoCollage }) {
+    const t = useTranslations('ImageAlt');
     const { lead, tiles, wish } = collage;
     const hasSide = tiles.length > 0 || wish !== null;
 
@@ -11,7 +13,7 @@ export function OccasionDemoPreview({ collage }: { collage: DemoCollage }) {
         <div className={`mt-10 grid gap-2.5 min-[761px]:mt-14 min-[761px]:gap-3 ${hasSide ? 'min-[761px]:grid-cols-[1.2fr_1fr]' : ''}`}>
             {/* Lead photo and its post */}
             <figure className="relative m-0 aspect-[4/5] overflow-hidden rounded-[22px] bg-white/40 min-[761px]:aspect-auto min-[761px]:min-h-110">
-                <Image alt="" className="object-cover" fill sizes="(min-width: 761px) 50vw, 100vw" src={lead.photo.src} />
+                <Image alt={lead.post ? t('photoBy', { name: lead.post.author }) : t('guestPhoto')} className="object-cover" fill sizes="(min-width: 761px) 50vw, 100vw" src={lead.photo.src} />
                 {lead.post ? (
                     <figcaption className="absolute inset-x-3 bottom-3 max-w-80 rounded-2xl bg-white/92 px-4 py-3.5 shadow-[0_18px_36px_-24px_rgba(70,38,24,0.55)] min-[761px]:inset-x-5 min-[761px]:bottom-5">
                         <p className="m-0 text-xs font-bold">{lead.post.author}</p>
@@ -28,7 +30,7 @@ export function OccasionDemoPreview({ collage }: { collage: DemoCollage }) {
                             className={`relative overflow-hidden rounded-[18px] bg-white/40 ${index === tiles.length - 1 && tiles.length % 2 === 1 ? 'col-span-2 aspect-[2/1]' : 'aspect-square'}`}
                             key={photo.src}
                         >
-                            <Image alt="" className="object-cover" fill sizes="(min-width: 761px) 22vw, 50vw" src={photo.src} />
+                            <Image alt={t('guestPhoto')} className="object-cover" fill sizes="(min-width: 761px) 22vw, 50vw" src={photo.src} />
                         </div>
                     ))}
 

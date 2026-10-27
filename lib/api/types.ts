@@ -768,7 +768,7 @@ export type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 // 2026-09-04: ctaRoute (a literal path) is gone, replaced by ctaTarget + ctaParams — the app
 // resolves the route itself. Closed but growable set; treat an unrecognized value defensively.
 // See docs/integration guides/notification-cta-target-fe-integration.md.
-export type NotificationCtaTarget = 'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS' | 'EVENT_COVERAGE_EXTEND' | 'EVENT_WISHBOOK' | 'EVENT_VENDORS';
+export type NotificationCtaTarget = 'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS' | 'EVENT_COVERAGE_EXTEND' | 'EVENT_WISHBOOK' | 'EVENT_VENDORS' | 'EVENT_VENDOR_PAGE';
 
 export interface NotificationResponseDto {
     id: string;
@@ -1120,7 +1120,7 @@ export interface PartnerBrandingDto {
 
 // --- Vendors in the event ---
 
-export type VendorCapability = 'PRO_ALBUM' | 'SCHEDULE_EDIT' | 'ANNOUNCE' | 'RSVP_REPORT' | 'QR_READ' | 'SONG_REQUESTS';
+export type VendorCapability = 'PRO_ALBUM' | 'SCHEDULE_EDIT' | 'ANNOUNCE' | 'RSVP_REPORT' | 'QR_READ' | 'SONG_REQUESTS' | 'PRINT_PICKS';
 export type MediaCollection = 'GUEST' | 'PRO';
 // Why a vendor's tools are off. Null in VendorMeDto while they are open.
 export type VendorToolsOff = 'MODULE_OFF' | 'TYPE_NOT_ALLOWED' | 'ACCESS_ENDED';
@@ -1164,6 +1164,95 @@ export interface VendorMeDto {
     optedOut: boolean;
     hiddenByHost: boolean;
     toolsOff: VendorToolsOff | null;
+    // An approved partner, who can list priced services (print picks spec 2026-10-23).
+    approvedPartner: boolean;
+}
+
+// Print picks (spec 2026-10-23). Prices are euro cents.
+export type VendorServiceKind = 'PRINT' | 'OTHER';
+
+export interface VendorServiceItemDto {
+    id: string;
+    kind: VendorServiceKind;
+    label: string;
+    priceCents: number;
+    currency: string;
+    sortOrder: number;
+}
+
+// Only PRINT is accepted for now; OTHER is reserved.
+// Label max 40, price 0..100000 cents, sortOrder 0..999.
+export interface VendorServiceItemRequestDto {
+    kind: VendorServiceKind;
+    label: string;
+    priceCents: number;
+    sortOrder?: number;
+}
+
+export type GuestPrintScope = 'OFF' | 'OWN' | 'ANY';
+
+export interface PrintSizeDto {
+    id: string;
+    label: string;
+    priceCents: number;
+    currency: string;
+}
+
+export interface PrintPhotographerDto {
+    vendorId: string;
+    businessName: string | null;
+    logoUrl: string | null;
+    // Never null: only open photographers are listed.
+    accessEndsAt: string;
+    // Hosts and the photographer themself; null for guests.
+    hostPrintsIncluded: number | null;
+    // Empty when the photographer has no sizes or is not an approved partner.
+    sizes: PrintSizeDto[];
+}
+
+export interface PrintPicksContextDto {
+    guestScope: GuestPrintScope;
+    photographers: PrintPhotographerDto[];
+}
+
+export type PrintListOwnerKind = 'HOST' | 'GUEST';
+export type PrintListStatus = 'OPEN' | 'SENT';
+
+export interface PrintListItemDto {
+    id: string;
+    mediaId: string;
+    // Null once the photo was deleted from the gallery (removed is then true).
+    media: MediaResponseDto | null;
+    removed: boolean;
+    // Size and price are null for a photographer without sizes or who is not an approved partner.
+    sizeId: string | null;
+    sizeLabel: string | null;
+    unitPriceCents: number | null;
+    copies: number;
+}
+
+export interface PrintListDto {
+    // Null for a host list nobody has written to yet.
+    id: string | null;
+    vendorId: string;
+    ownerKind: PrintListOwnerKind;
+    status: PrintListStatus;
+    sentAt: string | null;
+    ownerName: string | null;
+    // Sent guest lists, photographer's view only.
+    contactEmail: string | null;
+    contactPhone: string | null;
+    // Copied at send; null on open lists.
+    totalCents: number | null;
+    removedCount: number;
+    items: PrintListItemDto[];
+}
+
+// PATCH of one print pick: size, copies, or both.
+export type PrintItemPatch = { sizeId?: string; copies?: number };
+
+export interface PrintListArchiveManifestDto {
+    parts: { part: number; itemCount: number; bytes: number }[];
 }
 
 // PATCH /api/events/{eventId}/vendors/{vendorId}: a host sends hiddenByHost, the vendor sends optedOut. Exactly one.

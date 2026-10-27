@@ -1,17 +1,19 @@
 'use client';
 
-import { CalendarClock, Church, MapPin, Martini, Pencil, Plus, Trash2 } from 'lucide-react';
+import { CalendarClock, Church, MapPin, Martini, PartyPopper, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { TargetedSection } from '@/components/manage/TargetedSection';
-import type { EventSessionResponseDto } from '@/lib/api/types';
+import type { EventSessionResponseDto, EventTypeConvention } from '@/lib/api/types';
 import { formatTimeRange } from '@/lib/datetime';
+import { resolveLocationKind } from '@/lib/sessionLocations';
 import type { ManagedSessionDefinition } from '@/lib/sessionManagement';
 import { cn } from '@/lib/utils';
 
 interface ScheduleEditSessionRowProps {
     definition: ManagedSessionDefinition | null;
     session: EventSessionResponseDto | null;
+    eventType: EventTypeConvention;
     canWrite: boolean;
     // Separate from canWrite: editing/deleting an existing session is always
     // allowed while canWrite is true, but creating a new one is additionally
@@ -27,6 +29,7 @@ interface ScheduleEditSessionRowProps {
 export function ScheduleEditSessionRow({
     definition,
     session,
+    eventType,
     canWrite,
     canAddSession,
     deleteDisabled,
@@ -37,8 +40,13 @@ export function ScheduleEditSessionRow({
 }: ScheduleEditSessionRowProps) {
     const t = useTranslations('SchedulePage.host.sessionManagement');
     const isManaged = Boolean(definition || session?.isMain || session?.isSecondary);
+    const MainIcon = resolveLocationKind(eventType, 'main') === 'church' ? Church : PartyPopper;
     const Icon =
-        definition?.role === 'main' || session?.isMain ? Church : definition?.role === 'secondary' || session?.isSecondary ? Martini : CalendarClock;
+        definition?.role === 'main' || session?.isMain
+            ? MainIcon
+            : definition?.role === 'secondary' || session?.isSecondary
+              ? Martini
+              : CalendarClock;
     const title = session?.title ?? (definition ? t(`${definition.titleKey}.title`) : t('untitled'));
     const time = session?.startAt ? formatTimeRange(locale, session.startAt, session.endAt, t('notSet')) : t('notSet');
     const location = session?.locationName || t('notSet');

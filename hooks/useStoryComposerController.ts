@@ -7,6 +7,7 @@ import { useAppConfig } from '@/hooks/useAppConfig';
 import { pollMediaUntilProcessed, useDeleteMedia, useUploadMedia } from '@/hooks/useMedia';
 import type { MediaMetadata } from '@/lib/api/types';
 import { formatBytes } from '@/lib/format';
+import { INCIDENT_MODE } from '@/lib/incident';
 import { STORY_FILTER_PRESETS } from '@/lib/story/storyFilters';
 import { getUploadLimits } from '@/lib/uploadLimits';
 import { videoFailureReason } from '@/lib/videoFailure';
@@ -222,7 +223,10 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
                                                           ...existing,
                                                           remoteUrl: processed.mediaUrl ?? undefined,
                                                           status: processed.status === 'FAILED' ? 'failed' : 'uploaded',
-                                                          error: processed.status === 'FAILED' ? videoFailureMessage(processed.metadata) : existing.error,
+                                                          error:
+                                                              processed.status === 'FAILED'
+                                                                  ? videoFailureMessage(processed.metadata)
+                                                                  : existing.error,
                                                       }
                                                     : existing,
                                             ),
@@ -292,7 +296,7 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
         activeKey,
         activeItem,
         isBusy,
-        canSubmit: items.length > 0 && !isBusy && canCompose,
+        canSubmit: !INCIDENT_MODE && items.length > 0 && !isBusy && canCompose,
         error,
         maxItems,
         maxCaptionLength,

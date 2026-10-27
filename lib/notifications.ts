@@ -12,6 +12,7 @@ const CTA_ROUTES: Record<NotificationCtaTarget, (params: Record<string, string>)
     EVENT_COVERAGE_EXTEND: (p) => routes.events.manage(p.eventId, { tab: 'billing', section: EXTEND_COVERAGE_SECTION_ID }),
     EVENT_WISHBOOK: (p) => routes.events.tools.wishbook(p.eventId),
     EVENT_VENDORS: (p) => routes.events.manageVendors(p.eventId),
+    EVENT_VENDOR_PAGE: (p) => routes.events.tools.vendorMe(p.eventId),
 };
 
 export function notificationCtaRoute(notification: NotificationResponseDto): string | null {
@@ -77,4 +78,11 @@ export function payloadNumber(notification: NotificationResponseDto, key: string
 export function payloadBoolean(notification: NotificationResponseDto, key: string): boolean | null {
     const value = notification.payload?.[key];
     return typeof value === 'boolean' ? value : null;
+}
+
+// A count for plural copy: always a finite number, 0 when missing or not numeric.
+export function payloadCount(notification: NotificationResponseDto, key: string): number {
+    const value = notification.payload?.[key];
+    const count = typeof value === 'string' && value.trim() !== '' ? Number(value) : value;
+    return typeof count === 'number' && Number.isFinite(count) ? count : 0;
 }

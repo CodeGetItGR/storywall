@@ -11,6 +11,7 @@ import { useLandingMobileMenu } from '@/hooks/useLandingMobileMenu';
 import type { Locale } from '@/i18n/config';
 import { landingClickAttributes, landingNavTarget } from '@/lib/landingTracking';
 import { routes } from '@/lib/routes';
+import { cn } from '@/lib/utils';
 
 // One in-page link: the header's label, and the mobile menu's.
 export type LandingHeaderLink = { href: string; label: string; mobileLabel: string };
@@ -18,6 +19,8 @@ export type LandingHeaderLink = { href: string; label: string; mobileLabel: stri
 type LandingHeaderProps = {
     // The page's own URL in each language (occasion pages).
     alternatePaths?: Partial<Record<Locale, string>>;
+    // An occasion hero that draws its own background behind the header.
+    className?: string;
     // Where the logo goes: the top of the landing, or the landing from an occasion page.
     homeHref: string;
     links: LandingHeaderLink[];
@@ -25,14 +28,16 @@ type LandingHeaderProps = {
     mobileLoginLabel: string;
 };
 
-export function LandingHeader({ alternatePaths, homeHref, links, loginLabel, mobileLoginLabel }: LandingHeaderProps) {
+export function LandingHeader({ alternatePaths, className, homeHref, links, loginLabel, mobileLoginLabel }: LandingHeaderProps) {
     const t = useTranslations('LandingPage.hero');
     const { isAuthenticated, isBootstrapping } = useAuth();
     const { isOpen, menuRef, toggleRef, close, toggle } = useLandingMobileMenu();
     const isSignedIn = isAuthenticated && !isBootstrapping;
 
     return (
-        <header className="relative z-30 h-20 bg-white/95 min-[421px]:max-[760px]:h-31 min-[761px]:h-28 min-[761px]:backdrop-blur-sm">
+        <header
+            className={cn('relative z-30 h-20 bg-white/95 min-[421px]:max-[760px]:h-31 min-[761px]:h-28 min-[761px]:backdrop-blur-sm', className)}
+        >
             <div className="mx-auto flex h-full w-[calc(100%-40px)] max-w-305 items-center justify-between gap-6 min-[761px]:w-[calc(100%-64px)]">
                 {/* Logo */}
                 <a

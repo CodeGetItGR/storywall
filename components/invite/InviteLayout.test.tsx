@@ -7,7 +7,7 @@ import type { EventThemeDto, EventThemeFontDto } from '@/lib/api/types';
 vi.mock('@/components/common/Logo', () => ({ Logo: () => <span data-testid="logo" /> }));
 vi.mock('@/components/common/ProtectedImage', () => ({
     // eslint-disable-next-line @next/next/no-img-element
-    ProtectedImage: ({ src, onError }: { src: string; onError?: () => void }) => <img data-testid="hero" src={src} alt="" onError={onError} />,
+    ProtectedImage: ({ src, alt, onError }: { src: string; alt: string; onError?: () => void }) => <img data-testid="hero" src={src} alt={alt} onError={onError} />,
 }));
 
 const THEME: EventThemeDto = {

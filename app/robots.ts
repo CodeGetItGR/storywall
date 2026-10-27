@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-import { absoluteUrl } from '@/lib/seo';
+import { absoluteUrl, isStagingSite } from '@/lib/seo';
 import { SHARED_LINK_PREFIXES } from '@/lib/shareLinks';
 
 // Session-gated and token-link routes. Kept explicit rather than derived from
@@ -24,7 +24,7 @@ const LINK_PREVIEW_BOTS = [
 
 export default function robots(): MetadataRoute.Robots {
     // Staging serves the same pages under another host; it must never be indexed.
-    if (process.env.NEXT_PUBLIC_APP_ENV === 'staging') {
+    if (isStagingSite()) {
         return { rules: { userAgent: '*', disallow: '/' } };
     }
 

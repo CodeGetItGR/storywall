@@ -1,6 +1,6 @@
 'use client';
 
-import { Download } from 'lucide-react';
+import { Download, Loader2, Printer } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { createPortal } from 'react-dom';
 
@@ -14,6 +14,11 @@ interface GallerySelectionActionsProps {
     canDownloadSelected: boolean;
     /** Why the download is disabled, when the reason isn't obvious. */
     downloadHint?: string | null;
+    /** Download shows for hosts in the guest album only. */
+    canDownload?: boolean;
+    /** Adds the selection to the print list; absent while print picks are unavailable. */
+    onPrintSelected?: () => void;
+    isPrinting?: boolean;
     onSelectAll: () => void;
     onDownloadSelected: () => void;
     onExitSelection: () => void;
@@ -24,11 +29,15 @@ export function GallerySelectionActions({
     mediaCount,
     canDownloadSelected,
     downloadHint,
+    canDownload = true,
+    onPrintSelected,
+    isPrinting = false,
     onSelectAll,
     onDownloadSelected,
     onExitSelection,
 }: GallerySelectionActionsProps) {
     const t = useTranslations('GalleryPage');
+    const tPrint = useTranslations('GalleryPage.print');
     const { sentinelRef, scrolledPast } = useScrolledPastSentinel();
 
     const renderActions = (floating: boolean) => (
@@ -48,16 +57,34 @@ export function GallerySelectionActions({
                 {t('cancelSelection')}
             </Button>
 
-            <Button
-                type="button"
-                size="lg"
-                onClick={onDownloadSelected}
-                disabled={!canDownloadSelected}
-                className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-6 text-sm font-semibold text-white shadow-md"
-            >
-                <Download className="h-4 w-4" />
-                {t('downloadSelected', { count: selectedCount })}
-            </Button>
+            {/* Print */}
+            {onPrintSelected && (
+                <Button
+                    type="button"
+                    size="lg"
+                    variant={canDownload ? 'outline' : 'default'}
+                    onClick={onPrintSelected}
+                    disabled={!selectedCount || isPrinting}
+                    className="inline-flex items-center gap-2 rounded-full px-5 py-6 text-sm font-semibold"
+                >
+                    {isPrinting ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Printer className="h-4 w-4" aria-hidden="true" />}
+                    {tPrint('action')}
+                </Button>
+            )}
+
+            {/* Download */}
+            {canDownload && (
+                <Button
+                    type="button"
+                    size="lg"
+                    onClick={onDownloadSelected}
+                    disabled={!canDownloadSelected}
+                    className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-6 text-sm font-semibold text-white shadow-md"
+                >
+                    <Download className="h-4 w-4" />
+                    {t('downloadSelected', { count: selectedCount })}
+                </Button>
+            )}
 
             <Button
                 type="button"

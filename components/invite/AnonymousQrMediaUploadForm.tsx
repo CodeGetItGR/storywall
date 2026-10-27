@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import React, { useCallback, useState } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
 import { AcceptanceCheckboxes } from '@/components/legal/AcceptanceCheckboxes';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
@@ -17,6 +18,7 @@ import { termsVersionQueryKey, useTermsVersion } from '@/hooks/useTermsVersion';
 import { useUploadAccept } from '@/hooks/useUploadAccept';
 import { isGuidelinesVersionMismatchError, isTermsVersionMismatchError } from '@/lib/api/errors';
 import { formatBytes } from '@/lib/format';
+import { INCIDENT_MODE } from '@/lib/incident';
 import { getUploadLimits } from '@/lib/uploadLimits';
 import { cn } from '@/lib/utils';
 
@@ -26,6 +28,7 @@ interface AnonymousQrMediaUploadFormProps {
 
 export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadFormProps) {
     const t = useTranslations('QrCodePage');
+    const tAlt = useTranslations('ImageAlt');
     const uploadAccept = useUploadAccept();
     const toErrorMessage = useApiErrorMessage();
     const uploadBatch = useUploadQrMediaBatch();
@@ -168,6 +171,9 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
                 />
             </FormFieldLabel>
 
+            {/* Incident note */}
+            <IncidentPausedNote />
+
             <FormFieldLabel label={t('anonymousUpload.filesLabel')} required>
                 <label
                     onDragOver={handleDragOver}
@@ -177,6 +183,7 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
                         'flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed px-4 text-center transition-colors',
                         files.length > 0 ? 'py-4' : 'py-10',
                         isDragActive ? 'border-primary bg-primary/5' : 'border-ink-faint/30 bg-surface-muted hover:border-ink-faint/50',
+                        INCIDENT_MODE && 'pointer-events-none opacity-60',
                     )}
                 >
                     <ImagePlus className={cn('h-6 w-6', isDragActive ? 'text-primary' : 'text-ink-faint')} />
@@ -184,7 +191,14 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
                         {files.length > 0 ? t('anonymousUpload.addMore') : t('anonymousUpload.chooseFiles')}
                     </span>
                     <span className="text-xs text-ink-faint">{t('anonymousUpload.dropHint')}</span>
-                    <input type="file" accept={uploadAccept.media} multiple onChange={handleFilesChange} className="hidden" />
+                    <input
+                        type="file"
+                        accept={uploadAccept.media}
+                        multiple
+                        disabled={INCIDENT_MODE}
+                        onChange={handleFilesChange}
+                        className="hidden"
+                    />
                 </label>
 
                 {previews.length > 0 && (
@@ -200,7 +214,7 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
                                         <Video className="absolute bottom-1 left-1 h-3.5 w-3.5 text-white drop-shadow" aria-hidden="true" />
                                     </>
                                 ) : (
-                                    <ProtectedImage src={preview.url} alt="" fill className="object-cover" sizes="80px" unoptimized />
+                                    <ProtectedImage src={preview.url} alt={tAlt('photoPreview')} fill className="object-cover" sizes="80px" unoptimized />
                                 )}
                                 <button
                                     type="button"
@@ -239,7 +253,7 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
 
             <button
                 type="submit"
-                disabled={uploadBatch.isPending || files.length === 0 || !acceptedDocuments || !ageConfirmed}
+                disabled={INCIDENT_MODE || uploadBatch.isPending || files.length === 0 || !acceptedDocuments || !ageConfirmed}
                 className="flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
                 {uploadBatch.isPending ? (
