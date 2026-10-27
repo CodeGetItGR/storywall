@@ -46,6 +46,21 @@ function scrubBreadcrumb(breadcrumb: Breadcrumb): Breadcrumb {
     return breadcrumb;
 }
 
+type RecordingEvent = { type: number; data: unknown };
+
+// A replay recording keeps the page URL (its meta event's href) and the URLs of
+// its navigation and fetch spans; beforeSend never sees either.
+export function scrubRecordingEvent<T extends RecordingEvent>(event: T): T {
+    const data = event.data as { href?: unknown; payload?: { description?: unknown; data?: Record<string, unknown> } };
+    if (typeof data?.href === 'string') data.href = scrubUrl(data.href);
+    const payload = data?.payload;
+    if (payload) {
+        if (typeof payload.description === 'string') payload.description = scrubText(payload.description);
+        scrubData(payload.data);
+    }
+    return event;
+}
+
 // The backend reports its own failures; a 4xx is an expected answer, not a bug.
 function isExpectedApiError(hint: EventHint): boolean {
     const error = hint.originalException as { name?: unknown; status?: unknown } | null | undefined;

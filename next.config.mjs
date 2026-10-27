@@ -88,8 +88,8 @@ const nextConfig = {
 };
 
 export default withSentryConfig(withNextIntl(nextConfig), {
-    org: process.env.SENTRY_ORG,
-    project: process.env.SENTRY_PROJECT,
+    org: 'storywall',
+    project: 'storywall-web',
     // Uploads source maps when set (the Vercel build); without it the build skips the upload.
     authToken: process.env.SENTRY_AUTH_TOKEN,
     silent: !process.env.CI,
