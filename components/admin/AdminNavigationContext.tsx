@@ -10,6 +10,7 @@ import {
     GalleryVerticalEnd,
     Handshake,
     LayoutGrid,
+    Link2,
     type LucideIcon,
     Megaphone,
     MonitorPlay,
@@ -62,6 +63,7 @@ export type AdminTab =
     | 'bugReports'
     | 'errorEvents'
     | 'appReviews'
+    | 'campaigns'
     | 'siteNotices';
 
 export type AdminTabItem = {
@@ -105,6 +107,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#bug-reports': 'bugReports',
     '#errors': 'errorEvents',
     '#reviews': 'appReviews',
+    '#campaigns': 'campaigns',
     '#site-notices': 'siteNotices',
 };
 
@@ -128,6 +131,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     orders: ORDERS_HASH_ROOT,
     withdrawals: WITHDRAWALS_HASH_ROOT,
     accounts: '#accounts',
+    campaigns: '#campaigns',
     reports: '#reports',
     bugReports: '#bug-reports',
     errorEvents: '#errors',
@@ -214,6 +218,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'paidServices', label: t('paidServices'), icon: PackagePlus },
             { key: 'discountCodes', label: t('discountCodes'), icon: TicketPercent },
             { key: 'appReviews', label: t('appReviews'), icon: Star },
+            { key: 'campaigns', label: t('campaigns'), icon: Link2 },
             { key: 'collaborations', label: t('collaborations'), icon: Handshake },
             { key: 'partnerCards', label: t('partnerCards'), icon: GalleryVerticalEnd },
             { key: 'reactionTypes', label: t('reactionTypes'), icon: Smile },

@@ -31,6 +31,7 @@ export type ApiErrorMessageKey =
     | 'collaborationCodeNotValid'
     | 'collaborationEarningNotPayable'
     | 'collaboratorPayoutDetailsIncomplete'
+    | 'campaignLinkTaken'
     | 'collaboratorBrandingIncomplete'
     | 'partnerBrandingNoticeOutdated'
     | 'concurrentModification'
@@ -327,6 +328,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.COLLABORATION_CODE_NOT_VALID]: 'collaborationCodeNotValid',
     [ERROR_CODES.COLLABORATION_EARNING_NOT_PAYABLE]: 'collaborationEarningNotPayable',
     [ERROR_CODES.COLLABORATOR_PAYOUT_DETAILS_INCOMPLETE]: 'collaboratorPayoutDetailsIncomplete',
+    [ERROR_CODES.CAMPAIGN_LINK_TAKEN]: 'campaignLinkTaken',
     [ERROR_CODES.CONFLICT]: 'conflict',
     [ERROR_CODES.CONCURRENT_MODIFICATION]: 'concurrentModification',
     [ERROR_CODES.COVERAGE_ENDED]: 'coverageEnded',

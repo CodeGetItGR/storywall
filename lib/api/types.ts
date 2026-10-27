@@ -768,7 +768,8 @@ export type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 // 2026-09-04: ctaRoute (a literal path) is gone, replaced by ctaTarget + ctaParams — the app
 // resolves the route itself. Closed but growable set; treat an unrecognized value defensively.
 // See docs/integration guides/notification-cta-target-fe-integration.md.
-export type NotificationCtaTarget = 'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS' | 'EVENT_COVERAGE_EXTEND' | 'EVENT_WISHBOOK' | 'EVENT_VENDORS' | 'EVENT_VENDOR_PAGE';
+export type NotificationCtaTarget =
+    'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS' | 'EVENT_COVERAGE_EXTEND' | 'EVENT_WISHBOOK' | 'EVENT_VENDORS' | 'EVENT_VENDOR_PAGE';
 
 export interface NotificationResponseDto {
     id: string;
@@ -2319,6 +2320,40 @@ export type SignupChannel = 'INVITE' | 'GIFT' | 'ADS' | 'SOCIAL' | 'EMAIL' | 'PA
  */
 export interface FunnelChannelRowDto {
     channel: SignupChannel;
+    signedUp: number;
+    createdEvent: number;
+    paidHost: number;
+    revenueMinorByCurrency: Record<string, number>;
+}
+
+// /api/admin/campaign-links. Made with the campaign link builder; only the name changes afterwards.
+// Spring stores the UTM values trimmed and lowercased, one link per (source, medium, campaign).
+export interface CampaignLinkDto {
+    id: string;
+    name: string;
+    destinationPath: string;
+    utmSource: string;
+    utmMedium: string;
+    utmCampaign: string;
+    createdAt: string;
+}
+
+export interface CampaignLinkRequestDto {
+    name: string;
+    destinationPath: string;
+    utmSource: string;
+    utmMedium: string;
+    utmCampaign: string;
+}
+
+// GET /api/admin/metrics/campaigns. Sign-ups in the range per (source, medium, campaign), counted as
+// on FunnelChannelRowDto, with the saved link that has the same values. A saved link without
+// sign-ups is a row of zeros. Any of the three values is null when the visit didn't have it.
+export interface CampaignRowDto {
+    utmSource: string | null;
+    utmMedium: string | null;
+    utmCampaign: string | null;
+    link: CampaignLinkDto | null;
     signedUp: number;
     createdEvent: number;
     paidHost: number;

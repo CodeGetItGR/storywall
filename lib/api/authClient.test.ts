@@ -25,24 +25,12 @@ const REGISTER = {
     adultConfirmed: true as const,
 };
 
-describe('authClient visit source while off', () => {
-    it('sends no visitSource even when one is remembered', async () => {
-        const fetchMock = stubFetch();
-        rememberVisitSource(SOURCE);
-        await authClient.register(REGISTER);
-        await authClient.oauth('GOOGLE', { idToken: 'id' });
-        expect(sentBody(fetchMock)).not.toHaveProperty('visitSource');
-        expect(JSON.parse(String((fetchMock.mock.calls[1] as unknown as [string, RequestInit])[1].body))).not.toHaveProperty('visitSource');
-    });
-});
-
 afterEach(() => {
     rememberVisitSource(null);
     vi.unstubAllGlobals();
 });
 
-// Skipped while SEND_VISIT_SOURCE is off in authClient.ts.
-describe.skip('authClient visit source', () => {
+describe('authClient visit source', () => {
     it('adds the remembered source to register', async () => {
         const fetchMock = stubFetch();
         rememberVisitSource(SOURCE);
