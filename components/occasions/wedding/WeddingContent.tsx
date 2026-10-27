@@ -31,6 +31,9 @@ import type { OccasionThemeId } from '@/lib/occasions/themes';
 import { WEDDING_FINAL_CTA_IMAGE } from '@/lib/occasions/weddingMedia';
 import { LandingMotionProvider } from '@/providers/LandingMotionProvider';
 
+// A three-line demo heading tops out smaller on desktop, so it fits beside the phones.
+const DEMO_LONG_HEADING_CLASS = 'min-[761px]:text-[clamp(54px,4.5vw,72px)]';
+
 type HowCopy = { heading: [string, string]; kicker: string; steps: { title: string }[] };
 
 type WeddingContentProps = {
@@ -53,6 +56,7 @@ export async function WeddingContent({ campaign, demoHref, featureKeys, locale, 
     const createHref = occasionCreateHref(occasion, campaign);
     const bold = (chunks: ReactNode) => <strong className="font-bold">{chunks}</strong>;
     const how = t.raw('how') as HowCopy;
+    const demoHeading = t.raw('demo.heading') as string[];
     const faq = occasionFaqEntries(t.raw('faq') as OccasionFaqEntry[], (key) => t(key, price)).map((entry): [string, ReactNode] => [
         entry.q,
         <WeddingFaqAnswer
@@ -108,7 +112,8 @@ export async function WeddingContent({ campaign, demoHref, featureKeys, locale, 
                     <LandingDemo
                         copy={t.rich('demo.copy', { b: bold, br: () => <br /> })}
                         eyebrow={t('demo.kicker')}
-                        heading={t.raw('demo.heading') as string[]}
+                        heading={demoHeading}
+                        headingClassName={demoHeading.length > 2 ? DEMO_LONG_HEADING_CLASS : undefined}
                         href={demoHref}
                         imageAlt={t('demo.imageAlt')}
                     />

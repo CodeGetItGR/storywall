@@ -20,7 +20,7 @@ export async function WeddingPrivate({ locale }: { locale: Locale }) {
             <WeddingWrap>
                 {/* Heading */}
                 <WeddingSectionHead
-                    className="mb-9 max-w-225 min-[561px]:mb-15"
+                    className="mb-9 min-[561px]:mb-15"
                     heading={t.raw('heading') as [string, string]}
                     headingClassName="text-[clamp(40px,4.4vw,72px)] leading-[0.95] tracking-[-0.05em]"
                     id="wedding-private-title"

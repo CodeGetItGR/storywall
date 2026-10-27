@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { landingClickAttributes, landingSectionAttributes } from '@/lib/landingTracking';
@@ -18,12 +18,22 @@ type LandingDemoProps = {
     // A string: that kicker right above the heading, keeping the three columns.
     eyebrow?: boolean | string;
     heading?: string[];
+    // An occasion page's own heading size, over the landing's.
+    headingClassName?: string;
     href?: string;
     // An occasion page's own name for the picture.
     imageAlt?: string;
 };
 
-export async function LandingDemo({ children, copy, eyebrow = true, heading: headingOverride, href = routes.demo, imageAlt }: LandingDemoProps) {
+export async function LandingDemo({
+    children,
+    copy,
+    eyebrow = true,
+    heading: headingOverride,
+    headingClassName,
+    href = routes.demo,
+    imageAlt,
+}: LandingDemoProps) {
     const t = await getTranslations('LandingPage.demo');
     const heading = headingOverride ?? (t.raw('heading') as string[]);
     const kicker = typeof eyebrow === 'string' ? eyebrow : null;
@@ -65,10 +75,20 @@ export async function LandingDemo({ children, copy, eyebrow = true, heading: hea
                           : 'min-[761px]:col-start-1 min-[761px]:row-start-1',
                 )}
             >
-                <h2 className="m-0 mt-6 [font-family:var(--editorial)] text-[clamp(42px,10.5vw,58px)] leading-[0.98] font-normal tracking-[-0.055em] min-[761px]:mt-0 min-[761px]:max-w-[720px] min-[761px]:text-[clamp(54px,4.5vw,86px)] min-[761px]:leading-[0.96]">
-                    {heading[0]}
-                    <br />
-                    <strong className="font-bold">{heading[1]}</strong>
+                <h2
+                    className={cn(
+                        'm-0 mt-6 [font-family:var(--editorial)] text-[clamp(42px,10.5vw,58px)] leading-[0.98] font-normal tracking-[-0.055em] min-[761px]:mt-0 min-[761px]:max-w-[720px] min-[761px]:text-[clamp(54px,4.5vw,86px)] min-[761px]:leading-[0.96]',
+                        headingClassName,
+                    )}
+                >
+                    {/* Each part on its own line, the last one bold */}
+                    {heading.slice(0, -1).map((line) => (
+                        <Fragment key={line}>
+                            {line}
+                            <br />
+                        </Fragment>
+                    ))}
+                    <strong className="font-bold">{heading.at(-1)}</strong>
                 </h2>
                 <div className="mt-[26px] block border-t border-[#151313]/18 pt-6 min-[761px]:mt-[34px] min-[761px]:flex min-[761px]:flex-col min-[761px]:items-start min-[761px]:gap-[22px] min-[761px]:pt-[26px]">
                     <p className="m-0 max-w-[92%] text-[18px] leading-[1.5] text-[#151313] min-[761px]:max-w-[760px] min-[761px]:text-[clamp(22px,1.4vw,28px)] min-[761px]:leading-[1.45]">

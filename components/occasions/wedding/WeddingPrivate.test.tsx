@@ -11,7 +11,7 @@ afterEach(cleanup);
 describe('WeddingPrivate', () => {
     it('shows four numbered cards, each with its icon', async () => {
         const { container } = render(await WeddingPrivate({ locale: 'el' }));
-        expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Ένα ιδιωτικό Social γεμάτο στιγμές. Για εσάς και τους ανθρώπους σας.');
+        expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Ένα ιδιωτικό Social γεμάτο στιγμές και συναισθήματα.');
         expect(screen.getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent)).toEqual([
             'Ιδιωτικός τοίχος',
             'Διαχείριση από εσένα',

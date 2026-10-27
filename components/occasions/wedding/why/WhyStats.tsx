@@ -20,13 +20,16 @@ export function WhyStats({ chips, example, stats }: WhyStatsProps) {
                 ))}
             </ul>
             {/* Points */}
-            <ul className="m-0 mt-6.5 flex list-none flex-wrap justify-center gap-2 px-2 min-[601px]:gap-2.5 min-[601px]:px-5">
+            <ul className="mx-auto mt-8 mb-0 grid max-w-85 list-none grid-cols-1 gap-3.5 px-5 min-[561px]:max-w-275 min-[561px]:grid-cols-2 min-[561px]:gap-6 min-[901px]:grid-cols-4">
                 {chips.map((chip) => (
                     <li
-                        className="rounded-full bg-white px-4 py-2.5 text-[11px] leading-[1.4] font-semibold min-[601px]:text-[13px] min-[601px]:leading-[normal]"
+                        className="flex items-center gap-3 [font-family:var(--editorial)] text-[17px] leading-[1.3] text-[#151313] min-[561px]:text-[18px]"
                         key={chip}
                     >
-                        <span aria-hidden="true">✓ </span>
+                        {/* A check drawn as a rotated corner in a green circle */}
+                        <span aria-hidden="true" className="relative size-9 flex-none rounded-full bg-[#e4f0e1]">
+                            <span className="absolute top-2 left-[13px] h-[15px] w-2 rotate-45 border-r-[2.5px] border-b-[2.5px] border-solid border-[#2a6834]" />
+                        </span>
                         {chip}
                     </li>
                 ))}

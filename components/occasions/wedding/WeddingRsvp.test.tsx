@@ -10,7 +10,14 @@ afterEach(cleanup);
 describe('WeddingRsvp', () => {
     it('heads the section with both lines', async () => {
         render(await WeddingRsvp({ locale: 'el' }));
-        expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Μην αναρωτιέσαι ποιος θα έρθει. Όλες οι απαντήσεις σε ένα μέρος.');
+        expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
+            'Μην αναρωτιέσαι ποιος θα έρθει. Θα ξέρεις. Χωρίς τηλέφωνα και μηνύματα.',
+        );
+    });
+
+    it('puts the kicker above the heading', async () => {
+        render(await WeddingRsvp({ locale: 'el' }));
+        expect(screen.getByRole('heading', { level: 2 }).previousElementSibling).toHaveTextContent('RSVP γάμου');
     });
 
     it('shows both halves in one wide picture, and each half on its own for phones', async () => {
