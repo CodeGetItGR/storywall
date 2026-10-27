@@ -7682,7 +7682,13 @@
             "removeConfirm": "Remove",
             "removeCancel": "Cancel",
             "close": "Close",
-            "qrTitle": "{type} link"
+            "qrTitle": "{type} link",
+            "hideNamed": "Hide {name} from list",
+            "showNamed": "Show {name} in list",
+            "removeNamed": "Remove {name}",
+            "seats": "{used} / {max}",
+            "full": "This event has reached its vendor limit.",
+            "fullWithUpgrade": "This event has reached its vendor limit. Upgrade to {plan} for {count, plural, one {# vendor} other {# vendors}}."
         },
         "list": {
             "title": "Vendors",

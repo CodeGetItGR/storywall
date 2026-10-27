@@ -7693,7 +7693,13 @@
             "removeConfirm": "Αφαίρεση",
             "removeCancel": "Ακύρωση",
             "close": "Κλείσιμο",
-            "qrTitle": "Σύνδεσμος για {type}"
+            "qrTitle": "Σύνδεσμος για {type}",
+            "hideNamed": "Απόκρυψη: {name}",
+            "showNamed": "Εμφάνιση: {name}",
+            "removeNamed": "Αφαίρεση: {name}",
+            "seats": "{used} / {max}",
+            "full": "Η εκδήλωση έχει φτάσει το όριο συντελεστών.",
+            "fullWithUpgrade": "Η εκδήλωση έχει φτάσει το όριο συντελεστών. Αναβαθμίστε σε {plan} για {count, plural, one {# συντελεστή} other {# συντελεστές}}."
         },
         "list": {
             "title": "Συντελεστές",

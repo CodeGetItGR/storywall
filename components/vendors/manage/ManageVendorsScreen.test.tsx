@@ -18,6 +18,8 @@ const page = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
 vi.mock('@/hooks/useManageVendors', () => ({ useManageVendors: () => page.value }));
 const invite = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
 vi.mock('@/hooks/useVendorInvite', () => ({ useVendorInvite: () => invite.value }));
+const seats = vi.hoisted(() => ({ value: { seatsLabel: null as string | null, fullNotice: null as string | null } }));
+vi.mock('@/hooks/useVendorSeats', () => ({ useVendorSeats: () => seats.value }));
 
 const LINK = { vendorType: 'PHOTOGRAPHER', inviteToken: 't1' };
 
@@ -47,9 +49,11 @@ function state(overrides: Record<string, unknown> = {}) {
         vendors: [],
         isLoading: false,
         selectedVendor: null,
-        removeOpen: false,
-        error: null,
-        isPatching: false,
+        removeTarget: null,
+        sheetError: null,
+        listError: null,
+        patchingVendorId: null,
+        isSheetPatching: false,
         isRemoving: false,
         openVendor: vi.fn(),
         closeVendor: vi.fn(),
@@ -77,6 +81,7 @@ beforeEach(() => {
     readable.value = true;
     page.value = state();
     invite.value = inviteState();
+    seats.value = { seatsLabel: null, fullNotice: null };
 });
 afterEach(cleanup);
 
@@ -136,9 +141,46 @@ describe('ManageVendorsScreen', () => {
         page.value = state({ vendors: [JOINED], selectedVendor: JOINED });
         render(<ManageVendorsScreen />);
         fireEvent.click(screen.getByRole('button', { name: 'manage.hide' }));
-        expect(page.value.toggleHidden).toHaveBeenCalled();
+        expect(page.value.toggleHidden).toHaveBeenCalledWith('v1');
         fireEvent.click(screen.getByRole('button', { name: 'manage.remove' }));
-        expect(page.value.requestRemove).toHaveBeenCalled();
+        expect(page.value.requestRemove).toHaveBeenCalledWith('v1');
+    });
+
+    it('hides and removes from the row without opening the sheet', () => {
+        page.value = state({ vendors: [JOINED] });
+        render(<ManageVendorsScreen />);
+        fireEvent.click(screen.getByRole('button', { name: 'manage.hideNamed:{"name":"Studio X"}' }));
+        expect(page.value.toggleHidden).toHaveBeenCalledWith('v1');
+        fireEvent.click(screen.getByRole('button', { name: 'manage.removeNamed:{"name":"Studio X"}' }));
+        expect(page.value.requestRemove).toHaveBeenCalledWith('v1');
+        expect(page.value.openVendor).not.toHaveBeenCalled();
+    });
+
+    it('turns the row Show off for an opted-out vendor', () => {
+        page.value = state({ vendors: [{ ...JOINED, hiddenByHost: true, optedOut: true }] });
+        render(<ManageVendorsScreen />);
+        const show = screen.getByRole('button', { name: 'manage.showNamed:{"name":"Studio X"}' }) as HTMLButtonElement;
+        expect(show.disabled).toBe(true);
+    });
+
+    it('asks before removing the vendor picked from a row', () => {
+        page.value = state({ vendors: [JOINED], removeTarget: JOINED });
+        render(<ManageVendorsScreen />);
+        expect(screen.getByText('manage.removeTitle:{"name":"Studio X"}')).toBeTruthy();
+    });
+
+    it('shows the seat count next to Joined', () => {
+        seats.value = { seatsLabel: '1 / 5', fullNotice: null };
+        page.value = state({ vendors: [JOINED] });
+        render(<ManageVendorsScreen />);
+        expect(screen.getByText('1 / 5')).toBeTruthy();
+    });
+
+    it('swaps Invite for the full notice once every seat is taken', () => {
+        seats.value = { seatsLabel: '5 / 5', fullNotice: 'manage.full' };
+        render(<ManageVendorsScreen />);
+        expect(screen.getByText('manage.full')).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'manage.invite' })).toBeNull();
     });
 
     it('shows the module notice without the module', () => {

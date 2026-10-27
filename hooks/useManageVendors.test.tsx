@@ -8,7 +8,7 @@ const remove = vi.fn();
 const data = vi.hoisted(() => ({ vendors: [] as unknown[] }));
 vi.mock('@/hooks/useVendors', () => ({
     useEventVendors: () => ({ data: data.vendors, isLoading: false }),
-    usePatchVendor: () => ({ mutateAsync: patch, isPending: false }),
+    usePatchVendor: () => ({ mutateAsync: patch, isPending: false, variables: undefined }),
     useRemoveVendor: () => ({ mutateAsync: remove, isPending: false }),
 }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'failed' }));
@@ -32,24 +32,42 @@ beforeEach(() => {
 });
 
 describe('useManageVendors', () => {
-    it('hides and shows the open vendor', async () => {
+    it('hides and shows a vendor from its row, without opening the sheet', async () => {
         patch.mockResolvedValue({});
         const { result } = renderHook(() => useManageVendors('e1'));
-        act(() => result.current.openVendor('v2'));
-        expect(result.current.selectedVendor).toEqual(DJ);
-        await act(() => result.current.toggleHidden());
+        await act(() => result.current.toggleHidden('v2'));
         expect(patch).toHaveBeenCalledWith({ vendorId: 'v2', patch: { hiddenByHost: true } });
+        expect(result.current.selectedVendor).toBeNull();
     });
 
-    it('removes the open vendor after the confirmation and closes the sheet', async () => {
+    it('shows a row action error above the list, and a sheet action error in the sheet', async () => {
+        patch.mockRejectedValue(new Error('500'));
+        const { result } = renderHook(() => useManageVendors('e1'));
+        await act(() => result.current.toggleHidden('v2'));
+        expect(result.current.listError).toBe('failed');
+        expect(result.current.sheetError).toBeNull();
+        act(() => result.current.openVendor('v2'));
+        await act(() => result.current.toggleHidden('v2'));
+        expect(result.current.sheetError).toBe('failed');
+        expect(result.current.listError).toBeNull();
+    });
+
+    it('removes a vendor from its row after the confirmation', async () => {
+        remove.mockResolvedValue(undefined);
+        const { result } = renderHook(() => useManageVendors('e1'));
+        act(() => result.current.requestRemove('v2'));
+        expect(result.current.removeTarget).toEqual(DJ);
+        await act(() => result.current.confirmRemove());
+        expect(remove).toHaveBeenCalledWith('v2');
+        expect(result.current.removeTarget).toBeNull();
+    });
+
+    it('closes the sheet after removing the open vendor', async () => {
         remove.mockResolvedValue(undefined);
         const { result } = renderHook(() => useManageVendors('e1'));
         act(() => result.current.openVendor('v2'));
-        act(() => result.current.requestRemove());
-        expect(result.current.removeOpen).toBe(true);
+        act(() => result.current.requestRemove('v2'));
         await act(() => result.current.confirmRemove());
-        expect(remove).toHaveBeenCalledWith('v2');
-        expect(result.current.removeOpen).toBe(false);
         expect(result.current.selectedVendor).toBeNull();
     });
 
@@ -57,9 +75,9 @@ describe('useManageVendors', () => {
         remove.mockRejectedValue(new Error('500'));
         const { result } = renderHook(() => useManageVendors('e1'));
         act(() => result.current.openVendor('v2'));
-        act(() => result.current.requestRemove());
+        act(() => result.current.requestRemove('v2'));
         await act(() => result.current.confirmRemove());
-        expect(result.current.error).toBe('failed');
+        expect(result.current.sheetError).toBe('failed');
         expect(result.current.selectedVendor).toEqual(DJ);
     });
 });
