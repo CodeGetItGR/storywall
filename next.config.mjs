@@ -1,5 +1,6 @@
 import { execSync } from 'node:child_process';
 
+import { withSentryConfig } from '@sentry/nextjs/config';
 import createNextIntlPlugin from 'next-intl/plugin';
 
 import { securityHeaderRules } from './lib/security/securityHeaders.mjs';
@@ -17,6 +18,13 @@ function resolveAppVersion() {
     } catch {
         return '';
     }
+}
+
+// The environment Sentry files events under. Staging is a production
+// deployment of its own, told apart by NEXT_PUBLIC_APP_ENV.
+function resolveSentryEnvironment() {
+    if (process.env.NEXT_PUBLIC_APP_ENV === 'staging') return 'staging';
+    return process.env.VERCEL_ENV ?? 'development';
 }
 
 // Hosts the backend's media URLs are served from, comma-separated — for R2,
@@ -46,6 +54,7 @@ const LANDING_PEXELS_PHOTO_IDS = ['33635247', '9215433', '9901279', '15141416', 
 const nextConfig = {
     env: {
         NEXT_PUBLIC_APP_VERSION: resolveAppVersion(),
+        NEXT_PUBLIC_SENTRY_ENVIRONMENT: resolveSentryEnvironment(),
     },
     typescript: {
         ignoreBuildErrors: true,
@@ -84,4 +93,14 @@ const nextConfig = {
     },
 };
 
-export default withNextIntl(nextConfig);
+export default withSentryConfig(withNextIntl(nextConfig), {
+    org: 'storywall',
+    project: 'storywall-web',
+    // Uploads source maps on builds that have it (Vercel), so stack traces show the original code.
+    authToken: process.env.SENTRY_AUTH_TOKEN,
+    widenClientFileUpload: true,
+    // Browser events go through this app's own origin: ad blockers don't drop
+    // them, and the CSP's connect-src 'self' already covers it.
+    tunnelRoute: '/monitoring',
+    silent: !process.env.CI,
+});

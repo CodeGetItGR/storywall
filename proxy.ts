@@ -160,5 +160,6 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/((?!_next/static|_next/image|favicon.ico|api).*)'],
+    // /monitoring is Sentry's tunnel (next.config.mjs).
+    matcher: ['/((?!_next/static|_next/image|favicon.ico|api|monitoring).*)'],
 };

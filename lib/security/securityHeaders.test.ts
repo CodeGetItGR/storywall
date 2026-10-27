@@ -42,7 +42,7 @@ describe('contentSecurityPolicy', () => {
         expect(csp.get('base-uri')).toEqual(["'self'"]);
         expect(csp.get('frame-ancestors')).toEqual(["'none'"]);
         expect(csp.get('form-action')).toEqual(["'self'"]);
-        expect(csp.get('worker-src')).toEqual(["'self'"]);
+        expect(csp.get('worker-src')).toEqual(["'self'", 'blob:']);
         expect(csp.get('font-src')).toEqual(["'self'"]);
     });
 
