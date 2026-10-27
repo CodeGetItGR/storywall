@@ -1,0 +1,53 @@
+name: Chromatic
+
+# Runs only on PRs into staging that carry the `chromatic` label and touch UI
+# files, to stay inside the monthly snapshot budget. Adding the label starts a
+# build; each push while the label is on starts another.
+on:
+    pull_request:
+        branches: [staging]
+        types: [opened, synchronize, reopened, labeled]
+        paths:
+            - components/**
+            - app/**
+            - hooks/**
+            - lib/**
+            - providers/**
+            - i18n/**
+            - messages/**
+            - public/**
+            - .storybook/**
+            - '**/*.css'
+            - package.json
+            - package-lock.json
+            - postcss.config.mjs
+            - .github/workflows/chromatic.yml
+
+jobs:
+    chromatic:
+        if: contains(github.event.pull_request.labels.*.name, 'chromatic')
+        # Job-level, so runs the label check skips never cancel a real build.
+        concurrency:
+            group: chromatic-${{ github.ref }}
+            cancel-in-progress: true
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  # Chromatic reads git history to find the baseline build.
+                  fetch-depth: 0
+
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 22
+                  cache: npm
+
+            - run: npm ci
+
+            - uses: chromaui/action@v18
+              with:
+                  projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+                  buildScriptName: build-storybook
+                  # Only snapshot stories whose files (or their imports) changed.
+                  onlyChanged: true
+                  exitZeroOnChanges: true

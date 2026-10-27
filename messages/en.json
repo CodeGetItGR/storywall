@@ -928,6 +928,7 @@
         "deleteComment": "Delete comment",
         "deleteCommentConfirmTitle": "Delete this comment?",
         "deleteCommentConfirmBody": "This comment will be removed for everyone and can't be undone.",
+        "cancel": "Cancel",
         "deleteCommentFailed": "Couldn't delete this comment. Please try again.",
         "reportComment": "Report comment"
     },
