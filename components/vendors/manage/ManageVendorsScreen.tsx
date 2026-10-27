@@ -14,6 +14,7 @@ import { VendorRowsSkeleton } from '@/components/vendors/VendorsSkeletons';
 import { useManageVendors } from '@/hooks/useManageVendors';
 import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { useVendorInvite } from '@/hooks/useVendorInvite';
+import { useVendorSeats } from '@/hooks/useVendorSeats';
 import { routes } from '@/lib/routes';
 
 export function ManageVendorsScreen() {
@@ -22,7 +23,8 @@ export function ManageVendorsScreen() {
     const vendorsOn = useModuleReadable(eventId, 'vendors');
     const page = useManageVendors(eventId);
     const invite = useVendorInvite(eventId);
-    const selectedName = page.selectedVendor?.businessName ?? t('manage.noProfile');
+    const seats = useVendorSeats(eventId, page.vendors.length);
+    const removeName = page.removeTarget?.businessName ?? t('manage.noProfile');
     const resetType = invite.link ? t(`types.${invite.link.vendorType}`) : '';
 
     return (
@@ -34,7 +36,9 @@ export function ManageVendorsScreen() {
             ) : (
                 <>
                     {/* Invite */}
-                    {invite.links.length === 0 ? (
+                    {seats.fullNotice ? (
+                        <p className="rounded-2xl bg-surface-muted px-4 py-3 text-sm text-ink-muted">{seats.fullNotice}</p>
+                    ) : invite.links.length === 0 ? (
                         <p className="rounded-2xl bg-surface-muted px-4 py-3 text-sm text-ink-muted">{t('manage.linksEmpty')}</p>
                     ) : (
                         <Button type="button" size="lg" onClick={invite.openInvite} className="w-full sm:w-auto">
@@ -45,15 +49,31 @@ export function ManageVendorsScreen() {
 
                     {/* Joined */}
                     <section aria-labelledby="vendor-joined-title" className="mt-8">
-                        <h2 id="vendor-joined-title" className="mb-1 text-sm font-semibold text-ink">
-                            {t('manage.joinedTitle')}
-                        </h2>
+                        <div className="mb-1 flex items-baseline justify-between gap-3">
+                            <h2 id="vendor-joined-title" className="text-sm font-semibold text-ink">
+                                {t('manage.joinedTitle')}
+                            </h2>
+                            {/* Seats */}
+                            {seats.seatsLabel && <span className="text-sm text-ink-muted tabular-nums">{seats.seatsLabel}</span>}
+                        </div>
+                        {page.listError && (
+                            <p role="alert" className="mt-2 text-sm text-rose-600">
+                                {page.listError}
+                            </p>
+                        )}
                         {page.vendors.length === 0 ? (
                             <p className="mt-2 text-sm text-ink-muted">{t('manage.joinedEmpty')}</p>
                         ) : (
                             <ul className="flex flex-col divide-y divide-border">
                                 {page.vendors.map((vendor) => (
-                                    <VendorRow key={vendor.id} vendor={vendor} onOpenAction={page.openVendor} />
+                                    <VendorRow
+                                        key={vendor.id}
+                                        vendor={vendor}
+                                        isPatching={page.patchingVendorId === vendor.id}
+                                        onOpenAction={page.openVendor}
+                                        onToggleHiddenAction={page.toggleHidden}
+                                        onRemoveAction={page.requestRemove}
+                                    />
                                 ))}
                             </ul>
                         )}
@@ -77,8 +97,8 @@ export function ManageVendorsScreen() {
             {/* Vendor sheet */}
             <VendorSheet
                 vendor={page.selectedVendor}
-                error={page.error}
-                isPatching={page.isPatching}
+                error={page.sheetError}
+                isPatching={page.isSheetPatching}
                 onCloseAction={page.closeVendor}
                 onToggleHiddenAction={page.toggleHidden}
                 onRemoveAction={page.requestRemove}
@@ -98,8 +118,8 @@ export function ManageVendorsScreen() {
 
             {/* Remove confirmation */}
             <ConfirmActionModal
-                open={page.removeOpen}
-                title={t('manage.removeTitle', { name: selectedName })}
+                open={page.removeTarget !== null}
+                title={t('manage.removeTitle', { name: removeName })}
                 body={t('manage.removeBody')}
                 confirmLabel={t('manage.removeConfirm')}
                 cancelLabel={t('manage.removeCancel')}
