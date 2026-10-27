@@ -2901,7 +2901,8 @@
             "errorEvents": "Errors",
             "demoEvents": "Demo events",
             "partnerCards": "Partner cards",
-            "siteNotices": "Site notices"
+            "siteNotices": "Site notices",
+            "campaigns": "Campaigns"
         },
         "demoEvents": {
             "title": "Demo events",
@@ -4453,6 +4454,7 @@
             "reactionTypeNotUsable": "That reaction is no longer available. Refresh and choose another.",
             "collaborationEarningNotPayable": "One or more selected earnings are not payable. Refresh the ledger and choose accrued rows.",
             "collaboratorPayoutDetailsIncomplete": "This partner's business or payout details are incomplete, or their VAT number isn't VIES-valid. Complete their business details and try again.",
+            "campaignLinkTaken": "A link with this source, medium and campaign already exists.",
             "methodNotAllowed": "That action is not available here. Refresh and try again.",
             "invalidModuleKey": "One of the selected modules isn't available for this event type. Remove it and try again.",
             "orderNotManual": "Only manual orders can be settled here. Stripe orders settle through Stripe.",
@@ -5239,6 +5241,76 @@
                 "placement": "First card after post {firstAfter}, then every {every} posts."
             }
         },
+        "campaigns": {
+            "title": "Campaigns",
+            "create": "New link",
+            "createTitle": "New campaign link",
+            "saveLink": "Save link",
+            "rangeNote": "Counts accounts that signed up in this range.",
+            "empty": "No campaigns yet.",
+            "notSaved": "Not saved",
+            "delete": "Delete link",
+            "deleteTitle": "Delete this link?",
+            "deleteBody": "The link keeps working and its sign-ups still count. It only loses its name here.",
+            "deleteConfirm": "Delete",
+            "columns": {
+                "name": "Name",
+                "source": "Source / medium",
+                "campaign": "Campaign",
+                "signedUp": "Sign-ups",
+                "createdEvent": "Created an event",
+                "paidHost": "Paid",
+                "revenue": "Revenue"
+            },
+            "fields": {
+                "preset": "Where you'll share it",
+                "page": "Page",
+                "source": "Source",
+                "medium": "Medium",
+                "campaign": "Campaign",
+                "campaignHint": "Lowercase with dashes, like october-bio.",
+                "name": "Name"
+            },
+            "presetGroups": {
+                "social": "Social posts",
+                "ads": "Ads",
+                "other": "Other"
+            },
+            "presets": {
+                "instagram": "Instagram",
+                "facebook": "Facebook",
+                "tiktok": "TikTok",
+                "pinterest": "Pinterest",
+                "linkedin": "LinkedIn",
+                "youtube": "YouTube",
+                "instagramAds": "Instagram ads",
+                "facebookAds": "Facebook ads",
+                "tiktokAds": "TikTok ads",
+                "googleAds": "Google Ads",
+                "email": "Email or newsletter",
+                "partner": "Partner",
+                "qr": "Printed QR code",
+                "custom": "Custom"
+            },
+            "pages": {
+                "home": "Home",
+                "qrWedding": "Wedding QR",
+                "forBusiness": "For business",
+                "occasion": "Occasion page"
+            },
+            "problems": {
+                "name": "Add a name.",
+                "source": "Add a source.",
+                "medium": "Add a medium.",
+                "campaign": "Add a campaign."
+            },
+            "share": {
+                "copy": "Copy link",
+                "copied": "Copied",
+                "downloadQr": "Download QR",
+                "qr": "QR code for this link"
+            }
+        },
         "siteNotices": {
             "create": "New notice",
             "empty": "No notices yet.",
@@ -5694,6 +5766,7 @@
         "collaborationAlreadyRedeemed": "This event already has another discount code.",
         "collaborationEarningNotPayable": "That earning cannot be marked paid.",
         "collaboratorPayoutDetailsIncomplete": "A partner's business or payout details are incomplete.",
+        "campaignLinkTaken": "A campaign link with these values already exists.",
         "subscriptionAlreadyActive": "A subscription is already running for this event.",
         "subscriptionNotLive": "There was no active subscription to stop - we have refreshed this page.",
         "subscriptionCancelFailed": "We couldn't stop it just now, so the subscription is still running and will still be charged. Please try again in a moment.",

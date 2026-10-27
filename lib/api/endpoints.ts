@@ -370,6 +370,12 @@ export const endpoints = {
                 );
                 return `/api/admin/metrics/funnel/channels${params.length ? `?${params.join('&')}` : ''}`;
             },
+            campaigns: (since?: string | null, until?: string | null) => {
+                const params = [since ? `since=${encodeURIComponent(since)}` : null, until ? `until=${encodeURIComponent(until)}` : null].filter(
+                    Boolean,
+                );
+                return `/api/admin/metrics/campaigns${params.length ? `?${params.join('&')}` : ''}`;
+            },
             visitors: (since?: string | null, until?: string | null, fresh = false) => {
                 const params = [
                     since ? `since=${encodeURIComponent(since)}` : null,
@@ -506,6 +512,10 @@ export const endpoints = {
         siteNotices: {
             list: '/api/admin/site-notices',
             byId: (id: string) => `/api/admin/site-notices/${id}`,
+        },
+        campaignLinks: {
+            list: '/api/admin/campaign-links',
+            byId: (id: string) => `/api/admin/campaign-links/${id}`,
         },
         appReviews: {
             list: '/api/admin/app-reviews',
