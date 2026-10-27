@@ -20,13 +20,6 @@ function resolveAppVersion() {
     }
 }
 
-// The environment Sentry files events under. Staging is a production
-// deployment of its own, told apart by NEXT_PUBLIC_APP_ENV.
-function resolveSentryEnvironment() {
-    if (process.env.NEXT_PUBLIC_APP_ENV === 'staging') return 'staging';
-    return process.env.VERCEL_ENV ?? 'development';
-}
-
 // Hosts the backend's media URLs are served from, comma-separated — for R2,
 // "<account-id>.r2.cloudflarestorage.com". Each one is allowed bare and with
 // any subdomain, since presigned URLs can put the bucket in the hostname.
@@ -54,7 +47,8 @@ const LANDING_PEXELS_PHOTO_IDS = ['33635247', '9215433', '9901279', '15141416', 
 const nextConfig = {
     env: {
         NEXT_PUBLIC_APP_VERSION: resolveAppVersion(),
-        NEXT_PUBLIC_SENTRY_ENVIRONMENT: resolveSentryEnvironment(),
+        // Sentry's environment tag: "staging" on the staging deployment, else Vercel's environment.
+        NEXT_PUBLIC_SENTRY_ENVIRONMENT: process.env.NEXT_PUBLIC_APP_ENV || process.env.VERCEL_ENV || 'development',
     },
     typescript: {
         ignoreBuildErrors: true,
@@ -96,11 +90,12 @@ const nextConfig = {
 export default withSentryConfig(withNextIntl(nextConfig), {
     org: 'storywall',
     project: 'storywall-web',
-    // Uploads source maps on builds that have it (Vercel), so stack traces show the original code.
+    // Uploads source maps when set (the Vercel build); without it the build skips the upload.
     authToken: process.env.SENTRY_AUTH_TOKEN,
-    widenClientFileUpload: true,
-    // Browser events go through this app's own origin: ad blockers don't drop
-    // them, and the CSP's connect-src 'self' already covers it.
-    tunnelRoute: '/monitoring',
     silent: !process.env.CI,
+    widenClientFileUpload: true,
+    // Browser events go through this route on our own domain, so ad blockers and the CSP let them through.
+    // proxy.ts leaves it out of its matcher.
+    tunnelRoute: '/monitoring',
+    telemetry: false,
 });

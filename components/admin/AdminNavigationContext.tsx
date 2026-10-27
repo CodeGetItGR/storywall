@@ -11,6 +11,7 @@ import {
     Handshake,
     LayoutGrid,
     type LucideIcon,
+    Megaphone,
     MonitorPlay,
     OctagonAlert,
     PackagePlus,
@@ -60,7 +61,8 @@ export type AdminTab =
     | 'reports'
     | 'bugReports'
     | 'errorEvents'
-    | 'appReviews';
+    | 'appReviews'
+    | 'siteNotices';
 
 export type AdminTabItem = {
     key: AdminTab;
@@ -103,6 +105,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#bug-reports': 'bugReports',
     '#errors': 'errorEvents',
     '#reviews': 'appReviews',
+    '#site-notices': 'siteNotices',
 };
 
 const TAB_TO_HASH: Record<AdminTab, string> = {
@@ -129,6 +132,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     bugReports: '#bug-reports',
     errorEvents: '#errors',
     appReviews: '#reviews',
+    siteNotices: '#site-notices',
 };
 
 const AdminNavigationContext = createContext<
@@ -220,6 +224,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'events', label: t('events'), icon: PartyPopper },
             { key: 'orders', label: t('orders'), icon: ShoppingBag },
             { key: 'billingOps', label: t('billingOps'), icon: Receipt },
+            { key: 'siteNotices', label: t('siteNotices'), icon: Megaphone },
             { key: 'withdrawals', label: t('withdrawals'), icon: Undo2 },
             { key: 'reports', label: t('reports'), icon: Flag },
             { key: 'bugReports', label: t('bugReports'), icon: Bug },

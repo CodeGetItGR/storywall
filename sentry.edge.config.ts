@@ -1,5 +1,0 @@
-import * as Sentry from '@sentry/nextjs';
-
-import { sentryBaseOptions } from '@/lib/monitoring/sentryOptions';
-
-Sentry.init(sentryBaseOptions);

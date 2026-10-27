@@ -1,13 +1,10 @@
 import * as Sentry from '@sentry/nextjs';
 
-export async function register() {
-    if (process.env.NEXT_RUNTIME === 'nodejs') {
-        await import('./sentry.server.config');
-    }
-    if (process.env.NEXT_RUNTIME === 'edge') {
-        await import('./sentry.edge.config');
-    }
+import { sentrySharedOptions } from '@/lib/sentry/options';
+
+export function register() {
+    Sentry.init(sentrySharedOptions);
 }
 
-// Server Component, route handler and proxy errors.
+// Errors thrown while rendering Server Components, route handlers and the proxy.
 export const onRequestError = Sentry.captureRequestError;
