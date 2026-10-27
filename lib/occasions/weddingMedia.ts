@@ -1,3 +1,4 @@
+import type { Locale } from '@/i18n/config';
 import type { LandingImageAsset } from '@/lib/landingMedia';
 import type { OccasionPhoto } from '@/lib/occasions/occasionMedia';
 
@@ -39,11 +40,16 @@ export const WEDDING_MARQUEE = [
 ] as const;
 
 // RSVP replies without and with StoryWall: both side by side from 761 px, one under the other below.
-// The pictures hold Greek text, on both pages until the English ones arrive.
-export const WEDDING_RSVP_PICTURES = {
-    both: photo('wedding-rsvp-replies-without-and-with', 2044, 1380),
-    without: photo('wedding-rsvp-replies-without', 800, 1239),
-    with: photo('wedding-rsvp-replies-with', 900, 990),
-} as const;
+// The pictures hold text, so each language has its own set.
+const rsvpPictures = (suffix: string) => ({
+    both: photo(`wedding-rsvp-replies-without-and-with${suffix}`, 2044, 1380),
+    without: photo(`wedding-rsvp-replies-without${suffix}`, 800, 1239),
+    with: photo(`wedding-rsvp-replies-with${suffix}`, 900, 990),
+});
+
+export const WEDDING_RSVP_PICTURES: Record<Locale, ReturnType<typeof rsvpPictures>> = {
+    el: rsvpPictures(''),
+    en: rsvpPictures('-en'),
+};
 
 export const WEDDING_FINAL_CTA_IMAGE: LandingImageAsset = { src: '/landing/storywall-final-cta-wedding-santorini.webp', width: 1448, height: 1086 };

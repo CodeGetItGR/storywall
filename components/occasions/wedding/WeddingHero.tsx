@@ -2,8 +2,8 @@ import { getTranslations } from 'next-intl/server';
 import { Fragment } from 'react';
 
 import { LandingHeader } from '@/components/landing/LandingHeader';
+import { OccasionHeroActions } from '@/components/occasions/OccasionHeroActions';
 import { OccasionHeroVisual } from '@/components/occasions/OccasionHeroVisual';
-import { WeddingHeroActions } from '@/components/occasions/wedding/WeddingHeroActions';
 import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
 import type { OccasionCampaign } from '@/lib/occasions/campaigns';
@@ -12,12 +12,12 @@ import { occasionHeaderLinks } from '@/lib/occasions/occasionSections';
 
 // The design's background: pink top left, gold top right, coral at the bottom, on white.
 const SECTION_CLASS =
-    'relative bg-white bg-[radial-gradient(42%_52%_at_12%_18%,rgba(248,154,176,0.28),transparent_70%),radial-gradient(40%_50%_at_92%_22%,rgba(252,186,99,0.3),transparent_70%),radial-gradient(50%_60%_at_70%_100%,rgba(255,118,95,0.16),transparent_70%)] text-[#151313]';
+    'relative overflow-x-clip bg-white bg-[radial-gradient(42%_52%_at_12%_18%,rgba(248,154,176,0.28),transparent_70%),radial-gradient(40%_50%_at_92%_22%,rgba(252,186,99,0.3),transparent_70%),radial-gradient(50%_60%_at_70%_100%,rgba(255,118,95,0.16),transparent_70%)] text-[#151313]';
 
-// The landing's hero visual, sized and placed as in the design: 115% of the column under 768 px,
+// The landing's hero visual: as wide as the landing's phone under 768 px (the section clips the overflow),
 // overlapping the copy column's edge from 768 to 900, half the grid from 901 up.
 const VISUAL_CLASS = [
-    'left-1/2 mt-5.5 w-[min(115%,510px)] -translate-x-1/2',
+    'left-1/2 mt-5.5 ml-[3.7vw] w-[137vw] -translate-x-1/2',
     'min-[768px]:left-0 min-[768px]:mt-2.5 min-[768px]:ml-[max(-20px_-_9vw,50%_-_310px)] min-[768px]:w-[min(620px,118vw)] min-[768px]:translate-x-[3%]',
     'min-[901px]:my-[-3%] min-[901px]:ml-0 min-[901px]:w-[min(860px,54vw)] min-[901px]:justify-self-center',
 ].join(' ');
@@ -26,7 +26,7 @@ type WeddingHeroProps = {
     alternatePaths: Record<Locale, string>;
     campaign: OccasionCampaign | null;
     createHref: string;
-    // null: no wedding demo; the hero shows the create button only.
+    // null: no wedding demo; the hero shows the main button only.
     demoHref: string | null;
     locale: Locale;
     price: OccasionPriceValues;
@@ -56,12 +56,13 @@ export async function WeddingHero({ alternatePaths, campaign, createHref, demoHr
                 mobileLoginLabel={mobileNav.at(-1)!}
             />
 
-            <div className="pt-6.5 pb-9 min-[421px]:pt-0 min-[768px]:pt-1.5 min-[768px]:pb-10 min-[901px]:pt-9.5 min-[901px]:pb-22.5">
+            {/* Body: on phones the bottom padding makes room for the phone and cards hanging about 25vw below the visual */}
+            <div className="pt-6.5 pb-[calc(25.5vw+16px)] min-[421px]:pt-0 min-[761px]:pb-9 min-[768px]:pt-1.5 min-[768px]:pb-10 min-[901px]:pt-9.5 min-[901px]:pb-22.5">
                 <div className="mx-auto grid w-[calc(100%-40px)] grid-cols-1 items-center min-[768px]:w-[min(1220px,calc(100%-64px))] min-[768px]:gap-[clamp(20px,3vw,48px)] min-[901px]:grid-cols-2">
                     {/* Copy */}
                     <div className="relative z-20">
                         {/* Breadcrumb */}
-                        <nav aria-label={common('breadcrumbLabel')} className="mb-3.5 ml-1 min-[768px]:mb-4.5">
+                        <nav aria-label={common('breadcrumbLabel')} className="mb-3.5 min-[768px]:mb-4.5 min-[768px]:ml-1">
                             <ol className="m-0 flex list-none items-center gap-2 p-0 text-[11px] leading-[normal] font-bold tracking-[0.06em] text-[#151313]/55 uppercase">
                                 <li>
                                     <a className="text-[#151313] no-underline hover:underline" href={home}>
@@ -77,7 +78,7 @@ export async function WeddingHero({ alternatePaths, campaign, createHref, demoHr
                             {t.rich('hero.kicker', { b: (chunks) => <strong className="font-bold">{chunks}</strong> })}
                         </p>
                         {/* Title */}
-                        <h1 className="m-0 [font-family:var(--editorial)] text-[clamp(37px,9vw,45px)] leading-[1.02] font-normal tracking-[-0.045em] min-[768px]:text-[clamp(50px,5.2vw,92px)] min-[768px]:leading-[0.91] min-[768px]:tracking-[-0.055em]">
+                        <h1 className="m-0 [font-family:var(--editorial)] text-[clamp(37px,9vw,45px)] leading-[1.1] font-normal tracking-[-0.045em] min-[768px]:text-[clamp(50px,5.2vw,92px)] min-[768px]:leading-[0.91] min-[768px]:tracking-[-0.055em]">
                             {t.rich('hero.h1', {
                                 em: (chunks) => (
                                     <em className="[background-image:var(--brand-gradient)] bg-clip-text text-transparent italic min-[768px]:pr-[0.06em]">
@@ -95,11 +96,12 @@ export async function WeddingHero({ alternatePaths, campaign, createHref, demoHr
                             {c ? c('lead') : t('hero.body')}
                         </p>
                         {/* Actions */}
-                        <WeddingHeroActions
+                        <OccasionHeroActions
                             createHref={createHref}
                             createLabel={c ? c('cta') : t('hero.cta')}
                             demoHref={demoHref}
-                            demoLabel={landing('hero.demoCta')}
+                            demoLabel={common('heroDemo')}
+                            plansLabel={landing('hero.plansCta')}
                         />
                         {/* Trust line */}
                         <p className="mt-4.25 mb-0 flex flex-wrap gap-y-1.25 text-[10px] leading-[1.4] font-bold tracking-[0.035em] text-[#151313]/66 min-[768px]:mt-6 min-[768px]:ml-1 min-[768px]:gap-y-1.75 min-[768px]:text-[11px] min-[768px]:leading-[1.25]">

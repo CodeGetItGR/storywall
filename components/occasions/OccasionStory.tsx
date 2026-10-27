@@ -59,7 +59,6 @@ export async function OccasionStory({ createHref, locale, moments, occasion, the
                                 index={index}
                                 locale={locale}
                                 media={{ gallery, main: gallery[0]! }}
-                                occasionLabel=""
                                 occasions={[]}
                             />
 

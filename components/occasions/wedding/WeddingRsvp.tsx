@@ -28,7 +28,7 @@ export async function WeddingRsvp({ locale }: { locale: Locale }) {
                 </div>
                 {/* Pictures and points */}
                 <div className="grid grid-cols-1 items-stretch gap-[clamp(14px,1.8vw,26px)] min-[901px]:grid-cols-[minmax(0,1022fr)_minmax(0,370fr)]">
-                    <RsvpPictures alts={{ both: t('alts.both'), with: t('alts.with'), without: t('alts.without') }} />
+                    <RsvpPictures alts={{ both: t('alts.both'), with: t('alts.with'), without: t('alts.without') }} locale={locale} />
                     <RsvpChecklist items={t.raw('checklist.items') as WeddingCardCopy[]} pill={t('checklist.pill')} />
                 </div>
             </div>

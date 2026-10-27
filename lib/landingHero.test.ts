@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { LANDING_PRICING_HASH, landingHeroImageSizes, landingHeroMainAction, landingHeroSpriteSizes } from '@/lib/landingHero';
+import {
+    LANDING_PRICING_HASH,
+    landingHeroImageSizes,
+    landingHeroMainAction,
+    landingHeroSpriteSizes,
+    nextTypewriterStep,
+    occasionHeroMainAction,
+    TYPEWRITER_START,
+} from '@/lib/landingHero';
 import { routes } from '@/lib/routes';
 
 describe('landingHeroMainAction', () => {
@@ -15,6 +23,20 @@ describe('landingHeroMainAction', () => {
     it('sends signed-in visitors to their account', () => {
         expect(landingHeroMainAction(true)).toEqual({
             href: routes.home,
+            arrow: '↗',
+            click: { event: 'create', placement: 'hero' },
+        });
+    });
+});
+
+describe('occasionHeroMainAction', () => {
+    it('sends signed-out visitors to the plans on the page', () => {
+        expect(occasionHeroMainAction(false, '/events/new?type=wedding')).toEqual(landingHeroMainAction(false));
+    });
+
+    it('sends signed-in visitors to create the occasion', () => {
+        expect(occasionHeroMainAction(true, '/events/new?type=wedding')).toEqual({
+            href: '/events/new?type=wedding',
             arrow: '↗',
             click: { event: 'create', placement: 'hero' },
         });
@@ -36,5 +58,40 @@ describe('landingHeroSpriteSizes', () => {
 
     it('fails loudly when a width is missing', () => {
         expect(() => landingHeroSpriteSizes('absolute w-[50%]')).toThrow();
+    });
+});
+
+describe('nextTypewriterStep', () => {
+    it('types the first letter shortly after the start', () => {
+        expect(nextTypewriterStep(TYPEWRITER_START, 4, 2)).toEqual({ cursor: { word: 0, length: 1, deleting: false }, delay: 140 });
+    });
+
+    it('types one letter at a time', () => {
+        expect(nextTypewriterStep({ word: 0, length: 1, deleting: false }, 4, 2)).toEqual({
+            cursor: { word: 0, length: 2, deleting: false },
+            delay: 92,
+        });
+    });
+
+    it('holds a full word before deleting it', () => {
+        expect(nextTypewriterStep({ word: 0, length: 4, deleting: false }, 4, 2)).toEqual({
+            cursor: { word: 0, length: 3, deleting: true },
+            delay: 1342,
+        });
+    });
+
+    it('deletes one letter at a time', () => {
+        expect(nextTypewriterStep({ word: 0, length: 3, deleting: true }, 4, 2)).toEqual({
+            cursor: { word: 0, length: 2, deleting: true },
+            delay: 52,
+        });
+    });
+
+    it('moves to the next word, and back to the first after the last', () => {
+        expect(nextTypewriterStep({ word: 0, length: 0, deleting: true }, 4, 2)).toEqual({
+            cursor: { word: 1, length: 1, deleting: false },
+            delay: 312,
+        });
+        expect(nextTypewriterStep({ word: 1, length: 0, deleting: true }, 4, 2).cursor.word).toBe(0);
     });
 });

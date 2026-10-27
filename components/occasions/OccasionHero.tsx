@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { KeywordHero } from '@/components/landing/KeywordHero';
 import { LandingHeader } from '@/components/landing/LandingHeader';
-import { LandingHeroActions } from '@/components/landing/LandingHeroActions';
+import { OccasionHeroActions } from '@/components/occasions/OccasionHeroActions';
 import { OccasionHeroVisual } from '@/components/occasions/OccasionHeroVisual';
 import { type OccasionFeedCopy, OccasionPhoneFeed } from '@/components/occasions/OccasionPhoneFeed';
 import { OccasionPostCard } from '@/components/occasions/OccasionPostCard';
@@ -17,7 +17,7 @@ type OccasionHeroProps = {
     alternatePaths: Record<Locale, string>;
     campaign: OccasionCampaign | null;
     createHref: string;
-    // null → no demo for this type; the hero shows the create button only.
+    // null → no demo for this type; the hero shows the main button only.
     demoHref: string | null;
     feed: OccasionHeroFeed | null;
     locale: Locale;
@@ -26,6 +26,7 @@ type OccasionHeroProps = {
 
 export async function OccasionHero({ alternatePaths, campaign, createHref, demoHref, feed, locale, occasion }: OccasionHeroProps) {
     const t = await getTranslations({ locale, namespace: `OccasionPages.${occasion.eventType}.hero` });
+    const common = await getTranslations({ locale, namespace: 'OccasionPages.common' });
     const landing = await getTranslations({ locale, namespace: 'LandingPage' });
     // A campaign may swap the sentence, CTA label and the feed's cover. The H1 always stays the keyword.
     const c = campaign?.hero ? await getTranslations({ locale, namespace: `OccasionPages.campaigns.${campaign.id}` }) : null;
@@ -37,11 +38,12 @@ export async function OccasionHero({ alternatePaths, campaign, createHref, demoH
     return (
         <KeywordHero
             actions={
-                <LandingHeroActions
-                    demoHref={demoHref ?? undefined}
-                    demoLabel={demoHref ? landing('hero.demoCta') : undefined}
-                    main={{ href: createHref, arrow: '↗', click: { event: 'create', placement: 'hero' } }}
-                    mainLabel={c ? c('cta') : t('cta')}
+                <OccasionHeroActions
+                    createHref={createHref}
+                    createLabel={c ? c('cta') : t('cta')}
+                    demoHref={demoHref}
+                    demoLabel={common('heroDemo')}
+                    plansLabel={landing('hero.plansCta')}
                 />
             }
             // The wedding h1 marks its gradient words with <em>; this hero shows plain text.
