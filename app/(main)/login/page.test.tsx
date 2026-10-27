@@ -60,9 +60,8 @@ async function signInWithGoogle() {
     await act(() => mocks.oauthButtons!.onSignIn('GOOGLE', 'google-id-token'));
 }
 
-function tickBoth(dialog: HTMLElement) {
+function tick(dialog: HTMLElement) {
     fireEvent.click(within(dialog).getByRole('checkbox', { name: /^I accept/ }));
-    fireEvent.click(within(dialog).getByRole('checkbox', { name: 'I am 18 or older' }));
 }
 
 describe('LoginPage and a Google/Apple sign-in that would create an account', () => {
@@ -95,9 +94,9 @@ describe('LoginPage and a Google/Apple sign-in that would create an account', ()
         const dialog = screen.getByRole('dialog');
         const confirm = within(dialog).getByRole('button', { name: 'Create account' });
         expect(confirm).toBeDisabled();
-        fireEvent.click(within(dialog).getByRole('checkbox', { name: /^I accept/ }));
-        expect(confirm).toBeDisabled();
-        fireEvent.click(within(dialog).getByRole('checkbox', { name: 'I am 18 or older' }));
+        // One box covers the documents and the 18+ confirmation.
+        expect(within(dialog).getAllByRole('checkbox')).toHaveLength(1);
+        tick(dialog);
         expect(confirm).toBeEnabled();
 
         fireEvent.click(confirm);
@@ -123,7 +122,7 @@ describe('LoginPage and a Google/Apple sign-in that would create an account', ()
         renderPage(queryClient);
         await signInWithGoogle();
         const dialog = screen.getByRole('dialog');
-        tickBoth(dialog);
+        tick(dialog);
         mocks.termsVersion = '2026-11-01';
 
         fireEvent.click(within(dialog).getByRole('button', { name: 'Create account' }));
@@ -162,7 +161,7 @@ describe('LoginPage and a Google/Apple sign-in that would create an account', ()
         mocks.oauth.mockRejectedValueOnce(signupRequired()).mockRejectedValueOnce(new ApiError(401, { errorCode: 1004 }));
         renderPage();
         await signInWithGoogle();
-        tickBoth(screen.getByRole('dialog'));
+        tick(screen.getByRole('dialog'));
 
         fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Create account' }));
 

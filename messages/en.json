@@ -506,26 +506,21 @@
         "tabTitle": "Register",
         "haveAccount": "Already have an account?",
         "signInLink": "Sign in",
-        "orContinueWith": "Or continue with",
+        "orWithEmail": "Or sign up with email",
         "newsletter": {
-            "label": "Subscribe to the newsletter and get {percent}% off your next event",
-            "hint": "We'll send your code after you verify your email."
-        },
-        "business": {
-            "label": "Register as a business",
-            "hint": "Add your company's VAT details to buy as a business."
+            "label": "Subscribe to the newsletter and get {percent}% off your next event"
         },
         "acceptance": {
             "required": "Please accept the Terms of Use and Community Guidelines and confirm you are 18 or older to create your account.",
             "loading": "The Terms of Use and Community Guidelines are still loading. Please try again in a moment.",
             "unavailable": "The Terms of Use or Community Guidelines couldn't be loaded. Refresh the page and try again.",
-            "changed": "The Terms of Use or Community Guidelines were just updated. Please review them and tick the box again.",
-            "oauthHint": "Tick both boxes above to sign up with Google or Apple."
+            "changed": "The Terms of Use or Community Guidelines were just updated. Please review them and tick the box again."
         }
     },
     "AcceptanceCheckboxes": {
         "all": "I accept the <terms>Terms of Use</terms> and <guidelines>Community Guidelines</guidelines> and have read the <privacy>Privacy Policy</privacy>",
         "termsOnly": "I accept the <terms>Terms of Use</terms> and have read the <privacy>Privacy Policy</privacy>",
+        "signup": "I accept the <terms>Terms of Use</terms> and <guidelines>Community Guidelines</guidelines>, have read the <privacy>Privacy Policy</privacy>, and am 18 or older",
         "adult": "I am 18 or older",
         "age16": "I am 16 or older",
         "opensInNewTab": "(opens in a new tab)"

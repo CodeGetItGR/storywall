@@ -7,7 +7,7 @@ import React, { useCallback, useState } from 'react';
 
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { OAuthButtons } from '@/components/auth/OAuthButtons';
-import { OAuthSignupAcceptanceModal, type SignupAcceptance } from '@/components/auth/OAuthSignupAcceptanceModal';
+import { OAuthSignupAcceptanceModal } from '@/components/auth/OAuthSignupAcceptanceModal';
 import { InviteEventCard } from '@/components/invite/InviteEventCard';
 import { AuthLoadingState } from '@/components/layout/AuthLoadingState';
 import { AppLink } from '@/components/ui/AppLink';
@@ -17,13 +17,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAuthPageRedirect } from '@/hooks/useAuthPageRedirect';
 import { useContentLimits } from '@/hooks/useContentLimits';
 import { useNavigateAfterSignIn } from '@/hooks/useNavigateAfterSignIn';
-import { getSignupAcceptanceRequiredDetails, isSignupAcceptanceRequiredError } from '@/lib/api/errors';
-import type { OAuthProviderName, SignupAcceptanceRequiredDetails } from '@/lib/api/types';
+import { useOAuthSignIn } from '@/hooks/useOAuthSignIn';
+import type { AuthSessionDto, OAuthProviderName } from '@/lib/api/types';
 import { AUTH_RETURN_PATH_PARAM, getPostAuthRedirectPath, getSafeReturnPath } from '@/lib/auth/returnPath';
 import { routes } from '@/lib/routes';
-
-// A Google/Apple sign-in that would create an account, held while the user accepts.
-type PendingOAuthSignup = { provider: OAuthProviderName; idToken: string; versions: SignupAcceptanceRequiredDetails | null };
 
 export default function LoginPage() {
     const t = useTranslations('LoginPage');
@@ -35,7 +32,7 @@ export default function LoginPage() {
     const accountDeleted = searchParams.get('accountDeleted') === '1';
     const returnPath = getSafeReturnPath(searchParams.get(AUTH_RETURN_PATH_PARAM));
 
-    const { login, oauth } = useAuth();
+    const { login } = useAuth();
     const { shouldRenderAuthPage } = useAuthPageRedirect(returnPath);
     const toErrorMessage = useApiErrorMessage();
 
@@ -44,7 +41,6 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [pendingSignup, setPendingSignup] = useState<PendingOAuthSignup | null>(null);
 
     const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setEmail(e.target.value);
@@ -73,53 +69,29 @@ export default function LoginPage() {
         }
     }
 
-    const handleOAuthSignIn = useCallback(
-        async (provider: 'GOOGLE' | 'APPLE', idToken: string) => {
-            setError(null);
-            try {
-                const auth = await oauth(provider, { idToken, inviteToken: inviteToken ?? undefined });
-                navigateAfterSignIn(getPostAuthRedirectPath(auth.role, returnPath));
-            } catch (err) {
-                // No account for this identity yet, and nothing was created: ask, then resend the same token.
-                if (!isSignupAcceptanceRequiredError(err)) throw err;
-                setPendingSignup({ provider, idToken, versions: getSignupAcceptanceRequiredDetails(err) });
-            }
+    const handleSignedIn = useCallback(
+        (session: AuthSessionDto) => {
+            navigateAfterSignIn(getPostAuthRedirectPath(session.role, returnPath));
         },
-        [inviteToken, oauth, returnPath, navigateAfterSignIn],
+        [navigateAfterSignIn, returnPath],
     );
-
-    const handleSignupConfirm = useCallback(
-        async (acceptance: SignupAcceptance) => {
-            if (!pendingSignup) return;
-            const auth = await oauth(pendingSignup.provider, {
-                idToken: pendingSignup.idToken,
-                inviteToken: inviteToken ?? undefined,
-                ...acceptance,
-                adultConfirmed: true,
-            });
-            navigateAfterSignIn(getPostAuthRedirectPath(auth.role, returnPath));
-        },
-        [inviteToken, oauth, pendingSignup, returnPath, navigateAfterSignIn],
-    );
-
-    // An expired Apple token lands here too: signing in again fetches a fresh one.
-    const handleSignupError = useCallback(
-        (err: unknown) => {
-            setPendingSignup(null);
-            setError(toErrorMessage(err));
-        },
-        [toErrorMessage],
-    );
-
-    const handleSignupCancel = useCallback(() => {
-        setPendingSignup(null);
-    }, []);
 
     const handleOAuthError = useCallback(
         (err: unknown) => {
             setError(toErrorMessage(err));
         },
         [toErrorMessage],
+    );
+
+    const oauthSignIn = useOAuthSignIn({ inviteToken, onSignedInAction: handleSignedIn, onErrorAction: handleOAuthError });
+    const { handleSignIn } = oauthSignIn;
+
+    const handleOAuthSignIn = useCallback(
+        async (provider: OAuthProviderName, idToken: string) => {
+            setError(null);
+            await handleSignIn(provider, idToken);
+        },
+        [handleSignIn],
     );
 
     if (!shouldRenderAuthPage) {
@@ -214,12 +186,12 @@ export default function LoginPage() {
                 <span className="h-px flex-1 bg-surface-muted" />
             </div>
             <OAuthButtons onSignIn={handleOAuthSignIn} onError={handleOAuthError} />
-            {pendingSignup && (
+            {oauthSignIn.pendingSignup && (
                 <OAuthSignupAcceptanceModal
-                    versions={pendingSignup.versions}
-                    onConfirmAction={handleSignupConfirm}
-                    onErrorAction={handleSignupError}
-                    onCloseAction={handleSignupCancel}
+                    versions={oauthSignIn.pendingSignup.versions}
+                    onConfirmAction={oauthSignIn.handleSignupConfirm}
+                    onErrorAction={oauthSignIn.handleSignupError}
+                    onCloseAction={oauthSignIn.handleSignupCancel}
                 />
             )}
 
