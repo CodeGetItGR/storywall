@@ -84,7 +84,7 @@ export async function brandOgImage() {
             />
             {/* Logo */}
             {/* eslint-disable-next-line @next/next/no-img-element -- next/image cannot render inside ImageResponse */}
-            <img alt="" height={64} src={logoSrc} width={268} />
+            <img alt="StoryWall" height={64} src={logoSrc} width={268} />
             {/* Headline */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                 <div style={{ fontSize: 30, letterSpacing: 6, color: CORAL }}>THE SOCIAL SPACE FOR EVERY PRIVATE EVENT</div>
@@ -124,7 +124,7 @@ export async function forBusinessOgImage(copy: { eyebrow: string; headline: stri
         >
             {/* Logo */}
             {/* eslint-disable-next-line @next/next/no-img-element -- next/image cannot render inside ImageResponse */}
-            <img alt="" height={64} src={logoSrc} width={268} />
+            <img alt="StoryWall" height={64} src={logoSrc} width={268} />
             {/* Headline */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                 <div style={{ fontSize: 30, letterSpacing: 6, color: CORAL }}>{copy.eyebrow}</div>
@@ -182,7 +182,7 @@ async function eventOgPng(event: ShareEvent, refresh?: () => Promise<ShareEvent 
             {coverSrc ? (
                 // eslint-disable-next-line @next/next/no-img-element -- next/image cannot render inside ImageResponse
                 <img
-                    alt=""
+                    alt={event.title}
                     src={coverSrc}
                     width={OG_IMAGE_SIZE.width}
                     height={OG_IMAGE_SIZE.height}
@@ -226,7 +226,7 @@ async function eventOgPng(event: ShareEvent, refresh?: () => Promise<ShareEvent 
                     }}
                 >
                     {/* eslint-disable-next-line @next/next/no-img-element -- next/image cannot render inside ImageResponse */}
-                    <img alt="" height={40} src={logoSrc} width={167} />
+                    <img alt="StoryWall" height={40} src={logoSrc} width={167} />
                 </div>
             </div>
             {/* Title */}
@@ -304,7 +304,7 @@ export async function occasionOgImage(title: string) {
             />
             {/* Logo */}
             {/* eslint-disable-next-line @next/next/no-img-element -- next/image cannot render inside ImageResponse */}
-            <img alt="" height={64} src={logoSrc} width={268} />
+            <img alt="StoryWall" height={64} src={logoSrc} width={268} />
             {/* Title */}
             <div style={{ display: 'flex', fontSize: titleSize, fontWeight: 700, lineHeight: 1.05, maxWidth: 1000 }}>{title}</div>
         </div>,

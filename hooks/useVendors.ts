@@ -9,6 +9,7 @@ import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { api, ApiError } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { PartnerRole, VendorCapability, VendorLinkDto, VendorMeDto, VendorRowDto } from '@/lib/api/types';
+import { LIVE_CONTENT_STALE_TIME } from '@/lib/queryClient';
 import { hasVendorCapability } from '@/lib/vendors';
 
 export const vendorKeys = {
@@ -60,6 +61,7 @@ export function useVendorLinks(eventId: string | null, enabled: boolean) {
 }
 
 // Any member: listed vendors; a host also gets hidden rows with their flags.
+// Vendors join and edit their details from their own accounts, so no mutation here refreshes the list: it is live content.
 export function useEventVendors(eventId: string | null) {
     const { isAuthenticated } = useAuth();
     const vendorsReadable = useModuleReadable(eventId, 'vendors');
@@ -68,6 +70,8 @@ export function useEventVendors(eventId: string | null) {
         queryKey: vendorKeys.list(eventId ?? ''),
         queryFn: () => api.get<VendorRowDto[]>(endpoints.events.vendors(eventId!)),
         enabled: Boolean(eventId) && isAuthenticated && vendorsReadable,
+        staleTime: LIVE_CONTENT_STALE_TIME,
+        refetchOnWindowFocus: true,
     });
 }
 

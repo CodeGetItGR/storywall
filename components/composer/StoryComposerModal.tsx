@@ -45,6 +45,7 @@ function FilterLayer({ src, alt, preset }: { src: string; alt: string; preset: S
 
 export function StoryComposerModal({ controller }: { controller: StoryComposerController }) {
     const t = useTranslations('StoryComposer');
+    const tAlt = useTranslations('ImageAlt');
     const uploadAccept = useUploadAccept();
     const [cameraActive, setCameraActive] = useState(true);
     const [showFilterSwipeCue, setShowFilterSwipeCue] = useState(true);
@@ -207,7 +208,7 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                         <FilterLayer src={activeItem.previewUrl} alt={t('previewAlt')} preset={activeFilterPreset} />
                                         {targetFilterPreset && (
                                             <div className="absolute inset-0" style={{ opacity: dragProgress }}>
-                                                <FilterLayer src={activeItem.previewUrl} alt="" preset={targetFilterPreset} />
+                                                <FilterLayer src={activeItem.previewUrl} alt={t('previewAlt')} preset={targetFilterPreset} />
                                             </div>
                                         )}
                                     </div>
@@ -275,7 +276,7 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                                         className="h-full w-full object-cover"
                                                     />
                                                 ) : (
-                                                    <Image src={item.previewUrl} alt="" fill className="object-cover" sizes="36px" unoptimized />
+                                                    <Image src={item.previewUrl} alt={tAlt('photoPreview')} fill className="object-cover" sizes="36px" unoptimized />
                                                 )}
                                                 {item.status === 'failed' && <span className="absolute inset-x-0 bottom-0 h-1.5 bg-destructive" />}
                                             </button>

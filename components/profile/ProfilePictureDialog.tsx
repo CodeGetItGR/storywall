@@ -22,6 +22,7 @@ type ProfilePictureDialogProps = {
 
 export function ProfilePictureDialog({ open, previewUrl, error, isUploading, onFileChange, onConfirm, onCancel }: ProfilePictureDialogProps) {
     const t = useTranslations('ProfilePage.picture');
+    const tAlt = useTranslations('ImageAlt');
     const uploadAccept = useUploadAccept();
 
     return (
@@ -34,7 +35,7 @@ export function ProfilePictureDialog({ open, previewUrl, error, isUploading, onF
                     {/* Preview */}
                     <div className="flex flex-col items-center gap-3">
                         <div className="relative h-40 w-40 overflow-hidden rounded-full bg-surface-muted ring-2 ring-primary/20">
-                            {previewUrl && <ProtectedImage src={previewUrl} alt="" fill className="object-cover" sizes="160px" />}
+                            {previewUrl && <ProtectedImage src={previewUrl} alt={tAlt('profilePhoto')} fill className="object-cover" sizes="160px" />}
                             {isUploading && (
                                 <div className="absolute inset-0 flex items-center justify-center bg-black/35">
                                     <Loader2 className="h-8 w-8 animate-spin text-white" aria-hidden="true" />

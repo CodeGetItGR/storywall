@@ -17,6 +17,8 @@ export const PUBLIC_CLIENT_NAMESPACES = [
     'LandingPage.reviews',
     'LandingPage.pricing',
     'LandingPage.stack',
+    'LandingPage.imageAlts',
+    'ImageAlt',
     'LanguageSwitcher',
     'Modules',
     'Durations',
