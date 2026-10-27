@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 import { defaultLocale, type Locale, locales } from '@/i18n/config';
-import { getForBusinessPath, getPublicLandingPath } from '@/i18n/publicLocale';
+import { getForBusinessPath, getPublicLandingPath, getQrWeddingPath } from '@/i18n/publicLocale';
 
 // Single source for the production origin. Canonicals, alternates, the
 // sitemap and structured data all build absolute URLs from it, so it must
@@ -29,6 +29,14 @@ export function absoluteUrl(path: string): string {
 // nothing worth finding in search.
 export const NO_INDEX: Metadata['robots'] = { index: false, follow: true };
 
+// Staging serves the same pages under another host and must never be indexed. app/robots.ts
+// blocks it too; this tag covers a page a crawler reaches anyway.
+export const STAGING_NO_INDEX: Metadata['robots'] = { index: false, follow: false };
+
+export function isStagingSite(): boolean {
+    return process.env.NEXT_PUBLIC_APP_ENV === 'staging';
+}
+
 // The page's own URL, so a `?version=` copy of a legal page counts as the page itself.
 export function canonicalAlternates(path: string): Metadata['alternates'] {
     return { canonical: absoluteUrl(path) };
@@ -52,6 +60,14 @@ export function forBusinessLanguageAlternates(): Record<string, string> {
     return languages;
 }
 
+// Same shape again for the wedding QR page.
+export function qrWeddingLanguageAlternates(): Record<string, string> {
+    const languages: Record<string, string> = {};
+    for (const locale of locales) languages[locale] = absoluteUrl(getQrWeddingPath(locale));
+    languages['x-default'] = absoluteUrl(getQrWeddingPath(defaultLocale));
+    return languages;
+}
+
 export function ogLocale(locale: Locale): string {
     return locale === 'el' ? 'el_GR' : 'en_US';
 }
@@ -61,6 +77,8 @@ export type PageMetadataCopy = {
     description: string;
     siteName: string;
     imageAlt: string;
+    // The searches a page is written for (occasion pages).
+    keywords?: string[];
 };
 
 type IndexableMetadataInput = {
@@ -82,6 +100,7 @@ export function buildIndexableMetadata({ locale, path, languages, imagePath, cop
         metadataBase: new URL(SITE_URL),
         title: copy.title,
         description: copy.description,
+        ...(copy.keywords && { keywords: copy.keywords }),
         alternates: { canonical, languages },
         openGraph: {
             type: 'website',
@@ -99,7 +118,7 @@ export function buildIndexableMetadata({ locale, path, languages, imagePath, cop
             description: copy.description,
             ...(images && { images }),
         },
-        robots: { index: true, follow: true },
+        robots: isStagingSite() ? STAGING_NO_INDEX : { index: true, follow: true },
     };
 }
 
@@ -119,6 +138,17 @@ export function buildForBusinessMetadata(locale: Locale, copy: PageMetadataCopy)
         locale,
         path: getForBusinessPath(locale),
         languages: forBusinessLanguageAlternates(),
+        copy,
+    });
+}
+
+// The wedding QR page shares the landing's OG image.
+export function buildQrWeddingMetadata(locale: Locale, copy: PageMetadataCopy): Metadata {
+    return buildIndexableMetadata({
+        locale,
+        path: getQrWeddingPath(locale),
+        languages: qrWeddingLanguageAlternates(),
+        imagePath: OG_IMAGE_PATH,
         copy,
     });
 }

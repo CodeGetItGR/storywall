@@ -7,6 +7,7 @@ import {
     HelpCircle,
     Images,
     Mail,
+    MessageCircleQuestion,
     MessageSquareText,
     Music,
     Palette,
@@ -39,6 +40,7 @@ const moduleIcons: Record<string, ComponentType<{ className?: string }>> = {
     co_hosts: UserCog,
     named_invites: Mail,
     he_or_she: Baby,
+    quiz_polls: MessageCircleQuestion,
 };
 
 const moduleFallbacks: Record<string, { name: string; description: string }> = {
@@ -86,6 +88,10 @@ const moduleFallbacks: Record<string, { name: string; description: string }> = {
     he_or_she: {
         name: 'Boy or Girl?',
         description: 'Guests guess before the reveal.',
+    },
+    quiz_polls: {
+        name: 'Quiz & Polls',
+        description: 'A quiz about you and polls for your guests.',
     },
 };
 

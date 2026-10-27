@@ -16,6 +16,7 @@ vi.mock('@/providers/AccountPanelProvider', () => ({ AccountPanelProvider: ({ ch
 vi.mock('@/components/layout/AuthLoadingState', () => ({ AuthLoadingState: () => null }));
 vi.mock('@/components/layout/DesktopNavRail', () => ({ DesktopNavRail: () => null }));
 vi.mock('@/components/layout/MobileTabBar', () => ({ MobileTabBar: () => null }));
+vi.mock('@/components/review/ReviewPrompt', () => ({ ReviewPrompt: () => null }));
 
 afterEach(cleanup);
 

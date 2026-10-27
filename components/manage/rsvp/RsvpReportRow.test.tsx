@@ -29,4 +29,15 @@ describe('RsvpReportRow', () => {
         const link = screen.getByRole('link', { name: /Full list/ });
         expect(link.getAttribute('href')).toBe('/events/e1/manage/rsvp/reports/FULL_LIST?from=tools');
     });
+
+    it('carries from=vendor so a planner stays in the vendor origin', () => {
+        render(
+            <NextIntlClientProvider locale="en" messages={messages}>
+                <RsvpReportRow eventId="e1" reportType="FULL_LIST" origin="vendor" />
+            </NextIntlClientProvider>,
+        );
+
+        const link = screen.getByRole('link', { name: /Full list/ });
+        expect(link.getAttribute('href')).toBe('/events/e1/manage/rsvp/reports/FULL_LIST?from=vendor');
+    });
 });

@@ -8,6 +8,7 @@ import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { useUploadAccept } from '@/hooks/useUploadAccept';
+import { INCIDENT_MODE } from '@/lib/incident';
 
 type ProfilePictureDialogProps = {
     open: boolean;
@@ -21,6 +22,7 @@ type ProfilePictureDialogProps = {
 
 export function ProfilePictureDialog({ open, previewUrl, error, isUploading, onFileChange, onConfirm, onCancel }: ProfilePictureDialogProps) {
     const t = useTranslations('ProfilePage.picture');
+    const tAlt = useTranslations('ImageAlt');
     const uploadAccept = useUploadAccept();
 
     return (
@@ -33,7 +35,7 @@ export function ProfilePictureDialog({ open, previewUrl, error, isUploading, onF
                     {/* Preview */}
                     <div className="flex flex-col items-center gap-3">
                         <div className="relative h-40 w-40 overflow-hidden rounded-full bg-surface-muted ring-2 ring-primary/20">
-                            {previewUrl && <ProtectedImage src={previewUrl} alt="" fill className="object-cover" sizes="160px" />}
+                            {previewUrl && <ProtectedImage src={previewUrl} alt={tAlt('profilePhoto')} fill className="object-cover" sizes="160px" />}
                             {isUploading && (
                                 <div className="absolute inset-0 flex items-center justify-center bg-black/35">
                                     <Loader2 className="h-8 w-8 animate-spin text-white" aria-hidden="true" />
@@ -42,7 +44,7 @@ export function ProfilePictureDialog({ open, previewUrl, error, isUploading, onF
                         </div>
                         <label
                             htmlFor="profile-picture-dialog-input"
-                            aria-disabled={isUploading}
+                            aria-disabled={isUploading || INCIDENT_MODE}
                             className="cursor-pointer text-sm font-medium text-primary hover:underline aria-disabled:pointer-events-none aria-disabled:opacity-50"
                         >
                             {t('chooseAnother')}
@@ -52,7 +54,7 @@ export function ProfilePictureDialog({ open, previewUrl, error, isUploading, onF
                             type="file"
                             accept={uploadAccept.profilePicture}
                             className="sr-only"
-                            disabled={isUploading}
+                            disabled={isUploading || INCIDENT_MODE}
                             onChange={onFileChange}
                         />
                     </div>

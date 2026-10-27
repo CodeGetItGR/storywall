@@ -1,53 +1,78 @@
-import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 
-import { OccasionCtaLink } from '@/components/occasions/OccasionCtaLink';
-import { OccasionFloats } from '@/components/occasions/OccasionFloats';
+import { KeywordHero } from '@/components/landing/KeywordHero';
+import { LandingHeader } from '@/components/landing/LandingHeader';
+import { OccasionHeroActions } from '@/components/occasions/OccasionHeroActions';
+import { OccasionHeroVisual } from '@/components/occasions/OccasionHeroVisual';
+import { type OccasionFeedCopy, OccasionPhoneFeed } from '@/components/occasions/OccasionPhoneFeed';
+import { OccasionPostCard } from '@/components/occasions/OccasionPostCard';
 import type { Locale } from '@/i18n/config';
+import { getPublicLandingPath } from '@/i18n/publicLocale';
 import type { OccasionCampaign } from '@/lib/occasions/campaigns';
-import type { OccasionFloat } from '@/lib/occasions/occasionMedia';
+import type { OccasionHeroFeed } from '@/lib/occasions/occasionMedia';
 import type { Occasion } from '@/lib/occasions/occasions';
+import { occasionHeaderLinks } from '@/lib/occasions/occasionSections';
 
-type OccasionHeroProps = { campaign: OccasionCampaign | null; createHref: string; floats: OccasionFloat[]; locale: Locale; occasion: Occasion };
+type OccasionHeroProps = {
+    alternatePaths: Record<Locale, string>;
+    campaign: OccasionCampaign | null;
+    createHref: string;
+    // null → no demo for this type; the hero shows the main button only.
+    demoHref: string | null;
+    feed: OccasionHeroFeed | null;
+    locale: Locale;
+    occasion: Occasion;
+};
 
-export async function OccasionHero({ campaign, createHref, floats, locale, occasion }: OccasionHeroProps) {
+export async function OccasionHero({ alternatePaths, campaign, createHref, demoHref, feed, locale, occasion }: OccasionHeroProps) {
     const t = await getTranslations({ locale, namespace: `OccasionPages.${occasion.eventType}.hero` });
-    // A campaign may swap the sentence, CTA label and image. The H1 always stays the keyword.
+    const common = await getTranslations({ locale, namespace: 'OccasionPages.common' });
+    const landing = await getTranslations({ locale, namespace: 'LandingPage' });
+    // A campaign may swap the sentence, CTA label and the feed's cover. The H1 always stays the keyword.
     const c = campaign?.hero ? await getTranslations({ locale, namespace: `OccasionPages.campaigns.${campaign.id}` }) : null;
-    const image = campaign?.hero?.image ?? occasion.heroImage;
+    const nav = landing.raw('hero.nav') as string[];
+    const mobileNav = landing.raw('hero.mobileNav') as string[];
+    const links = occasionHeaderLinks(nav, mobileNav, landing('faq.eyebrow'));
+    const cover = campaign?.hero?.image ?? feed?.cover;
 
     return (
-        <section className="grid gap-8 px-5 pt-4 pb-16 min-[761px]:grid-cols-[1fr_1.05fr] min-[761px]:items-center min-[761px]:gap-[5vw] min-[761px]:px-[5vw] min-[761px]:pt-8 min-[761px]:pb-20">
-            {/* Copy */}
-            <div>
-                {/* The keyword stays the h1; the headline below is display text. */}
-                <h1 className="occasion-label m-0 text-xs leading-[1.5] font-black tracking-[0.18em] uppercase min-[761px]:text-[13px]">{t('h1')}</h1>
-                <p className="mt-4 mb-0 [font-family:var(--editorial)] text-[clamp(40px,11vw,56px)] leading-[1] font-normal tracking-[-0.035em] text-balance min-[761px]:text-[clamp(56px,5.2vw,84px)]">
-                    {t.rich('headline', { b: (chunks) => <strong className="font-bold">{chunks}</strong> })}
-                </p>
-                <p className="mt-6 mb-0 max-w-140 text-base leading-[1.6] text-pretty text-[#3d3836]">{c ? c('lead') : t('lead')}</p>
-                <p className="mt-4 mb-0 max-w-140 text-base leading-[1.6] font-bold text-pretty">{t('promise')}</p>
-                <OccasionCtaLink className="mt-8" href={createHref}>
-                    {c ? c('cta') : t('cta')}
-                </OccasionCtaLink>
-            </div>
-            {/* Photo, with app pieces floating over it */}
-            <div className="relative mx-2 min-[761px]:mx-6">
-                {image ? (
-                    <Image
-                        priority
-                        alt={t('imageAlt')}
-                        className="aspect-[4/3] h-auto w-full rounded-[28px] object-cover shadow-[0_30px_60px_-30px_rgba(21,19,19,0.45)]"
-                        height={image.height}
-                        sizes="(min-width: 761px) 50vw, 100vw"
-                        src={image.src}
-                        width={image.width}
+        <KeywordHero
+            actions={
+                <OccasionHeroActions
+                    createHref={createHref}
+                    createLabel={c ? c('cta') : t('cta')}
+                    demoHref={demoHref}
+                    demoLabel={common('heroDemo')}
+                    plansLabel={landing('hero.plansCta')}
+                />
+            }
+            // The wedding h1 marks its gradient words with <em>; this hero shows plain text.
+            h1={t.markup('h1', { em: (chunks) => chunks })}
+            header={
+                <LandingHeader
+                    alternatePaths={alternatePaths}
+                    homeHref={getPublicLandingPath(locale)}
+                    links={links}
+                    loginLabel={nav.at(-1)!}
+                    mobileLoginLabel={mobileNav.at(-1)!}
+                />
+            }
+            headline={t.rich('headline', { b: (chunks) => <strong className="font-bold">{chunks}</strong> })}
+            lead={c ? c('lead') : t('lead')}
+            note={t('promise')}
+            visual={
+                feed && cover ? (
+                    <OccasionHeroVisual
+                        feed={<OccasionPhoneFeed copy={t.raw('feed') as OccasionFeedCopy} media={{ ...feed, cover }} />}
+                        posts={[
+                            <OccasionPostCard avatar={feed.avatars[1]!} key="left" photo={feed.cards[0]} tilt="left" />,
+                            <OccasionPostCard avatar={feed.avatars[2]!} key="right" photo={feed.cards[1]} tilt="right" />,
+                        ]}
                     />
                 ) : (
-                    <div aria-hidden="true" className="aspect-[4/3] w-full rounded-[28px] bg-[linear-gradient(135deg,#d27b9b_0%,#e78274_28%,#f4905f_58%,#fcba63_100%)]" />
-                )}
-                <OccasionFloats floats={floats} />
-            </div>
-        </section>
+                    <OccasionHeroVisual />
+                )
+            }
+        />
     );
 }

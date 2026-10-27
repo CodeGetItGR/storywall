@@ -5,9 +5,11 @@ import {
     effectiveThemePresetId,
     isThemeStepAvailable,
     parseCreateEventStep,
+    resolveCreateEventStep,
     resolveCreateEventType,
     visibleCreateEventSteps,
 } from '@/lib/createEventSteps';
+import { eventTypeSlug } from '@/lib/eventTypeSlug';
 
 const SWAN = {
     id: 'p1',
@@ -23,6 +25,15 @@ describe('createEventSteps', () => {
     it('parses the theme step and falls back to the type step', () => {
         expect(parseCreateEventStep('theme')).toBe('theme');
         expect(parseCreateEventStep('nope')).toBe('type');
+    });
+
+    it('opens on the plan step when the link names an enabled type and no step', () => {
+        const enabled = ['WEDDING', 'BAPTISM'] as const;
+        expect(resolveCreateEventStep(null, enabled, eventTypeSlug('BAPTISM'))).toBe('plan');
+        expect(resolveCreateEventStep('type', enabled, eventTypeSlug('BAPTISM'))).toBe('type');
+        expect(resolveCreateEventStep(null, enabled, 'nope')).toBe('type');
+        expect(resolveCreateEventStep(null, [], eventTypeSlug('BAPTISM'))).toBe('type');
+        expect(resolveCreateEventStep(null, enabled, null)).toBe('type');
     });
 
     it('shows the theme step between details and overview only when available', () => {

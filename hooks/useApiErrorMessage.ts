@@ -16,6 +16,8 @@ import {
     isRateLimitedError,
 } from '@/lib/api/errors';
 import { formatDate } from '@/lib/datetime';
+import { INCIDENT_PAUSED_ERROR_CODE } from '@/lib/incident';
+import { PRINT_LIST_MAX_ITEMS, PRINT_SIZES_MAX } from '@/lib/printPicks';
 
 // Codes whose backend detail beats our fixed copy: it arrives in the user's language (the client
 // sends Accept-Language) and is more specific (the missing letters, the file's actual size, the
@@ -40,6 +42,7 @@ export function useApiErrorMessage() {
 
     const describe = useCallback(
         (error: unknown, fallback?: string): string => {
+            if (getErrorCode(error) === INCIDENT_PAUSED_ERROR_CODE) return t('incidentPaused');
             if (getErrorCode(error) === ERROR_CODES.EVENT_NOT_ACTIVE) return t('eventNotActive');
             if (getErrorCode(error) === ERROR_CODES.COLLABORATION_CODE_NOT_VALID) return getErrorMessage(error, t('collaborationCodeNotValid'));
             if (getErrorCode(error) === ERROR_CODES.HOST_TRANSFER_WITHDRAWAL_OPEN) {
@@ -54,7 +57,9 @@ export function useApiErrorMessage() {
             if (getErrorCode(error) === ERROR_CODES.MEDIA_ARCHIVE_DOWNLOADS_IN_PROGRESS) return t('mediaArchiveDownloadsInProgress');
             if (getErrorCode(error) === ERROR_CODES.MEDIA_ARCHIVE_DAILY_LIMIT_REACHED) {
                 const seconds = getRetryAfterSeconds(error);
-                return seconds ? t('mediaArchiveDailyLimitReachedWithWait', { hours: Math.ceil(seconds / 3600) }) : t('mediaArchiveDailyLimitReached');
+                return seconds
+                    ? t('mediaArchiveDailyLimitReachedWithWait', { hours: Math.ceil(seconds / 3600) })
+                    : t('mediaArchiveDailyLimitReached');
             }
 
             if (isRateLimitedError(error)) {
@@ -72,6 +77,10 @@ export function useApiErrorMessage() {
             }
 
             if (isModuleNotAvailableError(error)) return t('moduleUnavailable');
+
+            // The limits are the backend's; the copy names them.
+            if (quotaCode === ERROR_CODES.PRINT_LIST_FULL) return t('printListFull', { max: PRINT_LIST_MAX_ITEMS });
+            if (quotaCode === ERROR_CODES.VENDOR_SERVICE_LIMIT_REACHED) return t('vendorServiceLimitReached', { max: PRINT_SIZES_MAX });
 
             const messageKey = getApiErrorMessageKey(quotaCode);
             if (messageKey && typeof quotaCode === 'number' && DETAIL_FIRST_CODES.has(quotaCode)) {

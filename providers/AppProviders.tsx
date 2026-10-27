@@ -4,6 +4,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { type ReactNode, useEffect, useState } from 'react';
 
 import { BetaFeedback } from '@/components/betaFeedback/BetaFeedback';
+import { SignupSourceTracker } from '@/components/layout/SignupSourceTracker';
 import { GuidelinesAcceptanceGate, GuidelinesGateSignOutHold } from '@/components/legal/GuidelinesAcceptanceGate';
 import { useAuth } from '@/hooks/useAuth';
 import { useInAppHistoryTracking } from '@/hooks/useInAppHistoryTracking';
@@ -75,6 +76,7 @@ export function AppProviders({ children, handoff = null }: { children: ReactNode
     return (
         <QueryClientProvider client={queryClient}>
             <AppConfigBootstrap />
+            <SignupSourceTracker />
             <AuthProvider handoff={handoff}>
                 <DemoRouteAuthScope>
                     <EventProvider>

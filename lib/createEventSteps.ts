@@ -9,6 +9,17 @@ export function parseCreateEventStep(value: string | null): CreateEventStep {
     return CREATE_EVENT_STEPS.find((step) => step === value) ?? 'type';
 }
 
+// The step the wizard shows: the one in the link, else the plan step when the link already names an
+// enabled event type (occasion pages link with ?type=), else the type step.
+export function resolveCreateEventStep(
+    stepParam: string | null,
+    enabledTypes: readonly EventTypeConvention[],
+    requestedSlug: string | null,
+): CreateEventStep {
+    if (stepParam === null && requestedSlug && enabledTypes.some((type) => eventTypeSlug(type) === requestedSlug)) return 'plan';
+    return parseCreateEventStep(stepParam);
+}
+
 // The steps the host walks through: the theme step only when there is something to pick.
 export function visibleCreateEventSteps(themeStepAvailable: boolean): CreateEventStep[] {
     return themeStepAvailable ? CREATE_EVENT_STEPS : CREATE_EVENT_STEPS.filter((step) => step !== 'theme');

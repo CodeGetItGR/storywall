@@ -8,7 +8,6 @@ import { ModuleUnavailableState } from '@/components/tools/ModuleUnavailableStat
 import { usePlanUpgradeHref } from '@/hooks/usePlanUpgradeHref';
 import { useRsvpReportPage } from '@/hooks/useRsvpReportPage';
 import type { RsvpReportType } from '@/lib/api/types';
-import { routes } from '@/lib/routes';
 
 import { RsvpReportActions } from './RsvpReportActions';
 import { RsvpReportView } from './RsvpReportView';
@@ -21,7 +20,7 @@ export function RsvpReportScreen({ reportType }: { reportType: RsvpReportType })
     if (!page.isModuleReadable) {
         return (
             <ModuleUnavailableState
-                backHref={routes.events.manage(page.eventId, { tab: 'rsvp', section: 'reports' })}
+                backHref={page.closeHref}
                 backLabel={t('close')}
                 body={t('unavailableBody')}
                 icon={Users}
@@ -35,7 +34,13 @@ export function RsvpReportScreen({ reportType }: { reportType: RsvpReportType })
     return (
         <div data-print-root className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-6">
             {/* Actions */}
-            <RsvpReportActions isDownloading={page.isDownloading} onPrint={page.onPrint} onDownload={page.onDownload} onClose={page.onClose} />
+            <RsvpReportActions
+                canDownload={page.canDownload}
+                isDownloading={page.isDownloading}
+                onPrint={page.onPrint}
+                onDownload={page.onDownload}
+                onClose={page.onClose}
+            />
             {page.downloadError && (
                 <p role="alert" className="text-right text-xs text-rose-600 print:hidden">
                     {page.downloadError}
@@ -44,7 +49,7 @@ export function RsvpReportScreen({ reportType }: { reportType: RsvpReportType })
 
             {/* Report */}
             {page.report ? (
-                <RsvpReportView report={page.report} />
+                <RsvpReportView report={page.report} showPhone={page.showPhone} />
             ) : page.isError ? (
                 <p className="text-sm text-rose-600">{t('loadFailed')}</p>
             ) : (

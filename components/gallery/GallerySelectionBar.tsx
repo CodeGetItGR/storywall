@@ -1,7 +1,9 @@
 'use client';
 
-import { ArrowUp, Download, Loader2 } from 'lucide-react';
+import { ArrowUp, Download, Loader2, Printer } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+
+import { cn } from '@/lib/utils';
 
 interface GallerySelectionBarProps {
     visible: boolean;
@@ -11,6 +13,11 @@ interface GallerySelectionBarProps {
     /** Why the download is disabled, when the reason isn't obvious. */
     downloadHint?: string | null;
     isDownloadingSelection: boolean;
+    /** Download shows for hosts in the guest album only. */
+    canDownload?: boolean;
+    /** Adds the selection to the print list; absent while print picks are unavailable. */
+    onPrintSelected?: () => void;
+    isPrinting?: boolean;
     onSelectAll: () => void;
     onDownloadSelected: () => void;
     onExitSelection: () => void;
@@ -24,12 +31,16 @@ export function GallerySelectionBar({
     canDownloadSelected,
     downloadHint,
     isDownloadingSelection,
+    canDownload = true,
+    onPrintSelected,
+    isPrinting = false,
     onSelectAll,
     onDownloadSelected,
     onExitSelection,
     onScrollToTop,
 }: GallerySelectionBarProps) {
     const t = useTranslations('GalleryPage');
+    const tPrint = useTranslations('GalleryPage.print');
 
     if (!visible) return null;
 
@@ -55,17 +66,37 @@ export function GallerySelectionBar({
                         >
                             {t('selectAll')}
                         </button>
-                        <button
-                            type="button"
-                            onClick={onDownloadSelected}
-                            disabled={!canDownloadSelected}
-                            className="flex min-h-9 items-center gap-3.5 rounded-full bg-ink px-3 text-xs font-semibold text-white disabled:opacity-50"
-                        >
-                            <div>
-                                {isDownloadingSelection ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
-                            </div>
-                            <p className="w-full text-center text-xs font-semibold text-white">{selectedCount}</p>
-                        </button>
+                        {/* Print */}
+                        {onPrintSelected && (
+                            <button
+                                type="button"
+                                onClick={onPrintSelected}
+                                disabled={!selectedCount || isPrinting}
+                                className={cn(
+                                    'flex min-h-9 items-center gap-3.5 rounded-full px-3 text-xs font-semibold disabled:opacity-50',
+                                    canDownload ? 'bg-surface-muted text-ink' : 'bg-ink text-white',
+                                )}
+                            >
+                                {isPrinting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Printer className="h-3.5 w-3.5" />}
+                                <span className="sr-only">{tPrint('action')}</span>
+                                {!canDownload && <span className="text-center text-xs font-semibold text-white">{selectedCount}</span>}
+                            </button>
+                        )}
+
+                        {/* Download */}
+                        {canDownload && (
+                            <button
+                                type="button"
+                                onClick={onDownloadSelected}
+                                disabled={!canDownloadSelected}
+                                className="flex min-h-9 items-center gap-3.5 rounded-full bg-ink px-3 text-xs font-semibold text-white disabled:opacity-50"
+                            >
+                                <div>
+                                    {isDownloadingSelection ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                                </div>
+                                <p className="w-full text-center text-xs font-semibold text-white">{selectedCount}</p>
+                            </button>
+                        )}
                         <button type="button" onClick={onExitSelection} className="min-h-9 rounded-full px-3 text-xs font-semibold text-ink-muted">
                             {t('cancelSelection')}
                         </button>
@@ -87,15 +118,34 @@ export function GallerySelectionBar({
                         >
                             {t('selectAll')}
                         </button>
-                        <button
-                            type="button"
-                            onClick={onDownloadSelected}
-                            disabled={!canDownloadSelected}
-                            className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-ink px-3 text-xs font-semibold text-white disabled:opacity-50"
-                        >
-                            {isDownloadingSelection ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
-                            {t('download')}
-                        </button>
+                        {/* Print */}
+                        {onPrintSelected && (
+                            <button
+                                type="button"
+                                onClick={onPrintSelected}
+                                disabled={!selectedCount || isPrinting}
+                                className={cn(
+                                    'inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold disabled:opacity-50',
+                                    canDownload ? 'bg-surface-muted text-ink' : 'bg-ink text-white',
+                                )}
+                            >
+                                {isPrinting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Printer className="h-3.5 w-3.5" />}
+                                {tPrint('action')}
+                            </button>
+                        )}
+
+                        {/* Download */}
+                        {canDownload && (
+                            <button
+                                type="button"
+                                onClick={onDownloadSelected}
+                                disabled={!canDownloadSelected}
+                                className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-ink px-3 text-xs font-semibold text-white disabled:opacity-50"
+                            >
+                                {isDownloadingSelection ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                                {t('download')}
+                            </button>
+                        )}
                         <button type="button" onClick={onExitSelection} className="min-h-9 rounded-full px-3 text-xs font-semibold text-ink-muted">
                             {t('cancelSelection')}
                         </button>

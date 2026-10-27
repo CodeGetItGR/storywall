@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
 import type { EventModuleResponseDto } from '@/lib/api/types';
-import { isDeletedEventRouteAllowed, isEventDeleted, isEventEnded, isModuleAvailable, readableModuleKeys } from '@/lib/eventLifecycle';
+import {
+    canMarkSongsPlayed,
+    isDeletedEventRouteAllowed,
+    isEventDeleted,
+    isEventEnded,
+    isModuleAvailable,
+    readableModuleKeys,
+} from '@/lib/eventLifecycle';
 
 describe('isEventDeleted', () => {
     it('is true only when deletedAt is set', () => {
@@ -82,5 +89,19 @@ describe('isEventEnded', () => {
     it('is false without an end, or an unreadable one', () => {
         expect(isEventEnded({ schedule: { endAt: null } }, now)).toBe(false);
         expect(isEventEnded({ schedule: { endAt: 'nope' } }, now)).toBe(false);
+    });
+});
+
+describe('canMarkSongsPlayed', () => {
+    const playlist = (isAvailable: boolean) =>
+        [{ moduleKey: 'playlist', isEnabled: true, isAvailable, configuration: {} }] as EventModuleResponseDto[];
+
+    it('needs a live event with the playlist available', () => {
+        expect(canMarkSongsPlayed({ status: 'ACTIVE', deletedAt: null, modules: playlist(true) })).toBe(true);
+        expect(canMarkSongsPlayed({ status: 'DRAFT', deletedAt: null, modules: playlist(true) })).toBe(false);
+        expect(canMarkSongsPlayed({ status: 'ACTIVE', deletedAt: null, modules: playlist(false) })).toBe(false);
+        expect(canMarkSongsPlayed({ status: 'ACTIVE', deletedAt: '2026-09-22T10:00:00Z', modules: playlist(true) })).toBe(false);
+        expect(canMarkSongsPlayed({ status: 'ACTIVE', deletedAt: null, suspended: true, modules: playlist(true) })).toBe(false);
+        expect(canMarkSongsPlayed(undefined)).toBe(false);
     });
 });

@@ -17,10 +17,8 @@ import {
     heldHostOnlyRole,
     hostOnlyRoleKeys,
     isOptionDisabled,
-    isValidRoleKey,
     memberHasRole,
     memberRoleLabel,
-    normalizeRoleKeyInput,
     optionLabel,
     OTHER_CHOICE,
     roleErrorKind,
@@ -92,49 +90,35 @@ describe('activeRoleCount', () => {
     });
 });
 
-describe('role keys', () => {
-    it('uppercases input and turns spaces into underscores', () => {
-        expect(normalizeRoleKeyInput('best man')).toBe('BEST_MAN');
-    });
-
-    it('accepts the backend pattern only', () => {
-        expect(isValidRoleKey('BEST_MAN')).toBe(true);
-        expect(isValidRoleKey('B')).toBe(false);
-        expect(isValidRoleKey('1ST')).toBe(false);
-        expect(isValidRoleKey(`A${'B'.repeat(50)}`)).toBe(false);
-    });
-});
-
 describe('validateRoleDraft', () => {
-    it('flags every bad field on create', () => {
-        const draft = { ...draftFromRole(null), roleKey: 'x', labelEn: ' ', labelEl: 'a'.repeat(41), emoji: 'e'.repeat(17), limited: true, maxHolders: '0' };
-        expect(validateRoleDraft(draft, true)).toEqual({ roleKey: true, labelEn: true, labelEl: true, emoji: true, maxHolders: true });
+    it('flags every bad field', () => {
+        const draft = { ...draftFromRole(null), labelEn: ' ', labelEl: 'a'.repeat(41), emoji: 'e'.repeat(17), limited: true, maxHolders: '0' };
+        expect(validateRoleDraft(draft)).toEqual({ labelEn: true, labelEl: true, emoji: true, maxHolders: true });
     });
 
-    it('skips the key on edit and ignores the number when unlimited', () => {
+    it('ignores the number when unlimited', () => {
         const draft = { ...draftFromRole(null), labelEn: 'Best man', labelEl: 'Κουμπάρος' };
-        expect(validateRoleDraft(draft, false)).toEqual({});
+        expect(validateRoleDraft(draft)).toEqual({});
     });
 });
 
 describe('buildCreatePayload', () => {
-    it('trims, omits a blank emoji and an unlimited cap', () => {
-        const draft = { ...draftFromRole(null), roleKey: 'BEST_MAN', labelEn: ' Best man ', labelEl: 'Κουμπάρος', emoji: ' ' };
+    it('trims, sends no key, and omits a blank emoji and an unlimited cap', () => {
+        const draft = { ...draftFromRole(null), labelEn: ' Best man ', labelEl: 'Κουμπάρος', emoji: ' ' };
         expect(buildCreatePayload(draft, 'WEDDING', 3)).toEqual({
             eventTypeKey: 'WEDDING',
-            roleKey: 'BEST_MAN',
             label: { en: 'Best man', el: 'Κουμπάρος' },
             sortOrder: 3,
         });
     });
 
     it('sends emoji and cap when set', () => {
-        const draft = { ...draftFromRole(null), roleKey: 'BEST_MAN', labelEn: 'Best man', labelEl: 'Κουμπάρος', emoji: '🤵', limited: true, maxHolders: '2' };
+        const draft = { ...draftFromRole(null), labelEn: 'Best man', labelEl: 'Κουμπάρος', emoji: '🤵', limited: true, maxHolders: '2' };
         expect(buildCreatePayload(draft, 'WEDDING', 0)).toMatchObject({ emoji: '🤵', maxHolders: 2 });
     });
 
     it('sends hostOnly only when on', () => {
-        const draft = { ...draftFromRole(null), roleKey: 'BEST_MAN', labelEn: 'Best man', labelEl: 'Κουμπάρος', hostOnly: true };
+        const draft = { ...draftFromRole(null), labelEn: 'Best man', labelEl: 'Κουμπάρος', hostOnly: true };
         expect(buildCreatePayload(draft, 'WEDDING', 0)).toMatchObject({ hostOnly: true });
     });
 });
@@ -159,20 +143,20 @@ describe('buildPatchPayload', () => {
 });
 
 describe('section titles', () => {
-    const draft = { ...draftFromRole(null), roleKey: 'COUSIN', labelEn: 'Cousin', labelEl: 'Ξάδερφος' };
+    const draft = { ...draftFromRole(null), labelEn: 'Cousin', labelEl: 'Ξάδερφος' };
     const withSection = makeRole({ sectionLabel: { en: 'Our friends', el: 'Οι φίλοι μας' } });
 
     it('are optional, but both or neither', () => {
-        expect(validateRoleDraft(draft, true)).toEqual({});
-        expect(validateRoleDraft({ ...draft, sectionEn: 'Our cousins' }, true)).toEqual({ sectionEl: true });
-        expect(validateRoleDraft({ ...draft, sectionEl: 'Τα ξαδέρφια μας' }, true)).toEqual({ sectionEn: true });
-        expect(validateRoleDraft({ ...draft, sectionEn: 'Our cousins', sectionEl: 'Τα ξαδέρφια μας' }, true)).toEqual({});
+        expect(validateRoleDraft(draft)).toEqual({});
+        expect(validateRoleDraft({ ...draft, sectionEn: 'Our cousins' })).toEqual({ sectionEl: true });
+        expect(validateRoleDraft({ ...draft, sectionEl: 'Τα ξαδέρφια μας' })).toEqual({ sectionEn: true });
+        expect(validateRoleDraft({ ...draft, sectionEn: 'Our cousins', sectionEl: 'Τα ξαδέρφια μας' })).toEqual({});
     });
 
     it('treat blank text as empty, and enforce 1 to 40 characters once either is set', () => {
-        expect(validateRoleDraft({ ...draft, sectionEn: '  ', sectionEl: ' ' }, true)).toEqual({});
-        expect(validateRoleDraft({ ...draft, sectionEn: 'a'.repeat(40), sectionEl: 'b'.repeat(40) }, true)).toEqual({});
-        expect(validateRoleDraft({ ...draft, sectionEn: 'a'.repeat(41), sectionEl: 'b' }, true)).toEqual({ sectionEn: true });
+        expect(validateRoleDraft({ ...draft, sectionEn: '  ', sectionEl: ' ' })).toEqual({});
+        expect(validateRoleDraft({ ...draft, sectionEn: 'a'.repeat(40), sectionEl: 'b'.repeat(40) })).toEqual({});
+        expect(validateRoleDraft({ ...draft, sectionEn: 'a'.repeat(41), sectionEl: 'b' })).toEqual({ sectionEn: true });
     });
 
     it('fill the draft from the role', () => {
@@ -227,7 +211,7 @@ describe('filterRoles', () => {
         expect(filterRoles(roles, '', 'ACTIVE', 'en').map((role) => role.id)).toEqual(['r1']);
     });
 
-    it('matches either label or the key, ignoring case', () => {
+    it('matches either label, ignoring case', () => {
         expect(filterRoles(roles, 'κουμπ', 'ALL', 'en').map((role) => role.id)).toEqual(['r1']);
         expect(filterRoles(roles, 'old', 'ALL', 'en').map((role) => role.id)).toEqual(['r2']);
     });

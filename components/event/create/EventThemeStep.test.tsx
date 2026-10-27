@@ -18,7 +18,7 @@ vi.mock('@/providers/createEvent/CreateEventFormContext', () => ({ useCreateEven
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'Could not load themes.' }));
 vi.mock('@/components/common/ProtectedImage', () => ({
     // eslint-disable-next-line @next/next/no-img-element
-    ProtectedImage: ({ src }: { src: string }) => <img data-testid="art" src={src} alt="" />,
+    ProtectedImage: ({ src, alt }: { src: string; alt: string }) => <img data-testid="art" src={src} alt={alt} />,
 }));
 
 const SWAN = { id: 'p1', key: 'swan', name: { en: 'Swan', el: 'Κύκνος' }, backgroundColor: '#FFCCEF', illustrationUrl: 'https://r2.test/swan.png' };

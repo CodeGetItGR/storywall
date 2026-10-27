@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { NotificationResponseDto } from '@/lib/api/types';
 
-import { notificationCopyType, notificationCtaRoute, notificationSeverity } from './notifications';
+import { notificationCopyType, notificationCtaRoute, notificationSeverity, payloadCount } from './notifications';
 
 function notification(overrides: Partial<NotificationResponseDto>): NotificationResponseDto {
     return {
@@ -51,6 +51,20 @@ describe('notificationCtaRoute', () => {
         );
     });
 
+    it('sends VENDOR_JOINED to Manage → Vendors', () => {
+        expect(notificationCtaRoute(notification({ type: 'VENDOR_JOINED', ctaTarget: 'EVENT_VENDORS', ctaParams: { eventId: 'e1' } }))).toBe(
+            '/events/e1/manage/vendors',
+        );
+    });
+
+    it('sends the print notices to the vendor page', () => {
+        for (const type of ['PRINT_PICKS_ENDING', 'PRINT_LIST_SENT']) {
+            expect(notificationCtaRoute(notification({ type, ctaTarget: 'EVENT_VENDOR_PAGE', ctaParams: { eventId: 'e1' } }))).toBe(
+                '/events/e1/tools/vendors/me',
+            );
+        }
+    });
+
     it('hides the CTA for a target this app does not know', () => {
         expect(
             notificationCtaRoute(notification({ ctaTarget: 'SOMETHING_NEW' as NotificationResponseDto['ctaTarget'], ctaParams: { eventId: 'e' } })),
@@ -74,5 +88,19 @@ describe('withdrawal and storage-trim notifications', () => {
     it('falls back to the storage-trim severities when the server sends none', () => {
         expect(notificationSeverity(notification({ type: 'STORAGE_TRIM_SCHEDULED' }))).toBe('WARNING');
         expect(notificationSeverity(notification({ type: 'STORAGE_TRIM_WARNING' }))).toBe('CRITICAL');
+    });
+});
+
+describe('payloadCount', () => {
+    const count = (value: unknown) => payloadCount(notification({ payload: { count: value } }), 'count');
+
+    it('reads a number or a numeric string', () => {
+        expect(count(3)).toBe(3);
+        expect(count('4')).toBe(4);
+    });
+
+    it('is 0 for missing, NaN, infinite or non-numeric values', () => {
+        expect(payloadCount(notification({ payload: {} }), 'count')).toBe(0);
+        for (const value of [Number.NaN, Infinity, 'abc', '', null, true]) expect(count(value)).toBe(0);
     });
 });

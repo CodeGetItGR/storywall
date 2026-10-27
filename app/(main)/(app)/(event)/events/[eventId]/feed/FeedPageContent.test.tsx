@@ -26,6 +26,7 @@ vi.mock('@/components/feed/Banner', () => ({
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
 vi.mock('@/hooks/useGiftAccount', () => ({ useGiftAccount: () => ({ isLoading: true, data: undefined }) }));
 vi.mock('@/hooks/useHideMobileTabBarOnScroll', () => ({ useHideMobileTabBarOnScroll: () => undefined }));
+vi.mock('@/hooks/useRsvpPromptVisible', () => ({ useRsvpPromptVisible: () => false }));
 vi.mock('@/components/feed/ComposerCard', () => ({ ComposerCard: () => null }));
 vi.mock('@/components/feed/EventDescription', () => ({ EventDescription: () => null }));
 vi.mock('@/components/feed/EventInfoSection', () => ({ EventInfoSection: () => null }));
@@ -39,6 +40,7 @@ vi.mock('@/components/feed/RsvpPrompt', () => ({ RsvpPrompt: () => null }));
 vi.mock('@/components/feed/StoriesRow', () => ({ StoriesRow: () => null }));
 vi.mock('@/components/pwa/InstallAppBanner', () => ({ InstallAppBanner: () => null }));
 vi.mock('@/components/story/StoryModal', () => ({ StoryModal: () => null }));
+vi.mock('@/components/vendors/VendorProfilePrompt', () => ({ VendorProfilePrompt: () => null }));
 
 afterEach(cleanup);
 

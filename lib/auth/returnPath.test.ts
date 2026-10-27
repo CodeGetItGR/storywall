@@ -18,6 +18,14 @@ describe('getSafeReturnPath', () => {
     it('keeps the admin landing page for an administrator', () => {
         expect(getPostAuthRedirectPath('ADMIN', '/events/event-1/feed')).toBe('/admin');
     });
+
+    it.each(['/admin', '/admin?section=plans', '/admin/plans'])('sends a member to the feed instead of an admin return path: %s', (path) => {
+        expect(getPostAuthRedirectPath('USER', path)).toBe('/feed');
+    });
+
+    it('keeps a return path that only starts with the admin prefix', () => {
+        expect(getPostAuthRedirectPath('USER', '/administrator')).toBe('/administrator');
+    });
 });
 
 describe('buildReturnPath', () => {
@@ -37,6 +45,14 @@ describe('getPostRegisterRedirectPath', () => {
 
     it('sends an invited account to the feed', () => {
         expect(getPostRegisterRedirectPath('USER', true)).toBe('/feed');
+    });
+
+    it("sends an invited account to the invited event's feed", () => {
+        expect(getPostRegisterRedirectPath('USER', true, '/events/event-1/feed')).toBe('/events/event-1/feed');
+    });
+
+    it('ignores the return path without an invite', () => {
+        expect(getPostRegisterRedirectPath('USER', false, '/events/event-1/feed')).toBe('/home');
     });
 
     it('keeps the admin landing page for an administrator', () => {

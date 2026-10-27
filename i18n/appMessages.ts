@@ -11,8 +11,17 @@ import type { AbstractIntlMessages } from 'next-intl';
 // that never appears in the frontend code can still be needed.
 export const APP_OMITTED_NAMESPACES = ['AdminPage', 'OccasionPages', 'ForBusinessPage'] as const;
 
+// Parts of an omitted namespace that the app still reads: the partner application form,
+// shown on the vendor page ("Become a partner").
+export const APP_KEPT_PARTS = ['ForBusinessPage.apply'] as const;
+
 export function pickAppMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
     const picked = { ...messages };
     for (const namespace of APP_OMITTED_NAMESPACES) delete picked[namespace];
+    for (const part of APP_KEPT_PARTS) {
+        const [namespace, key] = part.split('.');
+        const source = messages[namespace];
+        if (typeof source === 'object' && source !== null && source[key] !== undefined) picked[namespace] = { [key]: source[key] };
+    }
     return picked;
 }

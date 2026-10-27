@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { DemoSnapshotDto, MediaResponseDto, PostResponseDto, WishbookEntryResponseDto } from '@/lib/api/types';
-import { pickDemoPreview } from '@/lib/occasions/demoPreview';
+import { demoCollage, type DemoPreview, pickDemoPreview } from '@/lib/occasions/demoPreview';
 
 function media(id: string, overrides: Partial<MediaResponseDto> = {}): MediaResponseDto {
     return {
@@ -64,5 +64,39 @@ describe('pickDemoPreview', () => {
         expect(preview.posts).toHaveLength(3);
         expect(preview.photos).toHaveLength(6);
         expect(preview.wishes).toHaveLength(3);
+    });
+});
+
+describe('demoCollage', () => {
+    const photo = (id: string) => ({ src: `https://media/${id}.jpg`, width: 1200, height: 800 });
+    const preview = (overrides: Partial<DemoPreview>): DemoPreview => ({ posts: [], photos: [], wishes: [], ...overrides });
+
+    it('leads with the first post, then the other photos once each, two beside a wish', () => {
+        const collage = demoCollage(
+            preview({
+                posts: [
+                    { id: 'p1', author: 'A', content: 'Hi', photo: photo('m1') },
+                    { id: 'p2', author: 'B', content: 'Yo', photo: photo('m2') },
+                ],
+                photos: [photo('m1'), photo('m2'), photo('m3'), photo('m4')],
+                wishes: [{ id: 'w1', guestName: 'C', message: 'Congrats' }],
+            }),
+        );
+
+        expect(collage?.lead.post?.id).toBe('p1');
+        expect(collage?.tiles.map((tile) => tile.src)).toEqual(['https://media/m2.jpg', 'https://media/m3.jpg']);
+        expect(collage?.wish?.id).toBe('w1');
+    });
+
+    it('leads with a photo when there is no post and fills four tiles without a wish', () => {
+        const collage = demoCollage(preview({ photos: ['m1', 'm2', 'm3', 'm4', 'm5', 'm6'].map(photo) }));
+
+        expect(collage?.lead).toEqual({ photo: photo('m1'), post: null });
+        expect(collage?.tiles).toHaveLength(4);
+        expect(collage?.wish).toBeNull();
+    });
+
+    it('is null without a photo to lead with', () => {
+        expect(demoCollage(preview({ wishes: [{ id: 'w1', guestName: 'C', message: 'Congrats' }] }))).toBeNull();
     });
 });

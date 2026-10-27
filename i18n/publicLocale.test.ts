@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getForBusinessPath, isForBusinessPath, publicPageLocale, publicTwinPath } from '@/i18n/publicLocale';
+import { getForBusinessPath, getQrWeddingPath, isForBusinessPath, isQrWeddingPath, publicPageLocale, publicTwinPath } from '@/i18n/publicLocale';
 
 describe('getForBusinessPath', () => {
     it('gives each locale its own slug', () => {
@@ -19,12 +19,35 @@ describe('isForBusinessPath', () => {
     });
 });
 
+describe('getQrWeddingPath', () => {
+    it('gives each locale its own slug', () => {
+        expect(getQrWeddingPath('en')).toBe('/wedding-qr-code');
+        expect(getQrWeddingPath('el')).toBe('/el/qr-code-gamou');
+    });
+});
+
+describe('isQrWeddingPath', () => {
+    it('matches only the two wedding QR URLs', () => {
+        expect(isQrWeddingPath('/wedding-qr-code')).toBe(true);
+        expect(isQrWeddingPath('/el/qr-code-gamou')).toBe(true);
+        expect(isQrWeddingPath('/en/wedding-qr-code')).toBe(false);
+        expect(isQrWeddingPath('/el/wedding-qr-code')).toBe(false);
+        expect(isQrWeddingPath(null)).toBe(false);
+    });
+});
+
 describe('publicPageLocale', () => {
     it('reads the locale from the landing and partner URLs', () => {
         expect(publicPageLocale('/')).toBe('en');
         expect(publicPageLocale('/el')).toBe('el');
         expect(publicPageLocale('/for-business')).toBe('en');
         expect(publicPageLocale('/el/epaggelmaties')).toBe('el');
+    });
+
+    it('reads the locale from the wedding QR URLs', () => {
+        expect(publicPageLocale('/wedding-qr-code')).toBe('en');
+        expect(publicPageLocale('/el/qr-code-gamou')).toBe('el');
+        expect(publicPageLocale('/en/qr-code-gamou')).toBeNull();
     });
 
     it('is null everywhere else', () => {

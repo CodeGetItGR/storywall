@@ -20,6 +20,7 @@ export const appConfigKeys = {
 };
 
 export const APP_CONFIG_STALE_TIME = 5 * 60 * 1000;
+export const APP_CONFIG_GC_TIME = 30 * 60 * 1000;
 
 // After an admin edit that changes public config: refetch it here and drop the
 // server-cached copy the landing page renders from.
@@ -43,7 +44,7 @@ export function useAppConfig(options: { enabled?: boolean } = {}) {
         queryKey: appConfigKeys.all,
         queryFn: fetchAppConfig,
         staleTime: APP_CONFIG_STALE_TIME,
-        gcTime: 30 * 60 * 1000,
+        gcTime: APP_CONFIG_GC_TIME,
         enabled: options.enabled ?? true,
     });
 }

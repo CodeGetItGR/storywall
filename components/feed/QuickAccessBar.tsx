@@ -1,7 +1,7 @@
 'use client';
 
 import type { LucideIcon } from 'lucide-react';
-import { Baby, BookHeart, Gift, Image, Images, MessageSquareText, Music4, Ticket } from 'lucide-react';
+import { Baby, BookHeart, Gift, Image, Images, MessageCircleQuestion, MessageSquareText, Music4, Ticket } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
@@ -18,7 +18,7 @@ type QuickAccessItem = {
     href: string;
     icon: LucideIcon;
     visible: boolean;
-    key: 'posts' | 'stories' | 'rsvp' | 'playlist' | 'gallery' | 'gifts' | 'wishbook' | 'heOrShe';
+    key: 'posts' | 'stories' | 'rsvp' | 'playlist' | 'gallery' | 'gifts' | 'wishbook' | 'heOrShe' | 'quizPolls';
 };
 
 export function QuickAccessBar() {
@@ -48,6 +48,7 @@ export function QuickAccessBar() {
             { moduleKey: 'wishlist', href: routes.events.tools.gifts(eventId), icon: Gift, visible: true, key: 'gifts' },
             { moduleKey: 'wishbook', href: routes.events.tools.wishbook(eventId), icon: BookHeart, visible: true, key: 'wishbook' },
             { moduleKey: 'he_or_she', href: routes.events.tools.heOrShe(eventId), icon: Baby, visible: true, key: 'heOrShe' },
+            { moduleKey: 'quiz_polls', href: routes.events.tools.quiz(eventId), icon: MessageCircleQuestion, visible: true, key: 'quizPolls' },
         ];
 
         const availableModules = new Set(activeEvent.modules.filter((module) => module.isAvailable).map((module) => module.moduleKey));
@@ -60,7 +61,7 @@ export function QuickAccessBar() {
                 if (item?.key === 'gifts' && !giftsVisibleToCurrentMember) return null;
                 if (item?.key === 'gallery' && !isHost && !isGalleryOpenToGuests(activeEvent)) return null;
                 // Not in the public demo in v1: its mock backend has no handlers for it.
-                if (item?.key === 'heOrShe' && isDemoVisitor) return null;
+                if ((item?.key === 'heOrShe' || item?.key === 'quizPolls') && isDemoVisitor) return null;
                 return item && availableModules.has(item.moduleKey) ? item : null;
             })
             .filter((item): item is QuickAccessItem => !!item);

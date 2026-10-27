@@ -55,7 +55,7 @@ export function LandingFeatures() {
                         className="pointer-events-none absolute top-0 right-0 bottom-3 z-3 hidden w-8.5 bg-[linear-gradient(270deg,#0b0b0f_0%,rgba(11,11,15,0)_100%)] max-[760px]:block"
                     />
                     <div
-                        className="sw-feature-track flex [touch-action:pan-x] snap-none items-start gap-4.5 overflow-x-auto overflow-y-hidden scroll-auto px-5 pt-2 pb-5 [-webkit-overflow-scrolling:touch] min-[761px]:w-full min-[761px]:max-w-none min-[761px]:flex-wrap min-[761px]:justify-center min-[761px]:gap-[clamp(34px,3vw,48px)_clamp(24px,2.2vw,34px)] min-[761px]:overflow-visible min-[761px]:px-0 min-[761px]:py-0"
+                        className="sw-feature-track flex [touch-action:pan-x_pan-y] snap-none items-start gap-4.5 overflow-x-auto overflow-y-hidden scroll-auto px-5 pt-2 pb-5 [-webkit-overflow-scrolling:touch] min-[761px]:w-full min-[761px]:max-w-none min-[761px]:flex-wrap min-[761px]:justify-center min-[761px]:gap-[clamp(34px,3vw,48px)_clamp(24px,2.2vw,34px)] min-[761px]:overflow-visible min-[761px]:px-0 min-[761px]:py-0"
                         aria-label={t('label')}
                         role="list"
                     >

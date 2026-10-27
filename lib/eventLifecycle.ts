@@ -79,3 +79,12 @@ export function eventCardStatus(
     if (isEventEnded(event, now)) return 'ended';
     return null;
 }
+
+// Marking a song played is a write: the backend wants the event live (ACTIVE) and the playlist module available.
+// Reading the leaderboard only needs the module readable.
+export function canMarkSongsPlayed(
+    event: { status: EventStatus; deletedAt: string | null; suspended?: boolean; modules: EventModuleResponseDto[] } | null | undefined,
+): boolean {
+    if (!event || event.suspended || isEventDeleted(event)) return false;
+    return isEventWritable(event.status) && isModuleAvailable(event.modules, 'playlist');
+}

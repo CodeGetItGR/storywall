@@ -117,4 +117,30 @@ describe('LandingPricing', () => {
             '/events/new?step=details&type=baby-shower&plan=SHOWER&option=o',
         );
     });
+
+    it("shows only an occasion page's own type, with no picker, whatever ?event= says", () => {
+        window.history.replaceState(null, '', '/?event=reunion');
+        state.result = { groups: GROUPS, defaultEventTypeId: 'wedding' };
+        render(<LandingPricing eventType="BABY_SHOWER" />);
+
+        expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+        expect(cardNames()).toEqual(['SHOWER']);
+    });
+
+    it('renders nothing on an occasion page whose type has no plans', () => {
+        state.result = { groups: GROUPS, defaultEventTypeId: 'wedding' };
+        const { container } = render(<LandingPricing eventType="BAPTISM" />);
+
+        expect(container).toBeEmptyDOMElement();
+    });
+
+    it('centers an occasion header with a kicker, on white', () => {
+        state.result = { groups: GROUPS, defaultEventTypeId: 'wedding' };
+        render(<LandingPricing eventType="WEDDING" heading="Plans for your wedding." intro="Pick a plan." kicker="PLANS" />);
+        const heading = screen.getByRole('heading', { name: 'Plans for your wedding.' });
+        expect(screen.getByText('PLANS')).toBeInTheDocument();
+        expect(heading.parentElement).toHaveClass('text-center');
+        expect(heading.closest('section')).toHaveClass('bg-white');
+        expect(heading.closest('section')).not.toHaveClass('bg-[#f4f0e8]');
+    });
 });

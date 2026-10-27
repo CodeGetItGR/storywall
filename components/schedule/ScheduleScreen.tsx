@@ -15,6 +15,7 @@ import { ModuleNotice } from '@/components/tools/ModuleNotice';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useCanEditSchedule } from '@/hooks/useCanEditSchedule';
 import { useCreateEventSession, useDeleteEventSession, useEventSessions, useUpdateEventSession } from '@/hooks/useEventSessions';
 import { useActiveModuleCopy } from '@/hooks/useModuleCopy';
 import { useScheduleSessionLimit } from '@/hooks/useScheduleSessionLimit';
@@ -37,13 +38,16 @@ export function ScheduleScreen() {
     const canWrite = isEventWritable(activeEvent?.status);
     const scheduleModule = activeEvent?.modules.find((module_) => module_.moduleKey === 'schedule');
     const scheduleEnabled = scheduleModule?.isAvailable ?? false;
-    const canManageSchedule = isHost && canWrite && scheduleEnabled;
+    // Hosts, and planners while their access is open.
+    const canEdit = useCanEditSchedule(eventId, isHost);
+    const canManageSchedule = canEdit && canWrite && scheduleEnabled;
 
     const { data: sessions = [], isLoading: isLoadingSessions } = useEventSessions(eventId);
-    const { atSessionLimit, sessionLimitMessage } = useScheduleSessionLimit(eventId, canManageSchedule, sessions.length);
+    // The limit reads the host-only usage endpoint; for a planner the server's own 409 still applies.
+    const { atSessionLimit, sessionLimitMessage } = useScheduleSessionLimit(eventId, canManageSchedule && isHost, sessions.length);
     const canAddSession = canManageSchedule && !atSessionLimit;
     const createSession = useCreateEventSession();
-    const [viewMode, setViewMode] = useState<'public' | 'edit'>(() => (isHost && searchParams.has('section') ? 'edit' : 'public'));
+    const [viewMode, setViewMode] = useState<'public' | 'edit'>(() => (searchParams.has('section') ? 'edit' : 'public'));
     const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
     const [editorOpen, setEditorOpen] = useState(false);
     const [creatingSecondary, setCreatingSecondary] = useState(false);
@@ -162,16 +166,17 @@ export function ScheduleScreen() {
             backHref={routes.events.feed(eventId)}
             subtitle={scheduleCopy.description}
             notice={
-                isHost && !canWrite ? (
+                canEdit && !canWrite ? (
                     <ModuleNotice>{t('host.readOnly')}</ModuleNotice>
-                ) : isHost && !scheduleEnabled ? (
+                ) : canEdit && !scheduleEnabled ? (
                     <ModuleNotice>{t('moduleUnavailable')}</ModuleNotice>
                 ) : undefined
             }
         >
             {deleteError && <p className="mb-4 text-xs font-medium text-rose-500">{deleteError}</p>}
 
-            {isHost && (
+            {/* View toggle */}
+            {canEdit && (
                 <div className="mx-auto mb-5 flex w-fit rounded-full bg-surface-muted p-1">
                     <button
                         type="button"
@@ -196,7 +201,8 @@ export function ScheduleScreen() {
                 </div>
             )}
 
-            {activeEvent && isHost && viewMode === 'edit' ? (
+            {/* Sessions */}
+            {activeEvent && canEdit && viewMode === 'edit' ? (
                 <ScheduleEditSessionsTable
                     event={activeEvent}
                     sessions={sessions}
@@ -210,9 +216,9 @@ export function ScheduleScreen() {
                     onDeleteSession={handleDeleteSession}
                 />
             ) : sessions.length === 0 ? (
-                <ScheduleEmptyState isHost={isHost} canWrite={canWrite} canAddSession={canAddSession} onAddSession={openCreateEditor} />
+                <ScheduleEmptyState isHost={canEdit} canWrite={canWrite} canAddSession={canAddSession} onAddSession={openCreateEditor} />
             ) : (
-                <ScheduleSessionsList sessions={sessions} locale={locale} />
+                <ScheduleSessionsList sessions={sessions} eventType={activeEvent?.eventType} locale={locale} />
             )}
 
             {canManageSchedule && (

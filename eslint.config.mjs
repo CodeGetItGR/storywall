@@ -112,6 +112,23 @@ export default defineConfig([
             'no-debugger': 'error',
             'prefer-const': 'error',
             eqeqeq: ['error', 'always'],
+
+            /*
+             * Every image needs real alt text, decorative ones included.
+             * An empty alt ("") is not allowed.
+             */
+            'jsx-a11y/alt-text': ['error', { img: ['Image', 'ProtectedImage'] }],
+            'no-restricted-syntax': [
+                'error',
+                {
+                    selector: "JSXAttribute[name.name='alt'][value.type='Literal'][value.value='']",
+                    message: 'Every image needs real, localized alt text. Do not use alt="".',
+                },
+                {
+                    selector: "JSXAttribute[name.name='alt'] > JSXExpressionContainer > Literal[value='']",
+                    message: 'Every image needs real, localized alt text. Do not use alt="".',
+                },
+            ],
         },
     },
 

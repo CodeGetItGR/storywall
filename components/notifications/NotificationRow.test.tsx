@@ -61,4 +61,60 @@ describe('NotificationRow', () => {
         expect(screen.getByText(messages.NotificationsPage.generic.title)).toBeInTheDocument();
         expect(screen.queryByRole('link')).not.toBeInTheDocument();
     });
+
+    it('fills the VENDOR_JOINED fallback with the business and the type', () => {
+        renderRow({
+            ...reportOutcome,
+            id: 'n-3',
+            type: 'VENDOR_JOINED',
+            category: null,
+            severity: null,
+            title: null,
+            body: null,
+            ctaTarget: 'EVENT_VENDORS',
+            ctaParams: { eventId: 'e-1' },
+            payload: { businessName: 'Studio X', vendorType: 'PHOTOGRAPHER' },
+        });
+
+        expect(screen.getByText('Studio X joined as Photographer')).toBeInTheDocument();
+    });
+
+    it('fills the PRINT_PICKS_ENDING fallback with the date and a singular or plural body', () => {
+        const ending: NotificationResponseDto = {
+            ...reportOutcome,
+            type: 'PRINT_PICKS_ENDING',
+            category: null,
+            severity: null,
+            title: null,
+            body: null,
+            ctaTarget: 'EVENT_VENDOR_PAGE',
+            ctaParams: { eventId: 'e-1' },
+        };
+
+        renderRow({ ...ending, id: 'n-4', payload: { count: 1, closesDate: '2027-07-12 21:00', closesAt: '2027-07-12T21:00:00Z' } });
+        expect(screen.getByText('Print picks close on 2027-07-12 21:00 (Athens time)')).toBeInTheDocument();
+        expect(screen.getByText('Download the photo the host picked.')).toBeInTheDocument();
+        cleanup();
+
+        renderRow({ ...ending, id: 'n-5', payload: { count: 5, closesDate: '2027-07-12 21:00', closesAt: '2027-07-12T21:00:00Z' } });
+        expect(screen.getByText('Download the 5 photos the host picked.')).toBeInTheDocument();
+    });
+
+    it('fills the PRINT_LIST_SENT fallback with the guest, count and total', () => {
+        renderRow({
+            ...reportOutcome,
+            id: 'n-6',
+            type: 'PRINT_LIST_SENT',
+            category: null,
+            severity: null,
+            title: null,
+            body: null,
+            ctaTarget: 'EVENT_VENDOR_PAGE',
+            ctaParams: { eventId: 'e-1' },
+            payload: { count: 1, guestName: 'Maria', total: '€9.00' },
+        });
+
+        expect(screen.getByText('Maria sent a print list')).toBeInTheDocument();
+        expect(screen.getByText('1 print, €9.00.')).toBeInTheDocument();
+    });
 });

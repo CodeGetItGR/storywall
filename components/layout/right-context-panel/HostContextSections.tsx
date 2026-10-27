@@ -6,9 +6,11 @@ import { RsvpSummarySection } from '@/components/layout/right-context-panel/Rsvp
 import { WishbookSummarySection } from '@/components/layout/right-context-panel/WishbookSummarySection';
 import { UsagePanel } from '@/components/plan/UsagePanel';
 import { AppLink } from '@/components/ui/AppLink';
+import { ProStorageMeter } from '@/components/vendors/ProStorageMeter';
 import { type UseRightContextPanelResult } from '@/hooks/useRightContextPanel';
 import { formatBytes } from '@/lib/format';
 import { routes } from '@/lib/routes';
+import { hasProAllowance } from '@/lib/vendors';
 
 /**
  * The host action links, plan usage, and RSVP/media/wishbook/QR-links
@@ -117,6 +119,11 @@ export function HostContextSections({ panel, showMembersUsage = true }: { panel:
                             : []),
                     ]}
                 />
+            )}
+
+            {/* Pro storage */}
+            {eventUsage && hasProAllowance(eventUsage) && (
+                <ProStorageMeter usedBytes={eventUsage.proUsedBytes ?? 0} allowanceBytes={eventUsage.proStorageBytes ?? 0} className="px-1" />
             )}
         </div>
     );

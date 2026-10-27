@@ -6,6 +6,7 @@ import { MarketingPlanCard } from '@/components/plan/MarketingPlanCard';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useMarketingPlanOptions } from '@/hooks/useMarketingPlanOptions';
 import type { AppMediaConfigDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import { cn } from '@/lib/utils';
 
 type EventPlanSelectorProps = {
     plans: PlanTierResponseDto[];
@@ -40,7 +41,11 @@ export function EventPlanSelector({
                 {showLoading && <LoadingState label={t('loadingPlans')} className="rounded-xl border border-border bg-white p-6" />}
                 {!showLoading && options.length === 0 && <p className="rounded-xl bg-rose-50 p-4 text-sm text-rose-600">{t('noPlans')}</p>}
                 {!showLoading && options.length > 0 && (
-                    <div className="grid gap-5 min-[761px]:grid-cols-3 min-[761px]:gap-6" role="group" aria-label={t('steps.planSubtitle')}>
+                    <div
+                        className={cn('grid gap-5 min-[761px]:grid-cols-3 min-[761px]:gap-6', options.length === 1 && 'min-[761px]:*:col-start-2')}
+                        role="group"
+                        aria-label={t('steps.planSubtitle')}
+                    >
                         {options.map(({ config, featured, presentation }, index) => (
                             <MarketingPlanCard
                                 key={config.id}

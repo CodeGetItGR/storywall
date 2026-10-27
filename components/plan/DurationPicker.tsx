@@ -40,6 +40,7 @@ export function DurationPicker({
     onChangeAction,
     variant = 'app',
     disabled = false,
+    disabledOptionIds = [],
     labelledBy,
     className,
 }: {
@@ -48,6 +49,8 @@ export function DurationPicker({
     onChangeAction: (optionId: string) => void;
     variant?: keyof typeof VARIANT_CLASSES;
     disabled?: boolean;
+    // Options shown but not pickable.
+    disabledOptionIds?: string[];
     // Id of a visible label that names the switch; falls back to a generic one.
     labelledBy?: string;
     className?: string;
@@ -55,11 +58,10 @@ export function DurationPicker({
     const t = useTranslations('Durations');
     const classes = VARIANT_CLASSES[variant];
     const valueOnSale = options.some((option) => option.id === value);
-    const handleKeyDown = useRadioGroupKeys(
-        options.map((option) => option.id),
-        value,
-        onChangeAction,
-    );
+    const pickableIds = options.filter((option) => !disabledOptionIds.includes(option.id)).map((option) => option.id);
+    // The one button Tab lands on: the pick, or the first pickable option while the pick can't be focused.
+    const tabStopId = value && pickableIds.includes(value) ? value : (pickableIds[0] ?? null);
+    const handleKeyDown = useRadioGroupKeys(pickableIds, value, onChangeAction);
 
     function handleClick(event: MouseEvent<HTMLButtonElement>) {
         const { radioId } = event.currentTarget.dataset;
@@ -83,8 +85,9 @@ export function DurationPicker({
             onKeyDown={disabled ? undefined : handleKeyDown}
             className={cn('inline-flex max-w-full', classes.group, disabled && 'opacity-50', className)}
         >
-            {options.map((option, index) => {
+            {options.map((option) => {
                 const isSelected = option.id === value;
+                const isDisabled = disabled || disabledOptionIds.includes(option.id);
                 const optionText = t(OPTION_TEXT_KEY[variant], { count: option.months });
                 return (
                     <button
@@ -95,12 +98,13 @@ export function DurationPicker({
                         aria-label={t('months', { count: option.months })}
                         data-radio-id={option.id}
                         data-label={optionText}
-                        tabIndex={isSelected || (!valueOnSale && index === 0) ? 0 : -1}
-                        disabled={disabled}
+                        tabIndex={option.id === tabStopId ? 0 : -1}
+                        disabled={isDisabled}
                         onClick={handleClick}
                         className={cn(
                             classes.option,
                             'focus-ring transition-colors disabled:cursor-not-allowed',
+                            !disabled && isDisabled && 'opacity-40',
                             isSelected ? classes.selected : classes.idle,
                         )}
                     >

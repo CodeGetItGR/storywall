@@ -7,12 +7,14 @@ import { type ChangeEvent, type MouseEvent, type PointerEvent as ReactPointerEve
 
 import { FilterNameOverlay } from '@/components/composer/FilterNameOverlay';
 import { PostImageFilterPicker } from '@/components/composer/PostImageFilterPicker';
+import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
 import { StoryVideo } from '@/components/story/StoryVideo';
 import { Modal } from '@/components/ui/modal';
 import { useStoryCameraController } from '@/hooks/useStoryCameraController';
 import type { StoryComposerController } from '@/hooks/useStoryComposerController';
 import { useStoryFilterSwipe } from '@/hooks/useStoryFilterSwipe';
 import { useUploadAccept } from '@/hooks/useUploadAccept';
+import { INCIDENT_MODE } from '@/lib/incident';
 import { STORY_FILTER_PRESETS, type StoryFilterPreset } from '@/lib/story/storyFilters';
 import { cn } from '@/lib/utils';
 
@@ -43,6 +45,7 @@ function FilterLayer({ src, alt, preset }: { src: string; alt: string; preset: S
 
 export function StoryComposerModal({ controller }: { controller: StoryComposerController }) {
     const t = useTranslations('StoryComposer');
+    const tAlt = useTranslations('ImageAlt');
     const uploadAccept = useUploadAccept();
     const [cameraActive, setCameraActive] = useState(true);
     const [showFilterSwipeCue, setShowFilterSwipeCue] = useState(true);
@@ -127,7 +130,7 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
         capture,
         switchCamera,
     } = useStoryCameraController(isOpen && showCamera, handleCapturedFile);
-    const canAdd = items.length < maxItems && !isBusy;
+    const canAdd = !INCIDENT_MODE && items.length < maxItems && !isBusy;
 
     function handleRemoveClick(event: MouseEvent<HTMLButtonElement>) {
         const key = event.currentTarget.dataset.storyKey;
@@ -205,7 +208,7 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                         <FilterLayer src={activeItem.previewUrl} alt={t('previewAlt')} preset={activeFilterPreset} />
                                         {targetFilterPreset && (
                                             <div className="absolute inset-0" style={{ opacity: dragProgress }}>
-                                                <FilterLayer src={activeItem.previewUrl} alt="" preset={targetFilterPreset} />
+                                                <FilterLayer src={activeItem.previewUrl} alt={t('previewAlt')} preset={targetFilterPreset} />
                                             </div>
                                         )}
                                     </div>
@@ -273,7 +276,7 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                                         className="h-full w-full object-cover"
                                                     />
                                                 ) : (
-                                                    <Image src={item.previewUrl} alt="" fill className="object-cover" sizes="36px" unoptimized />
+                                                    <Image src={item.previewUrl} alt={tAlt('photoPreview')} fill className="object-cover" sizes="36px" unoptimized />
                                                 )}
                                                 {item.status === 'failed' && <span className="absolute inset-x-0 bottom-0 h-1.5 bg-destructive" />}
                                             </button>
@@ -319,6 +322,7 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                             {activeItem.error ?? error}
                                         </p>
                                     )}
+                                    <IncidentPausedNote className="rounded-md bg-black/55 px-3 py-2 text-amber-200 backdrop-blur-md" />
                                     <button
                                         type="submit"
                                         disabled={!canSubmit}

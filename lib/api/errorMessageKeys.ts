@@ -18,6 +18,8 @@ export type ApiErrorMessageKey =
     | 'addonLockedWhileActive'
     | 'addonNotActive'
     | 'alreadyLinked'
+    | 'appReviewFeatureNotAllowed'
+    | 'appReviewNotEligible'
     | 'betaFeedbackDisabled'
     | 'authenticationRequired'
     | 'checkoutAmountBelowMinimum'
@@ -89,13 +91,27 @@ export type ApiErrorMessageKey =
     | 'membershipClaimEmailMismatch'
     | 'notificationNotYours'
     | 'sessionNotYours'
+    | 'vendorCapabilityMissing'
+    | 'vendorAccessEnded'
+    | 'vendorCannotRsvp'
+    | 'printItemInvalid'
+    | 'partnerRequired'
+    | 'printPicksUnavailable'
+    | 'printPricesMissing'
+    | 'printListLocked'
+    | 'printListFull'
+    | 'vendorServiceLimitReached'
+    | 'printListEmpty'
+    | 'vendorLimitReached'
+    | 'vendorIsHost'
+    | 'alreadyAVendor'
+    | 'partnerApplicationPending'
     | 'eventHostAlreadyCoHost'
     | 'eventHostLastHost'
     | 'eventHostAlreadyPrimary'
     | 'inviteCodeTaken'
     | 'coHostAlreadyMember'
     | 'memberIsHost'
-    | 'memberRoleKeyTaken'
     | 'reactionTypeCodeTaken'
     | 'blockedTermExists'
     | 'paidServiceCodeTaken'
@@ -300,6 +316,8 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.ADDON_LOCKED_WHILE_ACTIVE]: 'addonLockedWhileActive',
     [ERROR_CODES.ADDON_NOT_ACTIVE]: 'addonNotActive',
     [ERROR_CODES.ALREADY_LINKED]: 'alreadyLinked',
+    [ERROR_CODES.APP_REVIEW_FEATURE_NOT_ALLOWED]: 'appReviewFeatureNotAllowed',
+    [ERROR_CODES.APP_REVIEW_NOT_ELIGIBLE]: 'appReviewNotEligible',
     [ERROR_CODES.CHECKOUT_AMOUNT_BELOW_MINIMUM]: 'checkoutAmountBelowMinimum',
     [ERROR_CODES.CHECKOUT_SESSION_UNRESOLVED]: 'checkoutSessionUnresolved',
     [ERROR_CODES.CO_HOST_INVITE_NOT_YOURS]: 'coHostInviteNotYours',
@@ -508,7 +526,6 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.INVITE_CODE_TAKEN]: 'inviteCodeTaken',
     [ERROR_CODES.CO_HOST_ALREADY_MEMBER]: 'coHostAlreadyMember',
     [ERROR_CODES.MEMBER_IS_HOST]: 'memberIsHost',
-    [ERROR_CODES.MEMBER_ROLE_KEY_TAKEN]: 'memberRoleKeyTaken',
     [ERROR_CODES.REACTION_TYPE_CODE_TAKEN]: 'reactionTypeCodeTaken',
     [ERROR_CODES.BLOCKED_TERM_EXISTS]: 'blockedTermExists',
     [ERROR_CODES.PAID_SERVICE_CODE_TAKEN]: 'paidServiceCodeTaken',
@@ -571,6 +588,21 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.MEMBERSHIP_CLAIM_EMAIL_MISMATCH]: 'membershipClaimEmailMismatch',
     [ERROR_CODES.NOTIFICATION_NOT_YOURS]: 'notificationNotYours',
     [ERROR_CODES.SESSION_NOT_YOURS]: 'sessionNotYours',
+    [ERROR_CODES.VENDOR_CAPABILITY_MISSING]: 'vendorCapabilityMissing',
+    [ERROR_CODES.VENDOR_ACCESS_ENDED]: 'vendorAccessEnded',
+    [ERROR_CODES.VENDOR_CANNOT_RSVP]: 'vendorCannotRsvp',
+    [ERROR_CODES.PRINT_ITEM_INVALID]: 'printItemInvalid',
+    [ERROR_CODES.PARTNER_REQUIRED]: 'partnerRequired',
+    [ERROR_CODES.PRINT_PICKS_UNAVAILABLE]: 'printPicksUnavailable',
+    [ERROR_CODES.PRINT_PRICES_MISSING]: 'printPricesMissing',
+    [ERROR_CODES.PRINT_LIST_LOCKED]: 'printListLocked',
+    [ERROR_CODES.PRINT_LIST_FULL]: 'printListFull',
+    [ERROR_CODES.VENDOR_SERVICE_LIMIT_REACHED]: 'vendorServiceLimitReached',
+    [ERROR_CODES.PRINT_LIST_EMPTY]: 'printListEmpty',
+    [ERROR_CODES.VENDOR_LIMIT_REACHED]: 'vendorLimitReached',
+    [ERROR_CODES.VENDOR_IS_HOST]: 'vendorIsHost',
+    [ERROR_CODES.ALREADY_A_VENDOR]: 'alreadyAVendor',
+    [ERROR_CODES.PARTNER_APPLICATION_PENDING]: 'partnerApplicationPending',
 } satisfies Record<KnownApiErrorCode, ApiErrorMessageKey>;
 
 export function getApiErrorMessageKey(code: number | string | undefined): ApiErrorMessageKey | undefined {

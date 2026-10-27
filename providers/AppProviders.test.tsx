@@ -18,6 +18,7 @@ vi.mock('next/navigation', () => ({ usePathname: () => mocks.pathname }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: mocks.user, logout: mocks.logout, updateProfile: vi.fn() }) }));
 vi.mock('@/hooks/useVisualViewportSync', () => ({ useVisualViewportSync: () => undefined }));
 vi.mock('@/providers/AppConfigBootstrap', () => ({ AppConfigBootstrap: () => null }));
+vi.mock('@/components/layout/SignupSourceTracker', () => ({ SignupSourceTracker: () => null }));
 vi.mock('@/providers/DocumentTitleSync', () => ({ DocumentTitleSync: () => null }));
 vi.mock('@/components/betaFeedback/BetaFeedback', () => ({ BetaFeedback: () => null }));
 vi.mock('@/providers/AuthProvider', () => ({ AuthProvider: mocks.passThrough }));

@@ -3,7 +3,7 @@
 // since flipped every route; reconcile against Swagger (/v3/api-docs) if a
 // path here 404s.
 
-import type { RsvpReportType } from '@/lib/api/types';
+import type { RsvpReportType, SignupChannel } from '@/lib/api/types';
 
 export const endpoints = {
     betaFeedback: {
@@ -50,10 +50,18 @@ export const endpoints = {
         guidelinesAcceptance: '/api/me/guidelines-acceptance',
         termsAcceptance: '/api/me/terms-acceptance',
         newsletter: '/api/me/newsletter',
+        reviewPrompt: '/api/me/review-prompt',
+        reviews: '/api/me/reviews',
+        reviewsDismiss: '/api/me/reviews/dismiss',
         businessProfile: '/api/me/business-profile',
         dataExport: '/api/me/data-export',
         deletionRequestOtp: '/api/me/deletion-requests/otp',
         deletionRequests: '/api/me/deletion-requests',
+        vendorProfile: '/api/me/vendor-profile',
+        vendorProfileLogo: '/api/me/vendor-profile/logo',
+        vendorProfileDismissPartnerPrompt: '/api/me/vendor-profile/dismiss-partner-prompt',
+        vendorServices: '/api/me/vendor-profile/services',
+        vendorService: (serviceId: string) => `/api/me/vendor-profile/services/${serviceId}`,
     },
 
     contentNotices: { submit: '/api/content-notices' },
@@ -139,6 +147,14 @@ export const endpoints = {
         heOrSheQuestions: (eventId: string) => `/api/events/${eventId}/he-or-she/questions`,
         heOrSheQuestion: (eventId: string, questionId: string) => `/api/events/${eventId}/he-or-she/questions/${questionId}`,
         heOrSheResults: (eventId: string) => `/api/events/${eventId}/he-or-she/results`,
+        // Quiz & Polls (module quiz_polls, quiz-polls-fe-integration.md).
+        quizPolls: (eventId: string) => `/api/events/${eventId}/quiz-polls`,
+        quizPollsAnswer: (eventId: string, questionId: string) => `/api/events/${eventId}/quiz-polls/questions/${questionId}/answer`,
+        quizPollsSettings: (eventId: string) => `/api/events/${eventId}/quiz-polls/settings`,
+        quizPollsClose: (eventId: string) => `/api/events/${eventId}/quiz-polls/close`,
+        quizPollsQuestions: (eventId: string) => `/api/events/${eventId}/quiz-polls/questions`,
+        quizPollsQuestion: (eventId: string, questionId: string) => `/api/events/${eventId}/quiz-polls/questions/${questionId}`,
+        quizPollsResults: (eventId: string) => `/api/events/${eventId}/quiz-polls/results`,
         checkout: (eventId: string) => `/api/events/${eventId}/checkout`,
         partnerBrandingAcceptance: (eventId: string) => `/api/events/${eventId}/partner-branding/acceptance`,
         partnerBrandingDecline: (eventId: string) => `/api/events/${eventId}/partner-branding/decline`,
@@ -165,6 +181,21 @@ export const endpoints = {
         stories: (eventId: string) => `/api/events/${eventId}/stories`,
         playlistSuggestions: (eventId: string) => `/api/events/${eventId}/playlist-suggestions`,
         playlistSuggestionsLeaderboard: (eventId: string) => `/api/events/${eventId}/playlist-suggestions/leaderboard`,
+        playlistSuggestionPlayed: (eventId: string, id: string) => `/api/events/${eventId}/playlist-suggestions/${id}/played`,
+        // Vendors in the event.
+        vendors: (eventId: string) => `/api/events/${eventId}/vendors`,
+        vendorLinks: (eventId: string) => `/api/events/${eventId}/vendors/links`,
+        vendorLinkReset: (eventId: string, vendorType: string) => `/api/events/${eventId}/vendors/links/${encodeURIComponent(vendorType)}/reset`,
+        vendorMe: (eventId: string) => `/api/events/${eventId}/vendors/me`,
+        printPicks: (eventId: string) => `/api/events/${eventId}/print-picks`,
+        hostPrintList: (eventId: string, vendorId: string) => `/api/events/${eventId}/print-lists/host?vendorId=${encodeURIComponent(vendorId)}`,
+        hostPrintItems: (eventId: string) => `/api/events/${eventId}/print-lists/host/items`,
+        printItem: (eventId: string, itemId: string) => `/api/events/${eventId}/print-lists/items/${itemId}`,
+        vendorPrintsIncluded: (eventId: string) => `/api/events/${eventId}/vendors/me/prints-included`,
+        printListArchiveManifest: (eventId: string, listId: string) => `/api/events/${eventId}/print-lists/${listId}/archive/manifest`,
+        printListArchive: (eventId: string, listId: string, part: number) => `/api/events/${eventId}/print-lists/${listId}/archive?part=${part}`,
+        vendorById: (eventId: string, vendorId: string) => `/api/events/${eventId}/vendors/${vendorId}`,
+        vendorClicks: (eventId: string, vendorId: string) => `/api/events/${eventId}/vendors/${vendorId}/clicks`,
     },
 
     // Public preview; the claim needs a verified, non-guest account.
@@ -318,13 +349,30 @@ export const endpoints = {
                 `/api/admin/metrics/calendar/${encodeURIComponent(date)}/events?page=${encodeURIComponent(String(page))}&size=${encodeURIComponent(String(size))}`,
             timeline: (weeks: number) => `/api/admin/metrics/timeline?weeks=${encodeURIComponent(String(weeks))}`,
             costSummary: '/api/admin/metrics/cost-summary',
-            funnel: (since?: string | null, until?: string | null) => {
+            funnel: (since?: string | null, until?: string | null, channel?: SignupChannel | null) => {
+                const params = [
+                    since ? `since=${encodeURIComponent(since)}` : null,
+                    until ? `until=${encodeURIComponent(until)}` : null,
+                    channel ? `channel=${channel}` : null,
+                ].filter(Boolean);
+                return `/api/admin/metrics/funnel${params.length ? `?${params.join('&')}` : ''}`;
+            },
+            funnelCohorts: (weeks: number, channel?: SignupChannel | null) =>
+                `/api/admin/metrics/funnel/cohorts?weeks=${encodeURIComponent(String(weeks))}${channel ? `&channel=${channel}` : ''}`,
+            funnelChannels: (since?: string | null, until?: string | null) => {
                 const params = [since ? `since=${encodeURIComponent(since)}` : null, until ? `until=${encodeURIComponent(until)}` : null].filter(
                     Boolean,
                 );
-                return `/api/admin/metrics/funnel${params.length ? `?${params.join('&')}` : ''}`;
+                return `/api/admin/metrics/funnel/channels${params.length ? `?${params.join('&')}` : ''}`;
             },
-            funnelCohorts: (weeks: number) => `/api/admin/metrics/funnel/cohorts?weeks=${encodeURIComponent(String(weeks))}`,
+            visitors: (since?: string | null, until?: string | null, fresh = false) => {
+                const params = [
+                    since ? `since=${encodeURIComponent(since)}` : null,
+                    until ? `until=${encodeURIComponent(until)}` : null,
+                    fresh ? 'fresh=true' : null,
+                ].filter(Boolean);
+                return `/api/admin/metrics/visitors${params.length ? `?${params.join('&')}` : ''}`;
+            },
             moduleUsage: (filters: { since: string | null; until: string | null; eventTypeKey: string; planCode: string }) => {
                 const params = new URLSearchParams();
                 if (filters.since) params.set('since', filters.since);
@@ -450,6 +498,10 @@ export const endpoints = {
             byId: (id: string) => `/api/admin/landing-categories/${id}`,
             eventTypes: (id: string) => `/api/admin/landing-categories/${id}/event-types`,
         },
+        appReviews: {
+            list: '/api/admin/app-reviews',
+            byId: (id: string) => `/api/admin/app-reviews/${id}`,
+        },
         users: {
             planTier: (userId: string) => `/api/admin/users/${userId}/plan-tier`,
             emails: {
@@ -476,6 +528,7 @@ export const endpoints = {
             addon: (eventId: string, code: string) => `/api/admin/events/${eventId}/addons/${encodeURIComponent(code)}`,
             collaborationRedemptionVoid: (eventId: string) => `/api/admin/events/${eventId}/collaboration-redemption/void`,
             partnerBranding: (eventId: string) => `/api/admin/events/${eventId}/partner-branding`,
+            vendors: (eventId: string) => `/api/admin/events/${eventId}/vendors`,
         },
     },
 
