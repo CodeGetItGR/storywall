@@ -41,7 +41,7 @@ export function InviteLayout({ coverImageSrc, coverImageAlt, theme, eventTitle, 
                     <div className="relative m-4 min-h-0 flex-1 md:m-6">
                         <ProtectedImage
                             src={hero.src}
-                            alt=""
+                            alt={eventTitle}
                             fill
                             sizes="(min-width: 768px) 576px, 100vw"
                             className="object-contain"

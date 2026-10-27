@@ -1,7 +1,9 @@
 import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { KeywordHero } from '@/components/landing/KeywordHero';
+
+vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
 
 describe('KeywordHero', () => {
     afterEach(() => {

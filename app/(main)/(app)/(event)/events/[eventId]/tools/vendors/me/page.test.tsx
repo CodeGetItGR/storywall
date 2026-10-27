@@ -106,3 +106,75 @@ describe('vendor page prefetch', () => {
         await expect(visit()).resolves.toBeTruthy();
     });
 });
+
+describe('vendor page print prefetch', () => {
+    const PRINTER = { ...PHOTOGRAPHER, capabilities: ['PRINT_PICKS'], approvedPartner: true };
+    const SERVICES = [{ id: 's1', kind: 'PRINT', label: '10x15', priceCents: 100, sortOrder: 0 }];
+    const CONTEXT = { photographers: [] };
+    const HOST_LIST = { id: 'l1', items: [] };
+    const PRO_PAGE = { content: [], page: 0 };
+
+    beforeEach(() => {
+        serverGet.mockImplementation(async (path: string) => {
+            if (path.endsWith('/print-picks')) return CONTEXT;
+            if (path.includes('/print-lists/host')) return HOST_LIST;
+            if (path.includes('/services')) return SERVICES;
+            return PRO_PAGE;
+        });
+    });
+
+    function seeded(element: ReactElement) {
+        const { state } = element.props as { state: DehydratedState };
+        return state.queries.map((query) => ({ key: query.queryKey, data: query.state.data }));
+    }
+
+    const CONTEXT_ENTRY = { key: ['events', 'e1', 'print-picks'], data: CONTEXT };
+    const LIST_ENTRY = { key: ['events', 'e1', 'print-lists', 'host', 'v1'], data: HOST_LIST };
+    const SERVICES_ENTRY = { key: ['me', 'vendor-profile', 'services'], data: SERVICES };
+
+    it('seeds the context, the own host list and the sizes', async () => {
+        answer(PRINTER);
+        const entries = seeded(await visit());
+        expect(serverGet).toHaveBeenCalledWith('/api/events/e1/print-lists/host?vendorId=v1', 'tok');
+        expect(entries).toEqual(expect.arrayContaining([CONTEXT_ENTRY, LIST_ENTRY, SERVICES_ENTRY]));
+    });
+
+    it('seeds no prints without the capability', async () => {
+        answer({ ...PRINTER, capabilities: [] });
+        const entries = seeded(await visit());
+        expect(entries).not.toContainEqual(CONTEXT_ENTRY);
+        expect(entries).not.toContainEqual(LIST_ENTRY);
+        expect(entries).toContainEqual(SERVICES_ENTRY);
+    });
+
+    it('seeds no sizes when the photographer is not approved', async () => {
+        answer({ ...PRINTER, approvedPartner: false });
+        const entries = seeded(await visit());
+        expect(entries).not.toContainEqual(SERVICES_ENTRY);
+        expect(entries).toEqual(expect.arrayContaining([CONTEXT_ENTRY, LIST_ENTRY]));
+    });
+
+    it('seeds no sizes for an approved partner that is not a photographer', async () => {
+        answer({ ...PRINTER, vendorType: 'MUSIC' });
+        const entries = seeded(await visit());
+        expect(entries).not.toContainEqual(SERVICES_ENTRY);
+        expect(entries).toEqual(expect.arrayContaining([CONTEXT_ENTRY, LIST_ENTRY]));
+    });
+
+    it('seeds the host list but not the context when the vendors module is not readable', async () => {
+        answer(PRINTER);
+        ctx.event = { ...VENDOR_EVENT, modules: [moduleOf('gallery')] };
+        const entries = seeded(await visit());
+        expect(entries).not.toContainEqual(CONTEXT_ENTRY);
+        expect(entries).toContainEqual(LIST_ENTRY);
+    });
+
+    it('keeps the profile when the print and services requests fail', async () => {
+        answer(PRINTER);
+        serverGet.mockImplementation(async (path: string) => {
+            if (path.includes('media')) return PRO_PAGE;
+            throw new Error('down');
+        });
+        expect(seededKeys(await visit())).toEqual(expect.arrayContaining([['me', 'vendor-profile']]));
+    });
+});

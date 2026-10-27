@@ -31,6 +31,7 @@ function me(overrides: Partial<VendorMeDto> = {}): VendorMeDto {
         optedOut: false,
         hiddenByHost: false,
         toolsOff: null,
+        approvedPartner: false,
         ...overrides,
     };
 }
@@ -70,7 +71,7 @@ describe('capabilitiesOfType', () => {
     });
 
     it('gives photographers and videographers the Pro album', () => {
-        expect(capabilitiesOfType('PHOTOGRAPHER')).toEqual(['PRO_ALBUM']);
+        expect(capabilitiesOfType('PHOTOGRAPHER')).toEqual(['PRO_ALBUM', 'PRINT_PICKS']);
         expect(capabilitiesOfType('VIDEOGRAPHER')).toEqual(['PRO_ALBUM']);
     });
 
@@ -191,6 +192,10 @@ describe('vendorToolLinks', () => {
     it('gives the DJ the live list and a photographer nothing (their tool is on the page)', () => {
         expect(vendorToolLinks('e1', me({ vendorType: 'MUSIC', capabilities: ['SONG_REQUESTS'] })).map((tool) => tool.key)).toEqual(['liveRequests']);
         expect(vendorToolLinks('e1', me({ vendorType: 'PHOTOGRAPHER', capabilities: ['PRO_ALBUM'] }))).toEqual([]);
+    });
+
+    it('adds no link for print picks (it is a section of the vendor page)', () => {
+        expect(vendorToolLinks('e1', me({ vendorType: 'PHOTOGRAPHER', capabilities: ['PRO_ALBUM', 'PRINT_PICKS'] }))).toEqual([]);
     });
 
     it('lists nothing once access has closed', () => {

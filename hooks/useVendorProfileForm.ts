@@ -9,7 +9,8 @@ import { useDeleteVendorLogo, useSaveVendorProfile, useUploadVendorLogo } from '
 import type { PartnerRole, VendorProfileDto, VendorProfileRequestDto } from '@/lib/api/types';
 import { isValidVendorLink, VENDOR_BUSINESS_NAME_MAX } from '@/lib/vendors';
 
-type Field = keyof VendorProfileRequestDto;
+// The type is not editable: it stays the profile's own, or the joining link's on a first save.
+type Field = Exclude<keyof VendorProfileRequestDto, 'vendorType'>;
 type FieldErrors = Partial<Record<Field, string>>;
 
 function initialValues(profile: VendorProfileDto | null, defaultType: PartnerRole): VendorProfileRequestDto {

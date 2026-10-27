@@ -10,6 +10,8 @@ import { routes } from '@/lib/routes';
 export type LandingStoryCopyData = {
     galleryLabel: string;
     imageAlts: string[];
+    // The label of the link to the row's occasion page: that page's main search, not "Learn more".
+    occasionLink?: string;
     paragraphSegments: LandingTextSegment[][];
     tag: string;
     titleSegments: LandingTextSegment[];
@@ -23,17 +25,16 @@ type LandingStoryRowProps = {
     index: number;
     locale: Locale;
     media: LandingStoryMedia;
-    occasionLabel: string;
     // Live occasion pages; a row links to its own when it is one of them.
     occasions: readonly Occasion[];
 };
 
-export function LandingStoryRow({ children, copy, demoLabel, index, locale, media, occasionLabel, occasions }: LandingStoryRowProps) {
+export function LandingStoryRow({ children, copy, demoLabel, index, locale, media, occasions }: LandingStoryRowProps) {
     const isOdd = index % 2 === 0;
     const wide = index === 0 || index === 4;
     const demo = media.demoEventTypeSlug ? { href: routes.demoEventType(media.demoEventTypeSlug), label: demoLabel } : undefined;
     const occasion = occasions.find((candidate) => candidate.eventType === media.occasion);
-    const more = occasion ? { href: occasionPath(occasion, locale), label: occasionLabel } : undefined;
+    const more = occasion && copy.occasionLink ? { href: occasionPath(occasion, locale), label: copy.occasionLink } : undefined;
 
     return (
         <article

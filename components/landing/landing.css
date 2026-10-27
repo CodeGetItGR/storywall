@@ -6388,21 +6388,3 @@
             var(--swx-photo-scrim), url('/landing/decor-04.webp') !important;
     }
 }
-
-/* Occasion pages: the campaign banner's color. A dated theme (lib/occasions/themes.ts) swaps it. */
-.occasion-page {
-    --ink: #151313;
-    --editorial: Baskerville, 'Iowan Old Style', 'Times New Roman', Georgia, serif;
-    --occasion-accent: #e78274;
-}
-
-.occasion-page[data-occasion-theme='winter'] {
-    --occasion-accent: #5b7fa6;
-}
-
-/* The footer's motion toggle. */
-body[data-landing-motion-paused] .occasion-page *,
-body[data-landing-motion-paused] .occasion-page *::before,
-body[data-landing-motion-paused] .occasion-page *::after {
-    animation-play-state: paused !important;
-}

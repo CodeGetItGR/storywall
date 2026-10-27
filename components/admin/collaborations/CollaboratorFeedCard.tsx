@@ -45,7 +45,7 @@ function BrandingImage({ label, src, aspect }: { label: string; src: string | nu
                         aspect === 'square' ? 'h-16 w-16' : 'aspect-video w-full max-w-60',
                     )}
                 >
-                    <ProtectedImage src={src} alt="" fill sizes="240px" className={aspect === 'square' ? 'object-contain' : 'object-cover'} />
+                    <ProtectedImage src={src} alt={label} fill sizes="240px" className={aspect === 'square' ? 'object-contain' : 'object-cover'} />
                 </div>
             ) : (
                 <p className="mt-1 text-sm font-semibold text-status-warn">{t('missingValue')}</p>

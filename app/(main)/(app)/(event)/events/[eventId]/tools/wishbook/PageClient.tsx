@@ -31,6 +31,7 @@ import { useActiveEvent, useActiveMember, useContentAccessMode, useIsHost } from
 
 export default function WishbookPage() {
     const t = useTranslations('WishbookPage');
+    const tAlt = useTranslations('ImageAlt');
     const event = useActiveEvent();
     const member = useActiveMember();
     const isHost = useIsHost();
@@ -151,7 +152,7 @@ export default function WishbookPage() {
             {/* Header art */}
             {showHeaderArt ? (
                 <section className="flex flex-col items-center px-2 pt-8 text-center">
-                    <Image src="/icons/wishbook.svg" alt="" width={104} height={104} preload className="h-24 w-24" unoptimized />
+                    <Image src="/icons/wishbook.svg" alt={tAlt('wishbook')} width={104} height={104} preload className="h-24 w-24" unoptimized />
                 </section>
             ) : null}
 

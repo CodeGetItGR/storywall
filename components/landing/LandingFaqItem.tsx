@@ -1,14 +1,19 @@
+import type { ReactNode } from 'react';
+
 import { landingFaqAttributes } from '@/lib/landingTracking';
 
 type LandingFaqItemProps = {
-    answer: string;
+    // May hold a link (an occasion page's FAQ).
+    answer: ReactNode;
+    // Items with the same group close each other (native exclusive <details name>).
+    group?: string;
     index: number;
     question: string;
 };
 
-export function LandingFaqItem({ answer, index, question }: LandingFaqItemProps) {
+export function LandingFaqItem({ answer, group, index, question }: LandingFaqItemProps) {
     return (
-        <details className="group border-b border-[rgb(21_19_19/20%)]" {...landingFaqAttributes(index + 1)}>
+        <details className="group border-b border-[rgb(21_19_19/20%)]" name={group} {...landingFaqAttributes(index + 1)}>
             <summary className="group/summary grid min-h-[62px] cursor-pointer list-none grid-cols-[32px_minmax(0,1fr)_28px] items-center gap-2.5 py-3.5 min-[761px]:min-h-[68px] min-[761px]:grid-cols-[44px_minmax(0,1fr)_30px] min-[761px]:gap-3.5 min-[761px]:py-[17px] [&::-webkit-details-marker]:hidden">
                 <span className="[font-family:var(--editorial)] text-lg leading-none tracking-[-0.04em] text-[#151313] transition-colors duration-300 group-open:text-[#d87d8f] group-hover/summary:text-[#d87d8f] min-[761px]:text-[22px]">
                     {String(index + 1).padStart(2, '0')}

@@ -1,12 +1,14 @@
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 // The hero's background, and usually its largest paint. An img in the HTML starts downloading as the
 // page arrives; a CSS background or a high-priority preload() waits for the stylesheet or is dropped.
 export function HeroBackground() {
+    const t = useTranslations('LandingPage.imageAlts');
+
     return (
         <Image
-            alt=""
-            aria-hidden="true"
+            alt={t('heroBackground')}
             className="pointer-events-none absolute inset-0 size-full object-cover object-center select-none"
             draggable={false}
             fetchPriority="high"

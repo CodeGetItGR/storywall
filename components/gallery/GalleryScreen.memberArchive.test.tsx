@@ -39,6 +39,11 @@ vi.mock('@/components/gallery/MemberArchiveModal', () => ({
 vi.mock('@/components/tools/ModuleNotice', () => ({ ModuleNotice: () => null }));
 vi.mock('@/components/tools/ModulePageShell', () => ({ ModulePageShell: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
 vi.mock('@/components/ui/ConfirmActionModal', () => ({ ConfirmActionModal: () => null }));
+vi.mock('@/components/routing/EventRouteGate', () => ({ useEventRouteContext: () => ({ eventId: 'event-1', isHost: false }) }));
+vi.mock('@/hooks/useGalleryPrint', () => ({
+    usePrintAvailability: () => ({ available: false, photographers: [] }),
+    useGalleryPrint: () => ({ available: false, pickCount: 0, sheetOpen: false, notice: null, error: null, viewerToggle: null }),
+}));
 vi.mock('@/hooks/useGalleryScreen', () => ({
     useGalleryScreen: () => ({
         activeEvent: { id: 'event-1', title: 'E', modules: [] },
