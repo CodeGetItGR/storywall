@@ -7236,6 +7236,7 @@
                 }
             },
             "rsvp": {
+                "kicker": "Wedding RSVP",
                 "heading": ["Stop wondering who's coming.", "Every RSVP in one place."],
                 "intro": "With StoryWall, guests reply in seconds and you stay in control, from the invitation to the final guest list.",
                 "alts": {
@@ -7272,7 +7273,7 @@
                 "cards": [
                     {
                         "title": "Private wall",
-                        "body": "Only people with your wedding link can join. It isn't public and doesn't appear on Google."
+                        "body": "Only people with your wedding link can join. It isn't public."
                     },
                     {
                         "title": "You're in control",
@@ -7290,7 +7291,7 @@
             },
             "demo": {
                 "kicker": "DEMO",
-                "heading": ["See a StoryWall", "wedding."],
+                "heading": ["See a wedding", "on StoryWall,", "with every feature."],
                 "copy": "See the invitation, posts, stories and photos<br></br>exactly as <b>your guests will see them.</b>",
                 "imageAlt": "StoryWall wedding demo on two phones"
             },

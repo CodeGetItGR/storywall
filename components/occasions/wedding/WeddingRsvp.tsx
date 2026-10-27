@@ -15,6 +15,7 @@ export async function WeddingRsvp({ locale }: { locale: Locale }) {
             <div className="mx-auto w-[calc(100%-36px)] rounded-[22px] bg-[linear-gradient(135deg,#fbedf1_0%,#fcefea_40%,#fdf1e8_70%,#fef5e9_100%)] px-3 pt-9 pb-5 min-[761px]:w-[min(1220px,calc(100%-64px))] min-[761px]:rounded-[30px] min-[761px]:px-[clamp(16px,2.6vw,36px)] min-[761px]:pt-[clamp(40px,5vw,70px)] min-[761px]:pb-[clamp(30px,3.5vw,48px)]">
                 {/* Heading */}
                 <div className="mx-auto mb-[clamp(28px,3.5vw,46px)] max-w-250 text-center">
+                    <p className="mt-0 mb-4.5 text-[11px] font-extrabold tracking-[0.16em] text-[#ff765f] uppercase">{t('kicker')}</p>
                     <h2
                         className="m-0 [font-family:var(--editorial)] text-[clamp(36px,4.4vw,68px)] leading-[1.02] font-normal tracking-[-0.04em]"
                         id="wedding-rsvp-title"
