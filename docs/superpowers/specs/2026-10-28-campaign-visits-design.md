@@ -103,7 +103,7 @@ One Flyway migration (the next free number):
 - `campaign_visitor_days` — today's working state: `day date`, `visitor_key char(64)`,
   `link_id uuid`, `last_arrival_at timestamptz`, `clicked_create`, `clicked_plans`, `clicked_plan`
   (booleans). Primary key `(day, visitor_key, link_id)`. Rows from earlier days are deleted.
-- `campaign_visit_events` — the counts, kept for good: `id bigserial`, `kind varchar(10)`
+- `campaign_visit_events` — the counts, kept for good: `id uuid`, `kind varchar(10)`
   (`VISIT`, `CREATE`, `PLANS`, `PLAN`), `utm_source`, `utm_medium`, `utm_campaign`
   (`varchar(100)`), `new_visitor boolean` (true on a day's first visit; false on repeat visits and
   on clicks), `device varchar(10)` (`PHONE`, `TABLET`, `DESKTOP`), `language varchar(2)`,
@@ -111,7 +111,10 @@ One Flyway migration (the next free number):
   utm_campaign, occurred_at)`. No identifier of any kind.
 
 Events store the utm values rather than the link id, like the sign-up source. Deleting a link keeps
-its numbers; the row then shows as "Not saved", the same as sign-ups do today.
+its numbers; the row then shows as "Not saved", the same as sign-ups do today. New visits to a
+deleted link stop counting (only saved links count), while its sign-ups still count. The delete
+confirmation says so: "The link keeps working. Its past numbers and new sign-ups still count, but
+new visits don't."
 
 ### Recording
 
