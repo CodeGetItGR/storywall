@@ -32,6 +32,7 @@ import { PlatformMetricsPanel } from '@/components/admin/PlatformMetricsPanel';
 import { QrCardTemplatesPanel } from '@/components/admin/qrCards/QrCardTemplatesPanel';
 import { ReactionTypesCatalogPanel } from '@/components/admin/ReactionTypesCatalogPanel';
 import { SiteNoticesPanel } from '@/components/admin/siteNotices/SiteNoticesPanel';
+import { ShopPanel } from '@/components/admin/shop/ShopPanel';
 import { ThemeFontsPanel } from '@/components/admin/themeFonts/ThemeFontsPanel';
 import { ThemePresetsPanel } from '@/components/admin/themePresets/ThemePresetsPanel';
 import { VendorMessagesPanel } from '@/components/admin/vendorMessages/VendorMessagesPanel';
@@ -71,6 +72,13 @@ export function AdminConsole() {
         return (
             <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
                 <ModerationPanel />
+            </div>
+        );
+    }
+    if (tab === 'shop') {
+        return (
+            <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
+                <ShopPanel />
             </div>
         );
     }
