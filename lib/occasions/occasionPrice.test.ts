@@ -80,11 +80,37 @@ describe('occasionPriceValues', () => {
         });
     });
 
-    it('prices each plan at its shortest duration', () => {
-        const plan = makePlan({
-            initialOptions: [makeOption({ id: 'opt-12', months: 12, priceAmountMinor: 14900, sortOrder: 1 }), makeOption()],
+    it('reaches the dearest duration on sale, at its promo price', () => {
+        const plans = [
+            makePlan({ initialOptions: [makeOption(), makeOption({ id: 'opt-6', months: 6, priceAmountMinor: 14900, sortOrder: 1 })] }),
+            makePlan({
+                id: 'sig',
+                code: 'SIGNATURE',
+                name: 'SIGNATURE',
+                sortOrder: 2,
+                initialOptions: [
+                    makeOption({ id: 'sig-3', priceAmountMinor: 25900 }),
+                    makeOption({ id: 'sig-6', months: 6, priceAmountMinor: 36900, promoPriceAmountMinor: 32900, sortOrder: 1 }),
+                    makeOption({ id: 'sig-12', months: 12, priceAmountMinor: 49900, sortOrder: 2, active: false }),
+                ],
+            }),
+        ];
+        expect(occasionPriceValues(config(plans), 'WEDDING')).toEqual({
+            range: 'span',
+            from: '119€',
+            fromName: 'START',
+            to: '329€',
+            toName: 'SIGNATURE',
         });
-        expect(occasionPriceValues(config([plan]), 'WEDDING')).toMatchObject({ range: 'single', from: '119€', to: '119€' });
+    });
+
+    it('spans one plan sold at two durations', () => {
+        const plan = makePlan({ initialOptions: [makeOption({ id: 'opt-6', months: 6, priceAmountMinor: 14900, sortOrder: 1 }), makeOption()] });
+        expect(occasionPriceValues(config([plan]), 'WEDDING')).toMatchObject({ range: 'span', from: '119€', to: '149€', toName: 'START' });
+    });
+
+    it('has a single price for one plan at one duration', () => {
+        expect(occasionPriceValues(config([makePlan()]), 'WEDDING')).toMatchObject({ range: 'single', from: '119€', to: '119€' });
     });
 
     it('leaves out plans that are not on sale', () => {

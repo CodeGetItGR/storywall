@@ -17,7 +17,8 @@ Every free text is translated. Pictures that hold words (the RSVP comparison, th
 | Picture format | Every picture is WebP. |
 | Standalone photos | Reused from the design file: 14 marquee photos and their avatars, 3 "Without" photos, the QR photo, the final CTA photo. |
 | Plans | Live plans from `/api/config` through the existing `LandingPricing` / `MarketingPlanCard`. The design's card already matches it; only the section header changes. |
-| Prices in copy | "Από 119€" (hero) and the FAQ price answer read the lowest and highest live wedding plan prices from the server config. Without config: the hero price chip is left out and the FAQ uses a sentence without prices. |
+| Prices in copy | "Από 119€" (hero) and the FAQ price answer read the lowest and highest live wedding price from the server config, across every plan and duration (the top is the dearest plan's longest duration). Without config: the hero price chip is left out and the FAQ uses a sentence without prices. |
+| FAQ accuracy | Checked against the app on 2026-10-25. Videos are stored in HD (the backend converts them to at most 1920 px and keeps no original), so the download answer promises original resolution for photos only. Wedding plans sell no coverage extension, so the duration answer does not offer renewal. |
 | Kept extras | Campaign banner (top), language switcher (header and mobile menu), reviews (between Features and Plans), other-occasions links (above the footer). |
 | English | Claude translates; the owner reviews in the PR. Adapted for readers worldwide: no Greece/Cyprus line in the hero; FAQ 14 becomes "Does it work for weddings outside Greece?". Current English SEO keywords kept where they overlap. |
 | Kickers | The design's small uppercase kickers stay (the owner asked for the exact page), overriding the house "no eyebrow" rule for this page. |

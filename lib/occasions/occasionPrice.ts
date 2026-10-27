@@ -2,7 +2,7 @@ import type { AppConfigResponseDto, EventTypeConvention } from '@/lib/api/types'
 import { promotedOptionAmountMinor } from '@/lib/billing';
 import { resolveLandingCategoryPlans } from '@/lib/landingCategories';
 import { formatLandingOptionPrice } from '@/lib/landingPricing';
-import { shortestInitialOption } from '@/lib/planTiers';
+import { liveInitialOptions } from '@/lib/planTiers';
 
 // Values for an occasion's price sentences ({range, select, …} in its copy): 'span' for two or more
 // prices, 'single' for one, 'none' without config or without a plan on sale. A sentence leaves the
@@ -11,16 +11,17 @@ export type OccasionPriceValues = { range: 'span' | 'single' | 'none'; from: str
 
 const NO_PRICES: OccasionPriceValues = { range: 'none', from: '', fromName: '', to: '', toName: '' };
 
-// The cheapest and dearest card the occasion's pricing section shows, each at the duration it opens on.
+// The cheapest and dearest price the occasion's pricing section sells, across every plan and duration.
 export function occasionPriceValues(config: AppConfigResponseDto | null, eventType: EventTypeConvention): OccasionPriceValues {
     if (!config) return NO_PRICES;
     const { plans } = resolveLandingCategoryPlans(config.planTiers, [eventType], config.memberRolesByEventType);
     const prices = plans
-        .flatMap((plan) => {
-            const option = shortestInitialOption(plan);
-            const price = option ? formatLandingOptionPrice(plan, option) : null;
-            return option && price ? [{ amountMinor: promotedOptionAmountMinor(option, plan), name: plan.name, price }] : [];
-        })
+        .flatMap((plan) =>
+            liveInitialOptions(plan).flatMap((option) => {
+                const price = formatLandingOptionPrice(plan, option);
+                return price ? [{ amountMinor: promotedOptionAmountMinor(option, plan), name: plan.name, price }] : [];
+            }),
+        )
         .sort((left, right) => left.amountMinor - right.amountMinor);
     const from = prices[0];
     const to = prices.at(-1);

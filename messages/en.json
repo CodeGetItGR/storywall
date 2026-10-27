@@ -6969,11 +6969,11 @@
                 },
                 {
                     "q": "Can I download all the photos after the wedding?",
-                    "a": "Yes. You can download every photo and video shared on your StoryWall in its original resolution."
+                    "a": "Yes. You can download every photo in its original resolution, and every video in HD."
                 },
                 {
                     "q": "How long does my StoryWall stay online?",
-                    "a": "You choose 3 or 6 months. The time starts on the day you buy, and you can renew it."
+                    "a": "You choose 3 or 6 months. The time starts on the day you buy."
                 },
                 {
                     "q": "Does StoryWall replace our wedding photographer?",
@@ -6981,7 +6981,7 @@
                 },
                 {
                     "q": "How much does a StoryWall wedding website cost?",
-                    "a": "{range, select, span {Wedding plans start at {from} ({fromName}) and go up to {to} ({toName}), depending on your guest count and the features you need.} single {The wedding plan costs {from} ({fromName}).} other {The price depends on your guest count and the features you need.}}",
+                    "a": "{range, select, span {Wedding plans start at {from} ({fromName}) and go up to {to} ({toName}), depending on your guest count, the features and the length you choose.} single {The wedding plan costs {from} ({fromName}).} other {The price depends on your guest count, the features and the length you choose.}}",
                     "link": {
                         "to": "pricing",
                         "label": "See the plans"
