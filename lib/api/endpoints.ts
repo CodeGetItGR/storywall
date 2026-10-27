@@ -603,6 +603,15 @@ export const endpoints = {
                 decline: (id: string) => `/api/admin/outreach/requests/${encodeURIComponent(id)}/decline`,
             },
         },
+        shop: {
+            stores: '/api/admin/shop/stores',
+            store: (id: string) => `/api/admin/shop/stores/${id}`,
+            storeSync: (id: string) => `/api/admin/shop/stores/${id}/sync`,
+            storeCollections: (id: string) => `/api/admin/shop/stores/${id}/collections`,
+            categories: '/api/admin/shop/categories',
+            category: (id: string) => `/api/admin/shop/categories/${id}`,
+            categoryCollections: (id: string) => `/api/admin/shop/categories/${id}/collections`,
+        },
         appReviews: {
             list: '/api/admin/app-reviews',
             byId: (id: string) => `/api/admin/app-reviews/${id}`,
@@ -635,6 +644,17 @@ export const endpoints = {
             partnerBranding: (eventId: string) => `/api/admin/events/${eventId}/partner-branding`,
             vendors: (eventId: string) => `/api/admin/events/${eventId}/vendors`,
         },
+    },
+
+    shop: {
+        categories: '/api/shop/categories',
+        products: ({ category, page }: { category?: string; page: number }) => {
+            const params = new URLSearchParams();
+            if (category) params.set('category', category);
+            params.set('page', String(page));
+            return `/api/shop/products?${params.toString()}`;
+        },
+        product: (storeSlug: string, handle: string) => `/api/shop/products/${encodeURIComponent(storeSlug)}/${encodeURIComponent(handle)}`,
     },
 
     checkout: {

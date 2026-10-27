@@ -114,6 +114,9 @@ export type ApiErrorMessageKey =
     | 'sneakPeekUsed'
     | 'pushSendFailed'
     | 'pushUnavailable'
+    | 'shopStoreDomainTaken'
+    | 'shopSlugTaken'
+    | 'shopCredentialsInvalid'
     | 'vendorLimitReached'
     | 'vendorIsHost'
     | 'alreadyAVendor'
@@ -629,6 +632,9 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.SNEAK_PEEK_USED]: 'sneakPeekUsed',
     [ERROR_CODES.PUSH_UNAVAILABLE]: 'pushUnavailable',
     [ERROR_CODES.PUSH_SEND_FAILED]: 'pushSendFailed',
+    [ERROR_CODES.SHOP_STORE_DOMAIN_TAKEN]: 'shopStoreDomainTaken',
+    [ERROR_CODES.SHOP_SLUG_TAKEN]: 'shopSlugTaken',
+    [ERROR_CODES.SHOP_CREDENTIALS_INVALID]: 'shopCredentialsInvalid',
     [ERROR_CODES.VENDOR_LIMIT_REACHED]: 'vendorLimitReached',
     [ERROR_CODES.VENDOR_IS_HOST]: 'vendorIsHost',
     [ERROR_CODES.ALREADY_A_VENDOR]: 'alreadyAVendor',
