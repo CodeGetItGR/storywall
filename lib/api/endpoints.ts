@@ -77,6 +77,11 @@ export const endpoints = {
         applications: '/api/public/partner-applications',
     },
 
+    // Read through the app's own cached route (app/api/site-notices), never straight from the browser.
+    siteNotices: {
+        live: '/api/public/site-notices',
+    },
+
     notifications: {
         list: '/api/notifications',
         byId: (id: string) => `/api/notifications/${id}`,
@@ -497,6 +502,10 @@ export const endpoints = {
             list: '/api/admin/landing-categories',
             byId: (id: string) => `/api/admin/landing-categories/${id}`,
             eventTypes: (id: string) => `/api/admin/landing-categories/${id}/event-types`,
+        },
+        siteNotices: {
+            list: '/api/admin/site-notices',
+            byId: (id: string) => `/api/admin/site-notices/${id}`,
         },
         appReviews: {
             list: '/api/admin/app-reviews',

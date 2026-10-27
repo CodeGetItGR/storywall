@@ -81,6 +81,7 @@ describe('pickPublicMessages', () => {
             'Modules',
             'NewsletterForm',
             'PartnerCard',
+            'SiteNotice',
         ]);
         expect(Object.keys(picked.LandingPage as object).sort()).toEqual([
             'featureDetails',

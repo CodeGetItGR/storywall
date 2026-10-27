@@ -20,6 +20,7 @@ export const PUBLIC_CLIENT_NAMESPACES = [
     'LandingPage.imageAlts',
     'ImageAlt',
     'LanguageSwitcher',
+    'SiteNotice',
     'Modules',
     'Durations',
     'AccountDrawer',

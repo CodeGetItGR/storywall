@@ -11,6 +11,10 @@
         "home": "StoryWall home",
         "time": "Time"
     },
+    "SiteNotice": {
+        "apiDown": "We're having some issues. We're working on a fix.",
+        "close": "Close"
+    },
     "DemoActAs": {
         "postingAs": "Posting as",
         "host": "You (host)",
@@ -2896,7 +2900,8 @@
             "bugReports": "Bug reports",
             "errorEvents": "Errors",
             "demoEvents": "Demo events",
-            "partnerCards": "Partner cards"
+            "partnerCards": "Partner cards",
+            "siteNotices": "Site notices"
         },
         "demoEvents": {
             "title": "Demo events",
@@ -5232,6 +5237,74 @@
                     "clicksPerCardSlot": "Taps per card"
                 },
                 "placement": "First card after post {firstAfter}, then every {every} posts."
+            }
+        },
+        "siteNotices": {
+            "create": "New notice",
+            "empty": "No notices yet.",
+            "createTitle": "New notice",
+            "editTitle": "Edit notice",
+            "delete": "Delete notice",
+            "deleteTitle": "Delete this notice?",
+            "deleteBody": "It disappears for everyone right away.",
+            "deleteConfirm": "Delete",
+            "edit": "Edit",
+            "columns": {
+                "tone": "Tone",
+                "message": "Message",
+                "areas": "Where",
+                "status": "Status",
+                "schedule": "Schedule"
+            },
+            "tone": {
+                "INFO": "Info",
+                "OFFER": "Offer",
+                "WARNING": "Warning",
+                "CRITICAL": "Critical"
+            },
+            "status": {
+                "LIVE": "Live",
+                "SCHEDULED": "Scheduled",
+                "ENDED": "Ended",
+                "OFF": "Off"
+            },
+            "area": {
+                "EVERYWHERE": "Everywhere",
+                "PUBLIC": "Public site",
+                "HOST": "Host pages",
+                "GUEST": "Guest pages",
+                "ADMIN": "Admin"
+            },
+            "fields": {
+                "preview": "Preview",
+                "tone": "Tone",
+                "messageEn": "Message (English)",
+                "messageEl": "Message (Greek)",
+                "linkUrl": "Link",
+                "linkUrlHint": "A page here, like /pricing, or a full https:// address.",
+                "linkLabelEn": "Link text (English)",
+                "linkLabelEl": "Link text (Greek)",
+                "where": "Where",
+                "dismissible": "People can close it",
+                "startsAt": "Starts",
+                "endsAt": "Ends",
+                "active": "On"
+            },
+            "where": {
+                "everywhere": "Everywhere",
+                "choose": "Choose areas"
+            },
+            "whereHint": {
+                "everywhere": "Shows on every page, for everyone.",
+                "choose": "Shows only in the areas you pick."
+            },
+            "scheduleNow": "Now",
+            "scheduleNoEnd": "No end",
+            "problems": {
+                "message": "Add the message in both languages.",
+                "linkLabel": "Add the link text in both languages.",
+                "areas": "Pick at least one area.",
+                "schedule": "The end must be after the start."
             }
         }
     },
