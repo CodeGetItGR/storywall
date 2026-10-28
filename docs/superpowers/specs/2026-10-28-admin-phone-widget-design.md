@@ -56,6 +56,7 @@ New table `admin_devices`:
 - A new filter handles `/api/device/**` only. It reads `Authorization: Device <key>`, finds the row by hash, and accepts it only if the row is not revoked and the owner is still an active admin. It authenticates with a single `DEVICE` authority, never `ROLE_ADMIN`, so the key can't reach `/api/admin/**` or anything else.
 - `/api/device/**` uses the existing rate limiting.
 - Removing a phone sets `revoked_at` and clears `fcm_token`. The key stops working on its next request.
+- Removing an admin's role, or suspending or deleting the account, revokes all their phones.
 
 ### Endpoints
 
@@ -99,7 +100,7 @@ All day boundaries use `Europe/Athens`. Each number comes from the service the a
 
 ### Push
 
-- **Firebase:** the Firebase Admin SDK sends to every device that has a token, is not revoked, and whose owner is still an admin.
+- **Firebase:** Spring sends over the FCM HTTP v1 API with the Google auth library it already has, not the Admin SDK. It sends to every device that has a token, is not revoked, and whose owner is still an admin.
 - **Config:** the service-account JSON lives in Railway, Base64-encoded in `FIREBASE_SERVICE_ACCOUNT`. When the variable is unset, push is off and nothing is sent, which keeps local runs and tests quiet. This follows the off-by-default precedent of the metrics digest.
 - **Message shape:** messages are data-only: a `type`, the numbers, and a `link` (the admin console section's hash, e.g. `#orders`; the app adds the site address). The app writes the text in the phone's language. Alerts are sent with high priority, the digest with normal priority.
 - **Never blocks the action:** every trigger runs after the original transaction commits, on a background executor. A failed send is logged and never affects the action that caused it.
@@ -110,9 +111,9 @@ All day boundaries use `Europe/Athens`. Each number comes from the service the a
 | `ORDER_PAID` | Sales | `OrderPaidEvent` for an order paid through a payment provider with an amount above 0. Orders an admin settled (bank transfer, €0) are skipped | amount, currency, plan name |
 | `WITHDRAWAL_HELD` | Money | A withdrawal is held for review (the `WithdrawalNotifier` held path) | amount, currency |
 | `WEBHOOK_UNPROCESSED` | Money | A payment webhook delivery is left unprocessed (the `PaymentWebhookController` failure path) | provider |
-| `REPORT_CASE_OPENED` | Reports | A report opens a new moderation case. Further reports on a case that is already open send nothing | content type |
+| `REPORT_CASE_OPENED` | Reports | When the report makes its item open (no `OPEN` report before it); a new report on an item under review alerts too. Further reports on an item that is already open send nothing | content type |
 | `BUG_REPORT` | Reports | A bug report is created | none |
-| `ERROR_BURST` | Errors | A job every 5 minutes counts error events in the last 60 minutes. At 10 or more, it sends one alert, then stays quiet for 60 minutes. Threshold, window and quiet time are properties | count |
+| `ERROR_BURST` | Errors | A job every 5 minutes counts error events in the last 60 minutes: every occurrence, 4xx rejections left out, in memory. At 10 or more, it sends one alert, then stays quiet for 60 minutes. Threshold, window and quiet time are properties | count |
 | `DAILY_DIGEST` | Daily digest | 09:00 `Europe/Athens` | yesterday's paid orders and net revenue per currency, sign-ups, visitors; latest costs per currency; any needs-attention count above 0 |
 | `TEST` | Sales | The admin console's "Send test notification" button | none |
 
@@ -180,12 +181,12 @@ Each step is its own PR into `staging` (Spring and website) or into the app repo
 
 1. **Keys and summary.** Spring: `admin_devices`, the device filter, the device and admin endpoints, the summary. Website: the Phones section with QR pairing.
 2. **App and widget.** The new repo, pairing, the screen, the widget, the 15-minute refresh.
-3. **Push.** Spring: Firebase sending, the triggers, the error-burst job, the daily digest, the test endpoint. Website: the test button. App: Firebase Messaging, channels, token upload.
+3. **Push.** Spring: Firebase sending, the triggers, the error-burst job, the daily digest, the test endpoint. Website: the test button. App: Firebase Messaging, channels, token upload. The app branch starts from step 2's branch.
 
 Before step 3, the admin:
 
 1. Creates a free Firebase project.
-2. Adds an Android app with package `gr.storywall.admin`.
+2. Adds two Android apps, `gr.storywall.admin` and `gr.storywall.admin.debug`.
 3. Downloads `google-services.json` for the app repo (it stays out of git).
 4. Creates a service-account key and sets it Base64-encoded as `FIREBASE_SERVICE_ACCOUNT` in Railway.
 
