@@ -1,5 +1,7 @@
 # QR card templates — backend implementation plan
 
+2026-10-28: dot and corner shapes were dropped after implementation (backend commit cc4c5d10). The spec is current; shape mentions below are historical.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** An admin-curated catalog of A6 QR card templates per event type, served to hosts behind a new opt-in `qr_cards` plan module, with versioned public artwork files.

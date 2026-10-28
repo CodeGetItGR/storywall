@@ -18,7 +18,7 @@
 
 | File | Responsibility |
 | --- | --- |
-| `lib/qrCardCode.ts` (+ test) | QR module grid from `uqr`, logo clearing, SVG paths per dot and corner shape. |
+| `lib/qrCardCode.ts` (+ test) | QR module grid from `uqr`, logo clearing, one SVG path of plain square modules. |
 | `lib/qrCard.ts` (+ test) | Card constants, Plain style, template → style, text fitting and layout, default line keys, gift lines, file name. |
 | `lib/qrCardExport.ts` (+ test) | Standalone SVG (data URIs), PNG raster, PDF bytes, file save. |
 | `lib/api/prefetchQrCardTemplates.ts` | Server-side seed of the template list. |
@@ -141,9 +141,6 @@ In `lib/api/types.ts`, right after `export interface EventThemeFontDto { … }` 
 
 ```ts
 // QR card templates (qr-card-templates-fe-integration.md): A6 card designs a host prints a QR on.
-export type QrDotShape = 'SQUARE' | 'ROUNDED' | 'DOT';
-export type QrCornerShape = 'SQUARE' | 'ROUNDED' | 'CIRCLE';
-
 export interface QrCardTemplateDto {
     id: string;
     name: LocalizedText;
@@ -151,8 +148,6 @@ export interface QrCardTemplateDto {
     textColor: string; // #RRGGBB
     headingFont: EventThemeFontDto | null; // null = the card's own font
     codeColor: string; // #RRGGBB, at least 4.5:1 against white
-    dotShape: QrDotShape;
-    cornerShape: QrCornerShape;
     centerLogo: boolean;
 }
 
@@ -180,8 +175,6 @@ export interface AdminQrCardTemplateDto {
     textColor: string;
     headingFont: AdminThemeFontSummaryDto | null;
     codeColor: string;
-    dotShape: QrDotShape;
-    cornerShape: QrCornerShape;
     centerLogo: boolean;
 }
 
@@ -193,8 +186,6 @@ export interface AdminQrCardTemplateRequestDto {
     textColor: string;
     headingFontId?: string | null;
     codeColor: string;
-    dotShape: QrDotShape;
-    cornerShape: QrCornerShape;
     centerLogo: boolean;
 }
 
@@ -208,8 +199,6 @@ export interface AdminQrCardTemplatePatchDto {
     headingFontId?: string;
     clearHeadingFont?: boolean;
     codeColor?: string;
-    dotShape?: QrDotShape;
-    cornerShape?: QrCornerShape;
     centerLogo?: boolean;
 }
 ```
@@ -329,53 +318,71 @@ git commit -m "feat(qr-cards): add the QR card types, endpoints, module key and 
 
 ---
 
-### Task 2: QR code paths (`lib/qrCardCode.ts`)
+### Task 2: QR code path (`lib/qrCardCode.ts`)
 
 **Files:**
 - Create: `lib/qrCardCode.ts`
 - Test: `lib/qrCardCode.test.ts`
 
+Every code is drawn with plain square modules; the finder patterns are ordinary square modules too.
+
 - [ ] **Step 1: Write the failing test**
 
 ```ts
+import { encode } from 'uqr';
 import { describe, expect, it } from 'vitest';
 
-import { isFinderModule, logoSpan, qrCodePaths, qrModules } from '@/lib/qrCardCode';
+import { logoSpan, qrCodePath, qrModules } from '@/lib/qrCardCode';
 
 const URL = 'https://storywall.gr/q/AbCdEf123456';
+const RUN = /M(\d+) (\d+)h(\d+)v1h-(\d+)z/g;
 
-function darkDataCount(text: string, centerLogo: boolean): number {
-    const { size, isDataDark } = qrModules(text, centerLogo);
-    let count = 0;
-    for (let row = 0; row < size; row++) {
-        for (let col = 0; col < size; col++) if (isDataDark(row, col)) count++;
+// The cells a path draws, as "row,col", read back from its row runs.
+function drawnCells(d: string): Set<string> {
+    const cells = new Set<string>();
+    for (const [, x, y, width] of d.matchAll(RUN)) {
+        for (let col = Number(x); col < Number(x) + Number(width); col++) cells.add(`${y},${col}`);
     }
-    return count;
+    return cells;
+}
+
+// The dark cells uqr encodes, as "row,col", minus any the filter drops.
+function encodedCells(ecc: 'Q' | 'H', keep: (row: number, col: number) => boolean = () => true): Set<string> {
+    const { data } = encode(URL, { ecc, border: 0 });
+    const cells = new Set<string>();
+    data.forEach((cols, row) => cols.forEach((dark, col) => dark && keep(row, col) && cells.add(`${row},${col}`)));
+    return cells;
 }
 
 describe('qrModules', () => {
-    it('leaves the three finder patterns out of the data modules', () => {
-        const { size, isDataDark } = qrModules(URL, false);
+    it('keeps the finder patterns as dark modules', () => {
+        const { size, isDark } = qrModules(URL, false);
         for (const [row, col] of [
             [0, 0],
             [6, 6],
+            [2, 2],
             [0, size - 1],
             [size - 1, 0],
-            [3, size - 4],
         ]) {
-            expect(isDataDark(row, col), `${row},${col}`).toBe(false);
+            expect(isDark(row, col), `${row},${col}`).toBe(true);
         }
-        expect(isFinderModule(size, size - 1, size - 1)).toBe(false);
+        for (const [row, col] of [
+            [1, 1],
+            [5, 5],
+            [7, 0],
+        ]) {
+            expect(isDark(row, col), `${row},${col}`).toBe(false);
+        }
     });
 
     it('centres the logo and clears a one-module ring around it', () => {
-        const { size, isDataDark, logo } = qrModules(URL, true);
+        const { size, isDark, logo } = qrModules(URL, true);
         expect(logo).not.toBeNull();
         const { start, span } = logo!;
         expect(span % 2).toBe(1);
         expect(start + (span - 1) / 2).toBe((size - 1) / 2);
         for (let row = start - 1; row <= start + span; row++) {
-            for (let col = start - 1; col <= start + span; col++) expect(isDataDark(row, col), `${row},${col}`).toBe(false);
+            for (let col = start - 1; col <= start + span; col++) expect(isDark(row, col), `${row},${col}`).toBe(false);
         }
     });
 
@@ -395,26 +402,44 @@ describe('logoSpan', () => {
     });
 });
 
-describe('qrCodePaths', () => {
-    it('covers every dark data module with square runs', () => {
-        const paths = qrCodePaths(URL, { dotShape: 'SQUARE', cornerShape: 'SQUARE', centerLogo: true });
-        const covered = [...paths.dots.matchAll(/h(\d+)v1/g)].reduce((sum, match) => sum + Number(match[1]), 0);
-        expect(covered).toBe(darkDataCount(URL, true));
+describe('qrCodePath', () => {
+    it('is only whole-module row runs', () => {
+        const { d } = qrCodePath(URL, { centerLogo: true });
+        expect(d.length).toBeGreaterThan(0);
+        expect(d.replace(RUN, '')).toBe('');
     });
 
-    it.each(['ROUNDED', 'DOT'] as const)('draws one %s shape per dark data module', (dotShape) => {
-        const paths = qrCodePaths(URL, { dotShape, cornerShape: 'SQUARE', centerLogo: false });
-        expect(paths.dots.match(/M/g)?.length).toBe(darkDataCount(URL, false));
+    it('starts with the top-left finder pattern’s top edge as one run', () => {
+        expect(qrCodePath(URL, { centerLogo: false }).d.startsWith('M0 0h7v1h-7z')).toBe(true);
     });
 
-    it.each(['SQUARE', 'ROUNDED', 'CIRCLE'] as const)('draws three %s finder patterns of three rings each', (cornerShape) => {
-        const paths = qrCodePaths(URL, { dotShape: 'SQUARE', cornerShape, centerLogo: false });
-        expect(paths.corners.match(/M/g)?.length).toBe(9);
+    it('draws exactly the encoded modules, x as the column and y as the row', () => {
+        const { size, d } = qrCodePath(URL, { centerLogo: false });
+        expect(size).toBe(encode(URL, { ecc: 'Q', border: 0 }).size);
+        expect(drawnCells(d)).toEqual(encodedCells('Q'));
     });
 
-    it('writes no float noise into the paths', () => {
-        const { dots, corners } = qrCodePaths(URL, { dotShape: 'ROUNDED', cornerShape: 'ROUNDED', centerLogo: true });
-        expect(dots + corners).not.toMatch(/\d\.\d{4,}/);
+    it('is not transposed', () => {
+        const { data } = encode(URL, { ecc: 'Q', border: 0 });
+        const cells = drawnCells(qrCodePath(URL, { centerLogo: false }).d);
+        let checked = 0;
+        data.forEach((cols, row) =>
+            cols.forEach((dark, col) => {
+                if (!dark || data[col][row]) return;
+                // Dark at (row, col) but light at (col, row): only the right orientation draws it.
+                expect(cells.has(`${row},${col}`), `${row},${col}`).toBe(true);
+                expect(cells.has(`${col},${row}`), `${col},${row}`).toBe(false);
+                checked++;
+            }),
+        );
+        expect(checked).toBeGreaterThan(0);
+    });
+
+    it('draws the encoded modules around the cleared logo square', () => {
+        const { d, logo } = qrCodePath(URL, { centerLogo: true });
+        const { start, span } = logo!;
+        const isCleared = (row: number, col: number) => row >= start - 1 && row <= start + span && col >= start - 1 && col <= start + span;
+        expect(drawnCells(d)).toEqual(encodedCells('H', (row, col) => !isCleared(row, col)));
     });
 });
 ```
@@ -429,33 +454,13 @@ Expected: FAIL, "Failed to resolve import "@/lib/qrCardCode"".
 ```ts
 import { encode } from 'uqr';
 
-import type { QrCornerShape, QrDotShape } from '@/lib/api/types';
-
-const FINDER = 7;
-const DOT_RADIUS = 0.45;
-const ROUNDED_RADIUS = 0.3;
-
-export type QrCodeShapes = { dotShape: QrDotShape; cornerShape: QrCornerShape; centerLogo: boolean };
-
-// The code in module units (one module = 1), without the quiet zone. `dots` holds the data modules;
-// `corners` the three finder patterns, drawn with fill-rule evenodd. `logo` is the square the centre
-// logo covers, in modules.
-export type QrCodePaths = {
+// The code in module units (one module = 1), without the quiet zone. `d` draws every dark module as a
+// plain square, finder patterns included. `logo` is the square the centre logo covers, in modules.
+export type QrCodePath = {
     size: number;
-    dots: string;
-    corners: string;
+    d: string;
     logo: { start: number; span: number } | null;
 };
-
-function num(value: number): string {
-    return String(Math.round(value * 1000) / 1000);
-}
-
-export function isFinderModule(size: number, row: number, col: number): boolean {
-    const top = row < FINDER;
-    const left = col < FINDER;
-    return (top && left) || (top && col >= size - FINDER) || (row >= size - FINDER && left);
-}
 
 // The logo's side in modules: odd, so it sits exactly on the centre module, and about a fifth of the code.
 export function logoSpan(size: number): number {
@@ -464,7 +469,7 @@ export function logoSpan(size: number): number {
 }
 
 // Error correction H when the logo covers modules (it rebuilds up to 30%), else Q. The logo's square
-// and a one-module ring around it are cleared, so no dot touches the logo.
+// and a one-module ring around it are cleared, so no module touches the logo.
 export function qrModules(text: string, centerLogo: boolean) {
     const { size, data } = encode(text, { ecc: centerLogo ? 'H' : 'Q', border: 0 });
     const span = centerLogo ? logoSpan(size) : 0;
@@ -473,80 +478,40 @@ export function qrModules(text: string, centerLogo: boolean) {
     const isCleared = (row: number, col: number) => centerLogo && Math.abs(row - centre) <= clearRadius && Math.abs(col - centre) <= clearRadius;
     return {
         size,
-        isDataDark: (row: number, col: number) => data[row][col] && !isFinderModule(size, row, col) && !isCleared(row, col),
+        isDark: (row: number, col: number) => data[row][col] && !isCleared(row, col),
         logo: centerLogo ? { start: centre - (span - 1) / 2, span } : null,
     };
 }
 
-function squareRun(col: number, row: number, length: number): string {
-    return `M${col} ${row}h${length}v1h${-length}z`;
-}
-
-function roundedSquare(x: number, y: number, side: number, radius: number): string {
-    const r = num(radius);
-    const straight = num(side - 2 * radius);
-    return `M${num(x + radius)} ${num(y)}h${straight}a${r} ${r} 0 0 1 ${r} ${r}v${straight}a${r} ${r} 0 0 1 -${r} ${r}h-${straight}a${r} ${r} 0 0 1 -${r} -${r}v-${straight}a${r} ${r} 0 0 1 ${r} -${r}z`;
-}
-
-function circle(cx: number, cy: number, radius: number): string {
-    const r = num(radius);
-    const diameter = num(2 * radius);
-    return `M${num(cx - radius)} ${num(cy)}a${r} ${r} 0 1 0 ${diameter} 0a${r} ${r} 0 1 0 -${diameter} 0z`;
-}
-
-function dotsPath(size: number, isDataDark: (row: number, col: number) => boolean, shape: QrDotShape): string {
+// One path of runs of dark modules along each row: neighbours inside a run share no anti-aliased seam.
+export function qrCodePath(text: string, { centerLogo }: { centerLogo: boolean }): QrCodePath {
+    const { size, isDark, logo } = qrModules(text, centerLogo);
     const parts: string[] = [];
     for (let row = 0; row < size; row++) {
-        if (shape === 'SQUARE') {
-            // Runs of dark modules along the row: neighbours inside a run share no anti-aliased seam.
-            let start = -1;
-            for (let col = 0; col <= size; col++) {
-                const dark = col < size && isDataDark(row, col);
-                if (dark && start < 0) start = col;
-                if (!dark && start >= 0) {
-                    parts.push(squareRun(start, row, col - start));
-                    start = -1;
-                }
+        let start = -1;
+        for (let col = 0; col <= size; col++) {
+            const dark = col < size && isDark(row, col);
+            if (dark && start < 0) start = col;
+            if (!dark && start >= 0) {
+                parts.push(`M${start} ${row}h${col - start}v1h${start - col}z`);
+                start = -1;
             }
-            continue;
-        }
-        for (let col = 0; col < size; col++) {
-            if (!isDataDark(row, col)) continue;
-            parts.push(shape === 'DOT' ? circle(col + 0.5, row + 0.5, DOT_RADIUS) : roundedSquare(col, row, 1, ROUNDED_RADIUS));
         }
     }
-    return parts.join('');
-}
-
-// Outer 7 × 7 ring, its 5 × 5 hole and the 3 × 3 centre; evenodd fills the ring and the centre.
-function finderPath(x: number, y: number, shape: QrCornerShape): string {
-    if (shape === 'CIRCLE') return circle(x + 3.5, y + 3.5, 3.5) + circle(x + 3.5, y + 3.5, 2.5) + circle(x + 3.5, y + 3.5, 1.5);
-    if (shape === 'ROUNDED') return roundedSquare(x, y, 7, 2) + roundedSquare(x + 1, y + 1, 5, 1.2) + roundedSquare(x + 2, y + 2, 3, 0.8);
-    return `M${x} ${y}h7v7h-7z` + `M${x + 1} ${y + 1}h5v5h-5z` + `M${x + 2} ${y + 2}h3v3h-3z`;
-}
-
-export function qrCodePaths(text: string, shapes: QrCodeShapes): QrCodePaths {
-    const { size, isDataDark, logo } = qrModules(text, shapes.centerLogo);
-    const far = size - FINDER;
-    return {
-        size,
-        dots: dotsPath(size, isDataDark, shapes.dotShape),
-        corners: finderPath(0, 0, shapes.cornerShape) + finderPath(far, 0, shapes.cornerShape) + finderPath(0, far, shapes.cornerShape),
-        logo,
-    };
+    return { size, d: parts.join(''), logo };
 }
 ```
 
 - [ ] **Step 4: Run the test to see it pass**
 
 Run: `npx vitest run lib/qrCardCode.test.ts`
-Expected: PASS (all tests).
+Expected: PASS, 12 tests. If the three tests that compare against `encode` fail, the grid is transposed: check `data[row][col]` against Task 0, Step 4.
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add lib/qrCardCode.ts lib/qrCardCode.test.ts
-git commit -m "feat(qr-cards): draw QR codes as paths per dot and corner shape"
+git commit -m "feat(qr-cards): draw QR codes as one path of square modules"
 ```
 
 ---
@@ -673,8 +638,6 @@ describe('qrCardStyleOf', () => {
             textColor: '#5A3E2B',
             headingFont: null,
             codeColor: '#1F3A5A',
-            dotShape: 'DOT',
-            cornerShape: 'CIRCLE',
             centerLogo: false,
         };
         expect(qrCardStyleOf(template)).toEqual({
@@ -683,14 +646,12 @@ describe('qrCardStyleOf', () => {
             textColor: '#5A3E2B',
             headingFont: null,
             codeColor: '#1F3A5A',
-            dotShape: 'DOT',
-            cornerShape: 'CIRCLE',
             centerLogo: false,
         });
     });
 
     it('keeps Plain as today’s look', () => {
-        expect(PLAIN_QR_CARD_STYLE).toMatchObject({ artworkUrl: null, codeColor: '#241F1A', dotShape: 'SQUARE', cornerShape: 'SQUARE', centerLogo: true });
+        expect(PLAIN_QR_CARD_STYLE).toMatchObject({ artworkUrl: null, codeColor: '#241F1A', centerLogo: true });
     });
 });
 ```
@@ -703,7 +664,7 @@ Expected: FAIL, "Failed to resolve import "@/lib/qrCard"".
 - [ ] **Step 3: Write `lib/qrCard.ts`**
 
 ```ts
-import type { EventThemeFontDto, QrCardTemplateDto, QrCornerShape, QrDotShape, QrTargetType } from '@/lib/api/types';
+import type { EventThemeFontDto, QrCardTemplateDto, QrTargetType } from '@/lib/api/types';
 
 // A6 portrait in millimetres: the card SVG's user units.
 export const QR_CARD_WIDTH = 105;
@@ -736,8 +697,6 @@ export type QrCardStyle = {
     textColor: string;
     headingFont: EventThemeFontDto | null;
     codeColor: string;
-    dotShape: QrDotShape;
-    cornerShape: QrCornerShape;
     centerLogo: boolean;
 };
 
@@ -748,8 +707,6 @@ export const PLAIN_QR_CARD_STYLE: QrCardStyle = {
     textColor: QR_CARD_INK,
     headingFont: null,
     codeColor: QR_CARD_INK,
-    dotShape: 'SQUARE',
-    cornerShape: 'SQUARE',
     centerLogo: true,
 };
 
@@ -760,8 +717,6 @@ export function qrCardStyleOf(template: QrCardTemplateDto): QrCardStyle {
         textColor: template.textColor,
         headingFont: template.headingFont,
         codeColor: template.codeColor,
-        dotShape: template.dotShape,
-        cornerShape: template.cornerShape,
         centerLogo: template.centerLogo,
     };
 }
@@ -954,7 +909,7 @@ export function qrCardFileName(title: string, extension: 'png' | 'pdf'): string 
 - [ ] **Step 4: Run the test to see it pass**
 
 Run: `npx vitest run lib/qrCard.test.ts`
-Expected: PASS. If only the Greek two-line case fails on `fontSize`, print the actual result and check `charWidth` against the numbers in this plan's self-review before changing the expectation.
+Expected: PASS (18 tests). If only the Greek two-line case fails on `fontSize`, print the actual result and check `charWidth` against the numbers in this plan's self-review before changing the expectation.
 
 - [ ] **Step 5: Commit**
 
@@ -981,14 +936,11 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
 import { QrCardSvg } from '@/components/qrCard/QrCardSvg';
-import type { QrCornerShape, QrDotShape } from '@/lib/api/types';
 import { PLAIN_QR_CARD_STYLE, type QrCardStyle } from '@/lib/qrCard';
 
 // Rasterizes the card as a phone camera would see a print, and reads the code back.
 const SHORT_URL = 'https://storywall.gr/q/7Hk2pQx9Lm';
 const LONG_URL = `https://storywall.gr/i/${'a1B2c3D4e5'.repeat(18)}`;
-const DOTS: QrDotShape[] = ['SQUARE', 'ROUNDED', 'DOT'];
-const CORNERS: QrCornerShape[] = ['SQUARE', 'ROUNDED', 'CIRCLE'];
 
 function scan(url: string, style: Partial<QrCardStyle>): string | null {
     const markup = renderToStaticMarkup(
@@ -1005,15 +957,14 @@ function scan(url: string, style: Partial<QrCardStyle>): string | null {
     return jsQR(new Uint8ClampedArray(image.pixels), image.width, image.height)?.data ?? null;
 }
 
-const SHAPES = DOTS.flatMap((dotShape) => CORNERS.flatMap((cornerShape) => [true, false].map((centerLogo) => ({ dotShape, cornerShape, centerLogo }))));
+const CASES = [true, false].flatMap((centerLogo) => [
+    { link: 'short', url: SHORT_URL, centerLogo },
+    { link: 'long', url: LONG_URL, centerLogo },
+]);
 
 describe('QrCardSvg scans', () => {
-    it.each(SHAPES)('$dotShape dots, $cornerShape corners, logo $centerLogo', (shapes) => {
-        expect(scan(SHORT_URL, shapes)).toBe(SHORT_URL);
-    });
-
-    it.each([true, false])('a long link, logo %s', (centerLogo) => {
-        expect(scan(LONG_URL, { dotShape: 'DOT', cornerShape: 'CIRCLE', centerLogo })).toBe(LONG_URL);
+    it.each(CASES)('a $link link, logo $centerLogo', ({ url, centerLogo }) => {
+        expect(scan(url, { centerLogo })).toBe(url);
     });
 });
 ```
@@ -1044,7 +995,7 @@ import {
     type QrCardLineTone,
     type QrCardStyle,
 } from '@/lib/qrCard';
-import { qrCodePaths } from '@/lib/qrCardCode';
+import { qrCodePath } from '@/lib/qrCardCode';
 
 type TextLook = { fontFamily: string; fontWeight: number; opacity?: number; letterSpacing?: string };
 
@@ -1089,8 +1040,8 @@ export function QrCardSvg({
     ref?: Ref<SVGSVGElement>;
 }) {
     const titleId = useId();
-    const { dotShape, cornerShape, centerLogo } = style;
-    const code = useMemo(() => qrCodePaths(url, { dotShape, cornerShape, centerLogo }), [url, dotShape, cornerShape, centerLogo]);
+    const { centerLogo } = style;
+    const code = useMemo(() => qrCodePath(url, { centerLogo }), [url, centerLogo]);
     const { panel } = QR_CARD_LAYOUT;
     const cell = panel.size / (code.size + 2 * QR_QUIET_ZONE);
     const codeX = panel.x + QR_QUIET_ZONE * cell;
@@ -1119,10 +1070,7 @@ export function QrCardSvg({
             <CardText text={layoutTitle(title)} fill={style.textColor} look={titleLook} />
             {/* Code */}
             <rect x={panel.x} y={panel.y} width={panel.size} height={panel.size} rx={panel.radius} fill="#FFFFFF" />
-            <g transform={`translate(${codeX} ${codeY}) scale(${cell})`} fill={style.codeColor}>
-                <path d={code.dots} />
-                <path d={code.corners} fillRule="evenodd" />
-            </g>
+            <path d={code.d} transform={`translate(${codeX} ${codeY}) scale(${cell})`} fill={style.codeColor} />
             {code.logo && (
                 <image
                     href={QR_CARD_LOGO_SRC}
@@ -1146,9 +1094,9 @@ The variable is `cell`, not `module`: Next's lint forbids assigning a variable n
 - [ ] **Step 4: Run the scan test to see it pass**
 
 Run: `npx vitest run components/qrCard/QrCardSvg.scan.test.tsx`
-Expected: PASS, 20 cases.
+Expected: PASS, 4 cases.
 
-If every case fails, the grid is likely transposed: check `data[row][col]` against Task 0, Step 4. If only `CIRCLE` corners fail, jsQR is not finding round finder patterns: stop and ask the user before changing the design (phones may still read them; the spec asked for circles).
+If every case fails, the grid is likely transposed: check `data[row][col]` against Task 0, Step 4.
 
 - [ ] **Step 5: Commit**
 
@@ -1914,8 +1862,6 @@ const LINEN: QrCardTemplateDto = {
     textColor: '#5A3E2B',
     headingFont: null,
     codeColor: '#1F3A5A',
-    dotShape: 'DOT',
-    cornerShape: 'CIRCLE',
     centerLogo: false,
 };
 
@@ -1944,7 +1890,7 @@ describe('useQrCardDesigner', () => {
         const { result } = renderDesigner();
         act(() => result.current.selectTemplate('t1'));
         expect(result.current.selectedId).toBe('t1');
-        expect(result.current.style).toMatchObject({ artworkUrl: '/api/qr-card-artwork/t1/1', dotShape: 'DOT', centerLogo: false });
+        expect(result.current.style).toMatchObject({ artworkUrl: '/api/qr-card-artwork/t1/1', codeColor: '#1F3A5A', centerLogo: false });
         act(() => result.current.selectTemplate(PLAIN_QR_CARD_ID));
         expect(result.current.style).toEqual(PLAIN_QR_CARD_STYLE);
     });
@@ -2146,8 +2092,6 @@ const LINEN: QrCardTemplateDto = {
     textColor: '#5A3E2B',
     headingFont: null,
     codeColor: '#1F3A5A',
-    dotShape: 'DOT',
-    cornerShape: 'CIRCLE',
     centerLogo: false,
 };
 
@@ -3799,8 +3743,8 @@ import {
     draftFromQrCardTemplate,
     filterQrCardTemplates,
     isQrCardDetailError,
-    qrCardTemplateStatus,
     type QrCardTemplateDraft,
+    qrCardTemplateStatus,
     sortQrCardTemplates,
     validateQrCardTemplateDraft,
 } from '@/lib/adminQrCards';
@@ -3826,8 +3770,6 @@ const LINEN: AdminQrCardTemplateDto = {
     textColor: '#5A3E2B',
     headingFont: null,
     codeColor: '#1F3A5A',
-    dotShape: 'DOT',
-    cornerShape: 'CIRCLE',
     centerLogo: false,
 };
 
@@ -3838,7 +3780,7 @@ function valid(overrides: Partial<QrCardTemplateDraft> = {}): QrCardTemplateDraf
 }
 
 describe('draftFromQrCardTemplate', () => {
-    it('starts a new design as Plain: ink, square, logo on', () => {
+    it('starts a new design as Plain: ink, logo on', () => {
         expect(draftFromQrCardTemplate(null)).toEqual({
             nameEn: '',
             nameEl: '',
@@ -3847,8 +3789,6 @@ describe('draftFromQrCardTemplate', () => {
             textColor: '#241F1A',
             headingFontId: '',
             codeColor: '#241F1A',
-            dotShape: 'SQUARE',
-            cornerShape: 'SQUARE',
             centerLogo: true,
         });
     });
@@ -3857,8 +3797,6 @@ describe('draftFromQrCardTemplate', () => {
         expect(draftFromQrCardTemplate({ ...LINEN, headingFont: ALEGREYA })).toMatchObject({
             nameEn: 'Linen',
             codeColor: '#1F3A5A',
-            dotShape: 'DOT',
-            cornerShape: 'CIRCLE',
             centerLogo: false,
             headingFontId: 'f1',
         });
@@ -3892,7 +3830,7 @@ describe('validateQrCardTemplateDraft', () => {
 
 describe('buildQrCardTemplateCreatePayload', () => {
     it('sends trimmed names, upper-case colours and no font as null', () => {
-        const draft = valid({ nameEn: ' Linen ', textColor: '#5a3e2b', codeColor: '#1f3a5a', dotShape: 'DOT' });
+        const draft = valid({ nameEn: ' Linen ', textColor: '#5a3e2b', codeColor: '#1f3a5a' });
         expect(buildQrCardTemplateCreatePayload(draft, 4)).toEqual({
             name: { en: 'Linen', el: 'Λινό' },
             eventTypes: ['WEDDING'],
@@ -3900,8 +3838,6 @@ describe('buildQrCardTemplateCreatePayload', () => {
             textColor: '#5A3E2B',
             headingFontId: null,
             codeColor: '#1F3A5A',
-            dotShape: 'DOT',
-            cornerShape: 'SQUARE',
             centerLogo: true,
         });
     });
@@ -3913,10 +3849,9 @@ describe('buildQrCardTemplatePatchPayload', () => {
     });
 
     it('sends only what changed', () => {
-        const draft: QrCardTemplateDraft = { ...draftFromQrCardTemplate(LINEN), nameEl: 'Λινάρι', dotShape: 'ROUNDED', centerLogo: true, archived: true };
+        const draft: QrCardTemplateDraft = { ...draftFromQrCardTemplate(LINEN), nameEl: 'Λινάρι', centerLogo: true, archived: true };
         expect(buildQrCardTemplatePatchPayload(LINEN, draft)).toEqual({
             name: { en: 'Linen', el: 'Λινάρι' },
-            dotShape: 'ROUNDED',
             centerLogo: true,
             archived: true,
         });
@@ -3975,14 +3910,7 @@ Expected: FAIL, "Failed to resolve import "@/lib/adminQrCards"".
 import type { Locale } from '@/i18n/config';
 import { ApiError } from '@/lib/api/client';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
-import type {
-    AdminQrCardTemplateDto,
-    AdminQrCardTemplatePatchDto,
-    AdminQrCardTemplateRequestDto,
-    EventTypeConvention,
-    QrCornerShape,
-    QrDotShape,
-} from '@/lib/api/types';
+import type { AdminQrCardTemplateDto, AdminQrCardTemplatePatchDto, AdminQrCardTemplateRequestDto, EventTypeConvention } from '@/lib/api/types';
 import { contrastRatio } from '@/lib/contrast';
 import { isHexColor } from '@/lib/eventTheme';
 import { resolveLocalizedText } from '@/lib/localizedText';
@@ -3994,9 +3922,6 @@ export const QR_CARD_NAME_MAX = 60;
 // The code sits on a white panel; the backend rejects a code colour under this against it (3110).
 export const MIN_CODE_CONTRAST = 4.5;
 const CODE_PANEL_COLOR = '#FFFFFF';
-
-export const QR_DOT_SHAPES = ['SQUARE', 'ROUNDED', 'DOT'] as const satisfies readonly QrDotShape[];
-export const QR_CORNER_SHAPES = ['SQUARE', 'ROUNDED', 'CIRCLE'] as const satisfies readonly QrCornerShape[];
 
 export const QR_CARD_STATUS_FILTERS = ['ALL', 'LIVE', 'NO_ARTWORK', 'ARCHIVED'] as const;
 export type QrCardStatusFilter = (typeof QR_CARD_STATUS_FILTERS)[number];
@@ -4011,8 +3936,6 @@ export type QrCardTemplateDraft = {
     // '' means none: the card's own font.
     headingFontId: string;
     codeColor: string;
-    dotShape: QrDotShape;
-    cornerShape: QrCornerShape;
     centerLogo: boolean;
 };
 
@@ -4024,7 +3947,7 @@ export function codeContrastRatio(hex: string): number {
     return contrastRatio(hex, CODE_PANEL_COLOR);
 }
 
-// A new design starts as Plain looks: ink text and code, square dots and corners, the logo on.
+// A new design starts as Plain looks: ink text and code, the logo on.
 export function draftFromQrCardTemplate(template: AdminQrCardTemplateDto | null): QrCardTemplateDraft {
     return {
         nameEn: template?.name.en ?? '',
@@ -4034,8 +3957,6 @@ export function draftFromQrCardTemplate(template: AdminQrCardTemplateDto | null)
         textColor: template?.textColor ?? QR_CARD_INK,
         headingFontId: template?.headingFont?.id ?? '',
         codeColor: template?.codeColor ?? QR_CARD_INK,
-        dotShape: template?.dotShape ?? 'SQUARE',
-        cornerShape: template?.cornerShape ?? 'SQUARE',
         centerLogo: template?.centerLogo ?? true,
     };
 }
@@ -4070,8 +3991,6 @@ export function buildQrCardTemplateCreatePayload(draft: QrCardTemplateDraft, sor
         textColor: draft.textColor.toUpperCase(),
         headingFontId: draft.headingFontId || null,
         codeColor: draft.codeColor.toUpperCase(),
-        dotShape: draft.dotShape,
-        cornerShape: draft.cornerShape,
         centerLogo: draft.centerLogo,
     };
 }
@@ -4095,8 +4014,6 @@ export function buildQrCardTemplatePatchPayload(template: AdminQrCardTemplateDto
         patch.headingFontId = draft.headingFontId;
     }
     if (!sameColor(draft.codeColor, template.codeColor)) patch.codeColor = draft.codeColor.toUpperCase();
-    if (draft.dotShape !== template.dotShape) patch.dotShape = draft.dotShape;
-    if (draft.cornerShape !== template.cornerShape) patch.cornerShape = draft.cornerShape;
     if (draft.centerLogo !== template.centerLogo) patch.centerLogo = draft.centerLogo;
     return patch;
 }
@@ -4196,8 +4113,6 @@ describe('admin QR card template writes', () => {
             sortOrder: 0,
             textColor: '#241F1A',
             codeColor: '#241F1A',
-            dotShape: 'SQUARE' as const,
-            cornerShape: 'SQUARE' as const,
             centerLogo: true,
         };
         await act(() => result.current.mutateAsync(input));
@@ -4421,8 +4336,6 @@ const LINEN: AdminQrCardTemplateDto = {
     textColor: '#5A3E2B',
     headingFont: null,
     codeColor: '#1F3A5A',
-    dotShape: 'DOT',
-    cornerShape: 'CIRCLE',
     centerLogo: false,
 };
 
@@ -4480,7 +4393,6 @@ describe('useQrCardTemplateDrawer', () => {
         act(() => result.current.handleFieldChange(field('nameEn', 'Linen')));
         act(() => result.current.handleFieldChange(field('nameEl', 'Λινό')));
         act(() => result.current.handleEventTypeChange(field('eventType', 'WEDDING')));
-        act(() => result.current.handleDotShapeChange('DOT'));
         act(() => result.current.handleFileChange(fileChange(file)));
         expect(result.current.previewStyle.artworkUrl).toBe('blob:artwork');
         await act(() => result.current.handleSubmit(submitEvent()));
@@ -4492,8 +4404,6 @@ describe('useQrCardTemplateDrawer', () => {
             textColor: '#241F1A',
             headingFontId: null,
             codeColor: '#241F1A',
-            dotShape: 'DOT',
-            cornerShape: 'SQUARE',
             centerLogo: true,
         });
         expect(mocks.upload).toHaveBeenCalledWith({ id: 't1', file });
@@ -4503,10 +4413,10 @@ describe('useQrCardTemplateDrawer', () => {
     it('sends only what changed', async () => {
         mocks.patch.mockResolvedValue(LINEN);
         const { result } = renderDrawer(LINEN);
-        act(() => result.current.handleCornerShapeChange('ROUNDED'));
+        act(() => result.current.handleFieldChange(field('textColor', '#2b2b2b')));
         act(() => result.current.handleCenterLogoChange(true));
         await act(() => result.current.handleSubmit(submitEvent()));
-        expect(mocks.patch).toHaveBeenCalledWith({ id: 't1', input: { cornerShape: 'ROUNDED', centerLogo: true } });
+        expect(mocks.patch).toHaveBeenCalledWith({ id: 't1', input: { textColor: '#2B2B2B', centerLogo: true } });
     });
 
     it('closes without a request when nothing changed', async () => {
@@ -4533,8 +4443,6 @@ describe('useQrCardTemplateDrawer', () => {
             artworkUrl: LINEN.artworkUrl,
             textColor: '#241F1A',
             codeColor: '#1F3A5A',
-            dotShape: 'DOT',
-            cornerShape: 'CIRCLE',
             centerLogo: false,
         });
     });
@@ -4582,7 +4490,7 @@ import {
 } from '@/lib/adminQrCards';
 import { illustrationFileError, themeFontOptions, toggleEventType } from '@/lib/adminThemePresets';
 import { ERROR_CODES, getErrorCode, isNotFoundError } from '@/lib/api/errors';
-import type { AdminQrCardTemplateDto, EventThemeFontDto, EventTypeConvention, QrCornerShape, QrDotShape } from '@/lib/api/types';
+import type { AdminQrCardTemplateDto, EventThemeFontDto, EventTypeConvention } from '@/lib/api/types';
 import { isHexColor } from '@/lib/eventTheme';
 import { QR_CARD_INK, type QrCardStyle } from '@/lib/qrCard';
 
@@ -4664,8 +4572,6 @@ export function useQrCardTemplateDrawer({
             textColor: isHexColor(draft.textColor) ? draft.textColor : QR_CARD_INK,
             headingFont: previewFont,
             codeColor: isHexColor(draft.codeColor) ? draft.codeColor : QR_CARD_INK,
-            dotShape: draft.dotShape,
-            cornerShape: draft.cornerShape,
             centerLogo: draft.centerLogo,
         }),
         [draft, filePreviewUrl, previewFont, saved],
@@ -4681,8 +4587,6 @@ export function useQrCardTemplateDrawer({
         setDraft((current) => ({ ...current, eventTypes: toggleEventType(current.eventTypes, eventType) }));
     }, []);
 
-    const handleDotShapeChange = useCallback((dotShape: QrDotShape) => setDraft((current) => ({ ...current, dotShape })), []);
-    const handleCornerShapeChange = useCallback((cornerShape: QrCornerShape) => setDraft((current) => ({ ...current, cornerShape })), []);
     const handleCenterLogoChange = useCallback((centerLogo: boolean) => setDraft((current) => ({ ...current, centerLogo })), []);
 
     const handleAvailabilityChange = useCallback((availability: QrCardTemplateAvailability) => {
@@ -4768,8 +4672,6 @@ export function useQrCardTemplateDrawer({
         isSaving: create.isPending || patch.isPending || upload.isPending,
         handleFieldChange,
         handleEventTypeChange,
-        handleDotShapeChange,
-        handleCornerShapeChange,
         handleCenterLogoChange,
         handleAvailabilityChange,
         handleFileChange,
@@ -4833,16 +4735,6 @@ Use the `design:design-system` skill first. The panel copies the theme preset pa
                 "status": "Status",
                 "order": "Order"
             },
-            "dotShapes": {
-                "SQUARE": "Square",
-                "ROUNDED": "Rounded",
-                "DOT": "Round"
-            },
-            "cornerShapes": {
-                "SQUARE": "Square",
-                "ROUNDED": "Rounded",
-                "CIRCLE": "Circle"
-            },
             "drawer": {
                 "createTitle": "New design",
                 "close": "Close",
@@ -4869,8 +4761,6 @@ Use the `design:design-system` skill first. The panel copies the theme preset pa
                 "codeContrastOk": "Contrast {ratio}:1 on white",
                 "codeContrastLow": "Contrast {ratio}:1. Needs at least {min}:1 on white to scan, so pick a darker colour.",
                 "codeContrastInvalid": "This colour is too light to scan on white. Pick a darker one.",
-                "dotShape": "Dots",
-                "cornerShape": "Corners",
                 "centerLogo": "Logo in the middle of the code",
                 "eventTypes": "Event types",
                 "eventTypesInvalid": "Pick at least one event type.",
@@ -4927,16 +4817,6 @@ Use the `design:design-system` skill first. The panel copies the theme preset pa
                 "status": "Κατάσταση",
                 "order": "Σειρά"
             },
-            "dotShapes": {
-                "SQUARE": "Τετράγωνες",
-                "ROUNDED": "Στρογγυλεμένες",
-                "DOT": "Στρογγυλές"
-            },
-            "cornerShapes": {
-                "SQUARE": "Τετράγωνες",
-                "ROUNDED": "Στρογγυλεμένες",
-                "CIRCLE": "Κυκλικές"
-            },
             "drawer": {
                 "createTitle": "Νέο σχέδιο",
                 "close": "Κλείσιμο",
@@ -4963,8 +4843,6 @@ Use the `design:design-system` skill first. The panel copies the theme preset pa
                 "codeContrastOk": "Αντίθεση {ratio}:1 στο λευκό",
                 "codeContrastLow": "Αντίθεση {ratio}:1. Χρειάζεται τουλάχιστον {min}:1 στο λευκό για να σκανάρεται, οπότε επιλέξτε πιο σκούρο χρώμα.",
                 "codeContrastInvalid": "Αυτό το χρώμα είναι πολύ ανοιχτό για να σκανάρεται στο λευκό. Επιλέξτε πιο σκούρο.",
-                "dotShape": "Κουκκίδες",
-                "cornerShape": "Γωνίες",
                 "centerLogo": "Λογότυπο στη μέση του κωδικού",
                 "eventTypes": "Τύποι εκδήλωσης",
                 "eventTypesInvalid": "Επιλέξτε τουλάχιστον έναν τύπο εκδήλωσης.",
@@ -5075,8 +4953,6 @@ const LINEN: AdminQrCardTemplateDto = {
     textColor: '#5A3E2B',
     headingFont: null,
     codeColor: '#1F3A5A',
-    dotShape: 'DOT',
-    cornerShape: 'CIRCLE',
     centerLogo: false,
 };
 
@@ -5096,8 +4972,6 @@ function state(overrides: Record<string, unknown> = {}) {
             textColor: '#5A3E2B',
             headingFontId: '',
             codeColor: '#1F3A5A',
-            dotShape: 'DOT',
-            cornerShape: 'CIRCLE',
             centerLogo: false,
         },
         errors: {},
@@ -5116,8 +4990,6 @@ function state(overrides: Record<string, unknown> = {}) {
         isSaving: false,
         handleFieldChange: vi.fn(),
         handleEventTypeChange: vi.fn(),
-        handleDotShapeChange: vi.fn(),
-        handleCornerShapeChange: vi.fn(),
         handleCenterLogoChange: vi.fn(),
         handleAvailabilityChange: vi.fn(),
         handleFileChange: vi.fn(),
@@ -5148,16 +5020,6 @@ describe('QrCardTemplateDrawer', () => {
         state({ codeContrastRatio: 3.2 });
         renderDrawer();
         expect(screen.getByText('codeContrastLow {"ratio":"3.20","min":"4.5"}')).toBeInTheDocument();
-    });
-
-    it('picks the dot and corner shapes', () => {
-        const form = state();
-        renderDrawer();
-        fireEvent.click(screen.getByRole('button', { name: 'dotShapes.ROUNDED' }));
-        fireEvent.click(screen.getByRole('button', { name: 'cornerShapes.SQUARE' }));
-        expect(form.handleDotShapeChange).toHaveBeenCalledWith('ROUNDED');
-        expect(form.handleCornerShapeChange).toHaveBeenCalledWith('SQUARE');
-        expect(screen.getByRole('button', { name: 'dotShapes.DOT' })).toHaveAttribute('aria-pressed', 'true');
     });
 
     it('turns the logo on', () => {
@@ -5198,13 +5060,12 @@ import { useLocale, useTranslations } from 'next-intl';
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { AdminSwitch } from '@/components/admin/AdminSwitch';
-import { FunnelSegmented } from '@/components/admin/funnel/FunnelSegmented';
 import { QrCardTemplatePreview } from '@/components/admin/qrCards/QrCardTemplatePreview';
 import { ReactionTypeAvailabilityControl } from '@/components/admin/ReactionTypeAvailabilityControl';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { useQrCardTemplateDrawer } from '@/hooks/useQrCardTemplateDrawer';
-import { isQrCardDetailError, MIN_CODE_CONTRAST, QR_CARD_NAME_MAX, QR_CORNER_SHAPES, QR_DOT_SHAPES } from '@/lib/adminQrCards';
+import { isQrCardDetailError, MIN_CODE_CONTRAST, QR_CARD_NAME_MAX } from '@/lib/adminQrCards';
 import { formatContrastRatio, THEME_ILLUSTRATION_ACCEPT, type ThemeFontOption } from '@/lib/adminThemePresets';
 import { ApiError } from '@/lib/api/client';
 import type { AdminQrCardTemplateDto, EventTypeConvention } from '@/lib/api/types';
@@ -5226,7 +5087,6 @@ export function QrCardTemplateDrawer({
     onCloseAction: () => void;
 }) {
     const t = useTranslations('AdminPage.qrCards.drawer');
-    const tCards = useTranslations('AdminPage.qrCards');
     const tPreview = useTranslations('AdminPage.qrCards.preview');
     const tApi = useTranslations('ApiErrors');
     const localizedText = useLocalizedText();
@@ -5245,8 +5105,6 @@ export function QrCardTemplateDrawer({
             : t('codeContrastOk', { ratio: formatContrastRatio(form.codeContrastRatio, locale) });
     const fontHint = form.fontsStatus === 'loading' ? t('headingFontLoading') : form.fontsStatus === 'error' ? t('headingFontLoadFailed') : undefined;
     const fontLabel = (option: ThemeFontOption) => t(FONT_OPTION_LABEL_KEYS[option.status], { familyName: option.familyName, key: option.key });
-    const dotOptions = QR_DOT_SHAPES.map((shape) => ({ value: shape, label: tCards(`dotShapes.${shape}`) }));
-    const cornerOptions = QR_CORNER_SHAPES.map((shape) => ({ value: shape, label: tCards(`cornerShapes.${shape}`) }));
     // A non-ApiError is fetch failing before any response. Contrast, artwork size and name rejections
     // highlight no field: their localized detail says what's wrong instead.
     const describeServerError = (error: unknown) => {
@@ -5397,19 +5255,6 @@ export function QrCardTemplateDrawer({
                             </span>
                         )}
                     </AdminField>
-                    <div className="space-y-1.5">
-                        <p className={GROUP_LABEL_CLASS}>{t('dotShape')}</p>
-                        <FunnelSegmented label={t('dotShape')} options={dotOptions} value={form.draft.dotShape} onChangeAction={form.handleDotShapeChange} />
-                    </div>
-                    <div className="space-y-1.5">
-                        <p className={GROUP_LABEL_CLASS}>{t('cornerShape')}</p>
-                        <FunnelSegmented
-                            label={t('cornerShape')}
-                            options={cornerOptions}
-                            value={form.draft.cornerShape}
-                            onChangeAction={form.handleCornerShapeChange}
-                        />
-                    </div>
                     <AdminSwitch label={t('centerLogo')} checked={form.draft.centerLogo} onCheckedChangeAction={form.handleCenterLogoChange} />
 
                     {/* Event types */}
@@ -5469,7 +5314,7 @@ If `AdminSwitch`'s bottom border looks out of place on its own here, wrap it in 
 - [ ] **Step 6: Run the drawer test to see it pass**
 
 Run: `npx vitest run components/admin/qrCards/QrCardTemplateDrawer.test.tsx`
-Expected: PASS (6 tests). If `getByLabelText('codeColorHex')` finds two elements, `AdminField` also labels its child with the field label: query `screen.getByRole('textbox', { name: 'codeColorHex' })` instead.
+Expected: PASS (5 tests). If `getByLabelText('codeColorHex')` finds two elements, `AdminField` also labels its child with the field label: query `screen.getByRole('textbox', { name: 'codeColorHex' })` instead.
 
 - [ ] **Step 7: Write `components/admin/qrCards/QrCardTemplateRow.tsx`**
 
@@ -5980,7 +5825,7 @@ At desktop width, signed in as the platform admin:
 
 1. Turn on `qr_cards` for the local test event: add the module to that event's plan in the admin Plans tab, or follow the backend guide if it names another way.
 2. Open **QR cards** (`/admin#qr-cards`). It sits after Theme fonts in the Catalog group.
-3. Create a design: both names, the test event's type, text `#5A3E2B`, code `#777777`. The contrast hint warns and Save is refused with the inline alert. Change the code colour to `#1F3A5A`, pick Round dots, Circle corners, logo off. The preview follows each change.
+3. Create a design: both names, the test event's type, text `#5A3E2B`, code `#777777`. The contrast hint warns and Save is refused with the inline alert. Change the code colour to `#1F3A5A` and turn the logo off. The preview follows each change.
 4. Upload `square.png` and save. The drawer shows the server's 3111 detail. Upload `linen.png` and save. The row shows the thumbnail and "Offered".
 5. Make a second design and reorder with the arrows. Archive one; its pill reads "Archived" and the "Archived" filter finds it.
 6. Check a phone width for obvious overlap only (the console is desktop-first).
@@ -5990,7 +5835,7 @@ At desktop width, signed in as the platform admin:
 At phone width (`resize_window` preset `mobile`), as the event's host:
 
 1. Share links page: open a link's preview and press Print. It goes to the card page. Back returns to the share links page.
-2. The card shows Plain first and selected, the event title and "Scan to join". Pick the design. Its artwork, colours and shapes show; the title fits on two lines at most.
+2. The card shows Plain first and selected, the event title and "Scan to join". Pick the design. Its artwork and colours show, and the code has no logo; the title fits on two lines at most.
 3. If a strip or row thumbnail doesn't load and the console names the image optimizer, add `unoptimized` to that `ProtectedImage` and re-check.
 4. Edit the title and the line; the card follows. Clear the title: the card draws without one, and Save PNG still works.
 5. Gallery QR page (`tools/gallery/qr`): Print goes to the card page with "Scan to add your photos". Back returns to the gallery QR page.
@@ -6030,7 +5875,7 @@ img.style.cssText = 'position:fixed;inset:0;height:100vh;z-index:9999;background
 document.body.append(img);
 ```
 
-The screenshot must match the on-screen card: artwork, colours, dots, corners and the title in the template's font (pick a design with a heading font for this). Reload the page to remove the overlay.
+The screenshot must match the on-screen card: artwork, colours, the code and the title in the template's font (pick a design with a heading font for this). Reload the page to remove the overlay.
 
 Press **Save PDF** (after re-running the capture snippet), then:
 
@@ -6085,7 +5930,7 @@ Run the PNG and PDF checks from Step 5 in Playwright WebKit (the memory notes ha
 
 - [ ] **Step 11: Scan for real**
 
-Ask the user to scan, with a phone camera, the saved PNG on screen or printed: Plain, and the design with Round dots and Circle corners. Both must open the share link.
+Ask the user to scan, with a phone camera, the saved PNG on screen or printed: Plain, and the design with the logo off and the `#1F3A5A` code. Both must open the share link.
 
 - [ ] **Step 12: Reset the viewport**
 

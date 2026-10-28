@@ -16,7 +16,8 @@ Hosts can print their QR codes as designed A6 cards. Admins curate a catalog of 
 | Identifier | No slug. The template's UUID is its only id. |
 | Layout | Full-card artwork: one A6 portrait image per template. Title, code and lines sit on top in fixed spots. |
 | Card size | One size: A6 portrait, 105 × 148 mm. |
-| Code style per template | Code colour, dot shape, corner shape, centre logo on or off. |
+| Code style per template | Code colour, centre logo on or off. |
+| Code shapes | Dropped on 2026-10-28: no dot or corner shapes. Every code is plain squares, finder patterns included. |
 | Card text | Default title and line; the host can edit both before printing. |
 | Picking | At print time. Nothing is saved: not the template, not the text. |
 | Default selection | "Plain", always first and selected. |
@@ -51,8 +52,6 @@ Archived, never deleted.
 | `textColor` | `#RRGGBB`, upper-case, required. No server contrast check: the artwork varies, so the admin judges it in the live preview. |
 | `headingFontId` | Optional `ThemeFont`. Must exist, not be archived, and have a file. Null means the app's font. |
 | `codeColor` | `#RRGGBB`, upper-case, required. At least 4.5:1 against white (reuse `ThemeContrast`). |
-| `dotShape` | `SQUARE`, `ROUNDED` or `DOT`. |
-| `cornerShape` | `SQUARE`, `ROUNDED` or `CIRCLE`. |
 | `centerLogo` | Boolean. |
 
 A template is offered to hosts only when it is not archived and has artwork.
@@ -75,7 +74,7 @@ A template is offered to hosts only when it is not archived and has artwork.
 | `GET /api/events/{eventId}/qr-card-templates` | Anyone who can read the event's QR links, and the gift giver | `{ available, templates }`. `available` is whether the module is readable, drafts included. `templates` holds the offered templates for the event's type, sorted, and is empty when `available` is false. |
 | `GET /api/qr-card-templates/{id}/artwork/{version}` | Public | The artwork bytes, `image/png` or `image/webp`. 404 for an unknown id or a stale version. |
 
-Host DTO `QrCardTemplateDto`: `id`, `name`, `artworkUrl`, `textColor`, `headingFont` (the existing `EventThemeFontDto` shape), `codeColor`, `dotShape`, `cornerShape`, `centerLogo`.
+Host DTO `QrCardTemplateDto`: `id`, `name`, `artworkUrl`, `textColor`, `headingFont` (the existing `EventThemeFontDto` shape), `codeColor`, `centerLogo`.
 
 Why `available`: an event's `qr_cards` row says nothing reliable about its plan (events from before V184 are all switched on, newer ones follow their plan at creation), the event payload carries no plan, and a draft's `isAvailable` is always false. So the frontend can't tell from the event whether it has QR cards, and asks this endpoint instead (decided 2026-10-28).
 
@@ -96,7 +95,6 @@ Admin DTO adds `eventTypes`, `sortOrder`, `archived`, and a nullable `artworkUrl
 ### Rendering
 
 - **`lib/qrCard.ts`** (pure functions):
-  - QR grid to SVG paths for each dot shape and corner shape.
   - Text fitting: shrink the font size until the text fits its box, with a floor.
   - The default line key for each QR target type. The gift card keeps its existing "Scan to claim your gift".
   - A file name built from the title, falling back to `storywall-qr`.
@@ -107,8 +105,8 @@ Admin DTO adds `eventTypes`, `sortOrder`, `archived`, and a nullable `artworkUrl
   - Lines below the panel. The gift card stacks scan line, PIN, email and giver here.
   - An 8 mm safe margin on every side.
   - A `<title>` for screen readers.
-- **QR grid**: from `uqr`. Error correction is H when the logo is on, otherwise Q.
-- **"Plain"** is built in, not from the backend: white card, ink text, ink code, square dots and corners, logo on. It is today's look at A6. Its text uses a system sans-serif (Arial), so Plain has no font to inline when saved. A template without a heading font uses the same.
+- **QR grid**: from `uqr`. Error correction is H when the logo is on, otherwise Q. `lib/qrCardCode.ts` draws it as one SVG path of plain square modules, finder patterns included, with the logo's square cleared.
+- **"Plain"** is built in, not from the backend: white card, ink text, ink code, logo on. It is today's look at A6. Its text uses a system sans-serif (Arial), so Plain has no font to inline when saved. A template without a heading font uses the same.
 
 ### Export (`hooks/useQrCardExport.ts`)
 
@@ -173,7 +171,7 @@ Admin DTO adds `eventTypes`, `sortOrder`, `archived`, and a nullable `artworkUrl
     - `useQrCardDesigner`: the selected template, the text and the defaults.
     - `useQrCardExport`.
     - `useQrCardScreen`: the card page's data, gating and states. `useGiftCardPrint` gains the designer.
-  - Helpers: `lib/qrCardCode.ts` (the code's paths), `lib/qrCard.ts` (layout and text), `lib/qrCardExport.ts` (PNG and PDF).
+  - Helpers: `lib/qrCardCode.ts` (the code's path), `lib/qrCard.ts` (layout and text), `lib/qrCardExport.ts` (PNG and PDF).
 
 ### Admin console
 
@@ -184,7 +182,7 @@ Admin DTO adds `eventTypes`, `sortOrder`, `archived`, and a nullable `artworkUrl
   - Name (Greek and English) and event types.
   - Artwork upload, text colour and heading font from the theme font catalog.
   - Code colour, with an inline error below 4.5:1.
-  - Dot shape and corner shape as segmented controls (the existing `FunnelSegmented`). Centre logo as a switch.
+  - Centre logo as a switch.
   - Offered / Archived as the segmented control theme presets use. Archiving is undoable, so no confirmation modal (decided 2026-10-28).
 - **Live preview**: `QrCardSvg` with sample text in the admin's language.
 
@@ -202,12 +200,12 @@ Admin DTO adds `eventTypes`, `sortOrder`, `archived`, and a nullable `artworkUrl
 
 ### Frontend tests
 
-- **Path builder**: module coverage for each dot and corner shape.
-- **Scan test**: for every dot shape, corner shape, logo setting and a long URL, rasterize `QrCardSvg` with resvg, decode with jsQR, and expect the original URL.
+- **Path builder**: the path draws exactly the encoded modules, the right way round, with the logo's square cleared.
+- **Scan test**: for the logo on and off, with a short and a long URL, rasterize `QrCardSvg` with resvg, decode with jsQR, and expect the original URL.
 - **Text fitting and default lines** for each target type.
 - **Gating**: `available: false` (or loading, or failed) keeps today's print popup; `available: true` links to the card page; "Plain" is selected by default.
 - **Proxy route**: the same cases as the theme-font route test.
-- **Admin drawer**: contrast error, segmented controls, archiving through the Offered / Archived control.
+- **Admin drawer**: contrast error, the logo switch, archiving through the Offered / Archived control.
 - **Manual check**: phone and desktop in the browser, plus a real phone scan of a printed or exported card.
 
 ### SEO
