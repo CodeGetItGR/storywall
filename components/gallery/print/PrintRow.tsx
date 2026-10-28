@@ -53,7 +53,7 @@ export function PrintRow({
                         mediaType={media.mediaType}
                         status={media.status}
                         thumbnailUrl={media.thumbnailUrl}
-                        alt=""
+                        alt={media.originalFilename}
                         fill
                         sizes="56px"
                         className="object-cover"
