@@ -23,7 +23,7 @@
 | `J/model/event/ModuleKey.java` | Add `QR_CARDS`, plus `isOptInPerPlan(String)` shared by the three "not on a plan by default" checks. |
 | `J/config/PlanCatalogBootstrap.java` | Module name; leave `qr_cards` off seeded plans. |
 | `J/service/platform/PlanTierService.java` | Leave `qr_cards` off new and cloned plans. |
-| `src/main/resources/db/migration/V184__qr_card_templates.sql` | Tables and module rows. |
+| `src/main/resources/db/migration/V185__qr_card_templates.sql` | Tables and module rows. |
 | `J/model/qrcard/QrDotShape.java`, `QrCornerShape.java`, `QrCardTemplate.java` | Entity and shape enums. |
 | `J/repository/qrcard/QrCardTemplateRepository.java` | Queries. |
 | `J/exception/ErrorCode.java`, `J/exception/QrCardCodeContrastException.java` | New codes 3110, 3111. |
@@ -192,7 +192,7 @@ Replace the plan loop's condition and comment:
 ```java
                 for (ModuleKey key : ModuleKey.values()) {
                     // A plan lists only what its event type supports (theme is UNSUPPORTED for most).
-                    // Vendors and QR cards are on no plan until an admin turns them on (V176, V184), and
+                    // Vendors and QR cards are on no plan until an admin turns them on (V176, V185), and
                     // Quiz & Polls is on none until it is ready (V181).
                     if (!ModuleKey.isOptInPerPlan(key.getKey()) && key != ModuleKey.QUIZ_POLLS
                             && EventTypeModuleDefaults.supports(definition.eventTypeKey(), key)) {
@@ -239,7 +239,7 @@ git commit -m "feat(qr-cards): add the qr_cards module, off every plan by defaul
 ### Task 2: Flyway migration
 
 **Files:**
-- Create: `src/main/resources/db/migration/V184__qr_card_templates.sql`
+- Create: `src/main/resources/db/migration/V185__qr_card_templates.sql`
 - Test: `T/migration/QrCardsMigrationTest.java`
 
 - [ ] **Step 1: Write the migration**
@@ -396,7 +396,7 @@ Expected: FAIL with `ddl-auto=validate` complaining that `qr_card_templates` has
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/main/resources/db/migration/V184__qr_card_templates.sql src/test/java/event_social_media/migration/QrCardsMigrationTest.java
+git add src/main/resources/db/migration/V185__qr_card_templates.sql src/test/java/event_social_media/migration/QrCardsMigrationTest.java
 git commit -m "feat(qr-cards): add the qr_card_templates tables and seed the module"
 ```
 

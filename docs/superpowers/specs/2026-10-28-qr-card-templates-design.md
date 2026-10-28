@@ -76,7 +76,7 @@ A template is offered to hosts only when it is not archived and has artwork.
 
 Host DTO `QrCardTemplateDto`: `id`, `name`, `artworkUrl`, `textColor`, `headingFont` (the existing `EventThemeFontDto` shape), `codeColor`, `centerLogo`.
 
-Why `available`: an event's `qr_cards` row says nothing reliable about its plan (events from before V184 are all switched on, newer ones follow their plan at creation), the event payload carries no plan, and a draft's `isAvailable` is always false. So the frontend can't tell from the event whether it has QR cards, and asks this endpoint instead (decided 2026-10-28).
+Why `available`: an event's `qr_cards` row says nothing reliable about its plan (events from before V185 are all switched on, newer ones follow their plan at creation), the event payload carries no plan, and a draft's `isAvailable` is always false. So the frontend can't tell from the event whether it has QR cards, and asks this endpoint instead (decided 2026-10-28).
 
 Admin DTO adds `eventTypes`, `sortOrder`, `archived`, and a nullable `artworkUrl`. It uses the theme presets' `ThemePresetAdminDto.ThemeFontSummary` for the font.
 
