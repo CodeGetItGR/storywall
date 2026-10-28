@@ -10,6 +10,7 @@ import { BugReportsPanel } from '@/components/admin/betaFeedback/BugReportsPanel
 import { ErrorEventsPanel } from '@/components/admin/betaFeedback/ErrorEventsPanel';
 import { BillingOpsPanel } from '@/components/admin/BillingOpsPanel';
 import { CampaignsPanel } from '@/components/admin/campaigns/CampaignsPanel';
+import { CampaignOverviewPanel } from '@/components/admin/campaigns/overview/CampaignOverviewPanel';
 import { CollaborationsSection } from '@/components/admin/collaborations/CollaborationsSection';
 import { CostTrackingPanel } from '@/components/admin/CostTrackingPanel';
 import { DemoEventsSection } from '@/components/admin/demoEvents/DemoEventsSection';
@@ -38,6 +39,7 @@ export function AdminConsole() {
     if (tab === 'metrics') return <PlatformMetricsPanel />;
     if (tab === 'funnel') return <FunnelPanel />;
     if (tab === 'visitors') return <VisitorsPanel />;
+    if (tab === 'campaignOverview') return <CampaignOverviewPanel />;
     if (tab === 'campaigns') return <CampaignsPanel />;
     if (tab === 'moduleUsage') return <ModuleUsagePanel />;
     if (tab === 'paidServices') return <PaidServicesCatalogPanel />;

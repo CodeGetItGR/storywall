@@ -4,6 +4,7 @@ import {
     BarChart3,
     Bug,
     CalendarDays,
+    ChartLine,
     ChartNoAxesCombined,
     Flag,
     Footprints,
@@ -63,6 +64,7 @@ export type AdminTab =
     | 'bugReports'
     | 'errorEvents'
     | 'appReviews'
+    | 'campaignOverview'
     | 'campaigns'
     | 'siteNotices';
 
@@ -107,6 +109,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#bug-reports': 'bugReports',
     '#errors': 'errorEvents',
     '#reviews': 'appReviews',
+    '#campaign-overview': 'campaignOverview',
     '#campaigns': 'campaigns',
     '#site-notices': 'siteNotices',
 };
@@ -131,6 +134,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     orders: ORDERS_HASH_ROOT,
     withdrawals: WITHDRAWALS_HASH_ROOT,
     accounts: '#accounts',
+    campaignOverview: '#campaign-overview',
     campaigns: '#campaigns',
     reports: '#reports',
     bugReports: '#bug-reports',
@@ -218,6 +222,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'paidServices', label: t('paidServices'), icon: PackagePlus },
             { key: 'discountCodes', label: t('discountCodes'), icon: TicketPercent },
             { key: 'appReviews', label: t('appReviews'), icon: Star },
+            { key: 'campaignOverview', label: t('campaignOverview'), icon: ChartLine },
             { key: 'campaigns', label: t('campaigns'), icon: Link2 },
             { key: 'collaborations', label: t('collaborations'), icon: Handshake },
             { key: 'partnerCards', label: t('partnerCards'), icon: GalleryVerticalEnd },

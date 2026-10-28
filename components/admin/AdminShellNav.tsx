@@ -18,6 +18,7 @@ const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operat
     paidServices: 'catalog',
     discountCodes: 'marketing',
     appReviews: 'marketing',
+    campaignOverview: 'marketing',
     campaigns: 'marketing',
     collaborations: 'operations',
     partnerCards: 'operations',
