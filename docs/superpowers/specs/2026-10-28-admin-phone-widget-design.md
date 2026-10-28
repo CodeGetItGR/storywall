@@ -67,7 +67,7 @@ Device key (`/api/device/**`):
 Admin JWT (`/api/admin/**`, `ROLE_ADMIN`):
 
 - `GET /api/admin/devices` lists every device of the calling admin that is not revoked.
-- `POST /api/admin/devices` with `{ "name": "…" }` creates a device and returns it once with its key and the pairing payload.
+- `POST /api/admin/devices` with `{ "name": "…" }` creates a device and returns it with its key, once. The website builds the pairing payload from the key.
 - `DELETE /api/admin/devices/{id}` revokes it.
 - `POST /api/admin/devices/{id}/test-notification` sends a test push (build step 3).
 
@@ -81,7 +81,7 @@ All day boundaries use `Europe/Athens`. Each number comes from the service the a
 | | `unprocessedWebhooks` | Count of the list `GET /api/admin/webhooks/unprocessed` returns |
 | | `openReports` | Open moderation cases, the same count as the moderation queue |
 | | `bugReports24h` | Bug reports created in the last 24 hours |
-| | `errors24h` | Error events recorded in the last 24 hours |
+| | `errors24h` | Distinct errors seen in the last 24 hours, leaving out 4xx rejections; a repeat counts once, as on the Errors screen |
 | Sales | `today` | Paid orders and net revenue per currency since 00:00 today, from the funnel service's paid-events and revenue figures for that range |
 | | `week` | Net revenue per currency from Monday 00:00 to now, same source |
 | Growth | `signUpsToday` | The funnel's `signedUp` for today |
@@ -190,7 +190,7 @@ Before step 3, the admin:
 ## Testing
 
 - **Spring:**
-  - Device filter: valid key, revoked key, owner no longer an admin, and that a device key gets 403 on `/api/admin/**`.
+  - Device filter: valid key, revoked key, owner no longer an admin, and that a device key gets 401 on `/api/admin/**` and other paths (the filter never reads it there).
   - Summary: each field against seeded data, and a failing source returns `null` while the rest still returns.
   - Each trigger sends exactly one push, and none when push is off.
   - Skipped cases: admin-settled orders, a second report on an open case.
