@@ -2897,7 +2897,8 @@
             "demoEvents": "Demo events",
             "partnerCards": "Partner cards",
             "siteNotices": "Site notices",
-            "campaigns": "Campaigns"
+            "campaigns": "Campaigns",
+            "campaignOverview": "Campaign overview"
         },
         "demoEvents": {
             "title": "Demo events",
@@ -5241,17 +5242,23 @@
             "create": "New link",
             "createTitle": "New campaign link",
             "saveLink": "Save link",
-            "rangeNote": "Counts accounts that signed up in this range.",
+            "rangeNote": "Counts visits and sign-ups in this range.",
             "empty": "No campaigns yet.",
             "notSaved": "Not saved",
             "delete": "Delete link",
             "deleteTitle": "Delete this link?",
-            "deleteBody": "The link keeps working and its sign-ups still count. It only loses its name here.",
+            "deleteBody": "The link keeps working. Its past numbers and new sign-ups still count, but new visits don't.",
             "deleteConfirm": "Delete",
+            "statsError": "Couldn't load this link's numbers.",
             "columns": {
                 "name": "Name",
                 "source": "Source / medium",
                 "campaign": "Campaign",
+                "visits": "Visits",
+                "visitors": "Visitors",
+                "createClicks": "Create",
+                "plansClicks": "Plans",
+                "planPicks": "Plan picked",
                 "signedUp": "Sign-ups",
                 "createdEvent": "Created an event",
                 "paidHost": "Paid",
@@ -5304,6 +5311,30 @@
                 "copied": "Copied",
                 "downloadQr": "Download QR",
                 "qr": "QR code for this link"
+            }
+        },
+        "campaignOverview": {
+            "title": "Campaign overview",
+            "rangeNote": "Counts visits from saved links and sign-ups in this range.",
+            "empty": "No campaign visits in this range.",
+            "error": "Couldn't load the campaign overview.",
+            "retry": "Try again",
+            "tiles": {
+                "title": "Funnel",
+                "visits": "Visits",
+                "visitors": "Visitors",
+                "createClicks": "Create clicks",
+                "plansClicks": "See plans clicks",
+                "planPicks": "Plan picked",
+                "signedUp": "Sign-ups",
+                "paidHost": "Paid",
+                "revenue": "Revenue",
+                "share": "{rate} of visitors"
+            },
+            "splits": {
+                "title": "Language and device",
+                "language": "Language",
+                "device": "Device"
             }
         },
         "siteNotices": {
