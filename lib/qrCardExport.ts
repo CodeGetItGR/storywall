@@ -26,16 +26,17 @@ export async function standaloneQrCardSvg(svg: SVGSVGElement, font: EventThemeFo
     copy.setAttribute('width', String(QR_CARD_EXPORT_WIDTH));
     copy.setAttribute('height', String(QR_CARD_EXPORT_HEIGHT));
     copy.removeAttribute('class');
-    await Promise.all(
-        [...copy.querySelectorAll('image')].map(async (image) => {
+    const css = themeFontFaceCss(font);
+    const [fontUri] = await Promise.all([
+        css && font ? toDataUri(font.url) : null,
+        ...[...copy.querySelectorAll('image')].map(async (image) => {
             const href = image.getAttribute('href');
             if (href && !href.startsWith('data:')) image.setAttribute('href', await toDataUri(href));
         }),
-    );
-    const css = themeFontFaceCss(font);
-    if (css && font) {
+    ]);
+    if (css && font && fontUri) {
         const style = document.createElementNS(SVG_NS, 'style');
-        style.textContent = css.replace(font.url, await toDataUri(font.url));
+        style.textContent = css.replace(font.url, fontUri);
         copy.insertBefore(style, copy.firstChild);
     }
     return new XMLSerializer().serializeToString(copy);

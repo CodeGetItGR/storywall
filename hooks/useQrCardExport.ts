@@ -1,5 +1,6 @@
 'use client';
 
+import * as Sentry from '@sentry/nextjs';
 import { useCallback, useRef, useState } from 'react';
 
 import type { EventThemeFontDto } from '@/lib/api/types';
@@ -28,7 +29,8 @@ export function useQrCardExport({ font, title }: { font: EventThemeFontDto | nul
                 const file =
                     format === 'png' ? png : new Blob([new Uint8Array(await qrCardPdfBytes(await png.arrayBuffer()))], { type: 'application/pdf' });
                 saveBlob(file, qrCardFileName(title, format));
-            } catch {
+            } catch (error) {
+                Sentry.captureException(error);
                 setFailed(true);
             } finally {
                 running.current = false;
