@@ -6327,14 +6327,17 @@
             "moreLabel": "More ways to use StoryWall",
             "moreStories": [
                 {
+                    "imageAlt": "Woman in a black party dress holding a birthday cake",
                     "label": "BIRTHDAYS",
                     "text": "Your night, your friends, and every moment gathered in one StoryWall."
                 },
                 {
+                    "imageAlt": "Pregnant woman with two friends and pink and blue balloons",
                     "label": "BABY SHOWERS",
                     "text": "A sweet story before the big arrival, filled with wishes, photos, and moments with your people."
                 },
                 {
+                    "imageAlt": "Couple cheering with their guests under a lit arch at night",
                     "label": "ENGAGEMENT PARTIES",
                     "text": "The beginning of forever deserves its own space, from the first cheers to the last photo."
                 }
