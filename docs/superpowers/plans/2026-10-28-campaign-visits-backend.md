@@ -162,7 +162,7 @@ CREATE TABLE campaign_visit_salts (
 
 CREATE TABLE campaign_visitor_days (
     day             DATE        NOT NULL,
-    visitor_key     CHAR(64)    NOT NULL,
+    visitor_key     VARCHAR(64) NOT NULL,
     link_id         UUID        NOT NULL,
     last_arrival_at TIMESTAMPTZ NOT NULL,
     clicked_create  BOOLEAN     NOT NULL DEFAULT FALSE,

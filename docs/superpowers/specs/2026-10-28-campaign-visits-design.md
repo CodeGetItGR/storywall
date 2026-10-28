@@ -100,7 +100,7 @@ database.
 One Flyway migration (the next free number):
 
 - `campaign_visit_salts` — `day date primary key`, `salt bytea not null`. Only today's row is kept.
-- `campaign_visitor_days` — today's working state: `day date`, `visitor_key char(64)`,
+- `campaign_visitor_days` — today's working state: `day date`, `visitor_key varchar(64)`,
   `link_id uuid`, `last_arrival_at timestamptz`, `clicked_create`, `clicked_plans`, `clicked_plan`
   (booleans). Primary key `(day, visitor_key, link_id)`. Rows from earlier days are deleted.
 - `campaign_visit_events` — the counts, kept for good: `id uuid`, `kind varchar(10)`
