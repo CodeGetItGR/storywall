@@ -34,6 +34,21 @@ describe('fitText', () => {
         expect(fitted.lines.join('')).toBe('x'.repeat(60));
     });
 
+    it.each(['ΑΛΕΞΑΝΔΡΟΠΟΥΛΟΣ', 'Παπαδοπούλου-Αλεξανδρόπουλου'])('shrinks the long word %s instead of splitting it', (word) => {
+        const fitted = fitText(word, QR_CARD_TITLE_BOX);
+        expect(fitted.lines).toEqual([word]);
+        expect(fitted.fontSize).toBeLessThan(QR_CARD_TITLE_BOX.maxSize);
+        expect(fitted.fontSize).toBeGreaterThanOrEqual(QR_CARD_TITLE_BOX.minSize);
+    });
+
+    it('keeps words whole while a smaller size makes them fit, and only breaks them at the smallest size', () => {
+        expect(fitText('Anna ΑΛΕΞΑΝΔΡΟΠΟΥΛΟΣ', QR_CARD_TITLE_BOX).lines).toEqual(['Anna', 'ΑΛΕΞΑΝΔΡΟΠΟΥΛΟΣ']);
+        const broken = fitText('Χ'.repeat(40), QR_CARD_TITLE_BOX);
+        expect(broken.fontSize).toBe(QR_CARD_TITLE_BOX.minSize);
+        expect(broken.lines.length).toBeGreaterThan(1);
+        expect(broken.lines.join('')).toBe('Χ'.repeat(40));
+    });
+
     it('ends on an ellipsis when even the smallest size runs over', () => {
         const fitted = fitText('word '.repeat(80), QR_CARD_LINE_BOXES.body);
         expect(fitted.fontSize).toBe(3.5);
@@ -46,8 +61,46 @@ describe('fitText', () => {
         for (const line of fitted.lines) expect(estimateTextWidth(line, fitted.fontSize)).toBeLessThanOrEqual(QR_CARD_TITLE_BOX.width);
     });
 
+    it.each(['MW'.repeat(10), 'ΜΩ'.repeat(10), 'ΟΦΨΜΩ'.repeat(4), 'm&w@'.repeat(8)])('fits wide bold glyphs inside the text width: %s', (title) => {
+        const fitted = fitText(title, QR_CARD_TITLE_BOX);
+        expect(fitted.lines.length).toBeLessThanOrEqual(QR_CARD_TITLE_BOX.maxLines);
+        for (const line of fitted.lines) expect(estimateTextWidth(line, fitted.fontSize)).toBeLessThanOrEqual(QR_CARD_TITLE_BOX.width);
+    });
+
     it('draws nothing for blank text', () => {
         expect(fitText('   ', QR_CARD_TITLE_BOX).lines).toEqual([]);
+    });
+});
+
+// Advance widths of bold Arial as a share of the font size.
+const BOLD_ARIAL_EM = {
+    M: 0.833,
+    W: 0.944,
+    O: 0.778,
+    G: 0.778,
+    Q: 0.778,
+    m: 0.889,
+    w: 0.778,
+    '&': 0.722,
+    '@': 0.975,
+    Μ: 0.833,
+    Ο: 0.778,
+    Ω: 0.8,
+    Φ: 0.778,
+    Ψ: 0.778,
+    ω: 0.778,
+};
+
+describe('estimateTextWidth', () => {
+    it.each(Object.entries(BOLD_ARIAL_EM))('is no narrower than bold Arial for %s', (char, em) => {
+        expect(estimateTextWidth(char.repeat(10), 1)).toBeGreaterThanOrEqual(em * 10);
+    });
+
+    it('is no narrower than bold Arial for wide strings', () => {
+        for (const text of ['MWMWMW', 'ΜΩΜΩΜΩ', 'Mm W&w @OΦ']) {
+            const real = [...text].reduce((sum, char) => sum + (char === ' ' ? 0.278 : BOLD_ARIAL_EM[char as keyof typeof BOLD_ARIAL_EM]), 0);
+            expect(estimateTextWidth(text, 1)).toBeGreaterThanOrEqual(real);
+        }
     });
 });
 
@@ -74,7 +127,12 @@ describe('layoutLines', () => {
     });
 
     it('leaves out empty lines', () => {
-        expect(layoutLines([{ text: '  ', tone: 'body' }, { text: 'Eleni', tone: 'strong' }]).map((line) => line.tone)).toEqual(['strong']);
+        expect(
+            layoutLines([
+                { text: '  ', tone: 'body' },
+                { text: 'Eleni', tone: 'strong' },
+            ]).map((line) => line.tone),
+        ).toEqual(['strong']);
     });
 });
 
@@ -99,6 +157,17 @@ describe('qrCardFileName', () => {
         ['   ', 'pdf', 'storywall-qr.pdf'],
     ] as const)('names %s', (title, extension, expected) => {
         expect(qrCardFileName(title, extension)).toBe(expected);
+    });
+
+    it('cuts at 60 characters without splitting an emoji', () => {
+        const name = qrCardFileName(`${'a'.repeat(59)}😀`, 'png');
+        expect(name).toBe(`${'a'.repeat(59)}😀.png`);
+        expect(qrCardFileName(`${'a'.repeat(60)}😀`, 'png')).toBe(`${'a'.repeat(60)}.png`);
+        expect(name).not.toMatch(/\p{Surrogate}/u);
+    });
+
+    it('drops a dash left at the cut', () => {
+        expect(qrCardFileName(`${'a'.repeat(59)} b`, 'png')).toBe(`${'a'.repeat(59)}.png`);
     });
 });
 

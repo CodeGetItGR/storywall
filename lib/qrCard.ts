@@ -66,7 +66,17 @@ export type QrCardLineTone = 'body' | 'strong' | 'code' | 'small';
 export type QrCardLine = { text: string; tone: QrCardLineTone };
 
 // The gift card's stack under the code. pin and email come already worded; null leaves the line out.
-export function giftQrCardLines({ line, pin, email, giver }: { line: string; pin: string | null; email: string | null; giver: string }): QrCardLine[] {
+export function giftQrCardLines({
+    line,
+    pin,
+    email,
+    giver,
+}: {
+    line: string;
+    pin: string | null;
+    email: string | null;
+    giver: string;
+}): QrCardLine[] {
     const lines: QrCardLine[] = [{ text: line, tone: 'body' }];
     if (pin) lines.push({ text: pin, tone: 'code' });
     if (email) lines.push({ text: email, tone: 'small' });
@@ -107,10 +117,16 @@ function round(value: number): number {
     return Math.round(value * 1000) / 1000;
 }
 
-// Rough advance widths as a share of the font size, on the wide side so a line never spills.
+// Bold Arial's widest glyphs (M 0.83, W 0.94, O 0.78, m 0.89, & 0.72, @ 0.98 em, plus their Greek and Cyrillic kin).
+const WIDE_CHARS = new Set([...'MWOGQ@&mwΜΘΟΦΨΩωψφШЩЖЮЫМ']);
+const WIDE_CHAR_WIDTH = 1;
+
+// Rough advance widths as a share of the font size, a little over bold Arial's so a line never spills.
+// A custom heading font is not measured; this margin is its only protection.
 function charWidth(char: string): number {
     if (char === ' ') return 0.32;
-    return char !== char.toLocaleLowerCase() ? 0.74 : 0.6;
+    if (WIDE_CHARS.has(char)) return WIDE_CHAR_WIDTH;
+    return char !== char.toLocaleLowerCase() ? 0.74 : 0.615;
 }
 
 export function estimateTextWidth(text: string, size: number, mono = false): number {
@@ -140,11 +156,12 @@ function breakWord(word: string, size: number, box: TextBox): string[] {
     return pieces;
 }
 
-function wrap(text: string, size: number, box: TextBox): string[] {
+// Wraps on spaces. A word wider than the box is split only when breakWords is set, otherwise it keeps a line to itself.
+function wrap(text: string, size: number, box: TextBox, breakWords: boolean): string[] {
     const lines: string[] = [];
     let line = '';
     for (const word of text.split(' ')) {
-        for (const piece of breakWord(word, size, box)) {
+        for (const piece of breakWords ? breakWord(word, size, box) : [word]) {
             const candidate = line ? `${line} ${piece}` : piece;
             if (fits(candidate, size, box)) {
                 line = candidate;
@@ -169,16 +186,16 @@ function clamp(lines: string[], size: number, box: TextBox): string[] {
 
 export type FittedText = { lines: string[]; fontSize: number };
 
-// The largest size, in SIZE_STEP steps, at which the text wraps into the box's lines. At the smallest
-// size, whatever still runs over ends on an ellipsis.
+// The largest size, in SIZE_STEP steps, at which the text wraps into the box's lines with every word whole.
+// Only at the smallest size are long words broken, and whatever still runs over ends on an ellipsis.
 export function fitText(text: string, box: TextBox): FittedText {
     const clean = text.trim().replace(/\s+/g, ' ');
     if (!clean) return { lines: [], fontSize: box.maxSize };
     for (let size = box.maxSize; size > box.minSize; size = round(size - SIZE_STEP)) {
-        const lines = wrap(clean, size, box);
-        if (lines.length <= box.maxLines) return { lines, fontSize: size };
+        const lines = wrap(clean, size, box, false);
+        if (lines.length <= box.maxLines && lines.every((line) => fits(line, size, box))) return { lines, fontSize: size };
     }
-    return { lines: clamp(wrap(clean, box.minSize, box), box.minSize, box), fontSize: box.minSize };
+    return { lines: clamp(wrap(clean, box.minSize, box, true), box.minSize, box), fontSize: box.minSize };
 }
 
 export type PlacedText = FittedText & { baselines: number[] };
@@ -231,10 +248,11 @@ export function layoutLines(lines: QrCardLine[]): PlacedLine[] {
 
 // "Maria & Nikos" → "Maria-&-Nikos.png". Characters file systems refuse are dropped.
 export function qrCardFileName(title: string, extension: 'png' | 'pdf'): string {
-    const base = title
+    const clean = title
         .replace(/[\\/:*?"<>|\p{Cc}]/gu, '')
         .trim()
-        .replace(/\s+/g, '-')
-        .slice(0, 60);
+        .replace(/\s+/g, '-');
+    // Cut by code point so an emoji is never split, then drop a dash left at the cut.
+    const base = [...clean].slice(0, 60).join('').replace(/-+$/, '');
     return `${base || 'storywall-qr'}.${extension}`;
 }

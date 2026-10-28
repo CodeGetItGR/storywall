@@ -561,6 +561,21 @@ describe('fitText', () => {
         expect(fitted.lines.join('')).toBe('x'.repeat(60));
     });
 
+    it.each(['ΑΛΕΞΑΝΔΡΟΠΟΥΛΟΣ', 'Παπαδοπούλου-Αλεξανδρόπουλου'])('shrinks the long word %s instead of splitting it', (word) => {
+        const fitted = fitText(word, QR_CARD_TITLE_BOX);
+        expect(fitted.lines).toEqual([word]);
+        expect(fitted.fontSize).toBeLessThan(QR_CARD_TITLE_BOX.maxSize);
+        expect(fitted.fontSize).toBeGreaterThanOrEqual(QR_CARD_TITLE_BOX.minSize);
+    });
+
+    it('keeps words whole while a smaller size makes them fit, and only breaks them at the smallest size', () => {
+        expect(fitText('Anna ΑΛΕΞΑΝΔΡΟΠΟΥΛΟΣ', QR_CARD_TITLE_BOX).lines).toEqual(['Anna', 'ΑΛΕΞΑΝΔΡΟΠΟΥΛΟΣ']);
+        const broken = fitText('Χ'.repeat(40), QR_CARD_TITLE_BOX);
+        expect(broken.fontSize).toBe(QR_CARD_TITLE_BOX.minSize);
+        expect(broken.lines.length).toBeGreaterThan(1);
+        expect(broken.lines.join('')).toBe('Χ'.repeat(40));
+    });
+
     it('ends on an ellipsis when even the smallest size runs over', () => {
         const fitted = fitText('word '.repeat(80), QR_CARD_LINE_BOXES.body);
         expect(fitted.fontSize).toBe(3.5);
@@ -573,8 +588,46 @@ describe('fitText', () => {
         for (const line of fitted.lines) expect(estimateTextWidth(line, fitted.fontSize)).toBeLessThanOrEqual(QR_CARD_TITLE_BOX.width);
     });
 
+    it.each(['MW'.repeat(10), 'ΜΩ'.repeat(10), 'ΟΦΨΜΩ'.repeat(4), 'm&w@'.repeat(8)])('fits wide bold glyphs inside the text width: %s', (title) => {
+        const fitted = fitText(title, QR_CARD_TITLE_BOX);
+        expect(fitted.lines.length).toBeLessThanOrEqual(QR_CARD_TITLE_BOX.maxLines);
+        for (const line of fitted.lines) expect(estimateTextWidth(line, fitted.fontSize)).toBeLessThanOrEqual(QR_CARD_TITLE_BOX.width);
+    });
+
     it('draws nothing for blank text', () => {
         expect(fitText('   ', QR_CARD_TITLE_BOX).lines).toEqual([]);
+    });
+});
+
+// Advance widths of bold Arial as a share of the font size.
+const BOLD_ARIAL_EM = {
+    M: 0.833,
+    W: 0.944,
+    O: 0.778,
+    G: 0.778,
+    Q: 0.778,
+    m: 0.889,
+    w: 0.778,
+    '&': 0.722,
+    '@': 0.975,
+    Μ: 0.833,
+    Ο: 0.778,
+    Ω: 0.8,
+    Φ: 0.778,
+    Ψ: 0.778,
+    ω: 0.778,
+};
+
+describe('estimateTextWidth', () => {
+    it.each(Object.entries(BOLD_ARIAL_EM))('is no narrower than bold Arial for %s', (char, em) => {
+        expect(estimateTextWidth(char.repeat(10), 1)).toBeGreaterThanOrEqual(em * 10);
+    });
+
+    it('is no narrower than bold Arial for wide strings', () => {
+        for (const text of ['MWMWMW', 'ΜΩΜΩΜΩ', 'Mm W&w @OΦ']) {
+            const real = [...text].reduce((sum, char) => sum + (char === ' ' ? 0.278 : BOLD_ARIAL_EM[char as keyof typeof BOLD_ARIAL_EM]), 0);
+            expect(estimateTextWidth(text, 1)).toBeGreaterThanOrEqual(real);
+        }
     });
 });
 
@@ -601,7 +654,12 @@ describe('layoutLines', () => {
     });
 
     it('leaves out empty lines', () => {
-        expect(layoutLines([{ text: '  ', tone: 'body' }, { text: 'Eleni', tone: 'strong' }]).map((line) => line.tone)).toEqual(['strong']);
+        expect(
+            layoutLines([
+                { text: '  ', tone: 'body' },
+                { text: 'Eleni', tone: 'strong' },
+            ]).map((line) => line.tone),
+        ).toEqual(['strong']);
     });
 });
 
@@ -626,6 +684,17 @@ describe('qrCardFileName', () => {
         ['   ', 'pdf', 'storywall-qr.pdf'],
     ] as const)('names %s', (title, extension, expected) => {
         expect(qrCardFileName(title, extension)).toBe(expected);
+    });
+
+    it('cuts at 60 characters without splitting an emoji', () => {
+        const name = qrCardFileName(`${'a'.repeat(59)}😀`, 'png');
+        expect(name).toBe(`${'a'.repeat(59)}😀.png`);
+        expect(qrCardFileName(`${'a'.repeat(60)}😀`, 'png')).toBe(`${'a'.repeat(60)}.png`);
+        expect(name).not.toMatch(/\p{Surrogate}/u);
+    });
+
+    it('drops a dash left at the cut', () => {
+        expect(qrCardFileName(`${'a'.repeat(59)} b`, 'png')).toBe(`${'a'.repeat(59)}.png`);
     });
 });
 
@@ -732,7 +801,17 @@ export type QrCardLineTone = 'body' | 'strong' | 'code' | 'small';
 export type QrCardLine = { text: string; tone: QrCardLineTone };
 
 // The gift card's stack under the code. pin and email come already worded; null leaves the line out.
-export function giftQrCardLines({ line, pin, email, giver }: { line: string; pin: string | null; email: string | null; giver: string }): QrCardLine[] {
+export function giftQrCardLines({
+    line,
+    pin,
+    email,
+    giver,
+}: {
+    line: string;
+    pin: string | null;
+    email: string | null;
+    giver: string;
+}): QrCardLine[] {
     const lines: QrCardLine[] = [{ text: line, tone: 'body' }];
     if (pin) lines.push({ text: pin, tone: 'code' });
     if (email) lines.push({ text: email, tone: 'small' });
@@ -773,10 +852,16 @@ function round(value: number): number {
     return Math.round(value * 1000) / 1000;
 }
 
-// Rough advance widths as a share of the font size, on the wide side so a line never spills.
+// Bold Arial's widest glyphs (M 0.83, W 0.94, O 0.78, m 0.89, & 0.72, @ 0.98 em, plus their Greek and Cyrillic kin).
+const WIDE_CHARS = new Set([...'MWOGQ@&mwΜΘΟΦΨΩωψφШЩЖЮЫМ']);
+const WIDE_CHAR_WIDTH = 1;
+
+// Rough advance widths as a share of the font size, a little over bold Arial's so a line never spills.
+// A custom heading font is not measured; this margin is its only protection.
 function charWidth(char: string): number {
     if (char === ' ') return 0.32;
-    return char !== char.toLocaleLowerCase() ? 0.74 : 0.6;
+    if (WIDE_CHARS.has(char)) return WIDE_CHAR_WIDTH;
+    return char !== char.toLocaleLowerCase() ? 0.74 : 0.615;
 }
 
 export function estimateTextWidth(text: string, size: number, mono = false): number {
@@ -806,11 +891,12 @@ function breakWord(word: string, size: number, box: TextBox): string[] {
     return pieces;
 }
 
-function wrap(text: string, size: number, box: TextBox): string[] {
+// Wraps on spaces. A word wider than the box is split only when breakWords is set, otherwise it keeps a line to itself.
+function wrap(text: string, size: number, box: TextBox, breakWords: boolean): string[] {
     const lines: string[] = [];
     let line = '';
     for (const word of text.split(' ')) {
-        for (const piece of breakWord(word, size, box)) {
+        for (const piece of breakWords ? breakWord(word, size, box) : [word]) {
             const candidate = line ? `${line} ${piece}` : piece;
             if (fits(candidate, size, box)) {
                 line = candidate;
@@ -835,16 +921,16 @@ function clamp(lines: string[], size: number, box: TextBox): string[] {
 
 export type FittedText = { lines: string[]; fontSize: number };
 
-// The largest size, in SIZE_STEP steps, at which the text wraps into the box's lines. At the smallest
-// size, whatever still runs over ends on an ellipsis.
+// The largest size, in SIZE_STEP steps, at which the text wraps into the box's lines with every word whole.
+// Only at the smallest size are long words broken, and whatever still runs over ends on an ellipsis.
 export function fitText(text: string, box: TextBox): FittedText {
     const clean = text.trim().replace(/\s+/g, ' ');
     if (!clean) return { lines: [], fontSize: box.maxSize };
     for (let size = box.maxSize; size > box.minSize; size = round(size - SIZE_STEP)) {
-        const lines = wrap(clean, size, box);
-        if (lines.length <= box.maxLines) return { lines, fontSize: size };
+        const lines = wrap(clean, size, box, false);
+        if (lines.length <= box.maxLines && lines.every((line) => fits(line, size, box))) return { lines, fontSize: size };
     }
-    return { lines: clamp(wrap(clean, box.minSize, box), box.minSize, box), fontSize: box.minSize };
+    return { lines: clamp(wrap(clean, box.minSize, box, true), box.minSize, box), fontSize: box.minSize };
 }
 
 export type PlacedText = FittedText & { baselines: number[] };
@@ -897,11 +983,12 @@ export function layoutLines(lines: QrCardLine[]): PlacedLine[] {
 
 // "Maria & Nikos" → "Maria-&-Nikos.png". Characters file systems refuse are dropped.
 export function qrCardFileName(title: string, extension: 'png' | 'pdf'): string {
-    const base = title
+    const clean = title
         .replace(/[\\/:*?"<>|\p{Cc}]/gu, '')
         .trim()
-        .replace(/\s+/g, '-')
-        .slice(0, 60);
+        .replace(/\s+/g, '-');
+    // Cut by code point so an emoji is never split, then drop a dash left at the cut.
+    const base = [...clean].slice(0, 60).join('').replace(/-+$/, '');
     return `${base || 'storywall-qr'}.${extension}`;
 }
 ```
@@ -909,7 +996,7 @@ export function qrCardFileName(title: string, extension: 'png' | 'pdf'): string 
 - [ ] **Step 4: Run the test to see it pass**
 
 Run: `npx vitest run lib/qrCard.test.ts`
-Expected: PASS (18 tests). If only the Greek two-line case fails on `fontSize`, print the actual result and check `charWidth` against the numbers in this plan's self-review before changing the expectation.
+Expected: PASS (43 tests). If only the Greek two-line case fails on `fontSize`, print the actual result and check `charWidth` against the numbers in this plan's self-review before changing the expectation.
 
 - [ ] **Step 5: Commit**
 
