@@ -46,6 +46,8 @@
         "resetDemo": "Reset demo",
         "exitDemo": "Exit demo",
         "title": "Demo",
+        "metaTitle": "Demo | StoryWall",
+        "metaDescription": "Try StoryWall on a sample event: invitation, RSVP, photos and wishes.",
         "resetTitle": "Reset the demo?",
         "resetBody": "Nothing in the demo is saved. Your changes will be removed and the demo will start over.",
         "resetCancel": "Cancel",
@@ -482,6 +484,7 @@
         "hidePassword": "Hide password",
         "submit": "Sign In",
         "tabTitle": "Login",
+        "metaDescription": "Sign in to your StoryWall account.",
         "noAccount": "Don't have an account?",
         "createAccountLink": "Create one",
         "orContinueWith": "Or continue with",
@@ -1987,7 +1990,15 @@
         "communityGuidelines": "Community Guidelines",
         "reportContent": "Report content",
         "contact": "Contact",
-        "unavailable": "This page isn't available right now. Please try again later."
+        "unavailable": "This page isn't available right now. Please try again later.",
+        "descriptions": {
+            "terms": "The terms for using StoryWall and buying a plan.",
+            "privacy": "What data StoryWall collects, why, who receives it and your rights.",
+            "cookies": "The cookies StoryWall uses and how to change your choice.",
+            "withdrawal": "How to withdraw from a purchase, with the model withdrawal form.",
+            "communityGuidelines": "What you can and can't post on StoryWall.",
+            "contact": "How to reach StoryWall, and our company details."
+        }
     },
     "GuidelinesGate": {
         "title": "Our Community Guidelines",

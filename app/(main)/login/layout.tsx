@@ -6,7 +6,7 @@ import { NO_INDEX } from '@/lib/seo';
 
 export async function generateMetadata(): Promise<Metadata> {
     const t = await getTranslations('LoginPage');
-    return { title: `StoryWall - ${t('tabTitle')}`, robots: NO_INDEX };
+    return { title: `StoryWall - ${t('tabTitle')}`, description: t('metaDescription'), robots: NO_INDEX };
 }
 
 export default function LoginLayout({ children }: { children: ReactNode }) {
