@@ -4677,6 +4677,83 @@
                 "sampleTitle": "Event title"
             }
         },
+        "qrCards": {
+            "title": "QR cards",
+            "subtitle": "Card designs hosts can print their QR codes on.",
+            "create": "New design",
+            "search": "Search by name",
+            "loading": "Loading designs…",
+            "empty": "No designs yet.",
+            "noMatches": "No designs match.",
+            "edit": "Edit {name}",
+            "filters": {
+                "ALL": "All",
+                "LIVE": "Offered",
+                "NO_ARTWORK": "Needs artwork",
+                "ARCHIVED": "Archived"
+            },
+            "status": {
+                "LIVE": "Offered",
+                "NO_ARTWORK": "Needs artwork",
+                "ARCHIVED": "Archived"
+            },
+            "columns": {
+                "design": "Design",
+                "eventTypes": "Event types",
+                "code": "Code colour",
+                "status": "Status",
+                "order": "Order"
+            },
+            "drawer": {
+                "createTitle": "New design",
+                "close": "Close",
+                "cancel": "Cancel",
+                "save": "Save",
+                "nameEn": "English name",
+                "nameEl": "Greek name",
+                "nameInvalid": "Enter 1 to 60 characters.",
+                "textColor": "Text colour",
+                "textColorHex": "Text colour hex code",
+                "textColorInvalid": "Use a colour like #5A3E2B.",
+                "headingFont": "Title font",
+                "headingFontDefault": "Card font (default)",
+                "headingFontOption": "{familyName} ({key})",
+                "headingFontArchived": "{familyName} ({key}), archived",
+                "headingFontNoFile": "{familyName} ({key}), no file yet",
+                "headingFontLoading": "Loading fonts…",
+                "headingFontLoadFailed": "Couldn't load the fonts. The current choice is kept. Close and reopen this panel to try again.",
+                "headingFontEmpty": "No fonts are ready yet. A font needs an uploaded file and must not be archived.",
+                "headingFontEmptyLink": "Go to Theme fonts",
+                "codeColor": "Code colour",
+                "codeColorHex": "Code colour hex code",
+                "codeColorInvalid": "Use a colour like #1F3A5A.",
+                "codeContrastOk": "Contrast {ratio}:1 on white",
+                "codeContrastLow": "Contrast {ratio}:1. Needs at least {min}:1 on white to scan, so pick a darker colour.",
+                "codeContrastInvalid": "This colour is too light to scan on white. Pick a darker one.",
+                "centerLogo": "Logo in the middle of the code",
+                "eventTypes": "Event types",
+                "eventTypesInvalid": "Pick at least one event type.",
+                "artwork": "Artwork",
+                "artworkHint": "PNG or WebP, A6 portrait (105 × 148), at least 1240 px wide, up to 5 MB.",
+                "artworkChoose": "Choose file",
+                "artworkPending": "Uploads when you save.",
+                "artworkType": "Use a PNG or WebP image.",
+                "artworkSize": "Use an image up to 5 MB.",
+                "availability": "Availability",
+                "offered": "Offered",
+                "archived": "Archived",
+                "offeredHint": "Hosts of the selected event types can pick it.",
+                "archivedHint": "Hosts can no longer pick it.",
+                "network": "Couldn't reach the server. Check your connection and try again.",
+                "notFound": "This design no longer exists."
+            },
+            "preview": {
+                "label": "Preview",
+                "sampleTitle": "Event title",
+                "sampleLine": "Scan to join",
+                "cardLabel": "QR card: {title}"
+            }
+        },
         "themeFonts": {
             "title": "Theme fonts",
             "subtitle": "Heading fonts that theme presets can use for event titles. Each font needs a WOFF2, TTF or OTF file that covers every Greek and Latin letter.",
