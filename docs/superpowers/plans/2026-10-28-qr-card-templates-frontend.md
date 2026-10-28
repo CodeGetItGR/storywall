@@ -996,7 +996,7 @@ export function qrCardFileName(title: string, extension: 'png' | 'pdf'): string 
 - [ ] **Step 4: Run the test to see it pass**
 
 Run: `npx vitest run lib/qrCard.test.ts`
-Expected: PASS (43 tests). If only the Greek two-line case fails on `fontSize`, print the actual result and check `charWidth` against the numbers in this plan's self-review before changing the expectation.
+Expected: PASS (43 tests). If only the Greek two-line case fails on `fontSize`, print the actual result and check `charWidth` against the widths in `lib/qrCard.ts` (wide glyphs 1.0 em, other capitals 0.74, lower case 0.615, space 0.32) before changing the expectation.
 
 - [ ] **Step 5: Commit**
 
