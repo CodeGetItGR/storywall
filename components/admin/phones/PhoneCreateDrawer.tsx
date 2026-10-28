@@ -31,7 +31,7 @@ export function PhoneCreateDrawer({
             open={open}
             onClose={onCloseAction}
             onClosed={onClosedAction}
-            closeLabel={t('cancel')}
+            closeLabel={f.created ? t('phones.close') : t('cancel')}
             closeDisabled={f.busy}
             title={t('phones.createTitle')}
             footer={

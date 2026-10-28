@@ -12,10 +12,23 @@ vi.mock('next-intl', () => ({
     useLocale: () => 'en',
 }));
 vi.mock('@/components/admin/AdminDrawer', () => ({
-    AdminDrawer: ({ open, title, children, footer }: { open: boolean; title: ReactNode; children: ReactNode; footer: ReactNode }) =>
+    AdminDrawer: ({
+        open,
+        title,
+        closeLabel,
+        children,
+        footer,
+    }: {
+        open: boolean;
+        title: ReactNode;
+        closeLabel: string;
+        children: ReactNode;
+        footer: ReactNode;
+    }) =>
         open ? (
             <div data-testid="admin-drawer">
                 <h2>{title}</h2>
+                <button type="button" data-testid="drawer-close" aria-label={closeLabel} />
                 {children}
                 {footer}
             </div>
@@ -47,6 +60,7 @@ describe('PhoneCreateDrawer', () => {
     it('pairs with the trimmed name and shows the code without printing the key', async () => {
         const onClose = vi.fn();
         render(<PhoneCreateDrawer open onCloseAction={onClose} />);
+        expect(screen.getByTestId('drawer-close')).toHaveAttribute('aria-label', 'cancel');
         fireEvent.change(screen.getByLabelText('phones.fields.name'), { target: { value: ' Galaxy ' } });
         fireEvent.click(screen.getByRole('button', { name: 'phones.create' }));
 
@@ -56,6 +70,8 @@ describe('PhoneCreateDrawer', () => {
         expect(document.body.innerHTML).not.toContain('secret-key');
         // The finished mutation is detached, so React Query keeps no copy of the key.
         expect(hooks.reset).toHaveBeenCalledOnce();
+        // Once paired there is nothing to cancel.
+        expect(screen.getByTestId('drawer-close')).toHaveAttribute('aria-label', 'phones.close');
 
         fireEvent.click(screen.getByRole('button', { name: 'phones.done' }));
         expect(onClose).toHaveBeenCalled();

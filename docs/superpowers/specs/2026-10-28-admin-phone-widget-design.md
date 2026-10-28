@@ -1,7 +1,7 @@
 # Admin phone widget and push notifications
 
 Date: 2026-10-28
-Status: design approved in chat, awaiting spec review
+Status: approved. Build step 1 is done; the exact JSON contract is `docs/fe-guides/admin-devices-fe-integration.md` in the Spring repo.
 
 ## Goal
 
@@ -73,23 +73,24 @@ Admin JWT (`/api/admin/**`, `ROLE_ADMIN`):
 
 ### Summary
 
-All day boundaries use `Europe/Athens`. Each number comes from the service the admin console already uses, so the widget and the console always agree.
+All day boundaries use `Europe/Athens`. Each number comes from the service the admin console already uses, so the widget and the console always agree. Field paths below are as shipped; money is a list of `{ "currency", "amountMinor" }`, one per currency.
 
 | Group | Field | Definition |
 |---|---|---|
-| Needs attention | `heldWithdrawals` | Count of the list `GET /api/admin/withdrawals` returns |
-| | `unprocessedWebhooks` | Count of the list `GET /api/admin/webhooks/unprocessed` returns |
-| | `openReports` | Open moderation cases, the same count as the moderation queue |
-| | `bugReports24h` | Bug reports created in the last 24 hours |
-| | `errors24h` | Distinct errors seen in the last 24 hours, leaving out 4xx rejections; a repeat counts once, as on the Errors screen |
-| Sales | `today` | Paid orders and net revenue per currency since 00:00 today, from the funnel service's revenue figures for that range. Paid orders: every provider-paid order above 0 (`ordersByBuyerType`, added up), still counted if refunded later; the same orders the `ORDER_PAID` push reports |
-| | `week` | Net revenue per currency from Monday 00:00 to now, same source. Net revenue can be negative when refunds decided in the range outweigh its sales |
-| Growth | `signUpsToday` | The funnel's `signedUp` for today |
-| | `liveEvents` | `activeEvents` from the platform metrics |
-| | `visitorsToday` | Visitors from the visitor metrics service for today, cached. `null` when Google Analytics is not set up or fails |
-| Costs and health | `costs` | The newest Monday run's readings only. Per currency: the sum of the readings with an amount from that run, plus `asOf` (when the run fetched them), which the widget shows as the date, e.g. "Costs · 26 Oct". A provider missing from that run, or never reconciled, is left out. The readings mix periods as fetched today: Vercel and Stripe report the last 7 days, Railway its month-to-date estimate, R2 an estimated monthly storage cost, so the widget shows a date, not a range |
-| | `storageUsedBytes` | `usedBytes` from the platform storage metrics |
-| | `generatedAt` | Server time of the response |
+| Response | `generatedAt` | Server time of the response |
+| Needs attention | `attention.heldWithdrawals` | Count of the list `GET /api/admin/withdrawals` returns |
+| | `attention.unprocessedWebhooks` | Count of the list `GET /api/admin/webhooks/unprocessed` returns |
+| | `attention.openReports` | Open moderation cases, the same count as the moderation queue |
+| | `attention.bugReports24h` | Bug reports created in the last 24 hours |
+| | `attention.errors24h` | Distinct errors seen in the last 24 hours, leaving out 4xx rejections; a repeat counts once, as on the Errors screen |
+| Sales | `sales.todayOrders` | Paid orders since 00:00 today: every provider-paid order above 0 (`ordersByBuyerType`, added up), still counted if refunded later; the same orders the `ORDER_PAID` push reports |
+| | `sales.today` | Net revenue per currency since 00:00 today, from the funnel service's revenue figures for that range |
+| | `sales.week` | Net revenue per currency from Monday 00:00 to now, same source. Net revenue can be negative when refunds decided in the range outweigh its sales |
+| Growth | `growth.signUpsToday` | The funnel's `signedUp` for today |
+| | `growth.liveEvents` | `activeEvents` from the platform metrics |
+| | `growth.visitorsToday` | Visitors from the visitor metrics service for today, cached. `null` when Google Analytics is not set up or fails |
+| Costs and health | `costs.totals`, `costs.asOf` | The newest Monday run's readings only. `totals`, per currency: the sum of the readings with an amount from that run. `asOf`: when the run fetched them, which the widget shows as the date, e.g. "Costs · 26 Oct". A provider missing from that run, or never reconciled, is left out. The readings mix periods as fetched today: Vercel and Stripe report the last 7 days, Railway its month-to-date estimate, R2 an estimated monthly storage cost, so the widget shows a date, not a range |
+| | `costs.storageUsedBytes` | `usedBytes` from the platform storage metrics |
 
 - **No single cost total:** costs are never added across currencies. Vercel, Railway and R2 bill in dollars, so the widget shows e.g. "$38 + €6".
 - **One slow source can't sink the rest:** if a source fails, its fields come back `null` and the rest of the summary still returns. Google Analytics, the only outside call, gets a 3-second budget; past it, `visitorsToday` is `null` and the call finishes in the background to fill the cache for the next poll.
