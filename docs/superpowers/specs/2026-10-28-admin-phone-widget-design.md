@@ -82,17 +82,18 @@ All day boundaries use `Europe/Athens`. Each number comes from the service the a
 | | `openReports` | Open moderation cases, the same count as the moderation queue |
 | | `bugReports24h` | Bug reports created in the last 24 hours |
 | | `errors24h` | Distinct errors seen in the last 24 hours, leaving out 4xx rejections; a repeat counts once, as on the Errors screen |
-| Sales | `today` | Paid orders and net revenue per currency since 00:00 today, from the funnel service's paid-events and revenue figures for that range |
-| | `week` | Net revenue per currency from Monday 00:00 to now, same source |
+| Sales | `today` | Paid orders and net revenue per currency since 00:00 today, from the funnel service's revenue figures for that range. Paid orders: every provider-paid order above 0 (`ordersByBuyerType`, added up), still counted if refunded later; the same orders the `ORDER_PAID` push reports |
+| | `week` | Net revenue per currency from Monday 00:00 to now, same source. Net revenue can be negative when refunds decided in the range outweigh its sales |
 | Growth | `signUpsToday` | The funnel's `signedUp` for today |
 | | `liveEvents` | `activeEvents` from the platform metrics |
 | | `visitorsToday` | Visitors from the visitor metrics service for today, cached. `null` when Google Analytics is not set up or fails |
-| Costs and health | `costs` | Per currency: the sum of each provider's latest actual reading that has an amount, plus `asOf` (the newest `fetchedAt`). Providers never reconciled are left out |
+| Costs and health | `costs` | The latest reconciled week only. Each provider reports the 7 days before the Monday run. The week is the newest `periodEnd` among each provider's latest reading that has an amount. Per currency: the sum of the readings for that week, plus `periodStart`/`periodEnd` (so the widget can label it, e.g. "20–26 Oct") and `asOf` (the newest `fetchedAt` among them). A provider whose latest reading is from an older week, or that was never reconciled, is left out |
 | | `storageUsedBytes` | `usedBytes` from the platform storage metrics |
 | | `generatedAt` | Server time of the response |
 
 - **No single cost total:** costs are never added across currencies. Vercel, Railway and R2 bill in dollars, so the widget shows e.g. "$38 + €6".
-- **One slow source can't sink the rest:** if a source fails, its fields come back `null` and the rest of the summary still returns.
+- **One slow source can't sink the rest:** if a source fails, its fields come back `null` and the rest of the summary still returns. Google Analytics, the only outside call, gets a 3-second budget; past it, `visitorsToday` is `null` and the call finishes in the background to fill the cache for the next poll.
+- **Today and this week are phone-only views:** the console's funnel has no today or this-week preset, and its Errors screen has no "last 24 hours, no 4xx" filter. These figures use the console's sources, but the console can't show the same slice.
 - **API up/down:** "API up" on the widget means the summary request succeeded. Outage alerts stay with the outside uptime monitor in [uptime-monitoring.md](../../uptime-monitoring.md), because Spring can't push about its own outage.
 
 ### Push
