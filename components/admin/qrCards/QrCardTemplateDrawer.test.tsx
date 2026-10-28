@@ -49,6 +49,7 @@ const EVENT_TYPES = [
 function state(overrides: Record<string, unknown> = {}) {
     drawerState.current = {
         isCreate: false,
+        savedName: 'Linen',
         draft: {
             nameEn: 'Linen',
             nameEl: 'Λινό',
@@ -105,6 +106,20 @@ describe('QrCardTemplateDrawer', () => {
         state({ codeContrastRatio: 3.2 });
         renderDrawer();
         expect(screen.getByText('codeContrastLow {"ratio":"3.20","min":"4.5"}')).toBeInTheDocument();
+    });
+
+    it('ties the contrast hint to the code colour inputs', () => {
+        state({ codeContrastRatio: 3.2 });
+        renderDrawer();
+        const hint = 'codeContrastLow {"ratio":"3.20","min":"4.5"}';
+        expect(screen.getByLabelText('codeColorHex')).toHaveAccessibleDescription(hint);
+        expect(screen.getByLabelText('codeColor')).toHaveAccessibleDescription(hint);
+    });
+
+    it('titles a design saved from a create with its name', () => {
+        state({ isCreate: false, savedName: 'Marble' });
+        renderDrawer(null);
+        expect(screen.getByRole('heading', { name: 'Marble' })).toBeInTheDocument();
     });
 
     it('turns the logo on', () => {

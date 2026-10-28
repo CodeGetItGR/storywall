@@ -18,6 +18,7 @@ import { illustrationFileError, themeFontOptions, toggleEventType } from '@/lib/
 import { ERROR_CODES, getErrorCode, isNotFoundError } from '@/lib/api/errors';
 import type { AdminQrCardTemplateDto, EventThemeFontDto, EventTypeConvention } from '@/lib/api/types';
 import { isHexColor } from '@/lib/eventTheme';
+import { resolveLocalizedText } from '@/lib/localizedText';
 import { QR_CARD_INK, type QrCardStyle } from '@/lib/qrCard';
 
 export type QrCardTemplateDrawerError = { kind: 'notFound' } | { kind: 'other'; error: unknown };
@@ -178,6 +179,8 @@ export function useQrCardTemplateDrawer({
 
     return {
         isCreate,
+        // The saved design's name, for the heading once a create has gone through.
+        savedName: resolveLocalizedText(saved?.name, locale),
         draft,
         errors: submitted ? errors : {},
         failure,

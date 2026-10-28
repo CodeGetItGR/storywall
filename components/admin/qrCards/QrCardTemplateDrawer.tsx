@@ -2,6 +2,7 @@
 
 import { ImagePlus, Loader2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import { useId } from 'react';
 
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
@@ -9,7 +10,6 @@ import { AdminSwitch } from '@/components/admin/AdminSwitch';
 import { QrCardTemplatePreview } from '@/components/admin/qrCards/QrCardTemplatePreview';
 import { ReactionTypeAvailabilityControl } from '@/components/admin/ReactionTypeAvailabilityControl';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
-import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { useQrCardTemplateDrawer } from '@/hooks/useQrCardTemplateDrawer';
 import { isQrCardDetailError, MIN_CODE_CONTRAST, QR_CARD_NAME_MAX } from '@/lib/adminQrCards';
 import { formatContrastRatio, THEME_ILLUSTRATION_ACCEPT, type ThemeFontOption } from '@/lib/adminThemePresets';
@@ -35,10 +35,14 @@ export function QrCardTemplateDrawer({
     const t = useTranslations('AdminPage.qrCards.drawer');
     const tPreview = useTranslations('AdminPage.qrCards.preview');
     const tApi = useTranslations('ApiErrors');
-    const localizedText = useLocalizedText();
     const locale = useLocale();
     const apiErrorMessage = useApiErrorMessage();
     const form = useQrCardTemplateDrawer({ template, sortOrder, onDoneAction: onCloseAction });
+    const hintIdPrefix = useId();
+    const nameEnHintId = `${hintIdPrefix}-name-en`;
+    const nameElHintId = `${hintIdPrefix}-name-el`;
+    const textColorHintId = `${hintIdPrefix}-text-color`;
+    const codeColorHintId = `${hintIdPrefix}-code-color`;
     const formatMinimum = (value: number) => new Intl.NumberFormat(locale).format(value);
     // Floored like the server's ratio, so a colour just under the minimum never reads as passing. Once a
     // save is blocked, the alert below replaces the live hint.
@@ -91,7 +95,7 @@ export function QrCardTemplateDrawer({
             size="wide"
             onClose={onCloseAction}
             closeDisabled={form.isSaving}
-            title={template ? localizedText(template.name) : t('createTitle')}
+            title={form.isCreate ? t('createTitle') : form.savedName}
             closeLabel={t('close')}
             footer={footer}
         >
@@ -110,29 +114,36 @@ export function QrCardTemplateDrawer({
                     )}
 
                     {/* Names */}
-                    <AdminField label={t('nameEn')} required hint={form.errors.nameEn ? t('nameInvalid') : undefined}>
+                    <AdminField label={t('nameEn')} required hint={form.errors.nameEn ? t('nameInvalid') : undefined} hintId={nameEnHintId}>
                         <input
                             name="nameEn"
                             value={form.draft.nameEn}
                             onChange={form.handleFieldChange}
                             maxLength={QR_CARD_NAME_MAX}
                             aria-invalid={Boolean(form.errors.nameEn)}
+                            aria-describedby={form.errors.nameEn ? nameEnHintId : undefined}
                             className={adminInputClass()}
                         />
                     </AdminField>
-                    <AdminField label={t('nameEl')} required hint={form.errors.nameEl ? t('nameInvalid') : undefined}>
+                    <AdminField label={t('nameEl')} required hint={form.errors.nameEl ? t('nameInvalid') : undefined} hintId={nameElHintId}>
                         <input
                             name="nameEl"
                             value={form.draft.nameEl}
                             onChange={form.handleFieldChange}
                             maxLength={QR_CARD_NAME_MAX}
                             aria-invalid={Boolean(form.errors.nameEl)}
+                            aria-describedby={form.errors.nameEl ? nameElHintId : undefined}
                             className={adminInputClass()}
                         />
                     </AdminField>
 
                     {/* Text */}
-                    <AdminField label={t('textColor')} required hint={form.errors.textColor ? t('textColorInvalid') : undefined}>
+                    <AdminField
+                        label={t('textColor')}
+                        required
+                        hint={form.errors.textColor ? t('textColorInvalid') : undefined}
+                        hintId={textColorHintId}
+                    >
                         <div className="flex items-center gap-2">
                             <input
                                 type="color"
@@ -140,6 +151,7 @@ export function QrCardTemplateDrawer({
                                 value={form.textColorInputValue}
                                 onChange={form.handleFieldChange}
                                 aria-label={t('textColor')}
+                                aria-describedby={form.errors.textColor ? textColorHintId : undefined}
                                 className={SWATCH_CLASS}
                             />
                             <input
@@ -148,6 +160,7 @@ export function QrCardTemplateDrawer({
                                 onChange={form.handleFieldChange}
                                 maxLength={7}
                                 aria-label={t('textColorHex')}
+                                aria-describedby={form.errors.textColor ? textColorHintId : undefined}
                                 aria-invalid={Boolean(form.errors.textColor)}
                                 className={adminInputClass('font-mono uppercase')}
                             />
@@ -180,7 +193,7 @@ export function QrCardTemplateDrawer({
                     </div>
 
                     {/* Code */}
-                    <AdminField label={t('codeColor')} required hint={codeHint}>
+                    <AdminField label={t('codeColor')} required hint={codeHint} hintId={codeColorHintId}>
                         <div className="flex items-center gap-2">
                             <input
                                 type="color"
@@ -188,6 +201,7 @@ export function QrCardTemplateDrawer({
                                 value={form.codeColorInputValue}
                                 onChange={form.handleFieldChange}
                                 aria-label={t('codeColor')}
+                                aria-describedby={codeHint ? codeColorHintId : undefined}
                                 className={SWATCH_CLASS}
                             />
                             <input
@@ -196,6 +210,7 @@ export function QrCardTemplateDrawer({
                                 onChange={form.handleFieldChange}
                                 maxLength={7}
                                 aria-label={t('codeColorHex')}
+                                aria-describedby={codeHint ? codeColorHintId : undefined}
                                 aria-invalid={Boolean(form.errors.codeColor || form.errors.codeContrast)}
                                 className={adminInputClass('font-mono uppercase')}
                             />
@@ -233,7 +248,7 @@ export function QrCardTemplateDrawer({
 
                     {/* Artwork */}
                     <AdminField label={t('artwork')} hint={fileHint ?? (form.hasPendingFile ? t('artworkPending') : t('artworkHint'))}>
-                        <label className="inline-flex min-h-10 w-fit cursor-pointer items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold text-ink hover:bg-canvas">
+                        <label className="inline-flex min-h-10 w-fit cursor-pointer items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold text-ink focus-within:ring-2 focus-within:ring-primary/20 hover:bg-canvas">
                             <ImagePlus className="h-4 w-4" aria-hidden="true" />
                             {t('artworkChoose')}
                             <input type="file" accept={THEME_ILLUSTRATION_ACCEPT} onChange={form.handleFileChange} className="sr-only" />

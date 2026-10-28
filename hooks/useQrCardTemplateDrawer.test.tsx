@@ -107,6 +107,23 @@ describe('useQrCardTemplateDrawer', () => {
         expect(onDoneAction).toHaveBeenCalled();
     });
 
+    it('keeps the saved design open and named when the artwork upload fails after a create', async () => {
+        mocks.create.mockResolvedValue({ ...LINEN, artworkUrl: null });
+        mocks.upload.mockRejectedValue(new ApiError(500, {}));
+        const { result } = renderDrawer();
+        expect(result.current.isCreate).toBe(true);
+        expect(result.current.savedName).toBe('');
+
+        act(() => result.current.handleFieldChange(field('nameEn', 'Linen')));
+        act(() => result.current.handleFieldChange(field('nameEl', 'Λινό')));
+        act(() => result.current.handleEventTypeChange(field('eventType', 'WEDDING')));
+        act(() => result.current.handleFileChange(fileChange(new File(['x'], 'linen.png', { type: 'image/png' }))));
+        await act(() => result.current.handleSubmit(submitEvent()));
+
+        expect(result.current.isCreate).toBe(false);
+        expect(result.current.savedName).toBe('Linen');
+    });
+
     it('sends only what changed', async () => {
         mocks.patch.mockResolvedValue(LINEN);
         const { result } = renderDrawer(LINEN);
