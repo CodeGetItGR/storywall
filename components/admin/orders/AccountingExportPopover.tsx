@@ -38,7 +38,7 @@ export function AccountingExportPopover() {
 
             <Popover.Portal>
                 <Popover.Positioner side="bottom" align="end" sideOffset={6} className="z-40">
-                    <Popover.Popup className="w-[min(340px,calc(100vw-32px))] rounded-xl border border-border bg-card p-4 text-ink shadow-[0_20px_50px_-20px_rgba(18,20,28,0.4)] outline-none">
+                    <Popover.Popup className="admin-shell w-[min(340px,calc(100vw-32px))] rounded-xl border border-border bg-card p-4 text-ink shadow-[0_20px_50px_-20px_rgba(18,20,28,0.4)] outline-none">
                         {/* Title */}
                         <Popover.Title className="text-sm font-bold text-ink">{t('title')}</Popover.Title>
 
