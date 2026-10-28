@@ -9,11 +9,14 @@ import type {
     EventMemberResponseDto,
     MediaResponseDto,
     PostResponseDto,
+    QrLinkResponseDto,
     QrLinkStatsDto,
     RsvpResponseDto,
     UserResponseDto,
 } from '@/lib/api/types';
 import { RECENT_COMMENTS_SIZE } from '@/lib/comments';
+import { demoEventTypeSlugFromKey } from '@/lib/demo/demoEventTypes';
+import { demoGuestPagePath } from '@/lib/demo/demoRouting';
 import type { DemoSession } from '@/lib/demo/demoSession';
 import { type MockDb } from '@/lib/demo/mockDb';
 import { buildDemoRsvpReport } from '@/lib/demo/rsvpReport';
@@ -136,6 +139,15 @@ function newId(prefix: string): string {
     return `${prefix}-${Date.now()}-${nextId}`;
 }
 
+// What the demo calls the Terms and Guidelines in force. Nothing checks it: the uploads it goes with stay in the browser.
+const DEMO_LEGAL_VERSION = 'demo';
+
+// A text field of a multipart request, or null when it was left out.
+function formText(form: FormData, name: string): string | null {
+    const value = form.get(name);
+    return typeof value === 'string' ? value : null;
+}
+
 function nowIso(): string {
     return new Date().toISOString();
 }
@@ -249,13 +261,22 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
         }));
     }
 
-    function createLocalMedia(file: File): MediaResponseDto {
+    // The real /q/{token} and /invite/{token} pages ask the backend, which refuses a demo event's
+    // links. Point them at the demo's own guest pages instead, so a scan opens the demo there.
+    function withDemoPublicUrl(link: QrLinkResponseDto): QrLinkResponseDto {
+        const page = link.targetType === 'MEDIA_UPLOAD' ? 'upload' : 'invite';
+        return { ...link, publicUrl: `${appOrigin ?? ''}${demoGuestPagePath(demoEventTypeSlugFromKey(session.eventTypeKey), page)}` };
+    }
+
+    // A QR upload has no account behind it: the media carries the name the scanner typed, if any.
+    function createLocalMedia(file: File, anonymousUploaderName?: string | null): MediaResponseDto {
         const url = localMediaUrl(file);
+        const isAnonymous = anonymousUploaderName !== undefined;
         return db.create('media', {
             id: newId('demo-local-media'),
             eventId,
-            uploaderMemberId: viewerMemberId,
-            anonymousUploaderName: null,
+            uploaderMemberId: isAnonymous ? null : viewerMemberId,
+            anonymousUploaderName: anonymousUploaderName ?? null,
             storageKey: `demo/${file.name}`,
             mediaUrl: url,
             status: 'READY',
@@ -365,9 +386,36 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
         ...buildArrayHandlers(db, 'sessions', '/api/events/:eventId/sessions'),
         ...buildDetailHandlers(db, 'sessions', '/api/event-sessions/:id', { patch: true }),
 
-        // --- Invitations / QR links (read-only in the demo) ---
+        // --- Invitations / QR links (read-only in the demo; links open the demo's guest pages) ---
         ...buildArrayHandlers(db, 'invitations', '/api/events/:eventId/invitations'),
-        ...buildArrayHandlers(db, 'qrLinks', '/api/events/:eventId/qr-links'),
+        http.get(`${API_BASE_URL}/api/events/:eventId/qr-links`, ({ params }) =>
+            HttpResponse.json(
+                db
+                    .list('qrLinks')
+                    .filter((link) => link.eventId === params.eventId)
+                    .map(withDemoPublicUrl),
+            ),
+        ),
+
+        // --- QR uploads (the demo upload page; files stay in this browser like every demo upload) ---
+        http.post(`${API_BASE_URL}/api/qr/:token/media`, async ({ request }) => {
+            const form = await request.formData();
+            return HttpResponse.json(createLocalMedia(form.get('file') as File, formText(form, 'uploaderName')), { status: 201 });
+        }),
+        http.post(`${API_BASE_URL}/api/qr/:token/media/batch`, async ({ request }) => {
+            const form = await request.formData();
+            const uploaderName = formText(form, 'uploaderName');
+            const created = (form.getAll('files') as File[]).map((file) => createLocalMedia(file, uploaderName));
+            return HttpResponse.json({ created, failed: [] });
+        }),
+
+        // --- Legal versions: the QR upload form sends back the versions the scanner accepted ---
+        http.get(`${API_BASE_URL}/api/legal/documents/:document`, ({ params }) =>
+            HttpResponse.json({ document: params.document, version: DEMO_LEGAL_VERSION, locale: 'en', markdown: '' }),
+        ),
+        http.get(`${API_BASE_URL}/api/legal/community-guidelines`, () =>
+            HttpResponse.json({ version: DEMO_LEGAL_VERSION, locale: 'en', markdown: '' }),
+        ),
 
         // --- RSVPs ---
         http.get(`${API_BASE_URL}/api/events/:eventId/rsvps/report`, ({ request }) => {
@@ -431,7 +479,7 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
         }),
         http.post(`${API_BASE_URL}/api/events/:eventId/media/batch`, async ({ request }) => {
             const form = await request.formData();
-            const created = (form.getAll('files') as File[]).map(createLocalMedia);
+            const created = (form.getAll('files') as File[]).map((file) => createLocalMedia(file));
             return HttpResponse.json({ created, failed: [] });
         }),
 
