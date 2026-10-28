@@ -993,9 +993,6 @@ export interface EventThemeFontDto {
 }
 
 // QR card templates (qr-card-templates-fe-integration.md): A6 card designs a host prints a QR on.
-export type QrDotShape = 'SQUARE' | 'ROUNDED' | 'DOT';
-export type QrCornerShape = 'SQUARE' | 'ROUNDED' | 'CIRCLE';
-
 export interface QrCardTemplateDto {
     id: string;
     name: LocalizedText;
@@ -1003,8 +1000,6 @@ export interface QrCardTemplateDto {
     textColor: string; // #RRGGBB
     headingFont: EventThemeFontDto | null; // null = the card's own font
     codeColor: string; // #RRGGBB, at least 4.5:1 against white
-    dotShape: QrDotShape;
-    cornerShape: QrCornerShape;
     centerLogo: boolean;
 }
 
@@ -4387,8 +4382,6 @@ export interface AdminQrCardTemplateDto {
     textColor: string;
     headingFont: AdminThemeFontSummaryDto | null;
     codeColor: string;
-    dotShape: QrDotShape;
-    cornerShape: QrCornerShape;
     centerLogo: boolean;
 }
 
@@ -4400,8 +4393,6 @@ export interface AdminQrCardTemplateRequestDto {
     textColor: string;
     headingFontId?: string | null;
     codeColor: string;
-    dotShape: QrDotShape;
-    cornerShape: QrCornerShape;
     centerLogo: boolean;
 }
 
@@ -4415,8 +4406,6 @@ export interface AdminQrCardTemplatePatchDto {
     headingFontId?: string;
     clearHeadingFont?: boolean;
     codeColor?: string;
-    dotShape?: QrDotShape;
-    cornerShape?: QrCornerShape;
     centerLogo?: boolean;
 }
 

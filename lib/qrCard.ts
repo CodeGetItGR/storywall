@@ -1,4 +1,4 @@
-import type { EventThemeFontDto, QrCardTemplateDto, QrCornerShape, QrDotShape, QrTargetType } from '@/lib/api/types';
+import type { EventThemeFontDto, QrCardTemplateDto, QrTargetType } from '@/lib/api/types';
 
 // A6 portrait in millimetres: the card SVG's user units.
 export const QR_CARD_WIDTH = 105;
@@ -31,8 +31,6 @@ export type QrCardStyle = {
     textColor: string;
     headingFont: EventThemeFontDto | null;
     codeColor: string;
-    dotShape: QrDotShape;
-    cornerShape: QrCornerShape;
     centerLogo: boolean;
 };
 
@@ -43,8 +41,6 @@ export const PLAIN_QR_CARD_STYLE: QrCardStyle = {
     textColor: QR_CARD_INK,
     headingFont: null,
     codeColor: QR_CARD_INK,
-    dotShape: 'SQUARE',
-    cornerShape: 'SQUARE',
     centerLogo: true,
 };
 
@@ -55,8 +51,6 @@ export function qrCardStyleOf(template: QrCardTemplateDto): QrCardStyle {
         textColor: template.textColor,
         headingFont: template.headingFont,
         codeColor: template.codeColor,
-        dotShape: template.dotShape,
-        cornerShape: template.cornerShape,
         centerLogo: template.centerLogo,
     };
 }

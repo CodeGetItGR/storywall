@@ -111,8 +111,6 @@ describe('qrCardStyleOf', () => {
             textColor: '#5A3E2B',
             headingFont: null,
             codeColor: '#1F3A5A',
-            dotShape: 'DOT',
-            cornerShape: 'CIRCLE',
             centerLogo: false,
         };
         expect(qrCardStyleOf(template)).toEqual({
@@ -121,13 +119,11 @@ describe('qrCardStyleOf', () => {
             textColor: '#5A3E2B',
             headingFont: null,
             codeColor: '#1F3A5A',
-            dotShape: 'DOT',
-            cornerShape: 'CIRCLE',
             centerLogo: false,
         });
     });
 
     it('keeps Plain as today’s look', () => {
-        expect(PLAIN_QR_CARD_STYLE).toMatchObject({ artworkUrl: null, codeColor: '#241F1A', dotShape: 'SQUARE', cornerShape: 'SQUARE', centerLogo: true });
+        expect(PLAIN_QR_CARD_STYLE).toMatchObject({ artworkUrl: null, codeColor: '#241F1A', centerLogo: true });
     });
 });
