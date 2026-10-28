@@ -45,16 +45,30 @@ afterEach(cleanup);
 describe('QrCardTemplateStrip', () => {
     it('offers Plain first, selected by default', () => {
         renderStrip();
-        const [plain, linen] = screen.getAllByRole('button');
+        const [plain, linen] = screen.getAllByRole('radio');
         expect(plain).toHaveAccessibleName('Plain');
-        expect(plain).toHaveAttribute('aria-pressed', 'true');
+        expect(plain).toHaveAttribute('aria-checked', 'true');
         expect(linen).toHaveAccessibleName('Linen card design');
-        expect(linen).toHaveAttribute('aria-pressed', 'false');
+        expect(linen).toHaveAttribute('aria-checked', 'false');
+    });
+
+    it('is a radio group named by its heading, with one tab stop', () => {
+        renderStrip({ selectedId: 't1' });
+        expect(screen.getByRole('radiogroup', { name: 'Design' })).toBeInTheDocument();
+        const [plain, linen] = screen.getAllByRole('radio');
+        expect(plain).toHaveAttribute('tabindex', '-1');
+        expect(linen).toHaveAttribute('tabindex', '0');
+    });
+
+    it('moves the selection with the arrow keys', () => {
+        const { onSelectAction } = renderStrip();
+        fireEvent.keyDown(screen.getByRole('radio', { name: 'Plain' }), { key: 'ArrowRight' });
+        expect(onSelectAction).toHaveBeenCalledWith('t1');
     });
 
     it('picks a design', () => {
         const { onSelectAction } = renderStrip();
-        fireEvent.click(screen.getByRole('button', { name: 'Linen card design' }));
+        fireEvent.click(screen.getByRole('radio', { name: 'Linen card design' }));
         expect(onSelectAction).toHaveBeenCalledWith('t1');
     });
 
@@ -65,7 +79,7 @@ describe('QrCardTemplateStrip', () => {
 
     it('offers a retry when the designs failed to load', () => {
         const { onRetryAction } = renderStrip({ templates: [], failed: true });
-        expect(screen.getByText("Couldn't load the designs.")).toBeInTheDocument();
+        expect(screen.getByRole('status')).toHaveTextContent("Couldn't load the designs.");
         fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
         expect(onRetryAction).toHaveBeenCalled();
     });

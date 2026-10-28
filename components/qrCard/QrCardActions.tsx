@@ -15,6 +15,7 @@ function FileButton({ format, exporter, label }: { format: QrCardExportFormat; e
             type="button"
             onClick={format === 'png' ? exporter.savePng : exporter.savePdf}
             disabled={exporter.busy !== null}
+            aria-busy={exporter.busy === format}
             className={FILE_BUTTON_CLASS}
         >
             <Icon className={exporter.busy === format ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} aria-hidden="true" />

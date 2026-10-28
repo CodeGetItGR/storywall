@@ -2205,16 +2205,30 @@ afterEach(cleanup);
 describe('QrCardTemplateStrip', () => {
     it('offers Plain first, selected by default', () => {
         renderStrip();
-        const [plain, linen] = screen.getAllByRole('button');
+        const [plain, linen] = screen.getAllByRole('radio');
         expect(plain).toHaveAccessibleName('Plain');
-        expect(plain).toHaveAttribute('aria-pressed', 'true');
+        expect(plain).toHaveAttribute('aria-checked', 'true');
         expect(linen).toHaveAccessibleName('Linen card design');
-        expect(linen).toHaveAttribute('aria-pressed', 'false');
+        expect(linen).toHaveAttribute('aria-checked', 'false');
+    });
+
+    it('is a radio group named by its heading, with one tab stop', () => {
+        renderStrip({ selectedId: 't1' });
+        expect(screen.getByRole('radiogroup', { name: 'Design' })).toBeInTheDocument();
+        const [plain, linen] = screen.getAllByRole('radio');
+        expect(plain).toHaveAttribute('tabindex', '-1');
+        expect(linen).toHaveAttribute('tabindex', '0');
+    });
+
+    it('moves the selection with the arrow keys', () => {
+        const { onSelectAction } = renderStrip();
+        fireEvent.keyDown(screen.getByRole('radio', { name: 'Plain' }), { key: 'ArrowRight' });
+        expect(onSelectAction).toHaveBeenCalledWith('t1');
     });
 
     it('picks a design', () => {
         const { onSelectAction } = renderStrip();
-        fireEvent.click(screen.getByRole('button', { name: 'Linen card design' }));
+        fireEvent.click(screen.getByRole('radio', { name: 'Linen card design' }));
         expect(onSelectAction).toHaveBeenCalledWith('t1');
     });
 
@@ -2225,7 +2239,7 @@ describe('QrCardTemplateStrip', () => {
 
     it('offers a retry when the designs failed to load', () => {
         const { onRetryAction } = renderStrip({ templates: [], failed: true });
-        expect(screen.getByText("Couldn't load the designs.")).toBeInTheDocument();
+        expect(screen.getByRole('status')).toHaveTextContent("Couldn't load the designs.");
         fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
         expect(onRetryAction).toHaveBeenCalled();
     });
@@ -2248,13 +2262,14 @@ import { type MouseEvent, useId } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
+import { useRadioGroupKeys } from '@/hooks/useRadioGroupKeys';
 import type { QrCardTemplateDto } from '@/lib/api/types';
 import { PLAIN_QR_CARD_ID } from '@/lib/qrCard';
 import { cn } from '@/lib/utils';
 
 function optionClass(selected: boolean) {
     return cn(
-        'flex w-20 shrink-0 flex-col items-center gap-1.5 rounded-xl p-1.5 text-xs font-semibold transition-colors',
+        'flex w-20 shrink-0 flex-col items-center gap-1.5 rounded-xl p-1.5 text-xs font-semibold transition-colors outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink',
         selected ? 'bg-surface-muted text-ink ring-2 ring-primary' : 'text-ink-muted hover:bg-surface-muted/60 hover:text-ink',
     );
 }
@@ -2278,9 +2293,13 @@ export function QrCardTemplateStrip({
     const tAlt = useTranslations('ImageAlt');
     const localizedText = useLocalizedText();
     const headingId = useId();
+    const ids = [PLAIN_QR_CARD_ID, ...templates.map((template) => template.id)];
+    // The one tile Tab lands on: the pick, or Plain while the pick is not in the strip.
+    const tabStopId = ids.includes(selectedId) ? selectedId : PLAIN_QR_CARD_ID;
+    const handleKeyDown = useRadioGroupKeys(ids, tabStopId, onSelectAction);
 
     function handleClick(event: MouseEvent<HTMLButtonElement>) {
-        onSelectAction(event.currentTarget.dataset.templateId ?? PLAIN_QR_CARD_ID);
+        onSelectAction(event.currentTarget.dataset.radioId ?? PLAIN_QR_CARD_ID);
     }
 
     return (
@@ -2288,12 +2307,19 @@ export function QrCardTemplateStrip({
             <h2 id={headingId} className="text-sm font-semibold text-ink">
                 {t('templates')}
             </h2>
-            <div className="-mx-4 mt-2 flex gap-2 overflow-x-auto px-4 pt-1 pb-2">
+            <div
+                role="radiogroup"
+                aria-labelledby={headingId}
+                onKeyDown={handleKeyDown}
+                className="-mx-4 mt-2 flex gap-2 overflow-x-auto px-4 pt-1 pb-2"
+            >
                 {/* Plain */}
                 <button
                     type="button"
-                    data-template-id={PLAIN_QR_CARD_ID}
-                    aria-pressed={selectedId === PLAIN_QR_CARD_ID}
+                    role="radio"
+                    aria-checked={selectedId === PLAIN_QR_CARD_ID}
+                    data-radio-id={PLAIN_QR_CARD_ID}
+                    tabIndex={tabStopId === PLAIN_QR_CARD_ID ? 0 : -1}
                     onClick={handleClick}
                     className={optionClass(selectedId === PLAIN_QR_CARD_ID)}
                 >
@@ -2309,8 +2335,10 @@ export function QrCardTemplateStrip({
                         <button
                             key={template.id}
                             type="button"
-                            data-template-id={template.id}
-                            aria-pressed={selectedId === template.id}
+                            role="radio"
+                            aria-checked={selectedId === template.id}
+                            data-radio-id={template.id}
+                            tabIndex={tabStopId === template.id ? 0 : -1}
                             onClick={handleClick}
                             className={optionClass(selectedId === template.id)}
                         >
@@ -2332,7 +2360,7 @@ export function QrCardTemplateStrip({
             </div>
             {/* Failed */}
             {failed && (
-                <p className="mt-1 text-sm text-ink-muted">
+                <p role="status" className="mt-1 text-sm text-ink-muted">
                     {t('templatesFailed')}{' '}
                     <button type="button" onClick={onRetryAction} className="font-semibold text-primary underline-offset-2 hover:underline">
                         {t('retry')}
@@ -2433,6 +2461,7 @@ function FileButton({ format, exporter, label }: { format: QrCardExportFormat; e
             type="button"
             onClick={format === 'png' ? exporter.savePng : exporter.savePdf}
             disabled={exporter.busy !== null}
+            aria-busy={exporter.busy === format}
             className={FILE_BUTTON_CLASS}
         >
             <Icon className={exporter.busy === format ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} aria-hidden="true" />
@@ -2529,12 +2558,14 @@ export function QrCardDesigner({
     onRetryTemplatesAction: () => void;
     children?: ReactNode;
 }) {
+    const { svgRef } = exporter;
+
     return (
         <div className="flex flex-col gap-6">
             {/* Card */}
             <div data-print-root data-qr-card-print className="mx-auto w-full max-w-xs overflow-hidden rounded-lg shadow-sm">
                 <QrCardSvg
-                    ref={exporter.svgRef}
+                    ref={svgRef}
                     style={designer.style}
                     url={url}
                     title={designer.text.title}
