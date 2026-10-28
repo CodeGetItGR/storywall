@@ -12,8 +12,17 @@ import { adminErrorMessageKey } from '@/lib/adminUtils';
 
 const FORM_ID = 'phone-create-form';
 
-// Name the phone, then show its pairing code once. The panel remounts it (key) on every opening.
-export function PhoneCreateDrawer({ open, onCloseAction }: { open: boolean; onCloseAction: () => void }) {
+// Name the phone, then show its pairing code once. The panel remounts it (key) on every opening and once
+// it has finished closing (onClosedAction), which drops the code.
+export function PhoneCreateDrawer({
+    open,
+    onCloseAction,
+    onClosedAction,
+}: {
+    open: boolean;
+    onCloseAction: () => void;
+    onClosedAction?: () => void;
+}) {
     const t = useTranslations('AdminPage');
     const f = usePhoneCreateForm();
 
@@ -21,11 +30,13 @@ export function PhoneCreateDrawer({ open, onCloseAction }: { open: boolean; onCl
         <AdminDrawer
             open={open}
             onClose={onCloseAction}
+            onClosed={onClosedAction}
             closeLabel={t('cancel')}
             closeDisabled={f.busy}
             title={t('phones.createTitle')}
             footer={
                 <>
+                    {/* Spacer */}
                     <div />
 
                     {/* Actions */}
@@ -58,7 +69,10 @@ export function PhoneCreateDrawer({ open, onCloseAction }: { open: boolean; onCl
             }
         >
             {f.created && f.pairingPayload ? (
-                <PhonePairingCode name={f.created.device.name} payload={f.pairingPayload} />
+                <>
+                    {/* Code */}
+                    <PhonePairingCode name={f.created.device.name} payload={f.pairingPayload} />
+                </>
             ) : (
                 <form id={FORM_ID} onSubmit={f.handleSubmit} className="space-y-5">
                     {/* Name */}

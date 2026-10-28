@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
@@ -48,5 +48,29 @@ describe('AdminDrawer closeDisabled', () => {
         expect(onClose).toHaveBeenCalledOnce();
         expect(replaceState).toHaveBeenCalled();
         expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
+    });
+});
+
+describe('AdminDrawer onClosed', () => {
+    function drawer(open: boolean, onClosed: () => void) {
+        return (
+            <AdminDrawer open={open} onClose={vi.fn()} onClosed={onClosed} title="Font" closeLabel="Close">
+                <p>body</p>
+            </AdminDrawer>
+        );
+    }
+
+    it('fires once the drawer has closed, not when it opens or stays closed', async () => {
+        const onClosed = vi.fn();
+        const { rerender } = render(drawer(false, onClosed));
+        rerender(drawer(true, onClosed));
+        await act(async () => {
+            await Promise.resolve();
+        });
+        expect(onClosed).not.toHaveBeenCalled();
+
+        rerender(drawer(false, onClosed));
+
+        await waitFor(() => expect(onClosed).toHaveBeenCalledOnce());
     });
 });

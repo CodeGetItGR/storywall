@@ -23,7 +23,7 @@ export function PhoneDetailDrawer({ open, device, onCloseAction }: { open: boole
             <AdminDrawer
                 open={open}
                 onClose={onCloseAction}
-                closeLabel={t('cancel')}
+                closeLabel={t('phones.close')}
                 closeDisabled={r.removing}
                 title={device?.name ?? ''}
                 footer={
@@ -59,8 +59,12 @@ export function PhoneDetailDrawer({ open, device, onCloseAction }: { open: boole
                         </div>
                         <div className="flex items-center justify-between gap-4 px-4 py-3">
                             <dt className="text-ink-muted">{t('phones.columns.lastSeen')}</dt>
-                            <dd className="font-mono text-xs text-ink">
-                                {device.lastSeenAt ? formatDate(locale, device.lastSeenAt, ADMIN_DEVICE_DATE_FORMAT) : t('phones.never')}
+                            <dd className="text-ink">
+                                {device.lastSeenAt ? (
+                                    <span className="font-mono text-xs">{formatDate(locale, device.lastSeenAt, ADMIN_DEVICE_DATE_FORMAT)}</span>
+                                ) : (
+                                    t('phones.never')
+                                )}
                             </dd>
                         </div>
                         <div className="flex items-center justify-between gap-4 px-4 py-3">

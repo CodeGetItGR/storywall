@@ -22,9 +22,9 @@ export function PhonesTable({ devices, onOpenAction }: { devices: AdminDeviceDto
                         <th className="px-4 py-3 font-bold">{t('columns.name')}</th>
                         <th className="hidden px-3 py-3 font-bold md:table-cell">{t('columns.paired')}</th>
                         <th className="px-3 py-3 font-bold">{t('columns.lastSeen')}</th>
-                        <th className="px-3 py-3 font-bold">{t('columns.notifications')}</th>
+                        <th className="hidden px-3 py-3 font-bold sm:table-cell">{t('columns.notifications')}</th>
                         <th className="w-10 px-2 py-3">
-                            <span className="sr-only">{t('open')}</span>
+                            <span className="sr-only">{t('actions')}</span>
                         </th>
                     </tr>
                 </thead>
@@ -39,10 +39,14 @@ export function PhonesTable({ devices, onOpenAction }: { devices: AdminDeviceDto
                             <td className="hidden px-3 py-3 font-mono text-xs whitespace-nowrap text-ink-muted md:table-cell">
                                 {formatDate(locale, device.createdAt, ADMIN_DEVICE_DATE_FORMAT)}
                             </td>
-                            <td className="px-3 py-3 font-mono text-xs whitespace-nowrap text-ink-muted">
-                                {device.lastSeenAt ? formatDate(locale, device.lastSeenAt, ADMIN_DEVICE_DATE_FORMAT) : t('never')}
+                            <td className="px-3 py-3 whitespace-nowrap text-ink-muted">
+                                {device.lastSeenAt ? (
+                                    <span className="font-mono text-xs">{formatDate(locale, device.lastSeenAt, ADMIN_DEVICE_DATE_FORMAT)}</span>
+                                ) : (
+                                    t('never')
+                                )}
                             </td>
-                            <td className="px-3 py-3">
+                            <td className="hidden px-3 py-3 sm:table-cell">
                                 <PhonePushPill enabled={device.pushEnabled} />
                             </td>
                             <td className="px-2 py-3">
@@ -50,7 +54,7 @@ export function PhonesTable({ devices, onOpenAction }: { devices: AdminDeviceDto
                                     type="button"
                                     data-device-id={device.id}
                                     onClick={onOpenAction}
-                                    aria-label={`${t('open')} ${device.name}`}
+                                    aria-label={t('open', { name: device.name })}
                                     className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-canvas hover:text-ink"
                                 >
                                     <ChevronRight aria-hidden="true" className="h-4 w-4" />

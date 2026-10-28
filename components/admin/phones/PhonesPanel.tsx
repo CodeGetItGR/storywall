@@ -13,7 +13,7 @@ import { adminErrorMessageKey } from '@/lib/adminUtils';
 // The admin's paired phones (spec 2026-10-28-admin-phone-widget-design).
 export function PhonesPanel() {
     const t = useTranslations('AdminPage');
-    const { query, devices, create, detail, handleAddClick, closeCreate, handleOpenClick, closeDetail } = usePhonesPanel();
+    const { query, devices, create, detail, handleAddClick, closeCreate, handleCreateClosed, handleOpenClick, closeDetail } = usePhonesPanel();
 
     return (
         <section className="space-y-4">
@@ -38,7 +38,7 @@ export function PhonesPanel() {
             </section>
 
             {/* Drawers */}
-            <PhoneCreateDrawer key={`create-${create.token}`} open={create.open} onCloseAction={closeCreate} />
+            <PhoneCreateDrawer key={`create-${create.token}`} open={create.open} onCloseAction={closeCreate} onClosedAction={handleCreateClosed} />
             <PhoneDetailDrawer key={`detail-${detail.token}`} open={detail.open} device={detail.device} onCloseAction={closeDetail} />
         </section>
     );

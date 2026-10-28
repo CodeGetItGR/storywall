@@ -8,7 +8,7 @@ export function PhonePushPill({ enabled }: { enabled: boolean }) {
     return (
         <span
             className={cn(
-                'inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold',
+                'inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold whitespace-nowrap',
                 enabled ? 'bg-status-good-wash text-status-good' : 'bg-status-neutral-wash text-status-neutral',
             )}
         >
