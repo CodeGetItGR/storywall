@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 import { defaultLocale, type Locale, locales } from '@/i18n/config';
-import { getForBusinessPath, getPublicLandingPath, getQrWeddingPath } from '@/i18n/publicLocale';
+import { getForBusinessPath, getPublicLandingPath, getQrWeddingPath, localizeLegalHref } from '@/i18n/publicLocale';
 
 // Single source for the production origin. Canonicals, alternates, the
 // sitemap and structured data all build absolute URLs from it, so it must
@@ -65,6 +65,14 @@ export function qrWeddingLanguageAlternates(): Record<string, string> {
     const languages: Record<string, string> = {};
     for (const locale of locales) languages[locale] = absoluteUrl(getQrWeddingPath(locale));
     languages['x-default'] = absoluteUrl(getQrWeddingPath(defaultLocale));
+    return languages;
+}
+
+// And for a contact or legal page, given its English path.
+export function legalPageLanguageAlternates(path: string): Record<string, string> {
+    const languages: Record<string, string> = {};
+    for (const locale of locales) languages[locale] = absoluteUrl(localizeLegalHref(path, locale));
+    languages['x-default'] = absoluteUrl(path);
     return languages;
 }
 
@@ -148,6 +156,18 @@ export function buildQrWeddingMetadata(locale: Locale, copy: PageMetadataCopy): 
         locale,
         path: getQrWeddingPath(locale),
         languages: qrWeddingLanguageAlternates(),
+        imagePath: OG_IMAGE_PATH,
+        copy,
+    });
+}
+
+// A contact or legal page in the request's language, given its English path. It shares the
+// landing's OG image.
+export function buildLegalPageMetadata(locale: Locale, path: string, copy: PageMetadataCopy): Metadata {
+    return buildIndexableMetadata({
+        locale,
+        path: localizeLegalHref(path, locale),
+        languages: legalPageLanguageAlternates(path),
         imagePath: OG_IMAGE_PATH,
         copy,
     });

@@ -1,9 +1,16 @@
 import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { MarkdownDocument } from '@/components/legal/MarkdownDocument';
 
-afterEach(cleanup);
+const intl = vi.hoisted(() => ({ locale: 'en' }));
+
+vi.mock('next-intl', () => ({ useLocale: () => intl.locale }));
+
+afterEach(() => {
+    cleanup();
+    intl.locale = 'en';
+});
 
 const source = ['# Community Guidelines', '', '## 6. Harassment, threats and bullying', '', 'Text.', '', '### 6.1 Examples', '', '## Contact'].join(
     '\n',
@@ -28,6 +35,12 @@ describe('MarkdownDocument links', () => {
         render(<MarkdownDocument source={'See the [Privacy Policy](/legal/privacy) or write to help@storywall.gr.'} />);
         expect(screen.getByRole('link', { name: 'Privacy Policy' })).toHaveAttribute('href', '/legal/privacy');
         expect(screen.getByRole('link', { name: 'help@storywall.gr' })).toHaveAttribute('href', 'mailto:help@storywall.gr');
+    });
+
+    it('keeps a Greek reader on the Greek legal pages', () => {
+        intl.locale = 'el';
+        render(<MarkdownDocument source={'See the [Privacy Policy](/legal/privacy#section-3).'} />);
+        expect(screen.getByRole('link', { name: 'Privacy Policy' })).toHaveAttribute('href', '/el/legal/privacy#section-3');
     });
 
     it('opens external links in a new tab', () => {

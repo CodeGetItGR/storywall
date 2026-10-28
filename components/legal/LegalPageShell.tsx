@@ -1,21 +1,24 @@
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
 import { Logo } from '@/components/common/Logo';
 import { AppLink } from '@/components/ui/AppLink';
+import type { Locale } from '@/i18n/config';
+import { getPublicLandingPath, localizeLegalHref } from '@/i18n/publicLocale';
 import { LEGAL_PAGE_LINKS, type LegalPageKey } from '@/lib/legalDocuments';
 import { cn } from '@/lib/utils';
 
 // The frame of every public legal page. The body never scrolls (RootDocument locks it to the
-// viewport), so this is the page's scroll container.
+// viewport), so this is the page's scroll container. Its links stay in the page's language.
 export function LegalPageShell({ current, children }: { current: LegalPageKey; children: ReactNode }) {
     const t = useTranslations('LegalPages');
+    const locale = useLocale() as Locale;
 
     return (
         <div className="h-full overflow-y-auto overscroll-contain bg-background">
             {/* Header */}
             <header className="mx-auto w-full max-w-3xl px-4 pt-6">
-                <AppLink href="/" aria-label={t('home')} className="inline-flex">
+                <AppLink href={getPublicLandingPath(locale)} aria-label={t('home')} className="inline-flex">
                     <Logo iconClassName="h-7 w-auto" wordmarkClassName="h-5 w-auto" />
                 </AppLink>
             </header>
@@ -29,7 +32,7 @@ export function LegalPageShell({ current, children }: { current: LegalPageKey; c
                     {LEGAL_PAGE_LINKS.map(({ key, href }) => (
                         <AppLink
                             key={key}
-                            href={href}
+                            href={localizeLegalHref(href, locale)}
                             aria-current={key === current ? 'page' : undefined}
                             className={cn('hover:text-ink', key === current ? 'text-ink' : 'text-ink-muted')}
                         >

@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 
 import { useMe } from '@/hooks/useMe';
+import { defaultLocale, locales } from '@/i18n/config';
 
 // Pages that stay reachable while the gate is up. /legal/ holds the guidelines and
 // the Terms themselves (the gate's links open them in a new tab). The auth pages and
@@ -14,6 +15,8 @@ import { useMe } from '@/hooks/useMe';
 const UNGATED_PREFIXES = [
     '/demo',
     '/legal/',
+    // The same legal pages in another language (/el/legal/terms).
+    ...locales.filter((locale) => locale !== defaultLocale).map((locale) => `/${locale}/legal/`),
     '/login',
     '/register',
     '/verify-email',

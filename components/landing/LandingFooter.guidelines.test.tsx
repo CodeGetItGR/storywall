@@ -22,10 +22,10 @@ describe('LandingFooter', () => {
         vi.unstubAllEnvs();
     });
 
-    it('links to the community guidelines', async () => {
+    it('links to the community guidelines in the page language', async () => {
         render(await LandingFooter());
 
-        expect(screen.getByRole('link', { name: 'communityGuidelines' })).toHaveAttribute('href', '/legal/community-guidelines');
+        expect(screen.getByRole('link', { name: 'communityGuidelines' })).toHaveAttribute('href', '/el/legal/community-guidelines');
     });
 
     it('links to the public content notice form', async () => {
@@ -34,14 +34,14 @@ describe('LandingFooter', () => {
         expect(screen.getByRole('link', { name: 'reportContent' })).toHaveAttribute('href', '/report-content');
     });
 
-    it('links every legal page', async () => {
+    it('links every legal page in the page language', async () => {
         render(await LandingFooter());
 
-        expect(screen.getByRole('link', { name: 'legalLinks.privacy' })).toHaveAttribute('href', '/legal/privacy');
-        expect(screen.getByRole('link', { name: 'legalLinks.terms' })).toHaveAttribute('href', '/legal/terms');
-        expect(screen.getByRole('link', { name: 'legalLinks.cookies' })).toHaveAttribute('href', '/legal/cookies');
-        expect(screen.getByRole('link', { name: 'legalLinks.withdrawal' })).toHaveAttribute('href', '/legal/withdrawal-terms');
-        expect(screen.getByRole('link', { name: 'legalLinks.contact' })).toHaveAttribute('href', '/contact');
+        expect(screen.getByRole('link', { name: 'legalLinks.privacy' })).toHaveAttribute('href', '/el/legal/privacy');
+        expect(screen.getByRole('link', { name: 'legalLinks.terms' })).toHaveAttribute('href', '/el/legal/terms');
+        expect(screen.getByRole('link', { name: 'legalLinks.cookies' })).toHaveAttribute('href', '/el/legal/cookies');
+        expect(screen.getByRole('link', { name: 'legalLinks.withdrawal' })).toHaveAttribute('href', '/el/legal/withdrawal-terms');
+        expect(screen.getByRole('link', { name: 'legalLinks.contact' })).toHaveAttribute('href', '/el/contact');
     });
 
     it('links every social profile in a new tab', async () => {
