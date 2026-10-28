@@ -29,6 +29,7 @@ export function DemoUploadScreen() {
                         theme={event.theme}
                         eventTitle={event.title}
                         eventSubtitle={event.subtitle}
+                        scroll="page"
                     >
                         {/* Demo notice */}
                         <DemoGuestNotice>{tDemo('uploadNotice')}</DemoGuestNotice>
