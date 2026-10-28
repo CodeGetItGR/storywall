@@ -42,11 +42,16 @@ describe('sitemap', () => {
         expect(byUrl.get(`${SITE_URL}/el/epaggelmaties`)?.alternates?.languages).toEqual(forBusinessLanguageAlternates());
     });
 
-    it('lists only the landing and the wedding QR pages on the production site before launch', async () => {
+    it('lists only the landing and the launched occasion pages on the production site', async () => {
         vi.stubEnv('VERCEL_ENV', 'production');
-        serverPublicConfigGet.mockResolvedValue({ eventTypes: [{ eventTypeKey: 'WEDDING', isEnabled: true }] });
+        serverPublicConfigGet.mockResolvedValue({
+            eventTypes: [
+                { eventTypeKey: 'WEDDING', isEnabled: true },
+                { eventTypeKey: 'BAPTISM', isEnabled: true },
+            ],
+        });
         const urls = (await sitemap()).map((entry) => entry.url);
-        expect(urls).toEqual([SITE_URL, `${SITE_URL}/el`, `${SITE_URL}/wedding-qr-code`, `${SITE_URL}/el/qr-code-gamou`]);
+        expect(urls).toEqual([SITE_URL, `${SITE_URL}/el`, `${SITE_URL}/weddings`, `${SITE_URL}/el/gamos`]);
     });
 
     it('gives the wedding QR pages their language alternates', async () => {

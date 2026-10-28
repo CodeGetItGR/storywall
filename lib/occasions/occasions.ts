@@ -9,24 +9,26 @@ export type Occasion = {
     slugs: Record<Locale, string>;
     // Copy exists in both languages. A page goes live only when ready and the type is enabled.
     ready: boolean;
+    // Live on the production site too. The rest stay off it until launch (lib/unreleasedPages.ts).
+    launched: boolean;
 };
 
 // One list drives the routes, sitemap, hreflang and every link to an occasion page.
 export const OCCASIONS: readonly Occasion[] = [
-    { eventType: 'WEDDING', slugs: { en: 'weddings', el: 'gamos' }, ready: true },
-    { eventType: 'BAPTISM', slugs: { en: 'baptisms', el: 'vaptisi' }, ready: true },
-    { eventType: 'BIRTHDAY', slugs: { en: 'birthdays', el: 'genethlia' }, ready: false },
-    { eventType: 'BABY_SHOWER', slugs: { en: 'baby-showers', el: 'baby-shower' }, ready: false },
-    { eventType: 'GENDER_REVEAL', slugs: { en: 'gender-reveal', el: 'gender-reveal' }, ready: false },
-    { eventType: 'REUNION', slugs: { en: 'reunions', el: 'reunion' }, ready: false },
-    { eventType: 'PRIVATE_PARTY', slugs: { en: 'private-parties', el: 'idiotiko-parti' }, ready: false },
-    { eventType: 'SOCIAL_EVENT', slugs: { en: 'social-events', el: 'koinonikes-ekdiloseis' }, ready: false },
+    { eventType: 'WEDDING', slugs: { en: 'weddings', el: 'gamos' }, ready: true, launched: true },
+    { eventType: 'BAPTISM', slugs: { en: 'baptisms', el: 'vaptisi' }, ready: true, launched: false },
+    { eventType: 'BIRTHDAY', slugs: { en: 'birthdays', el: 'genethlia' }, ready: false, launched: false },
+    { eventType: 'BABY_SHOWER', slugs: { en: 'baby-showers', el: 'baby-shower' }, ready: false, launched: false },
+    { eventType: 'GENDER_REVEAL', slugs: { en: 'gender-reveal', el: 'gender-reveal' }, ready: false, launched: false },
+    { eventType: 'REUNION', slugs: { en: 'reunions', el: 'reunion' }, ready: false, launched: false },
+    { eventType: 'PRIVATE_PARTY', slugs: { en: 'private-parties', el: 'idiotiko-parti' }, ready: false, launched: false },
+    { eventType: 'SOCIAL_EVENT', slugs: { en: 'social-events', el: 'koinonikes-ekdiloseis' }, ready: false, launched: false },
 ];
 
-// None on the production site until the pages launch (lib/unreleasedPages.ts).
+// On the production site, only the launched ones (lib/unreleasedPages.ts).
 export function readyOccasions(): Occasion[] {
-    if (!showsUnreleasedPages()) return [];
-    return OCCASIONS.filter((occasion) => occasion.ready);
+    const showsUnreleased = showsUnreleasedPages();
+    return OCCASIONS.filter((occasion) => occasion.ready && (occasion.launched || showsUnreleased));
 }
 
 // Ready occasions whose event type is enabled. null (config unknown) → every ready occasion,
