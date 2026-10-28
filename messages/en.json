@@ -5718,6 +5718,32 @@
             "body": "This event doesn't have a photo upload code yet."
         }
     },
+    "QrCardPage": {
+        "title": "Print card",
+        "back": "Back",
+        "missing": "This QR code is no longer available.",
+        "cardLabel": "QR card: {title}",
+        "templates": "Design",
+        "plain": "Plain",
+        "templatesFailed": "Couldn't load the designs.",
+        "retry": "Try again",
+        "fields": {
+            "title": "Title",
+            "line": "Text",
+            "giver": "From"
+        },
+        "actions": {
+            "print": "Print",
+            "png": "Save PNG",
+            "pdf": "Save PDF",
+            "failed": "Couldn't save the card. Try again."
+        },
+        "lines": {
+            "join": "Scan to join",
+            "invitation": "Scan to open your invitation",
+            "gallery": "Scan to add your photos"
+        }
+    },
     "InvitationsQrPage": {
         "title": "Share links",
         "back": "Back to feed",
