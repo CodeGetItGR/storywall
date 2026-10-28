@@ -1,9 +1,10 @@
 'use client';
 
-import { AlertTriangle, BarChart3, Copy, Lock, Pencil, QrCode, Share2, Trash2 } from 'lucide-react';
+import { AlertTriangle, BarChart3, Copy, Eye, Lock, Pencil, QrCode, Share2, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type ChangeEvent, useCallback, useState } from 'react';
 
+import { AppLink } from '@/components/ui/AppLink';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useCopyText } from '@/hooks/useCopyText';
@@ -11,6 +12,7 @@ import { useNativeShare } from '@/hooks/useNativeShare';
 import { useRevokeQrLink, useUpdateQrLink } from '@/hooks/useQrLinks';
 import { useShareLink } from '@/hooks/useShareLink';
 import type { QrLinkResponseDto, QrLinkStatsDto } from '@/lib/api/types';
+import { demoGuestPagePathForEvent } from '@/lib/demo/demoRouting';
 import { isHostManagedQrLink } from '@/lib/qrLinks';
 import { getQrStatusTone, type QrDisplayStatus } from '@/lib/statusTones';
 import { cn } from '@/lib/utils';
@@ -33,6 +35,7 @@ export function QrLinkRow({
 }) {
     const t = useTranslations('ManagePage');
     const tGlobal = useTranslations();
+    const tDemo = useTranslations('Demo');
     const [previewOpen, setPreviewOpen] = useState(false);
     const [statsOpen, setStatsOpen] = useState(false);
     const [revokeConfirmOpen, setRevokeConfirmOpen] = useState(false);
@@ -51,6 +54,8 @@ export function QrLinkRow({
     const canEditLimit = canWrite && qrLink.targetType === 'INVITATION' && qrLink.maxGuests !== null;
     const remainingSlots = stats?.remainingSlots ?? null;
     const isLowOnSlots = remainingSlots !== null && remainingSlots <= 5;
+    // Only in the demo: the invitation a guest would see, on this device.
+    const demoInviteHref = status === 'ACTIVE' ? demoGuestPagePathForEvent(eventId, 'invite') : null;
 
     const handleStartEditing = useCallback(() => {
         if (!canEditLimit) return;
@@ -194,6 +199,15 @@ export function QrLinkRow({
                     <QrCode className="h-3.5 w-3.5" />
                     {t('qr.preview')}
                 </button>
+                {demoInviteHref && (
+                    <AppLink
+                        href={demoInviteHref}
+                        className="flex items-center gap-1.5 rounded-full bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-ink"
+                    >
+                        <Eye className="h-3.5 w-3.5" />
+                        {tDemo('previewInvite')}
+                    </AppLink>
+                )}
                 <button
                     type="button"
                     onClick={handleCopy}

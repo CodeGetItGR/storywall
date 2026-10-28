@@ -56,7 +56,11 @@
         "rateLimitedTitle": "The demo is busy right now.",
         "rateLimitedBody": "Try again in a minute.",
         "failedTitle": "The demo couldn’t start in this browser.",
-        "failedBody": "Try reloading the page, or use a different browser."
+        "failedBody": "Try reloading the page, or use a different browser.",
+        "uploadNotice": "This is a demo. Your photos stay on this device.",
+        "inviteNotice": "This is a demo. Your guests see this page and join from here.",
+        "tryUpload": "Try uploading",
+        "previewInvite": "Preview invitation"
     },
     "EventNotFound": {
         "title": "This celebration seems to have wandered off",

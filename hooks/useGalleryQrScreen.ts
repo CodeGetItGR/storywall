@@ -2,6 +2,7 @@
 
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { useEventQrLinks } from '@/hooks/useQrLinks';
+import { demoGuestPagePathForEvent } from '@/lib/demo/demoRouting';
 import { findGalleryQrLink, isGalleryQrFeatureEnabled } from '@/lib/qrLinks';
 
 export function useGalleryQrScreen() {
@@ -16,6 +17,8 @@ export function useGalleryQrScreen() {
     const qrLink = findGalleryQrLink(qrLinks ?? []);
 
     return {
+        // Only in the demo: its upload page, on this device.
+        demoUploadHref: demoGuestPagePathForEvent(eventId, 'upload'),
         eventId,
         featureEnabled,
         isLoading,
