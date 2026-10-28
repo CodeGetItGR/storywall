@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { NextRequest } from 'next/server';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { localeCookieName } from '@/i18n/config';
 import { PUBLIC_LOCALE_HEADER } from '@/i18n/publicMessages';
@@ -225,5 +225,23 @@ describe('proxy partner page locale', () => {
         const res = await proxy(partnerRequest('http://localhost/wedding-qr-code', 'el-GR'));
         expect(res.status).toBe(200);
         expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('en');
+    });
+});
+
+describe('proxy wedding QR page before launch', () => {
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    it.each([
+        ['/wedding-qr-code', '/weddings'],
+        ['/el/qr-code-gamou', '/el/gamos'],
+    ])('sends %s to %s for now, keeping the query string', async (from, to) => {
+        vi.stubEnv('VERCEL_ENV', 'production');
+        const res = await proxy(new NextRequest(`http://localhost${from}?utm_source=instagram`));
+        expect(res.status).toBe(307);
+        const location = new URL(res.headers.get('location') ?? '');
+        expect(location.pathname).toBe(to);
+        expect(location.searchParams.get('utm_source')).toBe('instagram');
     });
 });
