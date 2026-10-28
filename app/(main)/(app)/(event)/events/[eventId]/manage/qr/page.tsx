@@ -5,6 +5,7 @@ import { usageKeys } from '@/hooks/useUsage';
 import { vendorKeys } from '@/hooks/useVendors';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
+import { prefetchQrCardTemplates } from '@/lib/api/prefetchQrCardTemplates';
 import { serverGet, serverGetOrNull } from '@/lib/api/serverFetch';
 import type { EventUsageResponseDto, QrLinkResponseDto, QrLinkStatsDto, VendorMeDto } from '@/lib/api/types';
 import { resolveServerEventContext } from '@/lib/auth/serverEventContext';
@@ -30,30 +31,45 @@ async function prefetchHostData(queryClient: QueryClient, eventId: string, acces
     }
 }
 
-// A planner with the QR_READ tool open gets the links only: no stats, no usage.
+async function prefetchPlannerLinks(queryClient: QueryClient, eventId: string, accessToken: string) {
+    try {
+        const qrLinks = await serverGet<QrLinkResponseDto[]>(endpoints.events.qrLinks(eventId), accessToken);
+        queryClient.setQueryData(qrLinkKeys.list(eventId), normalizeList(qrLinks).items);
+    } catch {
+        // Best-effort — useEventQrLinks fetches normally on the client if this fails.
+    }
+}
+
+// A planner with the QR_READ tool open gets the links and the card designs: no stats, no usage.
 async function prefetchPlannerData(queryClient: QueryClient, eventId: string, accessToken: string) {
     try {
         const me = await serverGetOrNull<VendorMeDto>(endpoints.events.vendorMe(eventId), accessToken);
         queryClient.setQueryData(vendorKeys.me(eventId), me);
         if (!hasVendorCapability(me, 'QR_READ')) return;
-        const qrLinks = await serverGet<QrLinkResponseDto[]>(endpoints.events.qrLinks(eventId), accessToken);
-        queryClient.setQueryData(qrLinkKeys.list(eventId), normalizeList(qrLinks).items);
     } catch {
         // Best-effort — the hooks fetch normally on the client if this fails.
+        return;
     }
+    await Promise.all([prefetchPlannerLinks(queryClient, eventId, accessToken), prefetchQrCardTemplates(queryClient, eventId, accessToken)]);
 }
 
 // Prefetches the event's QR links, their stats, and usage (host-only) so
 // InvitationsQrScreen finds them already cached instead of showing its
-// loading state. A planner gets the vendor role and the links.
+// loading state. A planner gets the vendor role and the links. Both get the card designs, so Print knows where to go.
 export default async function Page({ params }: PageProps) {
     const { eventId } = await params;
     const queryClient = makeQueryClient();
     const context = await resolveServerEventContext(eventId);
 
     if (context) {
-        if (context.isHost) await prefetchHostData(queryClient, eventId, context.accessToken);
-        else await prefetchPlannerData(queryClient, eventId, context.accessToken);
+        if (context.isHost) {
+            await Promise.all([
+                prefetchHostData(queryClient, eventId, context.accessToken),
+                prefetchQrCardTemplates(queryClient, eventId, context.accessToken),
+            ]);
+        } else {
+            await prefetchPlannerData(queryClient, eventId, context.accessToken);
+        }
     }
 
     return (

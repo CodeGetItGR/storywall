@@ -1,6 +1,7 @@
 'use client';
 
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
+import { useQrCardHref } from '@/hooks/useQrCardTemplates';
 import { useEventQrLinks } from '@/hooks/useQrLinks';
 import { demoGuestPagePathForEvent } from '@/lib/demo/demoRouting';
 import { findGalleryQrLink, isGalleryQrFeatureEnabled } from '@/lib/qrLinks';
@@ -15,8 +16,10 @@ export function useGalleryQrScreen() {
     const featureEnabled = isGalleryQrFeatureEnabled(activeEvent?.modules);
 
     const qrLink = findGalleryQrLink(qrLinks ?? []);
+    const cardHref = useQrCardHref(eventId, qrLink?.id ?? '');
 
     return {
+        cardHref: qrLink ? cardHref : null,
         // Only in the demo: its upload page, on this device.
         demoUploadHref: demoGuestPagePathForEvent(eventId, 'upload'),
         eventId,
