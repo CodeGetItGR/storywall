@@ -87,7 +87,7 @@ All day boundaries use `Europe/Athens`. Each number comes from the service the a
 | Growth | `signUpsToday` | The funnel's `signedUp` for today |
 | | `liveEvents` | `activeEvents` from the platform metrics |
 | | `visitorsToday` | Visitors from the visitor metrics service for today, cached. `null` when Google Analytics is not set up or fails |
-| Costs and health | `costs` | The latest reconciled week only. Each provider reports the 7 days before the Monday run. The week is the newest `periodEnd` among each provider's latest reading that has an amount. Per currency: the sum of the readings for that week, plus `periodStart`/`periodEnd` (so the widget can label it, e.g. "20–26 Oct") and `asOf` (the newest `fetchedAt` among them). A provider whose latest reading is from an older week, or that was never reconciled, is left out |
+| Costs and health | `costs` | The newest Monday run's readings only. Per currency: the sum of the readings with an amount from that run, plus `asOf` (when the run fetched them), which the widget shows as the date, e.g. "Costs · 26 Oct". A provider missing from that run, or never reconciled, is left out. The readings mix periods as fetched today: Vercel and Stripe report the last 7 days, Railway its month-to-date estimate, R2 an estimated monthly storage cost, so the widget shows a date, not a range |
 | | `storageUsedBytes` | `usedBytes` from the platform storage metrics |
 | | `generatedAt` | Server time of the response |
 
