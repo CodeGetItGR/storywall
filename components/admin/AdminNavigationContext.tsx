@@ -21,6 +21,7 @@ import {
     PartyPopper,
     Receipt,
     ShoppingBag,
+    Smartphone,
     Smile,
     Star,
     TicketPercent,
@@ -66,7 +67,8 @@ export type AdminTab =
     | 'appReviews'
     | 'campaignOverview'
     | 'campaigns'
-    | 'siteNotices';
+    | 'siteNotices'
+    | 'phones';
 
 export type AdminTabItem = {
     key: AdminTab;
@@ -112,6 +114,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#campaign-overview': 'campaignOverview',
     '#campaigns': 'campaigns',
     '#site-notices': 'siteNotices',
+    '#phones': 'phones',
 };
 
 const TAB_TO_HASH: Record<AdminTab, string> = {
@@ -141,6 +144,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     errorEvents: '#errors',
     appReviews: '#reviews',
     siteNotices: '#site-notices',
+    phones: '#phones',
 };
 
 const AdminNavigationContext = createContext<
@@ -239,6 +243,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'reports', label: t('reports'), icon: Flag },
             { key: 'bugReports', label: t('bugReports'), icon: Bug },
             { key: 'errorEvents', label: t('errorEvents'), icon: OctagonAlert },
+            { key: 'phones', label: t('phones'), icon: Smartphone },
         ],
         [t],
     );

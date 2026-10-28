@@ -2912,6 +2912,7 @@
             "demoEvents": "Demo events",
             "partnerCards": "Partner cards",
             "siteNotices": "Site notices",
+            "phones": "Phones",
             "campaigns": "Campaigns",
             "campaignOverview": "Campaign overview"
         },
@@ -5351,6 +5352,28 @@
                 "language": "Language",
                 "device": "Device"
             }
+        },
+        "phones": {
+            "add": "Add phone",
+            "empty": "No phones paired.",
+            "createTitle": "Add phone",
+            "create": "Create code",
+            "done": "Done",
+            "close": "Close",
+            "open": "Open {name}",
+            "actions": "Actions",
+            "never": "Never",
+            "scan": "Scan it with the StoryWall Admin app.",
+            "shownOnce": "This code is shown only once.",
+            "qrLabel": "Pairing code for {name}",
+            "remove": "Remove phone",
+            "removeTitle": "Remove this phone?",
+            "removeBody": "It stops updating right away.",
+            "removeConfirm": "Remove",
+            "fields": { "name": "Name" },
+            "columns": { "name": "Name", "paired": "Paired", "lastSeen": "Last seen", "notifications": "Notifications" },
+            "push": { "on": "On", "off": "Off" },
+            "problems": { "name": "Enter a name." }
         },
         "siteNotices": {
             "create": "New notice",
