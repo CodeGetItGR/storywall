@@ -25,7 +25,7 @@ Hosts can print their QR codes as designed A6 cards. Admins curate a catalog of 
 | Gating | A new plan module, `qr_cards`. Without it, today's flow is unchanged and templates are hidden. |
 | Output | Print, PNG, PDF. Today's "Download SVG" (code only) stays. |
 | Rendering | In the browser, from one SVG. The PDF holds a 300 dpi image. |
-| Demo | Unchanged: the demo keeps today's flow. |
+| Demo | Unchanged: the demo keeps today's flow. Its mock backend answers that templates are unavailable. |
 | Delivery | Backend PR in `event_social_media`, then frontend PR here. Both into `staging`. |
 
 ## Backend (`event_social_media`)
@@ -72,10 +72,12 @@ A template is offered to hosts only when it is not archived and has artwork.
 | `POST /api/admin/qr-card-templates` | Admin | Create. No artwork yet. |
 | `PATCH /api/admin/qr-card-templates/{id}` | Admin | Omitted fields stay. `clearHeadingFont` to remove the font. |
 | `POST /api/admin/qr-card-templates/{id}/artwork` | Admin | Multipart `file`. Returns the admin DTO. |
-| `GET /api/events/{eventId}/qr-card-templates` | Anyone who can read the event's QR links, and the gift giver | Offered templates for the event's type, sorted. `[]` when the module isn't readable. |
+| `GET /api/events/{eventId}/qr-card-templates` | Anyone who can read the event's QR links, and the gift giver | `{ available, templates }`. `available` is whether the module is readable, drafts included. `templates` holds the offered templates for the event's type, sorted, and is empty when `available` is false. |
 | `GET /api/qr-card-templates/{id}/artwork/{version}` | Public | The artwork bytes, `image/png` or `image/webp`. 404 for an unknown id or a stale version. |
 
 Host DTO `QrCardTemplateDto`: `id`, `name`, `artworkUrl`, `textColor`, `headingFont` (the existing `EventThemeFontDto` shape), `codeColor`, `dotShape`, `cornerShape`, `centerLogo`.
+
+Why `available`: every event gets an enabled `qr_cards` row whatever its plan, the event payload carries no plan, and a draft's `isAvailable` is always false. So the frontend can't tell from the event whether it has QR cards, and asks this endpoint instead (decided 2026-10-28).
 
 Admin DTO adds `eventTypes`, `sortOrder`, `archived`, and a nullable `artworkUrl`. It uses `AdminThemeFontSummaryDto` for the font.
 
@@ -85,7 +87,7 @@ Admin DTO adds `eventTypes`, `sortOrder`, `archived`, and a nullable `artworkUrl
 
 - Code colour contrast is accepted at 4.5:1 and rejected below it.
 - Artwork: type, size, minimum width and ratio, each rejected with the right error.
-- The host list filters by event type, hides archived templates and templates without artwork, and returns `[]` without the module.
+- The host list filters by event type, hides archived templates and templates without artwork, and answers `available: false` with no templates without the module.
 - The host list works on a DRAFT event.
 - A stale artwork version returns 404.
 
@@ -96,7 +98,7 @@ Admin DTO adds `eventTypes`, `sortOrder`, `archived`, and a nullable `artworkUrl
 - **`lib/qrCard.ts`** (pure functions):
   - QR grid to SVG paths for each dot shape and corner shape.
   - Text fitting: shrink the font size until the text fits its box, with a floor.
-  - The default line key for each QR target type and for the gift card.
+  - The default line key for each QR target type. The gift card keeps its existing "Scan to claim your gift".
   - A file name built from the title, falling back to `storywall-qr`.
 - **`components/qrCard/QrCardSvg.tsx`**: the card as one SVG with a 105 × 148 viewBox in millimetres:
   - Artwork full-bleed underneath. "Plain" draws white instead.
@@ -106,30 +108,33 @@ Admin DTO adds `eventTypes`, `sortOrder`, `archived`, and a nullable `artworkUrl
   - An 8 mm safe margin on every side.
   - A `<title>` for screen readers.
 - **QR grid**: from `uqr`. Error correction is H when the logo is on, otherwise Q.
-- **"Plain"** is built in, not from the backend: white card, ink text, app font, ink code, square dots and corners, logo on. It is today's look at A6.
+- **"Plain"** is built in, not from the backend: white card, ink text, ink code, square dots and corners, logo on. It is today's look at A6. Its text uses a system sans-serif (Arial), so Plain has no font to inline when saved. A template without a heading font uses the same.
 
 ### Export (`hooks/useQrCardExport.ts`)
 
-- **Print**: a print-only copy of the SVG at `105mm × 148mm` with `@page { size: 105mm 148mm; margin: 0 }`, then `window.print()`.
+- **Print**: the on-screen card itself. While the card page is open, print rules set `@page { size: 105mm 148mm; margin: 0 }`, size the card to `105mm × 148mm` and zero the page's own margins and padding, then `window.print()`.
 - **PNG**:
   1. Serialize the SVG, with the heading font inlined as a base64 `@font-face` and the artwork inlined as a data URI.
   2. Draw it on a 1240 × 1748 canvas.
   3. Save it with `toBlob('image/png')`.
 - **PDF**: `pdf-lib`, loaded with a dynamic import on click. One A6 page (297.64 × 419.53 pt) holding that PNG full-page.
-- **Proxy route**: `app/api/qr-card-artwork/[templateId]/[file]/route.ts` mirrors the theme-font route:
+- **Proxy route**: `app/api/qr-card-artwork/[templateId]/[version]/route.ts` mirrors the theme-font route:
   - It validates the id and version.
   - It forwards the client IP and uses `redirect: 'error'`.
   - A 200 is cached for a year, at the CDN too. Everything else is `no-store`.
   - Content type is allowlisted to `image/png` and `image/webp`.
   - Same-origin artwork keeps the canvas untainted.
+- **CSP**: `img-src` already allows `data:` and `blob:`. If the browser blocks the inlined font under `font-src 'self'`, `font-src` gains `data:`. This is checked in the browser before the PR.
 
 ### Host screens
 
 - **Gating**:
-  - `isQrCardsEnabled(modules)` in `lib/qrLinks.ts` is true when the `qr_cards` module row is enabled. That is `isEnabled`, not `isAvailable`, for the draft reason `canPickTheme` documents.
-  - Off: everything stays as today.
-  - On: the "Print" button in `QrCodeCard` links to the card page.
+  - The designer shows when the host list answers `available: true`. Neither module flag can say this (see the backend's "Why `available`").
+  - Off, still loading, or the list failed: everything stays as today. The gift card page waits for the list before it draws, so it never swaps layouts in front of the host.
+  - On: the "Print" button in `QrCodeCard` (a new `cardHref` prop) links to the card page, and the gift card page shows the designer.
   - Copy link, Download SVG and Share stay either way.
+  - The QR screens and the gift card page prefetch the list on the server, so the button is right on a full page load.
+  - `qr_cards` joins `EVENT_MODULE_KEYS` and `OCCASION_HIDDEN_MODULES`, so the occasion pages never list it.
 - **Card page**:
   - Route `/events/[eventId]/manage/qr/[qrLinkId]/card`, used for share links and the gallery QR.
   - The back link goes to the gallery QR page for a `MEDIA_UPLOAD` link, and to the share links page otherwise.
@@ -157,32 +162,35 @@ Admin DTO adds `eventTypes`, `sortOrder`, `archived`, and a nullable `artworkUrl
   - Loading: the card page skeleton.
   - Template fetch failed: "Plain" only, plus a short retry line.
   - Module on but no templates for this event type: "Plain" only.
-  - QR link not found or revoked: the existing not-found treatment with the back link.
-  - Export failed (font, artwork or canvas): an error toast. The page stays usable.
+  - QR link not found or revoked: a short message under the back link.
+  - Export failed (font, artwork or canvas): an inline error under the actions (the app has no toast). The page stays usable.
+  - Card page opened without the module (a typed URL): the gallery QR page's treatment, a redirect to not found.
 - **Who**: anyone who sees that QR's Print button today.
 - **Structure**:
-  - Components: `components/qrCard/` (`QrCardScreen`, `QrCardSvg`, `QrCardTemplateStrip`, `QrCardTextFields`, `QrCardActions`).
+  - Components: `components/qrCard/` (`QrCardScreen`, `QrCardDesigner`, `QrCardSvg`, `QrCardTemplateStrip`, `QrCardTextFields`, `QrCardActions`, `QrCardPrintStyle`, `QrCardSkeletons`). The gift screen splits into `GiftCardPlain` (today's card, unchanged) and `GiftCardPinOption` (shared by both layouts).
   - Hooks:
-    - `useQrCardTemplates(eventId)`, which exports `qrCardTemplateKeys`.
+    - `useQrCardTemplates(eventId)`, which exports `qrCardTemplateKeys`, and `useQrCardHref` for the Print link.
     - `useQrCardDesigner`: the selected template, the text and the defaults.
     - `useQrCardExport`.
+    - `useQrCardScreen`: the card page's data, gating and states. `useGiftCardPrint` gains the designer.
+  - Helpers: `lib/qrCardCode.ts` (the code's paths), `lib/qrCard.ts` (layout and text), `lib/qrCardExport.ts` (PNG and PDF).
 
 ### Admin console
 
 - **Panel**: "QR cards" in the admin sidebar's Catalog group, next to Theme presets and Theme fonts. It follows their table-plus-drawer pattern and the admin design system.
-- **Files**: `components/admin/qrCards/` with `QrCardTemplatesPanel`, `QrCardTemplatesTable`, `QrCardTemplateRow` and `QrCardTemplateDrawer`. Hooks: `useAdminQrCardTemplates` and `useQrCardTemplateDrawer`.
-- **Table columns**: artwork thumbnail (with alt text), name, event type pills, status pill (Live, No artwork, Archived), sort order.
+- **Files**: `components/admin/qrCards/` with `QrCardTemplatesPanel`, `QrCardTemplatesTable`, `QrCardTemplateRow`, `QrCardTemplateDrawer` and `QrCardTemplatePreview`. Hooks: `useAdminQrCardTemplates`, `useQrCardTemplatesCatalog` and `useQrCardTemplateDrawer`. Helpers: `lib/adminQrCards.ts`.
+- **Table columns**: design (artwork thumbnail with alt text, and name), event type pills, code colour, status pill (Offered, Needs artwork, Archived), order arrows, edit.
 - **Drawer**:
   - Name (Greek and English) and event types.
   - Artwork upload, text colour and heading font from the theme font catalog.
   - Code colour, with an inline error below 4.5:1.
-  - Dot shape and corner shape as segmented controls. Centre logo as a switch.
-  - Archive in the danger row, behind a confirmation modal.
+  - Dot shape and corner shape as segmented controls (the existing `FunnelSegmented`). Centre logo as a switch.
+  - Offered / Archived as the segmented control theme presets use. Archiving is undoable, so no confirmation modal (decided 2026-10-28).
 - **Live preview**: `QrCardSvg` with sample text in the admin's language.
 
 ### Copy
 
-- New keys in `messages/en.json` and `messages/el.json` under `QrCardPage`, `AdminPage.qrCards` and `ManagePage.qr`.
+- New keys in `messages/en.json` and `messages/el.json`: `QrCardPage`, `AdminPage.qrCards`, `AdminPage.tabs.qrCards`, `ImageAlt.qrCardTemplate` and `Modules.qr_cards`. The gift card reuses its `GiftMode.card` keys.
 - Greek uses διοργανωτής for host.
 - Claude drafts both languages; the owner reviews before merge.
 
@@ -197,9 +205,9 @@ Admin DTO adds `eventTypes`, `sortOrder`, `archived`, and a nullable `artworkUrl
 - **Path builder**: module coverage for each dot and corner shape.
 - **Scan test**: for every dot shape, corner shape, logo setting and a long URL, rasterize `QrCardSvg` with resvg, decode with jsQR, and expect the original URL.
 - **Text fitting and default lines** for each target type.
-- **Gating**: module off shows today's print popup; module on links to the card page; "Plain" is selected by default.
+- **Gating**: `available: false` (or loading, or failed) keeps today's print popup; `available: true` links to the card page; "Plain" is selected by default.
 - **Proxy route**: the same cases as the theme-font route test.
-- **Admin drawer**: contrast error, segmented controls, archive confirmation.
+- **Admin drawer**: contrast error, segmented controls, archiving through the Offered / Archived control.
 - **Manual check**: phone and desktop in the browser, plus a real phone scan of a printed or exported card.
 
 ### SEO
