@@ -357,6 +357,21 @@ export interface AdminSiteNoticeRequestDto {
     active: boolean;
 }
 
+/** GET /api/admin/devices: the calling admin's paired phones. pushEnabled: the phone sent a Firebase token. */
+export interface AdminDeviceDto {
+    id: string;
+    name: string;
+    createdAt: string;
+    lastSeenAt: string | null;
+    pushEnabled: boolean;
+}
+
+/** POST /api/admin/devices: the only response that carries the key. */
+export interface AdminDeviceCreatedDto {
+    device: AdminDeviceDto;
+    key: string;
+}
+
 export type EventTypeAccentToken = 'rose' | 'sky' | 'amber';
 
 export interface AppEventTypeResponseDto {

@@ -524,6 +524,10 @@ export const endpoints = {
             list: '/api/admin/site-notices',
             byId: (id: string) => `/api/admin/site-notices/${id}`,
         },
+        devices: {
+            list: '/api/admin/devices',
+            byId: (id: string) => `/api/admin/devices/${id}`,
+        },
         campaignLinks: {
             list: '/api/admin/campaign-links',
             byId: (id: string) => `/api/admin/campaign-links/${id}`,
