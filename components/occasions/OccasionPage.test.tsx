@@ -43,11 +43,12 @@ beforeEach(() => {
 });
 
 describe('OccasionPage', () => {
-    it('renders the wedding layout with its prices, demo and QR links, and no demo snapshot', async () => {
+    it('renders the wedding layout with its prices, lengths, demo and QR links, and no demo snapshot', async () => {
         const wedding = await layout('WEDDING');
         expect(wedding.type).toBe(WeddingContent);
         expect(wedding.props).toMatchObject({
             demoHref: routes.demoEventType(eventTypeSlug('WEDDING')),
+            length: { lengths: 'none', extendable: 'no' },
             price: { range: 'none' },
             qrHref: '/el/qr-code-gamou',
         });

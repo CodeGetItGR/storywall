@@ -16,6 +16,7 @@ import { getLandingThemes } from '@/lib/landingThemes';
 import { activeCampaign } from '@/lib/occasions/campaigns';
 import { loadOccasionDemoPreview } from '@/lib/occasions/demoPreview.server';
 import { occasionFeatureKeys, occasionOffersThemes } from '@/lib/occasions/occasionFeatures';
+import { occasionLengthValues } from '@/lib/occasions/occasionLength';
 import { occasionPriceValues } from '@/lib/occasions/occasionPrice';
 import type { Occasion } from '@/lib/occasions/occasions';
 import { activeTheme } from '@/lib/occasions/themes';
@@ -48,6 +49,7 @@ export async function OccasionPage({ locale, occasion }: { locale: Locale; occas
     const featureKeys = occasionFeatureKeys(config, occasion.eventType, Object.keys(copy.raw('features') as Record<string, unknown>));
     const now = new Date();
     const price = occasionPriceValues(config, occasion.eventType);
+    const length = occasionLengthValues(config, occasion.eventType, locale);
     const campaign = activeCampaign(occasion.eventType, now);
     const demoHref = eventType?.hasDemo ? routes.demoEventType(eventTypeSlug(occasion.eventType)) : null;
     const theme = activeTheme(occasion.eventType, now);
@@ -56,12 +58,13 @@ export async function OccasionPage({ locale, occasion }: { locale: Locale; occas
 
     return (
         <HydrationBoundary state={dehydrate(queryClient)}>
-            <OccasionStructuredData locale={locale} occasion={occasion} price={price} />
+            <OccasionStructuredData length={length} locale={locale} occasion={occasion} price={price} />
             {wedding ? (
                 <WeddingContent
                     campaign={campaign}
                     demoHref={demoHref}
                     featureKeys={featureKeys}
+                    length={length}
                     locale={locale}
                     occasion={occasion}
                     price={price}

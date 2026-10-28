@@ -2,6 +2,7 @@ import { createTranslator, type Messages } from 'next-intl';
 import { describe, expect, it } from 'vitest';
 
 import type { OccasionFaqEntry } from '@/lib/occasions/occasionFaq';
+import type { OccasionLengthValues } from '@/lib/occasions/occasionLength';
 import type { OccasionPriceValues } from '@/lib/occasions/occasionPrice';
 import type { WeddingMarqueeCopy } from '@/lib/occasions/weddingCopy';
 import { WEDDING_FEATURE_ORDER } from '@/lib/occasions/weddingFeatures';
@@ -12,6 +13,9 @@ import en from '@/messages/en.json';
 const SPAN: OccasionPriceValues = { range: 'span', from: '119€', fromName: 'START', to: '259€', toName: 'SIGNATURE' };
 const SINGLE: OccasionPriceValues = { range: 'single', from: '119€', fromName: 'START', to: '119€', toName: 'START' };
 const NONE: OccasionPriceValues = { range: 'none', from: '', fromName: '', to: '', toName: '' };
+const ONE_LENGTH: OccasionLengthValues = { lengths: 'single', months: '12', monthCount: 12, extendable: 'no' };
+const TWO_LENGTHS: OccasionLengthValues = { lengths: 'span', months: '3 | 6', monthCount: 0, extendable: 'no' };
+const NO_LENGTH: OccasionLengthValues = { lengths: 'none', months: '', monthCount: 0, extendable: 'no' };
 
 // Tags rendered as plain text, so a test reads the words.
 const TAGS = { b: (chunks: string) => chunks, em: (chunks: string) => chunks, br: () => ' ' };
@@ -36,10 +40,32 @@ describe.each([
     });
 
     it('answers the price question for every range', () => {
-        expect(t('faq.9.a', SPAN)).toContain('259€ (SIGNATURE)');
-        expect(t('faq.9.a', SINGLE)).toContain('119€ (START)');
-        expect(t('faq.9.a', SINGLE)).not.toContain('259€');
-        expect(t('faq.9.a', NONE)).not.toMatch(/€|\{/);
+        expect(t('faq.9.a', { ...SPAN, ...TWO_LENGTHS })).toContain('259€ (SIGNATURE)');
+        expect(t('faq.9.a', { ...SINGLE, ...TWO_LENGTHS })).toContain('119€ (START)');
+        expect(t('faq.9.a', { ...SINGLE, ...TWO_LENGTHS })).not.toContain('259€');
+        expect(t('faq.9.a', { ...NONE, ...TWO_LENGTHS })).not.toMatch(/€|\{/);
+    });
+
+    it('names the length as a price factor only when there is a choice', () => {
+        for (const price of [SPAN, NONE]) {
+            const choice = t('faq.9.a', { ...price, ...TWO_LENGTHS });
+            const fixed = t('faq.9.a', { ...price, ...ONE_LENGTH });
+            expect(choice.length).toBeGreaterThan(fixed.length);
+            expect(fixed).not.toMatch(/[{}]/);
+        }
+    });
+
+    it('answers how long it stays online from the lengths on sale', () => {
+        expect(t('faq.7.a', ONE_LENGTH)).toContain('12');
+        expect(t('faq.7.a', TWO_LENGTHS)).toContain('3 | 6');
+        expect(t('faq.7.a', NO_LENGTH)).not.toMatch(/\d|[{}]/);
+    });
+
+    it('offers an extension only while one is on sale', () => {
+        const without = t('faq.7.a', ONE_LENGTH);
+        const withExtension = t('faq.7.a', { ...ONE_LENGTH, extendable: 'yes' });
+        expect(withExtension.startsWith(`${without} `)).toBe(true);
+        expect(withExtension.length).toBeGreaterThan(without.length + 1);
     });
 
     it('formats every string that holds tags', () => {

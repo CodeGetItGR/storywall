@@ -7186,7 +7186,7 @@
                 },
                 {
                     "q": "How long does my StoryWall stay online?",
-                    "a": "You choose 3 or 6 months. The time starts on the day you buy."
+                    "a": "{lengths, select, single {It stays online for {monthCount, plural, one {# month} other {# months}} from the day you buy.} span {You choose {months} months. The time starts on the day you buy.} other {It depends on the plan. The time starts on the day you buy.}}{extendable, select, yes { You can extend it any time.} other {}}"
                 },
                 {
                     "q": "Does StoryWall replace our wedding photographer?",
@@ -7194,7 +7194,7 @@
                 },
                 {
                     "q": "How much does a StoryWall wedding website cost?",
-                    "a": "{range, select, span {Wedding plans start at {from} ({fromName}) and go up to {to} ({toName}), depending on your guest count, the features and the length you choose.} single {The wedding plan costs {from} ({fromName}).} other {The price depends on your guest count, the features and the length you choose.}}",
+                    "a": "{range, select, span {Wedding plans start at {from} ({fromName}) and go up to {to} ({toName}), depending on your guest count{lengths, select, span {, the features and the length you choose} other { and the features you choose}}.} single {The wedding plan costs {from} ({fromName}).} other {The price depends on your guest count{lengths, select, span {, the features and the length you choose} other { and the features you choose}}.}}",
                     "link": {
                         "to": "pricing",
                         "label": "See the plans"

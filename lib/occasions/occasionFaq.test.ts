@@ -2,12 +2,14 @@ import { createTranslator, type Messages } from 'next-intl';
 import { describe, expect, it } from 'vitest';
 
 import { occasionFaqEntries, type OccasionFaqEntry, occasionFaqLinkHref } from '@/lib/occasions/occasionFaq';
+import type { OccasionLengthValues } from '@/lib/occasions/occasionLength';
 import type { OccasionPriceValues } from '@/lib/occasions/occasionPrice';
 import { readyOccasions } from '@/lib/occasions/occasions';
 import el from '@/messages/el.json';
 import en from '@/messages/en.json';
 
 const NONE: OccasionPriceValues = { range: 'none', from: '', fromName: '', to: '', toName: '' };
+const NO_LENGTH: OccasionLengthValues = { lengths: 'none', months: '', monthCount: 0, extendable: 'no' };
 
 describe('occasionFaqEntries', () => {
     it('formats each answer and keeps the question and link', () => {
@@ -35,7 +37,7 @@ describe('occasionFaqEntries', () => {
                     throw error;
                 },
             });
-            const entries = occasionFaqEntries(t.raw('faq') as OccasionFaqEntry[], (key) => t(key, NONE));
+            const entries = occasionFaqEntries(t.raw('faq') as OccasionFaqEntry[], (key) => t(key, { ...NONE, ...NO_LENGTH }));
             for (const entry of entries) expect(entry.a).not.toMatch(/[{}<>]/);
         }
     });
