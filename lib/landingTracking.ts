@@ -1,10 +1,12 @@
 import { track } from '@vercel/analytics';
 
+import { sendCampaignClick } from '@/lib/campaignVisits';
 import { trackAnalyticsEvent } from '@/lib/googleAnalytics';
 
 // Landing page clicks and scroll depth, sent as Vercel Web Analytics custom events and mirrored to
-// Google Analytics (only with the visitor's Analytics consent). Vercel's Pro plan keeps at most two
-// properties per event, so no event here carries more.
+// Google Analytics (only with the visitor's Analytics consent). Create, Plans and plan clicks also go
+// to the campaign counter (lib/campaignVisits.ts). Vercel's Pro plan keeps at most two properties per
+// event, so no event here carries more.
 
 export type LandingPlacement = 'header' | 'mobile_menu' | 'hero' | 'hero_band' | 'stories' | 'themes' | 'demo' | 'final_cta';
 
@@ -83,9 +85,18 @@ function sendLandingEvent(name: string, properties: Record<string, string | numb
     trackAnalyticsEvent(name.toLowerCase().replaceAll(' ', '_'), properties);
 }
 
+// The clicks Spring's campaign counter also counts, once per visitor and day.
+const CAMPAIGN_CLICKS: Partial<Record<LandingClick['event'], 'CREATE' | 'PLANS' | 'PLAN'>> = {
+    create: 'CREATE',
+    plans: 'PLANS',
+    plan: 'PLAN',
+};
+
 export function trackLandingClick(click: LandingClick) {
     const { event, ...properties } = click;
     sendLandingEvent(CLICK_EVENT_NAMES[event], properties);
+    const campaignClick = CAMPAIGN_CLICKS[event];
+    if (campaignClick) sendCampaignClick(campaignClick);
 }
 
 export function trackLandingSection(section: LandingSection) {
