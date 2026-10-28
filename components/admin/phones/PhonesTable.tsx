@@ -39,9 +39,9 @@ export function PhonesTable({ devices, onOpenAction }: { devices: AdminDeviceDto
                             <td className="hidden px-3 py-3 font-mono text-xs whitespace-nowrap text-ink-muted md:table-cell">
                                 {formatDate(locale, device.createdAt, ADMIN_DEVICE_DATE_FORMAT)}
                             </td>
-                            <td className="px-3 py-3 whitespace-nowrap text-ink-muted">
+                            <td className="px-3 py-3 text-xs whitespace-nowrap text-ink-muted">
                                 {device.lastSeenAt ? (
-                                    <span className="font-mono text-xs">{formatDate(locale, device.lastSeenAt, ADMIN_DEVICE_DATE_FORMAT)}</span>
+                                    <span className="font-mono">{formatDate(locale, device.lastSeenAt, ADMIN_DEVICE_DATE_FORMAT)}</span>
                                 ) : (
                                     t('never')
                                 )}
