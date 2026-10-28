@@ -11,6 +11,7 @@ import {
     MessageSquareText,
     Music,
     Palette,
+    QrCode,
     Tags,
     UserCog,
 } from 'lucide-react';
@@ -41,6 +42,7 @@ const moduleIcons: Record<string, ComponentType<{ className?: string }>> = {
     named_invites: Mail,
     he_or_she: Baby,
     quiz_polls: MessageCircleQuestion,
+    qr_cards: QrCode,
 };
 
 const moduleFallbacks: Record<string, { name: string; description: string }> = {
@@ -92,6 +94,10 @@ const moduleFallbacks: Record<string, { name: string; description: string }> = {
     quiz_polls: {
         name: 'Quiz & Polls',
         description: 'A quiz about you and polls for your guests.',
+    },
+    qr_cards: {
+        name: 'QR cards',
+        description: 'Designed cards for printing your QR codes.',
     },
 };
 
