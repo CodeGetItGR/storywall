@@ -20,19 +20,17 @@ function FieldError({ message }: { message: string | undefined }) {
     );
 }
 
-// The business profile inputs, shared by the profile dialog and signup.
+// The business profile inputs of the profile dialog.
 export function BusinessProfileFields({
     form,
     fieldErrors,
     countryOptions,
     onFieldChange,
-    inputClassName = INPUT_CLASS_NAME,
 }: {
     form: BusinessProfileForm;
     fieldErrors: Partial<Record<BusinessProfileField, string>>;
     countryOptions: { code: string; name: string }[];
     onFieldChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
-    inputClassName?: string;
 }) {
     const t = useTranslations('ProfilePage.business');
     const limits = useContentLimits();
@@ -50,7 +48,7 @@ export function BusinessProfileFields({
                         required
                         autoComplete="organization"
                         aria-invalid={Boolean(fieldErrors.legalName)}
-                        className={inputClassName}
+                        className={INPUT_CLASS_NAME}
                     />
                     <FieldError message={fieldErrors.legalName} />
                 </FormFieldLabel>
@@ -61,7 +59,7 @@ export function BusinessProfileFields({
                         onChange={onFieldChange}
                         required
                         aria-invalid={Boolean(fieldErrors.countryCode)}
-                        className={inputClassName}
+                        className={INPUT_CLASS_NAME}
                     >
                         {countryOptions.map((option) => (
                             <option key={option.code} value={option.code}>
@@ -79,7 +77,7 @@ export function BusinessProfileFields({
                         maxLength={limits.businessVatNumberMaxLength}
                         required
                         aria-invalid={Boolean(fieldErrors.vatNumber)}
-                        className={cn(inputClassName, 'font-mono')}
+                        className={cn(INPUT_CLASS_NAME, 'font-mono')}
                     />
                     <FieldError message={fieldErrors.vatNumber} />
                 </FormFieldLabel>
@@ -96,7 +94,7 @@ export function BusinessProfileFields({
                         required
                         autoComplete="address-line1"
                         aria-invalid={Boolean(fieldErrors.addressLine1)}
-                        className={inputClassName}
+                        className={INPUT_CLASS_NAME}
                     />
                     <FieldError message={fieldErrors.addressLine1} />
                 </FormFieldLabel>
@@ -108,7 +106,7 @@ export function BusinessProfileFields({
                         maxLength={limits.businessAddressLineMaxLength}
                         autoComplete="address-line2"
                         aria-invalid={Boolean(fieldErrors.addressLine2)}
-                        className={inputClassName}
+                        className={INPUT_CLASS_NAME}
                     />
                     <FieldError message={fieldErrors.addressLine2} />
                 </FormFieldLabel>
@@ -121,7 +119,7 @@ export function BusinessProfileFields({
                         required
                         autoComplete="address-level2"
                         aria-invalid={Boolean(fieldErrors.city)}
-                        className={inputClassName}
+                        className={INPUT_CLASS_NAME}
                     />
                     <FieldError message={fieldErrors.city} />
                 </FormFieldLabel>
@@ -134,7 +132,7 @@ export function BusinessProfileFields({
                         required
                         autoComplete="postal-code"
                         aria-invalid={Boolean(fieldErrors.postalCode)}
-                        className={inputClassName}
+                        className={INPUT_CLASS_NAME}
                     />
                     <FieldError message={fieldErrors.postalCode} />
                 </FormFieldLabel>

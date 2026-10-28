@@ -54,7 +54,7 @@ export function ToolEmptyState({
                         {iconSrc ? (
                             <Image
                                 src={iconSrc}
-                                alt=""
+                                alt={title}
                                 width={72}
                                 height={72}
                                 className={cn('h-12 w-12', !hasGradientIcon && 'h-18 w-18', iconClassName)}
@@ -79,7 +79,7 @@ export function ToolEmptyState({
                     <span className="flex h-9 w-9 items-center justify-center rounded-full bg-background shadow-[0_8px_20px_rgba(36,31,26,0.07)]">
                         {Icon ? <Icon className={cn('h-4 w-4', previewIconClassName)} strokeWidth={1.8} aria-hidden="true" /> : null}
                         {iconSrc ? (
-                            <Image src={iconSrc} alt="" width={20} height={20} className={cn('h-5 w-5', previewIconClassName)} unoptimized />
+                            <Image src={iconSrc} alt={title} width={20} height={20} className={cn('h-5 w-5', previewIconClassName)} unoptimized />
                         ) : null}
                     </span>
                     <span className="h-px flex-1 bg-border" />

@@ -1,6 +1,9 @@
+import { useLocale } from 'next-intl';
 import { Fragment } from 'react';
 
 import { AppLink } from '@/components/ui/AppLink';
+import type { Locale } from '@/i18n/config';
+import { localizeLegalHref } from '@/i18n/publicLocale';
 import { type MarkdownBlock, type MarkdownInline, parseMarkdown } from '@/lib/markdown';
 import { cn } from '@/lib/utils';
 
@@ -16,11 +19,13 @@ const HEADING_CLASS_NAMES = {
 const LINK_CLASS_NAME = 'font-semibold break-words text-ink underline underline-offset-2 hover:text-primary';
 
 function InlinePart({ part }: { part: MarkdownInline }) {
+    const locale = useLocale() as Locale;
     const text = part.bold ? <strong className="font-semibold text-ink">{part.text}</strong> : part.text;
     if (!part.href) return text;
     if (part.href.startsWith('/')) {
+        // A document links other legal pages by their English path; keep the reader in the page's language.
         return (
-            <AppLink href={part.href} className={LINK_CLASS_NAME}>
+            <AppLink href={localizeLegalHref(part.href, locale)} className={LINK_CLASS_NAME}>
                 {text}
             </AppLink>
         );

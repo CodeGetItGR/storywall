@@ -27,7 +27,7 @@ import { hasVendorCapability } from '@/lib/vendors';
 import { useActiveMember } from '@/providers/EventProvider';
 import { useMobileChromeActions } from '@/providers/MobileChromeProvider';
 
-export function useGalleryScreen() {
+export function useGalleryScreen({ printAvailable = false }: { printAvailable?: boolean } = {}) {
     const { activeEvent, eventId, isHost } = useEventRouteContext();
     const activeMember = useActiveMember();
     const contentAccess = useContentAccess();
@@ -55,6 +55,9 @@ export function useGalleryScreen() {
     // The tabs appear only once the event has Pro items; ?album=pro on an event without any shows the guest album.
     const showAlbumTabs = (proMedia.data?.pages[0]?.page.totalElements ?? 0) > 0;
     const album = showAlbumTabs ? requestedAlbum : 'GUEST';
+    // Hosts select guest photos to download; anyone who can pick for print selects in either album (print picks spec 2026-10-23).
+    const canSelect = (isHost && album === 'GUEST') || printAvailable;
+    const canDownloadSelection = isHost && album === 'GUEST';
     const activeMedia = album === 'PRO' ? proMedia : guestMedia;
     const { data: mediaPages, isLoading: isLoadingMedia, fetchNextPage, hasNextPage, isFetchingNextPage } = activeMedia;
     const media = useMemo(() => mediaPages?.pages.flatMap((page) => page.content) ?? [], [mediaPages?.pages]);
@@ -117,7 +120,9 @@ export function useGalleryScreen() {
     const reportOpen = reportMediaId !== null && reportMediaId === selectedMedia?.id && canReportMedia;
     // Forget a dialog that can no longer show, so it doesn't come back when its item or permission does.
     if (reportMediaId !== null && !reportOpen) setReportMediaId(null);
+    // Only the guest album downloads as a selection; print picks also select in the Pro album.
     const canDownloadSelected =
+        canDownloadSelection &&
         gallerySelection.selectedCount > 0 &&
         gallerySelection.selectedCount <= maxArchiveSelectedItems &&
         selectedArchiveSize <= maxArchivePartBytes &&
@@ -283,21 +288,21 @@ export function useGalleryScreen() {
     const handleMediaClick = useCallback(
         (id: string) => {
             if (gallerySelection.consumeLongPressClick()) return;
-            if (isHost && gallerySelection.selectionMode) {
+            if (canSelect && gallerySelection.selectionMode) {
                 gallerySelection.toggleSelection(id);
                 return;
             }
             setSelectedMediaId(id);
         },
-        [gallerySelection, isHost],
+        [canSelect, gallerySelection],
     );
 
     const handleMediaPointerDown = useCallback(
         (event: PointerEvent<HTMLButtonElement>, id: string) => {
-            if (!isHost || album !== 'GUEST') return;
+            if (!canSelect) return;
             gallerySelection.startLongPressSelection(event, id);
         },
-        [album, gallerySelection, isHost],
+        [canSelect, gallerySelection],
     );
 
     const handleMediaContextMenu = useCallback((event: MouseEvent<HTMLButtonElement>) => {
@@ -382,7 +387,9 @@ export function useGalleryScreen() {
         canUpload,
         showArchiveDownload,
         showMemberArchive,
-        showGalleryActions: isHost && galleryEnabled && album === 'GUEST',
+        showGalleryActions: galleryEnabled && canSelect,
+        canSelect,
+        canDownloadSelection,
         selectedFiles,
         selectedSize,
         uploadNotice: isUploadBusy ? t('uploadBusy') : uploadNotice,

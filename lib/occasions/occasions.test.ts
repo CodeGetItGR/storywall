@@ -18,11 +18,12 @@ describe('occasion registry', () => {
         vi.unstubAllEnvs();
     });
 
-    it('has no ready occasion on the production site before launch', () => {
+    it('has only the launched occasions on the production site', () => {
         vi.stubEnv('VERCEL_ENV', 'production');
-        expect(readyOccasions()).toEqual([]);
-        expect(findReadyOccasion('en', 'weddings')).toBeNull();
-        expect(occasionLocaleForPath('/el/gamos')).toBeNull();
+        expect(readyOccasions().map((occasion) => occasion.eventType)).toEqual(['WEDDING']);
+        expect(findReadyOccasion('el', 'gamos')?.eventType).toBe('WEDDING');
+        expect(findReadyOccasion('en', 'baptisms')).toBeNull();
+        expect(occasionLocaleForPath('/el/vaptisi')).toBeNull();
     });
 
     it('lists every event type once with unique slugs per locale', () => {

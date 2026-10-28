@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { defaultLocale, type Locale, localeCookieMaxAge, localeCookieName } from '@/i18n/config';
-import { getPublicLandingPath, publicPageLocale } from '@/i18n/publicLocale';
+import { getLegalPagePath, getPublicLandingPath, legalPageForPath, type LegalPagePath, publicPageLocale } from '@/i18n/publicLocale';
 import { PUBLIC_LOCALE_HEADER } from '@/i18n/publicMessages';
 import { resolveLocale } from '@/i18n/resolveLocale';
 import {
@@ -15,6 +15,7 @@ import {
 import { AUTH_RETURN_PATH_PARAM } from '@/lib/auth/returnPath';
 import { clientIpFrom, springAuth, SpringAuthError } from '@/lib/auth/springAuth';
 import { occasionLocaleForPath } from '@/lib/occasions/occasions';
+import { qrWeddingRedirectPath } from '@/lib/qrWeddingPage';
 import { routes } from '@/lib/routes';
 import { isSharedLinkPath, readShareLocale, SHARE_LOCALE_PARAM } from '@/lib/shareLinks';
 import { takeVisitSourceParam, VISIT_SOURCE_PARAM } from '@/lib/signupSource';
@@ -95,6 +96,28 @@ function preferredLandingRedirect(request: NextRequest): NextResponse | null {
     return NextResponse.redirect(url);
 }
 
+// Contact and legal pages have one URL per language (`/legal/terms`, `/el/legal/terms`) but live
+// once, at the English path: the Greek URL renders that page in Greek. Like `/`, the English URL
+// sends a visitor whose saved choice or browser language is another locale to that locale's URL.
+function legalPageResponse(request: NextRequest, { path, locale }: { path: LegalPagePath; locale: Locale }): NextResponse {
+    if (locale === defaultLocale) {
+        const preferred = resolveLocale(request.cookies.get(localeCookieName)?.value, request.headers.get('accept-language'));
+        if (preferred !== defaultLocale) {
+            const url = request.nextUrl.clone();
+            url.pathname = getLegalPagePath(path, preferred);
+            return NextResponse.redirect(url);
+        }
+    }
+
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set(PUBLIC_LOCALE_HEADER, locale);
+    if (locale === defaultLocale) return NextResponse.next({ request: { headers: requestHeaders } });
+
+    const url = request.nextUrl.clone();
+    url.pathname = path;
+    return NextResponse.rewrite(url, { request: { headers: requestHeaders } });
+}
+
 // A shared link opens in the sharer's language, and the rest of the visit
 // stays in it. A visitor who already picked a language keeps theirs.
 function sharedLinkLocale(request: NextRequest): Locale | null {
@@ -108,6 +131,17 @@ export async function proxy(request: NextRequest) {
     if (pathname === '/') {
         const redirect = preferredLandingRedirect(request);
         if (redirect) return redirect;
+    }
+
+    const legalPage = legalPageForPath(pathname);
+    if (legalPage) return legalPageResponse(request, legalPage);
+
+    // Keeps the query string, so a campaign link to the page still counts its visit.
+    const qrWeddingRedirect = qrWeddingRedirectPath(pathname);
+    if (qrWeddingRedirect) {
+        const url = request.nextUrl.clone();
+        url.pathname = qrWeddingRedirect;
+        return NextResponse.redirect(url);
     }
 
     const publicLocale = publicPageLocale(pathname) ?? occasionLocaleForPath(pathname);
@@ -160,5 +194,6 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/((?!_next/static|_next/image|favicon.ico|api).*)'],
+    // /monitoring is Sentry's tunnel (next.config.mjs).
+    matcher: ['/((?!_next/static|_next/image|favicon.ico|api|monitoring).*)'],
 };

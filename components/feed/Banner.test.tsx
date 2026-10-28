@@ -56,10 +56,10 @@ describe('Banner', () => {
     describe('illustration mode', () => {
         const illustration = 'https://media.example/dino.webp';
 
-        it('paints the theme colour behind an alt-less illustration', () => {
+        it('paints the theme colour behind the illustration, named after the event', () => {
             render(<Banner image={null} illustrationUrl={illustration} title="Baptism" glowVisible={false} />);
             const image = screen.getByTestId('banner-image');
-            expect(image).toHaveAttribute('alt', '');
+            expect(image).toHaveAttribute('alt', 'Baptism');
             expect(image.parentElement).toHaveClass('bg-event');
         });
 

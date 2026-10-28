@@ -19,10 +19,7 @@ export function RegisterNewsletterCheckbox({
     return (
         <label className="flex cursor-pointer items-start gap-3 rounded-xl px-1 py-1">
             <input type="checkbox" checked={checked} onChange={onChangeAction} className="mt-0.5 size-4 shrink-0 accent-primary" />
-            <span className="flex flex-col gap-0.5">
-                <span className="text-sm text-ink">{t('label', { percent: discountPercent })}</span>
-                <span className="text-xs text-ink-muted">{t('hint')}</span>
-            </span>
+            <span className="text-sm text-ink">{t('label', { percent: discountPercent })}</span>
         </label>
     );
 }

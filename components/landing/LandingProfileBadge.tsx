@@ -20,7 +20,7 @@ export function LandingProfileBadge() {
             aria-label={tHero('accountHomeLabel')}
             className="inline-flex items-center gap-2 text-xs font-bold whitespace-nowrap text-[#151313] transition-opacity hover:opacity-60"
         >
-            <Avatar src={user?.profilePictureUrl} initials={getInitials(accountName)} size="sm" alt="" />
+            <Avatar src={user?.profilePictureUrl} initials={getInitials(accountName)} size="sm" alt={accountName} />
             <span>{accountName}</span>
         </AppLink>
     );

@@ -2,6 +2,7 @@
 
 import { Eye, EyeOff, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import { useCallback } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
@@ -21,12 +22,14 @@ export function VendorSheet({
     error: string | null;
     isPatching: boolean;
     onCloseAction: () => void;
-    onToggleHiddenAction: () => void;
-    onRemoveAction: () => void;
+    onToggleHiddenAction: (vendorId: string) => void;
+    onRemoveAction: (vendorId: string) => void;
 }) {
     const t = useTranslations('Vendors');
     const locale = useLocale();
     const name = vendor?.businessName ?? t('manage.noProfile');
+    const handleToggleHidden = useCallback(() => vendor && onToggleHiddenAction(vendor.id), [onToggleHiddenAction, vendor]);
+    const handleRemove = useCallback(() => vendor && onRemoveAction(vendor.id), [onRemoveAction, vendor]);
 
     return (
         <Modal open={vendor !== null} onClose={onCloseAction} variant="sheet" size="sm" closeLabel={t('manage.close')}>
@@ -51,7 +54,7 @@ export function VendorSheet({
                             type="button"
                             variant="outline"
                             size="lg"
-                            onClick={onToggleHiddenAction}
+                            onClick={handleToggleHidden}
                             disabled={isPatching || Boolean(vendor.optedOut)}
                         >
                             {vendor.hiddenByHost ? <Eye aria-hidden="true" /> : <EyeOff aria-hidden="true" />}
@@ -68,7 +71,7 @@ export function VendorSheet({
 
                     {/* Danger */}
                     <div className="mt-6">
-                        <Button type="button" variant="destructive" size="lg" onClick={onRemoveAction} className="w-full">
+                        <Button type="button" variant="destructive" size="lg" onClick={handleRemove} className="w-full">
                             <Trash2 aria-hidden="true" />
                             {t('manage.remove')}
                         </Button>

@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
+import { useSentryUser } from '@/hooks/useSentryUser';
 import { authClient } from '@/lib/api/authClient';
 import { ApiError } from '@/lib/api/client';
 import type {
@@ -263,6 +264,7 @@ export function AuthProvider({ children, handoff = null }: { children: ReactNode
         [accessToken, userId, email, firstName, lastName, profilePictureUrl, authProvider, isGuestAccount, status, createdAt, role, emailVerified],
     );
     const isAuthenticated = Boolean(accessToken);
+    useSentryUser(user?.userId ?? null);
 
     const value: AuthContextValue = useMemo(
         () => ({ user, isAuthenticated, isBootstrapping, isSessionUnavailable, register, login, oauth, logout, updateProfile }),

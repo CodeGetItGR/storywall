@@ -9,6 +9,8 @@ import { AppReviewsPanel } from '@/components/admin/appReviews/AppReviewsPanel';
 import { BugReportsPanel } from '@/components/admin/betaFeedback/BugReportsPanel';
 import { ErrorEventsPanel } from '@/components/admin/betaFeedback/ErrorEventsPanel';
 import { BillingOpsPanel } from '@/components/admin/BillingOpsPanel';
+import { CampaignsPanel } from '@/components/admin/campaigns/CampaignsPanel';
+import { CampaignOverviewPanel } from '@/components/admin/campaigns/overview/CampaignOverviewPanel';
 import { CollaborationsSection } from '@/components/admin/collaborations/CollaborationsSection';
 import { CostTrackingPanel } from '@/components/admin/CostTrackingPanel';
 import { DemoEventsSection } from '@/components/admin/demoEvents/DemoEventsSection';
@@ -22,6 +24,7 @@ import { PartnerCardsSection } from '@/components/admin/partnerCards/PartnerCard
 import { PlansSection } from '@/components/admin/plans/PlansSection';
 import { PlatformMetricsPanel } from '@/components/admin/PlatformMetricsPanel';
 import { ReactionTypesCatalogPanel } from '@/components/admin/ReactionTypesCatalogPanel';
+import { SiteNoticesPanel } from '@/components/admin/siteNotices/SiteNoticesPanel';
 import { ThemeFontsPanel } from '@/components/admin/themeFonts/ThemeFontsPanel';
 import { ThemePresetsPanel } from '@/components/admin/themePresets/ThemePresetsPanel';
 import { VisitorsPanel } from '@/components/admin/visitors/VisitorsPanel';
@@ -36,6 +39,8 @@ export function AdminConsole() {
     if (tab === 'metrics') return <PlatformMetricsPanel />;
     if (tab === 'funnel') return <FunnelPanel />;
     if (tab === 'visitors') return <VisitorsPanel />;
+    if (tab === 'campaignOverview') return <CampaignOverviewPanel />;
+    if (tab === 'campaigns') return <CampaignsPanel />;
     if (tab === 'moduleUsage') return <ModuleUsagePanel />;
     if (tab === 'paidServices') return <PaidServicesCatalogPanel />;
     if (tab === 'plans') return <PlansSection />;
@@ -60,6 +65,13 @@ export function AdminConsole() {
         return (
             <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
                 <AppReviewsPanel />
+            </div>
+        );
+    }
+    if (tab === 'siteNotices') {
+        return (
+            <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
+                <SiteNoticesPanel />
             </div>
         );
     }

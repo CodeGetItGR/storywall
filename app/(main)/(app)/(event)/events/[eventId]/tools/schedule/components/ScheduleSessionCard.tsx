@@ -1,20 +1,25 @@
 'use client';
 
-import { Church, MapPin, Martini } from 'lucide-react';
+import { Church, MapPin, Martini, PartyPopper } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { ScheduleMapPreview } from '@/components/schedule/ScheduleMapPreview';
-import type { EventSessionResponseDto } from '@/lib/api/types';
+import type { EventSessionResponseDto, EventTypeConvention } from '@/lib/api/types';
+import { resolveLocationKind } from '@/lib/sessionLocations';
 import { cn } from '@/lib/utils';
 
 interface ScheduleSessionCardProps {
     session: EventSessionResponseDto;
+    // Undefined while the event loads: the main session then shows no icon rather than a wrong one.
+    eventType?: EventTypeConvention;
     className?: string;
 }
 
-export function ScheduleSessionCard({ session, className }: ScheduleSessionCardProps) {
+export function ScheduleSessionCard({ session, eventType, className }: ScheduleSessionCardProps) {
     const t = useTranslations('SchedulePage');
-    const SessionIcon = session.isMain ? Church : session.isSecondary ? Martini : null;
+    const mainKind = eventType ? resolveLocationKind(eventType, 'main') : null;
+    const MainIcon = mainKind === 'church' ? Church : mainKind ? PartyPopper : null;
+    const SessionIcon = session.isMain ? MainIcon : session.isSecondary ? Martini : null;
 
     return (
         <article className={cn('rounded-2xl border border-border/60 bg-card p-4 shadow-sm', className)}>

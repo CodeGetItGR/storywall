@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
-import { getForBusinessPath, getQrWeddingPath, isForBusinessPath, isQrWeddingPath, publicPageLocale, publicTwinPath } from '@/i18n/publicLocale';
+import {
+    getForBusinessPath,
+    getLegalPagePath,
+    getQrWeddingPath,
+    isForBusinessPath,
+    isQrWeddingPath,
+    legalPageForPath,
+    localizeLegalHref,
+    publicPageLocale,
+    publicTwinPath,
+} from '@/i18n/publicLocale';
 
 describe('getForBusinessPath', () => {
     it('gives each locale its own slug', () => {
@@ -68,8 +78,51 @@ describe('publicTwinPath', () => {
         expect(publicTwinPath('/el/epaggelmaties', 'en')).toBe('/for-business');
     });
 
+    it('maps a legal page to the same page', () => {
+        expect(publicTwinPath('/legal/terms', 'el')).toBe('/el/legal/terms');
+        expect(publicTwinPath('/el/contact', 'en')).toBe('/contact');
+    });
+
     it('is null for any other page', () => {
         expect(publicTwinPath('/feed', 'el')).toBeNull();
         expect(publicTwinPath(null, 'el')).toBeNull();
+    });
+});
+
+describe('getLegalPagePath', () => {
+    it('puts the Greek page under /el', () => {
+        expect(getLegalPagePath('/legal/privacy', 'en')).toBe('/legal/privacy');
+        expect(getLegalPagePath('/legal/privacy', 'el')).toBe('/el/legal/privacy');
+        expect(getLegalPagePath('/contact', 'el')).toBe('/el/contact');
+    });
+});
+
+describe('legalPageForPath', () => {
+    it('reads the page and language from either URL', () => {
+        expect(legalPageForPath('/legal/cookies')).toEqual({ path: '/legal/cookies', locale: 'en' });
+        expect(legalPageForPath('/el/legal/cookies')).toEqual({ path: '/legal/cookies', locale: 'el' });
+        expect(legalPageForPath('/el/contact')).toEqual({ path: '/contact', locale: 'el' });
+    });
+
+    it('is null everywhere else', () => {
+        expect(legalPageForPath('/en/legal/cookies')).toBeNull();
+        expect(legalPageForPath('/el/legal')).toBeNull();
+        expect(legalPageForPath('/report-content')).toBeNull();
+        expect(legalPageForPath('/el/gamos')).toBeNull();
+    });
+});
+
+describe('localizeLegalHref', () => {
+    it('moves a legal link to the language, keeping its query and hash', () => {
+        expect(localizeLegalHref('/legal/cookies', 'el')).toBe('/el/legal/cookies');
+        expect(localizeLegalHref('/legal/withdrawal-terms?version=2026-10-28', 'el')).toBe('/el/legal/withdrawal-terms?version=2026-10-28');
+        expect(localizeLegalHref('/legal/community-guidelines#section-3', 'el')).toBe('/el/legal/community-guidelines#section-3');
+        expect(localizeLegalHref('/legal/cookies', 'en')).toBe('/legal/cookies');
+    });
+
+    it('leaves every other link alone', () => {
+        expect(localizeLegalHref('/report-content', 'el')).toBe('/report-content');
+        expect(localizeLegalHref('/legal/cookies-old', 'el')).toBe('/legal/cookies-old');
+        expect(localizeLegalHref('/', 'el')).toBe('/');
     });
 });

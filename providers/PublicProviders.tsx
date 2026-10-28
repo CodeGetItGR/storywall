@@ -3,6 +3,7 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { type ReactNode, useState } from 'react';
 
+import { CampaignVisitTracker } from '@/components/layout/CampaignVisitTracker';
 import { SignupSourceTracker } from '@/components/layout/SignupSourceTracker';
 import { makeQueryClient } from '@/lib/queryClient';
 import { AppConfigBootstrap } from '@/providers/AppConfigBootstrap';
@@ -15,6 +16,7 @@ export function PublicProviders({ children }: { children: ReactNode }) {
         <QueryClientProvider client={queryClient}>
             <AppConfigBootstrap />
             <SignupSourceTracker />
+            <CampaignVisitTracker />
             <AuthProvider>{children}</AuthProvider>
         </QueryClientProvider>
     );

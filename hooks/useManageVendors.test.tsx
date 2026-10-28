@@ -3,15 +3,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useManageVendors } from '@/hooks/useManageVendors';
 
-const reset = vi.fn();
 const patch = vi.fn();
 const remove = vi.fn();
-const data = vi.hoisted(() => ({ links: [] as unknown[], vendors: [] as unknown[] }));
+const data = vi.hoisted(() => ({ vendors: [] as unknown[] }));
 vi.mock('@/hooks/useVendors', () => ({
-    useVendorLinks: () => ({ data: data.links, isLoading: false }),
     useEventVendors: () => ({ data: data.vendors, isLoading: false }),
-    useResetVendorLink: () => ({ mutateAsync: reset, isPending: false }),
-    usePatchVendor: () => ({ mutateAsync: patch, isPending: false }),
+    usePatchVendor: () => ({ mutateAsync: patch, isPending: false, variables: undefined }),
     useRemoveVendor: () => ({ mutateAsync: remove, isPending: false }),
 }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'failed' }));
@@ -29,68 +26,48 @@ const DJ = {
 };
 
 beforeEach(() => {
-    reset.mockReset();
     patch.mockReset();
     remove.mockReset();
-    data.links = [
-        { vendorType: 'MUSIC', inviteToken: 't-music' },
-        { vendorType: 'PLANNER', inviteToken: 't-planner' },
-    ];
     data.vendors = [DJ];
 });
 
 describe('useManageVendors', () => {
-    it('orders the links by type', () => {
-        const { result } = renderHook(() => useManageVendors('e1'));
-        expect(result.current.links.map((link) => link.vendorType)).toEqual(['PLANNER', 'MUSIC']);
-    });
-
-    it('resets a link only after the confirmation', async () => {
-        reset.mockResolvedValue({});
-        const { result } = renderHook(() => useManageVendors('e1'));
-        act(() => result.current.requestReset('MUSIC'));
-        expect(result.current.resetType).toBe('MUSIC');
-        expect(reset).not.toHaveBeenCalled();
-        await act(() => result.current.confirmReset());
-        expect(reset).toHaveBeenCalledWith('MUSIC');
-        expect(result.current.resetType).toBeNull();
-    });
-
-    it('cancelling a reset sends nothing', () => {
-        const { result } = renderHook(() => useManageVendors('e1'));
-        act(() => result.current.requestReset('MUSIC'));
-        act(() => result.current.cancelReset());
-        expect(result.current.resetType).toBeNull();
-        expect(reset).not.toHaveBeenCalled();
-    });
-
-    it('a failed reset shows the error', async () => {
-        reset.mockRejectedValue(new Error('500'));
-        const { result } = renderHook(() => useManageVendors('e1'));
-        act(() => result.current.requestReset('MUSIC'));
-        await act(() => result.current.confirmReset());
-        expect(result.current.error).toBe('failed');
-        expect(result.current.resetType).toBeNull();
-    });
-
-    it('hides and shows the open vendor', async () => {
+    it('hides and shows a vendor from its row, without opening the sheet', async () => {
         patch.mockResolvedValue({});
         const { result } = renderHook(() => useManageVendors('e1'));
-        act(() => result.current.openVendor('v2'));
-        expect(result.current.selectedVendor).toEqual(DJ);
-        await act(() => result.current.toggleHidden());
+        await act(() => result.current.toggleHidden('v2'));
         expect(patch).toHaveBeenCalledWith({ vendorId: 'v2', patch: { hiddenByHost: true } });
+        expect(result.current.selectedVendor).toBeNull();
     });
 
-    it('removes the open vendor after the confirmation and closes the sheet', async () => {
+    it('shows a row action error above the list, and a sheet action error in the sheet', async () => {
+        patch.mockRejectedValue(new Error('500'));
+        const { result } = renderHook(() => useManageVendors('e1'));
+        await act(() => result.current.toggleHidden('v2'));
+        expect(result.current.listError).toBe('failed');
+        expect(result.current.sheetError).toBeNull();
+        act(() => result.current.openVendor('v2'));
+        await act(() => result.current.toggleHidden('v2'));
+        expect(result.current.sheetError).toBe('failed');
+        expect(result.current.listError).toBeNull();
+    });
+
+    it('removes a vendor from its row after the confirmation', async () => {
+        remove.mockResolvedValue(undefined);
+        const { result } = renderHook(() => useManageVendors('e1'));
+        act(() => result.current.requestRemove('v2'));
+        expect(result.current.removeTarget).toEqual(DJ);
+        await act(() => result.current.confirmRemove());
+        expect(remove).toHaveBeenCalledWith('v2');
+        expect(result.current.removeTarget).toBeNull();
+    });
+
+    it('closes the sheet after removing the open vendor', async () => {
         remove.mockResolvedValue(undefined);
         const { result } = renderHook(() => useManageVendors('e1'));
         act(() => result.current.openVendor('v2'));
-        act(() => result.current.requestRemove());
-        expect(result.current.removeOpen).toBe(true);
+        act(() => result.current.requestRemove('v2'));
         await act(() => result.current.confirmRemove());
-        expect(remove).toHaveBeenCalledWith('v2');
-        expect(result.current.removeOpen).toBe(false);
         expect(result.current.selectedVendor).toBeNull();
     });
 
@@ -98,17 +75,9 @@ describe('useManageVendors', () => {
         remove.mockRejectedValue(new Error('500'));
         const { result } = renderHook(() => useManageVendors('e1'));
         act(() => result.current.openVendor('v2'));
-        act(() => result.current.requestRemove());
+        act(() => result.current.requestRemove('v2'));
         await act(() => result.current.confirmRemove());
-        expect(result.current.error).toBe('failed');
+        expect(result.current.sheetError).toBe('failed');
         expect(result.current.selectedVendor).toEqual(DJ);
-    });
-
-    it('opens the QR for one link', () => {
-        const { result } = renderHook(() => useManageVendors('e1'));
-        act(() => result.current.openQr('PLANNER'));
-        expect(result.current.qrLink?.inviteToken).toBe('t-planner');
-        act(() => result.current.closeQr());
-        expect(result.current.qrLink).toBeNull();
     });
 });

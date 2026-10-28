@@ -5,7 +5,7 @@ import { ScrollText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type ChangeEvent, useCallback, useState } from 'react';
 
-import { AcceptanceCheckboxes } from '@/components/legal/AcceptanceCheckboxes';
+import { SignupAcceptanceCheckbox } from '@/components/legal/SignupAcceptanceCheckbox';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { communityGuidelinesQueryKey, useCommunityGuidelinesVersion } from '@/hooks/useCommunityGuidelinesVersion';
 import { termsVersionQueryKey, useTermsVersion } from '@/hooks/useTermsVersion';
@@ -39,7 +39,6 @@ export function OAuthSignupAcceptanceModal({
     // Once a resend meets a changed version, the 3044's versions are out of date.
     const [versionsChanged, setVersionsChanged] = useState(false);
     const [accepted, setAccepted] = useState(false);
-    const [adultConfirmed, setAdultConfirmed] = useState(false);
     const [isConfirming, setIsConfirming] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -48,10 +47,6 @@ export function OAuthSignupAcceptanceModal({
 
     const onAcceptedChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         setAccepted(e.target.checked);
-    }, []);
-
-    const onAdultConfirmedChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        setAdultConfirmed(e.target.checked);
     }, []);
 
     const handleConfirm = useCallback(async () => {
@@ -87,12 +82,7 @@ export function OAuthSignupAcceptanceModal({
             body={
                 <div className="flex flex-col gap-4">
                     <p>{t('body')}</p>
-                    <AcceptanceCheckboxes
-                        accepted={accepted}
-                        adultConfirmed={adultConfirmed}
-                        onAcceptedChangeAction={onAcceptedChange}
-                        onAdultConfirmedChangeAction={onAdultConfirmedChange}
-                    />
+                    <SignupAcceptanceCheckbox checked={accepted} onChangeAction={onAcceptedChange} />
                     {error && (
                         <p role="alert" className="text-xs text-destructive">
                             {error}
@@ -105,7 +95,7 @@ export function OAuthSignupAcceptanceModal({
             onCloseAction={onCloseAction}
             onConfirmAction={handleConfirm}
             isConfirming={isConfirming}
-            confirmDisabled={!accepted || !adultConfirmed || !termsVersion || !guidelinesVersion}
+            confirmDisabled={!accepted || !termsVersion || !guidelinesVersion}
         />
     );
 }
