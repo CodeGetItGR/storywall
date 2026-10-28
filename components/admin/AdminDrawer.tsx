@@ -67,9 +67,11 @@ export function AdminDrawer({
                 {/* Backdrop */}
                 <Dialog.Backdrop forceRender className="motion-overlay fixed inset-0 z-50 bg-[#0a0b0f]/38 opacity-100" />
                 {/* Surface */}
+                {/* The portal lands in <body>, outside AdminLayoutShell's .admin-shell, so the popup
+                    re-enters that scope itself to pick up the console's slate tokens. */}
                 <Dialog.Popup
                     className={cn(
-                        'motion-surface fixed top-(--visual-viewport-offset-top) right-0 z-50 flex h-(--visual-viewport-height) flex-col overflow-hidden',
+                        'admin-shell motion-surface fixed top-(--visual-viewport-offset-top) right-0 z-50 flex h-(--visual-viewport-height) flex-col overflow-hidden',
                         'bg-card text-ink shadow-[0_24px_60px_-20px_rgba(18,20,28,0.45)] outline-none',
                         size === 'modal'
                             ? [
