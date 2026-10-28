@@ -103,6 +103,9 @@ export type ApiErrorMessageKey =
     | 'printListFull'
     | 'vendorServiceLimitReached'
     | 'printListEmpty'
+    | 'pushNotEnabled'
+    | 'pushSendFailed'
+    | 'pushUnavailable'
     | 'vendorLimitReached'
     | 'vendorIsHost'
     | 'alreadyAVendor'
@@ -601,6 +604,9 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.PRINT_LIST_FULL]: 'printListFull',
     [ERROR_CODES.VENDOR_SERVICE_LIMIT_REACHED]: 'vendorServiceLimitReached',
     [ERROR_CODES.PRINT_LIST_EMPTY]: 'printListEmpty',
+    [ERROR_CODES.PUSH_NOT_ENABLED]: 'pushNotEnabled',
+    [ERROR_CODES.PUSH_UNAVAILABLE]: 'pushUnavailable',
+    [ERROR_CODES.PUSH_SEND_FAILED]: 'pushSendFailed',
     [ERROR_CODES.VENDOR_LIMIT_REACHED]: 'vendorLimitReached',
     [ERROR_CODES.VENDOR_IS_HOST]: 'vendorIsHost',
     [ERROR_CODES.ALREADY_A_VENDOR]: 'alreadyAVendor',

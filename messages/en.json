@@ -4470,7 +4470,10 @@
             "methodNotAllowed": "That action is not available here. Refresh and try again.",
             "invalidModuleKey": "One of the selected modules isn't available for this event type. Remove it and try again.",
             "orderNotManual": "Only manual orders can be settled here. Stripe orders settle through Stripe.",
-            "collaboratorBrandingIncomplete": "This partner's card is incomplete. Fill in every field and add a logo, a cover and a website, then try again."
+            "collaboratorBrandingIncomplete": "This partner's card is incomplete. Fill in every field and add a logo, a cover and a website, then try again.",
+            "pushNotEnabled": "This phone's notifications are off. Open the app on the phone.",
+            "pushUnavailable": "Notifications aren't set up on the server.",
+            "pushSendFailed": "Couldn't send. Try again."
         },
         "reactionTypes": {
             "title": "Reaction catalog",
@@ -5372,6 +5375,8 @@
             "removeConfirm": "Remove",
             "fields": { "name": "Name" },
             "columns": { "name": "Name", "paired": "Paired", "lastSeen": "Last seen", "notifications": "Notifications" },
+            "sendTest": "Send test notification",
+            "testSent": "Sent.",
             "push": { "on": "On", "off": "Off" },
             "problems": { "name": "Enter a name." }
         },
@@ -5967,6 +5972,9 @@
         "printListFull": "A list holds up to {max} photos.",
         "vendorServiceLimitReached": "You can list up to {max} sizes.",
         "printListEmpty": "Pick at least one photo first.",
+        "pushNotEnabled": "This phone's notifications are off. Open the app on the phone.",
+        "pushUnavailable": "Notifications aren't set up on the server.",
+        "pushSendFailed": "Couldn't send. Try again.",
         "vendorLimitReached": "This event has all the vendors it can take.",
         "vendorIsHost": "You host this event, so you can't join it as a vendor.",
         "alreadyAVendor": "You're already a vendor in this event.",

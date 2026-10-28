@@ -301,6 +301,9 @@ export const ERROR_CODES = {
     PRINT_LIST_FULL: 5183,
     VENDOR_SERVICE_LIMIT_REACHED: 5184,
     PRINT_LIST_EMPTY: 5185,
+    PUSH_NOT_ENABLED: 5186,
+    PUSH_UNAVAILABLE: 9003,
+    PUSH_SEND_FAILED: 9004,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the

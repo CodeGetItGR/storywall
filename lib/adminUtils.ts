@@ -40,6 +40,9 @@ export type AdminErrorMessageKey =
     | 'eventAlreadySuspended'
     | 'eventAlreadyClosed'
     | 'statementInvalid'
+    | 'pushNotEnabled'
+    | 'pushUnavailable'
+    | 'pushSendFailed'
     | 'generic';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -113,6 +116,10 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.EVENT_ALREADY_SUSPENDED) return 'eventAlreadySuspended';
     if (code === ERROR_CODES.EVENT_ALREADY_CLOSED) return 'eventAlreadyClosed';
     if (code === ERROR_CODES.MODERATION_DECISION_INVALID) return 'statementInvalid';
+    // The Phones drawer's test notification.
+    if (code === ERROR_CODES.PUSH_NOT_ENABLED) return 'pushNotEnabled';
+    if (code === ERROR_CODES.PUSH_UNAVAILABLE) return 'pushUnavailable';
+    if (code === ERROR_CODES.PUSH_SEND_FAILED) return 'pushSendFailed';
     return 'generic';
 }
 
