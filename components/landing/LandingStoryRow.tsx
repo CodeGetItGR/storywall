@@ -65,12 +65,6 @@ export function LandingStoryRow({ children, copy, demoLabel, index, locale, medi
                     titleSegments={copy.titleSegments}
                     wide={wide}
                 />
-                <div
-                    aria-hidden="true"
-                    className="arr mt-8 self-start text-[26px] leading-none text-ink transition-[opacity,transform] duration-350 ease-in-out group-data-[active=true]:translate-x-1 group-data-[active=true]:-translate-y-1 max-[760px]:translate-y-4.5 max-[760px]:opacity-0 max-[760px]:duration-700 max-[760px]:ease-[cubic-bezier(0.2,0.75,0.2,1)] max-[760px]:group-data-[visible=true]:translate-y-0 max-[760px]:group-data-[visible=true]:opacity-100 max-[760px]:group-data-[visible=true]:delay-[180ms] min-[761px]:mt-0 min-[761px]:self-start min-[761px]:pt-2 min-[761px]:text-[30px]"
-                >
-                    ↗
-                </div>
             </div>
             {children}
         </article>

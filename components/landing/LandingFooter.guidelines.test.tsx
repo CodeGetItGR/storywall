@@ -12,7 +12,8 @@ vi.mock('@/components/landing/LandingMotionToggle', () => ({ LandingMotionToggle
 vi.mock('@/components/landing/LandingNewsletter', () => ({ LandingNewsletter: () => null }));
 vi.mock('@/components/consent/CookieSettingsLink', () => ({ CookieSettingsLink: () => <button type="button">cookieSettings</button> }));
 
-const qrWeddingLive = vi.hoisted(() => vi.fn(async () => true));
+// The real gate with weddings on; a test can switch it off.
+const qrWeddingLive = vi.hoisted(() => vi.fn(async () => (await import('@/lib/qrWeddingPage')).qrWeddingPageLive(null)));
 vi.mock('@/lib/qrWeddingPage.server', () => ({ loadQrWeddingPageLive: () => qrWeddingLive() }));
 
 describe('LandingFooter', () => {
@@ -77,13 +78,14 @@ describe('LandingFooter', () => {
         expect(screen.queryByRole('link', { name: 'exploreLinks.qrWedding' })).not.toBeInTheDocument();
     });
 
-    it('leaves out the partner and occasion links on the production site before launch', async () => {
+    it('links only the launched pages on the production site', async () => {
         vi.stubEnv('VERCEL_ENV', 'production');
         render(await LandingFooter());
 
         expect(screen.queryByRole('link', { name: 'exploreLinks.forBusiness' })).not.toBeInTheDocument();
-        expect(screen.queryByText('occasions')).not.toBeInTheDocument();
-        expect(screen.getByRole('link', { name: 'exploreLinks.qrWedding' })).toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: 'exploreLinks.qrWedding' })).not.toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'WEDDING.name' })).toHaveAttribute('href', '/el/gamos');
+        expect(screen.queryByRole('link', { name: 'BAPTISM.name' })).not.toBeInTheDocument();
     });
 
     it('points the anchors back at the landing when rendered elsewhere', async () => {

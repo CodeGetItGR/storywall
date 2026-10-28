@@ -72,13 +72,13 @@ export function isUtmValue(value: string): boolean {
 export type CampaignDestinationKind = 'home' | 'qrWedding' | 'forBusiness' | 'occasion';
 export type CampaignDestination = { kind: CampaignDestinationKind; path: string };
 
-// The pages a campaign can point at: each language's home, wedding QR and (once live here) partner
+// The pages a campaign can point at: each language's home, (once live here) wedding QR and partner
 // page, and every ready occasion page. Landing pages carry the source on into the app.
 export function campaignDestinations(): CampaignDestination[] {
     const destinations: CampaignDestination[] = [];
     for (const locale of locales) destinations.push({ kind: 'home', path: locale === 'en' ? '/' : `/${locale}` });
-    for (const locale of locales) destinations.push({ kind: 'qrWedding', path: getQrWeddingPath(locale) });
     if (showsUnreleasedPages()) {
+        for (const locale of locales) destinations.push({ kind: 'qrWedding', path: getQrWeddingPath(locale) });
         for (const locale of locales) destinations.push({ kind: 'forBusiness', path: getForBusinessPath(locale) });
     }
     for (const occasion of readyOccasions()) {

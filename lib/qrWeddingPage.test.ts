@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { AppConfigResponseDto } from '@/lib/api/types';
 import { QR_WEDDING_CREATE_HREF, qrWeddingPageLive } from '@/lib/qrWeddingPage';
@@ -8,6 +8,10 @@ function config(eventTypes: { eventTypeKey: string; isEnabled: boolean }[]): App
 }
 
 describe('qrWeddingPageLive', () => {
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
     it('is live while weddings are on', () => {
         expect(qrWeddingPageLive(config([{ eventTypeKey: 'WEDDING', isEnabled: true }]))).toBe(true);
     });
@@ -19,6 +23,12 @@ describe('qrWeddingPageLive', () => {
 
     it('stays live when the config is unknown', () => {
         expect(qrWeddingPageLive(null)).toBe(true);
+    });
+
+    it('is hidden on the production site before launch', () => {
+        vi.stubEnv('VERCEL_ENV', 'production');
+        expect(qrWeddingPageLive(config([{ eventTypeKey: 'WEDDING', isEnabled: true }]))).toBe(false);
+        expect(qrWeddingPageLive(null)).toBe(false);
     });
 });
 
