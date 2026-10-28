@@ -57,6 +57,7 @@ vi.mock('@/hooks/useAdminDevices', () => ({
     useRefreshAdminDevices: () => hooks.refresh,
     useCreateAdminDevice: () => ({ mutateAsync: hooks.create, reset: hooks.reset, isPending: false }),
     useRevokeAdminDevice: () => ({ mutateAsync: hooks.revoke, isPending: false }),
+    useSendTestNotification: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
 const galaxy: AdminDeviceDto = { id: 'd1', name: 'Galaxy', createdAt: '2026-10-28T08:00:00Z', lastSeenAt: null, pushEnabled: false };

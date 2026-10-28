@@ -48,3 +48,12 @@ export function useRevokeAdminDevice() {
         onSettled: refresh,
     });
 }
+
+export function useSendTestNotification() {
+    const refresh = useRefreshAdminDevices();
+    return useMutation({
+        mutationFn: (id: string) => api.post<void>(endpoints.admin.devices.testNotification(id)),
+        // A dead token is cleared on the server, which turns the phone's Notifications to Off.
+        onSettled: refresh,
+    });
+}

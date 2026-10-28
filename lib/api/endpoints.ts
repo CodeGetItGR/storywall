@@ -527,6 +527,7 @@ export const endpoints = {
         devices: {
             list: '/api/admin/devices',
             byId: (id: string) => `/api/admin/devices/${id}`,
+            testNotification: (id: string) => `/api/admin/devices/${id}/test-notification`,
         },
         campaignLinks: {
             list: '/api/admin/campaign-links',
