@@ -2346,18 +2346,51 @@ export interface CampaignLinkRequestDto {
     utmCampaign: string;
 }
 
-// GET /api/admin/metrics/campaigns. Sign-ups in the range per (source, medium, campaign), counted as
-// on FunnelChannelRowDto, with the saved link that has the same values. A saved link without
-// sign-ups is a row of zeros. Any of the three values is null when the visit didn't have it.
+// GET /api/admin/metrics/campaigns. Visits and landing page clicks (saved links only) and sign-ups in
+// the range per (source, medium, campaign), sign-ups counted as on FunnelChannelRowDto, with the saved
+// link that has the same values. A saved link with nothing in the range is a row of zeros. Any of the
+// three values is null when the visit didn't have it.
 export interface CampaignRowDto {
     utmSource: string | null;
     utmMedium: string | null;
     utmCampaign: string | null;
     link: CampaignLinkDto | null;
+    visits: number;
+    visitors: number;
+    createClicks: number;
+    plansClicks: number;
+    planPicks: number;
     signedUp: number;
     createdEvent: number;
     paidHost: number;
     revenueMinorByCurrency: Record<string, number>;
+}
+
+// GET /api/admin/metrics/campaigns/overview. Every saved link (or one with ?link=) over a range.
+// daily lists every Athens day in the range, zeros included; empty when there's no visit at all.
+export interface CampaignOverviewDto {
+    visits: number;
+    visitors: number;
+    createClicks: number;
+    plansClicks: number;
+    planPicks: number;
+    signedUp: number;
+    paidHost: number;
+    revenueMinorByCurrency: Record<string, number>;
+    daily: { date: string; visits: number; visitors: number }[];
+    devices: { device: VisitorDevice; visits: number }[];
+    languages: { language: VisitorLanguage; visits: number }[];
+}
+
+// POST /api/public/campaign-visits. Spring always answers 204.
+export type CampaignVisitKind = 'VISIT' | 'CREATE' | 'PLANS' | 'PLAN';
+
+export interface CampaignVisitRequestDto {
+    kind: CampaignVisitKind;
+    utmSource: string;
+    utmMedium: string;
+    utmCampaign: string;
+    language: VisitorLanguage;
 }
 
 // GET /api/admin/metrics/visitors. Google Analytics numbers for the public pages over a range.
