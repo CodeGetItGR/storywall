@@ -21,6 +21,7 @@ import { ModuleUsagePanel } from '@/components/admin/moduleUsage/ModuleUsagePane
 import { OrdersSection } from '@/components/admin/orders/OrdersSection';
 import { PaidServicesCatalogPanel } from '@/components/admin/PaidServicesCatalogPanel';
 import { PartnerCardsSection } from '@/components/admin/partnerCards/PartnerCardsSection';
+import { PhonesPanel } from '@/components/admin/phones/PhonesPanel';
 import { PlansSection } from '@/components/admin/plans/PlansSection';
 import { PlatformMetricsPanel } from '@/components/admin/PlatformMetricsPanel';
 import { ReactionTypesCatalogPanel } from '@/components/admin/ReactionTypesCatalogPanel';
@@ -72,6 +73,13 @@ export function AdminConsole() {
         return (
             <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
                 <SiteNoticesPanel />
+            </div>
+        );
+    }
+    if (tab === 'phones') {
+        return (
+            <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
+                <PhonesPanel />
             </div>
         );
     }
