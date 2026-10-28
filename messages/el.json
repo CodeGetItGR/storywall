@@ -6219,11 +6219,11 @@
             "mobileNav": ["Η Πλατφόρμα", "Πώς λειτουργεί", "Δυνατότητες", "Πακέτα", "Σύνδεση"],
             "title": "Ηλεκτρονικό προσκλητήριο και φωτογραφίες καλεσμένων σε ένα μέρος.",
             "subtitle": "Ψηφιακή πρόσκληση με RSVP για τον γάμο ή τη βάπτισή σου. Οι καλεσμένοι ανεβάζουν φωτογραφίες με ένα QR από το κινητό τους. Χωρίς app.",
-            "kicker": "ΤΟ SOCIAL ΓΙΑ ΚΑΘΕ <strong>PRIVATE EVENT</strong>",
+            "kicker": "ΤΟ SOCIAL ΓΙΑ ΚΑΘΕ <strong>ΙΔΙΩΤΙΚΗ ΕΚΔΗΛΩΣΗ</strong>",
             "typewriter": {
                 "prefix": "Για",
-                "words": ["Γάμο", "Βάπτιση", "Gender Reveal", "VIP Parties"],
-                "label": "Για Γάμο, Βάπτιση, Gender Reveal και VIP Parties"
+                "words": ["Γάμο", "Βάπτιση", "Gender Reveal", "VIP πάρτι"],
+                "label": "Για Γάμο, Βάπτιση, Gender Reveal και VIP πάρτι"
             },
             "plansCta": "Δες τα πακέτα",
             "demoCta": "Δες το demo",
@@ -6255,7 +6255,7 @@
             "openDemo": "Άνοιξε το demo",
             "rows": [
                 {
-                    "tag": "WEDDING",
+                    "tag": "ΓΑΜΟΣ",
                     "occasionLink": "Ηλεκτρονικό προσκλητήριο γάμου",
                     "title": ["Ο γάμος σας δεν είναι μία μέρα.", "Είναι μία ιστορία."],
                     "paragraphs": [
@@ -6308,7 +6308,7 @@
                     ]
                 },
                 {
-                    "tag": "BAPTISM",
+                    "tag": "ΒΑΠΤΙΣΗ",
                     "occasionLink": "Ηλεκτρονικό προσκλητήριο βάπτισης",
                     "title": ["Η πρώτη μεγάλη γιορτή του παιδιού σας.", "Και ήταν όλοι εκεί."],
                     "paragraphs": [
@@ -6405,7 +6405,7 @@
                     ]
                 },
                 {
-                    "tag": "VIP & SOCIAL PARTIES",
+                    "tag": "VIP & SOCIAL ΠΑΡΤΙ",
                     "title": ["Για", "ιδιωτικές εκδηλώσεις", "που γίνονται κάτι περισσότερο από ένα party."],
                     "paragraphs": ["Το party αποκτά τον δικό του ιδιωτικό social χώρο, γεμάτο στιγμές, reactions και backstage περιεχόμενο."],
                     "galleryLabel": "Στιγμές από VIP πάρτι",
@@ -6468,7 +6468,7 @@
                     "text": "Μία γλυκιά ιστορία πριν από τη μεγάλη άφιξη: ευχές, φωτογραφίες και στιγμές με τους ανθρώπους σου."
                 },
                 {
-                    "label": "ENGAGEMENT PARTY",
+                    "label": "ΑΡΡΑΒΩΝΑΣ",
                     "text": "Η αρχή του “μαζί” αξίζει τον δικό της χώρο, από το πρώτο cheers μέχρι την τελευταία φωτογραφία."
                 }
             ]
@@ -6487,12 +6487,12 @@
             "previewLabel": "Προεπισκόπηση του StoryWall στο κινητό"
         },
         "stack": {
-            "socialTopbar": "CHAPTER 01 · SOCIAL SIDE",
-            "socialChapter": "CHAPTER 01",
+            "socialTopbar": "ΚΕΦΑΛΑΙΟ 01 · ΓΙΑ ΤΟΥΣ ΚΑΛΕΣΜΕΝΟΥΣ",
+            "socialChapter": "ΚΕΦΑΛΑΙΟ 01",
             "socialTitle": ["Όλα όσα", "χρειάζεσαι..."],
             "socialCopy": "Posts, stories, reactions και σχόλια από όλους όσους ζουν το event μαζί σας.",
-            "hostTopbar": "CHAPTER 02 · HOST SIDE",
-            "hostChapter": "CHAPTER 02",
+            "hostTopbar": "ΚΕΦΑΛΑΙΟ 02 · ΓΙΑ ΤΟΝ ΔΙΟΡΓΑΝΩΤΗ",
+            "hostChapter": "ΚΕΦΑΛΑΙΟ 02",
             "hostTitle": ["...είναι στο", "χέρι σου!"],
             "hostCopy": "RSVP, φωτογραφίες, ευχές, περιεχόμενο και διαχείριση του event. Όλα από ένα σημείο."
         },
@@ -6506,13 +6506,13 @@
                 "Δημοσιεύσεις",
                 "Stories",
                 "Βίντεο",
-                "Reactions",
+                "Αντιδράσεις",
                 "Σχόλια",
                 "Πρόσκληση",
                 "Πρόγραμμα",
                 "Μουσικές προτάσεις",
                 "RSVP",
-                "QR Photo Upload",
+                "Ανέβασμα με QR",
                 "Ευχολόγιο",
                 "Λίστα δώρων"
             ]
@@ -6537,7 +6537,7 @@
                     "imageAlt": "Καλεσμένος βλέπει πρόσκληση StoryWall στο κινητό"
                 },
                 {
-                    "title": "QR PHOTO UPLOAD",
+                    "title": "ΑΝΕΒΑΣΜΑ ΜΕ QR",
                     "subtitle": "Κάθε καλεσμένος. Μια διαφορετική οπτική.",
                     "description": "Οι καλεσμένοι σκανάρουν το QR και ανεβάζουν απευθείας φωτογραφίες και videos στο StoryWall, εύκολα και άμεσα, τη στιγμή που συμβαίνουν.",
                     "items": ["Upload με ένα απλό scan", "Χωρίς app ή εγγραφή", "Φωτογραφίες και videos διαθέσιμα για download"],
@@ -6650,7 +6650,7 @@
             "lineOne": "Οι στιγμές περνούν.",
             "lineTwo": "Η ιστορία μένει.",
             "newsletter": "NEWSLETTER",
-            "explore": "EXPLORE",
+            "explore": "ΕΞΕΡΕΥΝΗΣΗ",
             "exploreLinks": {
                 "platform": "Η πλατφόρμα",
                 "howItWorks": "Πώς λειτουργεί",
@@ -6676,7 +6676,7 @@
             },
             "communityGuidelines": "Κανόνες Κοινότητας",
             "reportContent": "Αναφορά περιεχομένου",
-            "backToTop": "BACK TO TOP"
+            "backToTop": "ΕΠΙΣΤΡΟΦΗ ΣΤΗΝ ΑΡΧΗ"
         }
     },
     "ForBusinessPage": {
