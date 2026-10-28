@@ -58,25 +58,9 @@ export const landingStoryMedia: LandingStoryMedia[] = [
     },
 ];
 
+// One photo per "more stories" card, in the order of LandingPage.stories.moreStories.
 export const landingMoreStoryMedia = [
-    {
-        objectPosition: '50% 18%',
-        src: 'https://images.pexels.com/photos/33635247/pexels-photo-33635247.jpeg?auto=compress&cs=tinysrgb&w=1800',
-    },
-    {
-        objectPosition: '50% 25%',
-        src: 'https://images.pexels.com/photos/9215433/pexels-photo-9215433.jpeg?auto=compress&cs=tinysrgb&w=1800',
-    },
-    {
-        objectPosition: '50% 50%',
-        src: 'https://images.pexels.com/photos/9901279/pexels-photo-9901279.jpeg?auto=compress&cs=tinysrgb&w=1800',
-    },
-    {
-        objectPosition: '50% 50%',
-        src: 'https://images.pexels.com/photos/15141416/pexels-photo-15141416.jpeg?auto=compress&cs=tinysrgb&w=1800',
-    },
-    {
-        objectPosition: '50% 50%',
-        src: 'https://images.pexels.com/photos/3419643/pexels-photo-3419643.jpeg?auto=compress&cs=tinysrgb&w=1800',
-    },
+    { objectPosition: '50% 18%', src: '/landing/woman-in-black-dress-holding-birthday-cake.webp' },
+    { objectPosition: '50% 25%', src: '/landing/pregnant-woman-and-friends-with-pink-and-blue-balloons.webp' },
+    { objectPosition: '50% 50%', src: '/landing/couple-cheering-with-guests-under-lit-arch-at-night.webp' },
 ] as const;
