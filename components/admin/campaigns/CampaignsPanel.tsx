@@ -47,7 +47,13 @@ export function CampaignsPanel() {
 
             {/* Drawers */}
             {d.drawer.link ? (
-                <CampaignLinkDrawer key={d.drawer.token} open={d.drawer.open} link={d.drawer.link} onCloseAction={d.closeDrawer} />
+                <CampaignLinkDrawer
+                    key={d.drawer.token}
+                    open={d.drawer.open}
+                    link={d.drawer.link}
+                    bounds={d.range.bounds}
+                    onCloseAction={d.closeDrawer}
+                />
             ) : (
                 <CampaignLinkCreateDrawer key={d.drawer.token} open={d.drawer.open} onCloseAction={d.closeDrawer} />
             )}

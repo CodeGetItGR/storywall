@@ -14,13 +14,18 @@ export function CampaignsTable({ rows, onLinkAction }: { rows: CampaignRowDto[];
 
     return (
         <div className="overflow-x-auto">
-            <table aria-label={t('title')} className="w-full min-w-[760px] border-collapse text-left text-sm">
+            <table aria-label={t('title')} className="w-full min-w-[1080px] border-collapse text-left text-sm">
                 {/* Columns */}
                 <thead>
                     <tr className="border-b border-border text-[11px] font-bold tracking-wide text-ink-faint uppercase">
                         <th className="px-4 py-3 font-bold">{t('columns.name')}</th>
                         <th className="px-3 py-3 font-bold">{t('columns.source')}</th>
                         <th className="px-3 py-3 font-bold">{t('columns.campaign')}</th>
+                        <th className="px-3 py-3 text-right font-bold">{t('columns.visits')}</th>
+                        <th className="px-3 py-3 text-right font-bold">{t('columns.visitors')}</th>
+                        <th className="px-3 py-3 text-right font-bold">{t('columns.createClicks')}</th>
+                        <th className="px-3 py-3 text-right font-bold">{t('columns.plansClicks')}</th>
+                        <th className="px-3 py-3 text-right font-bold">{t('columns.planPicks')}</th>
                         <th className="px-3 py-3 text-right font-bold">{t('columns.signedUp')}</th>
                         <th className="px-3 py-3 text-right font-bold">{t('columns.createdEvent')}</th>
                         <th className="px-3 py-3 text-right font-bold">{t('columns.paidHost')}</th>
@@ -54,7 +59,13 @@ export function CampaignsTable({ rows, onLinkAction }: { rows: CampaignRowDto[];
                                     {row.utmSource ?? EMPTY_VALUE} / {row.utmMedium ?? EMPTY_VALUE}
                                 </td>
                                 <td className="px-3 py-3 font-mono text-xs text-ink-muted">{row.utmCampaign ?? EMPTY_VALUE}</td>
-                                {/* Counts */}
+                                {/* Visits */}
+                                <td className="px-3 py-3 text-right font-mono tabular-nums">{format.count(row.visits)}</td>
+                                <td className="px-3 py-3 text-right font-mono tabular-nums">{format.count(row.visitors)}</td>
+                                <td className="px-3 py-3 text-right font-mono tabular-nums">{format.count(row.createClicks)}</td>
+                                <td className="px-3 py-3 text-right font-mono tabular-nums">{format.count(row.plansClicks)}</td>
+                                <td className="px-3 py-3 text-right font-mono tabular-nums">{format.count(row.planPicks)}</td>
+                                {/* Sign-ups */}
                                 <td className="px-3 py-3 text-right font-mono tabular-nums">{format.count(row.signedUp)}</td>
                                 <td className="px-3 py-3 text-right font-mono tabular-nums">{format.count(row.createdEvent)}</td>
                                 <td className="px-3 py-3 text-right font-mono tabular-nums">{format.count(row.paidHost)}</td>
