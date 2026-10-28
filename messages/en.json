@@ -2903,6 +2903,7 @@
             "reactionTypes": "Reactions",
             "themePresets": "Themes",
             "themeFonts": "Theme fonts",
+            "qrCards": "QR cards",
             "billingOps": "Billing ops",
             "withdrawals": "Withdrawals",
             "accounts": "Accounts",
