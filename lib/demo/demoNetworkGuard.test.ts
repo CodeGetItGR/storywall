@@ -163,6 +163,11 @@ describe('demo network guard', () => {
         expect(left).toEqual([]);
     });
 
+    it("lets the map preview's short-link lookup through to this app", async () => {
+        await send('GET', `/api/maps/resolve?url=${encodeURIComponent('https://share.google/abc')}`, undefined, 'http://localhost');
+        expect(left).toEqual([{ method: 'GET', url: 'http://localhost/api/maps/resolve?url=https%3A%2F%2Fshare.google%2Fabc' }]);
+    });
+
     it('lets only the snapshot and /api/config reach the backend', async () => {
         await send('GET', '/api/config');
         await send('GET', '/api/demo/WEDDING');

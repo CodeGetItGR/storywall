@@ -277,6 +277,8 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
         // --- Allowed backend calls ---
         http.get(`${API_BASE_URL}/api/config`, () => passthrough()),
         http.get(`${API_BASE_URL}/api/demo/:eventTypeKey`, () => passthrough()),
+        // The map preview's short-link lookup only asks Google, never the backend.
+        ...(appOrigin ? [http.get(`${appOrigin}/api/maps/resolve`, () => passthrough())] : []),
 
         // --- Me ---
         http.get(`${API_BASE_URL}/api/me`, () => HttpResponse.json(me())),
