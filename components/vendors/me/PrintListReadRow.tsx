@@ -20,7 +20,7 @@ export function PrintListReadRow({ item }: { item: PrintListItemDto }) {
                         mediaType={media.mediaType}
                         status={media.status}
                         thumbnailUrl={media.thumbnailUrl}
-                        alt=""
+                        alt={media.originalFilename}
                         fill
                         sizes="48px"
                         className="object-cover"
