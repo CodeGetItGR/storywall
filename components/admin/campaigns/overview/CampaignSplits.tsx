@@ -15,7 +15,11 @@ export function CampaignSplits({ data }: { data: CampaignOverviewDto }) {
         <FunnelGroup title={t('title')} window="visit">
             <div className="grid gap-5 @xl:grid-cols-2">
                 {/* Language */}
-                <FunnelBreakdown title={t('language')} rows={languageRows(data.languages)} labels={{ el: v('languages.el'), en: v('languages.en') }} />
+                <FunnelBreakdown
+                    title={t('language')}
+                    rows={languageRows(data.languages)}
+                    labels={{ el: v('languages.el'), en: v('languages.en') }}
+                />
                 {/* Device */}
                 <FunnelBreakdown
                     title={t('device')}

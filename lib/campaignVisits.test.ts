@@ -1,13 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-    campaignFromUrl,
-    currentCampaign,
-    pageLanguage,
-    rememberCampaign,
-    sendCampaignClick,
-    sendCampaignVisit,
-} from '@/lib/campaignVisits';
+import { campaignFromUrl, currentCampaign, pageLanguage, rememberCampaign, sendCampaignClick, sendCampaignVisit } from '@/lib/campaignVisits';
 
 const CAMPAIGN = { utmSource: 'instagram', utmMedium: 'social', utmCampaign: 'spring' };
 

@@ -28,12 +28,7 @@ export function useAdminCampaigns(since: string | null, until: string | null, op
 }
 
 // Every saved link, or one with linkId.
-export function useAdminCampaignOverview(
-    since: string | null,
-    until: string | null,
-    linkId: string | null,
-    options: { enabled?: boolean } = {},
-) {
+export function useAdminCampaignOverview(since: string | null, until: string | null, linkId: string | null, options: { enabled?: boolean } = {}) {
     return useQuery({
         queryKey: adminCampaignKeys.overview(since, until, linkId),
         queryFn: () => api.get<CampaignOverviewDto>(endpoints.admin.metrics.campaignOverview(since, until, linkId)),
