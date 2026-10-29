@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { Modal } from '@/components/ui/modal';
+import { useQrCardHref } from '@/hooks/useQrCardTemplates';
 import type { QrLinkResponseDto } from '@/lib/api/types';
 
 import { QrCodeCard } from './QrCodeCard';
@@ -10,6 +11,7 @@ import { QrCodeCard } from './QrCodeCard';
 export function QrPreviewModal({ qrLink, open, onCloseAction }: { qrLink: QrLinkResponseDto; open: boolean; onCloseAction: () => void }) {
     const t = useTranslations('ManagePage');
     const tGlobal = useTranslations();
+    const cardHref = useQrCardHref(qrLink.eventId, qrLink.id);
 
     return (
         <Modal open={open} onClose={onCloseAction} closeLabel={t('invitations.create.cancel')} size="sm">
@@ -19,7 +21,7 @@ export function QrPreviewModal({ qrLink, open, onCloseAction }: { qrLink: QrLink
                     <p className="mt-1 text-xs text-ink-muted">{t(`qr.targetTypes.${qrLink.targetType}`)}</p>
                 </div>
 
-                <QrCodeCard qrLink={qrLink} />
+                <QrCodeCard qrLink={qrLink} cardHref={cardHref} />
             </Modal.Body>
         </Modal>
     );

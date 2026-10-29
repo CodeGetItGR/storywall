@@ -11,6 +11,10 @@
         "home": "StoryWall home",
         "time": "Time"
     },
+    "SiteNotice": {
+        "apiDown": "We're having some issues. We're working on a fix.",
+        "close": "Close"
+    },
     "DemoActAs": {
         "postingAs": "Posting as",
         "host": "You (host)",
@@ -42,6 +46,8 @@
         "resetDemo": "Reset demo",
         "exitDemo": "Exit demo",
         "title": "Demo",
+        "metaTitle": "Demo | StoryWall",
+        "metaDescription": "Try StoryWall on a sample event: invitation, RSVP, photos and wishes.",
         "resetTitle": "Reset the demo?",
         "resetBody": "Nothing in the demo is saved. Your changes will be removed and the demo will start over.",
         "resetCancel": "Cancel",
@@ -50,7 +56,11 @@
         "rateLimitedTitle": "The demo is busy right now.",
         "rateLimitedBody": "Try again in a minute.",
         "failedTitle": "The demo couldn’t start in this browser.",
-        "failedBody": "Try reloading the page, or use a different browser."
+        "failedBody": "Try reloading the page, or use a different browser.",
+        "uploadNotice": "This is a demo. Your photos stay on this device.",
+        "inviteNotice": "This is a demo. Your guests see this page and join from here.",
+        "tryUpload": "Try uploading",
+        "previewInvite": "Preview invitation"
     },
     "EventNotFound": {
         "title": "This celebration seems to have wandered off",
@@ -170,6 +180,7 @@
         "month": "Month",
         "time": "Time",
         "pinned": "Pinned",
+        "announcement": "Announcement",
         "pinPost": "Pin post",
         "unpinPost": "Unpin post",
         "pinPostFailed": "Couldn't pin this post. Please try again.",
@@ -478,6 +489,7 @@
         "hidePassword": "Hide password",
         "submit": "Sign In",
         "tabTitle": "Login",
+        "metaDescription": "Sign in to your StoryWall account.",
         "noAccount": "Don't have an account?",
         "createAccountLink": "Create one",
         "orContinueWith": "Or continue with",
@@ -502,26 +514,21 @@
         "tabTitle": "Register",
         "haveAccount": "Already have an account?",
         "signInLink": "Sign in",
-        "orContinueWith": "Or continue with",
+        "orWithEmail": "Or sign up with email",
         "newsletter": {
-            "label": "Subscribe to the newsletter and get {percent}% off your next event",
-            "hint": "We'll send your code after you verify your email."
-        },
-        "business": {
-            "label": "Register as a business",
-            "hint": "Add your company's VAT details to buy as a business."
+            "label": "Subscribe to the newsletter and get {percent}% off your next event"
         },
         "acceptance": {
             "required": "Please accept the Terms of Use and Community Guidelines and confirm you are 18 or older to create your account.",
             "loading": "The Terms of Use and Community Guidelines are still loading. Please try again in a moment.",
             "unavailable": "The Terms of Use or Community Guidelines couldn't be loaded. Refresh the page and try again.",
-            "changed": "The Terms of Use or Community Guidelines were just updated. Please review them and tick the box again.",
-            "oauthHint": "Tick both boxes above to sign up with Google or Apple."
+            "changed": "The Terms of Use or Community Guidelines were just updated. Please review them and tick the box again."
         }
     },
     "AcceptanceCheckboxes": {
         "all": "I accept the <terms>Terms of Use</terms> and <guidelines>Community Guidelines</guidelines> and have read the <privacy>Privacy Policy</privacy>",
         "termsOnly": "I accept the <terms>Terms of Use</terms> and have read the <privacy>Privacy Policy</privacy>",
+        "signup": "I accept the <terms>Terms of Use</terms> and <guidelines>Community Guidelines</guidelines>, have read the <privacy>Privacy Policy</privacy>, and am 18 or older",
         "adult": "I am 18 or older",
         "age16": "I am 16 or older",
         "opensInNewTab": "(opens in a new tab)"
@@ -847,6 +854,14 @@
             "VENDOR_JOINED": {
                 "title": "{business} joined as {type}",
                 "body": "They can now use their tools in your event."
+            },
+            "PRINT_PICKS_ENDING": {
+                "title": "Print picks close on {closesDate} (Athens time)",
+                "body": "{count, plural, one {Download the photo the host picked.} other {Download the # photos the host picked.}}"
+            },
+            "PRINT_LIST_SENT": {
+                "title": "{guestName} sent a print list",
+                "body": "{count, plural, one {# print} other {# prints}}, {total}."
             },
             "WITHDRAWAL_REFUNDED": {
                 "title": "Your withdrawal was processed",
@@ -1980,7 +1995,15 @@
         "communityGuidelines": "Community Guidelines",
         "reportContent": "Report content",
         "contact": "Contact",
-        "unavailable": "This page isn't available right now. Please try again later."
+        "unavailable": "This page isn't available right now. Please try again later.",
+        "descriptions": {
+            "terms": "The terms for using StoryWall and buying a plan.",
+            "privacy": "What data StoryWall collects, why, who receives it and your rights.",
+            "cookies": "The cookies StoryWall uses and how to change your choice.",
+            "withdrawal": "How to withdraw from a purchase, with the model withdrawal form.",
+            "communityGuidelines": "What you can and can't post on StoryWall.",
+            "contact": "How to reach StoryWall, and our company details."
+        }
     },
     "GuidelinesGate": {
         "title": "Our Community Guidelines",
@@ -2880,6 +2903,7 @@
             "reactionTypes": "Reactions",
             "themePresets": "Themes",
             "themeFonts": "Theme fonts",
+            "qrCards": "QR cards",
             "billingOps": "Billing ops",
             "withdrawals": "Withdrawals",
             "accounts": "Accounts",
@@ -2888,7 +2912,11 @@
             "bugReports": "Bug reports",
             "errorEvents": "Errors",
             "demoEvents": "Demo events",
-            "partnerCards": "Partner cards"
+            "partnerCards": "Partner cards",
+            "siteNotices": "Site notices",
+            "phones": "Phones",
+            "campaigns": "Campaigns",
+            "campaignOverview": "Campaign overview"
         },
         "demoEvents": {
             "title": "Demo events",
@@ -4440,10 +4468,14 @@
             "reactionTypeNotUsable": "That reaction is no longer available. Refresh and choose another.",
             "collaborationEarningNotPayable": "One or more selected earnings are not payable. Refresh the ledger and choose accrued rows.",
             "collaboratorPayoutDetailsIncomplete": "This partner's business or payout details are incomplete, or their VAT number isn't VIES-valid. Complete their business details and try again.",
+            "campaignLinkTaken": "A link with this source, medium and campaign already exists.",
             "methodNotAllowed": "That action is not available here. Refresh and try again.",
             "invalidModuleKey": "One of the selected modules isn't available for this event type. Remove it and try again.",
             "orderNotManual": "Only manual orders can be settled here. Stripe orders settle through Stripe.",
-            "collaboratorBrandingIncomplete": "This partner's card is incomplete. Fill in every field and add a logo, a cover and a website, then try again."
+            "collaboratorBrandingIncomplete": "This partner's card is incomplete. Fill in every field and add a logo, a cover and a website, then try again.",
+            "pushNotEnabled": "This phone's notifications are off. Open the app on the phone.",
+            "pushUnavailable": "Notifications aren't set up on the server.",
+            "pushSendFailed": "Couldn't send. Try again."
         },
         "reactionTypes": {
             "title": "Reaction catalog",
@@ -4644,6 +4676,83 @@
             "preview": {
                 "label": "Preview",
                 "sampleTitle": "Event title"
+            }
+        },
+        "qrCards": {
+            "title": "QR cards",
+            "subtitle": "Card designs hosts can print their QR codes on.",
+            "create": "New design",
+            "search": "Search by name",
+            "loading": "Loading designs…",
+            "empty": "No designs yet.",
+            "noMatches": "No designs match.",
+            "edit": "Edit {name}",
+            "filters": {
+                "ALL": "All",
+                "LIVE": "Offered",
+                "NO_ARTWORK": "Needs artwork",
+                "ARCHIVED": "Archived"
+            },
+            "status": {
+                "LIVE": "Offered",
+                "NO_ARTWORK": "Needs artwork",
+                "ARCHIVED": "Archived"
+            },
+            "columns": {
+                "design": "Design",
+                "eventTypes": "Event types",
+                "code": "Code colour",
+                "status": "Status",
+                "order": "Order"
+            },
+            "drawer": {
+                "createTitle": "New design",
+                "close": "Close",
+                "cancel": "Cancel",
+                "save": "Save",
+                "nameEn": "English name",
+                "nameEl": "Greek name",
+                "nameInvalid": "Enter 1 to 60 characters.",
+                "textColor": "Text colour",
+                "textColorHex": "Text colour hex code",
+                "textColorInvalid": "Use a colour like #5A3E2B.",
+                "headingFont": "Title font",
+                "headingFontDefault": "Card font (default)",
+                "headingFontOption": "{familyName} ({key})",
+                "headingFontArchived": "{familyName} ({key}), archived",
+                "headingFontNoFile": "{familyName} ({key}), no file yet",
+                "headingFontLoading": "Loading fonts…",
+                "headingFontLoadFailed": "Couldn't load the fonts. The current choice is kept. Close and reopen this panel to try again.",
+                "headingFontEmpty": "No fonts are ready yet. A font needs an uploaded file and must not be archived.",
+                "headingFontEmptyLink": "Go to Theme fonts",
+                "codeColor": "Code colour",
+                "codeColorHex": "Code colour hex code",
+                "codeColorInvalid": "Use a colour like #1F3A5A.",
+                "codeContrastOk": "Contrast {ratio}:1 on white",
+                "codeContrastLow": "Contrast {ratio}:1. Needs at least {min}:1 on white to scan, so pick a darker colour.",
+                "codeContrastInvalid": "This colour is too light to scan on white. Pick a darker one.",
+                "centerLogo": "Logo in the middle of the code",
+                "eventTypes": "Event types",
+                "eventTypesInvalid": "Pick at least one event type.",
+                "artwork": "Artwork",
+                "artworkHint": "PNG or WebP, A6 portrait (105 × 148), at least 1240 px wide, up to 5 MB.",
+                "artworkChoose": "Choose file",
+                "artworkPending": "Uploads when you save.",
+                "artworkType": "Use a PNG or WebP image.",
+                "artworkSize": "Use an image up to 5 MB.",
+                "availability": "Availability",
+                "offered": "Offered",
+                "archived": "Archived",
+                "offeredHint": "Hosts of the selected event types can pick it.",
+                "archivedHint": "Hosts can no longer pick it.",
+                "network": "Couldn't reach the server. Check your connection and try again.",
+                "notFound": "This design no longer exists."
+            },
+            "preview": {
+                "label": "Preview",
+                "sampleTitle": "Event title",
+                "sampleLine": "Scan to join",
+                "cardLabel": "QR card: {title}"
             }
         },
         "themeFonts": {
@@ -5229,6 +5338,198 @@
                 },
                 "placement": "First card after post {firstAfter}, then every {every} posts."
             }
+        },
+        "campaigns": {
+            "title": "Campaigns",
+            "create": "New link",
+            "createTitle": "New campaign link",
+            "saveLink": "Save link",
+            "rangeNote": "Counts visits and sign-ups in this range.",
+            "empty": "No campaigns yet.",
+            "notSaved": "Not saved",
+            "delete": "Delete link",
+            "deleteTitle": "Delete this link?",
+            "deleteBody": "The link keeps working. Its past numbers and new sign-ups still count, but new visits don't.",
+            "deleteConfirm": "Delete",
+            "statsError": "Couldn't load this link's numbers.",
+            "columns": {
+                "name": "Name",
+                "source": "Source / medium",
+                "campaign": "Campaign",
+                "visits": "Visits",
+                "visitors": "Visitors",
+                "createClicks": "Create",
+                "plansClicks": "Plans",
+                "planPicks": "Plan picked",
+                "signedUp": "Sign-ups",
+                "createdEvent": "Created an event",
+                "paidHost": "Paid",
+                "revenue": "Revenue"
+            },
+            "fields": {
+                "preset": "Where you'll share it",
+                "page": "Page",
+                "source": "Source",
+                "medium": "Medium",
+                "campaign": "Campaign",
+                "campaignHint": "Lowercase with dashes, like october-bio.",
+                "name": "Name"
+            },
+            "presetGroups": {
+                "social": "Social posts",
+                "ads": "Ads",
+                "other": "Other"
+            },
+            "presets": {
+                "instagram": "Instagram",
+                "facebook": "Facebook",
+                "tiktok": "TikTok",
+                "pinterest": "Pinterest",
+                "linkedin": "LinkedIn",
+                "youtube": "YouTube",
+                "instagramAds": "Instagram ads",
+                "facebookAds": "Facebook ads",
+                "tiktokAds": "TikTok ads",
+                "googleAds": "Google Ads",
+                "email": "Email or newsletter",
+                "partner": "Partner",
+                "qr": "Printed QR code",
+                "custom": "Custom"
+            },
+            "pages": {
+                "home": "Home",
+                "qrWedding": "Wedding QR",
+                "forBusiness": "For business",
+                "occasion": "Occasion page"
+            },
+            "problems": {
+                "name": "Add a name.",
+                "source": "Add a source.",
+                "medium": "Add a medium.",
+                "campaign": "Add a campaign."
+            },
+            "share": {
+                "copy": "Copy link",
+                "copied": "Copied",
+                "downloadQr": "Download QR",
+                "qr": "QR code for this link"
+            }
+        },
+        "campaignOverview": {
+            "title": "Campaign overview",
+            "rangeNote": "Counts visits from saved links and sign-ups in this range.",
+            "empty": "No campaign visits in this range.",
+            "error": "Couldn't load the campaign overview.",
+            "retry": "Try again",
+            "tiles": {
+                "title": "Funnel",
+                "visits": "Visits",
+                "visitors": "Visitors",
+                "createClicks": "Create clicks",
+                "plansClicks": "See plans clicks",
+                "planPicks": "Plan picked",
+                "signedUp": "Sign-ups",
+                "paidHost": "Paid",
+                "revenue": "Revenue",
+                "share": "{rate} of visitors"
+            },
+            "splits": {
+                "title": "Language and device",
+                "language": "Language",
+                "device": "Device"
+            }
+        },
+        "phones": {
+            "add": "Add phone",
+            "empty": "No phones paired.",
+            "createTitle": "Add phone",
+            "create": "Create code",
+            "done": "Done",
+            "close": "Close",
+            "open": "Open {name}",
+            "actions": "Actions",
+            "never": "Never",
+            "scan": "Scan it with the StoryWall Admin app.",
+            "shownOnce": "This code is shown only once.",
+            "qrLabel": "Pairing code for {name}",
+            "remove": "Remove phone",
+            "removeTitle": "Remove this phone?",
+            "removeBody": "It stops updating right away.",
+            "removeConfirm": "Remove",
+            "fields": { "name": "Name" },
+            "columns": { "name": "Name", "paired": "Paired", "lastSeen": "Last seen", "notifications": "Notifications" },
+            "sendTest": "Send test notification",
+            "testSent": "Sent.",
+            "push": { "on": "On", "off": "Off" },
+            "problems": { "name": "Enter a name." }
+        },
+        "siteNotices": {
+            "create": "New notice",
+            "empty": "No notices yet.",
+            "createTitle": "New notice",
+            "editTitle": "Edit notice",
+            "delete": "Delete notice",
+            "deleteTitle": "Delete this notice?",
+            "deleteBody": "It disappears for everyone right away.",
+            "deleteConfirm": "Delete",
+            "edit": "Edit",
+            "columns": {
+                "tone": "Tone",
+                "message": "Message",
+                "areas": "Where",
+                "status": "Status",
+                "schedule": "Schedule"
+            },
+            "tone": {
+                "INFO": "Info",
+                "OFFER": "Offer",
+                "WARNING": "Warning",
+                "CRITICAL": "Critical"
+            },
+            "status": {
+                "LIVE": "Live",
+                "SCHEDULED": "Scheduled",
+                "ENDED": "Ended",
+                "OFF": "Off"
+            },
+            "area": {
+                "EVERYWHERE": "Everywhere",
+                "PUBLIC": "Public site",
+                "HOST": "Host pages",
+                "GUEST": "Guest pages",
+                "ADMIN": "Admin"
+            },
+            "fields": {
+                "preview": "Preview",
+                "tone": "Tone",
+                "messageEn": "Message (English)",
+                "messageEl": "Message (Greek)",
+                "linkUrl": "Link",
+                "linkUrlHint": "A page here, like /pricing, or a full https:// address.",
+                "linkLabelEn": "Link text (English)",
+                "linkLabelEl": "Link text (Greek)",
+                "where": "Where",
+                "dismissible": "People can close it",
+                "startsAt": "Starts",
+                "endsAt": "Ends",
+                "active": "On"
+            },
+            "where": {
+                "everywhere": "Everywhere",
+                "choose": "Choose areas"
+            },
+            "whereHint": {
+                "everywhere": "Shows on every page, for everyone.",
+                "choose": "Shows only in the areas you pick."
+            },
+            "scheduleNow": "Now",
+            "scheduleNoEnd": "No end",
+            "problems": {
+                "message": "Add the message in both languages.",
+                "linkLabel": "Add the link text in both languages.",
+                "areas": "Pick at least one area.",
+                "schedule": "The end must be after the start."
+            }
         }
     },
     "FeedQuickAccessBar": {
@@ -5302,6 +5603,10 @@
             "name": "Quiz & Polls",
             "description": "A quiz about you and polls for your guests."
         },
+        "qr_cards": {
+            "name": "QR cards",
+            "description": "Designed cards for printing your QR codes."
+        },
         "posts": {
             "name": "Posts",
             "description": "Guests can share messages, photos, reactions, and comments on the event wall."
@@ -5369,6 +5674,32 @@
         "includedModules": "Included modules"
     },
     "GalleryPage": {
+        "print": {
+            "action": "Print",
+            "picked": "Picked for print",
+            "pill": "Prints · {count}",
+            "added": "{count, plural, one {# photo added to prints} other {# photos added to prints}}",
+            "addedFor": "{count, plural, one {# photo added for {name}} other {# photos added for {name}}}",
+            "skippedNotPrintable": "Some items can't be printed, so they were left out.",
+            "alreadyPicked": "Already on your prints.",
+            "sheetTitle": "Prints",
+            "seenBy": "{name} sees this list.",
+            "empty": "Tap Select in the gallery, then Print.",
+            "size": "Size",
+            "sizeOption": "{label} · {price}",
+            "copies": "Copies",
+            "fewer": "One copy fewer",
+            "more": "One copy more",
+            "remove": "Remove",
+            "removed": "Photo removed",
+            "included": "{used} of {included} included",
+            "includedLabel": "Included",
+            "includedValue": "{used} of {included}",
+            "beyond": "{count} more",
+            "noPrice": "Your photographer sets the price",
+            "photographerUnnamed": "Photographer",
+            "close": "Close"
+        },
         "backToTools": "Back",
         "hostSubtitle": "Guest uploads are stored here without creating feed posts, so you can review and download them later.",
         "downloadGallery": "Download all",
@@ -5467,6 +5798,32 @@
         "linkUnavailable": "This code isn't accepting uploads right now.",
         "missing": {
             "body": "This event doesn't have a photo upload code yet."
+        }
+    },
+    "QrCardPage": {
+        "title": "Print card",
+        "back": "Back",
+        "missing": "This QR code is no longer available.",
+        "cardLabel": "QR card: {title}",
+        "templates": "Design",
+        "plain": "Plain",
+        "templatesFailed": "Couldn't load the designs.",
+        "retry": "Try again",
+        "fields": {
+            "title": "Title",
+            "line": "Text",
+            "giver": "From"
+        },
+        "actions": {
+            "print": "Print",
+            "png": "Save PNG",
+            "pdf": "Save PDF",
+            "failed": "Couldn't save the card. Try again."
+        },
+        "lines": {
+            "join": "Scan to join",
+            "invitation": "Scan to open your invitation",
+            "gallery": "Scan to add your photos"
         }
     },
     "InvitationsQrPage": {
@@ -5591,6 +5948,7 @@
         "collaborationAlreadyRedeemed": "This event already has another discount code.",
         "collaborationEarningNotPayable": "That earning cannot be marked paid.",
         "collaboratorPayoutDetailsIncomplete": "A partner's business or payout details are incomplete.",
+        "campaignLinkTaken": "A campaign link with these values already exists.",
         "subscriptionAlreadyActive": "A subscription is already running for this event.",
         "subscriptionNotLive": "There was no active subscription to stop - we have refreshed this page.",
         "subscriptionCancelFailed": "We couldn't stop it just now, so the subscription is still running and will still be charged. Please try again in a moment.",
@@ -5719,10 +6077,23 @@
         "vendorCapabilityMissing": "This tool isn't part of your role.",
         "vendorAccessEnded": "Your tools for this event have ended.",
         "vendorCannotRsvp": "Vendors don't RSVP.",
+        "printItemInvalid": "Only photos can be printed.",
+        "partnerRequired": "Only approved partners can list prices.",
+        "printPicksUnavailable": "You can't pick this photo for print.",
+        "printPricesMissing": "The photographer hasn't set print prices yet.",
+        "printListLocked": "This list was sent and can't change.",
+        "printListFull": "A list holds up to {max} photos.",
+        "vendorServiceLimitReached": "You can list up to {max} sizes.",
+        "printListEmpty": "Pick at least one photo first.",
+        "pushNotEnabled": "This phone's notifications are off. Open the app on the phone.",
+        "pushUnavailable": "Notifications aren't set up on the server.",
+        "pushSendFailed": "Couldn't send. Try again.",
         "vendorLimitReached": "This event has all the vendors it can take.",
         "vendorIsHost": "You host this event, so you can't join it as a vendor.",
         "alreadyAVendor": "You're already a vendor in this event.",
         "partnerApplicationPending": "We already have your application. We'll reply by email.",
+        "qrCardCodeColorLowContrast": "The code colour is too light against white. Choose a darker one.",
+        "qrCardArtworkSizeInvalid": "The artwork must be A6 portrait.",
         "themeFontConversionUnavailable": "Fonts in TTF or OTF format can't be converted right now. Upload a WOFF2 file, or try again later.",
         "wishbookEmpty": "There are no messages yet, so there is nothing to put in a book.",
         "wishbookBookRendererUnavailable": "The book can't be created right now. Please try again later.",
@@ -5818,6 +6189,41 @@
         "partnerBrandingNoticeOutdated": "The partner notice has changed. Please review it again."
     },
     "LandingPage": {
+        "imageAlts": {
+            "heroBackground": "Soft pastel background with sparkles",
+            "phone": "Phone showing a StoryWall feed",
+            "feedHeader": "Event header in a StoryWall wedding feed",
+            "feedPosts": "Guest posts in a StoryWall wedding feed",
+            "feedMorePosts": "More guest posts in a StoryWall wedding feed",
+            "guestPost": "Guest post with an event photo",
+            "weddingPost": "Guest post with a wedding photo",
+            "partyPost": "Guest post with a party photo",
+            "baptismStory": "Story from a baptism",
+            "partyStory": "Story from a party",
+            "guestComment": "Guest comment",
+            "guestAvatar": "Guest profile photo",
+            "heartEyes": "Heart-eyes emoji",
+            "tearsOfJoy": "Tears-of-joy emoji",
+            "surprised": "Surprised emoji",
+            "wink": "Winking emoji",
+            "fire": "Fire emoji",
+            "sparkle": "Sparkle",
+            "champagne": "Champagne glasses",
+            "musicNote": "Music note",
+            "partyPopper": "Party popper",
+            "heart": "Heart",
+            "songRequest": "Song request",
+            "songRequests": "Song requests",
+            "rsvpReport": "RSVP report",
+            "receptionMap": "Map of the reception venue",
+            "ceremonyMap": "Map of the ceremony location",
+            "giftDetails": "Thank-you note with bank details for gifts",
+            "photoGallery": "Event photo gallery",
+            "emilyComment": "Comment from Emily Johnson",
+            "mariaComment": "Comment from Maria Papadopoulou",
+            "createMenu": "Menu for a new post or story",
+            "hostStats": "Event statistics for the host"
+        },
         "reviews": {
             "heading": "What people say",
             "stars": "{count} out of 5 stars",
@@ -5828,10 +6234,10 @@
             "playMotion": "Play animations"
         },
         "meta": {
-            "title": "Guest photos with a QR code, no app | StoryWall",
-            "description": "Guests scan a QR code and upload photos and videos from their phone, for weddings, baptisms and parties. No app needed.",
+            "title": "Digital invitations and guest photos with a QR | StoryWall",
+            "description": "Digital invitations with RSVP and guest photos with a QR code, for weddings, baptisms and parties. Guests upload from their phone, no app needed.",
             "siteName": "StoryWall",
-            "imageAlt": "StoryWall guest photo sharing with a QR code"
+            "imageAlt": "StoryWall digital invitations and guest photo sharing with a QR code"
         },
         "hero": {
             "homeLabel": "StoryWall home",
@@ -5842,9 +6248,14 @@
             "closeMenu": "Close menu",
             "nav": ["THE PLATFORM", "HOW IT WORKS", "FEATURES", "PLANS", "LOGIN"],
             "mobileNav": ["The platform", "How it works", "Features", "Plans", "Login"],
-            "title": "All your guests' wedding and event photos, in one place.",
-            "subtitle": "Guests scan a QR code and share from their phone. No app.",
-            "eventTypes": "For weddings, baptisms and parties.",
+            "title": "Digital invitations and guest photos, in one place.",
+            "subtitle": "A digital invitation with RSVP for your wedding or baptism. Guests upload photos from their phone with a QR code. No app.",
+            "kicker": "THE SOCIAL FOR EVERY <strong>PRIVATE EVENT</strong>",
+            "typewriter": {
+                "prefix": "For",
+                "words": ["Weddings", "Baptisms", "Gender Reveals", "VIP Parties"],
+                "label": "For Weddings, Baptisms, Gender Reveals and VIP Parties"
+            },
             "plansCta": "See plans",
             "demoCta": "See the demo",
             "signedInCta": "My StoryWall"
@@ -5869,11 +6280,11 @@
             "eyebrow": "ONE PLATFORM. MANY STORIES.",
             "heading": ["For weddings, baptisms", "and every celebration."],
             "intro": "StoryWall brings people, moments, and memories into one private social space, before, during, and after your event.",
-            "openDemo": "Open the demo",
-            "occasionLink": "Learn more",
+            "openDemo": "Demo",
             "rows": [
                 {
                     "tag": "WEDDING",
+                    "occasionLink": "Digital wedding invitation",
                     "title": ["Your wedding is more than one day.", "It is a story."],
                     "paragraphs": [
                         "From the first preparations to the honeymoon, every moment becomes part of it.",
@@ -5926,34 +6337,47 @@
                 },
                 {
                     "tag": "BAPTISM",
-                    "title": ["A baptism full of", "moments worth keeping."],
+                    "occasionLink": "Digital baptism invitation",
+                    "title": ["Your child's first big celebration.", "And everyone was there."],
                     "paragraphs": [
-                        "From the invitation and first wishes to the photos, posts, and moments of the day.",
-                        "Everything your people share, gathered in one StoryWall."
+                        "From the church to the last dance, your guests share what they captured.",
+                        "Photos, videos and wishes from everyone celebrating with you."
                     ],
                     "galleryLabel": "Baptism moments",
                     "imageAlts": ["Baptism outside the church", "Baptism ceremony inside the church", "Baptism celebration at the table"],
                     "titleSegments": [
                         {
-                            "text": "A baptism full of ",
-                            "strong": false
+                            "text": "Your child's first big celebration.",
+                            "strong": true
                         },
                         {
-                            "text": "moments worth keeping.",
-                            "strong": true
+                            "text": " And everyone was there.",
+                            "strong": false
                         }
                     ],
                     "paragraphSegments": [
                         [
                             {
-                                "text": "From the invitation and first wishes to the photos, posts, and moments of the day.",
+                                "text": "From the church to the last dance, your guests share what they captured.",
                                 "strong": false
                             }
                         ],
                         [
                             {
-                                "text": "Everything your people share, gathered in one StoryWall.",
+                                "text": "Photos, videos",
                                 "strong": true
+                            },
+                            {
+                                "text": " and ",
+                                "strong": false
+                            },
+                            {
+                                "text": "wishes",
+                                "strong": true
+                            },
+                            {
+                                "text": " from everyone celebrating with you.",
+                                "strong": false
                             }
                         ]
                     ]
@@ -6064,14 +6488,17 @@
             "moreLabel": "More ways to use StoryWall",
             "moreStories": [
                 {
+                    "imageAlt": "Woman in a black party dress holding a birthday cake",
                     "label": "BIRTHDAYS",
                     "text": "Your night, your friends, and every moment gathered in one StoryWall."
                 },
                 {
+                    "imageAlt": "Pregnant woman with two friends and pink and blue balloons",
                     "label": "BABY SHOWERS",
                     "text": "A sweet story before the big arrival, filled with wishes, photos, and moments with your people."
                 },
                 {
+                    "imageAlt": "Couple cheering with their guests under a lit arch at night",
                     "label": "ENGAGEMENT PARTIES",
                     "text": "The beginning of forever deserves its own space, from the first cheers to the last photo."
                 }
@@ -6727,6 +7154,7 @@
     "OccasionPages": {
         "common": {
             "breadcrumbHome": "Home",
+            "heroDemo": "Demo",
             "features": {
                 "invitation": {
                     "title": "Digital invitation",
@@ -6774,180 +7202,371 @@
                 }
             },
             "linksHeading": "Other occasions",
-            "linksHome": "All of StoryWall"
+            "linksHome": "All of StoryWall",
+            "breadcrumbLabel": "Breadcrumb"
         },
         "campaigns": {},
         "WEDDING": {
             "name": "Weddings",
             "meta": {
-                "title": "Wedding Website & Guest Photo Sharing | StoryWall",
-                "description": "One private wedding website for your invitation, RSVPs, guest photos by QR code, wishes and song requests. No app for guests to install.",
+                "title": "Wedding Website & QR Photo Sharing | StoryWall",
+                "description": "A wedding website with your digital invitation, RSVP, schedule and maps, plus QR photo sharing for your guests. No app to install.{range, select, none {} other { From {from}.}}",
                 "imageAlt": "StoryWall for weddings",
                 "keywords": [
                     "wedding website",
+                    "wedding QR photo sharing",
                     "digital wedding invitation",
                     "wedding RSVP",
-                    "wedding photo sharing",
                     "QR code wedding photos",
-                    "digital wedding guestbook",
+                    "digital wedding guest book",
                     "wedding song requests"
                 ]
             },
             "hero": {
-                "h1": "Wedding website and guest photo sharing",
-                "headline": "A wedding full of moments <b>worth keeping.</b>",
-                "lead": "From the invitation and RSVPs to the photos, posts and wishes from the day.",
-                "promise": "Everything your people share, together in one StoryWall.",
-                "cta": "Create your wedding StoryWall",
-                "imageAlt": "Wedding guests celebrating with photos shared on StoryWall"
+                "h1": "Wedding website & <em>QR photo sharing</em>",
+                "cta": "Create your StoryWall",
+                "breadcrumb": "Wedding",
+                "kicker": "THE PRIVATE SOCIAL FOR <b>YOUR WEDDING</b>",
+                "subtitle": "A wedding full of moments worth keeping.",
+                "body": "Create your wedding website with a digital invitation, RSVP, schedule and maps, wherever you're getting married. On the day, guests scan a QR code to upload their photos, and everything stays in your own private StoryWall.",
+                "trust": ["No app", "Private", "One link"],
+                "trustPrice": "From {from}"
             },
-            "themes": {
-                "heading": "Give your wedding StoryWall the theme that suits it.",
-                "intro": "Sample themes for your wedding invitation and wall."
-            },
-            "timeline": [
-                {
-                    "title": "Before",
-                    "heading": "One link with everything.",
-                    "body": "Guests get one link with the date, schedule and maps. They RSVP, suggest songs and follow the plans."
-                },
-                {
-                    "title": "On the day",
-                    "heading": "Every guest becomes a photographer.",
-                    "body": "Guests scan the QR code on the tables and add photos and videos. No app, no account needed to upload."
-                },
-                {
-                    "title": "After",
-                    "heading": "The day stays with you.",
-                    "body": "Photos, stories and wishes stay together, from the preparations to the honeymoon."
-                }
-            ],
-            "story": {
-                "heading": ["Your whole wedding,", "in one place."],
-                "intro": "From the first invitation to the last dance, every guest adds to the same story.",
-                "rows": [
-                    {
-                        "galleryLabel": "Before the wedding",
-                        "imageAlts": [
-                            "Guest opening the wedding invitation on a phone",
-                            "Guest confirming the wedding RSVP",
-                            "Bachelor party in Santorini"
-                        ]
-                    },
-                    {
-                        "galleryLabel": "The wedding day",
-                        "imageAlts": ["Bride getting ready with her bridesmaids", "Wedding ceremony in Santorini", "Wedding reception in Santorini"]
-                    },
-                    {
-                        "galleryLabel": "After the wedding",
-                        "imageAlts": ["Guest writing a wish in the wedding guestbook", "Honeymoon in Paris"]
-                    }
-                ]
-            },
-            "demoHeading": ["See a wedding", "StoryWall."],
-            "demoCopy": "See how StoryWall works through a real wedding example. Explore the online invitation, posts, stories and photos the way your guests will see them.",
             "features": {
                 "invitation": {
-                    "title": "Digital wedding invitation",
-                    "body": "Date, schedule, ceremony and reception with maps, all on your guests' phones."
+                    "title": "Digital invitation",
+                    "body": "Send your invitation with one link: date, venues, schedule and maps."
                 },
                 "posts": {
-                    "title": "Posts from your guests",
-                    "body": "Guests share messages, photos and reactions on your wedding wall."
+                    "title": "Posts & reactions",
+                    "body": "Photos, messages, comments and reactions on your private wedding wall."
                 },
                 "rsvp": {
-                    "title": "Online wedding RSVP",
-                    "body": "Guests answer from the link. You see who is coming, with notes and plus-ones, in one list."
+                    "title": "Wedding RSVP",
+                    "body": "Guests confirm attendance and you see every reply together."
                 },
                 "playlist": {
-                    "title": "Wedding song requests",
-                    "body": "Guests suggest the songs they want to hear, so the DJ knows the room before the party."
+                    "title": "Song requests",
+                    "body": "Guests suggest the songs they want to dance to."
                 },
                 "stories": {
-                    "title": "Stories from the day",
-                    "body": "Short stories from guests and hosts, as the moments happen."
+                    "title": "Wedding stories",
+                    "body": "Candid moments from the prep, the ceremony and the reception."
                 },
                 "gallery": {
-                    "title": "QR code wedding photos",
-                    "body": "Put the QR code on the tables. Guests scan it and add their photos and videos straight from the camera roll."
+                    "title": "Guest photos",
+                    "body": "Guests scan a QR code and upload photos and videos, no sign-up needed."
                 },
                 "wishlist": {
-                    "title": "Wedding gift account",
-                    "body": "Share your gift account next to the invitation, for guests who want to send a gift."
+                    "title": "Gift registry / bank details",
+                    "body": "Share your gift registry details, discreetly."
                 },
                 "wishbook": {
-                    "title": "Digital wedding guestbook",
-                    "body": "Guests leave their wishes in one book you can keep and read again."
+                    "title": "Guest book",
+                    "body": "Wishes from your loved ones in a digital keepsake book."
                 },
                 "schedule": {
                     "title": "Wedding schedule",
-                    "body": "Ceremony, reception, party and their times, step by step."
+                    "body": "Ceremony and reception times and venues, so everyone knows where and when."
+                },
+                "quiz_polls": {
+                    "title": "Quiz & polls",
+                    "body": "A quiz about the two of you and polls for your guests."
                 }
             },
-            "featuresIntro": {
-                "heading": "Everything your wedding needs, in one link."
-            },
-            "howItWorksHeading": ["Three steps.", "One wedding story."],
-            "howItWorks": [
-                {
-                    "title": "Create",
-                    "body": "Pick a plan and add your date, venues and schedule."
-                },
-                {
-                    "title": "Share",
-                    "body": "Send the invitation link and print the QR code for the tables."
-                },
-                {
-                    "title": "The story begins",
-                    "body": "Guests RSVP, post and add photos. Everything lands in one private feed."
-                }
-            ],
             "faq": [
                 {
                     "q": "What is a StoryWall wedding website?",
-                    "a": "StoryWall is a private social space for your wedding. It brings together an online invitation, RSVPs, posts, stories, guest photos and a digital guestbook, depending on the plan you choose."
+                    "a": "StoryWall is a private social space for your wedding. It combines a digital invitation, RSVP, posts, stories, guest photos and a digital guest book, depending on the plan you choose."
                 },
                 {
-                    "q": "How does the online wedding invitation work?",
-                    "a": "You create your wedding StoryWall and send the link to your guests. They complete a short sign-up and get access to the invitation and the available features."
+                    "q": "How does the digital wedding invitation work?",
+                    "a": "You create your wedding's StoryWall and send the link to your guests. To see the invitation and the wedding wall they sign up in a few seconds. Uploading photos with the QR code needs no sign-up at all."
                 },
                 {
-                    "q": "How do I collect wedding photos with a QR code?",
-                    "a": "Place the QR code on the reception tables. Guests scan it and upload photos and videos with no app or sign-up. Everything is gathered in a separate collection."
+                    "q": "How do I collect wedding photos from guests?",
+                    "a": "Place the QR code on the reception tables. Guests scan it and upload photos and videos with no app and no sign-up. Everything is gathered in its own gallery.",
+                    "link": {
+                        "to": "qr",
+                        "label": "Learn about the wedding QR code"
+                    }
                 },
                 {
                     "q": "Do guests need to download an app?",
-                    "a": "No. StoryWall works straight from the phone's browser, with nothing to install."
+                    "a": "No. StoryWall opens straight in the phone's browser from your link or QR code, with nothing to install."
                 },
                 {
                     "q": "How does the wedding RSVP work?",
-                    "a": "Guests confirm they're coming online through StoryWall, and you can follow all their replies in one place."
+                    "a": "Guests confirm attendance inside StoryWall, adding plus-ones and children, and you see every reply in one place."
                 },
                 {
                     "q": "Who can see the photos and posts?",
-                    "a": "StoryWall is private. Only invited guests who have signed up can see the social feed. Photos uploaded by QR code are gathered in a separate collection."
+                    "a": "StoryWall is private. Only guests who have signed up can see the wedding wall. Photos uploaded with the QR code are gathered in a separate gallery."
                 },
                 {
                     "q": "Can I download all the photos after the wedding?",
-                    "a": "Yes. You can download the photos and videos collected on StoryWall in their original resolution."
+                    "a": "Yes. You can download every photo in its original resolution, and every video in HD."
                 },
                 {
-                    "q": "How long does StoryWall stay active?",
-                    "a": "You can choose a 3- or 6-month plan. It starts on the purchase date and can be renewed."
+                    "q": "How long does my StoryWall stay online?",
+                    "a": "{lengths, select, single {It stays online for {monthCount, plural, one {# month} other {# months}} from the day you buy.} span {You choose {months} months. The time starts on the day you buy.} other {It depends on the plan. The time starts on the day you buy.}}{extendable, select, yes { You can extend it any time.} other {}}"
                 },
                 {
-                    "q": "Does StoryWall replace the wedding photographer?",
-                    "a": "No. It complements professional photography by gathering the candid moments your guests capture."
+                    "q": "Does StoryWall replace our wedding photographer?",
+                    "a": "No. Your photographer captures the official moments. StoryWall collects the candid ones your guests take."
+                },
+                {
+                    "q": "How much does a StoryWall wedding website cost?",
+                    "a": "{range, select, span {Wedding plans start at {from} ({fromName}) and go up to {to} ({toName}), depending on your guest count{lengths, select, span {, the features and the length you choose} other { and the features you choose}}.} single {The wedding plan costs {from} ({fromName}).} other {The price depends on your guest count{lengths, select, span {, the features and the length you choose} other { and the features you choose}}.}}",
+                    "link": {
+                        "to": "pricing",
+                        "label": "See the plans"
+                    }
+                },
+                {
+                    "q": "How do I send the digital invitation to my guests?",
+                    "a": "Your invitation is a link. Send it however you like: WhatsApp, Messenger, email or text message."
+                },
+                {
+                    "q": "Digital or printed wedding invitations?",
+                    "a": "They work well together. Many couples keep printed invitations for parents and close family, and send the digital one to every guest for RSVP, maps and the schedule."
+                },
+                {
+                    "q": "Can I change details after sending it?",
+                    "a": "Yes. Details update in real time, so guests always see the latest version of your invitation."
+                },
+                {
+                    "q": "Does it work for weddings abroad and destination weddings?",
+                    "a": "Yes. StoryWall works online, so it's the same wherever you marry, from the UK to a destination wedding in Greece. Guests from any country use the same link. Prices are in euros."
                 }
             ],
-            "faqIntro": "What couples ask before they create their wedding StoryWall.",
+            "faqIntro": "What couples ask about our wedding website, digital invitation and QR photo sharing.",
             "finalCta": {
                 "heading": ["Your wedding", "starts here."],
-                "copyStart": "Create your own StoryWall with an online invitation, photos and memories to share with the people you love.",
-                "imageAlt": "Wedding celebration in Santorini"
+                "copyStart": "Create your StoryWall with a digital invitation, photos and memories",
+                "imageAlt": "Newlyweds at their wedding on a Greek island",
+                "eyebrow": "YOUR WEDDING ON STORYWALL",
+                "copyStrong": "to share with the people you love.",
+                "cta": "Create your <b>StoryWall</b>"
             },
-            "pricingHeading": "Plans for your wedding.",
-            "pricingIntro": "Choose the StoryWall that fits your wedding. From the private social feed to the online invitation, RSVPs and photo collection."
+            "how": {
+                "kicker": "HOW IT WORKS",
+                "heading": ["Three steps.", "One wedding story."],
+                "steps": [
+                    {
+                        "title": "Create",
+                        "body": "Pick a plan and build your wedding website with the date, venues and schedule, <b>in just a few minutes.</b>"
+                    },
+                    {
+                        "title": "Share",
+                        "body": "Send your <b>digital invitation</b> with one link, plus a <b>QR code</b> for collecting photos. <b>No app.</b>"
+                    },
+                    {
+                        "title": "The story begins",
+                        "body": "Guests RSVP, share posts and stories, and <b>upload photos from the wedding.</b>"
+                    }
+                ]
+            },
+            "why": {
+                "kicker": "WHY STORYWALL",
+                "heading": ["Your wedding photos", "shouldn't get lost on 100 phones."],
+                "without": {
+                    "label": "WITHOUT STORYWALL",
+                    "bubbles": ["Send them to me too! 🙏", "Who has the video?"],
+                    "items": [
+                        "“Can you send me the photos?”",
+                        "Photos scattered across 100 phones",
+                        "Wishes lost in WhatsApp and Messenger",
+                        "Public posts anyone can see"
+                    ]
+                },
+                "with": {
+                    "label": "WITH STORYWALL · ALL IN ONE PLACE",
+                    "subtitle": "From the preparations and the wedding day to the honeymoon.",
+                    "qrAlt": "Wedding guest scanning a QR code on the table to upload photos",
+                    "steps": [
+                        {
+                            "title": "Scan",
+                            "body": "The QR code on the table, with their phone camera."
+                        },
+                        {
+                            "title": "Upload",
+                            "body": "Photos and videos. <b>No app.</b>"
+                        },
+                        {
+                            "title": "All together",
+                            "body": "In your StoryWall, <b>in original quality.</b>"
+                        }
+                    ],
+                    "photoAlt": "{moment}, a photo by {name}, {role}",
+                    "marquee": [
+                        {
+                            "name": "Emma",
+                            "role": "bride's friend",
+                            "moment": "Getting into the dress"
+                        },
+                        {
+                            "name": "Maria",
+                            "role": "bride's friend",
+                            "moment": "Night out"
+                        },
+                        {
+                            "name": "Chris",
+                            "role": "groom's friend",
+                            "moment": "A toast at dinner"
+                        },
+                        {
+                            "name": "Sophie",
+                            "role": "bride's friend",
+                            "moment": "Dancing at the party"
+                        },
+                        {
+                            "name": "Peter",
+                            "role": "groom's friend",
+                            "moment": "The groom's crew"
+                        },
+                        {
+                            "name": "Helen",
+                            "role": "mother of the bride",
+                            "moment": "Bride getting ready"
+                        },
+                        {
+                            "name": "Anna",
+                            "role": "bride's friend",
+                            "moment": "Guests outside the church"
+                        },
+                        {
+                            "name": "George",
+                            "role": "best man",
+                            "moment": "The newlyweds arrive"
+                        },
+                        {
+                            "name": "Emma",
+                            "role": "bridesmaid",
+                            "moment": "A tender moment"
+                        },
+                        {
+                            "name": "Nick",
+                            "role": "groom's friend",
+                            "moment": "First dance"
+                        },
+                        {
+                            "name": "Kate",
+                            "role": "cousin",
+                            "moment": "Dancing at the reception"
+                        },
+                        {
+                            "name": "Olivia",
+                            "role": "bride",
+                            "moment": "The bride's morning"
+                        },
+                        {
+                            "name": "Olivia",
+                            "role": "bride",
+                            "moment": "Honeymoon in Paris"
+                        },
+                        {
+                            "name": "James",
+                            "role": "groom",
+                            "moment": "Arriving in Paris"
+                        }
+                    ],
+                    "example": "EXAMPLE · ONE WEDDING ON STORYWALL",
+                    "stats": [
+                        {
+                            "value": "248",
+                            "label": "PHOTOS"
+                        },
+                        {
+                            "value": "36",
+                            "label": "VIDEOS"
+                        },
+                        {
+                            "value": "64",
+                            "label": "WISHES"
+                        },
+                        {
+                            "value": "86",
+                            "label": "GUESTS"
+                        }
+                    ],
+                    "chips": [
+                        "Every photo in one place",
+                        "Uploaded with one QR code, no app",
+                        "Guest book you download as a PDF",
+                        "Private, for your guests only"
+                    ]
+                }
+            },
+            "rsvp": {
+                "kicker": "Wedding RSVP",
+                "heading": ["Stop wondering who's coming.", "Every RSVP in one place."],
+                "intro": "With StoryWall, guests reply in seconds and you stay in control, from the invitation to the final guest list.",
+                "alts": {
+                    "both": "Without StoryWall, RSVPs arrive scattered across WhatsApp, Messenger, email and text. With StoryWall, the RSVP form, guest list and stats are all in one place.",
+                    "without": "Without StoryWall: RSVPs arrive scattered across WhatsApp, Messenger, email and text.",
+                    "with": "With StoryWall: RSVP form, guest list and stats, all in one place."
+                },
+                "checklist": {
+                    "pill": "ALL YOUR RSVPS",
+                    "items": [
+                        {
+                            "title": "Every RSVP in one place",
+                            "body": "No more chasing replies on WhatsApp, Messenger, email and text."
+                        },
+                        {
+                            "title": "Who's coming",
+                            "body": "See at a glance who has confirmed."
+                        },
+                        {
+                            "title": "Plus-ones & kids",
+                            "body": "Know your exact headcount."
+                        },
+                        {
+                            "title": "Quick and simple",
+                            "body": "Guests reply in one tap, right from the invitation."
+                        }
+                    ]
+                }
+            },
+            "private": {
+                "kicker": "GUESTS ONLY",
+                "heading": ["A private social full of moments.", "Just for you and your people."],
+                "intro": "Guests upload photos, write wishes and comment. Everything stays between you.",
+                "cards": [
+                    {
+                        "title": "Private wall",
+                        "body": "Only people with your wedding link can join. It isn't public."
+                    },
+                    {
+                        "title": "You're in control",
+                        "body": "See who has joined and what's shared, all in one place. You can add a co-host too."
+                    },
+                    {
+                        "title": "Guest roles",
+                        "body": "Bride, groom, best man, family: everyone appears with their role."
+                    },
+                    {
+                        "title": "Original-quality downloads",
+                        "body": "Download every wedding photo and video, plus your guest book as a PDF."
+                    }
+                ]
+            },
+            "demo": {
+                "kicker": "DEMO",
+                "heading": ["See a wedding", "on StoryWall,", "with every feature."],
+                "copy": "See the invitation, posts, stories and photos<br></br>exactly as <b>your guests will see them.</b>",
+                "imageAlt": "StoryWall wedding demo on two phones"
+            },
+            "featuresHead": {
+                "kicker": "FEATURES",
+                "heading": ["Your own wedding website,", "with everything you need."]
+            },
+            "pricing": {
+                "kicker": "PLANS",
+                "heading": "Plans for your wedding.",
+                "intro": "Choose your plan and how long it stays online."
+            }
         },
         "BAPTISM": {
             "name": "Baptisms",
@@ -7247,6 +7866,45 @@
         }
     },
     "Vendors": {
+        "prints": {
+            "title": "Print order",
+            "included": "Prints included for the host",
+            "includedInvalid": "Enter a whole number from 0 to {max}.",
+            "includedSheetTitle": "Prints included for the host",
+            "includedLabel": "Number of prints",
+            "save": "Save",
+            "cancel": "Cancel",
+            "hostEmpty": "The host hasn't picked photos yet.",
+            "noPrice": "No price set",
+            "download": "Download",
+            "downloadPart": "Part {part} of {total}",
+            "downloading": "Downloading…",
+            "removedCount": "{count, plural, one {# photo removed} other {# photos removed}}",
+            "noSize": "No size",
+            "copies": "{count, plural, one {# copy} other {# copies}}"
+        },
+        "services": {
+            "title": "Print prices",
+            "partnerOnly": "Only approved partners can list prices.",
+            "profileFirst": "Fill in your details first.",
+            "empty": "No sizes yet.",
+            "add": "Add size",
+            "sheetAdd": "Add size",
+            "sheetEdit": "Edit size",
+            "label": "Size",
+            "labelPlaceholder": "13x18",
+            "price": "Price per copy (€)",
+            "priceInvalid": "Enter a price like 3.50.",
+            "priceTooHigh": "Enter a price up to {max}.",
+            "labelRequired": "Enter a size.",
+            "save": "Save",
+            "cancel": "Cancel",
+            "delete": "Delete size",
+            "deleteTitle": "Delete this size?",
+            "deleteBody": "Picks at this size keep their place, without a size.",
+            "deleteConfirm": "Delete",
+            "limit": "You can list up to {max} sizes."
+        },
         "types": {
             "PLANNER": "Planner",
             "VENUE": "Venue",
@@ -7288,13 +7946,22 @@
             "removeConfirm": "Remove",
             "removeCancel": "Cancel",
             "close": "Close",
-            "qrTitle": "{type} link"
+            "qrTitle": "{type} link",
+            "hideNamed": "Hide {name} from list",
+            "showNamed": "Show {name} in list",
+            "removeNamed": "Remove {name}",
+            "seats": "{used} / {max}",
+            "full": "This event has reached its vendor limit.",
+            "fullWithUpgrade": "This event has reached its vendor limit. Upgrade to {plan} for {count, plural, one {# vendor} other {# vendors}}."
         },
         "list": {
             "title": "Vendors",
             "back": "Back",
             "empty": "No vendors yet.",
-            "open": "Open {name}"
+            "instagram": "Instagram",
+            "website": "Website",
+            "instagramOf": "{name} on Instagram",
+            "websiteOf": "{name} website"
         },
         "me": {
             "title": "Your vendor page",
@@ -7326,11 +7993,12 @@
             "proDeleteBody": "It's removed from the Pro album.",
             "proDeleteConfirm": "Delete",
             "proDeleteCancel": "Keep",
-            "listingTitle": "Vendor list",
             "listingSwitch": "Show me in the vendor list",
             "listingHiddenByHost": "The host hid you from the list.",
             "profileTitle": "Your details",
-            "profileEdit": "Edit"
+            "profileEdit": "Edit",
+            "groupEvent": "For this event",
+            "groupSettings": "Your settings"
         },
         "meter": {
             "label": "Pro album",
@@ -7404,5 +8072,29 @@
             "empty": "No vendors.",
             "joined": "Joined {date}"
         }
+    },
+    "ImageAlt": {
+        "gift": "Gift",
+        "wishbook": "Wishbook",
+        "eventCover": "Event cover photo",
+        "eventCoverOf": "Cover photo of {name}",
+        "photoPreview": "Photo preview",
+        "profilePhoto": "Profile photo",
+        "profilePhotoOf": "Profile photo of {name}",
+        "themeIllustration": "{name} theme",
+        "qrCardTemplate": "{name} card design",
+        "eventIllustration": "Event illustration",
+        "eventTypeImage": "Event type image",
+        "partnerLogo": "{name} logo",
+        "partnerCover": "{name} cover photo",
+        "partnerLogoPreview": "Partner logo",
+        "partnerCoverPreview": "Partner cover photo",
+        "reportedContent": "Reported content",
+        "filterPreview": "{name} filter",
+        "storywallLogo": "StoryWall",
+        "appIcon": "StoryWall app icon",
+        "location": "Location",
+        "guestPhoto": "Guest photo",
+        "photoBy": "Photo by {name}"
     }
 }

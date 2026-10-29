@@ -10,6 +10,8 @@ import { routes } from '@/lib/routes';
 export type LandingStoryCopyData = {
     galleryLabel: string;
     imageAlts: string[];
+    // The label of the link to the row's occasion page: that page's main search, not "Learn more".
+    occasionLink?: string;
     paragraphSegments: LandingTextSegment[][];
     tag: string;
     titleSegments: LandingTextSegment[];
@@ -23,17 +25,16 @@ type LandingStoryRowProps = {
     index: number;
     locale: Locale;
     media: LandingStoryMedia;
-    occasionLabel: string;
     // Live occasion pages; a row links to its own when it is one of them.
     occasions: readonly Occasion[];
 };
 
-export function LandingStoryRow({ children, copy, demoLabel, index, locale, media, occasionLabel, occasions }: LandingStoryRowProps) {
+export function LandingStoryRow({ children, copy, demoLabel, index, locale, media, occasions }: LandingStoryRowProps) {
     const isOdd = index % 2 === 0;
     const wide = index === 0 || index === 4;
     const demo = media.demoEventTypeSlug ? { href: routes.demoEventType(media.demoEventTypeSlug), label: demoLabel } : undefined;
     const occasion = occasions.find((candidate) => candidate.eventType === media.occasion);
-    const more = occasion ? { href: occasionPath(occasion, locale), label: occasionLabel } : undefined;
+    const more = occasion && copy.occasionLink ? { href: occasionPath(occasion, locale), label: copy.occasionLink } : undefined;
 
     return (
         <article
@@ -64,12 +65,6 @@ export function LandingStoryRow({ children, copy, demoLabel, index, locale, medi
                     titleSegments={copy.titleSegments}
                     wide={wide}
                 />
-                <div
-                    aria-hidden="true"
-                    className="arr mt-8 self-start text-[26px] leading-none text-ink transition-[opacity,transform] duration-350 ease-in-out group-data-[active=true]:translate-x-1 group-data-[active=true]:-translate-y-1 max-[760px]:translate-y-4.5 max-[760px]:opacity-0 max-[760px]:duration-700 max-[760px]:ease-[cubic-bezier(0.2,0.75,0.2,1)] max-[760px]:group-data-[visible=true]:translate-y-0 max-[760px]:group-data-[visible=true]:opacity-100 max-[760px]:group-data-[visible=true]:delay-[180ms] min-[761px]:mt-0 min-[761px]:self-start min-[761px]:pt-2 min-[761px]:text-[30px]"
-                >
-                    ↗
-                </div>
             </div>
             {children}
         </article>

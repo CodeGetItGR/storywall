@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildGoogleMapsEmbedUrl, isGoogleMapsShortLink, readGoogleMapsRedirect } from '@/lib/maps';
+import { buildGoogleMapsEmbedUrl, isGoogleMapsShortLink, readGoogleMapsRedirect, readGoogleShareRedirect } from '@/lib/maps';
 
 function embedQuery(url: string | null): string | null {
     const embed = buildGoogleMapsEmbedUrl(url, 'el');
@@ -39,6 +39,7 @@ describe('isGoogleMapsShortLink', () => {
     it('matches share links only', () => {
         expect(isGoogleMapsShortLink('https://maps.app.goo.gl/mWtb4a1cUE9zMWya7')).toBe(true);
         expect(isGoogleMapsShortLink('https://goo.gl/maps/abc')).toBe(true);
+        expect(isGoogleMapsShortLink('https://share.google/QAYTtdf9XhMuzgv7Z')).toBe(true);
         expect(isGoogleMapsShortLink('https://goo.gl/other')).toBe(false);
         expect(isGoogleMapsShortLink('https://www.google.com/maps/place/X')).toBe(false);
     });
@@ -53,9 +54,32 @@ describe('readGoogleMapsRedirect', () => {
         expect(readGoogleMapsRedirect(consent, base)).toBe('https://www.google.com/maps/place/X');
     });
 
+    it('accepts the Google Search for a place that a share.google link ends on', () => {
+        const search = 'https://www.google.com/search?kgmid=/g/11b6qw8mw0&q=%CE%9A%CF%84%CE%AE%CE%BC%CE%B1+%CE%94%CE%AD%CE%B4%CE%B1';
+        expect(readGoogleMapsRedirect(search, 'https://www.google.com/share.google?q=abc')).toBe(search);
+        expect(embedQuery(search)).toBe('Κτήμα Δέδα');
+    });
+
     it('rejects anything else', () => {
         expect(readGoogleMapsRedirect(null, base)).toBeNull();
         expect(readGoogleMapsRedirect('https://evil.example/maps', base)).toBeNull();
         expect(readGoogleMapsRedirect('https://www.google.com/search?q=x', base)).toBeNull();
+        expect(readGoogleMapsRedirect('https://www.google.com/search?kgmid=/g/1', base)).toBeNull();
+    });
+});
+
+describe('readGoogleShareRedirect', () => {
+    const base = 'https://share.google/abc';
+
+    it('follows the google.com/share.google step, including via the consent page', () => {
+        expect(readGoogleShareRedirect('https://www.google.com/share.google?q=abc', base)).toBe('https://www.google.com/share.google?q=abc');
+        const consent = `https://consent.google.com/m?continue=${encodeURIComponent('https://www.google.com/share.google?q=abc')}`;
+        expect(readGoogleShareRedirect(consent, base)).toBe('https://www.google.com/share.google?q=abc');
+    });
+
+    it('rejects anything else', () => {
+        expect(readGoogleShareRedirect(null, base)).toBeNull();
+        expect(readGoogleShareRedirect('https://evil.example/share.google?q=abc', base)).toBeNull();
+        expect(readGoogleShareRedirect('https://www.google.com/maps/place/X', base)).toBeNull();
     });
 });

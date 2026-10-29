@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import type { ReactNode } from 'react';
 
 import { landingSectionAttributes } from '@/lib/landingTracking';
 
@@ -22,7 +23,8 @@ export type LandingHowItWorksCopy = {
     eyebrow?: string;
     headingEnd: string;
     headingStart: string;
-    steps: { description: string; title: string }[];
+    // A description may hold bold words (an occasion page's t.rich).
+    steps: { description: ReactNode; title: string }[];
 };
 
 // An occasion page passes its own copy; the landing reads its messages.

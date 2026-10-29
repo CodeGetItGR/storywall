@@ -35,7 +35,7 @@ export function Banner({
                     <div className="relative aspect-16/11 w-full bg-event">
                         <ProtectedImage
                             src={illustrationUrl}
-                            alt=""
+                            alt={title}
                             fill
                             className="object-contain"
                             preload

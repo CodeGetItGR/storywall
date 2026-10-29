@@ -37,6 +37,7 @@ export function ThemePresetRow({
     onEditAction: (presetId: string) => void;
 }) {
     const t = useTranslations('AdminPage.themePresets');
+    const tAlt = useTranslations('ImageAlt');
     const localizedText = useLocalizedText();
     const name = localizedText(preset.name, preset.key);
     const status = themePresetStatus(preset);
@@ -55,7 +56,7 @@ export function ThemePresetRow({
                         style={isHexColor(preset.backgroundColor) ? { backgroundColor: preset.backgroundColor } : undefined}
                     >
                         {preset.illustrationUrl && (
-                            <ProtectedImage src={preset.illustrationUrl} alt="" fill className="object-contain" sizes="40px" />
+                            <ProtectedImage src={preset.illustrationUrl} alt={tAlt('themeIllustration', { name })} fill className="object-contain" sizes="40px" />
                         )}
                     </span>
                     <div className="min-w-0">

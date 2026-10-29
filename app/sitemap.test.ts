@@ -5,7 +5,28 @@ const serverPublicConfigGet = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/api/serverFetch', () => ({ serverPublicConfigGet: (...args: unknown[]) => serverPublicConfigGet(...args) }));
 
 import sitemap from '@/app/sitemap';
-import { forBusinessLanguageAlternates, landingLanguageAlternates, qrWeddingLanguageAlternates, SITE_URL } from '@/lib/seo';
+import {
+    forBusinessLanguageAlternates,
+    landingLanguageAlternates,
+    legalPageLanguageAlternates,
+    qrWeddingLanguageAlternates,
+    SITE_URL,
+} from '@/lib/seo';
+
+const LEGAL_URLS = [
+    `${SITE_URL}/contact`,
+    `${SITE_URL}/el/contact`,
+    `${SITE_URL}/legal/terms`,
+    `${SITE_URL}/el/legal/terms`,
+    `${SITE_URL}/legal/privacy`,
+    `${SITE_URL}/el/legal/privacy`,
+    `${SITE_URL}/legal/cookies`,
+    `${SITE_URL}/el/legal/cookies`,
+    `${SITE_URL}/legal/withdrawal-terms`,
+    `${SITE_URL}/el/legal/withdrawal-terms`,
+    `${SITE_URL}/legal/community-guidelines`,
+    `${SITE_URL}/el/legal/community-guidelines`,
+];
 
 describe('sitemap', () => {
     afterEach(() => {
@@ -20,7 +41,7 @@ describe('sitemap', () => {
         expect(serverPublicConfigGet).toHaveBeenCalledTimes(1);
     });
 
-    it('lists the landing, wedding QR, partner and every enabled ready occasion page', async () => {
+    it('lists the landing, wedding QR, partner, every enabled ready occasion page and the legal pages', async () => {
         serverPublicConfigGet.mockResolvedValue({ eventTypes: [{ eventTypeKey: 'WEDDING', isEnabled: true }] });
         const urls = (await sitemap()).map((entry) => entry.url);
         expect(urls).toEqual([
@@ -32,6 +53,7 @@ describe('sitemap', () => {
             `${SITE_URL}/el/epaggelmaties`,
             `${SITE_URL}/weddings`,
             `${SITE_URL}/el/gamos`,
+            ...LEGAL_URLS,
         ]);
     });
 
@@ -42,11 +64,27 @@ describe('sitemap', () => {
         expect(byUrl.get(`${SITE_URL}/el/epaggelmaties`)?.alternates?.languages).toEqual(forBusinessLanguageAlternates());
     });
 
-    it('lists only the landing and the wedding QR pages on the production site before launch', async () => {
+    it('lists only the landing, the launched occasion pages and the legal pages on the production site', async () => {
         vi.stubEnv('VERCEL_ENV', 'production');
-        serverPublicConfigGet.mockResolvedValue({ eventTypes: [{ eventTypeKey: 'WEDDING', isEnabled: true }] });
+        serverPublicConfigGet.mockResolvedValue({
+            eventTypes: [
+                { eventTypeKey: 'WEDDING', isEnabled: true },
+                { eventTypeKey: 'BAPTISM', isEnabled: true },
+            ],
+        });
         const urls = (await sitemap()).map((entry) => entry.url);
-        expect(urls).toEqual([SITE_URL, `${SITE_URL}/el`, `${SITE_URL}/wedding-qr-code`, `${SITE_URL}/el/qr-code-gamou`]);
+        expect(urls).toEqual([SITE_URL, `${SITE_URL}/el`, `${SITE_URL}/weddings`, `${SITE_URL}/el/gamos`, ...LEGAL_URLS]);
+    });
+
+    it('gives each legal page both language URLs', async () => {
+        serverPublicConfigGet.mockResolvedValue({ eventTypes: [] });
+        const byUrl = new Map((await sitemap()).map((entry) => [entry.url, entry]));
+        expect(byUrl.get(`${SITE_URL}/el/legal/privacy`)?.alternates?.languages).toEqual(legalPageLanguageAlternates('/legal/privacy'));
+        expect(legalPageLanguageAlternates('/legal/privacy')).toEqual({
+            en: `${SITE_URL}/legal/privacy`,
+            el: `${SITE_URL}/el/legal/privacy`,
+            'x-default': `${SITE_URL}/legal/privacy`,
+        });
     });
 
     it('gives the wedding QR pages their language alternates', async () => {

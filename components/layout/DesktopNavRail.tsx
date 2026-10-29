@@ -63,7 +63,7 @@ export function DesktopNavRail() {
             onClick={handleRailClick}
             data-expanded={expanded}
             className={cn(
-                'desktop-account-rail fixed top-0 left-0 z-40 hidden h-screen flex-col overflow-hidden text-[#3d332b] transition-[width,padding,color] duration-700 ease-out lg:flex',
+                'desktop-account-rail fixed top-[var(--site-notice-h,0px)] left-0 z-40 hidden h-[calc(100vh-var(--site-notice-h,0px))] flex-col overflow-hidden text-[#3d332b] transition-[width,padding,color] duration-700 ease-out lg:flex',
                 expanded ? 'w-80 px-5 pt-14 pb-7 text-white' : 'w-20 px-3 pt-6 pb-5',
             )}
         >

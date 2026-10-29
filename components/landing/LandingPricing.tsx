@@ -20,39 +20,60 @@ type LandingPricingProps = {
     eventType?: EventTypeConvention;
     heading?: string;
     intro?: string;
+    // With an event type: a small label over a centered heading, on white.
+    kicker?: string;
 };
 
-export function LandingPricing({ eventType, heading, intro }: LandingPricingProps) {
+export function LandingPricing({ eventType, heading, intro, kicker }: LandingPricingProps) {
     const t = useTranslations('LandingPage.pricing');
     const { groups, active, pickEventType, picks, pickDuration } = useLandingPricing(eventType ? eventTypeSlug(eventType) : null);
 
     if (!active) return null;
     const planCount = Math.min(active.plans.length, 3);
+    const centered = Boolean(eventType && kicker);
 
     return (
         <section
             aria-labelledby="landing-pricing-title"
-            // On an occasion page the plans follow white sections, so a paper tone sets them apart.
-            className={`${eventType ? 'bg-[#f4f0e8]' : 'bg-white'} px-5 pt-16 pb-16 text-[#151313] min-[761px]:px-[clamp(24px,4vw,72px)] min-[761px]:pt-20 min-[761px]:pb-24`}
+            // On an occasion page the plans follow white sections, so a paper tone sets them apart; a
+            // centered header (the wedding page) follows the dark features and stays white.
+            className={cn(
+                'px-5 pt-16 pb-16 text-[#151313] min-[761px]:px-[clamp(24px,4vw,72px)] min-[761px]:pt-20 min-[761px]:pb-24',
+                centered ? 'bg-white min-[761px]:px-18 min-[761px]:pt-22 min-[761px]:pb-24.5' : eventType ? 'bg-[#f4f0e8]' : 'bg-white',
+            )}
             id="pricing"
             {...landingSectionAttributes('pricing')}
         >
-            {/* Pricing introduction: an occasion page lines its heading up with the cards, with no eyebrow */}
-            <div className={cn('mx-auto grid', eventType ? PLAN_WIDTH[planCount] : 'max-w-300 gap-x-[5vw] min-[761px]:grid-cols-[1fr_2fr]')}>
-                {eventType ? null : <p className="text-[13px] font-black tracking-[.15em]">{t('eyebrow')}</p>}
-                <div>
+            {centered ? (
+                /* Pricing introduction: kicker, heading and intro, centered */
+                <div className="mx-auto max-w-180 text-center">
+                    <p className="mb-3.5 text-[13px] font-black tracking-[.15em] uppercase">{kicker}</p>
                     <h2
-                        className={cn(
-                            'font-[Baskerville,Georgia,serif] text-[clamp(48px,11vw,88px)] leading-[.9] tracking-[-.055em]',
-                            eventType ? 'text-balance' : 'mt-5 max-w-205 min-[761px]:mt-0',
-                        )}
+                        className="mt-6 font-[Baskerville,Georgia,serif] text-[clamp(44px,12vw,62px)] leading-[.9] tracking-[-.055em] text-balance min-[761px]:mt-0 min-[761px]:text-[clamp(40.5px,4.275vw,70.5px)]"
                         id="landing-pricing-title"
                     >
                         {heading ?? t('heading')}
                     </h2>
-                    <p className="mt-5 max-w-155 text-base leading-relaxed">{intro ?? t('intro')}</p>
+                    <p className="mx-auto mt-4.5 max-w-155 text-sm leading-[1.55] min-[761px]:mt-6.25 min-[761px]:text-base">{intro ?? t('intro')}</p>
                 </div>
-            </div>
+            ) : (
+                /* Pricing introduction: an occasion page lines its heading up with the cards, with no eyebrow */
+                <div className={cn('mx-auto grid', eventType ? PLAN_WIDTH[planCount] : 'max-w-300 gap-x-[5vw] min-[761px]:grid-cols-[1fr_2fr]')}>
+                    {eventType ? null : <p className="text-[13px] font-black tracking-[.15em]">{t('eyebrow')}</p>}
+                    <div>
+                        <h2
+                            className={cn(
+                                'font-[Baskerville,Georgia,serif] text-[clamp(48px,11vw,88px)] leading-[.9] tracking-[-.055em]',
+                                eventType ? 'text-balance' : 'mt-5 max-w-205 min-[761px]:mt-0',
+                            )}
+                            id="landing-pricing-title"
+                        >
+                            {heading ?? t('heading')}
+                        </h2>
+                        <p className="mt-5 max-w-155 text-base leading-relaxed">{intro ?? t('intro')}</p>
+                    </div>
+                </div>
+            )}
 
             {/* Event type */}
             {eventType ? null : (

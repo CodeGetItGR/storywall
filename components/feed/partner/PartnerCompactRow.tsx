@@ -15,7 +15,7 @@ export function PartnerCompactRow({ content }: { content: PartnerBrandingCardCon
                 className="flex min-h-16 items-center gap-3 rounded-xl bg-card px-3 py-2.5 ring-1 ring-border transition-colors hover:bg-surface-muted"
             >
                 {/* Logo */}
-                <PartnerLogo src={content.logoUrl} size={44} />
+                <PartnerLogo src={content.logoUrl} alt={content.name} size={44} />
 
                 {/* Partner */}
                 <div className="min-w-0 flex-1">

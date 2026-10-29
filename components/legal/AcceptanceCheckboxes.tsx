@@ -1,13 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, type ReactNode, useId } from 'react';
+import { type ChangeEvent, useId } from 'react';
 
-import { AppLink } from '@/components/ui/AppLink';
-import { routes } from '@/lib/routes';
+import { useLegalDocLinks } from '@/hooks/useLegalDocLinks';
 
-// The two boxes every new account ticks (register, the OAuth sign-up modal) and the
-// acceptance gate shows again: the documents, and the 18+ confirmation (Terms §3).
+// The two boxes the acceptance gate shows again: the documents, and the 18+
+// confirmation (Terms §3). A new account ticks SignupAcceptanceCheckbox instead.
 // 'all' names the Terms, the Community Guidelines and the Privacy Policy; 'terms'
 // leaves out the Guidelines, for an account that only owes the Terms. A QR-link
 // upload, with no account, asks for 16+ instead (minimumAge).
@@ -27,23 +26,9 @@ export function AcceptanceCheckboxes({
     onAdultConfirmedChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
 }) {
     const t = useTranslations('AcceptanceCheckboxes');
+    const links = useLegalDocLinks();
     const acceptedId = useId();
     const adultId = useId();
-
-    // The documents open in a new tab, so a half-filled form survives the read.
-    const docLink = (href: string) =>
-        function DocLink(chunks: ReactNode) {
-            return (
-                <AppLink href={href} target="_blank" rel="noopener" className="font-semibold underline hover:text-ink">
-                    {chunks} <span className="sr-only">{t('opensInNewTab')}</span>
-                </AppLink>
-            );
-        };
-    const links = {
-        terms: docLink(routes.legal.terms()),
-        guidelines: docLink(routes.legal.communityGuidelines()),
-        privacy: docLink(routes.legal.privacy()),
-    };
 
     return (
         <div className="flex flex-col gap-2 px-1 py-1">

@@ -20,6 +20,7 @@ const NO_ROLE = { relationshipRole: null, customRelationshipRole: null };
 export function HomeNextEventCard({ items }: { items: EventGridItem[] }) {
     const t = useTranslations('HomePage');
     const tEvents = useTranslations('EventsPage');
+    const tAlt = useTranslations('ImageAlt');
     const locale = useLocale();
     // A deleted event is never "next" — it has no feed to open.
     const liveItems = useMemo(() => items.filter((item) => !isEventDeleted(item.event) && !item.event?.suspended), [items]);
@@ -47,7 +48,7 @@ export function HomeNextEventCard({ items }: { items: EventGridItem[] }) {
                     <div className="relative aspect-video w-full overflow-hidden bg-surface-muted">
                         <ProtectedImage
                             src={event.coverMedia.mediaUrl}
-                            alt=""
+                            alt={tAlt('eventCoverOf', { name: event.title })}
                             fill
                             className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                             sizes="(max-width: 640px) 100vw, 640px"

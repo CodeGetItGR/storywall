@@ -13,12 +13,13 @@ interface GiftAccountSetupFormProps {
 
 export function GiftAccountSetupForm({ onSubmitAction, isSaving, invalidIban }: GiftAccountSetupFormProps) {
     const t = useTranslations('GiftsPage');
+    const tAlt = useTranslations('ImageAlt');
 
     return (
         <div className="pt-4 pb-8">
             {/* Intro */}
             <section className="flex flex-col items-center px-2 text-center">
-                <Image src="/icons/present.svg" alt="" width={80} height={80} preload className="h-20 w-20" unoptimized />
+                <Image src="/icons/present.svg" alt={tAlt('gift')} width={80} height={80} preload className="h-20 w-20" unoptimized />
                 <h2 className="mt-3 text-lg font-semibold text-ink">{t('emptyTitle')}</h2>
                 <p className="mt-1 text-sm leading-6 text-ink-muted">{t('emptyHost')}</p>
             </section>

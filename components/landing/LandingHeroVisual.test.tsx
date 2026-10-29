@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { LandingHeroVisual } from '@/components/landing/LandingHeroVisual';
 
+vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
+
 class InertResizeObserver {
     observe() {}
     unobserve() {}
@@ -17,6 +19,11 @@ function sourcePath(image: HTMLImageElement) {
 
 function feedScreenshots(container: HTMLElement) {
     return [...container.querySelectorAll('img')].filter((image) => sourcePath(image)?.includes('sw-phone-feed'));
+}
+
+// The drift runs on real animation frames, so the motion check waits in real time.
+function wait(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 beforeEach(() => {
@@ -53,6 +60,25 @@ describe('LandingHeroVisual', () => {
         expect(screenshots.map((image) => image.getAttribute('fetchpriority'))).toEqual(['low', 'low', 'low']);
     });
 
+    it('holds the floating cards and the phone where they are while landing motion is paused', async () => {
+        const { container, rerender } = render(<LandingHeroVisual motionPaused={false} />);
+        const floats = [...(container.firstElementChild?.children ?? [])] as HTMLElement[];
+        const transforms = () => floats.map((float) => float.style.transform);
+        await wait(100);
+
+        rerender(<LandingHeroVisual motionPaused />);
+        // The next frame still draws the spot where each one stopped.
+        await wait(50);
+        const held = transforms();
+        held.forEach((transform) => expect(transform).toContain('translate'));
+        await wait(150);
+        expect(transforms()).toEqual(held);
+
+        rerender(<LandingHeroVisual motionPaused={false} />);
+        await wait(150);
+        transforms().forEach((transform, index) => expect(transform).not.toBe(held[index]));
+    });
+
     it('freezes the feed scroll only while landing motion is paused', () => {
         const { container, rerender } = render(<LandingHeroVisual motionPaused />);
         const track = feedScreenshots(container)[0].parentElement;
@@ -60,5 +86,12 @@ describe('LandingHeroVisual', () => {
 
         rerender(<LandingHeroVisual motionPaused={false} />);
         expect(track).not.toHaveAttribute('data-paused');
+    });
+
+    it('takes its size and place from the page when given', () => {
+        const { container } = render(<LandingHeroVisual className="w-10" motionPaused={false} />);
+        const root = container.firstElementChild;
+        expect(root).toHaveClass('w-10', 'aspect-[1136/1204]');
+        expect(root).not.toHaveClass('w-[137vw]');
     });
 });

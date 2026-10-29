@@ -19,6 +19,7 @@ interface PostImageFilterPickerProps {
 
 export function PostImageFilterPicker({ image, onFilterChange, variant = 'default' }: PostImageFilterPickerProps) {
     const t = useTranslations('ComposerCard');
+    const tAlt = useTranslations('ImageAlt');
 
     function handleFilterClick(event: React.MouseEvent<HTMLButtonElement>) {
         const filterId = event.currentTarget.dataset.filterId;
@@ -45,7 +46,7 @@ export function PostImageFilterPicker({ image, onFilterChange, variant = 'defaul
                                 : 'opacity-70 hover:opacity-100',
                         )}
                     >
-                        <Image src={image.previewUrl} alt="" fill className="object-cover" sizes="48px" style={{ filter: preset.cssFilter }} />
+                        <Image src={image.previewUrl} alt={tAlt('filterPreview', { name: t(`filters.${preset.id}`) })} fill className="object-cover" sizes="48px" style={{ filter: preset.cssFilter }} />
                     </button>
                 ))}
             </div>

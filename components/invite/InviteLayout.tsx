@@ -20,15 +20,32 @@ interface InviteLayoutProps {
     eventSubtitle?: string | null;
     // The page's main buttons. On small screens they stay pinned to the bottom edge.
     actions?: ReactNode;
+    // 'page' scrolls the hero away with the body, for long forms (the QR upload). By default the
+    // hero stays put and only the body scrolls.
+    scroll?: 'body' | 'page';
     children: ReactNode;
 }
 
-export function InviteLayout({ coverImageSrc, coverImageAlt, theme, eventTitle, eventSubtitle, actions, children }: InviteLayoutProps) {
+export function InviteLayout({
+    coverImageSrc,
+    coverImageAlt,
+    theme,
+    eventTitle,
+    eventSubtitle,
+    actions,
+    scroll = 'body',
+    children,
+}: InviteLayoutProps) {
     const { hero, handleIllustrationError } = useInviteHero(theme, coverImageSrc);
 
     return (
         // One stacked column at every size: the hero on top, the actions below. Wider screens centre it.
-        <div className="mx-auto flex h-full w-full max-w-xl flex-col overflow-hidden bg-background md:px-6 md:pt-6">
+        <div
+            className={cn(
+                'mx-auto flex h-full w-full max-w-xl flex-col bg-background md:px-6 md:pt-6',
+                scroll === 'page' ? 'overflow-y-auto' : 'overflow-hidden',
+            )}
+        >
             {hero.kind === 'illustration' && (
                 // Illustration mode: the art sits clean on the theme colour and the title goes below it
                 // in dark ink. The cover-photo overlay (dark gradient, white title) would only muddy it.
@@ -41,7 +58,7 @@ export function InviteLayout({ coverImageSrc, coverImageAlt, theme, eventTitle, 
                     <div className="relative m-4 min-h-0 flex-1 md:m-6">
                         <ProtectedImage
                             src={hero.src}
-                            alt=""
+                            alt={eventTitle}
                             fill
                             sizes="(min-width: 768px) 576px, 100vw"
                             className="object-contain"
@@ -87,7 +104,7 @@ export function InviteLayout({ coverImageSrc, coverImageAlt, theme, eventTitle, 
                 </div>
             )}
 
-            <div className="flex flex-1 flex-col overflow-y-auto">
+            <div className={cn('flex flex-1 flex-col', scroll === 'body' && 'overflow-y-auto')}>
                 <div className="mx-auto flex w-full max-w-sm flex-1 flex-col px-6 pt-8">
                     {/* Body */}
                     <div className="w-full">{children}</div>
