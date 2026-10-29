@@ -37,6 +37,7 @@ describe('useCampaignVisitTracking', () => {
             utmMedium: 'social',
             utmCampaign: 'spring',
             language: 'el',
+            page: '/el',
         });
         expect(currentCampaign()?.utmCampaign).toBe('spring');
     });

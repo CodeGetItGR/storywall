@@ -4108,6 +4108,8 @@
             "range": {
                 "label": "Date range",
                 "ALL": "All time",
+                "TODAY": "Today",
+                "YESTERDAY": "Yesterday",
                 "LAST_30": "Last 30 days",
                 "LAST_90": "Last 90 days",
                 "THIS_YEAR": "This year",
@@ -5438,7 +5440,17 @@
                 "title": "Language and device",
                 "language": "Language",
                 "device": "Device"
-            }
+            },
+            "source": { "label": "Source", "all": "All sources" },
+            "hourly": { "title": "Visitors by hour", "visitors": "Visitors" },
+            "bySource": {
+                "title": "By source",
+                "titlePicked": "By campaign",
+                "source": "Source",
+                "campaign": "Medium / campaign",
+                "campaigns": "{count, plural, one {# campaign} other {# campaigns}}"
+            },
+            "pages": { "title": "Landing page", "page": "Page", "unknown": "Unknown" }
         },
         "phones": {
             "add": "Add phone",

@@ -2400,8 +2400,10 @@ export interface CampaignRowDto {
     revenueMinorByCurrency: Record<string, number>;
 }
 
-// GET /api/admin/metrics/campaigns/overview. Every saved link (or one with ?link=) over a range.
-// daily lists every Athens day in the range, zeros included; empty when there's no visit at all.
+// GET /api/admin/metrics/campaigns/overview. Every saved link, one utm source (?source=) or one link
+// (?link=, which wins) over a range. daily lists every Athens day in the range and hourly every Athens
+// hour (0-23) summed over it, zeros included; both are empty when there's no visit at all. A page is
+// null for old visits whose link is gone.
 export interface CampaignOverviewDto {
     visits: number;
     visitors: number;
@@ -2412,8 +2414,10 @@ export interface CampaignOverviewDto {
     paidHost: number;
     revenueMinorByCurrency: Record<string, number>;
     daily: { date: string; visits: number; visitors: number }[];
+    hourly: { hour: number; visits: number; visitors: number }[];
     devices: { device: VisitorDevice; visits: number }[];
     languages: { language: VisitorLanguage; visits: number }[];
+    pages: { page: string | null; visits: number }[];
 }
 
 // POST /api/public/campaign-visits. Spring always answers 204.
@@ -2425,6 +2429,7 @@ export interface CampaignVisitRequestDto {
     utmMedium: string;
     utmCampaign: string;
     language: VisitorLanguage;
+    page: string;
 }
 
 // GET /api/admin/metrics/visitors. Google Analytics numbers for the public pages over a range.

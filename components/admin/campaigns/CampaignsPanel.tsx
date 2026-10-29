@@ -10,6 +10,7 @@ import { FunnelHeader } from '@/components/admin/funnel/FunnelHeader';
 import { FunnelRangeControl } from '@/components/admin/funnel/FunnelRangeControl';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useCampaignsDashboard } from '@/hooks/useCampaignsDashboard';
+import { CAMPAIGN_RANGE_PRESETS } from '@/lib/adminFunnel';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 
 // Sign-ups per campaign, and the links made with the campaign link builder.
@@ -25,7 +26,7 @@ export function CampaignsPanel() {
             <div className="space-y-5">
                 {/* Range and action */}
                 <div className="flex flex-wrap items-start justify-between gap-3">
-                    <FunnelRangeControl range={d.range} note={t('campaigns.rangeNote')} />
+                    <FunnelRangeControl range={d.range} presets={CAMPAIGN_RANGE_PRESETS} note={t('campaigns.rangeNote')} />
                     <button
                         type="button"
                         onClick={d.handleCreateClick}
