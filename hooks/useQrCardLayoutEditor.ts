@@ -100,8 +100,13 @@ export function useQrCardLayoutEditor({
         [requestClose, selected],
     );
 
-    const handleAlignChange = useCallback((element: 'title' | 'lines', align: QrCardTextAlign) => {
-        setLayout((current) => (element === 'title' ? setTitleOptions(current, { align }) : setLinesOptions(current, { align })));
+    const handleTitleAlignChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+        const align = event.currentTarget.value as QrCardTextAlign;
+        setLayout((current) => setTitleOptions(current, { align }));
+    }, []);
+    const handleLinesAlignChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+        const align = event.currentTarget.value as QrCardTextAlign;
+        setLayout((current) => setLinesOptions(current, { align }));
     }, []);
     const handleTitleSizeChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
         const maxSize = Number(event.currentTarget.value);
@@ -156,7 +161,8 @@ export function useQrCardLayoutEditor({
         saveError,
         handleElementFocus,
         handleKeyDown,
-        handleAlignChange,
+        handleTitleAlignChange,
+        handleLinesAlignChange,
         handleTitleSizeChange,
         handleLinesSizeChange,
         handlePanelChange,

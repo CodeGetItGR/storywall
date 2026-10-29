@@ -33,6 +33,10 @@ function key(name: string, options: { shiftKey?: boolean; target?: EventTarget }
     return { key: name, shiftKey: false, target: document.body, preventDefault: vi.fn(), ...options } as unknown as KeyboardEvent<HTMLElement>;
 }
 
+function alignEvent(value: string) {
+    return { currentTarget: { value } } as never;
+}
+
 function renderEditor() {
     const onSaved = vi.fn();
     const onClose = vi.fn();
@@ -81,7 +85,7 @@ describe('useQrCardLayoutEditor', () => {
 
     it('asks before closing with changes', () => {
         const { result, onClose } = renderEditor();
-        act(() => result.current.handleAlignChange('title', 'left'));
+        act(() => result.current.handleTitleAlignChange(alignEvent('left')));
         act(() => result.current.requestClose());
         expect(result.current.confirmingDiscard).toBe(true);
         expect(onClose).not.toHaveBeenCalled();
@@ -89,9 +93,17 @@ describe('useQrCardLayoutEditor', () => {
         expect(result.current.confirmingDiscard).toBe(false);
     });
 
+    it('sets the title and lines alignment from the radio value', () => {
+        const { result } = renderEditor();
+        act(() => result.current.handleTitleAlignChange(alignEvent('left')));
+        act(() => result.current.handleLinesAlignChange(alignEvent('right')));
+        expect(result.current.layout.title.align).toBe('left');
+        expect(result.current.layout.lines.align).toBe('right');
+    });
+
     it('resets to the default layout', () => {
         const { result } = renderEditor();
-        act(() => result.current.handleAlignChange('lines', 'right'));
+        act(() => result.current.handleLinesAlignChange(alignEvent('right')));
         act(() => result.current.reset());
         expect(result.current.layout).toEqual(DEFAULT_QR_CARD_LAYOUT);
     });
@@ -100,7 +112,7 @@ describe('useQrCardLayoutEditor', () => {
         const saved = { ...LINEN, layout: DEFAULT_QR_CARD_LAYOUT };
         patch.mutateAsync.mockResolvedValue(saved);
         const { result, onSaved, onClose } = renderEditor();
-        act(() => result.current.handleAlignChange('title', 'left'));
+        act(() => result.current.handleTitleAlignChange(alignEvent('left')));
 
         await act(() => result.current.save());
 

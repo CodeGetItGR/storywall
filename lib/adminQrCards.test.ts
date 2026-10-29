@@ -6,6 +6,7 @@ import {
     codeContrastRatio,
     draftFromQrCardTemplate,
     filterQrCardTemplates,
+    formatMm,
     isQrCardDetailError,
     QR_CARD_ARTWORK_MAX_BYTES,
     qrCardArtworkFileError,
@@ -180,5 +181,12 @@ describe('qrCardArtworkFileError', () => {
     it('refuses other types and larger files', () => {
         expect(qrCardArtworkFileError(file('image/jpeg', 100))).toBe('type');
         expect(qrCardArtworkFileError(file('image/png', 10 * 1024 * 1024 + 1))).toBe('size');
+    });
+});
+
+describe('formatMm', () => {
+    it('always shows one decimal, in the locale', () => {
+        expect(formatMm(8, 'en')).toBe('8.0');
+        expect(formatMm(10.5, 'el')).toBe('10,5');
     });
 });

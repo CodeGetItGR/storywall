@@ -165,3 +165,8 @@ export function isQrCardDetailError(error: unknown): boolean {
     if (code !== ERROR_CODES.VALIDATION_FAILED) return false;
     return Object.keys(error.problem?.errors ?? {}).length === 0;
 }
+
+// A layout length for the editor, always one decimal: 8 → "8.0" ("8,0" in Greek).
+export function formatMm(value: number, locale: string): string {
+    return new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value);
+}
