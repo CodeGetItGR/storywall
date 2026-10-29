@@ -135,10 +135,11 @@ export function filterQrCardTemplates(
 }
 
 // The rejections whose localized detail names the exact problem (the ratio, the artwork's size, the
-// language at fault), so the drawer shows the detail.
+// layout rule, the language at fault), so the drawer shows the detail.
 const DETAIL_CODES: ReadonlySet<number> = new Set([
     ERROR_CODES.QR_CARD_CODE_COLOR_LOW_CONTRAST,
     ERROR_CODES.QR_CARD_ARTWORK_SIZE_INVALID,
+    ERROR_CODES.QR_CARD_LAYOUT_INVALID,
     ERROR_CODES.LOCALIZED_TEXT_INVALID,
 ]);
 

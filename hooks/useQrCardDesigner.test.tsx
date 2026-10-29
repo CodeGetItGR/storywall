@@ -14,6 +14,7 @@ const LINEN: QrCardTemplateDto = {
     headingFont: null,
     codeColor: '#1F3A5A',
     centerLogo: false,
+    layout: null, sizes: ['A6'],
 };
 
 type Defaults = { title: string; line: string; giver?: string };

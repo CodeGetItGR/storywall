@@ -181,6 +181,7 @@ describe('qrCardStyleOf', () => {
             headingFont: null,
             codeColor: '#1F3A5A',
             centerLogo: false,
+            layout: null, sizes: ['A6'],
         };
         expect(qrCardStyleOf(template)).toEqual({
             id: 't1',

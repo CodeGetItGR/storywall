@@ -35,6 +35,7 @@ const LINEN: AdminQrCardTemplateDto = {
     headingFont: null,
     codeColor: '#1F3A5A',
     centerLogo: false,
+    layout: null, artworkWidth: null,
 };
 
 const SAGE: AdminQrCardTemplateDto = { ...LINEN, id: 't2', name: { en: 'Sage', el: 'Φασκόμηλο' }, sortOrder: 1, artworkUrl: null };

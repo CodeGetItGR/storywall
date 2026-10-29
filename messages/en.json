@@ -6108,6 +6108,7 @@
         "partnerApplicationPending": "We already have your application. We'll reply by email.",
         "qrCardCodeColorLowContrast": "The code colour is too light against white. Choose a darker one.",
         "qrCardArtworkSizeInvalid": "The artwork must be A6 portrait.",
+        "qrCardLayoutInvalid": "The layout is not valid. Check the elements and try again.",
         "themeFontConversionUnavailable": "Fonts in TTF or OTF format can't be converted right now. Upload a WOFF2 file, or try again later.",
         "wishbookEmpty": "There are no messages yet, so there is nothing to put in a book.",
         "wishbookBookRendererUnavailable": "The book can't be created right now. Please try again later.",
