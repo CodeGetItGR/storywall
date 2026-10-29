@@ -18,11 +18,11 @@
 
 | File | Change |
 | --- | --- |
-| `src/main/resources/db/migration/V186__qr_card_layout.sql` | Create: `layout` and `artwork_width` columns. |
+| `src/main/resources/db/migration/V187__qr_card_layout.sql` | Create: `layout` and `artwork_width` columns. |
 | `J/model/qrcard/QrCardLayout.java` | Create: the layout record and its three box records. |
 | `J/model/qrcard/QrCardTemplate.java` | Modify: `layout`, `artworkWidth` fields. |
 | `J/service/qrcard/QrCardLayoutValidator.java` | Create: rounding and every layout rule. |
-| `J/exception/ErrorCode.java` | Modify: `QR_CARD_LAYOUT_INVALID(3112)`; update 3111's comment. |
+| `J/exception/ErrorCode.java` | Modify: `QR_CARD_LAYOUT_INVALID(3113)`; update 3111's comment. |
 | `src/main/resources/i18n/messages.properties`, `messages_el.properties` | Modify: layout messages, new artwork size text. |
 | `J/service/theme/ThemeIllustrationPipeline.java` | Modify: `validate(file, maxBytes)` overload. |
 | `J/service/qrcard/QrCardArtworkPipeline.java` | Modify: 1748 px, 10 MB, return the width. |
@@ -54,7 +54,7 @@ git ls-tree -r --name-only HEAD src/main/resources/db/migration | sed 's/.*\/V\(
 grep -o -E "[A-Z_]+\(3[0-9]{3}\)" src/main/java/event_social_media/exception/ErrorCode.java | sort -t'(' -k2 -n | tail -1
 ```
 
-Expected at plan time: `185` and `QR_CARD_ARTWORK_SIZE_INVALID(3111)`. If staging moved on, use the next free numbers everywhere this plan says `V186` and `3112`, including the FE guide (Task 8) and the frontend plan's `ERROR_CODES` entry.
+Expected at plan time: `185` and `QR_CARD_ARTWORK_SIZE_INVALID(3111)`. If staging moved on, use the next free numbers everywhere this plan says `V187` and `3113`, including the FE guide (Task 8) and the frontend plan's `ERROR_CODES` entry.
 
 - [ ] **Step 3: Baseline build**
 
@@ -66,7 +66,7 @@ Expected: `BUILD SUCCESSFUL`.
 ### Task 1: Migration and entity fields
 
 **Files:**
-- Create: `src/main/resources/db/migration/V186__qr_card_layout.sql`
+- Create: `src/main/resources/db/migration/V187__qr_card_layout.sql`
 - Create: `J/model/qrcard/QrCardLayout.java`
 - Modify: `J/model/qrcard/QrCardTemplate.java`
 - Test: `T/migration/QrCardsMigrationTest.java`
@@ -103,7 +103,7 @@ Expected: FAIL, `column "layout" does not exist`.
 
 - [ ] **Step 3: Write the migration**
 
-`src/main/resources/db/migration/V186__qr_card_layout.sql`:
+`src/main/resources/db/migration/V187__qr_card_layout.sql`:
 
 ```sql
 -- QR card layout editor and A5: see the frontend repo's docs/superpowers/specs/2026-10-29-qr-card-layout-editor-design.md.
@@ -113,7 +113,7 @@ Expected: FAIL, `column "layout" does not exist`.
 ALTER TABLE qr_card_templates ADD COLUMN layout JSONB;
 
 -- The uploaded artwork's width in pixels, written on every upload. Null for artwork uploaded before
--- V186: such a template offers A6 only until new artwork is uploaded.
+-- V187: such a template offers A6 only until new artwork is uploaded.
 ALTER TABLE qr_card_templates ADD COLUMN artwork_width INTEGER;
 ALTER TABLE qr_card_templates ADD CONSTRAINT qr_card_templates_artwork_width_check CHECK (artwork_width > 0);
 ```
@@ -165,7 +165,7 @@ In `J/model/qrcard/QrCardTemplate.java`, after `centerLogo`:
     @Column(name = "layout")
     private QrCardLayout layout;
 
-    /** The artwork's width in pixels, set on every upload; null for artwork uploaded before V186. */
+    /** The artwork's width in pixels, set on every upload; null for artwork uploaded before V187. */
     @Column(name = "artwork_width")
     private Integer artworkWidth;
 ```
@@ -180,7 +180,7 @@ Expected: PASS.
 - [ ] **Step 7: Commit**
 
 ```bash
-git add src/main/resources/db/migration/V186__qr_card_layout.sql src/main/java/event_social_media/model/qrcard src/test/java/event_social_media/migration/QrCardsMigrationTest.java
+git add src/main/resources/db/migration/V187__qr_card_layout.sql src/main/java/event_social_media/model/qrcard src/test/java/event_social_media/migration/QrCardsMigrationTest.java
 git commit -m "feat(qr-cards): layout and artwork width columns"
 ```
 
@@ -198,7 +198,7 @@ git commit -m "feat(qr-cards): layout and artwork width columns"
 In `QrCardErrorCodesTest`, extend `theCodesAreNumbered`:
 
 ```java
-        assertThat(ErrorCode.QR_CARD_LAYOUT_INVALID.getCode()).isEqualTo(3112);
+        assertThat(ErrorCode.QR_CARD_LAYOUT_INVALID.getCode()).isEqualTo(3113);
 ```
 
 Add the six layout keys (all thrown without args) to the `@ValueSource` of `messagesWithoutArgs_haveEnglishAndGreek_andNoDoubledApostrophes`:
@@ -223,14 +223,14 @@ Expected: FAIL to compile, `QR_CARD_LAYOUT_INVALID` not found.
 
 - [ ] **Step 3: Add the code**
 
-In `ErrorCode.java`, change 3111's comment and add 3112 after it:
+In `ErrorCode.java`, change 3111's comment and add 3113 after it:
 
 ```java
     /** 3111 — A QR card template's artwork isn't A6 portrait (105:148 within 2%) or is under 1748 px wide. The detail is localized. {@code 400}. */
     QR_CARD_ARTWORK_SIZE_INVALID(3111),
 
-    /** 3112 — A QR card template's layout breaks a rule (missing box, outside the safe area, too small, out of range, unknown alignment, overlap). The detail is localized. {@code 400}. */
-    QR_CARD_LAYOUT_INVALID(3112),
+    /** 3113 — A QR card template's layout breaks a rule (missing box, outside the safe area, too small, out of range, unknown alignment, overlap). The detail is localized. {@code 400}. */
+    QR_CARD_LAYOUT_INVALID(3113),
 ```
 
 - [ ] **Step 4: Add the messages**
@@ -439,7 +439,7 @@ public final class QrCardLayoutValidator {
     private QrCardLayoutValidator() {
     }
 
-    /** The layout rounded to 0.1 mm. @throws BadRequestException 3112 naming the first broken rule */
+    /** The layout rounded to 0.1 mm. @throws BadRequestException 3113 naming the first broken rule */
     public static QrCardLayout validated(QrCardLayout layout, UUID actorId) {
         if (layout == null || layout.title() == null || layout.code() == null || layout.lines() == null) {
             throw rejected("missing", actorId);
@@ -577,7 +577,7 @@ Add to `QrCardTemplateAdminControllerTest`:
         mockMvc.perform(as(admin, "ROLE_ADMIN", patch(URL + "/" + template.getId())).contentType(MediaType.APPLICATION_JSON)
                         .header("Accept-Language", "en").content("{\"layout\":" + overlapping + "}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errorCode").value(3112))
+                .andExpect(jsonPath("$.errorCode").value(3113))
                 .andExpect(jsonPath("$.detail").value(containsString("can't overlap")));
         assertNull(repository.findById(template.getId()).orElseThrow().getLayout());
     }
@@ -612,7 +612,7 @@ Expected: the new tests FAIL (no `layout` in the response; the overlapping layou
 ```java
     /** Null means the default layout. */
     private QrCardLayout layout;
-    /** The artwork's width in pixels; null without artwork, or for artwork uploaded before V186. */
+    /** The artwork's width in pixels; null without artwork, or for artwork uploaded before V187. */
     private Integer artworkWidth;
 ```
 
@@ -923,7 +923,7 @@ In `QrCardTemplateService`, add:
     private static final List<String> A6_ONLY = List.of("A6");
     private static final List<String> A6_AND_A5 = List.of("A6", "A5");
 
-    /** A5 needs 300 dpi at 148 mm. Artwork from before V186 has no recorded width: A6 only. */
+    /** A5 needs 300 dpi at 148 mm. Artwork from before V187 has no recorded width: A6 only. */
     static List<String> sizesFor(QrCardTemplate template) {
         Integer width = template.getArtworkWidth();
         return width != null && width >= QrCardArtworkPipeline.MIN_WIDTH ? A6_AND_A5 : A6_ONLY;
@@ -968,10 +968,10 @@ Expected: `BUILD SUCCESSFUL`. If an unrelated test fails, run it alone on `origi
 
 - [ ] **Step 1: Update the contract**
 
-- "Host" section: add `layout` (nullable `QrCardLayout`, shape below; null = the default layout) and `sizes` (`["A6"]` or `["A6","A5"]`; A5 when the artwork is at least 1748 px wide; artwork from before V186 is A6 only) to the host DTO description.
+- "Host" section: add `layout` (nullable `QrCardLayout`, shape below; null = the default layout) and `sizes` (`["A6"]` or `["A6","A5"]`; A5 when the artwork is at least 1748 px wide; artwork from before V187 is A6 only) to the host DTO description.
 - "Admin" section: the artwork row becomes "Multipart `file`. PNG or WebP, ≤ 10 MB, A6 portrait (105:148 ± 2%), ≥ 1748 px wide. Stores the width." Add `layout` to the PATCH row ("a full layout replaces the stored one; omitted, it stays") and `layout`, `artworkWidth` to the admin DTO.
 - New "Layout" section with the JSON example and the rules table from the spec's "Layout" section, copied as they are.
-- "Errors" table: 3111 says 1748 px; add `| 3112 | Layout breaks a rule. The localized detail names which. |`; the 413 row says 10 MB.
+- "Errors" table: 3111 says 1748 px; add `| 3113 | Layout breaks a rule. The localized detail names which. |`; the 413 row says 10 MB.
 
 - [ ] **Step 2: Commit**
 
@@ -992,7 +992,7 @@ git rebase origin/staging
 ./gradlew test
 ```
 
-Expected: `BUILD SUCCESSFUL`. If staging gained a migration numbered 186 or higher, renumber this one to the next free number and re-run.
+Expected: `BUILD SUCCESSFUL`. If staging gained a migration numbered 187 or higher, renumber this one to the next free number and re-run.
 
 - [ ] **Step 2: Ask the user before pushing**
 
@@ -1005,8 +1005,8 @@ git push -u origin feat/qr-card-layout
 gh pr create --base staging --title "QR card layouts and A5" --body "$(cat <<'EOF'
 Layouts for QR card templates and A5 printing. Spec: storywall repo, docs/superpowers/specs/2026-10-29-qr-card-layout-editor-design.md.
 
-- `qr_card_templates.layout` (JSONB) and `artwork_width` (V186).
-- PATCH accepts `layout`, checked by `QrCardLayoutValidator` (new error 3112).
+- `qr_card_templates.layout` (JSONB) and `artwork_width` (V187).
+- PATCH accepts `layout`, checked by `QrCardLayoutValidator` (new error 3113).
 - Artwork: at least 1748 px wide, up to 10 MB (theme illustrations keep 5 MB). The width is stored on upload.
 - Host list: `layout` and `sizes` (A5 when the artwork is at least 1748 px wide).
 - FE guide updated.

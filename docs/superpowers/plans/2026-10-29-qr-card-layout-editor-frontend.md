@@ -124,7 +124,7 @@ Add to `AdminQrCardTemplatePatchDto`, after `centerLogo?`:
 In `lib/api/errors.ts`, after `QR_CARD_ARTWORK_SIZE_INVALID: 3111,`:
 
 ```ts
-    QR_CARD_LAYOUT_INVALID: 3112,
+    QR_CARD_LAYOUT_INVALID: 3113,
 ```
 
 Use the number the backend plan's Task 0 confirmed.
