@@ -24,6 +24,7 @@ import { useCustomRoleReport } from '@/hooks/useCustomRoleReport';
 import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
 import { openPostModal } from '@/hooks/usePostModal';
 import { useDeletePost, useUpdatePost } from '@/hooks/usePosts';
+import { useVendorPostViewTracking } from '@/hooks/useVendorPostViewTracking';
 import type { PostResponseDto } from '@/lib/api/types';
 import { canDeleteContent, canReportContent } from '@/lib/contentPermissions';
 import { isEventWritable } from '@/lib/eventLifecycle';
@@ -52,6 +53,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const media = post.media;
     const isHostPost = post.author?.role === 'HOST';
     const isAnnouncement = isAnnouncementPost(post);
+    const viewRef = useVendorPostViewTracking<HTMLElement>(post);
 
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
@@ -163,6 +165,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                 isAnnouncement && 'bg-linear-to-b from-primary/12 to-primary/5',
                 showHostPostBadge && 'pt-3 sm:pt-0 sm:pr-3',
             )}
+            ref={viewRef}
         >
             {/* Announcement label */}
             {isAnnouncement && (
