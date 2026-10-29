@@ -32,6 +32,7 @@ const CAPABILITY_TYPES: Record<VendorCapability, readonly PartnerRole[]> = {
     QR_READ: ['PLANNER'],
     SONG_REQUESTS: ['MUSIC'],
     PRINT_PICKS: ['PHOTOGRAPHER'],
+    SNEAK_PEEK: ['PHOTOGRAPHER', 'VIDEOGRAPHER'],
 };
 
 export function capabilitiesOfType(type: PartnerRole): VendorCapability[] {
@@ -127,3 +128,25 @@ export function vendorToolLinks(eventId: string, me: VendorMeDto, readableModule
         .filter((tool) => !readableModules || !tool.moduleKey || readableModules.has(tool.moduleKey))
         .map((tool) => ({ key: tool.key, href: tool.href(eventId) }));
 }
+
+export type PartnerBenefitKey = 'discount' | 'feedCard' | 'reach' | 'printPrices';
+export type ComingPartnerBenefitKey = 'inquiries' | 'printKit' | 'eventPacks';
+
+// What partners get today, for the vendor page's partner block. Print prices only mean something to photographers.
+export function partnerBenefits(type: PartnerRole): PartnerBenefitKey[] {
+    const benefits: PartnerBenefitKey[] = ['discount', 'feedCard', 'reach'];
+    return capabilitiesOfType(type).includes('PRINT_PICKS') ? [...benefits, 'printPrices'] : benefits;
+}
+
+// Partner features still being built (Jira KAN-20, KAN-22, KAN-21). Move one to partnerBenefits when it ships.
+export const COMING_PARTNER_BENEFITS: readonly ComingPartnerBenefitKey[] = ['inquiries', 'printKit', 'eventPacks'];
+
+// Made-up print sizes, shown blurred behind the locked Print prices. Never readable, never real data.
+export const SAMPLE_PRINT_SIZES: readonly { label: string; priceCents: number }[] = [
+    { label: '10x15', priceCents: 120 },
+    { label: '13x18', priceCents: 250 },
+    { label: '20x30', priceCents: 600 },
+];
+
+// How many of the vendor's own photos the vendor page header shows.
+export const VENDOR_HERO_PHOTOS_MAX = 5;

@@ -1,25 +1,32 @@
 'use client';
 
-import { BriefcaseBusiness, Pencil } from 'lucide-react';
+import { BriefcaseBusiness } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
-import { Button } from '@/components/ui/button';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { PartnerPromptCard } from '@/components/vendors/me/PartnerPromptCard';
+import { BecomePartnerSheet } from '@/components/vendors/BecomePartnerSheet';
+import { PartnerBenefitsSection } from '@/components/vendors/me/PartnerBenefitsSection';
 import { PrintsIncludedRow } from '@/components/vendors/me/PrintsIncludedRow';
 import { PrintsIncludedSheet } from '@/components/vendors/me/PrintsIncludedSheet';
 import { PrintsSection } from '@/components/vendors/me/PrintsSection';
 import { ProAlbumSection } from '@/components/vendors/me/ProAlbumSection';
+import { ReachSection } from '@/components/vendors/me/ReachSection';
 import { ServiceSheet } from '@/components/vendors/me/ServiceSheet';
 import { ServicesSection } from '@/components/vendors/me/ServicesSection';
+import { SneakPeekSection } from '@/components/vendors/me/SneakPeekSection';
+import { SneakPeekSheet } from '@/components/vendors/me/SneakPeekSheet';
 import { VendorListingSection } from '@/components/vendors/me/VendorListingSection';
 import { VendorMeGroup } from '@/components/vendors/me/VendorMeGroup';
+import { VendorMeHero } from '@/components/vendors/me/VendorMeHero';
 import { VendorToolLinks } from '@/components/vendors/me/VendorToolLinks';
-import { VendorLogo } from '@/components/vendors/VendorLogo';
 import { VendorProfileSheet } from '@/components/vendors/VendorProfileSheet';
 import { VendorRowsSkeleton } from '@/components/vendors/VendorsSkeletons';
+import { usePartnerBenefits } from '@/hooks/usePartnerBenefits';
+import { useReachSection } from '@/hooks/useReachSection';
+import { useSneakPeekSection } from '@/hooks/useSneakPeekSection';
+import { useVendorHeroPhotos } from '@/hooks/useVendorHeroPhotos';
 import { useVendorMePage } from '@/hooks/useVendorMePage';
 import { useVendorPrintsSection } from '@/hooks/useVendorPrintsSection';
 import { useVendorServicesSection } from '@/hooks/useVendorServicesSection';
@@ -29,13 +36,18 @@ import { routes } from '@/lib/routes';
 export function VendorMeScreen() {
     const t = useTranslations('Vendors');
     const tServices = useTranslations('Vendors.services');
+    const tSneakPeek = useTranslations('Vendors.sneakPeek');
     const locale = useLocale();
     const { eventId } = useEventRouteContext();
     const page = useVendorMePage(eventId);
     const { me, profile } = page;
     const prints = useVendorPrintsSection(eventId, me);
     const services = useVendorServicesSection(me, page.profileStatus);
-    const hasEventWork = page.tools.length > 0 || prints.open || page.hasProAlbum;
+    const sneakPeek = useSneakPeekSection(eventId, me, page.hasProAlbum);
+    const reach = useReachSection(eventId, me);
+    const partner = usePartnerBenefits(me);
+    const heroPhotos = useVendorHeroPhotos(eventId, page.hasProAlbum);
+    const hasEventWork = page.tools.length > 0 || prints.open || page.hasProAlbum || sneakPeek.visible || reach.visible;
 
     return (
         <ModulePageShell
@@ -50,23 +62,47 @@ export function VendorMeScreen() {
             ) : !me ? (
                 <p className="text-sm text-ink-muted">{t('me.notVendor')}</p>
             ) : (
-                <div className="flex flex-col gap-12">
-                    {/* Access: one line, either the reason the tools are off or the date they stop */}
-                    {me.toolsOff ? (
-                        <p className="text-sm text-ink-muted">{t(`me.toolsOff.${me.toolsOff}`)}</p>
-                    ) : (
-                        me.accessEndsAt && (
-                            <p className="text-sm text-ink-muted">
-                                {t('me.accessUntil', { date: formatDate(locale, me.accessEndsAt, { dateStyle: 'long' }) })}
-                            </p>
-                        )
-                    )}
+                <div className="flex flex-col gap-10">
+                    {/* Hero: photos, identity and access */}
+                    <VendorMeHero
+                        profile={profile}
+                        vendorType={me.vendorType}
+                        photos={heroPhotos}
+                        accessLine={
+                            me.accessEndsAt ? t('me.accessUntil', { date: formatDate(locale, me.accessEndsAt, { dateStyle: 'long' }) }) : null
+                        }
+                        toolsOffLine={me.toolsOff ? t(`me.toolsOff.${me.toolsOff}`) : null}
+                        onEditAction={page.openProfile}
+                    />
 
                     {/* Event: the work for this event */}
                     {hasEventWork && (
                         <VendorMeGroup id="vendor-event-title" title={t('me.groupEvent')}>
                             {/* Tools */}
                             {page.tools.length > 0 && <VendorToolLinks tools={page.tools} />}
+
+                            {/* Pro album */}
+                            {page.hasProAlbum && (
+                                <ProAlbumSection
+                                    eventId={eventId}
+                                    usedBytes={me.proUsedBytes ?? 0}
+                                    allowanceBytes={me.proStorageBytes ?? 0}
+                                    canUpload={page.canUploadPro}
+                                />
+                            )}
+
+                            {/* Sneak peek */}
+                            {sneakPeek.visible && sneakPeek.state !== 'hidden' && (
+                                <SneakPeekSection
+                                    state={sneakPeek.state}
+                                    thumbnails={sneakPeek.thumbnails}
+                                    fanItems={sneakPeek.candidates}
+                                    feedHref={sneakPeek.feedHref}
+                                    onChooseAction={sneakPeek.openNew}
+                                    onEditAction={sneakPeek.openEdit}
+                                    onDeleteAction={sneakPeek.requestDelete}
+                                />
+                            )}
 
                             {/* Print order */}
                             {prints.open && (
@@ -86,82 +122,75 @@ export function VendorMeScreen() {
                                 />
                             )}
 
-                            {/* Pro album */}
-                            {page.hasProAlbum && (
-                                <ProAlbumSection
-                                    eventId={eventId}
-                                    usedBytes={me.proUsedBytes ?? 0}
-                                    allowanceBytes={me.proStorageBytes ?? 0}
-                                    canUpload={page.canUploadPro}
+                            {/* Reach */}
+                            {reach.visible && (
+                                <ReachSection
+                                    tiles={reach.tiles}
+                                    sampleTiles={reach.sampleTiles}
+                                    partner={reach.partner}
+                                    canApply={partner.canApply}
+                                    isLoading={reach.isLoading}
+                                    loadFailed={reach.loadFailed}
+                                    onBecomePartnerAction={partner.sheet.openSheet}
                                 />
                             )}
                         </VendorMeGroup>
                     )}
 
                     {/* Settings: set once, change rarely */}
-                    <VendorMeGroup id="vendor-settings-title" title={t('me.groupSettings')}>
-                        {/* Details */}
-                        <section aria-labelledby="vendor-details-title">
-                            <div className="flex items-center justify-between gap-3">
-                                <h3 id="vendor-details-title" className="text-sm font-semibold text-ink">
-                                    {t('me.profileTitle')}
-                                </h3>
-                                <Button type="button" variant="outline" size="lg" onClick={page.openProfile}>
-                                    <Pencil aria-hidden="true" />
-                                    {t('me.profileEdit')}
-                                </Button>
-                            </div>
-                            {profile && (
-                                <div className="mt-3 flex items-center gap-3">
-                                    <VendorLogo logoUrl={profile.logoUrl} name={profile.businessName} />
-                                    <div className="min-w-0 text-sm">
-                                        <p className="truncate font-semibold text-ink">{profile.businessName}</p>
-                                        <p className="truncate text-ink-muted">{profile.link}</p>
-                                    </div>
-                                </div>
+                    {(services.visible || page.canChooseListing) && (
+                        <VendorMeGroup id="vendor-settings-title" title={t('me.groupSettings')}>
+                            {/* Print prices */}
+                            {services.visible && (
+                                <ServicesSection
+                                    approved={services.approved}
+                                    sizes={services.sizes}
+                                    canAdd={services.canAdd}
+                                    needsProfile={services.needsProfile}
+                                    profileLoading={services.profileLoading}
+                                    isLoading={services.isLoading}
+                                    loadFailed={services.loadFailed}
+                                    error={services.sectionError}
+                                    includedRow={
+                                        prints.open &&
+                                        !prints.includedFailed && (
+                                            <PrintsIncludedRow
+                                                included={prints.included}
+                                                isLoading={prints.isLoadingIncluded}
+                                                onEditAction={prints.openIncluded}
+                                            />
+                                        )
+                                    }
+                                    canApply={partner.canApply}
+                                    onAddAction={services.openNew}
+                                    onEditAction={services.openEdit}
+                                    onBecomePartnerAction={partner.sheet.openSheet}
+                                />
                             )}
-                        </section>
 
-                        {/* Listing */}
-                        {page.canChooseListing && (
-                            <VendorListingSection
-                                listed={page.listed}
-                                hiddenByHost={page.hiddenByHost}
-                                disabled={page.isTogglingListed}
-                                error={page.error}
-                                onToggleAction={page.toggleListed}
-                            />
-                        )}
-
-                        {/* Print prices */}
-                        {services.visible && (
-                            <ServicesSection
-                                approved={services.approved}
-                                sizes={services.sizes}
-                                canAdd={services.canAdd}
-                                needsProfile={services.needsProfile}
-                                profileLoading={services.profileLoading}
-                                isLoading={services.isLoading}
-                                loadFailed={services.loadFailed}
-                                error={services.sectionError}
-                                includedRow={
-                                    prints.open &&
-                                    !prints.includedFailed && (
-                                        <PrintsIncludedRow
-                                            included={prints.included}
-                                            isLoading={prints.isLoadingIncluded}
-                                            onEditAction={prints.openIncluded}
-                                        />
-                                    )
-                                }
-                                onAddAction={services.openNew}
-                                onEditAction={services.openEdit}
-                            />
-                        )}
-                    </VendorMeGroup>
+                            {/* Listing */}
+                            {page.canChooseListing && (
+                                <VendorListingSection
+                                    listed={page.listed}
+                                    hiddenByHost={page.hiddenByHost}
+                                    disabled={page.isTogglingListed}
+                                    error={page.error}
+                                    onToggleAction={page.toggleListed}
+                                />
+                            )}
+                        </VendorMeGroup>
+                    )}
 
                     {/* Partner */}
-                    {page.showPartnerPrompt && <PartnerPromptCard />}
+                    {partner.visible && (
+                        <PartnerBenefitsSection
+                            partner={partner.partner}
+                            canApply={partner.canApply}
+                            benefits={partner.benefits}
+                            coming={partner.coming}
+                            onApplyAction={partner.sheet.openSheet}
+                        />
+                    )}
                 </div>
             )}
 
@@ -193,6 +222,49 @@ export function VendorMeScreen() {
                     onCloseAction={services.close}
                 />
             )}
+
+            {/* Sneak peek sheet */}
+            {sneakPeek.sheet && (
+                <SneakPeekSheet
+                    key={sneakPeek.sheet}
+                    open
+                    mode={sneakPeek.sheet}
+                    items={sneakPeek.candidates}
+                    initialPicked={sneakPeek.initialPicked}
+                    initialCaption={sneakPeek.initialCaption}
+                    hasMore={sneakPeek.hasMore}
+                    isSaving={sneakPeek.isSaving}
+                    error={sneakPeek.error}
+                    onLoadMoreAction={sneakPeek.loadMore}
+                    onSubmitAction={sneakPeek.submit}
+                    onCloseAction={sneakPeek.closeSheet}
+                />
+            )}
+
+            {/* Sneak peek delete confirmation */}
+            <ConfirmActionModal
+                open={sneakPeek.confirmDelete}
+                onCloseAction={sneakPeek.cancelDelete}
+                onConfirmAction={sneakPeek.confirmRemove}
+                title={tSneakPeek('deleteTitle')}
+                body={
+                    <>
+                        {tSneakPeek('deleteBody')}
+                        {sneakPeek.deleteError && <span className="mt-1 block text-destructive">{sneakPeek.deleteError}</span>}
+                    </>
+                }
+                confirmLabel={tSneakPeek('deleteConfirm')}
+                cancelLabel={tSneakPeek('deleteCancel')}
+                isConfirming={sneakPeek.isDeleting}
+            />
+
+            {/* Partner sheet, from the partner block and every locked preview */}
+            <BecomePartnerSheet
+                open={partner.sheet.sheetOpen}
+                defaults={partner.sheet.defaults}
+                search={partner.sheet.search}
+                onCloseAction={partner.sheet.closeSheet}
+            />
 
             {/* Service delete confirmation */}
             <ConfirmActionModal

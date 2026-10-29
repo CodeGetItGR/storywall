@@ -3,14 +3,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-    useDeleteVendorLogo,
-    useDismissPartnerPrompt,
-    useSaveVendorProfile,
-    useUploadVendorLogo,
-    useVendorProfile,
-    vendorProfileKeys,
-} from '@/hooks/useVendorProfile';
+import { useDeleteVendorLogo, useSaveVendorProfile, useUploadVendorLogo, useVendorProfile, vendorProfileKeys } from '@/hooks/useVendorProfile';
 import { vendorKeys } from '@/hooks/useVendors';
 import { ApiError } from '@/lib/api/client';
 
@@ -125,18 +118,5 @@ describe('logo mutations', () => {
         await act(() => result.current.mutateAsync());
         expect(apiDel).toHaveBeenCalledWith('/api/me/vendor-profile/logo');
         expect(client.getQueryData(vendorProfileKeys.mine)).toEqual(PROFILE);
-    });
-});
-
-describe('useDismissPartnerPrompt', () => {
-    it('posts the dismissal and refreshes the profile and vendor keys', async () => {
-        apiPost.mockResolvedValue(undefined);
-        const client = newClient();
-        const invalidate = vi.spyOn(client, 'invalidateQueries');
-        const { result } = renderHook(() => useDismissPartnerPrompt(), { wrapper: wrapperFor(client) });
-        await act(() => result.current.mutateAsync());
-        expect(apiPost).toHaveBeenCalledWith('/api/me/vendor-profile/dismiss-partner-prompt');
-        expect(invalidate).toHaveBeenCalledWith({ queryKey: vendorProfileKeys.mine });
-        expect(invalidate).toHaveBeenCalledWith({ predicate: expect.any(Function) });
     });
 });

@@ -7,6 +7,7 @@ import { PrintTotal } from '@/components/gallery/print/PrintTotal';
 import { Button } from '@/components/ui/button';
 import { PrintListReadRow } from '@/components/vendors/me/PrintListReadRow';
 import { PrintPartButton } from '@/components/vendors/me/PrintPartButton';
+import { VendorMeSection } from '@/components/vendors/me/VendorMeSection';
 import { VendorRowsSkeleton } from '@/components/vendors/VendorsSkeletons';
 import type { PrintListItemDto } from '@/lib/api/types';
 import type { PrintTotals } from '@/lib/printPicks';
@@ -40,16 +41,12 @@ export function PrintsSection({
     onDownloadPartAction: (part: number) => void;
 }) {
     const t = useTranslations('Vendors.prints');
+    const tHints = useTranslations('Vendors.hints');
     const live = items.filter((item) => !item.removed);
     const parts = Array.from({ length: partCount }, (_, index) => index + 1);
 
     return (
-        <section aria-labelledby="vendor-prints-title" className="flex flex-col gap-4">
-            {/* Header */}
-            <h3 id="vendor-prints-title" className="text-sm font-semibold text-ink">
-                {t('title')}
-            </h3>
-
+        <VendorMeSection id="vendor-prints-title" title={t('title')} hint={tHints('prints')}>
             {/* Host picks */}
             {listFailed ? null : isLoading ? (
                 <VendorRowsSkeleton rows={3} />
@@ -95,6 +92,6 @@ export function PrintsSection({
                     {error}
                 </p>
             )}
-        </section>
+        </VendorMeSection>
     );
 }

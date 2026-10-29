@@ -16,10 +16,19 @@ vi.mock('@/hooks/usePosts', () => ({
     useDeletePost: () => ({ isPending: false, mutateAsync: vi.fn() }),
     useUpdatePost: () => ({ isPending: false, mutateAsync: vi.fn() }),
 }));
+const viewer = vi.hoisted(() => ({ member: null as { id: string } | null, isHost: false }));
 vi.mock('@/providers/EventProvider', () => ({
     useActiveEvent: () => ({ status: 'ACTIVE', eventType: 'WEDDING' }),
-    useActiveMember: () => null,
-    useIsHost: () => false,
+    useActiveMember: () => viewer.member,
+    useIsHost: () => viewer.isHost,
+}));
+vi.mock('@/components/feed/post/PostActionsMenu', () => ({
+    PostActionsMenu: ({ editLabel, deleteLabel }: { editLabel?: string; deleteLabel?: string }) => (
+        <div>
+            {editLabel && <span>{editLabel}</span>}
+            {deleteLabel && <span>{deleteLabel}</span>}
+        </div>
+    ),
 }));
 vi.mock('@/components/feed/post/PostReactionPicker', () => ({ PostReactionPicker: () => null }));
 vi.mock('@/components/memberRoles/AuthorRoleChip', () => ({ AuthorRoleChip: () => null }));
@@ -43,7 +52,11 @@ function post(type: PostResponseDto['type']): PostResponseDto {
 }
 
 describe('PostCard announcement', () => {
-    afterEach(cleanup);
+    afterEach(() => {
+        cleanup();
+        viewer.member = null;
+        viewer.isHost = false;
+    });
 
     it('labels an announcement', () => {
         render(<PostCard post={post('ANNOUNCEMENT')} />);
@@ -53,5 +66,41 @@ describe('PostCard announcement', () => {
     it('leaves a normal post unlabelled', () => {
         render(<PostCard post={post('TEXT')} />);
         expect(screen.queryByText('announcement')).toBeNull();
+    });
+
+    it('labels a sneak peek', () => {
+        render(<PostCard post={{ ...post('SNEAK_PEEK'), isPinned: true }} />);
+        expect(screen.getByText('sneakPeek')).toBeTruthy();
+        expect(screen.queryByText('announcement')).toBeNull();
+    });
+});
+
+describe('PostCard sneak peek actions', () => {
+    afterEach(() => {
+        cleanup();
+        viewer.member = null;
+        viewer.isHost = false;
+    });
+
+    it('lets its vendor neither edit nor delete it in the feed', () => {
+        viewer.member = { id: 'm1' };
+        render(<PostCard post={post('SNEAK_PEEK')} />);
+        expect(screen.queryByText('editPost')).toBeNull();
+        expect(screen.queryByText('deletePost')).toBeNull();
+    });
+
+    it('lets a host remove it but not edit it', () => {
+        viewer.member = { id: 'h1' };
+        viewer.isHost = true;
+        render(<PostCard post={post('SNEAK_PEEK')} />);
+        expect(screen.queryByText('editPost')).toBeNull();
+        expect(screen.getByText('deletePost')).toBeTruthy();
+    });
+
+    it('still lets an author edit and delete a normal post', () => {
+        viewer.member = { id: 'm1' };
+        render(<PostCard post={post('TEXT')} />);
+        expect(screen.getByText('editPost')).toBeTruthy();
+        expect(screen.getByText('deletePost')).toBeTruthy();
     });
 });

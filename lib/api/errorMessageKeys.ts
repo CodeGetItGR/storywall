@@ -104,6 +104,9 @@ export type ApiErrorMessageKey =
     | 'vendorServiceLimitReached'
     | 'printListEmpty'
     | 'pushNotEnabled'
+    | 'sneakPeekMediaInvalid'
+    | 'sneakPeekNotOpen'
+    | 'sneakPeekUsed'
     | 'pushSendFailed'
     | 'pushUnavailable'
     | 'vendorLimitReached'
@@ -608,6 +611,9 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.VENDOR_SERVICE_LIMIT_REACHED]: 'vendorServiceLimitReached',
     [ERROR_CODES.PRINT_LIST_EMPTY]: 'printListEmpty',
     [ERROR_CODES.PUSH_NOT_ENABLED]: 'pushNotEnabled',
+    [ERROR_CODES.SNEAK_PEEK_MEDIA_INVALID]: 'sneakPeekMediaInvalid',
+    [ERROR_CODES.SNEAK_PEEK_NOT_OPEN]: 'sneakPeekNotOpen',
+    [ERROR_CODES.SNEAK_PEEK_USED]: 'sneakPeekUsed',
     [ERROR_CODES.PUSH_UNAVAILABLE]: 'pushUnavailable',
     [ERROR_CODES.PUSH_SEND_FAILED]: 'pushSendFailed',
     [ERROR_CODES.VENDOR_LIMIT_REACHED]: 'vendorLimitReached',

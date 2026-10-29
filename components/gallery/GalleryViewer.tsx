@@ -12,6 +12,7 @@ import type { PrintToggle } from '@/components/gallery/print/PrintToggleButton';
 import { PrintToggleButton } from '@/components/gallery/print/PrintToggleButton';
 import { ProCreditLine } from '@/components/vendors/ProCreditLine';
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
+import { useRecordProMediaView } from '@/hooks/useContentViews';
 import { useImageZoomPan } from '@/hooks/useImageZoomPan';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import type { MediaResponseDto } from '@/lib/api/types';
@@ -59,6 +60,8 @@ export function GalleryViewer({
     onNext,
 }: GalleryViewerProps) {
     const t = useTranslations('GalleryPage');
+    // A Pro item on screen counts as one view for its vendor (2026-10-29).
+    useRecordProMediaView(media);
     const { requestClose } = useOverlayHistory(media !== null, onClose);
     useBodyScrollLock(media !== null);
 

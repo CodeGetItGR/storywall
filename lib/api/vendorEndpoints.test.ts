@@ -15,7 +15,6 @@ describe('vendor endpoints', () => {
         expect(endpoints.events.playlistSuggestionPlayed('e1', 's1')).toBe('/api/events/e1/playlist-suggestions/s1/played');
         expect(endpoints.me.vendorProfile).toBe('/api/me/vendor-profile');
         expect(endpoints.me.vendorProfileLogo).toBe('/api/me/vendor-profile/logo');
-        expect(endpoints.me.vendorProfileDismissPartnerPrompt).toBe('/api/me/vendor-profile/dismiss-partner-prompt');
         expect(endpoints.admin.events.vendors('e1')).toBe('/api/admin/events/e1/vendors');
         expect(endpoints.partnerProgram.applications).toBe('/api/public/partner-applications');
     });
