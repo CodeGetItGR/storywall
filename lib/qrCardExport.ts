@@ -19,6 +19,22 @@ export async function toDataUri(url: string): Promise<string> {
     return `data:${type};base64,${btoa(binary)}`;
 }
 
+async function inlineImages(svg: SVGSVGElement): Promise<void> {
+    await Promise.all(
+        [...svg.querySelectorAll('image')].map(async (image) => {
+            const href = image.getAttribute('href');
+            if (href && !href.startsWith('data:')) image.setAttribute('href', await toDataUri(href));
+        }),
+    );
+}
+
+// A copy of a plain QR code with its centre logo inline, so a saved file or print window shows it.
+export async function selfContainedQrSvg(svg: SVGSVGElement): Promise<string> {
+    const copy = svg.cloneNode(true) as SVGSVGElement;
+    await inlineImages(copy);
+    return new XMLSerializer().serializeToString(copy);
+}
+
 // A copy of the card as a self-contained SVG file at export size: images and the title font inline,
 // no page classes. The card on the page stays as it is.
 export async function standaloneQrCardSvg(svg: SVGSVGElement, font: EventThemeFontDto | null): Promise<string> {
@@ -27,13 +43,7 @@ export async function standaloneQrCardSvg(svg: SVGSVGElement, font: EventThemeFo
     copy.setAttribute('height', String(QR_CARD_EXPORT_HEIGHT));
     copy.removeAttribute('class');
     const css = themeFontFaceCss(font);
-    const [fontUri] = await Promise.all([
-        css && font ? toDataUri(font.url) : null,
-        ...[...copy.querySelectorAll('image')].map(async (image) => {
-            const href = image.getAttribute('href');
-            if (href && !href.startsWith('data:')) image.setAttribute('href', await toDataUri(href));
-        }),
-    ]);
+    const [fontUri] = await Promise.all([css && font ? toDataUri(font.url) : null, inlineImages(copy)]);
     if (css && font && fontUri) {
         const style = document.createElementNS(SVG_NS, 'style');
         style.textContent = css.replace(font.url, fontUri);

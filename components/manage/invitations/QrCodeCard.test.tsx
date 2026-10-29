@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -18,7 +18,21 @@ vi.mock('@/components/ui/AppLink', () => ({
 afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
 });
+
+// The centre logo, as the browser would fetch it.
+function stubLogo() {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(new Uint8Array([60]), { headers: { 'Content-Type': 'image/svg+xml' } })));
+}
+
+function renderCard(link: QrLinkResponseDto, cardHref: string | null = null) {
+    render(
+        <NextIntlClientProvider locale="en" messages={messages}>
+            <QrCodeCard qrLink={link} cardHref={cardHref} />
+        </NextIntlClientProvider>,
+    );
+}
 
 function qrLink(overrides: Partial<QrLinkResponseDto>): QrLinkResponseDto {
     return {
@@ -43,52 +57,77 @@ function qrLink(overrides: Partial<QrLinkResponseDto>): QrLinkResponseDto {
     } as QrLinkResponseDto;
 }
 
-function printedDocument(link: QrLinkResponseDto): string {
+async function printedDocument(link: QrLinkResponseDto): Promise<string> {
+    stubLogo();
     const write = vi.fn();
     vi.spyOn(window, 'open').mockReturnValue({
         document: { write, close: vi.fn() },
         focus: vi.fn(),
         print: vi.fn(),
     } as unknown as Window);
-    render(
-        <NextIntlClientProvider locale="en" messages={messages}>
-            <QrCodeCard qrLink={link} />
-        </NextIntlClientProvider>,
-    );
+    renderCard(link);
     fireEvent.click(screen.getByRole('button', { name: messages.ManagePage.qr.print }));
+    await waitFor(() => expect(write).toHaveBeenCalled());
     return write.mock.calls.map((call) => call[0]).join('');
 }
 
 describe('QrCodeCard print', () => {
     // A host names their own links, and the print window shares this page's
     // origin: markup in the name would run there with the host's session.
-    it('prints the label as text, never as markup', () => {
-        const html = printedDocument(qrLink({ label: '</title><img src=x onerror="alert(1)">' }));
+    it('prints the label as text, never as markup', async () => {
+        const html = await printedDocument(qrLink({ label: '</title><img src=x onerror="alert(1)">' }));
 
         expect(html).not.toContain('<img');
         expect(html).toContain('&lt;/title&gt;&lt;img src=x onerror=&quot;alert(1)&quot;&gt;');
     });
 
-    it('prints an ordinary label unchanged', () => {
-        const html = printedDocument(qrLink({ label: 'Table 4' }));
+    it('prints an ordinary label unchanged', async () => {
+        const html = await printedDocument(qrLink({ label: 'Table 4' }));
 
         expect(html).toContain('<title>Table 4</title>');
         expect(html).toContain('<div class="label">Table 4</div>');
+    });
+
+    it('prints the logo inline', async () => {
+        const html = await printedDocument(qrLink({ label: 'Table 4' }));
+
+        expect(html).toContain('href="data:image/svg+xml;base64,PA=="');
+        expect(html).not.toContain('/assets/Logo.svg');
+    });
+});
+
+describe('QrCodeCard download', () => {
+    it('saves the logo inside the file', async () => {
+        stubLogo();
+        const createObjectURL = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:qr');
+        vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+        vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+        renderCard(qrLink({ label: 'Table 4' }));
+
+        fireEvent.click(screen.getByRole('button', { name: messages.ManagePage.qr.downloadFile }));
+        await waitFor(() => expect(createObjectURL).toHaveBeenCalled());
+
+        const markup = await (createObjectURL.mock.calls[0][0] as Blob).text();
+        expect(markup).toContain('href="data:image/svg+xml;base64,PA=="');
+        expect(markup).not.toContain('/assets/Logo.svg');
     });
 });
 
 describe('QrCodeCard print with designs', () => {
     it('opens the card page instead of the popup', () => {
         const open = vi.spyOn(window, 'open');
-        render(
-            <NextIntlClientProvider locale="en" messages={messages}>
-                <QrCodeCard qrLink={qrLink({})} cardHref="/events/event-1/manage/qr/qr-1/card" />
-            </NextIntlClientProvider>,
-        );
+        renderCard(qrLink({}), '/events/event-1/manage/qr/qr-1/card');
 
-        const print = screen.getByRole('link', { name: messages.ManagePage.qr.print });
+        const print = screen.getByRole('link', { name: messages.ManagePage.qr.printCard });
         expect(print).toHaveAttribute('href', '/events/event-1/manage/qr/qr-1/card');
         expect(screen.queryByRole('button', { name: messages.ManagePage.qr.print })).toBeNull();
         expect(open).not.toHaveBeenCalled();
+    });
+
+    it('makes Print card the main action', () => {
+        renderCard(qrLink({}), '/events/event-1/manage/qr/qr-1/card');
+
+        expect(screen.getByRole('link', { name: messages.ManagePage.qr.printCard })).toHaveClass('bg-gradient-brand');
+        expect(screen.getByRole('button', { name: messages.ManagePage.qr.downloadFile })).not.toHaveClass('bg-surface-muted');
     });
 });
