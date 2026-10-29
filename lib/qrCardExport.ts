@@ -1,6 +1,6 @@
-import type { EventThemeFontDto } from '@/lib/api/types';
+import type { EventThemeFontDto, QrCardSize } from '@/lib/api/types';
 import { themeFontFaceCss } from '@/lib/eventTheme';
-import { QR_CARD_EXPORT_HEIGHT, QR_CARD_EXPORT_WIDTH, QR_CARD_PDF_HEIGHT, QR_CARD_PDF_WIDTH } from '@/lib/qrCard';
+import { QR_CARD_SIZES } from '@/lib/qrCard';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const CHUNK = 0x8000;
@@ -35,12 +35,13 @@ export async function selfContainedQrSvg(svg: SVGSVGElement): Promise<string> {
     return new XMLSerializer().serializeToString(copy);
 }
 
-// A copy of the card as a self-contained SVG file at export size: images and the title font inline,
-// no page classes. The card on the page stays as it is.
-export async function standaloneQrCardSvg(svg: SVGSVGElement, font: EventThemeFontDto | null): Promise<string> {
+// A copy of the card as a self-contained SVG file at the size's export pixels: images and the title
+// font inline, no page classes. The card on the page stays as it is.
+export async function standaloneQrCardSvg(svg: SVGSVGElement, font: EventThemeFontDto | null, size: QrCardSize): Promise<string> {
+    const { widthPx, heightPx } = QR_CARD_SIZES[size];
     const copy = svg.cloneNode(true) as SVGSVGElement;
-    copy.setAttribute('width', String(QR_CARD_EXPORT_WIDTH));
-    copy.setAttribute('height', String(QR_CARD_EXPORT_HEIGHT));
+    copy.setAttribute('width', String(widthPx));
+    copy.setAttribute('height', String(heightPx));
     copy.removeAttribute('class');
     const css = themeFontFaceCss(font);
     const [fontUri] = await Promise.all([css && font ? toDataUri(font.url) : null, inlineImages(copy)]);
@@ -52,19 +53,20 @@ export async function standaloneQrCardSvg(svg: SVGSVGElement, font: EventThemeFo
     return new XMLSerializer().serializeToString(copy);
 }
 
-// The standalone SVG drawn on a 300 dpi A6 canvas.
-export async function qrCardPng(markup: string): Promise<Blob> {
+// The standalone SVG drawn on a 300 dpi canvas at the paper size.
+export async function qrCardPng(markup: string, size: QrCardSize): Promise<Blob> {
+    const { widthPx, heightPx } = QR_CARD_SIZES[size];
     const url = URL.createObjectURL(new Blob([markup], { type: 'image/svg+xml' }));
     try {
         const image = new Image();
         image.src = url;
         await image.decode();
         const canvas = document.createElement('canvas');
-        canvas.width = QR_CARD_EXPORT_WIDTH;
-        canvas.height = QR_CARD_EXPORT_HEIGHT;
+        canvas.width = widthPx;
+        canvas.height = heightPx;
         const context = canvas.getContext('2d');
         if (!context) throw new Error('No 2D canvas');
-        context.drawImage(image, 0, 0, QR_CARD_EXPORT_WIDTH, QR_CARD_EXPORT_HEIGHT);
+        context.drawImage(image, 0, 0, widthPx, heightPx);
         return await new Promise<Blob>((resolve, reject) =>
             canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Canvas export failed'))), 'image/png'),
         );
@@ -73,12 +75,13 @@ export async function qrCardPng(markup: string): Promise<Blob> {
     }
 }
 
-// One A6 page with the PNG edge to edge. pdf-lib loads only when a host saves a PDF.
-export async function qrCardPdfBytes(png: ArrayBuffer): Promise<Uint8Array> {
+// One page of the paper size with the PNG edge to edge. pdf-lib loads only when a host saves a PDF.
+export async function qrCardPdfBytes(png: ArrayBuffer, size: QrCardSize): Promise<Uint8Array> {
+    const { widthPt, heightPt } = QR_CARD_SIZES[size];
     const { PDFDocument } = await import('pdf-lib');
     const pdf = await PDFDocument.create();
-    const page = pdf.addPage([QR_CARD_PDF_WIDTH, QR_CARD_PDF_HEIGHT]);
+    const page = pdf.addPage([widthPt, heightPt]);
     const image = await pdf.embedPng(png);
-    page.drawImage(image, { x: 0, y: 0, width: QR_CARD_PDF_WIDTH, height: QR_CARD_PDF_HEIGHT });
+    page.drawImage(image, { x: 0, y: 0, width: widthPt, height: heightPt });
     return pdf.save();
 }
