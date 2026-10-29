@@ -41,8 +41,9 @@ export function QrCardLayoutEditor({
             title={t('title', { name: editor.name })}
             closeLabel={t('cancel')}
             footer={<QrCardLayoutToolbar editor={editor} />}
+            onKeyDown={editor.handleKeyDown}
         >
-            <div onKeyDown={editor.handleKeyDown} className="grid gap-6 md:grid-cols-[minmax(0,1fr)_17rem]">
+            <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_17rem]">
                 {/* Canvas */}
                 <QrCardLayoutCanvas
                     style={{ ...style, layout: editor.layout }}

@@ -81,6 +81,8 @@ export function useQrCardLayoutEditor({
 
     const handleKeyDown = useCallback(
         (event: KeyboardEvent<HTMLElement>) => {
+            // The discard modal's own keys bubble here through its portal; it handles them.
+            if (confirmingDiscard) return;
             if (event.key === 'Escape') {
                 event.preventDefault();
                 if (selected) setSelected(null);
@@ -88,8 +90,8 @@ export function useQrCardLayoutEditor({
                 return;
             }
             const arrow = ARROWS[event.key];
-            // A range slider in the side panel uses the arrows itself.
-            if (!arrow || !selected || event.target instanceof HTMLInputElement) return;
+            // Sliders and radios use the arrows themselves; a toolbar button shouldn't move the card.
+            if (!arrow || !selected || event.target instanceof HTMLInputElement || event.target instanceof HTMLButtonElement) return;
             event.preventDefault();
             const step = event.shiftKey ? NUDGE_LARGE : NUDGE;
             setLayout((current) => {
@@ -97,7 +99,7 @@ export function useQrCardLayoutEditor({
                 return moveElementTo(current, selected, { x: rect.x + arrow[0] * step, y: rect.y + arrow[1] * step });
             });
         },
-        [requestClose, selected],
+        [confirmingDiscard, requestClose, selected],
     );
 
     const handleTitleAlignChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {

@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { ReactNode } from 'react';
+import type { KeyboardEventHandler, ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const patch = vi.hoisted(() => ({ mutateAsync: vi.fn(), isPending: false }));
@@ -10,8 +10,8 @@ vi.mock('next-intl', () => ({
     useLocale: () => 'en',
 }));
 vi.mock('@/components/admin/AdminDrawer', () => ({
-    AdminDrawer: ({ children, footer }: { children: ReactNode; footer: ReactNode }) => (
-        <div>
+    AdminDrawer: ({ children, footer, onKeyDown }: { children: ReactNode; footer: ReactNode; onKeyDown?: KeyboardEventHandler<HTMLDivElement> }) => (
+        <div onKeyDown={onKeyDown}>
             {children}
             {footer}
         </div>
@@ -87,6 +87,18 @@ describe('QrCardLayoutEditor', () => {
         fireEvent.focus(screen.getByRole('button', { name: 'elements.title' }));
         fireEvent.click(screen.getByRole('radio', { name: 'alignOptions.left' }));
         fireEvent.click(screen.getByRole('button', { name: 'cancel' }));
+        expect(onClose).not.toHaveBeenCalled();
+        expect(screen.getByText('discard-open')).toBeInTheDocument();
+    });
+
+    it('asks before discarding on Escape from the toolbar', () => {
+        const { onClose } = renderEditor();
+        fireEvent.focus(screen.getByRole('button', { name: 'elements.title' }));
+        fireEvent.click(screen.getByRole('radio', { name: 'alignOptions.left' }));
+        const reset = screen.getByRole('button', { name: 'reset' });
+        // The first Escape deselects, the second asks.
+        fireEvent.keyDown(reset, { key: 'Escape' });
+        fireEvent.keyDown(reset, { key: 'Escape' });
         expect(onClose).not.toHaveBeenCalled();
         expect(screen.getByText('discard-open')).toBeInTheDocument();
     });
