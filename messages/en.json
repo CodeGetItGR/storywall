@@ -4750,7 +4750,38 @@
                 "offeredHint": "Hosts of the selected event types can pick it.",
                 "archivedHint": "Hosts can no longer pick it.",
                 "network": "Couldn't reach the server. Check your connection and try again.",
-                "notFound": "This design no longer exists."
+                "notFound": "This design no longer exists.",
+                "layout": "Layout"
+            },
+            "layout": {
+                "edit": "Edit layout",
+                "editSaveFirst": "Save the design first.",
+                "title": "Layout: {name}",
+                "canvas": "Card layout",
+                "cardLabel": "QR card: {title}",
+                "elements": { "title": "Title", "code": "Code", "lines": "Lines" },
+                "selectHint": "Select something on the card to change it.",
+                "position": "X {x} · Y {y} · W {width} · H {height} mm",
+                "align": "Alignment",
+                "alignOptions": { "left": "Left", "center": "Centre", "right": "Right" },
+                "titleSize": "Largest text size",
+                "linesSize": "Text size",
+                "panel": "White panel",
+                "panelOffNote": "Test-scan a printed card before offering this template.",
+                "radius": "Corner rounding",
+                "mm": "{value} mm",
+                "sample": { "label": "Sample", "short": "Short card", "gift": "Gift card" },
+                "sampleGiver": "With love from Eleni",
+                "reset": "Reset layout",
+                "cancel": "Cancel",
+                "save": "Save layout",
+                "network": "Couldn't reach the server. Check your connection and try again.",
+                "discard": {
+                    "title": "Discard layout changes?",
+                    "body": "Your changes to this layout will be lost.",
+                    "confirm": "Discard changes",
+                    "keep": "Keep editing"
+                }
             },
             "preview": {
                 "label": "Preview",
