@@ -1,4 +1,5 @@
 import type { Locale } from '@/i18n/config';
+import { THEME_ILLUSTRATION_TYPES } from '@/lib/adminThemePresets';
 import { ApiError } from '@/lib/api/client';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type { AdminQrCardTemplateDto, AdminQrCardTemplatePatchDto, AdminQrCardTemplateRequestDto, EventTypeConvention } from '@/lib/api/types';
@@ -13,6 +14,19 @@ export const QR_CARD_NAME_MAX = 60;
 // The code sits on a white panel; the backend rejects a code colour under this against it (3110).
 export const MIN_CODE_CONTRAST = 4.5;
 const CODE_PANEL_COLOR = '#FFFFFF';
+
+// The backend's cap for QR card artwork; theme illustrations keep 5 MB.
+export const QR_CARD_ARTWORK_MAX_BYTES = 10 * 1024 * 1024;
+
+// Never resolves to an event: the code only has to scan the way a real one would.
+export const QR_CARD_SAMPLE_URL = 'https://storywall.gr/q/preview';
+
+// Type and size only; the server checks the A6 shape and the 1748 px width (3111).
+export function qrCardArtworkFileError(file: File): 'type' | 'size' | null {
+    if (!THEME_ILLUSTRATION_TYPES.includes(file.type)) return 'type';
+    if (file.size > QR_CARD_ARTWORK_MAX_BYTES) return 'size';
+    return null;
+}
 
 export const QR_CARD_STATUS_FILTERS = ['ALL', 'LIVE', 'NO_ARTWORK', 'ARCHIVED'] as const;
 export type QrCardStatusFilter = (typeof QR_CARD_STATUS_FILTERS)[number];

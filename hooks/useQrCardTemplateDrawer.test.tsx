@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useQrCardTemplateDrawer } from '@/hooks/useQrCardTemplateDrawer';
 import { ApiError } from '@/lib/api/client';
 import type { AdminQrCardTemplateDto, AdminThemeFontDto } from '@/lib/api/types';
+import { DEFAULT_QR_CARD_LAYOUT } from '@/lib/qrCardLayout';
 
 const mocks = vi.hoisted(() => ({
     create: vi.fn(),
@@ -75,6 +76,12 @@ afterEach(() => {
 });
 
 describe('useQrCardTemplateDrawer', () => {
+    it('previews the saved layout, or the default without one', () => {
+        const layout = { ...DEFAULT_QR_CARD_LAYOUT, title: { ...DEFAULT_QR_CARD_LAYOUT.title, align: 'left' as const } };
+        expect(renderDrawer({ ...LINEN, layout }).result.current.previewStyle.layout).toEqual(layout);
+        expect(renderDrawer(LINEN).result.current.previewStyle.layout).toEqual(DEFAULT_QR_CARD_LAYOUT);
+    });
+
     it('does not save an invalid draft and shows what is missing', async () => {
         const { result } = renderDrawer();
         await act(() => result.current.handleSubmit(submitEvent()));

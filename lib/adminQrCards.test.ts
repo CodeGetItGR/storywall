@@ -7,6 +7,8 @@ import {
     draftFromQrCardTemplate,
     filterQrCardTemplates,
     isQrCardDetailError,
+    QR_CARD_ARTWORK_MAX_BYTES,
+    qrCardArtworkFileError,
     type QrCardTemplateDraft,
     qrCardTemplateStatus,
     sortQrCardTemplates,
@@ -163,5 +165,20 @@ describe('isQrCardDetailError', () => {
         expect(isQrCardDetailError(new ApiError(400, { errorCode: 3001, errors: { codeColor: 'must match' } }))).toBe(false);
         expect(isQrCardDetailError(new ApiError(409, { errorCode: 5145 }))).toBe(false);
         expect(isQrCardDetailError(new Error('offline'))).toBe(false);
+    });
+});
+
+describe('qrCardArtworkFileError', () => {
+    const file = (type: string, size: number) => ({ type, size }) as File;
+
+    it('takes PNG and WebP up to 10 MB', () => {
+        expect(QR_CARD_ARTWORK_MAX_BYTES).toBe(10 * 1024 * 1024);
+        expect(qrCardArtworkFileError(file('image/webp', 6 * 1024 * 1024))).toBeNull();
+        expect(qrCardArtworkFileError(file('image/png', 10 * 1024 * 1024))).toBeNull();
+    });
+
+    it('refuses other types and larger files', () => {
+        expect(qrCardArtworkFileError(file('image/jpeg', 100))).toBe('type');
+        expect(qrCardArtworkFileError(file('image/png', 10 * 1024 * 1024 + 1))).toBe('size');
     });
 });
