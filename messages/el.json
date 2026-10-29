@@ -7004,6 +7004,14 @@
                 "country": "Χώρα",
                 "phone": "Τηλέφωνο (προαιρετικό)"
             },
+            "editDetails": "Αλλαγή στοιχείων",
+            "placeholders": {
+                "name": "Μαρία Παπαδοπούλου",
+                "businessName": "Lens and Light Studio",
+                "email": "name@example.com",
+                "link": "@lensandlight",
+                "phone": "691 234 5678"
+            },
             "rolePlaceholder": "Επιλέξτε",
             "countryPlaceholder": "Επιλέξτε χώρα",
             "roles": {

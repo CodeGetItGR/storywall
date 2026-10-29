@@ -1,10 +1,12 @@
 'use client';
 
+import { ChevronRight } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 
 import { Skeleton, SkeletonStatus } from '@/components/ui/skeleton';
 
-// How many prints the host's package includes, as a price-list row. The whole row opens the edit sheet.
+// How many prints the host's package includes, as a price-list row. The whole row opens the edit sheet; the chevron
+// says so.
 export function PrintsIncludedRow({ included, isLoading, onEditAction }: { included: number; isLoading: boolean; onEditAction: () => void }) {
     const t = useTranslations('Vendors.prints');
     const format = useFormatter();
@@ -22,7 +24,10 @@ export function PrintsIncludedRow({ included, isLoading, onEditAction }: { inclu
                     className="flex min-h-12 w-full items-center justify-between gap-3 py-2 text-left text-sm"
                 >
                     <span className="text-ink">{t('included')}</span>
-                    <span className="text-ink-muted tabular-nums">{format.number(included)}</span>
+                    <span className="flex items-center gap-2 text-ink-muted tabular-nums">
+                        {format.number(included)}
+                        <ChevronRight className="size-4" aria-hidden="true" />
+                    </span>
                 </button>
             )}
         </li>
