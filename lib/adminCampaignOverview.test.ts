@@ -10,6 +10,8 @@ import {
     campaignFunnelTiles,
     campaignSourceGroups,
     campaignSourceOptions,
+    campaignVisitorsChart,
+    CHART_SLOTS,
     hourLabel,
     pageRows,
     showsHourly,
@@ -60,5 +62,46 @@ describe('the hourly chart and pages', () => {
     it('labels hours and keys a missing page as unknown', () => {
         expect(hourLabel(9)).toBe('09:00');
         expect(pageRows(campaignOverviewFixture.pages).map((row) => row.key)).toEqual(['/el', '/for-business', UNKNOWN_PAGE]);
+    });
+});
+
+describe('campaignVisitorsChart', () => {
+    it('has a line per source, biggest first, with zeros on days without visits', () => {
+        const chart = campaignVisitorsChart(campaignOverviewFixture, false);
+
+        expect(chart.lines.map((line) => [line.series, line.visitors, line.slot])).toEqual([
+            ['instagram', 25, 1],
+            ['facebook', 8, 0],
+        ]);
+        expect(chart.rows).toEqual([
+            { x: '2027-03-01', s0: 25, s1: 8 },
+            { x: '2027-03-02', s0: 0, s1: 0 },
+        ]);
+    });
+
+    it('uses the hours for a one-day range', () => {
+        const chart = campaignVisitorsChart(oneDayCampaignOverviewFixture, true);
+        expect(chart.rows).toHaveLength(24);
+        expect(chart.rows[9]).toEqual({ x: 9, s0: 25, s1: 8 });
+    });
+
+    it('adds the smallest lines into Other past the palette', () => {
+        const dailySeries = Array.from({ length: CHART_SLOTS + 2 }, (_, index) => ({
+            series: `source-${index}`,
+            date: '2027-03-01',
+            visits: 100 - index,
+            visitors: 100 - index,
+        }));
+        const chart = campaignVisitorsChart({ ...campaignOverviewFixture, dailySeries }, false);
+
+        expect(chart.lines).toHaveLength(CHART_SLOTS);
+        expect(chart.lines.at(-1)).toMatchObject({ dataKey: 'other', other: true, slot: -1, visitors: 93 + 92 + 91 });
+        expect(chart.rows[0].other).toBe(93 + 92 + 91);
+    });
+
+    it('is the single total line without series', () => {
+        const chart = campaignVisitorsChart({ ...campaignOverviewFixture, dailySeries: [] }, false);
+        expect(chart.lines).toEqual([{ dataKey: 'total', series: null, other: false, slot: 0, visitors: 33 }]);
+        expect(chart.rows[0]).toEqual({ x: '2027-03-01', total: 33 });
     });
 });

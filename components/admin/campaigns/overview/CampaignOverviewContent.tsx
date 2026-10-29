@@ -3,12 +3,11 @@
 import { useTranslations } from 'next-intl';
 
 import { CampaignFunnelTiles } from '@/components/admin/campaigns/overview/CampaignFunnelTiles';
-import { CampaignHourly } from '@/components/admin/campaigns/overview/CampaignHourly';
 import { CampaignPages } from '@/components/admin/campaigns/overview/CampaignPages';
 import { CampaignSourceTable } from '@/components/admin/campaigns/overview/CampaignSourceTable';
 import { CampaignSplits } from '@/components/admin/campaigns/overview/CampaignSplits';
-import { VisitorsDaily } from '@/components/admin/visitors/VisitorsDaily';
-import { type CampaignSourceGroup, showsHourly } from '@/lib/adminCampaignOverview';
+import { CampaignVisitorsChart } from '@/components/admin/campaigns/overview/CampaignVisitorsChart';
+import type { CampaignSourceGroup } from '@/lib/adminCampaignOverview';
 import type { CampaignOverviewDto } from '@/lib/api/types';
 
 // sourceGroups is left out for one link's stats, which have no By source table.
@@ -33,7 +32,7 @@ export function CampaignOverviewContent({
             ) : (
                 <>
                     {/* Visitors over time */}
-                    {showsHourly(data) ? <CampaignHourly hourly={data.hourly} /> : <VisitorsDaily daily={data.daily} />}
+                    <CampaignVisitorsChart data={data} />
 
                     {/* By source */}
                     {sourceGroups && sourceGroups.length > 0 && <CampaignSourceTable groups={sourceGroups} picked={picked} />}
