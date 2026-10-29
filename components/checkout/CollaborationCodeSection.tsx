@@ -3,15 +3,19 @@
 import { BadgePercent, Loader2, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import type React from 'react';
-import { type ChangeEvent, useEffect, useState } from 'react';
+import { type ChangeEvent, useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { usePreviewCollaborationCode } from '@/hooks/useBilling';
 import { useDisclosure } from '@/hooks/useDisclosure';
 import type { CollaborationCodePreviewResponseDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
+import { clearPartnerCode, readPartnerCode, subscribePartnerCode } from '@/lib/partnerCodeLink';
 
 const MAX_COLLABORATION_CODE_LENGTH = 40;
+
+// The device's storage doesn't exist on the server render.
+const serverPartnerCode = () => null;
 
 export function CollaborationCodeSection({
     eventId,
@@ -32,10 +36,15 @@ export function CollaborationCodeSection({
     const locale = useLocale();
     const previewCode = usePreviewCollaborationCode(eventId);
     const toErrorMessage = useApiErrorMessage();
-    const [code, setCode] = useState('');
+    // A code saved from a partner's link fills the field and opens it until the host types.
+    const linkCode = useSyncExternalStore(subscribePartnerCode, readPartnerCode, serverPartnerCode);
+    const [typedCode, setTypedCode] = useState<string | null>(null);
+    const code = typedCode ?? linkCode ?? '';
     const [appliedCode, setAppliedCode] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const { open, toggle, close } = useDisclosure(!collapsible);
+    const { open: openedByHost, toggle, close, show } = useDisclosure(!collapsible);
+    const open = openedByHost || (typedCode === null && linkCode !== null);
+    const linkCodeTried = useRef(false);
     const trimmedCode = code.trim();
     const preview = appliedCode === trimmedCode ? (previewCode.data ?? null) : null;
 
@@ -43,19 +52,41 @@ export function CollaborationCodeSection({
         onPreviewChangeAction(appliedCode, preview);
     }, [appliedCode, onPreviewChangeAction, preview]);
 
+    // Applied once, as soon as checkout is enabled. A refused code stays on screen with its error,
+    // but is forgotten so it doesn't fill the field again.
+    const applyLinkCode = useEffectEvent(() => {
+        if (!linkCode || linkCodeTried.current) return;
+        linkCodeTried.current = true;
+        previewCode.mutateAsync({ collaborationCode: linkCode }).then(
+            () => setAppliedCode(linkCode),
+            (previewError) => {
+                setTypedCode(linkCode);
+                show();
+                setError(toErrorMessage(previewError));
+                clearPartnerCode();
+            },
+        );
+    });
+
+    useEffect(() => {
+        if (!disabled) applyLinkCode();
+    }, [disabled, linkCode]);
+
     function handleCodeChange(event: ChangeEvent<HTMLInputElement>) {
-        setCode(event.target.value);
+        setTypedCode(event.target.value);
         setAppliedCode(null);
         setError(null);
         previewCode.reset();
     }
 
-    // Hiding the field drops the code with it, so no unseen discount stays applied.
+    // Hiding the field drops the code with it, so no unseen discount stays applied. A code from a
+    // partner's link goes too: the host turned it down.
     function handleCollapse() {
-        setCode('');
+        setTypedCode('');
         setAppliedCode(null);
         setError(null);
         previewCode.reset();
+        clearPartnerCode();
         close();
     }
 
