@@ -35,8 +35,8 @@ vi.mock('@/hooks/useBilling', () => ({
 vi.mock('@/hooks/useIsPrimaryHost', () => ({ useIsPrimaryHost: () => ctx.isHost }));
 vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: () => ({ data: { planTiers: [] } }) }));
 const rows = vi.hoisted(() => ({ canWrite: [] as boolean[] }));
-vi.mock('@/components/manage/invitations/QrLinkRow', () => ({
-    QrLinkRow: ({ canWrite }: { canWrite: boolean }) => {
+vi.mock('@/components/manage/invitations/ShareLinkPanel', () => ({
+    ShareLinkPanel: ({ canWrite }: { canWrite: boolean }) => {
         rows.canWrite.push(canWrite);
         return <p>row</p>;
     },

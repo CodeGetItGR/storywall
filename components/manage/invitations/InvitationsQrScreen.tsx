@@ -4,8 +4,8 @@ import { QrCode } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
-import { QrLinkRow } from '@/components/manage/invitations/QrLinkRow';
 import { ShareLanguageNote } from '@/components/manage/invitations/ShareLanguageNote';
+import { ShareLinkPanel } from '@/components/manage/invitations/ShareLinkPanel';
 import { QrLinksListSkeleton } from '@/components/manage/ManageSkeletons';
 import { UsagePanel } from '@/components/plan/UsagePanel';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
@@ -63,7 +63,7 @@ export function InvitationsQrScreen() {
             ) : (
                 <>
                     {eventUsage && (
-                        <div className="mb-4">
+                        <div className="mb-8">
                             <UsagePanel
                                 title={t('invitations.capacity.title')}
                                 planName={currentPlan?.name ?? eventUsage.planTier}
@@ -82,8 +82,6 @@ export function InvitationsQrScreen() {
                         </div>
                     )}
 
-                    <p className="mb-3 text-xs text-ink-muted">{t('qr.summary', { count: shareQrLinks.length })}</p>
-
                     {isHost && !isWritable && (
                         <p className="mb-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('qr.readOnly')}</p>
                     )}
@@ -94,11 +92,12 @@ export function InvitationsQrScreen() {
                         </p>
                     )}
 
-                    <div className="flex flex-col divide-y divide-border">
+                    {/* Share links */}
+                    <div className="flex flex-col divide-y divide-border [&>*]:py-8 [&>*:first-child]:pt-0">
                         {shareQrLinks.map((qrLink) => {
                             const stats = qrLinkStats.find((row) => row.qrLinkId === qrLink.id);
                             return (
-                                <QrLinkRow
+                                <ShareLinkPanel
                                     key={qrLink.id}
                                     eventId={eventId}
                                     qrLink={qrLink}
@@ -111,7 +110,7 @@ export function InvitationsQrScreen() {
                     </div>
 
                     {/* Link language */}
-                    {shareQrLinks.length > 0 && <ShareLanguageNote className="mt-2" />}
+                    {shareQrLinks.length > 0 && <ShareLanguageNote />}
 
                     {shareQrLinks.length === 0 && (
                         <ToolEmptyState title={t('qr.emptyTitle')} body={t('qr.emptyBody')} icon={QrCode} className="py-8" />
