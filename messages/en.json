@@ -180,6 +180,7 @@
         "month": "Month",
         "time": "Time",
         "pinned": "Pinned",
+        "announcement": "Announcement",
         "pinPost": "Pin post",
         "unpinPost": "Unpin post",
         "pinPostFailed": "Couldn't pin this post. Please try again.",

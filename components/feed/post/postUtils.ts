@@ -5,3 +5,7 @@ import type { PostResponseDto } from '@/lib/api/types';
 export function isPlaylistDigestPost(post: PostResponseDto) {
     return post.type === 'PLAYLIST' && post.author === null;
 }
+
+export function isAnnouncementPost(post: PostResponseDto) {
+    return post.type === 'ANNOUNCEMENT';
+}
