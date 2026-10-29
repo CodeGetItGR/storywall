@@ -6340,7 +6340,11 @@
                         "Photos, videos and wishes from everyone celebrating with you."
                     ],
                     "galleryLabel": "Baptism moments",
-                    "imageAlts": ["Family celebrating a baptism outside a church on a Greek island", "Priest baptizing a baby in the font during an Orthodox baptism", "Family and guests at the baptism table by the sea"],
+                    "imageAlts": [
+                        "Family celebrating a baptism outside a church on a Greek island",
+                        "Priest baptizing a baby in the font during an Orthodox baptism",
+                        "Family and guests at the baptism table by the sea"
+                    ],
                     "titleSegments": [
                         {
                             "text": "Your child's first big celebration.",
@@ -6729,7 +6733,11 @@
             "disposable": "A simpler alternative to disposable cameras on the tables."
         },
         "occasions": {
-            "WEDDING": { "name": "Weddings", "line": "From the ceremony to the last dance.", "alt": "Bride and groom dancing with guests at a wedding reception in Santorini" },
+            "WEDDING": {
+                "name": "Weddings",
+                "line": "From the ceremony to the last dance.",
+                "alt": "Bride and groom dancing with guests at a wedding reception in Santorini"
+            },
             "BAPTISM": {
                 "name": "Baptisms and christenings",
                 "line": "The whole family's photos in one place.",
