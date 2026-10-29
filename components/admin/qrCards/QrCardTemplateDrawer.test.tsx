@@ -26,6 +26,9 @@ vi.mock('@/components/admin/AdminDrawer', () => ({
 vi.mock('@/components/admin/qrCards/QrCardTemplatePreview', () => ({
     QrCardTemplatePreview: ({ title }: { title: string }) => <div data-testid="preview" data-title={title} />,
 }));
+vi.mock('@/components/admin/qrCards/layoutEditor/QrCardLayoutEditor', () => ({
+    QrCardLayoutEditor: () => <div data-testid="layout-editor" />,
+}));
 vi.mock('@/hooks/useQrCardTemplateDrawer', () => ({ useQrCardTemplateDrawer: () => drawerState.current }));
 
 const LINEN: AdminQrCardTemplateDto = {
@@ -76,6 +79,11 @@ function state(overrides: Record<string, unknown> = {}) {
         hasUsableFonts: true,
         fontsStatus: 'ready',
         isSaving: false,
+        savedTemplate: LINEN,
+        layoutEditorOpen: false,
+        openLayoutEditor: vi.fn(),
+        closeLayoutEditor: vi.fn(),
+        handleLayoutSaved: vi.fn(),
         handleFieldChange: vi.fn(),
         handleEventTypeChange: vi.fn(),
         handleCenterLogoChange: vi.fn(),
@@ -142,5 +150,25 @@ describe('QrCardTemplateDrawer', () => {
         renderDrawer(null);
         expect(screen.getByRole('heading', { name: 'createTitle' })).toBeInTheDocument();
         expect(screen.queryByText('availability')).toBeNull();
+    });
+
+    it('opens the layout editor for a saved design', () => {
+        state();
+        renderDrawer();
+        fireEvent.click(screen.getByRole('button', { name: 'edit' }));
+        expect(drawerState.current.openLayoutEditor).toHaveBeenCalled();
+    });
+
+    it('asks to save a new design before its layout', () => {
+        state({ isCreate: true, savedTemplate: null });
+        renderDrawer(null);
+        expect(screen.getByRole('button', { name: 'edit' })).toBeDisabled();
+        expect(screen.getByText('editSaveFirst')).toBeInTheDocument();
+    });
+
+    it('shows the editor while it is open', () => {
+        state({ layoutEditorOpen: true });
+        renderDrawer();
+        expect(screen.getByTestId('layout-editor')).toBeInTheDocument();
     });
 });

@@ -184,4 +184,16 @@ describe('useQrCardTemplateDrawer', () => {
         await act(() => result.current.handleSubmit(submitEvent()));
         expect(invalidate).toHaveBeenCalledWith({ queryKey: ['admin', 'theme-fonts'] });
     });
+
+    it('opens and closes the layout editor, and keeps a saved layout', () => {
+        const { result } = renderDrawer(LINEN);
+        act(() => result.current.openLayoutEditor());
+        expect(result.current.layoutEditorOpen).toBe(true);
+        const layout = { ...DEFAULT_QR_CARD_LAYOUT, code: { ...DEFAULT_QR_CARD_LAYOUT.code, panel: false } };
+        act(() => result.current.handleLayoutSaved({ ...LINEN, layout }));
+        expect(result.current.savedTemplate?.layout).toEqual(layout);
+        expect(result.current.previewStyle.layout).toEqual(layout);
+        act(() => result.current.closeLayoutEditor());
+        expect(result.current.layoutEditorOpen).toBe(false);
+    });
 });

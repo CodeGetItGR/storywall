@@ -109,6 +109,12 @@ export function useQrCardTemplateDrawer({
         [draft, filePreviewUrl, previewFont, saved],
     );
 
+    const [layoutEditorOpen, setLayoutEditorOpen] = useState(false);
+    const openLayoutEditor = useCallback(() => setLayoutEditorOpen(true), []);
+    const closeLayoutEditor = useCallback(() => setLayoutEditorOpen(false), []);
+    // The editor saved the layout: the drawer's copy follows, so its preview shows it.
+    const handleLayoutSaved = useCallback((updated: AdminQrCardTemplateDto) => setSaved(updated), []);
+
     const handleFieldChange = useCallback((event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = event.currentTarget;
         setDraft((current) => ({ ...current, [name]: value }));
@@ -203,6 +209,11 @@ export function useQrCardTemplateDrawer({
         hasUsableFonts: fonts.data?.some((font) => !font.archived && font.url) ?? false,
         // A failed refetch over cached data still has a list to offer.
         fontsStatus: (fonts.isPending ? 'loading' : fonts.isError && !fonts.data ? 'error' : 'ready') as QrCardFontsStatus,
+        savedTemplate: saved,
+        layoutEditorOpen,
+        openLayoutEditor,
+        closeLayoutEditor,
+        handleLayoutSaved,
         isSaving: create.isPending || patch.isPending || upload.isPending,
         handleFieldChange,
         handleEventTypeChange,
