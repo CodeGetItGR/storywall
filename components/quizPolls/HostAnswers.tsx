@@ -35,7 +35,7 @@ export function HostAnswers({ answers, open, onToggleAction }: { answers: HostAn
                     <ul className="divide-y divide-border/60 overflow-hidden rounded-2xl bg-surface-muted/60">
                         {answers.map((answer) => (
                             <li key={answer.memberId} className="flex items-start gap-3 px-4 py-2.5">
-                                <Avatar size="xs" src={answer.avatarUrl} initials={getInitials(answer.displayName)} alt="" />
+                                <Avatar size="xs" src={answer.avatarUrl} initials={getInitials(answer.displayName)} alt={answer.displayName} />
                                 <div className="min-w-0">
                                     <p className="text-xs font-semibold text-ink-muted">{answer.displayName}</p>
                                     <p className="text-sm whitespace-pre-line text-ink">{answer.text}</p>

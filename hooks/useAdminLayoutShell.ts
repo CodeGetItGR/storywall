@@ -28,7 +28,9 @@ export function useAdminLayoutShell(): AdminLayoutShell {
     useEffect(() => {
         if (isBootstrapping) return;
         if (!user) {
-            router.replace(routes.login);
+            // Back to the same console section after signing in.
+            const { pathname, search, hash } = window.location;
+            router.replace(routes.auth.login({ next: `${pathname}${search}${hash}` }));
         }
     }, [isBootstrapping, router, user]);
 

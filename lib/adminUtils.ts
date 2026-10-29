@@ -23,6 +23,7 @@ export type AdminErrorMessageKey =
     | 'reactionTypeNotUsable'
     | 'collaborationEarningNotPayable'
     | 'collaboratorPayoutDetailsIncomplete'
+    | 'campaignLinkTaken'
     | 'collaboratorBrandingIncomplete'
     | 'methodNotAllowed'
     | 'coverageOptionInvalid'
@@ -39,6 +40,9 @@ export type AdminErrorMessageKey =
     | 'eventAlreadySuspended'
     | 'eventAlreadyClosed'
     | 'statementInvalid'
+    | 'pushNotEnabled'
+    | 'pushUnavailable'
+    | 'pushSendFailed'
     | 'generic';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -94,6 +98,7 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.COLLABORATION_EARNING_NOT_PAYABLE) return 'collaborationEarningNotPayable';
     // Mark-paid refused: a partner in the batch lacks business/payout details or a VIES-valid VAT number.
     if (code === ERROR_CODES.COLLABORATOR_PAYOUT_DETAILS_INCOMPLETE) return 'collaboratorPayoutDetailsIncomplete';
+    if (code === ERROR_CODES.CAMPAIGN_LINK_TAKEN) return 'campaignLinkTaken';
     // Enabling, or clearing a field of an enabled partner, while the card would be incomplete.
     if (code === ERROR_CODES.COLLABORATOR_BRANDING_INCOMPLETE) return 'collaboratorBrandingIncomplete';
     if (code === ERROR_CODES.METHOD_NOT_ALLOWED) return 'methodNotAllowed';
@@ -111,6 +116,10 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.EVENT_ALREADY_SUSPENDED) return 'eventAlreadySuspended';
     if (code === ERROR_CODES.EVENT_ALREADY_CLOSED) return 'eventAlreadyClosed';
     if (code === ERROR_CODES.MODERATION_DECISION_INVALID) return 'statementInvalid';
+    // The Phones drawer's test notification.
+    if (code === ERROR_CODES.PUSH_NOT_ENABLED) return 'pushNotEnabled';
+    if (code === ERROR_CODES.PUSH_UNAVAILABLE) return 'pushUnavailable';
+    if (code === ERROR_CODES.PUSH_SEND_FAILED) return 'pushSendFailed';
     return 'generic';
 }
 

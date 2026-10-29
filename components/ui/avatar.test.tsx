@@ -11,13 +11,13 @@ function image(container: HTMLElement) {
 
 describe('Avatar', () => {
     it('shows the picture when there is one', () => {
-        const { container } = render(<Avatar src="https://storage.test/a.jpg" initials="AN" />);
+        const { container } = render(<Avatar src="https://storage.test/a.jpg" initials="AN" alt="Anna" />);
         expect(image(container)).not.toBeNull();
         expect(screen.queryByText('AN')).not.toBeInTheDocument();
     });
 
     it('falls back to the initials when the picture fails to load', () => {
-        const { container } = render(<Avatar src="https://storage.test/a.jpg" initials="AN" />);
+        const { container } = render(<Avatar src="https://storage.test/a.jpg" initials="AN" alt="Anna" />);
 
         fireEvent.error(image(container)!);
 
@@ -26,10 +26,10 @@ describe('Avatar', () => {
     });
 
     it('tries the picture again for a new src', () => {
-        const { container, rerender } = render(<Avatar src="https://storage.test/a.jpg" initials="AN" />);
+        const { container, rerender } = render(<Avatar src="https://storage.test/a.jpg" initials="AN" alt="Anna" />);
         fireEvent.error(image(container)!);
 
-        rerender(<Avatar src="https://storage.test/b.jpg" initials="AN" />);
+        rerender(<Avatar src="https://storage.test/b.jpg" initials="AN" alt="Anna" />);
 
         expect(image(container)).not.toBeNull();
         expect(screen.queryByText('AN')).not.toBeInTheDocument();

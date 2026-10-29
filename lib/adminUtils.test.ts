@@ -25,4 +25,10 @@ describe('adminErrorMessageKey', () => {
     it('says the partner card is incomplete when it cannot be turned on (5152)', () => {
         expect(adminErrorMessageKey(new ApiError(409, { errorCode: 5152 }))).toBe('collaboratorBrandingIncomplete');
     });
+
+    it('names each test notification refusal (5186, 9003, 9004)', () => {
+        expect(adminErrorMessageKey(new ApiError(409, { errorCode: 5186 }))).toBe('pushNotEnabled');
+        expect(adminErrorMessageKey(new ApiError(503, { errorCode: 9003 }))).toBe('pushUnavailable');
+        expect(adminErrorMessageKey(new ApiError(502, { errorCode: 9004 }))).toBe('pushSendFailed');
+    });
 });

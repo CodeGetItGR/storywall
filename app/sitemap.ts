@@ -1,13 +1,19 @@
 import type { MetadataRoute } from 'next';
 
 import { defaultLocale, locales } from '@/i18n/config';
-import { getForBusinessPath, getPublicLandingPath, getQrWeddingPath } from '@/i18n/publicLocale';
+import { getForBusinessPath, getLegalPagePath, getPublicLandingPath, getQrWeddingPath, LEGAL_PAGE_PATHS } from '@/i18n/publicLocale';
 import { endpoints } from '@/lib/api/endpoints';
 import { serverPublicConfigGet } from '@/lib/api/serverFetch';
 import type { AppConfigResponseDto } from '@/lib/api/types';
 import { liveOccasionsInConfig, occasionLanguageAlternates, occasionPath } from '@/lib/occasions/occasions';
 import { qrWeddingPageLive } from '@/lib/qrWeddingPage';
-import { absoluteUrl, forBusinessLanguageAlternates, landingLanguageAlternates, qrWeddingLanguageAlternates } from '@/lib/seo';
+import {
+    absoluteUrl,
+    forBusinessLanguageAlternates,
+    landingLanguageAlternates,
+    legalPageLanguageAlternates,
+    qrWeddingLanguageAlternates,
+} from '@/lib/seo';
 import { showsUnreleasedPages } from '@/lib/unreleasedPages';
 
 // One config read for every gate below. While the site builds, a second identical fetch waits for the
@@ -20,8 +26,8 @@ async function loadConfig(): Promise<AppConfigResponseDto | null> {
     }
 }
 
-// Only the public landing, wedding QR, partner and occasion pages are indexable. Every other route is
-// either behind a session or a tokenised guest link, so it stays out on purpose.
+// Only the public landing, wedding QR, partner, occasion, contact and legal pages are indexable. Every
+// other route is either behind a session or a tokenised guest link, so it stays out on purpose.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const config = await loadConfig();
 
@@ -59,5 +65,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }));
     });
 
-    return [...landing, ...qrWedding, ...forBusiness, ...occasions];
+    const legal: MetadataRoute.Sitemap = LEGAL_PAGE_PATHS.flatMap((path) => {
+        const languages = legalPageLanguageAlternates(path);
+        return locales.map((locale) => ({
+            url: absoluteUrl(getLegalPagePath(path, locale)),
+            changeFrequency: 'monthly' as const,
+            priority: 0.3,
+            alternates: { languages },
+        }));
+    });
+
+    return [...landing, ...qrWedding, ...forBusiness, ...occasions, ...legal];
 }

@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 export function CollaboratorBrandingImageField({ collaborator, kind }: { collaborator: CollaboratorResponseDto; kind: PartnerBrandingImageKind }) {
     const t = useTranslations('AdminPage.collaborations.feedCard');
     const tAdmin = useTranslations('AdminPage');
+    const tAlt = useTranslations('ImageAlt');
     const image = useCollaboratorBrandingImage(collaborator, kind);
     const isBusy = image.isUploading || image.isRemoving;
 
@@ -32,7 +33,7 @@ export function CollaboratorBrandingImageField({ collaborator, kind }: { collabo
                         >
                             <ProtectedImage
                                 src={image.imageUrl}
-                                alt=""
+                                alt={kind === 'logo' ? tAlt('partnerLogoPreview') : tAlt('partnerCoverPreview')}
                                 fill
                                 sizes="320px"
                                 className={kind === 'logo' ? 'object-contain' : 'object-cover'}

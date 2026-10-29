@@ -32,9 +32,9 @@ export function InviteEventCard({ inviteToken }: { inviteToken: string | null })
                 style={illustrationUrl ? { backgroundColor: theme?.backgroundColor } : undefined}
             >
                 {illustrationUrl ? (
-                    <ProtectedImage src={illustrationUrl} alt="" fill sizes="48px" className="object-contain p-1" onError={handleIllustrationError} />
+                    <ProtectedImage src={illustrationUrl} alt={preview.eventTitle} fill sizes="48px" className="object-contain p-1" onError={handleIllustrationError} />
                 ) : coverUrl ? (
-                    <ProtectedImage src={coverUrl} alt="" fill sizes="48px" className="object-cover" />
+                    <ProtectedImage src={coverUrl} alt={preview.eventTitle} fill sizes="48px" className="object-cover" />
                 ) : (
                     <CalendarHeart className="h-5 w-5 text-white" />
                 )}

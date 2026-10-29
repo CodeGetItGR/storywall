@@ -5,12 +5,14 @@ import { useTranslations } from 'next-intl';
 import React, { useMemo, useState } from 'react';
 
 import { MediaThumbnail } from '@/components/common/MediaThumbnail';
+import { AnnouncementLabel } from '@/components/feed/post/AnnouncementLabel';
 import { CommentsList } from '@/components/feed/post/CommentsList';
 import { EditPostModal } from '@/components/feed/post/EditPostModal';
 import { PostActionsMenu } from '@/components/feed/post/PostActionsMenu';
 import { PostAuthorAvatar } from '@/components/feed/post/PostAuthorAvatar';
 import { PostMediaViewer } from '@/components/feed/post/PostMediaViewer';
 import { PostReactionPicker } from '@/components/feed/post/PostReactionPicker';
+import { isAnnouncementPost } from '@/components/feed/post/postUtils';
 import { ReactionSummary } from '@/components/feed/post/ReactionSummary';
 import { AuthorRoleChip } from '@/components/memberRoles/AuthorRoleChip';
 import { ReportTargetModal } from '@/components/reports/ReportTargetModal';
@@ -49,6 +51,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const timeAgo = useMemo(() => timeAgoParts(post.createdAt), [post.createdAt]);
     const media = post.media;
     const isHostPost = post.author?.role === 'HOST';
+    const isAnnouncement = isAnnouncementPost(post);
 
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
@@ -153,8 +156,23 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     }
 
     return (
-        <article className={cn('relative border-b border-event-card-line bg-event-card', showHostPostBadge && 'pt-3 sm:pt-0 sm:pr-3')}>
-            <div className="flex items-center justify-between gap-2 px-2 pt-4 pb-3">
+        <article
+            className={cn(
+                'relative border-b border-event-card-line bg-event-card',
+                // The tint sits over the card colour, so it reads on every event theme.
+                isAnnouncement && 'bg-linear-to-b from-primary/12 to-primary/5',
+                showHostPostBadge && 'pt-3 sm:pt-0 sm:pr-3',
+            )}
+        >
+            {/* Announcement label */}
+            {isAnnouncement && (
+                <div className="px-4 pt-4">
+                    <AnnouncementLabel />
+                </div>
+            )}
+
+            {/* Header */}
+            <div className={cn('flex items-center justify-between gap-2 px-2 pb-3', isAnnouncement ? 'pt-3' : 'pt-4')}>
                 <PostAuthorAvatar
                     avatarUrl={memberAvatarUrl(post.authorMemberId, post.author?.avatarUrl)}
                     name={authorName}
@@ -205,9 +223,10 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                 </div>
             </div>
 
+            {/* Post text */}
             {post.content && (
                 <div className="px-4 pb-3">
-                    <p className="text-sm leading-relaxed text-ink">{post.content}</p>
+                    <p className={cn('leading-relaxed text-ink', isAnnouncement ? 'text-base font-medium' : 'text-sm')}>{post.content}</p>
                 </div>
             )}
 

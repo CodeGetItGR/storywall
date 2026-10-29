@@ -3,44 +3,23 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
-import { useEventVendors, usePatchVendor, useRemoveVendor, useResetVendorLink, useVendorLinks } from '@/hooks/useVendors';
-import type { PartnerRole } from '@/lib/api/types';
-import { sortByVendorType } from '@/lib/vendors';
+import { useEventVendors, usePatchVendor, useRemoveVendor } from '@/hooks/useVendors';
 
-// Manage → Vendors: the links, the joined vendors, the open sheet and the two confirmations.
+// Manage → Vendors: the joined vendors, their row actions, the open vendor's sheet and the remove
+// confirmation. Hide/show and remove work from a row or the sheet. The links live in useVendorInvite.
 export function useManageVendors(eventId: string) {
     const toErrorMessage = useApiErrorMessage();
-    const linksQuery = useVendorLinks(eventId, true);
     const vendorsQuery = useEventVendors(eventId);
-    const resetLink = useResetVendorLink(eventId);
     const patchVendor = usePatchVendor(eventId);
     const removeVendor = useRemoveVendor(eventId);
-    const [resetType, setResetType] = useState<PartnerRole | null>(null);
-    const [qrType, setQrType] = useState<PartnerRole | null>(null);
     const [openVendorId, setOpenVendorId] = useState<string | null>(null);
-    const [removeOpen, setRemoveOpen] = useState(false);
+    const [removeVendorId, setRemoveVendorId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const links = useMemo(() => sortByVendorType(linksQuery.data ?? []), [linksQuery.data]);
     const vendors = useMemo(() => vendorsQuery.data ?? [], [vendorsQuery.data]);
     const selectedVendor = vendors.find((vendor) => vendor.id === openVendorId) ?? null;
-    const qrLink = links.find((link) => link.vendorType === qrType) ?? null;
-
-    const requestReset = useCallback((type: PartnerRole) => {
-        setError(null);
-        setResetType(type);
-    }, []);
-    const cancelReset = useCallback(() => setResetType(null), []);
-    const confirmReset = useCallback(async () => {
-        if (!resetType) return;
-        try {
-            await resetLink.mutateAsync(resetType);
-        } catch (resetError) {
-            setError(toErrorMessage(resetError));
-        } finally {
-            setResetType(null);
-        }
-    }, [resetLink, resetType, toErrorMessage]);
+    const removeTarget = vendors.find((vendor) => vendor.id === removeVendorId) ?? null;
+    const patchingVendorId = patchVendor.isPending ? (patchVendor.variables?.vendorId ?? null) : null;
 
     const openVendor = useCallback((vendorId: string) => {
         setError(null);
@@ -48,59 +27,58 @@ export function useManageVendors(eventId: string) {
     }, []);
     const closeVendor = useCallback(() => {
         setOpenVendorId(null);
-        setRemoveOpen(false);
+        setRemoveVendorId(null);
+        setError(null);
     }, []);
 
-    const toggleHidden = useCallback(async () => {
-        if (!selectedVendor) return;
-        setError(null);
-        try {
-            await patchVendor.mutateAsync({ vendorId: selectedVendor.id, patch: { hiddenByHost: !selectedVendor.hiddenByHost } });
-        } catch (patchError) {
-            setError(toErrorMessage(patchError));
-        }
-    }, [patchVendor, selectedVendor, toErrorMessage]);
+    const toggleHidden = useCallback(
+        async (vendorId: string) => {
+            const vendor = vendors.find((candidate) => candidate.id === vendorId);
+            if (!vendor) return;
+            setError(null);
+            try {
+                await patchVendor.mutateAsync({ vendorId, patch: { hiddenByHost: !vendor.hiddenByHost } });
+            } catch (patchError) {
+                setError(toErrorMessage(patchError));
+            }
+        },
+        [patchVendor, vendors, toErrorMessage],
+    );
 
-    const requestRemove = useCallback(() => setRemoveOpen(true), []);
-    const cancelRemove = useCallback(() => setRemoveOpen(false), []);
+    const requestRemove = useCallback((vendorId: string) => {
+        setError(null);
+        setRemoveVendorId(vendorId);
+    }, []);
+    const cancelRemove = useCallback(() => setRemoveVendorId(null), []);
     const confirmRemove = useCallback(async () => {
-        if (!selectedVendor) return;
+        if (!removeTarget) return;
         setError(null);
         try {
-            await removeVendor.mutateAsync(selectedVendor.id);
-            setOpenVendorId(null);
+            await removeVendor.mutateAsync(removeTarget.id);
+            setOpenVendorId((current) => (current === removeTarget.id ? null : current));
         } catch (removeError) {
             setError(toErrorMessage(removeError));
         } finally {
-            setRemoveOpen(false);
+            setRemoveVendorId(null);
         }
-    }, [removeVendor, selectedVendor, toErrorMessage]);
-
-    const openQr = useCallback((type: PartnerRole) => setQrType(type), []);
-    const closeQr = useCallback(() => setQrType(null), []);
+    }, [removeVendor, removeTarget, toErrorMessage]);
 
     return {
-        links,
         vendors,
-        isLoading: linksQuery.isLoading || vendorsQuery.isLoading,
+        isLoading: vendorsQuery.isLoading,
         selectedVendor,
-        resetType,
-        removeOpen,
-        qrLink,
-        error,
-        isResetting: resetLink.isPending,
-        isPatching: patchVendor.isPending,
+        removeTarget,
+        // One error, shown where the host acted: in the sheet while it is open, else above the list.
+        sheetError: selectedVendor ? error : null,
+        listError: selectedVendor ? null : error,
+        patchingVendorId,
+        isSheetPatching: selectedVendor !== null && patchingVendorId === selectedVendor.id,
         isRemoving: removeVendor.isPending,
-        requestReset,
-        cancelReset,
-        confirmReset,
         openVendor,
         closeVendor,
         toggleHidden,
         requestRemove,
         cancelRemove,
         confirmRemove,
-        openQr,
-        closeQr,
     };
 }

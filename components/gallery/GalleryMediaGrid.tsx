@@ -7,6 +7,7 @@ import { useCallback } from 'react';
 
 import { MediaThumbnail } from '@/components/common/MediaThumbnail';
 import { GalleryMediaGridSkeleton } from '@/components/gallery/GallerySkeletons';
+import { PrintBadge } from '@/components/gallery/print/PrintBadge';
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import type { MediaResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
@@ -17,6 +18,8 @@ interface GalleryMediaGridProps {
     items: MediaResponseDto[];
     selectedIds: Set<string>;
     selectionMode: boolean;
+    /** Photos on the print list; absent while print picks are unavailable. */
+    printedIds?: Set<string>;
     loadMoreRef: RefCallback<HTMLDivElement>;
     onMediaClick: (id: string) => void;
     onMediaPointerDown: (event: PointerEvent<HTMLButtonElement>, id: string) => void;
@@ -30,6 +33,7 @@ export function GalleryMediaGrid({
     items,
     selectedIds,
     selectionMode,
+    printedIds,
     loadMoreRef,
     onMediaClick,
     onMediaPointerDown,
@@ -104,6 +108,7 @@ export function GalleryMediaGrid({
                                                 isSelected && 'brightness-75',
                                             )}
                                         />
+                                        {printedIds?.has(item.id) && <PrintBadge />}
                                         {selectionMode && (
                                             <span
                                                 className={cn(

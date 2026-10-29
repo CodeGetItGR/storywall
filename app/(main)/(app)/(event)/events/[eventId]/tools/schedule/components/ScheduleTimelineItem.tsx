@@ -1,15 +1,16 @@
 'use client';
 
 import { ScheduleSessionCard } from '@/app/(main)/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleSessionCard';
-import type { EventSessionResponseDto } from '@/lib/api/types';
+import type { EventSessionResponseDto, EventTypeConvention } from '@/lib/api/types';
 
 interface ScheduleTimelineItemProps {
     session: EventSessionResponseDto;
+    eventType?: EventTypeConvention;
     time: string;
     isLast: boolean;
 }
 
-export function ScheduleTimelineItem({ session, time, isLast }: ScheduleTimelineItemProps) {
+export function ScheduleTimelineItem({ session, eventType, time, isLast }: ScheduleTimelineItemProps) {
     return (
         <li className="grid grid-cols-[0.75rem_minmax(0,1fr)] gap-x-3">
             {/* Rail */}
@@ -21,7 +22,7 @@ export function ScheduleTimelineItem({ session, time, isLast }: ScheduleTimeline
             {/* Session */}
             <div className={isLast ? undefined : 'pb-6'}>
                 <p className="text-sm font-semibold text-ink tabular-nums">{time}</p>
-                <ScheduleSessionCard session={session} className="mt-2" />
+                <ScheduleSessionCard session={session} eventType={eventType} className="mt-2" />
             </div>
         </li>
     );

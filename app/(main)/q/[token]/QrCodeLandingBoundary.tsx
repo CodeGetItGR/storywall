@@ -53,6 +53,7 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
                         theme={resolution.theme}
                         eventTitle={resolution.eventTitle ?? t('fallbackTitle')}
                         eventSubtitle={resolution.eventSubtitle}
+                        scroll="page"
                     >
                         <div className="mb-4 flex items-center gap-2 text-xs font-semibold tracking-wide text-ink-muted uppercase">
                             {t('mediaUploadEyebrow')}

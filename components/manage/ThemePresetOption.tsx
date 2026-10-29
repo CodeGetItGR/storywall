@@ -70,6 +70,7 @@ export function ThemePresetOption({
         <button
             type="button"
             role="radio"
+            aria-label={label}
             aria-checked={selected}
             aria-disabled={inert}
             data-option-id={optionId}
@@ -94,7 +95,7 @@ export function ThemePresetOption({
                 {illustrationUrl && failedUrl !== illustrationUrl && (
                     <ProtectedImage
                         src={illustrationUrl}
-                        alt=""
+                        alt={label}
                         fill
                         className="object-contain"
                         sizes={size === 'large' ? '(min-width: 640px) 360px, 50vw' : '(min-width: 640px) 240px, 50vw'}

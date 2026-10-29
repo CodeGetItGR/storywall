@@ -4,20 +4,25 @@ import {
     BarChart3,
     Bug,
     CalendarDays,
+    ChartLine,
     ChartNoAxesCombined,
     Flag,
     Footprints,
     GalleryVerticalEnd,
     Handshake,
     LayoutGrid,
+    Link2,
     type LucideIcon,
+    Megaphone,
     MonitorPlay,
     OctagonAlert,
     PackagePlus,
     Palette,
     PartyPopper,
+    QrCode,
     Receipt,
     ShoppingBag,
+    Smartphone,
     Smile,
     Star,
     TicketPercent,
@@ -51,6 +56,7 @@ export type AdminTab =
     | 'reactionTypes'
     | 'themePresets'
     | 'themeFonts'
+    | 'qrCards'
     | 'demoEvents'
     | 'billingOps'
     | 'events'
@@ -60,7 +66,11 @@ export type AdminTab =
     | 'reports'
     | 'bugReports'
     | 'errorEvents'
-    | 'appReviews';
+    | 'appReviews'
+    | 'campaignOverview'
+    | 'campaigns'
+    | 'siteNotices'
+    | 'phones';
 
 export type AdminTabItem = {
     key: AdminTab;
@@ -97,12 +107,17 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#reaction-types': 'reactionTypes',
     '#theme-presets': 'themePresets',
     '#theme-fonts': 'themeFonts',
+    '#qr-cards': 'qrCards',
     '#billing-ops': 'billingOps',
     '#accounts': 'accounts',
     '#reports': 'reports',
     '#bug-reports': 'bugReports',
     '#errors': 'errorEvents',
     '#reviews': 'appReviews',
+    '#campaign-overview': 'campaignOverview',
+    '#campaigns': 'campaigns',
+    '#site-notices': 'siteNotices',
+    '#phones': 'phones',
 };
 
 const TAB_TO_HASH: Record<AdminTab, string> = {
@@ -119,16 +134,21 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     reactionTypes: '#reaction-types',
     themePresets: '#theme-presets',
     themeFonts: '#theme-fonts',
+    qrCards: '#qr-cards',
     demoEvents: DEMO_EVENTS_HASH_ROOT,
     billingOps: '#billing-ops',
     events: EVENTS_HASH_ROOT,
     orders: ORDERS_HASH_ROOT,
     withdrawals: WITHDRAWALS_HASH_ROOT,
     accounts: '#accounts',
+    campaignOverview: '#campaign-overview',
+    campaigns: '#campaigns',
     reports: '#reports',
     bugReports: '#bug-reports',
     errorEvents: '#errors',
     appReviews: '#reviews',
+    siteNotices: '#site-notices',
+    phones: '#phones',
 };
 
 const AdminNavigationContext = createContext<
@@ -210,20 +230,25 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'paidServices', label: t('paidServices'), icon: PackagePlus },
             { key: 'discountCodes', label: t('discountCodes'), icon: TicketPercent },
             { key: 'appReviews', label: t('appReviews'), icon: Star },
+            { key: 'campaignOverview', label: t('campaignOverview'), icon: ChartLine },
+            { key: 'campaigns', label: t('campaigns'), icon: Link2 },
             { key: 'collaborations', label: t('collaborations'), icon: Handshake },
             { key: 'partnerCards', label: t('partnerCards'), icon: GalleryVerticalEnd },
             { key: 'reactionTypes', label: t('reactionTypes'), icon: Smile },
             { key: 'themePresets', label: t('themePresets'), icon: Palette },
             { key: 'themeFonts', label: t('themeFonts'), icon: Type },
+            { key: 'qrCards', label: t('qrCards'), icon: QrCode },
             { key: 'demoEvents', label: t('demoEvents'), icon: MonitorPlay },
             { key: 'accounts', label: t('accounts'), icon: Users },
             { key: 'events', label: t('events'), icon: PartyPopper },
             { key: 'orders', label: t('orders'), icon: ShoppingBag },
             { key: 'billingOps', label: t('billingOps'), icon: Receipt },
+            { key: 'siteNotices', label: t('siteNotices'), icon: Megaphone },
             { key: 'withdrawals', label: t('withdrawals'), icon: Undo2 },
             { key: 'reports', label: t('reports'), icon: Flag },
             { key: 'bugReports', label: t('bugReports'), icon: Bug },
             { key: 'errorEvents', label: t('errorEvents'), icon: OctagonAlert },
+            { key: 'phones', label: t('phones'), icon: Smartphone },
         ],
         [t],
     );

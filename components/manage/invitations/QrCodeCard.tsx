@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { QRCodeSVG } from 'qrcode.react';
 import { useRef } from 'react';
 
+import { AppLink } from '@/components/ui/AppLink';
 import { useCopyText } from '@/hooks/useCopyText';
 import { useNativeShare } from '@/hooks/useNativeShare';
 import { useShareLink } from '@/hooks/useShareLink';
@@ -18,9 +19,13 @@ function escapeHtml(text: string): string {
     return text.replace(/[&<>"']/g, (char) => HTML_ESCAPES[char]);
 }
 
+const ACTION_CLASS =
+    'flex min-w-28 flex-1 items-center justify-center gap-2 rounded-full bg-surface-muted px-3 py-2.5 text-xs font-semibold text-ink-muted transition-colors hover:text-ink';
+
 // The QR artwork + copy/download/print/share actions, shared between the
-// manage-page preview modal and the dedicated gallery QR page.
-export function QrCodeCard({ qrLink, size = 240 }: { qrLink: QrLinkResponseDto; size?: number }) {
+// manage-page preview modal and the dedicated gallery QR page. With cardHref
+// (the event has QR cards), Print opens the card page instead of the popup.
+export function QrCodeCard({ qrLink, size = 240, cardHref = null }: { qrLink: QrLinkResponseDto; size?: number; cardHref?: string | null }) {
     const t = useTranslations('ManagePage');
     const tGlobal = useTranslations();
     const svgRef = useRef<SVGSVGElement | null>(null);
@@ -96,30 +101,25 @@ export function QrCodeCard({ qrLink, size = 240 }: { qrLink: QrLinkResponseDto; 
 
             {/* Actions */}
             <div className="mt-4 flex flex-wrap gap-2">
-                <button
-                    type="button"
-                    onClick={copyLink}
-                    className="flex min-w-28 flex-1 items-center justify-center gap-2 rounded-full bg-surface-muted px-3 py-2.5 text-xs font-semibold text-ink-muted transition-colors hover:text-ink"
-                >
+                <button type="button" onClick={copyLink} className={ACTION_CLASS}>
                     <Copy className="h-3.5 w-3.5" />
                     {copied ? t('invitations.copied') : t('invitations.copyLink')}
                 </button>
-                <button
-                    type="button"
-                    onClick={handleDownloadSvg}
-                    className="flex min-w-28 flex-1 items-center justify-center gap-2 rounded-full bg-surface-muted px-3 py-2.5 text-xs font-semibold text-ink-muted transition-colors hover:text-ink"
-                >
+                <button type="button" onClick={handleDownloadSvg} className={ACTION_CLASS}>
                     <Download className="h-3.5 w-3.5" />
                     {t('qr.downloadSvg')}
                 </button>
-                <button
-                    type="button"
-                    onClick={handlePrint}
-                    className="flex min-w-28 flex-1 items-center justify-center gap-2 rounded-full bg-surface-muted px-3 py-2.5 text-xs font-semibold text-ink-muted transition-colors hover:text-ink"
-                >
-                    <Printer className="h-3.5 w-3.5" />
-                    {t('qr.print')}
-                </button>
+                {cardHref ? (
+                    <AppLink href={cardHref} className={ACTION_CLASS}>
+                        <Printer className="h-3.5 w-3.5" />
+                        {t('qr.print')}
+                    </AppLink>
+                ) : (
+                    <button type="button" onClick={handlePrint} className={ACTION_CLASS}>
+                        <Printer className="h-3.5 w-3.5" />
+                        {t('qr.print')}
+                    </button>
+                )}
                 {canShare && (
                     <button
                         type="button"

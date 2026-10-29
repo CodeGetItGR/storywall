@@ -26,9 +26,9 @@ export function ProAlbumSection({
     return (
         <section aria-labelledby="vendor-pro-title" className="flex flex-col gap-4">
             {/* Title */}
-            <h2 id="vendor-pro-title" className="text-sm font-semibold text-ink">
+            <h3 id="vendor-pro-title" className="text-sm font-semibold text-ink">
                 {t('me.proTitle')}
-            </h2>
+            </h3>
 
             {/* Meter */}
             <ProStorageMeter usedBytes={usedBytes} allowanceBytes={allowanceBytes} hideLabel />

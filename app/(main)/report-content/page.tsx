@@ -5,10 +5,12 @@ import { ContentNoticeForm } from '@/components/contentNotice/ContentNoticeForm'
 import { LegalPageShell } from '@/components/legal/LegalPageShell';
 import { AppLink } from '@/components/ui/AppLink';
 import { routes } from '@/lib/routes';
+import { NO_INDEX } from '@/lib/seo';
 
 export async function generateMetadata(): Promise<Metadata> {
     const t = await getTranslations('ContentNoticePage');
-    return { title: `StoryWall - ${t('title')}` };
+    // A form, not a page worth finding in search (docs/seo-guidelines.md).
+    return { title: `StoryWall - ${t('title')}`, robots: NO_INDEX };
 }
 
 // Public: anyone can report content, signed in or not (DSA Art. 16).

@@ -28,7 +28,7 @@ import type {
     EventTypeConvention,
 } from '@/lib/api/types';
 import { navigateToCheckout } from '@/lib/billing';
-import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
+import { getInitialSessionTitleKey } from '@/lib/createEventCatalog';
 import {
     CREATE_EVENT_CODE_PARAM,
     CREATE_EVENT_OPTION_PARAM,
@@ -150,8 +150,8 @@ export function useCreateEventFormController(): CreateEventFormValue {
     const selectedThemePresetId = effectiveThemePresetId(themePresetId, themePresets);
     const steps = visibleCreateEventSteps(themeStepAvailable);
     const { reset: resetGift, saveToDraft: saveGiftToDraft } = gift;
-    const initialSessionTitleKey = getCreateEventCatalogEntry(selectedEventType)?.initialSessionTitleKey;
-    const initialSessionTitle = initialSessionTitleKey && t.has(initialSessionTitleKey) ? t(initialSessionTitleKey) : undefined;
+    const initialSessionTitleKey = getInitialSessionTitleKey(selectedEventType);
+    const initialSessionTitle = t.has(initialSessionTitleKey) ? t(initialSessionTitleKey) : undefined;
     const timezoneOptions = useMemo(() => getSupportedTimezones(), []);
     const isTimezoneValid = timezoneOptions.includes(timezone);
     // The server fills endAt (startAt + 24h) when it is omitted; the form only asks for a start.

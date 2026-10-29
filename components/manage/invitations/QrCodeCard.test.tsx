@@ -1,10 +1,19 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
+import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { QrCodeCard } from '@/components/manage/invitations/QrCodeCard';
 import type { QrLinkResponseDto } from '@/lib/api/types';
 import messages from '@/messages/en.json';
+
+vi.mock('@/components/ui/AppLink', () => ({
+    AppLink: ({ href, className, children }: { href: string; className?: string; children: ReactNode }) => (
+        <a href={href} className={className}>
+            {children}
+        </a>
+    ),
+}));
 
 afterEach(() => {
     cleanup();
@@ -65,5 +74,21 @@ describe('QrCodeCard print', () => {
 
         expect(html).toContain('<title>Table 4</title>');
         expect(html).toContain('<div class="label">Table 4</div>');
+    });
+});
+
+describe('QrCodeCard print with designs', () => {
+    it('opens the card page instead of the popup', () => {
+        const open = vi.spyOn(window, 'open');
+        render(
+            <NextIntlClientProvider locale="en" messages={messages}>
+                <QrCodeCard qrLink={qrLink({})} cardHref="/events/event-1/manage/qr/qr-1/card" />
+            </NextIntlClientProvider>,
+        );
+
+        const print = screen.getByRole('link', { name: messages.ManagePage.qr.print });
+        expect(print).toHaveAttribute('href', '/events/event-1/manage/qr/qr-1/card');
+        expect(screen.queryByRole('button', { name: messages.ManagePage.qr.print })).toBeNull();
+        expect(open).not.toHaveBeenCalled();
     });
 });

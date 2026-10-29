@@ -26,6 +26,14 @@ export function getSafeReturnPath(value: string | null): string | null {
     }
 }
 
+// A redirect to the login page can't put a link's `#section` in `next`: the
+// server never sees it. The browser keeps it on the login URL instead, so the
+// login page adds it back. A `next` with its own hash keeps that one.
+export function withLocationHash(returnPath: string | null, hash: string): string | null {
+    if (!returnPath || returnPath.includes('#') || hash.length <= 1) return returnPath;
+    return `${returnPath}${hash}`;
+}
+
 // The current location as a `next` value. `search` is what
 // useSearchParams().toString() / URL.search give: '' or '?a=b'.
 export function buildReturnPath(pathname: string, search: string): string {
@@ -41,8 +49,8 @@ function isAdminPath(path: string): boolean {
 // An admin whose session ended on an admin page comes back with `next` still
 // pointing there; anyone else signing in on that tab goes to the feed.
 export function getPostAuthRedirectPath(role: PlatformRole, returnPath: string | null): string {
-    if (role === 'ADMIN') return routes.admin;
     const safePath = getSafeReturnPath(returnPath);
+    if (role === 'ADMIN') return safePath && isAdminPath(safePath) ? safePath : routes.admin;
     if (!safePath || isAdminPath(safePath)) return routes.feed;
     return safePath;
 }

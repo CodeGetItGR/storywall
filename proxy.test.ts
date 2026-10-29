@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { NextRequest } from 'next/server';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { localeCookieName } from '@/i18n/config';
 import { PUBLIC_LOCALE_HEADER } from '@/i18n/publicMessages';
@@ -225,5 +225,62 @@ describe('proxy partner page locale', () => {
         const res = await proxy(partnerRequest('http://localhost/wedding-qr-code', 'el-GR'));
         expect(res.status).toBe(200);
         expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('en');
+    });
+});
+
+describe('proxy legal page locale', () => {
+    function legalRequest(url: string, { cookie, acceptLanguage }: { cookie?: string; acceptLanguage?: string } = {}) {
+        const req = new NextRequest(url, acceptLanguage ? { headers: { 'accept-language': acceptLanguage } } : undefined);
+        if (cookie) req.cookies.set(localeCookieName, cookie);
+        return req;
+    }
+
+    it('renders the Greek URL from the English page, in Greek', async () => {
+        const res = await proxy(legalRequest('http://localhost/el/legal/privacy', { acceptLanguage: 'en-US' }));
+        expect(new URL(res.headers.get('x-middleware-rewrite') ?? '').pathname).toBe('/legal/privacy');
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('el');
+    });
+
+    it('does the same for the contact page', async () => {
+        const res = await proxy(legalRequest('http://localhost/el/contact'));
+        expect(new URL(res.headers.get('x-middleware-rewrite') ?? '').pathname).toBe('/contact');
+    });
+
+    it('renders the English URL in English for a visitor with no preference', async () => {
+        const res = await proxy(legalRequest('http://localhost/legal/terms'));
+        expect(res.status).toBe(200);
+        expect(res.headers.get('x-middleware-rewrite')).toBeNull();
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('en');
+    });
+
+    it('sends a Greek browser to the Greek URL, keeping the query string', async () => {
+        const res = await proxy(legalRequest('http://localhost/legal/withdrawal-terms?version=2026-10-28', { acceptLanguage: 'el-GR' }));
+        expect(res.status).toBe(307);
+        const location = new URL(res.headers.get('location') ?? '');
+        expect(location.pathname).toBe('/el/legal/withdrawal-terms');
+        expect(location.searchParams.get('version')).toBe('2026-10-28');
+    });
+
+    it('keeps a saved English choice on the English URL', async () => {
+        const res = await proxy(legalRequest('http://localhost/legal/cookies', { cookie: 'en', acceptLanguage: 'el-GR' }));
+        expect(res.status).toBe(200);
+    });
+});
+
+describe('proxy wedding QR page before launch', () => {
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    it.each([
+        ['/wedding-qr-code', '/weddings'],
+        ['/el/qr-code-gamou', '/el/gamos'],
+    ])('sends %s to %s for now, keeping the query string', async (from, to) => {
+        vi.stubEnv('VERCEL_ENV', 'production');
+        const res = await proxy(new NextRequest(`http://localhost${from}?utm_source=instagram`));
+        expect(res.status).toBe(307);
+        const location = new URL(res.headers.get('location') ?? '');
+        expect(location.pathname).toBe(to);
+        expect(location.searchParams.get('utm_source')).toBe('instagram');
     });
 });

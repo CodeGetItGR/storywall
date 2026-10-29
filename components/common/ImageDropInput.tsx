@@ -19,6 +19,7 @@ type ImageDropInputProps = {
 export function ImageDropInput({ name, accept, required, disabled: disabledProp }: ImageDropInputProps) {
     const disabled = disabledProp || INCIDENT_MODE;
     const t = useTranslations('ImageDropInput');
+    const tAlt = useTranslations('ImageAlt');
     const { inputRef, file, previewUrl, isDragActive, handleChange, handleDragOver, handleDragLeave, handleDrop, clear } = useImageDropInput();
 
     return (
@@ -38,7 +39,7 @@ export function ImageDropInput({ name, accept, required, disabled: disabledProp 
                     <>
                         {/* Preview */}
                         <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full bg-white">
-                            <ProtectedImage src={previewUrl} alt="" fill className="object-cover" sizes="56px" unoptimized />
+                            <ProtectedImage src={previewUrl} alt={tAlt('photoPreview')} fill className="object-cover" sizes="56px" unoptimized />
                         </span>
                         <span className="flex min-w-0 flex-col pr-8 text-left">
                             <span className="truncate text-sm font-medium text-ink">{file.name}</span>

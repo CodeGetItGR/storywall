@@ -23,6 +23,11 @@ interface AdminDrawerProps {
      * leave it open but unregistered. Back still closes it: owners must cope with an unmount mid-save.
      */
     closeDisabled?: boolean;
+    /**
+     * Called once the drawer has finished closing, after its slide-out animation. Owners use it to drop
+     * state that must not outlive the drawer, while the animation still plays with that state on screen.
+     */
+    onClosed?: () => void;
 }
 
 const DrawerFooterSlotContext = createContext<HTMLDivElement | null>(null);
@@ -49,6 +54,7 @@ export function AdminDrawer({
     children,
     size = 'default',
     closeDisabled = false,
+    onClosed,
 }: AdminDrawerProps) {
     const [footerSlot, setFooterSlot] = useState<HTMLDivElement | null>(null);
     // Back closes the drawer instead of leaving the section it was opened from.
@@ -61,15 +67,24 @@ export function AdminDrawer({
         [closeDisabled, requestClose],
     );
 
+    const onOpenChangeComplete = useCallback(
+        (nextOpen: boolean) => {
+            if (!nextOpen) onClosed?.();
+        },
+        [onClosed],
+    );
+
     return (
-        <Dialog.Root open={open} onOpenChange={onOpenChange}>
+        <Dialog.Root open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
             <Dialog.Portal>
                 {/* Backdrop */}
                 <Dialog.Backdrop forceRender className="motion-overlay fixed inset-0 z-50 bg-[#0a0b0f]/38 opacity-100" />
                 {/* Surface */}
+                {/* The portal lands in <body>, outside AdminLayoutShell's .admin-shell, so the popup
+                    re-enters that scope itself to pick up the console's slate tokens. */}
                 <Dialog.Popup
                     className={cn(
-                        'motion-surface fixed top-(--visual-viewport-offset-top) right-0 z-50 flex h-(--visual-viewport-height) flex-col overflow-hidden',
+                        'admin-shell motion-surface fixed top-(--visual-viewport-offset-top) right-0 z-50 flex h-(--visual-viewport-height) flex-col overflow-hidden',
                         'bg-card text-ink shadow-[0_24px_60px_-20px_rgba(18,20,28,0.45)] outline-none',
                         size === 'modal'
                             ? [

@@ -56,7 +56,6 @@ export async function LandingStories() {
                             key={copy.tag}
                             locale={locale}
                             media={landingStoryMedia[index]}
-                            occasionLabel={t('occasionLink')}
                             occasions={occasions}
                         >
                             {/* Themes */}
