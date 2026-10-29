@@ -248,7 +248,7 @@ export function QrCardTemplateDrawer({
 
                     {/* Artwork */}
                     <AdminField label={t('artwork')} hint={fileHint ?? (form.hasPendingFile ? t('artworkPending') : t('artworkHint'))}>
-                        <label className="inline-flex min-h-10 w-fit cursor-pointer items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold text-ink focus-within:ring-2 focus-within:ring-primary/20 hover:bg-canvas">
+                        <label className="relative inline-flex min-h-10 w-fit cursor-pointer items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold text-ink focus-within:ring-2 focus-within:ring-primary/20 hover:bg-canvas">
                             <ImagePlus className="h-4 w-4" aria-hidden="true" />
                             {t('artworkChoose')}
                             <input type="file" accept={THEME_ILLUSTRATION_ACCEPT} onChange={form.handleFileChange} className="sr-only" />
