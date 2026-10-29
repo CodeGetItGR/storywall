@@ -98,3 +98,12 @@ export function toApplicationError(error: unknown): ApplicationError {
 
 // Starting values for the apply form's text fields and role select.
 export type ApplyFormDefaults = Partial<Record<'name' | 'businessName' | 'role' | 'email' | 'link', string>>;
+
+// The apply-form fields a set of starting values can fill, in the order the form shows them.
+export const PREFILLABLE_APPLY_FIELDS = ['name', 'businessName', 'role', 'email', 'link'] as const;
+export type PrefillableApplyField = (typeof PREFILLABLE_APPLY_FIELDS)[number];
+
+// The prefillable fields that have a non-blank starting value.
+export function filledApplyFields(defaults: ApplyFormDefaults | undefined): PrefillableApplyField[] {
+    return PREFILLABLE_APPLY_FIELDS.filter((field) => !!defaults?.[field]?.trim());
+}

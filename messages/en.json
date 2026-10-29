@@ -6870,6 +6870,14 @@
                 "country": "Country",
                 "phone": "Phone (optional)"
             },
+            "editDetails": "Edit details",
+            "placeholders": {
+                "name": "Maria Papadopoulou",
+                "businessName": "Lens and Light Studio",
+                "email": "name@example.com",
+                "link": "@lensandlight",
+                "phone": "+30 691 234 5678"
+            },
             "rolePlaceholder": "Choose one",
             "countryPlaceholder": "Choose your country",
             "roles": {
