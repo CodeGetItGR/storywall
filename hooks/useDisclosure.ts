@@ -9,6 +9,7 @@ export function useDisclosure(defaultOpen = false) {
     const toggle = useCallback(() => setOpen((current) => !current), []);
     // Idempotent, unlike toggle: safe from an async callback that may land after the user closed it.
     const close = useCallback(() => setOpen(false), []);
+    const show = useCallback(() => setOpen(true), []);
 
-    return { open, toggle, close };
+    return { open, toggle, close, show };
 }

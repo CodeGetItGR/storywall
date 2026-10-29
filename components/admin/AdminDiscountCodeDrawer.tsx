@@ -5,8 +5,10 @@ import { useTranslations } from 'next-intl';
 
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
+import { CodeDiscountWarnings } from '@/components/admin/CodeDiscountWarnings';
 import { CodeRestrictionFields } from '@/components/admin/CodeRestrictionFields';
 import { useSaveDiscountCode } from '@/hooks/useAdmin';
+import { useCodeFormDiscountWarnings } from '@/hooks/useCodeDiscountWarnings';
 import { discountCodeCreateFromFormData, discountCodePatchFromFormData, instantToLocalInput } from '@/lib/adminCollaborations';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { DiscountCodeResponseDto } from '@/lib/api/types';
@@ -25,6 +27,7 @@ export function AdminDiscountCodeDrawer({
     const tCodes = useTranslations('AdminPage.collaborations.codes');
     const tAdmin = useTranslations('AdminPage');
     const saveCode = useSaveDiscountCode();
+    const discountWarnings = useCodeFormDiscountWarnings(code);
 
     async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -62,7 +65,7 @@ export function AdminDiscountCodeDrawer({
                 </div>
             }
         >
-            <form id="discount-code-form" onSubmit={handleSubmit} className="space-y-5">
+            <form id="discount-code-form" onSubmit={handleSubmit} onChange={discountWarnings.handleFormChange} className="space-y-5">
                 {/* Code identity */}
                 <AdminField label={tCodes('fields.code')} required hint={tCodes('fields.codeHint')}>
                     <input
@@ -91,6 +94,7 @@ export function AdminDiscountCodeDrawer({
                         className={adminInputClass()}
                     />
                 </AdminField>
+                <CodeDiscountWarnings warnings={discountWarnings.warnings} />
 
                 {/* Availability */}
                 <div className="grid grid-cols-2 gap-3">
