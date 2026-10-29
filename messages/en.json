@@ -181,6 +181,7 @@
         "time": "Time",
         "pinned": "Pinned",
         "announcement": "Announcement",
+        "sneakPeek": "Sneak peek",
         "pinPost": "Pin post",
         "unpinPost": "Unpin post",
         "pinPostFailed": "Couldn't pin this post. Please try again.",
@@ -851,6 +852,14 @@
             "title": "You have a new update"
         },
         "types": {
+            "SNEAK_PEEK_POSTED": {
+                "title": "{business} shared a sneak peek",
+                "body": "See the first moments from the event."
+            },
+            "VENDOR_REACH_SUMMARY": {
+                "title": "Your reach report is ready",
+                "body": "See how many guests saw your work."
+            },
             "VENDOR_JOINED": {
                 "title": "{business} joined as {type}",
                 "body": "They can now use their tools in your event."

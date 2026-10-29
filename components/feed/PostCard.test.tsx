@@ -54,4 +54,10 @@ describe('PostCard announcement', () => {
         render(<PostCard post={post('TEXT')} />);
         expect(screen.queryByText('announcement')).toBeNull();
     });
+
+    it('labels a sneak peek', () => {
+        render(<PostCard post={{ ...post('SNEAK_PEEK'), isPinned: true }} />);
+        expect(screen.getByText('sneakPeek')).toBeTruthy();
+        expect(screen.queryByText('announcement')).toBeNull();
+    });
 });

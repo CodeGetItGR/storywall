@@ -12,8 +12,9 @@ import { PostActionsMenu } from '@/components/feed/post/PostActionsMenu';
 import { PostAuthorAvatar } from '@/components/feed/post/PostAuthorAvatar';
 import { PostMediaViewer } from '@/components/feed/post/PostMediaViewer';
 import { PostReactionPicker } from '@/components/feed/post/PostReactionPicker';
-import { isAnnouncementPost } from '@/components/feed/post/postUtils';
+import { isAnnouncementPost, isSneakPeekPost } from '@/components/feed/post/postUtils';
 import { ReactionSummary } from '@/components/feed/post/ReactionSummary';
+import { SneakPeekLabel } from '@/components/feed/post/SneakPeekLabel';
 import { AuthorRoleChip } from '@/components/memberRoles/AuthorRoleChip';
 import { ReportTargetModal } from '@/components/reports/ReportTargetModal';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
@@ -53,6 +54,9 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const media = post.media;
     const isHostPost = post.author?.role === 'HOST';
     const isAnnouncement = isAnnouncementPost(post);
+    const isSneakPeek = isSneakPeekPost(post);
+    // Both kinds get the tint and a label row above the header.
+    const isLabelled = isAnnouncement || isSneakPeek;
     const viewRef = useVendorPostViewTracking<HTMLElement>(post);
 
     const activeEvent = useActiveEvent();
@@ -162,20 +166,16 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
             className={cn(
                 'relative border-b border-event-card-line bg-event-card',
                 // The tint sits over the card colour, so it reads on every event theme.
-                isAnnouncement && 'bg-linear-to-b from-primary/12 to-primary/5',
+                isLabelled && 'bg-linear-to-b from-primary/12 to-primary/5',
                 showHostPostBadge && 'pt-3 sm:pt-0 sm:pr-3',
             )}
             ref={viewRef}
         >
-            {/* Announcement label */}
-            {isAnnouncement && (
-                <div className="px-4 pt-4">
-                    <AnnouncementLabel />
-                </div>
-            )}
+            {/* Label */}
+            {isLabelled && <div className="px-4 pt-4">{isSneakPeek ? <SneakPeekLabel /> : <AnnouncementLabel />}</div>}
 
             {/* Header */}
-            <div className={cn('flex items-center justify-between gap-2 px-2 pb-3', isAnnouncement ? 'pt-3' : 'pt-4')}>
+            <div className={cn('flex items-center justify-between gap-2 px-2 pb-3', isLabelled ? 'pt-3' : 'pt-4')}>
                 <PostAuthorAvatar
                     avatarUrl={memberAvatarUrl(post.authorMemberId, post.author?.avatarUrl)}
                     name={authorName}
