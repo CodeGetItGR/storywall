@@ -4,6 +4,7 @@ import { Banknote, CalendarCheck2, Handshake, MousePointerClick } from 'lucide-r
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 
+import { PartnerReachSection } from '@/components/partners/PartnerReachSection';
 import { PartnerTierProgress } from '@/components/partners/PartnerTierProgress';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { PageErrorState } from '@/components/ui/PageErrorState';
@@ -129,6 +130,9 @@ export function PartnerPortalBoundary({ token }: { token: string }) {
                         </div>
                     )}
                 </section>
+
+                {/* Reach */}
+                <PartnerReachSection reach={portal.data.reach} />
             </div>
         </main>
     );

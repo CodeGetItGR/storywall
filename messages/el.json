@@ -2195,7 +2195,20 @@
             "activationsThisYear": "{count, plural, one {# ενεργοποίηση} other {# ενεργοποιήσεις}} φέτος",
             "next": "Η {number}η ενεργοποίησή σας αποδίδει {percent}%"
         },
-        "brandingClicks": "Πατήματα κάρτας"
+        "brandingClicks": "Πατήματα κάρτας",
+        "reach": {
+            "title": "Απήχηση",
+            "events": "Εκδηλώσεις",
+            "guests": "Καλεσμένοι",
+            "proViews": "Προβολές Pro",
+            "postViewers": "Είδαν τις αναρτήσεις σας",
+            "listTaps": "Άνοιξαν τα στοιχεία σας",
+            "recentTitle": "Πρόσφατες εκδηλώσεις",
+            "date": "Ημερομηνία",
+            "type": "Τύπος",
+            "views": "Προβολές",
+            "empty": "Δεν υπάρχουν ακόμη εκδηλώσεις ως συντελεστής."
+        }
     },
     "SchedulePage": {
         "back": "Πίσω",

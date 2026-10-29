@@ -2073,7 +2073,20 @@
             "activationsThisYear": "{count, plural, one {# activation} other {# activations}} this year",
             "next": "Your {number, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} activation earns {percent}%"
         },
-        "brandingClicks": "Card taps"
+        "brandingClicks": "Card taps",
+        "reach": {
+            "title": "Reach",
+            "events": "Events",
+            "guests": "Guests",
+            "proViews": "Pro views",
+            "postViewers": "Saw your posts",
+            "listTaps": "Opened your details",
+            "recentTitle": "Recent events",
+            "date": "Date",
+            "type": "Type",
+            "views": "Views",
+            "empty": "No events as a vendor yet."
+        }
     },
     "SchedulePage": {
         "back": "Go back",
