@@ -14,7 +14,8 @@ const LINEN: QrCardTemplateDto = {
     headingFont: null,
     codeColor: '#1F3A5A',
     centerLogo: false,
-    layout: null, sizes: ['A6'],
+    layout: null,
+    sizes: ['A6', 'A5'],
 };
 
 type Defaults = { title: string; line: string; giver?: string };
@@ -66,6 +67,25 @@ describe('useQrCardDesigner', () => {
         const { result } = renderDesigner();
         act(() => result.current.handleTextChange(typed('title', '')));
         expect(result.current.text.title).toBe('');
+    });
+
+    const NARROW: QrCardTemplateDto = { ...LINEN, id: 't2', sizes: ['A6'] };
+
+    it('starts at A6 and offers the picked design’s sizes', () => {
+        const { result } = renderDesigner([LINEN, NARROW]);
+        expect(result.current.size).toBe('A6');
+        expect(result.current.sizes).toEqual(['A6', 'A5']); // Plain
+    });
+
+    it('prints at A6 on a design without A5, and back at A5 on one with it', () => {
+        const { result } = renderDesigner([LINEN, NARROW]);
+        act(() => result.current.handleSizeChange(typed('size', 'A5')));
+        expect(result.current.size).toBe('A5');
+        act(() => result.current.selectTemplate('t2'));
+        expect(result.current.size).toBe('A6');
+        expect(result.current.sizes).toEqual(['A6']);
+        act(() => result.current.selectTemplate('t1'));
+        expect(result.current.size).toBe('A5');
     });
 
     it('offers the giver line on the gift card', () => {

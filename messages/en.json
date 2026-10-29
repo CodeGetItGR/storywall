@@ -5821,6 +5821,11 @@
         "cardLabel": "QR card: {title}",
         "templates": "Design",
         "plain": "Plain",
+        "size": {
+            "label": "Paper size",
+            "A6": "A6 · 10.5 × 14.8 cm",
+            "A5": "A5 · 14.8 × 21 cm"
+        },
         "templatesFailed": "Couldn't load the designs.",
         "retry": "Try again",
         "fields": {

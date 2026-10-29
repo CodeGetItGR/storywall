@@ -47,7 +47,7 @@ export function useGiftCardPrint(eventId: string) {
         templates: templates.data?.templates ?? NO_TEMPLATES,
         defaults: { title: card?.recipientLabel ?? '', line: t('scan'), giver: card?.giverDisplayName ?? '' },
     });
-    const exporter = useQrCardExport({ font: designer.style.headingFont, title: designer.text.title });
+    const exporter = useQrCardExport({ font: designer.style.headingFont, title: designer.text.title, size: designer.size });
 
     const handleIncludePinChange = useCallback((event: ChangeEvent<HTMLInputElement>) => setIncludePin(event.target.checked), []);
     const print = useCallback(() => window.print(), []);
