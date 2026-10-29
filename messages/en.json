@@ -181,6 +181,7 @@
         "time": "Time",
         "pinned": "Pinned",
         "announcement": "Announcement",
+        "sneakPeek": "Sneak peek",
         "pinPost": "Pin post",
         "unpinPost": "Unpin post",
         "pinPostFailed": "Couldn't pin this post. Please try again.",
@@ -851,6 +852,14 @@
             "title": "You have a new update"
         },
         "types": {
+            "SNEAK_PEEK_POSTED": {
+                "title": "{business} shared a sneak peek",
+                "body": "See the first moments from the event."
+            },
+            "VENDOR_REACH_SUMMARY": {
+                "title": "Your reach report is ready",
+                "body": "See how many guests saw your work."
+            },
             "VENDOR_JOINED": {
                 "title": "{business} joined as {type}",
                 "body": "They can now use their tools in your event."
@@ -2065,7 +2074,20 @@
             "activationsThisYear": "{count, plural, one {# activation} other {# activations}} this year",
             "next": "Your {number, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} activation earns {percent}%"
         },
-        "brandingClicks": "Card taps"
+        "brandingClicks": "Card taps",
+        "reach": {
+            "title": "Reach",
+            "events": "Events",
+            "guests": "Guests",
+            "proViews": "Photo and video views",
+            "postViewers": "Saw your posts",
+            "listTaps": "Opened your details",
+            "recentTitle": "Recent events",
+            "date": "Date",
+            "type": "Type",
+            "views": "Views",
+            "empty": "No events as a vendor yet."
+        }
     },
     "SchedulePage": {
         "back": "Go back",
@@ -6102,6 +6124,9 @@
         "pushNotEnabled": "This phone's notifications are off. Open the app on the phone.",
         "pushUnavailable": "Notifications aren't set up on the server.",
         "pushSendFailed": "Couldn't send. Try again.",
+        "sneakPeekMediaInvalid": "Pick from your own photos and videos.",
+        "sneakPeekNotOpen": "You can share a sneak peek once the event starts.",
+        "sneakPeekUsed": "You already shared your sneak peek for this event.",
         "vendorLimitReached": "This event has all the vendors it can take.",
         "vendorIsHost": "You host this event, so you can't join it as a vendor.",
         "alreadyAVendor": "You're already a vendor in this event.",
@@ -7888,6 +7913,48 @@
         }
     },
     "Vendors": {
+        "sneakPeek": {
+            "title": "Sneak peek",
+            "notOpen": "You can share it once the event starts.",
+            "noItems": "Add photos or videos to your Pro album first.",
+            "ready": "Share up to 20 photos and videos with all guests. One per event.",
+            "choose": "Choose photos",
+            "used": "You already shared your sneak peek for this event.",
+            "seeInFeed": "See it in the feed",
+            "edit": "Edit",
+            "delete": "Delete",
+            "thumbAlt": "Sneak peek photo {index}",
+            "sheetTitle": "Sneak peek",
+            "picked": "{count} of 20 chosen",
+            "pickAlt": "Your photo or video {index}",
+            "pick": "Choose photo {index}",
+            "unpick": "Remove photo {index}",
+            "more": "Show more",
+            "captionLabel": "Caption (optional)",
+            "share": "Share",
+            "save": "Save",
+            "cancel": "Cancel",
+            "deleteTitle": "Delete the sneak peek?",
+            "deleteBody": "Guests will no longer see it. You can't share another one for this event.",
+            "deleteConfirm": "Delete",
+            "deleteCancel": "Keep it"
+        },
+        "reach": {
+            "title": "Reach",
+            "tiles": {
+                "guests": "Guests",
+                "proViewers": "Saw your photos and videos",
+                "proViews": "Photo and video views",
+                "postViewers": "Saw your posts",
+                "reactions": "Reactions",
+                "comments": "Comments",
+                "listTaps": "Opened your details",
+                "partnerCardTaps": "Partner card taps"
+            },
+            "partnerLine": "Partners see the full report.",
+            "partnerAction": "Become a partner",
+            "loadFailed": "Couldn't load your reach."
+        },
         "prints": {
             "title": "Print order",
             "included": "Prints included for the host",

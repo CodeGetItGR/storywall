@@ -7,19 +7,25 @@ import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { Button } from '@/components/ui/button';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
+import { BecomePartnerSheet } from '@/components/vendors/BecomePartnerSheet';
 import { PartnerPromptCard } from '@/components/vendors/me/PartnerPromptCard';
 import { PrintsIncludedRow } from '@/components/vendors/me/PrintsIncludedRow';
 import { PrintsIncludedSheet } from '@/components/vendors/me/PrintsIncludedSheet';
 import { PrintsSection } from '@/components/vendors/me/PrintsSection';
 import { ProAlbumSection } from '@/components/vendors/me/ProAlbumSection';
+import { ReachSection } from '@/components/vendors/me/ReachSection';
 import { ServiceSheet } from '@/components/vendors/me/ServiceSheet';
 import { ServicesSection } from '@/components/vendors/me/ServicesSection';
+import { SneakPeekSection } from '@/components/vendors/me/SneakPeekSection';
+import { SneakPeekSheet } from '@/components/vendors/me/SneakPeekSheet';
 import { VendorListingSection } from '@/components/vendors/me/VendorListingSection';
 import { VendorMeGroup } from '@/components/vendors/me/VendorMeGroup';
 import { VendorToolLinks } from '@/components/vendors/me/VendorToolLinks';
 import { VendorLogo } from '@/components/vendors/VendorLogo';
 import { VendorProfileSheet } from '@/components/vendors/VendorProfileSheet';
 import { VendorRowsSkeleton } from '@/components/vendors/VendorsSkeletons';
+import { useReachSection } from '@/hooks/useReachSection';
+import { useSneakPeekSection } from '@/hooks/useSneakPeekSection';
 import { useVendorMePage } from '@/hooks/useVendorMePage';
 import { useVendorPrintsSection } from '@/hooks/useVendorPrintsSection';
 import { useVendorServicesSection } from '@/hooks/useVendorServicesSection';
@@ -29,13 +35,16 @@ import { routes } from '@/lib/routes';
 export function VendorMeScreen() {
     const t = useTranslations('Vendors');
     const tServices = useTranslations('Vendors.services');
+    const tSneakPeek = useTranslations('Vendors.sneakPeek');
     const locale = useLocale();
     const { eventId } = useEventRouteContext();
     const page = useVendorMePage(eventId);
     const { me, profile } = page;
     const prints = useVendorPrintsSection(eventId, me);
     const services = useVendorServicesSection(me, page.profileStatus);
-    const hasEventWork = page.tools.length > 0 || prints.open || page.hasProAlbum;
+    const sneakPeek = useSneakPeekSection(eventId, me, page.hasProAlbum);
+    const reach = useReachSection(eventId, me);
+    const hasEventWork = page.tools.length > 0 || prints.open || page.hasProAlbum || sneakPeek.visible || reach.visible;
 
     return (
         <ModulePageShell
@@ -68,6 +77,18 @@ export function VendorMeScreen() {
                             {/* Tools */}
                             {page.tools.length > 0 && <VendorToolLinks tools={page.tools} />}
 
+                            {/* Sneak peek */}
+                            {sneakPeek.visible && sneakPeek.state !== 'hidden' && (
+                                <SneakPeekSection
+                                    state={sneakPeek.state}
+                                    thumbnails={sneakPeek.thumbnails}
+                                    feedHref={sneakPeek.feedHref}
+                                    onChooseAction={sneakPeek.openNew}
+                                    onEditAction={sneakPeek.openEdit}
+                                    onDeleteAction={sneakPeek.requestDelete}
+                                />
+                            )}
+
                             {/* Print order */}
                             {prints.open && (
                                 <PrintsSection
@@ -93,6 +114,18 @@ export function VendorMeScreen() {
                                     usedBytes={me.proUsedBytes ?? 0}
                                     allowanceBytes={me.proStorageBytes ?? 0}
                                     canUpload={page.canUploadPro}
+                                />
+                            )}
+
+                            {/* Reach */}
+                            {reach.visible && (
+                                <ReachSection
+                                    tiles={reach.tiles}
+                                    partner={reach.partner}
+                                    showPartnerAction={reach.showPartnerAction}
+                                    isLoading={reach.isLoading}
+                                    loadFailed={reach.loadFailed}
+                                    onBecomePartnerAction={reach.partnerSheet.openSheet}
                                 />
                             )}
                         </VendorMeGroup>
@@ -193,6 +226,49 @@ export function VendorMeScreen() {
                     onCloseAction={services.close}
                 />
             )}
+
+            {/* Sneak peek sheet */}
+            {sneakPeek.sheet && (
+                <SneakPeekSheet
+                    key={sneakPeek.sheet}
+                    open
+                    mode={sneakPeek.sheet}
+                    items={sneakPeek.candidates}
+                    initialPicked={sneakPeek.initialPicked}
+                    initialCaption={sneakPeek.initialCaption}
+                    hasMore={sneakPeek.hasMore}
+                    isSaving={sneakPeek.isSaving}
+                    error={sneakPeek.error}
+                    onLoadMoreAction={sneakPeek.loadMore}
+                    onSubmitAction={sneakPeek.submit}
+                    onCloseAction={sneakPeek.closeSheet}
+                />
+            )}
+
+            {/* Sneak peek delete confirmation */}
+            <ConfirmActionModal
+                open={sneakPeek.confirmDelete}
+                onCloseAction={sneakPeek.cancelDelete}
+                onConfirmAction={sneakPeek.confirmRemove}
+                title={tSneakPeek('deleteTitle')}
+                body={
+                    <>
+                        {tSneakPeek('deleteBody')}
+                        {sneakPeek.deleteError && <span className="mt-1 block text-destructive">{sneakPeek.deleteError}</span>}
+                    </>
+                }
+                confirmLabel={tSneakPeek('deleteConfirm')}
+                cancelLabel={tSneakPeek('deleteCancel')}
+                isConfirming={sneakPeek.isDeleting}
+            />
+
+            {/* Partner sheet, from the Reach section */}
+            <BecomePartnerSheet
+                open={reach.partnerSheet.sheetOpen}
+                defaults={reach.partnerSheet.defaults}
+                search={reach.partnerSheet.search}
+                onCloseAction={reach.partnerSheet.closeSheet}
+            />
 
             {/* Service delete confirmation */}
             <ConfirmActionModal
