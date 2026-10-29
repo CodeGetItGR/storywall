@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { Modal } from '@/components/ui/modal';
+import { PortalScopeProvider } from '@/components/ui/PortalScope';
 
 const requestClose = vi.hoisted(() => vi.fn());
 vi.mock('@/hooks/useOverlayHistory', () => ({ useOverlayHistory: () => ({ requestClose }) }));
@@ -70,5 +71,31 @@ describe('Modal closeDisabled', () => {
         expect(screen.getByRole('button', { name: 'Close' })).toBeTruthy();
         fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
         expect(requestClose).toHaveBeenCalled();
+    });
+});
+
+describe('Modal portal scope', () => {
+    it('re-enters the scope class of the nearest PortalScopeProvider', () => {
+        render(
+            <PortalScopeProvider className="admin-shell">
+                <Modal open onClose={vi.fn()} ariaLabel="d">
+                    <div>content</div>
+                </Modal>
+            </PortalScopeProvider>,
+        );
+
+        const { popup, backdrop } = layers();
+        expect(popup.classList).toContain('admin-shell');
+        expect(backdrop?.classList).toContain('admin-shell');
+    });
+
+    it('adds no scope class outside a provider', () => {
+        render(
+            <Modal open onClose={vi.fn()} ariaLabel="d">
+                <div>content</div>
+            </Modal>,
+        );
+
+        expect(layers().popup.classList).not.toContain('admin-shell');
     });
 });

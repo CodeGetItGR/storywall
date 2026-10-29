@@ -1,6 +1,7 @@
-// The occasion pages and the partner page for businesses aren't launched yet. Until then they
-// render everywhere but the production site; there they 404 and drop out of the sitemap and every
-// link. Set this to true to put them live.
+// The wedding QR page, the partner page for businesses and every occasion page not marked
+// `launched` (lib/occasions/occasions.ts) aren't launched yet. Until then they render everywhere
+// but the production site; there they 404 and drop out of the sitemap and every link. Set this to
+// true to put them all live.
 export const UNRELEASED_PAGES_LAUNCHED = false;
 
 type DeploymentEnv = { VERCEL_ENV?: string; NEXT_PUBLIC_APP_ENV?: string };

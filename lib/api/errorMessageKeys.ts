@@ -31,6 +31,7 @@ export type ApiErrorMessageKey =
     | 'collaborationCodeNotValid'
     | 'collaborationEarningNotPayable'
     | 'collaboratorPayoutDetailsIncomplete'
+    | 'campaignLinkTaken'
     | 'collaboratorBrandingIncomplete'
     | 'partnerBrandingNoticeOutdated'
     | 'concurrentModification'
@@ -94,10 +95,23 @@ export type ApiErrorMessageKey =
     | 'vendorCapabilityMissing'
     | 'vendorAccessEnded'
     | 'vendorCannotRsvp'
+    | 'printItemInvalid'
+    | 'partnerRequired'
+    | 'printPicksUnavailable'
+    | 'printPricesMissing'
+    | 'printListLocked'
+    | 'printListFull'
+    | 'vendorServiceLimitReached'
+    | 'printListEmpty'
+    | 'pushNotEnabled'
+    | 'pushSendFailed'
+    | 'pushUnavailable'
     | 'vendorLimitReached'
     | 'vendorIsHost'
     | 'alreadyAVendor'
     | 'partnerApplicationPending'
+    | 'qrCardCodeColorLowContrast'
+    | 'qrCardArtworkSizeInvalid'
     | 'eventHostAlreadyCoHost'
     | 'eventHostLastHost'
     | 'eventHostAlreadyPrimary'
@@ -319,6 +333,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.COLLABORATION_CODE_NOT_VALID]: 'collaborationCodeNotValid',
     [ERROR_CODES.COLLABORATION_EARNING_NOT_PAYABLE]: 'collaborationEarningNotPayable',
     [ERROR_CODES.COLLABORATOR_PAYOUT_DETAILS_INCOMPLETE]: 'collaboratorPayoutDetailsIncomplete',
+    [ERROR_CODES.CAMPAIGN_LINK_TAKEN]: 'campaignLinkTaken',
     [ERROR_CODES.CONFLICT]: 'conflict',
     [ERROR_CODES.CONCURRENT_MODIFICATION]: 'concurrentModification',
     [ERROR_CODES.COVERAGE_ENDED]: 'coverageEnded',
@@ -583,10 +598,23 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.VENDOR_CAPABILITY_MISSING]: 'vendorCapabilityMissing',
     [ERROR_CODES.VENDOR_ACCESS_ENDED]: 'vendorAccessEnded',
     [ERROR_CODES.VENDOR_CANNOT_RSVP]: 'vendorCannotRsvp',
+    [ERROR_CODES.PRINT_ITEM_INVALID]: 'printItemInvalid',
+    [ERROR_CODES.PARTNER_REQUIRED]: 'partnerRequired',
+    [ERROR_CODES.PRINT_PICKS_UNAVAILABLE]: 'printPicksUnavailable',
+    [ERROR_CODES.PRINT_PRICES_MISSING]: 'printPricesMissing',
+    [ERROR_CODES.PRINT_LIST_LOCKED]: 'printListLocked',
+    [ERROR_CODES.PRINT_LIST_FULL]: 'printListFull',
+    [ERROR_CODES.VENDOR_SERVICE_LIMIT_REACHED]: 'vendorServiceLimitReached',
+    [ERROR_CODES.PRINT_LIST_EMPTY]: 'printListEmpty',
+    [ERROR_CODES.PUSH_NOT_ENABLED]: 'pushNotEnabled',
+    [ERROR_CODES.PUSH_UNAVAILABLE]: 'pushUnavailable',
+    [ERROR_CODES.PUSH_SEND_FAILED]: 'pushSendFailed',
     [ERROR_CODES.VENDOR_LIMIT_REACHED]: 'vendorLimitReached',
     [ERROR_CODES.VENDOR_IS_HOST]: 'vendorIsHost',
     [ERROR_CODES.ALREADY_A_VENDOR]: 'alreadyAVendor',
     [ERROR_CODES.PARTNER_APPLICATION_PENDING]: 'partnerApplicationPending',
+    [ERROR_CODES.QR_CARD_CODE_COLOR_LOW_CONTRAST]: 'qrCardCodeColorLowContrast',
+    [ERROR_CODES.QR_CARD_ARTWORK_SIZE_INVALID]: 'qrCardArtworkSizeInvalid',
 } satisfies Record<KnownApiErrorCode, ApiErrorMessageKey>;
 
 export function getApiErrorMessageKey(code: number | string | undefined): ApiErrorMessageKey | undefined {

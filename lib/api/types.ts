@@ -34,6 +34,7 @@ export const EVENT_MODULE_KEYS = [
     'he_or_she',
     'quiz_polls',
     'vendors',
+    'qr_cards',
 ] as const;
 // Use this (not the raw `ModuleKey` wire type below) whenever code branches on
 // a specific module — it's a closed set and catches typos at compile time.
@@ -318,6 +319,58 @@ export type AdminLandingCategoryPatchDto = Partial<AdminLandingCategoryCreateDto
 export interface AdminLandingCategoryEventTypesDto {
     eventTypeKeys: EventTypeConvention[];
     moveFromOtherCategory?: boolean;
+}
+
+// Site notices (spec 2026-10-22-site-notices-design). Both locales travel; the client picks one.
+export type SiteNoticeTone = 'INFO' | 'OFFER' | 'WARNING' | 'CRITICAL';
+export type SiteNoticeArea = 'EVERYWHERE' | 'PUBLIC' | 'HOST' | 'GUEST' | 'ADMIN';
+export type SiteNoticeStatus = 'LIVE' | 'SCHEDULED' | 'ENDED' | 'OFF';
+
+export interface SiteNoticeLiveDto {
+    id: string;
+    version: number;
+    tone: SiteNoticeTone;
+    message: LocalizedText;
+    linkUrl: string | null;
+    linkLabel: LocalizedText;
+    areas: SiteNoticeArea[];
+    dismissible: boolean;
+    startsAt: string | null;
+    createdAt: string;
+}
+
+export interface AdminSiteNoticeDto extends SiteNoticeLiveDto {
+    endsAt: string | null;
+    active: boolean;
+    status: SiteNoticeStatus;
+    updatedAt: string;
+}
+
+export interface AdminSiteNoticeRequestDto {
+    tone: SiteNoticeTone;
+    message: LocalizedText;
+    linkUrl: string | null;
+    linkLabel: LocalizedText | null;
+    areas: SiteNoticeArea[];
+    dismissible: boolean;
+    startsAt: string | null;
+    endsAt: string | null;
+    active: boolean;
+}
+
+/** GET /api/admin/devices: the calling admin's paired phones. pushEnabled: the phone sent a Firebase token. */
+export interface AdminDeviceDto {
+    id: string;
+    name: string;
+    createdAt: string;
+    lastSeenAt: string | null;
+    pushEnabled: boolean;
+}
+
+/** POST /api/admin/devices: the only response that carries the key. */
+export interface AdminDeviceCreatedDto {
+    device: AdminDeviceDto;
+    key: string;
 }
 
 export type EventTypeAccentToken = 'rose' | 'sky' | 'amber';
@@ -731,7 +784,8 @@ export type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 // 2026-09-04: ctaRoute (a literal path) is gone, replaced by ctaTarget + ctaParams — the app
 // resolves the route itself. Closed but growable set; treat an unrecognized value defensively.
 // See docs/integration guides/notification-cta-target-fe-integration.md.
-export type NotificationCtaTarget = 'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS' | 'EVENT_COVERAGE_EXTEND' | 'EVENT_WISHBOOK' | 'EVENT_VENDORS';
+export type NotificationCtaTarget =
+    'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS' | 'EVENT_COVERAGE_EXTEND' | 'EVENT_WISHBOOK' | 'EVENT_VENDORS' | 'EVENT_VENDOR_PAGE';
 
 export interface NotificationResponseDto {
     id: string;
@@ -938,6 +992,24 @@ export interface EventThemeFontDto {
     url: string; // FE-origin path, /api/theme-fonts/<key>/<version>.woff2
 }
 
+// QR card templates (qr-card-templates-fe-integration.md): A6 card designs a host prints a QR on.
+export interface QrCardTemplateDto {
+    id: string;
+    name: LocalizedText;
+    artworkUrl: string; // FE-origin path, /api/qr-card-artwork/<id>/<version>
+    textColor: string; // #RRGGBB
+    headingFont: EventThemeFontDto | null; // null = the card's own font
+    codeColor: string; // #RRGGBB, at least 4.5:1 against white
+    centerLogo: boolean;
+}
+
+// GET /api/events/{eventId}/qr-card-templates. available: the event has QR cards (drafts included).
+// templates: live, with artwork, for the event's type, sorted; empty when available is false.
+export interface QrCardTemplateListDto {
+    available: boolean;
+    templates: QrCardTemplateDto[];
+}
+
 // The event's look (event-theme-customization, 2026-10-05). Null when the event has
 // no preset, or when the theme module isn't readable for it (kill switch, plan,
 // event type) — then the app shows the default look. illustrationUrl is presigned.
@@ -1083,7 +1155,7 @@ export interface PartnerBrandingDto {
 
 // --- Vendors in the event ---
 
-export type VendorCapability = 'PRO_ALBUM' | 'SCHEDULE_EDIT' | 'ANNOUNCE' | 'RSVP_REPORT' | 'QR_READ' | 'SONG_REQUESTS';
+export type VendorCapability = 'PRO_ALBUM' | 'SCHEDULE_EDIT' | 'ANNOUNCE' | 'RSVP_REPORT' | 'QR_READ' | 'SONG_REQUESTS' | 'PRINT_PICKS';
 export type MediaCollection = 'GUEST' | 'PRO';
 // Why a vendor's tools are off. Null in VendorMeDto while they are open.
 export type VendorToolsOff = 'MODULE_OFF' | 'TYPE_NOT_ALLOWED' | 'ACCESS_ENDED';
@@ -1127,6 +1199,95 @@ export interface VendorMeDto {
     optedOut: boolean;
     hiddenByHost: boolean;
     toolsOff: VendorToolsOff | null;
+    // An approved partner, who can list priced services (print picks spec 2026-10-23).
+    approvedPartner: boolean;
+}
+
+// Print picks (spec 2026-10-23). Prices are euro cents.
+export type VendorServiceKind = 'PRINT' | 'OTHER';
+
+export interface VendorServiceItemDto {
+    id: string;
+    kind: VendorServiceKind;
+    label: string;
+    priceCents: number;
+    currency: string;
+    sortOrder: number;
+}
+
+// Only PRINT is accepted for now; OTHER is reserved.
+// Label max 40, price 0..100000 cents, sortOrder 0..999.
+export interface VendorServiceItemRequestDto {
+    kind: VendorServiceKind;
+    label: string;
+    priceCents: number;
+    sortOrder?: number;
+}
+
+export type GuestPrintScope = 'OFF' | 'OWN' | 'ANY';
+
+export interface PrintSizeDto {
+    id: string;
+    label: string;
+    priceCents: number;
+    currency: string;
+}
+
+export interface PrintPhotographerDto {
+    vendorId: string;
+    businessName: string | null;
+    logoUrl: string | null;
+    // Never null: only open photographers are listed.
+    accessEndsAt: string;
+    // Hosts and the photographer themself; null for guests.
+    hostPrintsIncluded: number | null;
+    // Empty when the photographer has no sizes or is not an approved partner.
+    sizes: PrintSizeDto[];
+}
+
+export interface PrintPicksContextDto {
+    guestScope: GuestPrintScope;
+    photographers: PrintPhotographerDto[];
+}
+
+export type PrintListOwnerKind = 'HOST' | 'GUEST';
+export type PrintListStatus = 'OPEN' | 'SENT';
+
+export interface PrintListItemDto {
+    id: string;
+    mediaId: string;
+    // Null once the photo was deleted from the gallery (removed is then true).
+    media: MediaResponseDto | null;
+    removed: boolean;
+    // Size and price are null for a photographer without sizes or who is not an approved partner.
+    sizeId: string | null;
+    sizeLabel: string | null;
+    unitPriceCents: number | null;
+    copies: number;
+}
+
+export interface PrintListDto {
+    // Null for a host list nobody has written to yet.
+    id: string | null;
+    vendorId: string;
+    ownerKind: PrintListOwnerKind;
+    status: PrintListStatus;
+    sentAt: string | null;
+    ownerName: string | null;
+    // Sent guest lists, photographer's view only.
+    contactEmail: string | null;
+    contactPhone: string | null;
+    // Copied at send; null on open lists.
+    totalCents: number | null;
+    removedCount: number;
+    items: PrintListItemDto[];
+}
+
+// PATCH of one print pick: size, copies, or both.
+export type PrintItemPatch = { sizeId?: string; copies?: number };
+
+export interface PrintListArchiveManifestDto {
+    parts: { part: number; itemCount: number; bytes: number }[];
 }
 
 // PATCH /api/events/{eventId}/vendors/{vendorId}: a host sends hiddenByHost, the vendor sends optedOut. Exactly one.
@@ -2197,6 +2358,73 @@ export interface FunnelChannelRowDto {
     createdEvent: number;
     paidHost: number;
     revenueMinorByCurrency: Record<string, number>;
+}
+
+// /api/admin/campaign-links. Made with the campaign link builder; only the name changes afterwards.
+// Spring stores the UTM values trimmed and lowercased, one link per (source, medium, campaign).
+export interface CampaignLinkDto {
+    id: string;
+    name: string;
+    destinationPath: string;
+    utmSource: string;
+    utmMedium: string;
+    utmCampaign: string;
+    createdAt: string;
+}
+
+export interface CampaignLinkRequestDto {
+    name: string;
+    destinationPath: string;
+    utmSource: string;
+    utmMedium: string;
+    utmCampaign: string;
+}
+
+// GET /api/admin/metrics/campaigns. Visits and landing page clicks (saved links only) and sign-ups in
+// the range per (source, medium, campaign), sign-ups counted as on FunnelChannelRowDto, with the saved
+// link that has the same values. A saved link with nothing in the range is a row of zeros. Any of the
+// three values is null when the visit didn't have it.
+export interface CampaignRowDto {
+    utmSource: string | null;
+    utmMedium: string | null;
+    utmCampaign: string | null;
+    link: CampaignLinkDto | null;
+    visits: number;
+    visitors: number;
+    createClicks: number;
+    plansClicks: number;
+    planPicks: number;
+    signedUp: number;
+    createdEvent: number;
+    paidHost: number;
+    revenueMinorByCurrency: Record<string, number>;
+}
+
+// GET /api/admin/metrics/campaigns/overview. Every saved link (or one with ?link=) over a range.
+// daily lists every Athens day in the range, zeros included; empty when there's no visit at all.
+export interface CampaignOverviewDto {
+    visits: number;
+    visitors: number;
+    createClicks: number;
+    plansClicks: number;
+    planPicks: number;
+    signedUp: number;
+    paidHost: number;
+    revenueMinorByCurrency: Record<string, number>;
+    daily: { date: string; visits: number; visitors: number }[];
+    devices: { device: VisitorDevice; visits: number }[];
+    languages: { language: VisitorLanguage; visits: number }[];
+}
+
+// POST /api/public/campaign-visits. Spring always answers 204.
+export type CampaignVisitKind = 'VISIT' | 'CREATE' | 'PLANS' | 'PLAN';
+
+export interface CampaignVisitRequestDto {
+    kind: CampaignVisitKind;
+    utmSource: string;
+    utmMedium: string;
+    utmCampaign: string;
+    language: VisitorLanguage;
 }
 
 // GET /api/admin/metrics/visitors. Google Analytics numbers for the public pages over a range.
@@ -4141,6 +4369,44 @@ export interface AdminThemePresetPatchDto {
     titleColor?: string;
     clearHeadingFont?: boolean;
     clearTitleColor?: boolean;
+}
+
+// /api/admin/qr-card-templates — the whole catalog, archived and without artwork included.
+export interface AdminQrCardTemplateDto {
+    id: string;
+    name: LocalizedText;
+    eventTypes: EventTypeConvention[];
+    sortOrder: number;
+    archived: boolean;
+    artworkUrl: string | null; // null until uploaded; such a template isn't offered to hosts
+    textColor: string;
+    headingFont: AdminThemeFontSummaryDto | null;
+    codeColor: string;
+    centerLogo: boolean;
+}
+
+// POST /api/admin/qr-card-templates
+export interface AdminQrCardTemplateRequestDto {
+    name: LocalizedText;
+    eventTypes: EventTypeConvention[];
+    sortOrder: number;
+    textColor: string;
+    headingFontId?: string | null;
+    codeColor: string;
+    centerLogo: boolean;
+}
+
+// PATCH /api/admin/qr-card-templates/{id}. Omitted fields stay as they are.
+export interface AdminQrCardTemplatePatchDto {
+    name?: LocalizedText;
+    eventTypes?: EventTypeConvention[];
+    sortOrder?: number;
+    archived?: boolean;
+    textColor?: string;
+    headingFontId?: string;
+    clearHeadingFont?: boolean;
+    codeColor?: string;
+    centerLogo?: boolean;
 }
 
 // /api/admin/theme-fonts

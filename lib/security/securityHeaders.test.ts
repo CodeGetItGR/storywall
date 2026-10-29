@@ -42,7 +42,7 @@ describe('contentSecurityPolicy', () => {
         expect(csp.get('base-uri')).toEqual(["'self'"]);
         expect(csp.get('frame-ancestors')).toEqual(["'none'"]);
         expect(csp.get('form-action')).toEqual(["'self'"]);
-        expect(csp.get('worker-src')).toEqual(["'self'"]);
+        expect(csp.get('worker-src')).toEqual(["'self'", 'blob:']);
         expect(csp.get('font-src')).toEqual(["'self'"]);
     });
 
@@ -62,7 +62,8 @@ describe('contentSecurityPolicy', () => {
                 ]),
             );
         }
-        expect(csp.get('img-src')).toEqual(expect.arrayContaining(["'self'", 'data:', 'blob:', 'https://images.pexels.com']));
+        expect(csp.get('img-src')).toEqual(expect.arrayContaining(["'self'", 'data:', 'blob:']));
+        expect(csp.get('img-src')).not.toContain('https://images.pexels.com');
         expect(csp.get('media-src')).toEqual(expect.arrayContaining(["'self'", 'blob:']));
     });
 
@@ -161,7 +162,6 @@ describe('workerContentSecurityPolicy', () => {
                 'https://accounts.google.com/gsi/',
                 'https://accounts.google.com/gsi/client',
                 'https://appleid.cdn-apple.com',
-                'https://images.pexels.com',
                 'https://acct.r2.cloudflarestorage.com',
                 'https://*.acct.r2.cloudflarestorage.com',
             ]),

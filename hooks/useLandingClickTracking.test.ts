@@ -7,6 +7,9 @@ import { landingClickAttributes, landingFaqAttributes, landingNavTarget } from '
 const { track } = vi.hoisted(() => ({ track: vi.fn() }));
 vi.mock('@vercel/analytics', () => ({ track }));
 
+const { sendCampaignClick } = vi.hoisted(() => ({ sendCampaignClick: vi.fn() }));
+vi.mock('@/lib/campaignVisits', () => ({ sendCampaignClick }));
+
 function attributes(record: Record<string, string>) {
     return Object.entries(record)
         .map(([name, value]) => `${name}='${value}'`)
@@ -18,6 +21,7 @@ function mountLanding() {
     document.body.innerHTML = `
         <main id="landing">
             <a href="#create" id="create" ${attributes(landingClickAttributes({ event: 'create', placement: 'hero' }))}><span id="createLabel">Create</span></a>
+            <a href="#pricing" id="plans" ${attributes(landingClickAttributes({ event: 'plans', placement: 'hero' }))}>See plans</a>
             <a href="#pricing" id="nav" ${attributes(landingClickAttributes({ event: 'nav', placement: 'header', target: 'pricing' }))}>Plans</a>
             <a href="#plan" id="plan" ${attributes(landingClickAttributes({ event: 'plan', plan: 'wedding/STORY', months: 6 }))}>Choose plan</a>
             <a href="#plain" id="plain">Untracked</a>
@@ -38,6 +42,7 @@ function click(id: string) {
 
 beforeEach(() => {
     track.mockClear();
+    sendCampaignClick.mockClear();
     mountLanding();
 });
 
@@ -90,5 +95,22 @@ describe('landingNavTarget', () => {
         expect(landingNavTarget('#experience')).toBe('features');
         expect(landingNavTarget('#platformStories')).toBe('stories');
         expect(landingNavTarget('#somewhere')).toBe('somewhere');
+    });
+});
+
+describe('campaign clicks', () => {
+    it('reports create and plan clicks, and nothing for other clicks', () => {
+        click('create');
+        click('plan');
+        click('nav');
+        click('plain');
+
+        expect(sendCampaignClick.mock.calls).toEqual([['CREATE'], ['PLAN']]);
+    });
+
+    it('reports the See plans button', () => {
+        click('plans');
+
+        expect(sendCampaignClick).toHaveBeenCalledExactlyOnceWith('PLANS');
     });
 });

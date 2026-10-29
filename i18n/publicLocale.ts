@@ -37,6 +37,41 @@ export function isQrWeddingPath(pathname: string | null): boolean {
     return locales.some((locale) => QR_WEDDING_PATHS[locale] === pathname);
 }
 
+// The contact and legal pages: the English path, and the same path under /el for Greek.
+// Each page lives once at its English path; proxy.ts renders the Greek URL from it in Greek.
+export const LEGAL_PAGE_PATHS = [
+    '/contact',
+    '/legal/terms',
+    '/legal/privacy',
+    '/legal/cookies',
+    '/legal/withdrawal-terms',
+    '/legal/community-guidelines',
+] as const;
+
+export type LegalPagePath = (typeof LEGAL_PAGE_PATHS)[number];
+
+export function getLegalPagePath(path: LegalPagePath, locale: Locale): string {
+    return locale === defaultLocale ? path : `/${locale}${path}`;
+}
+
+// The legal page a URL shows, and in which language. Null for every other path.
+export function legalPageForPath(pathname: string): { path: LegalPagePath; locale: Locale } | null {
+    for (const locale of locales) {
+        const path = LEGAL_PAGE_PATHS.find((candidate) => getLegalPagePath(candidate, locale) === pathname);
+        if (path) return { path, locale };
+    }
+    return null;
+}
+
+// A site link in the given language: a contact or legal page link moves to that language's URL,
+// keeping its query and hash. Every other link comes back unchanged.
+export function localizeLegalHref(href: string, locale: Locale): string {
+    const pathEnd = href.search(/[?#]/);
+    const path = pathEnd === -1 ? href : href.slice(0, pathEnd);
+    const legalPath = LEGAL_PAGE_PATHS.find((candidate) => candidate === path);
+    return legalPath ? `${getLegalPagePath(legalPath, locale)}${href.slice(path.length)}` : href;
+}
+
 // The language a public page is written in, read from its URL alone so
 // crawlers get the same language as visitors. Null for every other path.
 export function publicPageLocale(pathname: string): Locale | null {
@@ -51,5 +86,7 @@ export function publicPageLocale(pathname: string): Locale | null {
 export function publicTwinPath(pathname: string | null, target: Locale): string | null {
     if (isPublicLandingPath(pathname)) return getPublicLandingPath(target);
     if (isForBusinessPath(pathname)) return getForBusinessPath(target);
+    const legalPage = pathname ? legalPageForPath(pathname) : null;
+    if (legalPage) return getLegalPagePath(legalPage.path, target);
     return null;
 }

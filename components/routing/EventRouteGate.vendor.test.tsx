@@ -37,6 +37,7 @@ function vendor(overrides: Partial<VendorMeDto> = {}): VendorMeDto {
         optedOut: false,
         hiddenByHost: false,
         toolsOff: null,
+        approvedPartner: false,
         ...overrides,
     };
 }

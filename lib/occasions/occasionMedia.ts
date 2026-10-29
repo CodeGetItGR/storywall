@@ -34,20 +34,6 @@ const BAPTISM_TABLE = asset('baptism-celebration-at-the-table', 1448, 1086);
 const BAPTISM_OUTSIDE = asset('happy-baptism-celebration-outside-the-church-on-a-greek-island', 1536, 1024);
 
 const MEDIA: Partial<Record<EventTypeConvention, OccasionMedia>> = {
-    WEDDING: {
-        // The landing's hero already shows a wedding.
-        heroFeed: null,
-        moments: [
-            [INVITATION_PHOTO, RSVP_PHOTO, asset('01-bachelor-santorini', 1536, 1024)],
-            [
-                asset('02-bride-preparation-santorini', 1536, 1024),
-                asset('03-wedding-ceremony-santorini', 1536, 1024),
-                asset('04-wedding-reception-santorini', 1536, 1024),
-            ],
-            [WISH_PHOTO, asset('05-honeymoon-paris', 1448, 1086)],
-        ],
-        finalImage: asset('storywall-final-cta-wedding-santorini', 1448, 1086),
-    },
     BAPTISM: {
         heroFeed: {
             cover: { ...BAPTISM_OUTSIDE, position: '50% 35%' },

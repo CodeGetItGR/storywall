@@ -3,13 +3,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
+import { adminQrCardTemplateKeys } from '@/hooks/useAdminQrCardTemplates';
 import { adminThemePresetKeys } from '@/hooks/useAdminThemePresets';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { AdminThemeFontDto, AdminThemeFontPatchDto, AdminThemeFontRequestDto } from '@/lib/api/types';
 
 // Admin theme font catalog (/api/admin/theme-fonts). Every write refetches the list, and the
-// presets too: their rows and font picker carry font summaries.
+// presets and QR card designs too: their rows and font pickers carry font summaries.
 
 export const adminThemeFontKeys = {
     all: ['admin', 'theme-fonts'] as const,
@@ -27,6 +28,7 @@ function useRefreshThemeFonts() {
     return useCallback(() => {
         void queryClient.invalidateQueries({ queryKey: adminThemeFontKeys.all });
         void queryClient.invalidateQueries({ queryKey: adminThemePresetKeys.all });
+        void queryClient.invalidateQueries({ queryKey: adminQrCardTemplateKeys.all });
     }, [queryClient]);
 }
 

@@ -4,14 +4,15 @@
 // `X-Frame-Options: SAMEORIGIN`, so we extract the place from the link and
 // rebuild it in that form instead of reusing the original path.
 
-const SHORT_LINK_HOSTS = new Set(['maps.app.goo.gl', 'goo.gl']);
+const SHORT_LINK_HOSTS = new Set(['maps.app.goo.gl', 'goo.gl', 'share.google']);
 
 function isGoogleHost(hostname: string): boolean {
     return /(^|\.)google\.[a-z.]+$/.test(hostname);
 }
 
-// `maps.app.goo.gl/…` is what the Share button in Google Maps produces. It
-// carries no place info until its redirect is followed (see /api/maps/resolve).
+// `maps.app.goo.gl/…` and `share.google/…` are what the Share button in Google
+// Maps produces. They carry no place info until their redirects are followed
+// (see /api/maps/resolve).
 export function isGoogleMapsShortLink(url: string | null): boolean {
     if (!url) return false;
     try {
@@ -23,18 +24,36 @@ export function isGoogleMapsShortLink(url: string | null): boolean {
     }
 }
 
-// Returns the long google.com Maps URL a redirect points at, or null when the
-// target is anything else. Google may bounce through its consent page first;
-// the real destination then sits in its `continue` param.
-export function readGoogleMapsRedirect(location: string | null, base: string): string | null {
+// The Google URL a redirect points at, or null when it leads anywhere else.
+// Google may bounce through its consent page first; the real destination then
+// sits in its `continue` param.
+function readGoogleRedirect(location: string | null, base: string): URL | null {
     if (!location) return null;
     try {
         const target = new URL(location, base);
-        if (target.hostname === 'consent.google.com') return readGoogleMapsRedirect(target.searchParams.get('continue'), base);
-        return isGoogleHost(target.hostname) && target.pathname.startsWith('/maps') ? target.toString() : null;
+        if (target.hostname === 'consent.google.com') return readGoogleRedirect(target.searchParams.get('continue'), base);
+        return isGoogleHost(target.hostname) ? target : null;
     } catch {
         return null;
     }
+}
+
+// Returns the long google.com URL of the place a redirect points at, or null
+// when the target is anything else. A `share.google` link ends on a Google
+// Search for the place: `kgmid` marks a known place and `q` is its name.
+export function readGoogleMapsRedirect(location: string | null, base: string): string | null {
+    const target = readGoogleRedirect(location, base);
+    if (!target) return null;
+    if (target.pathname.startsWith('/maps')) return target.toString();
+    const isPlaceSearch = target.pathname === '/search' && Boolean(target.searchParams.get('q')?.trim()) && target.searchParams.has('kgmid');
+    return isPlaceSearch ? target.toString() : null;
+}
+
+// A `share.google` link first redirects to google.com/share.google, which
+// redirects again to the place. Returns that middle step to follow, or null.
+export function readGoogleShareRedirect(location: string | null, base: string): string | null {
+    const target = readGoogleRedirect(location, base);
+    return target?.pathname === '/share.google' ? target.toString() : null;
 }
 
 function extractPlaceQuery(parsed: URL): string | null {

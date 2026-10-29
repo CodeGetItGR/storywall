@@ -21,13 +21,8 @@ export function VendorListingSection({
     const t = useTranslations('Vendors');
 
     return (
-        <section aria-labelledby="vendor-listing-title">
-            {/* Title */}
-            <h2 id="vendor-listing-title" className="text-sm font-semibold text-ink">
-                {t('me.listingTitle')}
-            </h2>
-
-            {/* Switch */}
+        <section>
+            {/* Switch: its label names the section */}
             <CookieSwitchRow
                 label={t('me.listingSwitch')}
                 description={hiddenByHost ? t('me.listingHiddenByHost') : ''}

@@ -4,6 +4,7 @@ import { Dialog } from '@base-ui/react/dialog';
 import { X } from 'lucide-react';
 import { forwardRef, type ReactNode, useCallback } from 'react';
 
+import { usePortalScopeClass } from '@/components/ui/PortalScope';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import { cn } from '@/lib/utils';
 
@@ -53,6 +54,7 @@ export function Modal({
     const isDrawer = variant === 'drawer';
     const isOverStory = layer === 'overStory';
     const { requestClose } = useOverlayHistory(open, onClose, dismissOnBack);
+    const scopeClass = usePortalScopeClass();
 
     const onOpenChange = useCallback(
         (nextOpen: boolean) => {
@@ -76,6 +78,7 @@ export function Modal({
                 <Dialog.Backdrop
                     forceRender
                     className={cn(
+                        scopeClass,
                         'motion-overlay fixed inset-0 bg-ink/60 opacity-100 backdrop-blur-sm data-closed:pointer-events-none data-closed:opacity-0',
                         isOverStory ? 'z-70' : 'z-50',
                     )}
@@ -84,6 +87,7 @@ export function Modal({
                 <Dialog.Popup
                     aria-label={ariaLabel}
                     className={cn(
+                        scopeClass,
                         'motion-surface fixed flex flex-col bg-background outline-none',
                         isOverStory ? 'z-70' : 'z-50',
                         isFull

@@ -3,10 +3,15 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { LegalPageShell } from '@/components/legal/LegalPageShell';
 
-vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
+const intl = vi.hoisted(() => ({ locale: 'en' }));
+
+vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => intl.locale }));
 vi.mock('@/components/common/Logo', () => ({ Logo: () => null }));
 
-afterEach(cleanup);
+afterEach(() => {
+    cleanup();
+    intl.locale = 'en';
+});
 
 describe('LegalPageShell', () => {
     it('is the scroll container, since the body never scrolls', () => {
@@ -20,5 +25,13 @@ describe('LegalPageShell', () => {
         expect(screen.getByRole('link', { name: 'terms' })).not.toHaveAttribute('aria-current');
         expect(screen.getByRole('link', { name: 'contact' })).toHaveAttribute('href', '/contact');
         expect(screen.getByRole('link', { name: 'withdrawal' })).toHaveAttribute('href', '/legal/withdrawal-terms');
+    });
+
+    it('keeps the links of a Greek page in Greek', () => {
+        intl.locale = 'el';
+        render(<LegalPageShell current="privacy">content</LegalPageShell>);
+        expect(screen.getByRole('link', { name: 'home' })).toHaveAttribute('href', '/el');
+        expect(screen.getByRole('link', { name: 'terms' })).toHaveAttribute('href', '/el/legal/terms');
+        expect(screen.getByRole('link', { name: 'contact' })).toHaveAttribute('href', '/el/contact');
     });
 });

@@ -60,9 +60,14 @@ export const endpoints = {
         vendorProfile: '/api/me/vendor-profile',
         vendorProfileLogo: '/api/me/vendor-profile/logo',
         vendorProfileDismissPartnerPrompt: '/api/me/vendor-profile/dismiss-partner-prompt',
+        vendorServices: '/api/me/vendor-profile/services',
+        vendorService: (serviceId: string) => `/api/me/vendor-profile/services/${serviceId}`,
     },
 
     contentNotices: { submit: '/api/content-notices' },
+
+    // Straight from the browser to Spring: no cookie, always 204.
+    campaignVisits: { record: '/api/public/campaign-visits' },
 
     newsletter: {
         subscribe: '/api/newsletter/subscribe',
@@ -73,6 +78,11 @@ export const endpoints = {
     partnerProgram: {
         summary: '/api/public/partner-program',
         applications: '/api/public/partner-applications',
+    },
+
+    // Read through the app's own cached route (app/api/site-notices), never straight from the browser.
+    siteNotices: {
+        live: '/api/public/site-notices',
     },
 
     notifications: {
@@ -107,6 +117,7 @@ export const endpoints = {
         members: (eventId: string) => `/api/events/${eventId}/members`,
         modules: (eventId: string) => `/api/events/${eventId}/modules`,
         themePresets: (eventId: string) => `/api/events/${eventId}/theme-presets`,
+        qrCardTemplates: (eventId: string) => `/api/events/${eventId}/qr-card-templates`,
         theme: (eventId: string) => `/api/events/${eventId}/theme`,
         memberRoles: (eventId: string) => `/api/events/${eventId}/member-roles`,
         sessions: (eventId: string) => `/api/events/${eventId}/sessions`,
@@ -185,6 +196,13 @@ export const endpoints = {
         vendorLinks: (eventId: string) => `/api/events/${eventId}/vendors/links`,
         vendorLinkReset: (eventId: string, vendorType: string) => `/api/events/${eventId}/vendors/links/${encodeURIComponent(vendorType)}/reset`,
         vendorMe: (eventId: string) => `/api/events/${eventId}/vendors/me`,
+        printPicks: (eventId: string) => `/api/events/${eventId}/print-picks`,
+        hostPrintList: (eventId: string, vendorId: string) => `/api/events/${eventId}/print-lists/host?vendorId=${encodeURIComponent(vendorId)}`,
+        hostPrintItems: (eventId: string) => `/api/events/${eventId}/print-lists/host/items`,
+        printItem: (eventId: string, itemId: string) => `/api/events/${eventId}/print-lists/items/${itemId}`,
+        vendorPrintsIncluded: (eventId: string) => `/api/events/${eventId}/vendors/me/prints-included`,
+        printListArchiveManifest: (eventId: string, listId: string) => `/api/events/${eventId}/print-lists/${listId}/archive/manifest`,
+        printListArchive: (eventId: string, listId: string, part: number) => `/api/events/${eventId}/print-lists/${listId}/archive?part=${part}`,
         vendorById: (eventId: string, vendorId: string) => `/api/events/${eventId}/vendors/${vendorId}`,
         vendorClicks: (eventId: string, vendorId: string) => `/api/events/${eventId}/vendors/${vendorId}/clicks`,
     },
@@ -356,6 +374,20 @@ export const endpoints = {
                 );
                 return `/api/admin/metrics/funnel/channels${params.length ? `?${params.join('&')}` : ''}`;
             },
+            campaigns: (since?: string | null, until?: string | null) => {
+                const params = [since ? `since=${encodeURIComponent(since)}` : null, until ? `until=${encodeURIComponent(until)}` : null].filter(
+                    Boolean,
+                );
+                return `/api/admin/metrics/campaigns${params.length ? `?${params.join('&')}` : ''}`;
+            },
+            campaignOverview: (since?: string | null, until?: string | null, linkId?: string | null) => {
+                const params = [
+                    since ? `since=${encodeURIComponent(since)}` : null,
+                    until ? `until=${encodeURIComponent(until)}` : null,
+                    linkId ? `link=${encodeURIComponent(linkId)}` : null,
+                ].filter(Boolean);
+                return `/api/admin/metrics/campaigns/overview${params.length ? `?${params.join('&')}` : ''}`;
+            },
             visitors: (since?: string | null, until?: string | null, fresh = false) => {
                 const params = [
                     since ? `since=${encodeURIComponent(since)}` : null,
@@ -421,6 +453,11 @@ export const endpoints = {
             list: '/api/admin/theme-presets',
             byId: (id: string) => `/api/admin/theme-presets/${id}`,
             illustration: (id: string) => `/api/admin/theme-presets/${id}/illustration`,
+        },
+        qrCardTemplates: {
+            list: '/api/admin/qr-card-templates',
+            byId: (id: string) => `/api/admin/qr-card-templates/${id}`,
+            artwork: (id: string) => `/api/admin/qr-card-templates/${id}/artwork`,
         },
         themeFonts: {
             list: '/api/admin/theme-fonts',
@@ -488,6 +525,19 @@ export const endpoints = {
             list: '/api/admin/landing-categories',
             byId: (id: string) => `/api/admin/landing-categories/${id}`,
             eventTypes: (id: string) => `/api/admin/landing-categories/${id}/event-types`,
+        },
+        siteNotices: {
+            list: '/api/admin/site-notices',
+            byId: (id: string) => `/api/admin/site-notices/${id}`,
+        },
+        devices: {
+            list: '/api/admin/devices',
+            byId: (id: string) => `/api/admin/devices/${id}`,
+            testNotification: (id: string) => `/api/admin/devices/${id}/test-notification`,
+        },
+        campaignLinks: {
+            list: '/api/admin/campaign-links',
+            byId: (id: string) => `/api/admin/campaign-links/${id}`,
         },
         appReviews: {
             list: '/api/admin/app-reviews',

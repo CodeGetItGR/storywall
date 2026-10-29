@@ -14,6 +14,7 @@ import {
     vendorApplySearch,
     vendorInviteUrl,
     vendorLinkHref,
+    vendorLinkKind,
     vendorToolLinks,
 } from '@/lib/vendors';
 
@@ -31,6 +32,7 @@ function me(overrides: Partial<VendorMeDto> = {}): VendorMeDto {
         optedOut: false,
         hiddenByHost: false,
         toolsOff: null,
+        approvedPartner: false,
         ...overrides,
     };
 }
@@ -70,7 +72,7 @@ describe('capabilitiesOfType', () => {
     });
 
     it('gives photographers and videographers the Pro album', () => {
-        expect(capabilitiesOfType('PHOTOGRAPHER')).toEqual(['PRO_ALBUM']);
+        expect(capabilitiesOfType('PHOTOGRAPHER')).toEqual(['PRO_ALBUM', 'PRINT_PICKS']);
         expect(capabilitiesOfType('VIDEOGRAPHER')).toEqual(['PRO_ALBUM']);
     });
 
@@ -185,12 +187,18 @@ describe('hasProAllowance', () => {
 describe('vendorToolLinks', () => {
     it('lists a planner’s four tools in a fixed order', () => {
         expect(vendorToolLinks('e1', me()).map((tool) => tool.key)).toEqual(['schedule', 'announcement', 'rsvpReport', 'qr']);
-        expect(vendorToolLinks('e1', me()).find((tool) => tool.key === 'rsvpReport')?.href).toBe('/events/e1/manage/rsvp/reports/FULL_LIST?from=vendor');
+        expect(vendorToolLinks('e1', me()).find((tool) => tool.key === 'rsvpReport')?.href).toBe(
+            '/events/e1/manage/rsvp/reports/FULL_LIST?from=vendor',
+        );
     });
 
     it('gives the DJ the live list and a photographer nothing (their tool is on the page)', () => {
         expect(vendorToolLinks('e1', me({ vendorType: 'MUSIC', capabilities: ['SONG_REQUESTS'] })).map((tool) => tool.key)).toEqual(['liveRequests']);
         expect(vendorToolLinks('e1', me({ vendorType: 'PHOTOGRAPHER', capabilities: ['PRO_ALBUM'] }))).toEqual([]);
+    });
+
+    it('adds no link for print picks (it is a section of the vendor page)', () => {
+        expect(vendorToolLinks('e1', me({ vendorType: 'PHOTOGRAPHER', capabilities: ['PRO_ALBUM', 'PRINT_PICKS'] }))).toEqual([]);
     });
 
     it('lists nothing once access has closed', () => {
@@ -199,8 +207,21 @@ describe('vendorToolLinks', () => {
 
     it('leaves out tools whose module is off', () => {
         expect(vendorToolLinks('e1', me(), new Set(['gallery'])).map((tool) => tool.key)).toEqual(['schedule', 'announcement', 'qr']);
-        expect(vendorToolLinks('e1', me({ vendorType: 'MUSIC', capabilities: ['SONG_REQUESTS'] }), new Set(['playlist'])).map((tool) => tool.key)).toEqual([
-            'liveRequests',
-        ]);
+        expect(
+            vendorToolLinks('e1', me({ vendorType: 'MUSIC', capabilities: ['SONG_REQUESTS'] }), new Set(['playlist'])).map((tool) => tool.key),
+        ).toEqual(['liveRequests']);
+    });
+});
+
+describe('vendorLinkKind', () => {
+    it('names Instagram for a handle or an instagram.com link, and Website for any other link', () => {
+        expect(vendorLinkKind('@studio.x')).toBe('instagram');
+        expect(vendorLinkKind('https://www.instagram.com/studio.x')).toBe('instagram');
+        expect(vendorLinkKind('https://studio.gr')).toBe('website');
+    });
+
+    it('names nothing without a usable link', () => {
+        expect(vendorLinkKind(null)).toBeNull();
+        expect(vendorLinkKind('http://studio.gr')).toBeNull();
     });
 });

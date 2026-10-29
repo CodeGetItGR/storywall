@@ -38,7 +38,7 @@ export function PlanModuleConfigPopover({
             <Popover.Root open onOpenChange={handleOpenChange}>
                 <Popover.Portal>
                     <Popover.Positioner anchor={anchor} side="bottom" align="start" sideOffset={6} className="z-40">
-                        <Popover.Popup className="w-[min(360px,calc(100vw-32px))] rounded-xl border border-border bg-card p-4 text-ink shadow-[0_20px_50px_-20px_rgba(18,20,28,0.4)] outline-none">
+                        <Popover.Popup className="admin-shell w-[min(360px,calc(100vw-32px))] rounded-xl border border-border bg-card p-4 text-ink shadow-[0_20px_50px_-20px_rgba(18,20,28,0.4)] outline-none">
                             {/* Title */}
                             <Popover.Title className="text-sm font-bold text-ink">
                                 {t('plans.grid.cell.title', { module: moduleName, plan: plan.name })}

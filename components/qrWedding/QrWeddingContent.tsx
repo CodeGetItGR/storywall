@@ -13,7 +13,7 @@ import { QrWeddingGuide } from '@/components/qrWedding/QrWeddingGuide';
 import { QrWeddingHero } from '@/components/qrWedding/QrWeddingHero';
 import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
-import { occasionMedia } from '@/lib/occasions/occasionMedia';
+import { WEDDING_FINAL_CTA_IMAGE } from '@/lib/occasions/weddingMedia';
 import { QR_WEDDING_CREATE_HREF } from '@/lib/qrWeddingPage';
 import type { FaqEntry } from '@/lib/structuredData';
 import { LandingMotionProvider } from '@/providers/LandingMotionProvider';
@@ -62,7 +62,7 @@ export async function QrWeddingContent({ locale }: { locale: Locale }) {
                     />
 
                     {/* Final call to action */}
-                    <LandingFinalCta copy={finalCta} href={QR_WEDDING_CREATE_HREF} image={occasionMedia('WEDDING')?.finalImage} />
+                    <LandingFinalCta copy={finalCta} href={QR_WEDDING_CREATE_HREF} image={WEDDING_FINAL_CTA_IMAGE} />
 
                     {/* Footer */}
                     <LandingFooter anchorBase={getPublicLandingPath(locale)} />

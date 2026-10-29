@@ -1,10 +1,12 @@
-import { motion, type TargetAndTransition, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { useLandingHeroFeedTravel } from '@/hooks/useLandingHeroFeedTravel';
+import { type LandingHeroFloat, useLandingHeroFloat } from '@/hooks/useLandingHeroFloat';
 import { landingHeroImageSizes, landingHeroSpriteSizes } from '@/lib/landingHero';
+import { cn } from '@/lib/utils';
 
 const HERO_SPRITES = [
     {
@@ -185,8 +187,10 @@ const HERO_SPRITES = [
     },
 ] as const;
 
-const HERO_VISUAL_CLASS =
-    'pointer-events-none relative z-10 order-2 left-[3.7vw] mt-[42px] aspect-[1136/1204] w-[137vw] max-w-none justify-self-center self-center min-[761px]:order-none min-[761px]:left-auto min-[761px]:m-0 min-[761px]:w-[min(780px,43vw)] min-[761px]:justify-self-start';
+const HERO_VISUAL_BASE_CLASS = 'pointer-events-none relative z-10 aspect-[1136/1204] max-w-none';
+// The landing's size and place in its hero grid; an occasion page may pass its own.
+const HERO_VISUAL_PLACEMENT_CLASS =
+    'order-2 left-[3.7vw] mt-[42px] w-[137vw] justify-self-center self-center min-[761px]:order-none min-[761px]:left-auto min-[761px]:m-0 min-[761px]:w-[min(780px,43vw)] min-[761px]:justify-self-start';
 
 const PHONE_WRAP_CLASS =
     'absolute aspect-[748/1541] left-[19.28%] top-[3.78%] w-[56.47%] z-[5] min-[761px]:left-[23.5%] min-[761px]:top-[5.21%] min-[761px]:w-[43.7%]';
@@ -215,32 +219,45 @@ const HERO_SPRITE_MOTION = {
     'motion-hero-pulse-flash': { x: [-2, 3, -2], y: [2, -8, 2], rotate: [-1.2, 1.8, -1.2], scale: [0.965, 1.045, 0.965] },
     'motion-hero-note-float': { x: [-4, 7, -4], y: [4, -14, 4], rotate: [-4.5, 5, -4.5], scale: [0.99, 1.035, 0.99] },
     'motion-hero-heart-float': { x: [-2, 5, -2], y: [3, -10, 3], rotate: [-1.2, 1.8, -1.2], scale: [0.985, 1.03, 0.985] },
-} satisfies Record<(typeof HERO_SPRITES)[number]['motionClass'], TargetAndTransition>;
+} satisfies Record<(typeof HERO_SPRITES)[number]['motionClass'], LandingHeroFloat['keyframes']>;
+
+// The phone's bob, then each sprite's drift keyed by its source.
+const HERO_FLOATS: Record<string, LandingHeroFloat> = {
+    phone: { keyframes: { y: [0, -7, 0] }, duration: 7 },
+    ...Object.fromEntries(
+        HERO_SPRITES.map((sprite) => [
+            sprite.src,
+            {
+                keyframes: HERO_SPRITE_MOTION[sprite.motionClass],
+                duration: Number.parseFloat(sprite.duration),
+                delay: Number.parseFloat(sprite.delay),
+            },
+        ]),
+    ),
+};
 
 // The floating post that sits on the phone's right, after the first one.
 const SECOND_POST_SRC = '/landing/sw-scene-item-sw-post-2.webp';
 
 type LandingHeroVisualProps = {
     motionPaused: boolean;
+    // Replaces the landing's size and place in its hero grid.
+    className?: string;
     // An occasion page's own phone feed and two post cards, in place of the wedding screenshots.
     feed?: ReactNode;
     posts?: readonly [ReactNode, ReactNode];
 };
 
-export function LandingHeroVisual({ motionPaused, feed, posts }: LandingHeroVisualProps) {
+export function LandingHeroVisual({ motionPaused, className, feed, posts }: LandingHeroVisualProps) {
     const t = useTranslations('LandingPage.imageAlts');
-    const reduceMotion = useReducedMotion();
+    const floats = useLandingHeroFloat(HERO_FLOATS, motionPaused);
     const { screenRef, trackRef } = useLandingHeroFeedTravel();
     const [firstSprite, ...restSprites] = HERO_SPRITES;
 
     return (
-        <div className={HERO_VISUAL_CLASS}>
+        <div className={cn(HERO_VISUAL_BASE_CLASS, className ?? HERO_VISUAL_PLACEMENT_CLASS)}>
             {/* Floating social post */}
-            <motion.div
-                animate={reduceMotion ? undefined : HERO_SPRITE_MOTION[firstSprite.motionClass]}
-                className={firstSprite.posClass}
-                transition={{ duration: Number.parseFloat(firstSprite.duration), ease: 'easeInOut', repeat: Infinity }}
-            >
+            <motion.div className={firstSprite.posClass} style={floats[firstSprite.src]}>
                 {posts ? (
                     posts[0]
                 ) : (
@@ -255,11 +272,7 @@ export function LandingHeroVisual({ motionPaused, feed, posts }: LandingHeroVisu
                 )}
             </motion.div>
             {/* Phone feed */}
-            <motion.div
-                animate={reduceMotion ? undefined : { y: [0, -7, 0] }}
-                className={PHONE_WRAP_CLASS}
-                transition={{ duration: 7, ease: 'easeInOut', repeat: Infinity }}
-            >
+            <motion.div className={PHONE_WRAP_CLASS} style={floats.phone}>
                 <div
                     className="absolute top-[2.1%] right-[4.55%] bottom-[2.1%] left-[4.68%] z-[1] overflow-hidden rounded-[10.5%/4.8%] bg-white"
                     ref={screenRef}
@@ -294,15 +307,10 @@ export function LandingHeroVisual({ motionPaused, feed, posts }: LandingHeroVisu
             {/* Surrounding reactions and posts */}
             {restSprites.map((sprite) => (
                 <motion.div
-                    animate={reduceMotion ? undefined : HERO_SPRITE_MOTION[sprite.motionClass]}
                     className={sprite.posClass}
                     key={sprite.src}
-                    transition={{
-                        duration: Number.parseFloat(sprite.duration),
-                        ease: 'easeInOut',
-                        repeat: Infinity,
-                        delay: Number.parseFloat(sprite.delay),
-                    }}
+                    // Each sprite's drift, held where it is while landing motion is paused.
+                    style={floats[sprite.src]}
                 >
                     {posts && sprite.src === SECOND_POST_SRC ? (
                         posts[1]
