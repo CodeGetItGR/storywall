@@ -44,7 +44,8 @@ export const EVENT_MODULE_KEYS = [
 export type ModuleKeyConvention = (typeof EVENT_MODULE_KEYS)[number];
 // Post.type is enforced server-side against this exact set (DB CHECK constraint
 // + matching DTO validation) — not a free-string convention like the others.
-export type PostType = 'TEXT' | 'MEDIA' | 'ANNOUNCEMENT' | 'PLAYLIST';
+// SNEAK_PEEK is made only through the vendor's sneak-peek endpoint, never POST /api/posts.
+export type PostType = 'TEXT' | 'MEDIA' | 'ANNOUNCEMENT' | 'PLAYLIST' | 'SNEAK_PEEK';
 export type MediaTypeConvention = 'IMAGE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT';
 // Each context needs its own module: GALLERY → gallery, STORY → stories,
 // POST → posts (plan-owned-modules-fe-integration.md §4).
@@ -785,7 +786,15 @@ export type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 // resolves the route itself. Closed but growable set; treat an unrecognized value defensively.
 // See docs/integration guides/notification-cta-target-fe-integration.md.
 export type NotificationCtaTarget =
-    'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS' | 'EVENT_COVERAGE_EXTEND' | 'EVENT_WISHBOOK' | 'EVENT_VENDORS' | 'EVENT_VENDOR_PAGE';
+    | 'EVENT_PLAN_SETTINGS'
+    | 'EVENT_GALLERY'
+    | 'EVENT_GUESTS'
+    | 'EVENT_COVERAGE_EXTEND'
+    | 'EVENT_WISHBOOK'
+    | 'EVENT_VENDORS'
+    | 'EVENT_VENDOR_PAGE'
+    // One post over the feed, { eventId, postId } (sneak peek, 2026-10-29).
+    | 'EVENT_POST';
 
 export interface NotificationResponseDto {
     id: string;
@@ -1155,7 +1164,7 @@ export interface PartnerBrandingDto {
 
 // --- Vendors in the event ---
 
-export type VendorCapability = 'PRO_ALBUM' | 'SCHEDULE_EDIT' | 'ANNOUNCE' | 'RSVP_REPORT' | 'QR_READ' | 'SONG_REQUESTS' | 'PRINT_PICKS';
+export type VendorCapability = 'PRO_ALBUM' | 'SCHEDULE_EDIT' | 'ANNOUNCE' | 'RSVP_REPORT' | 'QR_READ' | 'SONG_REQUESTS' | 'PRINT_PICKS' | 'SNEAK_PEEK';
 export type MediaCollection = 'GUEST' | 'PRO';
 // Why a vendor's tools are off. Null in VendorMeDto while they are open.
 export type VendorToolsOff = 'MODULE_OFF' | 'TYPE_NOT_ALLOWED' | 'ACCESS_ENDED';
@@ -1201,6 +1210,48 @@ export interface VendorMeDto {
     toolsOff: VendorToolsOff | null;
     // An approved partner, who can list priced services (print picks spec 2026-10-23).
     approvedPartner: boolean;
+    // Null for types without the sneak peek (spec 2026-10-29).
+    sneakPeek: SneakPeekSummaryDto | null;
+}
+
+// One sneak peek per vendor per event. `used` stays true after a delete (postId and content null, mediaIds empty).
+export interface SneakPeekSummaryDto {
+    postId: string | null;
+    mediaIds: string[];
+    content: string | null;
+    used: boolean;
+}
+
+// POST …/vendors/me/sneak-peek: 1–20 of the vendor's own ready Pro items, in display order.
+export interface SneakPeekRequestDto {
+    mediaIds: string[];
+    content?: string | null;
+}
+
+// PATCH …/vendors/me/sneak-peek: an absent field is unchanged; content "" clears the caption.
+export interface SneakPeekPatchDto {
+    mediaIds?: string[];
+    content?: string;
+}
+
+// GET …/vendors/me/reach. Every vendor gets guests and listTaps; the optional fields come only for partners,
+// and the Pro ones only for types with a Pro album. partnerCardTaps is 0 when their card never ran here.
+export interface VendorReachDto {
+    guests: number;
+    listTaps: number;
+    proViewers?: number;
+    proViews?: number;
+    postViewers?: number;
+    reactions?: number;
+    comments?: number;
+    partnerCardTaps?: number;
+    partner: boolean;
+}
+
+// POST /api/events/{eventId}/views. Each list at most 50. Always 204 for members.
+export interface ContentViewsRequestDto {
+    mediaIds: string[];
+    postIds: string[];
 }
 
 // Print picks (spec 2026-10-23). Prices are euro cents.
@@ -1505,6 +1556,25 @@ export interface PartnerPortalResponseDto {
     tierProgress: PartnerTierProgressDto | null;
     // Every tap on the partner's feed cards, across all events (2026-10-08).
     brandingClicks: number;
+    // Across every event where the partner's account was a vendor (2026-10-29). Never null.
+    reach: PartnerPortalReachDto;
+}
+// No titles or ids: the portal opens with the link alone (KAN-28).
+export interface PartnerPortalReachEventDto {
+    startAt: string;
+    vendorType: PartnerRole;
+    guests: number;
+    // Pro item views plus post views.
+    views: number;
+}
+export interface PartnerPortalReachDto {
+    events: number;
+    guests: number;
+    proViews: number;
+    postViewers: number;
+    listTaps: number;
+    // The 10 most recent, newest first.
+    recent: PartnerPortalReachEventDto[];
 }
 // Counts only, nothing per event.
 export interface PartnerTierProgressDto {

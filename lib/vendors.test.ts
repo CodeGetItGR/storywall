@@ -33,6 +33,7 @@ function me(overrides: Partial<VendorMeDto> = {}): VendorMeDto {
         hiddenByHost: false,
         toolsOff: null,
         approvedPartner: false,
+        sneakPeek: null,
         ...overrides,
     };
 }
@@ -71,9 +72,9 @@ describe('capabilitiesOfType', () => {
         expect([...capabilitiesOfType('PLANNER')].sort()).toEqual(['ANNOUNCE', 'QR_READ', 'RSVP_REPORT', 'SCHEDULE_EDIT']);
     });
 
-    it('gives photographers and videographers the Pro album', () => {
-        expect(capabilitiesOfType('PHOTOGRAPHER')).toEqual(['PRO_ALBUM', 'PRINT_PICKS']);
-        expect(capabilitiesOfType('VIDEOGRAPHER')).toEqual(['PRO_ALBUM']);
+    it('gives photographers and videographers the Pro album and the sneak peek', () => {
+        expect(capabilitiesOfType('PHOTOGRAPHER')).toEqual(['PRO_ALBUM', 'PRINT_PICKS', 'SNEAK_PEEK']);
+        expect(capabilitiesOfType('VIDEOGRAPHER')).toEqual(['PRO_ALBUM', 'SNEAK_PEEK']);
     });
 
     it('gives music the song requests', () => {

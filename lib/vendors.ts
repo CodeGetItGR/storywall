@@ -32,6 +32,7 @@ const CAPABILITY_TYPES: Record<VendorCapability, readonly PartnerRole[]> = {
     QR_READ: ['PLANNER'],
     SONG_REQUESTS: ['MUSIC'],
     PRINT_PICKS: ['PHOTOGRAPHER'],
+    SNEAK_PEEK: ['PHOTOGRAPHER', 'VIDEOGRAPHER'],
 };
 
 export function capabilitiesOfType(type: PartnerRole): VendorCapability[] {
