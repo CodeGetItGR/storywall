@@ -7887,6 +7887,32 @@
         }
     },
     "Vendors": {
+        "sneakPeek": {
+            "title": "Sneak peek",
+            "notOpen": "You can share it once the event starts.",
+            "noItems": "Add photos or videos to your Pro album first.",
+            "ready": "Share up to 20 photos and videos with all guests. One per event.",
+            "choose": "Choose photos",
+            "used": "You already shared your sneak peek for this event.",
+            "seeInFeed": "See it in the feed",
+            "edit": "Edit",
+            "delete": "Delete",
+            "thumbAlt": "Sneak peek photo {index}",
+            "sheetTitle": "Sneak peek",
+            "picked": "{count} of 20 chosen",
+            "pickAlt": "Your Pro photo {index}",
+            "pick": "Choose photo {index}",
+            "unpick": "Remove photo {index}",
+            "more": "Show more",
+            "captionLabel": "Caption (optional)",
+            "share": "Share",
+            "save": "Save",
+            "cancel": "Cancel",
+            "deleteTitle": "Delete the sneak peek?",
+            "deleteBody": "Guests will no longer see it. You can't share another one for this event.",
+            "deleteConfirm": "Delete",
+            "deleteCancel": "Keep it"
+        },
         "prints": {
             "title": "Print order",
             "included": "Prints included for the host",
