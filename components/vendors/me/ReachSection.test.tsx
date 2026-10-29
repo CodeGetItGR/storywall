@@ -53,7 +53,7 @@ describe('ReachSection', () => {
                 { key: 'reactions', value: 33 },
             ],
         });
-        expect(screen.getByText('Saw your Pro work')).toBeInTheDocument();
+        expect(screen.getByText('Saw your photos and videos')).toBeInTheDocument();
         expect(screen.queryByText('Partners see the full report.')).toBeNull();
     });
 

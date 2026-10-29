@@ -74,8 +74,8 @@ describe('SneakPeekSheet', () => {
     });
 
     it('shows the error and loads more', () => {
-        const props = renderSheet({ error: 'Pick from your own Pro photos and videos.', hasMore: true });
-        expect(screen.getByRole('alert')).toHaveTextContent('Pick from your own Pro photos and videos.');
+        const props = renderSheet({ error: 'Pick from your own photos and videos.', hasMore: true });
+        expect(screen.getByRole('alert')).toHaveTextContent('Pick from your own photos and videos.');
         fireEvent.click(screen.getByRole('button', { name: 'Show more' }));
         expect(props.onLoadMoreAction).toHaveBeenCalled();
     });
