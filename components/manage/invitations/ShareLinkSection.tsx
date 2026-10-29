@@ -14,7 +14,7 @@ const ACTION_CLASS =
 const PRIMARY_ACTION_CLASS =
     'flex min-w-28 flex-1 items-center justify-center gap-2 rounded-full px-3 py-2.5 text-xs font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90';
 
-// The link written out, with copy and share.
+// Copy and share for the link, with a one-line note on what it's for.
 export function ShareLinkSection({ qrLink }: { qrLink: QrLinkResponseDto }) {
     const t = useTranslations('ManagePage');
     const tGlobal = useTranslations();
@@ -25,12 +25,12 @@ export function ShareLinkSection({ qrLink }: { qrLink: QrLinkResponseDto }) {
     return (
         <section aria-labelledby={`share-link-${qrLink.id}`}>
             {/* Header */}
-            <h2 id={`share-link-${qrLink.id}`} className="mb-2 text-sm font-semibold text-ink">
+            <h2 id={`share-link-${qrLink.id}`} className="mb-1 text-sm font-semibold text-ink">
                 {t('qr.sections.link')}
             </h2>
 
-            {/* Link */}
-            <p className="rounded-2xl bg-surface-muted px-4 py-3 font-mono text-xs leading-relaxed break-all text-ink select-all">{shareLink}</p>
+            {/* Note */}
+            <p className="text-xs leading-relaxed text-ink-muted">{t('qr.sections.linkNote')}</p>
 
             {/* Actions */}
             <div className="mt-3 flex flex-wrap gap-2">
