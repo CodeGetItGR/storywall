@@ -59,7 +59,6 @@ export const endpoints = {
         deletionRequests: '/api/me/deletion-requests',
         vendorProfile: '/api/me/vendor-profile',
         vendorProfileLogo: '/api/me/vendor-profile/logo',
-        vendorProfileDismissPartnerPrompt: '/api/me/vendor-profile/dismiss-partner-prompt',
         vendorServices: '/api/me/vendor-profile/services',
         vendorService: (serviceId: string) => `/api/me/vendor-profile/services/${serviceId}`,
     },

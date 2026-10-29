@@ -57,7 +57,6 @@ describe('useVendorMePage', () => {
         expect(result.current.canUploadPro).toBe(false);
         expect(result.current.canChooseListing).toBe(true);
         expect(result.current.listed).toBe(true);
-        expect(result.current.showPartnerPrompt).toBe(true);
     });
 
     it('opts out and back in', async () => {
@@ -78,12 +77,11 @@ describe('useVendorMePage', () => {
         expect(result.current.error).toBe('failed');
     });
 
-    it('has no tools or prompt for someone who is not a vendor', () => {
+    it('has no tools for someone who is not a vendor', () => {
         role.data = null;
         const { result } = renderHook(() => useVendorMePage('e1'));
         expect(result.current.me).toBeNull();
         expect(result.current.tools).toEqual([]);
-        expect(result.current.showPartnerPrompt).toBe(false);
     });
 
     it('keeps the Pro album for a photographer while the gallery and vendors modules are readable', () => {

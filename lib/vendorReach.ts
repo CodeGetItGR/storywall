@@ -32,3 +32,21 @@ export function reachTiles(reach: VendorReachDto): ReachTile[] {
 export function formatReachCount(locale: string, value: number): string {
     return new Intl.NumberFormat(locale).format(value);
 }
+
+// Made-up partner numbers, shown blurred behind the locked part of a non-partner's report. Never readable, never real data.
+const SAMPLE_VALUES: Partial<Record<ReachTileKey, number>> = {
+    proViewers: 96,
+    proViews: 1204,
+    postViewers: 88,
+    reactions: 57,
+    comments: 12,
+    partnerCardTaps: 9,
+};
+
+// The partner tiles a vendor of this kind would unlock: Pro numbers for types with a Pro album, post numbers for the rest.
+export function reachSampleTiles(hasProAlbum: boolean): ReachTile[] {
+    const keys: ReachTileKey[] = hasProAlbum
+        ? ['proViewers', 'proViews', 'reactions', 'comments']
+        : ['postViewers', 'reactions', 'comments', 'partnerCardTaps'];
+    return keys.map((key) => ({ key, value: SAMPLE_VALUES[key] ?? 0 }));
+}

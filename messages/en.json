@@ -7913,11 +7913,20 @@
         }
     },
     "Vendors": {
+        "hints": {
+            "tools": "What you can help run in this event.",
+            "proAlbum": "Your photos and videos in the gallery's Pro tab, with your name on them.",
+            "sneakPeek": "Share up to 20 photos and videos with all guests. One per event.",
+            "prints": "The photos the host picked to print.",
+            "reach": "How many guests saw your work.",
+            "printPrices": "Your price per print size. Hosts see it when they pick prints.",
+            "listing": "Guests find your details in the event's vendor list."
+        },
         "sneakPeek": {
+            "fanAlt": "Your photo {index}",
             "title": "Sneak peek",
             "notOpen": "You can share it once the event starts.",
             "noItems": "Add photos or videos to your Pro album first.",
-            "ready": "Share up to 20 photos and videos with all guests. One per event.",
             "choose": "Choose photos",
             "used": "You already shared your sneak peek for this event.",
             "seeInFeed": "See it in the feed",
@@ -7940,6 +7949,7 @@
             "deleteCancel": "Keep it"
         },
         "reach": {
+            "lockedLabel": "Views, reactions and comments",
             "title": "Reach",
             "tiles": {
                 "guests": "Guests",
@@ -7951,8 +7961,6 @@
                 "listTaps": "Opened your details",
                 "partnerCardTaps": "Partner card taps"
             },
-            "partnerLine": "Partners see the full report.",
-            "partnerAction": "Become a partner",
             "loadFailed": "Couldn't load your reach."
         },
         "prints": {
@@ -7973,8 +7981,8 @@
             "copies": "{count, plural, one {# copy} other {# copies}}"
         },
         "services": {
+            "lockedLabel": "Set your print prices",
             "title": "Print prices",
-            "partnerOnly": "Only approved partners can list prices.",
             "profileFirst": "Fill in your details first.",
             "empty": "No sizes yet.",
             "add": "Add size",
@@ -8053,6 +8061,9 @@
             "websiteOf": "{name} website"
         },
         "me": {
+            "profileAdd": "Add details",
+            "profileMissing": "Your business",
+            "heroPhotoAlt": "Your photo {index}",
             "title": "Your vendor page",
             "back": "Back",
             "notVendor": "You're not a vendor in this event.",
@@ -8084,7 +8095,6 @@
             "proDeleteCancel": "Keep",
             "listingSwitch": "Show me in the vendor list",
             "listingHiddenByHost": "The host hid you from the list.",
-            "profileTitle": "Your details",
             "profileEdit": "Edit",
             "groupEvent": "For this event",
             "groupSettings": "Your settings"
@@ -8114,11 +8124,43 @@
             "edit": "Edit"
         },
         "partner": {
-            "promptTitle": "Become a StoryWall partner",
-            "promptBody": "Get a discount code for your clients and appear on their events.",
-            "promptApply": "Apply",
-            "promptDismiss": "Don't show again",
-            "sheetTitle": "Apply to partner"
+            "title": "Become a StoryWall partner",
+            "youArePartner": "You're a StoryWall partner",
+            "nowTitle": "What you get",
+            "comingTitle": "Coming soon",
+            "become": "Become a partner",
+            "partnersOnly": "For partners",
+            "sheetTitle": "Apply to partner",
+            "benefits": {
+                "discount": {
+                    "title": "A discount for your clients",
+                    "body": "Your own code, and commission when clients use it."
+                },
+                "feedCard": {
+                    "title": "Your card in the feed",
+                    "body": "Guests see who made the day happen."
+                },
+                "reach": {
+                    "title": "Full reach report",
+                    "body": "Views, reactions and comments on your work."
+                },
+                "printPrices": {
+                    "title": "Print prices",
+                    "body": "Hosts see your prices when they pick prints."
+                },
+                "inquiries": {
+                    "title": "Guest inquiries",
+                    "body": "Guests ask about your dates from the event."
+                },
+                "printKit": {
+                    "title": "Co-branded print kit",
+                    "body": "QR cards with your logo next to ours."
+                },
+                "eventPacks": {
+                    "title": "Event packs",
+                    "body": "Buy events in bulk for your clients."
+                }
+            }
         },
         "invite": {
             "PLANNER": "You're invited as the planner.",
