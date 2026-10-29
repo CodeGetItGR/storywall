@@ -1,7 +1,7 @@
 # Vendor reach report and sneak peek — design
 
 Date: 2026-10-29
-Status: draft, awaiting review
+Status: approved
 Scope: two vendor features that show hosts and vendors the value of a vendor joining the event. Builds on [Vendors in the event](2026-10-19-vendors-in-the-event-design.md) (Pro album, vendor page, access window) and [Print picks](2026-10-23-print-picks-design.md) (the approved-partner match). The other ideas from the same brainstorm are Jira stories under epic KAN-17.
 
 ## Goal
@@ -120,7 +120,7 @@ For a non-partner the server returns the partner fields as null. It never sends 
 
 ### Partner portal
 
-- `PartnerPortalResponseDto` gains `reach`: totals across every event where an account matched to this collaborator was a vendor: `events`, `guests`, `proViews`, `postViewers`, `listTaps`, and the 10 most recent events (title, date, type, guests, views).
+- `PartnerPortalResponseDto` gains `reach`: totals across every event where an account matched to this collaborator was a vendor: `events`, `guests`, `proViews`, `postViewers`, `listTaps`, and the 10 most recent events (date, type, guests, views). No event titles or ids: the portal opens with the link alone and stays aggregate-only until it gets sign-in (KAN-28).
 - The portal shows it as a "Reach" section after earnings: stat tiles, then compact rows for the recent events.
 - Events whose host deleted them drop out.
 
