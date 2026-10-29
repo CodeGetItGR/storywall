@@ -24,6 +24,7 @@ import { getPublicLandingPath } from '@/i18n/publicLocale';
 import { LANDING_TOKENS_CLASS } from '@/lib/landingTokens';
 import type { OccasionCampaign } from '@/lib/occasions/campaigns';
 import { occasionFaqEntries, type OccasionFaqEntry, occasionFaqLinkHref } from '@/lib/occasions/occasionFaq';
+import type { OccasionLengthValues } from '@/lib/occasions/occasionLength';
 import { occasionCreateHref } from '@/lib/occasions/occasionLinks';
 import type { OccasionPriceValues } from '@/lib/occasions/occasionPrice';
 import { type Occasion, occasionAlternatePaths } from '@/lib/occasions/occasions';
@@ -41,6 +42,7 @@ type WeddingContentProps = {
     // null: no wedding demo; the demo band, the demo and the hero's demo link are left out.
     demoHref: string | null;
     featureKeys: string[];
+    length: OccasionLengthValues;
     locale: Locale;
     occasion: Occasion;
     price: OccasionPriceValues;
@@ -50,14 +52,14 @@ type WeddingContentProps = {
 };
 
 // The wedding page, section by section as in the design, with the landing's shared sections.
-export async function WeddingContent({ campaign, demoHref, featureKeys, locale, occasion, price, qrHref, theme }: WeddingContentProps) {
+export async function WeddingContent({ campaign, demoHref, featureKeys, length, locale, occasion, price, qrHref, theme }: WeddingContentProps) {
     const t = await getTranslations({ locale, namespace: 'OccasionPages.WEDDING' });
     const landing = await getTranslations({ locale, namespace: 'LandingPage' });
     const createHref = occasionCreateHref(occasion, campaign);
     const bold = (chunks: ReactNode) => <strong className="font-bold">{chunks}</strong>;
     const how = t.raw('how') as HowCopy;
     const demoHeading = t.raw('demo.heading') as string[];
-    const faq = occasionFaqEntries(t.raw('faq') as OccasionFaqEntry[], (key) => t(key, price)).map((entry): [string, ReactNode] => [
+    const faq = occasionFaqEntries(t.raw('faq') as OccasionFaqEntry[], (key) => t(key, { ...price, ...length })).map((entry): [string, ReactNode] => [
         entry.q,
         <WeddingFaqAnswer
             answer={entry.a}
