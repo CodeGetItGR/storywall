@@ -18,6 +18,7 @@ vi.mock('@/components/vendors/me/PrintsIncludedSheet', () => ({ PrintsIncludedSh
 vi.mock('@/components/vendors/me/ServicesSection', () => ({ ServicesSection: () => <p>services section</p> }));
 vi.mock('@/components/vendors/me/SneakPeekSection', () => ({ SneakPeekSection: () => <p>sneak peek section</p> }));
 vi.mock('@/components/vendors/me/SneakPeekSheet', () => ({ SneakPeekSheet: () => <p>sneak peek sheet</p> }));
+vi.mock('@/components/vendors/BecomePartnerSheet', () => ({ BecomePartnerSheet: () => null }));
 vi.mock('@/components/vendors/me/ServiceSheet', () => ({ ServiceSheet: () => <p>service sheet</p> }));
 vi.mock('@/components/ui/ConfirmActionModal', () => ({ ConfirmActionModal: () => null }));
 const prints = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
@@ -26,6 +27,8 @@ vi.mock('@/hooks/useVendorPrintsSection', () => ({ useVendorPrintsSection: () =>
 vi.mock('@/hooks/useVendorServicesSection', () => ({ useVendorServicesSection: () => services.value }));
 const sneakPeek = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
 vi.mock('@/hooks/useSneakPeekSection', () => ({ useSneakPeekSection: () => sneakPeek.value }));
+const reach = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
+vi.mock('@/hooks/useReachSection', () => ({ useReachSection: () => reach.value }));
 const page = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
 vi.mock('@/hooks/useVendorMePage', () => ({ useVendorMePage: () => page.value }));
 
@@ -64,6 +67,15 @@ beforeEach(() => {
     prints.value = { open: false, includedOpen: false, error: null };
     services.value = { visible: false, editing: null, confirmDelete: false, error: null };
     sneakPeek.value = { visible: false, state: 'hidden', sheet: null, confirmDelete: false };
+    reach.value = {
+        visible: false,
+        tiles: [],
+        partner: false,
+        showPartnerAction: false,
+        isLoading: false,
+        loadFailed: false,
+        partnerSheet: { sheetOpen: false, defaults: {}, search: '', openSheet: vi.fn(), closeSheet: vi.fn() },
+    };
 });
 afterEach(cleanup);
 
@@ -98,6 +110,19 @@ describe('VendorMeScreen', () => {
         render(<VendorMeScreen />);
         expect(screen.getByText('sneak peek section')).toBeTruthy();
         expect(screen.getByText('sneak peek sheet')).toBeTruthy();
+    });
+
+    it('shows the Reach section', () => {
+        reach.value = { ...reach.value, visible: true, tiles: [{ key: 'guests', value: 12 }] };
+        render(<VendorMeScreen />);
+        expect(screen.getByRole('heading', { name: 'title' })).toBeTruthy();
+        expect(screen.getByText('tiles.guests')).toBeTruthy();
+        expect(screen.getByText('12')).toBeTruthy();
+    });
+
+    it('hides the Reach section when it does not apply', () => {
+        render(<VendorMeScreen />);
+        expect(screen.queryByText('tiles.guests')).toBeNull();
     });
 
     it('hides the Sneak peek section when it does not apply', () => {

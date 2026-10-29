@@ -7,11 +7,13 @@ import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { Button } from '@/components/ui/button';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
+import { BecomePartnerSheet } from '@/components/vendors/BecomePartnerSheet';
 import { PartnerPromptCard } from '@/components/vendors/me/PartnerPromptCard';
 import { PrintsIncludedRow } from '@/components/vendors/me/PrintsIncludedRow';
 import { PrintsIncludedSheet } from '@/components/vendors/me/PrintsIncludedSheet';
 import { PrintsSection } from '@/components/vendors/me/PrintsSection';
 import { ProAlbumSection } from '@/components/vendors/me/ProAlbumSection';
+import { ReachSection } from '@/components/vendors/me/ReachSection';
 import { ServiceSheet } from '@/components/vendors/me/ServiceSheet';
 import { ServicesSection } from '@/components/vendors/me/ServicesSection';
 import { SneakPeekSection } from '@/components/vendors/me/SneakPeekSection';
@@ -22,6 +24,7 @@ import { VendorToolLinks } from '@/components/vendors/me/VendorToolLinks';
 import { VendorLogo } from '@/components/vendors/VendorLogo';
 import { VendorProfileSheet } from '@/components/vendors/VendorProfileSheet';
 import { VendorRowsSkeleton } from '@/components/vendors/VendorsSkeletons';
+import { useReachSection } from '@/hooks/useReachSection';
 import { useSneakPeekSection } from '@/hooks/useSneakPeekSection';
 import { useVendorMePage } from '@/hooks/useVendorMePage';
 import { useVendorPrintsSection } from '@/hooks/useVendorPrintsSection';
@@ -40,7 +43,8 @@ export function VendorMeScreen() {
     const prints = useVendorPrintsSection(eventId, me);
     const services = useVendorServicesSection(me, page.profileStatus);
     const sneakPeek = useSneakPeekSection(eventId, me, page.hasProAlbum);
-    const hasEventWork = page.tools.length > 0 || prints.open || page.hasProAlbum || sneakPeek.visible;
+    const reach = useReachSection(eventId, me);
+    const hasEventWork = page.tools.length > 0 || prints.open || page.hasProAlbum || sneakPeek.visible || reach.visible;
 
     return (
         <ModulePageShell
@@ -110,6 +114,18 @@ export function VendorMeScreen() {
                                     usedBytes={me.proUsedBytes ?? 0}
                                     allowanceBytes={me.proStorageBytes ?? 0}
                                     canUpload={page.canUploadPro}
+                                />
+                            )}
+
+                            {/* Reach */}
+                            {reach.visible && (
+                                <ReachSection
+                                    tiles={reach.tiles}
+                                    partner={reach.partner}
+                                    showPartnerAction={reach.showPartnerAction}
+                                    isLoading={reach.isLoading}
+                                    loadFailed={reach.loadFailed}
+                                    onBecomePartnerAction={reach.partnerSheet.openSheet}
                                 />
                             )}
                         </VendorMeGroup>
@@ -239,6 +255,14 @@ export function VendorMeScreen() {
                 confirmLabel={tSneakPeek('deleteConfirm')}
                 cancelLabel={tSneakPeek('deleteCancel')}
                 isConfirming={sneakPeek.isDeleting}
+            />
+
+            {/* Partner sheet, from the Reach section */}
+            <BecomePartnerSheet
+                open={reach.partnerSheet.sheetOpen}
+                defaults={reach.partnerSheet.defaults}
+                search={reach.partnerSheet.search}
+                onCloseAction={reach.partnerSheet.closeSheet}
             />
 
             {/* Service delete confirmation */}

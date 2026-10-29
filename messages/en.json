@@ -7913,6 +7913,22 @@
             "deleteConfirm": "Delete",
             "deleteCancel": "Keep it"
         },
+        "reach": {
+            "title": "Reach",
+            "tiles": {
+                "guests": "Guests",
+                "proViewers": "Saw your Pro work",
+                "proViews": "Pro views",
+                "postViewers": "Saw your posts",
+                "reactions": "Reactions",
+                "comments": "Comments",
+                "listTaps": "Opened your details",
+                "partnerCardTaps": "Partner card taps"
+            },
+            "partnerLine": "Partners see the full report.",
+            "partnerAction": "Become a partner",
+            "loadFailed": "Couldn't load your reach."
+        },
         "prints": {
             "title": "Print order",
             "included": "Prints included for the host",
