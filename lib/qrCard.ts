@@ -1,14 +1,19 @@
-import type { EventThemeFontDto, QrCardTemplateDto, QrTargetType } from '@/lib/api/types';
+import type { EventThemeFontDto, QrCardSize, QrCardTemplateDto, QrCardTextAlign, QrTargetType } from '@/lib/api/types';
+import { DEFAULT_QR_CARD_LAYOUT, type QrCardLayout } from '@/lib/qrCardLayout';
 
 // A6 portrait in millimetres: the card SVG's user units.
 export const QR_CARD_WIDTH = 105;
 export const QR_CARD_HEIGHT = 148;
-// 300 dpi at A6, for the PNG.
-export const QR_CARD_EXPORT_WIDTH = 1240;
-export const QR_CARD_EXPORT_HEIGHT = 1748;
-// A6 in PDF points (1/72 in).
-export const QR_CARD_PDF_WIDTH = 297.64;
-export const QR_CARD_PDF_HEIGHT = 419.53;
+
+// Each paper size a card prints at, 300 dpi for the PNG. The SVG is drawn once, in A6 millimetres;
+// these only set the output.
+export const QR_CARD_SIZES: Record<
+    QrCardSize,
+    { widthMm: number; heightMm: number; widthPx: number; heightPx: number; widthPt: number; heightPt: number }
+> = {
+    A6: { widthMm: 105, heightMm: 148, widthPx: 1240, heightPx: 1748, widthPt: 297.64, heightPt: 419.53 },
+    A5: { widthMm: 148, heightMm: 210, widthPx: 1748, heightPx: 2480, widthPt: 419.53, heightPt: 595.28 },
+};
 
 export const QR_CARD_TITLE_MAX = 40;
 export const QR_CARD_LINE_MAX = 60;
@@ -32,9 +37,11 @@ export type QrCardStyle = {
     headingFont: EventThemeFontDto | null;
     codeColor: string;
     centerLogo: boolean;
+    layout: QrCardLayout;
+    sizes: QrCardSize[];
 };
 
-// Built in, never from the backend: today's printed look at A6.
+// Built in, never from the backend: today's printed look. It has no artwork, so it prints sharp at any size.
 export const PLAIN_QR_CARD_STYLE: QrCardStyle = {
     id: PLAIN_QR_CARD_ID,
     artworkUrl: null,
@@ -42,6 +49,8 @@ export const PLAIN_QR_CARD_STYLE: QrCardStyle = {
     headingFont: null,
     codeColor: QR_CARD_INK,
     centerLogo: true,
+    layout: DEFAULT_QR_CARD_LAYOUT,
+    sizes: ['A6', 'A5'],
 };
 
 export function qrCardStyleOf(template: QrCardTemplateDto): QrCardStyle {
@@ -52,6 +61,8 @@ export function qrCardStyleOf(template: QrCardTemplateDto): QrCardStyle {
         headingFont: template.headingFont,
         codeColor: template.codeColor,
         centerLogo: template.centerLogo,
+        layout: template.layout ?? DEFAULT_QR_CARD_LAYOUT,
+        sizes: template.sizes,
     };
 }
 
@@ -84,24 +95,41 @@ export function giftQrCardLines({
     return lines;
 }
 
-// Fixed spots on the card in millimetres, inside an 8 mm safe margin.
-export const QR_CARD_LAYOUT = {
-    textX: QR_CARD_WIDTH / 2,
-    title: { top: 10, bottom: 36 },
-    panel: { x: 20.5, y: 40, size: 64, radius: 4 },
-    lines: { top: 107, bottom: 140, gap: 2 },
-} as const;
+function round(value: number): number {
+    return Math.round(value * 1000) / 1000;
+}
 
-export type TextBox = { width: number; maxLines: number; maxSize: number; minSize: number; mono?: boolean };
+// maxHeight: the box's height, when the text must also fit it.
+export type TextBox = { width: number; maxLines: number; maxSize: number; minSize: number; mono?: boolean; maxHeight?: number };
 
-const TEXT_WIDTH = QR_CARD_WIDTH - 16;
-export const QR_CARD_TITLE_BOX: TextBox = { width: TEXT_WIDTH, maxLines: 2, maxSize: 9, minSize: 5 };
-export const QR_CARD_LINE_BOXES: Record<QrCardLineTone, TextBox> = {
-    body: { width: TEXT_WIDTH, maxLines: 2, maxSize: 5, minSize: 3.5 },
-    strong: { width: TEXT_WIDTH, maxLines: 2, maxSize: 5, minSize: 3.5 },
-    code: { width: TEXT_WIDTH, maxLines: 1, maxSize: 5.5, minSize: 4, mono: true },
-    small: { width: TEXT_WIDTH, maxLines: 2, maxSize: 3.2, minSize: 2.6 },
+const TITLE_MIN_SIZE = 5;
+
+// The title's text box: up to two lines, shrinking from the layout's maximum to 5 mm to fit.
+export function titleTextBox(title: QrCardLayout['title']): TextBox {
+    return { width: title.width, maxLines: 2, maxSize: title.maxSize, minSize: Math.min(TITLE_MIN_SIZE, title.maxSize), maxHeight: title.height };
+}
+
+// Each tone at the default text size (5 mm, the body line's). A layout's textSize scales them all.
+const BASE_TEXT_SIZE = 5;
+const LINE_TONES: Record<QrCardLineTone, Omit<TextBox, 'width'>> = {
+    body: { maxLines: 2, maxSize: 5, minSize: 3.5 },
+    strong: { maxLines: 2, maxSize: 5, minSize: 3.5 },
+    code: { maxLines: 1, maxSize: 5.5, minSize: 4, mono: true },
+    small: { maxLines: 2, maxSize: 3.2, minSize: 2.6 },
 };
+
+export function lineTextBoxes(width: number, textSize: number): Record<QrCardLineTone, TextBox> {
+    const scale = textSize / BASE_TEXT_SIZE;
+    const boxes = {} as Record<QrCardLineTone, TextBox>;
+    for (const [tone, box] of Object.entries(LINE_TONES) as Array<[QrCardLineTone, Omit<TextBox, 'width'>]>) {
+        boxes[tone] = { ...box, width, maxSize: round(box.maxSize * scale), minSize: round(box.minSize * scale) };
+    }
+    return boxes;
+}
+
+// The default layout's boxes: today's.
+export const QR_CARD_TITLE_BOX = titleTextBox(DEFAULT_QR_CARD_LAYOUT.title);
+export const QR_CARD_LINE_BOXES = lineTextBoxes(DEFAULT_QR_CARD_LAYOUT.lines.width, DEFAULT_QR_CARD_LAYOUT.lines.textSize);
 
 const LINE_HEIGHT = 1.2;
 // The baseline's drop from the top of its line box, as a share of the font size: centres capitals and descenders.
@@ -112,10 +140,6 @@ const MONO_WIDTH = 0.8;
 // A stack of lines too tall for its band shrinks every tone together, down to this share.
 const MIN_LINES_SCALE = 0.6;
 const LINES_SCALE_STEP = 0.05;
-
-function round(value: number): number {
-    return Math.round(value * 1000) / 1000;
-}
 
 // Bold Arial's widest glyphs (M 0.83, W 0.94, O 0.78, m 0.89, & 0.72, @ 0.98 em, plus their Greek and Cyrillic kin).
 const WIDE_CHARS = new Set([...'MWOGQ@&mwΜΘΟΦΨΩωψφШЩЖЮЫМ']);
@@ -186,39 +210,64 @@ function clamp(lines: string[], size: number, box: TextBox): string[] {
 
 export type FittedText = { lines: string[]; fontSize: number };
 
-// The largest size, in SIZE_STEP steps, at which the text wraps into the box's lines with every word whole.
-// Only at the smallest size are long words broken, and whatever still runs over ends on an ellipsis.
+function fitsHeight(lineCount: number, size: number, box: TextBox): boolean {
+    return box.maxHeight === undefined || lineCount * size * LINE_HEIGHT <= box.maxHeight + 0.001;
+}
+
+// The largest size, in SIZE_STEP steps, at which the text wraps into the box's lines (and height)
+// with every word whole. Only at the smallest size are long words broken, and whatever still runs
+// over ends on an ellipsis.
 export function fitText(text: string, box: TextBox): FittedText {
     const clean = text.trim().replace(/\s+/g, ' ');
     if (!clean) return { lines: [], fontSize: box.maxSize };
     for (let size = box.maxSize; size > box.minSize; size = round(size - SIZE_STEP)) {
         const lines = wrap(clean, size, box, false);
-        if (lines.length <= box.maxLines && lines.every((line) => fits(line, size, box))) return { lines, fontSize: size };
+        if (lines.length <= box.maxLines && fitsHeight(lines.length, size, box) && lines.every((line) => fits(line, size, box))) {
+            return { lines, fontSize: size };
+        }
     }
-    return { lines: clamp(wrap(clean, box.minSize, box, true), box.minSize, box), fontSize: box.minSize };
+    const heldLines = box.maxHeight === undefined ? box.maxLines : Math.floor(box.maxHeight / (box.minSize * LINE_HEIGHT) + 0.001);
+    const maxLines = Math.max(1, Math.min(box.maxLines, heldLines));
+    return { lines: clamp(wrap(clean, box.minSize, box, true), box.minSize, { ...box, maxLines }), fontSize: box.minSize };
 }
 
-export type PlacedText = FittedText & { baselines: number[] };
+export type TextAnchor = 'start' | 'middle' | 'end';
+export type PlacedText = FittedText & { baselines: number[]; x: number; anchor: TextAnchor };
 export type PlacedLine = PlacedText & { tone: QrCardLineTone };
+
+const ANCHORS: Record<QrCardTextAlign, TextAnchor> = { left: 'start', center: 'middle', right: 'end' };
+
+// The x the text hangs from, and how: the box's left edge, centre or right edge.
+function anchorOf(box: { x: number; width: number; align: QrCardTextAlign }): { x: number; anchor: TextAnchor } {
+    const x = box.align === 'left' ? box.x : box.align === 'right' ? box.x + box.width : box.x + box.width / 2;
+    return { x: round(x), anchor: ANCHORS[box.align] };
+}
 
 function blockHeight(fitted: FittedText): number {
     return fitted.lines.length * fitted.fontSize * LINE_HEIGHT;
 }
 
-function place<T extends FittedText>(fitted: T, top: number): T & { baselines: number[] } {
-    return { ...fitted, baselines: fitted.lines.map((_, index) => round(top + (index * LINE_HEIGHT + BASELINE) * fitted.fontSize)) };
+function place<T extends FittedText>(
+    fitted: T,
+    top: number,
+    anchor: { x: number; anchor: TextAnchor },
+): T & { baselines: number[]; x: number; anchor: TextAnchor } {
+    return {
+        ...fitted,
+        baselines: fitted.lines.map((_, index) => round(top + (index * LINE_HEIGHT + BASELINE) * fitted.fontSize)),
+        ...anchor,
+    };
 }
 
-// The title, centred in its band.
-export function layoutTitle(title: string): PlacedText {
-    const { top, bottom } = QR_CARD_LAYOUT.title;
-    const fitted = fitText(title, QR_CARD_TITLE_BOX);
-    return place(fitted, top + (bottom - top - blockHeight(fitted)) / 2);
+// The title, centred vertically in its box and aligned across it.
+export function layoutTitle(title: string, box: QrCardLayout['title'] = DEFAULT_QR_CARD_LAYOUT.title): PlacedText {
+    const fitted = fitText(title, titleTextBox(box));
+    return place(fitted, box.y + (box.height - blockHeight(fitted)) / 2, anchorOf(box));
 }
 
-function fitLines(lines: QrCardLine[], scale: number): Array<FittedText & { tone: QrCardLineTone }> {
+function fitLines(lines: QrCardLine[], boxes: Record<QrCardLineTone, TextBox>, scale: number): Array<FittedText & { tone: QrCardLineTone }> {
     return lines.map((line) => {
-        const box = QR_CARD_LINE_BOXES[line.tone];
+        const box = boxes[line.tone];
         const scaled = { ...box, maxSize: round(box.maxSize * scale), minSize: round(box.minSize * scale) };
         return { ...fitText(line.text, scaled), tone: line.tone };
     });
@@ -228,19 +277,24 @@ function stackHeight(items: FittedText[], gap: number): number {
     return items.reduce((sum, item) => sum + blockHeight(item), 0) + Math.max(0, items.length - 1) * gap;
 }
 
-// Each line fitted to its tone, the stack centred in the band below the code.
-export function layoutLines(lines: QrCardLine[]): PlacedLine[] {
-    const { top, bottom, gap } = QR_CARD_LAYOUT.lines;
+// The 2 mm gap between lines at the default text size; it scales with the text.
+const LINES_GAP = 2;
+
+// Each line fitted to its tone, the stack centred vertically in its box and aligned across it.
+export function layoutLines(lines: QrCardLine[], box: QrCardLayout['lines'] = DEFAULT_QR_CARD_LAYOUT.lines): PlacedLine[] {
+    const boxes = lineTextBoxes(box.width, box.textSize);
+    const gap = round((LINES_GAP * box.textSize) / BASE_TEXT_SIZE);
     const shown = lines.filter((line) => line.text.trim());
     let scale = 1;
-    let fitted = fitLines(shown, scale);
-    while (stackHeight(fitted, gap) > bottom - top && scale > MIN_LINES_SCALE) {
+    let fitted = fitLines(shown, boxes, scale);
+    while (stackHeight(fitted, gap) > box.height && scale > MIN_LINES_SCALE) {
         scale = round(scale - LINES_SCALE_STEP);
-        fitted = fitLines(shown, scale);
+        fitted = fitLines(shown, boxes, scale);
     }
-    let cursor = top + Math.max(0, bottom - top - stackHeight(fitted, gap)) / 2;
+    const anchor = anchorOf(box);
+    let cursor = box.y + Math.max(0, box.height - stackHeight(fitted, gap)) / 2;
     return fitted.map((item) => {
-        const placed = place(item, cursor);
+        const placed = place(item, cursor, anchor);
         cursor += blockHeight(item) + gap;
         return placed;
     });
