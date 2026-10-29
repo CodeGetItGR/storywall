@@ -8,16 +8,18 @@ import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { PhonePushPill } from '@/components/admin/phones/PhonePushPill';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { usePhoneRemoval } from '@/hooks/usePhoneRemoval';
+import { usePhoneTestNotification } from '@/hooks/usePhoneTestNotification';
 import { ADMIN_DEVICE_DATE_FORMAT } from '@/lib/adminDevices';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { AdminDeviceDto } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
 
-// One paired phone. Removing it lives here, behind a confirmation. The panel remounts it (key) on every opening.
+// One paired phone, with a test notification. Removing it lives here, behind a confirmation. The panel remounts it (key) on every opening.
 export function PhoneDetailDrawer({ open, device, onCloseAction }: { open: boolean; device: AdminDeviceDto | null; onCloseAction: () => void }) {
     const t = useTranslations('AdminPage');
     const locale = useLocale();
     const r = usePhoneRemoval(device, onCloseAction);
+    const test = usePhoneTestNotification(device);
     // Keeps the details on screen while the drawer slides out after the phone leaves the list.
     const [opened] = useState(device);
     const shown = device ?? opened;
@@ -80,8 +82,30 @@ export function PhoneDetailDrawer({ open, device, onCloseAction }: { open: boole
                     </dl>
                 )}
 
+                {/* Test */}
+                {shown && (
+                    <div className="flex flex-wrap items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={test.send}
+                            disabled={!shown.pushEnabled || test.sending || r.removing}
+                            className="inline-flex min-h-9 items-center gap-2 rounded-md border border-border px-3.5 text-sm font-semibold text-ink disabled:opacity-50"
+                        >
+                            {test.sending && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
+                            {t('phones.sendTest')}
+                        </button>
+                        {test.sent && (
+                            <p role="status" className="text-sm text-status-good">
+                                {t('phones.testSent')}
+                            </p>
+                        )}
+                    </div>
+                )}
+
                 {/* Errors */}
-                {r.error !== null && <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(r.error)}`)}</p>}
+                {(r.error ?? test.error) !== null && (
+                    <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(r.error ?? test.error)}`)}</p>
+                )}
             </AdminDrawer>
 
             {/* Remove confirmation */}

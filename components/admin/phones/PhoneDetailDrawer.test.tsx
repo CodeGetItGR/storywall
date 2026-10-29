@@ -3,9 +3,10 @@ import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PhoneDetailDrawer } from '@/components/admin/phones/PhoneDetailDrawer';
+import { ApiError } from '@/lib/api/client';
 import type { AdminDeviceDto } from '@/lib/api/types';
 
-const hooks = vi.hoisted(() => ({ revoke: vi.fn() }));
+const hooks = vi.hoisted(() => ({ revoke: vi.fn(), sendTest: vi.fn() }));
 
 // Keys come back as-is, so the pill renders its bare key.
 vi.mock('next-intl', () => ({
@@ -44,12 +45,14 @@ vi.mock('@/components/ui/ConfirmActionModal', () => ({
 }));
 vi.mock('@/hooks/useAdminDevices', () => ({
     useRevokeAdminDevice: () => ({ mutateAsync: hooks.revoke, isPending: false }),
+    useSendTestNotification: () => ({ mutateAsync: hooks.sendTest, isPending: false }),
 }));
 
 const device: AdminDeviceDto = { id: 'd1', name: 'Galaxy', createdAt: '2026-10-28T08:00:00Z', lastSeenAt: null, pushEnabled: true };
 
 beforeEach(() => {
     hooks.revoke.mockReset().mockResolvedValue(undefined);
+    hooks.sendTest.mockReset().mockResolvedValue(undefined);
 });
 afterEach(cleanup);
 
@@ -85,5 +88,30 @@ describe('PhoneDetailDrawer', () => {
         expect(await screen.findByText('errors.generic')).toBeInTheDocument();
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
         expect(onClose).not.toHaveBeenCalled();
+    });
+
+    it('sends a test notification to this phone and says it was sent', async () => {
+        render(<PhoneDetailDrawer open device={device} onCloseAction={vi.fn()} />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'phones.sendTest' }));
+
+        await waitFor(() => expect(hooks.sendTest).toHaveBeenCalledWith('d1'));
+        expect(await screen.findByText('phones.testSent')).toBeInTheDocument();
+    });
+
+    it('cannot send a test while the phone has notifications off', () => {
+        render(<PhoneDetailDrawer open device={{ ...device, pushEnabled: false }} onCloseAction={vi.fn()} />);
+
+        expect(screen.getByRole('button', { name: 'phones.sendTest' })).toBeDisabled();
+    });
+
+    it('shows why a test could not be sent', async () => {
+        hooks.sendTest.mockRejectedValue(new ApiError(409, { errorCode: 5186 }));
+        render(<PhoneDetailDrawer open device={device} onCloseAction={vi.fn()} />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'phones.sendTest' }));
+
+        expect(await screen.findByText('errors.pushNotEnabled')).toBeInTheDocument();
+        expect(screen.queryByText('phones.testSent')).not.toBeInTheDocument();
     });
 });
