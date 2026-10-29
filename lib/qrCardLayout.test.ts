@@ -102,10 +102,16 @@ describe('resizeElement', () => {
         expect(resizeElement(L, 'code', 'se', start, -60, 0).code.size).toBe(30);
     });
 
-    it('refuses a resize that would overlap', () => {
-        // Growing the code's bottom edge into the lines leaves the layout as it was.
-        const result = resizeElement(L, 'code', 'se', start, 5, 5);
-        expect(result).toBe(L);
+    it('stops a resize at the next box', () => {
+        // The code's bottom edge (104) can grow only to the lines' top (107).
+        expect(resizeElement(L, 'code', 'se', start, 20, 20).code).toMatchObject({ x: 20.5, y: 40, size: 67 });
+        // The title's bottom edge (36) can grow only to the code's top (40).
+        expect(resizeElement(L, 'title', 's', elementRect(L, 'title'), 0, 50).title).toMatchObject({ y: 10, height: 30 });
+    });
+
+    it('leaves the layout as it was when no part of the resize fits', () => {
+        const touching = resizeElement(L, 'title', 's', elementRect(L, 'title'), 0, 4);
+        expect(resizeElement(touching, 'title', 's', elementRect(touching, 'title'), 0, 5)).toEqual(touching);
     });
 
     it('resizes a text box from an edge, within its minimum', () => {

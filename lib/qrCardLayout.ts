@@ -135,9 +135,29 @@ export function handlePoint(rect: Rect, handle: QrCardHandle): Point {
 }
 
 // Resizes from a handle by (dx, dy) measured from `start`, the rect when the drag began. Clamped to
-// the minimum and maximum sizes and the safe area. A resize onto another box is refused: the layout
-// comes back unchanged, so a drag holds its last good size.
+// the minimum and maximum sizes and the safe area. A resize onto another box stops at the largest
+// part of the drag that fits, so a fast drag still meets the other box's edge.
 export function resizeElement(layout: QrCardLayout, element: QrCardElement, handle: QrCardHandle, start: Rect, dx: number, dy: number): QrCardLayout {
+    const others = otherRects(layout, element);
+    const fits = (rect: Rect) => !others.some((other) => rectsOverlap(rect, other));
+    const full = resizedRect(element, handle, start, dx, dy);
+    if (fits(full)) return withRect(layout, element, full);
+    // Halve toward the start until the step is under the 0.1 mm rounding.
+    let low = 0;
+    let high = 1;
+    let best: Rect | null = null;
+    for (let i = 0; i < 12; i++) {
+        const mid = (low + high) / 2;
+        const rect = resizedRect(element, handle, start, dx * mid, dy * mid);
+        if (fits(rect)) {
+            best = rect;
+            low = mid;
+        } else high = mid;
+    }
+    return best ? withRect(layout, element, best) : layout;
+}
+
+function resizedRect(element: QrCardElement, handle: QrCardHandle, start: Rect, dx: number, dy: number): Rect {
     let { x, y, width, height } = start;
     const right = x + width;
     const bottom = y + height;
@@ -166,9 +186,7 @@ export function resizeElement(layout: QrCardLayout, element: QrCardElement, hand
             height = bottom - y;
         }
     }
-    const rect = { x: roundMm(x), y: roundMm(y), width: roundMm(width), height: roundMm(height) };
-    if (otherRects(layout, element).some((other) => rectsOverlap(rect, other))) return layout;
-    return withRect(layout, element, rect);
+    return { x: roundMm(x), y: roundMm(y), width: roundMm(width), height: roundMm(height) };
 }
 
 // The nearest target within SNAP_DISTANCE for any of the start, middle or end of a span.
