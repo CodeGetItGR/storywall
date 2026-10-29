@@ -17,7 +17,7 @@ export function GalleryQrScreen() {
     const t = useTranslations('GalleryQrPage');
     const router = useRouter();
     const tDemo = useTranslations('Demo');
-    const { demoUploadHref, eventId, featureEnabled, isLoading, qrLink } = useGalleryQrScreen();
+    const { cardHref, demoUploadHref, eventId, featureEnabled, isLoading, qrLink } = useGalleryQrScreen();
 
     // The gallery QR feature is a plan/event-type setting, not something a host
     // can turn back on — treat a disabled feature the same as a page that
@@ -45,7 +45,7 @@ export function GalleryQrScreen() {
                         <ModuleNotice tone="warning">{t(qrLink.status === 'TARGET_UNAVAILABLE' ? 'temporarilyOff' : 'linkUnavailable')}</ModuleNotice>
                     )}
                     <div className="w-full max-w-xs">
-                        <QrCodeCard qrLink={qrLink} size={280} />
+                        <QrCodeCard qrLink={qrLink} size={280} cardHref={cardHref} />
 
                         {/* Demo upload */}
                         {demoUploadHref && qrLink.status === 'ACTIVE' && (

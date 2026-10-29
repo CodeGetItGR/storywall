@@ -117,6 +117,7 @@ export const endpoints = {
         members: (eventId: string) => `/api/events/${eventId}/members`,
         modules: (eventId: string) => `/api/events/${eventId}/modules`,
         themePresets: (eventId: string) => `/api/events/${eventId}/theme-presets`,
+        qrCardTemplates: (eventId: string) => `/api/events/${eventId}/qr-card-templates`,
         theme: (eventId: string) => `/api/events/${eventId}/theme`,
         memberRoles: (eventId: string) => `/api/events/${eventId}/member-roles`,
         sessions: (eventId: string) => `/api/events/${eventId}/sessions`,
@@ -452,6 +453,11 @@ export const endpoints = {
             list: '/api/admin/theme-presets',
             byId: (id: string) => `/api/admin/theme-presets/${id}`,
             illustration: (id: string) => `/api/admin/theme-presets/${id}/illustration`,
+        },
+        qrCardTemplates: {
+            list: '/api/admin/qr-card-templates',
+            byId: (id: string) => `/api/admin/qr-card-templates/${id}`,
+            artwork: (id: string) => `/api/admin/qr-card-templates/${id}/artwork`,
         },
         themeFonts: {
             list: '/api/admin/theme-fonts',

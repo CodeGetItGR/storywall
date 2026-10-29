@@ -25,6 +25,7 @@ const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operat
     reactionTypes: 'catalog',
     themePresets: 'catalog',
     themeFonts: 'catalog',
+    qrCards: 'catalog',
     demoEvents: 'catalog',
     billingOps: 'operations',
     siteNotices: 'operations',

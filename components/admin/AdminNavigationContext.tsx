@@ -19,6 +19,7 @@ import {
     PackagePlus,
     Palette,
     PartyPopper,
+    QrCode,
     Receipt,
     ShoppingBag,
     Smartphone,
@@ -55,6 +56,7 @@ export type AdminTab =
     | 'reactionTypes'
     | 'themePresets'
     | 'themeFonts'
+    | 'qrCards'
     | 'demoEvents'
     | 'billingOps'
     | 'events'
@@ -105,6 +107,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#reaction-types': 'reactionTypes',
     '#theme-presets': 'themePresets',
     '#theme-fonts': 'themeFonts',
+    '#qr-cards': 'qrCards',
     '#billing-ops': 'billingOps',
     '#accounts': 'accounts',
     '#reports': 'reports',
@@ -131,6 +134,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     reactionTypes: '#reaction-types',
     themePresets: '#theme-presets',
     themeFonts: '#theme-fonts',
+    qrCards: '#qr-cards',
     demoEvents: DEMO_EVENTS_HASH_ROOT,
     billingOps: '#billing-ops',
     events: EVENTS_HASH_ROOT,
@@ -233,6 +237,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'reactionTypes', label: t('reactionTypes'), icon: Smile },
             { key: 'themePresets', label: t('themePresets'), icon: Palette },
             { key: 'themeFonts', label: t('themeFonts'), icon: Type },
+            { key: 'qrCards', label: t('qrCards'), icon: QrCode },
             { key: 'demoEvents', label: t('demoEvents'), icon: MonitorPlay },
             { key: 'accounts', label: t('accounts'), icon: Users },
             { key: 'events', label: t('events'), icon: PartyPopper },

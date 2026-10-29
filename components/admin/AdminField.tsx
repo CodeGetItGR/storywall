@@ -19,6 +19,8 @@ export function AdminField({
     required,
     optional,
     hint,
+    hintId,
+    hintLive = true,
 }: {
     label: string;
     children: ReactNode;
@@ -26,6 +28,10 @@ export function AdminField({
     required?: boolean;
     optional?: boolean;
     hint?: string;
+    // Gives the hint an id for the input's aria-describedby, and announces it as it changes.
+    hintId?: string;
+    // False for a hint that changes on every keystroke, which would flood a screen reader.
+    hintLive?: boolean;
 }) {
     return (
         <FormFieldLabel
@@ -35,7 +41,11 @@ export function AdminField({
             indicator={required ? 'required' : optional ? 'optional' : undefined}
         >
             {children}
-            {hint && <span className="text-[11px] leading-4 text-ink-faint">{hint}</span>}
+            {hint && (
+                <span id={hintId} aria-live={hintId && hintLive ? 'polite' : undefined} className="text-[11px] leading-4 text-ink-faint">
+                    {hint}
+                </span>
+            )}
         </FormFieldLabel>
     );
 }

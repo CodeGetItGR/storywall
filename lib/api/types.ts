@@ -34,6 +34,7 @@ export const EVENT_MODULE_KEYS = [
     'he_or_she',
     'quiz_polls',
     'vendors',
+    'qr_cards',
 ] as const;
 // Use this (not the raw `ModuleKey` wire type below) whenever code branches on
 // a specific module — it's a closed set and catches typos at compile time.
@@ -989,6 +990,24 @@ export interface EventThemeFontDto {
     key: string; // CSS family is "theme-" + key
     fallback: 'serif' | 'sans-serif';
     url: string; // FE-origin path, /api/theme-fonts/<key>/<version>.woff2
+}
+
+// QR card templates (qr-card-templates-fe-integration.md): A6 card designs a host prints a QR on.
+export interface QrCardTemplateDto {
+    id: string;
+    name: LocalizedText;
+    artworkUrl: string; // FE-origin path, /api/qr-card-artwork/<id>/<version>
+    textColor: string; // #RRGGBB
+    headingFont: EventThemeFontDto | null; // null = the card's own font
+    codeColor: string; // #RRGGBB, at least 4.5:1 against white
+    centerLogo: boolean;
+}
+
+// GET /api/events/{eventId}/qr-card-templates. available: the event has QR cards (drafts included).
+// templates: live, with artwork, for the event's type, sorted; empty when available is false.
+export interface QrCardTemplateListDto {
+    available: boolean;
+    templates: QrCardTemplateDto[];
 }
 
 // The event's look (event-theme-customization, 2026-10-05). Null when the event has
@@ -4350,6 +4369,44 @@ export interface AdminThemePresetPatchDto {
     titleColor?: string;
     clearHeadingFont?: boolean;
     clearTitleColor?: boolean;
+}
+
+// /api/admin/qr-card-templates — the whole catalog, archived and without artwork included.
+export interface AdminQrCardTemplateDto {
+    id: string;
+    name: LocalizedText;
+    eventTypes: EventTypeConvention[];
+    sortOrder: number;
+    archived: boolean;
+    artworkUrl: string | null; // null until uploaded; such a template isn't offered to hosts
+    textColor: string;
+    headingFont: AdminThemeFontSummaryDto | null;
+    codeColor: string;
+    centerLogo: boolean;
+}
+
+// POST /api/admin/qr-card-templates
+export interface AdminQrCardTemplateRequestDto {
+    name: LocalizedText;
+    eventTypes: EventTypeConvention[];
+    sortOrder: number;
+    textColor: string;
+    headingFontId?: string | null;
+    codeColor: string;
+    centerLogo: boolean;
+}
+
+// PATCH /api/admin/qr-card-templates/{id}. Omitted fields stay as they are.
+export interface AdminQrCardTemplatePatchDto {
+    name?: LocalizedText;
+    eventTypes?: EventTypeConvention[];
+    sortOrder?: number;
+    archived?: boolean;
+    textColor?: string;
+    headingFontId?: string;
+    clearHeadingFont?: boolean;
+    codeColor?: string;
+    centerLogo?: boolean;
 }
 
 // /api/admin/theme-fonts

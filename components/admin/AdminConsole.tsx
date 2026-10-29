@@ -24,6 +24,7 @@ import { PartnerCardsSection } from '@/components/admin/partnerCards/PartnerCard
 import { PhonesPanel } from '@/components/admin/phones/PhonesPanel';
 import { PlansSection } from '@/components/admin/plans/PlansSection';
 import { PlatformMetricsPanel } from '@/components/admin/PlatformMetricsPanel';
+import { QrCardTemplatesPanel } from '@/components/admin/qrCards/QrCardTemplatesPanel';
 import { ReactionTypesCatalogPanel } from '@/components/admin/ReactionTypesCatalogPanel';
 import { SiteNoticesPanel } from '@/components/admin/siteNotices/SiteNoticesPanel';
 import { ThemeFontsPanel } from '@/components/admin/themeFonts/ThemeFontsPanel';
@@ -51,6 +52,7 @@ export function AdminConsole() {
     if (tab === 'reactionTypes') return <ReactionTypesCatalogPanel />;
     if (tab === 'themePresets') return <ThemePresetsPanel />;
     if (tab === 'themeFonts') return <ThemeFontsPanel />;
+    if (tab === 'qrCards') return <QrCardTemplatesPanel />;
     if (tab === 'demoEvents') return <DemoEventsSection />;
     if (tab === 'withdrawals') return <WithdrawalsSection />;
     if (tab === 'orders') return <OrdersSection />;

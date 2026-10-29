@@ -330,6 +330,7 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
         http.get(`${API_BASE_URL}/api/events/:eventId/upgrade-options`, () => HttpResponse.json([])),
         http.get(`${API_BASE_URL}/api/events/:eventId/extension-options`, () => HttpResponse.json([])),
         http.get(`${API_BASE_URL}/api/events/:eventId/qr-links/stats`, () => HttpResponse.json(qrLinkStats())),
+        http.get(`${API_BASE_URL}/api/events/:eventId/qr-card-templates`, () => HttpResponse.json({ available: false, templates: [] })),
 
         // --- Gift account (one per event; absent when the module is off) ---
         http.get(`${API_BASE_URL}/api/events/:eventId/gift-account`, ({ params }) => {
