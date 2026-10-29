@@ -65,7 +65,7 @@ Rules:
 
 ### Entity
 
-`QrCardTemplate` gains, in the next Flyway migration (V187: V186 and error 3112 are taken by the unmerged vendor-reach branch):
+`QrCardTemplate` gains, in the next Flyway migration (V188: vendor reach took V186 and error 3112, campaign visit pages took V187):
 
 | Field | Rule |
 | --- | --- |
