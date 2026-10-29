@@ -17,11 +17,13 @@ export function QrCardScreen() {
     return (
         <ModulePageShell maxWidth="xl" title={t('title')} icon={QrCode} backLabel={t('back')} backHref={screen.backHref}>
             {screen.status === 'loading' ? (
+                // Loading
                 <QrCardDesignerSkeleton />
             ) : screen.status === 'missing' ? (
                 // Missing
                 <p className="text-center text-sm text-ink-muted">{t('missing')}</p>
             ) : (
+                // Designer
                 <QrCardDesigner
                     designer={screen.designer}
                     exporter={screen.exporter}

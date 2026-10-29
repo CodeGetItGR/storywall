@@ -5,9 +5,10 @@ const exportMocks = vi.hoisted(() => ({
     standaloneQrCardSvg: vi.fn(),
     qrCardPng: vi.fn(),
     qrCardPdfBytes: vi.fn(),
-    saveBlob: vi.fn(),
 }));
+const downloadBlob = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/qrCardExport', () => exportMocks);
+vi.mock('@/lib/download', () => ({ downloadBlob }));
 
 import { useQrCardExport } from '@/hooks/useQrCardExport';
 import type { EventThemeFontDto } from '@/lib/api/types';
@@ -26,7 +27,7 @@ beforeEach(() => {
     exportMocks.standaloneQrCardSvg.mockReset().mockResolvedValue('<svg/>');
     exportMocks.qrCardPng.mockReset().mockResolvedValue(PNG);
     exportMocks.qrCardPdfBytes.mockReset().mockResolvedValue(new Uint8Array([37, 80, 68, 70]));
-    exportMocks.saveBlob.mockReset();
+    downloadBlob.mockReset();
 });
 
 describe('useQrCardExport', () => {
@@ -39,7 +40,7 @@ describe('useQrCardExport', () => {
         await waitFor(() => expect(result.current.busy).toBeNull());
         expect(exportMocks.standaloneQrCardSvg).toHaveBeenCalledWith(result.current.svgRef.current, FONT);
         expect(exportMocks.qrCardPng).toHaveBeenCalledWith('<svg/>');
-        expect(exportMocks.saveBlob).toHaveBeenCalledWith(PNG, 'Maria-&-Nikos.png');
+        expect(downloadBlob).toHaveBeenCalledWith(PNG, 'Maria-&-Nikos.png');
         expect(result.current.failed).toBe(false);
     });
 
@@ -48,8 +49,8 @@ describe('useQrCardExport', () => {
 
         act(() => result.current.savePdf());
 
-        await waitFor(() => expect(exportMocks.saveBlob).toHaveBeenCalled());
-        const [file, name] = exportMocks.saveBlob.mock.calls[0];
+        await waitFor(() => expect(downloadBlob).toHaveBeenCalled());
+        const [file, name] = downloadBlob.mock.calls[0];
         expect(name).toBe('Maria-&-Nikos.pdf');
         expect((file as Blob).type).toBe('application/pdf');
     });
@@ -63,7 +64,7 @@ describe('useQrCardExport', () => {
         await waitFor(() => expect(result.current.failed).toBe(true));
         expect(result.current.busy).toBeNull();
         act(() => result.current.savePng());
-        await waitFor(() => expect(exportMocks.saveBlob).toHaveBeenCalledTimes(1));
+        await waitFor(() => expect(downloadBlob).toHaveBeenCalledTimes(1));
         expect(result.current.failed).toBe(false);
     });
 

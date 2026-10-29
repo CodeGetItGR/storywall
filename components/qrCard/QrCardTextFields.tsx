@@ -22,6 +22,7 @@ export function QrCardTextFields({
 
     return (
         <div className="flex flex-col gap-4">
+            {/* Title */}
             <FormFieldLabel label={t('title')}>
                 <input
                     name="title"
@@ -32,6 +33,7 @@ export function QrCardTextFields({
                     className={fieldControlClass}
                 />
             </FormFieldLabel>
+            {/* Line */}
             <FormFieldLabel label={t('line')}>
                 <input
                     name="line"
@@ -42,6 +44,7 @@ export function QrCardTextFields({
                     className={fieldControlClass}
                 />
             </FormFieldLabel>
+            {/* Giver */}
             {showGiver && (
                 <FormFieldLabel label={t('giver')}>
                     <input

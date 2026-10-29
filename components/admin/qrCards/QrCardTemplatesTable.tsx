@@ -35,6 +35,7 @@ export function QrCardTemplatesTable({
     return (
         <div className="overflow-x-auto">
             <table className="w-full min-w-160 text-left">
+                {/* Header */}
                 <thead>
                     <tr className="border-b border-border text-[11px] font-bold tracking-wide text-ink-faint uppercase">
                         <th className="px-3 py-2">{t('columns.design')}</th>
@@ -45,6 +46,7 @@ export function QrCardTemplatesTable({
                         <th className="px-3 py-2" />
                     </tr>
                 </thead>
+                {/* Rows */}
                 <tbody>
                     <AdminSortableList ids={templates.map(templateIdOf)} disabled={!canReorder} onReorderAction={onReorderAction}>
                         {templates.map((template, index) => (

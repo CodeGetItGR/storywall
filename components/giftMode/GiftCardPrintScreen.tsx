@@ -21,11 +21,13 @@ export function GiftCardPrintScreen() {
     return (
         <ModulePageShell maxWidth="xl" title={t('title')} icon={Gift} backLabel={t('back')} backHref={routes.events.manage(eventId, { tab: 'gift' })}>
             {print.isLoading ? (
+                // Loading
                 <QrLinksListSkeleton />
             ) : !print.card ? (
-                // No live card
+                // Missing: no live card
                 <p className="text-center text-sm text-ink-muted">{t('noCard')}</p>
             ) : !print.designsAvailable ? (
+                // Plain
                 <GiftCardPlain
                     card={print.card}
                     claimUrl={print.claimUrl}
@@ -35,9 +37,10 @@ export function GiftCardPrintScreen() {
                     onPrintAction={print.print}
                 />
             ) : !print.claimUrl ? (
-                // The claim link needs the browser's origin: a beat after hydration.
+                // Loading: the claim link needs the browser's origin, a beat after hydration.
                 <QrCardDesignerSkeleton />
             ) : (
+                // Designer
                 <QrCardDesigner
                     designer={print.designer}
                     exporter={print.exporter}

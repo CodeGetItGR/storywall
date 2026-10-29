@@ -4,8 +4,9 @@ import * as Sentry from '@sentry/nextjs';
 import { useCallback, useRef, useState } from 'react';
 
 import type { EventThemeFontDto } from '@/lib/api/types';
+import { downloadBlob } from '@/lib/download';
 import { qrCardFileName } from '@/lib/qrCard';
-import { qrCardPdfBytes, qrCardPng, saveBlob, standaloneQrCardSvg } from '@/lib/qrCardExport';
+import { qrCardPdfBytes, qrCardPng, standaloneQrCardSvg } from '@/lib/qrCardExport';
 
 export type QrCardExportFormat = 'png' | 'pdf';
 
@@ -28,7 +29,7 @@ export function useQrCardExport({ font, title }: { font: EventThemeFontDto | nul
                 const png = await qrCardPng(await standaloneQrCardSvg(svg, font));
                 const file =
                     format === 'png' ? png : new Blob([new Uint8Array(await qrCardPdfBytes(await png.arrayBuffer()))], { type: 'application/pdf' });
-                saveBlob(file, qrCardFileName(title, format));
+                downloadBlob(file, qrCardFileName(title, format));
             } catch (error) {
                 Sentry.captureException(error);
                 setFailed(true);

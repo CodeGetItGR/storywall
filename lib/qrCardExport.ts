@@ -72,13 +72,3 @@ export async function qrCardPdfBytes(png: ArrayBuffer): Promise<Uint8Array> {
     page.drawImage(image, { x: 0, y: 0, width: QR_CARD_PDF_WIDTH, height: QR_CARD_PDF_HEIGHT });
     return pdf.save();
 }
-
-export function saveBlob(blob: Blob, fileName: string) {
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.click();
-    // Some browsers start the download only after click() returns.
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-}

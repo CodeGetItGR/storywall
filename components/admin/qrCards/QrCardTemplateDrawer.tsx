@@ -1,7 +1,7 @@
 'use client';
 
 import { ImagePlus, Loader2 } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useId } from 'react';
 
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
@@ -9,15 +9,13 @@ import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { AdminSwitch } from '@/components/admin/AdminSwitch';
 import { QrCardTemplatePreview } from '@/components/admin/qrCards/QrCardTemplatePreview';
 import { ReactionTypeAvailabilityControl } from '@/components/admin/ReactionTypeAvailabilityControl';
-import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useQrCardTemplateDrawer } from '@/hooks/useQrCardTemplateDrawer';
-import { isQrCardDetailError, MIN_CODE_CONTRAST, QR_CARD_NAME_MAX } from '@/lib/adminQrCards';
-import { formatContrastRatio, THEME_ILLUSTRATION_ACCEPT, type ThemeFontOption } from '@/lib/adminThemePresets';
-import { ApiError } from '@/lib/api/client';
+import { useQrCardTemplateDrawerCopy } from '@/hooks/useQrCardTemplateDrawerCopy';
+import { QR_CARD_NAME_MAX } from '@/lib/adminQrCards';
+import { THEME_ILLUSTRATION_ACCEPT } from '@/lib/adminThemePresets';
 import type { AdminQrCardTemplateDto, EventTypeConvention } from '@/lib/api/types';
 
 const FORM_ID = 'qr-card-template-form';
-const FONT_OPTION_LABEL_KEYS = { live: 'headingFontOption', archived: 'headingFontArchived', noFile: 'headingFontNoFile' } as const;
 const SWATCH_CLASS = 'h-10 w-12 shrink-0 cursor-pointer rounded-md border border-border bg-white p-1';
 const GROUP_LABEL_CLASS = 'text-[11px] font-bold tracking-wide text-ink-muted uppercase';
 
@@ -34,36 +32,13 @@ export function QrCardTemplateDrawer({
 }) {
     const t = useTranslations('AdminPage.qrCards.drawer');
     const tPreview = useTranslations('AdminPage.qrCards.preview');
-    const tApi = useTranslations('ApiErrors');
-    const locale = useLocale();
-    const apiErrorMessage = useApiErrorMessage();
     const form = useQrCardTemplateDrawer({ template, sortOrder, onDoneAction: onCloseAction });
+    const { codeHint, fontHint, fontLabel, serverError, artworkHint } = useQrCardTemplateDrawerCopy(form);
     const hintIdPrefix = useId();
     const nameEnHintId = `${hintIdPrefix}-name-en`;
     const nameElHintId = `${hintIdPrefix}-name-el`;
     const textColorHintId = `${hintIdPrefix}-text-color`;
     const codeColorHintId = `${hintIdPrefix}-code-color`;
-    const formatMinimum = (value: number) => new Intl.NumberFormat(locale).format(value);
-    // Floored like the server's ratio, so a colour just under the minimum never reads as passing. Once a
-    // save is blocked, the alert below replaces the live hint.
-    const codeHint = form.errors.codeColor
-        ? t('codeColorInvalid')
-        : form.codeContrastRatio === null || form.errors.codeContrast
-          ? undefined
-          : form.codeContrastRatio < MIN_CODE_CONTRAST
-            ? t('codeContrastLow', { ratio: formatContrastRatio(form.codeContrastRatio, locale), min: formatMinimum(MIN_CODE_CONTRAST) })
-            : t('codeContrastOk', { ratio: formatContrastRatio(form.codeContrastRatio, locale) });
-    const fontHint = form.fontsStatus === 'loading' ? t('headingFontLoading') : form.fontsStatus === 'error' ? t('headingFontLoadFailed') : undefined;
-    const fontLabel = (option: ThemeFontOption) => t(FONT_OPTION_LABEL_KEYS[option.status], { familyName: option.familyName, key: option.key });
-    // A non-ApiError is fetch failing before any response. Contrast, artwork size and name rejections
-    // highlight no field: their localized detail says what's wrong instead.
-    const describeServerError = (error: unknown) => {
-        if (!(error instanceof ApiError)) return t('network');
-        if (isQrCardDetailError(error)) return error.problem?.detail?.trim() || tApi('generic');
-        return apiErrorMessage(error);
-    };
-    const serverError = form.failure?.kind === 'other' ? describeServerError(form.failure.error) : null;
-    const fileHint = form.fileError === 'type' ? t('artworkType') : form.fileError === 'size' ? t('artworkSize') : undefined;
 
     const footer = (
         <div className="flex w-full items-center justify-end gap-2">
@@ -193,7 +168,7 @@ export function QrCardTemplateDrawer({
                     </div>
 
                     {/* Code */}
-                    <AdminField label={t('codeColor')} required hint={codeHint} hintId={codeColorHintId}>
+                    <AdminField label={t('codeColor')} required hint={codeHint} hintId={codeColorHintId} hintLive={false}>
                         <div className="flex items-center gap-2">
                             <input
                                 type="color"
@@ -247,7 +222,7 @@ export function QrCardTemplateDrawer({
                     </fieldset>
 
                     {/* Artwork */}
-                    <AdminField label={t('artwork')} hint={fileHint ?? (form.hasPendingFile ? t('artworkPending') : t('artworkHint'))}>
+                    <AdminField label={t('artwork')} hint={artworkHint}>
                         <label className="relative inline-flex min-h-10 w-fit cursor-pointer items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold text-ink focus-within:ring-2 focus-within:ring-primary/20 hover:bg-canvas">
                             <ImagePlus className="h-4 w-4" aria-hidden="true" />
                             {t('artworkChoose')}
