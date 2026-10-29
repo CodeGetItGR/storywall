@@ -37,10 +37,21 @@ const ACTION_CLASS =
 const PRIMARY_ACTION_CLASS =
     'flex min-w-28 flex-1 items-center justify-center gap-2 rounded-full px-3 py-2.5 text-xs font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90';
 
-// The QR artwork + copy/download/print/share actions, shared between the
-// manage-page preview modal and the dedicated gallery QR page. With cardHref
-// (the event has QR cards), Print opens the card page instead of the popup.
-export function QrCodeCard({ qrLink, size = 240, cardHref = null }: { qrLink: QrLinkResponseDto; size?: number; cardHref?: string | null }) {
+// The QR artwork + copy/download/print/share actions, shared between the share
+// links page and the dedicated gallery QR page. With cardHref (the event has QR
+// cards), Print opens the card page instead of the popup. Without linkActions,
+// copy, share and the language note are left to the page around it.
+export function QrCodeCard({
+    qrLink,
+    size = 240,
+    cardHref = null,
+    linkActions = true,
+}: {
+    qrLink: QrLinkResponseDto;
+    size?: number;
+    cardHref?: string | null;
+    linkActions?: boolean;
+}) {
     const t = useTranslations('ManagePage');
     const tGlobal = useTranslations();
     const svgRef = useRef<SVGSVGElement | null>(null);
@@ -112,22 +123,24 @@ export function QrCodeCard({ qrLink, size = 240, cardHref = null }: { qrLink: Qr
 
             {/* Actions */}
             <div className="mt-4 flex flex-wrap gap-2">
-                <button type="button" onClick={copyLink} className={ACTION_CLASS}>
-                    <Copy className="h-3.5 w-3.5" />
-                    {copied ? t('invitations.copied') : t('invitations.copyLink')}
-                </button>
+                {linkActions && (
+                    <button type="button" onClick={copyLink} className={ACTION_CLASS}>
+                        <Copy className="h-3.5 w-3.5" />
+                        {copied ? t('invitations.copied') : t('invitations.copyLink')}
+                    </button>
+                )}
                 {cardHref ? (
                     <AppLink href={cardHref} className={PRIMARY_ACTION_CLASS}>
                         <Printer className="h-3.5 w-3.5" />
                         {t('qr.printCard')}
                     </AppLink>
                 ) : (
-                    <button type="button" onClick={handlePrint} className={ACTION_CLASS}>
+                    <button type="button" onClick={handlePrint} className={linkActions ? ACTION_CLASS : PRIMARY_ACTION_CLASS}>
                         <Printer className="h-3.5 w-3.5" />
                         {t('qr.print')}
                     </button>
                 )}
-                {canShare && (
+                {linkActions && canShare && (
                     <button type="button" onClick={handleShare} className={cardHref ? ACTION_CLASS : PRIMARY_ACTION_CLASS}>
                         <Share2 className="h-3.5 w-3.5" />
                         {t('qr.share')}
@@ -148,7 +161,7 @@ export function QrCodeCard({ qrLink, size = 240, cardHref = null }: { qrLink: Qr
             </div>
 
             {/* Link language */}
-            <ShareLanguageNote className="mt-3 text-center" />
+            {linkActions && <ShareLanguageNote className="mt-3 text-center" />}
         </div>
     );
 }
