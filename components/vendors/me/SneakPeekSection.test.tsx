@@ -14,6 +14,7 @@ function renderSection(overrides: Partial<Parameters<typeof SneakPeekSection>[0]
     const props = {
         state: 'ready' as const,
         thumbnails: [],
+        fanItems: [],
         feedHref: '/events/e1/feed?post=p1',
         onChooseAction: vi.fn(),
         onEditAction: vi.fn(),

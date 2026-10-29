@@ -4,16 +4,15 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
-import { isEventVendorKey, useDismissPartnerPrompt, useVendorProfile } from '@/hooks/useVendorProfile';
+import { isEventVendorKey, useVendorProfile } from '@/hooks/useVendorProfile';
 import type { ApplyFormDefaults } from '@/lib/forBusinessApplication';
 import { vendorApplySearch } from '@/lib/vendors';
 
-// The vendor page's partner prompt: the sheet's starting values, its attribution and the dismissal.
+// The vendor page's partner sheet: its starting values and its attribution.
 export function useBecomePartner() {
     const { user } = useAuth();
     const { data: profile } = useVendorProfile();
     const queryClient = useQueryClient();
-    const dismissPrompt = useDismissPartnerPrompt();
     const [sheetOpen, setSheetOpen] = useState(false);
     const vendorType = profile?.vendorType ?? 'OTHER';
     const firstName = user?.firstName;
@@ -39,14 +38,6 @@ export function useBecomePartner() {
         setSheetOpen(false);
         queryClient.invalidateQueries({ predicate: (query) => isEventVendorKey(query.queryKey) });
     }, [queryClient]);
-    const { mutateAsync: dismissAsync } = dismissPrompt;
-    const dismiss = useCallback(async () => {
-        try {
-            await dismissAsync();
-        } catch {
-            // The card stays; the next tap tries again.
-        }
-    }, [dismissAsync]);
 
-    return { defaults, search: vendorApplySearch(vendorType), sheetOpen, openSheet, closeSheet, dismiss, isDismissing: dismissPrompt.isPending };
+    return { defaults, search: vendorApplySearch(vendorType), sheetOpen, openSheet, closeSheet };
 }

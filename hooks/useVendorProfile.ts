@@ -66,15 +66,3 @@ export function useUploadVendorLogo() {
 export function useDeleteVendorLogo() {
     return useProfileMutation<void>(() => api.del<VendorProfileDto>(endpoints.me.vendorProfileLogo));
 }
-
-export function useDismissPartnerPrompt() {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: () => api.post<void>(endpoints.me.vendorProfileDismissPartnerPrompt),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: vendorProfileKeys.mine });
-            queryClient.invalidateQueries({ predicate: (query) => isEventVendorKey(query.queryKey) });
-        },
-    });
-}
