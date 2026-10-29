@@ -2,7 +2,7 @@ import { PDFDocument } from 'pdf-lib';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { EventThemeFontDto } from '@/lib/api/types';
-import { qrCardPdfBytes, standaloneQrCardSvg, toDataUri } from '@/lib/qrCardExport';
+import { qrCardPdfBytes, selfContainedQrSvg, standaloneQrCardSvg, toDataUri } from '@/lib/qrCardExport';
 
 // A 1 × 1 transparent PNG.
 const PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
@@ -85,6 +85,19 @@ describe('standaloneQrCardSvg', () => {
         await standaloneQrCardSvg(svg, null);
 
         expect(svg.getAttribute('class')).toBe('block w-full');
+        expect(svg.querySelector('image')?.getAttribute('href')).toBe('/api/qr-card-artwork/t1/1');
+    });
+});
+
+describe('selfContainedQrSvg', () => {
+    it('inlines the logo and keeps the page code as it is', async () => {
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValue(respond('image/svg+xml', new Uint8Array([60]))));
+        const svg = cardSvg();
+
+        const markup = await selfContainedQrSvg(svg);
+
+        expect(markup).toContain('href="data:image/svg+xml;base64,PA=="');
+        expect(markup).not.toContain('/api/qr-card-artwork/');
         expect(svg.querySelector('image')?.getAttribute('href')).toBe('/api/qr-card-artwork/t1/1');
     });
 });
