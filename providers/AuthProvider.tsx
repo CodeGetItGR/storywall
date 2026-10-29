@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
+import { resetContentViews } from '@/hooks/useContentViews';
 import { useSentryUser } from '@/hooks/useSentryUser';
 import { authClient } from '@/lib/api/authClient';
 import { ApiError } from '@/lib/api/client';
@@ -161,9 +162,11 @@ export function AuthProvider({ children, handoff = null }: { children: ReactNode
     // fetched, and so is every page the router keeps for back/forward and
     // repeat visits (next.config.mjs staleTimes): each one carries the server
     // prefetch it was rendered with, which would hydrate straight back into
-    // the cleared query cache. Drop both whenever who is signed in changes.
+    // the cleared query cache. Drop both, and the queued content views,
+    // whenever who is signed in changes.
     const resetSessionCaches = useCallback(() => {
         queryClient.clear();
+        resetContentViews();
         router.refresh();
     }, [queryClient, router]);
 

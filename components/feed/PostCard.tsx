@@ -72,8 +72,10 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const isMyPost = activeMember?.id !== undefined && post.authorMemberId === activeMember.id;
     const isLocked = contentAccess.isLocked(post.id);
     // Editing stays with the author; a host may remove another member's post but not reword it.
-    const canEditPost = (isMyPost || contentAccess.isDemoBuilder) && canWrite && !isLocked;
-    const canDeletePost = canDeleteContent({ isMember: Boolean(activeMember), isAuthor: isMyPost, isHost, canWrite }) && !isLocked;
+    // A sneak peek is changed only from the vendor page, so here only a host can remove it.
+    const canEditPost = (isMyPost || contentAccess.isDemoBuilder) && canWrite && !isLocked && !isSneakPeek;
+    const canDeletePost =
+        canDeleteContent({ isMember: Boolean(activeMember), isAuthor: isMyPost, isHost, canWrite }) && !isLocked && (!isSneakPeek || isHost);
     const canReportPost = canReportContent({
         isMember: Boolean(activeMember),
         isAuthor: isMyPost,

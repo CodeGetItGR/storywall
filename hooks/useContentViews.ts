@@ -22,6 +22,11 @@ function startFlushing() {
     });
 }
 
+// Called when who is signed in changes, so nothing is sent or skipped under the wrong account.
+export function resetContentViews() {
+    queue.reset();
+}
+
 // Records that the caller saw something. Counting only: never throws, never shows an error.
 export function useContentViews() {
     return useCallback((eventId: string, kind: ContentViewKind, id: string) => {

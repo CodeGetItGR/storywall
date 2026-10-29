@@ -28,6 +28,7 @@ export function useSneakPeekSection(eventId: string, me: VendorMeDto | null, has
     const [sheet, setSheet] = useState<'new' | 'edit' | null>(null);
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
 
     const candidates = useMemo(
         () => sneakPeekCandidates(pro.data?.pages.flatMap((page) => page.content) ?? [], activeMember?.id),
@@ -68,17 +69,21 @@ export function useSneakPeekSection(eventId: string, me: VendorMeDto | null, has
         [create, sheet, toErrorMessage, update],
     );
 
-    const requestDelete = useCallback(() => setConfirmDelete(true), []);
+    const requestDelete = useCallback(() => {
+        setDeleteError(null);
+        setConfirmDelete(true);
+    }, []);
     const cancelDelete = useCallback(() => setConfirmDelete(false), []);
+    // On a failure the dialog stays open with the reason, e.g. access ended while the page was open.
     const confirmRemove = useCallback(async () => {
+        setDeleteError(null);
         try {
             await remove.mutateAsync();
-        } catch {
-            // The section stays as it was; the generic post delete never fails for a valid vendor in the window.
-        } finally {
             setConfirmDelete(false);
+        } catch (removeError) {
+            setDeleteError(toErrorMessage(removeError));
         }
-    }, [remove]);
+    }, [remove, toErrorMessage]);
 
     const { fetchNextPage } = pro;
     const loadMore = useCallback(() => {
@@ -106,6 +111,7 @@ export function useSneakPeekSection(eventId: string, me: VendorMeDto | null, has
         requestDelete,
         cancelDelete,
         confirmRemove,
+        deleteError,
         isDeleting: remove.isPending,
     };
 }

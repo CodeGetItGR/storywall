@@ -22,6 +22,20 @@ describe('createContentViewQueue', () => {
         expect(send).not.toHaveBeenCalled();
     });
 
+    it('forgets what was queued and seen on reset', () => {
+        const send = vi.fn().mockResolvedValue(undefined);
+        const queue = createContentViewQueue(send);
+        queue.add('e1', 'media', 'm1');
+
+        queue.reset();
+        queue.flush();
+        expect(send).not.toHaveBeenCalled();
+
+        expect(queue.add('e1', 'media', 'm1')).toBe(true);
+        queue.flush();
+        expect(send).toHaveBeenCalledWith('e1', { mediaIds: ['m1'], postIds: [] }, false);
+    });
+
     it('splits into batches of 50 and passes keepalive', () => {
         const send = vi.fn().mockResolvedValue(undefined);
         const queue = createContentViewQueue(send);

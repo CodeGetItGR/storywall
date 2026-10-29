@@ -1,3 +1,5 @@
+import { ApiError } from '@/lib/api/client';
+import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type { MediaResponseDto, SneakPeekPatchDto, VendorMeDto } from '@/lib/api/types';
 import { hasVendorCapability } from '@/lib/vendors';
 
@@ -22,6 +24,13 @@ export function sneakPeekState(
     if (summary.used) return 'used';
     if (eventStartAt && now < new Date(eventStartAt)) return 'notOpen';
     return hasOwnItems ? 'ready' : 'noItems';
+}
+
+// The vendor page's copy of the sneak peek is out of date: a host removed it, or it changed in another tab.
+export function isStaleSneakPeekError(error: unknown): boolean {
+    if (error instanceof ApiError && error.status === 404) return true;
+    const code = getErrorCode(error);
+    return code === ERROR_CODES.SNEAK_PEEK_USED || code === ERROR_CODES.SNEAK_PEEK_NOT_OPEN;
 }
 
 // The caller's own ready Pro items: the only ones the backend accepts.

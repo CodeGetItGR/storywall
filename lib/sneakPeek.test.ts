@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
+import { ApiError } from '@/lib/api/client';
+import { ERROR_CODES } from '@/lib/api/errors';
 import type { MediaResponseDto, VendorMeDto } from '@/lib/api/types';
-import { SNEAK_PEEK_MAX_ITEMS, sneakPeekCandidates, sneakPeekPatch, sneakPeekState, toggleSneakPeekPick } from '@/lib/sneakPeek';
+import {
+    isStaleSneakPeekError,
+    SNEAK_PEEK_MAX_ITEMS,
+    sneakPeekCandidates,
+    sneakPeekPatch,
+    sneakPeekState,
+    toggleSneakPeekPick,
+} from '@/lib/sneakPeek';
 
 const START = '2026-11-01T16:00:00Z';
 const AFTER = new Date('2026-11-01T18:00:00Z');
@@ -90,5 +99,21 @@ describe('sneakPeekPatch', () => {
         expect(sneakPeekPatch(initial, { mediaIds: ['b', 'a'], content: 'Hi' })).toEqual({ mediaIds: ['b', 'a'] });
         expect(sneakPeekPatch(initial, { mediaIds: ['a', 'b'], content: '  ' })).toEqual({ content: '' });
         expect(sneakPeekPatch({ mediaIds: ['a'], content: null }, { mediaIds: ['a'], content: 'New' })).toEqual({ content: 'New' });
+    });
+});
+
+describe('isStaleSneakPeekError', () => {
+    const coded = (status: number, errorCode: number) => new ApiError(status, { title: 'x', status, errorCode });
+
+    it('is true when the post is gone or the server state moved on', () => {
+        expect(isStaleSneakPeekError(new ApiError(404, null))).toBe(true);
+        expect(isStaleSneakPeekError(coded(409, ERROR_CODES.SNEAK_PEEK_USED))).toBe(true);
+        expect(isStaleSneakPeekError(coded(409, ERROR_CODES.SNEAK_PEEK_NOT_OPEN))).toBe(true);
+    });
+
+    it('is false for other failures', () => {
+        expect(isStaleSneakPeekError(new ApiError(500, null))).toBe(false);
+        expect(isStaleSneakPeekError(coded(400, ERROR_CODES.SNEAK_PEEK_MEDIA_INVALID))).toBe(false);
+        expect(isStaleSneakPeekError(new Error('offline'))).toBe(false);
     });
 });

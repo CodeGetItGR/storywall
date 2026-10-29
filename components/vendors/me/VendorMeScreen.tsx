@@ -251,7 +251,12 @@ export function VendorMeScreen() {
                 onCloseAction={sneakPeek.cancelDelete}
                 onConfirmAction={sneakPeek.confirmRemove}
                 title={tSneakPeek('deleteTitle')}
-                body={tSneakPeek('deleteBody')}
+                body={
+                    <>
+                        {tSneakPeek('deleteBody')}
+                        {sneakPeek.deleteError && <span className="mt-1 block text-destructive">{sneakPeek.deleteError}</span>}
+                    </>
+                }
                 confirmLabel={tSneakPeek('deleteConfirm')}
                 cancelLabel={tSneakPeek('deleteCancel')}
                 isConfirming={sneakPeek.isDeleting}

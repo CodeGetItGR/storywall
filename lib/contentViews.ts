@@ -45,5 +45,11 @@ export function createContentViewQueue(send: SendContentViews) {
         }
     }
 
-    return { add, flush };
+    // Forgets everything queued and seen, for a change of account: views belong to whoever was signed in.
+    function reset() {
+        seen.clear();
+        pending.clear();
+    }
+
+    return { add, flush, reset };
 }

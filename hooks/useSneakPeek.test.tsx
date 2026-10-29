@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { vendorKeys } from '@/hooks/useVendors';
+import { ApiError } from '@/lib/api/client';
 import type { PostResponseDto, VendorMeDto } from '@/lib/api/types';
 import { postKeys } from '@/lib/postQueries';
 
@@ -14,6 +15,14 @@ import { useCreateSneakPeek, useDeleteSneakPeek, useUpdateSneakPeek } from '@/ho
 
 const ME = { vendorId: 'v1', sneakPeek: { postId: null, mediaIds: [], content: null, used: false } } as unknown as VendorMeDto;
 const POST = { id: 'p1', eventId: 'e1', type: 'SNEAK_PEEK', content: 'Hi', media: [{ id: 'm2' }, { id: 'm1' }] } as unknown as PostResponseDto;
+
+const OTHER = { id: 'p2', eventId: 'e1', type: 'TEXT', content: 'Other', media: [] } as unknown as PostResponseDto;
+
+function feedContent(queryClient: QueryClient) {
+    return queryClient
+        .getQueryData<{ pages: { content: PostResponseDto[] }[] }>(postKeys.list('e1'))
+        ?.pages.flatMap((page) => page.content.map((post) => post.content));
+}
 
 function setup() {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
@@ -68,5 +77,51 @@ describe('useSneakPeek', () => {
             content: null,
             used: true,
         });
+    });
+
+    it('patches the edited post in the feed and reloads its media', async () => {
+        api.patch.mockResolvedValue({ ...POST, content: 'New' });
+        const { queryClient, invalidate, wrapper } = setup();
+        queryClient.setQueryData(postKeys.list('e1'), { pages: [{ content: [POST, OTHER] }], pageParams: [0] });
+        const { result } = renderHook(() => useUpdateSneakPeek('e1'), { wrapper });
+
+        await act(() => result.current.mutateAsync({ content: 'New' }));
+
+        expect(feedContent(queryClient)).toEqual(['New', 'Other']);
+        expect(invalidate).toHaveBeenCalledWith({ queryKey: postKeys.media('p1') });
+        expect(invalidate).not.toHaveBeenCalledWith({ queryKey: postKeys.list('e1') });
+    });
+
+    it('drops the deleted post from the feed without refetching it', async () => {
+        api.del.mockResolvedValue(undefined);
+        const { queryClient, invalidate, wrapper } = setup();
+        queryClient.setQueryData(vendorKeys.me('e1'), { ...ME, sneakPeek: { postId: 'p1', mediaIds: ['m1'], content: 'Hi', used: true } });
+        queryClient.setQueryData(postKeys.list('e1'), { pages: [{ content: [POST, OTHER] }], pageParams: [0] });
+        const { result } = renderHook(() => useDeleteSneakPeek('e1'), { wrapper });
+
+        await act(() => result.current.mutateAsync());
+
+        expect(feedContent(queryClient)).toEqual(['Other']);
+        expect(invalidate).not.toHaveBeenCalled();
+    });
+
+    it('reloads the vendor page when the sneak peek is already gone', async () => {
+        api.del.mockRejectedValue(new ApiError(404, null));
+        const { invalidate, wrapper } = setup();
+        const { result } = renderHook(() => useDeleteSneakPeek('e1'), { wrapper });
+
+        await act(() => result.current.mutateAsync().catch(() => undefined));
+
+        expect(invalidate).toHaveBeenCalledWith({ queryKey: vendorKeys.me('e1') });
+    });
+
+    it('leaves the vendor page alone on other errors', async () => {
+        api.del.mockRejectedValue(new ApiError(500, null));
+        const { invalidate, wrapper } = setup();
+        const { result } = renderHook(() => useDeleteSneakPeek('e1'), { wrapper });
+
+        await act(() => result.current.mutateAsync().catch(() => undefined));
+
+        expect(invalidate).not.toHaveBeenCalled();
     });
 });
