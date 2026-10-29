@@ -107,8 +107,8 @@ describe('payloadCount', () => {
 
 describe('EVENT_POST', () => {
     it('opens the post over the feed', () => {
-        expect(notificationCtaRoute(notification({ type: 'SNEAK_PEEK_POSTED', ctaTarget: 'EVENT_POST', ctaParams: { eventId: 'e1', postId: 'p1' } }))).toBe(
-            '/events/e1/feed?post=p1',
-        );
+        expect(
+            notificationCtaRoute(notification({ type: 'SNEAK_PEEK_POSTED', ctaTarget: 'EVENT_POST', ctaParams: { eventId: 'e1', postId: 'p1' } })),
+        ).toBe('/events/e1/feed?post=p1');
     });
 });

@@ -109,7 +109,9 @@ describe('vendor page prefetch', () => {
 
     it("seeds every vendor's reach, and nothing for a non-vendor", async () => {
         answer({ ...PHOTOGRAPHER, vendorType: 'MUSIC', capabilities: ['SONG_REQUESTS'] });
-        serverGet.mockImplementation(async (path: string) => (path.endsWith('/vendors/me/reach') ? { guests: 4, listTaps: 1, partner: false } : null));
+        serverGet.mockImplementation(async (path: string) =>
+            path.endsWith('/vendors/me/reach') ? { guests: 4, listTaps: 1, partner: false } : null,
+        );
         const element = await visit();
         expect(serverGet).toHaveBeenCalledWith('/api/events/e1/vendors/me/reach', 'tok');
         expect(seededKeys(element)).toEqual(expect.arrayContaining([['events', 'e1', 'vendors', 'reach']]));
@@ -127,7 +129,12 @@ describe('vendor page prefetch', () => {
             return { content: [], page: { number: 0, totalPages: 0, totalElements: 0, size: 30 } };
         });
         const element = await visit();
-        expect(seededKeys(element)).toEqual(expect.arrayContaining([['events', 'e1', 'vendors', 'me'], ['me', 'vendor-profile']]));
+        expect(seededKeys(element)).toEqual(
+            expect.arrayContaining([
+                ['events', 'e1', 'vendors', 'me'],
+                ['me', 'vendor-profile'],
+            ]),
+        );
     });
 });
 

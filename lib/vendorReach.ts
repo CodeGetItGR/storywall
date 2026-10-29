@@ -7,7 +7,16 @@ export interface ReachTile {
     value: number;
 }
 
-const TILE_ORDER: readonly ReachTileKey[] = ['guests', 'proViewers', 'proViews', 'postViewers', 'reactions', 'comments', 'listTaps', 'partnerCardTaps'];
+const TILE_ORDER: readonly ReachTileKey[] = [
+    'guests',
+    'proViewers',
+    'proViews',
+    'postViewers',
+    'reactions',
+    'comments',
+    'listTaps',
+    'partnerCardTaps',
+];
 
 // The tiles a vendor sees: exactly the numbers the backend sent. Partner card taps hide at 0
 // (their card never ran in this event, or nobody tapped it).

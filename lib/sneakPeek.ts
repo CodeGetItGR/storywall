@@ -8,7 +8,12 @@ export type SneakPeekState = 'hidden' | 'notOpen' | 'noItems' | 'ready' | 'poste
 
 // What the vendor page's Sneak peek section shows. Closed tools are explained by the page's access line,
 // so the section adds nothing for them unless there is a post to link to.
-export function sneakPeekState(me: VendorMeDto | null, eventStartAt: string | null | undefined, hasOwnItems: boolean, now: Date = new Date()): SneakPeekState {
+export function sneakPeekState(
+    me: VendorMeDto | null,
+    eventStartAt: string | null | undefined,
+    hasOwnItems: boolean,
+    now: Date = new Date(),
+): SneakPeekState {
     const summary = me?.sneakPeek;
     if (!me || !summary) return 'hidden';
     const open = hasVendorCapability(me, 'SNEAK_PEEK');

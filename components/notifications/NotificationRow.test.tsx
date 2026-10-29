@@ -96,7 +96,16 @@ describe('NotificationRow', () => {
     });
 
     it('falls back to the reach summary copy', () => {
-        renderRow({ ...reportOutcome, id: 'n-rs', type: 'VENDOR_REACH_SUMMARY', category: null, severity: null, title: null, body: null, payload: {} });
+        renderRow({
+            ...reportOutcome,
+            id: 'n-rs',
+            type: 'VENDOR_REACH_SUMMARY',
+            category: null,
+            severity: null,
+            title: null,
+            body: null,
+            payload: {},
+        });
 
         expect(screen.getByText('Your reach report is ready')).toBeInTheDocument();
     });

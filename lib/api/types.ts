@@ -1164,7 +1164,8 @@ export interface PartnerBrandingDto {
 
 // --- Vendors in the event ---
 
-export type VendorCapability = 'PRO_ALBUM' | 'SCHEDULE_EDIT' | 'ANNOUNCE' | 'RSVP_REPORT' | 'QR_READ' | 'SONG_REQUESTS' | 'PRINT_PICKS' | 'SNEAK_PEEK';
+export type VendorCapability =
+    'PRO_ALBUM' | 'SCHEDULE_EDIT' | 'ANNOUNCE' | 'RSVP_REPORT' | 'QR_READ' | 'SONG_REQUESTS' | 'PRINT_PICKS' | 'SNEAK_PEEK';
 export type MediaCollection = 'GUEST' | 'PRO';
 // Why a vendor's tools are off. Null in VendorMeDto while they are open.
 export type VendorToolsOff = 'MODULE_OFF' | 'TYPE_NOT_ALLOWED' | 'ACCESS_ENDED';

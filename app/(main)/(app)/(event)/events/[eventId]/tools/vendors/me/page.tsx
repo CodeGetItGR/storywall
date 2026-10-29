@@ -9,7 +9,15 @@ import { vendorServiceKeys } from '@/hooks/useVendorServices';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page as ApiPage } from '@/lib/api/pagination';
 import { serverGet, serverGetOrNull } from '@/lib/api/serverFetch';
-import type { MediaResponseDto, PrintListDto, PrintPicksContextDto, VendorMeDto, VendorProfileDto, VendorReachDto, VendorServiceItemDto } from '@/lib/api/types';
+import type {
+    MediaResponseDto,
+    PrintListDto,
+    PrintPicksContextDto,
+    VendorMeDto,
+    VendorProfileDto,
+    VendorReachDto,
+    VendorServiceItemDto,
+} from '@/lib/api/types';
 import { resolveServerEventContext, resolveServerEventDetail } from '@/lib/auth/serverEventContext';
 import { readableModuleKeys } from '@/lib/eventLifecycle';
 import { makeQueryClient } from '@/lib/queryClient';

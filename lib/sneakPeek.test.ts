@@ -59,10 +59,16 @@ describe('sneakPeekState', () => {
 });
 
 describe('sneakPeekCandidates', () => {
-    const item = (id: string, overrides: Partial<MediaResponseDto>) => ({ id, uploaderMemberId: 'me', status: 'READY', collection: 'PRO', ...overrides }) as MediaResponseDto;
+    const item = (id: string, overrides: Partial<MediaResponseDto>) =>
+        ({ id, uploaderMemberId: 'me', status: 'READY', collection: 'PRO', ...overrides }) as MediaResponseDto;
 
     it("keeps the caller's own ready Pro items", () => {
-        const items = [item('a', {}), item('b', { uploaderMemberId: 'other' }), item('c', { status: 'PROCESSING' }), item('d', { collection: 'GUEST' })];
+        const items = [
+            item('a', {}),
+            item('b', { uploaderMemberId: 'other' }),
+            item('c', { status: 'PROCESSING' }),
+            item('d', { collection: 'GUEST' }),
+        ];
         expect(sneakPeekCandidates(items, 'me').map((m) => m.id)).toEqual(['a']);
         expect(sneakPeekCandidates(items, null)).toEqual([]);
     });

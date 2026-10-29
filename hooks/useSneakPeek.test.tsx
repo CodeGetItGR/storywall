@@ -62,6 +62,11 @@ describe('useSneakPeek', () => {
         await act(() => result.current.mutateAsync());
 
         expect(api.del).toHaveBeenCalledWith('/api/events/e1/vendors/me/sneak-peek');
-        expect(queryClient.getQueryData<VendorMeDto>(vendorKeys.me('e1'))?.sneakPeek).toEqual({ postId: null, mediaIds: [], content: null, used: true });
+        expect(queryClient.getQueryData<VendorMeDto>(vendorKeys.me('e1'))?.sneakPeek).toEqual({
+            postId: null,
+            mediaIds: [],
+            content: null,
+            used: true,
+        });
     });
 });

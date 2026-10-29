@@ -64,7 +64,10 @@ export function SneakPeekSheet({
                                         onClick={sheet.handlePick}
                                         aria-pressed={isPicked}
                                         aria-label={t(isPicked ? 'unpick' : 'pick', { index: i + 1 })}
-                                        className={cn('relative block aspect-square w-full overflow-hidden rounded-lg', isPicked && 'ring-2 ring-primary ring-offset-2')}
+                                        className={cn(
+                                            'relative block aspect-square w-full overflow-hidden rounded-lg',
+                                            isPicked && 'ring-2 ring-primary ring-offset-2',
+                                        )}
                                     >
                                         <MediaThumbnail
                                             src={item.mediaUrl}

@@ -9,7 +9,17 @@ import messages from '@/messages/en.json';
 // The caption limit comes from the app config; its fallback is enough here.
 vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: () => ({ data: undefined }) }));
 
-const items = Array.from({ length: 21 }, (_, i) => ({ id: `m${i}`, mediaUrl: `https://cdn.test/m${i}.jpg`, thumbnailUrl: null, mediaType: 'IMAGE', status: 'READY' }) as unknown as MediaResponseDto);
+const items = Array.from(
+    { length: 21 },
+    (_, i) =>
+        ({
+            id: `m${i}`,
+            mediaUrl: `https://cdn.test/m${i}.jpg`,
+            thumbnailUrl: null,
+            mediaType: 'IMAGE',
+            status: 'READY',
+        }) as unknown as MediaResponseDto,
+);
 
 function renderSheet(overrides: Partial<Parameters<typeof SneakPeekSheet>[0]> = {}) {
     const props = {
