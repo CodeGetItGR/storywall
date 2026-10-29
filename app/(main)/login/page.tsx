@@ -15,11 +15,12 @@ import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthPageRedirect } from '@/hooks/useAuthPageRedirect';
+import { useAuthReturnPath } from '@/hooks/useAuthReturnPath';
 import { useContentLimits } from '@/hooks/useContentLimits';
 import { useNavigateAfterSignIn } from '@/hooks/useNavigateAfterSignIn';
 import { useOAuthSignIn } from '@/hooks/useOAuthSignIn';
 import type { AuthSessionDto, OAuthProviderName } from '@/lib/api/types';
-import { AUTH_RETURN_PATH_PARAM, getPostAuthRedirectPath, getSafeReturnPath } from '@/lib/auth/returnPath';
+import { getPostAuthRedirectPath } from '@/lib/auth/returnPath';
 import { routes } from '@/lib/routes';
 
 export default function LoginPage() {
@@ -30,7 +31,7 @@ export default function LoginPage() {
     const inviteToken = searchParams.get('invite');
     const passwordChanged = searchParams.get('passwordChanged') === '1';
     const accountDeleted = searchParams.get('accountDeleted') === '1';
-    const returnPath = getSafeReturnPath(searchParams.get(AUTH_RETURN_PATH_PARAM));
+    const returnPath = useAuthReturnPath();
 
     const { login } = useAuth();
     const { shouldRenderAuthPage } = useAuthPageRedirect(returnPath);
