@@ -92,3 +92,63 @@ export const UNKNOWN_PAGE = '';
 export function pageRows(pages: CampaignOverviewDto['pages']): FunnelBreakdownRow[] {
     return funnelBreakdown(Object.fromEntries(pages.map((row) => [row.page ?? UNKNOWN_PAGE, row.visits])));
 }
+
+// The chart has a color per line; past that, the smallest lines add up into one "Other" line.
+export const CHART_SLOTS = 8;
+
+export type CampaignChartLine = {
+    // The row field holding the line's values. Series names can hold dots, which recharts reads as paths.
+    dataKey: string;
+    // The source or "medium / campaign"; null for the single total line or "Other".
+    series: string | null;
+    other: boolean;
+    // The line's palette slot, by name, so a line keeps its color when another one comes or goes; -1 for "Other".
+    slot: number;
+    visitors: number;
+};
+
+export type CampaignChart = { lines: CampaignChartLine[]; rows: Record<string, string | number>[] };
+
+// Visitors per day (or per hour for a one-day range) as chart rows, a line per series, biggest first.
+// Without series (one link) it is the single total line.
+export function campaignVisitorsChart(data: CampaignOverviewDto, hourly: boolean): CampaignChart {
+    const xs: (string | number)[] = hourly ? data.hourly.map((row) => row.hour) : data.daily.map((row) => row.date);
+    const points = hourly
+        ? data.hourlySeries.map((row) => ({ series: row.series, x: row.hour as string | number, visitors: row.visitors }))
+        : data.dailySeries.map((row) => ({ series: row.series, x: row.date as string | number, visitors: row.visitors }));
+    const totals = hourly ? data.hourly : data.daily;
+
+    if (points.length === 0) {
+        return {
+            lines: [{ dataKey: 'total', series: null, other: false, slot: 0, visitors: totals.reduce((sum, row) => sum + row.visitors, 0) }],
+            rows: totals.map((row, index) => ({ x: xs[index], total: row.visitors })),
+        };
+    }
+
+    const bySeries = new Map<string, number>();
+    for (const point of points) bySeries.set(point.series, (bySeries.get(point.series) ?? 0) + point.visitors);
+    const ranked = [...bySeries.entries()].sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]));
+    const kept = ranked.length > CHART_SLOTS ? ranked.slice(0, CHART_SLOTS - 1) : ranked;
+    const byName = kept.map(([series]) => series).sort((left, right) => left.localeCompare(right));
+    const lines: CampaignChartLine[] = kept.map(([series, visitors], index) => ({
+        dataKey: `s${index}`,
+        series,
+        other: false,
+        slot: byName.indexOf(series),
+        visitors,
+    }));
+    const dataKeyOf = new Map(lines.map((line) => [line.series, line.dataKey]));
+    if (ranked.length > kept.length) {
+        const visitors = ranked.slice(kept.length).reduce((sum, [, count]) => sum + count, 0);
+        lines.push({ dataKey: 'other', series: null, other: true, slot: -1, visitors });
+    }
+
+    const rows: Record<string, string | number>[] = xs.map((x) => Object.fromEntries([['x', x], ...lines.map((line) => [line.dataKey, 0])]));
+    const rowOf = new Map(xs.map((x, index) => [x, rows[index]]));
+    for (const point of points) {
+        const row = rowOf.get(point.x);
+        const dataKey = dataKeyOf.get(point.series) ?? 'other';
+        if (row) row[dataKey] = Number(row[dataKey]) + point.visitors;
+    }
+    return { lines, rows };
+}

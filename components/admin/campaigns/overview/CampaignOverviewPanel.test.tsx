@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -62,7 +62,10 @@ describe('CampaignOverviewPanel', () => {
         expect(apiGet).toHaveBeenCalledWith('/api/admin/metrics/campaigns/overview');
         expect(screen.getByText('1,240')).toBeTruthy();
         expect(screen.getAllByText(/of visitors$/)).toHaveLength(5);
-        expect(screen.getByText(messages.AdminPage.visitors.daily.title)).toBeTruthy();
+        // A legend line per source in the visitors chart.
+        const chart = within(screen.getByText('Visitors over time').closest('section') as HTMLElement);
+        expect(chart.getByText('instagram')).toBeTruthy();
+        expect(chart.getByText('facebook')).toBeTruthy();
         expect(await screen.findByRole('table', { name: 'By source' })).toBeTruthy();
         expect(screen.getByText('Landing page')).toBeTruthy();
         expect(screen.getByText('/for-business')).toBeTruthy();
@@ -104,7 +107,7 @@ describe('CampaignOverviewPanel', () => {
         renderPanel();
 
         expect(await screen.findByText('Visitors by hour')).toBeTruthy();
-        expect(screen.queryByText(messages.AdminPage.visitors.daily.title)).toBeNull();
+        expect(screen.queryByText('Visitors over time')).toBeNull();
     });
 
     it('keeps the tiles and says so when there are no visits', async () => {

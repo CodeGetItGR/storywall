@@ -5443,7 +5443,7 @@
                 "device": "Device"
             },
             "source": { "label": "Source", "all": "All sources" },
-            "hourly": { "title": "Visitors by hour", "visitors": "Visitors" },
+            "chart": { "daily": "Visitors over time", "hourly": "Visitors by hour", "visitors": "Visitors", "other": "Other" },
             "bySource": {
                 "title": "By source",
                 "titlePicked": "By campaign",
