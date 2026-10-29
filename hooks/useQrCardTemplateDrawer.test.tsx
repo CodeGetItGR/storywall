@@ -34,7 +34,8 @@ const LINEN: AdminQrCardTemplateDto = {
     headingFont: null,
     codeColor: '#1F3A5A',
     centerLogo: false,
-    layout: null, artworkWidth: null,
+    layout: null,
+    artworkWidth: null,
 };
 
 let queryClient: QueryClient;
