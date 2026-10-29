@@ -4575,6 +4575,16 @@ git add README.md
 git commit -m "docs: notifications"
 ```
 
+## Changes made while building
+
+- **App branch:** `claude/app-push` starts from the app's `main`, which equals `claude/app-and-widget` (4b77a29).
+- **Firebase tokens:** Firebase Messaging 25.1 deprecated `getToken`, `deleteToken` and `onNewToken` in favor of installation ID registration (`register()`, `onRegistered`). Firebase says both are fully supported and gives no removal date, so the app keeps tokens, with the warnings suppressed in `PushTokens` and `AdminMessagingService`. Spring keeps sending to `message.token`. Moving to installation IDs is a follow-up and touches both the app and `FcmClient`.
+- **Unpair order:** `unpairPhone` calls `PushTokens.forget` last, not first. Firebase can take a while offline, and a push that arrives in the meantime is dropped because the phone is already unpaired.
+- **Tests:** `PushTextsTest` pins `Locale.US`, and `TestStrings.get` takes `(id: Int, args: Array<out Any>)` to match `PushTexts`' lookup.
+- **Lint:** `notificationsAllowed` is marked `@RequiresApi(TIRAMISU)`, and the tap link uses `toUri()`. The two warnings left (`widget_today` unused, `createBitmap` in `AttentionRing`) were already on `main`.
+- **Spring, beyond the plan:** deleting the account also removes the admin's phones (`MeAccountDeletionService`). `ErrorBurstJobTest` and `OrderPaidAlertsTest` match `publishEvent(any(AdminAlert.class))`, because a bare `any()` binds to the `ApplicationEvent` overload.
+- **Emulator check (API 36):** without Firebase, there's no notifications row, and pair and Unpair work. With a throwaway dummy `google-services.json`, deleted afterwards: the row shows in English and Greek; Turn on asks, asks again after one deny, then opens Android's settings; the row goes away once the permission is granted; and all five channels exist.
+
 ---
 
 ## Part D: Before staging
