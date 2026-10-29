@@ -14,12 +14,15 @@ import { PrintsSection } from '@/components/vendors/me/PrintsSection';
 import { ProAlbumSection } from '@/components/vendors/me/ProAlbumSection';
 import { ServiceSheet } from '@/components/vendors/me/ServiceSheet';
 import { ServicesSection } from '@/components/vendors/me/ServicesSection';
+import { SneakPeekSection } from '@/components/vendors/me/SneakPeekSection';
+import { SneakPeekSheet } from '@/components/vendors/me/SneakPeekSheet';
 import { VendorListingSection } from '@/components/vendors/me/VendorListingSection';
 import { VendorMeGroup } from '@/components/vendors/me/VendorMeGroup';
 import { VendorToolLinks } from '@/components/vendors/me/VendorToolLinks';
 import { VendorLogo } from '@/components/vendors/VendorLogo';
 import { VendorProfileSheet } from '@/components/vendors/VendorProfileSheet';
 import { VendorRowsSkeleton } from '@/components/vendors/VendorsSkeletons';
+import { useSneakPeekSection } from '@/hooks/useSneakPeekSection';
 import { useVendorMePage } from '@/hooks/useVendorMePage';
 import { useVendorPrintsSection } from '@/hooks/useVendorPrintsSection';
 import { useVendorServicesSection } from '@/hooks/useVendorServicesSection';
@@ -29,13 +32,15 @@ import { routes } from '@/lib/routes';
 export function VendorMeScreen() {
     const t = useTranslations('Vendors');
     const tServices = useTranslations('Vendors.services');
+    const tSneakPeek = useTranslations('Vendors.sneakPeek');
     const locale = useLocale();
     const { eventId } = useEventRouteContext();
     const page = useVendorMePage(eventId);
     const { me, profile } = page;
     const prints = useVendorPrintsSection(eventId, me);
     const services = useVendorServicesSection(me, page.profileStatus);
-    const hasEventWork = page.tools.length > 0 || prints.open || page.hasProAlbum;
+    const sneakPeek = useSneakPeekSection(eventId, me, page.hasProAlbum);
+    const hasEventWork = page.tools.length > 0 || prints.open || page.hasProAlbum || sneakPeek.visible;
 
     return (
         <ModulePageShell
@@ -67,6 +72,18 @@ export function VendorMeScreen() {
                         <VendorMeGroup id="vendor-event-title" title={t('me.groupEvent')}>
                             {/* Tools */}
                             {page.tools.length > 0 && <VendorToolLinks tools={page.tools} />}
+
+                            {/* Sneak peek */}
+                            {sneakPeek.visible && sneakPeek.state !== 'hidden' && (
+                                <SneakPeekSection
+                                    state={sneakPeek.state}
+                                    thumbnails={sneakPeek.thumbnails}
+                                    feedHref={sneakPeek.feedHref}
+                                    onChooseAction={sneakPeek.openNew}
+                                    onEditAction={sneakPeek.openEdit}
+                                    onDeleteAction={sneakPeek.requestDelete}
+                                />
+                            )}
 
                             {/* Print order */}
                             {prints.open && (
@@ -193,6 +210,36 @@ export function VendorMeScreen() {
                     onCloseAction={services.close}
                 />
             )}
+
+            {/* Sneak peek sheet */}
+            {sneakPeek.sheet && (
+                <SneakPeekSheet
+                    key={sneakPeek.sheet}
+                    open
+                    mode={sneakPeek.sheet}
+                    items={sneakPeek.candidates}
+                    initialPicked={sneakPeek.initialPicked}
+                    initialCaption={sneakPeek.initialCaption}
+                    hasMore={sneakPeek.hasMore}
+                    isSaving={sneakPeek.isSaving}
+                    error={sneakPeek.error}
+                    onLoadMoreAction={sneakPeek.loadMore}
+                    onSubmitAction={sneakPeek.submit}
+                    onCloseAction={sneakPeek.closeSheet}
+                />
+            )}
+
+            {/* Sneak peek delete confirmation */}
+            <ConfirmActionModal
+                open={sneakPeek.confirmDelete}
+                onCloseAction={sneakPeek.cancelDelete}
+                onConfirmAction={sneakPeek.confirmRemove}
+                title={tSneakPeek('deleteTitle')}
+                body={tSneakPeek('deleteBody')}
+                confirmLabel={tSneakPeek('deleteConfirm')}
+                cancelLabel={tSneakPeek('deleteCancel')}
+                isConfirming={sneakPeek.isDeleting}
+            />
 
             {/* Service delete confirmation */}
             <ConfirmActionModal

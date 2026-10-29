@@ -16,12 +16,16 @@ vi.mock('@/components/vendors/VendorProfileSheet', () => ({ VendorProfileSheet: 
 vi.mock('@/components/vendors/me/PrintsSection', () => ({ PrintsSection: () => <p>prints section</p> }));
 vi.mock('@/components/vendors/me/PrintsIncludedSheet', () => ({ PrintsIncludedSheet: () => null }));
 vi.mock('@/components/vendors/me/ServicesSection', () => ({ ServicesSection: () => <p>services section</p> }));
+vi.mock('@/components/vendors/me/SneakPeekSection', () => ({ SneakPeekSection: () => <p>sneak peek section</p> }));
+vi.mock('@/components/vendors/me/SneakPeekSheet', () => ({ SneakPeekSheet: () => <p>sneak peek sheet</p> }));
 vi.mock('@/components/vendors/me/ServiceSheet', () => ({ ServiceSheet: () => <p>service sheet</p> }));
 vi.mock('@/components/ui/ConfirmActionModal', () => ({ ConfirmActionModal: () => null }));
 const prints = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
 const services = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
 vi.mock('@/hooks/useVendorPrintsSection', () => ({ useVendorPrintsSection: () => prints.value }));
 vi.mock('@/hooks/useVendorServicesSection', () => ({ useVendorServicesSection: () => services.value }));
+const sneakPeek = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
+vi.mock('@/hooks/useSneakPeekSection', () => ({ useSneakPeekSection: () => sneakPeek.value }));
 const page = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
 vi.mock('@/hooks/useVendorMePage', () => ({ useVendorMePage: () => page.value }));
 
@@ -59,6 +63,7 @@ beforeEach(() => {
     page.value = state();
     prints.value = { open: false, includedOpen: false, error: null };
     services.value = { visible: false, editing: null, confirmDelete: false, error: null };
+    sneakPeek.value = { visible: false, state: 'hidden', sheet: null, confirmDelete: false };
 });
 afterEach(cleanup);
 
@@ -86,6 +91,19 @@ describe('VendorMeScreen', () => {
         expect(screen.getByText('services section')).toBeTruthy();
         expect(screen.getByText('service sheet')).toBeTruthy();
         expect(screen.queryByText('prints section')).toBeNull();
+    });
+
+    it('shows the Sneak peek section and its sheet while it is open', () => {
+        sneakPeek.value = { visible: true, state: 'ready', sheet: 'new', confirmDelete: false, candidates: [], thumbnails: [] };
+        render(<VendorMeScreen />);
+        expect(screen.getByText('sneak peek section')).toBeTruthy();
+        expect(screen.getByText('sneak peek sheet')).toBeTruthy();
+    });
+
+    it('hides the Sneak peek section when it does not apply', () => {
+        render(<VendorMeScreen />);
+        expect(screen.queryByText('sneak peek section')).toBeNull();
+        expect(screen.queryByText('sneak peek sheet')).toBeNull();
     });
 
     it('shows the Pro album and the partner prompt when they apply', () => {
