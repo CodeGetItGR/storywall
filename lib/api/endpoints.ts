@@ -380,11 +380,12 @@ export const endpoints = {
                 );
                 return `/api/admin/metrics/campaigns${params.length ? `?${params.join('&')}` : ''}`;
             },
-            campaignOverview: (since?: string | null, until?: string | null, linkId?: string | null) => {
+            campaignOverview: (since?: string | null, until?: string | null, linkId?: string | null, source?: string | null) => {
                 const params = [
                     since ? `since=${encodeURIComponent(since)}` : null,
                     until ? `until=${encodeURIComponent(until)}` : null,
                     linkId ? `link=${encodeURIComponent(linkId)}` : null,
+                    source ? `source=${encodeURIComponent(source)}` : null,
                 ].filter(Boolean);
                 return `/api/admin/metrics/campaigns/overview${params.length ? `?${params.join('&')}` : ''}`;
             },

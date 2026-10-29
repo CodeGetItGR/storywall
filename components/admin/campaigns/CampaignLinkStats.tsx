@@ -7,7 +7,8 @@ import { LoadingState } from '@/components/ui/LoadingState';
 import { useAdminCampaignOverview } from '@/hooks/useAdminCampaigns';
 import type { FunnelBounds } from '@/lib/adminFunnel';
 
-// One saved link's funnel, visitors per day, and language and device, in the table's range.
+// One saved link's funnel, visitors per day or hour, landing pages, and language and device, in the
+// table's range.
 export function CampaignLinkStats({ linkId, bounds }: { linkId: string; bounds: FunnelBounds }) {
     const t = useTranslations('AdminPage.campaigns');
     const query = useAdminCampaignOverview(bounds.since, bounds.until, linkId, { enabled: bounds.isValid });

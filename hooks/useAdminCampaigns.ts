@@ -14,8 +14,8 @@ import type { CampaignLinkDto, CampaignLinkRequestDto, CampaignOverviewDto, Camp
 export const adminCampaignKeys = {
     all: ['admin', 'campaigns'] as const,
     report: (since: string | null, until: string | null) => ['admin', 'campaigns', 'report', since, until] as const,
-    overview: (since: string | null, until: string | null, linkId: string | null) =>
-        ['admin', 'campaigns', 'overview', since, until, linkId] as const,
+    overview: (since: string | null, until: string | null, linkId: string | null, source: string | null = null) =>
+        ['admin', 'campaigns', 'overview', since, until, linkId, source] as const,
 };
 
 export function useAdminCampaigns(since: string | null, until: string | null, options: { enabled?: boolean } = {}) {
@@ -27,11 +27,17 @@ export function useAdminCampaigns(since: string | null, until: string | null, op
     });
 }
 
-// Every saved link, or one with linkId.
-export function useAdminCampaignOverview(since: string | null, until: string | null, linkId: string | null, options: { enabled?: boolean } = {}) {
+// Every saved link, one utm source, or one link with linkId.
+export function useAdminCampaignOverview(
+    since: string | null,
+    until: string | null,
+    linkId: string | null,
+    options: { enabled?: boolean; source?: string | null } = {},
+) {
+    const source = options.source ?? null;
     return useQuery({
-        queryKey: adminCampaignKeys.overview(since, until, linkId),
-        queryFn: () => api.get<CampaignOverviewDto>(endpoints.admin.metrics.campaignOverview(since, until, linkId)),
+        queryKey: adminCampaignKeys.overview(since, until, linkId, source),
+        queryFn: () => api.get<CampaignOverviewDto>(endpoints.admin.metrics.campaignOverview(since, until, linkId, source)),
         placeholderData: keepPreviousData,
         enabled: options.enabled ?? true,
     });

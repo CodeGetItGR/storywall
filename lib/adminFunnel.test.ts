@@ -37,6 +37,19 @@ describe('funnelRangeBounds', () => {
         expect(funnelRangeBounds('THIS_YEAR', noCustom, '2026-09-30').since).toBe('2026-01-01T00:00:00+02:00');
     });
 
+    it('covers one local day for Today and Yesterday, across a DST change', () => {
+        expect(funnelRangeBounds('TODAY', noCustom, '2026-10-25')).toEqual({
+            since: '2026-10-25T00:00:00+03:00',
+            until: '2026-10-26T00:00:00+02:00',
+            isValid: true,
+        });
+        expect(funnelRangeBounds('YESTERDAY', noCustom, '2026-10-26')).toEqual({
+            since: '2026-10-25T00:00:00+03:00',
+            until: '2026-10-26T00:00:00+02:00',
+            isValid: true,
+        });
+    });
+
     it('includes the whole last day of a custom range across a DST change', () => {
         expect(funnelRangeBounds('CUSTOM', { from: '2026-03-01', to: '2026-09-30' }, '2026-10-05')).toEqual({
             since: '2026-03-01T00:00:00+02:00',

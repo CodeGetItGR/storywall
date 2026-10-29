@@ -3,15 +3,19 @@
 import { useTranslations } from 'next-intl';
 
 import { CampaignOverviewContent } from '@/components/admin/campaigns/overview/CampaignOverviewContent';
+import { CampaignSourcePicker } from '@/components/admin/campaigns/overview/CampaignSourcePicker';
 import { FunnelHeader } from '@/components/admin/funnel/FunnelHeader';
 import { FunnelRangeControl } from '@/components/admin/funnel/FunnelRangeControl';
 import { VisitorsSkeleton } from '@/components/admin/visitors/VisitorsSkeleton';
 import { useCampaignOverview } from '@/hooks/useCampaignOverview';
+import { CAMPAIGN_RANGE_PRESETS } from '@/lib/adminFunnel';
 
-// Every saved link together: the funnel, visitors per day, and language and device.
+// Every saved link together, or one source: the funnel, visitors per day or hour, the sources,
+// landing pages, and language and device.
 export function CampaignOverviewPanel() {
     const t = useTranslations('AdminPage.campaignOverview');
-    const { range, data, isLoading, isFetching, error, updatedAt, refresh } = useCampaignOverview();
+    const { range, source, sourceOptions, handleSourceChange, sourceGroups, data, isLoading, isFetching, error, updatedAt, refresh } =
+        useCampaignOverview();
 
     return (
         <div className="mx-auto max-w-6xl px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
@@ -19,8 +23,11 @@ export function CampaignOverviewPanel() {
             <FunnelHeader title={t('title')} updatedAt={updatedAt} isFetching={isFetching} onRefreshAction={refresh} />
 
             <div className="space-y-5">
-                {/* Range */}
-                <FunnelRangeControl range={range} note={t('rangeNote')} />
+                {/* Range and source */}
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                    <FunnelRangeControl range={range} presets={CAMPAIGN_RANGE_PRESETS} note={t('rangeNote')} />
+                    <CampaignSourcePicker value={source} options={sourceOptions} onChangeAction={handleSourceChange} />
+                </div>
 
                 {/* States */}
                 {isLoading && <VisitorsSkeleton />}
@@ -39,7 +46,7 @@ export function CampaignOverviewPanel() {
                 )}
 
                 {/* Content */}
-                {data && <CampaignOverviewContent data={data} />}
+                {data && <CampaignOverviewContent data={data} sourceGroups={sourceGroups} picked={source !== null} />}
             </div>
         </div>
     );

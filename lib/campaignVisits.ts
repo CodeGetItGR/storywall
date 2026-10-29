@@ -41,8 +41,9 @@ export function pageLanguage(pathname: string): VisitorLanguage {
 }
 
 // Best effort: keepalive lets a click that leaves the page still arrive; a failure is ignored.
-export function sendCampaignVisit(kind: CampaignVisitKind, campaign: Campaign, language: VisitorLanguage) {
-    const body: CampaignVisitRequestDto = { kind, ...campaign, language };
+// `pathname` is the landing page it happened on; its locale segment is also the language.
+export function sendCampaignVisit(kind: CampaignVisitKind, campaign: Campaign, pathname: string) {
+    const body: CampaignVisitRequestDto = { kind, ...campaign, language: pageLanguage(pathname), page: pathname };
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL ?? ''}${endpoints.campaignVisits.record}`, {
         method: 'POST',
         keepalive: true,
@@ -55,5 +56,5 @@ export function sendCampaignVisit(kind: CampaignVisitKind, campaign: Campaign, l
 // A landing page click, counted for the campaign this visit arrived from.
 export function sendCampaignClick(kind: Exclude<CampaignVisitKind, 'VISIT'>) {
     const campaign = currentCampaign();
-    if (campaign) sendCampaignVisit(kind, campaign, pageLanguage(window.location.pathname));
+    if (campaign) sendCampaignVisit(kind, campaign, window.location.pathname);
 }
