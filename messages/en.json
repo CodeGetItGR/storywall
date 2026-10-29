@@ -1307,13 +1307,11 @@
             }
         },
         "qr": {
-            "summary": "{count} QR codes",
             "empty": "No share links yet.",
             "emptyTitle": "No share links yet",
             "emptyBody": "Create one for group chats, printed cards, posters, or photo uploads.",
             "readOnly": "This event is read-only. QR code changes are paused, but existing codes can still be previewed and printed.",
             "untitled": "Untitled QR code",
-            "preview": "Preview",
             "revoke": "Revoke",
             "confirmRevoke": "Confirm revoke",
             "revokeConfirmTitle": "Revoke this QR code?",
@@ -1354,8 +1352,10 @@
                 "TARGET_UNAVAILABLE": "Target unavailable"
             },
             "share": "Share",
-            "managedAutomatically": "Managed automatically",
-            "locked": "Locked"
+            "sections": {
+                "link": "Link",
+                "qr": "QR code"
+            }
         },
         "sessionManagement": {
             "title": "Event sessions",
