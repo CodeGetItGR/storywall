@@ -14,6 +14,14 @@ export const campaignOverviewFixture: CampaignOverviewDto = {
         { date: '2027-03-02', visits: 0, visitors: 0 },
     ],
     hourly: Array.from({ length: 24 }, (_, hour) => ({ hour, visits: hour === 9 ? 40 : 0, visitors: hour === 9 ? 33 : 0 })),
+    dailySeries: [
+        { series: 'instagram', date: '2027-03-01', visits: 30, visitors: 25 },
+        { series: 'facebook', date: '2027-03-01', visits: 10, visitors: 8 },
+    ],
+    hourlySeries: [
+        { series: 'instagram', hour: 9, visits: 30, visitors: 25 },
+        { series: 'facebook', hour: 9, visits: 10, visitors: 8 },
+    ],
     devices: [
         { device: 'PHONE', visits: 900 },
         { device: 'DESKTOP', visits: 340 },
@@ -46,6 +54,8 @@ export const emptyCampaignOverviewFixture: CampaignOverviewDto = {
     revenueMinorByCurrency: {},
     daily: [],
     hourly: [],
+    dailySeries: [],
+    hourlySeries: [],
     devices: [],
     languages: [],
     pages: [],

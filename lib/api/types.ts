@@ -2402,8 +2402,10 @@ export interface CampaignRowDto {
 
 // GET /api/admin/metrics/campaigns/overview. Every saved link, one utm source (?source=) or one link
 // (?link=, which wins) over a range. daily lists every Athens day in the range and hourly every Athens
-// hour (0-23) summed over it, zeros included; both are empty when there's no visit at all. A page is
-// null for old visits whose link is gone.
+// hour (0-23) summed over it, zeros included; both are empty when there's no visit at all.
+// dailySeries and hourlySeries split them into the chart's lines (each source, or with ?source= each
+// "medium / campaign"), only where a line had a visit; empty for one link. A page is null for old
+// visits whose link is gone.
 export interface CampaignOverviewDto {
     visits: number;
     visitors: number;
@@ -2415,6 +2417,8 @@ export interface CampaignOverviewDto {
     revenueMinorByCurrency: Record<string, number>;
     daily: { date: string; visits: number; visitors: number }[];
     hourly: { hour: number; visits: number; visitors: number }[];
+    dailySeries: { series: string; date: string; visits: number; visitors: number }[];
+    hourlySeries: { series: string; hour: number; visits: number; visitors: number }[];
     devices: { device: VisitorDevice; visits: number }[];
     languages: { language: VisitorLanguage; visits: number }[];
     pages: { page: string | null; visits: number }[];
