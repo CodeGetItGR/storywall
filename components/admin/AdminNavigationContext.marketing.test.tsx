@@ -33,7 +33,7 @@ afterEach(() => {
 describe('Admin navigation for marketing', () => {
     it('lists only the marketing group and phones', () => {
         renderAs('#outreach', 'MARKETING');
-        expect(screen.getByText('outreach|outreach,discountCodes,appReviews,campaignOverview,campaigns,phones')).toBeInTheDocument();
+        expect(screen.getByText('outreach|outreach,outreachRequests,discountCodes,appReviews,campaignOverview,campaigns,phones')).toBeInTheDocument();
     });
 
     it('sends a hidden section to partner outreach', () => {

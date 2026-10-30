@@ -13,20 +13,26 @@ import { OUTREACH_CITY_SUGGESTIONS, OUTREACH_KINDS, OUTREACH_NAME_MAX, OUTREACH_
 
 const CITY_LIST_ID = 'outreach-city-suggestions';
 
-// The owner keys this on each opening, so the form always starts empty.
+// The owner keys this on each opening, so the form always starts empty. `suggest` (marketing) sends
+// the business to an admin as a request, with a note saying why, instead of adding it.
 export function OutreachAddModal({
     open,
+    suggest = false,
     onCloseAction,
     onCreatedAction,
     onOpenExistingAction,
+    onSuggestedAction,
 }: {
     open: boolean;
+    suggest?: boolean;
     onCloseAction: () => void;
     onCreatedAction: (id: string) => void;
     onOpenExistingAction: (id: string) => void;
+    onSuggestedAction?: () => void;
 }) {
     const t = useTranslations('AdminPage.outreach');
-    const form = useOutreachAddForm(onCreatedAction, onOpenExistingAction);
+    const form = useOutreachAddForm(onCreatedAction, onOpenExistingAction, suggest, onSuggestedAction);
+    const title = suggest ? t('suggest.title') : t('add.title');
     const roles = useTranslations('AdminPage.collaborations.feedCard.roles');
     const toErrorMessage = useApiErrorMessage();
     const priorities = OUTREACH_PRIORITIES.map((value) => ({ value, label: t(`priority.${value}`) }));
@@ -36,10 +42,13 @@ export function OutreachAddModal({
     };
 
     return (
-        <Modal open={open} onClose={onCloseAction} size="md" closeLabel={t('add.close')} ariaLabel={t('add.title')}>
+        <Modal open={open} onClose={onCloseAction} size="md" closeLabel={t('add.close')} ariaLabel={title}>
             <form onSubmit={form.handleSubmit} className="space-y-5 p-5" noValidate>
                 {/* Header */}
-                <h3 className="text-lg font-semibold text-ink">{t('add.title')}</h3>
+                <div className="space-y-1">
+                    <h3 className="text-lg font-semibold text-ink">{title}</h3>
+                    {suggest && <p className="text-sm text-ink-muted">{t('suggest.intro')}</p>}
+                </div>
 
                 {/* Business */}
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -98,6 +107,20 @@ export function OutreachAddModal({
                     <OutreachAddTextField form={form} field="fit" label={t('why.fit')} multiline />
                 </div>
 
+                {/* Why (a suggestion) */}
+                {suggest && (
+                    <AdminField label={t('suggest.note')} required hint={errorText('note') ?? t('suggest.noteHint')}>
+                        <textarea
+                            name="note"
+                            value={form.note}
+                            onChange={form.handleNoteChange}
+                            maxLength={2000}
+                            rows={3}
+                            className={adminInputClass('resize-y')}
+                        />
+                    </AdminField>
+                )}
+
                 {/* Duplicate */}
                 {form.duplicateId !== undefined && (
                     <div
@@ -129,7 +152,7 @@ export function OutreachAddModal({
                         className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-bold text-white disabled:opacity-50"
                     >
                         {form.isSaving && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />}
-                        {t('add.submit')}
+                        {suggest ? t('suggest.submit') : t('add.submit')}
                     </button>
                 </div>
             </form>

@@ -5,6 +5,7 @@ import type { PlatformRole } from '@/lib/api/types';
 // The server enforces the same split; hiding the rest here only keeps the sidebar honest.
 const MARKETING_TABS: ReadonlySet<AdminTab> = new Set<AdminTab>([
     'outreach',
+    'outreachRequests',
     'campaignOverview',
     'campaigns',
     'discountCodes',

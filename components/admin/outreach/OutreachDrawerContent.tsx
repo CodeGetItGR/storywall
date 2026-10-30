@@ -1,5 +1,7 @@
 'use client';
 
+import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
+import { OutreachAskRemove } from '@/components/admin/outreach/OutreachAskRemove';
 import { OutreachColdEmail } from '@/components/admin/outreach/OutreachColdEmail';
 import { OutreachNotes } from '@/components/admin/outreach/OutreachNotes';
 import { OutreachProgress } from '@/components/admin/outreach/OutreachProgress';
@@ -12,6 +14,7 @@ import type { OutreachProspectDto } from '@/lib/api/types';
 // One business, top to bottom in the order the work happens.
 export function OutreachDrawerContent({ prospect, onRemovedAction }: { prospect: OutreachProspectDto; onRemovedAction: () => void }) {
     const email = useOutreachColdEmail(prospect);
+    const { role } = useAdminNavigation();
 
     return (
         <div className="space-y-7">
@@ -30,8 +33,12 @@ export function OutreachDrawerContent({ prospect, onRemovedAction }: { prospect:
             {/* Notes and activity */}
             <OutreachNotes prospect={prospect} />
 
-            {/* Remove */}
-            <OutreachRemove prospectId={prospect.id} onRemovedAction={onRemovedAction} />
+            {/* Remove: an admin removes, marketing asks an admin to */}
+            {role === 'ADMIN' ? (
+                <OutreachRemove prospectId={prospect.id} onRemovedAction={onRemovedAction} />
+            ) : (
+                <OutreachAskRemove key={prospect.id} prospectId={prospect.id} />
+            )}
         </div>
     );
 }

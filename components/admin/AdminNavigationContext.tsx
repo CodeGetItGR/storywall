@@ -13,6 +13,7 @@ import {
     Inbox,
     LayoutGrid,
     Link2,
+    ListChecks,
     type LucideIcon,
     Megaphone,
     MonitorPlay,
@@ -57,6 +58,7 @@ export type AdminTab =
     | 'plans'
     | 'paidServices'
     | 'outreach'
+    | 'outreachRequests'
     | 'discountCodes'
     | 'partnerApplications'
     | 'collaborations'
@@ -110,6 +112,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#module-usage': 'moduleUsage',
     '#cost-tracking': 'costTracking',
     '#paid-services': 'paidServices',
+    '#outreach-requests': 'outreachRequests',
     '#discount-codes': 'discountCodes',
     '#partner-cards': 'partnerCards',
     '#reaction-types': 'reactionTypes',
@@ -137,6 +140,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     plans: PLANS_HASH_ROOT,
     paidServices: '#paid-services',
     outreach: OUTREACH_HASH_ROOT,
+    outreachRequests: '#outreach-requests',
     discountCodes: '#discount-codes',
     partnerApplications: PARTNER_APPLICATIONS_HASH_ROOT,
     collaborations: COLLABORATIONS_HASH_ROOT,
@@ -256,6 +260,7 @@ export function AdminNavigationProvider({ children, role = 'ADMIN' }: { children
             { key: 'plans', label: t('plans'), icon: CalendarDays },
             { key: 'paidServices', label: t('paidServices'), icon: PackagePlus },
             { key: 'outreach', label: t('outreach'), icon: Send },
+            { key: 'outreachRequests', label: t('outreachRequests'), icon: ListChecks },
             { key: 'discountCodes', label: t('discountCodes'), icon: TicketPercent },
             { key: 'appReviews', label: t('appReviews'), icon: Star },
             { key: 'campaignOverview', label: t('campaignOverview'), icon: ChartLine },

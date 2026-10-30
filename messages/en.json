@@ -3013,7 +3013,8 @@
             "phones": "Phones",
             "campaigns": "Campaigns",
             "campaignOverview": "Campaign overview",
-            "outreach": "Partner outreach"
+            "outreach": "Partner outreach",
+            "outreachRequests": "Requests"
         },
         "outreach": {
             "cityNames": {
@@ -3218,6 +3219,63 @@
                 "confirmBody": "Its notes go with it. This can't be undone.",
                 "keep": "Keep",
                 "confirm": "Remove"
+            },
+            "suggest": {
+                "action": "Suggest a business",
+                "title": "Suggest a business",
+                "intro": "An admin reviews each suggestion and adds it to the list.",
+                "note": "Note for the admin",
+                "noteHint": "Why we should approach them.",
+                "submit": "Send suggestion"
+            },
+            "askRemove": {
+                "action": "Ask to remove",
+                "title": "Ask to remove this business?",
+                "body": "An admin decides. Say why so they can.",
+                "reason": "Reason",
+                "confirm": "Send request",
+                "cancel": "Cancel",
+                "sent": "Sent. An admin will decide."
+            },
+            "requests": {
+                "title": "Requests",
+                "intro": "Marketing suggests businesses to add or remove; an admin decides.",
+                "introMarketing": "Your suggestions to add or remove a business, and what an admin decided.",
+                "pending": "Waiting",
+                "all": "All",
+                "filter": "Show",
+                "empty": "Nothing waiting.",
+                "emptyAll": "No requests yet.",
+                "loadError": "Couldn't load the requests.",
+                "kind": {
+                    "ADD": "Add",
+                    "REMOVE": "Remove"
+                },
+                "status": {
+                    "PENDING": "Waiting",
+                    "APPROVED": "Approved",
+                    "DECLINED": "Declined"
+                },
+                "requestedBy": "{name} · {date}",
+                "someone": "Someone",
+                "decided": "{status} by {name} · {date}",
+                "why": "Why",
+                "reply": "Reply",
+                "approve": "Approve",
+                "decline": "Decline",
+                "openBusiness": "Open business",
+                "approveTitle": {
+                    "ADD": "Add {name}?",
+                    "REMOVE": "Remove {name}?"
+                },
+                "approveBody": {
+                    "ADD": "It goes on the list with the note above.",
+                    "REMOVE": "Its notes go with it. This can't be undone."
+                },
+                "declineTitle": "Decline this request?",
+                "declineBody": "Nothing changes on the list.",
+                "decisionNote": "Note to the requester (optional)",
+                "cancel": "Cancel"
             },
             "drawer": {
                 "close": "Close",
@@ -6474,6 +6532,8 @@
         "partnerApplicationNotPending": "This application was already decided.",
         "foundingSpotsFull": "No founding spots left.",
         "collaboratorEmailExists": "A partner with this email already exists.",
+        "outreachRequestPending": "A removal request for this business is already waiting for an admin.",
+        "outreachRequestDecided": "Someone already decided this request.",
         "qrCardCodeColorLowContrast": "The code colour is too light against white. Choose a darker one.",
         "qrCardArtworkSizeInvalid": "The artwork must be A6 portrait.",
         "qrCardLayoutInvalid": "The layout is not valid. Check the elements and try again.",

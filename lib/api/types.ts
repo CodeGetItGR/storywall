@@ -4817,6 +4817,35 @@ export interface OutreachProspectCreateRequestDto {
     emailEn?: OutreachEmailDto;
 }
 
+// Marketing asks, an admin decides: ADD carries the business, REMOVE the one to remove.
+export type OutreachRequestKind = 'ADD' | 'REMOVE';
+export type OutreachRequestStatus = 'PENDING' | 'APPROVED' | 'DECLINED';
+
+// POST /api/admin/outreach/requests -> 201. 409 5192 for an ADD already in the pipeline, 5193 for a REMOVE already waiting.
+export interface OutreachRequestCreateDto {
+    kind: OutreachRequestKind;
+    prospectId?: string;
+    proposal?: OutreachProspectCreateRequestDto;
+    note: string;
+}
+
+export interface OutreachRequestDto {
+    id: string;
+    kind: OutreachRequestKind;
+    status: OutreachRequestStatus;
+    // The business to remove, or the one an approved ADD created; null once it is gone.
+    prospectId: string | null;
+    prospectName: string;
+    proposal: OutreachProspectCreateRequestDto | null;
+    note: string;
+    // Null when the account was deleted.
+    requestedBy: string | null;
+    requestedAt: string;
+    decidedBy: string | null;
+    decidedAt: string | null;
+    decisionNote: string | null;
+}
+
 // Every field optional; an explicit null clears a nullable field.
 export interface OutreachProspectUpdateRequestDto {
     status?: OutreachStatus;

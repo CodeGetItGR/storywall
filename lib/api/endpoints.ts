@@ -3,7 +3,7 @@
 // since flipped every route; reconcile against Swagger (/v3/api-docs) if a
 // path here 404s.
 
-import type { OutreachProspectQuery, PartnerApplicationStatus, RsvpReportType, SignupChannel } from '@/lib/api/types';
+import type { OutreachProspectQuery, OutreachRequestStatus, PartnerApplicationStatus, RsvpReportType, SignupChannel } from '@/lib/api/types';
 
 export const endpoints = {
     betaFeedback: {
@@ -569,6 +569,17 @@ export const endpoints = {
             byId: (id: string) => `/api/admin/outreach/prospects/${encodeURIComponent(id)}`,
             notes: (id: string) => `/api/admin/outreach/prospects/${encodeURIComponent(id)}/notes`,
             summary: '/api/admin/outreach/summary',
+            requests: {
+                list: (status: OutreachRequestStatus | null, page = 0, size = 50) => {
+                    const params = new URLSearchParams({ page: String(page), size: String(size) });
+                    if (status) params.set('status', status);
+                    return `/api/admin/outreach/requests?${params.toString()}`;
+                },
+                create: '/api/admin/outreach/requests',
+                pendingCount: '/api/admin/outreach/requests/pending-count',
+                approve: (id: string) => `/api/admin/outreach/requests/${encodeURIComponent(id)}/approve`,
+                decline: (id: string) => `/api/admin/outreach/requests/${encodeURIComponent(id)}/decline`,
+            },
         },
         appReviews: {
             list: '/api/admin/app-reviews',

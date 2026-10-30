@@ -2,7 +2,9 @@
 
 import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useCallback } from 'react';
 
+import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { OutreachAddModal } from '@/components/admin/outreach/OutreachAddModal';
 import { OutreachDrawer } from '@/components/admin/outreach/OutreachDrawer';
 import { OutreachGuide } from '@/components/admin/outreach/OutreachGuide';
@@ -12,9 +14,17 @@ import { OutreachStatusHelp } from '@/components/admin/outreach/OutreachStatusHe
 import { useOutreachSection } from '@/hooks/useOutreachSection';
 
 // Partner outreach: businesses we may approach, how far each one got, and what to do next.
+// Only an admin adds a business; marketing suggests one, and an admin decides.
 export function OutreachSection() {
     const t = useTranslations('AdminPage.outreach');
     const s = useOutreachSection();
+    const { role, setTab } = useAdminNavigation();
+    const suggest = role !== 'ADMIN';
+    const { closeAdd } = s;
+    const handleSuggested = useCallback(() => {
+        closeAdd();
+        setTab('outreachRequests');
+    }, [closeAdd, setTab]);
 
     return (
         <div className="mx-auto max-w-6xl px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
@@ -29,7 +39,7 @@ export function OutreachSection() {
                         className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white"
                     >
                         <Plus aria-hidden="true" className="h-4 w-4" />
-                        {t('add.action')}
+                        {suggest ? t('suggest.action') : t('add.action')}
                     </button>
                 </div>
             </header>
@@ -57,9 +67,11 @@ export function OutreachSection() {
             <OutreachAddModal
                 key={s.add.token}
                 open={s.add.open}
+                suggest={suggest}
                 onCloseAction={s.closeAdd}
                 onCreatedAction={s.openAfterAdd}
                 onOpenExistingAction={s.openAfterAdd}
+                onSuggestedAction={handleSuggested}
             />
         </div>
     );
