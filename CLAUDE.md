@@ -11,6 +11,35 @@
 - `main` only receives merges from `staging`. Never branch from `main` or open a feature or fix PR into it.
 - Before merging a PR into `staging`, bring its branch up to date with `staging` and re-run the checks.
 
+## Production releases
+
+A release PR merges `staging` into `main`. Everything in it must be tested before it is opened, and it must not be merged until a person has tested it too.
+
+### Before opening the PR
+
+- Pick the exact `staging` commit being released and run every check on it: `tsc --noEmit`, `eslint .`, `vitest run` and `next build` (Vercel's build of that commit counts). All must be clean. Fix a failing check with a normal PR into `staging` first, never inside the release PR.
+- Write test cases for every change in the release, then run each one yourself on https://staging.storywall.gr, on mobile and desktop widths, signed in when the change needs it. Record pass or fail for each case. A failed case blocks the release until it is fixed on `staging`.
+- If the release needs a guestwall-be release, that backend release must already be running on staging when you test. Link its release PR and state the deploy order (normally backend first).
+- Staging shows unreleased pages that production hides ([lib/unreleasedPages.ts](lib/unreleasedPages.ts)). For any case that can't be seen on staging, say so and name the test that covers it.
+
+### PR description
+
+Use these sections, in this order:
+
+1. **Summary**: one or two sentences on what the release is.
+2. **Release notes**: every included PR with its number, grouped by area.
+3. **What's new / Τι αλλάζει**: plain-language notes in English and in Greek for people who don't read code. One short line per change, written from the user's side (what a host, guest or vendor will notice). No PR numbers, file names, or technical terms. Use the app's own Greek words (διοργανωτής, συντελεστής).
+4. **Deploy**: env vars, backend release and order, migrations, flags, manual steps. Write "Nothing" if there are none.
+5. **Test cases**: a table with one row per case: ID, what it covers (PR number), steps, expected result, and your result on staging (pass/fail, with the commit tested).
+6. **How to test / Πώς να το ελέγξετε**: step-by-step instructions in English and in Greek that someone with no technical knowledge can follow on staging.storywall.gr. Group the steps by change. Each step says which page to open, what to tap or type, and what they should see, and has a checkbox. Name the test account to use, never its password. End with what to do if something looks wrong: leave a comment on the PR with a screenshot and the step number.
+7. **Checks**: the tested commit and the result of each automated check.
+8. **After deploying**: checks to run on https://www.storywall.gr once the release is live, each with a checkbox.
+
+### Merging
+
+- Merge only when every check is clean, every test case passed, and a person has ticked every box in **How to test** and approved the PR.
+- Never tick the **How to test** boxes yourself. They record a person's sign-off.
+
 ## Workflow
 
 - Never dispatch parallel subagents (the Agent tool) unless the user has explicitly given permission for that specific task. Parallel agents burn through the 5-hour session limit fast. Do research and multi-file audits directly (Read/Grep/Glob/Bash) instead, even if it takes more turns. A single subagent for a narrow, well-scoped sub-task is fine; spawning several at once is not, absent explicit permission.
