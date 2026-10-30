@@ -40,6 +40,13 @@ Use these sections, in this order:
 - Merge only when every check is clean, every test case passed, and a person has ticked every box in **How to test** and approved the PR.
 - Never tick the **How to test** boxes yourself. They record a person's sign-off.
 
+### After deploying
+
+- Once the release is live on https://www.storywall.gr and the **After deploying** checks pass, publish a GitHub Release on the merge commit on `main`.
+- Tag it with the date, `vYYYY.MM.DD` (add `.2`, `.3` for a second or third release that day), and title it like the PR.
+- Its notes are the PR's **What's new / Τι αλλάζει** and **Release notes** sections, copied as they are, with a link to the release PR.
+- Comment on the release PR with the link to the Release.
+
 ## Workflow
 
 - Never dispatch parallel subagents (the Agent tool) unless the user has explicitly given permission for that specific task. Parallel agents burn through the 5-hour session limit fast. Do research and multi-file audits directly (Read/Grep/Glob/Bash) instead, even if it takes more turns. A single subagent for a narrow, well-scoped sub-task is fine; spawning several at once is not, absent explicit permission.
