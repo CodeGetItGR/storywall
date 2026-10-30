@@ -7,6 +7,7 @@ import {
     instagramHandle,
     isEmailDraftChanged,
     linkLabel,
+    localizedWhy,
     nextOutreachStatus,
     OUTREACH_STATUSES,
     outreachCityKey,
@@ -215,21 +216,60 @@ describe('add a business', () => {
     });
 
     it('trims, nulls empty fields and adds the scheme to links', () => {
-        const request = toProspectCreateRequest({
-            ...EMPTY_PROSPECT_DRAFT,
-            name: '  Villa  ',
-            kind: 'VENUE',
-            city: 'Athens ',
-            website: 'villa.gr',
-            area: ' ',
-        });
+        const request = toProspectCreateRequest(
+            {
+                ...EMPTY_PROSPECT_DRAFT,
+                name: '  Villa  ',
+                kind: 'VENUE',
+                city: 'Athens ',
+                website: 'villa.gr',
+                area: ' ',
+            },
+            'en',
+        );
         expect(request).toMatchObject({ name: 'Villa', kind: 'VENUE', city: 'Athens', website: 'https://villa.gr/', area: null, priority: 'B' });
+    });
+
+    it('sends the why text in the UI language and leaves the other one for the agent', () => {
+        const draft = { ...EMPTY_PROSPECT_DRAFT, name: 'Villa', kind: 'VENUE' as const, city: 'Athens', credibility: ' Known ', fit: '' };
+
+        const english = toProspectCreateRequest(draft, 'en');
+        expect(english).toMatchObject({ credibility: 'Known', fit: null });
+        expect(english).not.toHaveProperty('credibilityEl');
+        expect(english).not.toHaveProperty('fitEl');
+
+        const greek = toProspectCreateRequest(draft, 'el');
+        expect(greek).toMatchObject({ credibilityEl: 'Known', fitEl: null });
+        expect(greek).not.toHaveProperty('credibility');
+        expect(greek).not.toHaveProperty('fit');
     });
 
     it('reads the existing business from a 409', () => {
         expect(duplicateProspectId(new ApiError(409, { status: 409, errorCode: 5001, details: { existingId: 'p-9' } }))).toBe('p-9');
         expect(duplicateProspectId(new ApiError(409, {}))).toBeNull();
         expect(duplicateProspectId(new ApiError(400, {}))).toBeUndefined();
+    });
+});
+
+describe('why this business, in the UI language', () => {
+    const both = { credibility: 'Known', fit: 'Fits', credibilityEl: 'Γνωστό', fitEl: 'Ταιριάζει' };
+
+    it('shows Greek for a Greek UI and English otherwise', () => {
+        expect(localizedWhy(both, 'el')).toEqual({ credibility: 'Γνωστό', fit: 'Ταιριάζει' });
+        expect(localizedWhy(both, 'en')).toEqual({ credibility: 'Known', fit: 'Fits' });
+        expect(localizedWhy(both, 'de')).toEqual({ credibility: 'Known', fit: 'Fits' });
+    });
+
+    it('falls back to the other language, field by field', () => {
+        expect(localizedWhy({ credibility: 'Known', fit: null, credibilityEl: null, fitEl: 'Ταιριάζει' }, 'el')).toEqual({
+            credibility: 'Known',
+            fit: 'Ταιριάζει',
+        });
+        expect(localizedWhy({ credibility: ' ', fitEl: 'Ταιριάζει' }, 'en')).toEqual({ credibility: null, fit: 'Ταιριάζει' });
+    });
+
+    it('is empty when neither language has the text', () => {
+        expect(localizedWhy({}, 'el')).toEqual({ credibility: null, fit: null });
     });
 });
 
