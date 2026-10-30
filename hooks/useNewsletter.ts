@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppNewsletterConfig } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
+import { isAccountRole } from '@/lib/accountRole';
 import { api, ApiError } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { NewsletterStatusResponseDto, NewsletterTokenRequestDto, NewsletterUpdateRequestDto } from '@/lib/api/types';
@@ -73,7 +74,7 @@ export function useNewsletterSettings() {
     const { user } = useAuth();
     const queryClient = useQueryClient();
     const toErrorMessage = useApiErrorMessage();
-    const canManage = Boolean(config) && (user?.role === 'USER' || user?.role === 'ADMIN');
+    const canManage = Boolean(config) && isAccountRole(user?.role);
     const statusQuery = useNewsletterStatus(canManage);
     const [isAwaitingConfirmation, setIsAwaitingConfirmation] = useState(false);
     const [isCopied, setIsCopied] = useState(false);

@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '@/hooks/useAuth';
+import { isAccountRole } from '@/lib/accountRole';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { isNotFoundError } from '@/lib/api/errors';
@@ -29,7 +30,7 @@ export function isEventVendorKey(queryKey: readonly unknown[]): boolean {
 // Guest accounts can't be vendors (they have no /api/me profile), so they never ask.
 export function useVendorProfile(enabled = true) {
     const { user } = useAuth();
-    const canHaveProfile = user?.role === 'USER' || user?.role === 'ADMIN';
+    const canHaveProfile = isAccountRole(user?.role);
 
     return useQuery({
         queryKey: vendorProfileKeys.mine,
