@@ -3011,6 +3011,7 @@
             "providerEventId": "ID συμβάντος παρόχου"
         },
         "layout": {
+            "pendingCount": "{count} σε αναμονή",
             "console": "Κέντρο ελέγχου",
             "signedInAs": "Συνδεδεμένος ως",
             "signOut": "Αποσύνδεση",

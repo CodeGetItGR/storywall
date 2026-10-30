@@ -2889,6 +2889,7 @@
             "providerEventId": "Provider event ID"
         },
         "layout": {
+            "pendingCount": "{count} pending",
             "console": "Control room",
             "signedInAs": "Signed in as",
             "signOut": "Sign out",
