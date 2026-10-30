@@ -1,6 +1,6 @@
 'use client';
 
-import { Handshake, MailWarning } from 'lucide-react';
+import { Handshake, Mail, MailWarning } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { PageErrorState } from '@/components/ui/PageErrorState';
@@ -35,6 +35,7 @@ function NotLinked() {
             icon={<Handshake className="h-7 w-7" aria-hidden="true" />}
             actionHref={routes.contact}
             actionLabel={t('contact')}
+            actionIcon={<Mail className="h-4 w-4" aria-hidden="true" />}
         />
     );
 }
