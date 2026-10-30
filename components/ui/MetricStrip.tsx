@@ -24,7 +24,8 @@ const columnClass: Record<number, string> = {
  * instead of free-floating tiles, so a wide screen reads as a single strip.
  * A number shown here must not be restated elsewhere on the same view.
  */
-export function MetricStrip({ items, className }: { items: Metric[]; className?: string }) {
+// wrapLabels lets long labels take two lines instead of being cut off.
+export function MetricStrip({ items, wrapLabels = false, className }: { items: Metric[]; wrapLabels?: boolean; className?: string }) {
     return (
         <dl
             className={cn(
@@ -36,7 +37,7 @@ export function MetricStrip({ items, className }: { items: Metric[]; className?:
             {items.map((item) => (
                 <div key={item.key} className="flex flex-col gap-2 bg-background px-3.5 py-3 text-center">
                     <dd className={cn('mt-1 text-2xl leading-none font-extrabold text-ink tabular-nums', item.tone)}>{item.value}</dd>
-                    <dt className="truncate text-[11px] font-bold tracking-wide text-ink-faint uppercase">{item.label}</dt>
+                    <dt className={cn('text-[11px] font-bold tracking-wide text-ink-faint uppercase', wrapLabels ? 'leading-snug text-balance' : 'truncate')}>{item.label}</dt>
                 </div>
             ))}
         </dl>

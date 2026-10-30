@@ -2059,7 +2059,6 @@
         "title": "Partner report",
         "summary": "Partner summary",
         "eventsReferred": "Events referred",
-        "currencies": "Currencies",
         "unavailable": {
             "title": "Couldn't load your partner page",
             "description": "Try again in a moment."
@@ -2074,31 +2073,28 @@
             "contact": "Contact us"
         },
         "totals": {
-            "title": "Earnings",
+            "title": "To be paid",
             "empty": "No earnings yet.",
-            "currency": "Currency",
-            "accrued": "Accrued",
-            "paid": "Paid",
-            "balance": "Balance"
+            "earnedPaid": "{earned} earned · {paid} paid"
         },
         "tiers": {
             "title": "Commission rate",
             "percent": "{percent}%",
+            "progressLabel": "Progress to the next rate",
             "activationsThisYear": "{count, plural, one {# activation} other {# activations}} this year",
             "next": "Your {number, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} activation earns {percent}%"
         },
         "brandingClicks": "Card taps",
         "reach": {
             "title": "Reach",
-            "events": "Events",
+            "eventCount": "{count, plural, one {# event} other {# events}}",
             "guests": "Guests",
             "proViews": "Photo and video views",
             "postViewers": "Saw your posts",
             "listTaps": "Opened your details",
             "recentTitle": "Recent events",
-            "date": "Date",
-            "type": "Type",
-            "views": "Views",
+            "rowViews": "{count, plural, one {# view} other {# views}}",
+            "rowGuests": "{count, plural, one {# guest} other {# guests}}",
             "empty": "No events as a vendor yet."
         }
     },

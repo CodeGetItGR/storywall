@@ -53,6 +53,29 @@ describe('PartnerPortalBoundary', () => {
         expect(screen.getByRole('link', { name: 'Contact us' })).toHaveAttribute('href', '/contact');
     });
 
+    it('leads with what the partner is still owed', () => {
+        mocks.portal = {
+            isLoading: false,
+            error: null,
+            refetch: vi.fn(),
+            data: {
+                name: 'Barn Venue',
+                eventsReferred: 4,
+                brandingClicks: 31,
+                totals: [{ currency: 'EUR', accruedMinor: 120000, paidMinor: 96000 }],
+                tierProgress: { activationsThisYear: 3, currentPercent: 10, nextTierMinActivations: 5, nextTierPercent: 15 },
+                reach: { events: 0, guests: 0, proViews: 0, postViewers: 0, listTaps: 0, recent: [] },
+            },
+        };
+        renderPortal();
+
+        expect(screen.getByRole('heading', { level: 1, name: 'Barn Venue' })).toBeInTheDocument();
+        expect(screen.getByText('To be paid')).toBeInTheDocument();
+        expect(screen.getByText(/240\.00/)).toBeInTheDocument();
+        expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '3');
+        expect(screen.getByText('31')).toBeInTheDocument();
+    });
+
     it('offers a retry for any other failure', () => {
         mocks.portal = { isLoading: false, data: undefined, error: new ApiError(500, { errorCode: 9001 }), refetch: vi.fn() };
         renderPortal();
