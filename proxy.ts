@@ -14,7 +14,7 @@ import {
 } from '@/lib/auth/authCookies';
 import { AUTH_RETURN_PATH_PARAM } from '@/lib/auth/returnPath';
 import { clientIpFrom, springAuth, SpringAuthError } from '@/lib/auth/springAuth';
-import { occasionLocaleForPath } from '@/lib/occasions/occasions';
+import { type Occasion, occasionPageForPath, occasionPath } from '@/lib/occasions/occasions';
 import { qrWeddingRedirectPath } from '@/lib/qrWeddingPage';
 import { routes } from '@/lib/routes';
 import { isSharedLinkPath, readShareLocale, SHARE_LOCALE_PARAM } from '@/lib/shareLinks';
@@ -118,6 +118,18 @@ function legalPageResponse(request: NextRequest, { path, locale }: { path: Legal
     return NextResponse.rewrite(url, { request: { headers: requestHeaders } });
 }
 
+// Occasion pages have one URL per language (`/weddings`, `/el/gamos`). Like `/`, the English URL
+// sends a visitor whose saved choice or browser language is another locale to that locale's URL.
+function preferredOccasionRedirect(request: NextRequest, { occasion, locale }: { occasion: Occasion; locale: Locale }): NextResponse | null {
+    if (locale !== defaultLocale) return null;
+    const preferred = resolveLocale(request.cookies.get(localeCookieName)?.value, request.headers.get('accept-language'));
+    if (preferred === defaultLocale) return null;
+
+    const url = request.nextUrl.clone();
+    url.pathname = occasionPath(occasion, preferred);
+    return NextResponse.redirect(url);
+}
+
 // A shared link opens in the sharer's language, and the rest of the visit
 // stays in it. A visitor who already picked a language keeps theirs.
 function sharedLinkLocale(request: NextRequest): Locale | null {
@@ -144,7 +156,13 @@ export async function proxy(request: NextRequest) {
         return NextResponse.redirect(url);
     }
 
-    const publicLocale = publicPageLocale(pathname) ?? occasionLocaleForPath(pathname);
+    const occasionPage = occasionPageForPath(pathname);
+    if (occasionPage) {
+        const redirect = preferredOccasionRedirect(request, occasionPage);
+        if (redirect) return redirect;
+    }
+
+    const publicLocale = publicPageLocale(pathname) ?? occasionPage?.locale;
     if (publicLocale) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(PUBLIC_LOCALE_HEADER, publicLocale);
