@@ -74,7 +74,7 @@ describe('next step', () => {
 
 describe('status tip', () => {
     it('has a tip for every status', () => {
-        expect(OUTREACH_STATUSES.map((status) => outreachTip(status, '2026-11-04'))).toEqual([
+        expect(OUTREACH_STATUSES.map((status) => outreachTip(status, '2026-11-04', '2026-10-30'))).toEqual([
             'new',
             'waiting',
             'waiting',
@@ -87,9 +87,15 @@ describe('status tip', () => {
     });
 
     it('drops the reminder date when there is none', () => {
-        expect(outreachTip('EMAILED', null)).toBe('waitingNoDate');
-        expect(outreachTip('FOLLOWED_UP', null)).toBe('waitingNoDate');
-        expect(outreachTip('NEW', null)).toBe('new');
+        expect(outreachTip('EMAILED', null, '2026-10-30')).toBe('waitingNoDate');
+        expect(outreachTip('FOLLOWED_UP', null, '2026-10-30')).toBe('waitingNoDate');
+        expect(outreachTip('NEW', null, '2026-10-30')).toBe('new');
+    });
+
+    it('says it is time to follow up from the reminder day on', () => {
+        expect(outreachTip('EMAILED', '2026-10-30', '2026-10-30')).toBe('waitingDue');
+        expect(outreachTip('FOLLOWED_UP', '2026-10-28', '2026-10-30')).toBe('waitingDue');
+        expect(outreachTip('EMAILED', '2026-10-31', '2026-10-30')).toBe('waiting');
     });
 });
 

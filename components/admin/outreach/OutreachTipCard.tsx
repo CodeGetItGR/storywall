@@ -5,14 +5,14 @@ import { useTranslations } from 'next-intl';
 
 import { useOutreachFormat } from '@/hooks/useOutreachFormat';
 import type { OutreachProgressFormState } from '@/hooks/useOutreachProgressForm';
-import { OUTREACH_SENDER_PLACEHOLDER, outreachTip } from '@/lib/adminOutreach';
+import { OUTREACH_SENDER_PLACEHOLDER, outreachTip, todayInAthens } from '@/lib/adminOutreach';
 import type { OutreachProspectDto } from '@/lib/api/types';
 
 // What to do now for this status, and the one button that does the next step.
 export function OutreachTipCard({ prospect, form }: { prospect: OutreachProspectDto; form: OutreachProgressFormState }) {
     const t = useTranslations('AdminPage.outreach');
     const format = useOutreachFormat();
-    const tip = outreachTip(prospect.status, prospect.nextFollowupOn);
+    const tip = outreachTip(prospect.status, prospect.nextFollowupOn, todayInAthens());
 
     return (
         <section aria-label={t('tips.label')} className="rounded-lg bg-canvas p-4">

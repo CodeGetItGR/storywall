@@ -79,16 +79,18 @@ export function nextOutreachStatus(status: OutreachStatus): OutreachStatus | nul
     return NEXT_STATUS[status] ?? null;
 }
 
-export type OutreachTipKey = 'new' | 'waiting' | 'waitingNoDate' | 'replied' | 'meeting' | 'partner' | 'closed';
+export type OutreachTipKey = 'new' | 'waiting' | 'waitingDue' | 'waitingNoDate' | 'replied' | 'meeting' | 'partner' | 'closed';
 
-// What to do now, shown in the drawer. `waiting` names the reminder date.
-export function outreachTip(status: OutreachStatus, nextFollowupOn: string | null): OutreachTipKey {
+// What to do now, shown in the drawer. `waiting` names a reminder date still ahead; on or after it, `waitingDue`.
+// Both days are yyyy-mm-dd, so they compare as text.
+export function outreachTip(status: OutreachStatus, nextFollowupOn: string | null, today: string): OutreachTipKey {
     switch (status) {
         case 'NEW':
             return 'new';
         case 'EMAILED':
         case 'FOLLOWED_UP':
-            return nextFollowupOn ? 'waiting' : 'waitingNoDate';
+            if (!nextFollowupOn) return 'waitingNoDate';
+            return nextFollowupOn > today ? 'waiting' : 'waitingDue';
         case 'REPLIED':
             return 'replied';
         case 'MEETING':

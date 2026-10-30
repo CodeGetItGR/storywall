@@ -3158,6 +3158,7 @@
                 "label": "What to do now",
                 "new": "Copy the email below, replace {placeholder} with your name and send it. Then press Mark as emailed.",
                 "waiting": "We'll remind you on {date}. If they haven't replied by then, a short, friendly follow-up works best.",
+                "waitingDue": "No reply yet, and it's time to follow up. A short, friendly reminder works best.",
                 "waitingNoDate": "Set a follow-up date so we can remind you. A short, friendly follow-up works best.",
                 "replied": "They replied. Suggest a 15-minute call, or send them the demo link.",
                 "meeting": "After the meeting, add what you agreed in a note.",
