@@ -2181,7 +2181,6 @@
         "title": "Αναφορά συνεργάτη",
         "summary": "Σύνοψη συνεργάτη",
         "eventsReferred": "Εκδηλώσεις από παραπομπή",
-        "currencies": "Νομίσματα",
         "unavailable": {
             "title": "Δεν ήταν δυνατή η φόρτωση της σελίδας συνεργάτη",
             "description": "Δοκιμάστε ξανά σε λίγο."
@@ -2196,31 +2195,28 @@
             "contact": "Επικοινωνία"
         },
         "totals": {
-            "title": "Αμοιβές",
+            "title": "Προς πληρωμή",
             "empty": "Δεν υπάρχουν αμοιβές ακόμα.",
-            "currency": "Νόμισμα",
-            "accrued": "Δεδουλευμένα",
-            "paid": "Πληρωμένα",
-            "balance": "Υπόλοιπο"
+            "earnedPaid": "{earned} δεδουλευμένα · {paid} πληρωμένα"
         },
         "tiers": {
             "title": "Ποσοστό προμήθειας",
             "percent": "{percent}%",
+            "progressLabel": "Πρόοδος προς το επόμενο ποσοστό",
             "activationsThisYear": "{count, plural, one {# ενεργοποίηση} other {# ενεργοποιήσεις}} φέτος",
             "next": "Η {number}η ενεργοποίησή σας αποδίδει {percent}%"
         },
         "brandingClicks": "Πατήματα κάρτας",
         "reach": {
             "title": "Απήχηση",
-            "events": "Εκδηλώσεις",
+            "eventCount": "{count, plural, one {# εκδήλωση} other {# εκδηλώσεις}}",
             "guests": "Καλεσμένοι",
             "proViews": "Προβολές φωτογραφιών και βίντεο",
             "postViewers": "Είδαν τις αναρτήσεις σας",
             "listTaps": "Άνοιξαν τα στοιχεία σας",
             "recentTitle": "Πρόσφατες εκδηλώσεις",
-            "date": "Ημερομηνία",
-            "type": "Τύπος",
-            "views": "Προβολές",
+            "rowViews": "{count, plural, one {# προβολή} other {# προβολές}}",
+            "rowGuests": "{count, plural, one {# καλεσμένος} other {# καλεσμένοι}}",
             "empty": "Δεν υπάρχουν ακόμη εκδηλώσεις ως συντελεστής."
         }
     },

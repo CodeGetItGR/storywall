@@ -30,13 +30,15 @@ describe('PartnerReachSection', () => {
         renderSection(REACH);
         expect(screen.getByText('812')).toBeInTheDocument();
         expect(screen.getByText('Recent events')).toBeInTheDocument();
-        expect(screen.getByText('400')).toBeInTheDocument();
-        expect(screen.getAllByRole('row')).toHaveLength(2);
+        expect(screen.getByText('400 views')).toBeInTheDocument();
+        expect(screen.getByText('120 guests')).toBeInTheDocument();
+        expect(screen.getByText('2 events')).toBeInTheDocument();
+        expect(screen.getAllByRole('listitem')).toHaveLength(1);
     });
 
     it('says when they were never a vendor', () => {
         renderSection({ events: 0, guests: 0, proViews: 0, postViewers: 0, listTaps: 0, recent: [] });
         expect(screen.getByText('No events as a vendor yet.')).toBeInTheDocument();
-        expect(screen.queryByRole('table')).toBeNull();
+        expect(screen.queryByRole('list')).toBeNull();
     });
 });
