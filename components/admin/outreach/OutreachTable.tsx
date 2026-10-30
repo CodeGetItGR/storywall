@@ -51,7 +51,7 @@ export function OutreachTable({
                         <td className="py-2.5 pr-3 pl-4">
                             <OutreachPriorityBadge priority={row.priority} />
                         </td>
-                        <td className="max-w-[16rem] px-3 py-2.5">
+                        <td className="max-w-[15rem] px-3 py-2.5">
                             {/* The button covers the whole row */}
                             <button
                                 type="button"
@@ -67,17 +67,18 @@ export function OutreachTable({
                                 </span>
                             )}
                         </td>
-                        <td className="px-3 py-2.5 text-ink-muted">{t(`types.${row.type}`)}</td>
-                        <td className="px-3 py-2.5 text-ink-muted">{row.city}</td>
+                        <td className="min-w-[6.5rem] px-3 py-2.5 text-ink-muted">{t(`types.${row.type}`)}</td>
+                        <td className="px-3 py-2.5 whitespace-nowrap text-ink-muted">{format.city(row.city)}</td>
                         <td className="max-w-[14rem] px-3 py-2.5">
                             <OutreachStatusPill status={row.status} />
                             {row.outcome && <span className="mt-1 block truncate text-xs text-ink-muted">{row.outcome}</span>}
                         </td>
-                        <td className="max-w-[13rem] px-3 py-2.5">
+                        <td className="max-w-[12rem] px-3 py-2.5">
                             <OutreachContactCell row={row} />
                         </td>
-                        <td className="px-3 py-2.5 text-ink-muted tabular-nums">{format.day(row.lastContactOn)}</td>
-                        <td className="py-2.5 pr-4 pl-3 tabular-nums">
+                        <td className="px-3 py-2.5 whitespace-nowrap text-ink-muted tabular-nums">{format.day(row.lastContactOn)}</td>
+                        {/* Short phrases, kept on one line so the rows stay one line tall */}
+                        <td className="py-2.5 pr-4 pl-3 whitespace-nowrap tabular-nums">
                             <OutreachNextStepCell row={row} />
                         </td>
                     </tr>

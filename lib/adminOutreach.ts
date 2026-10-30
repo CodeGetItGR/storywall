@@ -168,6 +168,14 @@ function parseDay(value: string): Date | null {
     return new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
 }
 
+// The research writes cities in English; these two have a name in each console language.
+export type OutreachCityKey = 'athens' | 'thessaloniki';
+
+export function outreachCityKey(city: string): OutreachCityKey | null {
+    const key = city.trim().toLowerCase();
+    return key === 'athens' || key === 'thessaloniki' ? key : null;
+}
+
 // A calendar day, read as written (no time zone shift).
 export function formatOutreachDay(locale: string, value: string | null): string | null {
     if (!value) return null;

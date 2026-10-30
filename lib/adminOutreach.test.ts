@@ -9,6 +9,7 @@ import {
     linkLabel,
     nextOutreachStatus,
     OUTREACH_STATUSES,
+    outreachCityKey,
     outreachCityRows,
     outreachFunnelSteps,
     outreachReplyRate,
@@ -258,5 +259,13 @@ describe('cold email', () => {
         expect(toEmailDraft(saved)).toEqual({ subject: 'Hi', body: '' });
         expect(isEmailDraftChanged(saved, { subject: 'Hi', body: '' })).toBe(false);
         expect(isEmailDraftChanged(saved, { subject: 'Hi', body: 'x' })).toBe(true);
+    });
+});
+
+describe('outreachCityKey', () => {
+    it('knows Athens and Thessaloniki in any case, and nothing else', () => {
+        expect(outreachCityKey('Athens')).toBe('athens');
+        expect(outreachCityKey(' thessaloniki ')).toBe('thessaloniki');
+        expect(outreachCityKey('Patras')).toBeNull();
     });
 });

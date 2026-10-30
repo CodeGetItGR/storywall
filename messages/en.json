@@ -3016,6 +3016,10 @@
             "outreach": "Partner outreach"
         },
         "outreach": {
+            "cityNames": {
+                "athens": "Athens",
+                "thessaloniki": "Thessaloniki"
+            },
             "title": "Partner outreach",
             "loading": "Loading outreach…",
             "copied": "Copied",

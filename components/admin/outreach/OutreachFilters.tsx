@@ -4,6 +4,7 @@ import { Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { adminInputClass } from '@/components/admin/AdminField';
+import { useOutreachFormat } from '@/hooks/useOutreachFormat';
 import type { OutreachTableState } from '@/hooks/useOutreachTable';
 import { OUTREACH_PRIORITIES, OUTREACH_STATUSES, OUTREACH_TYPES } from '@/lib/adminOutreach';
 
@@ -11,6 +12,7 @@ const SELECT = adminInputClass('w-auto min-w-0 pr-8');
 
 export function OutreachFilters({ table, cities }: { table: OutreachTableState; cities: string[] }) {
     const t = useTranslations('AdminPage.outreach');
+    const format = useOutreachFormat();
     const { filters } = table;
 
     return (
@@ -43,7 +45,7 @@ export function OutreachFilters({ table, cities }: { table: OutreachTableState; 
                 <option value="">{t('filters.allCities')}</option>
                 {cities.map((city) => (
                     <option key={city} value={city}>
-                        {city}
+                        {format.city(city)}
                     </option>
                 ))}
             </select>

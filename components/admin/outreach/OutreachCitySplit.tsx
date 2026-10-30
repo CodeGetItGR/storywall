@@ -22,7 +22,7 @@ export function OutreachCitySplit({ byCity }: { byCity: OutreachSummaryDto['byCi
             <ul className="space-y-3">
                 {rows.map((row) => (
                     <li key={row.city} className="grid grid-cols-[minmax(0,7rem)_minmax(0,1fr)_auto] items-center gap-3">
-                        <span className="truncate text-sm font-semibold text-ink">{row.city}</span>
+                        <span className="truncate text-sm font-semibold text-ink">{format.city(row.city)}</span>
                         <PlatformMetricBar ratio={row.share ?? 0} className="h-2.5" />
                         <span className="text-right text-xs text-ink-muted tabular-nums">
                             {t('contactedOf', { contacted: format.count(row.contacted), total: format.count(row.total) })}
