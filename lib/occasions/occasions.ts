@@ -66,12 +66,16 @@ export function occasionLanguageAlternates(occasion: Occasion): Record<string, s
     return languages;
 }
 
-// The locale a ready occasion page renders in, read by proxy.ts. Null for any other path.
-export function occasionLocaleForPath(pathname: string): Locale | null {
+// The ready occasion page a URL shows, and in which language, read by proxy.ts. Null for any other path.
+export function occasionPageForPath(pathname: string): { occasion: Occasion; locale: Locale } | null {
     for (const occasion of readyOccasions()) {
         for (const locale of locales) {
-            if (occasionPath(occasion, locale) === pathname) return locale;
+            if (occasionPath(occasion, locale) === pathname) return { occasion, locale };
         }
     }
     return null;
+}
+
+export function occasionLocaleForPath(pathname: string): Locale | null {
+    return occasionPageForPath(pathname)?.locale ?? null;
 }
