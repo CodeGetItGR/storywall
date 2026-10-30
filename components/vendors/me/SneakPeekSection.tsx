@@ -1,18 +1,27 @@
 'use client';
 
-import { Pencil, Trash2 } from 'lucide-react';
+import { CircleCheck, Clock, ImageIcon, Images, type LucideIcon, Pencil, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { MediaThumbnail } from '@/components/common/MediaThumbnail';
 import { AppLink } from '@/components/ui/AppLink';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { VendorMeNote } from '@/components/vendors/me/VendorMeNote';
 import { VendorMeSection } from '@/components/vendors/me/VendorMeSection';
 import type { MediaResponseDto } from '@/lib/api/types';
 import type { SneakPeekState } from '@/lib/sneakPeek';
 import { cn } from '@/lib/utils';
 
+// The states where the sneak peek can't be shared, each with the icon its note carries.
+type BlockedState = Extract<SneakPeekState, 'notOpen' | 'noItems' | 'used'>;
+const BLOCKED_ICONS: Record<BlockedState, LucideIcon> = { notOpen: Clock, noItems: Images, used: CircleCheck };
+
+function isBlocked(state: SneakPeekState): state is BlockedState {
+    return state in BLOCKED_ICONS;
+}
+
 // Never rendered for 'hidden'; the screen checks `visible` first. While ready, a small fan of the vendor's own photos
-// shows what guests are about to get.
+// shows what guests are about to get; before that, an empty fan and a disabled button show what will come.
 export function SneakPeekSection({
     state,
     thumbnails,
@@ -36,10 +45,20 @@ export function SneakPeekSection({
 
     return (
         <VendorMeSection id="vendor-sneak-peek-title" title={t('title')} hint={tHints('sneakPeek')}>
-            {/* Status */}
-            {state === 'notOpen' && <p className="text-sm text-ink-muted">{t('notOpen')}</p>}
-            {state === 'noItems' && <p className="text-sm text-ink-muted">{t('noItems')}</p>}
-            {state === 'used' && <p className="text-sm text-ink-muted">{t('used')}</p>}
+            {/* Not yet */}
+            {isBlocked(state) && (
+                <>
+                    <div className="flex items-center gap-5">
+                        <EmptyFan />
+                        <Button type="button" size="lg" disabled>
+                            {t('choose')}
+                        </Button>
+                    </div>
+                    <VendorMeNote icon={BLOCKED_ICONS[state]}>{t(state)}</VendorMeNote>
+                </>
+            )}
+
+            {/* Ready */}
             {state === 'ready' && (
                 <div className="flex items-center gap-5">
                     {fanItems.length > 0 && <PhotoFan items={fanItems} />}
@@ -97,6 +116,22 @@ export function SneakPeekSection({
 
 // Up to three photos fanned out like prints on a table.
 const FAN_TILTS = ['-rotate-8 -translate-x-5', 'rotate-0 z-10', 'rotate-8 translate-x-5'];
+
+// The fan's frames with nothing in them yet.
+function EmptyFan() {
+    return (
+        <div aria-hidden="true" className="relative flex h-24 w-28 shrink-0 items-center justify-center">
+            {FAN_TILTS.map((tilt) => (
+                <span
+                    key={tilt}
+                    className={cn('absolute flex size-18 items-center justify-center rounded-md bg-surface-muted shadow-sm ring-2 ring-card', tilt)}
+                >
+                    <ImageIcon className="size-5 text-ink/25" />
+                </span>
+            ))}
+        </div>
+    );
+}
 
 function PhotoFan({ items }: { items: MediaResponseDto[] }) {
     const t = useTranslations('Vendors.sneakPeek');
