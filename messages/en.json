@@ -687,6 +687,9 @@
         "showPreview": "Show {name} preview"
     },
     "ProfilePage": {
+        "partner": {
+            "title": "Partner page"
+        },
         "dataExport": {
             "title": "Your data",
             "body": "Download a copy of everything StoryWall holds about you (your profile, your activity in events and your purchases) as a JSON file. Photos and videos aren't in it; download those from each event.",
@@ -2051,14 +2054,24 @@
         "redirectCountdown": "Opening the feed in {seconds, plural, one {# second} other {# seconds}}."
     },
     "PartnerPortalPage": {
+        "back": "Back",
         "loading": "Loading partner report",
         "title": "Partner report",
         "summary": "Partner summary",
         "eventsReferred": "Events referred",
         "currencies": "Currencies",
         "unavailable": {
-            "title": "This partner link is not available",
-            "description": "Ask StoryWall for a new link."
+            "title": "Couldn't load your partner page",
+            "description": "Try again in a moment."
+        },
+        "notVerified": {
+            "title": "Verify your email to open your partner page",
+            "description": "Open the link we sent to your email."
+        },
+        "notLinked": {
+            "title": "This account isn't linked to a partner",
+            "description": "Sign in with your partner email, or contact us.",
+            "contact": "Contact us"
         },
         "totals": {
             "title": "Earnings",
@@ -4967,17 +4980,10 @@
                 "editTitle": "Edit {name}"
             },
             "portal": {
-                "title": "Portal link",
-                "notIssued": "No portal link yet",
-                "confirmTitle": "Replace the portal link?",
-                "confirmBody": "The current link stops working right away.",
-                "once": "Copy this now. It won't be shown again.",
+                "title": "Partner page",
+                "signInAs": "The partner signs in with {email}.",
                 "copy": "Copy link",
-                "copied": "Copied",
-                "issuedAt": "Link created {date}",
-                "issued": "Link created",
-                "create": "Create link",
-                "replace": "Replace link"
+                "copied": "Copied"
             },
             "codes": {
                 "title": "Codes",
@@ -6115,6 +6121,8 @@
         "vendorCannotRsvp": "Vendors don't RSVP.",
         "printItemInvalid": "Only photos can be printed.",
         "partnerRequired": "Only approved partners can list prices.",
+        "partnerEmailNotVerified": "Verify your email to open your partner page.",
+        "partnerNotLinked": "This account isn't linked to a partner.",
         "printPicksUnavailable": "You can't pick this photo for print.",
         "printPricesMissing": "The photographer hasn't set print prices yet.",
         "printListLocked": "This list was sent and can't change.",

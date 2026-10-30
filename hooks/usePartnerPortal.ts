@@ -5,14 +5,14 @@ import { endpoints } from '@/lib/api/endpoints';
 import type { PartnerPortalResponseDto } from '@/lib/api/types';
 
 export const partnerPortalKeys = {
-    portal: (token: string) => ['partners', token, 'portal'] as const,
+    me: ['partners', 'me', 'portal'] as const,
 };
 
-export function usePartnerPortal(token: string | null) {
+// The signed-in partner's page. A 403 (not verified, not linked) is an answer, not a blip, so it is not retried.
+export function usePartnerPortal() {
     return useQuery({
-        queryKey: partnerPortalKeys.portal(token ?? ''),
-        queryFn: () => api.publicGet<PartnerPortalResponseDto>(endpoints.partners.portal(token!)),
-        enabled: Boolean(token),
+        queryKey: partnerPortalKeys.me,
+        queryFn: () => api.get<PartnerPortalResponseDto>(endpoints.partners.me),
         retry: false,
     });
 }

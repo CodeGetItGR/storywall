@@ -240,7 +240,7 @@ export const endpoints = {
     },
 
     partners: {
-        portal: (token: string) => `/api/partners/${encodeURIComponent(token)}`,
+        me: '/api/partners/me',
     },
 
     eventMembers: {
@@ -481,7 +481,6 @@ export const endpoints = {
         collaborators: {
             list: '/api/admin/collaborators',
             byId: (id: string) => `/api/admin/collaborators/${id}`,
-            portalToken: (id: string) => `/api/admin/collaborators/${id}/portal-token`,
             businessDetails: (id: string) => `/api/admin/collaborators/${id}/business-details`,
             viesCheck: (id: string) => `/api/admin/collaborators/${id}/vies-check`,
             commissionTiers: (id: string) => `/api/admin/collaborators/${id}/commission-tiers`,
