@@ -24,8 +24,7 @@ const basic = {
 
 vi.mock('@/hooks/useAdmin', () => ({
     useSaveDiscountCode: () => ({ mutateAsync: vi.fn(), isPending: false, error: null }),
-    useAdminPlanTiers: () => ({ data: [basic], isLoading: false }),
-    useAdminPlatformEventTypes: () => ({ data: [{ eventTypeKey: 'WEDDING', sortOrder: 0 }], isLoading: false }),
+    useDiscountCodeOptions: () => ({ data: { eventTypes: [{ eventTypeKey: 'WEDDING', sortOrder: 0 }], plans: [basic] }, isLoading: false }),
 }));
 
 vi.mock('@/hooks/useLocalizedEventTypeName', () => ({ useLocalizedEventTypeName: () => () => 'Wedding' }));

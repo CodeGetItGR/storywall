@@ -11,6 +11,8 @@ import { campaignRowKey } from '@/lib/campaignLinks';
 export function CampaignsTable({ rows, onLinkAction }: { rows: CampaignRowDto[]; onLinkAction: (event: MouseEvent<HTMLButtonElement>) => void }) {
     const t = useTranslations('AdminPage.campaigns');
     const format = useFunnelFormat();
+    // Marketing gets the rows without revenue, so the column goes.
+    const showRevenue = rows.every((row) => row.revenueMinorByCurrency !== null);
 
     return (
         <div className="overflow-x-auto">
@@ -29,14 +31,14 @@ export function CampaignsTable({ rows, onLinkAction }: { rows: CampaignRowDto[];
                         <th className="px-3 py-3 text-right font-bold">{t('columns.signedUp')}</th>
                         <th className="px-3 py-3 text-right font-bold">{t('columns.createdEvent')}</th>
                         <th className="px-3 py-3 text-right font-bold">{t('columns.paidHost')}</th>
-                        <th className="px-4 py-3 text-right font-bold">{t('columns.revenue')}</th>
+                        {showRevenue && <th className="px-4 py-3 text-right font-bold">{t('columns.revenue')}</th>}
                     </tr>
                 </thead>
 
                 {/* Rows */}
                 <tbody>
                     {rows.map((row) => {
-                        const revenue = Object.entries(row.revenueMinorByCurrency);
+                        const revenue = row.revenueMinorByCurrency && Object.entries(row.revenueMinorByCurrency);
                         return (
                             <tr key={campaignRowKey(row)} className="border-b border-border last:border-b-0 hover:bg-canvas/55">
                                 {/* Name */}
@@ -70,9 +72,11 @@ export function CampaignsTable({ rows, onLinkAction }: { rows: CampaignRowDto[];
                                 <td className="px-3 py-3 text-right font-mono tabular-nums">{format.count(row.createdEvent)}</td>
                                 <td className="px-3 py-3 text-right font-mono tabular-nums">{format.count(row.paidHost)}</td>
                                 {/* Revenue */}
-                                <td className="px-4 py-3 text-right font-mono tabular-nums">
-                                    {revenue.length ? revenue.map(([currency, minor]) => format.money(minor, currency)).join(' · ') : EMPTY_VALUE}
-                                </td>
+                                {revenue && (
+                                    <td className="px-4 py-3 text-right font-mono tabular-nums">
+                                        {revenue.length ? revenue.map(([currency, minor]) => format.money(minor, currency)).join(' · ') : EMPTY_VALUE}
+                                    </td>
+                                )}
                             </tr>
                         );
                     })}

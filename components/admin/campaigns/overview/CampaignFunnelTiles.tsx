@@ -12,7 +12,8 @@ import type { CampaignOverviewDto } from '@/lib/api/types';
 export function CampaignFunnelTiles({ data }: { data: CampaignOverviewDto }) {
     const t = useTranslations('AdminPage.campaignOverview.tiles');
     const format = useFunnelFormat();
-    const revenue = Object.entries(data.revenueMinorByCurrency);
+    // Null for marketing, who don't see revenue.
+    const revenue = data.revenueMinorByCurrency && Object.entries(data.revenueMinorByCurrency);
 
     return (
         <FunnelGroup title={t('title')} window="visit">
@@ -27,10 +28,12 @@ export function CampaignFunnelTiles({ data }: { data: CampaignOverviewDto }) {
                         />
                     ))}
                     {/* Revenue */}
-                    <PlatformMetricFigure
-                        label={t('revenue')}
-                        value={revenue.length ? revenue.map(([currency, minor]) => format.money(minor, currency)).join(' · ') : EMPTY_VALUE}
-                    />
+                    {revenue && (
+                        <PlatformMetricFigure
+                            label={t('revenue')}
+                            value={revenue.length ? revenue.map(([currency, minor]) => format.money(minor, currency)).join(' · ') : EMPTY_VALUE}
+                        />
+                    )}
                 </div>
             </div>
         </FunnelGroup>

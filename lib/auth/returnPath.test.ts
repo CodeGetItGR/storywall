@@ -29,6 +29,12 @@ describe('getSafeReturnPath', () => {
         expect(getPostAuthRedirectPath('USER', path)).toBe('/feed');
     });
 
+    it('returns marketing to the console section they asked for, and signs them in like a member otherwise', () => {
+        expect(getPostAuthRedirectPath('MARKETING', '/admin#outreach/abc')).toBe('/admin#outreach/abc');
+        expect(getPostAuthRedirectPath('MARKETING', '/events/event-1/feed')).toBe('/events/event-1/feed');
+        expect(getPostAuthRedirectPath('MARKETING', null)).toBe('/feed');
+    });
+
     it('keeps a return path that only starts with the admin prefix', () => {
         expect(getPostAuthRedirectPath('USER', '/administrator')).toBe('/administrator');
     });

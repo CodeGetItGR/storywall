@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import { useAdminPlanTiers } from '@/hooks/useAdmin';
+import { useDiscountCodeOptions } from '@/hooks/useAdmin';
 import { codeRestrictionsFromFormData, HIGH_CODE_DISCOUNT_PERCENT, plansBelowChargeMinimum } from '@/lib/adminCollaborations';
 import type { CodeRestrictionsDto, DiscountCodeResponseDto } from '@/lib/api/types';
 
@@ -12,10 +12,10 @@ export type CodeDiscountWarnings = { isHigh: boolean; belowMinimumPlanNames: str
 
 // Warnings for a code's percent: high, or too steep for some plan's price to be charged.
 export function useCodeDiscountWarnings(codePercent: number, restrictions: CodeRestrictionsDto | null): CodeDiscountWarnings {
-    const plansQuery = useAdminPlanTiers('EVENT', true);
+    const optionsQuery = useDiscountCodeOptions();
     const belowMinimumPlanNames = useMemo(
-        () => plansBelowChargeMinimum(plansQuery.data ?? [], codePercent, restrictions ?? NO_RESTRICTIONS).map((plan) => plan.name),
-        [codePercent, plansQuery.data, restrictions],
+        () => plansBelowChargeMinimum(optionsQuery.data?.plans ?? [], codePercent, restrictions ?? NO_RESTRICTIONS).map((plan) => plan.name),
+        [codePercent, optionsQuery.data?.plans, restrictions],
     );
     return { isHigh: codePercent >= HIGH_CODE_DISCOUNT_PERCENT, belowMinimumPlanNames };
 }

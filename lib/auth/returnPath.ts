@@ -48,9 +48,11 @@ function isAdminPath(path: string): boolean {
 
 // An admin whose session ended on an admin page comes back with `next` still
 // pointing there; anyone else signing in on that tab goes to the feed.
+// MARKETING keeps an admin `next` (their console sections) and otherwise signs in like a USER.
 export function getPostAuthRedirectPath(role: PlatformRole, returnPath: string | null): string {
     const safePath = getSafeReturnPath(returnPath);
     if (role === 'ADMIN') return safePath && isAdminPath(safePath) ? safePath : routes.admin;
+    if (role === 'MARKETING' && safePath && isAdminPath(safePath)) return safePath;
     if (!safePath || isAdminPath(safePath)) return routes.feed;
     return safePath;
 }

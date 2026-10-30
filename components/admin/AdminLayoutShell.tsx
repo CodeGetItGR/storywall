@@ -13,8 +13,9 @@ import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { Modal } from '@/components/ui/modal';
 import { PortalScopeProvider } from '@/components/ui/PortalScope';
 import { useAdminLayoutShell } from '@/hooks/useAdminLayoutShell';
+import { canUseAdminConsole } from '@/lib/adminAccess';
 
-// The admin console's frame: sidebar, mobile menu and sign-out. Admins only; anyone else sees the page as is.
+// The admin console's frame: sidebar, mobile menu and sign-out. Admins and marketing only; anyone else sees the page as is.
 export function AdminLayoutShell({ children }: { children: ReactNode }) {
     const t = useTranslations('AdminPage');
     const {
@@ -34,13 +35,13 @@ export function AdminLayoutShell({ children }: { children: ReactNode }) {
         return <AuthLoadingState className="admin-shell bg-canvas" />;
     }
 
-    if (user.role !== 'ADMIN') {
+    if (!canUseAdminConsole(user.role)) {
         return <>{children}</>;
     }
 
     return (
         <RefineAdminProvider>
-            <AdminNavigationProvider>
+            <AdminNavigationProvider role={user.role}>
                 {/* Shared modals portal out of .admin-shell; this hands them its slate tokens back. */}
                 <PortalScopeProvider className="admin-shell">
                     <div className="admin-shell flex h-full min-h-0 overflow-hidden bg-canvas text-ink">

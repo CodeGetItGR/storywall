@@ -63,7 +63,8 @@ export function ConfirmActionModal({
                             </div>
                         )}
 
-                        <div className="min-w-0">
+                        {/* flex-1: a field in the body takes the dialog's width */}
+                        <div className="min-w-0 flex-1">
                             <h2 className="text-base font-semibold text-ink">{title}</h2>
                             <div className="mt-1 text-sm leading-relaxed text-ink-muted">{body}</div>
                         </div>

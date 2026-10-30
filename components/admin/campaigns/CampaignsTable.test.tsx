@@ -60,4 +60,16 @@ describe('CampaignsTable', () => {
             .map((cell) => cell.textContent);
         expect(cells.slice(3, 8)).toEqual(['620', '510', '88', '40', '12']);
     });
+
+    it('drops the revenue column for marketing, who get revenue as null', () => {
+        render(
+            <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
+                <CampaignsTable rows={[{ ...ROW, revenueMinorByCurrency: null }]} onLinkAction={vi.fn()} />
+            </NextIntlClientProvider>,
+        );
+
+        const headers = screen.getAllByRole('columnheader').map((cell) => cell.textContent);
+        expect(headers).not.toContain('Revenue');
+        expect(within(screen.getAllByRole('row')[1]).getAllByRole('cell')).toHaveLength(headers.length);
+    });
 });

@@ -4,6 +4,7 @@ import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tansta
 
 import { useAuth } from '@/hooks/useAuth';
 import { isEventPrintKey } from '@/hooks/usePrintLists';
+import { isAccountRole } from '@/lib/accountRole';
 import { api, ApiError } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { VendorServiceItemDto, VendorServiceItemRequestDto } from '@/lib/api/types';
@@ -36,7 +37,7 @@ function rereadServices(queryClient: QueryClient) {
 export function useVendorServices(enabled: boolean) {
     const { user } = useAuth();
     // Guest accounts have no /api/me profile, so they never ask.
-    const canHaveProfile = user?.role === 'USER' || user?.role === 'ADMIN';
+    const canHaveProfile = isAccountRole(user?.role);
 
     return useQuery({
         queryKey: vendorServiceKeys.mine,
@@ -62,9 +63,12 @@ export function useUpdateVendorService() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ id, body }: { id: string; body: VendorServiceItemRequestDto }) => api.put<VendorServiceItemDto>(endpoints.me.vendorService(id), body),
+        mutationFn: ({ id, body }: { id: string; body: VendorServiceItemRequestDto }) =>
+            api.put<VendorServiceItemDto>(endpoints.me.vendorService(id), body),
         onSuccess: async (updated) => {
-            await writeServices(queryClient, (services) => services.map((service) => (service.id === updated.id ? updated : service)).sort(bySortOrder));
+            await writeServices(queryClient, (services) =>
+                services.map((service) => (service.id === updated.id ? updated : service)).sort(bySortOrder),
+            );
             await refreshPrintQueries(queryClient);
         },
         onError: () => rereadServices(queryClient),

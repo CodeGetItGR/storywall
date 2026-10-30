@@ -7,6 +7,7 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
+import { isAccountRole } from '@/lib/accountRole';
 import { api, ApiError } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { getFieldErrors } from '@/lib/api/errors';
@@ -37,7 +38,7 @@ async function fetchBusinessProfile(): Promise<BusinessProfileResponseDto | null
 // Guest accounts can't hold a business profile (403), so they never ask.
 export function useBusinessProfile() {
     const { user } = useAuth();
-    const canHaveProfile = user?.role === 'USER' || user?.role === 'ADMIN';
+    const canHaveProfile = isAccountRole(user?.role);
     const query = useQuery({
         queryKey: businessProfileKeys.mine,
         queryFn: fetchBusinessProfile,

@@ -12,10 +12,10 @@ import type {
     CollaboratorResponseDto,
     CommissionTierDto,
     DiscountCodePatchDto,
+    DiscountCodePlanOption,
     DiscountCodeRequestDto,
     DiscountCodeResponseDto,
     LinkDiscountCodeRequestDto,
-    PlanTierResponseDto,
 } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
 
@@ -448,7 +448,7 @@ const MIN_CHARGEABLE_AMOUNT_MINOR: Record<string, number> = {
     BGN: 100,
 };
 
-function planPromotionOpen(plan: PlanTierResponseDto, now: Date): boolean {
+function planPromotionOpen(plan: DiscountCodePlanOption, now: Date): boolean {
     const startsAt = plan.discountStartsAt ? new Date(plan.discountStartsAt) : null;
     const endsAt = plan.discountEndsAt ? new Date(plan.discountEndsAt) : null;
     return (!startsAt || startsAt <= now) && (!endsAt || now < endsAt);
@@ -457,8 +457,8 @@ function planPromotionOpen(plan: PlanTierResponseDto, now: Date): boolean {
 // What one duration costs with a code, as PriceBreakdownCalculator prices it: a promo price first and the
 // code off what is left, or the plan's percent and the code stacked. The cap bounds only the code.
 export function codedOptionPriceMinor(
-    plan: PlanTierResponseDto,
-    option: PlanTierResponseDto['initialOptions'][number],
+    plan: DiscountCodePlanOption,
+    option: DiscountCodePlanOption['initialOptions'][number],
     codePercent: number,
     now: Date,
 ): number {
@@ -473,7 +473,7 @@ export function codedOptionPriceMinor(
     return option.priceAmountMinor - Math.floor((option.priceAmountMinor * combined) / 100);
 }
 
-function codeAppliesToPlan(restrictions: CodeRestrictionsDto, plan: PlanTierResponseDto): boolean {
+function codeAppliesToPlan(restrictions: CodeRestrictionsDto, plan: DiscountCodePlanOption): boolean {
     const typeAllowed =
         restrictions.eventTypeKeys.length === 0 || (plan.eventTypeKey !== null && restrictions.eventTypeKeys.includes(plan.eventTypeKey));
     const planAllowed = restrictions.planTierCodes.length === 0 || restrictions.planTierCodes.includes(plan.code);
@@ -482,12 +482,12 @@ function codeAppliesToPlan(restrictions: CodeRestrictionsDto, plan: PlanTierResp
 
 // Plans the code can be used on where it pushes a live duration under the smallest charge. Durations
 // already under it without the code are left out: the code isn't what breaks them.
-export function plansBelowChargeMinimum(
-    plans: PlanTierResponseDto[],
+export function plansBelowChargeMinimum<Plan extends DiscountCodePlanOption>(
+    plans: Plan[],
     codePercent: number,
     restrictions: CodeRestrictionsDto,
     now: Date = new Date(),
-): PlanTierResponseDto[] {
+): Plan[] {
     return plans.filter((plan) => {
         if (plan.scope !== 'EVENT' || !plan.isAssignable || !plan.priceCurrency) return false;
         if (!codeAppliesToPlan(restrictions, plan)) return false;

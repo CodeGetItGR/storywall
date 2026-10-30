@@ -33,6 +33,8 @@ export type ApiErrorMessageKey =
     | 'collaboratorPayoutDetailsIncomplete'
     | 'campaignLinkTaken'
     | 'collaboratorBrandingIncomplete'
+    | 'outreachRequestDecided'
+    | 'outreachRequestPending'
     | 'partnerBrandingNoticeOutdated'
     | 'concurrentModification'
     | 'conflict'
@@ -630,6 +632,8 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.PARTNER_APPLICATION_NOT_PENDING]: 'partnerApplicationNotPending',
     [ERROR_CODES.FOUNDING_SPOTS_FULL]: 'foundingSpotsFull',
     [ERROR_CODES.COLLABORATOR_EMAIL_EXISTS]: 'collaboratorEmailExists',
+    [ERROR_CODES.OUTREACH_REQUEST_PENDING]: 'outreachRequestPending',
+    [ERROR_CODES.OUTREACH_REQUEST_DECIDED]: 'outreachRequestDecided',
     [ERROR_CODES.QR_CARD_CODE_COLOR_LOW_CONTRAST]: 'qrCardCodeColorLowContrast',
     [ERROR_CODES.QR_CARD_ARTWORK_SIZE_INVALID]: 'qrCardArtworkSizeInvalid',
     [ERROR_CODES.QR_CARD_LAYOUT_INVALID]: 'qrCardLayoutInvalid',

@@ -30,6 +30,8 @@ interface AdminDrawerProps {
     onClosed?: () => void;
     /** Keys pressed anywhere in the drawer, footer included. */
     onKeyDown?: KeyboardEventHandler<HTMLDivElement>;
+    /** False when the owner keeps the drawer in the URL (a hash route) and so owns its Back step. */
+    dismissOnBack?: boolean;
 }
 
 const DrawerFooterSlotContext = createContext<HTMLDivElement | null>(null);
@@ -58,10 +60,11 @@ export function AdminDrawer({
     closeDisabled = false,
     onClosed,
     onKeyDown,
+    dismissOnBack = true,
 }: AdminDrawerProps) {
     const [footerSlot, setFooterSlot] = useState<HTMLDivElement | null>(null);
     // Back closes the drawer instead of leaving the section it was opened from.
-    const { requestClose } = useOverlayHistory(open, onClose);
+    const { requestClose } = useOverlayHistory(open, onClose, dismissOnBack);
     const onOpenChange = useCallback(
         (nextOpen: boolean) => {
             if (!nextOpen && closeDisabled) return;

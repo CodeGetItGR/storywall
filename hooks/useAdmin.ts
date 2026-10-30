@@ -16,6 +16,7 @@ import type {
     CollaboratorResponseDto,
     CommissionTiersRequestDto,
     CostSummaryResponseDto,
+    DiscountCodeOptionsDto,
     DiscountCodePatchDto,
     DiscountCodeRequestDto,
     DiscountCodeResponseDto,
@@ -77,6 +78,7 @@ export const adminKeys = {
     collaborators: ['admin', 'collaborators'] as const,
     collaboratorCodes: (id: string) => ['admin', 'collaborators', id, 'codes'] as const,
     discountCodes: ['admin', 'discount-codes'] as const,
+    discountCodeOptions: ['admin', 'discount-codes', 'options'] as const,
     collaboratorEarnings: (id: string) => ['admin', 'collaborators', id, 'earnings'] as const,
     reactionTypes: (eventTypeKey?: string, includeArchived?: boolean) =>
         ['admin', 'reaction-types', eventTypeKey ?? 'ALL', Boolean(includeArchived)] as const,
@@ -165,6 +167,14 @@ export function useAdminDiscountCodes() {
     return useQuery({
         queryKey: adminKeys.discountCodes,
         queryFn: () => api.get<DiscountCodeResponseDto[]>(endpoints.admin.discountCodes.list),
+    });
+}
+
+// The event types and plans a code form offers; marketing may read these, unlike the plan admin.
+export function useDiscountCodeOptions() {
+    return useQuery({
+        queryKey: adminKeys.discountCodeOptions,
+        queryFn: () => api.get<DiscountCodeOptionsDto>(endpoints.admin.discountCodes.options),
     });
 }
 

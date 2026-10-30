@@ -6,7 +6,9 @@ import { type MouseEvent } from 'react';
 
 import { type AdminTab, useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { usePendingOutreachRequestsCount } from '@/hooks/useAdminOutreachRequests';
 import { usePendingApplicationsCount } from '@/hooks/useAdminPartnerApplications';
+import { canOpenAdminTab } from '@/lib/adminAccess';
 import { cn } from '@/lib/utils';
 
 const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operations'> = {
@@ -17,6 +19,8 @@ const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operat
     costTracking: 'overview',
     plans: 'catalog',
     paidServices: 'catalog',
+    outreach: 'marketing',
+    outreachRequests: 'marketing',
     discountCodes: 'marketing',
     appReviews: 'marketing',
     campaignOverview: 'marketing',
@@ -56,8 +60,11 @@ export function AdminShellNav({
     onNavigateAction?: () => void;
 }) {
     const t = useTranslations('AdminPage');
-    const { tab, tabs, setTab } = useAdminNavigation();
-    const pendingApplications = usePendingApplicationsCount();
+    const { role, tab, tabs, setTab } = useAdminNavigation();
+    // Only admins see Partner applications; the count would 403 for anyone else.
+    const pendingApplications = usePendingApplicationsCount(canOpenAdminTab(role, 'partnerApplications'));
+    const pendingRequests = usePendingOutreachRequestsCount(canOpenAdminTab(role, 'outreachRequests'));
+    const pendingCounts: Partial<Record<AdminTab, number>> = { partnerApplications: pendingApplications, outreachRequests: pendingRequests };
 
     function handleNavClick(event: MouseEvent<HTMLButtonElement>) {
         const nextTab = event.currentTarget.dataset.tab as Parameters<typeof setTab>[0] | undefined;
@@ -85,7 +92,9 @@ export function AdminShellNav({
                 </div>
                 <div className="min-w-0 leading-tight">
                     <p className="truncate text-[14.5px] font-extrabold tracking-tight text-ink">{t('layout.console')}</p>
-                    <p className="text-[10px] font-semibold tracking-[0.06em] text-ink-faint uppercase">{t('eyebrow')}</p>
+                    <p className="text-[10px] font-semibold tracking-[0.06em] text-ink-faint uppercase">
+                        {role === 'MARKETING' ? t('eyebrowMarketing') : t('eyebrow')}
+                    </p>
                 </div>
             </div>
 
@@ -100,6 +109,7 @@ export function AdminShellNav({
                         <div className="space-y-px">
                             {groupTabs.map(({ key, label, icon: Icon }) => {
                                 const active = tab === key;
+                                const pendingCount = pendingCounts[key] ?? 0;
                                 return (
                                     <button
                                         key={key}
@@ -114,11 +124,11 @@ export function AdminShellNav({
                                     >
                                         <Icon className="h-4 w-4 shrink-0 opacity-85" />
                                         <span className="truncate">{label}</span>
-                                        {/* Pending applications */}
-                                        {key === 'partnerApplications' && pendingApplications > 0 && (
+                                        {/* Pending applications and outreach requests */}
+                                        {pendingCount > 0 && (
                                             <span className="ml-auto rounded-full bg-status-warn-wash px-1.5 font-mono text-[11px] font-bold text-status-warn tabular-nums">
-                                                <span aria-hidden="true">{pendingApplications}</span>
-                                                <span className="sr-only">{t('layout.pendingCount', { count: pendingApplications })}</span>
+                                                <span aria-hidden="true">{pendingCount}</span>
+                                                <span className="sr-only">{t('layout.pendingCount', { count: pendingCount })}</span>
                                             </span>
                                         )}
                                     </button>

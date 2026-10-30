@@ -6,10 +6,10 @@ import { EMPTY_VALUE } from '@/lib/adminFunnel';
 
 const cell = 'px-3 py-3 text-right font-mono tabular-nums';
 
-// The number cells of a By source row, in the table's column order.
+// The number cells of a By source row, in the table's column order. No revenue cell for marketing.
 export function CampaignCountCells({ counts }: { counts: CampaignCounts }) {
     const format = useFunnelFormat();
-    const revenue = Object.entries(counts.revenueMinorByCurrency);
+    const revenue = counts.revenueMinorByCurrency && Object.entries(counts.revenueMinorByCurrency);
 
     return (
         <>
@@ -23,9 +23,11 @@ export function CampaignCountCells({ counts }: { counts: CampaignCounts }) {
             <td className={cell}>{format.count(counts.signedUp)}</td>
             <td className={cell}>{format.count(counts.paidHost)}</td>
             {/* Revenue */}
-            <td className="px-4 py-3 text-right font-mono tabular-nums">
-                {revenue.length ? revenue.map(([currency, minor]) => format.money(minor, currency)).join(' · ') : EMPTY_VALUE}
-            </td>
+            {revenue && (
+                <td className="px-4 py-3 text-right font-mono tabular-nums">
+                    {revenue.length ? revenue.map(([currency, minor]) => format.money(minor, currency)).join(' · ') : EMPTY_VALUE}
+                </td>
+            )}
         </>
     );
 }
