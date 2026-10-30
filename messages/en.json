@@ -2604,6 +2604,66 @@
         }
     },
     "AdminPage": {
+        "partnerApplications": {
+            "title": "Applications",
+            "loading": "Loading applications…",
+            "empty": "No applications.",
+            "filterLabel": "Status",
+            "filter": {
+                "PENDING": "Pending",
+                "APPROVED": "Approved",
+                "DECLINED": "Declined",
+                "all": "All"
+            },
+            "status": {
+                "PENDING": "Pending",
+                "APPROVED": "Approved",
+                "DECLINED": "Declined"
+            },
+            "columns": {
+                "received": "Received",
+                "business": "Business",
+                "role": "Role",
+                "country": "Country",
+                "source": "Source",
+                "status": "Status"
+            },
+            "count": "{count, plural, one {# application} other {# applications}}",
+            "back": "All applications",
+            "receivedAt": "Received {date}",
+            "fields": {
+                "name": "Name",
+                "email": "Email",
+                "phone": "Phone",
+                "link": "Website or Instagram",
+                "role": "Role",
+                "country": "Country",
+                "language": "Language",
+                "source": "Source"
+            },
+            "languages": {
+                "el": "Greek",
+                "en": "English"
+            },
+            "decidedBy": "Decided by {email} · {date}",
+            "decidedByUnknown": "Decided · {date}",
+            "reasonSent": "Reason sent",
+            "noReason": "No reason. The generic message was sent.",
+            "openPartner": "Open partner",
+            "approve": "Approve",
+            "decline": "Decline",
+            "cancel": "Cancel",
+            "approveTitle": "Approve {name}?",
+            "approveBody": "This creates the partner. You'll set their code and rates next.",
+            "foundingLabel": "Founding partner ({left} of {total} spots left)",
+            "foundingNone": "No founding spots left",
+            "foundingPlain": "Founding partner",
+            "foundingError": "Couldn't load founding spots.",
+            "declineTitle": "Decline {name}?",
+            "reasonLabel": "Reason (sent to the applicant)",
+            "reasonHelp": "Leave empty to send a short generic message.",
+            "openExistingPartner": "Open that partner"
+        },
         "visitors": {
             "title": "Visitors",
             "cookiesNote": "Counts only visitors who allowed analytics cookies.",
@@ -2898,6 +2958,7 @@
             "providerEventId": "Provider event ID"
         },
         "layout": {
+            "pendingCount": "{count} pending",
             "console": "Control room",
             "signedInAs": "Signed in as",
             "signOut": "Sign out",
@@ -2932,6 +2993,7 @@
             "plans": "Plans",
             "paidServices": "Paid services",
             "discountCodes": "Discount codes",
+            "partnerApplications": "Applications",
             "collaborations": "Collaborations",
             "reactionTypes": "Reactions",
             "themePresets": "Themes",
@@ -4482,6 +4544,9 @@
             "orderNotPending": "This order has already been settled or cancelled.",
             "notFound": "We could not find that record. Check the id and try again.",
             "withdrawalNotHeld": "This request was already decided. Refresh the list to see its current status.",
+            "applicationNotPending": "This application was already decided.",
+            "foundingSpotsFull": "No founding spots left.",
+            "collaboratorEmailExists": "A partner with this email already exists.",
             "keepEventDayNotDue": "The event date hadn't passed when the host withdrew. Release as calculated instead.",
             "withdrawalOrderDisputed": "One of this withdrawal's payments is under an open card dispute. Release it once the dispute closes, or deny it.",
             "eventNotActive": "This event is not live, so that action does not apply.",
@@ -4986,6 +5051,8 @@
             }
         },
         "collaborations": {
+            "founding": "Founding partner",
+            "foundingBadge": "Founding",
             "title": "Collaborations",
             "loading": "Loading partners...",
             "empty": "No partners yet.",
@@ -6171,6 +6238,9 @@
         "vendorIsHost": "You host this event, so you can't join it as a vendor.",
         "alreadyAVendor": "You're already a vendor in this event.",
         "partnerApplicationPending": "We already have your application. We'll reply by email.",
+        "partnerApplicationNotPending": "This application was already decided.",
+        "foundingSpotsFull": "No founding spots left.",
+        "collaboratorEmailExists": "A partner with this email already exists.",
         "qrCardCodeColorLowContrast": "The code colour is too light against white. Choose a darker one.",
         "qrCardArtworkSizeInvalid": "The artwork must be A6 portrait.",
         "qrCardLayoutInvalid": "The layout is not valid. Check the elements and try again.",

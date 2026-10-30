@@ -10,6 +10,7 @@ import {
     Footprints,
     GalleryVerticalEnd,
     Handshake,
+    Inbox,
     LayoutGrid,
     Link2,
     type LucideIcon,
@@ -38,6 +39,7 @@ import { COLLABORATIONS_HASH_ROOT, isCollaborationsHash } from '@/lib/adminColla
 import { DEMO_EVENTS_HASH_ROOT, isDemoEventsHash } from '@/lib/adminDemoEventsRouting';
 import { EVENTS_HASH_ROOT, isEventsHash } from '@/lib/adminEvents';
 import { isOrdersHash, ORDERS_HASH_ROOT } from '@/lib/adminOrders';
+import { isPartnerApplicationsHash, PARTNER_APPLICATIONS_HASH_ROOT } from '@/lib/adminPartnerApplicationsRouting';
 import { isPlansHash, PLANS_HASH_ROOT } from '@/lib/adminPlansRouting';
 import { isWithdrawalsHash, WITHDRAWALS_HASH_ROOT } from '@/lib/adminWithdrawalsRouting';
 import { pushPageEntry } from '@/lib/overlayHistory';
@@ -51,6 +53,7 @@ export type AdminTab =
     | 'plans'
     | 'paidServices'
     | 'discountCodes'
+    | 'partnerApplications'
     | 'collaborations'
     | 'partnerCards'
     | 'reactionTypes'
@@ -129,6 +132,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     plans: PLANS_HASH_ROOT,
     paidServices: '#paid-services',
     discountCodes: '#discount-codes',
+    partnerApplications: PARTNER_APPLICATIONS_HASH_ROOT,
     collaborations: COLLABORATIONS_HASH_ROOT,
     partnerCards: '#partner-cards',
     reactionTypes: '#reaction-types',
@@ -170,6 +174,7 @@ function currentHashTab(): AdminTab {
     if (typeof window === 'undefined') return 'metrics';
     const hash = window.location.hash;
     if (isPlansHash(hash)) return 'plans';
+    if (isPartnerApplicationsHash(hash)) return 'partnerApplications';
     if (isCollaborationsHash(hash)) return 'collaborations';
     if (isDemoEventsHash(hash)) return 'demoEvents';
     if (isWithdrawalsHash(hash)) return 'withdrawals';
@@ -232,6 +237,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'appReviews', label: t('appReviews'), icon: Star },
             { key: 'campaignOverview', label: t('campaignOverview'), icon: ChartLine },
             { key: 'campaigns', label: t('campaigns'), icon: Link2 },
+            { key: 'partnerApplications', label: t('partnerApplications'), icon: Inbox },
             { key: 'collaborations', label: t('collaborations'), icon: Handshake },
             { key: 'partnerCards', label: t('partnerCards'), icon: GalleryVerticalEnd },
             { key: 'reactionTypes', label: t('reactionTypes'), icon: Smile },

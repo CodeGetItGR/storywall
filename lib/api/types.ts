@@ -1482,6 +1482,49 @@ export interface PartnerApplicationResponseDto {
     id: string;
 }
 
+export type PartnerApplicationStatus = 'PENDING' | 'APPROVED' | 'DECLINED';
+
+// GET /api/admin/partner-applications(/{id}). Newest first.
+export interface AdminPartnerApplicationDto {
+    id: string;
+    status: PartnerApplicationStatus;
+    createdAt: string;
+    name: string;
+    businessName: string;
+    role: PartnerRole;
+    email: string;
+    // An https URL or an @handle.
+    link: string;
+    // ISO 3166-1 alpha-2.
+    countryCode: string;
+    phone: string | null;
+    locale: string;
+    utmSource: string | null;
+    utmMedium: string | null;
+    utmCampaign: string | null;
+    decidedAt: string | null;
+    decidedByEmail: string | null;
+    declineReason: string | null;
+    // Set once approved.
+    collaboratorId: string | null;
+}
+
+// POST /api/admin/partner-applications/{id}/approve -> 200 { collaboratorId }.
+// 409 5189 not pending, 5190 no founding spots, 5191 email already a partner (details.collaboratorId).
+export interface ApprovePartnerApplicationRequestDto {
+    founding: boolean;
+}
+
+export interface ApprovePartnerApplicationResponseDto {
+    collaboratorId: string;
+}
+
+// POST /api/admin/partner-applications/{id}/decline -> 200 AdminPartnerApplicationDto. 409 5189.
+export interface DeclinePartnerApplicationRequestDto {
+    // Sent to the applicant as written. null sends a short generic line instead.
+    reason: string | null;
+}
+
 // Why a StoryWall is suspended. ground, rule and explanation are null if the decision row was deleted.
 export interface EventSuspensionDto {
     suspendedAt: string;
@@ -1610,12 +1653,15 @@ export interface CollaboratorRequestDto {
     contactEmail: string;
     notes: string | null;
     status: CollaboratorStatus | null;
+    // null = false on create, unchanged on update. 409 5190 when no founding spots are left.
+    founding: boolean | null;
 }
 export interface CollaboratorResponseDto {
     id: string;
     name: string;
     contactEmail: string;
     status: CollaboratorStatus;
+    founding: boolean;
     notes: string | null;
     // Same rows as GET …/earnings/totals, on list and detail. [] when never earned.
     earningsTotals: CollaborationEarningsTotalDto[];

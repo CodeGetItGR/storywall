@@ -8,6 +8,9 @@ export type AdminErrorMessageKey =
     | 'orderNotManual'
     | 'notFound'
     | 'withdrawalNotHeld'
+    | 'applicationNotPending'
+    | 'foundingSpotsFull'
+    | 'collaboratorEmailExists'
     | 'keepEventDayNotDue'
     | 'withdrawalOrderDisputed'
     | 'eventNotActive'
@@ -82,6 +85,10 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.WITHDRAWAL_NOT_HELD) return 'withdrawalNotHeld';
     if (code === ERROR_CODES.WITHDRAWAL_KEEP_EVENT_DAY_NOT_DUE) return 'keepEventDayNotDue';
     if (code === ERROR_CODES.WITHDRAWAL_ORDER_DISPUTED) return 'withdrawalOrderDisputed';
+    // Another admin decided it first.
+    if (code === ERROR_CODES.PARTNER_APPLICATION_NOT_PENDING) return 'applicationNotPending';
+    if (code === ERROR_CODES.FOUNDING_SPOTS_FULL) return 'foundingSpotsFull';
+    if (code === ERROR_CODES.COLLABORATOR_EMAIL_EXISTS) return 'collaboratorEmailExists';
     if (code === ERROR_CODES.EVENT_NOT_ACTIVE) return 'eventNotActive';
     if (code === ERROR_CODES.WEBHOOK_ALREADY_PROCESSED) return 'webhookAlreadyProcessed';
     if (code === ERROR_CODES.WEBHOOK_NOT_REPLAYABLE) return 'webhookNotReplayable';

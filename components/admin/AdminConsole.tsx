@@ -20,6 +20,7 @@ import { ModerationPanel } from '@/components/admin/moderation/ModerationPanel';
 import { ModuleUsagePanel } from '@/components/admin/moduleUsage/ModuleUsagePanel';
 import { OrdersSection } from '@/components/admin/orders/OrdersSection';
 import { PaidServicesCatalogPanel } from '@/components/admin/PaidServicesCatalogPanel';
+import { PartnerApplicationsSection } from '@/components/admin/partnerApplications/PartnerApplicationsSection';
 import { PartnerCardsSection } from '@/components/admin/partnerCards/PartnerCardsSection';
 import { PhonesPanel } from '@/components/admin/phones/PhonesPanel';
 import { PlansSection } from '@/components/admin/plans/PlansSection';
@@ -47,6 +48,7 @@ export function AdminConsole() {
     if (tab === 'paidServices') return <PaidServicesCatalogPanel />;
     if (tab === 'plans') return <PlansSection />;
     if (tab === 'discountCodes') return <AdminDiscountCodesPanel />;
+    if (tab === 'partnerApplications') return <PartnerApplicationsSection />;
     if (tab === 'collaborations') return <CollaborationsSection />;
     if (tab === 'partnerCards') return <PartnerCardsSection />;
     if (tab === 'reactionTypes') return <ReactionTypesCatalogPanel />;

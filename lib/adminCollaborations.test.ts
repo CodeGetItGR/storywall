@@ -24,6 +24,7 @@ function collaborator(overrides: Partial<CollaboratorResponseDto> = {}): Collabo
         name: 'Barn Venue',
         contactEmail: 'hello@barn.test',
         status: 'ACTIVE',
+        founding: false,
         notes: null,
         earningsTotals: [],
         websiteUrl: null,
@@ -228,7 +229,16 @@ describe('collaboratorRequestFromFormData', () => {
             contactEmail: 'hello@barn.test',
             notes: null,
             status: null,
+            founding: false,
         });
+    });
+
+    it('reads the founding checkbox', () => {
+        const formData = new FormData();
+        formData.set('name', 'Barn Venue');
+        formData.set('contactEmail', 'hello@barn.test');
+        formData.set('founding', 'on');
+        expect(collaboratorRequestFromFormData(formData).founding).toBe(true);
     });
 });
 
@@ -239,6 +249,7 @@ describe('collaboratorRequestWithStatus', () => {
             contactEmail: 'hello@barn.test',
             notes: 'Renewed',
             status: 'SUSPENDED',
+            founding: null,
         });
     });
 });

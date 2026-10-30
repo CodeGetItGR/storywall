@@ -17,6 +17,7 @@ type ConfirmActionModalProps = {
     confirmDisabled?: boolean;
     tone?: 'danger' | 'default';
     icon?: ReactNode;
+    iconTone?: 'danger' | 'neutral';
     size?: 'sm' | 'md';
     showCancelAction?: boolean;
     showCloseButton?: boolean;
@@ -35,6 +36,7 @@ export function ConfirmActionModal({
     confirmDisabled = false,
     tone = 'danger',
     icon,
+    iconTone = 'danger',
     size = 'sm',
     showCancelAction = true,
     showCloseButton = true,
@@ -47,7 +49,14 @@ export function ConfirmActionModal({
                     {/* Confirmation content */}
                     <div className="flex items-start gap-3 pr-8">
                         {icon ? (
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">{icon}</div>
+                            <div
+                                className={cn(
+                                    'flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl',
+                                    iconTone === 'neutral' ? 'bg-surface-muted text-ink' : 'bg-rose-100 text-rose-600',
+                                )}
+                            >
+                                {icon}
+                            </div>
                         ) : (
                             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
                                 <span className="text-lg font-semibold">!</span>
