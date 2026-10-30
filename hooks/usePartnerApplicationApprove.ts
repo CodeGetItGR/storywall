@@ -3,7 +3,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { type ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 
-import { adminKeys } from '@/hooks/useAdmin';
 import { partnerApplicationKeys, useApprovePartnerApplication, usePartnerProgramSummary } from '@/hooks/useAdminPartnerApplications';
 import { formatCollaborationsHash } from '@/lib/adminCollaborationsRouting';
 import { type ApplicationErrorKind, applicationErrorKind, foundingCheckbox } from '@/lib/adminPartnerApplications';
@@ -57,7 +56,8 @@ export function usePartnerApplicationApprove(applicationId: string, onNotPending
     }, [isOpen, flushNavigation]);
 
     // The page may re-render from the approved application and drop this component first.
-    useEffect(() => flushNavigation, [flushNavigation]);
+    // Deferred so the dialog's own cleanup releases its history entry before we push.
+    useEffect(() => () => queueMicrotask(flushNavigation), [flushNavigation]);
 
     const error = applicationErrorKind(approve.error);
 
@@ -74,8 +74,6 @@ export function usePartnerApplicationApprove(applicationId: string, onNotPending
     const confirm = useCallback(async () => {
         try {
             const { collaboratorId } = await approve.mutateAsync({ id: applicationId, founding });
-            // Collaborations picks its partner from the list, so the new one has to be in it first.
-            await queryClient.refetchQueries({ queryKey: adminKeys.collaborators });
             pendingHash.current = formatCollaborationsHash(collaboratorId);
             setIsOpen(false);
         } catch (caught) {

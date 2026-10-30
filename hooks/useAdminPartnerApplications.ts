@@ -69,9 +69,11 @@ export function useApprovePartnerApplication() {
     return useMutation({
         mutationFn: ({ id, founding }: { id: string; founding: boolean }) =>
             api.post<ApprovePartnerApplicationResponseDto>(endpoints.admin.partnerApplications.approve(id), { founding }),
-        onSuccess: () => {
+        // Collaborations picks its partner from the list, so it must hold the new one before the
+        // application refetch can swap the page; mutateAsync waits for this.
+        onSuccess: async () => {
+            await queryClient.refetchQueries({ queryKey: adminKeys.collaborators });
             queryClient.invalidateQueries({ queryKey: partnerApplicationKeys.all });
-            queryClient.invalidateQueries({ queryKey: adminKeys.collaborators });
             queryClient.invalidateQueries({ queryKey: partnerProgramKeys.summary });
         },
     });

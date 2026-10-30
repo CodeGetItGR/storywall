@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { type MouseEvent, useCallback, useEffect, useState } from 'react';
+import { type MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { usePartnerApplications } from '@/hooks/useAdminPartnerApplications';
 import { APPLICATION_STATUS_FILTERS } from '@/lib/adminPartnerApplications';
@@ -42,7 +42,10 @@ export function usePartnerApplicationsPanel() {
         window.dispatchEvent(new HashChangeEvent('hashchange'));
     }, []);
 
-    const filterOptions = APPLICATION_STATUS_FILTERS.map((value) => ({ value: value ?? 'all', label: t(`filter.${value ?? 'all'}`) }));
+    const filterOptions = useMemo(
+        () => APPLICATION_STATUS_FILTERS.map((value) => ({ value: value ?? 'all', label: t(`filter.${value ?? 'all'}`) })),
+        [t],
+    );
 
     return {
         filterOptions,

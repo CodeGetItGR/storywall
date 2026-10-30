@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -119,5 +119,38 @@ describe('usePartnerApplicationApprove', () => {
 
         expect(result.current.isOpen).toBe(false);
         expect(mocks.push).toHaveBeenCalledWith('#collaborations/c-9');
+    });
+
+    it('has the collaborators list fresh before the application refetch, and still navigates', async () => {
+        const order: string[] = [];
+        const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+        client.setQueryData(['admin', 'collaborators'], []);
+        client.setQueryData(['admin', 'partnerApplications', 'detail', 'a-1'], { id: 'a-1' });
+        mocks.get.mockImplementation(async (url: string) => {
+            if (url.includes('collaborators')) {
+                await new Promise((resolve) => setTimeout(resolve, 20));
+                order.push('collaborators');
+                return [];
+            }
+            if (url.includes('partner-applications')) order.push('applications');
+            return { foundingSpotsTotal: 20, foundingSpotsLeft: 3 };
+        });
+        mocks.post.mockResolvedValue({ collaboratorId: 'c-1' });
+        const localWrapper = ({ children }: { children: React.ReactNode }) => <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+        const { result } = renderHook(() => usePartnerApplicationApprove('a-1'), { wrapper: localWrapper });
+        const { result: observer } = renderHook(() => useQuery({ queryKey: ['admin', 'collaborators'], queryFn: () => mocks.get('/api/admin/collaborators') }), {
+            wrapper: localWrapper,
+        });
+        expect(observer.current).toBeDefined();
+
+        act(() => result.current.open());
+        await act(async () => {
+            await result.current.confirm();
+        });
+
+        expect(order.indexOf('collaborators')).toBeGreaterThanOrEqual(0);
+        if (order.includes('applications')) expect(order.indexOf('collaborators')).toBeLessThan(order.indexOf('applications'));
+        expect(result.current.isOpen).toBe(false);
+        expect(mocks.push).toHaveBeenCalledWith('#collaborations/c-1');
     });
 });
