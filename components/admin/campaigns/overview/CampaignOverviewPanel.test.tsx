@@ -10,7 +10,7 @@ import {
     oneDayCampaignOverviewFixture,
 } from '@/components/admin/campaigns/__fixtures__/campaignOverview';
 import { CampaignOverviewPanel } from '@/components/admin/campaigns/overview/CampaignOverviewPanel';
-import type { CampaignOverviewDto } from '@/lib/api/types';
+import type { CampaignOverviewDto, CampaignRowDto } from '@/lib/api/types';
 import messages from '@/messages/en.json';
 
 const apiGet = vi.fn();
@@ -25,11 +25,9 @@ class InertResizeObserver {
     disconnect() {}
 }
 
-// The overview answers with `overview`; the per-campaign report always with the report fixture.
-function answer(overview: CampaignOverviewDto) {
-    apiGet.mockImplementation((url: string) =>
-        Promise.resolve(url.startsWith('/api/admin/metrics/campaigns/overview') ? overview : campaignReportFixture),
-    );
+// The overview answers with `overview`; the per-campaign report with the report fixture.
+function answer(overview: CampaignOverviewDto, report: CampaignRowDto[] = campaignReportFixture) {
+    apiGet.mockImplementation((url: string) => Promise.resolve(url.startsWith('/api/admin/metrics/campaigns/overview') ? overview : report));
 }
 
 function renderPanel() {
@@ -72,6 +70,18 @@ describe('CampaignOverviewPanel', () => {
         expect(screen.getByText('Unknown')).toBeTruthy();
         expect(screen.getByText('Language and device')).toBeTruthy();
         expect(screen.getByText('Greek')).toBeTruthy();
+    });
+
+    it('leaves revenue out for marketing, who get it as null', async () => {
+        answer(
+            { ...campaignOverviewFixture, revenueMinorByCurrency: null },
+            campaignReportFixture.map((row) => ({ ...row, revenueMinorByCurrency: null })),
+        );
+        renderPanel();
+
+        await waitFor(() => expect(screen.getByText('1,240')).toBeTruthy());
+        expect(screen.getByText('instagram', { selector: 'button *, button' })).toBeTruthy();
+        expect(screen.queryByText('Revenue')).toBeNull();
     });
 
     it('opens a source into its campaigns', async () => {

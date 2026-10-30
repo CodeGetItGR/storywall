@@ -35,6 +35,7 @@ export function CampaignSourceTable({ groups, picked }: { groups: CampaignSource
     const t = useTranslations('AdminPage.campaignOverview.bySource');
     const c = useTranslations('AdminPage.campaigns.columns');
     const { expanded, handleToggle } = useExpandedKeys();
+    const showRevenue = groups.every((group) => group.totals.revenueMinorByCurrency !== null);
 
     return (
         <FunnelGroup title={picked ? t('titlePicked') : t('title')} window="visit">
@@ -51,7 +52,7 @@ export function CampaignSourceTable({ groups, picked }: { groups: CampaignSource
                             <th className="px-3 py-3 text-right font-bold">{c('planPicks')}</th>
                             <th className="px-3 py-3 text-right font-bold">{c('signedUp')}</th>
                             <th className="px-3 py-3 text-right font-bold">{c('paidHost')}</th>
-                            <th className="px-4 py-3 text-right font-bold">{c('revenue')}</th>
+                            {showRevenue && <th className="px-4 py-3 text-right font-bold">{c('revenue')}</th>}
                         </tr>
                     </thead>
 

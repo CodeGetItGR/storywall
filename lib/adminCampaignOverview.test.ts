@@ -45,6 +45,11 @@ describe('campaignSourceGroups', () => {
         expect(groups[0].totals).toMatchObject({ visits: 940, visitors: 750, signedUp: 34, paidHost: 10, revenueMinorByCurrency: { EUR: 131000 } });
     });
 
+    it('leaves revenue out of the totals when the rows come without it', () => {
+        const groups = campaignSourceGroups(campaignReportFixture.map((row) => ({ ...row, revenueMinorByCurrency: null })));
+        expect(groups.every((group) => group.totals.revenueMinorByCurrency === null)).toBe(true);
+    });
+
     it('keeps a picked source the range has nothing for', () => {
         const groups = campaignSourceGroups(campaignReportFixture);
         expect(campaignSourceOptions(groups, 'pinterest')).toEqual(['pinterest', 'instagram', 'facebook', 'tiktok']);

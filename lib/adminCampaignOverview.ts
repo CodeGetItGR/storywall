@@ -49,6 +49,11 @@ function addUp(rows: CampaignRowDto[]): CampaignCounts {
         totals.planPicks += row.planPicks;
         totals.signedUp += row.signedUp;
         totals.paidHost += row.paidHost;
+        // A row without revenue (a marketing caller) leaves the totals without it too.
+        if (row.revenueMinorByCurrency === null || totals.revenueMinorByCurrency === null) {
+            totals.revenueMinorByCurrency = null;
+            continue;
+        }
         for (const [currency, minor] of Object.entries(row.revenueMinorByCurrency)) {
             totals.revenueMinorByCurrency[currency] = (totals.revenueMinorByCurrency[currency] ?? 0) + minor;
         }
