@@ -1,12 +1,13 @@
 'use client';
 
-import { Plus } from 'lucide-react';
+import { IdCard, Plus, ReceiptText } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { LockedPreview } from '@/components/vendors/me/LockedPreview';
 import { ServiceRow } from '@/components/vendors/me/ServiceRow';
+import { VendorMeNote } from '@/components/vendors/me/VendorMeNote';
 import { VendorMeSection } from '@/components/vendors/me/VendorMeSection';
 import { VendorRowsSkeleton } from '@/components/vendors/VendorsSkeletons';
 import type { VendorServiceItemDto } from '@/lib/api/types';
@@ -88,9 +89,9 @@ export function ServicesSection({
             ) : loadFailed ? null : isLoading ? (
                 <VendorRowsSkeleton rows={2} />
             ) : needsProfile ? (
-                <p className="text-sm text-ink-muted">{t('profileFirst')}</p>
+                <VendorMeNote icon={IdCard}>{t('profileFirst')}</VendorMeNote>
             ) : (
-                sizes.length === 0 && <p className="text-sm text-ink-muted">{t('empty')}</p>
+                sizes.length === 0 && <VendorMeNote icon={ReceiptText}>{t('empty')}</VendorMeNote>
             )}
             {approved && !canAdd && <p className="text-xs text-ink-muted">{t('limit', { max: PRINT_SIZES_MAX })}</p>}
 

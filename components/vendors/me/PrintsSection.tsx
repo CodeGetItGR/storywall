@@ -1,12 +1,14 @@
 'use client';
 
-import { Download } from 'lucide-react';
+import { Clock, Download } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { PrintTotal } from '@/components/gallery/print/PrintTotal';
 import { Button } from '@/components/ui/button';
 import { PrintListReadRow } from '@/components/vendors/me/PrintListReadRow';
 import { PrintPartButton } from '@/components/vendors/me/PrintPartButton';
+import { PrintsGhostRows } from '@/components/vendors/me/PrintsGhostRows';
+import { VendorMeNote } from '@/components/vendors/me/VendorMeNote';
 import { VendorMeSection } from '@/components/vendors/me/VendorMeSection';
 import { VendorRowsSkeleton } from '@/components/vendors/VendorsSkeletons';
 import type { PrintListItemDto } from '@/lib/api/types';
@@ -51,7 +53,14 @@ export function PrintsSection({
             {listFailed ? null : isLoading ? (
                 <VendorRowsSkeleton rows={3} />
             ) : live.length === 0 ? (
-                <p className="text-sm text-ink-muted">{t('hostEmpty')}</p>
+                <>
+                    <PrintsGhostRows />
+                    <VendorMeNote icon={Clock}>{t('hostEmpty')}</VendorMeNote>
+                    <Button type="button" size="lg" className="self-start" disabled>
+                        <Download aria-hidden="true" />
+                        {t('download')}
+                    </Button>
+                </>
             ) : (
                 <ul className="divide-y divide-border">
                     {live.map((item) => (

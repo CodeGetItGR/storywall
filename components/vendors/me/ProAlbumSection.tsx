@@ -1,11 +1,13 @@
 'use client';
 
+import { Images } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { ProAlbumFilePicker } from '@/components/vendors/me/ProAlbumFilePicker';
 import { ProAlbumItem } from '@/components/vendors/me/ProAlbumItem';
+import { VendorMeNote } from '@/components/vendors/me/VendorMeNote';
 import { VendorMeSection } from '@/components/vendors/me/VendorMeSection';
 import { ProStorageMeter } from '@/components/vendors/ProStorageMeter';
 import { useProAlbum } from '@/hooks/useProAlbum';
@@ -48,7 +50,7 @@ export function ProAlbumSection({
 
             {/* Items */}
             {!album.isLoading && album.items.length === 0 ? (
-                <p className="text-sm text-ink-muted">{t('me.proEmpty')}</p>
+                <VendorMeNote icon={Images}>{t('me.proEmpty')}</VendorMeNote>
             ) : (
                 <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                     {album.items.map((item) => (

@@ -96,7 +96,7 @@ describe('PrintsSection', () => {
     it('says when the host has picked nothing', () => {
         renderSection({ items: [], totals: printTotals([], 0), partCount: 0 });
         expect(screen.getByText("The host hasn't picked photos yet.")).toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: 'Download' })).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Download' })).toBeDisabled();
     });
 
     it('shows the error instead of an empty list when the list read failed', () => {

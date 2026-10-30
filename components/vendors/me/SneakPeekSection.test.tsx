@@ -32,15 +32,16 @@ function renderSection(overrides: Partial<Parameters<typeof SneakPeekSection>[0]
 describe('SneakPeekSection', () => {
     afterEach(cleanup);
 
-    it('waits for the start', () => {
+    it('waits for the start with the button disabled', () => {
         renderSection({ state: 'notOpen' });
         expect(screen.getByText('You can share it once the event starts.')).toBeInTheDocument();
-        expect(screen.queryByRole('button')).toBeNull();
+        expect(screen.getByRole('button', { name: 'Choose photos' })).toBeDisabled();
     });
 
     it('asks for Pro items first', () => {
         renderSection({ state: 'noItems' });
         expect(screen.getByText('Add photos or videos to your Pro album first.')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Choose photos' })).toBeDisabled();
     });
 
     it('opens the sheet when ready', () => {

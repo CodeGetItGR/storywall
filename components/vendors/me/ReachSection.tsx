@@ -1,8 +1,10 @@
 'use client';
 
+import { CircleAlert } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { LockedPreview } from '@/components/vendors/me/LockedPreview';
+import { VendorMeNote } from '@/components/vendors/me/VendorMeNote';
 import { VendorMeSection } from '@/components/vendors/me/VendorMeSection';
 import { formatReachCount, type ReachTile } from '@/lib/vendorReach';
 
@@ -32,7 +34,7 @@ export function ReachSection({
         <VendorMeSection id="vendor-reach-title" title={t('title')} hint={tHints('reach')} busy={isLoading}>
             {/* Tiles */}
             {loadFailed ? (
-                <p className="text-sm text-ink-muted">{t('loadFailed')}</p>
+                <VendorMeNote icon={CircleAlert}>{t('loadFailed')}</VendorMeNote>
             ) : isLoading ? (
                 <div className="grid grid-cols-2 gap-2">
                     <div className="h-16 animate-pulse rounded-lg bg-surface-muted" />
