@@ -141,4 +141,74 @@ describe('overlayHistory', () => {
             expect(window.history.state).toEqual(stateBefore);
         });
     });
+
+    // Next ignores a popstate whose state is null, but reloads the page for any
+    // other state without its `__NA` marker. Its patched pushState/replaceState
+    // only copy `__NA` over from the current entry, which a plain
+    // <a href="#…"> leaves at null.
+    describe('on an entry a plain hash link made', () => {
+        let originalPush: History['pushState'];
+        let originalReplace: History['replaceState'];
+        let reloads: number;
+
+        function patched(original: History['pushState']): History['pushState'] {
+            return (data, unused, url) => {
+                if (data?.__NA) return original(data, unused, url);
+                const copied = { ...(data ?? {}) };
+                if (window.history.state?.__NA) copied.__NA = window.history.state.__NA;
+                return original(copied, unused, url);
+            };
+        }
+
+        function onPopState(event: PopStateEvent) {
+            if (event.state && !event.state.__NA) reloads += 1;
+        }
+
+        beforeEach(() => {
+            originalPush = window.history.pushState.bind(window.history);
+            originalReplace = window.history.replaceState.bind(window.history);
+            originalReplace({ __NA: true }, '', '/admin#list');
+            originalPush(null, '', '#applications/1');
+            window.history.pushState = patched(originalPush);
+            window.history.replaceState = patched(originalReplace);
+            reloads = 0;
+            window.addEventListener('popstate', onPopState);
+        });
+
+        afterEach(() => {
+            window.removeEventListener('popstate', onPopState);
+            window.history.pushState = originalPush;
+            window.history.replaceState = originalReplace;
+        });
+
+        it('returns to it without a reload after leaving through a page entry', async () => {
+            overlayHistory.registerOverlayHistory({ id: 'dialog', onClose: vi.fn() }).remove();
+            overlayHistory.pushPageEntry('#collaborations/1');
+
+            await goBack();
+
+            expect(window.location.hash).toBe('#applications/1');
+            expect(reloads).toBe(0);
+        });
+
+        it('still skips the leftover entry on Back after the overlay is closed', async () => {
+            overlayHistory.registerOverlayHistory({ id: 'dialog', onClose: vi.fn() }).requestClose();
+
+            await goBack();
+
+            expect(window.location.hash).toBe('#list');
+            expect(reloads).toBe(0);
+        });
+
+        it('closes the overlay on Back without a reload', async () => {
+            const onClose = vi.fn();
+            overlayHistory.registerOverlayHistory({ id: 'dialog', onClose });
+
+            await goBack();
+
+            expect(onClose).toHaveBeenCalledTimes(1);
+            expect(window.location.hash).toBe('#applications/1');
+            expect(reloads).toBe(0);
+        });
+    });
 });
