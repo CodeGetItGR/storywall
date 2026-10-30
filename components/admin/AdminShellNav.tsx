@@ -6,6 +6,7 @@ import { type MouseEvent } from 'react';
 
 import { type AdminTab, useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { usePendingApplicationsCount } from '@/hooks/useAdminPartnerApplications';
 import { cn } from '@/lib/utils';
 
 const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operations'> = {
@@ -20,6 +21,7 @@ const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operat
     appReviews: 'marketing',
     campaignOverview: 'marketing',
     campaigns: 'marketing',
+    partnerApplications: 'operations',
     collaborations: 'operations',
     partnerCards: 'operations',
     reactionTypes: 'catalog',
@@ -55,6 +57,7 @@ export function AdminShellNav({
 }) {
     const t = useTranslations('AdminPage');
     const { tab, tabs, setTab } = useAdminNavigation();
+    const pendingApplications = usePendingApplicationsCount();
 
     function handleNavClick(event: MouseEvent<HTMLButtonElement>) {
         const nextTab = event.currentTarget.dataset.tab as Parameters<typeof setTab>[0] | undefined;
@@ -111,6 +114,12 @@ export function AdminShellNav({
                                     >
                                         <Icon className="h-4 w-4 shrink-0 opacity-85" />
                                         <span className="truncate">{label}</span>
+                                        {/* Pending applications */}
+                                        {key === 'partnerApplications' && pendingApplications > 0 && (
+                                            <span className="ml-auto rounded-full bg-status-warn-wash px-1.5 font-mono text-[11px] font-bold text-status-warn tabular-nums">
+                                                {pendingApplications}
+                                            </span>
+                                        )}
                                     </button>
                                 );
                             })}
