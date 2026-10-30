@@ -3214,9 +3214,10 @@
             },
             "remove": {
                 "action": "Remove business",
-                "confirmBody": "Remove this business and its notes?",
+                "confirmTitle": "Remove this business?",
+                "confirmBody": "Its notes go with it. This can't be undone.",
                 "keep": "Keep",
-                "confirm": "Yes, remove"
+                "confirm": "Remove"
             },
             "drawer": {
                 "close": "Close",

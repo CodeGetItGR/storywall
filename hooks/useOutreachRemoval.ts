@@ -1,17 +1,40 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useDeleteOutreachProspect } from '@/hooks/useAdminOutreach';
 
-// Remove takes two clicks: the first arms it, the second deletes.
+// Remove asks first in a confirmation dialog, then deletes.
 export function useOutreachRemoval(prospectId: string, onRemoved: () => void) {
-    const remove = useDeleteOutreachProspect();
-    const [armed, setArmed] = useState(false);
+    const { mutateAsync: removeProspect, isPending: isRemoving } = useDeleteOutreachProspect();
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [error, setError] = useState<unknown>(null);
+    // A removal that finishes after the drawer moved on must not close what is open now.
+    const mounted = useRef(true);
 
-    const arm = useCallback(() => setArmed(true), []);
-    const disarm = useCallback(() => setArmed(false), []);
-    const confirm = useCallback(() => remove.mutate(prospectId, { onSuccess: onRemoved }), [onRemoved, prospectId, remove]);
+    useEffect(() => {
+        mounted.current = true;
+        return () => {
+            mounted.current = false;
+        };
+    }, []);
 
-    return { armed, arm, disarm, confirm, isRemoving: remove.isPending, error: remove.error };
+    const openConfirmation = useCallback(() => setConfirmOpen(true), []);
+    const closeConfirmation = useCallback(() => setConfirmOpen(false), []);
+
+    const confirmRemoval = useCallback(async () => {
+        setError(null);
+        try {
+            await removeProspect(prospectId);
+            if (!mounted.current) return;
+            setConfirmOpen(false);
+            onRemoved();
+        } catch (caught) {
+            if (!mounted.current) return;
+            setConfirmOpen(false);
+            setError(caught);
+        }
+    }, [onRemoved, prospectId, removeProspect]);
+
+    return { confirmOpen, openConfirmation, closeConfirmation, confirmRemoval, isRemoving, error };
 }
