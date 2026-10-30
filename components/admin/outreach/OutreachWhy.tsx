@@ -1,16 +1,19 @@
 'use client';
 
 import { ExternalLink } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
-import { linkLabel, safeHttpUrl } from '@/lib/adminOutreach';
+import { linkLabel, localizedWhy, safeHttpUrl } from '@/lib/adminOutreach';
 import type { OutreachProspectDto } from '@/lib/api/types';
 
 // Why the research picked them: their reputation, why they fit, and where that came from.
+// The text shows in the UI language, or in the other one until the weekly agent translates it.
 export function OutreachWhy({ prospect }: { prospect: OutreachProspectDto }) {
     const t = useTranslations('AdminPage.outreach.why');
+    const locale = useLocale();
+    const { credibility, fit } = localizedWhy(prospect, locale);
     const sources = prospect.sources.filter((source) => safeHttpUrl(source));
-    const isEmpty = !prospect.credibility && !prospect.fit && sources.length === 0;
+    const isEmpty = !credibility && !fit && sources.length === 0;
 
     return (
         <section className="space-y-3">
@@ -20,18 +23,18 @@ export function OutreachWhy({ prospect }: { prospect: OutreachProspectDto }) {
             {isEmpty && <p className="text-sm text-ink-muted">{t('empty')}</p>}
 
             {/* Reputation */}
-            {prospect.credibility && (
+            {credibility && (
                 <div>
                     <p className="text-[11px] font-bold tracking-wide text-ink-faint uppercase">{t('credibility')}</p>
-                    <p className="mt-0.5 text-sm leading-6 whitespace-pre-wrap text-ink">{prospect.credibility}</p>
+                    <p className="mt-0.5 text-sm leading-6 whitespace-pre-wrap text-ink">{credibility}</p>
                 </div>
             )}
 
             {/* Fit */}
-            {prospect.fit && (
+            {fit && (
                 <div>
                     <p className="text-[11px] font-bold tracking-wide text-ink-faint uppercase">{t('fit')}</p>
-                    <p className="mt-0.5 text-sm leading-6 whitespace-pre-wrap text-ink">{prospect.fit}</p>
+                    <p className="mt-0.5 text-sm leading-6 whitespace-pre-wrap text-ink">{fit}</p>
                 </div>
             )}
 

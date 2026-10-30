@@ -4754,8 +4754,11 @@ export interface OutreachNoteDto {
 export interface OutreachProspectDto extends OutreachProspectRowDto {
     website: string | null;
     contactPerson: string | null;
+    // Why this business, in English and in Greek. Either may be missing until the weekly agent fills it.
     credibility: string | null;
     fit: string | null;
+    credibilityEl: string | null;
+    fitEl: string | null;
     sources: string[];
     emailEl: OutreachEmailDto;
     emailEn: OutreachEmailDto;
@@ -4810,8 +4813,11 @@ export interface OutreachProspectCreateRequestDto {
     instagram?: string | null;
     contactForm?: string | null;
     contactPerson?: string | null;
+    // English; the El fields are Greek. Set at creation only (max 5000).
     credibility?: string | null;
     fit?: string | null;
+    credibilityEl?: string | null;
+    fitEl?: string | null;
     sources?: string[];
     emailEl?: OutreachEmailDto;
     emailEn?: OutreachEmailDto;

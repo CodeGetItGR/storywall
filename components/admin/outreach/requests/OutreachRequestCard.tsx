@@ -1,11 +1,12 @@
 'use client';
 
 import { Minus, Plus } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
 import { OutreachRequestStatusPill } from '@/components/admin/outreach/requests/OutreachRequestStatusPill';
 import { useOutreachFormat } from '@/hooks/useOutreachFormat';
+import { localizedWhy } from '@/lib/adminOutreach';
 import type { OutreachRequestDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
@@ -22,10 +23,14 @@ export function OutreachRequestCard({
     onOpenClick: (event: MouseEvent<HTMLButtonElement>) => void;
 }) {
     const t = useTranslations('AdminPage.outreach.requests');
+    const tWhy = useTranslations('AdminPage.outreach.why');
     const roles = useTranslations('AdminPage.collaborations.feedCard.roles');
+    const locale = useLocale();
     const format = useOutreachFormat();
     const add = request.kind === 'ADD';
     const proposal = request.proposal;
+    // The business's own "why", in the UI language when it has one.
+    const why = proposal ? localizedWhy(proposal, locale) : null;
     const contacts = proposal ? [proposal.email, proposal.phone, proposal.website, proposal.instagram].filter(Boolean) : [];
     const Icon = add ? Plus : Minus;
 
@@ -53,6 +58,24 @@ export function OutreachRequestCard({
                 </div>
                 <OutreachRequestStatusPill status={request.status} />
             </div>
+
+            {/* Why this business (an ADD's proposal) */}
+            {(why?.credibility || why?.fit) && (
+                <dl className="mt-3 space-y-2 text-sm">
+                    {why.credibility && (
+                        <div>
+                            <dt className="text-[11px] font-bold tracking-[0.12em] text-ink-faint uppercase">{tWhy('credibility')}</dt>
+                            <dd className="whitespace-pre-line text-ink">{why.credibility}</dd>
+                        </div>
+                    )}
+                    {why.fit && (
+                        <div>
+                            <dt className="text-[11px] font-bold tracking-[0.12em] text-ink-faint uppercase">{tWhy('fit')}</dt>
+                            <dd className="whitespace-pre-line text-ink">{why.fit}</dd>
+                        </div>
+                    )}
+                </dl>
+            )}
 
             {/* Why */}
             <div className="mt-3 rounded-lg bg-canvas px-3 py-2.5">
