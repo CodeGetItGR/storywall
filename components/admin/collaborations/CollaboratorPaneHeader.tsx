@@ -29,6 +29,9 @@ export function CollaboratorPaneHeader({
                     <h2 className="truncate text-xl font-semibold tracking-tight text-ink">{collaborator.name}</h2>
                     <span className="font-mono text-[11px] text-ink-faint">{collaborator.contactEmail}</span>
                     <CollaboratorStatusPill status={collaborator.status} />
+                    {collaborator.founding && (
+                        <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[11px] font-bold text-ink-muted">{t('foundingBadge')}</span>
+                    )}
                 </div>
                 <div className="flex items-center gap-2">
                     <button type="button" onClick={onStatusAction} className={SECONDARY_BUTTON}>

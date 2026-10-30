@@ -95,6 +95,14 @@ export function CollaboratorDrawer({
                         className={adminInputClass('min-h-28 resize-y')}
                     />
                 </AdminField>
+
+                {/* Founding */}
+                <label className="flex items-center gap-3 text-sm font-semibold text-ink">
+                    <input type="checkbox" name="founding" defaultChecked={collaborator?.founding ?? false} className="h-4 w-4 accent-primary" />
+                    {t('founding')}
+                </label>
+
+                {/* Error */}
                 {saveCollaborator.error && (
                     <p className="text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(saveCollaborator.error)}`)}</p>
                 )}

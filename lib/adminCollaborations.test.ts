@@ -231,8 +231,16 @@ describe('collaboratorRequestFromFormData', () => {
             contactEmail: 'hello@barn.test',
             notes: null,
             status: null,
-            founding: null,
+            founding: false,
         });
+    });
+
+    it('reads the founding checkbox', () => {
+        const formData = new FormData();
+        formData.set('name', 'Barn Venue');
+        formData.set('contactEmail', 'hello@barn.test');
+        formData.set('founding', 'on');
+        expect(collaboratorRequestFromFormData(formData).founding).toBe(true);
     });
 });
 

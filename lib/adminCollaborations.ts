@@ -28,7 +28,7 @@ export function collaboratorRequestFromFormData(formData: FormData): Collaborato
             .toLowerCase(),
         notes: String(formData.get('notes') ?? '').trim() || null,
         status: null,
-        founding: null,
+        founding: formData.get('founding') === 'on',
     };
 }
 

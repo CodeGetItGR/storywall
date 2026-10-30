@@ -5009,6 +5009,8 @@
             }
         },
         "collaborations": {
+            "founding": "Founding partner",
+            "foundingBadge": "Founding",
             "title": "Collaborations",
             "loading": "Loading partners...",
             "empty": "No partners yet.",
