@@ -12,7 +12,6 @@ import type {
     CollaborationCodeResponseDto,
     CollaborationEarningResponseDto,
     CollaboratorBusinessDetailsRequestDto,
-    CollaboratorPortalTokenResponseDto,
     CollaboratorRequestDto,
     CollaboratorResponseDto,
     CommissionTiersRequestDto,
@@ -67,7 +66,8 @@ export const adminKeys = {
     costTimeline: (weeks: number) => ['admin', 'metrics', 'timeline', weeks] as const,
     costCalendar: (since: string, until: string) => ['admin', 'metrics', 'calendar', since, until] as const,
     costCalendarDayEvents: (date: string, page: number, size: number) => ['admin', 'metrics', 'calendar', date, 'events', page, size] as const,
-    funnel: (since: string | null, until: string | null, channel: SignupChannel | null) => ['admin', 'metrics', 'funnel', since, until, channel] as const,
+    funnel: (since: string | null, until: string | null, channel: SignupChannel | null) =>
+        ['admin', 'metrics', 'funnel', since, until, channel] as const,
     funnelCohorts: (weeks: number, channel: SignupChannel | null) => ['admin', 'metrics', 'funnel', 'cohorts', weeks, channel] as const,
     funnelChannels: (since: string | null, until: string | null) => ['admin', 'metrics', 'funnel', 'channels', since, until] as const,
     visitors: (since: string | null, until: string | null) => ['admin', 'metrics', 'visitors', since, until] as const,
@@ -136,18 +136,6 @@ export function useSaveCollaboratorCommissionTiers() {
         mutationFn: ({ id, input }: { id: string; input: CommissionTiersRequestDto }) =>
             api.put<CollaboratorResponseDto>(endpoints.admin.collaborators.commissionTiers(id), input),
         onSuccess: (saved) => upsertCollaborator(queryClient, saved),
-    });
-}
-
-export function useIssueCollaboratorPortalToken() {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: (id: string) => api.post<CollaboratorPortalTokenResponseDto>(endpoints.admin.collaborators.portalToken(id)),
-        onSuccess: (_token, id) => {
-            queryClient.invalidateQueries({ queryKey: adminKeys.collaborators });
-            queryClient.invalidateQueries({ queryKey: ['admin', 'collaborators', id] });
-        },
     });
 }
 

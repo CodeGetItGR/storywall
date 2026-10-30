@@ -40,7 +40,7 @@ export function useQrCardScreen() {
         templates: templates.data?.templates ?? NO_TEMPLATES,
         defaults: { title: activeEvent.title, line: qrLink ? t(`lines.${QR_CARD_LINE_KEYS[qrLink.targetType]}`) : '' },
     });
-    const exporter = useQrCardExport({ font: designer.style.headingFont, title: designer.text.title });
+    const exporter = useQrCardExport({ font: designer.style.headingFont, title: designer.text.title, size: designer.size });
     const lines: QrCardLine[] = [{ text: designer.text.line, tone: 'body' }];
 
     const { refetch } = templates;

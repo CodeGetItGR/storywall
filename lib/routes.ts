@@ -42,6 +42,7 @@ export const routes = {
     invite: '/invite',
     home: '/home',
     profile: '/profile',
+    partner: '/partner',
     events: {
         // run: the wizard run the entry belongs to (see CREATE_EVENT_RUN_PARAM).
         new: (

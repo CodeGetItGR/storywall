@@ -97,6 +97,8 @@ export type ApiErrorMessageKey =
     | 'vendorCannotRsvp'
     | 'printItemInvalid'
     | 'partnerRequired'
+    | 'partnerEmailNotVerified'
+    | 'partnerNotLinked'
     | 'printPicksUnavailable'
     | 'printPricesMissing'
     | 'printListLocked'
@@ -118,6 +120,7 @@ export type ApiErrorMessageKey =
     | 'collaboratorEmailExists'
     | 'qrCardCodeColorLowContrast'
     | 'qrCardArtworkSizeInvalid'
+    | 'qrCardLayoutInvalid'
     | 'eventHostAlreadyCoHost'
     | 'eventHostLastHost'
     | 'eventHostAlreadyPrimary'
@@ -606,6 +609,8 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.VENDOR_CANNOT_RSVP]: 'vendorCannotRsvp',
     [ERROR_CODES.PRINT_ITEM_INVALID]: 'printItemInvalid',
     [ERROR_CODES.PARTNER_REQUIRED]: 'partnerRequired',
+    [ERROR_CODES.PARTNER_EMAIL_NOT_VERIFIED]: 'partnerEmailNotVerified',
+    [ERROR_CODES.PARTNER_NOT_LINKED]: 'partnerNotLinked',
     [ERROR_CODES.PRINT_PICKS_UNAVAILABLE]: 'printPicksUnavailable',
     [ERROR_CODES.PRINT_PRICES_MISSING]: 'printPricesMissing',
     [ERROR_CODES.PRINT_LIST_LOCKED]: 'printListLocked',
@@ -627,6 +632,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.COLLABORATOR_EMAIL_EXISTS]: 'collaboratorEmailExists',
     [ERROR_CODES.QR_CARD_CODE_COLOR_LOW_CONTRAST]: 'qrCardCodeColorLowContrast',
     [ERROR_CODES.QR_CARD_ARTWORK_SIZE_INVALID]: 'qrCardArtworkSizeInvalid',
+    [ERROR_CODES.QR_CARD_LAYOUT_INVALID]: 'qrCardLayoutInvalid',
 } satisfies Record<KnownApiErrorCode, ApiErrorMessageKey>;
 
 export function getApiErrorMessageKey(code: number | string | undefined): ApiErrorMessageKey | undefined {

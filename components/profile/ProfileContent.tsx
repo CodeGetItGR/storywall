@@ -7,6 +7,7 @@ import { ProfileBusinessSection } from '@/components/profile/ProfileBusinessSect
 import { ProfileDataSection } from '@/components/profile/ProfileDataSection';
 import { ProfileDeleteAccountSection } from '@/components/profile/ProfileDeleteAccountSection';
 import { ProfileNewsletterSection } from '@/components/profile/ProfileNewsletterSection';
+import { ProfilePartnerSection } from '@/components/profile/ProfilePartnerSection';
 import { ProfilePasswordSection } from '@/components/profile/ProfilePasswordSection';
 import { ProfilePictureDialog } from '@/components/profile/ProfilePictureDialog';
 import { ProfileVendorSection } from '@/components/profile/ProfileVendorSection';
@@ -182,6 +183,9 @@ export function ProfileContent() {
 
                 {/* Vendor details */}
                 <ProfileVendorSection />
+
+                {/* Partner page */}
+                <ProfilePartnerSection />
 
                 {/* Newsletter */}
                 <ProfileNewsletterSection />

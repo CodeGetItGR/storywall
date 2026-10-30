@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useQrCardTemplateDrawer } from '@/hooks/useQrCardTemplateDrawer';
 import { ApiError } from '@/lib/api/client';
 import type { AdminQrCardTemplateDto, AdminThemeFontDto } from '@/lib/api/types';
+import { DEFAULT_QR_CARD_LAYOUT } from '@/lib/qrCardLayout';
 
 const mocks = vi.hoisted(() => ({
     create: vi.fn(),
@@ -34,6 +35,8 @@ const LINEN: AdminQrCardTemplateDto = {
     headingFont: null,
     codeColor: '#1F3A5A',
     centerLogo: false,
+    layout: null,
+    artworkWidth: null,
 };
 
 let queryClient: QueryClient;
@@ -73,6 +76,12 @@ afterEach(() => {
 });
 
 describe('useQrCardTemplateDrawer', () => {
+    it('previews the saved layout, or the default without one', () => {
+        const layout = { ...DEFAULT_QR_CARD_LAYOUT, title: { ...DEFAULT_QR_CARD_LAYOUT.title, align: 'left' as const } };
+        expect(renderDrawer({ ...LINEN, layout }).result.current.previewStyle.layout).toEqual(layout);
+        expect(renderDrawer(LINEN).result.current.previewStyle.layout).toEqual(DEFAULT_QR_CARD_LAYOUT);
+    });
+
     it('does not save an invalid draft and shows what is missing', async () => {
         const { result } = renderDrawer();
         await act(() => result.current.handleSubmit(submitEvent()));
@@ -174,5 +183,17 @@ describe('useQrCardTemplateDrawer', () => {
         mocks.patch.mockRejectedValueOnce(new ApiError(409, { errorCode: 5145 }));
         await act(() => result.current.handleSubmit(submitEvent()));
         expect(invalidate).toHaveBeenCalledWith({ queryKey: ['admin', 'theme-fonts'] });
+    });
+
+    it('opens and closes the layout editor, and keeps a saved layout', () => {
+        const { result } = renderDrawer(LINEN);
+        act(() => result.current.openLayoutEditor());
+        expect(result.current.layoutEditorOpen).toBe(true);
+        const layout = { ...DEFAULT_QR_CARD_LAYOUT, code: { ...DEFAULT_QR_CARD_LAYOUT.code, panel: false } };
+        act(() => result.current.handleLayoutSaved({ ...LINEN, layout }));
+        expect(result.current.savedTemplate?.layout).toEqual(layout);
+        expect(result.current.previewStyle.layout).toEqual(layout);
+        act(() => result.current.closeLayoutEditor());
+        expect(result.current.layoutEditorOpen).toBe(false);
     });
 });

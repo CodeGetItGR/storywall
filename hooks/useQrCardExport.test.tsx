@@ -11,14 +11,14 @@ vi.mock('@/lib/qrCardExport', () => exportMocks);
 vi.mock('@/lib/download', () => ({ downloadBlob }));
 
 import { useQrCardExport } from '@/hooks/useQrCardExport';
-import type { EventThemeFontDto } from '@/lib/api/types';
+import type { EventThemeFontDto, QrCardSize } from '@/lib/api/types';
 
 const FONT: EventThemeFontDto = { key: 'alegreya', fallback: 'serif', url: '/api/theme-fonts/alegreya/1.woff2' };
 // jsdom's Blob may lack arrayBuffer(); the hook only needs that one method.
 const PNG = { arrayBuffer: async () => new ArrayBuffer(4) } as unknown as Blob;
 
-function renderExport() {
-    const hook = renderHook(() => useQrCardExport({ font: FONT, title: 'Maria & Nikos' }));
+function renderExport(size: QrCardSize = 'A6') {
+    const hook = renderHook(() => useQrCardExport({ font: FONT, title: 'Maria & Nikos', size }));
     hook.result.current.svgRef.current = document.createElementNS('http://www.w3.org/2000/svg', 'svg') as SVGSVGElement;
     return hook;
 }
@@ -38,8 +38,8 @@ describe('useQrCardExport', () => {
 
         expect(result.current.busy).toBe('png');
         await waitFor(() => expect(result.current.busy).toBeNull());
-        expect(exportMocks.standaloneQrCardSvg).toHaveBeenCalledWith(result.current.svgRef.current, FONT);
-        expect(exportMocks.qrCardPng).toHaveBeenCalledWith('<svg/>');
+        expect(exportMocks.standaloneQrCardSvg).toHaveBeenCalledWith(result.current.svgRef.current, FONT, 'A6');
+        expect(exportMocks.qrCardPng).toHaveBeenCalledWith('<svg/>', 'A6');
         expect(downloadBlob).toHaveBeenCalledWith(PNG, 'Maria-&-Nikos.png');
         expect(result.current.failed).toBe(false);
     });
@@ -53,6 +53,17 @@ describe('useQrCardExport', () => {
         const [file, name] = downloadBlob.mock.calls[0];
         expect(name).toBe('Maria-&-Nikos.pdf');
         expect((file as Blob).type).toBe('application/pdf');
+    });
+
+    it('exports at the chosen size', async () => {
+        const { result } = renderExport('A5');
+
+        act(() => result.current.savePdf());
+
+        await waitFor(() => expect(downloadBlob).toHaveBeenCalled());
+        expect(exportMocks.standaloneQrCardSvg).toHaveBeenCalledWith(result.current.svgRef.current, FONT, 'A5');
+        expect(exportMocks.qrCardPng).toHaveBeenCalledWith('<svg/>', 'A5');
+        expect(exportMocks.qrCardPdfBytes).toHaveBeenCalledWith(expect.anything(), 'A5');
     });
 
     it('says so when a save fails, and lets the next one run', async () => {

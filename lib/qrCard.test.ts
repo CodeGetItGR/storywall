@@ -8,13 +8,14 @@ import {
     layoutLines,
     layoutTitle,
     PLAIN_QR_CARD_STYLE,
-    QR_CARD_LAYOUT,
     QR_CARD_LINE_BOXES,
     QR_CARD_LINE_KEYS,
+    QR_CARD_SIZES,
     QR_CARD_TITLE_BOX,
     qrCardFileName,
     qrCardStyleOf,
 } from '@/lib/qrCard';
+import { DEFAULT_QR_CARD_LAYOUT } from '@/lib/qrCardLayout';
 
 describe('fitText', () => {
     it('keeps a short title at the largest size, on one line', () => {
@@ -106,7 +107,7 @@ describe('estimateTextWidth', () => {
 
 describe('layoutTitle', () => {
     it('centres the title in its band', () => {
-        expect(layoutTitle('Anna & Nikos')).toEqual({ lines: ['Anna & Nikos'], fontSize: 9, baselines: [25.34] });
+        expect(layoutTitle('Anna & Nikos')).toEqual({ lines: ['Anna & Nikos'], fontSize: 9, baselines: [25.34], x: 52.5, anchor: 'middle' });
     });
 });
 
@@ -118,7 +119,8 @@ describe('layoutLines', () => {
             { text: 'Or sign in with a.very.long.address@example-mail.com', tone: 'small' },
             { text: 'With love from the whole Papadopoulos family', tone: 'strong' },
         ]);
-        const { top, bottom } = QR_CARD_LAYOUT.lines;
+        const top = DEFAULT_QR_CARD_LAYOUT.lines.y;
+        const bottom = top + DEFAULT_QR_CARD_LAYOUT.lines.height;
         expect(placed.map((line) => line.tone)).toEqual(['body', 'code', 'small', 'strong']);
         for (const line of placed) {
             expect(line.baselines[0] - 0.86 * line.fontSize).toBeGreaterThanOrEqual(top - 0.01);
@@ -133,6 +135,45 @@ describe('layoutLines', () => {
                 { text: 'Eleni', tone: 'strong' },
             ]).map((line) => line.tone),
         ).toEqual(['strong']);
+    });
+});
+
+describe('layout boxes', () => {
+    const title = DEFAULT_QR_CARD_LAYOUT.title;
+
+    it('anchors the title to the left or right edge of its box', () => {
+        expect(layoutTitle('Anna', { ...title, x: 10, width: 50, align: 'left' })).toMatchObject({ x: 10, anchor: 'start' });
+        expect(layoutTitle('Anna', { ...title, x: 10, width: 50, align: 'right' })).toMatchObject({ x: 60, anchor: 'end' });
+    });
+
+    it('centres the title in a moved box', () => {
+        const placed = layoutTitle('Anna', { ...title, y: 50, height: 20 });
+        // One 9 mm line: 10.8 tall, centred in 50..70.
+        expect(placed.baselines[0]).toBeCloseTo(50 + (20 - 10.8) / 2 + 0.86 * 9, 2);
+    });
+
+    it('shrinks a title to fit a short box', () => {
+        const placed = layoutTitle('Anna & Nikos', { ...title, height: 6, maxSize: 16 });
+        expect(placed.lines).toHaveLength(1);
+        expect(placed.fontSize * 1.2).toBeLessThanOrEqual(6.001);
+    });
+
+    it('lets a large maximum grow the title', () => {
+        expect(layoutTitle('Anna', { ...title, maxSize: 14 }).fontSize).toBe(14);
+    });
+
+    it('scales the lines with the text size, inside a moved box', () => {
+        const box = { ...DEFAULT_QR_CARD_LAYOUT.lines, y: 40, height: 30, textSize: 7, align: 'right' as const };
+        const [line] = layoutLines([{ text: 'Scan', tone: 'body' }], box);
+        expect(line).toMatchObject({ fontSize: 7, x: 97, anchor: 'end' });
+        expect(line.baselines[0] - 0.86 * 7).toBeGreaterThanOrEqual(40);
+    });
+});
+
+describe('QR_CARD_SIZES', () => {
+    it('prints A6 and A5 at 300 dpi', () => {
+        expect(QR_CARD_SIZES.A6).toEqual({ widthMm: 105, heightMm: 148, widthPx: 1240, heightPx: 1748, widthPt: 297.64, heightPt: 419.53 });
+        expect(QR_CARD_SIZES.A5).toEqual({ widthMm: 148, heightMm: 210, widthPx: 1748, heightPx: 2480, widthPt: 419.53, heightPt: 595.28 });
     });
 });
 
@@ -181,6 +222,8 @@ describe('qrCardStyleOf', () => {
             headingFont: null,
             codeColor: '#1F3A5A',
             centerLogo: false,
+            layout: null,
+            sizes: ['A6', 'A5'],
         };
         expect(qrCardStyleOf(template)).toEqual({
             id: 't1',
@@ -189,10 +232,13 @@ describe('qrCardStyleOf', () => {
             headingFont: null,
             codeColor: '#1F3A5A',
             centerLogo: false,
+            layout: DEFAULT_QR_CARD_LAYOUT,
+            sizes: ['A6', 'A5'],
         });
     });
 
     it('keeps Plain as today’s look', () => {
         expect(PLAIN_QR_CARD_STYLE).toMatchObject({ artworkUrl: null, codeColor: '#241F1A', centerLogo: true });
+        expect(PLAIN_QR_CARD_STYLE).toMatchObject({ layout: DEFAULT_QR_CARD_LAYOUT, sizes: ['A6', 'A5'] });
     });
 });

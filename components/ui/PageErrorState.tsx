@@ -12,6 +12,8 @@ type PageErrorStateProps = {
     description: string;
     actionHref?: string;
     actionLabel?: string;
+    // Defaults to a back arrow; pass one when the link goes somewhere new.
+    actionIcon?: ReactNode;
     onRetryAction?: () => void;
     retryLabel?: string;
     icon?: ReactNode;
@@ -19,7 +21,7 @@ type PageErrorStateProps = {
     error?: unknown;
 };
 
-export function PageErrorState({ title, description, actionHref, actionLabel, onRetryAction, retryLabel, icon, error }: PageErrorStateProps) {
+export function PageErrorState({ title, description, actionHref, actionLabel, actionIcon, onRetryAction, retryLabel, icon, error }: PageErrorStateProps) {
     const t = useTranslations('PageErrorState');
     const errorRef = getErrorRef(error);
 
@@ -46,7 +48,7 @@ export function PageErrorState({ title, description, actionHref, actionLabel, on
                         href={actionHref}
                         className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted"
                     >
-                        <ArrowLeft className="h-4 w-4" />
+                        {actionIcon ?? <ArrowLeft className="h-4 w-4" />}
                         {actionLabel}
                     </AppLink>
                 )}

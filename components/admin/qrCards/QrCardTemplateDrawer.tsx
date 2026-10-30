@@ -1,12 +1,13 @@
 'use client';
 
-import { ImagePlus, Loader2 } from 'lucide-react';
+import { ImagePlus, LayoutTemplate, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useId } from 'react';
 
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { AdminSwitch } from '@/components/admin/AdminSwitch';
+import { QrCardLayoutEditor } from '@/components/admin/qrCards/layoutEditor/QrCardLayoutEditor';
 import { QrCardTemplatePreview } from '@/components/admin/qrCards/QrCardTemplatePreview';
 import { ReactionTypeAvailabilityControl } from '@/components/admin/ReactionTypeAvailabilityControl';
 import { useQrCardTemplateDrawer } from '@/hooks/useQrCardTemplateDrawer';
@@ -32,6 +33,7 @@ export function QrCardTemplateDrawer({
 }) {
     const t = useTranslations('AdminPage.qrCards.drawer');
     const tPreview = useTranslations('AdminPage.qrCards.preview');
+    const tLayout = useTranslations('AdminPage.qrCards.layout');
     const form = useQrCardTemplateDrawer({ template, sortOrder, onDoneAction: onCloseAction });
     const { codeHint, fontHint, fontLabel, serverError, artworkHint } = useQrCardTemplateDrawerCopy(form);
     const hintIdPrefix = useId();
@@ -39,6 +41,7 @@ export function QrCardTemplateDrawer({
     const nameElHintId = `${hintIdPrefix}-name-el`;
     const textColorHintId = `${hintIdPrefix}-text-color`;
     const codeColorHintId = `${hintIdPrefix}-code-color`;
+    const layoutHintId = `${hintIdPrefix}-layout`;
 
     const footer = (
         <div className="flex w-full items-center justify-end gap-2">
@@ -230,6 +233,27 @@ export function QrCardTemplateDrawer({
                         </label>
                     </AdminField>
 
+                    {/* Layout */}
+                    {/* Not an AdminField: a label around the button would rename it to the label's whole text. */}
+                    <div className="flex min-w-0 flex-col gap-0.5">
+                        <span className="text-[11px] font-bold tracking-wide text-ink-muted uppercase">{t('layout')}</span>
+                        <button
+                            type="button"
+                            onClick={form.openLayoutEditor}
+                            disabled={form.isCreate || form.isSaving}
+                            aria-describedby={form.isCreate ? layoutHintId : undefined}
+                            className="mt-1.5 inline-flex min-h-10 w-fit items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold text-ink hover:bg-canvas disabled:opacity-50"
+                        >
+                            <LayoutTemplate className="h-4 w-4" aria-hidden="true" />
+                            {tLayout('edit')}
+                        </button>
+                        {form.isCreate && (
+                            <span id={layoutHintId} className="text-[11px] leading-4 text-ink-faint">
+                                {tLayout('editSaveFirst')}
+                            </span>
+                        )}
+                    </div>
+
                     {/* Availability */}
                     {!form.isCreate && (
                         <ReactionTypeAvailabilityControl
@@ -245,6 +269,16 @@ export function QrCardTemplateDrawer({
                 {/* Preview */}
                 <QrCardTemplatePreview style={form.previewStyle} title={form.previewTitle || tPreview('sampleTitle')} />
             </div>
+
+            {/* Layout editor */}
+            {form.layoutEditorOpen && form.savedTemplate && (
+                <QrCardLayoutEditor
+                    template={form.savedTemplate}
+                    style={form.previewStyle}
+                    onSavedAction={form.handleLayoutSaved}
+                    onCloseAction={form.closeLayoutEditor}
+                />
+            )}
         </AdminDrawer>
     );
 }

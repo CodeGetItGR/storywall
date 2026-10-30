@@ -1,4 +1,5 @@
 import type { Locale } from '@/i18n/config';
+import { THEME_ILLUSTRATION_TYPES } from '@/lib/adminThemePresets';
 import { ApiError } from '@/lib/api/client';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type { AdminQrCardTemplateDto, AdminQrCardTemplatePatchDto, AdminQrCardTemplateRequestDto, EventTypeConvention } from '@/lib/api/types';
@@ -13,6 +14,19 @@ export const QR_CARD_NAME_MAX = 60;
 // The code sits on a white panel; the backend rejects a code colour under this against it (3110).
 export const MIN_CODE_CONTRAST = 4.5;
 const CODE_PANEL_COLOR = '#FFFFFF';
+
+// The backend's cap for QR card artwork; theme illustrations keep 5 MB.
+export const QR_CARD_ARTWORK_MAX_BYTES = 10 * 1024 * 1024;
+
+// Never resolves to an event: the code only has to scan the way a real one would.
+export const QR_CARD_SAMPLE_URL = 'https://storywall.gr/q/preview';
+
+// Type and size only; the server checks the A6 shape and the 1748 px width (3111).
+export function qrCardArtworkFileError(file: File): 'type' | 'size' | null {
+    if (!THEME_ILLUSTRATION_TYPES.includes(file.type)) return 'type';
+    if (file.size > QR_CARD_ARTWORK_MAX_BYTES) return 'size';
+    return null;
+}
 
 export const QR_CARD_STATUS_FILTERS = ['ALL', 'LIVE', 'NO_ARTWORK', 'ARCHIVED'] as const;
 export type QrCardStatusFilter = (typeof QR_CARD_STATUS_FILTERS)[number];
@@ -135,10 +149,11 @@ export function filterQrCardTemplates(
 }
 
 // The rejections whose localized detail names the exact problem (the ratio, the artwork's size, the
-// language at fault), so the drawer shows the detail.
+// layout rule, the language at fault), so the drawer shows the detail.
 const DETAIL_CODES: ReadonlySet<number> = new Set([
     ERROR_CODES.QR_CARD_CODE_COLOR_LOW_CONTRAST,
     ERROR_CODES.QR_CARD_ARTWORK_SIZE_INVALID,
+    ERROR_CODES.QR_CARD_LAYOUT_INVALID,
     ERROR_CODES.LOCALIZED_TEXT_INVALID,
 ]);
 
@@ -149,4 +164,9 @@ export function isQrCardDetailError(error: unknown): boolean {
     if (typeof code === 'number' && DETAIL_CODES.has(code)) return true;
     if (code !== ERROR_CODES.VALIDATION_FAILED) return false;
     return Object.keys(error.problem?.errors ?? {}).length === 0;
+}
+
+// A layout length for the editor, always one decimal: 8 → "8.0" ("8,0" in Greek).
+export function formatMm(value: number, locale: string): string {
+    return new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value);
 }

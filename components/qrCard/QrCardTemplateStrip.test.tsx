@@ -20,6 +20,8 @@ const LINEN: QrCardTemplateDto = {
     headingFont: null,
     codeColor: '#1F3A5A',
     centerLogo: false,
+    layout: null,
+    sizes: ['A6'],
 };
 
 function renderStrip(props: Partial<Parameters<typeof QrCardTemplateStrip>[0]> = {}) {

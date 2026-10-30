@@ -25,8 +25,6 @@ function collaborator(overrides: Partial<CollaboratorResponseDto> = {}): Collabo
         contactEmail: 'hello@barn.test',
         status: 'ACTIVE',
         founding: false,
-        portalTokenIssued: false,
-        portalTokenIssuedAt: null,
         notes: null,
         earningsTotals: [],
         websiteUrl: null,

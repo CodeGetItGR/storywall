@@ -2,7 +2,7 @@
 
 import { Dialog } from '@base-ui/react/dialog';
 import { X } from 'lucide-react';
-import { createContext, type ReactNode, useCallback, useContext, useState } from 'react';
+import { createContext, type KeyboardEventHandler, type ReactNode, useCallback, useContext, useState } from 'react';
 
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import { cn } from '@/lib/utils';
@@ -28,6 +28,8 @@ interface AdminDrawerProps {
      * state that must not outlive the drawer, while the animation still plays with that state on screen.
      */
     onClosed?: () => void;
+    /** Keys pressed anywhere in the drawer, footer included. */
+    onKeyDown?: KeyboardEventHandler<HTMLDivElement>;
 }
 
 const DrawerFooterSlotContext = createContext<HTMLDivElement | null>(null);
@@ -55,6 +57,7 @@ export function AdminDrawer({
     size = 'default',
     closeDisabled = false,
     onClosed,
+    onKeyDown,
 }: AdminDrawerProps) {
     const [footerSlot, setFooterSlot] = useState<HTMLDivElement | null>(null);
     // Back closes the drawer instead of leaving the section it was opened from.
@@ -83,6 +86,7 @@ export function AdminDrawer({
                 {/* The portal lands in <body>, outside AdminLayoutShell's .admin-shell, so the popup
                     re-enters that scope itself to pick up the console's slate tokens. */}
                 <Dialog.Popup
+                    onKeyDown={onKeyDown}
                     className={cn(
                         'admin-shell motion-surface fixed top-(--visual-viewport-offset-top) right-0 z-50 flex h-(--visual-viewport-height) flex-col overflow-hidden',
                         'bg-card text-ink shadow-[0_24px_60px_-20px_rgba(18,20,28,0.45)] outline-none',

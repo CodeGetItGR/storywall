@@ -687,6 +687,9 @@
         "showPreview": "Show {name} preview"
     },
     "ProfilePage": {
+        "partner": {
+            "title": "Partner page"
+        },
         "dataExport": {
             "title": "Your data",
             "body": "Download a copy of everything StoryWall holds about you (your profile, your activity in events and your purchases) as a JSON file. Photos and videos aren't in it; download those from each event.",
@@ -2051,41 +2054,47 @@
         "redirectCountdown": "Opening the feed in {seconds, plural, one {# second} other {# seconds}}."
     },
     "PartnerPortalPage": {
+        "back": "Back",
         "loading": "Loading partner report",
         "title": "Partner report",
         "summary": "Partner summary",
         "eventsReferred": "Events referred",
-        "currencies": "Currencies",
         "unavailable": {
-            "title": "This partner link is not available",
-            "description": "Ask StoryWall for a new link."
+            "title": "Couldn't load your partner page",
+            "description": "Try again in a moment."
+        },
+        "notVerified": {
+            "title": "Verify your email to open your partner page",
+            "description": "Open the link we sent to your email."
+        },
+        "notLinked": {
+            "title": "This account isn't linked to a partner",
+            "description": "Sign in with your partner email, or contact us.",
+            "contact": "Contact us"
         },
         "totals": {
-            "title": "Earnings",
+            "title": "To be paid",
             "empty": "No earnings yet.",
-            "currency": "Currency",
-            "accrued": "Accrued",
-            "paid": "Paid",
-            "balance": "Balance"
+            "earnedPaid": "{earned} earned · {paid} paid"
         },
         "tiers": {
             "title": "Commission rate",
             "percent": "{percent}%",
+            "progressLabel": "Progress to the next rate",
             "activationsThisYear": "{count, plural, one {# activation} other {# activations}} this year",
             "next": "Your {number, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} activation earns {percent}%"
         },
         "brandingClicks": "Card taps",
         "reach": {
             "title": "Reach",
-            "events": "Events",
+            "eventCount": "{count, plural, one {# event} other {# events}}",
             "guests": "Guests",
             "proViews": "Photo and video views",
             "postViewers": "Saw your posts",
             "listTaps": "Opened your details",
             "recentTitle": "Recent events",
-            "date": "Date",
-            "type": "Type",
-            "views": "Views",
+            "rowViews": "{count, plural, one {# view} other {# views}}",
+            "rowGuests": "{count, plural, one {# guest} other {# guests}}",
             "empty": "No events as a vendor yet."
         }
     },
@@ -4826,18 +4835,49 @@
                 "eventTypes": "Event types",
                 "eventTypesInvalid": "Pick at least one event type.",
                 "artwork": "Artwork",
-                "artworkHint": "PNG or WebP, A6 portrait (105 × 148), at least 1240 px wide, up to 5 MB.",
+                "artworkHint": "WebP recommended: it keeps the file small. PNG also works. A6 portrait (105 × 148), at least 1748 px wide, up to 10 MB.",
                 "artworkChoose": "Choose file",
                 "artworkPending": "Uploads when you save.",
                 "artworkType": "Use a PNG or WebP image.",
-                "artworkSize": "Use an image up to 5 MB.",
+                "artworkSize": "Use an image up to 10 MB.",
                 "availability": "Availability",
                 "offered": "Offered",
                 "archived": "Archived",
                 "offeredHint": "Hosts of the selected event types can pick it.",
                 "archivedHint": "Hosts can no longer pick it.",
                 "network": "Couldn't reach the server. Check your connection and try again.",
-                "notFound": "This design no longer exists."
+                "notFound": "This design no longer exists.",
+                "layout": "Layout"
+            },
+            "layout": {
+                "edit": "Edit layout",
+                "editSaveFirst": "Save the design first.",
+                "title": "Layout: {name}",
+                "canvas": "Card layout",
+                "cardLabel": "QR card: {title}",
+                "elements": { "title": "Title", "code": "Code", "lines": "Lines" },
+                "selectHint": "Select something on the card to change it.",
+                "position": "X {x} · Y {y} · W {width} · H {height} mm",
+                "align": "Alignment",
+                "alignOptions": { "left": "Left", "center": "Centre", "right": "Right" },
+                "titleSize": "Largest text size",
+                "linesSize": "Text size",
+                "panel": "White panel",
+                "panelOffNote": "Test-scan a printed card before offering this template.",
+                "radius": "Corner rounding",
+                "mm": "{value} mm",
+                "sample": { "label": "Sample", "short": "Short card", "gift": "Gift card" },
+                "sampleGiver": "With love from Eleni",
+                "reset": "Reset layout",
+                "cancel": "Cancel",
+                "save": "Save layout",
+                "network": "Couldn't reach the server. Check your connection and try again.",
+                "discard": {
+                    "title": "Discard layout changes?",
+                    "body": "Your changes to this layout will be lost.",
+                    "confirm": "Discard changes",
+                    "keep": "Keep editing"
+                }
             },
             "preview": {
                 "label": "Preview",
@@ -5034,17 +5074,10 @@
                 "editTitle": "Edit {name}"
             },
             "portal": {
-                "title": "Portal link",
-                "notIssued": "No portal link yet",
-                "confirmTitle": "Replace the portal link?",
-                "confirmBody": "The current link stops working right away.",
-                "once": "Copy this now. It won't be shown again.",
+                "title": "Partner page",
+                "signInAs": "The partner signs in with {email}.",
                 "copy": "Copy link",
-                "copied": "Copied",
-                "issuedAt": "Link created {date}",
-                "issued": "Link created",
-                "create": "Create link",
-                "replace": "Replace link"
+                "copied": "Copied"
             },
             "codes": {
                 "title": "Codes",
@@ -5910,6 +5943,11 @@
         "cardLabel": "QR card: {title}",
         "templates": "Design",
         "plain": "Plain",
+        "size": {
+            "label": "Paper size",
+            "A6": "A6 · 10.5 × 14.8 cm",
+            "A5": "A5 · 14.8 × 21 cm"
+        },
         "templatesFailed": "Couldn't load the designs.",
         "retry": "Try again",
         "fields": {
@@ -6182,6 +6220,8 @@
         "vendorCannotRsvp": "Vendors don't RSVP.",
         "printItemInvalid": "Only photos can be printed.",
         "partnerRequired": "Only approved partners can list prices.",
+        "partnerEmailNotVerified": "Verify your email to open your partner page.",
+        "partnerNotLinked": "This account isn't linked to a partner.",
         "printPicksUnavailable": "You can't pick this photo for print.",
         "printPricesMissing": "The photographer hasn't set print prices yet.",
         "printListLocked": "This list was sent and can't change.",
@@ -6203,6 +6243,7 @@
         "collaboratorEmailExists": "A partner with this email already exists.",
         "qrCardCodeColorLowContrast": "The code colour is too light against white. Choose a darker one.",
         "qrCardArtworkSizeInvalid": "The artwork must be A6 portrait.",
+        "qrCardLayoutInvalid": "The layout is not valid. Check the elements and try again.",
         "themeFontConversionUnavailable": "Fonts in TTF or OTF format can't be converted right now. Upload a WOFF2 file, or try again later.",
         "wishbookEmpty": "There are no messages yet, so there is nothing to put in a book.",
         "wishbookBookRendererUnavailable": "The book can't be created right now. Please try again later.",

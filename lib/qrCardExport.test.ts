@@ -50,7 +50,7 @@ describe('standaloneQrCardSvg', () => {
         const fetchMock = vi.fn().mockResolvedValue(respond('image/webp', new Uint8Array([9])));
         vi.stubGlobal('fetch', fetchMock);
 
-        const markup = await standaloneQrCardSvg(cardSvg(), null);
+        const markup = await standaloneQrCardSvg(cardSvg(), null, 'A6');
 
         expect(markup).toContain('width="1240"');
         expect(markup).toContain('height="1748"');
@@ -70,7 +70,7 @@ describe('standaloneQrCardSvg', () => {
                 ),
         );
 
-        const markup = await standaloneQrCardSvg(cardSvg(), FONT);
+        const markup = await standaloneQrCardSvg(cardSvg(), FONT, 'A6');
 
         expect(markup).toContain('@font-face');
         expect(markup).toContain('font-family:"theme-alegreya"');
@@ -78,11 +78,18 @@ describe('standaloneQrCardSvg', () => {
         expect(markup).not.toContain('/api/theme-fonts/');
     });
 
+    it('sizes the card for A5', async () => {
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValue(respond('image/webp', new Uint8Array([9]))));
+        const markup = await standaloneQrCardSvg(cardSvg(), null, 'A5');
+        expect(markup).toContain('width="1748"');
+        expect(markup).toContain('height="2480"');
+    });
+
     it("leaves the page's own card untouched", async () => {
         vi.stubGlobal('fetch', vi.fn().mockResolvedValue(respond('image/webp', new Uint8Array([9]))));
         const svg = cardSvg();
 
-        await standaloneQrCardSvg(svg, null);
+        await standaloneQrCardSvg(svg, null, 'A6');
 
         expect(svg.getAttribute('class')).toBe('block w-full');
         expect(svg.querySelector('image')?.getAttribute('href')).toBe('/api/qr-card-artwork/t1/1');
@@ -104,11 +111,18 @@ describe('selfContainedQrSvg', () => {
 
 describe('qrCardPdfBytes', () => {
     it('puts the PNG on one A6 page', async () => {
-        const pdf = await PDFDocument.load(await qrCardPdfBytes(bytes(PNG_BASE64)));
+        const pdf = await PDFDocument.load(await qrCardPdfBytes(bytes(PNG_BASE64), 'A6'));
 
         expect(pdf.getPageCount()).toBe(1);
         const { width, height } = pdf.getPage(0).getSize();
         expect(width).toBeCloseTo(297.64, 1);
         expect(height).toBeCloseTo(419.53, 1);
+    });
+
+    it('puts the PNG on one A5 page', async () => {
+        const pdf = await PDFDocument.load(await qrCardPdfBytes(bytes(PNG_BASE64), 'A5'));
+        const { width, height } = pdf.getPage(0).getSize();
+        expect(width).toBeCloseTo(419.53, 1);
+        expect(height).toBeCloseTo(595.28, 1);
     });
 });
