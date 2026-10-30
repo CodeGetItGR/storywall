@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { ThemeFontFace } from '@/components/event/ThemeFontFace';
 import { QrCardActions } from '@/components/qrCard/QrCardActions';
 import { QrCardPrintStyle } from '@/components/qrCard/QrCardPrintStyle';
+import { QrCardSizeControl } from '@/components/qrCard/QrCardSizeControl';
 import { QrCardSvg } from '@/components/qrCard/QrCardSvg';
 import { QrCardTemplateStrip } from '@/components/qrCard/QrCardTemplateStrip';
 import { QrCardTextFields } from '@/components/qrCard/QrCardTextFields';
@@ -49,7 +50,7 @@ export function QrCardDesigner({
                     className="block h-auto w-full"
                 />
             </div>
-            <QrCardPrintStyle />
+            <QrCardPrintStyle size={designer.size} />
             <ThemeFontFace font={designer.style.headingFont} />
 
             {/* Designs */}
@@ -66,6 +67,9 @@ export function QrCardDesigner({
 
             {/* Options */}
             {children}
+
+            {/* Size */}
+            <QrCardSizeControl sizes={designer.sizes} size={designer.size} onChangeAction={designer.handleSizeChange} />
 
             {/* Actions */}
             <QrCardActions exporter={exporter} />

@@ -3,15 +3,15 @@
 import * as Sentry from '@sentry/nextjs';
 import { useCallback, useRef, useState } from 'react';
 
-import type { EventThemeFontDto } from '@/lib/api/types';
+import type { EventThemeFontDto, QrCardSize } from '@/lib/api/types';
 import { downloadBlob } from '@/lib/download';
 import { qrCardFileName } from '@/lib/qrCard';
 import { qrCardPdfBytes, qrCardPng, standaloneQrCardSvg } from '@/lib/qrCardExport';
 
 export type QrCardExportFormat = 'png' | 'pdf';
 
-// Print, Save PNG and Save PDF for the card SVG behind svgRef. One save runs at a time.
-export function useQrCardExport({ font, title }: { font: EventThemeFontDto | null; title: string }) {
+// Print, Save PNG and Save PDF for the card SVG behind svgRef, at the chosen paper size. One save runs at a time.
+export function useQrCardExport({ font, title, size }: { font: EventThemeFontDto | null; title: string; size: QrCardSize }) {
     const svgRef = useRef<SVGSVGElement | null>(null);
     // Set synchronously: a fast double click starts two saves before busy re-renders.
     const running = useRef(false);
@@ -26,9 +26,11 @@ export function useQrCardExport({ font, title }: { font: EventThemeFontDto | nul
             setBusy(format);
             setFailed(false);
             try {
-                const png = await qrCardPng(await standaloneQrCardSvg(svg, font));
+                const png = await qrCardPng(await standaloneQrCardSvg(svg, font, size), size);
                 const file =
-                    format === 'png' ? png : new Blob([new Uint8Array(await qrCardPdfBytes(await png.arrayBuffer()))], { type: 'application/pdf' });
+                    format === 'png'
+                        ? png
+                        : new Blob([new Uint8Array(await qrCardPdfBytes(await png.arrayBuffer(), size))], { type: 'application/pdf' });
                 downloadBlob(file, qrCardFileName(title, format));
             } catch (error) {
                 Sentry.captureException(error);
@@ -38,7 +40,7 @@ export function useQrCardExport({ font, title }: { font: EventThemeFontDto | nul
                 setBusy(null);
             }
         },
-        [font, title],
+        [font, size, title],
     );
 
     const print = useCallback(() => window.print(), []);

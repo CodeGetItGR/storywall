@@ -11,15 +11,17 @@ import {
     buildQrCardTemplatePatchPayload,
     codeContrastRatio,
     draftFromQrCardTemplate,
+    qrCardArtworkFileError,
     type QrCardTemplateDraft,
     validateQrCardTemplateDraft,
 } from '@/lib/adminQrCards';
-import { illustrationFileError, themeFontOptions, toggleEventType } from '@/lib/adminThemePresets';
+import { themeFontOptions, toggleEventType } from '@/lib/adminThemePresets';
 import { ERROR_CODES, getErrorCode, isNotFoundError } from '@/lib/api/errors';
 import type { AdminQrCardTemplateDto, EventThemeFontDto, EventTypeConvention } from '@/lib/api/types';
 import { isHexColor } from '@/lib/eventTheme';
 import { resolveLocalizedText } from '@/lib/localizedText';
 import { QR_CARD_INK, type QrCardStyle } from '@/lib/qrCard';
+import { DEFAULT_QR_CARD_LAYOUT } from '@/lib/qrCardLayout';
 
 export type QrCardTemplateDrawerError = { kind: 'notFound' } | { kind: 'other'; error: unknown };
 export type QrCardTemplateAvailability = 'AVAILABLE' | 'ARCHIVED';
@@ -100,9 +102,18 @@ export function useQrCardTemplateDrawer({
             headingFont: previewFont,
             codeColor: isHexColor(draft.codeColor) ? draft.codeColor : QR_CARD_INK,
             centerLogo: draft.centerLogo,
+            layout: saved?.layout ?? DEFAULT_QR_CARD_LAYOUT,
+            // The preview never prints, so its sizes don't matter.
+            sizes: ['A6'],
         }),
         [draft, filePreviewUrl, previewFont, saved],
     );
+
+    const [layoutEditorOpen, setLayoutEditorOpen] = useState(false);
+    const openLayoutEditor = useCallback(() => setLayoutEditorOpen(true), []);
+    const closeLayoutEditor = useCallback(() => setLayoutEditorOpen(false), []);
+    // The editor saved the layout: the drawer's copy follows, so its preview shows it.
+    const handleLayoutSaved = useCallback((updated: AdminQrCardTemplateDto) => setSaved(updated), []);
 
     const handleFieldChange = useCallback((event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = event.currentTarget;
@@ -120,13 +131,13 @@ export function useQrCardTemplateDrawer({
         setDraft((current) => ({ ...current, archived: availability === 'ARCHIVED' }));
     }, []);
 
-    // Type and size only; the server checks the A6 shape and width (3111).
+    // Type and size only; the server checks the A6 shape and the 1748 px width (3111).
     const handleFileChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
         const next = event.currentTarget.files?.[0] ?? null;
         // Lets the same file be picked again after a refusal.
         event.currentTarget.value = '';
         if (!next) return;
-        const problem = illustrationFileError(next);
+        const problem = qrCardArtworkFileError(next);
         setFileError(problem);
         if (problem) return;
         setFile(next);
@@ -198,6 +209,11 @@ export function useQrCardTemplateDrawer({
         hasUsableFonts: fonts.data?.some((font) => !font.archived && font.url) ?? false,
         // A failed refetch over cached data still has a list to offer.
         fontsStatus: (fonts.isPending ? 'loading' : fonts.isError && !fonts.data ? 'error' : 'ready') as QrCardFontsStatus,
+        savedTemplate: saved,
+        layoutEditorOpen,
+        openLayoutEditor,
+        closeLayoutEditor,
+        handleLayoutSaved,
         isSaving: create.isPending || patch.isPending || upload.isPending,
         handleFieldChange,
         handleEventTypeChange,

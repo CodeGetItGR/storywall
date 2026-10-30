@@ -1003,6 +1003,17 @@ export interface EventThemeFontDto {
     url: string; // FE-origin path, /api/theme-fonts/<key>/<version>.woff2
 }
 
+// QR card layout (qr-card-layout-editor spec): boxes in A6 millimetres from the card's top-left corner.
+export type QrCardTextAlign = 'left' | 'center' | 'right';
+export interface QrCardLayoutDto {
+    title: { x: number; y: number; width: number; height: number; maxSize: number; align: QrCardTextAlign };
+    code: { x: number; y: number; size: number; panel: boolean; radius: number };
+    lines: { x: number; y: number; width: number; height: number; textSize: number; align: QrCardTextAlign };
+}
+
+// The paper sizes a card prints at. One SVG serves both: A5 is A6 drawn larger.
+export type QrCardSize = 'A6' | 'A5';
+
 // QR card templates (qr-card-templates-fe-integration.md): A6 card designs a host prints a QR on.
 export interface QrCardTemplateDto {
     id: string;
@@ -1012,6 +1023,8 @@ export interface QrCardTemplateDto {
     headingFont: EventThemeFontDto | null; // null = the card's own font
     codeColor: string; // #RRGGBB, at least 4.5:1 against white
     centerLogo: boolean;
+    layout: QrCardLayoutDto | null; // null = the default layout
+    sizes: QrCardSize[]; // ['A6'], or ['A6', 'A5'] when the artwork is wide enough
 }
 
 // GET /api/events/{eventId}/qr-card-templates. available: the event has QR cards (drafts included).
@@ -4459,6 +4472,8 @@ export interface AdminQrCardTemplateDto {
     headingFont: AdminThemeFontSummaryDto | null;
     codeColor: string;
     centerLogo: boolean;
+    layout: QrCardLayoutDto | null; // null = the default layout
+    artworkWidth: number | null; // px; null without artwork, or for artwork uploaded before A5 support
 }
 
 // POST /api/admin/qr-card-templates
@@ -4483,6 +4498,7 @@ export interface AdminQrCardTemplatePatchDto {
     clearHeadingFont?: boolean;
     codeColor?: string;
     centerLogo?: boolean;
+    layout?: QrCardLayoutDto; // a full layout replaces the stored one
 }
 
 // /api/admin/theme-fonts
