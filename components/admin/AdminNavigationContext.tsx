@@ -163,6 +163,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
 
 const AdminNavigationContext = createContext<
     | {
+          role: PlatformRole;
           tabs: AdminTabItem[];
           tab: AdminTab;
           activeHash: string;
@@ -285,6 +286,7 @@ export function AdminNavigationProvider({ children, role = 'ADMIN' }: { children
 
     const value = useMemo(
         () => ({
+            role,
             tabs,
             tab,
             activeHash: TAB_TO_HASH[tab],
@@ -292,7 +294,7 @@ export function AdminNavigationProvider({ children, role = 'ADMIN' }: { children
             setTab,
             sendTo,
         }),
-        [focus, sendTo, setTab, tab, tabs],
+        [focus, role, sendTo, setTab, tab, tabs],
     );
 
     return <AdminNavigationContext.Provider value={value}>{children}</AdminNavigationContext.Provider>;

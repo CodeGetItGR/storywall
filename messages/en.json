@@ -2938,6 +2938,7 @@
         },
         "checkingAccess": "Checking admin access...",
         "eyebrow": "Platform admin",
+        "eyebrowMarketing": "Marketing team",
         "title": "Plan operations",
         "subtitle": "Manage catalog tiers, module availability, and plan assignment without a deploy.",
         "save": "Save",

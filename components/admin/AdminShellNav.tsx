@@ -7,6 +7,7 @@ import { type MouseEvent } from 'react';
 import { type AdminTab, useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { usePendingApplicationsCount } from '@/hooks/useAdminPartnerApplications';
+import { canOpenAdminTab } from '@/lib/adminAccess';
 import { cn } from '@/lib/utils';
 
 const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operations'> = {
@@ -57,9 +58,9 @@ export function AdminShellNav({
     onNavigateAction?: () => void;
 }) {
     const t = useTranslations('AdminPage');
-    const { tab, tabs, setTab } = useAdminNavigation();
+    const { role, tab, tabs, setTab } = useAdminNavigation();
     // Only admins see Partner applications; the count would 403 for anyone else.
-    const pendingApplications = usePendingApplicationsCount(tabs.some((item) => item.key === 'partnerApplications'));
+    const pendingApplications = usePendingApplicationsCount(canOpenAdminTab(role, 'partnerApplications'));
 
     function handleNavClick(event: MouseEvent<HTMLButtonElement>) {
         const nextTab = event.currentTarget.dataset.tab as Parameters<typeof setTab>[0] | undefined;
@@ -87,7 +88,9 @@ export function AdminShellNav({
                 </div>
                 <div className="min-w-0 leading-tight">
                     <p className="truncate text-[14.5px] font-extrabold tracking-tight text-ink">{t('layout.console')}</p>
-                    <p className="text-[10px] font-semibold tracking-[0.06em] text-ink-faint uppercase">{t('eyebrow')}</p>
+                    <p className="text-[10px] font-semibold tracking-[0.06em] text-ink-faint uppercase">
+                        {role === 'MARKETING' ? t('eyebrowMarketing') : t('eyebrow')}
+                    </p>
                 </div>
             </div>
 
