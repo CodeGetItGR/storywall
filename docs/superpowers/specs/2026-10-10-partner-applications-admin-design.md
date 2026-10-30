@@ -123,8 +123,8 @@ Spring does the mapping, so the frontend only sends `{ founding }`.
 | `contactPersonName` | `name` |
 | `contactPhone` | `phone`, normalized to E.164 when it parses. Otherwise the raw value goes into `notes`. |
 | `websiteUrl` | `link` when it's an `https://` URL |
-| `notes` | `Instagram: @handle` when `link` is a handle. Plus `Country: <code>` when the country is outside the VIES list. Plus `Applied via <utmSource>` when set. Plus `Role: <role>` (the `PartnerRole` the applicant picked). |
-| `countryCode` | The VIES code when the country is in the EU (`GR` → `EL`). Otherwise null. |
+| `notes` | `Instagram: @handle` when `link` is a handle. Plus `Country: <code>`. Plus `Applied via <utmSource>` when set. Plus `Role: <role>` (the `PartnerRole` the applicant picked). |
+| `countryCode` | Null. It is the VAT member state and the database requires it together with a VAT number (`collaborators_vat_pair_check`), which an application doesn't have. The admin sets both in Collaborations. |
 | `founding` | The dialog's checkbox |
 | `status` | `ACTIVE` |
 
