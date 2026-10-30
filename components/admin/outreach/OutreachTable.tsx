@@ -27,7 +27,7 @@ export function OutreachTable({
     const format = useOutreachFormat();
 
     return (
-        <table aria-label={t('table.label')} className="w-full min-w-[1040px] border-collapse text-sm">
+        <table aria-label={t('table.label')} className="w-full min-w-[880px] border-collapse text-sm">
             {/* Columns */}
             <thead>
                 <tr className="border-b border-border text-left text-[11px] text-ink-faint">
@@ -36,7 +36,8 @@ export function OutreachTable({
                     <OutreachSortHeader field="kind" label={t('table.type')} sort={sort} onSortAction={onSortAction} />
                     <OutreachSortHeader field="city" label={t('table.city')} sort={sort} onSortAction={onSortAction} />
                     <OutreachSortHeader field="status" label={t('table.status')} sort={sort} onSortAction={onSortAction} />
-                    <th scope="col" className="px-3 py-2.5 font-bold tracking-wide uppercase">
+                    {/* Contact details are in the drawer too, so the column waits for a wide screen */}
+                    <th scope="col" className="hidden px-3 py-2.5 font-bold tracking-wide uppercase 2xl:table-cell">
                         {t('table.contact')}
                     </th>
                     <OutreachSortHeader field="lastContactOn" label={t('table.lastContact')} sort={sort} onSortAction={onSortAction} />
@@ -73,7 +74,7 @@ export function OutreachTable({
                             <OutreachStatusPill status={row.status} />
                             {row.outcome && <span className="mt-1 block truncate text-xs text-ink-muted">{row.outcome}</span>}
                         </td>
-                        <td className="max-w-[12rem] px-3 py-2.5">
+                        <td className="hidden max-w-[12rem] px-3 py-2.5 2xl:table-cell">
                             <OutreachContactCell row={row} />
                         </td>
                         <td className="px-3 py-2.5 whitespace-nowrap text-ink-muted tabular-nums">{format.day(row.lastContactOn)}</td>
