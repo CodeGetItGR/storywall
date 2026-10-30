@@ -136,7 +136,11 @@ export function registerOverlayHistory(layer: OverlayLayer): OverlayHistoryRegis
 
     // Mark the entry underneath the overlay without changing its URL. This lets
     // us skip that same-page entry later when a close button dismisses the UI.
-    window.history.replaceState({ ...currentState, [OVERLAY_ANCHOR_KEY]: id }, '', openedHref);
+    // Next reloads the page on Back to an entry that has state but no `__NA`,
+    // and a plain <a href="#…"> leaves state null, which Next would not fill in
+    // here. With no tree stored, Next restores the entry from its current one,
+    // which is this same page.
+    window.history.replaceState({ ...currentState, __NA: true, [OVERLAY_ANCHOR_KEY]: id }, '', openedHref);
     window.history.pushState(
         {
             ...currentState,
