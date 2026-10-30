@@ -2717,6 +2717,64 @@
         }
     },
     "AdminPage": {
+        "partnerApplications": {
+            "title": "Αιτήσεις",
+            "loading": "Φόρτωση αιτήσεων…",
+            "empty": "Δεν υπάρχουν αιτήσεις.",
+            "filterLabel": "Κατάσταση",
+            "filter": {
+                "PENDING": "Σε αναμονή",
+                "APPROVED": "Εγκρίθηκαν",
+                "DECLINED": "Απορρίφθηκαν",
+                "all": "Όλες"
+            },
+            "status": {
+                "PENDING": "Σε αναμονή",
+                "APPROVED": "Εγκρίθηκε",
+                "DECLINED": "Απορρίφθηκε"
+            },
+            "columns": {
+                "received": "Λήψη",
+                "business": "Επιχείρηση",
+                "role": "Ρόλος",
+                "country": "Χώρα",
+                "source": "Πηγή",
+                "status": "Κατάσταση"
+            },
+            "count": "{count, plural, one {# αίτηση} other {# αιτήσεις}}",
+            "back": "Όλες οι αιτήσεις",
+            "receivedAt": "Λήψη {date}",
+            "fields": {
+                "name": "Όνομα",
+                "email": "Email",
+                "phone": "Τηλέφωνο",
+                "link": "Ιστότοπος ή Instagram",
+                "role": "Ρόλος",
+                "country": "Χώρα",
+                "language": "Γλώσσα",
+                "source": "Πηγή"
+            },
+            "languages": {
+                "el": "Ελληνικά",
+                "en": "Αγγλικά"
+            },
+            "decidedBy": "{status} από {email} · {date}",
+            "decidedByUnknown": "{status} · {date}",
+            "reasonSent": "Αιτιολογία που στάλθηκε",
+            "noReason": "Χωρίς αιτιολογία. Στάλθηκε το γενικό μήνυμα.",
+            "openPartner": "Άνοιγμα συνεργάτη",
+            "approve": "Έγκριση",
+            "decline": "Απόρριψη",
+            "cancel": "Άκυρο",
+            "approveTitle": "Έγκριση {name};",
+            "approveBody": "Θα δημιουργηθεί ο συνεργάτης. Μετά ορίζετε κωδικό και ποσοστά.",
+            "foundingLabel": "Ιδρυτικός συνεργάτης ({left} από {total} θέσεις ελεύθερες)",
+            "foundingNone": "Δεν υπάρχουν άλλες ιδρυτικές θέσεις",
+            "declineTitle": "Απόρριψη {name};",
+            "reasonLabel": "Αιτιολογία (στέλνεται στον αιτούντα)",
+            "reasonHelp": "Αφήστε το κενό για να σταλεί ένα σύντομο γενικό μήνυμα.",
+            "openExistingPartner": "Άνοιγμα αυτού του συνεργάτη"
+        },
         "visitors": {
             "title": "Επισκέπτες",
             "cookiesNote": "Μετρά μόνο όσους επισκέπτες δέχτηκαν τα cookies ανάλυσης.",

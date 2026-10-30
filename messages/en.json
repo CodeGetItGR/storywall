@@ -2595,6 +2595,64 @@
         }
     },
     "AdminPage": {
+        "partnerApplications": {
+            "title": "Applications",
+            "loading": "Loading applications…",
+            "empty": "No applications.",
+            "filterLabel": "Status",
+            "filter": {
+                "PENDING": "Pending",
+                "APPROVED": "Approved",
+                "DECLINED": "Declined",
+                "all": "All"
+            },
+            "status": {
+                "PENDING": "Pending",
+                "APPROVED": "Approved",
+                "DECLINED": "Declined"
+            },
+            "columns": {
+                "received": "Received",
+                "business": "Business",
+                "role": "Role",
+                "country": "Country",
+                "source": "Source",
+                "status": "Status"
+            },
+            "count": "{count, plural, one {# application} other {# applications}}",
+            "back": "All applications",
+            "receivedAt": "Received {date}",
+            "fields": {
+                "name": "Name",
+                "email": "Email",
+                "phone": "Phone",
+                "link": "Website or Instagram",
+                "role": "Role",
+                "country": "Country",
+                "language": "Language",
+                "source": "Source"
+            },
+            "languages": {
+                "el": "Greek",
+                "en": "English"
+            },
+            "decidedBy": "{status} by {email} · {date}",
+            "decidedByUnknown": "{status} · {date}",
+            "reasonSent": "Reason sent",
+            "noReason": "No reason. The generic message was sent.",
+            "openPartner": "Open partner",
+            "approve": "Approve",
+            "decline": "Decline",
+            "cancel": "Cancel",
+            "approveTitle": "Approve {name}?",
+            "approveBody": "This creates the partner. You'll set their code and rates next.",
+            "foundingLabel": "Founding partner ({left} of {total} spots left)",
+            "foundingNone": "No founding spots left",
+            "declineTitle": "Decline {name}?",
+            "reasonLabel": "Reason (sent to the applicant)",
+            "reasonHelp": "Leave empty to send a short generic message.",
+            "openExistingPartner": "Open that partner"
+        },
         "visitors": {
             "title": "Visitors",
             "cookiesNote": "Counts only visitors who allowed analytics cookies.",
