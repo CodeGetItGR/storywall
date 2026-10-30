@@ -1,6 +1,7 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
+import { useCallback, useState } from 'react';
 
 import { usePartnerApplication } from '@/hooks/useAdminPartnerApplications';
 import { formatCollaborationsHash } from '@/lib/adminCollaborationsRouting';
@@ -12,18 +13,21 @@ export function usePartnerApplicationDetail(applicationId: string) {
     const locale = useLocale();
     const query = usePartnerApplication(applicationId);
     const application = query.data ?? null;
+    const [alreadyDecided, setAlreadyDecided] = useState(false);
+    const handleNotPending = useCallback(() => setAlreadyDecided(true), []);
 
     let decision: string | null = null;
     if (application && application.status !== 'PENDING' && application.decidedAt) {
-        const status = t(`status.${application.status}`);
         const date = formatAdminDateTime(locale, application.decidedAt);
         decision = application.decidedByEmail
-            ? t('decidedBy', { status, email: application.decidedByEmail, date })
-            : t('decidedByUnknown', { status, date });
+            ? t('decidedBy', { email: application.decidedByEmail, date })
+            : t('decidedByUnknown', { date });
     }
 
     return {
         application,
+        alreadyDecided,
+        handleNotPending,
         isLoading: query.isLoading,
         error: query.error,
         receivedAt: application ? formatAdminDateTime(locale, application.createdAt) : '',

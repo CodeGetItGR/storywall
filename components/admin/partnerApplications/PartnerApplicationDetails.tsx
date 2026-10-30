@@ -21,7 +21,7 @@ export function PartnerApplicationDetails({
     source,
 }: {
     application: AdminPartnerApplicationDto;
-    linkHref: string;
+    linkHref: string | null;
     source: string | null;
 }) {
     const t = useTranslations('AdminPage.partnerApplications');
@@ -46,9 +46,13 @@ export function PartnerApplicationDetails({
                 )}
             </Row>
             <Row label={t('fields.link')}>
-                <a href={linkHref} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                    {application.link}
-                </a>
+                {linkHref ? (
+                    <a href={linkHref} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                        {application.link}
+                    </a>
+                ) : (
+                    '—'
+                )}
             </Row>
             <Row label={t('fields.role')}>{tRoles(application.role)}</Row>
             <Row label={t('fields.country')}>

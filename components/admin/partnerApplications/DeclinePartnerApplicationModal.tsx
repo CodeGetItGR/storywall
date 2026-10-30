@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
+import { adminInputClass } from '@/components/admin/AdminField';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { DECLINE_REASON_MAX, type usePartnerApplicationDecline } from '@/hooks/usePartnerApplicationDecline';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
@@ -17,6 +18,7 @@ export function DeclinePartnerApplicationModal({
 }) {
     const t = useTranslations('AdminPage');
     const reasonId = `decline-reason-${applicationId}`;
+    const helpId = `${reasonId}-help`;
 
     return (
         <ConfirmActionModal
@@ -35,9 +37,10 @@ export function DeclinePartnerApplicationModal({
                         onChange={decline.handleReasonChange}
                         rows={4}
                         maxLength={DECLINE_REASON_MAX}
-                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-ink"
+                        aria-describedby={helpId}
+                        className={adminInputClass('resize-y')}
                     />
-                    <p className="text-xs text-ink-muted">{t('partnerApplications.reasonHelp')}</p>
+                    <p id={helpId} className="text-xs text-ink-muted">{t('partnerApplications.reasonHelp')}</p>
 
                     {/* Error */}
                     {decline.error && <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(decline.error)}`)}</p>}

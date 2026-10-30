@@ -1,5 +1,6 @@
 'use client';
 
+import { Check } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
@@ -33,19 +34,21 @@ export function ApprovePartnerApplicationModal({
                             onChange={approve.handleFoundingChange}
                             className="h-4 w-4 accent-primary"
                         />
-                        {approve.foundingDisabled
-                            ? t('partnerApplications.foundingNone')
-                            : t('partnerApplications.foundingLabel', { left: approve.spotsLeft ?? 0, total: approve.spotsTotal ?? 0 })}
+                        {approve.foundingLabel === 'unknown' && t('partnerApplications.foundingPlain')}
+                        {approve.foundingLabel === 'none' && t('partnerApplications.foundingNone')}
+                        {approve.foundingLabel === 'available' &&
+                            t('partnerApplications.foundingLabel', { left: approve.spotsLeft ?? 0, total: approve.spotsTotal ?? 0 })}
                     </label>
+                    {approve.summaryFailed && <p className="text-sm text-status-danger">{t('partnerApplications.foundingError')}</p>}
 
                     {/* Error */}
                     {approve.errorMessageKey && (
                         <p className="text-sm text-status-danger">
                             {t(`errors.${approve.errorMessageKey}`)}{' '}
                             {approve.existingPartnerHash && (
-                                <a href={approve.existingPartnerHash} className="font-semibold underline">
+                                <button type="button" onClick={approve.openExistingPartner} className="font-semibold underline">
                                     {t('partnerApplications.openExistingPartner')}
-                                </a>
+                                </button>
                             )}
                         </p>
                     )}
@@ -54,6 +57,9 @@ export function ApprovePartnerApplicationModal({
             cancelLabel={t('partnerApplications.cancel')}
             confirmLabel={t('partnerApplications.approve')}
             isConfirming={approve.isPending}
+            confirmDisabled={approve.summaryLoading}
+            iconTone="neutral"
+            icon={<Check className="h-5 w-5" aria-hidden="true" />}
             onConfirmAction={approve.confirm}
             tone="default"
             size="md"

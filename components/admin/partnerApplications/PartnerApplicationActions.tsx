@@ -9,10 +9,16 @@ import { usePartnerApplicationApprove } from '@/hooks/usePartnerApplicationAppro
 import { usePartnerApplicationDecline } from '@/hooks/usePartnerApplicationDecline';
 import type { AdminPartnerApplicationDto } from '@/lib/api/types';
 
-export function PartnerApplicationActions({ application }: { application: AdminPartnerApplicationDto }) {
+export function PartnerApplicationActions({
+    application,
+    onNotPendingAction,
+}: {
+    application: AdminPartnerApplicationDto;
+    onNotPendingAction: () => void;
+}) {
     const t = useTranslations('AdminPage.partnerApplications');
-    const approve = usePartnerApplicationApprove(application.id);
-    const decline = usePartnerApplicationDecline(application.id);
+    const approve = usePartnerApplicationApprove(application.id, onNotPendingAction);
+    const decline = usePartnerApplicationDecline(application.id, onNotPendingAction);
 
     return (
         <section className="flex flex-wrap items-center gap-2 border-t border-border pt-5">

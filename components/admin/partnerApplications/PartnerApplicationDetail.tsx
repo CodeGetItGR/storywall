@@ -32,7 +32,14 @@ export function PartnerApplicationDetail({
             {detail.isLoading && <LoadingState label={t('partnerApplications.loading')} className="justify-start py-6" />}
             {Boolean(detail.error) && <p className="py-6 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(detail.error)}`)}</p>}
 
-            {application && detail.linkHref && (
+            {/* Already decided */}
+            {detail.alreadyDecided && (
+                <p role="status" className="text-sm text-ink-muted">
+                    {t('errors.applicationNotPending')}
+                </p>
+            )}
+
+            {application && (
                 <>
                     {/* Header */}
                     <header className="space-y-2">
@@ -52,7 +59,7 @@ export function PartnerApplicationDetail({
                     )}
 
                     {/* Actions */}
-                    {application.status === 'PENDING' && <PartnerApplicationActions application={application} />}
+                    {application.status === 'PENDING' && <PartnerApplicationActions application={application} onNotPendingAction={detail.handleNotPending} />}
                 </>
             )}
         </div>

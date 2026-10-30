@@ -60,7 +60,7 @@ describe('usePartnerApplicationApprove', () => {
         await waitFor(() => expect(result.current.foundingDisabled).toBe(true));
         expect(result.current.founding).toBe(false);
         expect(result.current.error).toEqual({ kind: 'foundingFull' });
-        expect(result.current.errorMessageKey).toBe('foundingSpotsFull');
+        expect(result.current.errorMessageKey).toBeNull();
         expect(result.current.isOpen).toBe(true);
     });
 
@@ -77,5 +77,47 @@ describe('usePartnerApplicationApprove', () => {
         expect(result.current.errorMessageKey).toBe('collaboratorEmailExists');
         expect(result.current.existingPartnerHash).toBe('#collaborations/c-9');
         expect(mocks.push).not.toHaveBeenCalled();
+    });
+
+    it('closes the dialog and tells the page when the application was already decided', async () => {
+        mocks.post.mockRejectedValue(new ApiError(409, { status: 409, errorCode: 5189 }));
+        const onNotPending = vi.fn();
+        const { result } = renderHook(() => usePartnerApplicationApprove('a-1', onNotPending), { wrapper });
+
+        act(() => result.current.open());
+        await act(async () => {
+            await result.current.confirm();
+        });
+
+        expect(result.current.isOpen).toBe(false);
+        expect(onNotPending).toHaveBeenCalledTimes(1);
+        expect(mocks.push).not.toHaveBeenCalled();
+    });
+
+    it('keeps confirm disabled and the box plain until the spots count loads', async () => {
+        mocks.get.mockReturnValue(new Promise(() => {}));
+        const { result } = renderHook(() => usePartnerApplicationApprove('a-1'), { wrapper });
+
+        act(() => result.current.open());
+
+        await waitFor(() => expect(result.current.summaryLoading).toBe(true));
+        expect(result.current.foundingLabel).toBe('unknown');
+        expect(result.current.foundingDisabled).toBe(true);
+    });
+
+    it('navigates to the existing partner after closing the dialog', async () => {
+        mocks.post.mockRejectedValue(new ApiError(409, { status: 409, errorCode: 5191, details: { collaboratorId: 'c-9' } }));
+        const { result } = renderHook(() => usePartnerApplicationApprove('a-1'), { wrapper });
+
+        act(() => result.current.open());
+        await act(async () => {
+            await result.current.confirm();
+        });
+        await waitFor(() => expect(result.current.existingPartnerHash).toBe('#collaborations/c-9'));
+
+        act(() => result.current.openExistingPartner());
+
+        expect(result.current.isOpen).toBe(false);
+        expect(mocks.push).toHaveBeenCalledWith('#collaborations/c-9');
     });
 });

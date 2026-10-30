@@ -1,8 +1,10 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback, useEffect, useState } from 'react';
 
 import { usePartnerApplications } from '@/hooks/useAdminPartnerApplications';
+import { APPLICATION_STATUS_FILTERS } from '@/lib/adminPartnerApplications';
 import { formatPartnerApplicationsHash, parsePartnerApplicationsHash } from '@/lib/adminPartnerApplicationsRouting';
 import type { PartnerApplicationStatus } from '@/lib/api/types';
 import { pushPageEntry } from '@/lib/overlayHistory';
@@ -13,6 +15,7 @@ function currentApplicationId(): string | null {
 
 // The list's filter and page live here, so they survive a trip to a detail page and back.
 export function usePartnerApplicationsPanel() {
+    const t = useTranslations('AdminPage.partnerApplications');
     const [status, setStatus] = useState<PartnerApplicationStatus | null>('PENDING');
     const [page, setPage] = useState(0);
     const [selectedId, setSelectedId] = useState<string | null>(currentApplicationId);
@@ -39,7 +42,10 @@ export function usePartnerApplicationsPanel() {
         window.dispatchEvent(new HashChangeEvent('hashchange'));
     }, []);
 
+    const filterOptions = APPLICATION_STATUS_FILTERS.map((value) => ({ value: value ?? 'all', label: t(`filter.${value ?? 'all'}`) }));
+
     return {
+        filterOptions,
         status,
         handleStatusChange,
         page,

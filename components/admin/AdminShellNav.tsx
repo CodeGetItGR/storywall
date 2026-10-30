@@ -117,7 +117,8 @@ export function AdminShellNav({
                                         {/* Pending applications */}
                                         {key === 'partnerApplications' && pendingApplications > 0 && (
                                             <span className="ml-auto rounded-full bg-status-warn-wash px-1.5 font-mono text-[11px] font-bold text-status-warn tabular-nums">
-                                                {pendingApplications}
+                                                <span aria-hidden="true">{pendingApplications}</span>
+                                                <span className="sr-only">{t('layout.pendingCount', { count: pendingApplications })}</span>
                                             </span>
                                         )}
                                     </button>

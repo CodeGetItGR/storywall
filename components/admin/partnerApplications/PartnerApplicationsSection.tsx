@@ -8,16 +8,11 @@ import { PartnerApplicationDetail } from '@/components/admin/partnerApplications
 import { PartnerApplicationsTable } from '@/components/admin/partnerApplications/PartnerApplicationsTable';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { usePartnerApplicationsPanel } from '@/hooks/usePartnerApplicationsPanel';
-import { APPLICATION_STATUS_FILTERS } from '@/lib/adminPartnerApplications';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 
 export function PartnerApplicationsSection() {
     const t = useTranslations('AdminPage');
     const panel = usePartnerApplicationsPanel();
-    const filterOptions = APPLICATION_STATUS_FILTERS.map((value) => ({
-        value: value ?? 'all',
-        label: t(`partnerApplications.filter.${value ?? 'all'}`),
-    }));
 
     return (
         <div className="mx-auto max-w-6xl px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
@@ -33,7 +28,7 @@ export function PartnerApplicationsSection() {
                         <h1 className="text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">{t('partnerApplications.title')}</h1>
                         <FunnelSegmented
                             label={t('partnerApplications.filterLabel')}
-                            options={filterOptions}
+                            options={panel.filterOptions}
                             value={panel.status ?? 'all'}
                             onChangeAction={panel.handleStatusChange}
                         />

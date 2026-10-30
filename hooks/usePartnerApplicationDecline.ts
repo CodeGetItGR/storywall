@@ -8,7 +8,7 @@ import { applicationErrorKind } from '@/lib/adminPartnerApplications';
 
 export const DECLINE_REASON_MAX = 1000;
 
-export function usePartnerApplicationDecline(applicationId: string) {
+export function usePartnerApplicationDecline(applicationId: string, onNotPending?: () => void) {
     const queryClient = useQueryClient();
     const decline = useDeclinePartnerApplication();
     const [isOpen, setIsOpen] = useState(false);
@@ -16,6 +16,7 @@ export function usePartnerApplicationDecline(applicationId: string) {
 
     const open = useCallback(() => {
         decline.reset();
+        setReason('');
         setIsOpen(true);
     }, [decline]);
 
@@ -31,10 +32,11 @@ export function usePartnerApplicationDecline(applicationId: string) {
         } catch (caught) {
             if (applicationErrorKind(caught)?.kind === 'notPending') {
                 setIsOpen(false);
+                onNotPending?.();
                 await queryClient.invalidateQueries({ queryKey: partnerApplicationKeys.all });
             }
         }
-    }, [applicationId, decline, queryClient, reason]);
+    }, [applicationId, decline, onNotPending, queryClient, reason]);
 
     return { isOpen, open, close, confirm, reason, handleReasonChange, isPending: decline.isPending, error: decline.error };
 }
