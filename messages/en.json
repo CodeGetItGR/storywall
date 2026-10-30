@@ -3011,7 +3011,233 @@
             "siteNotices": "Site notices",
             "phones": "Phones",
             "campaigns": "Campaigns",
-            "campaignOverview": "Campaign overview"
+            "campaignOverview": "Campaign overview",
+            "outreach": "Partner outreach"
+        },
+        "outreach": {
+            "title": "Partner outreach",
+            "loading": "Loading outreach…",
+            "copied": "Copied",
+            "status": {
+                "NEW": "To contact",
+                "EMAILED": "Emailed",
+                "FOLLOWED_UP": "Followed up",
+                "REPLIED": "Replied",
+                "MEETING": "Meeting set",
+                "PARTNER": "Partner",
+                "DECLINED": "Not interested",
+                "NO_RESPONSE": "No response"
+            },
+            "priority": {
+                "A": "A · Top priority",
+                "B": "B · Medium priority",
+                "C": "C · Low priority"
+            },
+            "types": {
+                "VENUES": "Venues",
+                "PLANNERS": "Planners",
+                "PHOTO_VIDEO": "Photo & video",
+                "SHOPS_DECOR": "Shops & decor"
+            },
+            "summary": {
+                "label": "Outreach at a glance",
+                "prospects": "Businesses",
+                "topPriority": "{count} top priority",
+                "contacted": "Contacted",
+                "replied": "Replied",
+                "replyRate": "{rate} reply rate",
+                "meetings": "Meetings",
+                "partners": "Partners",
+                "followupsDue": "Follow-ups due",
+                "followupsDueHint": "See the list below"
+            },
+            "funnel": {
+                "title": "From found to partner",
+                "caption": "Of the {total, plural, one {# business} other {# businesses}} we found, {contacted} {contacted, plural, one {has} other {have}} been emailed so far.",
+                "captionEmpty": "No businesses yet. Add one to get started.",
+                "researched": "Found",
+                "contacted": "Contacted",
+                "replied": "Replied",
+                "meetings": "Meeting",
+                "partners": "Partner"
+            },
+            "typeMix": {
+                "title": "Where each type stands",
+                "caption": "{type} have the most businesses still to contact: {count}.",
+                "captionDone": "Every business has been contacted.",
+                "barLabel": "{type}: {count, plural, one {# business} other {# businesses}}"
+            },
+            "cities": {
+                "title": "Cities",
+                "caption": "Each bar shows how much of that city we have contacted.",
+                "empty": "No cities yet.",
+                "contactedOf": "{contacted} of {total} contacted"
+            },
+            "due": {
+                "title": "Follow-ups due",
+                "empty": "Nothing due today. Pick a top-priority business and send their email.",
+                "dueOn": "Due {date}"
+            },
+            "filters": {
+                "search": "Search",
+                "searchPlaceholder": "Search by name, area or email",
+                "type": "Type",
+                "allTypes": "All types",
+                "city": "City",
+                "allCities": "All cities",
+                "status": "Status",
+                "allStatuses": "All statuses",
+                "priority": "Priority",
+                "allPriorities": "All priorities",
+                "dueOnly": "Follow-ups due",
+                "clear": "Clear filters"
+            },
+            "table": {
+                "title": "Businesses",
+                "label": "Businesses to approach",
+                "priority": "Pri",
+                "business": "Business",
+                "type": "Type",
+                "city": "City",
+                "status": "Status",
+                "contact": "Contact",
+                "lastContact": "Last contact",
+                "nextStep": "Next step",
+                "sendEmail": "Send the first email",
+                "followUpDue": "Follow up now · {date}",
+                "followUpOn": "Follow up {date}",
+                "empty": "No businesses yet. Add the first one with Add business.",
+                "emptyFiltered": "No businesses match these filters.",
+                "count": "{count, plural, one {# business} other {# businesses}}"
+            },
+            "reach": {
+                "title": "How to reach them",
+                "none": "No contact details yet. Add them when you find them.",
+                "email": "Email",
+                "phone": "Phone",
+                "website": "Website",
+                "instagram": "Instagram",
+                "contactForm": "Contact form",
+                "copy": "Copy"
+            },
+            "statusHelp": {
+                "trigger": "What do the statuses mean?",
+                "title": "What each status means",
+                "NEW": "We found them but haven't emailed yet.",
+                "EMAILED": "You sent the first email.",
+                "FOLLOWED_UP": "You sent a reminder because they didn't reply.",
+                "REPLIED": "They wrote back.",
+                "MEETING": "A call or meeting is booked.",
+                "PARTNER": "They said yes to working with us.",
+                "DECLINED": "They said no.",
+                "NO_RESPONSE": "No reply, even after the reminder."
+            },
+            "guide": {
+                "title": "How this works",
+                "dismiss": "Hide this",
+                "gotIt": "Got it",
+                "pick": {
+                    "title": "Pick a business",
+                    "body": "Start with top priority (A) businesses."
+                },
+                "send": {
+                    "title": "Send the email",
+                    "body": "Copy the ready email, add your name and send it from your inbox."
+                },
+                "update": {
+                    "title": "Update the status",
+                    "body": "Press the button for the next step, so we remind you to follow up."
+                }
+            },
+            "tips": {
+                "label": "What to do now",
+                "new": "Copy the email below, replace {placeholder} with your name and send it. Then press Mark as emailed.",
+                "waiting": "We'll remind you on {date}. If they haven't replied by then, a short, friendly follow-up works best.",
+                "waitingNoDate": "Set a follow-up date so we can remind you. A short, friendly follow-up works best.",
+                "replied": "They replied. Suggest a 15-minute call, or send them the demo link.",
+                "meeting": "After the meeting, add what you agreed in a note.",
+                "partner": "Welcome them, and ask them to apply at storywall.gr/partners.",
+                "closed": "Add a note with the reason."
+            },
+            "nextStep": {
+                "EMAILED": "Mark as emailed",
+                "FOLLOWED_UP": "Mark followed up",
+                "REPLIED": "Log their reply",
+                "MEETING": "Mark meeting set",
+                "PARTNER": "Mark as partner"
+            },
+            "progress": {
+                "title": "Where it stands",
+                "status": "Status",
+                "nextFollowup": "Next follow-up",
+                "nextFollowupHint": "We remind you on this day.",
+                "lastContact": "Last contact",
+                "contactPerson": "Contact person",
+                "outcome": "Outcome",
+                "outcomeHint": "One line, e.g. \"Asked for prices\".",
+                "discard": "Discard",
+                "save": "Save changes"
+            },
+            "email": {
+                "title": "Cold email",
+                "language": "Email language",
+                "greek": "Ελληνικά",
+                "english": "English",
+                "subject": "Subject",
+                "body": "Email",
+                "placeholderHint": "Replace {placeholder} before sending.",
+                "copySubject": "Copy subject",
+                "copyBody": "Copy email",
+                "copyAddress": "Copy address",
+                "discard": "Discard",
+                "save": "Save email"
+            },
+            "why": {
+                "title": "Why this business",
+                "empty": "No notes from the research yet.",
+                "credibility": "Reputation",
+                "fit": "Why they fit",
+                "sources": "Sources"
+            },
+            "notes": {
+                "title": "Notes & activity",
+                "add": "Add note",
+                "placeholder": "What happened? E.g. \"Called, they want a demo next week.\"",
+                "empty": "No notes yet.",
+                "byline": "{author} · {date}"
+            },
+            "remove": {
+                "action": "Remove business",
+                "confirmBody": "Remove this business and its notes?",
+                "keep": "Keep",
+                "confirm": "Yes, remove"
+            },
+            "drawer": {
+                "close": "Close",
+                "loadingTitle": "Business"
+            },
+            "add": {
+                "action": "Add business",
+                "title": "Add a business",
+                "close": "Close",
+                "name": "Business name",
+                "kind": "Kind",
+                "kindPlaceholder": "Choose a kind",
+                "subcategory": "Category",
+                "subcategoryHint": "E.g. \"Wedding venue\" or \"Florist\".",
+                "city": "City",
+                "area": "Area",
+                "priority": "Priority",
+                "duplicate": "We already have this business.",
+                "openExisting": "Open it",
+                "cancel": "Cancel",
+                "submit": "Add business",
+                "errors": {
+                    "required": "Fill this in.",
+                    "emailInvalid": "Check the email address.",
+                    "linkInvalid": "Enter a web address, e.g. example.gr."
+                }
+            }
         },
         "demoEvents": {
             "title": "Demo events",

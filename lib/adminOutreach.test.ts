@@ -5,6 +5,7 @@ import {
     EMPTY_PROSPECT_DRAFT,
     formatOutreachDay,
     instagramHandle,
+    isEmailDraftChanged,
     linkLabel,
     nextOutreachStatus,
     OUTREACH_STATUSES,
@@ -14,11 +15,14 @@ import {
     outreachSortParam,
     outreachStatusSegments,
     outreachTip,
+    progressPatch,
     prospectDraftErrors,
     reachChannels,
     safeHttpUrl,
     todayInAthens,
+    toEmailDraft,
     toggleOutreachSort,
+    toProgressDraft,
     toProspectCreateRequest,
     typeWithMostToContact,
 } from '@/lib/adminOutreach';
@@ -219,5 +223,40 @@ describe('add a business', () => {
         expect(duplicateProspectId(new ApiError(409, { status: 409, errorCode: 5001, details: { existingId: 'p-9' } }))).toBe('p-9');
         expect(duplicateProspectId(new ApiError(409, {}))).toBeNull();
         expect(duplicateProspectId(new ApiError(400, {}))).toBeUndefined();
+    });
+});
+
+describe('where it stands', () => {
+    const prospect = {
+        status: 'EMAILED' as const,
+        nextFollowupOn: '2026-11-04',
+        lastContactOn: '2026-10-30',
+        contactPerson: null,
+        outcome: 'Asked for prices',
+    };
+
+    it('sends nothing when nothing changed', () => {
+        expect(progressPatch(prospect, toProgressDraft(prospect))).toEqual({});
+    });
+
+    it('sends a status change alone, so the server picks the follow-up date', () => {
+        expect(progressPatch(prospect, { ...toProgressDraft(prospect), status: 'REPLIED' })).toEqual({ status: 'REPLIED' });
+    });
+
+    it('clears emptied fields with null and trims text', () => {
+        expect(progressPatch(prospect, { ...toProgressDraft(prospect), nextFollowupOn: '', outcome: '  ', contactPerson: ' Maria ' })).toEqual({
+            nextFollowupOn: null,
+            outcome: null,
+            contactPerson: 'Maria',
+        });
+    });
+});
+
+describe('cold email', () => {
+    it('notices an edited subject or body', () => {
+        const saved = { subject: 'Hi', body: null };
+        expect(toEmailDraft(saved)).toEqual({ subject: 'Hi', body: '' });
+        expect(isEmailDraftChanged(saved, { subject: 'Hi', body: '' })).toBe(false);
+        expect(isEmailDraftChanged(saved, { subject: 'Hi', body: 'x' })).toBe(true);
     });
 });

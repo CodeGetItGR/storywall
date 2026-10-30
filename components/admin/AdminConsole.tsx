@@ -19,6 +19,7 @@ import { FunnelPanel } from '@/components/admin/funnel/FunnelPanel';
 import { ModerationPanel } from '@/components/admin/moderation/ModerationPanel';
 import { ModuleUsagePanel } from '@/components/admin/moduleUsage/ModuleUsagePanel';
 import { OrdersSection } from '@/components/admin/orders/OrdersSection';
+import { OutreachSection } from '@/components/admin/outreach/OutreachSection';
 import { PaidServicesCatalogPanel } from '@/components/admin/PaidServicesCatalogPanel';
 import { PartnerApplicationsSection } from '@/components/admin/partnerApplications/PartnerApplicationsSection';
 import { PartnerCardsSection } from '@/components/admin/partnerCards/PartnerCardsSection';
@@ -42,6 +43,7 @@ export function AdminConsole() {
     if (tab === 'metrics') return <PlatformMetricsPanel />;
     if (tab === 'funnel') return <FunnelPanel />;
     if (tab === 'visitors') return <VisitorsPanel />;
+    if (tab === 'outreach') return <OutreachSection />;
     if (tab === 'campaignOverview') return <CampaignOverviewPanel />;
     if (tab === 'campaigns') return <CampaignsPanel />;
     if (tab === 'moduleUsage') return <ModuleUsagePanel />;

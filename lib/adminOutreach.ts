@@ -3,6 +3,7 @@ import type {
     OutreachPriority,
     OutreachProspectCreateRequestDto,
     OutreachProspectDto,
+    OutreachProspectUpdateRequestDto,
     OutreachStatus,
     OutreachStatusCounts,
     OutreachSummaryDto,
@@ -15,6 +16,7 @@ export const OUTREACH_NAME_MAX = 200;
 export const OUTREACH_EMAIL_SUBJECT_MAX = 300;
 export const OUTREACH_EMAIL_BODY_MAX = 5000;
 export const OUTREACH_NOTE_MAX = 4000;
+export const OUTREACH_OUTCOME_MAX = 1000;
 export const OUTREACH_TEXT_MAX = 100;
 export const OUTREACH_SENDER_PLACEHOLDER = '{{sender_name}}';
 export const OUTREACH_TIME_ZONE = 'Europe/Athens';
@@ -341,4 +343,56 @@ export function duplicateProspectId(error: unknown): string | null | undefined {
     const details = (error.problem?.details ?? error.problem ?? {}) as Record<string, unknown>;
     const id = details.existingId ?? details.prospectId ?? details.id;
     return typeof id === 'string' ? id : null;
+}
+
+// --- Where it stands (drawer form) ---
+
+// Dates are 'YYYY-MM-DD' as a date input gives them; '' means none.
+export interface ProgressDraft {
+    status: OutreachStatus;
+    nextFollowupOn: string;
+    lastContactOn: string;
+    contactPerson: string;
+    outcome: string;
+}
+
+export function toProgressDraft(
+    prospect: Pick<OutreachProspectDto, 'status' | 'nextFollowupOn' | 'lastContactOn' | 'contactPerson' | 'outcome'>,
+): ProgressDraft {
+    return {
+        status: prospect.status,
+        nextFollowupOn: prospect.nextFollowupOn ?? '',
+        lastContactOn: prospect.lastContactOn ?? '',
+        contactPerson: prospect.contactPerson ?? '',
+        outcome: prospect.outcome ?? '',
+    };
+}
+
+// Only what changed. Untouched dates stay out, so a status change gets the server's default follow-up date.
+export function progressPatch(
+    prospect: Pick<OutreachProspectDto, 'status' | 'nextFollowupOn' | 'lastContactOn' | 'contactPerson' | 'outcome'>,
+    draft: ProgressDraft,
+): OutreachProspectUpdateRequestDto {
+    const saved = toProgressDraft(prospect);
+    const patch: OutreachProspectUpdateRequestDto = {};
+    if (draft.status !== saved.status) patch.status = draft.status;
+    if (draft.nextFollowupOn !== saved.nextFollowupOn) patch.nextFollowupOn = draft.nextFollowupOn || null;
+    if (draft.lastContactOn !== saved.lastContactOn) patch.lastContactOn = draft.lastContactOn || null;
+    if (draft.contactPerson.trim() !== saved.contactPerson) patch.contactPerson = draft.contactPerson.trim() || null;
+    if (draft.outcome.trim() !== saved.outcome) patch.outcome = draft.outcome.trim() || null;
+    return patch;
+}
+
+// --- Cold email ---
+
+export type OutreachEmailLanguage = 'el' | 'en';
+export type EmailDraft = { subject: string; body: string };
+
+export function toEmailDraft(email: { subject: string | null; body: string | null } | null | undefined): EmailDraft {
+    return { subject: email?.subject ?? '', body: email?.body ?? '' };
+}
+
+export function isEmailDraftChanged(saved: { subject: string | null; body: string | null } | null | undefined, draft: EmailDraft): boolean {
+    const original = toEmailDraft(saved);
+    return original.subject !== draft.subject || original.body !== draft.body;
 }

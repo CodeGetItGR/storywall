@@ -22,6 +22,7 @@ import {
     PartyPopper,
     QrCode,
     Receipt,
+    Send,
     ShoppingBag,
     Smartphone,
     Smile,
@@ -39,6 +40,7 @@ import { COLLABORATIONS_HASH_ROOT, isCollaborationsHash } from '@/lib/adminColla
 import { DEMO_EVENTS_HASH_ROOT, isDemoEventsHash } from '@/lib/adminDemoEventsRouting';
 import { EVENTS_HASH_ROOT, isEventsHash } from '@/lib/adminEvents';
 import { isOrdersHash, ORDERS_HASH_ROOT } from '@/lib/adminOrders';
+import { isOutreachHash, OUTREACH_HASH_ROOT } from '@/lib/adminOutreachRouting';
 import { isPartnerApplicationsHash, PARTNER_APPLICATIONS_HASH_ROOT } from '@/lib/adminPartnerApplicationsRouting';
 import { isPlansHash, PLANS_HASH_ROOT } from '@/lib/adminPlansRouting';
 import { isWithdrawalsHash, WITHDRAWALS_HASH_ROOT } from '@/lib/adminWithdrawalsRouting';
@@ -52,6 +54,7 @@ export type AdminTab =
     | 'costTracking'
     | 'plans'
     | 'paidServices'
+    | 'outreach'
     | 'discountCodes'
     | 'partnerApplications'
     | 'collaborations'
@@ -131,6 +134,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     costTracking: '#cost-tracking',
     plans: PLANS_HASH_ROOT,
     paidServices: '#paid-services',
+    outreach: OUTREACH_HASH_ROOT,
     discountCodes: '#discount-codes',
     partnerApplications: PARTNER_APPLICATIONS_HASH_ROOT,
     collaborations: COLLABORATIONS_HASH_ROOT,
@@ -175,6 +179,7 @@ function currentHashTab(): AdminTab {
     const hash = window.location.hash;
     if (isPlansHash(hash)) return 'plans';
     if (isPartnerApplicationsHash(hash)) return 'partnerApplications';
+    if (isOutreachHash(hash)) return 'outreach';
     if (isCollaborationsHash(hash)) return 'collaborations';
     if (isDemoEventsHash(hash)) return 'demoEvents';
     if (isWithdrawalsHash(hash)) return 'withdrawals';
@@ -233,6 +238,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'costTracking', label: t('costTracking'), icon: ChartNoAxesCombined },
             { key: 'plans', label: t('plans'), icon: CalendarDays },
             { key: 'paidServices', label: t('paidServices'), icon: PackagePlus },
+            { key: 'outreach', label: t('outreach'), icon: Send },
             { key: 'discountCodes', label: t('discountCodes'), icon: TicketPercent },
             { key: 'appReviews', label: t('appReviews'), icon: Star },
             { key: 'campaignOverview', label: t('campaignOverview'), icon: ChartLine },
