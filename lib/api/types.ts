@@ -1774,6 +1774,16 @@ export interface DiscountCodeResponseDto extends DiscountCodeRequestDto {
     status: CollaborationCodeStatus;
     liveRedemptions: number;
 }
+// What a code form offers and prices its warnings from (GET /api/admin/discount-codes/options): event types and
+// event plans, archived ones too, cut down so marketing can read them without the plan admin.
+export type DiscountCodePlanOption = Pick<
+    PlanTierResponseDto,
+    'code' | 'name' | 'scope' | 'eventTypeKey' | 'sortOrder' | 'isAssignable' | 'priceCurrency' | 'discountPercent' | 'discountStartsAt' | 'discountEndsAt'
+> & { initialOptions: Pick<PlanTierResponseDto['initialOptions'][number], 'priceAmountMinor' | 'promoPriceAmountMinor' | 'active'>[] };
+export interface DiscountCodeOptionsDto {
+    eventTypes: Pick<PlatformEventTypeResponseDto, 'eventTypeKey' | 'name' | 'sortOrder'>[];
+    plans: DiscountCodePlanOption[];
+}
 export interface LinkDiscountCodeRequestDto {
     discountCodeId: string;
     commissionPercent: number;
@@ -2524,7 +2534,8 @@ export interface CampaignRowDto {
     signedUp: number;
     createdEvent: number;
     paidHost: number;
-    revenueMinorByCurrency: Record<string, number>;
+    // Null for a MARKETING caller: the server leaves revenue out.
+    revenueMinorByCurrency: Record<string, number> | null;
 }
 
 // GET /api/admin/metrics/campaigns/overview. Every saved link, one utm source (?source=) or one link
@@ -2541,7 +2552,8 @@ export interface CampaignOverviewDto {
     planPicks: number;
     signedUp: number;
     paidHost: number;
-    revenueMinorByCurrency: Record<string, number>;
+    // Null for a MARKETING caller: the server leaves revenue out.
+    revenueMinorByCurrency: Record<string, number> | null;
     daily: { date: string; visits: number; visitors: number }[];
     hourly: { hour: number; visits: number; visitors: number }[];
     dailySeries: { series: string; date: string; visits: number; visitors: number }[];

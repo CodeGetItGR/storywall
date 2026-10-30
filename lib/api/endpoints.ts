@@ -514,6 +514,7 @@ export const endpoints = {
         },
         discountCodes: {
             list: '/api/admin/discount-codes',
+            options: '/api/admin/discount-codes/options',
             byId: (id: string) => `/api/admin/discount-codes/${id}`,
             redemptionVoid: (eventId: string) => `/api/admin/discount-codes/events/${eventId}/redemption/void`,
         },
