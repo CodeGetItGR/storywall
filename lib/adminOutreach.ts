@@ -52,13 +52,13 @@ export function isActiveOutreachStatus(status: OutreachStatus): boolean {
     return ACTIVE_STATUSES.has(status);
 }
 
-// One colour per status, from the console's semantic status set. `bar` fills the charts.
+// One colour per status, from the console's semantic status set, the same hues as the Android app. `bar` fills the charts.
 export const OUTREACH_STATUS_TONE: Record<OutreachStatus, { pill: string; bar: string }> = {
     NEW: { pill: 'bg-status-neutral-wash text-status-neutral', bar: 'bg-status-neutral' },
     EMAILED: { pill: 'bg-status-info-wash text-status-info', bar: 'bg-status-info' },
-    FOLLOWED_UP: { pill: 'bg-status-warn-wash text-status-warn', bar: 'bg-status-warn' },
-    REPLIED: { pill: 'bg-status-violet-wash text-status-violet', bar: 'bg-status-violet' },
-    MEETING: { pill: 'bg-status-teal-wash text-status-teal', bar: 'bg-status-teal' },
+    FOLLOWED_UP: { pill: 'bg-status-violet-wash text-status-violet', bar: 'bg-status-violet' },
+    REPLIED: { pill: 'bg-status-teal-wash text-status-teal', bar: 'bg-status-teal' },
+    MEETING: { pill: 'bg-status-warn-wash text-status-warn', bar: 'bg-status-warn' },
     PARTNER: { pill: 'bg-status-good-wash text-status-good', bar: 'bg-status-good' },
     DECLINED: { pill: 'bg-status-danger-wash text-status-danger', bar: 'bg-status-danger' },
     NO_RESPONSE: { pill: 'bg-surface-muted text-ink-faint', bar: 'bg-line-strong' },
