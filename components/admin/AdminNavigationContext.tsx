@@ -36,6 +36,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
+import { adminHomeTab, canOpenAdminTab, resolveAdminTab } from '@/lib/adminAccess';
 import { COLLABORATIONS_HASH_ROOT, isCollaborationsHash } from '@/lib/adminCollaborationsRouting';
 import { DEMO_EVENTS_HASH_ROOT, isDemoEventsHash } from '@/lib/adminDemoEventsRouting';
 import { EVENTS_HASH_ROOT, isEventsHash } from '@/lib/adminEvents';
@@ -44,7 +45,8 @@ import { isOutreachHash, OUTREACH_HASH_ROOT } from '@/lib/adminOutreachRouting';
 import { isPartnerApplicationsHash, PARTNER_APPLICATIONS_HASH_ROOT } from '@/lib/adminPartnerApplicationsRouting';
 import { isPlansHash, PLANS_HASH_ROOT } from '@/lib/adminPlansRouting';
 import { isWithdrawalsHash, WITHDRAWALS_HASH_ROOT } from '@/lib/adminWithdrawalsRouting';
-import { pushPageEntry } from '@/lib/overlayHistory';
+import type { PlatformRole } from '@/lib/api/types';
+import { pushPageEntry, replacePageUrl } from '@/lib/overlayHistory';
 
 export type AdminTab =
     | 'metrics'
@@ -174,8 +176,8 @@ const AdminNavigationContext = createContext<
 // `#plans/...`, `#collaborations/...`, `#withdrawals/...`, `#events/...` and `#orders/...` carry their own sub-route, parsed by
 // the section itself; legacy `#event-plans`, `#modules`, `#event-types` land
 // on Plans too so old links keep working.
-function currentHashTab(): AdminTab {
-    if (typeof window === 'undefined') return 'metrics';
+function hashTab(): AdminTab | null {
+    if (typeof window === 'undefined') return null;
     const hash = window.location.hash;
     if (isPlansHash(hash)) return 'plans';
     if (isPartnerApplicationsHash(hash)) return 'partnerApplications';
@@ -185,7 +187,12 @@ function currentHashTab(): AdminTab {
     if (isWithdrawalsHash(hash)) return 'withdrawals';
     if (isOrdersHash(hash)) return 'orders';
     if (isEventsHash(hash)) return 'events';
-    return HASH_TO_TAB[hash] ?? 'metrics';
+    return HASH_TO_TAB[hash] ?? null;
+}
+
+// A section the role can't open (or no section at all) lands on the role's home.
+function currentHashTab(role: PlatformRole): AdminTab {
+    return resolveAdminTab(role, hashTab() ?? adminHomeTab(role));
 }
 
 // Each section is its own Back step. Re-selecting the section already shown
@@ -195,41 +202,50 @@ function navigateToHash(hash: string) {
     window.dispatchEvent(new HashChangeEvent('hashchange'));
 }
 
-export function AdminNavigationProvider({ children }: { children: ReactNode }) {
+// `role` decides which sections exist: MARKETING sees the marketing group and Phones.
+export function AdminNavigationProvider({ children, role = 'ADMIN' }: { children: ReactNode; role?: PlatformRole }) {
     const t = useTranslations('AdminPage.tabs');
-    const [tab, setTabState] = useState<AdminTab>(currentHashTab);
+    const [tab, setTabState] = useState<AdminTab>(() => currentHashTab(role));
     const [focus, setFocus] = useState<AdminFocus | null>(null);
 
     useEffect(() => {
         function syncFromHash() {
-            setTabState(currentHashTab());
-        }
-
-        if (!window.location.hash) {
-            window.history.replaceState(null, '', TAB_TO_HASH.metrics);
+            const shown = hashTab();
+            const next = currentHashTab(role);
+            // A hidden section's link is rewritten, so Back doesn't return to it.
+            if (shown !== next) replacePageUrl(TAB_TO_HASH[next]);
+            setTabState(next);
         }
 
         syncFromHash();
 
         window.addEventListener('hashchange', syncFromHash);
         return () => window.removeEventListener('hashchange', syncFromHash);
-    }, []);
+    }, [role]);
 
-    const setTab = useCallback((nextTab: AdminTab) => {
-        setFocus(null);
-        setTabState(nextTab);
-        navigateToHash(TAB_TO_HASH[nextTab]);
-    }, []);
+    const setTab = useCallback(
+        (nextTab: AdminTab) => {
+            const target = resolveAdminTab(role, nextTab);
+            setFocus(null);
+            setTabState(target);
+            navigateToHash(TAB_TO_HASH[target]);
+        },
+        [role],
+    );
 
     // A new object on every call on purpose: handing the same event over twice
     // has to re-prefill the destination form, not be swallowed as "unchanged".
-    const sendTo = useCallback((nextTab: AdminTab, nextFocus: AdminFocus) => {
-        setTabState(nextTab);
-        setFocus({ ...nextFocus });
-        navigateToHash(TAB_TO_HASH[nextTab]);
-    }, []);
+    const sendTo = useCallback(
+        (nextTab: AdminTab, nextFocus: AdminFocus) => {
+            if (!canOpenAdminTab(role, nextTab)) return;
+            setTabState(nextTab);
+            setFocus({ ...nextFocus });
+            navigateToHash(TAB_TO_HASH[nextTab]);
+        },
+        [role],
+    );
 
-    const tabs = useMemo<AdminTabItem[]>(
+    const allTabs = useMemo<AdminTabItem[]>(
         () => [
             { key: 'metrics', label: t('metrics'), icon: BarChart3 },
             { key: 'funnel', label: t('funnel'), icon: TrendingUp },
@@ -264,6 +280,8 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
         ],
         [t],
     );
+
+    const tabs = useMemo(() => allTabs.filter((item) => canOpenAdminTab(role, item.key)), [allTabs, role]);
 
     const value = useMemo(
         () => ({

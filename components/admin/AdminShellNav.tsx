@@ -58,7 +58,8 @@ export function AdminShellNav({
 }) {
     const t = useTranslations('AdminPage');
     const { tab, tabs, setTab } = useAdminNavigation();
-    const pendingApplications = usePendingApplicationsCount();
+    // Only admins see Partner applications; the count would 403 for anyone else.
+    const pendingApplications = usePendingApplicationsCount(tabs.some((item) => item.key === 'partnerApplications'));
 
     function handleNavClick(event: MouseEvent<HTMLButtonElement>) {
         const nextTab = event.currentTarget.dataset.tab as Parameters<typeof setTab>[0] | undefined;

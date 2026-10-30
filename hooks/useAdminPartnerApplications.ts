@@ -43,9 +43,10 @@ export function usePartnerApplication(id: string | null) {
 }
 
 // The sidebar badge: only the total is needed, so one row is fetched.
-export function usePendingApplicationsCount(): number {
+export function usePendingApplicationsCount(enabled = true): number {
     const query = useQuery({
         queryKey: partnerApplicationKeys.pendingCount,
+        enabled,
         queryFn: async () => {
             const page = await api.get<Page<AdminPartnerApplicationDto>>(
                 endpoints.admin.partnerApplications.list({ status: 'PENDING', page: 0, size: 1 }),
