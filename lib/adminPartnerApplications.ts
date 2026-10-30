@@ -18,10 +18,10 @@ export function foundingCheckbox(spotsLeft: number | null): { defaultChecked: bo
     return { defaultChecked: room, disabled: !room };
 }
 
-export type ApproveErrorKind =
+export type ApplicationErrorKind =
     { kind: 'notPending' } | { kind: 'foundingFull' } | { kind: 'emailExists'; collaboratorId: string | null } | { kind: 'other' };
 
-export function approveErrorKind(error: unknown): ApproveErrorKind | null {
+export function applicationErrorKind(error: unknown): ApplicationErrorKind | null {
     if (!error) return null;
     const code = getErrorCode(error);
     if (code === ERROR_CODES.PARTNER_APPLICATION_NOT_PENDING) return { kind: 'notPending' };

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { applicationLinkHref, approveErrorKind, foundingCheckbox } from '@/lib/adminPartnerApplications';
+import { applicationErrorKind, applicationLinkHref, foundingCheckbox } from '@/lib/adminPartnerApplications';
 import { ApiError } from '@/lib/api/client';
 
 function conflict(errorCode: number, details?: Record<string, unknown>) {
@@ -31,19 +31,19 @@ describe('foundingCheckbox', () => {
     });
 });
 
-describe('approveErrorKind', () => {
+describe('applicationErrorKind', () => {
     it('names each 409', () => {
-        expect(approveErrorKind(conflict(5189))).toEqual({ kind: 'notPending' });
-        expect(approveErrorKind(conflict(5190))).toEqual({ kind: 'foundingFull' });
-        expect(approveErrorKind(conflict(5191, { collaboratorId: 'c-1' }))).toEqual({ kind: 'emailExists', collaboratorId: 'c-1' });
+        expect(applicationErrorKind(conflict(5189))).toEqual({ kind: 'notPending' });
+        expect(applicationErrorKind(conflict(5190))).toEqual({ kind: 'foundingFull' });
+        expect(applicationErrorKind(conflict(5191, { collaboratorId: 'c-1' }))).toEqual({ kind: 'emailExists', collaboratorId: 'c-1' });
     });
 
     it('keeps an email clash without an id', () => {
-        expect(approveErrorKind(conflict(5191))).toEqual({ kind: 'emailExists', collaboratorId: null });
+        expect(applicationErrorKind(conflict(5191))).toEqual({ kind: 'emailExists', collaboratorId: null });
     });
 
     it('falls back to other', () => {
-        expect(approveErrorKind(new Error('boom'))).toEqual({ kind: 'other' });
-        expect(approveErrorKind(null)).toBeNull();
+        expect(applicationErrorKind(new Error('boom'))).toEqual({ kind: 'other' });
+        expect(applicationErrorKind(null)).toBeNull();
     });
 });
