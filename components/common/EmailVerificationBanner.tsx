@@ -2,29 +2,12 @@
 
 import { MailWarning } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useState } from 'react';
 
-import { useAuth } from '@/hooks/useAuth';
-import { api } from '@/lib/api/client';
-import { endpoints } from '@/lib/api/endpoints';
-
-type ResendState = 'idle' | 'pending' | 'sent' | 'error';
+import { useResendVerificationEmail } from '@/hooks/useResendVerificationEmail';
 
 export function EmailVerificationBanner() {
     const t = useTranslations('EmailVerificationBanner');
-    const { user } = useAuth();
-    const [resendState, setResendState] = useState<ResendState>('idle');
-
-    const onResend = useCallback(async () => {
-        if (!user?.email) return;
-        setResendState('pending');
-        try {
-            await api.post(endpoints.auth.resendVerification, { email: user.email });
-            setResendState('sent');
-        } catch {
-            setResendState('error');
-        }
-    }, [user]);
+    const { state: resendState, resend: onResend } = useResendVerificationEmail();
 
     return (
         <div className="flex flex-col gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between">

@@ -24,8 +24,6 @@ function collaborator(overrides: Partial<CollaboratorResponseDto> = {}): Collabo
         name: 'Barn Venue',
         contactEmail: 'hello@barn.test',
         status: 'ACTIVE',
-        portalTokenIssued: false,
-        portalTokenIssuedAt: null,
         notes: null,
         earningsTotals: [],
         websiteUrl: null,

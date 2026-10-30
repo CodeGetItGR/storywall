@@ -876,6 +876,8 @@ export interface UserResponseDto {
     // confirmed being 18+; until then every write is 403 4020. Same nulls as above.
     termsAcceptanceRequired: boolean | null;
     currentTermsVersion: string | null;
+    // The account opens a partner page (verified email matching an active partner). Null off /api/me.
+    partner?: boolean | null;
     signupSource?: SignupSourceDto | null;
 }
 
@@ -1601,8 +1603,6 @@ export interface CollaboratorResponseDto {
     name: string;
     contactEmail: string;
     status: CollaboratorStatus;
-    portalTokenIssued: boolean;
-    portalTokenIssuedAt: string | null;
     notes: string | null;
     // Same rows as GET …/earnings/totals, on list and detail. [] when never earned.
     earningsTotals: CollaborationEarningsTotalDto[];
@@ -1672,10 +1672,6 @@ export interface CommissionTierDto {
 // tiers: [] removes it. Only later activations are affected.
 export interface CommissionTiersRequestDto {
     tiers: CommissionTierDto[];
-}
-export interface CollaboratorPortalTokenResponseDto {
-    token: string;
-    portalUrl: string;
 }
 // Which events a code may be redeemed against. Keys and plan codes, never ids.
 // An empty array means every event type / every plan, not none. On PATCH both

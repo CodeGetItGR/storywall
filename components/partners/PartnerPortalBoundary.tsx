@@ -4,23 +4,28 @@ import { Banknote, CalendarCheck2, Handshake, MousePointerClick } from 'lucide-r
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 
+import { PartnerPortalBlocked } from '@/components/partners/PartnerPortalBlocked';
 import { PartnerReachSection } from '@/components/partners/PartnerReachSection';
 import { PartnerTierProgress } from '@/components/partners/PartnerTierProgress';
+import { BackButton } from '@/components/ui/BackButton';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { PageErrorState } from '@/components/ui/PageErrorState';
 import { usePartnerPortal } from '@/hooks/usePartnerPortal';
 import type { PartnerPortalTotalDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
+import { partnerPortalBlock } from '@/lib/partnerPortal';
+import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
 function balanceMinor(total: PartnerPortalTotalDto): number {
     return total.accruedMinor - total.paidMinor;
 }
 
-export function PartnerPortalBoundary({ token }: { token: string }) {
+export function PartnerPortalBoundary() {
     const t = useTranslations('PartnerPortalPage');
     const locale = useLocale();
-    const portal = usePartnerPortal(token);
+    const portal = usePartnerPortal();
+    const block = partnerPortalBlock(portal.error);
     const handleRetry = useCallback(() => {
         void portal.refetch();
     }, [portal]);
@@ -32,6 +37,8 @@ export function PartnerPortalBoundary({ token }: { token: string }) {
             </main>
         );
     }
+
+    if (block) return <PartnerPortalBlocked block={block} />;
 
     if (portal.error || !portal.data) {
         return (
@@ -50,6 +57,7 @@ export function PartnerPortalBoundary({ token }: { token: string }) {
                 {/* Header */}
                 <header className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
                     <div className="min-w-0">
+                        <BackButton href={routes.profile} label={t('back')} historyBack className="mb-4" />
                         <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
                             <Handshake className="h-5 w-5" aria-hidden="true" />
                         </div>

@@ -97,6 +97,8 @@ export type ApiErrorMessageKey =
     | 'vendorCannotRsvp'
     | 'printItemInvalid'
     | 'partnerRequired'
+    | 'partnerEmailNotVerified'
+    | 'partnerNotLinked'
     | 'printPicksUnavailable'
     | 'printPricesMissing'
     | 'printListLocked'
@@ -603,6 +605,8 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.VENDOR_CANNOT_RSVP]: 'vendorCannotRsvp',
     [ERROR_CODES.PRINT_ITEM_INVALID]: 'printItemInvalid',
     [ERROR_CODES.PARTNER_REQUIRED]: 'partnerRequired',
+    [ERROR_CODES.PARTNER_EMAIL_NOT_VERIFIED]: 'partnerEmailNotVerified',
+    [ERROR_CODES.PARTNER_NOT_LINKED]: 'partnerNotLinked',
     [ERROR_CODES.PRINT_PICKS_UNAVAILABLE]: 'printPicksUnavailable',
     [ERROR_CODES.PRINT_PRICES_MISSING]: 'printPricesMissing',
     [ERROR_CODES.PRINT_LIST_LOCKED]: 'printListLocked',
