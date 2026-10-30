@@ -24,6 +24,7 @@ function collaborator(overrides: Partial<CollaboratorResponseDto> = {}): Collabo
         name: 'Barn Venue',
         contactEmail: 'hello@barn.test',
         status: 'ACTIVE',
+        founding: false,
         portalTokenIssued: false,
         portalTokenIssuedAt: null,
         notes: null,
@@ -230,6 +231,7 @@ describe('collaboratorRequestFromFormData', () => {
             contactEmail: 'hello@barn.test',
             notes: null,
             status: null,
+            founding: null,
         });
     });
 });
@@ -241,6 +243,7 @@ describe('collaboratorRequestWithStatus', () => {
             contactEmail: 'hello@barn.test',
             notes: 'Renewed',
             status: 'SUSPENDED',
+            founding: null,
         });
     });
 });

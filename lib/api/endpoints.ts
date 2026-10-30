@@ -3,7 +3,7 @@
 // since flipped every route; reconcile against Swagger (/v3/api-docs) if a
 // path here 404s.
 
-import type { RsvpReportType, SignupChannel } from '@/lib/api/types';
+import type { PartnerApplicationStatus, RsvpReportType, SignupChannel } from '@/lib/api/types';
 
 export const endpoints = {
     betaFeedback: {
@@ -477,6 +477,16 @@ export const endpoints = {
         blockedTerms: {
             collection: '/api/admin/blocked-terms',
             byId: (id: string) => `/api/admin/blocked-terms/${id}`,
+        },
+        partnerApplications: {
+            list: ({ status, page, size }: { status: PartnerApplicationStatus | null; page: number; size: number }) => {
+                const params = new URLSearchParams({ page: String(page), size: String(size) });
+                if (status) params.set('status', status);
+                return `/api/admin/partner-applications?${params.toString()}`;
+            },
+            byId: (id: string) => `/api/admin/partner-applications/${id}`,
+            approve: (id: string) => `/api/admin/partner-applications/${id}/approve`,
+            decline: (id: string) => `/api/admin/partner-applications/${id}/decline`,
         },
         collaborators: {
             list: '/api/admin/collaborators',

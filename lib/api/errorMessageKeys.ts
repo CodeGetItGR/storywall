@@ -113,6 +113,9 @@ export type ApiErrorMessageKey =
     | 'vendorIsHost'
     | 'alreadyAVendor'
     | 'partnerApplicationPending'
+    | 'partnerApplicationNotPending'
+    | 'foundingSpotsFull'
+    | 'collaboratorEmailExists'
     | 'qrCardCodeColorLowContrast'
     | 'qrCardArtworkSizeInvalid'
     | 'eventHostAlreadyCoHost'
@@ -619,6 +622,9 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.VENDOR_IS_HOST]: 'vendorIsHost',
     [ERROR_CODES.ALREADY_A_VENDOR]: 'alreadyAVendor',
     [ERROR_CODES.PARTNER_APPLICATION_PENDING]: 'partnerApplicationPending',
+    [ERROR_CODES.PARTNER_APPLICATION_NOT_PENDING]: 'partnerApplicationNotPending',
+    [ERROR_CODES.FOUNDING_SPOTS_FULL]: 'foundingSpotsFull',
+    [ERROR_CODES.COLLABORATOR_EMAIL_EXISTS]: 'collaboratorEmailExists',
     [ERROR_CODES.QR_CARD_CODE_COLOR_LOW_CONTRAST]: 'qrCardCodeColorLowContrast',
     [ERROR_CODES.QR_CARD_ARTWORK_SIZE_INVALID]: 'qrCardArtworkSizeInvalid',
 } satisfies Record<KnownApiErrorCode, ApiErrorMessageKey>;

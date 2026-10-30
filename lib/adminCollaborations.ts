@@ -28,6 +28,7 @@ export function collaboratorRequestFromFormData(formData: FormData): Collaborato
             .toLowerCase(),
         notes: String(formData.get('notes') ?? '').trim() || null,
         status: null,
+        founding: null,
     };
 }
 
@@ -215,7 +216,7 @@ export function collaboratorRequestWithStatus(
     collaborator: CollaboratorResponseDto,
     status: CollaboratorResponseDto['status'],
 ): CollaboratorRequestDto {
-    return { name: collaborator.name, contactEmail: collaborator.contactEmail, notes: collaborator.notes, status };
+    return { name: collaborator.name, contactEmail: collaborator.contactEmail, notes: collaborator.notes, status, founding: null };
 }
 
 // --- Business, invoicing and payout details (2026-10-08) ---
