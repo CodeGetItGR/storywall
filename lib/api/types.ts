@@ -9,7 +9,8 @@ export type AttendanceStatus = 'ATTENDING' | 'DECLINED';
 export type RsvpReportType = 'STATISTICS' | 'FULL_LIST' | 'ATTENDING_ONLY' | 'WITH_CHILDREN';
 export type AuthProvider = 'LOCAL' | 'OAUTH' | 'INVITE';
 export type AccountStatus = 'ACTIVE' | 'SUSPENDED' | 'DELETED';
-export type PlatformRole = 'USER' | 'ADMIN' | 'GUEST';
+// MARKETING: a USER who also works the console's marketing group and partner outreach. Never money or users.
+export type PlatformRole = 'USER' | 'ADMIN' | 'MARKETING' | 'GUEST';
 
 // eventType is now a closed set on the backend (EventTypeKey), validated on
 // POST /api/events against this exact union — an unknown value 400s with
@@ -4691,4 +4692,134 @@ export interface AdminEventCloseRequestDto {
     operationalReason: OperationalCloseReason | null;
     explanation: string;
     note: string | null;
+}
+
+// --- Partner outreach (outreach-fe-integration.md, 2026-10-30) ---
+// Businesses we may approach to become partners, before they apply. Base /api/admin/outreach.
+export type OutreachStatus = 'NEW' | 'EMAILED' | 'FOLLOWED_UP' | 'REPLIED' | 'MEETING' | 'PARTNER' | 'DECLINED' | 'NO_RESPONSE';
+// The four groups of PartnerRole the console shows.
+export type OutreachType = 'VENUES' | 'PLANNERS' | 'PHOTO_VIDEO' | 'SHOPS_DECOR';
+export type OutreachPriority = 'A' | 'B' | 'C';
+export type OutreachOrigin = 'AGENT' | 'IMPORT' | 'MANUAL';
+export type OutreachNoteKind = 'NOTE' | 'STATUS_CHANGE' | 'SYSTEM';
+
+export interface OutreachEmailDto {
+    subject: string | null;
+    body: string | null;
+}
+
+// Dates without a time (lastContactOn, nextFollowupOn) are 'YYYY-MM-DD' in Europe/Athens.
+export interface OutreachProspectRowDto {
+    id: string;
+    name: string;
+    kind: PartnerRole;
+    type: OutreachType;
+    subcategory: string | null;
+    city: string;
+    area: string | null;
+    priority: OutreachPriority;
+    status: OutreachStatus;
+    outcome: string | null;
+    email: string | null;
+    instagram: string | null;
+    contactForm: string | null;
+    phone: string | null;
+    lastContactOn: string | null;
+    nextFollowupOn: string | null;
+    followupDue: boolean;
+    updatedAt: string;
+}
+
+export interface OutreachNoteDto {
+    id: string;
+    kind: OutreachNoteKind;
+    body: string;
+    // The author's display name, or a label such as "Research agent"; null when neither is known.
+    authorName: string | null;
+    createdAt: string;
+}
+
+export interface OutreachProspectDto extends OutreachProspectRowDto {
+    website: string | null;
+    contactPerson: string | null;
+    credibility: string | null;
+    fit: string | null;
+    sources: string[];
+    emailEl: OutreachEmailDto;
+    emailEn: OutreachEmailDto;
+    origin: OutreachOrigin;
+    createdAt: string;
+    // Newest first.
+    notes: OutreachNoteDto[];
+}
+
+export type OutreachStatusCounts = Record<OutreachStatus, number>;
+
+export interface OutreachSummaryDto {
+    total: number;
+    topPriority: number;
+    contacted: number;
+    replied: number;
+    meetings: number;
+    partners: number;
+    followupsDue: number;
+    byStatus: OutreachStatusCounts;
+    // All four types, even when empty.
+    byType: { type: OutreachType; total: number; byStatus: OutreachStatusCounts }[];
+    byCity: { city: string; total: number; contacted: number }[];
+    // Active, with a follow-up date, earliest first, at most 8.
+    dueSoon: OutreachProspectRowDto[];
+}
+
+// GET /api/admin/outreach/prospects. `sort` is Spring's "field,asc|desc".
+export interface OutreachProspectQuery {
+    status?: OutreachStatus | null;
+    type?: OutreachType | null;
+    kind?: PartnerRole | null;
+    city?: string | null;
+    priority?: OutreachPriority | null;
+    q?: string | null;
+    due?: boolean;
+    page: number;
+    size: number;
+    sort?: string | null;
+}
+
+export interface OutreachProspectCreateRequestDto {
+    name: string;
+    kind: PartnerRole;
+    city: string;
+    area?: string | null;
+    subcategory?: string | null;
+    priority?: OutreachPriority;
+    website?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    instagram?: string | null;
+    contactForm?: string | null;
+    contactPerson?: string | null;
+    credibility?: string | null;
+    fit?: string | null;
+    sources?: string[];
+    emailEl?: OutreachEmailDto;
+    emailEn?: OutreachEmailDto;
+}
+
+// Every field optional; an explicit null clears a nullable field.
+export interface OutreachProspectUpdateRequestDto {
+    status?: OutreachStatus;
+    outcome?: string | null;
+    priority?: OutreachPriority;
+    contactPerson?: string | null;
+    lastContactOn?: string | null;
+    nextFollowupOn?: string | null;
+    website?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    instagram?: string | null;
+    contactForm?: string | null;
+    area?: string | null;
+    subcategory?: string | null;
+    emailEl?: OutreachEmailDto;
+    emailEn?: OutreachEmailDto;
 }

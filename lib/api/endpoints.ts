@@ -3,7 +3,7 @@
 // since flipped every route; reconcile against Swagger (/v3/api-docs) if a
 // path here 404s.
 
-import type { PartnerApplicationStatus, RsvpReportType, SignupChannel } from '@/lib/api/types';
+import type { OutreachProspectQuery, PartnerApplicationStatus, RsvpReportType, SignupChannel } from '@/lib/api/types';
 
 export const endpoints = {
     betaFeedback: {
@@ -550,6 +550,24 @@ export const endpoints = {
         campaignLinks: {
             list: '/api/admin/campaign-links',
             byId: (id: string) => `/api/admin/campaign-links/${id}`,
+        },
+        outreach: {
+            prospects: (query: OutreachProspectQuery) => {
+                const params = new URLSearchParams({ page: String(query.page), size: String(query.size) });
+                if (query.status) params.set('status', query.status);
+                if (query.type) params.set('type', query.type);
+                if (query.kind) params.set('kind', query.kind);
+                if (query.city) params.set('city', query.city);
+                if (query.priority) params.set('priority', query.priority);
+                if (query.q) params.set('q', query.q);
+                if (query.due) params.set('due', 'true');
+                if (query.sort) params.set('sort', query.sort);
+                return `/api/admin/outreach/prospects?${params.toString()}`;
+            },
+            create: '/api/admin/outreach/prospects',
+            byId: (id: string) => `/api/admin/outreach/prospects/${encodeURIComponent(id)}`,
+            notes: (id: string) => `/api/admin/outreach/prospects/${encodeURIComponent(id)}/notes`,
+            summary: '/api/admin/outreach/summary',
         },
         appReviews: {
             list: '/api/admin/app-reviews',
