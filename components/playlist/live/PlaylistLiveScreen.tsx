@@ -3,7 +3,8 @@
 import { ListMusic } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { PlaylistLiveRow } from '@/components/playlist/live/PlaylistLiveRow';
+import { PlaylistLiveCard } from '@/components/playlist/live/PlaylistLiveCard';
+import { PlaylistLivePlayedGroup } from '@/components/playlist/live/PlaylistLivePlayedGroup';
 import { PlaylistListSkeleton } from '@/components/playlist/PlaylistSkeletons';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
@@ -52,17 +53,37 @@ export function PlaylistLiveScreen() {
             ) : live.rows.length === 0 ? (
                 <p className="text-sm text-ink-muted">{t('live.empty')}</p>
             ) : (
-                <ol className="divide-y divide-border">
-                    {live.rows.map((row) => (
-                        <PlaylistLiveRow
-                            key={row.id}
-                            row={row}
+                <div className="flex flex-col gap-6">
+                    {/* Up next */}
+                    {live.upNext.length === 0 ? (
+                        <p className="text-sm text-ink-muted">{t('live.allPlayed')}</p>
+                    ) : (
+                        <ol className="flex flex-col gap-3">
+                            {live.upNext.map((row, i) => (
+                                <PlaylistLiveCard
+                                    key={row.id}
+                                    row={row}
+                                    position={i + 1}
+                                    canMark={live.canMark}
+                                    isPending={live.pendingId === row.id}
+                                    onToggleAction={live.togglePlayed}
+                                />
+                            ))}
+                        </ol>
+                    )}
+
+                    {/* Played */}
+                    {live.played.length > 0 && (
+                        <PlaylistLivePlayedGroup
+                            rows={live.played}
+                            open={live.playedOpen}
                             canMark={live.canMark}
-                            isPending={live.pendingId === row.id}
+                            pendingId={live.pendingId}
+                            onToggleOpenAction={live.togglePlayedOpen}
                             onToggleAction={live.togglePlayed}
                         />
-                    ))}
-                </ol>
+                    )}
+                </div>
             )}
         </ModulePageShell>
     );

@@ -22,3 +22,14 @@ export function sortPlaylistSuggestionsBySupport(suggestions: PlaylistSuggestion
         return new Date(first.createdAt).getTime() - new Date(second.createdAt).getTime();
     });
 }
+
+// The DJ's live list in two parts: what's still to play in the server's rank order, then what was played, the most
+// recent first.
+export function splitPlaylistLiveRows<T extends { playedAt?: string | null }>(rows: T[]) {
+    const upNext = rows.filter((row) => !row.playedAt);
+    const played = rows
+        .filter((row) => row.playedAt)
+        .sort((first, second) => new Date(second.playedAt!).getTime() - new Date(first.playedAt!).getTime());
+
+    return { upNext, played };
+}

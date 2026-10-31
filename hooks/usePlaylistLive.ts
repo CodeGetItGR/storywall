@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useEvent } from '@/hooks/useEvent';
@@ -11,11 +11,12 @@ import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { PlaylistSuggestionLeaderboardDto } from '@/lib/api/types';
 import { canMarkSongsPlayed } from '@/lib/eventLifecycle';
+import { splitPlaylistLiveRows } from '@/lib/playlistRanking';
 
 // Guests keep voting during the party, so the DJ's list refreshes on its own.
 export const PLAYLIST_LIVE_REFRESH_MS = 15_000;
 
-// The DJ's live list: the leaderboard in rank order and the played mark.
+// The DJ's live list: the songs still to play in rank order, the played ones apart, and the played mark.
 export function usePlaylistLive(eventId: string) {
     const toErrorMessage = useApiErrorMessage();
     const queryClient = useQueryClient();
@@ -23,6 +24,10 @@ export function usePlaylistLive(eventId: string) {
     const leaderboard = usePlaylistLeaderboard(eventId, true, { refetchInterval: PLAYLIST_LIVE_REFRESH_MS });
     const isReadable = useModuleReadable(eventId, 'playlist');
     const [error, setError] = useState<string | null>(null);
+    const [playedOpen, setPlayedOpen] = useState(false);
+    const rows = useMemo(() => leaderboard.data ?? [], [leaderboard.data]);
+    const { upNext, played } = useMemo(() => splitPlaylistLiveRows(rows), [rows]);
+    const togglePlayedOpen = useCallback(() => setPlayedOpen((open) => !open), []);
 
     const markPlayed = useMutation({
         mutationFn: ({ id, played }: { id: string; played: boolean }) =>
@@ -45,7 +50,11 @@ export function usePlaylistLive(eventId: string) {
 
     return {
         isReadable,
-        rows: leaderboard.data ?? [],
+        rows,
+        upNext,
+        played,
+        playedOpen,
+        togglePlayedOpen,
         isLoading: leaderboard.isLoading,
         error,
         // Marking needs a live event; reading the list does not.

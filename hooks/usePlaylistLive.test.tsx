@@ -53,6 +53,15 @@ describe('usePlaylistLive', () => {
         expect(result.current.rows.map((row) => row.id)).toEqual(['s1', 's2']);
     });
 
+    it('splits the songs still to play from the played ones', () => {
+        const { result } = renderHook(() => usePlaylistLive('e1'), { wrapper: TestWrapper });
+        expect(result.current.upNext.map((row) => row.id)).toEqual(['s1']);
+        expect(result.current.played.map((row) => row.id)).toEqual(['s2']);
+        expect(result.current.playedOpen).toBe(false);
+        act(() => result.current.togglePlayedOpen());
+        expect(result.current.playedOpen).toBe(true);
+    });
+
     it('marks a song played and not played, then refreshes the list', async () => {
         patch.mockResolvedValue({});
         const { result } = renderHook(() => usePlaylistLive('e1'), { wrapper: TestWrapper });
