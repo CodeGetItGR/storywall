@@ -1,23 +1,23 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import type { ChangeEvent } from 'react';
 import { useCallback } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { Modal } from '@/components/ui/modal';
+import { VendorContactField } from '@/components/vendors/profile/VendorContactField';
+import { VendorProfileInput } from '@/components/vendors/profile/VendorProfileInput';
+import { VendorServiceTagsField } from '@/components/vendors/profile/VendorServiceTagsField';
 import { VendorBannerField } from '@/components/vendors/VendorBannerField';
 import { VendorLogoField } from '@/components/vendors/VendorLogoField';
+import { useMe } from '@/hooks/useMe';
 import { useVendorProfileForm } from '@/hooks/useVendorProfileForm';
 import type { PartnerRole, VendorProfileDto } from '@/lib/api/types';
-import { VENDOR_BUSINESS_NAME_MAX, VENDOR_LINK_MAX } from '@/lib/vendors';
-
-const INPUT_CLASS =
-    'min-h-11 w-full rounded-2xl border border-border/70 bg-background px-4 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10';
+import { VENDOR_BUSINESS_NAME_MAX, VENDOR_DESCRIPTION_MAX, VENDOR_EMAIL_MAX, VENDOR_PHONE_MAX, VENDOR_WEBSITE_MAX } from '@/lib/vendors';
 
 // Mounted only while open, so useVendorProfileForm always starts from the latest profile.
 // No type field: a vendor's type comes from the event link they joined with.
+// The contact fields are for approved partners only; guests never see them otherwise.
 export function VendorProfileSheet({
     open,
     profile,
@@ -30,11 +30,16 @@ export function VendorProfileSheet({
     onCloseAction: () => void;
 }) {
     const t = useTranslations('Vendors.profile');
+    const { data: me } = useMe();
     const form = useVendorProfileForm({ profile, defaultType, onSaved: onCloseAction });
-    const { setField, setLogo, setRemoveLogo, setBanner, setRemoveBanner } = form;
+    const { setField, toggleServiceTag, setShowPhone, setShowEmail, setLogo, setRemoveLogo, setBanner, setRemoveBanner } = form;
 
-    const handleNameChange = useCallback((event: ChangeEvent<HTMLInputElement>) => setField('businessName', event.target.value), [setField]);
-    const handleLinkChange = useCallback((event: ChangeEvent<HTMLInputElement>) => setField('link', event.target.value), [setField]);
+    const setBusinessName = useCallback((value: string) => setField('businessName', value), [setField]);
+    const setDescription = useCallback((value: string) => setField('description', value), [setField]);
+    const setInstagram = useCallback((value: string) => setField('instagram', value), [setField]);
+    const setWebsite = useCallback((value: string) => setField('website', value), [setField]);
+    const setPhone = useCallback((value: string) => setField('contactPhone', value), [setField]);
+    const setEmail = useCallback((value: string) => setField('contactEmail', value), [setField]);
 
     return (
         <Modal open={open} onClose={onCloseAction} variant="sheet" size="sm" closeDisabled={form.isSaving} ariaLabel={t('title')}>
@@ -47,43 +52,87 @@ export function VendorProfileSheet({
 
                 <form onSubmit={form.handleSubmit} noValidate className="mt-5 flex flex-col gap-4">
                     {/* Business name */}
-                    <div>
-                        <FormFieldLabel label={t('businessName')} required>
-                            <input
-                                className={INPUT_CLASS}
-                                value={form.values.businessName}
-                                maxLength={VENDOR_BUSINESS_NAME_MAX}
-                                onChange={handleNameChange}
-                                aria-invalid={Boolean(form.fieldErrors.businessName)}
-                                autoComplete="organization"
-                            />
-                        </FormFieldLabel>
-                        {form.fieldErrors.businessName && (
-                            <p role="alert" className="mt-1 text-xs text-red-600">
-                                {form.fieldErrors.businessName}
-                            </p>
-                        )}
-                    </div>
+                    <VendorProfileInput
+                        label={t('businessName')}
+                        value={form.values.businessName}
+                        error={form.fieldErrors.businessName}
+                        maxLength={VENDOR_BUSINESS_NAME_MAX}
+                        autoComplete="organization"
+                        required
+                        onChangeAction={setBusinessName}
+                    />
 
-                    {/* Link */}
-                    <div>
-                        <FormFieldLabel label={t('link')}>
-                            <input
-                                className={INPUT_CLASS}
-                                value={form.values.link}
-                                maxLength={VENDOR_LINK_MAX}
-                                placeholder={t('linkHint')}
-                                onChange={handleLinkChange}
-                                aria-invalid={Boolean(form.fieldErrors.link)}
-                                inputMode="url"
+                    {/* Description */}
+                    <VendorProfileInput
+                        label={t('description')}
+                        value={form.values.description}
+                        maxLength={VENDOR_DESCRIPTION_MAX}
+                        placeholder={t('descriptionHint')}
+                        multiline
+                        onChangeAction={setDescription}
+                    />
+
+                    {/* Services */}
+                    <VendorServiceTagsField
+                        vendorType={form.values.vendorType}
+                        selected={form.values.serviceTags}
+                        disabled={form.isSaving}
+                        onToggleAction={toggleServiceTag}
+                    />
+
+                    {/* Links */}
+                    <VendorProfileInput
+                        label={t('instagram')}
+                        value={form.values.instagram}
+                        error={form.fieldErrors.instagram}
+                        maxLength={VENDOR_WEBSITE_MAX}
+                        placeholder={t('instagramHint')}
+                        autoComplete="off"
+                        onChangeAction={setInstagram}
+                    />
+                    <VendorProfileInput
+                        label={t('website')}
+                        value={form.values.website}
+                        error={form.fieldErrors.website}
+                        maxLength={VENDOR_WEBSITE_MAX}
+                        placeholder={t('websiteHint')}
+                        inputMode="url"
+                        autoComplete="url"
+                        onChangeAction={setWebsite}
+                    />
+
+                    {/* Contact */}
+                    {me?.partner && (
+                        <section aria-labelledby="vendor-contact-title" className="flex flex-col gap-3 rounded-2xl bg-surface-muted/60 p-4">
+                            <h3 id="vendor-contact-title" className="text-sm font-semibold text-ink">
+                                {t('contactTitle')}
+                            </h3>
+                            <VendorContactField
+                                label={t('phone')}
+                                value={form.values.contactPhone}
+                                error={form.fieldErrors.contactPhone}
+                                maxLength={VENDOR_PHONE_MAX}
+                                type="tel"
+                                autoComplete="tel"
+                                shown={form.values.showPhone}
+                                disabled={form.isSaving}
+                                onChangeAction={setPhone}
+                                onShownChangeAction={setShowPhone}
                             />
-                        </FormFieldLabel>
-                        {form.fieldErrors.link && (
-                            <p role="alert" className="mt-1 text-xs text-red-600">
-                                {form.fieldErrors.link}
-                            </p>
-                        )}
-                    </div>
+                            <VendorContactField
+                                label={t('email')}
+                                value={form.values.contactEmail}
+                                error={form.fieldErrors.contactEmail}
+                                maxLength={VENDOR_EMAIL_MAX}
+                                type="email"
+                                autoComplete="email"
+                                shown={form.values.showEmail}
+                                disabled={form.isSaving}
+                                onChangeAction={setEmail}
+                                onShownChangeAction={setShowEmail}
+                            />
+                        </section>
+                    )}
 
                     {/* Logo */}
                     <VendorLogoField
