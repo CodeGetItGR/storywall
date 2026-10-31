@@ -7310,7 +7310,10 @@
             },
             "consent": "I agree to the <link>privacy policy</link>.",
             "submit": "Send application",
-            "sent": "Thanks. We'll reply by email.",
+            "sent": {
+                "title": "Thanks for your application!",
+                "body": "We'll review it and get in touch soon."
+            },
             "errors": {
                 "invalid": "Check the highlighted fields.",
                 "exists": "We already have your application. We'll reply by email.",

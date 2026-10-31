@@ -1,9 +1,10 @@
 'use client';
 
-import { Check, ChevronDown, Loader2 } from 'lucide-react';
+import { ChevronDown, Loader2, MailCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Children, type ComponentProps, type ReactNode } from 'react';
 
+import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { useApplyFormSummary } from '@/hooks/useApplyFormSummary';
 import { useForBusinessApplication } from '@/hooks/useForBusinessApplication';
 import { APPLICATION_ROLES, type ApplyFormDefaults, type CountryOption, type PrefillableApplyField } from '@/lib/forBusinessApplication';
@@ -25,11 +26,8 @@ export function ForBusinessApplyForm({ countries, defaultCountry, defaults, sear
     if (form.isSent) {
         return (
             /* Sent */
-            <div role="status" className="mt-8 flex flex-col items-center gap-4 rounded-3xl bg-[#151313]/[0.04] px-6 py-10 text-center">
-                <span className="flex size-14 items-center justify-center rounded-full bg-(image:--logo) text-white shadow-sm">
-                    <Check className="size-7" strokeWidth={2.5} aria-hidden="true" />
-                </span>
-                <p className="max-w-xs text-lg font-semibold text-[#151313]">{t('sent')}</p>
+            <div role="status">
+                <ToolEmptyState title={t('sent.title')} body={t('sent.body')} icon={MailCheck} className="px-0 py-6" />
             </div>
         );
     }
