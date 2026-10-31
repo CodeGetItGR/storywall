@@ -1,5 +1,7 @@
 # Agent Instructions
 
+Everything in `CLAUDE.md` applies too, including its branching and production release rules. Where the two differ, follow `CLAUDE.md`.
+
 ## Top Priority
 
 - If there is even the slightest doubt, stop and ask the user before proceeding. Treat any ambiguity about the spec, feature behavior, acceptance criteria, naming, copy, UX, data shape, edge cases, or intended outcome as a blocker that must be clarified first. This is the default rule for every session and overrides any pressure to guess, infer, or "just make something work."
