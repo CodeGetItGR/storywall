@@ -9,6 +9,7 @@ import {
     Flag,
     Footprints,
     GalleryVerticalEnd,
+    Gift,
     Handshake,
     Inbox,
     LayoutGrid,
@@ -60,6 +61,7 @@ export type AdminTab =
     | 'outreach'
     | 'outreachRequests'
     | 'discountCodes'
+    | 'guestOffer'
     | 'partnerApplications'
     | 'collaborations'
     | 'partnerCards'
@@ -114,6 +116,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#paid-services': 'paidServices',
     '#outreach-requests': 'outreachRequests',
     '#discount-codes': 'discountCodes',
+    '#guest-offer': 'guestOffer',
     '#partner-cards': 'partnerCards',
     '#reaction-types': 'reactionTypes',
     '#theme-presets': 'themePresets',
@@ -142,6 +145,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     outreach: OUTREACH_HASH_ROOT,
     outreachRequests: '#outreach-requests',
     discountCodes: '#discount-codes',
+    guestOffer: '#guest-offer',
     partnerApplications: PARTNER_APPLICATIONS_HASH_ROOT,
     collaborations: COLLABORATIONS_HASH_ROOT,
     partnerCards: '#partner-cards',
@@ -262,6 +266,7 @@ export function AdminNavigationProvider({ children, role = 'ADMIN' }: { children
             { key: 'outreach', label: t('outreach'), icon: Send },
             { key: 'outreachRequests', label: t('outreachRequests'), icon: ListChecks },
             { key: 'discountCodes', label: t('discountCodes'), icon: TicketPercent },
+            { key: 'guestOffer', label: t('guestOffer'), icon: Gift },
             { key: 'appReviews', label: t('appReviews'), icon: Star },
             { key: 'campaignOverview', label: t('campaignOverview'), icon: ChartLine },
             { key: 'campaigns', label: t('campaigns'), icon: Link2 },
