@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { AccountsPanel } from '@/components/admin/AccountsPanel';
 import { AdminDiscountCodesPanel } from '@/components/admin/AdminDiscountCodesPanel';
+import { AdminGuestOfferPanel } from '@/components/admin/AdminGuestOfferPanel';
 import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { AppReviewsPanel } from '@/components/admin/appReviews/AppReviewsPanel';
 import { BugReportsPanel } from '@/components/admin/betaFeedback/BugReportsPanel';
@@ -52,6 +53,7 @@ export function AdminConsole() {
     if (tab === 'paidServices') return <PaidServicesCatalogPanel />;
     if (tab === 'plans') return <PlansSection />;
     if (tab === 'discountCodes') return <AdminDiscountCodesPanel />;
+    if (tab === 'guestOffer') return <AdminGuestOfferPanel />;
     if (tab === 'partnerApplications') return <PartnerApplicationsSection />;
     if (tab === 'collaborations') return <CollaborationsSection />;
     if (tab === 'partnerCards') return <PartnerCardsSection />;

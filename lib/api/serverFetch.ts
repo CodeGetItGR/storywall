@@ -30,7 +30,7 @@ export async function serverGet<T>(path: string, accessToken: string): Promise<T
     return res.json() as Promise<T>;
 }
 
-// Like serverGet, but a 404 resolves to null: for resources that may simply not
+// Like serverGet, but a 404 or 204 resolves to null: for resources that may simply not
 // exist yet (e.g. the business profile), where "none" is a valid cache value.
 export async function serverGetOrNull<T>(path: string, accessToken: string): Promise<T | null> {
     const locale = await getServerLocale();
@@ -39,7 +39,7 @@ export async function serverGetOrNull<T>(path: string, accessToken: string): Pro
         cache: 'no-store',
     });
 
-    if (res.status === 404) return null;
+    if (res.status === 404 || res.status === 204) return null;
     if (!res.ok) {
         throw new Error(`Server prefetch failed for ${path} with status ${res.status}`);
     }
