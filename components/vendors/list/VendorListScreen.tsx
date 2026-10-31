@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { VendorListRow } from '@/components/vendors/list/VendorListRow';
-import { VendorRowsSkeleton } from '@/components/vendors/VendorsSkeletons';
+import { VendorCardsSkeleton } from '@/components/vendors/VendorsSkeletons';
 import { useVendorList } from '@/hooks/useVendorList';
 import { routes } from '@/lib/routes';
 
@@ -19,11 +19,11 @@ export function VendorListScreen() {
         <ModulePageShell maxWidth="2xl" title={t('list.title')} icon={Store} backLabel={t('list.back')} backHref={routes.events.feed(eventId)}>
             {/* List */}
             {isLoading ? (
-                <VendorRowsSkeleton />
+                <VendorCardsSkeleton />
             ) : vendors.length === 0 ? (
                 <p className="text-sm text-ink-muted">{t('list.empty')}</p>
             ) : (
-                <ul className="flex flex-col divide-y divide-border">
+                <ul className="grid gap-4 sm:grid-cols-2">
                     {vendors.map((vendor) => (
                         <VendorListRow key={vendor.id} vendor={vendor} onOpenAction={openVendor} />
                     ))}

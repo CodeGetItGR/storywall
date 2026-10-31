@@ -1202,6 +1202,8 @@ export interface VendorRowDto {
     businessName: string | null;
     link: string | null;
     logoUrl: string | null;
+    // The vendor's wide cover photo; absent when they have none.
+    bannerUrl?: string | null;
     joinedAt: string;
     hiddenByHost?: boolean;
     optedOut?: boolean;
@@ -1370,6 +1372,7 @@ export interface VendorProfileDto {
     vendorType: PartnerRole;
     link: string;
     logoUrl: string | null;
+    bannerUrl?: string | null;
     partnerPromptDismissed: boolean;
 }
 
@@ -1778,7 +1781,16 @@ export interface DiscountCodeResponseDto extends DiscountCodeRequestDto {
 // event plans, archived ones too, cut down so marketing can read them without the plan admin.
 export type DiscountCodePlanOption = Pick<
     PlanTierResponseDto,
-    'code' | 'name' | 'scope' | 'eventTypeKey' | 'sortOrder' | 'isAssignable' | 'priceCurrency' | 'discountPercent' | 'discountStartsAt' | 'discountEndsAt'
+    | 'code'
+    | 'name'
+    | 'scope'
+    | 'eventTypeKey'
+    | 'sortOrder'
+    | 'isAssignable'
+    | 'priceCurrency'
+    | 'discountPercent'
+    | 'discountStartsAt'
+    | 'discountEndsAt'
 > & { initialOptions: Pick<PlanTierResponseDto['initialOptions'][number], 'priceAmountMinor' | 'promoPriceAmountMinor' | 'active'>[] };
 export interface DiscountCodeOptionsDto {
     eventTypes: Pick<PlatformEventTypeResponseDto, 'eventTypeKey' | 'name' | 'sortOrder'>[];
