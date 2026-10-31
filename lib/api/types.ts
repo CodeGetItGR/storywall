@@ -256,12 +256,24 @@ export interface GuestOfferDto {
     endsAt: string | null;
 }
 
-// GET/PUT /api/admin/guest-offer. claimedCount is read only.
+// GET/PUT /api/admin/guest-offer.
 export interface GuestOfferSettingsDto {
     enabled: boolean;
     discountPercent: number;
     validityMonths: number;
-    claimedCount?: number | null;
+}
+
+// POST /api/events/{id}/guest-offer/activity. Counted once per person per day.
+export type GuestOfferAction = 'SEEN' | 'DISCOVER' | 'COPY';
+
+// GET /api/admin/guest-offer/stats?days=. People, each counted once; used = codes paid for at checkout.
+export interface GuestOfferStatsDto {
+    seen: number;
+    discovered: number;
+    claimed: number;
+    copied: number;
+    closed: number;
+    used: number;
 }
 
 // GET /api/me/review-prompt → 200 with this, or 204 (null) when there is nothing to ask.

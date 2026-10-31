@@ -9,6 +9,7 @@ import type { GuestOfferSettingsDto } from '@/lib/api/types';
 
 export const adminGuestOfferKeys = {
     settings: ['admin', 'guest-offer'] as const,
+    stats: (days: number) => ['admin', 'guest-offer', 'stats', days] as const,
 };
 
 interface GuestOfferDraft {
@@ -82,7 +83,6 @@ export function useAdminGuestOffer() {
     return {
         isLoading: query.isLoading,
         loadFailed: query.isError,
-        claimedCount: query.data?.claimedCount ?? 0,
         draft,
         percentInvalid: draft !== null && percent === null,
         monthsInvalid: draft !== null && months === null,

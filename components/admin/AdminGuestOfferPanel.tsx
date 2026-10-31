@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
-import { AdminStatTile } from '@/components/admin/AdminStatTile';
+import { AdminGuestOfferStats } from '@/components/admin/AdminGuestOfferStats';
 import { AdminSwitch } from '@/components/admin/AdminSwitch';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useAdminGuestOffer } from '@/hooks/useAdminGuestOffer';
@@ -24,6 +24,9 @@ export function AdminGuestOfferPanel() {
                 <p className="mt-1.5 max-w-2xl text-sm leading-6 text-ink-muted">{t('description')}</p>
             </header>
 
+            {/* Stats */}
+            <AdminGuestOfferStats />
+
             {form.isLoading && <LoadingState label={t('loading')} className="justify-start" />}
             {form.loadFailed && (
                 <p role="alert" className="text-sm text-red-600">
@@ -33,11 +36,6 @@ export function AdminGuestOfferPanel() {
 
             {form.draft && (
                 <>
-                    {/* Stats */}
-                    <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                        <AdminStatTile label={t('claimed')} value={form.claimedCount} />
-                    </div>
-
                     {/* Terms */}
                     <form onSubmit={form.submit} className="rounded-xl border border-border bg-card">
                         <AdminSwitch label={t('enabled')} checked={form.draft.enabled} onCheckedChangeAction={form.setEnabled} />

@@ -36,7 +36,11 @@ export function GuestOfferCode({ code, endsAt, isCopied, onCopy }: GuestOfferCod
             </div>
 
             {/* Expiry */}
-            {endsAt && <p className="mt-2.5 text-[0.8125rem] text-ink-muted">{t('expires', { date: formatDate(locale, endsAt, { dateStyle: 'medium' }) })}</p>}
+            {endsAt && (
+                <p className="mt-2.5 text-[0.8125rem] text-ink-muted">
+                    {t('expires', { date: formatDate(locale, endsAt, { dateStyle: 'medium' }) })}
+                </p>
+            )}
         </div>
     );
 }

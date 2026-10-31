@@ -154,6 +154,7 @@ export const endpoints = {
         guestOffer: (eventId: string) => `/api/events/${eventId}/guest-offer`,
         guestOfferClaim: (eventId: string) => `/api/events/${eventId}/guest-offer/claim`,
         guestOfferDismiss: (eventId: string) => `/api/events/${eventId}/guest-offer/dismiss`,
+        guestOfferActivity: (eventId: string) => `/api/events/${eventId}/guest-offer/activity`,
         heOrShe: (eventId: string) => `/api/events/${eventId}/he-or-she`,
         heOrSheAnswers: (eventId: string) => `/api/events/${eventId}/he-or-she/answers`,
         heOrSheSettings: (eventId: string) => `/api/events/${eventId}/he-or-she/settings`,
@@ -518,6 +519,7 @@ export const endpoints = {
             byId: (id: string) => `/api/admin/collaboration-codes/${id}`,
         },
         guestOffer: '/api/admin/guest-offer',
+        guestOfferStats: '/api/admin/guest-offer/stats',
         discountCodes: {
             list: '/api/admin/discount-codes',
             options: '/api/admin/discount-codes/options',
