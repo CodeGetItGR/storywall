@@ -8514,6 +8514,13 @@
                 "qr": "Share links",
                 "liveRequests": "Live requests"
             },
+            "toolsBody": {
+                "schedule": "Change the event schedule. Guests see the changes right away.",
+                "announcement": "Post a message every guest sees.",
+                "rsvpReport": "See who is coming and what they answered.",
+                "qr": "Print or send the QR codes guests use to join.",
+                "liveRequests": "The songs guests ask for during the event."
+            },
             "proTitle": "Pro album",
             "proChoose": "Choose photos or videos",
             "proUpload": "Upload {count, plural, one {# file} other {# files}}",
