@@ -5,11 +5,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useBecomePartner } from '@/hooks/useBecomePartner';
 
-const dismiss = vi.hoisted(() => vi.fn());
 vi.mock('@/hooks/useVendorProfile', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@/hooks/useVendorProfile')>()),
     useVendorProfile: () => ({ data: { businessName: 'DJ Nik', vendorType: 'MUSIC', link: '@djnik', logoUrl: null, partnerPromptDismissed: false } }),
-    useDismissPartnerPrompt: () => ({ mutateAsync: dismiss, isPending: false }),
 }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { email: 'nik@example.com', firstName: 'Nik', lastName: 'Papas' } }) }));
 
@@ -20,7 +18,6 @@ function wrapper({ children }: { children: ReactNode }) {
 }
 
 beforeEach(() => {
-    dismiss.mockReset();
     client = new QueryClient();
 });
 
@@ -55,12 +52,5 @@ describe('useBecomePartner', () => {
         const { predicate } = invalidate.mock.calls[0][0] as { predicate: (query: { queryKey: readonly unknown[] }) => boolean };
         expect(predicate({ queryKey: ['events', 'e1', 'vendors', 'me'] })).toBe(true);
         expect(predicate({ queryKey: ['events', 'e1', 'media'] })).toBe(false);
-    });
-
-    it('stores the dismissal and survives a failure', async () => {
-        dismiss.mockRejectedValueOnce(new Error('500'));
-        const { result } = renderHook(() => useBecomePartner(), { wrapper });
-        await act(() => result.current.dismiss());
-        expect(dismiss).toHaveBeenCalledTimes(1);
     });
 });

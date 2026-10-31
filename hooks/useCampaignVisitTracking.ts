@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { useEffect, useEffectEvent } from 'react';
 
-import { campaignFromUrl, pageLanguage, rememberCampaign, sendCampaignVisit } from '@/lib/campaignVisits';
+import { campaignFromUrl, rememberCampaign, sendCampaignVisit } from '@/lib/campaignVisits';
 import { isLandingPath } from '@/lib/signupSource';
 
 // Counts an arrival from a campaign link on a landing page. A page without utm values keeps the
@@ -16,7 +16,7 @@ export function useCampaignVisitTracking() {
         const campaign = campaignFromUrl(window.location.href);
         if (!campaign) return;
         rememberCampaign(campaign);
-        sendCampaignVisit('VISIT', campaign, pageLanguage(pathname));
+        sendCampaignVisit('VISIT', campaign, pathname);
     });
 
     useEffect(() => {

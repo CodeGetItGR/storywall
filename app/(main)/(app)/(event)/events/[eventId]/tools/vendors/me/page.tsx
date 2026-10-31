@@ -3,12 +3,21 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { mediaKeys, mediaListPath } from '@/hooks/useMedia';
 import { printListKeys } from '@/hooks/usePrintLists';
 import { vendorProfileKeys } from '@/hooks/useVendorProfile';
+import { vendorReachKeys } from '@/hooks/useVendorReach';
 import { vendorKeys } from '@/hooks/useVendors';
 import { vendorServiceKeys } from '@/hooks/useVendorServices';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page as ApiPage } from '@/lib/api/pagination';
 import { serverGet, serverGetOrNull } from '@/lib/api/serverFetch';
-import type { MediaResponseDto, PrintListDto, PrintPicksContextDto, VendorMeDto, VendorProfileDto, VendorServiceItemDto } from '@/lib/api/types';
+import type {
+    MediaResponseDto,
+    PrintListDto,
+    PrintPicksContextDto,
+    VendorMeDto,
+    VendorProfileDto,
+    VendorReachDto,
+    VendorServiceItemDto,
+} from '@/lib/api/types';
 import { resolveServerEventContext, resolveServerEventDetail } from '@/lib/auth/serverEventContext';
 import { readableModuleKeys } from '@/lib/eventLifecycle';
 import { makeQueryClient } from '@/lib/queryClient';
@@ -21,6 +30,7 @@ type PageProps = { params: Promise<{ eventId: string }> };
 // Prefetches the caller's vendor role, their profile and, for Pro album types, the Pro first page.
 // With print picks open it also seeds the context and the photographer's host list, and an approved photographer's sizes.
 // The role and profile are not module-gated (the page works with the vendors module off), like their hooks.
+// Every vendor's reach is seeded too, the same gate as `useReachSection` (a vendor row).
 // Hosts are never vendors, so they get nothing.
 export default async function Page({ params }: PageProps) {
     const { eventId } = await params;
@@ -38,7 +48,7 @@ export default async function Page({ params }: PageProps) {
                 // The same gates as useVendorPrintsSection (PRINT_PICKS open; the context also needs the vendors module readable) and useVendorServicesSection (approved photographer).
                 const withPrints = hasVendorCapability(me, 'PRINT_PICKS');
                 const withServices = me.vendorType === 'PHOTOGRAPHER' && me.approvedPartner;
-                const [profile, proFirstPage, printContext, hostList, services] = await Promise.all([
+                const [profile, proFirstPage, printContext, hostList, services, reach] = await Promise.all([
                     serverGetOrNull<VendorProfileDto>(endpoints.me.vendorProfile, context.accessToken),
                     withPro ? serverGet<ApiPage<MediaResponseDto>>(mediaListPath(eventId, 'PRO', 0), context.accessToken) : Promise.resolve(null),
                     // A failed print read must not drop the profile: the client fetches these itself.
@@ -49,12 +59,15 @@ export default async function Page({ params }: PageProps) {
                         ? serverGet<PrintListDto>(endpoints.events.hostPrintList(eventId, me.vendorId), context.accessToken).catch(() => null)
                         : null,
                     withServices ? serverGet<VendorServiceItemDto[]>(endpoints.me.vendorServices, context.accessToken).catch(() => null) : null,
+                    // Every vendor has a reach report; a failed read must not drop the rest.
+                    serverGet<VendorReachDto>(endpoints.events.vendorReach(eventId), context.accessToken).catch(() => null),
                 ]);
                 queryClient.setQueryData(vendorProfileKeys.mine, profile);
                 if (proFirstPage) queryClient.setQueryData(mediaKeys.proList(eventId), { pages: [proFirstPage], pageParams: [0] });
                 if (printContext) queryClient.setQueryData(printListKeys.context(eventId), printContext);
                 if (hostList) queryClient.setQueryData(printListKeys.host(eventId, me.vendorId), hostList);
                 if (services) queryClient.setQueryData(vendorServiceKeys.mine, services);
+                if (reach) queryClient.setQueryData(vendorReachKeys.me(eventId), reach);
             }
         } catch {
             // Best-effort — the hooks fetch normally on the client if this fails.

@@ -52,7 +52,6 @@ export function useVendorMePage(eventId: string) {
         canChooseListing: vendorsReadable,
         listed: me ? !me.optedOut : false,
         hiddenByHost: me?.hiddenByHost ?? false,
-        showPartnerPrompt: me?.showPartnerPrompt ?? false,
         toggleListed,
         isTogglingListed: patchVendor.isPending,
         error,

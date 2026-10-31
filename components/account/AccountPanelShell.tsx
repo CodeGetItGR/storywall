@@ -15,7 +15,7 @@ export function AccountPanelShell({ children }: { children: ReactNode }) {
             <div
                 aria-hidden={!open}
                 data-open={open}
-                className={cn('account-panel-sidebar absolute inset-0 lg:hidden', !open && 'pointer-events-none')}
+                className={cn('account-panel-sidebar absolute inset-0 md:hidden', !open && 'pointer-events-none')}
             >
                 <AccountSidebarContent onCloseAction={closeAccount} />
             </div>
@@ -24,7 +24,7 @@ export function AccountPanelShell({ children }: { children: ReactNode }) {
             <div
                 onClick={open ? closeAccount : undefined}
                 data-open={open}
-                className="account-panel-page relative h-full w-full overflow-hidden bg-background lg:bg-transparent"
+                className="account-panel-page relative h-full w-full overflow-hidden bg-background md:bg-transparent"
             >
                 {/* Page content */}
                 <div inert={open || undefined} className="h-full w-full">

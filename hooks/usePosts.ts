@@ -199,9 +199,14 @@ export function useDeletePost(eventId: string) {
         // The pages after it are offsets that moved by one; like a post someone
         // else deletes, they catch up on the feed's refetchInterval.
         onSuccess: (_data, id) => {
-            queryClient.setQueryData<InfiniteData<Page<PostResponseDto>>>(postKeys.list(eventId), (old) =>
-                old ? { ...old, pages: old.pages.map((page) => ({ ...page, content: page.content.filter((post) => post.id !== id) })) } : old,
-            );
+            removePostFromFeed(queryClient, eventId, id);
         },
     });
+}
+
+// Drops one post from the cached feed without refetching any page.
+export function removePostFromFeed(queryClient: QueryClient, eventId: string, postId: string) {
+    queryClient.setQueryData<InfiniteData<Page<PostResponseDto>>>(postKeys.list(eventId), (old) =>
+        old ? { ...old, pages: old.pages.map((page) => ({ ...page, content: page.content.filter((post) => post.id !== postId) })) } : old,
+    );
 }

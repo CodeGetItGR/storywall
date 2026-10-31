@@ -79,6 +79,37 @@ describe('NotificationRow', () => {
         expect(screen.getByText('Studio X joined as Photographer')).toBeInTheDocument();
     });
 
+    it('falls back to the sneak peek copy', () => {
+        renderRow({
+            ...reportOutcome,
+            id: 'n-sp',
+            type: 'SNEAK_PEEK_POSTED',
+            category: null,
+            severity: null,
+            title: null,
+            body: null,
+            payload: { businessName: 'Studio X', vendorType: 'PHOTOGRAPHER' },
+        });
+
+        expect(screen.getByText('Studio X shared a sneak peek')).toBeInTheDocument();
+        expect(screen.getByText('See the first moments from the event.')).toBeInTheDocument();
+    });
+
+    it('falls back to the reach summary copy', () => {
+        renderRow({
+            ...reportOutcome,
+            id: 'n-rs',
+            type: 'VENDOR_REACH_SUMMARY',
+            category: null,
+            severity: null,
+            title: null,
+            body: null,
+            payload: {},
+        });
+
+        expect(screen.getByText('Your reach report is ready')).toBeInTheDocument();
+    });
+
     it('fills the PRINT_PICKS_ENDING fallback with the date and a singular or plural body', () => {
         const ending: NotificationResponseDto = {
             ...reportOutcome,

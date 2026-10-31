@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildReturnPath, getPostAuthRedirectPath, getPostRegisterRedirectPath, getSafeReturnPath } from '@/lib/auth/returnPath';
+import { buildReturnPath, getPostAuthRedirectPath, getPostRegisterRedirectPath, getSafeReturnPath, withLocationHash } from '@/lib/auth/returnPath';
 
 describe('getSafeReturnPath', () => {
     it('keeps an internal path and its query string', () => {
@@ -17,14 +17,45 @@ describe('getSafeReturnPath', () => {
 
     it('keeps the admin landing page for an administrator', () => {
         expect(getPostAuthRedirectPath('ADMIN', '/events/event-1/feed')).toBe('/admin');
+        expect(getPostAuthRedirectPath('ADMIN', null)).toBe('/admin');
+    });
+
+    it('returns an administrator to the console section they asked for', () => {
+        expect(getPostAuthRedirectPath('ADMIN', '/admin#phones')).toBe('/admin#phones');
+        expect(getPostAuthRedirectPath('ADMIN', '/admin#orders/abc')).toBe('/admin#orders/abc');
     });
 
     it.each(['/admin', '/admin?section=plans', '/admin/plans'])('sends a member to the feed instead of an admin return path: %s', (path) => {
         expect(getPostAuthRedirectPath('USER', path)).toBe('/feed');
     });
 
+    it('returns marketing to the console section they asked for, and signs them in like a member otherwise', () => {
+        expect(getPostAuthRedirectPath('MARKETING', '/admin#outreach/abc')).toBe('/admin#outreach/abc');
+        expect(getPostAuthRedirectPath('MARKETING', '/events/event-1/feed')).toBe('/events/event-1/feed');
+        expect(getPostAuthRedirectPath('MARKETING', null)).toBe('/feed');
+    });
+
     it('keeps a return path that only starts with the admin prefix', () => {
         expect(getPostAuthRedirectPath('USER', '/administrator')).toBe('/administrator');
+    });
+});
+
+describe('withLocationHash', () => {
+    it("adds the page's hash to the return path", () => {
+        expect(withLocationHash('/admin', '#phones')).toBe('/admin#phones');
+        expect(withLocationHash('/events/event-1/feed?post=post-1', '#comments')).toBe('/events/event-1/feed?post=post-1#comments');
+    });
+
+    it('keeps a return path that has its own hash', () => {
+        expect(withLocationHash('/admin#orders', '#phones')).toBe('/admin#orders');
+    });
+
+    it.each(['', '#'])('leaves the return path alone without a hash: %j', (hash) => {
+        expect(withLocationHash('/admin', hash)).toBe('/admin');
+    });
+
+    it('stays empty without a return path', () => {
+        expect(withLocationHash(null, '#phones')).toBeNull();
     });
 });
 

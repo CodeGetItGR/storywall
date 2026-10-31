@@ -32,6 +32,8 @@ describe('ServicesSection', () => {
                 loadFailed={false}
                 error={null}
                 onAddAction={vi.fn()}
+                canApply={false}
+                onBecomePartnerAction={vi.fn()}
                 onEditAction={onEditAction}
             />,
         );
@@ -53,6 +55,8 @@ describe('ServicesSection', () => {
                 loadFailed={false}
                 error={null}
                 onAddAction={onAddAction}
+                canApply={false}
+                onBecomePartnerAction={vi.fn()}
                 onEditAction={vi.fn()}
             />,
         );
@@ -73,6 +77,8 @@ describe('ServicesSection', () => {
                 loadFailed={false}
                 error={null}
                 onAddAction={vi.fn()}
+                canApply={false}
+                onBecomePartnerAction={vi.fn()}
                 onEditAction={vi.fn()}
             />,
         );
@@ -80,7 +86,7 @@ describe('ServicesSection', () => {
         expect(screen.getByText('You can list up to 8 sizes.')).toBeInTheDocument();
     });
 
-    it('shows one line to vendors who are not approved partners', () => {
+    it('shows vendors who are not approved partners a locked sample', () => {
         renderIntl(
             <ServicesSection
                 approved={false}
@@ -92,10 +98,13 @@ describe('ServicesSection', () => {
                 loadFailed={false}
                 error={null}
                 onAddAction={vi.fn()}
+                canApply={false}
+                onBecomePartnerAction={vi.fn()}
                 onEditAction={vi.fn()}
             />,
         );
-        expect(screen.getByText('Only approved partners can list prices.')).toBeInTheDocument();
+        expect(screen.getByText('Set your print prices')).toBeInTheDocument();
+        expect(screen.getByText('For partners')).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Add size' })).not.toBeInTheDocument();
     });
 
@@ -111,6 +120,8 @@ describe('ServicesSection', () => {
                 loadFailed={false}
                 error="Nope"
                 onAddAction={vi.fn()}
+                canApply={false}
+                onBecomePartnerAction={vi.fn()}
                 onEditAction={vi.fn()}
             />,
         );
@@ -129,6 +140,8 @@ describe('ServicesSection', () => {
                 loadFailed={false}
                 error={null}
                 onAddAction={vi.fn()}
+                canApply={false}
+                onBecomePartnerAction={vi.fn()}
                 onEditAction={vi.fn()}
             />,
         );
@@ -149,6 +162,8 @@ describe('ServicesSection', () => {
                 loadFailed={false}
                 error={null}
                 onAddAction={vi.fn()}
+                canApply={false}
+                onBecomePartnerAction={vi.fn()}
                 onEditAction={vi.fn()}
             />,
         );
@@ -169,6 +184,8 @@ describe('ServicesSection', () => {
                 error={null}
                 includedRow={<li>included row</li>}
                 onAddAction={vi.fn()}
+                canApply={false}
+                onBecomePartnerAction={vi.fn()}
                 onEditAction={vi.fn()}
             />,
         );
@@ -191,6 +208,8 @@ describe('ServicesSection', () => {
                 error={null}
                 includedRow={<li>included row</li>}
                 onAddAction={vi.fn()}
+                canApply={false}
+                onBecomePartnerAction={vi.fn()}
                 onEditAction={vi.fn()}
             />,
         );

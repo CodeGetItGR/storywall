@@ -1,16 +1,22 @@
 'use client';
 
-import { Plus } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { IdCard, Plus, ReceiptText } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { LockedPreview } from '@/components/vendors/me/LockedPreview';
 import { ServiceRow } from '@/components/vendors/me/ServiceRow';
+import { VendorMeNote } from '@/components/vendors/me/VendorMeNote';
+import { VendorMeSection } from '@/components/vendors/me/VendorMeSection';
 import { VendorRowsSkeleton } from '@/components/vendors/VendorsSkeletons';
 import type { VendorServiceItemDto } from '@/lib/api/types';
+import { formatMoney } from '@/lib/billing';
 import { PRINT_SIZES_MAX } from '@/lib/printPicks';
+import { SAMPLE_PRINT_SIZES } from '@/lib/vendors';
 
-// Print prices as compact rows: the host's included prints, then the sizes. A row opens its edit sheet. Non-partners get one line for the sizes.
+// Print prices as compact rows: the host's included prints, then the sizes. A row opens its edit sheet.
+// Non-partners get a blurred sample list in place of the sizes.
 export function ServicesSection({
     approved,
     sizes,
@@ -21,8 +27,10 @@ export function ServicesSection({
     loadFailed,
     error,
     includedRow,
+    canApply,
     onAddAction,
     onEditAction,
+    onBecomePartnerAction,
 }: {
     approved: boolean;
     sizes: VendorServiceItemDto[];
@@ -33,27 +41,31 @@ export function ServicesSection({
     loadFailed: boolean;
     error: string | null;
     includedRow?: ReactNode;
+    canApply: boolean;
     onAddAction: () => void;
     onEditAction: (item: VendorServiceItemDto) => void;
+    onBecomePartnerAction: () => void;
 }) {
     const t = useTranslations('Vendors.services');
+    const tHints = useTranslations('Vendors.hints');
+    const locale = useLocale();
     const showSizes = approved && !loadFailed && !isLoading && !needsProfile && sizes.length > 0;
 
     return (
-        <section aria-labelledby="vendor-services-title" className="flex flex-col gap-3">
-            {/* Header */}
-            <div className="flex items-center justify-between gap-3">
-                <h3 id="vendor-services-title" className="text-sm font-semibold text-ink">
-                    {t('title')}
-                </h3>
-                {approved && !needsProfile && (
+        <VendorMeSection
+            id="vendor-services-title"
+            title={t('title')}
+            hint={tHints('printPrices')}
+            action={
+                approved &&
+                !needsProfile && (
                     <Button type="button" variant="outline" size="lg" onClick={onAddAction} disabled={!canAdd || profileLoading}>
                         <Plus aria-hidden="true" />
                         {t('add')}
                     </Button>
-                )}
-            </div>
-
+                )
+            }
+        >
             {/* Prices */}
             {(includedRow || showSizes) && (
                 <ul className="divide-y divide-border">
@@ -64,13 +76,22 @@ export function ServicesSection({
 
             {/* Sizes state */}
             {!approved ? (
-                <p className="text-sm text-ink-muted">{t('partnerOnly')}</p>
+                <LockedPreview label={t('lockedLabel')} canApply={canApply} onApplyAction={onBecomePartnerAction}>
+                    <ul className="divide-y divide-border">
+                        {SAMPLE_PRINT_SIZES.map((size) => (
+                            <li key={size.label} className="flex min-h-12 items-center justify-between gap-3 py-2 text-sm">
+                                <span className="text-ink">{size.label}</span>
+                                <span className="text-ink-muted tabular-nums">{formatMoney(locale, size.priceCents, 'EUR')}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </LockedPreview>
             ) : loadFailed ? null : isLoading ? (
                 <VendorRowsSkeleton rows={2} />
             ) : needsProfile ? (
-                <p className="text-sm text-ink-muted">{t('profileFirst')}</p>
+                <VendorMeNote icon={IdCard}>{t('profileFirst')}</VendorMeNote>
             ) : (
-                sizes.length === 0 && <p className="text-sm text-ink-muted">{t('empty')}</p>
+                sizes.length === 0 && <VendorMeNote icon={ReceiptText}>{t('empty')}</VendorMeNote>
             )}
             {approved && !canAdd && <p className="text-xs text-ink-muted">{t('limit', { max: PRINT_SIZES_MAX })}</p>}
 
@@ -80,6 +101,6 @@ export function ServicesSection({
                     {error}
                 </p>
             )}
-        </section>
+        </VendorMeSection>
     );
 }

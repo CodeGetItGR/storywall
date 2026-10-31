@@ -19,10 +19,15 @@ import { FunnelPanel } from '@/components/admin/funnel/FunnelPanel';
 import { ModerationPanel } from '@/components/admin/moderation/ModerationPanel';
 import { ModuleUsagePanel } from '@/components/admin/moduleUsage/ModuleUsagePanel';
 import { OrdersSection } from '@/components/admin/orders/OrdersSection';
+import { OutreachSection } from '@/components/admin/outreach/OutreachSection';
+import { OutreachRequestsSection } from '@/components/admin/outreach/requests/OutreachRequestsSection';
 import { PaidServicesCatalogPanel } from '@/components/admin/PaidServicesCatalogPanel';
+import { PartnerApplicationsSection } from '@/components/admin/partnerApplications/PartnerApplicationsSection';
 import { PartnerCardsSection } from '@/components/admin/partnerCards/PartnerCardsSection';
+import { PhonesPanel } from '@/components/admin/phones/PhonesPanel';
 import { PlansSection } from '@/components/admin/plans/PlansSection';
 import { PlatformMetricsPanel } from '@/components/admin/PlatformMetricsPanel';
+import { QrCardTemplatesPanel } from '@/components/admin/qrCards/QrCardTemplatesPanel';
 import { ReactionTypesCatalogPanel } from '@/components/admin/ReactionTypesCatalogPanel';
 import { SiteNoticesPanel } from '@/components/admin/siteNotices/SiteNoticesPanel';
 import { ThemeFontsPanel } from '@/components/admin/themeFonts/ThemeFontsPanel';
@@ -39,17 +44,21 @@ export function AdminConsole() {
     if (tab === 'metrics') return <PlatformMetricsPanel />;
     if (tab === 'funnel') return <FunnelPanel />;
     if (tab === 'visitors') return <VisitorsPanel />;
+    if (tab === 'outreach') return <OutreachSection />;
+    if (tab === 'outreachRequests') return <OutreachRequestsSection />;
     if (tab === 'campaignOverview') return <CampaignOverviewPanel />;
     if (tab === 'campaigns') return <CampaignsPanel />;
     if (tab === 'moduleUsage') return <ModuleUsagePanel />;
     if (tab === 'paidServices') return <PaidServicesCatalogPanel />;
     if (tab === 'plans') return <PlansSection />;
     if (tab === 'discountCodes') return <AdminDiscountCodesPanel />;
+    if (tab === 'partnerApplications') return <PartnerApplicationsSection />;
     if (tab === 'collaborations') return <CollaborationsSection />;
     if (tab === 'partnerCards') return <PartnerCardsSection />;
     if (tab === 'reactionTypes') return <ReactionTypesCatalogPanel />;
     if (tab === 'themePresets') return <ThemePresetsPanel />;
     if (tab === 'themeFonts') return <ThemeFontsPanel />;
+    if (tab === 'qrCards') return <QrCardTemplatesPanel />;
     if (tab === 'demoEvents') return <DemoEventsSection />;
     if (tab === 'withdrawals') return <WithdrawalsSection />;
     if (tab === 'orders') return <OrdersSection />;
@@ -72,6 +81,13 @@ export function AdminConsole() {
         return (
             <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
                 <SiteNoticesPanel />
+            </div>
+        );
+    }
+    if (tab === 'phones') {
+        return (
+            <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
+                <PhonesPanel />
             </div>
         );
     }

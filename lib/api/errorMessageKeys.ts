@@ -33,6 +33,8 @@ export type ApiErrorMessageKey =
     | 'collaboratorPayoutDetailsIncomplete'
     | 'campaignLinkTaken'
     | 'collaboratorBrandingIncomplete'
+    | 'outreachRequestDecided'
+    | 'outreachRequestPending'
     | 'partnerBrandingNoticeOutdated'
     | 'concurrentModification'
     | 'conflict'
@@ -97,16 +99,30 @@ export type ApiErrorMessageKey =
     | 'vendorCannotRsvp'
     | 'printItemInvalid'
     | 'partnerRequired'
+    | 'partnerEmailNotVerified'
+    | 'partnerNotLinked'
     | 'printPicksUnavailable'
     | 'printPricesMissing'
     | 'printListLocked'
     | 'printListFull'
     | 'vendorServiceLimitReached'
     | 'printListEmpty'
+    | 'pushNotEnabled'
+    | 'sneakPeekMediaInvalid'
+    | 'sneakPeekNotOpen'
+    | 'sneakPeekUsed'
+    | 'pushSendFailed'
+    | 'pushUnavailable'
     | 'vendorLimitReached'
     | 'vendorIsHost'
     | 'alreadyAVendor'
     | 'partnerApplicationPending'
+    | 'partnerApplicationNotPending'
+    | 'foundingSpotsFull'
+    | 'collaboratorEmailExists'
+    | 'qrCardCodeColorLowContrast'
+    | 'qrCardArtworkSizeInvalid'
+    | 'qrCardLayoutInvalid'
     | 'eventHostAlreadyCoHost'
     | 'eventHostLastHost'
     | 'eventHostAlreadyPrimary'
@@ -595,16 +611,32 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.VENDOR_CANNOT_RSVP]: 'vendorCannotRsvp',
     [ERROR_CODES.PRINT_ITEM_INVALID]: 'printItemInvalid',
     [ERROR_CODES.PARTNER_REQUIRED]: 'partnerRequired',
+    [ERROR_CODES.PARTNER_EMAIL_NOT_VERIFIED]: 'partnerEmailNotVerified',
+    [ERROR_CODES.PARTNER_NOT_LINKED]: 'partnerNotLinked',
     [ERROR_CODES.PRINT_PICKS_UNAVAILABLE]: 'printPicksUnavailable',
     [ERROR_CODES.PRINT_PRICES_MISSING]: 'printPricesMissing',
     [ERROR_CODES.PRINT_LIST_LOCKED]: 'printListLocked',
     [ERROR_CODES.PRINT_LIST_FULL]: 'printListFull',
     [ERROR_CODES.VENDOR_SERVICE_LIMIT_REACHED]: 'vendorServiceLimitReached',
     [ERROR_CODES.PRINT_LIST_EMPTY]: 'printListEmpty',
+    [ERROR_CODES.PUSH_NOT_ENABLED]: 'pushNotEnabled',
+    [ERROR_CODES.SNEAK_PEEK_MEDIA_INVALID]: 'sneakPeekMediaInvalid',
+    [ERROR_CODES.SNEAK_PEEK_NOT_OPEN]: 'sneakPeekNotOpen',
+    [ERROR_CODES.SNEAK_PEEK_USED]: 'sneakPeekUsed',
+    [ERROR_CODES.PUSH_UNAVAILABLE]: 'pushUnavailable',
+    [ERROR_CODES.PUSH_SEND_FAILED]: 'pushSendFailed',
     [ERROR_CODES.VENDOR_LIMIT_REACHED]: 'vendorLimitReached',
     [ERROR_CODES.VENDOR_IS_HOST]: 'vendorIsHost',
     [ERROR_CODES.ALREADY_A_VENDOR]: 'alreadyAVendor',
     [ERROR_CODES.PARTNER_APPLICATION_PENDING]: 'partnerApplicationPending',
+    [ERROR_CODES.PARTNER_APPLICATION_NOT_PENDING]: 'partnerApplicationNotPending',
+    [ERROR_CODES.FOUNDING_SPOTS_FULL]: 'foundingSpotsFull',
+    [ERROR_CODES.COLLABORATOR_EMAIL_EXISTS]: 'collaboratorEmailExists',
+    [ERROR_CODES.OUTREACH_REQUEST_PENDING]: 'outreachRequestPending',
+    [ERROR_CODES.OUTREACH_REQUEST_DECIDED]: 'outreachRequestDecided',
+    [ERROR_CODES.QR_CARD_CODE_COLOR_LOW_CONTRAST]: 'qrCardCodeColorLowContrast',
+    [ERROR_CODES.QR_CARD_ARTWORK_SIZE_INVALID]: 'qrCardArtworkSizeInvalid',
+    [ERROR_CODES.QR_CARD_LAYOUT_INVALID]: 'qrCardLayoutInvalid',
 } satisfies Record<KnownApiErrorCode, ApiErrorMessageKey>;
 
 export function getApiErrorMessageKey(code: number | string | undefined): ApiErrorMessageKey | undefined {

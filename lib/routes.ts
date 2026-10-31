@@ -42,6 +42,7 @@ export const routes = {
     invite: '/invite',
     home: '/home',
     profile: '/profile',
+    partner: '/partner',
     events: {
         // run: the wizard run the entry belongs to (see CREATE_EVENT_RUN_PARAM).
         new: (
@@ -60,6 +61,8 @@ export const routes = {
         // same way the gallery upload code lives on its own page, linked from a
         // compact pointer instead of an embedded panel.
         invitationsQr: (eventId: string) => `${eventBasePath(eventId)}/manage/qr`,
+        // The printable card for one share link or the gallery QR (QR card templates, 2026-10-28).
+        qrCard: (eventId: string, qrLinkId: string) => `${eventBasePath(eventId)}/manage/qr/${qrLinkId}/card`,
         // The host's vendor links and joined vendors (vendors spec 2026-10-19); VENDOR_JOINED links here.
         manageVendors: (eventId: string) => `${eventBasePath(eventId)}/manage/vendors`,
         // The printable gift claim card.

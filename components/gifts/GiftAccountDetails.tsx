@@ -21,7 +21,7 @@ export function GiftAccountDetails({ account, onEditAction }: GiftAccountDetails
     const note = account.note?.trim() || t('accountSubtitle');
 
     return (
-        <div className="flex min-h-[calc(100dvh-9.25rem)] flex-col lg:min-h-[calc(100dvh-4.25rem)]">
+        <div className="flex min-h-[calc(100dvh-9.25rem)] flex-col md:min-h-[calc(100dvh-4.25rem)]">
             {/* Hero */}
             <section className="flex flex-col items-center px-2 pt-4 text-center">
                 <Image src="/icons/present.svg" alt={tAlt('gift')} width={80} height={80} preload className="h-20 w-20" unoptimized />

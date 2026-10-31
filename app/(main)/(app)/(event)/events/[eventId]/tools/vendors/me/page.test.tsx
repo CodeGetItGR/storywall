@@ -42,6 +42,7 @@ function answer(me: unknown) {
 
 beforeEach(() => {
     serverGet.mockReset();
+    serverGet.mockResolvedValue(null);
     serverGetOrNull.mockReset();
     ctx.context = { accessToken: 'tok', isHost: false };
     ctx.event = VENDOR_EVENT;
@@ -72,7 +73,7 @@ describe('vendor page prefetch', () => {
         await visit();
         ctx.event = { ...VENDOR_EVENT, modules: [moduleOf('gallery')] };
         await visit();
-        expect(serverGet).not.toHaveBeenCalled();
+        expect(serverGet).not.toHaveBeenCalledWith(expect.stringContaining('/media'), 'tok');
     });
 
     it('still fetches the role and profile with the vendors module off', async () => {
@@ -81,7 +82,7 @@ describe('vendor page prefetch', () => {
         await visit();
         expect(serverGetOrNull).toHaveBeenCalledWith('/api/events/e1/vendors/me', 'tok');
         expect(serverGetOrNull).toHaveBeenCalledWith('/api/me/vendor-profile', 'tok');
-        expect(serverGet).not.toHaveBeenCalled();
+        expect(serverGet).not.toHaveBeenCalledWith(expect.stringContaining('/media'), 'tok');
     });
 
     it('stops after the role for someone who is not a vendor', async () => {
@@ -104,6 +105,36 @@ describe('vendor page prefetch', () => {
     it('still renders when Spring fails', async () => {
         serverGetOrNull.mockRejectedValue(new Error('down'));
         await expect(visit()).resolves.toBeTruthy();
+    });
+
+    it("seeds every vendor's reach, and nothing for a non-vendor", async () => {
+        answer({ ...PHOTOGRAPHER, vendorType: 'MUSIC', capabilities: ['SONG_REQUESTS'] });
+        serverGet.mockImplementation(async (path: string) =>
+            path.endsWith('/vendors/me/reach') ? { guests: 4, listTaps: 1, partner: false } : null,
+        );
+        const element = await visit();
+        expect(serverGet).toHaveBeenCalledWith('/api/events/e1/vendors/me/reach', 'tok');
+        expect(seededKeys(element)).toEqual(expect.arrayContaining([['events', 'e1', 'vendors', 'reach']]));
+
+        serverGet.mockClear();
+        answer(null);
+        await visit();
+        expect(serverGet).not.toHaveBeenCalledWith('/api/events/e1/vendors/me/reach', 'tok');
+    });
+
+    it('keeps the page when the reach read fails', async () => {
+        answer(PHOTOGRAPHER);
+        serverGet.mockImplementation(async (path: string) => {
+            if (path.endsWith('/vendors/me/reach')) throw new Error('down');
+            return { content: [], page: { number: 0, totalPages: 0, totalElements: 0, size: 30 } };
+        });
+        const element = await visit();
+        expect(seededKeys(element)).toEqual(
+            expect.arrayContaining([
+                ['events', 'e1', 'vendors', 'me'],
+                ['me', 'vendor-profile'],
+            ]),
+        );
     });
 });
 

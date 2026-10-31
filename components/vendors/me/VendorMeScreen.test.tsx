@@ -11,18 +11,28 @@ vi.mock('@/components/tools/ModulePageShell', () => ({ ModulePageShell: ({ child
 vi.mock('@/lib/datetime', () => ({ formatDate: () => '12 July 2027' }));
 vi.mock('@/components/routing/EventRouteGate', () => ({ useEventRouteContext: () => ({ eventId: 'e1', activeEvent: { id: 'e1' }, isHost: false }) }));
 vi.mock('@/components/vendors/me/ProAlbumSection', () => ({ ProAlbumSection: () => <p>pro album</p> }));
-vi.mock('@/components/vendors/me/PartnerPromptCard', () => ({ PartnerPromptCard: () => <p>partner prompt</p> }));
+vi.mock('@/components/vendors/me/PartnerBenefitsSection', () => ({ PartnerBenefitsSection: () => <p>partner block</p> }));
 vi.mock('@/components/vendors/VendorProfileSheet', () => ({ VendorProfileSheet: () => <p>profile sheet</p> }));
 vi.mock('@/components/vendors/me/PrintsSection', () => ({ PrintsSection: () => <p>prints section</p> }));
 vi.mock('@/components/vendors/me/PrintsIncludedSheet', () => ({ PrintsIncludedSheet: () => null }));
 vi.mock('@/components/vendors/me/ServicesSection', () => ({ ServicesSection: () => <p>services section</p> }));
+vi.mock('@/components/vendors/me/SneakPeekSection', () => ({ SneakPeekSection: () => <p>sneak peek section</p> }));
+vi.mock('@/components/vendors/me/SneakPeekSheet', () => ({ SneakPeekSheet: () => <p>sneak peek sheet</p> }));
+vi.mock('@/components/vendors/BecomePartnerSheet', () => ({ BecomePartnerSheet: () => null }));
 vi.mock('@/components/vendors/me/ServiceSheet', () => ({ ServiceSheet: () => <p>service sheet</p> }));
 vi.mock('@/components/ui/ConfirmActionModal', () => ({ ConfirmActionModal: () => null }));
 const prints = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
 const services = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
 vi.mock('@/hooks/useVendorPrintsSection', () => ({ useVendorPrintsSection: () => prints.value }));
 vi.mock('@/hooks/useVendorServicesSection', () => ({ useVendorServicesSection: () => services.value }));
+const sneakPeek = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
+vi.mock('@/hooks/useSneakPeekSection', () => ({ useSneakPeekSection: () => sneakPeek.value }));
+const reach = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
+vi.mock('@/hooks/useReachSection', () => ({ useReachSection: () => reach.value }));
 const page = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
+const partner = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
+vi.mock('@/hooks/usePartnerBenefits', () => ({ usePartnerBenefits: () => partner.value }));
+vi.mock('@/hooks/useVendorHeroPhotos', () => ({ useVendorHeroPhotos: () => [] }));
 vi.mock('@/hooks/useVendorMePage', () => ({ useVendorMePage: () => page.value }));
 
 function state(overrides: Record<string, unknown> = {}) {
@@ -44,7 +54,6 @@ function state(overrides: Record<string, unknown> = {}) {
         canChooseListing: true,
         listed: true,
         hiddenByHost: false,
-        showPartnerPrompt: false,
         toggleListed: vi.fn(),
         isTogglingListed: false,
         error: null,
@@ -59,6 +68,23 @@ beforeEach(() => {
     page.value = state();
     prints.value = { open: false, includedOpen: false, error: null };
     services.value = { visible: false, editing: null, confirmDelete: false, error: null };
+    sneakPeek.value = { visible: false, state: 'hidden', sheet: null, confirmDelete: false };
+    reach.value = {
+        visible: false,
+        tiles: [],
+        sampleTiles: [],
+        partner: false,
+        isLoading: false,
+        loadFailed: false,
+    };
+    partner.value = {
+        visible: true,
+        partner: false,
+        canApply: false,
+        benefits: [],
+        coming: [],
+        sheet: { sheetOpen: false, defaults: {}, search: '', openSheet: vi.fn(), closeSheet: vi.fn() },
+    };
 });
 afterEach(cleanup);
 
@@ -70,7 +96,7 @@ describe('VendorMeScreen', () => {
         expect(screen.getByRole('switch', { name: /me.listingSwitch/ }).getAttribute('aria-checked')).toBe('true');
         expect(screen.getByText('Plans & Co')).toBeTruthy();
         expect(screen.queryByText('pro album')).toBeNull();
-        expect(screen.queryByText('partner prompt')).toBeNull();
+        expect(screen.getByText('partner block')).toBeTruthy();
     });
 
     it('shows the Prints section for a photographer with print picks', () => {
@@ -88,11 +114,42 @@ describe('VendorMeScreen', () => {
         expect(screen.queryByText('prints section')).toBeNull();
     });
 
-    it('shows the Pro album and the partner prompt when they apply', () => {
-        page.value = state({ hasProAlbum: true, showPartnerPrompt: true });
+    it('shows the Sneak peek section and its sheet while it is open', () => {
+        sneakPeek.value = { visible: true, state: 'ready', sheet: 'new', confirmDelete: false, candidates: [], thumbnails: [] };
+        render(<VendorMeScreen />);
+        expect(screen.getByText('sneak peek section')).toBeTruthy();
+        expect(screen.getByText('sneak peek sheet')).toBeTruthy();
+    });
+
+    it('shows the Reach section', () => {
+        reach.value = { ...reach.value, visible: true, tiles: [{ key: 'guests', value: 12 }] };
+        render(<VendorMeScreen />);
+        expect(screen.getByRole('heading', { name: 'title' })).toBeTruthy();
+        expect(screen.getByText('tiles.guests')).toBeTruthy();
+        expect(screen.getByText('12')).toBeTruthy();
+    });
+
+    it('hides the Reach section when it does not apply', () => {
+        render(<VendorMeScreen />);
+        expect(screen.queryByText('tiles.guests')).toBeNull();
+    });
+
+    it('hides the Sneak peek section when it does not apply', () => {
+        render(<VendorMeScreen />);
+        expect(screen.queryByText('sneak peek section')).toBeNull();
+        expect(screen.queryByText('sneak peek sheet')).toBeNull();
+    });
+
+    it('shows the Pro album when it applies', () => {
+        page.value = state({ hasProAlbum: true });
         render(<VendorMeScreen />);
         expect(screen.getByText('pro album')).toBeTruthy();
-        expect(screen.getByText('partner prompt')).toBeTruthy();
+    });
+
+    it('drops the settings heading when no setting applies', () => {
+        page.value = state({ canChooseListing: false });
+        render(<VendorMeScreen />);
+        expect(screen.queryByText('me.groupSettings')).toBeNull();
     });
 
     it('says when the tools have stopped', () => {
@@ -136,12 +193,12 @@ describe('VendorMeScreen', () => {
     it('still offers to fill in the details before there is a profile', () => {
         page.value = state({ profile: null });
         render(<VendorMeScreen />);
-        expect(screen.getByRole('button', { name: 'me.profileEdit' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'me.profileAdd' })).toBeTruthy();
     });
 
     it('says plainly when the caller is not a vendor', () => {
         page.value = state({ me: null, profile: null, tools: [] });
         render(<VendorMeScreen />);
-        expect(screen.getByText('me.notVendor')).toBeTruthy();
+        expect(screen.getByText('title')).toBeTruthy();
     });
 });

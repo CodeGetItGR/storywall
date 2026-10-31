@@ -3,6 +3,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { adminQrCardTemplateKeys } from '@/hooks/useAdminQrCardTemplates';
 import { adminThemeFontKeys, useAdminThemeFonts, useCreateThemeFont, usePatchThemeFont, useUploadThemeFontFile } from '@/hooks/useAdminThemeFonts';
 import { adminThemePresetKeys } from '@/hooks/useAdminThemePresets';
 import { endpoints } from '@/lib/api/endpoints';
@@ -41,7 +42,7 @@ describe('useAdminThemeFonts', () => {
 });
 
 describe('admin theme font mutations', () => {
-    it('creates, then refreshes the fonts and the presets', async () => {
+    it('creates, then refreshes the fonts, the presets and the QR card designs', async () => {
         const invalidate = vi.spyOn(client, 'invalidateQueries');
         const input = { key: 'gfs-didot', familyName: 'GFS Didot', fallback: 'serif' as const };
         const { result } = renderHook(() => useCreateThemeFont(), { wrapper: wrapperFor(client) });
@@ -51,6 +52,7 @@ describe('admin theme font mutations', () => {
         expect(api.post).toHaveBeenCalledWith(endpoints.admin.themeFonts.list, input);
         expect(invalidate).toHaveBeenCalledWith({ queryKey: adminThemeFontKeys.all });
         expect(invalidate).toHaveBeenCalledWith({ queryKey: adminThemePresetKeys.all });
+        expect(invalidate).toHaveBeenCalledWith({ queryKey: adminQrCardTemplateKeys.all });
     });
 
     it('patches one font', async () => {

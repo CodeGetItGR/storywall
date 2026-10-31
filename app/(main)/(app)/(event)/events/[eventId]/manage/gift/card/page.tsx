@@ -2,6 +2,7 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
 import { giftKeys } from '@/hooks/useGift';
 import { endpoints } from '@/lib/api/endpoints';
+import { prefetchQrCardTemplates } from '@/lib/api/prefetchQrCardTemplates';
 import { serverGetOrNull } from '@/lib/api/serverFetch';
 import type { GiftHandoverResponseDto } from '@/lib/api/types';
 import { resolveServerEventContext } from '@/lib/auth/serverEventContext';
@@ -11,7 +12,7 @@ import GiftCardPage from './PageClient';
 
 type PageProps = { params: Promise<{ eventId: string }> };
 
-// Prefetches the gift (any host) so the card's QR draws without a loading state.
+// Prefetches the gift and the card designs (any host) so the card draws without a loading state.
 // The PIN is never fetched: only a card issued in this visit has it, in memory.
 export default async function Page({ params }: PageProps) {
     const { eventId } = await params;
@@ -19,12 +20,17 @@ export default async function Page({ params }: PageProps) {
     const context = await resolveServerEventContext(eventId);
 
     if (context?.isHost) {
-        try {
-            const gift = await serverGetOrNull<GiftHandoverResponseDto>(endpoints.events.gift(eventId), context.accessToken);
-            queryClient.setQueryData(giftKeys.event(eventId), gift);
-        } catch {
-            // Best-effort — useEventGift fetches normally on the client if this fails.
-        }
+        await Promise.all([
+            (async () => {
+                try {
+                    const gift = await serverGetOrNull<GiftHandoverResponseDto>(endpoints.events.gift(eventId), context.accessToken);
+                    queryClient.setQueryData(giftKeys.event(eventId), gift);
+                } catch {
+                    // Best-effort — useEventGift fetches normally on the client if this fails.
+                }
+            })(),
+            prefetchQrCardTemplates(queryClient, eventId, context.accessToken),
+        ]);
     }
 
     return (

@@ -3,7 +3,7 @@
 // since flipped every route; reconcile against Swagger (/v3/api-docs) if a
 // path here 404s.
 
-import type { RsvpReportType, SignupChannel } from '@/lib/api/types';
+import type { OutreachProspectQuery, OutreachRequestStatus, PartnerApplicationStatus, RsvpReportType, SignupChannel } from '@/lib/api/types';
 
 export const endpoints = {
     betaFeedback: {
@@ -59,7 +59,6 @@ export const endpoints = {
         deletionRequests: '/api/me/deletion-requests',
         vendorProfile: '/api/me/vendor-profile',
         vendorProfileLogo: '/api/me/vendor-profile/logo',
-        vendorProfileDismissPartnerPrompt: '/api/me/vendor-profile/dismiss-partner-prompt',
         vendorServices: '/api/me/vendor-profile/services',
         vendorService: (serviceId: string) => `/api/me/vendor-profile/services/${serviceId}`,
     },
@@ -117,6 +116,7 @@ export const endpoints = {
         members: (eventId: string) => `/api/events/${eventId}/members`,
         modules: (eventId: string) => `/api/events/${eventId}/modules`,
         themePresets: (eventId: string) => `/api/events/${eventId}/theme-presets`,
+        qrCardTemplates: (eventId: string) => `/api/events/${eventId}/qr-card-templates`,
         theme: (eventId: string) => `/api/events/${eventId}/theme`,
         memberRoles: (eventId: string) => `/api/events/${eventId}/member-roles`,
         sessions: (eventId: string) => `/api/events/${eventId}/sessions`,
@@ -200,6 +200,9 @@ export const endpoints = {
         hostPrintItems: (eventId: string) => `/api/events/${eventId}/print-lists/host/items`,
         printItem: (eventId: string, itemId: string) => `/api/events/${eventId}/print-lists/items/${itemId}`,
         vendorPrintsIncluded: (eventId: string) => `/api/events/${eventId}/vendors/me/prints-included`,
+        vendorSneakPeek: (eventId: string) => `/api/events/${eventId}/vendors/me/sneak-peek`,
+        vendorReach: (eventId: string) => `/api/events/${eventId}/vendors/me/reach`,
+        contentViews: (eventId: string) => `/api/events/${eventId}/views`,
         printListArchiveManifest: (eventId: string, listId: string) => `/api/events/${eventId}/print-lists/${listId}/archive/manifest`,
         printListArchive: (eventId: string, listId: string, part: number) => `/api/events/${eventId}/print-lists/${listId}/archive?part=${part}`,
         vendorById: (eventId: string, vendorId: string) => `/api/events/${eventId}/vendors/${vendorId}`,
@@ -237,7 +240,7 @@ export const endpoints = {
     },
 
     partners: {
-        portal: (token: string) => `/api/partners/${encodeURIComponent(token)}`,
+        me: '/api/partners/me',
     },
 
     eventMembers: {
@@ -379,11 +382,12 @@ export const endpoints = {
                 );
                 return `/api/admin/metrics/campaigns${params.length ? `?${params.join('&')}` : ''}`;
             },
-            campaignOverview: (since?: string | null, until?: string | null, linkId?: string | null) => {
+            campaignOverview: (since?: string | null, until?: string | null, linkId?: string | null, source?: string | null) => {
                 const params = [
                     since ? `since=${encodeURIComponent(since)}` : null,
                     until ? `until=${encodeURIComponent(until)}` : null,
                     linkId ? `link=${encodeURIComponent(linkId)}` : null,
+                    source ? `source=${encodeURIComponent(source)}` : null,
                 ].filter(Boolean);
                 return `/api/admin/metrics/campaigns/overview${params.length ? `?${params.join('&')}` : ''}`;
             },
@@ -453,6 +457,11 @@ export const endpoints = {
             byId: (id: string) => `/api/admin/theme-presets/${id}`,
             illustration: (id: string) => `/api/admin/theme-presets/${id}/illustration`,
         },
+        qrCardTemplates: {
+            list: '/api/admin/qr-card-templates',
+            byId: (id: string) => `/api/admin/qr-card-templates/${id}`,
+            artwork: (id: string) => `/api/admin/qr-card-templates/${id}/artwork`,
+        },
         themeFonts: {
             list: '/api/admin/theme-fonts',
             byId: (id: string) => `/api/admin/theme-fonts/${id}`,
@@ -469,10 +478,19 @@ export const endpoints = {
             collection: '/api/admin/blocked-terms',
             byId: (id: string) => `/api/admin/blocked-terms/${id}`,
         },
+        partnerApplications: {
+            list: ({ status, page, size }: { status: PartnerApplicationStatus | null; page: number; size: number }) => {
+                const params = new URLSearchParams({ page: String(page), size: String(size) });
+                if (status) params.set('status', status);
+                return `/api/admin/partner-applications?${params.toString()}`;
+            },
+            byId: (id: string) => `/api/admin/partner-applications/${id}`,
+            approve: (id: string) => `/api/admin/partner-applications/${id}/approve`,
+            decline: (id: string) => `/api/admin/partner-applications/${id}/decline`,
+        },
         collaborators: {
             list: '/api/admin/collaborators',
             byId: (id: string) => `/api/admin/collaborators/${id}`,
-            portalToken: (id: string) => `/api/admin/collaborators/${id}/portal-token`,
             businessDetails: (id: string) => `/api/admin/collaborators/${id}/business-details`,
             viesCheck: (id: string) => `/api/admin/collaborators/${id}/vies-check`,
             commissionTiers: (id: string) => `/api/admin/collaborators/${id}/commission-tiers`,
@@ -496,6 +514,7 @@ export const endpoints = {
         },
         discountCodes: {
             list: '/api/admin/discount-codes',
+            options: '/api/admin/discount-codes/options',
             byId: (id: string) => `/api/admin/discount-codes/${id}`,
             redemptionVoid: (eventId: string) => `/api/admin/discount-codes/events/${eventId}/redemption/void`,
         },
@@ -524,9 +543,43 @@ export const endpoints = {
             list: '/api/admin/site-notices',
             byId: (id: string) => `/api/admin/site-notices/${id}`,
         },
+        devices: {
+            list: '/api/admin/devices',
+            byId: (id: string) => `/api/admin/devices/${id}`,
+            testNotification: (id: string) => `/api/admin/devices/${id}/test-notification`,
+        },
         campaignLinks: {
             list: '/api/admin/campaign-links',
             byId: (id: string) => `/api/admin/campaign-links/${id}`,
+        },
+        outreach: {
+            prospects: (query: OutreachProspectQuery) => {
+                const params = new URLSearchParams({ page: String(query.page), size: String(query.size) });
+                if (query.status) params.set('status', query.status);
+                if (query.type) params.set('type', query.type);
+                if (query.kind) params.set('kind', query.kind);
+                if (query.city) params.set('city', query.city);
+                if (query.priority) params.set('priority', query.priority);
+                if (query.q) params.set('q', query.q);
+                if (query.due) params.set('due', 'true');
+                if (query.sort) params.set('sort', query.sort);
+                return `/api/admin/outreach/prospects?${params.toString()}`;
+            },
+            create: '/api/admin/outreach/prospects',
+            byId: (id: string) => `/api/admin/outreach/prospects/${encodeURIComponent(id)}`,
+            notes: (id: string) => `/api/admin/outreach/prospects/${encodeURIComponent(id)}/notes`,
+            summary: '/api/admin/outreach/summary',
+            requests: {
+                list: (status: OutreachRequestStatus | null, page = 0, size = 50) => {
+                    const params = new URLSearchParams({ page: String(page), size: String(size) });
+                    if (status) params.set('status', status);
+                    return `/api/admin/outreach/requests?${params.toString()}`;
+                },
+                create: '/api/admin/outreach/requests',
+                pendingCount: '/api/admin/outreach/requests/pending-count',
+                approve: (id: string) => `/api/admin/outreach/requests/${encodeURIComponent(id)}/approve`,
+                decline: (id: string) => `/api/admin/outreach/requests/${encodeURIComponent(id)}/decline`,
+            },
         },
         appReviews: {
             list: '/api/admin/app-reviews',

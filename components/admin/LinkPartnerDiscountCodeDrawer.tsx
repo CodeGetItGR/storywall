@@ -5,8 +5,10 @@ import { useTranslations } from 'next-intl';
 
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
+import { CodeDiscountWarnings } from '@/components/admin/CodeDiscountWarnings';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useAdminDiscountCodes, useLinkDiscountCodeToCollaborator } from '@/hooks/useAdmin';
+import { usePickedCodeDiscountWarnings } from '@/hooks/useCodeDiscountWarnings';
 import { linkDiscountCodeFromFormData } from '@/lib/adminCollaborations';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { CollaboratorResponseDto } from '@/lib/api/types';
@@ -26,6 +28,7 @@ export function LinkPartnerDiscountCodeDrawer({
     const codesQuery = useAdminDiscountCodes();
     const linkCode = useLinkDiscountCodeToCollaborator(collaborator?.id ?? null);
     const codes = codesQuery.data ?? [];
+    const pickedCode = usePickedCodeDiscountWarnings(codes);
 
     async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -69,7 +72,14 @@ export function LinkPartnerDiscountCodeDrawer({
                 <form id="link-discount-code-form" onSubmit={handleSubmit} className="space-y-5">
                     {/* Code picker */}
                     <AdminField label={t('code')} required hint={codes.length === 0 ? t('empty') : undefined}>
-                        <select name="discountCodeId" required disabled={codes.length === 0} className={adminInputClass()}>
+                        <select
+                            name="discountCodeId"
+                            required
+                            disabled={codes.length === 0}
+                            value={pickedCode.pickedCodeId}
+                            onChange={pickedCode.handleCodeChange}
+                            className={adminInputClass()}
+                        >
                             <option value="">{t('choose')}</option>
                             {codes.map((code) => (
                                 <option key={code.id} value={code.id}>
@@ -78,6 +88,7 @@ export function LinkPartnerDiscountCodeDrawer({
                             ))}
                         </select>
                     </AdminField>
+                    <CodeDiscountWarnings warnings={pickedCode.warnings} />
 
                     {/* Commission */}
                     <AdminField label={tCodes('fields.commissionPercent')} required>

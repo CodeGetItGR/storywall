@@ -1,12 +1,15 @@
 'use client';
 
-import { Download } from 'lucide-react';
+import { Clock, Download } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { PrintTotal } from '@/components/gallery/print/PrintTotal';
 import { Button } from '@/components/ui/button';
 import { PrintListReadRow } from '@/components/vendors/me/PrintListReadRow';
 import { PrintPartButton } from '@/components/vendors/me/PrintPartButton';
+import { PrintsGhostRows } from '@/components/vendors/me/PrintsGhostRows';
+import { VendorMeNote } from '@/components/vendors/me/VendorMeNote';
+import { VendorMeSection } from '@/components/vendors/me/VendorMeSection';
 import { VendorRowsSkeleton } from '@/components/vendors/VendorsSkeletons';
 import type { PrintListItemDto } from '@/lib/api/types';
 import type { PrintTotals } from '@/lib/printPicks';
@@ -40,21 +43,24 @@ export function PrintsSection({
     onDownloadPartAction: (part: number) => void;
 }) {
     const t = useTranslations('Vendors.prints');
+    const tHints = useTranslations('Vendors.hints');
     const live = items.filter((item) => !item.removed);
     const parts = Array.from({ length: partCount }, (_, index) => index + 1);
 
     return (
-        <section aria-labelledby="vendor-prints-title" className="flex flex-col gap-4">
-            {/* Header */}
-            <h3 id="vendor-prints-title" className="text-sm font-semibold text-ink">
-                {t('title')}
-            </h3>
-
+        <VendorMeSection id="vendor-prints-title" title={t('title')} hint={tHints('prints')}>
             {/* Host picks */}
             {listFailed ? null : isLoading ? (
                 <VendorRowsSkeleton rows={3} />
             ) : live.length === 0 ? (
-                <p className="text-sm text-ink-muted">{t('hostEmpty')}</p>
+                <>
+                    <PrintsGhostRows />
+                    <VendorMeNote icon={Clock}>{t('hostEmpty')}</VendorMeNote>
+                    <Button type="button" size="lg" className="self-start" disabled>
+                        <Download aria-hidden="true" />
+                        {t('download')}
+                    </Button>
+                </>
             ) : (
                 <ul className="divide-y divide-border">
                     {live.map((item) => (
@@ -95,6 +101,6 @@ export function PrintsSection({
                     {error}
                 </p>
             )}
-        </section>
+        </VendorMeSection>
     );
 }

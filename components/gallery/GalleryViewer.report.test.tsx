@@ -7,6 +7,7 @@ import type { MediaResponseDto } from '@/lib/api/types';
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
 vi.mock('@/hooks/useOverlayHistory', () => ({ useOverlayHistory: () => ({ requestClose: vi.fn() }) }));
 vi.mock('@/components/common/ProtectedImage', () => ({ ProtectedImage: () => null }));
+vi.mock('@/providers/EventProvider', () => ({ useActiveEvent: () => null, useActiveMember: () => null, useIsHost: () => false }));
 
 const video = {
     id: 'media-1',

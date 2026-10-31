@@ -105,15 +105,48 @@ describe('proxy', () => {
         expect(location.searchParams.get('src')).toBe('{"landingPage":"/"}');
     });
 
-    it('renders an English occasion page in English whatever the cookie says', async () => {
-        const req = request({}, 'http://localhost/weddings');
-        req.cookies.set(localeCookieName, 'el');
-        const res = await proxy(req);
+    it('renders an English occasion page in English for a visitor with no preference', async () => {
+        const res = await proxy(request({}, 'http://localhost/weddings'));
+        expect(res.status).toBe(200);
         expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('en');
     });
 
     it('renders a Greek occasion page in Greek', async () => {
         const res = await proxy(request({}, 'http://localhost/el/gamos'));
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('el');
+    });
+});
+
+describe('proxy occasion page locale', () => {
+    function occasionRequest(url: string, { cookie, acceptLanguage }: { cookie?: string; acceptLanguage?: string } = {}) {
+        const req = new NextRequest(url, acceptLanguage ? { headers: { 'accept-language': acceptLanguage } } : undefined);
+        if (cookie) req.cookies.set(localeCookieName, cookie);
+        return req;
+    }
+
+    it('sends a Greek browser to the Greek URL, keeping the query string', async () => {
+        const res = await proxy(occasionRequest('http://localhost/weddings?src=ad', { acceptLanguage: 'el-GR,el;q=0.9,en;q=0.8' }));
+        expect(res.status).toBe(307);
+        const location = new URL(res.headers.get('location') ?? '');
+        expect(location.pathname).toBe('/el/gamos');
+        expect(location.searchParams.get('src')).toBe('ad');
+    });
+
+    it('sends a saved Greek choice to the Greek URL over an English browser', async () => {
+        const res = await proxy(occasionRequest('http://localhost/weddings', { cookie: 'el', acceptLanguage: 'en-US' }));
+        expect(res.status).toBe(307);
+        expect(new URL(res.headers.get('location') ?? '').pathname).toBe('/el/gamos');
+    });
+
+    it('keeps a saved English choice on the English URL over a Greek browser', async () => {
+        const res = await proxy(occasionRequest('http://localhost/weddings', { cookie: 'en', acceptLanguage: 'el-GR' }));
+        expect(res.status).toBe(200);
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('en');
+    });
+
+    it('does not redirect the Greek URL for an English browser', async () => {
+        const res = await proxy(occasionRequest('http://localhost/el/gamos', { acceptLanguage: 'en-US' }));
+        expect(res.status).toBe(200);
         expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('el');
     });
 });

@@ -1,36 +1,29 @@
 'use client';
 
-import { Banknote, CalendarCheck2, Handshake, MousePointerClick } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 
-import { PartnerTierProgress } from '@/components/partners/PartnerTierProgress';
-import { LoadingState } from '@/components/ui/LoadingState';
+import { PartnerHero } from '@/components/partners/PartnerHero';
+import { PartnerPortalBlocked } from '@/components/partners/PartnerPortalBlocked';
+import { PartnerPortalFrame } from '@/components/partners/PartnerPortalFrame';
+import { PartnerPortalSkeleton } from '@/components/partners/PartnerPortalSkeleton';
+import { PartnerReachSection } from '@/components/partners/PartnerReachSection';
+import { MetricStrip } from '@/components/ui/MetricStrip';
 import { PageErrorState } from '@/components/ui/PageErrorState';
 import { usePartnerPortal } from '@/hooks/usePartnerPortal';
-import type { PartnerPortalTotalDto } from '@/lib/api/types';
-import { formatMoney } from '@/lib/billing';
-import { cn } from '@/lib/utils';
+import { partnerBalances, partnerPortalBlock } from '@/lib/partnerPortal';
 
-function balanceMinor(total: PartnerPortalTotalDto): number {
-    return total.accruedMinor - total.paidMinor;
-}
-
-export function PartnerPortalBoundary({ token }: { token: string }) {
+export function PartnerPortalBoundary() {
     const t = useTranslations('PartnerPortalPage');
-    const locale = useLocale();
-    const portal = usePartnerPortal(token);
+    const portal = usePartnerPortal();
+    const block = partnerPortalBlock(portal.error);
     const handleRetry = useCallback(() => {
         void portal.refetch();
     }, [portal]);
 
-    if (portal.isLoading) {
-        return (
-            <main className="flex min-h-dvh items-center justify-center bg-background px-6">
-                <LoadingState label={t('loading')} />
-            </main>
-        );
-    }
+    if (portal.isLoading) return <PartnerPortalSkeleton />;
+
+    if (block) return <PartnerPortalBlocked block={block} />;
 
     if (portal.error || !portal.data) {
         return (
@@ -44,92 +37,24 @@ export function PartnerPortalBoundary({ token }: { token: string }) {
     }
 
     return (
-        <main className="min-h-dvh bg-background px-4 py-8 text-ink sm:px-6 sm:py-12">
-            <div className="mx-auto w-full max-w-4xl">
-                {/* Header */}
-                <header className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
-                    <div className="min-w-0">
-                        <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
-                            <Handshake className="h-5 w-5" aria-hidden="true" />
-                        </div>
-                        <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">{portal.data.name}</h1>
-                        <p className="mt-2 text-sm text-ink-muted">{t('title')}</p>
-                    </div>
-                </header>
+        <PartnerPortalFrame>
+            <div className="flex flex-col gap-4">
+                {/* Hero: name, what is owed, commission */}
+                <PartnerHero name={portal.data.name} balances={partnerBalances(portal.data.totals)} tierProgress={portal.data.tierProgress} />
 
-                {/* Summary */}
-                <section className={cn('grid gap-3 py-6 sm:grid-cols-3', portal.data.tierProgress && 'lg:grid-cols-4')} aria-label={t('summary')}>
-                    <div className="rounded-lg bg-surface-muted/55 p-4">
-                        <div className="flex items-center gap-2 text-xs font-semibold tracking-wide text-ink-muted uppercase">
-                            <CalendarCheck2 className="h-4 w-4" aria-hidden="true" />
-                            {t('eventsReferred')}
-                        </div>
-                        <p className="mt-3 text-3xl font-bold text-ink tabular-nums">{portal.data.eventsReferred}</p>
-                    </div>
-                    <div className="rounded-lg bg-surface-muted/55 p-4">
-                        <div className="flex items-center gap-2 text-xs font-semibold tracking-wide text-ink-muted uppercase">
-                            <Banknote className="h-4 w-4" aria-hidden="true" />
-                            {t('currencies')}
-                        </div>
-                        <p className="mt-3 text-3xl font-bold text-ink tabular-nums">{portal.data.totals.length}</p>
-                    </div>
-                    <div className="rounded-lg bg-surface-muted/55 p-4">
-                        <div className="flex items-center gap-2 text-xs font-semibold tracking-wide text-ink-muted uppercase">
-                            <MousePointerClick className="h-4 w-4" aria-hidden="true" />
-                            {t('brandingClicks')}
-                        </div>
-                        <p className="mt-3 text-3xl font-bold text-ink tabular-nums">{portal.data.brandingClicks}</p>
-                    </div>
-                    {portal.data.tierProgress && <PartnerTierProgress progress={portal.data.tierProgress} />}
+                {/* Counts */}
+                <section aria-label={t('summary')}>
+                    <MetricStrip
+                        items={[
+                            { key: 'eventsReferred', label: t('eventsReferred'), value: portal.data.eventsReferred },
+                            { key: 'brandingClicks', label: t('brandingClicks'), value: portal.data.brandingClicks },
+                        ]}
+                    />
                 </section>
 
-                {/* Totals */}
-                <section aria-labelledby="partner-totals-title">
-                    <h2 id="partner-totals-title" className="text-base font-bold text-ink">
-                        {t('totals.title')}
-                    </h2>
-                    {portal.data.totals.length === 0 ? (
-                        <p className="mt-4 rounded-lg bg-surface-muted/55 p-4 text-sm text-ink-muted">{t('totals.empty')}</p>
-                    ) : (
-                        <div className="mt-4 overflow-x-auto rounded-lg bg-card shadow-sm ring-1 ring-border">
-                            <table className="w-full min-w-[560px] text-left text-sm">
-                                <thead className="bg-surface-muted/70 text-xs font-semibold tracking-wide text-ink-muted uppercase">
-                                    <tr>
-                                        <th scope="col" className="px-4 py-3">
-                                            {t('totals.currency')}
-                                        </th>
-                                        <th scope="col" className="px-4 py-3 text-right">
-                                            {t('totals.accrued')}
-                                        </th>
-                                        <th scope="col" className="px-4 py-3 text-right">
-                                            {t('totals.paid')}
-                                        </th>
-                                        <th scope="col" className="px-4 py-3 text-right">
-                                            {t('totals.balance')}
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-border">
-                                    {portal.data.totals.map((total) => (
-                                        <tr key={total.currency}>
-                                            <td className="px-4 py-3 font-mono text-xs font-semibold text-ink">{total.currency}</td>
-                                            <td className="px-4 py-3 text-right font-semibold text-ink tabular-nums">
-                                                {formatMoney(locale, total.accruedMinor, total.currency)}
-                                            </td>
-                                            <td className="px-4 py-3 text-right text-ink-muted tabular-nums">
-                                                {formatMoney(locale, total.paidMinor, total.currency)}
-                                            </td>
-                                            <td className="px-4 py-3 text-right font-semibold text-ink tabular-nums">
-                                                {formatMoney(locale, balanceMinor(total), total.currency)}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </section>
+                {/* Reach */}
+                <PartnerReachSection reach={portal.data.reach} />
             </div>
-        </main>
+        </PartnerPortalFrame>
     );
 }

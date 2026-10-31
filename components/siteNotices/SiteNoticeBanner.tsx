@@ -7,12 +7,12 @@ import { AppLink } from '@/components/ui/AppLink';
 import type { SiteNoticeTone } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
-// Dark bar with amber text for problems (the outage look), calmer brand tones for the rest.
-// No design token pairs dark with amber, so those two hexes are literal (9.9:1 contrast).
-// OFFER uses ink text: text-primary-dark on primary-light is only 3.1:1.
+// Every tone uses ink text on a brand tint; problems get the stronger coral and orange tints.
+// No token holds those tints or icon shades, so they are literal. Icons stay at 3:1 or more
+// (primary-dark on the coral tint is only 2.8:1). OFFER uses ink text: text-primary-dark on primary-light is only 3.1:1.
 const TONE_STYLE: Record<SiteNoticeTone, { className: string; iconClassName: string; icon: LucideIcon }> = {
-    CRITICAL: { className: 'bg-[#1d1813] text-[#f5b84a]', iconClassName: '', icon: CircleAlert },
-    WARNING: { className: 'bg-[#1d1813] text-[#f5b84a]', iconClassName: '', icon: TriangleAlert },
+    CRITICAL: { className: 'bg-[#ffe3d9] text-ink', iconClassName: 'text-[#d14a2c]', icon: CircleAlert },
+    WARNING: { className: 'bg-[#fff1dc] text-ink', iconClassName: 'text-[#c76a00]', icon: TriangleAlert },
     OFFER: { className: 'bg-primary-light text-ink', iconClassName: 'text-primary-dark', icon: Tag },
     INFO: { className: 'bg-surface-muted text-ink', iconClassName: 'text-ink-muted', icon: Info },
 };

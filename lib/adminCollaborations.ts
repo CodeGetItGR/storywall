@@ -12,6 +12,7 @@ import type {
     CollaboratorResponseDto,
     CommissionTierDto,
     DiscountCodePatchDto,
+    DiscountCodePlanOption,
     DiscountCodeRequestDto,
     DiscountCodeResponseDto,
     LinkDiscountCodeRequestDto,
@@ -27,6 +28,7 @@ export function collaboratorRequestFromFormData(formData: FormData): Collaborato
             .toLowerCase(),
         notes: String(formData.get('notes') ?? '').trim() || null,
         status: null,
+        founding: formData.get('founding') === 'on',
     };
 }
 
@@ -214,7 +216,7 @@ export function collaboratorRequestWithStatus(
     collaborator: CollaboratorResponseDto,
     status: CollaboratorResponseDto['status'],
 ): CollaboratorRequestDto {
-    return { name: collaborator.name, contactEmail: collaborator.contactEmail, notes: collaborator.notes, status };
+    return { name: collaborator.name, contactEmail: collaborator.contactEmail, notes: collaborator.notes, status, founding: null };
 }
 
 // --- Business, invoicing and payout details (2026-10-08) ---
@@ -420,4 +422,82 @@ export function commissionTierEnd(tiers: CommissionTierDto[], index: number): nu
 export function currentCommissionTierIndex(tiers: CommissionTierDto[], activationsThisYear: number): number {
     const nextActivation = activationsThisYear + 1;
     return tiers.reduce((current, tier, index) => (tier.minActivations <= nextActivation ? index : current), -1);
+}
+
+// A code at or above this percent gets a "high discount" warning in the code forms.
+export const HIGH_CODE_DISCOUNT_PERCENT = 50;
+
+// Spring's BillingProperties.maxCombinedDiscountPercent: the most a code takes off, together with a plan promotion.
+const MAX_COMBINED_DISCOUNT_PERCENT = 99;
+
+// Spring's CheckoutService.MIN_CHARGEABLE_AMOUNT_MINOR: the provider's smallest charge. Checkout refuses less.
+const MIN_CHARGEABLE_AMOUNT_MINOR: Record<string, number> = {
+    EUR: 50,
+    USD: 50,
+    GBP: 30,
+    CHF: 50,
+    AUD: 50,
+    CAD: 50,
+    NZD: 50,
+    SEK: 300,
+    NOK: 300,
+    DKK: 250,
+    PLN: 200,
+    CZK: 1500,
+    RON: 200,
+    BGN: 100,
+};
+
+function planPromotionOpen(plan: DiscountCodePlanOption, now: Date): boolean {
+    const startsAt = plan.discountStartsAt ? new Date(plan.discountStartsAt) : null;
+    const endsAt = plan.discountEndsAt ? new Date(plan.discountEndsAt) : null;
+    return (!startsAt || startsAt <= now) && (!endsAt || now < endsAt);
+}
+
+// What one duration costs with a code, as PriceBreakdownCalculator prices it: a promo price first and the
+// code off what is left, or the plan's percent and the code stacked. The cap bounds only the code.
+export function codedOptionPriceMinor(
+    plan: DiscountCodePlanOption,
+    option: DiscountCodePlanOption['initialOptions'][number],
+    codePercent: number,
+    now: Date,
+): number {
+    const promotionOpen = planPromotionOpen(plan, now);
+    const code = Math.max(0, codePercent);
+    if (promotionOpen && option.promoPriceAmountMinor !== null) {
+        const base = option.promoPriceAmountMinor;
+        return base - Math.floor((base * Math.min(code, MAX_COMBINED_DISCOUNT_PERCENT)) / 100);
+    }
+    const planPercent = promotionOpen ? Math.max(0, plan.discountPercent ?? 0) : 0;
+    const combined = Math.max(planPercent, Math.min(planPercent + code, MAX_COMBINED_DISCOUNT_PERCENT));
+    return option.priceAmountMinor - Math.floor((option.priceAmountMinor * combined) / 100);
+}
+
+function codeAppliesToPlan(restrictions: CodeRestrictionsDto, plan: DiscountCodePlanOption): boolean {
+    const typeAllowed =
+        restrictions.eventTypeKeys.length === 0 || (plan.eventTypeKey !== null && restrictions.eventTypeKeys.includes(plan.eventTypeKey));
+    const planAllowed = restrictions.planTierCodes.length === 0 || restrictions.planTierCodes.includes(plan.code);
+    return typeAllowed && planAllowed;
+}
+
+// Plans the code can be used on where it pushes a live duration under the smallest charge. Durations
+// already under it without the code are left out: the code isn't what breaks them.
+export function plansBelowChargeMinimum<Plan extends DiscountCodePlanOption>(
+    plans: Plan[],
+    codePercent: number,
+    restrictions: CodeRestrictionsDto,
+    now: Date = new Date(),
+): Plan[] {
+    return plans.filter((plan) => {
+        if (plan.scope !== 'EVENT' || !plan.isAssignable || !plan.priceCurrency) return false;
+        if (!codeAppliesToPlan(restrictions, plan)) return false;
+        const minimum = MIN_CHARGEABLE_AMOUNT_MINOR[plan.priceCurrency.toUpperCase()];
+        if (minimum === undefined) return false;
+        return plan.initialOptions.some(
+            (option) =>
+                option.active &&
+                codedOptionPriceMinor(plan, option, 0, now) >= minimum &&
+                codedOptionPriceMinor(plan, option, codePercent, now) < minimum,
+        );
+    });
 }

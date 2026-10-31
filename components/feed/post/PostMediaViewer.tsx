@@ -7,6 +7,7 @@ import { useCallback, useState } from 'react';
 
 import { PostMediaCarousel } from '@/components/feed/post/PostMediaCarousel';
 import { PostMediaViewerInfo } from '@/components/feed/post/PostMediaViewerInfo';
+import { useRecordProMediaView } from '@/hooks/useContentViews';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import type { MediaResponseDto, PostResponseDto } from '@/lib/api/types';
 
@@ -21,6 +22,8 @@ interface PostMediaViewerProps {
 export function PostMediaViewer({ post, media, initialIndex, alt, onCloseAction }: PostMediaViewerProps) {
     const t = useTranslations('PostModal');
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
+    // A Pro item on screen counts as one view for its vendor (sneak peek, 2026-10-29).
+    useRecordProMediaView(media[currentIndex]);
     const { requestClose } = useOverlayHistory(true, onCloseAction);
 
     const handleOpenChange = useCallback(

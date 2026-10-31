@@ -36,7 +36,7 @@ export function DemoShell({ session, etag, presignedUrlsValidUntil, children }: 
                                     {/* Demo notice */}
                                     <DemoBanner onResetAction={handleReset} />
                                     {/* Content */}
-                                    <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-background pb-20 lg:pb-0">{children}</main>
+                                    <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-background pb-20 md:pb-0">{children}</main>
                                     <MobileTabBar />
                                 </div>
                             </AccountPanelShell>

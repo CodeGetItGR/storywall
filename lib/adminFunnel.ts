@@ -2,7 +2,9 @@ import type { FunnelCohortDto, FunnelMetricsResponseDto, SignupChannel } from '@
 import { numberFormat } from '@/lib/format';
 
 export const FUNNEL_RANGE_PRESETS = ['ALL', 'LAST_30', 'LAST_90', 'THIS_YEAR', 'CUSTOM'] as const;
-export type FunnelRangePreset = (typeof FUNNEL_RANGE_PRESETS)[number];
+// The campaign pages also offer single days.
+export const CAMPAIGN_RANGE_PRESETS = ['ALL', 'TODAY', 'YESTERDAY', 'LAST_30', 'LAST_90', 'THIS_YEAR', 'CUSTOM'] as const;
+export type FunnelRangePreset = (typeof CAMPAIGN_RANGE_PRESETS)[number];
 
 export const FUNNEL_COHORT_WEEKS = [12, 26, 52] as const;
 export type FunnelCohortWeeks = (typeof FUNNEL_COHORT_WEEKS)[number];
@@ -45,6 +47,8 @@ export function funnelRangeBounds(preset: FunnelRangePreset, custom: FunnelCusto
     const tomorrow = localMidnightIso(today, 1);
 
     if (preset === 'ALL') return { since: null, until: null, isValid: true };
+    if (preset === 'TODAY') return { since: localMidnightIso(today), until: tomorrow, isValid: true };
+    if (preset === 'YESTERDAY') return { since: localMidnightIso(today, -1), until: localMidnightIso(today), isValid: true };
     if (preset === 'LAST_30') return { since: localMidnightIso(today, -29), until: tomorrow, isValid: true };
     if (preset === 'LAST_90') return { since: localMidnightIso(today, -89), until: tomorrow, isValid: true };
     if (preset === 'THIS_YEAR') return { since: localMidnightIso(`${today.slice(0, 4)}-01-01`), until: tomorrow, isValid: true };
@@ -62,7 +66,18 @@ export function rateOf(part: number, whole: number): number | null {
 export const EMPTY_VALUE = '—';
 
 // Every channel, in the order the source filter lists them.
-export const SIGNUP_CHANNELS = ['ADS', 'SOCIAL', 'SEARCH', 'EMAIL', 'PARTNER', 'OTHER_SITE', 'DIRECT', 'INVITE', 'GIFT', 'UNKNOWN'] as const satisfies readonly SignupChannel[];
+export const SIGNUP_CHANNELS = [
+    'ADS',
+    'SOCIAL',
+    'SEARCH',
+    'EMAIL',
+    'PARTNER',
+    'OTHER_SITE',
+    'DIRECT',
+    'INVITE',
+    'GIFT',
+    'UNKNOWN',
+] as const satisfies readonly SignupChannel[];
 
 // Below this many sign-ups a channel's percentages say little, and its row is tagged.
 export const FEW_SIGNUPS = 20;

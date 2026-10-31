@@ -38,7 +38,7 @@ export function ContextMenuTab({ active, TriggerIcon = MenuIcon, items, label, p
         <Menu.Root open={open} onOpenChange={handleOpenChange}>
             <Menu.Trigger
                 aria-label={label}
-                className="group flex min-w-12 flex-col items-center gap-0.5 px-3 py-1 transition-opacity lg:hidden"
+                className="group flex min-w-12 flex-col items-center gap-0.5 px-3 py-1 transition-opacity md:hidden"
                 aria-current={active ? 'page' : undefined}
             >
                 <span

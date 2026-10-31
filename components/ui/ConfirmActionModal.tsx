@@ -17,6 +17,7 @@ type ConfirmActionModalProps = {
     confirmDisabled?: boolean;
     tone?: 'danger' | 'default';
     icon?: ReactNode;
+    iconTone?: 'danger' | 'neutral';
     size?: 'sm' | 'md';
     showCancelAction?: boolean;
     showCloseButton?: boolean;
@@ -35,6 +36,7 @@ export function ConfirmActionModal({
     confirmDisabled = false,
     tone = 'danger',
     icon,
+    iconTone = 'danger',
     size = 'sm',
     showCancelAction = true,
     showCloseButton = true,
@@ -47,14 +49,22 @@ export function ConfirmActionModal({
                     {/* Confirmation content */}
                     <div className="flex items-start gap-3 pr-8">
                         {icon ? (
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">{icon}</div>
+                            <div
+                                className={cn(
+                                    'flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl',
+                                    iconTone === 'neutral' ? 'bg-surface-muted text-ink' : 'bg-rose-100 text-rose-600',
+                                )}
+                            >
+                                {icon}
+                            </div>
                         ) : (
                             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
                                 <span className="text-lg font-semibold">!</span>
                             </div>
                         )}
 
-                        <div className="min-w-0">
+                        {/* flex-1: a field in the body takes the dialog's width */}
+                        <div className="min-w-0 flex-1">
                             <h2 className="text-base font-semibold text-ink">{title}</h2>
                             <div className="mt-1 text-sm leading-relaxed text-ink-muted">{body}</div>
                         </div>

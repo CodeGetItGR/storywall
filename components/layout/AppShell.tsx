@@ -48,7 +48,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <DesktopNavRail />
             <main
                 className={cn(
-                    'desktop-account-page h-full min-w-0 flex-1 overflow-y-auto overscroll-contain bg-background lg:ml-20 lg:pb-0',
+                    'desktop-account-page h-full min-w-0 flex-1 overflow-y-auto overscroll-contain bg-background md:ml-20 md:pb-0',
                     reservesTabBar && 'pb-(--tab-bar-h)',
                 )}
             >

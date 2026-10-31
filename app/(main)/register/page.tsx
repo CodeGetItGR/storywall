@@ -14,9 +14,9 @@ import { SignupAcceptanceCheckbox } from '@/components/legal/SignupAcceptanceChe
 import { AppLink } from '@/components/ui/AppLink';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useAuthPageRedirect } from '@/hooks/useAuthPageRedirect';
+import { useAuthReturnPath } from '@/hooks/useAuthReturnPath';
 import { useContentLimits } from '@/hooks/useContentLimits';
 import { useRegisterForm } from '@/hooks/useRegisterForm';
-import { AUTH_RETURN_PATH_PARAM, getSafeReturnPath } from '@/lib/auth/returnPath';
 import { routes } from '@/lib/routes';
 
 export default function RegisterPage() {
@@ -24,7 +24,7 @@ export default function RegisterPage() {
     const limits = useContentLimits();
     const searchParams = useSearchParams();
     const inviteToken = searchParams.get('invite');
-    const returnPath = getSafeReturnPath(searchParams.get(AUTH_RETURN_PATH_PARAM));
+    const returnPath = useAuthReturnPath();
 
     const { shouldRenderAuthPage } = useAuthPageRedirect(returnPath);
     const form = useRegisterForm({

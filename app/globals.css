@@ -68,6 +68,12 @@
     --color-status-neutral-wash: var(--status-neutral-wash);
     --color-status-danger: var(--status-danger);
     --color-status-danger-wash: var(--status-danger-wash);
+    --color-status-info: var(--status-info);
+    --color-status-info-wash: var(--status-info-wash);
+    --color-status-violet: var(--status-violet);
+    --color-status-violet-wash: var(--status-violet-wash);
+    --color-status-teal: var(--status-teal);
+    --color-status-teal-wash: var(--status-teal-wash);
 
     /* ── Radii ── */
     --radius-sm: 0.5rem;
@@ -231,6 +237,13 @@
     --status-neutral-wash: #edeff3;
     --status-danger: #c23b3b;
     --status-danger-wash: #fbebeb;
+    /* Extra steps for pipelines with more stages than good/warn/neutral/danger (partner outreach). */
+    --status-info: #2b5fb4;
+    --status-info-wash: #e8effb;
+    --status-violet: #6a46b8;
+    --status-violet-wash: #f0ebfa;
+    --status-teal: #0f7480;
+    --status-teal-wash: #e2f3f5;
     --line-strong: #d8dbe3;
     --scrollbar-thumb: rgb(255 122 89 / 0.28);
     --scrollbar-thumb-hover: rgb(232 93 61 / 0.42);
@@ -417,7 +430,7 @@
     transform-origin: var(--transform-origin, top right);
 }
 
-@media (max-width: 63.999rem) {
+@media (max-width: 47.999rem) {
     .account-panel-surface {
         background: linear-gradient(180deg, #f29573 0%, #f6ab74 45%, #fcc777 100%);
     }
@@ -464,7 +477,7 @@
     }
 }
 
-@media (min-width: 64rem) {
+@media (min-width: 48rem) {
     .account-panel-page {
         background: transparent;
     }

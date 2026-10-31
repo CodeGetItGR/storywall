@@ -5,14 +5,22 @@ import { useMemo } from 'react';
 
 import { FunnelSegmented } from '@/components/admin/funnel/FunnelSegmented';
 import type { useFunnelRange } from '@/hooks/useFunnelRange';
-import { FUNNEL_RANGE_PRESETS } from '@/lib/adminFunnel';
+import { FUNNEL_RANGE_PRESETS, type FunnelRangePreset } from '@/lib/adminFunnel';
 
 const dateInputClass = 'min-h-10 rounded-lg border border-border bg-card px-3 text-sm text-ink';
 
 // `note` says which date each section filters by.
-export function FunnelRangeControl({ range, note }: { range: ReturnType<typeof useFunnelRange>; note: string }) {
+export function FunnelRangeControl({
+    range,
+    note,
+    presets = FUNNEL_RANGE_PRESETS,
+}: {
+    range: ReturnType<typeof useFunnelRange>;
+    note: string;
+    presets?: readonly FunnelRangePreset[];
+}) {
     const t = useTranslations('AdminPage.funnel.range');
-    const options = useMemo(() => FUNNEL_RANGE_PRESETS.map((preset) => ({ value: preset, label: t(preset) })), [t]);
+    const options = useMemo(() => presets.map((preset) => ({ value: preset, label: t(preset) })), [presets, t]);
 
     return (
         <div className="space-y-3">
@@ -24,11 +32,23 @@ export function FunnelRangeControl({ range, note }: { range: ReturnType<typeof u
                 <div className="flex flex-wrap items-end gap-3">
                     <label className="flex flex-col gap-1 text-xs font-semibold text-ink-muted">
                         {t('from')}
-                        <input type="date" value={range.custom.from} max={range.custom.to || range.today} onChange={range.handleFromChange} className={dateInputClass} />
+                        <input
+                            type="date"
+                            value={range.custom.from}
+                            max={range.custom.to || range.today}
+                            onChange={range.handleFromChange}
+                            className={dateInputClass}
+                        />
                     </label>
                     <label className="flex flex-col gap-1 text-xs font-semibold text-ink-muted">
                         {t('to')}
-                        <input type="date" value={range.custom.to} min={range.custom.from || undefined} onChange={range.handleToChange} className={dateInputClass} />
+                        <input
+                            type="date"
+                            value={range.custom.to}
+                            min={range.custom.from || undefined}
+                            onChange={range.handleToChange}
+                            className={dateInputClass}
+                        />
                     </label>
                 </div>
             )}

@@ -50,18 +50,18 @@ describe('pageLanguage', () => {
 
 describe('sending', () => {
     it('posts a visit straight to Spring without credentials', () => {
-        sendCampaignVisit('VISIT', CAMPAIGN, 'el');
+        sendCampaignVisit('VISIT', CAMPAIGN, '/el/gamos');
 
         expect(fetchMock).toHaveBeenCalledTimes(1);
         const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
         expect(url).toMatch(/\/api\/public\/campaign-visits$/);
         expect(init).toMatchObject({ method: 'POST', keepalive: true, credentials: 'omit' });
-        expect(sentBody()).toEqual({ kind: 'VISIT', ...CAMPAIGN, language: 'el' });
+        expect(sentBody()).toEqual({ kind: 'VISIT', ...CAMPAIGN, language: 'el', page: '/el/gamos' });
     });
 
     it('swallows a failed request', async () => {
         fetchMock.mockImplementationOnce(() => Promise.reject(new TypeError('offline')));
-        expect(() => sendCampaignVisit('VISIT', CAMPAIGN, 'en')).not.toThrow();
+        expect(() => sendCampaignVisit('VISIT', CAMPAIGN, '/')).not.toThrow();
         await Promise.resolve();
     });
 
@@ -73,6 +73,6 @@ describe('sending', () => {
         rememberCampaign(CAMPAIGN);
         expect(currentCampaign()).toEqual(CAMPAIGN);
         sendCampaignClick('CREATE');
-        expect(sentBody()).toEqual({ kind: 'CREATE', ...CAMPAIGN, language: 'el' });
+        expect(sentBody()).toEqual({ kind: 'CREATE', ...CAMPAIGN, language: 'el', page: '/el' });
     });
 });

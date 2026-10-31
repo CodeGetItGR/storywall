@@ -12,11 +12,11 @@ import type {
     CollaborationCodeResponseDto,
     CollaborationEarningResponseDto,
     CollaboratorBusinessDetailsRequestDto,
-    CollaboratorPortalTokenResponseDto,
     CollaboratorRequestDto,
     CollaboratorResponseDto,
     CommissionTiersRequestDto,
     CostSummaryResponseDto,
+    DiscountCodeOptionsDto,
     DiscountCodePatchDto,
     DiscountCodeRequestDto,
     DiscountCodeResponseDto,
@@ -67,7 +67,8 @@ export const adminKeys = {
     costTimeline: (weeks: number) => ['admin', 'metrics', 'timeline', weeks] as const,
     costCalendar: (since: string, until: string) => ['admin', 'metrics', 'calendar', since, until] as const,
     costCalendarDayEvents: (date: string, page: number, size: number) => ['admin', 'metrics', 'calendar', date, 'events', page, size] as const,
-    funnel: (since: string | null, until: string | null, channel: SignupChannel | null) => ['admin', 'metrics', 'funnel', since, until, channel] as const,
+    funnel: (since: string | null, until: string | null, channel: SignupChannel | null) =>
+        ['admin', 'metrics', 'funnel', since, until, channel] as const,
     funnelCohorts: (weeks: number, channel: SignupChannel | null) => ['admin', 'metrics', 'funnel', 'cohorts', weeks, channel] as const,
     funnelChannels: (since: string | null, until: string | null) => ['admin', 'metrics', 'funnel', 'channels', since, until] as const,
     visitors: (since: string | null, until: string | null) => ['admin', 'metrics', 'visitors', since, until] as const,
@@ -77,6 +78,7 @@ export const adminKeys = {
     collaborators: ['admin', 'collaborators'] as const,
     collaboratorCodes: (id: string) => ['admin', 'collaborators', id, 'codes'] as const,
     discountCodes: ['admin', 'discount-codes'] as const,
+    discountCodeOptions: ['admin', 'discount-codes', 'options'] as const,
     collaboratorEarnings: (id: string) => ['admin', 'collaborators', id, 'earnings'] as const,
     reactionTypes: (eventTypeKey?: string, includeArchived?: boolean) =>
         ['admin', 'reaction-types', eventTypeKey ?? 'ALL', Boolean(includeArchived)] as const,
@@ -139,18 +141,6 @@ export function useSaveCollaboratorCommissionTiers() {
     });
 }
 
-export function useIssueCollaboratorPortalToken() {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: (id: string) => api.post<CollaboratorPortalTokenResponseDto>(endpoints.admin.collaborators.portalToken(id)),
-        onSuccess: (_token, id) => {
-            queryClient.invalidateQueries({ queryKey: adminKeys.collaborators });
-            queryClient.invalidateQueries({ queryKey: ['admin', 'collaborators', id] });
-        },
-    });
-}
-
 export function useCollaboratorCodes(collaboratorId: string | null) {
     return useQuery({
         queryKey: adminKeys.collaboratorCodes(collaboratorId ?? ''),
@@ -177,6 +167,14 @@ export function useAdminDiscountCodes() {
     return useQuery({
         queryKey: adminKeys.discountCodes,
         queryFn: () => api.get<DiscountCodeResponseDto[]>(endpoints.admin.discountCodes.list),
+    });
+}
+
+// The event types and plans a code form offers; marketing may read these, unlike the plan admin.
+export function useDiscountCodeOptions() {
+    return useQuery({
+        queryKey: adminKeys.discountCodeOptions,
+        queryFn: () => api.get<DiscountCodeOptionsDto>(endpoints.admin.discountCodes.options),
     });
 }
 

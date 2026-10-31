@@ -1,11 +1,14 @@
 'use client';
 
+import { Images } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { ProAlbumFilePicker } from '@/components/vendors/me/ProAlbumFilePicker';
 import { ProAlbumItem } from '@/components/vendors/me/ProAlbumItem';
+import { VendorMeNote } from '@/components/vendors/me/VendorMeNote';
+import { VendorMeSection } from '@/components/vendors/me/VendorMeSection';
 import { ProStorageMeter } from '@/components/vendors/ProStorageMeter';
 import { useProAlbum } from '@/hooks/useProAlbum';
 
@@ -24,12 +27,7 @@ export function ProAlbumSection({
     const album = useProAlbum(eventId);
 
     return (
-        <section aria-labelledby="vendor-pro-title" className="flex flex-col gap-4">
-            {/* Title */}
-            <h3 id="vendor-pro-title" className="text-sm font-semibold text-ink">
-                {t('me.proTitle')}
-            </h3>
-
+        <VendorMeSection id="vendor-pro-title" title={t('me.proTitle')} hint={t('hints.proAlbum')}>
             {/* Meter */}
             <ProStorageMeter usedBytes={usedBytes} allowanceBytes={allowanceBytes} hideLabel />
 
@@ -52,7 +50,7 @@ export function ProAlbumSection({
 
             {/* Items */}
             {!album.isLoading && album.items.length === 0 ? (
-                <p className="text-sm text-ink-muted">{t('me.proEmpty')}</p>
+                <VendorMeNote icon={Images}>{t('me.proEmpty')}</VendorMeNote>
             ) : (
                 <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                     {album.items.map((item) => (
@@ -77,6 +75,6 @@ export function ProAlbumSection({
                 onConfirmAction={album.confirmDelete}
                 isConfirming={album.isDeleting}
             />
-        </section>
+        </VendorMeSection>
     );
 }

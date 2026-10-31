@@ -4,20 +4,16 @@ import { ChevronRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { AppLink } from '@/components/ui/AppLink';
+import { VendorMeSection } from '@/components/vendors/me/VendorMeSection';
 import type { VendorToolKey } from '@/lib/vendors';
 
 export function VendorToolLinks({ tools }: { tools: { key: VendorToolKey; href: string }[] }) {
     const t = useTranslations('Vendors');
 
     return (
-        <section aria-labelledby="vendor-tools-title">
-            {/* Title */}
-            <h3 id="vendor-tools-title" className="text-sm font-semibold text-ink">
-                {t('me.toolsTitle')}
-            </h3>
-
+        <VendorMeSection id="vendor-tools-title" title={t('me.toolsTitle')} hint={t('hints.tools')}>
             {/* Links */}
-            <ul className="mt-1 divide-y divide-border">
+            <ul className="-my-3 divide-y divide-border">
                 {tools.map((tool) => (
                     <li key={tool.key}>
                         <AppLink
@@ -30,6 +26,6 @@ export function VendorToolLinks({ tools }: { tools: { key: VendorToolKey; href: 
                     </li>
                 ))}
             </ul>
-        </section>
+        </VendorMeSection>
     );
 }

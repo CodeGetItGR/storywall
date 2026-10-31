@@ -24,7 +24,7 @@ function seededKeys(element: ReactElement) {
 }
 
 beforeEach(() => {
-    serverGet.mockReset().mockResolvedValue([]);
+    serverGet.mockReset().mockImplementation(async (path: string) => (path.endsWith('/qr-card-templates') ? { available: true, templates: [] } : []));
     serverGetOrNull.mockReset().mockResolvedValue(null);
     ctx.context = { accessToken: 'tok', isHost: true };
 });
@@ -37,21 +37,28 @@ describe('Share links prefetch', () => {
                 ['events', 'e1', 'qr-links'],
                 ['events', 'e1', 'qr-links', 'stats'],
                 ['events', 'e1', 'usage'],
+                ['events', 'e1', 'qr-card-templates'],
             ]),
         );
         expect(serverGetOrNull).not.toHaveBeenCalled();
     });
 
-    it('seeds the role and the links only for a planner with the tool open', async () => {
+    it('seeds the role, the links and the designs for a planner with the tool open', async () => {
         ctx.context = { accessToken: 'tok', isHost: false };
         serverGetOrNull.mockResolvedValue({ vendorType: 'PLANNER', capabilities: ['QR_READ'], accessOpen: true });
         const element = await visit();
-        expect(seededKeys(element)).toEqual([
-            ['events', 'e1', 'vendors', 'me'],
-            ['events', 'e1', 'qr-links'],
-        ]);
-        expect(serverGet).toHaveBeenCalledTimes(1);
+        const keys = seededKeys(element);
+        expect(keys).toEqual(
+            expect.arrayContaining([
+                ['events', 'e1', 'vendors', 'me'],
+                ['events', 'e1', 'qr-links'],
+                ['events', 'e1', 'qr-card-templates'],
+            ]),
+        );
+        expect(keys).toHaveLength(3);
+        expect(serverGet).toHaveBeenCalledTimes(2);
         expect(serverGet).toHaveBeenCalledWith('/api/events/e1/qr-links', 'tok');
+        expect(serverGet).toHaveBeenCalledWith('/api/events/e1/qr-card-templates', 'tok');
     });
 
     it('fetches no links for a member who is not a planner, or whose access ended', async () => {

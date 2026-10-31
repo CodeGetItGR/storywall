@@ -27,7 +27,7 @@ export function HomeHeader() {
                 <AppLink
                     href={routes.notifications}
                     aria-label={tNotifications('title')}
-                    className="relative flex h-11 w-11 items-center justify-center lg:hidden"
+                    className="relative flex h-11 w-11 items-center justify-center md:hidden"
                 >
                     <Bell className="h-5 w-5 text-ink" strokeWidth={1.8} />
                     {unreadCount > 0 && (
@@ -42,7 +42,7 @@ export function HomeHeader() {
                     aria-label={tAccount('drawerLabel')}
                     aria-haspopup="dialog"
                     aria-expanded={open}
-                    className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary lg:hidden"
+                    className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:hidden"
                 >
                     <Menu className="h-5 w-5" strokeWidth={2.2} aria-hidden="true" />
                 </button>

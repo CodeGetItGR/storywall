@@ -4,7 +4,7 @@ import { landingClickAttributes } from '@/lib/landingTracking';
 import { cn } from '@/lib/utils';
 
 const PILL =
-    'inline-flex items-center rounded-full px-6 py-3.5 text-[11px] font-black tracking-[0.08em] uppercase no-underline focus-ring transition-transform hover:-translate-y-0.5 focus-visible:outline-offset-4 motion-reduce:transition-none min-[761px]:px-7 min-[761px]:text-[13px] min-[761px]:tracking-widest';
+    'inline-flex items-center justify-center rounded-full px-6 py-3.5 text-[11px] font-black tracking-[0.08em] uppercase no-underline focus-ring transition-transform hover:-translate-y-0.5 focus-visible:outline-offset-4 motion-reduce:transition-none min-[761px]:px-7 min-[761px]:text-[13px] min-[761px]:tracking-widest';
 
 export type LandingTextSegment = { strong?: boolean; text: string };
 
@@ -52,37 +52,39 @@ export function LandingStoryCopy({ demo, more, paragraphSegments, tag, titleSegm
                     </p>
                 </div>
             ) : null}
-            {/* Links: the demo and the occasion page, as pills on one row that wraps on phones */}
+            {/* Links: the demo and the occasion page, as pills side by side, stacked full width when the column is too narrow for both */}
             {demo || more ? (
-                <div className="mt-6 flex flex-wrap items-center gap-3 min-[761px]:mt-[clamp(20px,2vw,30px)]">
-                    {/* Demo link */}
-                    {demo ? (
-                        <a
-                            className={cn(
-                                PILL,
-                                'gap-3 bg-[linear-gradient(135deg,#d27b9b_0%,#e78274_28%,#f4905f_58%,#fcba63_100%)] text-white! shadow-[0_16px_32px_rgba(217,102,74,.15)]',
-                            )}
-                            href={demo.href}
-                            {...landingClickAttributes({ event: 'demo', placement: 'stories' })}
-                        >
-                            <span>{demo.label}</span>
-                            <span aria-hidden="true" className="text-[18px] leading-none">
-                                ↗
-                            </span>
-                        </a>
-                    ) : null}
-                    {/* Occasion page link: sentence case so the longer label stays on one line on phones */}
-                    {more ? (
-                        <a
-                            className={cn(
-                                PILL,
-                                'border border-[var(--ink)]/20 bg-white py-3 text-[13px] font-bold tracking-normal text-[var(--ink)] normal-case min-[761px]:py-[13px] min-[761px]:text-[13px] min-[761px]:tracking-normal',
-                            )}
-                            href={more.href}
-                        >
-                            {more.label}
-                        </a>
-                    ) : null}
+                <div className="@container mt-6 min-[761px]:mt-[clamp(20px,2vw,30px)]">
+                    <div className="flex flex-col gap-3 @min-[27rem]:flex-row @min-[27rem]:flex-wrap @min-[27rem]:items-center">
+                        {/* Demo link */}
+                        {demo ? (
+                            <a
+                                className={cn(
+                                    PILL,
+                                    'gap-3 bg-[linear-gradient(135deg,#d27b9b_0%,#e78274_28%,#f4905f_58%,#fcba63_100%)] text-white! shadow-[0_16px_32px_rgba(217,102,74,.15)]',
+                                )}
+                                href={demo.href}
+                                {...landingClickAttributes({ event: 'demo', placement: 'stories' })}
+                            >
+                                <span>{demo.label}</span>
+                                <span aria-hidden="true" className="text-[18px] leading-none">
+                                    ↗
+                                </span>
+                            </a>
+                        ) : null}
+                        {/* Occasion page link: sentence case so the longer label stays on one line on phones */}
+                        {more ? (
+                            <a
+                                className={cn(
+                                    PILL,
+                                    'border border-[var(--ink)]/20 bg-white py-3 text-[13px] font-bold tracking-normal text-[var(--ink)] normal-case min-[761px]:py-[13px] min-[761px]:text-[13px] min-[761px]:tracking-normal',
+                                )}
+                                href={more.href}
+                            >
+                                {more.label}
+                            </a>
+                        ) : null}
+                    </div>
                 </div>
             ) : null}
         </div>

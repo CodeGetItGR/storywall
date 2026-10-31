@@ -13,6 +13,7 @@ const CTA_ROUTES: Record<NotificationCtaTarget, (params: Record<string, string>)
     EVENT_WISHBOOK: (p) => routes.events.tools.wishbook(p.eventId),
     EVENT_VENDORS: (p) => routes.events.manageVendors(p.eventId),
     EVENT_VENDOR_PAGE: (p) => routes.events.tools.vendorMe(p.eventId),
+    EVENT_POST: (p) => routes.events.feed(p.eventId, { post: p.postId }),
 };
 
 export function notificationCtaRoute(notification: NotificationResponseDto): string | null {

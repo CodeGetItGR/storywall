@@ -8,6 +8,9 @@ export type AdminErrorMessageKey =
     | 'orderNotManual'
     | 'notFound'
     | 'withdrawalNotHeld'
+    | 'applicationNotPending'
+    | 'foundingSpotsFull'
+    | 'collaboratorEmailExists'
     | 'keepEventDayNotDue'
     | 'withdrawalOrderDisputed'
     | 'eventNotActive'
@@ -40,6 +43,9 @@ export type AdminErrorMessageKey =
     | 'eventAlreadySuspended'
     | 'eventAlreadyClosed'
     | 'statementInvalid'
+    | 'pushNotEnabled'
+    | 'pushUnavailable'
+    | 'pushSendFailed'
     | 'generic';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -79,6 +85,10 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.WITHDRAWAL_NOT_HELD) return 'withdrawalNotHeld';
     if (code === ERROR_CODES.WITHDRAWAL_KEEP_EVENT_DAY_NOT_DUE) return 'keepEventDayNotDue';
     if (code === ERROR_CODES.WITHDRAWAL_ORDER_DISPUTED) return 'withdrawalOrderDisputed';
+    // Another admin decided it first.
+    if (code === ERROR_CODES.PARTNER_APPLICATION_NOT_PENDING) return 'applicationNotPending';
+    if (code === ERROR_CODES.FOUNDING_SPOTS_FULL) return 'foundingSpotsFull';
+    if (code === ERROR_CODES.COLLABORATOR_EMAIL_EXISTS) return 'collaboratorEmailExists';
     if (code === ERROR_CODES.EVENT_NOT_ACTIVE) return 'eventNotActive';
     if (code === ERROR_CODES.WEBHOOK_ALREADY_PROCESSED) return 'webhookAlreadyProcessed';
     if (code === ERROR_CODES.WEBHOOK_NOT_REPLAYABLE) return 'webhookNotReplayable';
@@ -113,6 +123,10 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.EVENT_ALREADY_SUSPENDED) return 'eventAlreadySuspended';
     if (code === ERROR_CODES.EVENT_ALREADY_CLOSED) return 'eventAlreadyClosed';
     if (code === ERROR_CODES.MODERATION_DECISION_INVALID) return 'statementInvalid';
+    // The Phones drawer's test notification.
+    if (code === ERROR_CODES.PUSH_NOT_ENABLED) return 'pushNotEnabled';
+    if (code === ERROR_CODES.PUSH_UNAVAILABLE) return 'pushUnavailable';
+    if (code === ERROR_CODES.PUSH_SEND_FAILED) return 'pushSendFailed';
     return 'generic';
 }
 

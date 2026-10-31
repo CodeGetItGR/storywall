@@ -9,7 +9,8 @@ export type AttendanceStatus = 'ATTENDING' | 'DECLINED';
 export type RsvpReportType = 'STATISTICS' | 'FULL_LIST' | 'ATTENDING_ONLY' | 'WITH_CHILDREN';
 export type AuthProvider = 'LOCAL' | 'OAUTH' | 'INVITE';
 export type AccountStatus = 'ACTIVE' | 'SUSPENDED' | 'DELETED';
-export type PlatformRole = 'USER' | 'ADMIN' | 'GUEST';
+// MARKETING: a USER who also works the console's marketing group and partner outreach. Never money or users.
+export type PlatformRole = 'USER' | 'ADMIN' | 'MARKETING' | 'GUEST';
 
 // eventType is now a closed set on the backend (EventTypeKey), validated on
 // POST /api/events against this exact union — an unknown value 400s with
@@ -34,6 +35,7 @@ export const EVENT_MODULE_KEYS = [
     'he_or_she',
     'quiz_polls',
     'vendors',
+    'qr_cards',
 ] as const;
 // Use this (not the raw `ModuleKey` wire type below) whenever code branches on
 // a specific module — it's a closed set and catches typos at compile time.
@@ -43,7 +45,8 @@ export const EVENT_MODULE_KEYS = [
 export type ModuleKeyConvention = (typeof EVENT_MODULE_KEYS)[number];
 // Post.type is enforced server-side against this exact set (DB CHECK constraint
 // + matching DTO validation) — not a free-string convention like the others.
-export type PostType = 'TEXT' | 'MEDIA' | 'ANNOUNCEMENT' | 'PLAYLIST';
+// SNEAK_PEEK is made only through the vendor's sneak-peek endpoint, never POST /api/posts.
+export type PostType = 'TEXT' | 'MEDIA' | 'ANNOUNCEMENT' | 'PLAYLIST' | 'SNEAK_PEEK';
 export type MediaTypeConvention = 'IMAGE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT';
 // Each context needs its own module: GALLERY → gallery, STORY → stories,
 // POST → posts (plan-owned-modules-fe-integration.md §4).
@@ -355,6 +358,21 @@ export interface AdminSiteNoticeRequestDto {
     startsAt: string | null;
     endsAt: string | null;
     active: boolean;
+}
+
+/** GET /api/admin/devices: the calling admin's paired phones. pushEnabled: the phone sent a Firebase token. */
+export interface AdminDeviceDto {
+    id: string;
+    name: string;
+    createdAt: string;
+    lastSeenAt: string | null;
+    pushEnabled: boolean;
+}
+
+/** POST /api/admin/devices: the only response that carries the key. */
+export interface AdminDeviceCreatedDto {
+    device: AdminDeviceDto;
+    key: string;
 }
 
 export type EventTypeAccentToken = 'rose' | 'sky' | 'amber';
@@ -769,7 +787,15 @@ export type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 // resolves the route itself. Closed but growable set; treat an unrecognized value defensively.
 // See docs/integration guides/notification-cta-target-fe-integration.md.
 export type NotificationCtaTarget =
-    'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS' | 'EVENT_COVERAGE_EXTEND' | 'EVENT_WISHBOOK' | 'EVENT_VENDORS' | 'EVENT_VENDOR_PAGE';
+    | 'EVENT_PLAN_SETTINGS'
+    | 'EVENT_GALLERY'
+    | 'EVENT_GUESTS'
+    | 'EVENT_COVERAGE_EXTEND'
+    | 'EVENT_WISHBOOK'
+    | 'EVENT_VENDORS'
+    | 'EVENT_VENDOR_PAGE'
+    // One post over the feed, { eventId, postId } (sneak peek, 2026-10-29).
+    | 'EVENT_POST';
 
 export interface NotificationResponseDto {
     id: string;
@@ -851,6 +877,8 @@ export interface UserResponseDto {
     // confirmed being 18+; until then every write is 403 4020. Same nulls as above.
     termsAcceptanceRequired: boolean | null;
     currentTermsVersion: string | null;
+    // The account opens a partner page (verified email matching an active partner). Null off /api/me.
+    partner?: boolean | null;
     signupSource?: SignupSourceDto | null;
 }
 
@@ -974,6 +1002,37 @@ export interface EventThemeFontDto {
     key: string; // CSS family is "theme-" + key
     fallback: 'serif' | 'sans-serif';
     url: string; // FE-origin path, /api/theme-fonts/<key>/<version>.woff2
+}
+
+// QR card layout (qr-card-layout-editor spec): boxes in A6 millimetres from the card's top-left corner.
+export type QrCardTextAlign = 'left' | 'center' | 'right';
+export interface QrCardLayoutDto {
+    title: { x: number; y: number; width: number; height: number; maxSize: number; align: QrCardTextAlign };
+    code: { x: number; y: number; size: number; panel: boolean; radius: number };
+    lines: { x: number; y: number; width: number; height: number; textSize: number; align: QrCardTextAlign };
+}
+
+// The paper sizes a card prints at. One SVG serves both: A5 is A6 drawn larger.
+export type QrCardSize = 'A6' | 'A5';
+
+// QR card templates (qr-card-templates-fe-integration.md): A6 card designs a host prints a QR on.
+export interface QrCardTemplateDto {
+    id: string;
+    name: LocalizedText;
+    artworkUrl: string; // FE-origin path, /api/qr-card-artwork/<id>/<version>
+    textColor: string; // #RRGGBB
+    headingFont: EventThemeFontDto | null; // null = the card's own font
+    codeColor: string; // #RRGGBB, at least 4.5:1 against white
+    centerLogo: boolean;
+    layout: QrCardLayoutDto | null; // null = the default layout
+    sizes: QrCardSize[]; // ['A6'], or ['A6', 'A5'] when the artwork is wide enough
+}
+
+// GET /api/events/{eventId}/qr-card-templates. available: the event has QR cards (drafts included).
+// templates: live, with artwork, for the event's type, sorted; empty when available is false.
+export interface QrCardTemplateListDto {
+    available: boolean;
+    templates: QrCardTemplateDto[];
 }
 
 // The event's look (event-theme-customization, 2026-10-05). Null when the event has
@@ -1121,7 +1180,8 @@ export interface PartnerBrandingDto {
 
 // --- Vendors in the event ---
 
-export type VendorCapability = 'PRO_ALBUM' | 'SCHEDULE_EDIT' | 'ANNOUNCE' | 'RSVP_REPORT' | 'QR_READ' | 'SONG_REQUESTS' | 'PRINT_PICKS';
+export type VendorCapability =
+    'PRO_ALBUM' | 'SCHEDULE_EDIT' | 'ANNOUNCE' | 'RSVP_REPORT' | 'QR_READ' | 'SONG_REQUESTS' | 'PRINT_PICKS' | 'SNEAK_PEEK';
 export type MediaCollection = 'GUEST' | 'PRO';
 // Why a vendor's tools are off. Null in VendorMeDto while they are open.
 export type VendorToolsOff = 'MODULE_OFF' | 'TYPE_NOT_ALLOWED' | 'ACCESS_ENDED';
@@ -1167,6 +1227,48 @@ export interface VendorMeDto {
     toolsOff: VendorToolsOff | null;
     // An approved partner, who can list priced services (print picks spec 2026-10-23).
     approvedPartner: boolean;
+    // Null for types without the sneak peek (spec 2026-10-29).
+    sneakPeek: SneakPeekSummaryDto | null;
+}
+
+// One sneak peek per vendor per event. `used` stays true after a delete (postId and content null, mediaIds empty).
+export interface SneakPeekSummaryDto {
+    postId: string | null;
+    mediaIds: string[];
+    content: string | null;
+    used: boolean;
+}
+
+// POST …/vendors/me/sneak-peek: 1–20 of the vendor's own ready Pro items, in display order.
+export interface SneakPeekRequestDto {
+    mediaIds: string[];
+    content?: string | null;
+}
+
+// PATCH …/vendors/me/sneak-peek: an absent field is unchanged; content "" clears the caption.
+export interface SneakPeekPatchDto {
+    mediaIds?: string[];
+    content?: string;
+}
+
+// GET …/vendors/me/reach. Every vendor gets guests and listTaps; the optional fields come only for partners,
+// and the Pro ones only for types with a Pro album. partnerCardTaps is 0 when their card never ran here.
+export interface VendorReachDto {
+    guests: number;
+    listTaps: number;
+    proViewers?: number;
+    proViews?: number;
+    postViewers?: number;
+    reactions?: number;
+    comments?: number;
+    partnerCardTaps?: number;
+    partner: boolean;
+}
+
+// POST /api/events/{eventId}/views. Each list at most 50. Always 204 for members.
+export interface ContentViewsRequestDto {
+    mediaIds: string[];
+    postIds: string[];
 }
 
 // Print picks (spec 2026-10-23). Prices are euro cents.
@@ -1381,6 +1483,49 @@ export interface PartnerApplicationResponseDto {
     id: string;
 }
 
+export type PartnerApplicationStatus = 'PENDING' | 'APPROVED' | 'DECLINED';
+
+// GET /api/admin/partner-applications(/{id}). Newest first.
+export interface AdminPartnerApplicationDto {
+    id: string;
+    status: PartnerApplicationStatus;
+    createdAt: string;
+    name: string;
+    businessName: string;
+    role: PartnerRole;
+    email: string;
+    // An https URL or an @handle.
+    link: string;
+    // ISO 3166-1 alpha-2.
+    countryCode: string;
+    phone: string | null;
+    locale: string;
+    utmSource: string | null;
+    utmMedium: string | null;
+    utmCampaign: string | null;
+    decidedAt: string | null;
+    decidedByEmail: string | null;
+    declineReason: string | null;
+    // Set once approved.
+    collaboratorId: string | null;
+}
+
+// POST /api/admin/partner-applications/{id}/approve -> 200 { collaboratorId }.
+// 409 5189 not pending, 5190 no founding spots, 5191 email already a partner (details.collaboratorId).
+export interface ApprovePartnerApplicationRequestDto {
+    founding: boolean;
+}
+
+export interface ApprovePartnerApplicationResponseDto {
+    collaboratorId: string;
+}
+
+// POST /api/admin/partner-applications/{id}/decline -> 200 AdminPartnerApplicationDto. 409 5189.
+export interface DeclinePartnerApplicationRequestDto {
+    // Sent to the applicant as written. null sends a short generic line instead.
+    reason: string | null;
+}
+
 // Why a StoryWall is suspended. ground, rule and explanation are null if the decision row was deleted.
 export interface EventSuspensionDto {
     suspendedAt: string;
@@ -1471,6 +1616,25 @@ export interface PartnerPortalResponseDto {
     tierProgress: PartnerTierProgressDto | null;
     // Every tap on the partner's feed cards, across all events (2026-10-08).
     brandingClicks: number;
+    // Across every event where the partner's account was a vendor (2026-10-29). Never null.
+    reach: PartnerPortalReachDto;
+}
+// No titles or ids: the portal opens with the link alone (KAN-28).
+export interface PartnerPortalReachEventDto {
+    startAt: string;
+    vendorType: PartnerRole;
+    guests: number;
+    // Pro item views plus post views.
+    views: number;
+}
+export interface PartnerPortalReachDto {
+    events: number;
+    guests: number;
+    proViews: number;
+    postViewers: number;
+    listTaps: number;
+    // The 10 most recent, newest first.
+    recent: PartnerPortalReachEventDto[];
 }
 // Counts only, nothing per event.
 export interface PartnerTierProgressDto {
@@ -1490,14 +1654,15 @@ export interface CollaboratorRequestDto {
     contactEmail: string;
     notes: string | null;
     status: CollaboratorStatus | null;
+    // null = false on create, unchanged on update. 409 5190 when no founding spots are left.
+    founding: boolean | null;
 }
 export interface CollaboratorResponseDto {
     id: string;
     name: string;
     contactEmail: string;
     status: CollaboratorStatus;
-    portalTokenIssued: boolean;
-    portalTokenIssuedAt: string | null;
+    founding: boolean;
     notes: string | null;
     // Same rows as GET …/earnings/totals, on list and detail. [] when never earned.
     earningsTotals: CollaborationEarningsTotalDto[];
@@ -1568,10 +1733,6 @@ export interface CommissionTierDto {
 export interface CommissionTiersRequestDto {
     tiers: CommissionTierDto[];
 }
-export interface CollaboratorPortalTokenResponseDto {
-    token: string;
-    portalUrl: string;
-}
 // Which events a code may be redeemed against. Keys and plan codes, never ids.
 // An empty array means every event type / every plan, not none. On PATCH both
 // replace the stored sets wholesale, so an edit must send the current values back.
@@ -1612,6 +1773,16 @@ export interface DiscountCodeResponseDto extends DiscountCodeRequestDto {
     id: string;
     status: CollaborationCodeStatus;
     liveRedemptions: number;
+}
+// What a code form offers and prices its warnings from (GET /api/admin/discount-codes/options): event types and
+// event plans, archived ones too, cut down so marketing can read them without the plan admin.
+export type DiscountCodePlanOption = Pick<
+    PlanTierResponseDto,
+    'code' | 'name' | 'scope' | 'eventTypeKey' | 'sortOrder' | 'isAssignable' | 'priceCurrency' | 'discountPercent' | 'discountStartsAt' | 'discountEndsAt'
+> & { initialOptions: Pick<PlanTierResponseDto['initialOptions'][number], 'priceAmountMinor' | 'promoPriceAmountMinor' | 'active'>[] };
+export interface DiscountCodeOptionsDto {
+    eventTypes: Pick<PlatformEventTypeResponseDto, 'eventTypeKey' | 'name' | 'sortOrder'>[];
+    plans: DiscountCodePlanOption[];
 }
 export interface LinkDiscountCodeRequestDto {
     discountCodeId: string;
@@ -2363,11 +2534,16 @@ export interface CampaignRowDto {
     signedUp: number;
     createdEvent: number;
     paidHost: number;
-    revenueMinorByCurrency: Record<string, number>;
+    // Null for a MARKETING caller: the server leaves revenue out.
+    revenueMinorByCurrency: Record<string, number> | null;
 }
 
-// GET /api/admin/metrics/campaigns/overview. Every saved link (or one with ?link=) over a range.
-// daily lists every Athens day in the range, zeros included; empty when there's no visit at all.
+// GET /api/admin/metrics/campaigns/overview. Every saved link, one utm source (?source=) or one link
+// (?link=, which wins) over a range. daily lists every Athens day in the range and hourly every Athens
+// hour (0-23) summed over it, zeros included; both are empty when there's no visit at all.
+// dailySeries and hourlySeries split them into the chart's lines (each source, or with ?source= each
+// "medium / campaign"), only where a line had a visit; empty for one link. A page is null for old
+// visits whose link is gone.
 export interface CampaignOverviewDto {
     visits: number;
     visitors: number;
@@ -2376,10 +2552,15 @@ export interface CampaignOverviewDto {
     planPicks: number;
     signedUp: number;
     paidHost: number;
-    revenueMinorByCurrency: Record<string, number>;
+    // Null for a MARKETING caller: the server leaves revenue out.
+    revenueMinorByCurrency: Record<string, number> | null;
     daily: { date: string; visits: number; visitors: number }[];
+    hourly: { hour: number; visits: number; visitors: number }[];
+    dailySeries: { series: string; date: string; visits: number; visitors: number }[];
+    hourlySeries: { series: string; hour: number; visits: number; visitors: number }[];
     devices: { device: VisitorDevice; visits: number }[];
     languages: { language: VisitorLanguage; visits: number }[];
+    pages: { page: string | null; visits: number }[];
 }
 
 // POST /api/public/campaign-visits. Spring always answers 204.
@@ -2391,6 +2572,7 @@ export interface CampaignVisitRequestDto {
     utmMedium: string;
     utmCampaign: string;
     language: VisitorLanguage;
+    page: string;
 }
 
 // GET /api/admin/metrics/visitors. Google Analytics numbers for the public pages over a range.
@@ -4337,6 +4519,47 @@ export interface AdminThemePresetPatchDto {
     clearTitleColor?: boolean;
 }
 
+// /api/admin/qr-card-templates — the whole catalog, archived and without artwork included.
+export interface AdminQrCardTemplateDto {
+    id: string;
+    name: LocalizedText;
+    eventTypes: EventTypeConvention[];
+    sortOrder: number;
+    archived: boolean;
+    artworkUrl: string | null; // null until uploaded; such a template isn't offered to hosts
+    textColor: string;
+    headingFont: AdminThemeFontSummaryDto | null;
+    codeColor: string;
+    centerLogo: boolean;
+    layout: QrCardLayoutDto | null; // null = the default layout
+    artworkWidth: number | null; // px; null without artwork, or for artwork uploaded before A5 support
+}
+
+// POST /api/admin/qr-card-templates
+export interface AdminQrCardTemplateRequestDto {
+    name: LocalizedText;
+    eventTypes: EventTypeConvention[];
+    sortOrder: number;
+    textColor: string;
+    headingFontId?: string | null;
+    codeColor: string;
+    centerLogo: boolean;
+}
+
+// PATCH /api/admin/qr-card-templates/{id}. Omitted fields stay as they are.
+export interface AdminQrCardTemplatePatchDto {
+    name?: LocalizedText;
+    eventTypes?: EventTypeConvention[];
+    sortOrder?: number;
+    archived?: boolean;
+    textColor?: string;
+    headingFontId?: string;
+    clearHeadingFont?: boolean;
+    codeColor?: string;
+    centerLogo?: boolean;
+    layout?: QrCardLayoutDto; // a full layout replaces the stored one
+}
+
 // /api/admin/theme-fonts
 export interface AdminThemeFontDto {
     id: string;
@@ -4481,4 +4704,169 @@ export interface AdminEventCloseRequestDto {
     operationalReason: OperationalCloseReason | null;
     explanation: string;
     note: string | null;
+}
+
+// --- Partner outreach (outreach-fe-integration.md, 2026-10-30) ---
+// Businesses we may approach to become partners, before they apply. Base /api/admin/outreach.
+export type OutreachStatus = 'NEW' | 'EMAILED' | 'FOLLOWED_UP' | 'REPLIED' | 'MEETING' | 'PARTNER' | 'DECLINED' | 'NO_RESPONSE';
+// The four groups of PartnerRole the console shows.
+export type OutreachType = 'VENUES' | 'PLANNERS' | 'PHOTO_VIDEO' | 'SHOPS_DECOR';
+export type OutreachPriority = 'A' | 'B' | 'C';
+export type OutreachOrigin = 'AGENT' | 'IMPORT' | 'MANUAL';
+export type OutreachNoteKind = 'NOTE' | 'STATUS_CHANGE' | 'SYSTEM';
+
+export interface OutreachEmailDto {
+    subject: string | null;
+    body: string | null;
+}
+
+// Dates without a time (lastContactOn, nextFollowupOn) are 'YYYY-MM-DD' in Europe/Athens.
+export interface OutreachProspectRowDto {
+    id: string;
+    name: string;
+    kind: PartnerRole;
+    type: OutreachType;
+    subcategory: string | null;
+    city: string;
+    area: string | null;
+    priority: OutreachPriority;
+    status: OutreachStatus;
+    outcome: string | null;
+    email: string | null;
+    instagram: string | null;
+    contactForm: string | null;
+    phone: string | null;
+    lastContactOn: string | null;
+    nextFollowupOn: string | null;
+    followupDue: boolean;
+    updatedAt: string;
+}
+
+export interface OutreachNoteDto {
+    id: string;
+    kind: OutreachNoteKind;
+    body: string;
+    // The author's display name, or a label such as "Research agent"; null when neither is known.
+    authorName: string | null;
+    createdAt: string;
+}
+
+export interface OutreachProspectDto extends OutreachProspectRowDto {
+    website: string | null;
+    contactPerson: string | null;
+    // Why this business, in English and in Greek. Either may be missing until the weekly agent fills it.
+    credibility: string | null;
+    fit: string | null;
+    credibilityEl: string | null;
+    fitEl: string | null;
+    sources: string[];
+    emailEl: OutreachEmailDto;
+    emailEn: OutreachEmailDto;
+    origin: OutreachOrigin;
+    createdAt: string;
+    // Newest first.
+    notes: OutreachNoteDto[];
+}
+
+export type OutreachStatusCounts = Record<OutreachStatus, number>;
+
+export interface OutreachSummaryDto {
+    total: number;
+    topPriority: number;
+    contacted: number;
+    replied: number;
+    meetings: number;
+    partners: number;
+    followupsDue: number;
+    byStatus: OutreachStatusCounts;
+    // All four types, even when empty.
+    byType: { type: OutreachType; total: number; byStatus: OutreachStatusCounts }[];
+    byCity: { city: string; total: number; contacted: number }[];
+    // Active, with a follow-up date, earliest first, at most 8.
+    dueSoon: OutreachProspectRowDto[];
+}
+
+// GET /api/admin/outreach/prospects. `sort` is Spring's "field,asc|desc".
+export interface OutreachProspectQuery {
+    status?: OutreachStatus | null;
+    type?: OutreachType | null;
+    kind?: PartnerRole | null;
+    city?: string | null;
+    priority?: OutreachPriority | null;
+    q?: string | null;
+    due?: boolean;
+    page: number;
+    size: number;
+    sort?: string | null;
+}
+
+export interface OutreachProspectCreateRequestDto {
+    name: string;
+    kind: PartnerRole;
+    city: string;
+    area?: string | null;
+    subcategory?: string | null;
+    priority?: OutreachPriority;
+    website?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    instagram?: string | null;
+    contactForm?: string | null;
+    contactPerson?: string | null;
+    // English; the El fields are Greek. Set at creation only (max 5000).
+    credibility?: string | null;
+    fit?: string | null;
+    credibilityEl?: string | null;
+    fitEl?: string | null;
+    sources?: string[];
+    emailEl?: OutreachEmailDto;
+    emailEn?: OutreachEmailDto;
+}
+
+// Marketing asks, an admin decides: ADD carries the business, REMOVE the one to remove.
+export type OutreachRequestKind = 'ADD' | 'REMOVE';
+export type OutreachRequestStatus = 'PENDING' | 'APPROVED' | 'DECLINED';
+
+// POST /api/admin/outreach/requests -> 201. 409 5192 for an ADD already in the pipeline, 5193 for a REMOVE already waiting.
+export interface OutreachRequestCreateDto {
+    kind: OutreachRequestKind;
+    prospectId?: string;
+    proposal?: OutreachProspectCreateRequestDto;
+    note: string;
+}
+
+export interface OutreachRequestDto {
+    id: string;
+    kind: OutreachRequestKind;
+    status: OutreachRequestStatus;
+    // The business to remove, or the one an approved ADD created; null once it is gone.
+    prospectId: string | null;
+    prospectName: string;
+    proposal: OutreachProspectCreateRequestDto | null;
+    note: string;
+    // Null when the account was deleted.
+    requestedBy: string | null;
+    requestedAt: string;
+    decidedBy: string | null;
+    decidedAt: string | null;
+    decisionNote: string | null;
+}
+
+// Every field optional; an explicit null clears a nullable field.
+export interface OutreachProspectUpdateRequestDto {
+    status?: OutreachStatus;
+    outcome?: string | null;
+    priority?: OutreachPriority;
+    contactPerson?: string | null;
+    lastContactOn?: string | null;
+    nextFollowupOn?: string | null;
+    website?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    instagram?: string | null;
+    contactForm?: string | null;
+    area?: string | null;
+    subcategory?: string | null;
+    emailEl?: OutreachEmailDto;
+    emailEn?: OutreachEmailDto;
 }

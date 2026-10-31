@@ -17,9 +17,10 @@ const mocks = vi.hoisted(() => ({
     termsVersion: '2026-10-04',
     guidelinesVersion: '2026-09-30',
     oauthButtons: null as OAuthButtonsProps | null,
+    search: '',
 }));
 
-vi.mock('next/navigation', () => ({ usePathname: () => '/login', useSearchParams: () => new URLSearchParams() }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/login', useSearchParams: () => new URLSearchParams(mocks.search) }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ login: vi.fn(), oauth: mocks.oauth }) }));
 vi.mock('@/hooks/useAuthPageRedirect', () => ({ useAuthPageRedirect: () => ({ shouldRenderAuthPage: true }) }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'generic error' }));
@@ -63,6 +64,39 @@ async function signInWithGoogle() {
 function tick(dialog: HTMLElement) {
     fireEvent.click(within(dialog).getByRole('checkbox', { name: /^I accept/ }));
 }
+
+describe('LoginPage return path', () => {
+    beforeEach(() => {
+        mocks.oauth.mockReset();
+        mocks.navigateAfterSignIn.mockReset();
+        // A signed-out tap on /admin#phones: the redirect puts /admin in `next`, the browser keeps the hash.
+        mocks.search = 'next=%2Fadmin';
+        window.history.replaceState(null, '', '/login?next=%2Fadmin#phones');
+    });
+    afterEach(() => {
+        cleanup();
+        mocks.search = '';
+        window.history.replaceState(null, '', '/');
+    });
+
+    it('sends an admin back to the console section the link named', async () => {
+        mocks.oauth.mockResolvedValue({ role: 'ADMIN' });
+        renderPage();
+
+        await signInWithGoogle();
+
+        expect(mocks.navigateAfterSignIn).toHaveBeenCalledWith('/admin#phones');
+    });
+
+    it('sends a member to the feed, not to the admin link', async () => {
+        mocks.oauth.mockResolvedValue({ role: 'USER' });
+        renderPage();
+
+        await signInWithGoogle();
+
+        expect(mocks.navigateAfterSignIn).toHaveBeenCalledWith('/feed');
+    });
+});
 
 describe('LoginPage and a Google/Apple sign-in that would create an account', () => {
     beforeEach(() => {

@@ -8,6 +8,7 @@ import { useMemo, useState } from 'react';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
 import { meQueryKey, useMe } from '@/hooks/useMe';
+import { isAccountRole } from '@/lib/accountRole';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { ERROR_CODES, getErrorCode, getErrorMessage, getFieldErrors } from '@/lib/api/errors';
@@ -66,7 +67,7 @@ export function useProfileForm() {
         () => [firstName.trim(), lastName.trim()].filter(Boolean).join(' ') || user?.firstName || '',
         [firstName, lastName, user?.firstName],
     );
-    const canChangePassword = user?.role === 'USER' || user?.role === 'ADMIN';
+    const canChangePassword = isAccountRole(user?.role);
     const hasProfileChanges = firstName !== sourceFirstName || lastName !== sourceLastName;
     const passwordMismatch = confirmPassword.length > 0 && newPassword !== confirmPassword;
 

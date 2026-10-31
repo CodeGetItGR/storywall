@@ -11,16 +11,16 @@ import { cn } from '@/lib/utils';
 import { useComposer } from '@/providers/ComposerProvider';
 import { useMobileChrome } from '@/providers/MobileChromeProvider';
 
-// On lg+ there's no tab bar to tuck behind, and the button is anchored to the
+// On md+ there's no tab bar to tuck behind, and the button is anchored to the
 // feed column's right edge (viewport width minus the 80px nav rail and 300px
-// right context panel, halved) instead of the raw viewport corner. z-46 sits
+// right context panel, halved, never closer than the panel's edge) instead of the raw viewport corner. z-46 sits
 // above the tab bar (z-40) and the compose backdrop (z-45) but under every
 // modal (z-50). The layer carries that z-index and keeps the button at its
 // normal size during a pinch zoom (see usePinchZoomBox).
 const composerFabLayerClassName = 'pointer-events-none fixed inset-0 z-46';
 
 const composerFabClassName =
-    'motion-fab group pointer-events-auto absolute right-4 bottom-20 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md will-change-transform max-lg:translate-y-[var(--composer-lower-y)] lg:right-[calc(50vw-210px)] lg:bottom-6';
+    'motion-fab group pointer-events-auto absolute right-4 bottom-20 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md will-change-transform max-md:translate-y-[var(--composer-lower-y)] md:right-[max(19.75rem,calc(50vw-210px))] md:bottom-6';
 
 const composerMenuItemClassName =
     'motion-menu-item flex min-h-14 cursor-pointer items-center justify-between rounded-[1.45rem] border border-[#efc0dc] bg-background px-5 text-sm font-medium text-ink shadow-[0_6px_18px_rgba(36,31,26,0.08)] outline-none hover:-translate-y-0.5 hover:border-[#f0b47f]';

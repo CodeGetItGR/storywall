@@ -4,7 +4,7 @@ import { OCCASION_SECTION_IDS } from '@/lib/occasions/occasionSections';
 export type OccasionFaqLinkTarget = 'qr' | 'pricing';
 
 // One FAQ entry as the copy stores it (OccasionPages.<type>.faq). The answer may hold
-// {range, select, …} price sentences.
+// {range, select, …} price and {lengths, select, …} length sentences.
 export type OccasionFaqEntry = { q: string; a: string; link?: { to: OccasionFaqLinkTarget; label: string } };
 
 // The FAQ in copy order with each answer formatted. format gets the answer's key ("faq.3.a").

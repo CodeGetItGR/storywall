@@ -25,7 +25,7 @@ export function EventThemeScope({ children }: { children: ReactNode }) {
         // Fills the shell's content area: its wrapper is a grid, so min-h-full is not needed here. On mobile
         // the shell's main reserves --tab-bar-h for the tab bar in its own white; pulling the scope over that
         // strip (-mb-(--tab-bar-h) pb-(--tab-bar-h)) lets the theme colour reach the bottom of the viewport.
-        <div className="-mb-(--tab-bar-h) bg-event pb-(--tab-bar-h) lg:mb-0 lg:pb-0" style={themeStyle} {...themeFontScopeProps(headingFont)}>
+        <div className="-mb-(--tab-bar-h) bg-event pb-(--tab-bar-h) md:mb-0 md:pb-0" style={themeStyle} {...themeFontScopeProps(headingFont)}>
             <ThemeFontFace font={headingFont} />
             {children}
         </div>

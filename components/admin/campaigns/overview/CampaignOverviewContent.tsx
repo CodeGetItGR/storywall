@@ -3,11 +3,23 @@
 import { useTranslations } from 'next-intl';
 
 import { CampaignFunnelTiles } from '@/components/admin/campaigns/overview/CampaignFunnelTiles';
+import { CampaignPages } from '@/components/admin/campaigns/overview/CampaignPages';
+import { CampaignSourceTable } from '@/components/admin/campaigns/overview/CampaignSourceTable';
 import { CampaignSplits } from '@/components/admin/campaigns/overview/CampaignSplits';
-import { VisitorsDaily } from '@/components/admin/visitors/VisitorsDaily';
+import { CampaignVisitorsChart } from '@/components/admin/campaigns/overview/CampaignVisitorsChart';
+import type { CampaignSourceGroup } from '@/lib/adminCampaignOverview';
 import type { CampaignOverviewDto } from '@/lib/api/types';
 
-export function CampaignOverviewContent({ data }: { data: CampaignOverviewDto }) {
+// sourceGroups is left out for one link's stats, which have no By source table.
+export function CampaignOverviewContent({
+    data,
+    sourceGroups,
+    picked = false,
+}: {
+    data: CampaignOverviewDto;
+    sourceGroups?: CampaignSourceGroup[];
+    picked?: boolean;
+}) {
     const t = useTranslations('AdminPage.campaignOverview');
 
     return (
@@ -20,7 +32,13 @@ export function CampaignOverviewContent({ data }: { data: CampaignOverviewDto })
             ) : (
                 <>
                     {/* Visitors over time */}
-                    <VisitorsDaily daily={data.daily} />
+                    <CampaignVisitorsChart data={data} />
+
+                    {/* By source */}
+                    {sourceGroups && sourceGroups.length > 0 && <CampaignSourceTable groups={sourceGroups} picked={picked} />}
+
+                    {/* Landing page */}
+                    <CampaignPages pages={data.pages} />
 
                     {/* Language and device */}
                     <CampaignSplits data={data} />
