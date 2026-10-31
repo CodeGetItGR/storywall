@@ -6,8 +6,22 @@ import { VendorProfileSheet } from '@/components/vendors/VendorProfileSheet';
 vi.mock('next-intl', () => ({ useTranslations: (ns: string) => (key: string) => `${ns}.${key}` }));
 const form = vi.hoisted(() => ({
     value: {
-        values: { businessName: '', vendorType: 'MUSIC', link: '' },
+        values: {
+            businessName: '',
+            vendorType: 'MUSIC',
+            description: '',
+            serviceTags: [],
+            instagram: '',
+            website: '',
+            contactPhone: '',
+            contactEmail: '',
+            showPhone: false,
+            showEmail: false,
+        },
         setField: vi.fn(),
+        toggleServiceTag: vi.fn(),
+        setShowPhone: vi.fn(),
+        setShowEmail: vi.fn(),
         logo: null,
         setLogo: vi.fn(),
         removeLogo: false,
@@ -20,16 +34,35 @@ const form = vi.hoisted(() => ({
 }));
 vi.mock('@/components/vendors/VendorLogo', () => ({ VendorLogo: () => null }));
 vi.mock('@/hooks/useVendorProfileForm', () => ({ useVendorProfileForm: () => form.value }));
+const me = vi.hoisted(() => ({ partner: false }));
+vi.mock('@/hooks/useMe', () => ({ useMe: () => ({ data: me }) }));
 
-afterEach(cleanup);
+afterEach(() => {
+    cleanup();
+    me.partner = false;
+});
 
 describe('VendorProfileSheet', () => {
     it('shows the fields and the field error, without a type picker', () => {
         render(<VendorProfileSheet open profile={null} defaultType="MUSIC" onCloseAction={vi.fn()} />);
         expect(screen.getByLabelText(/Vendors\.profile\.businessName/)).toBeTruthy();
-        expect(screen.getByLabelText(/Vendors\.profile\.link/)).toBeTruthy();
+        expect(screen.getByLabelText(/Vendors\.profile\.description/)).toBeTruthy();
+        expect(screen.getByLabelText(/Vendors\.profile\.instagram/)).toBeTruthy();
+        expect(screen.getByLabelText(/Vendors\.profile\.website/)).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Vendors.serviceTags.DJ' }).getAttribute('aria-pressed')).toBe('false');
         expect(screen.getByText('required')).toBeTruthy();
         expect(screen.queryByRole('combobox')).toBeNull();
+    });
+
+    it('shows the contact fields to approved partners only', () => {
+        render(<VendorProfileSheet open profile={null} defaultType="MUSIC" onCloseAction={vi.fn()} />);
+        expect(screen.queryByLabelText(/Vendors\.profile\.phone/)).toBeNull();
+        cleanup();
+        me.partner = true;
+        render(<VendorProfileSheet open profile={null} defaultType="MUSIC" onCloseAction={vi.fn()} />);
+        expect(screen.getByRole('textbox', { name: 'Vendors.profile.phone' })).toBeTruthy();
+        fireEvent.click(screen.getByRole('switch', { name: 'Vendors.profile.phone: Vendors.profile.showOnCard' }));
+        expect(form.value.setShowPhone).toHaveBeenCalledWith(true);
     });
 
     it('picks a logo through a button, with the allowed image types', () => {

@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useDeleteVendorLogo, useSaveVendorProfile, useUploadVendorLogo, useVendorProfile, vendorProfileKeys } from '@/hooks/useVendorProfile';
 import { vendorKeys } from '@/hooks/useVendors';
 import { ApiError } from '@/lib/api/client';
+import type { VendorProfileRequestDto } from '@/lib/api/types';
 
 const apiGet = vi.fn();
 const apiPut = vi.fn();
@@ -45,6 +46,19 @@ beforeEach(() => {
     auth.user = { role: 'USER' };
 });
 
+const REQUEST: VendorProfileRequestDto = {
+    businessName: 'Studio X',
+    vendorType: 'PHOTOGRAPHER',
+    description: null,
+    serviceTags: [],
+    instagram: 'studio.x',
+    website: null,
+    contactPhone: null,
+    contactEmail: null,
+    showPhone: false,
+    showEmail: false,
+};
+
 describe('useVendorProfile', () => {
     it('loads the profile', async () => {
         apiGet.mockResolvedValue(PROFILE);
@@ -79,7 +93,7 @@ describe('useSaveVendorProfile', () => {
         const client = newClient();
         const invalidate = vi.spyOn(client, 'invalidateQueries');
         const { result } = renderHook(() => useSaveVendorProfile(), { wrapper: wrapperFor(client) });
-        await act(() => result.current.mutateAsync({ businessName: 'Studio X', vendorType: 'PHOTOGRAPHER', link: '@studio.x' }));
+        await act(() => result.current.mutateAsync(REQUEST));
         expect(client.getQueryData(vendorProfileKeys.mine)).toEqual(PROFILE);
         expect(invalidate).toHaveBeenCalledWith({ predicate: expect.any(Function) });
     });
@@ -91,7 +105,7 @@ describe('useSaveVendorProfile', () => {
         client.setQueryData(vendorKeys.me('e2'), {});
         client.setQueryData(['events', 'e1', 'posts'], []);
         const { result } = renderHook(() => useSaveVendorProfile(), { wrapper: wrapperFor(client) });
-        await act(() => result.current.mutateAsync({ businessName: 'Studio X', vendorType: 'PHOTOGRAPHER', link: '@studio.x' }));
+        await act(() => result.current.mutateAsync(REQUEST));
         expect(client.getQueryState(vendorKeys.list('e1'))?.isInvalidated).toBe(true);
         expect(client.getQueryState(vendorKeys.me('e2'))?.isInvalidated).toBe(true);
         expect(client.getQueryState(['events', 'e1', 'posts'])?.isInvalidated).toBe(false);
