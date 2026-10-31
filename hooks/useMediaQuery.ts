@@ -2,8 +2,8 @@
 
 import { useCallback, useSyncExternalStore } from 'react';
 
-// Tailwind's `lg` breakpoint, for logic that has to agree with `lg:` classes.
-export const LG_MEDIA_QUERY = '(min-width: 64rem)';
+// Tailwind's `md` breakpoint, where the nav rail and right panel replace the tab bar.
+export const MD_MEDIA_QUERY = '(min-width: 48rem)';
 
 function getServerSnapshot() {
     return false;

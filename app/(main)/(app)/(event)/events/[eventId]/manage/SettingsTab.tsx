@@ -435,7 +435,7 @@ export default function SettingsTab({
                 {/* Actions */}
                 <div
                     className={cn(
-                        'fixed right-4 bottom-20 z-30 flex items-center justify-end gap-3 lg:static lg:z-auto lg:mt-2 lg:flex',
+                        'fixed right-4 bottom-20 z-30 flex items-center justify-end gap-3 md:bottom-4 lg:static lg:z-auto lg:mt-2 lg:flex',
                         !hasChanges && !saved && 'hidden',
                     )}
                 >

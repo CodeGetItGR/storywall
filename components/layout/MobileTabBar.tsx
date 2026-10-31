@@ -103,7 +103,7 @@ export function MobileTabBar() {
     return (
         <>
             {/* Navigation */}
-            <div className="pointer-events-none fixed inset-0 z-40 lg:hidden" style={pinchZoomBox}>
+            <div className="pointer-events-none fixed inset-0 z-40 md:hidden" style={pinchZoomBox}>
                 <div className="pointer-events-auto absolute bottom-0 left-1/2 w-full max-w-lg -translate-x-1/2">
                     <nav
                         aria-label={t('eventNavigation')}

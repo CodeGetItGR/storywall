@@ -7310,7 +7310,10 @@
             },
             "consent": "I agree to the <link>privacy policy</link>.",
             "submit": "Send application",
-            "sent": "Thanks. We'll reply by email.",
+            "sent": {
+                "title": "Thanks for your application!",
+                "body": "We'll review it and get in touch soon."
+            },
             "errors": {
                 "invalid": "Check the highlighted fields.",
                 "exists": "We already have your application. We'll reply by email.",
@@ -8492,7 +8495,11 @@
             "heroPhotoAlt": "Your photo {index}",
             "title": "Your vendor page",
             "back": "Back",
-            "notVendor": "You're not a vendor in this event.",
+            "notVendor": {
+                "title": "Looks like you wandered off",
+                "body": "This page is for vendors in this event.",
+                "action": "Back to the event"
+            },
             "accessUntil": "Your tools work until {date}.",
             "toolsOff": {
                 "MODULE_OFF": "Vendor tools aren't part of this event's plan right now.",
