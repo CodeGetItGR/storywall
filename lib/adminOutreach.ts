@@ -328,7 +328,10 @@ function optional(value: string): string | null {
 }
 
 // Links are sent with their scheme, since the server only takes http(s).
-export function toProspectCreateRequest(draft: ProspectDraft): OutreachProspectCreateRequestDto {
+// The "why" text goes in the UI language's fields; the weekly agent fills the other language.
+export function toProspectCreateRequest(draft: ProspectDraft, locale: string): OutreachProspectCreateRequestDto {
+    const credibility = optional(draft.credibility);
+    const fit = optional(draft.fit);
     return {
         name: draft.name.trim(),
         kind: draft.kind as PartnerRole,
@@ -342,8 +345,7 @@ export function toProspectCreateRequest(draft: ProspectDraft): OutreachProspectC
         instagram: optional(draft.instagram),
         contactForm: draft.contactForm.trim() ? safeHttpUrl(draft.contactForm) : null,
         contactPerson: optional(draft.contactPerson),
-        credibility: optional(draft.credibility),
-        fit: optional(draft.fit),
+        ...(locale === 'el' ? { credibilityEl: credibility, fitEl: fit } : { credibility, fit }),
     };
 }
 
@@ -353,6 +355,25 @@ export function duplicateProspectId(error: unknown): string | null | undefined {
     const details = (error.problem?.details ?? error.problem ?? {}) as Record<string, unknown>;
     const id = details.existingId ?? details.prospectId ?? details.id;
     return typeof id === 'string' ? id : null;
+}
+
+// --- Why this business, in the UI language ---
+
+type WhyTexts = Pick<OutreachProspectCreateRequestDto, 'credibility' | 'fit' | 'credibilityEl' | 'fitEl'>;
+
+function inLanguage(english: string | null | undefined, greek: string | null | undefined, preferGreek: boolean): string | null {
+    const [preferred, other] = preferGreek ? [greek, english] : [english, greek];
+    if (preferred?.trim()) return preferred;
+    return other?.trim() ? other : null;
+}
+
+// Greek for an 'el' UI, English otherwise; a missing language falls back to the other one.
+export function localizedWhy(why: WhyTexts, locale: string): { credibility: string | null; fit: string | null } {
+    const preferGreek = locale === 'el';
+    return {
+        credibility: inLanguage(why.credibility, why.credibilityEl, preferGreek),
+        fit: inLanguage(why.fit, why.fitEl, preferGreek),
+    };
 }
 
 // --- Where it stands (drawer form) ---

@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale } from 'next-intl';
 import { type ChangeEvent, type SubmitEvent, useCallback, useMemo, useState } from 'react';
 
 import { useCreateOutreachProspect } from '@/hooks/useAdminOutreach';
@@ -17,12 +18,14 @@ function formErrors(draft: ProspectDraft, note: string, suggest: boolean): AddFo
 
 // The Add business form. Errors show after the first submit; a duplicate offers the existing business.
 // `suggest` (marketing): the same form, plus a required note, sends an ADD request for an admin instead.
+// The "why" text is sent as written in the UI language (Greek UI: the El fields).
 export function useOutreachAddForm(
     onCreated: (id: string) => void,
     onOpenExisting: (id: string) => void,
     suggest = false,
     onSuggested: () => void = () => {},
 ) {
+    const locale = useLocale();
     const createProspect = useCreateOutreachProspect();
     const createRequest = useCreateOutreachRequest();
     const create = suggest ? createRequest : createProspect;
@@ -47,14 +50,14 @@ export function useOutreachAddForm(
             event.preventDefault();
             setSubmitted(true);
             if (Object.keys(formErrors(draft, note, suggest)).length > 0) return;
-            const proposal = toProspectCreateRequest(draft);
+            const proposal = toProspectCreateRequest(draft, locale);
             if (suggest) {
                 createRequest.mutate({ kind: 'ADD', proposal, note: note.trim() }, { onSuccess: onSuggested });
             } else {
                 createProspect.mutate(proposal, { onSuccess: (created) => onCreated(created.id) });
             }
         },
-        [createProspect, createRequest, draft, note, onCreated, onSuggested, suggest],
+        [createProspect, createRequest, draft, locale, note, onCreated, onSuggested, suggest],
     );
 
     const handleOpenExistingClick = useCallback(() => {

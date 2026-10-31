@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { AccountAdminActions } from '@/components/admin/AccountAdminActions';
 import { AccountEmailSection } from '@/components/admin/AccountEmailSection';
 import { AccountEventsSection } from '@/components/admin/AccountEventsSection';
+import { AccountRoleSection } from '@/components/admin/AccountRoleSection';
 import { AccountStatusPill } from '@/components/admin/AccountStatusPill';
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminIdentifier } from '@/components/admin/AdminIdentifier';
@@ -102,6 +103,9 @@ export function AccountDetailDrawer({
 
             {/* Email */}
             {account.status !== 'DELETED' ? <AccountEmailSection account={account} onChangedAction={onAccountChangedAction} /> : null}
+
+            {/* Console role */}
+            {account.status !== 'DELETED' ? <AccountRoleSection account={account} onChangedAction={onAccountChangedAction} /> : null}
 
             <AccountAdminActions account={account} onCompleteAction={onCloseAction} onProvisionAction={onProvisionAction} />
         </AdminDrawer>

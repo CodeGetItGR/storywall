@@ -3834,7 +3834,21 @@
             "provisionFor": "Provision an event for {name}",
             "columns": { "account": "Account", "status": "Status", "role": "Role", "eventCreation": "Event creation", "created": "Created" },
             "status": { "ACTIVE": "Active", "SUSPENDED": "Suspended", "DELETED": "Deleted" },
-            "role": { "USER": "User", "ADMIN": "Admin", "GUEST": "Guest" },
+            "role": { "USER": "User", "ADMIN": "Admin", "MARKETING": "Marketing", "GUEST": "Guest" },
+            "roleAccess": {
+                "title": "Console role",
+                "user": "User",
+                "marketing": "Marketing",
+                "userHint": "A regular account with no access to the console.",
+                "marketingHint": "A marketing teammate: opens the console's marketing sections and partner outreach.",
+                "readOnlyHint": "Admin and guest roles can't be changed here.",
+                "confirmMarketingTitle": "Make this account a marketing teammate?",
+                "confirmMarketingBody": "They will be able to open the console's marketing sections and partner outreach.",
+                "confirmUserTitle": "Remove marketing access?",
+                "confirmUserBody": "This account will become a regular user and lose access to the console.",
+                "confirm": "Update role",
+                "cancel": "Cancel"
+            },
             "access": {
                 "enabled": "Enabled",
                 "disabled": "Disabled",
