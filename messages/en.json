@@ -8480,6 +8480,7 @@
             "full": "This event has reached its vendor limit.",
             "fullWithUpgrade": "This event has reached its vendor limit. Upgrade to {plan} for {count, plural, one {# vendor} other {# vendors}}."
         },
+        "bannerAlt": "Cover: {name}",
         "list": {
             "title": "Vendors",
             "back": "Back",
@@ -8553,6 +8554,9 @@
             "logo": "Logo (optional)",
             "logoChoose": "Choose logo",
             "logoRemove": "Remove logo",
+            "banner": "Cover photo (optional)",
+            "bannerChoose": "Choose photo",
+            "bannerRemove": "Remove cover photo",
             "save": "Save",
             "later": "Later",
             "errors": {

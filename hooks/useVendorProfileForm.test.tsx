@@ -7,10 +7,14 @@ import type { VendorProfileDto } from '@/lib/api/types';
 const save = vi.fn();
 const uploadLogo = vi.fn();
 const deleteLogo = vi.fn();
+const uploadBanner = vi.fn();
+const deleteBanner = vi.fn();
 vi.mock('@/hooks/useVendorProfile', () => ({
     useSaveVendorProfile: () => ({ mutateAsync: save, isPending: false }),
     useUploadVendorLogo: () => ({ mutateAsync: uploadLogo, isPending: false }),
     useDeleteVendorLogo: () => ({ mutateAsync: deleteLogo, isPending: false }),
+    useUploadVendorBanner: () => ({ mutateAsync: uploadBanner, isPending: false }),
+    useDeleteVendorBanner: () => ({ mutateAsync: deleteBanner, isPending: false }),
 }));
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'failed' }));
@@ -23,6 +27,8 @@ beforeEach(() => {
     save.mockReset();
     uploadLogo.mockReset();
     deleteLogo.mockReset();
+    uploadBanner.mockReset();
+    deleteBanner.mockReset();
 });
 
 describe('useVendorProfileForm', () => {
@@ -93,6 +99,36 @@ describe('useVendorProfileForm', () => {
         expect(deleteLogo).toHaveBeenCalled();
         expect(uploadLogo).not.toHaveBeenCalled();
         expect(onSaved).toHaveBeenCalled();
+    });
+
+    it('uploads a picked banner and leaves the logo alone', async () => {
+        save.mockResolvedValue({});
+        uploadBanner.mockResolvedValue({});
+        const file = new File(['x'], 'cover.png', { type: 'image/png' });
+        const { result } = renderHook(() => useVendorProfileForm({ profile: null, defaultType: 'MUSIC', onSaved: vi.fn() }));
+        act(() => {
+            result.current.setField('businessName', 'DJ Nik');
+            result.current.setField('link', '@djnik');
+            result.current.setBanner(file);
+        });
+        await act(() => result.current.handleSubmit(submitEvent()));
+        expect(uploadBanner).toHaveBeenCalledWith(file);
+        expect(uploadLogo).not.toHaveBeenCalled();
+        expect(deleteLogo).not.toHaveBeenCalled();
+    });
+
+    it('removes the banner when asked and no new one is picked', async () => {
+        save.mockResolvedValue({});
+        deleteBanner.mockResolvedValue({});
+        const { result } = renderHook(() => useVendorProfileForm({ profile: null, defaultType: 'MUSIC', onSaved: vi.fn() }));
+        act(() => {
+            result.current.setField('businessName', 'DJ Nik');
+            result.current.setField('link', '@djnik');
+            result.current.setRemoveBanner(true);
+        });
+        await act(() => result.current.handleSubmit(submitEvent()));
+        expect(deleteBanner).toHaveBeenCalled();
+        expect(uploadBanner).not.toHaveBeenCalled();
     });
 
     it('shows the server error and keeps the sheet open', async () => {

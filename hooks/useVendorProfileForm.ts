@@ -5,7 +5,13 @@ import type { SubmitEvent } from 'react';
 import { useCallback, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
-import { useDeleteVendorLogo, useSaveVendorProfile, useUploadVendorLogo } from '@/hooks/useVendorProfile';
+import {
+    useDeleteVendorBanner,
+    useDeleteVendorLogo,
+    useSaveVendorProfile,
+    useUploadVendorBanner,
+    useUploadVendorLogo,
+} from '@/hooks/useVendorProfile';
 import type { PartnerRole, VendorProfileDto, VendorProfileRequestDto } from '@/lib/api/types';
 import { isValidVendorLink, VENDOR_BUSINESS_NAME_MAX } from '@/lib/vendors';
 
@@ -36,9 +42,13 @@ export function useVendorProfileForm({
     const save = useSaveVendorProfile();
     const uploadLogo = useUploadVendorLogo();
     const deleteLogo = useDeleteVendorLogo();
+    const uploadBanner = useUploadVendorBanner();
+    const deleteBanner = useDeleteVendorBanner();
     const [values, setValues] = useState(() => initialValues(profile, defaultType));
     const [logo, setLogo] = useState<File | null>(null);
     const [removeLogo, setRemoveLogo] = useState(false);
+    const [banner, setBanner] = useState<File | null>(null);
+    const [removeBanner, setRemoveBanner] = useState(false);
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
     const [error, setError] = useState<string | null>(null);
 
@@ -56,7 +66,8 @@ export function useVendorProfileForm({
             };
             const errors: FieldErrors = {};
             if (!request.businessName) errors.businessName = t('errors.businessNameRequired');
-            else if (request.businessName.length > VENDOR_BUSINESS_NAME_MAX) errors.businessName = t('errors.businessNameTooLong', { max: VENDOR_BUSINESS_NAME_MAX });
+            else if (request.businessName.length > VENDOR_BUSINESS_NAME_MAX)
+                errors.businessName = t('errors.businessNameTooLong', { max: VENDOR_BUSINESS_NAME_MAX });
             if (!isValidVendorLink(request.link)) errors.link = t('errors.linkInvalid');
             setFieldErrors(errors);
             setError(null);
@@ -66,12 +77,14 @@ export function useVendorProfileForm({
                 await save.mutateAsync(request);
                 if (logo) await uploadLogo.mutateAsync(logo);
                 else if (removeLogo) await deleteLogo.mutateAsync();
+                if (banner) await uploadBanner.mutateAsync(banner);
+                else if (removeBanner) await deleteBanner.mutateAsync();
                 onSaved();
             } catch (submitError) {
                 setError(toErrorMessage(submitError));
             }
         },
-        [deleteLogo, logo, onSaved, removeLogo, save, t, toErrorMessage, uploadLogo, values],
+        [banner, deleteBanner, deleteLogo, logo, onSaved, removeBanner, removeLogo, save, t, toErrorMessage, uploadBanner, uploadLogo, values],
     );
 
     return {
@@ -81,9 +94,13 @@ export function useVendorProfileForm({
         setLogo,
         removeLogo,
         setRemoveLogo,
+        banner,
+        setBanner,
+        removeBanner,
+        setRemoveBanner,
         fieldErrors,
         error,
-        isSaving: save.isPending || uploadLogo.isPending || deleteLogo.isPending,
+        isSaving: save.isPending || uploadLogo.isPending || deleteLogo.isPending || uploadBanner.isPending || deleteBanner.isPending,
         handleSubmit,
     };
 }
