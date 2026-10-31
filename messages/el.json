@@ -8643,6 +8643,11 @@
             "markPlayed": "Σήμανση: το {title} έπαιξε",
             "markUnplayed": "Σήμανση: το {title} δεν έπαιξε",
             "votes": "{count, plural, one {# ψήφος} other {# ψήφοι}}",
+            "spotify": "Spotify",
+            "youtube": "YouTube",
+            "undo": "Αναίρεση",
+            "playedGroup": "{count, plural, one {Έπαιξε # τραγούδι} other {Έπαιξαν # τραγούδια}}",
+            "allPlayed": "Έπαιξαν όλα τα αιτήματα.",
             "open": "Ζωντανή λίστα"
         },
         "announcement": {

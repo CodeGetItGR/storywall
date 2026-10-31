@@ -8633,6 +8633,11 @@
             "markPlayed": "Mark {title} played",
             "markUnplayed": "Mark {title} not played",
             "votes": "{count, plural, one {# vote} other {# votes}}",
+            "spotify": "Spotify",
+            "youtube": "YouTube",
+            "undo": "Undo",
+            "playedGroup": "{count, plural, one {# song played} other {# songs played}}",
+            "allPlayed": "All requests have been played.",
             "open": "Live list"
         },
         "announcement": {
