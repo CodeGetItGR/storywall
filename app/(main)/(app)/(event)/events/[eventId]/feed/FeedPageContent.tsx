@@ -134,7 +134,7 @@ export function FeedPageContent() {
             <section id="posts">
                 {moduleFlags.posts && (
                     <div
-                        className={cn('flex flex-col px-0 pb-24 lg:pb-10', {
+                        className={cn('flex flex-col px-0 pb-24 md:pb-10', {
                             'mt-4': (!moduleFlags.stories || !event.description) && !shouldShowRSVP,
                         })}
                     >

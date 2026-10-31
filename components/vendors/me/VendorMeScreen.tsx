@@ -20,6 +20,7 @@ import { SneakPeekSheet } from '@/components/vendors/me/SneakPeekSheet';
 import { VendorListingSection } from '@/components/vendors/me/VendorListingSection';
 import { VendorMeGroup } from '@/components/vendors/me/VendorMeGroup';
 import { VendorMeHero } from '@/components/vendors/me/VendorMeHero';
+import { VendorMeNotVendor } from '@/components/vendors/me/VendorMeNotVendor';
 import { VendorToolLinks } from '@/components/vendors/me/VendorToolLinks';
 import { VendorProfileSheet } from '@/components/vendors/VendorProfileSheet';
 import { VendorRowsSkeleton } from '@/components/vendors/VendorsSkeletons';
@@ -60,7 +61,7 @@ export function VendorMeScreen() {
             {page.isLoading ? (
                 <VendorRowsSkeleton />
             ) : !me ? (
-                <p className="text-sm text-ink-muted">{t('me.notVendor')}</p>
+                <VendorMeNotVendor backHref={routes.events.feed(eventId)} />
             ) : (
                 <div className="flex flex-col gap-10">
                     {/* Hero: photos, identity and access */}

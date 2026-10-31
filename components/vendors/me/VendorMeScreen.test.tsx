@@ -199,6 +199,6 @@ describe('VendorMeScreen', () => {
     it('says plainly when the caller is not a vendor', () => {
         page.value = state({ me: null, profile: null, tools: [] });
         render(<VendorMeScreen />);
-        expect(screen.getByText('me.notVendor')).toBeTruthy();
+        expect(screen.getByText('title')).toBeTruthy();
     });
 });

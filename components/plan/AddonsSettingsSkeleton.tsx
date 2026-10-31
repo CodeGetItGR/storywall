@@ -2,7 +2,7 @@ import { Skeleton, SkeletonStatus } from '@/components/ui/skeleton';
 
 export function AddonsSettingsSkeleton() {
     return (
-        <SkeletonStatus className="mx-auto max-w-3xl px-4 pt-5 pb-24 sm:pt-6 lg:pb-10">
+        <SkeletonStatus className="mx-auto max-w-3xl px-4 pt-5 pb-24 sm:pt-6 md:pb-10">
             {/* Back */}
             <div className="flex min-h-10 items-center">
                 <Skeleton className="h-3 w-24 rounded-full" />

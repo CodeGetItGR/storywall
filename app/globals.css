@@ -430,7 +430,7 @@
     transform-origin: var(--transform-origin, top right);
 }
 
-@media (max-width: 63.999rem) {
+@media (max-width: 47.999rem) {
     .account-panel-surface {
         background: linear-gradient(180deg, #f29573 0%, #f6ab74 45%, #fcc777 100%);
     }
@@ -477,7 +477,7 @@
     }
 }
 
-@media (min-width: 64rem) {
+@media (min-width: 48rem) {
     .account-panel-page {
         background: transparent;
     }

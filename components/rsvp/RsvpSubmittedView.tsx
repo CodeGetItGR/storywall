@@ -26,8 +26,8 @@ export function RsvpSubmittedView({
             title={attending === 'attending' ? t('onTheList') : t('rsvpReceived')}
             body={attending === 'attending' ? voice.rsvpAttendingConfirmation : t('declinedConfirmation')}
             icon={CheckCircle2}
-            // Fills the viewport minus the page header, bottom padding and (on mobile) the tab bar, so it centers without scrolling.
-            className="flex min-h-[calc(var(--visual-viewport-height)-11.5rem)] flex-col justify-center pt-16 lg:min-h-[calc(var(--visual-viewport-height)-6.5rem)]"
+            // Fills the viewport minus the page header, bottom padding and (on phones) the tab bar, so it centers without scrolling.
+            className="flex min-h-[calc(var(--visual-viewport-height)-11.5rem)] flex-col justify-center pt-16 md:min-h-[calc(var(--visual-viewport-height)-6.5rem)]"
             action={
                 <button
                     onClick={onBackToWallAction}

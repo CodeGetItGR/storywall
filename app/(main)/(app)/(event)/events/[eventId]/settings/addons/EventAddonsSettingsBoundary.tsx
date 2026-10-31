@@ -62,7 +62,7 @@ export default function EventAddonsSettingsBoundary() {
     }
 
     return (
-        <main className="mx-auto max-w-3xl px-4 pt-5 pb-24 sm:pt-6 lg:pb-10">
+        <main className="mx-auto max-w-3xl px-4 pt-5 pb-24 sm:pt-6 md:pb-10">
             <BackButton href={routes.events.manage(eventId, { tab: 'billing' })} label={t('backToBilling')} />
 
             <section className="mt-4">

@@ -3,18 +3,18 @@
 import { type ReactNode } from 'react';
 
 import { RightContextPanel } from '@/components/layout/RightContextPanel';
-import { LG_MEDIA_QUERY, useMediaQuery } from '@/hooks/useMediaQuery';
+import { MD_MEDIA_QUERY, useMediaQuery } from '@/hooks/useMediaQuery';
 import { useActiveEvent, useEventContextLoading } from '@/providers/EventProvider';
 
 export default function FeedLayout({ children }: { children: ReactNode }) {
     const activeEvent = useActiveEvent();
     const isLoading = useEventContextLoading();
-    const isDesktop = useMediaQuery(LG_MEDIA_QUERY);
+    const isDesktop = useMediaQuery(MD_MEDIA_QUERY);
 
     // Hosts and members alike need this panel: on desktop widths there's no
     // MobileTabBar to hold the module/tool links, so RightContextPanel itself
     // decides what a given viewer sees (host console vs. plain tool links).
-    // Below `lg` the panel is hidden, so it isn't mounted at all and its
+    // Below `md` the panel is hidden, so it isn't mounted at all and its
     // summaries aren't fetched.
     const showRightPanel = isDesktop && !isLoading && Boolean(activeEvent);
 

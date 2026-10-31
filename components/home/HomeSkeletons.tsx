@@ -42,7 +42,7 @@ export function HomePageSkeleton() {
                 </div>
                 <div className="flex items-center gap-3">
                     <Skeleton className="h-9 w-9 rounded-full" />
-                    <Skeleton className="h-11 w-11 rounded-full lg:hidden" />
+                    <Skeleton className="h-11 w-11 rounded-full md:hidden" />
                 </div>
             </div>
 
