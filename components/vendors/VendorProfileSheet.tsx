@@ -7,6 +7,7 @@ import { useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { Modal } from '@/components/ui/modal';
+import { VendorBannerField } from '@/components/vendors/VendorBannerField';
 import { VendorLogoField } from '@/components/vendors/VendorLogoField';
 import { useVendorProfileForm } from '@/hooks/useVendorProfileForm';
 import type { PartnerRole, VendorProfileDto } from '@/lib/api/types';
@@ -30,7 +31,7 @@ export function VendorProfileSheet({
 }) {
     const t = useTranslations('Vendors.profile');
     const form = useVendorProfileForm({ profile, defaultType, onSaved: onCloseAction });
-    const { setField, setLogo, setRemoveLogo } = form;
+    const { setField, setLogo, setRemoveLogo, setBanner, setRemoveBanner } = form;
 
     const handleNameChange = useCallback((event: ChangeEvent<HTMLInputElement>) => setField('businessName', event.target.value), [setField]);
     const handleLinkChange = useCallback((event: ChangeEvent<HTMLInputElement>) => setField('link', event.target.value), [setField]);
@@ -93,6 +94,17 @@ export function VendorProfileSheet({
                         disabled={form.isSaving}
                         setLogo={setLogo}
                         setRemoveLogo={setRemoveLogo}
+                    />
+
+                    {/* Banner */}
+                    <VendorBannerField
+                        file={form.banner}
+                        currentBannerUrl={profile?.bannerUrl ?? null}
+                        removeBanner={form.removeBanner}
+                        name={form.values.businessName}
+                        disabled={form.isSaving}
+                        setBanner={setBanner}
+                        setRemoveBanner={setRemoveBanner}
                     />
 
                     {/* Error */}

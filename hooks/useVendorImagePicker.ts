@@ -5,25 +5,25 @@ import { useCallback, useMemo, useRef } from 'react';
 
 import { useFilePreviews } from '@/hooks/useFilePreviews';
 
-// The logo picker in the vendor profile sheet: a hidden file input opened by a button.
-// Shows the chosen file, else the saved logo unless it is marked for removal.
-export function useVendorLogoPicker({
+// An image picker in the vendor profile sheet (the logo, the banner): a hidden file input opened by a button.
+// Shows the chosen file, else the saved image unless it is marked for removal.
+export function useVendorImagePicker({
     file,
-    currentLogoUrl,
-    removeLogo,
-    setLogo,
-    setRemoveLogo,
+    currentUrl,
+    remove,
+    setFile,
+    setRemove,
 }: {
     file: File | null;
-    currentLogoUrl: string | null;
-    removeLogo: boolean;
-    setLogo: (file: File | null) => void;
-    setRemoveLogo: (remove: boolean) => void;
+    currentUrl: string | null;
+    remove: boolean;
+    setFile: (file: File | null) => void;
+    setRemove: (remove: boolean) => void;
 }) {
     const inputRef = useRef<HTMLInputElement>(null);
     const files = useMemo(() => (file ? [file] : []), [file]);
     const filePreviewUrl = useFilePreviews(files)[0]?.url ?? null;
-    const previewUrl = filePreviewUrl ?? (removeLogo ? null : currentLogoUrl);
+    const previewUrl = filePreviewUrl ?? (remove ? null : currentUrl);
 
     const openPicker = useCallback(() => inputRef.current?.click(), []);
 
@@ -31,17 +31,17 @@ export function useVendorLogoPicker({
         (event: ChangeEvent<HTMLInputElement>) => {
             const picked = event.target.files?.[0] ?? null;
             if (!picked) return;
-            setLogo(picked);
-            setRemoveLogo(false);
+            setFile(picked);
+            setRemove(false);
             event.target.value = '';
         },
-        [setLogo, setRemoveLogo],
+        [setFile, setRemove],
     );
 
     const handleRemove = useCallback(() => {
-        if (file) setLogo(null);
-        else setRemoveLogo(true);
-    }, [file, setLogo, setRemoveLogo]);
+        if (file) setFile(null);
+        else setRemove(true);
+    }, [file, setFile, setRemove]);
 
     return { inputRef, previewUrl, openPicker, handleChange, handleRemove };
 }

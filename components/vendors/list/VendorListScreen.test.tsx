@@ -8,6 +8,10 @@ vi.mock('next-intl', () => ({
 }));
 vi.mock('@/components/tools/ModulePageShell', () => ({ ModulePageShell: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
 vi.mock('@/components/routing/EventRouteGate', () => ({ useEventRouteContext: () => ({ eventId: 'e1', activeEvent: { id: 'e1' }, isHost: false }) }));
+vi.mock('@/components/common/ProtectedImage', () => ({
+    // eslint-disable-next-line @next/next/no-img-element
+    ProtectedImage: ({ src, alt }: { src: string; alt: string }) => <img src={src} alt={alt} />,
+}));
 const list = vi.hoisted(() => ({ data: [] as unknown[], isLoading: false }));
 const recordClick = vi.fn();
 vi.mock('@/hooks/useVendors', () => ({
@@ -83,6 +87,18 @@ describe('VendorListScreen', () => {
         render(<VendorListScreen />);
         expect(screen.queryByText('Studio X')).toBeNull();
         expect(screen.getByText('list.empty')).toBeTruthy();
+    });
+
+    it('shows the vendor banner as the card cover', () => {
+        list.data = [row({ bannerUrl: 'https://r2.test/banner.png' })];
+        render(<VendorListScreen />);
+        const cover = screen.getByRole('img', { name: 'bannerAlt:{"name":"Studio X"}' });
+        expect(cover.getAttribute('src')).toBe('https://r2.test/banner.png');
+    });
+
+    it('shows no cover photo without a banner', () => {
+        render(<VendorListScreen />);
+        expect(screen.queryByRole('img', { name: 'bannerAlt:{"name":"Studio X"}' })).toBeNull();
     });
 
     it('shows the empty line', () => {
