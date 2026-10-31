@@ -6,16 +6,21 @@ import {
     capabilitiesOfType,
     hasProAllowance,
     hasVendorCapability,
-    isValidVendorLink,
+    instagramHandle,
+    instagramHref,
+    isValidVendorEmail,
+    isValidVendorPhone,
+    isValidVendorWebsite,
     listedVendors,
     proStorageState,
+    serviceTagsForType,
     sortByVendorType,
     VENDOR_TYPES,
     vendorApplySearch,
+    vendorCardActions,
     vendorInviteUrl,
-    vendorLinkHref,
-    vendorLinkKind,
     vendorToolLinks,
+    websiteHref,
 } from '@/lib/vendors';
 
 function me(overrides: Partial<VendorMeDto> = {}): VendorMeDto {
@@ -98,17 +103,29 @@ describe('vendorApplySearch', () => {
     });
 });
 
-describe('isValidVendorLink', () => {
-    it('accepts an https URL or an @handle', () => {
-        expect(isValidVendorLink('https://studio.gr')).toBe(true);
-        expect(isValidVendorLink('@studio.x')).toBe(true);
+describe('instagramHandle', () => {
+    it('takes a handle with or without the @, or a profile address', () => {
+        expect(instagramHandle('@studio.x')).toBe('studio.x');
+        expect(instagramHandle(' studio_x ')).toBe('studio_x');
+        expect(instagramHandle('https://www.instagram.com/studio.x/?hl=el')).toBe('studio.x');
     });
 
-    it('refuses http, bare words and long handles', () => {
-        expect(isValidVendorLink('http://studio.gr')).toBe(false);
-        expect(isValidVendorLink('studio')).toBe(false);
-        expect(isValidVendorLink(`@${'a'.repeat(61)}`)).toBe(false);
-        expect(isValidVendorLink('https://studio.gr/a b')).toBe(false);
+    it('refuses anything else', () => {
+        expect(instagramHandle('https://instagram.com/p/abc/xyz')).toBeNull();
+        expect(instagramHandle('bad handle')).toBeNull();
+        expect(instagramHandle(`@${'a'.repeat(61)}`)).toBeNull();
+    });
+});
+
+describe('website, phone and email rules', () => {
+    it('take https sites, phone numbers and emails only', () => {
+        expect(isValidVendorWebsite('https://studio.gr')).toBe(true);
+        expect(isValidVendorWebsite('http://studio.gr')).toBe(false);
+        expect(isValidVendorWebsite('https://studio.gr/a b')).toBe(false);
+        expect(isValidVendorPhone('+30 210 123 4567')).toBe(true);
+        expect(isValidVendorPhone('call me')).toBe(false);
+        expect(isValidVendorEmail('hi@studio.gr')).toBe(true);
+        expect(isValidVendorEmail('hi@studio')).toBe(false);
     });
 });
 
@@ -161,18 +178,26 @@ describe('sortByVendorType', () => {
     });
 });
 
-describe('vendorLinkHref', () => {
-    it('opens https links as they are and handles on Instagram', () => {
-        expect(vendorLinkHref('https://studio.gr')).toBe('https://studio.gr');
-        expect(vendorLinkHref('@studio.x')).toBe('https://instagram.com/studio.x');
-        expect(vendorLinkHref('  @studio.x ')).toBe('https://instagram.com/studio.x');
+describe('instagramHref and websiteHref', () => {
+    it('open a handle on Instagram and an https site as it is', () => {
+        expect(instagramHref('studio.x')).toBe('https://instagram.com/studio.x');
+        expect(websiteHref(' https://studio.gr ')).toBe('https://studio.gr');
     });
 
-    it('opens nothing for anything else', () => {
-        expect(vendorLinkHref('javascript:alert(1)')).toBeNull();
-        expect(vendorLinkHref('http://studio.gr')).toBeNull();
-        expect(vendorLinkHref('')).toBeNull();
-        expect(vendorLinkHref(null)).toBeNull();
+    it('open nothing for anything else', () => {
+        expect(instagramHref(null)).toBeNull();
+        expect(instagramHref('bad handle')).toBeNull();
+        expect(websiteHref('javascript:alert(1)')).toBeNull();
+        expect(websiteHref('http://studio.gr')).toBeNull();
+        expect(websiteHref(null)).toBeNull();
+    });
+});
+
+describe('serviceTagsForType', () => {
+    it('keeps the type’s own tags, each once, in order, at most five', () => {
+        expect(serviceTagsForType(['DJ', 'DRONE', 'DJ', 'SOUND'], 'MUSIC')).toEqual(['DJ', 'SOUND']);
+        expect(serviceTagsForType(['DJ', 'LIVE_MUSIC', 'SOUND', 'LIGHTING', 'CHURCH', 'DANCE_FLOOR'], 'MUSIC')).toHaveLength(5);
+        expect(serviceTagsForType(undefined, 'OTHER')).toEqual([]);
     });
 });
 
@@ -214,15 +239,17 @@ describe('vendorToolLinks', () => {
     });
 });
 
-describe('vendorLinkKind', () => {
-    it('names Instagram for a handle or an instagram.com link, and Website for any other link', () => {
-        expect(vendorLinkKind('@studio.x')).toBe('instagram');
-        expect(vendorLinkKind('https://www.instagram.com/studio.x')).toBe('instagram');
-        expect(vendorLinkKind('https://studio.gr')).toBe('website');
+describe('vendorCardActions', () => {
+    it('lists Instagram, website, call and email in that order', () => {
+        expect(vendorCardActions({ instagram: 'studio.x', website: 'https://studio.gr', phone: '+30 210 123-4567', email: 'hi@studio.gr' })).toEqual([
+            { kind: 'instagram', href: 'https://instagram.com/studio.x' },
+            { kind: 'website', href: 'https://studio.gr' },
+            { kind: 'call', href: 'tel:+302101234567' },
+            { kind: 'email', href: 'mailto:hi@studio.gr' },
+        ]);
     });
 
-    it('names nothing without a usable link', () => {
-        expect(vendorLinkKind(null)).toBeNull();
-        expect(vendorLinkKind('http://studio.gr')).toBeNull();
+    it('leaves out what is missing or unsafe to open', () => {
+        expect(vendorCardActions({ website: 'javascript:alert(1)', phone: 'call me', email: null })).toEqual([]);
     });
 });

@@ -1228,7 +1228,17 @@ export interface VendorRowDto {
     vendorType: PartnerRole;
     // Null for a host's view of a vendor who hasn't filled in their profile yet.
     businessName: string | null;
+    // Absent when the vendor has none.
+    description?: string | null;
+    serviceTags?: VendorServiceTag[];
+    // The handle, without the @.
+    instagram?: string | null;
+    website?: string | null;
+    // The Instagram link as @handle, else the website. Kept for older screens; use instagram and website.
     link: string | null;
+    // Only for an approved partner who chose to show them.
+    phone?: string | null;
+    email?: string | null;
     logoUrl: string | null;
     // The vendor's wide cover photo; absent when they have none.
     bannerUrl?: string | null;
@@ -1395,19 +1405,77 @@ export interface VendorPatchDto {
 }
 
 // GET/PUT /api/me/vendor-profile — GET is 404 until the first save.
+// A service a vendor shows on their card, from their type's list (lib/vendors VENDOR_SERVICE_TAGS).
+export type VendorServiceTag =
+    | 'DRONE'
+    | 'ALBUM'
+    | 'PRINTS'
+    | 'PHOTO_BOOTH'
+    | 'PRE_WEDDING'
+    | 'SAME_DAY_EDIT'
+    | 'HIGHLIGHTS'
+    | 'FULL_FILM'
+    | 'LIVE_STREAMING'
+    | 'DJ'
+    | 'LIVE_MUSIC'
+    | 'SOUND'
+    | 'LIGHTING'
+    | 'CHURCH'
+    | 'DANCE_FLOOR'
+    | 'FLOWERS'
+    | 'TABLES'
+    | 'BALLOONS'
+    | 'BAPTISM'
+    | 'BUFFET'
+    | 'SERVED'
+    | 'SWEETS'
+    | 'CAKE'
+    | 'BAR'
+    | 'FINGER_FOOD'
+    | 'OUTDOOR'
+    | 'INDOOR'
+    | 'SEASIDE'
+    | 'ACCOMMODATION'
+    | 'PARKING'
+    | 'CHURCH_NEARBY'
+    | 'FULL_PLANNING'
+    | 'DAY_COORDINATION'
+    | 'DESTINATION'
+    | 'BUDGET'
+    | 'SUPPLIERS';
+
 export interface VendorProfileDto {
     businessName: string;
     vendorType: PartnerRole;
-    link: string;
+    description?: string | null;
+    serviceTags?: VendorServiceTag[];
+    // The handle, without the @.
+    instagram?: string | null;
+    website?: string | null;
+    // As in VendorRowDto.
+    link: string | null;
+    // The vendor's own; guests see them only while the vendor is an approved partner and the switch is on.
+    contactPhone?: string | null;
+    contactEmail?: string | null;
+    showPhone?: boolean;
+    showEmail?: boolean;
     logoUrl: string | null;
     bannerUrl?: string | null;
     partnerPromptDismissed: boolean;
 }
 
+// PUT /api/me/vendor-profile. Every field after the type is optional; null or "" clears it.
 export interface VendorProfileRequestDto {
     businessName: string;
     vendorType: PartnerRole;
-    link: string;
+    description: string | null;
+    serviceTags: VendorServiceTag[];
+    instagram: string | null;
+    website: string | null;
+    contactPhone: string | null;
+    contactEmail: string | null;
+    showPhone: boolean;
+    showEmail: boolean;
 }
 
 export interface ProCreditDto {
