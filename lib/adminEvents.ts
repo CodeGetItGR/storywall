@@ -11,6 +11,7 @@ import type {
     StatementGround,
 } from '@/lib/api/types';
 import { isExplanationValid, trimLikeBackend } from '@/lib/guidelinesRules';
+import { knownConfigFields } from '@/lib/planModuleConfig';
 
 export const EVENTS_HASH_ROOT = '#events';
 
@@ -205,12 +206,19 @@ export type EventModuleRow = AdminEventDetailDto['modules'][number] & {
 // Each module with the admin grant behind it, if any. A grant can sit under a plan or bought
 // unlock that already covers the module (the source names the first that applies), so it is
 // looked up by key rather than read off the source.
+// A module's settings come in the plan grid's order; a setting without a control there goes last.
+function byFieldOrder(moduleKey: string) {
+    const order = knownConfigFields(moduleKey).map((field) => field.key);
+    const rank = (key: string) => (order.includes(key) ? order.indexOf(key) : order.length);
+    return (a: AdminEventModuleConfig, b: AdminEventModuleConfig) => rank(a.configKey) - rank(b.configKey);
+}
+
 export function eventModuleRows(event: Pick<AdminEventDetailDto, 'modules' | 'moduleGrants' | 'moduleConfigs'>): EventModuleRow[] {
     const grants = new Map(event.moduleGrants.map((grant) => [grant.moduleKey, grant]));
     return event.modules.map((module) => ({
         ...module,
         grant: grants.get(module.moduleKey) ?? null,
-        configs: event.moduleConfigs.filter((config) => config.moduleKey === module.moduleKey),
+        configs: event.moduleConfigs.filter((config) => config.moduleKey === module.moduleKey).sort(byFieldOrder(module.moduleKey)),
     }));
 }
 
@@ -240,16 +248,41 @@ export function flagChoice(config: AdminEventModuleConfig): FlagChoice {
     return 'PLAN';
 }
 
-// What saving the drawer does: set an override, put the plan's value back, or nothing at all.
-// An extra of 0 and "follow the plan" both mean the plan's value.
-export type ModuleConfigChange = { kind: 'set'; extra: number | null; enabled: boolean | null } | { kind: 'reset' } | null;
+// A value follows the plan until an admin sets it for the event.
+export type ValueChoice = 'PLAN' | 'SET';
 
-export function moduleConfigChange(config: AdminEventModuleConfig, input: { extra: number } | { choice: FlagChoice }): ModuleConfigChange {
-    const followsPlan = 'extra' in input ? input.extra === 0 : input.choice === 'PLAN';
+export function valueChoice(config: AdminEventModuleConfig): ValueChoice {
+    return (config.override?.value ?? null) !== null ? 'SET' : 'PLAN';
+}
+
+// What saving the drawer does: set an override, put the plan's value back, or nothing at all.
+// An extra of 0 and "follow the plan" both mean the plan's value. A value of undefined is one
+// the drawer can't save yet.
+export type ModuleConfigChange =
+    | { kind: 'set'; extra: number | null; enabled: boolean | null; value: number | string[] | null }
+    | { kind: 'reset' }
+    | null;
+
+export function moduleConfigChange(
+    config: AdminEventModuleConfig,
+    input: { extra: number } | { choice: FlagChoice } | { valueChoice: ValueChoice; value: unknown },
+): ModuleConfigChange {
+    const followsPlan = 'extra' in input ? input.extra === 0 : 'choice' in input ? input.choice === 'PLAN' : input.valueChoice === 'PLAN';
     if (followsPlan) return config.override ? { kind: 'reset' } : null;
-    if ('extra' in input) return config.override?.extra === input.extra ? null : { kind: 'set', extra: input.extra, enabled: null };
-    const enabled = input.choice === 'ON';
-    return config.override?.enabled === enabled ? null : { kind: 'set', extra: null, enabled };
+    if ('extra' in input) return config.override?.extra === input.extra ? null : { kind: 'set', extra: input.extra, enabled: null, value: null };
+    if ('choice' in input) {
+        const enabled = input.choice === 'ON';
+        return config.override?.enabled === enabled ? null : { kind: 'set', extra: null, enabled, value: null };
+    }
+    if (input.value === undefined) return null;
+    const value = input.value as number | string[];
+    return JSON.stringify(config.override?.value ?? null) === JSON.stringify(value) ? null : { kind: 'set', extra: null, enabled: null, value };
+}
+
+// Whether the event has the module through its plan, a bought unlock or an admin grant. A setting
+// saved for a module it doesn't have turns the module on for this event (the server adds a grant).
+export function eventHasModule(event: Pick<AdminEventDetailDto, 'modules'>, moduleKey: string): boolean {
+    return event.modules.some((module) => module.moduleKey === moduleKey && module.source !== 'NONE');
 }
 
 // Used over limit as a 0–1 share for the meters; 0 when the limit is unlimited.

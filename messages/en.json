@@ -3007,6 +3007,7 @@
             "reports": "Reports",
             "bugReports": "Bug reports",
             "errorEvents": "Errors",
+            "auditLog": "Audit log",
             "demoEvents": "Demo events",
             "partnerCards": "Partner cards",
             "siteNotices": "Site notices",
@@ -3572,6 +3573,105 @@
             "reporterId": "Reporter ID",
             "eventId": "Event ID"
         },
+        "auditLog": {
+            "title": "Audit log",
+            "loading": "Loading the audit log",
+            "empty": "No admin actions yet.",
+            "emptyFiltered": "No admin actions match these filters.",
+            "count": "{count, plural, one {# action} other {# actions}}",
+            "close": "Close",
+            "openDetails": "Open details",
+            "filterByAdmin": "Show only this admin",
+            "filterByEvent": "Show only this event",
+            "reason": "Reason: {reason}",
+            "columns": {
+                "when": "When",
+                "admin": "Admin",
+                "action": "Action",
+                "details": "Details",
+                "event": "Event"
+            },
+            "filters": {
+                "action": "Action",
+                "allActions": "All actions",
+                "event": "Event id",
+                "eventPlaceholder": "Event id",
+                "eventInvalid": "Paste a full event id.",
+                "clearEvent": "Clear event",
+                "admin": "Admin: {name}",
+                "clearAdmin": "Show every admin"
+            },
+            "drawer": {
+                "record": "Record",
+                "target": "Target",
+                "targetId": "Target id",
+                "ip": "IP address",
+                "openEvent": "Open event",
+                "details": "Details"
+            },
+            "summary": {
+                "configSet": "{module} · {setting}: {before} → {after}",
+                "configReset": "{module} · {setting}: back to the plan's",
+                "plansValue": "Plan's",
+                "provisioned": "{title} · {plan} · {count, plural, =0 {plan settings} one {# setting changed} other {# settings changed}}",
+                "added": "Added {modules}",
+                "removed": "Removed {modules}",
+                "planConfig": "{plan} · {module}: {changes}"
+            },
+            "actions": {
+                "EVENT_PROVISIONED": "Event provisioned",
+                "EVENT_MODULE_GRANTED": "Module turned on",
+                "EVENT_MODULE_REVOKED": "Module turned off",
+                "EVENT_MODULE_CONFIG_SET": "Setting changed",
+                "EVENT_MODULE_CONFIG_RESET": "Setting back to plan",
+                "EVENT_STORAGE_GRANTED": "Free storage set",
+                "EVENT_MEMBERS_GRANTED": "Free members set",
+                "EVENT_BROWSED": "Event viewed",
+                "EVENT_SUSPENDED": "Event suspended",
+                "EVENT_SUSPENSION_LIFTED": "Suspension lifted",
+                "EVENT_CLOSED": "Event closed",
+                "PLAN_MODULES_CHANGED": "Plan modules changed",
+                "PLAN_MODULE_CONFIG_CHANGED": "Plan settings changed",
+                "CONTENT_VIEWED": "Content viewed",
+                "CASE_REVIEW_STARTED": "Review started",
+                "CASE_DISMISSED": "Report dismissed",
+                "CASE_RESOLVED": "Report resolved",
+                "CONTENT_REMOVED": "Content removed",
+                "MEMBER_REMOVED": "Member removed",
+                "MEMBER_BANNED": "Member banned",
+                "BAN_LIFTED": "Ban lifted",
+                "STATEMENT_OF_REASONS_SENT": "Statement of reasons sent",
+                "NOTICE_VIEWED": "Notice viewed",
+                "NOTICE_ATTACHED": "Notice attached",
+                "NOTICE_CLOSED": "Notice closed",
+                "ACCOUNT_CREATED": "Account created",
+                "ACCOUNT_STATUS_CHANGED": "Account status changed",
+                "ACCOUNT_ROLE_CHANGED": "Account role changed",
+                "ACCOUNT_EMAIL_CHANGED": "Account email changed",
+                "ACCOUNT_SUSPENDED": "Account suspended",
+                "ACCOUNT_DELETED": "Account deleted",
+                "EMAIL_SENT": "Email sent",
+                "LANDING_CATEGORY_CREATED": "Landing category created",
+                "LANDING_CATEGORY_UPDATED": "Landing category changed",
+                "LANDING_CATEGORY_DELETED": "Landing category deleted",
+                "LANDING_CATEGORY_EVENT_TYPES_CHANGED": "Landing category types changed",
+                "SITE_NOTICE_CREATED": "Site notice created",
+                "SITE_NOTICE_UPDATED": "Site notice changed",
+                "SITE_NOTICE_DELETED": "Site notice deleted",
+                "CAMPAIGN_LINK_CREATED": "Campaign link created",
+                "CAMPAIGN_LINK_RENAMED": "Campaign link renamed",
+                "CAMPAIGN_LINK_DELETED": "Campaign link deleted",
+                "APP_REVIEW_UPDATED": "App review changed",
+                "OUTREACH_CREATED": "Outreach lead added",
+                "OUTREACH_UPDATED": "Outreach lead changed",
+                "OUTREACH_DELETED": "Outreach lead deleted",
+                "OUTREACH_REQUESTED": "Outreach requested",
+                "OUTREACH_REQUEST_APPROVED": "Outreach request approved",
+                "OUTREACH_REQUEST_DECLINED": "Outreach request declined",
+                "ADMIN_DEVICE_PAIRED": "Admin phone paired",
+                "ADMIN_DEVICE_REVOKED": "Admin phone removed"
+            }
+        },
         "errorEvents": {
             "title": "Errors",
             "loading": "Loading errors",
@@ -3620,6 +3720,10 @@
             "lastUserId": "Last user ID"
         },
         "events": {
+            "history": {
+                "title": "History",
+                "empty": "No admin actions on this event yet."
+            },
             "title": "Events",
             "loading": "Loading events…",
             "empty": "No events yet.",
@@ -3719,7 +3823,10 @@
                 "planUnlimited": "The plan already has no limit, so an extra changes nothing until the plan sets one.",
                 "value": "Setting",
                 "followPlan": "Follow the plan ({value})",
-                "flagHint": "On or off stays until an admin puts it back, whatever the plan does."
+                "flagHint": "On or off stays until an admin puts it back, whatever the plan does.",
+                "setForEvent": "Set for this event",
+                "valueHint": "A value set for this event stays until an admin puts the plan's back, whatever the plan does.",
+                "turnsOn": "This turns {module} on for this event only. The plan doesn't change."
             },
             "memberGrant": {
                 "title": "Extra members",
@@ -4017,7 +4124,11 @@
                 "reviewDescription": "Description",
                 "notifyHost": "Email the host",
                 "hostEmailed": "The host will get a welcome email.",
-                "hostNotEmailed": "The host was not emailed."
+                "hostNotEmailed": "The host was not emailed.",
+                "vendorSettings": "Vendor settings",
+                "vendorSettingsChanged": "{count} changed",
+                "vendorSettingsLoading": "Loading the plan's settings…",
+                "vendorSettingsTurnOn": "This turns vendors on for this event only. The plan doesn't change."
             },
             "email": {
                 "title": "Email",
@@ -4241,10 +4352,8 @@
                     "title": "{module} · {plan}",
                     "includedSwitch": "Included in plan",
                     "resetToDefault": "Reset to type default",
-                    "otherKeys": "Other settings (JSON)",
-                    "invalidJson": "Enter a JSON object.",
-                    "invalidNumber": "Enter a whole number of at least {min}.",
-                    "invalidNumberRange": "Enter a whole number from {min} to {max}.",
+                    "invalidNumber": "Enter a whole number of at least {min, number}.",
+                    "invalidNumberRange": "Enter a whole number from {min, number} to {max, number}.",
                     "invalidStorage": "Enter a size of 0 or more.",
                     "confirmTitle": "Save changes to {module} for {plan}?",
                     "included": "Included",
@@ -4252,14 +4361,15 @@
                     "no": "No",
                     "noChanges": "No changes yet.",
                     "fields": {
-                        "maxVendors": "Vendors",
+                        "maxVendors": "Max vendors",
                         "accessDaysAfterEvent": "Tool days after the event",
                         "proStorageBytes": "Pro storage",
                         "maxSections": "Schedule sections",
                         "maxCoHosts": "Co-hosts",
                         "qrUploadEnabled": "Guest QR upload",
                         "memberArchiveAfterEnd": "Member gallery download",
-                        "allowCustom": "Custom roles"
+                        "allowCustom": "Custom roles",
+                        "allowedTypes": "Vendor types"
                     },
                     "fieldHints": {
                         "allowCustom": "Members can type their own role.",
@@ -4270,7 +4380,8 @@
                     "upToValue": "Up to {count}",
                     "on": "On",
                     "off": "Off",
-                    "advanced": "Advanced"
+                    "allTypes": "All",
+                    "typeCount": "{count} of {total} types"
                 }
             },
             "search": {

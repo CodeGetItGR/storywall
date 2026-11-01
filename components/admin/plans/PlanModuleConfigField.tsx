@@ -7,6 +7,8 @@ import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { AdminLimitControl } from '@/components/admin/AdminLimitControl';
 import { AdminSwitch } from '@/components/admin/AdminSwitch';
 import { PlanModuleStorageField } from '@/components/admin/plans/PlanModuleStorageField';
+import { PlanModuleTypesField } from '@/components/admin/plans/PlanModuleTypesField';
+import type { PartnerRole } from '@/lib/api/types';
 import type { KnownConfigField } from '@/lib/planModuleConfig';
 
 export function PlanModuleConfigField({
@@ -17,6 +19,7 @@ export function PlanModuleConfigField({
     onLimitModeChangeAction,
     onLimitValueChangeAction,
     onSwitchChangeAction,
+    onTypeChangeAction,
 }: {
     field: KnownConfigField;
     value: string;
@@ -25,6 +28,7 @@ export function PlanModuleConfigField({
     onLimitModeChangeAction: (key: string, limited: boolean) => void;
     onLimitValueChangeAction: (key: string, value: string) => void;
     onSwitchChangeAction: (key: string, checked: boolean) => void;
+    onTypeChangeAction: (key: string, role: PartnerRole, checked: boolean) => void;
 }) {
     const t = useTranslations('AdminPage.plans.grid.cell');
 
@@ -42,6 +46,14 @@ export function PlanModuleConfigField({
 
     function handleSwitchChange(next: boolean) {
         onSwitchChangeAction(field.key, next);
+    }
+
+    function handleTypeChange(role: PartnerRole, checked: boolean) {
+        onTypeChangeAction(field.key, role, checked);
+    }
+
+    if (field.type === 'types') {
+        return <PlanModuleTypesField label={t(`fields.${field.key}`)} value={value} onChangeAction={handleTypeChange} />;
     }
 
     if (field.type === 'boolean') {

@@ -958,6 +958,18 @@ export interface AdminProvisionEventRequestDto {
     event: EventRequestDto;
     // Emails the host a welcome; the server treats a missing value as true.
     notifyHost?: boolean;
+    // Module settings saved with the event, in the same request (max 50). One refused setting
+    // (400, 409) and no event is created. A vendors setting turns vendors on for this event.
+    moduleConfigs?: AdminProvisionModuleConfig[];
+}
+
+// One setting as PUT .../modules/{moduleKey}/config/{configKey} takes it: extra, enabled or value, exactly one.
+export interface AdminProvisionModuleConfig {
+    moduleKey: ModuleKey;
+    configKey: string;
+    extra?: number | null;
+    enabled?: boolean | null;
+    value?: unknown;
 }
 
 export type AdminEmailTemplateKey = 'PASSWORD_RESET' | 'PROVISIONED_HOST_WELCOME' | 'EMAIL_VERIFICATION' | 'CUSTOM';
@@ -4285,7 +4297,32 @@ export type AdminAuditAction =
     | 'EVENT_STORAGE_GRANTED'
     | 'EVENT_MEMBERS_GRANTED'
     | 'EVENT_MODULE_GRANTED'
-    | 'EVENT_MODULE_REVOKED';
+    | 'EVENT_MODULE_REVOKED'
+    | 'EVENT_MODULE_CONFIG_SET'
+    | 'EVENT_MODULE_CONFIG_RESET'
+    | 'LANDING_CATEGORY_CREATED'
+    | 'LANDING_CATEGORY_UPDATED'
+    | 'LANDING_CATEGORY_DELETED'
+    | 'LANDING_CATEGORY_EVENT_TYPES_CHANGED'
+    | 'EMAIL_SENT'
+    | 'APP_REVIEW_UPDATED'
+    | 'SITE_NOTICE_CREATED'
+    | 'SITE_NOTICE_UPDATED'
+    | 'SITE_NOTICE_DELETED'
+    | 'CAMPAIGN_LINK_CREATED'
+    | 'CAMPAIGN_LINK_RENAMED'
+    | 'CAMPAIGN_LINK_DELETED'
+    | 'ADMIN_DEVICE_PAIRED'
+    | 'ADMIN_DEVICE_REVOKED'
+    | 'OUTREACH_CREATED'
+    | 'OUTREACH_UPDATED'
+    | 'OUTREACH_DELETED'
+    | 'OUTREACH_REQUESTED'
+    | 'OUTREACH_REQUEST_APPROVED'
+    | 'OUTREACH_REQUEST_DECLINED'
+    | 'EVENT_PROVISIONED'
+    | 'PLAN_MODULES_CHANGED'
+    | 'PLAN_MODULE_CONFIG_CHANGED';
 
 // The statement of reasons sent with every moderation action (Guidelines §22).
 export type StatementGround = 'ILLEGAL_CONTENT' | 'GUIDELINES_BREACH';
@@ -4515,10 +4552,13 @@ export interface NoticeCloseRequestDto {
     note?: string | null;
 } // note max 2000
 
-// GET /api/admin/audit-log?targetId=&adminUserId=&page=&size= (Page, newest first).
+// GET /api/admin/audit-log?targetId=&adminUserId=&eventId=&action=&page=&size= (Page, newest first, size ≤ 100).
 export interface AdminAuditLogResponseDto {
     id: string;
     adminUserId: string;
+    // Null when the admin's account is gone.
+    adminEmail: string | null;
+    adminName: string | null;
     action: AdminAuditAction;
     targetType: string;
     targetId: string | null;
@@ -4736,24 +4776,35 @@ export interface AdminEventDetailDto {
     suspension: { suspendedAt: string; closedAt: string | null; decision: ModerationDecisionDto | null } | null;
 }
 
-// A cap (COUNT: a number, null = unlimited) or a flag (FLAG: absent counts as off).
-export type ModuleConfigKind = 'COUNT' | 'FLAG';
+// A cap (COUNT: a number, null = unlimited), a flag (FLAG: absent counts as off) or a value
+// (VALUE: the vendors settings, a number or a list of vendor types, set exactly).
+export type ModuleConfigKind = 'COUNT' | 'FLAG' | 'VALUE';
 
 // One module setting of an event: the plan's value, the admin override if any, and what the event gets.
-// A cap's override is an extra on top of the plan's; a flag's replaces it.
+// A cap's override is an extra on top of the plan's; a flag's and a value's replace it.
 export interface AdminEventModuleConfig {
     moduleKey: ModuleKey;
     configKey: string;
     kind: ModuleConfigKind;
-    planValue: number | boolean | null;
-    effectiveValue: number | boolean | null;
-    override: { extra: number | null; enabled: boolean | null; reason: string; setByUserId: string; setAt: string } | null;
+    planValue: number | boolean | string[] | null;
+    effectiveValue: number | boolean | string[] | null;
+    override: {
+        extra: number | null;
+        enabled: boolean | null;
+        value: number | string[] | null;
+        reason: string;
+        setByUserId: string;
+        setAt: string;
+    } | null;
 }
 
-// PUT /api/admin/events/{id}/modules/{moduleKey}/config/{configKey}. extra for a cap, enabled for a flag, never both.
+// PUT /api/admin/events/{id}/modules/{moduleKey}/config/{configKey}. extra for a cap, enabled for
+// a flag, value for a value; exactly one. A setting of a module the event doesn't have turns that
+// module on for the event (an admin grant with the same reason); the plan doesn't change.
 export interface AdminModuleConfigOverrideRequestDto {
     extra: number | null;
     enabled: boolean | null;
+    value?: number | string[] | null;
     reason: string;
 }
 

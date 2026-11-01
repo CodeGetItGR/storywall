@@ -7,6 +7,7 @@ import {
     closeRequest,
     EMPTY_EVENT_FILTERS,
     EMPTY_RESTRICTION_DRAFT,
+    eventHasModule,
     eventModuleRows,
     findModuleConfig,
     flagChoice,
@@ -24,6 +25,7 @@ import {
     storageLimitWithGrant,
     suspendRequest,
     usageRatio,
+    valueChoice,
 } from '@/lib/adminEvents';
 import type { AdminEventDetailDto, AdminEventModuleConfig } from '@/lib/api/types';
 
@@ -173,9 +175,26 @@ describe('eventModuleRows', () => {
         });
         expect(rows[0].configs).toEqual([SECTIONS]);
     });
+
+    it("lists a module's settings in the plan grid's order", () => {
+        const setting = (configKey: string): AdminEventModuleConfig => ({
+            moduleKey: 'vendors',
+            configKey,
+            kind: 'VALUE',
+            planValue: 1,
+            effectiveValue: 1,
+            override: null,
+        });
+        const rows = eventModuleRows({
+            modules: [{ moduleKey: 'vendors', enabled: true, source: 'PLAN' }],
+            moduleGrants: [],
+            moduleConfigs: ['accessDaysAfterEvent', 'later', 'allowedTypes', 'maxVendors', 'proStorageBytes'].map(setting),
+        });
+        expect(rows[0].configs.map((config) => config.configKey)).toEqual(['maxVendors', 'allowedTypes', 'accessDaysAfterEvent', 'proStorageBytes', 'later']);
+    });
 });
 
-const OVERRIDE = { reason: 'Asked', setByUserId: 'a-1', setAt: '2026-10-01T10:00:00Z' };
+const OVERRIDE = { value: null, reason: 'Asked', setByUserId: 'a-1', setAt: '2026-10-01T10:00:00Z' };
 const SECTIONS: AdminEventModuleConfig = {
     moduleKey: 'schedule',
     configKey: 'maxSections',
@@ -222,7 +241,7 @@ describe('module config', () => {
 
     it('sets a new extra, resets at 0, and does nothing when unchanged', () => {
         const overridden = { ...SECTIONS, override: { ...OVERRIDE, extra: 2, enabled: null } };
-        expect(moduleConfigChange(SECTIONS, { extra: 2 })).toEqual({ kind: 'set', extra: 2, enabled: null });
+        expect(moduleConfigChange(SECTIONS, { extra: 2 })).toEqual({ kind: 'set', extra: 2, enabled: null, value: null });
         expect(moduleConfigChange(SECTIONS, { extra: 0 })).toBeNull();
         expect(moduleConfigChange(overridden, { extra: 2 })).toBeNull();
         expect(moduleConfigChange(overridden, { extra: 0 })).toEqual({ kind: 'reset' });
@@ -230,11 +249,68 @@ describe('module config', () => {
 
     it('sets a flag, resets to the plan, and does nothing when unchanged', () => {
         const off = { ...QR, override: { ...OVERRIDE, extra: null, enabled: false } };
-        expect(moduleConfigChange(QR, { choice: 'OFF' })).toEqual({ kind: 'set', extra: null, enabled: false });
+        expect(moduleConfigChange(QR, { choice: 'OFF' })).toEqual({ kind: 'set', extra: null, enabled: false, value: null });
         expect(moduleConfigChange(QR, { choice: 'PLAN' })).toBeNull();
         expect(moduleConfigChange(off, { choice: 'OFF' })).toBeNull();
-        expect(moduleConfigChange(off, { choice: 'ON' })).toEqual({ kind: 'set', extra: null, enabled: true });
+        expect(moduleConfigChange(off, { choice: 'ON' })).toEqual({ kind: 'set', extra: null, enabled: true, value: null });
         expect(moduleConfigChange(off, { choice: 'PLAN' })).toEqual({ kind: 'reset' });
+    });
+
+    const MAX_VENDORS: AdminEventModuleConfig = {
+        moduleKey: 'vendors',
+        configKey: 'maxVendors',
+        kind: 'VALUE',
+        planValue: 5,
+        effectiveValue: 5,
+        override: null,
+    };
+    const TYPES: AdminEventModuleConfig = {
+        moduleKey: 'vendors',
+        configKey: 'allowedTypes',
+        kind: 'VALUE',
+        planValue: ['PLANNER', 'MUSIC'],
+        effectiveValue: ['PLANNER', 'MUSIC'],
+        override: null,
+    };
+
+    it('reads a value choice from the override', () => {
+        expect(valueChoice(MAX_VENDORS)).toBe('PLAN');
+        expect(valueChoice({ ...MAX_VENDORS, override: { ...OVERRIDE, extra: null, enabled: null, value: 1 } })).toBe('SET');
+        expect(valueChoice({ ...MAX_VENDORS, override: { ...OVERRIDE, extra: null, enabled: null, value: 0 } })).toBe('SET');
+        expect(valueChoice({ ...TYPES, override: { ...OVERRIDE, extra: null, enabled: null, value: [] } })).toBe('SET');
+    });
+
+    it('sets an exact value, even one lower than the plan or 0', () => {
+        expect(moduleConfigChange(MAX_VENDORS, { valueChoice: 'SET', value: 1 })).toEqual({ kind: 'set', extra: null, enabled: null, value: 1 });
+        expect(moduleConfigChange(MAX_VENDORS, { valueChoice: 'SET', value: 0 })).toEqual({ kind: 'set', extra: null, enabled: null, value: 0 });
+        expect(moduleConfigChange(TYPES, { valueChoice: 'SET', value: [] })).toEqual({ kind: 'set', extra: null, enabled: null, value: [] });
+    });
+
+    it('saves nothing for a value it cannot read, or the same value again', () => {
+        const one = { ...MAX_VENDORS, override: { ...OVERRIDE, extra: null, enabled: null, value: 1 } };
+        expect(moduleConfigChange(MAX_VENDORS, { valueChoice: 'SET', value: undefined })).toBeNull();
+        expect(moduleConfigChange(one, { valueChoice: 'SET', value: 1 })).toBeNull();
+        expect(moduleConfigChange(one, { valueChoice: 'SET', value: 2 })).toEqual({ kind: 'set', extra: null, enabled: null, value: 2 });
+        const music = { ...TYPES, override: { ...OVERRIDE, extra: null, enabled: null, value: ['MUSIC'] } };
+        expect(moduleConfigChange(music, { valueChoice: 'SET', value: ['MUSIC'] })).toBeNull();
+    });
+
+    it('goes back to the plan only when there is an override', () => {
+        const one = { ...MAX_VENDORS, override: { ...OVERRIDE, extra: null, enabled: null, value: 1 } };
+        expect(moduleConfigChange(one, { valueChoice: 'PLAN', value: 1 })).toEqual({ kind: 'reset' });
+        expect(moduleConfigChange(MAX_VENDORS, { valueChoice: 'PLAN', value: 3 })).toBeNull();
+    });
+
+    it('knows whether the event has a module', () => {
+        const modules = [
+            { moduleKey: 'vendors', source: 'NONE' },
+            { moduleKey: 'gallery', source: 'PLAN' },
+            { moduleKey: 'schedule', source: 'GRANT' },
+        ] as AdminEventDetailDto['modules'];
+        expect(eventHasModule({ modules }, 'vendors')).toBe(false);
+        expect(eventHasModule({ modules }, 'gallery')).toBe(true);
+        expect(eventHasModule({ modules }, 'schedule')).toBe(true);
+        expect(eventHasModule({ modules }, 'wishbook')).toBe(false);
     });
 });
 

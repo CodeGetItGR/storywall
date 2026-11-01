@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { auditLogKeys } from '@/lib/adminAuditLog';
 import { type AdminEventFilters, adminEventsPath } from '@/lib/adminEvents';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -66,6 +67,7 @@ function useEventDetailMutation<TInput>(eventId: string, request: (input: TInput
         onSuccess: (event) => {
             queryClient.setQueryData(adminEventKeys.detail(eventId), event);
             void queryClient.invalidateQueries({ queryKey: [...adminEventKeys.all, 'list'] });
+            void queryClient.invalidateQueries({ queryKey: auditLogKeys.all });
         },
     });
 }

@@ -4,8 +4,9 @@ import { Check } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
+import { useConfigValueLabels } from '@/hooks/useConfigValueLabels';
 import { formatMoney } from '@/lib/billing';
-import { formatConfigValue } from '@/lib/planModuleConfig';
+import { configSummary } from '@/lib/planModuleConfig';
 import type { PlanModuleCell } from '@/lib/planModuleGrid';
 import { cn } from '@/lib/utils';
 
@@ -20,11 +21,12 @@ export function PlanModuleGridCell({
 }) {
     const t = useTranslations('AdminPage.plans.grid');
     const locale = useLocale();
+    const labels = useConfigValueLabels();
 
     if (cell.kind === 'unsupported') return <td className="px-2.5 py-2" />;
     if (failed) return <td className="px-2.5 py-2 text-[11px] text-status-danger">{t('columnError')}</td>;
 
-    const tokens = Object.entries(cell.config).map(([key, value]) => `${key} ${formatConfigValue(value)}`);
+    const settings = configSummary(cell.moduleKey, cell.config, labels);
     const unlockLabel =
         cell.kind === 'excluded' && cell.unlock
             ? cell.unlock.billingPeriod === 'ONE_TIME'
@@ -53,11 +55,12 @@ export function PlanModuleGridCell({
                     )}
                     {cell.kind === 'included' ? t('included') : (unlockLabel ?? t('notIncluded'))}
                 </span>
-                {cell.kind === 'included' && tokens.length > 0 && (
-                    <span className="flex flex-wrap gap-1">
-                        {tokens.map((token) => (
-                            <span key={token} className="rounded bg-canvas px-1 font-mono text-[10.5px] text-ink-muted">
-                                {token}
+                {/* Settings */}
+                {cell.kind === 'included' && settings.length > 0 && (
+                    <span className="flex flex-col gap-0.5">
+                        {settings.map((setting) => (
+                            <span key={setting.key} className="text-[10.5px] leading-4 text-ink-muted">
+                                {setting.label} <span className="font-mono font-semibold text-ink">{setting.value}</span>
                             </span>
                         ))}
                     </span>
