@@ -1,6 +1,7 @@
 import { useTranslations } from 'next-intl';
 
 import { AppLink } from '@/components/ui/AppLink';
+import { VendorToolIcon } from '@/components/vendors/VendorToolIcon';
 import { type ToolMenuItem } from '@/hooks/useToolsMenuItems';
 import { handleRoleSheetLinkClick } from '@/lib/myRoleSheetRequests';
 
@@ -19,14 +20,18 @@ export function MemberActionsSection({ items }: { items: ToolMenuItem[] }) {
         <div className={''}>
             <p className="mb-2 text-sm font-semibold text-ink">{t('toolsTitle')}</p>
             <div className="space-y-1">
-                {items.map(({ key, href, icon: Icon, label }) => (
+                {items.map(({ key, href, icon: Icon, label, vendorTool }) => (
                     <AppLink
                         key={key}
                         href={href}
                         onClick={handleRoleSheetLinkClick}
                         className="group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
                     >
-                        <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        {vendorTool ? (
+                            <VendorToolIcon tool={vendorTool} size="sm" className="-mx-1" />
+                        ) : (
+                            <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        )}
                         <span className="min-w-0 truncate">{label}</span>
                     </AppLink>
                 ))}

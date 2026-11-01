@@ -87,7 +87,8 @@ export const routes = {
             schedule: (eventId: string, params: { section?: string | null } = {}) => withQuery(`${eventBasePath(eventId)}/tools/schedule`, params),
             wishbook: (eventId: string) => `${eventBasePath(eventId)}/tools/wishbook`,
             vendors: (eventId: string) => `${eventBasePath(eventId)}/tools/vendors`,
-            vendorMe: (eventId: string) => `${eventBasePath(eventId)}/tools/vendors/me`,
+            // section: a part of the page to scroll to on arrival (VendorPageSection).
+            vendorMe: (eventId: string, params: { section?: string | null } = {}) => withQuery(`${eventBasePath(eventId)}/tools/vendors/me`, params),
             playlistLive: (eventId: string) => `${eventBasePath(eventId)}/tools/playlist/live`,
             announcement: (eventId: string) => `${eventBasePath(eventId)}/tools/announcement`,
         },

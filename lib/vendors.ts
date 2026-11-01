@@ -177,6 +177,51 @@ export function vendorToolLinks(eventId: string, me: VendorMeDto, readableModule
         .map((tool) => ({ key: tool.key, href: tool.href(eventId) }));
 }
 
+// Parts of the vendor page the feed's quick actions open straight at.
+export type VendorPageSection = 'proAlbum' | 'sneakPeek' | 'prints';
+export const VENDOR_PAGE_SECTIONS: readonly VendorPageSection[] = ['proAlbum', 'sneakPeek', 'prints'];
+
+export function isVendorPageSection(value: string | null | undefined): value is VendorPageSection {
+    return VENDOR_PAGE_SECTIONS.includes(value as VendorPageSection);
+}
+
+export type VendorActionKey = VendorToolKey | VendorPageSection;
+
+// The vendor's quick actions on the feed: the photo work that lives on the vendor page, then the tool links.
+// Mirrors the vendor page's own gates, so an action never opens a section the page hides.
+export function vendorQuickActions(
+    eventId: string,
+    me: VendorMeDto,
+    readableModules: ReadonlySet<string>,
+    eventStartAt: string | null | undefined,
+    now: Date = new Date(),
+): { key: VendorActionKey; href: string }[] {
+    const proAlbumOn = capabilitiesOfType(me.vendorType).includes('PRO_ALBUM') && readableModules.has('vendors') && readableModules.has('gallery');
+    const peek = me.sneakPeek;
+    const started = !eventStartAt || now >= new Date(eventStartAt);
+    const sections: { key: VendorPageSection; open: boolean }[] = [
+        { key: 'proAlbum', open: proAlbumOn && hasVendorCapability(me, 'PRO_ALBUM') },
+        // Only while one can be posted: from the event's start, and not once it's posted or used.
+        {
+            key: 'sneakPeek',
+            open:
+                proAlbumOn &&
+                readableModules.has('posts') &&
+                hasVendorCapability(me, 'SNEAK_PEEK') &&
+                Boolean(peek && !peek.postId && !peek.used) &&
+                started,
+        },
+        { key: 'prints', open: hasVendorCapability(me, 'PRINT_PICKS') },
+    ];
+
+    return [
+        ...sections
+            .filter((section) => section.open)
+            .map((section) => ({ key: section.key, href: routes.events.tools.vendorMe(eventId, { section: section.key }) })),
+        ...vendorToolLinks(eventId, me, readableModules),
+    ];
+}
+
 export type PartnerBenefitKey = 'discount' | 'feedCard' | 'reach' | 'printPrices';
 export type ComingPartnerBenefitKey = 'inquiries' | 'printKit' | 'eventPacks';
 

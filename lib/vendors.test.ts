@@ -11,6 +11,7 @@ import {
     isValidVendorEmail,
     isValidVendorPhone,
     isValidVendorWebsite,
+    isVendorPageSection,
     listedVendors,
     proStorageState,
     serviceTagsForType,
@@ -19,6 +20,7 @@ import {
     vendorApplySearch,
     vendorCardActions,
     vendorInviteUrl,
+    vendorQuickActions,
     vendorToolLinks,
     websiteHref,
 } from '@/lib/vendors';
@@ -236,6 +238,55 @@ describe('vendorToolLinks', () => {
         expect(
             vendorToolLinks('e1', me({ vendorType: 'MUSIC', capabilities: ['SONG_REQUESTS'] }), new Set(['playlist'])).map((tool) => tool.key),
         ).toEqual(['liveRequests']);
+    });
+});
+
+describe('vendorQuickActions', () => {
+    const allModules = new Set(['vendors', 'gallery', 'posts', 'rsvp', 'playlist']);
+    const started = '2027-07-01T18:00:00Z';
+    const now = new Date('2027-07-02T00:00:00Z');
+    const photographer = (overrides: Partial<VendorMeDto> = {}) =>
+        me({
+            vendorType: 'PHOTOGRAPHER',
+            capabilities: ['PRO_ALBUM', 'SNEAK_PEEK', 'PRINT_PICKS'],
+            sneakPeek: { postId: null, mediaIds: [], content: null, used: false },
+            ...overrides,
+        });
+    const keys = (actions: { key: string }[]) => actions.map((action) => action.key);
+
+    it('gives a photographer the Pro album, sneak peek and print order, each opening its section', () => {
+        const actions = vendorQuickActions('e1', photographer(), allModules, started, now);
+        expect(keys(actions)).toEqual(['proAlbum', 'sneakPeek', 'prints']);
+        expect(actions[1].href).toBe('/events/e1/tools/vendors/me?section=sneakPeek');
+    });
+
+    it('drops the sneak peek before the event starts, once posted or used, and without posts', () => {
+        expect(keys(vendorQuickActions('e1', photographer(), allModules, '2027-07-03T00:00:00Z', now))).not.toContain('sneakPeek');
+        const posted = photographer({ sneakPeek: { postId: 'p1', mediaIds: ['m1'], content: null, used: true } });
+        expect(keys(vendorQuickActions('e1', posted, allModules, started, now))).not.toContain('sneakPeek');
+        expect(keys(vendorQuickActions('e1', photographer(), new Set(['vendors', 'gallery']), started, now))).toEqual(['proAlbum', 'prints']);
+    });
+
+    it('hides the Pro album without the gallery module', () => {
+        expect(keys(vendorQuickActions('e1', photographer(), new Set(['vendors', 'posts']), started, now))).toEqual(['prints']);
+    });
+
+    it('lists a planner’s tools after any page sections, and nothing once access closes', () => {
+        expect(keys(vendorQuickActions('e1', me(), allModules, started, now))).toEqual(['schedule', 'announcement', 'rsvpReport', 'qr']);
+        expect(vendorQuickActions('e1', me({ accessOpen: false }), allModules, started, now)).toEqual([]);
+        expect(vendorQuickActions('e1', photographer({ accessOpen: false }), allModules, started, now)).toEqual([]);
+    });
+
+    it('gives a type without tools nothing', () => {
+        expect(vendorQuickActions('e1', me({ vendorType: 'CATERING', capabilities: [] }), allModules, started, now)).toEqual([]);
+    });
+});
+
+describe('isVendorPageSection', () => {
+    it('accepts only the page sections', () => {
+        expect(isVendorPageSection('prints')).toBe(true);
+        expect(isVendorPageSection('schedule')).toBe(false);
+        expect(isVendorPageSection(null)).toBe(false);
     });
 });
 

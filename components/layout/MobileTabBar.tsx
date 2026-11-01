@@ -8,22 +8,25 @@ import type { MouseEvent } from 'react';
 import { ComposerFab } from '@/components/layout/mobile-tab-bar/ComposerFab';
 import { ContextNavSlot } from '@/components/layout/mobile-tab-bar/ContextNavSlot';
 import { ShareInviteTab } from '@/components/layout/mobile-tab-bar/ShareInviteTab';
+import { tabIconBoxClass, TabLabel } from '@/components/layout/mobile-tab-bar/TabLabel';
 import { TabLink } from '@/components/layout/mobile-tab-bar/TabLink';
 import type { ContextNavItem } from '@/components/layout/mobile-tab-bar/types';
 import { isAccountRoute, isFeedRoute, isPathActive } from '@/components/layout/mobile-tab-bar/utils';
+import { VendorTab } from '@/components/layout/mobile-tab-bar/VendorTab';
 import { useHideMobileTabBarWhileTyping } from '@/hooks/useHideMobileTabBarWhileTyping';
 import { useInviteShare } from '@/hooks/useInviteShare';
 import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { useHasOpenOverlay } from '@/hooks/useOverlayPresence';
 import { usePinchZoomBox } from '@/hooks/usePinchZoomBox';
 import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
+import { useMyVendorRole } from '@/hooks/useVendors';
 import { isEventDeleted } from '@/lib/eventLifecycle';
 import { openMyRoleSheetFromHref } from '@/lib/myRoleSheetRequests';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 import { useAccountPanel } from '@/providers/AccountPanelProvider';
 import { useComposer } from '@/providers/ComposerProvider';
-import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
+import { useActiveEvent, useEventContextLoading, useIsHost, useRouteEventId } from '@/providers/EventProvider';
 import { useMobileChrome } from '@/providers/MobileChromeProvider';
 
 const homeTabItem = { href: routes.feed, icon: '/icons/home.svg', key: 'home' } as const;
@@ -42,6 +45,11 @@ export function MobileTabBar() {
     const activeEvent = useActiveEvent();
     const moduleCopy = useModuleCopy(activeEvent?.eventType);
     const isHost = useIsHost();
+    const routeEventId = useRouteEventId();
+    // A host is never a vendor (Jira KAN-35). Only on event routes, like the tools menu.
+    const vendor = useMyVendorRole(isHost ? null : routeEventId).data ?? null;
+    // A vendor's bar has fewer tabs, so each one is named under its icon.
+    const showLabels = vendor !== null;
     const isLoading = useEventContextLoading();
     const isFeedDetailPage = isFeedRoute(pathname);
     const showEventNavigation = !isLoading && Boolean(activeEvent) && !isAccountRoute(pathname);
@@ -76,8 +84,11 @@ export function MobileTabBar() {
                   // Hosts answer RSVPs from the dashboard's RSVP section, not the guest self-RSVP tool.
                   ...(isDraft ? [] : toolItems.filter((item) => item.key !== 'rsvp')),
               ]
-            : toolItems
+            : // A vendor's own page has its own tab.
+              toolItems.filter((item) => item.key !== 'vendorMe')
         : [];
+    const vendorHref = activeEvent && vendor ? routes.events.tools.vendorMe(activeEvent.id) : null;
+    const vendorActive = vendorHref !== null && isPathActive(pathname, vendorHref);
     const contextActive = contextItems.some((item) => isPathActive(pathname, item.href, searchParams));
     const ContextTriggerIcon = isHost ? Settings : Wrench;
     const contextMenuLabel = isHost ? t('eventMenu') : t('toolsMenu');
@@ -98,7 +109,13 @@ export function MobileTabBar() {
 
     const accountActive = accountOpen;
     const railColumnCount =
-        1 + 1 + (playlistAvailable ? 1 : 0) + (rsvpTabAvailable ? 1 : 0) + (inviteShare.available ? 1 : 0) + (contextItems.length > 0 ? 1 : 0);
+        1 +
+        1 +
+        (vendorHref ? 1 : 0) +
+        (playlistAvailable ? 1 : 0) +
+        (rsvpTabAvailable ? 1 : 0) +
+        (inviteShare.available ? 1 : 0) +
+        (contextItems.length > 0 ? 1 : 0);
 
     return (
         <>
@@ -125,6 +142,7 @@ export function MobileTabBar() {
                                 icon={homeTabItem.icon}
                                 label={t(`items.${homeTabItem.key}`)}
                                 active={homeActive}
+                                showLabel={showLabels}
                                 onClick={handleHomeClick}
                             />
                         </div>
@@ -137,7 +155,15 @@ export function MobileTabBar() {
                                     icon="/icons/music.svg"
                                     label={moduleCopy('playlist').name}
                                     active={playlistActive}
+                                    showLabel={showLabels}
                                 />
+                            </div>
+                        )}
+
+                        {/* Vendor page */}
+                        {vendor && vendorHref && (
+                            <div className="flex h-full items-center justify-center">
+                                <VendorTab href={vendorHref} vendorType={vendor.vendorType} active={vendorActive} />
                             </div>
                         )}
 
@@ -164,6 +190,7 @@ export function MobileTabBar() {
                                     TriggerIcon={ContextTriggerIcon}
                                     items={contextItems}
                                     menuLabel={contextMenuLabel}
+                                    showLabel={showLabels}
                                     pathname={pathname}
                                     searchParams={searchParams}
                                     onItemClick={handleDashboardMenuClick}
@@ -181,13 +208,17 @@ export function MobileTabBar() {
                                 aria-expanded={accountOpen}
                                 className="flex h-full w-full items-center justify-center transition-colors hover:bg-surface-muted"
                             >
-                                <span
-                                    className={cn(
-                                        'flex h-10 w-10 items-center justify-center transition-all duration-200',
-                                        accountActive ? 'scale-105 opacity-100' : 'scale-100 opacity-50',
-                                    )}
-                                >
-                                    <MenuIcon className="h-5.5 w-5.5 text-ink transition-all duration-200" aria-hidden="true" />
+                                <span className="flex flex-col items-center gap-0.5">
+                                    <span
+                                        className={cn(
+                                            'flex items-center justify-center transition-all duration-200',
+                                            tabIconBoxClass(showLabels),
+                                            accountActive ? 'scale-105 opacity-100' : 'scale-100 opacity-50',
+                                        )}
+                                    >
+                                        <MenuIcon className="h-5.5 w-5.5 text-ink transition-all duration-200" aria-hidden="true" />
+                                    </span>
+                                    {showLabels && <TabLabel label={t('menu')} active={accountActive} />}
                                 </span>
                             </button>
                         </div>
