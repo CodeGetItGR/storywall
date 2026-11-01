@@ -20,7 +20,9 @@
 - Route `routes.business = '/business'`. `routes.partner` is removed; `/partner` permanently redirects to `/business`.
 - Section order (spec): top card → insights → your events → your content → print prices → how guests see you → contact. From `lg`, the top card spans both columns; insights/events/content sit in the main column; print prices/previews/contact in the side column. (Inquiries arrive in phase 2.)
 - Non-partners: insights shows Events, Guests, Profile taps, then one row with **Become a partner** (opens the existing `BecomePartnerSheet`). Partners: six counts and the monthly chart.
-- Feed card preview: partners with `cardPreview` only. The card is drawn with the real `PartnerCardVariant` and no link.
+- Feed card preview: partners with `cardPreview` only. Show all three styles the feed can pick (large card `FEATURE_CARD`, compact row `COMPACT_ROW`, credit line `CREDIT`; user decision 2026-11-01), each drawn with the real `PartnerCardVariant` from the same `cardPreview` content (override `variant`), with no link. Spring sends `variant: FEATURE_CARD`, `linkUrl: null`, `placement: null`.
+- Your events: rows for events the host removed the vendor from stay in the list (user decision 2026-11-01), with `open: false` and the "Access ended" label; they don't link. `open` is computed live by Spring.
+- Admin inbox: `VendorContactMessageDto` also has `emailVerified: boolean`; the drawer marks an unverified reply address ("Not verified"). The push `name` may be absent.
 - Sneak peek sample: types with a Pro album (`content` present). Static, built from the vendor's logo and name with placeholder tiles (no `<img>`, so no alt text needed for the tiles; the logo uses `VendorLogo`, which has alt text).
 - Print prices: `ServicesSection` and `ServiceSheet` move here, unchanged, for photographers (`vendorType === 'PHOTOGRAPHER'`). The per-event page keeps only its "prints included" row, inside a small section that links here.
 - Account drawer and profile show **My business** when `me.vendor || me.partner`.
