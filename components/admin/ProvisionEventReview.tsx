@@ -38,6 +38,8 @@ export function ProvisionEventReview({ form, host }: { form: ProvisionEventForm;
         [t('reviewDuration'), form.duration.selectedOption ? tAdmin('plans.columns.months', { count: form.duration.selectedOption.months }) : ''],
         ...(theme ? [[t('reviewTheme'), localizedText(theme.name, theme.key)] as [string, string]] : []),
         [t('reviewVisibility'), t(`visibilityOption.${form.visibility}`)],
+        // Vendors settings changed from the plan's.
+        ...form.vendorSettings.changes.map((change) => [change.label, change.value] as [string, string]),
     ];
 
     function handleNotifyHostChange(event: ChangeEvent<HTMLInputElement>) {
@@ -74,6 +76,11 @@ export function ProvisionEventReview({ form, host }: { form: ProvisionEventForm;
                         <EmailPreviewFrame preview={form.welcomePreview} isLoading={form.isWelcomePreviewLoading} error={form.welcomePreviewError} />
                     ) : null}
                 </section>
+            ) : null}
+
+            {/* Vendors turned on */}
+            {form.vendorSettings.turnsVendorsOn ? (
+                <p className="rounded-lg bg-status-warn-wash px-4 py-3 text-sm leading-6 text-status-warn">{t('vendorSettingsTurnOn')}</p>
             ) : null}
 
             {/* Activation notice */}

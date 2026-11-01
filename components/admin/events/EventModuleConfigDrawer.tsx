@@ -7,6 +7,7 @@ import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { EventDrawerFooter } from '@/components/admin/events/EventDrawerFooter';
 import { EventGrantReasonField } from '@/components/admin/events/EventGrantReasonField';
 import { EventLimitPreview } from '@/components/admin/events/EventLimitPreview';
+import { EventModuleConfigValueFields } from '@/components/admin/events/EventModuleConfigValueFields';
 import { useModuleConfigForm } from '@/hooks/useModuleConfigForm';
 import { useModuleConfigValue } from '@/hooks/useModuleConfigValue';
 import type { FlagChoice } from '@/lib/adminEvents';
@@ -17,25 +18,36 @@ const FORM_ID = 'event-module-config-form';
 const FLAG_CHOICES: readonly FlagChoice[] = ['PLAN', 'ON', 'OFF'];
 
 // One module setting of one event. A cap takes extra on top of the plan's, so a plan upgrade still
-// raises it; a flag follows the plan or is set on or off until an admin puts it back.
+// raises it; a flag follows the plan or is set on or off until an admin puts it back; a value (the
+// vendors settings) follows the plan or is set exactly, lower than the plan's included. Saving a
+// setting of a module the event doesn't have turns the module on for this event only.
 export function EventModuleConfigDrawer({
     open,
     eventId,
     config,
     moduleName,
+    hasModule,
     onCloseAction,
 }: {
     open: boolean;
     eventId: string;
     config: AdminEventModuleConfig;
     moduleName: string;
+    hasModule: boolean;
     onCloseAction: () => void;
 }) {
     const t = useTranslations('AdminPage');
     const formatValue = useModuleConfigValue();
     const form = useModuleConfigForm(eventId, config, onCloseAction);
-    const planText = formatValue(config.kind, config.planValue);
+    const planText = formatValue(config, config.planValue);
     const planUnlimited = config.kind === 'COUNT' && typeof config.planValue !== 'number';
+    const turnsModuleOn = !hasModule && form.change?.kind === 'set';
+    const valueError =
+        form.valueInvalid && form.field?.type === 'number'
+            ? form.field.storage
+                ? t('plans.grid.cell.invalidStorage')
+                : t('plans.grid.cell.invalidNumberRange', { min: form.field.min ?? 0, max: form.field.max ?? 0 })
+            : undefined;
 
     return (
         <AdminDrawer
@@ -72,8 +84,8 @@ export function EventModuleConfigDrawer({
                             />
                         </AdminField>
                         <EventLimitPreview
-                            current={formatValue('COUNT', config.effectiveValue)}
-                            next={form.parsedExtra === null ? null : formatValue('COUNT', form.resultCap)}
+                            current={formatValue(config, config.effectiveValue)}
+                            next={form.parsedExtra === null ? null : formatValue(config, form.resultCap)}
                             breakdown={null}
                             warning={null}
                         />
@@ -95,6 +107,36 @@ export function EventModuleConfigDrawer({
                         </div>
                         <p className="mt-2 text-xs text-ink-muted">{t('events.moduleConfig.flagHint')}</p>
                     </fieldset>
+                )}
+
+                {/* Plan's value or this event's */}
+                {config.kind === 'VALUE' && form.field && (
+                    <>
+                        <EventModuleConfigValueFields
+                            field={form.field}
+                            choice={form.valueChoice}
+                            draft={form.valueDraft}
+                            planText={planText}
+                            error={valueError}
+                            onChoiceChangeAction={form.handleValueChoiceChange}
+                            onDraftChangeAction={form.handleValueDraftChange}
+                            onTypeChangeAction={form.handleTypeChange}
+                        />
+                        <EventLimitPreview
+                            current={formatValue(config, config.effectiveValue)}
+                            next={form.nextValue === undefined ? null : formatValue(config, form.nextValue as AdminEventModuleConfig['effectiveValue'])}
+                            breakdown={null}
+                            warning={null}
+                            list={form.field.type === 'types'}
+                        />
+                    </>
+                )}
+
+                {/* Module turned on */}
+                {turnsModuleOn && (
+                    <p role="status" className="rounded-lg bg-status-warn-wash px-3 py-2.5 text-sm text-status-warn">
+                        {t('events.moduleConfig.turnsOn', { module: moduleName })}
+                    </p>
                 )}
 
                 {/* Reason */}

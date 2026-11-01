@@ -6,6 +6,7 @@ import type { ChangeEvent, MouseEvent } from 'react';
 import { AdminDurationSelect } from '@/components/admin/AdminDurationSelect';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { ProvisionEventTheme } from '@/components/admin/ProvisionEventTheme';
+import { ProvisionVendorSettings } from '@/components/admin/ProvisionVendorSettings';
 import { useCreateEventFieldLabels } from '@/hooks/useCreateEventFieldLabels';
 import { useEventTypeVoice } from '@/hooks/useEventTypeVoice';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
@@ -218,6 +219,9 @@ export function ProvisionEventForm({ form }: { form: ProvisionEventFormState }) 
 
             {/* Theme */}
             {form.isThemeAvailable ? <ProvisionEventTheme form={form} /> : null}
+
+            {/* Vendor settings */}
+            {form.vendorSettings.isSupported ? <ProvisionVendorSettings settings={form.vendorSettings} /> : null}
 
             {/* Visibility */}
             <section aria-labelledby="provision-event-visibility" className="border-t border-border pt-6">

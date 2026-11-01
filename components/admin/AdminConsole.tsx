@@ -7,6 +7,7 @@ import { AdminDiscountCodesPanel } from '@/components/admin/AdminDiscountCodesPa
 import { AdminGuestOfferPanel } from '@/components/admin/AdminGuestOfferPanel';
 import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { AppReviewsPanel } from '@/components/admin/appReviews/AppReviewsPanel';
+import { AuditLogPanel } from '@/components/admin/auditLog/AuditLogPanel';
 import { BugReportsPanel } from '@/components/admin/betaFeedback/BugReportsPanel';
 import { ErrorEventsPanel } from '@/components/admin/betaFeedback/ErrorEventsPanel';
 import { BillingOpsPanel } from '@/components/admin/BillingOpsPanel';
@@ -76,6 +77,13 @@ export function AdminConsole() {
         return (
             <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
                 <AppReviewsPanel />
+            </div>
+        );
+    }
+    if (tab === 'auditLog') {
+        return (
+            <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
+                <AuditLogPanel />
             </div>
         );
     }

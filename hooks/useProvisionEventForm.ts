@@ -10,6 +10,7 @@ import { useWelcomeEmailPreview } from '@/hooks/useAdminEmails';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useThemePresetsForType } from '@/hooks/useEventTheme';
+import { useProvisionVendorSettings } from '@/hooks/useProvisionVendorSettings';
 import { eligibleProvisioningPlans, type ProvisionHost } from '@/lib/adminAccountProvisioning';
 import { getFieldErrors } from '@/lib/api/errors';
 import type { AdminWelcomePreviewRequestDto, EventResponseDto, EventTypeConvention, EventVisibility } from '@/lib/api/types';
@@ -66,6 +67,7 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
     const selectedPlan = eligiblePlans.find((plan) => plan.code === planTierCode) ?? null;
     // Preselects the plan's shortest duration, which is what the server would pick.
     const duration = useAdminDurationPick(selectedPlan, { preselectShortest: true });
+    const vendorSettings = useProvisionVendorSettings(selectedPlan, selectedEventType);
     // Theme and RSVP deadline show only when the plan includes the module; the type is covered too,
     // since a plan can't list a module its type doesn't support.
     const planHasTheme = selectedPlan?.moduleKeys.includes('theme') ?? false;
@@ -92,7 +94,8 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
         !scheduleError &&
         !rsvpDeadlineError &&
         locationName.trim() &&
-        locationAddress.trim(),
+        locationAddress.trim() &&
+        vendorSettings.errorKeys.length === 0,
     );
 
     // The welcome email as provisioning will send it. Built only on the review step, where the
@@ -157,6 +160,7 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
                     rsvpDeadline: rsvpDeadlineIso,
                     themePresetId: selectedThemePresetId ?? undefined,
                 },
+                ...(vendorSettings.moduleConfigs.length > 0 ? { moduleConfigs: vendorSettings.moduleConfigs } : {}),
             });
             // A failure here is the caller's to show; the event itself was created.
             await options.onProvisioned?.(created).catch(() => undefined);
@@ -177,6 +181,7 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
         setRsvpDeadline('');
         setThemePresetId(null);
         setNotifyHost(true);
+        vendorSettings.reset();
         provisionEvent.reset();
     }
 
@@ -194,6 +199,7 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
         planTierCode,
         setPlanTierCode,
         duration,
+        vendorSettings,
         title,
         setTitle,
         startAt,

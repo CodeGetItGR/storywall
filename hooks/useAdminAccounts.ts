@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { adminAccountsPath } from '@/lib/adminAccountProvisioning';
+import { auditLogKeys } from '@/lib/adminAuditLog';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
@@ -55,6 +56,7 @@ export function useProvisionAdminEventMutation() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['events'] });
             queryClient.invalidateQueries({ queryKey: ['admin', 'metrics'] });
+            queryClient.invalidateQueries({ queryKey: auditLogKeys.all });
         },
     });
 }

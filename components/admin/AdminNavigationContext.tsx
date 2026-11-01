@@ -11,6 +11,7 @@ import {
     GalleryVerticalEnd,
     Gift,
     Handshake,
+    History,
     Inbox,
     LayoutGrid,
     Link2,
@@ -82,6 +83,7 @@ export type AdminTab =
     | 'campaignOverview'
     | 'campaigns'
     | 'siteNotices'
+    | 'auditLog'
     | 'phones';
 
 export type AdminTabItem = {
@@ -131,6 +133,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#campaign-overview': 'campaignOverview',
     '#campaigns': 'campaigns',
     '#site-notices': 'siteNotices',
+    '#audit-log': 'auditLog',
     '#phones': 'phones',
 };
 
@@ -166,6 +169,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     errorEvents: '#errors',
     appReviews: '#reviews',
     siteNotices: '#site-notices',
+    auditLog: '#audit-log',
     phones: '#phones',
 };
 
@@ -287,6 +291,7 @@ export function AdminNavigationProvider({ children, role = 'ADMIN' }: { children
             { key: 'reports', label: t('reports'), icon: Flag },
             { key: 'bugReports', label: t('bugReports'), icon: Bug },
             { key: 'errorEvents', label: t('errorEvents'), icon: OctagonAlert },
+            { key: 'auditLog', label: t('auditLog'), icon: History },
             { key: 'phones', label: t('phones'), icon: Smartphone },
         ],
         [t],

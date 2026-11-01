@@ -45,15 +45,37 @@ describe('usePlanModuleCellDraft with the vendors module', () => {
         expect(Object.keys(body.defaultConfig).sort()).toEqual(['accessDaysAfterEvent', 'allowedTypes', 'maxVendors', 'proStorageBytes']);
     });
 
-    it('sends allowedTypes edited in the Advanced JSON together with the unchanged numbers', async () => {
-        await saveAfter((draft) =>
-            draft.handleJsonChange({
-                currentTarget: { value: JSON.stringify({ allowedTypes: ['MUSIC'] }) },
-            } as React.ChangeEvent<HTMLTextAreaElement>),
-        );
+    it('sends vendor types ticked and unticked together with the unchanged numbers', async () => {
+        await saveAfter((draft) => {
+            draft.handleTypeChange('allowedTypes', 'PLANNER', false);
+        });
+        let [, body] = apiPatch.mock.calls[0] as [string, { defaultConfig: Record<string, unknown> }];
+        expect(body.defaultConfig).toEqual({ maxVendors: 5, accessDaysAfterEvent: 30, proStorageBytes: 5368709120, allowedTypes: ['PHOTOGRAPHER', 'MUSIC'] });
 
-        const [, body] = apiPatch.mock.calls[0] as [string, { defaultConfig: Record<string, unknown> }];
-        expect(body.defaultConfig).toEqual({ maxVendors: 5, accessDaysAfterEvent: 30, proStorageBytes: 5368709120, allowedTypes: ['MUSIC'] });
+        await saveAfter((draft) => draft.handleTypeChange('allowedTypes', 'VENUE', true));
+        [, body] = apiPatch.mock.calls[0] as [string, { defaultConfig: Record<string, unknown> }];
+        expect(body.defaultConfig.allowedTypes).toEqual(['PLANNER', 'VENUE', 'PHOTOGRAPHER', 'MUSIC']);
+    });
+
+    it('lists the types change in words before saving', () => {
+        const { result } = renderHook(() => usePlanModuleCellDraft({ cell, plan, onSavedAction: vi.fn() }), { wrapper });
+        act(() => result.current.handleTypeChange('allowedTypes', 'MUSIC', false));
+        act(() => result.current.requestSave());
+        expect(result.current.pending?.changes).toEqual([
+            {
+                key: 'plans.grid.cell.fields.allowedTypes',
+                before: 'collaborations.feedCard.roles.PLANNER, collaborations.feedCard.roles.PHOTOGRAPHER, collaborations.feedCard.roles.MUSIC',
+                after: 'collaborations.feedCard.roles.PLANNER, collaborations.feedCard.roles.PHOTOGRAPHER',
+            },
+        ]);
+    });
+
+    it('has nothing to save when a type is ticked and unticked again', () => {
+        const { result } = renderHook(() => usePlanModuleCellDraft({ cell, plan, onSavedAction: vi.fn() }), { wrapper });
+        act(() => result.current.handleTypeChange('allowedTypes', 'VENUE', true));
+        expect(result.current.canSave).toBe(true);
+        act(() => result.current.handleTypeChange('allowedTypes', 'VENUE', false));
+        expect(result.current.canSave).toBe(false);
     });
 
     it('sends storage in bytes', async () => {

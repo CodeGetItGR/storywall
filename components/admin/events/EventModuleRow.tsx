@@ -55,9 +55,40 @@ export function EventModuleRow({
                 <Icon className="h-4 w-4" />
             </span>
 
-            {/* Name and grant */}
-            <div className="min-w-0 flex-1 pt-1">
-                <p className={cn('text-sm font-semibold', included ? 'text-ink' : 'text-ink-muted')}>{name}</p>
+            <div className="min-w-0 flex-1">
+                {/* Name, source and action */}
+                <div className="flex min-h-8 flex-wrap items-center gap-x-3 gap-y-1">
+                    <p className={cn('mr-auto text-sm font-semibold', included ? 'text-ink' : 'text-ink-muted')}>{name}</p>
+                    <div className="flex shrink-0 items-center gap-2">
+                        {included ? (
+                            <span className={cn('rounded-full px-2 py-0.5 text-[11px] font-bold', SOURCE_STYLES[row.source])}>
+                                {t(`source.${row.source}`)}
+                            </span>
+                        ) : (
+                            <span className="text-xs text-ink-faint">{t('source.NONE')}</span>
+                        )}
+                        {canGrant && (
+                            <button
+                                type="button"
+                                onClick={grant}
+                                className="inline-flex h-7 items-center rounded-md border border-border px-2.5 text-xs font-semibold text-ink transition hover:bg-canvas"
+                            >
+                                {t('grant')}
+                            </button>
+                        )}
+                        {canRevoke && (
+                            <button
+                                type="button"
+                                onClick={revoke}
+                                className="inline-flex h-7 items-center rounded-md px-2.5 text-xs font-semibold text-ink-muted transition hover:bg-surface-muted hover:text-ink"
+                            >
+                                {t('revoke')}
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                {/* Grant */}
                 {row.grant && (
                     <p className="mt-0.5 text-xs text-ink-muted">
                         {t('grantedOn', { date: formatAdminDate(locale, row.grant.grantedAt) })}
@@ -65,40 +96,13 @@ export function EventModuleRow({
                     </p>
                 )}
 
-                {/* Settings */}
-                {included && row.configs.length > 0 && (
+                {/* Settings, also of a module the event doesn't have: saving one turns it on */}
+                {row.configs.length > 0 && (
                     <ul className="mt-2 space-y-1">
                         {row.configs.map((config) => (
                             <EventModuleConfigItem key={config.configKey} config={config} editable={editable} onEditAction={onEditConfigAction} />
                         ))}
                     </ul>
-                )}
-            </div>
-
-            {/* Source and action */}
-            <div className="flex shrink-0 items-center gap-2 pt-0.5">
-                {included ? (
-                    <span className={cn('rounded-full px-2 py-0.5 text-[11px] font-bold', SOURCE_STYLES[row.source])}>{t(`source.${row.source}`)}</span>
-                ) : (
-                    <span className="text-xs text-ink-faint">{t('source.NONE')}</span>
-                )}
-                {canGrant && (
-                    <button
-                        type="button"
-                        onClick={grant}
-                        className="inline-flex h-7 items-center rounded-md border border-border px-2.5 text-xs font-semibold text-ink transition hover:bg-canvas"
-                    >
-                        {t('grant')}
-                    </button>
-                )}
-                {canRevoke && (
-                    <button
-                        type="button"
-                        onClick={revoke}
-                        className="inline-flex h-7 items-center rounded-md px-2.5 text-xs font-semibold text-ink-muted transition hover:bg-surface-muted hover:text-ink"
-                    >
-                        {t('revoke')}
-                    </button>
                 )}
             </div>
         </li>

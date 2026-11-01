@@ -2,6 +2,7 @@
 
 import { EventAddonsSection } from '@/components/admin/events/EventAddonsSection';
 import { EventDetailOverlays } from '@/components/admin/events/EventDetailOverlays';
+import { EventHistorySection } from '@/components/admin/events/EventHistorySection';
 import { EventHostsSection } from '@/components/admin/events/EventHostsSection';
 import { EventModulesSection } from '@/components/admin/events/EventModulesSection';
 import { EventPlanSection } from '@/components/admin/events/EventPlanSection';
@@ -47,6 +48,8 @@ export function EventDetail({ event }: { event: AdminEventDetailDto }) {
                         onEditConfigAction={overlays.openModuleConfig}
                     />
                     <EventAddonsSection addons={event.addons} editable={editable} onRemoveAction={overlays.openRemoveAddon} />
+                    {/* History */}
+                    <EventHistorySection eventId={event.id} />
                 </div>
 
                 {/* Reference */}
