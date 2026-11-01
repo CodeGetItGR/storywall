@@ -6800,13 +6800,23 @@
     },
     "LandingPage": {
         "forBusiness": {
-            "eyebrow": "For business",
             "heading": {
                 "plain": "Are you a photographer, a wedding planner",
                 "grad": "or a DJ?"
             },
             "body": "StoryWall has tools for every wedding and event professional, inside your client’s event.",
-            "all": "Everything for professionals"
+            "points": ["Join free with the host’s link", "Guests see your name and your work", "Partners get a discount code and commission"],
+            "highlights": {
+                "PLANNER": "Schedule, announcements and RSVPs",
+                "VENUE": "Your venue in the vendor list",
+                "PHOTOGRAPHER": "Pro album, sneak peek and prints",
+                "VIDEOGRAPHER": "Your videos with your name on them",
+                "DECORATION": "Guests see who made it",
+                "CATERING": "Guests can find you again",
+                "MUSIC": "Song requests from guests’ phones"
+            },
+            "all": "Everything for professionals",
+            "allBody": "Partner program, steps and how to apply"
         },
         "imageAlts": {
             "heroBackground": "Soft pastel background with sparkles",
