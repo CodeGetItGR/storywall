@@ -42,6 +42,7 @@ export function BusinessTrendChart({ trend }: { trend: { month: string; views: n
                         />
                         <YAxis
                             allowDecimals={false}
+                            domain={[0, (dataMax: number) => Math.max(dataMax, 4)]}
                             tickFormatter={formatCount}
                             tick={{ fill: 'var(--ink-faint)', fontSize: 11 }}
                             tickLine={false}

@@ -19,7 +19,7 @@ export function BusinessEventRow({ event }: { event: BusinessEventDto }) {
             {/* Name and details */}
             <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-ink">{event.title}</p>
-                <p className="truncate text-xs text-ink-muted">
+                <p className="text-xs leading-snug text-ink-muted">
                     {formatDate(locale, event.startAt, { dateStyle: 'medium' })} · {tVendors(`types.${event.vendorType}`)} ·{' '}
                     {t('rowGuests', { count: event.guests })}
                     {!event.open && ` · ${t('ended')}`}

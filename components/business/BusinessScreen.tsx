@@ -55,6 +55,7 @@ export function BusinessScreen() {
                         vendorType={overview.vendorType ?? null}
                         partner={overview.partner}
                         profileState={page.profileState}
+                        canEdit={!page.needsProfile}
                         onEditAction={page.openProfile}
                         onRetryProfileAction={page.retryProfile}
                     >

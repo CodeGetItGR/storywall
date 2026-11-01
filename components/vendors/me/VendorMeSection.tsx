@@ -29,8 +29,9 @@ export function VendorMeSection({
     return (
         <section aria-labelledby={id} aria-busy={busy || undefined} className={cn(VENDOR_SECTION_SURFACE, 'p-4 sm:p-5', className)}>
             {/* Header */}
-            <div className="flex items-start justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-3">
+            {/* The action drops below the title when the column is too narrow for both. */}
+            <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="flex min-w-[min(100%,14rem)] flex-1 items-center gap-3">
                     {icon}
                     <div className="min-w-0">
                         <h3 id={id} className="text-base font-semibold text-ink">

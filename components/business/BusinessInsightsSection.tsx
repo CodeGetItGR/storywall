@@ -38,10 +38,11 @@ export function BusinessInsightsSection({
             {businessHasNumbers(overview) ? (
                 <>
                     {/* Counts */}
-                    <MetricStrip items={items} wrapLabels />
+                    {/* Six counts sit in two rows of three: the main column is too narrow for one row of six. */}
+                    <MetricStrip items={items} wrapLabels className={items.length === 6 ? 'sm:grid-cols-3' : undefined} />
 
                     {/* Trend */}
-                    {overview.trend && <BusinessTrendChart trend={overview.trend} />}
+                    {overview.trend?.some((point) => point.views > 0) && <BusinessTrendChart trend={overview.trend} />}
                 </>
             ) : (
                 /* Empty */

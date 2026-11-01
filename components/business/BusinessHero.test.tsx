@@ -12,6 +12,7 @@ function renderHero(overrides: Partial<React.ComponentProps<typeof BusinessHero>
         vendorType: 'PHOTOGRAPHER' as const,
         partner: false,
         profileState: 'ready' as const,
+        canEdit: true,
         onEditAction: vi.fn(),
         onRetryProfileAction: vi.fn(),
         ...overrides,
@@ -63,6 +64,11 @@ describe('BusinessHero', () => {
         expect(screen.queryByRole('button', { name: 'Edit' })).toBeNull();
         fireEvent.click(screen.getByRole('button', { name: 'Reload details' }));
         expect(onRetryProfileAction).toHaveBeenCalledTimes(1);
+    });
+
+    it('hides Edit without a profile, where the setup card offers it', () => {
+        renderHero({ canEdit: false });
+        expect(screen.queryByRole('button', { name: 'Edit' })).toBeNull();
     });
 
     it('falls back to "Your business" without a name, and shows no type without one', () => {

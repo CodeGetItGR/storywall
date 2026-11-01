@@ -19,6 +19,7 @@ export function BusinessHero({
     vendorType,
     partner,
     profileState,
+    canEdit,
     onEditAction,
     onRetryProfileAction,
     children,
@@ -28,6 +29,7 @@ export function BusinessHero({
     vendorType: PartnerRole | null;
     partner: boolean;
     profileState: ProfileLoadState;
+    canEdit: boolean;
     onEditAction: () => void;
     onRetryProfileAction: () => void;
     children?: ReactNode;
@@ -45,10 +47,10 @@ export function BusinessHero({
             <div className="relative flex items-center gap-3.5">
                 <VendorLogo logoUrl={logoUrl} name={displayName} className="size-12" />
                 <div className="min-w-0 flex-1">
-                    <h2 id="business-name" className="truncate text-xl leading-tight font-bold tracking-tight text-ink sm:text-2xl">
+                    <h2 id="business-name" className="line-clamp-2 text-xl leading-tight font-bold tracking-tight break-words text-ink sm:text-2xl">
                         {displayName}
                     </h2>
-                    <p className="flex items-center gap-2 text-sm text-ink-muted">
+                    <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-muted">
                         {vendorType && <span>{tVendors(`types.${vendorType}`)}</span>}
                         {partner && (
                             <span className="rounded-full bg-status-good-wash px-2 py-0.5 text-xs font-semibold text-status-good">
@@ -58,23 +60,25 @@ export function BusinessHero({
                     </p>
                 </div>
 
-                {/* Edit, or retry when the details failed to load */}
+                {/* Edit, or retry when the details failed to load. Without a profile the setup card offers it instead. */}
                 {profileState === 'failed' ? (
                     <Button type="button" variant="outline" onClick={onRetryProfileAction} className="shrink-0 gap-2 rounded-full px-3">
                         <RefreshCw className="size-4" aria-hidden="true" />
                         {t('retryProfile')}
                     </Button>
                 ) : (
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={onEditAction}
-                        disabled={profileState === 'loading'}
-                        className="shrink-0 gap-2 rounded-full px-3"
-                    >
-                        <Pencil className="size-4" aria-hidden="true" />
-                        {t('edit')}
-                    </Button>
+                    canEdit && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={onEditAction}
+                            disabled={profileState === 'loading'}
+                            className="shrink-0 gap-2 rounded-full px-3"
+                        >
+                            <Pencil className="size-4" aria-hidden="true" />
+                            <span className="sr-only sm:not-sr-only">{t('edit')}</span>
+                        </Button>
+                    )
                 )}
             </div>
 
