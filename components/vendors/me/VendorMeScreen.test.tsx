@@ -148,10 +148,11 @@ describe('VendorMeScreen', () => {
         expect(screen.getByText('pro album')).toBeTruthy();
     });
 
-    it('drops the settings heading when no setting applies', () => {
+    it('links every vendor to My business, whatever their type', () => {
         page.value = state({ canChooseListing: false });
         render(<VendorMeScreen />);
-        expect(screen.queryByText('me.groupSettings')).toBeNull();
+        expect(screen.getByText('me.groupSettings')).toBeTruthy();
+        expect(screen.getByRole('link', { name: 'myBusiness' }).getAttribute('href')).toBe('/business');
     });
 
     it('says when the tools have stopped', () => {

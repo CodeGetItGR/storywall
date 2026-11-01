@@ -7,6 +7,7 @@ import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { BecomePartnerSheet } from '@/components/vendors/BecomePartnerSheet';
+import { BusinessLinkSection } from '@/components/vendors/me/BusinessLinkSection';
 import { PartnerBenefitsSection } from '@/components/vendors/me/PartnerBenefitsSection';
 import { PrintPricesLinkSection } from '@/components/vendors/me/PrintPricesLinkSection';
 import { PrintsIncludedRow } from '@/components/vendors/me/PrintsIncludedRow';
@@ -144,36 +145,37 @@ export function VendorMeScreen() {
                     )}
 
                     {/* Settings: set once, change rarely */}
-                    {(showPrintPrices || page.canChooseListing) && (
-                        <VendorMeGroup id="vendor-settings-title" title={t('me.groupSettings')}>
-                            {/* Print prices */}
-                            {showPrintPrices && (
-                                <PrintPricesLinkSection
-                                    includedRow={
-                                        prints.open &&
-                                        !prints.includedFailed && (
-                                            <PrintsIncludedRow
-                                                included={prints.included}
-                                                isLoading={prints.isLoadingIncluded}
-                                                onEditAction={prints.openIncluded}
-                                            />
-                                        )
-                                    }
-                                />
-                            )}
+                    <VendorMeGroup id="vendor-settings-title" title={t('me.groupSettings')}>
+                        {/* My business: every vendor's page across their events */}
+                        <BusinessLinkSection />
 
-                            {/* Listing */}
-                            {page.canChooseListing && (
-                                <VendorListingSection
-                                    listed={page.listed}
-                                    hiddenByHost={page.hiddenByHost}
-                                    disabled={page.isTogglingListed}
-                                    error={page.error}
-                                    onToggleAction={page.toggleListed}
-                                />
-                            )}
-                        </VendorMeGroup>
-                    )}
+                        {/* Print prices */}
+                        {showPrintPrices && (
+                            <PrintPricesLinkSection
+                                includedRow={
+                                    prints.open &&
+                                    !prints.includedFailed && (
+                                        <PrintsIncludedRow
+                                            included={prints.included}
+                                            isLoading={prints.isLoadingIncluded}
+                                            onEditAction={prints.openIncluded}
+                                        />
+                                    )
+                                }
+                            />
+                        )}
+
+                        {/* Listing */}
+                        {page.canChooseListing && (
+                            <VendorListingSection
+                                listed={page.listed}
+                                hiddenByHost={page.hiddenByHost}
+                                disabled={page.isTogglingListed}
+                                error={page.error}
+                                onToggleAction={page.toggleListed}
+                            />
+                        )}
+                    </VendorMeGroup>
 
                     {/* Partner */}
                     {partner.visible && (
