@@ -1,6 +1,6 @@
 # My business page — design
 
-Date: 2026-11-01. Status: agreed with the user, waiting for spec review.
+Date: 2026-11-01. Status: approved by the user; plans written.
 
 ## Goal
 
@@ -55,13 +55,13 @@ States:
    - `content`: `proItems`, `sneakPeeks`, `proUsedBytes` summed across events. Absent for types without a Pro album.
    - Reuses `PartnerReachService` queries, keyed by the account's user id instead of the partner's contact email.
 2. **`GET /api/me/business/events?page=`** — paged, newest first: `eventId`, `title`, `startAt`, `vendorType`, `guests`, `views` (partners only), `open` (false once access ended or the vendor was removed; such rows don't link).
-3. **Partner branding for the preview** — add the partner's feed card fields (display name, logo, cover, text, link, enabled) to `GET /api/partners/me`, so the preview uses the real card.
+3. **Partner branding for the preview** — add `cardPreview` (the partner's real feed card, no link and no placement; null while branding is off) to `GET /api/partners/me`.
 4. **Contact messages**
    - Table `vendor_contact_messages`: id, user id, topic (`QUESTION`, `PROBLEM`, `PARTNERSHIP`, `OTHER`), message (≤ 2,000 chars), status (`NEW`, `ANSWERED`), created at, answered at.
    - `POST /api/me/business/messages` — vendors only, at most 5 a day per account.
    - `GET /api/admin/vendor-messages?status=&page=` and `PATCH /api/admin/vendor-messages/{id}` (status).
    - New `AdminAlertType.VENDOR_MESSAGE` (`#vendor-messages`, not urgent, admins only) with the topic in its data.
-5. **`isVendor`** on the signed-in user DTO (next to `partner`), so the drawer and profile can show the entry without another request.
+5. **`vendor`** (boolean) on the signed-in user DTO (next to `partner`), so the drawer and profile can show the entry without another request.
 
 ### Frontend (storywall)
 
@@ -72,7 +72,7 @@ States:
 - Contact sheet: topic as a segmented control, message textarea, send. Success shows a short confirmation in the sheet.
 - `/partner` → `/business` redirect. Remove `PartnerPortalBoundary`/`Frame`/`Skeleton`/`Blocked` and `PartnerReachSection` once nothing uses them.
 - Profile: one **My business** link row replaces `ProfileVendorSection` and `ProfilePartnerSection`.
-- Account drawer: **My business** entry when `isVendor || partner`.
+- Account drawer: **My business** entry when `vendor || partner`.
 - Event **My page**: the Print prices editor moves to `/business`; the event page keeps its "prints included" row and gets a **My business** link.
 - `robots.ts`: add `/business` to private paths; the page is `noindex` like other signed-in pages.
 - All copy in `messages/en.json` and `messages/el.json`. Greek: "Η επιχείρησή μου"; no "συντελεστής" in the page name.
@@ -83,7 +83,7 @@ States:
 
 ### Android admin app (storywall-admin-android)
 
-- New `PushMessage.VendorMessage(topic, link)` so `VENDOR_MESSAGE` pushes show a notification ("New vendor message: Problem") that opens the console's `#vendor-messages`. Today unknown types are dropped.
+- New `PushMessage.VendorMessage(topic, name, link)` so `VENDOR_MESSAGE` pushes show a notification ("Message from Studio Lumen" · "Problem") that opens the console's `#vendor-messages`. Today unknown types are dropped.
 
 ### Release order
 
