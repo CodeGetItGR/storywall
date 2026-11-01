@@ -9736,9 +9736,19 @@
         "others": "See everything professionals get"
     },
     "BusinessPage": {
+        "title": "My business",
+        "back": "Profile",
         "unnamed": "Your business",
         "edit": "Edit",
         "partnerPill": "Partner",
+        "notVendor": {
+            "title": "This page is for businesses working at events",
+            "description": "Join an event from the link a host sent you."
+        },
+        "unavailable": {
+            "title": "Couldn't load this page",
+            "description": "Try again in a moment."
+        },
         "insights": {
             "title": "Insights",
             "events": "Events",

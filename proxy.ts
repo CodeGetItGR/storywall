@@ -25,7 +25,7 @@ import { takeVisitSourceParam, VISIT_SOURCE_PARAM } from '@/lib/signupSource';
 // protected route has to be added here deliberately rather than relying on
 // an exclusion pattern that could silently leave a public route ungated —
 // or, worse, gate one that was meant to stay public.
-const PROTECTED_PREFIXES = ['/admin', '/feed', '/home', '/notifications', '/profile', '/partner', '/event-not-found', '/post/'];
+const PROTECTED_PREFIXES = ['/admin', '/feed', '/home', '/notifications', '/profile', '/business', '/partner', '/event-not-found', '/post/'];
 
 function isProtectedPath(pathname: string): boolean {
     if (PROTECTED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix))) return true;
