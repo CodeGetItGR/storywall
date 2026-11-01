@@ -8419,78 +8419,405 @@
     "QrWeddingPage": {
         "name": "Wedding QR code",
         "meta": {
-            "title": "Wedding QR Code for Guest Photos | StoryWall",
-            "description": "Guests scan your wedding QR code and upload photos and videos to one shared album. No app, no sign-up. Included in every plan.",
+            "title": "QR Code for Wedding Photos – Guest Photo Sharing | StoryWall",
+            "description": "QR code for wedding photos: guests scan the QR code on the table and upload photos and videos in full resolution, with no app and no sign-up.",
             "keywords": [
-                "wedding QR code",
                 "QR code for wedding photos",
-                "QR code upload wedding photos",
+                "wedding QR code",
+                "QR code for wedding pictures",
                 "wedding photo sharing",
-                "shared wedding album",
-                "guest photo app"
-            ]
+                "wedding guest photo sharing",
+                "collect wedding photos from guests",
+                "shared wedding album"
+            ],
+            "imageAlt": "A guest scans the StoryWall QR code on a wedding table"
         },
-        "nav": {
-            "guide": "GUIDE",
-            "guideMobile": "Guide"
+        "header": {
+            "homeLabel": "StoryWall — Home",
+            "logoAlt": "StoryWall",
+            "navLabel": "Main navigation",
+            "howItWorks": "How it works",
+            "why": "Why QR",
+            "demo": "Demo",
+            "pricing": "Pricing",
+            "faq": "FAQ",
+            "login": "Log in"
         },
         "hero": {
-            "h1": "Wedding QR code for guest photos",
-            "headline": "One QR code on the tables. <b>Every guest photo in one album.</b>",
-            "lead": "Guests scan with their phone camera and upload photos and videos. No app, no account.",
-            "included": "The QR code is included in every plan.",
-            "cta": "Create your wedding QR code"
-        },
-        "howItWorksHeading": ["One QR code.", "The whole wedding."],
-        "howItWorks": [
-            { "title": "Create", "body": "Set up your wedding's StoryWall in a few minutes." },
-            { "title": "Print the QR code", "body": "Print it and place it around the venue." },
-            { "title": "Guests upload", "body": "They scan with their phone camera and add photos and videos." }
-        ],
-        "guide": {
-            "what": {
-                "title": "What is a wedding QR code?",
-                "body": "A code you place around your venue. Guests scan it with their phone camera and upload photos and videos to one shared album, so you see every guest's photos in one place."
-            },
-            "where": {
-                "title": "Where to put the QR code at your wedding",
-                "places": [
-                    "At the reception entrance",
-                    "On every table",
-                    "At the bar",
-                    "Next to the photo booth",
-                    "On your thank-you cards, for photos that come in later"
-                ]
-            },
-            "sign": {
-                "title": "What to write on the QR sign",
-                "intro": "Pick one for under the QR code:",
-                "texts": [
-                    "\"Scan to share your photos from our wedding!\"",
-                    "\"Got a great shot? Scan the code and share it with us.\"",
-                    "\"Our day through your eyes. Upload your photos and videos here.\""
-                ],
-                "tip": "If some guests don't read English, add a line in their language."
+            "crumbLabel": "Breadcrumb",
+            "crumbWedding": "Wedding",
+            "kicker": "Every photo, <strong>your story</strong>",
+            "h1": "QR code for <em>wedding photos</em>",
+            "sub": "One QR code on the table. Every moment, together.",
+            "body": "Put your wedding QR code on the reception tables. Guests scan it with their phone camera and upload photos and videos, with no app to download and no sign-up. Everything stays in your private StoryWall in full resolution, together with your invitation, RSVPs and guestbook messages.",
+            "cta": "Create your<br></br>StoryWall",
+            "demo": "See the demo",
+            "trustLabel": "Key features",
+            "trust": [
+                "No app",
+                "No sign-up",
+                "Full resolution"
+            ],
+            "price": "Included with StoryWall, <b>from {price}</b>",
+            "videoLabel": "A guest scans the StoryWall QR code on a wedding table to upload photos",
+            "images": {
+                "newlyweds": "Guest post of the newlyweds",
+                "reception": "Guest post from the reception",
+                "love": "Heart-eyes emoji",
+                "glasses": "Champagne glasses",
+                "heart": "Heart"
             }
         },
-        "pricingHeading": "How much does a wedding QR code cost?",
-        "faqIntro": "What couples ask about the wedding QR code.",
-        "faq": [
-            { "q": "Do guests need an app or an account?", "a": "No. They scan the code and upload from their phone's browser." },
-            { "q": "Can guests upload videos too?", "a": "Yes. The same QR code takes photos and videos." },
-            { "q": "Who can see the photos?", "a": "Only the people you invite. Your wedding album is private." },
-            { "q": "Can I download all the photos?", "a": "Yes. In the album, select as many as you like and download them." },
-            {
-                "q": "How long can guests keep uploading?",
-                "a": "As long as your StoryWall is online. Your plan sets how long, and you can extend it."
-            },
-            { "q": "Will older guests manage?", "a": "Yes. They open the camera, scan and tap upload." }
-        ],
+        "howItWorks": {
+            "kicker": "HOW THE WEDDING QR CODE WORKS",
+            "title": "One QR code.<br></br>Every guest photo.",
+            "steps": [
+                {
+                    "title": "Scan",
+                    "body": "Guests scan the QR code on the table <strong>with their phone camera.</strong>"
+                },
+                {
+                    "title": "Upload",
+                    "body": "Photos and videos, straight from the browser. <strong>No app, no sign-up.</strong>"
+                },
+                {
+                    "title": "All together",
+                    "body": "Everything is collected in your StoryWall, <strong>in full resolution.</strong>"
+                }
+            ]
+        },
+        "strip": {
+            "label": "StoryWall demo",
+            "slogan": "Step inside <strong>StoryWall.</strong>",
+            "cta": "SEE THE DEMO"
+        },
+        "guests": {
+            "kicker": "Wedding guest photo sharing",
+            "title": "The best photos of your wedding<br></br><strong>are on your guests' phones.</strong>",
+            "body": "Your photographer captures the official moments. The candid ones are on your guests' phones. With one QR code on the table, they all come to you.",
+            "phones": [
+                {
+                    "name": "Emma",
+                    "role": "maid of honour",
+                    "count": "34 photos",
+                    "alt": "Guests at the ceremony, photo by a guest"
+                },
+                {
+                    "name": "James",
+                    "role": "best man",
+                    "count": "21 photos",
+                    "alt": "The newlyweds arrive, photo by the best man"
+                },
+                {
+                    "name": "Tom",
+                    "role": "groom's friend",
+                    "count": "47 photos",
+                    "alt": "The first dance, photo by a guest"
+                },
+                {
+                    "name": "Sophie",
+                    "role": "cousin",
+                    "count": "18 photos",
+                    "alt": "Dancing at the reception, photo by a guest"
+                }
+            ],
+            "qr": "One QR code",
+            "albumLabel": "The wedding gallery with all the guests' photos in full resolution",
+            "albumKicker": "The wedding gallery",
+            "albumTitle": "Charlotte & Daniel",
+            "albumBadge": "Full resolution",
+            "tiles": [
+                "The wedding dress",
+                "Portrait of the bride",
+                "Guests at the ceremony",
+                "The newlyweds arrive",
+                "A tender moment, a guest video",
+                "The first dance",
+                "Dancing at the reception",
+                "The party at the reception",
+                "The groom with his friends"
+            ],
+            "toast": "<b>Tom</b> uploaded 3 photos",
+            "example": "Example · one wedding on StoryWall",
+            "stats": [
+                {
+                    "value": "248",
+                    "label": "photos"
+                },
+                {
+                    "value": "36",
+                    "label": "videos"
+                },
+                {
+                    "value": "64",
+                    "label": "messages"
+                },
+                {
+                    "value": "86",
+                    "label": "guests"
+                }
+            ]
+        },
+        "tryIt": {
+            "kicker": "TRY IT NOW",
+            "title": "Scan the wedding QR code.",
+            "titleSub": "See what your guests see.",
+            "bodyDesktop": "Open your phone camera and scan. The upload page will open, exactly as your guests will see it on your wedding day.",
+            "bodyMobile": "Ask someone near you to scan the QR code, or tap the button. The upload page will open, exactly as your guests will see it on your wedding day.",
+            "checks": [
+                "No app",
+                "No sign-up",
+                "In the phone's browser"
+            ],
+            "button": "Open the upload page",
+            "qr": "Scan me",
+            "qrAlt": "StoryWall QR code to try uploading wedding photos"
+        },
+        "compare": {
+            "title": "One QR code for the photos.",
+            "titleSub": "One StoryWall for the whole wedding.",
+            "body": "Most wedding photo sharing apps do one thing. With StoryWall, the QR code is part of your wedding website.",
+            "feature": "Feature",
+            "app": "QR photo app only",
+            "storywall": "StoryWall",
+            "yes": "Yes",
+            "no": "No",
+            "rows": [
+                {
+                    "label": "Photos and videos via QR code",
+                    "app": true,
+                    "storywall": true
+                },
+                {
+                    "label": "No app, no sign-up",
+                    "app": true,
+                    "storywall": true
+                },
+                {
+                    "label": "Full-resolution downloads",
+                    "app": true,
+                    "storywall": true
+                },
+                {
+                    "label": "Digital invitation",
+                    "app": false,
+                    "storywall": true
+                },
+                {
+                    "label": "Guest RSVPs",
+                    "app": false,
+                    "storywall": true
+                },
+                {
+                    "label": "Posts, comments and stories",
+                    "app": false,
+                    "storywall": true
+                },
+                {
+                    "label": "Guestbook as a PDF",
+                    "app": "Sometimes, at extra cost",
+                    "storywall": "From the STORY package"
+                }
+            ],
+            "note": "With the QR code, invitation, RSVPs and guestbook. <strong>From {price}.</strong>"
+        },
+        "timeline": {
+            "kicker": "ONE DAY, ONE QR CODE",
+            "title": "Every moment of the day,<br></br><strong>from your guests' phones.</strong>",
+            "items": [
+                {
+                    "time": "E.g. Saturday, 10:00",
+                    "title": "Getting ready",
+                    "body": "The bridesmaids capture the dress going on, then upload the photos as soon as they find the QR code on the table.",
+                    "alt": "Bridesmaids helping the bride get ready for the wedding"
+                },
+                {
+                    "time": "13:00",
+                    "title": "A moment with Dad",
+                    "body": "A hug with Dad before the ceremony, from the phone of a relative who was there.",
+                    "alt": "The bride hugs her father before the ceremony"
+                },
+                {
+                    "time": "14:00",
+                    "title": "The ceremony",
+                    "body": "Guests capture the vows from every corner of the venue.",
+                    "alt": "The wedding ceremony, a guest photo uploaded with the QR code"
+                },
+                {
+                    "time": "15:00",
+                    "title": "The confetti exit",
+                    "body": "Confetti, petals and dozens of phones in the air. Not a single shot is lost.",
+                    "alt": "The newlyweds' exit, a guest photo from the wedding QR code"
+                },
+                {
+                    "time": "Sunday, 11:00",
+                    "title": "The morning after",
+                    "body": "The party's over, the photos aren't. Share the QR link on WhatsApp and collect the ones that didn't make it on the night.",
+                    "alt": "The couple set off on honeymoon the morning after the wedding"
+                }
+            ],
+            "badge": "After the wedding",
+            "nextTitle": "And the morning after,<br></br><strong>you keep collecting photos.</strong>",
+            "nextBody": "Share the QR link on WhatsApp and the photos that missed the night start coming in."
+        },
+        "cards": {
+            "kicker": "QR CODE TABLE CARDS",
+            "title": "The QR code card,",
+            "titleSub": "ready for your tables.",
+            "body": "Choose a card design with your wedding QR code, in the style of your invitation, and print one for every table.",
+            "alts": [
+                "Wedding QR code card with gold roses",
+                "Wedding QR code card with a gold frame",
+                "Wedding QR code card with an olive branch",
+                "Wedding QR code card with pampas grass",
+                "Wedding QR code card with blue flowers"
+            ],
+            "checks": [
+                "Your wedding QR code, ready to print",
+                "Designs that match your wedding style",
+                "Your QR code never changes"
+            ]
+        },
+        "features": {
+            "kicker": "Digital wedding album and much more",
+            "title": "Not just photos.<br></br><strong>Your whole wedding in one place.</strong>",
+            "items": [
+                {
+                    "title": "Invitation",
+                    "body": "Date, venues, schedule and maps, in one link for everyone."
+                },
+                {
+                    "title": "RSVP",
+                    "body": "Guests confirm whether they're coming and you see every reply in one place."
+                },
+                {
+                    "title": "Posts & reactions",
+                    "body": "Photos, messages, comments and reactions on your private wedding wall."
+                },
+                {
+                    "title": "Stories",
+                    "body": "Candid moments from getting ready, the ceremony and the reception."
+                },
+                {
+                    "title": "Wishbook",
+                    "body": "Messages from your loved ones in a digital guestbook you can download as a PDF."
+                }
+            ],
+            "more": "See the wedding website"
+        },
+        "demo": {
+            "kicker": "DEMO",
+            "title": "Explore a<br></br><strong>wedding gallery.</strong>",
+            "body": "Your guests' photos, <strong>exactly as you'll see them, in full resolution.</strong>",
+            "demo": "SEE THE DEMO",
+            "demoLabel": "See the wedding demo",
+            "gallery": "SEE THE GALLERY",
+            "galleryLabel": "See the demo photo gallery",
+            "imageAlt": "The guest photo gallery and wedding wall on StoryWall, on two phones"
+        },
+        "pricing": {
+            "kicker": "PRICING",
+            "title": "Every StoryWall package includes the wedding QR code.",
+            "body": "It isn't sold separately. Choose your package and how long it stays online, and you get the QR code with your whole wedding StoryWall.",
+            "choose": "CHOOSE PACKAGE",
+            "durationGroup": "{plan} package duration",
+            "secure": "Secure payment",
+            "refund": "<link>Refund policy</link>",
+            "demo": "See the demo first"
+        },
+        "faq": {
+            "title": "Frequently asked questions",
+            "intro": "What couples ask about QR codes for wedding photos and collecting photos from guests.",
+            "items": [
+                {
+                    "q": "How does a QR code for wedding photos work?",
+                    "a": "You place the QR code on the reception tables. Guests scan it with their phone camera and upload photos and videos. Everything is collected in one gallery in your wedding StoryWall."
+                },
+                {
+                    "q": "Do guests need to download an app or sign up?",
+                    "a": "No. The QR code opens straight in the phone's browser. Guests can upload photos without downloading an app or creating an account."
+                },
+                {
+                    "q": "What if the venue has poor signal or no Wi-Fi?",
+                    "a": "Guests need an internet connection to upload, either the venue's Wi-Fi or their mobile data. If the signal is weak, ask the venue for the Wi-Fi password and add it next to the QR code. Anyone who can't upload on the night can do it later."
+                },
+                {
+                    "q": "How many photos and videos can guests upload?",
+                    "a": "Thousands of photos and videos. START includes 15 GB, STORY 25 GB and SIGNATURE 50 GB. A phone photo is usually a few MB, while videos take up more space. Each guest can select up to 10 files at a time."
+                },
+                {
+                    "q": "Is it better than a WhatsApp group or a shared Google Photos album?",
+                    "a": "Unlike WhatsApp or Messenger, photos and videos aren't compressed, so you download them in their original resolution. Guests don't need an app or a Google account, and everything lands in one private gallery instead of being scattered across group chats."
+                },
+                {
+                    "q": "Who can see the photos, and can I delete any?",
+                    "a": "Photos uploaded through the QR code are seen only by the two of you, in your own gallery. Guests see only the posts on your wedding wall, and you can delete those. In the QR gallery, tap “Select” to choose which photos to download. StoryWall is private and doesn't appear on Google."
+                },
+                {
+                    "q": "Where should I put the QR code, and what should the sign say?",
+                    "a": "Usually on every reception table, so each guest has it in front of them, and at the entrance or the bar if you like. Add a short line next to it, for example “Scan to share your photos from our wedding” or “Help us see the day through your eyes: scan and upload”. If some guests don't speak English, add a line in their language too."
+                },
+                {
+                    "q": "Can we use it for a destination wedding in Greece?",
+                    "a": "Yes. Many couples who marry in Greece have guests flying in from the UK and across Europe. Guests scan the QR code with their own phone, on the venue's Wi-Fi or their mobile data, and every photo lands in the same gallery. You can also share the link on WhatsApp once everyone is back home."
+                },
+                {
+                    "q": "How do I get guests to upload photos, even after the wedding?",
+                    "a": "Put the QR code on every table and ask your DJ or MC to mention it once or twice during the evening. The QR code opens a link you can also share after the wedding on WhatsApp, iMessage or Messenger, for anyone who didn't get round to it."
+                },
+                {
+                    "q": "How long are photos kept, and how do I download them?",
+                    "a": "It depends on the package you choose, with the option to renew. During that time, open the Gallery in your StoryWall, tap “Download all” and save every photo and video in its original quality."
+                },
+                {
+                    "q": "Does it replace our wedding photographer?",
+                    "a": "No. Your photographer captures the official moments. The QR code collects the candid moments your guests capture."
+                },
+                {
+                    "q": "Can I try it before the wedding?",
+                    "a": "Yes. The demo shows a wedding gallery exactly as you'll see it, with guests' photos and the upload button.",
+                    "link": {
+                        "label": "See the demo gallery →",
+                        "to": "gallery"
+                    }
+                },
+                {
+                    "q": "Can I get a refund?",
+                    "a": "Yes. Refunds are available under our cancellation terms. Before you buy, you can explore the whole StoryWall in the demo.",
+                    "link": {
+                        "label": "See the terms →",
+                        "to": "terms"
+                    }
+                },
+                {
+                    "q": "How much does a QR code for wedding photos cost?",
+                    "a": "The QR code isn't sold separately. It's included in every StoryWall wedding package, together with your invitation, RSVPs and wedding wall, from {price}.",
+                    "link": {
+                        "label": "See the packages →",
+                        "to": "pricing"
+                    }
+                }
+            ]
+        },
         "finalCta": {
-            "heading": ["Your wedding QR code,", "ready in minutes."],
-            "copyStart": "Create your wedding's StoryWall and print the QR code",
-            "copyStrong": "for the tables.",
-            "imageAlt": "Wedding celebration in Santorini"
+            "kicker": "YOUR WEDDING QR CODE",
+            "title": "One QR code.<br></br><strong>Your whole wedding.</strong>",
+            "body": "Guests upload their photos with one QR code on the table. <strong>And you have it all: invitation, photos, RSVPs and messages.</strong>",
+            "cta": "Create your <strong>StoryWall</strong>",
+            "imageAlt": "Newlyweds with their guests' photos from the wedding QR code"
+        },
+        "footer": {
+            "explore": "EXPLORE",
+            "links": {
+                "platform": "The platform",
+                "howItWorks": "How it works",
+                "features": "Features",
+                "pricing": "Pricing",
+                "faq": "FAQ",
+                "qrWedding": "Wedding QR code",
+                "forBusiness": "For professionals"
+            },
+            "backToTop": "BACK TO TOP"
         }
     },
     "Vendors": {

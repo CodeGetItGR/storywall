@@ -1,76 +1,84 @@
-import '@/components/landing/landing.css';
-
-import { getTranslations } from 'next-intl/server';
-
 import { CookieConsent } from '@/components/consent/CookieConsent';
-import { LandingFaq } from '@/components/landing/LandingFaq';
-import { LandingFinalCta, type LandingFinalCtaCopy } from '@/components/landing/LandingFinalCta';
-import { LandingFooter } from '@/components/landing/LandingFooter';
-import { LandingHowItWorks } from '@/components/landing/LandingHowItWorks';
-import { LandingPricing } from '@/components/landing/LandingPricing';
-import { OccasionPageShell } from '@/components/occasions/OccasionPageShell';
-import { QrWeddingGuide } from '@/components/qrWedding/QrWeddingGuide';
+import { QrWeddingCompare } from '@/components/qrWedding/QrWeddingCompare';
+import { QrWeddingDemo } from '@/components/qrWedding/QrWeddingDemo';
+import { QrWeddingDemoStrip } from '@/components/qrWedding/QrWeddingDemoStrip';
+import { QrWeddingFaq } from '@/components/qrWedding/QrWeddingFaq';
+import { QrWeddingFeatures } from '@/components/qrWedding/QrWeddingFeatures';
+import { QrWeddingFinalCta } from '@/components/qrWedding/QrWeddingFinalCta';
+import { QrWeddingFooter } from '@/components/qrWedding/QrWeddingFooter';
+import { QrWeddingGuestPhotos } from '@/components/qrWedding/QrWeddingGuestPhotos';
+import { QrWeddingHeader } from '@/components/qrWedding/QrWeddingHeader';
 import { QrWeddingHero } from '@/components/qrWedding/QrWeddingHero';
+import { QrWeddingHowItWorks } from '@/components/qrWedding/QrWeddingHowItWorks';
+import { QrWeddingPricing } from '@/components/qrWedding/QrWeddingPricing';
+import { QrWeddingTableCards } from '@/components/qrWedding/QrWeddingTableCards';
+import { QrWeddingTimeline } from '@/components/qrWedding/QrWeddingTimeline';
+import { QrWeddingTryIt } from '@/components/qrWedding/QrWeddingTryIt';
 import type { Locale } from '@/i18n/config';
-import { getPublicLandingPath } from '@/i18n/publicLocale';
-import { WEDDING_FINAL_CTA_IMAGE } from '@/lib/occasions/weddingMedia';
-import { QR_WEDDING_CREATE_HREF } from '@/lib/qrWeddingPage';
-import type { FaqEntry } from '@/lib/structuredData';
-import { LandingMotionProvider } from '@/providers/LandingMotionProvider';
+import { LANDING_TOKENS_CLASS } from '@/lib/landingTokens';
+import type { QrWeddingFaqItem } from '@/lib/qrWeddingPage';
+import { cn } from '@/lib/utils';
 
-type HowItWorksStep = { title: string; body: string };
-
-// The landing's sections around the guide, with the wedding plans and the wedding photo.
-export async function QrWeddingContent({ locale }: { locale: Locale }) {
-    const t = await getTranslations({ locale, namespace: 'QrWeddingPage' });
-    const landing = await getTranslations({ locale, namespace: 'LandingPage' });
-    const howItWorksHeading = t.raw('howItWorksHeading') as string[];
-    const finalCta = { ...(t.raw('finalCta') as Omit<LandingFinalCtaCopy, 'cta'>), cta: t('hero.cta') };
-
+// The page's sections in order. price: the cheapest wedding package, or empty; faq: with the price filled in.
+export function QrWeddingContent({ locale, price, faq }: { locale: Locale; price: string; faq: QrWeddingFaqItem[] }) {
     return (
-        // The footer's motion toggle reads LandingMotionProvider.
-        <LandingMotionProvider>
-            <OccasionPageShell theme={null}>
-                {/* Hero */}
-                <QrWeddingHero locale={locale} />
+        <>
+            <div
+                className={cn(
+                    LANDING_TOKENS_CLASS,
+                    'relative overflow-x-clip bg-white font-[Arial,Helvetica,sans-serif] text-[14px] leading-[normal] text-[#151313]',
+                )}
+            >
+                {/* Header */}
+                <QrWeddingHeader locale={locale} />
 
-                <div className="landing-page">
+                <main>
+                    {/* Hero */}
+                    <QrWeddingHero locale={locale} price={price} />
+
                     {/* How it works */}
-                    <LandingHowItWorks
-                        copy={{
-                            headingStart: howItWorksHeading[0]!,
-                            headingEnd: howItWorksHeading[1]!,
-                            steps: (t.raw('howItWorks') as HowItWorksStep[]).map((step) => ({ title: step.title, description: step.body })),
-                        }}
-                    />
+                    <QrWeddingHowItWorks locale={locale} />
 
-                    {/* Guide */}
-                    <QrWeddingGuide locale={locale} />
-                </div>
+                    {/* Demo strip */}
+                    <QrWeddingDemoStrip locale={locale} />
 
-                {/* Plans for weddings */}
-                <LandingPricing eventType="WEDDING" heading={t('pricingHeading')} />
+                    {/* Guests' photos */}
+                    <QrWeddingGuestPhotos locale={locale} />
 
-                <div className="landing-page">
+                    {/* Try it */}
+                    <QrWeddingTryIt locale={locale} />
+
+                    {/* Comparison */}
+                    <QrWeddingCompare locale={locale} price={price} />
+
+                    {/* The day */}
+                    <QrWeddingTimeline locale={locale} />
+
+                    {/* Table cards */}
+                    <QrWeddingTableCards locale={locale} />
+
+                    {/* Features */}
+                    <QrWeddingFeatures locale={locale} />
+
+                    {/* Demo */}
+                    <QrWeddingDemo locale={locale} />
+
+                    {/* Pricing */}
+                    <QrWeddingPricing locale={locale} />
+
                     {/* FAQ */}
-                    <LandingFaq
-                        copy={{
-                            heading: landing('faq.heading'),
-                            intro: t('faqIntro'),
-                            items: (t.raw('faq') as FaqEntry[]).map((item) => [item.q, item.a]),
-                        }}
-                    />
+                    <QrWeddingFaq items={faq} locale={locale} />
 
                     {/* Final call to action */}
-                    <LandingFinalCta copy={finalCta} href={QR_WEDDING_CREATE_HREF} image={WEDDING_FINAL_CTA_IMAGE} />
+                    <QrWeddingFinalCta locale={locale} />
+                </main>
 
-                    {/* Footer */}
-                    <LandingFooter anchorBase={getPublicLandingPath(locale)} />
-                </div>
-            </OccasionPageShell>
+                {/* Footer */}
+                <QrWeddingFooter locale={locale} />
+            </div>
 
             {/* Cookie consent */}
             <CookieConsent />
-        </LandingMotionProvider>
+        </>
     );
 }

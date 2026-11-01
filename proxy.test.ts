@@ -254,8 +254,8 @@ describe('proxy partner page locale', () => {
         expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('el');
     });
 
-    it('renders /wedding-qr-code in English for a Greek browser, without redirecting', async () => {
-        const res = await proxy(partnerRequest('http://localhost/wedding-qr-code', 'el-GR'));
+    it('renders /qr-code-for-wedding-photos in English for a Greek browser, without redirecting', async () => {
+        const res = await proxy(partnerRequest('http://localhost/qr-code-for-wedding-photos', 'el-GR'));
         expect(res.status).toBe(200);
         expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('en');
     });
@@ -300,12 +300,23 @@ describe('proxy legal page locale', () => {
     });
 });
 
+describe('proxy wedding QR page earlier URLs', () => {
+    it.each(['/wedding-qr-code', '/en/wedding-qr-code'])('sends %s to the current URL for good, keeping the query string', async (from) => {
+        const res = await proxy(new NextRequest(`http://localhost${from}?utm_source=instagram`));
+        expect(res.status).toBe(308);
+        const location = new URL(res.headers.get('location') ?? '');
+        expect(location.pathname).toBe('/qr-code-for-wedding-photos');
+        expect(location.searchParams.get('utm_source')).toBe('instagram');
+    });
+});
+
 describe('proxy wedding QR page before launch', () => {
     afterEach(() => {
         vi.unstubAllEnvs();
     });
 
     it.each([
+        ['/qr-code-for-wedding-photos', '/weddings'],
         ['/wedding-qr-code', '/weddings'],
         ['/el/qr-code-gamou', '/el/gamos'],
     ])('sends %s to %s for now, keeping the query string', async (from, to) => {

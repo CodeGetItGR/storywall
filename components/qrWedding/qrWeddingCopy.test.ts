@@ -7,12 +7,13 @@ type Json = Record<string, unknown>;
 type QrWeddingCopy = {
     meta: { title: string; description: string; keywords: string[] };
     hero: { h1: string };
-    faq: { q: string; a: string }[];
+    faq: { items: { q: string; a: string }[] };
 };
 
 function keyPaths(value: unknown, prefix = ''): string[] {
-    // Keyword lists are the searches each language is written for, so their length can differ.
-    if (Array.isArray(value) && prefix.endsWith('keywords')) return [prefix];
+    // Keyword lists are the searches each language is written for, and the comparison has a row only
+    // Greek readers ask about, so their length can differ.
+    if (Array.isArray(value) && (prefix.endsWith('keywords') || prefix.endsWith('compare.rows'))) return [prefix];
     if (Array.isArray(value)) return value.flatMap((item, index) => keyPaths(item, `${prefix}[${index}]`));
     if (value && typeof value === 'object')
         return Object.entries(value).flatMap(([key, child]) => keyPaths(child, prefix ? `${prefix}.${key}` : key));
@@ -21,11 +22,15 @@ function keyPaths(value: unknown, prefix = ''): string[] {
 
 const CATALOGS = { en: en as Json, el: el as Json };
 const PAGES = Object.entries(CATALOGS).map(([locale, catalog]) => [locale, catalog.QrWeddingPage as QrWeddingCopy] as const);
-// The searches each page is written for, as they must appear in its title and h1.
-const KEYWORDS: Record<string, { title: string; h1: string }> = {
-    en: { title: 'wedding qr code', h1: 'wedding qr code' },
-    el: { title: 'qr code γάμου', h1: 'qr γάμου' },
+// The search each page is written for, as it must appear in its title and h1.
+const KEYWORDS: Record<string, string> = {
+    en: 'qr code for wedding photos',
+    el: 'qr code για φωτογραφίες γάμου',
 };
+
+function plain(text: string): string {
+    return text.replace(/<[^>]+>/g, '').toLowerCase();
+}
 
 describe('wedding QR copy', () => {
     it('has the same keys in English and Greek', () => {
@@ -38,12 +43,12 @@ describe('wedding QR copy', () => {
     });
 
     it.each(PAGES)('%s puts the main search in the title and h1', (locale, copy) => {
-        expect(copy.meta.title.toLowerCase()).toContain(KEYWORDS[locale]!.title);
-        expect(copy.hero.h1.toLowerCase()).toContain(KEYWORDS[locale]!.h1);
+        expect(copy.meta.title.toLowerCase()).toContain(KEYWORDS[locale]);
+        expect(plain(copy.hero.h1)).toContain(KEYWORDS[locale]);
     });
 
     it.each(PAGES)('%s has at least five different questions', (_, copy) => {
-        const questions = copy.faq.map((item) => item.q);
+        const questions = copy.faq.items.map((item) => item.q);
         expect(questions.length).toBeGreaterThanOrEqual(5);
         expect(new Set(questions).size).toBe(questions.length);
     });

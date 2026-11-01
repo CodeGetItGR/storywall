@@ -88,9 +88,9 @@ describe('buildForBusinessMetadata', () => {
 describe('qrWeddingLanguageAlternates', () => {
     it('lists both wedding QR URLs and sends x-default to the English one', () => {
         expect(qrWeddingLanguageAlternates()).toEqual({
-            en: `${SITE_URL}/wedding-qr-code`,
+            en: `${SITE_URL}/qr-code-for-wedding-photos`,
             el: `${SITE_URL}/el/qr-code-gamou`,
-            'x-default': `${SITE_URL}/wedding-qr-code`,
+            'x-default': `${SITE_URL}/qr-code-for-wedding-photos`,
         });
     });
 });
@@ -102,15 +102,15 @@ describe('buildQrWeddingMetadata', () => {
         const el = buildQrWeddingMetadata('el', copy);
         expect(el.alternates?.canonical).toBe(`${SITE_URL}/el/qr-code-gamou`);
         expect(el.alternates?.languages).toEqual(qrWeddingLanguageAlternates());
-        expect(buildQrWeddingMetadata('en', copy).alternates?.canonical).toBe(`${SITE_URL}/wedding-qr-code`);
+        expect(buildQrWeddingMetadata('en', copy).alternates?.canonical).toBe(`${SITE_URL}/qr-code-for-wedding-photos`);
     });
 
-    it('is indexable, keeps its keywords and uses the default share image', () => {
+    it('is indexable, keeps its keywords and leaves the share image to its route', () => {
         const metadata = buildQrWeddingMetadata('el', copy);
         const openGraph = metadata.openGraph as { images?: { url: string }[] };
         expect(metadata.robots).toEqual({ index: true, follow: true });
         expect(metadata.keywords).toEqual(['QR γάμου']);
-        expect(openGraph.images?.[0]?.url).toBe(`${SITE_URL}/opengraph-image`);
+        expect(openGraph.images).toBeUndefined();
     });
 
     it('is never indexed on staging', () => {

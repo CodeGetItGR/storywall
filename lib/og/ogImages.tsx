@@ -314,3 +314,33 @@ export async function occasionOgImage(title: string) {
         },
     );
 }
+
+// The wedding QR page's preview: the headline beside the hero's poster of a guest scanning the code.
+// Served as JPEG, like the event preview, since the photo would make a PNG too heavy for some apps.
+export async function qrWeddingOgImage({ headline, alt }: { headline: string; alt: string }): Promise<Response> {
+    const logoSrc = await logoDataUri();
+    const font = await loadTitleFont(headline, 700);
+    const poster = await sharp(path.join(process.cwd(), 'public/landing/qr-wedding/guest-scanning-wedding-qr-code-poster.webp'))
+        .jpeg({ quality: 90 })
+        .toBuffer();
+
+    const image = new ImageResponse(
+        <div style={{ width: '100%', height: '100%', display: 'flex', background: CANVAS, color: INK, fontFamily: font ? TITLE_FONT : 'sans-serif' }}>
+            {/* Logo and headline */}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '72px 64px 72px 80px' }}>
+                {/* eslint-disable-next-line @next/next/no-img-element -- next/image cannot render inside ImageResponse */}
+                <img alt="StoryWall" height={56} src={logoSrc} width={235} />
+                <div style={{ fontSize: 76, lineHeight: 1.04 }}>{headline}</div>
+            </div>
+            {/* Poster */}
+            {/* eslint-disable-next-line @next/next/no-img-element -- next/image cannot render inside ImageResponse */}
+            <img alt={alt} height={630} src={`data:image/jpeg;base64,${poster.toString('base64')}`} style={{ objectFit: 'cover' }} width={504} />
+        </div>,
+        { ...OG_IMAGE_SIZE, fonts: font ? [{ name: TITLE_FONT, data: font, weight: 700, style: 'normal' }] : undefined },
+    );
+    const jpeg = await sharp(Buffer.from(await image.arrayBuffer()))
+        .jpeg({ quality: 82, mozjpeg: true })
+        .toBuffer();
+
+    return new Response(new Uint8Array(jpeg), { headers: { 'Content-Type': 'image/jpeg', 'Cache-Control': 'public, max-age=3600' } });
+}

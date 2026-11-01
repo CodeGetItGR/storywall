@@ -117,7 +117,7 @@ export function pickVisitSource(saved: VisitSource | null, incoming: VisitSource
     return saved;
 }
 
-// Pages under app/(landing): `/`, `/for-business`, `/wedding-qr-code`, a locale's pages (`/el/...`) and
+// Pages under app/(landing): `/`, `/for-business`, `/qr-code-for-wedding-photos`, a locale's pages (`/el/...`) and
 // the default locale's occasion pages (`/weddings`). Leaving one for any other page is a full page load
 // (another root layout).
 export function isLandingPath(pathname: string): boolean {

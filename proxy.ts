@@ -15,7 +15,7 @@ import {
 import { AUTH_RETURN_PATH_PARAM } from '@/lib/auth/returnPath';
 import { clientIpFrom, springAuth, SpringAuthError } from '@/lib/auth/springAuth';
 import { type Occasion, occasionPageForPath, occasionPath } from '@/lib/occasions/occasions';
-import { qrWeddingRedirectPath } from '@/lib/qrWeddingPage';
+import { qrWeddingMovedPath, qrWeddingRedirectPath } from '@/lib/qrWeddingPage';
 import { routes } from '@/lib/routes';
 import { isSharedLinkPath, readShareLocale, SHARE_LOCALE_PARAM } from '@/lib/shareLinks';
 import { takeVisitSourceParam, VISIT_SOURCE_PARAM } from '@/lib/signupSource';
@@ -154,6 +154,12 @@ export async function proxy(request: NextRequest) {
         const url = request.nextUrl.clone();
         url.pathname = qrWeddingRedirect;
         return NextResponse.redirect(url);
+    }
+    const qrWeddingMoved = qrWeddingMovedPath(pathname);
+    if (qrWeddingMoved) {
+        const url = request.nextUrl.clone();
+        url.pathname = qrWeddingMoved;
+        return NextResponse.redirect(url, 308);
     }
 
     const occasionPage = occasionPageForPath(pathname);

@@ -36,7 +36,11 @@ afterEach(() => {
 
 describe('captureVisitSource', () => {
     it('reads campaign parameters, an ad click and the referrer host', () => {
-        const source = captureVisitSource(`${ORIGIN}/?utm_source=instagram&utm_medium=social&utm_campaign=bio-link&gclid=abc`, 'https://l.instagram.com/x?y=1', {});
+        const source = captureVisitSource(
+            `${ORIGIN}/?utm_source=instagram&utm_medium=social&utm_campaign=bio-link&gclid=abc`,
+            'https://l.instagram.com/x?y=1',
+            {},
+        );
         expect(source).toEqual({ ...INSTAGRAM, adClick: true });
     });
 
@@ -108,7 +112,7 @@ describe('isLandingPath', () => {
     it('knows the pages under app/(landing)', () => {
         expect(isLandingPath('/')).toBe(true);
         expect(isLandingPath('/for-business')).toBe(true);
-        expect(isLandingPath('/wedding-qr-code')).toBe(true);
+        expect(isLandingPath('/qr-code-for-wedding-photos')).toBe(true);
         expect(isLandingPath('/el/qr-code-gamou')).toBe(true);
         expect(isLandingPath('/el')).toBe(true);
         expect(isLandingPath('/el/wedding')).toBe(true);
