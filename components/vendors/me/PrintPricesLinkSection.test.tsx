@@ -10,7 +10,7 @@ afterEach(cleanup);
 describe('PrintPricesLinkSection', () => {
     it('links to the print prices on the business page', () => {
         render(<PrintPricesLinkSection />);
-        expect(screen.getByRole('link', { name: 'Vendors.me.printPrices.openBusiness' }).getAttribute('href')).toBe('/business#print-prices');
+        expect(screen.getByRole('link', { name: 'Vendors.me.printPrices.openBusiness' }).getAttribute('href')).toBe('/business?section=printPrices');
     });
 
     it('shows the included prints row under the link', () => {

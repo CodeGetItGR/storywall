@@ -6,56 +6,73 @@ import { useTranslations } from 'next-intl';
 import { BusinessContactSection } from '@/components/business/BusinessContactSection';
 import { BusinessContactSheet } from '@/components/business/BusinessContactSheet';
 import { BusinessContentSection } from '@/components/business/BusinessContentSection';
+import { BusinessEarnings } from '@/components/business/BusinessEarnings';
 import { BusinessEventsSection } from '@/components/business/BusinessEventsSection';
 import { BusinessHero } from '@/components/business/BusinessHero';
 import { BusinessInsightsSection } from '@/components/business/BusinessInsightsSection';
+import { BusinessLoadFailed } from '@/components/business/BusinessLoadFailed';
 import { BusinessNotVendor } from '@/components/business/BusinessNotVendor';
 import { BusinessPreviewsSection } from '@/components/business/BusinessPreviewsSection';
+import { BusinessProfileSetupCard } from '@/components/business/BusinessProfileSetupCard';
+import { BusinessSectionIcon } from '@/components/business/BusinessSectionIcon';
 import { BusinessSkeleton } from '@/components/business/BusinessSkeleton';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { PageErrorState } from '@/components/ui/PageErrorState';
 import { BecomePartnerSheet } from '@/components/vendors/BecomePartnerSheet';
 import { ServiceSheet } from '@/components/vendors/me/ServiceSheet';
 import { ServicesSection } from '@/components/vendors/me/ServicesSection';
 import { VendorProfileSheet } from '@/components/vendors/VendorProfileSheet';
 import { useAuth } from '@/hooks/useAuth';
 import { useBusinessPage } from '@/hooks/useBusinessPage';
+import { BUSINESS_SECTION_IDS } from '@/lib/business';
 import { routes } from '@/lib/routes';
 
-// "My business": one page across all of a vendor's events.
+// "My business": one page across all of a vendor's (or partner's) events.
 export function BusinessScreen() {
     const t = useTranslations('BusinessPage');
     const tServices = useTranslations('Vendors.services');
     const { user } = useAuth();
     const page = useBusinessPage();
     const { overview, sections, profile, services, contact, becomePartner } = page;
-    const name = profile?.businessName ?? t('unnamed');
+    const logoUrl = profile?.logoUrl ?? null;
 
     return (
         <ModulePageShell maxWidth="5xl" title={t('title')} icon={BriefcaseBusiness} backLabel={t('back')} backHref={routes.profile}>
             {page.isLoading ? (
                 <BusinessSkeleton />
             ) : page.notVendor ? (
+                /* Not a vendor */
                 <BusinessNotVendor />
             ) : page.loadFailed || !overview || !sections ? (
-                <PageErrorState title={t('unavailable.title')} description={t('unavailable.description')} onRetryAction={page.retry} />
+                /* Failed */
+                <BusinessLoadFailed onRetryAction={page.retry} />
             ) : (
                 <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
                     {/* Top card */}
                     <BusinessHero
-                        profile={profile}
-                        vendorType={overview.vendorType}
+                        name={page.name}
+                        logoUrl={logoUrl}
+                        vendorType={overview.vendorType ?? null}
                         partner={overview.partner}
-                        balances={page.balances}
-                        tierProgress={page.tierProgress}
+                        profileState={page.profileState}
                         onEditAction={page.openProfile}
-                    />
+                        onRetryProfileAction={page.retryProfile}
+                    >
+                        {/* Earnings */}
+                        <BusinessEarnings earnings={page.earnings} onRetryAction={page.retryEarnings} onContactAction={contact.openSheet} />
+                    </BusinessHero>
+
+                    {/* Profile setup */}
+                    {page.needsProfile && <BusinessProfileSetupCard onSetUpAction={page.openProfile} />}
 
                     {/* Main: numbers and events */}
                     <div className="flex min-w-0 flex-col gap-4">
                         {/* Insights */}
-                        <BusinessInsightsSection overview={overview} onBecomePartnerAction={becomePartner.openSheet} />
+                        <BusinessInsightsSection
+                            overview={overview}
+                            showPartnerPrompt={sections.partnerPrompt}
+                            onBecomePartnerAction={becomePartner.openSheet}
+                        />
 
                         {/* Events */}
                         <BusinessEventsSection
@@ -76,7 +93,7 @@ export function BusinessScreen() {
                     <div className="flex min-w-0 flex-col gap-4">
                         {/* Print prices */}
                         {sections.printPrices && (
-                            <div id="print-prices">
+                            <div id={BUSINESS_SECTION_IDS.printPrices} className="scroll-mt-4">
                                 <ServicesSection
                                     approved={services.approved}
                                     sizes={services.sizes}
@@ -87,7 +104,9 @@ export function BusinessScreen() {
                                     loadFailed={services.loadFailed}
                                     error={services.sectionError}
                                     includedRow={null}
-                                    canApply={!overview.partner}
+                                    // The page's one "Become a partner" prompt is in Insights.
+                                    canApply={false}
+                                    icon={<BusinessSectionIcon section="printPrices" />}
                                     onAddAction={services.openNew}
                                     onEditAction={services.openEdit}
                                     onBecomePartnerAction={becomePartner.openSheet}
@@ -100,8 +119,8 @@ export function BusinessScreen() {
                             <BusinessPreviewsSection
                                 cardPreview={sections.feedCard ? page.cardPreview : null}
                                 showSneakPeek={sections.sneakPeekSample}
-                                name={name}
-                                logoUrl={profile?.logoUrl ?? null}
+                                name={page.name ?? t('unnamed')}
+                                logoUrl={logoUrl}
                             />
                         )}
 
@@ -151,7 +170,7 @@ export function BusinessScreen() {
                     sendError={contact.sendError}
                     sent={contact.sent}
                     isSending={contact.isSending}
-                    replyEmail={user?.email ?? ''}
+                    replyEmail={user?.email?.trim() || null}
                     onTopicChangeAction={contact.setTopic}
                     onMessageChangeAction={contact.setMessage}
                     onSubmitAction={contact.submit}

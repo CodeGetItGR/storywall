@@ -13,6 +13,16 @@ export function vendorProfileStatus(query: { isSuccess: boolean; isError: boolea
     return 'loading';
 }
 
+// Whether the profile can be edited: only once it has loaded (a missing profile counts), since the edit form starts
+// from it. A read that failed with nothing to show gets a retry instead; one that hasn't finished keeps Edit off.
+export type ProfileLoadState = 'loading' | 'failed' | 'ready';
+
+export function profileLoadState(query: { isSuccess: boolean; isError: boolean; data?: unknown }): ProfileLoadState {
+    if (query.isSuccess || query.data !== undefined) return 'ready';
+    if (query.isError) return 'failed';
+    return 'loading';
+}
+
 // One order everywhere vendor types are listed: the partner application's.
 export const VENDOR_TYPES: readonly PartnerRole[] = APPLICATION_ROLES;
 

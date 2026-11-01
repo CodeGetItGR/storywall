@@ -8,10 +8,11 @@ import type { BusinessEventDto } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
 import { routes } from '@/lib/routes';
 
-// One event the vendor worked: name, date and guests, with views for partners. Opens that event's vendor page while
+// One event the vendor worked: name, date, their type there and guests, with views for partners. Opens that event's vendor page while
 // access lasts; once the host removed the vendor it stays in the list, marked "Access ended", without a link.
 export function BusinessEventRow({ event }: { event: BusinessEventDto }) {
     const t = useTranslations('BusinessPage.events');
+    const tVendors = useTranslations('Vendors');
     const locale = useLocale();
     const body = (
         <>
@@ -19,7 +20,8 @@ export function BusinessEventRow({ event }: { event: BusinessEventDto }) {
             <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-ink">{event.title}</p>
                 <p className="truncate text-xs text-ink-muted">
-                    {formatDate(locale, event.startAt, { dateStyle: 'medium' })} · {t('rowGuests', { count: event.guests })}
+                    {formatDate(locale, event.startAt, { dateStyle: 'medium' })} · {tVendors(`types.${event.vendorType}`)} ·{' '}
+                    {t('rowGuests', { count: event.guests })}
                     {!event.open && ` · ${t('ended')}`}
                 </p>
             </div>

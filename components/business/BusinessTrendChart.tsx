@@ -1,10 +1,10 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
-import { monthLabel } from '@/lib/business';
+import { monthLabel, trendListLabel } from '@/lib/business';
 import { formatReachCount } from '@/lib/vendorReach';
 
 // Views per month over the last six months. One series, so one color.
@@ -14,6 +14,14 @@ export function BusinessTrendChart({ trend }: { trend: { month: string; views: n
     const formatMonth = useCallback((value: unknown) => monthLabel(locale, String(value)), [locale]);
     const formatCount = useCallback((value: unknown) => formatReachCount(locale, Number(value)), [locale]);
     const formatTooltip = useCallback((value: unknown) => [formatCount(value), t('trendViews')], [formatCount, t]);
+    // The bars are drawn for the eye only; a screen reader gets every month and its views in one label.
+    const label = useMemo(
+        () =>
+            t('trendLabel', {
+                values: trendListLabel(locale, trend, (month, views) => t('trendPoint', { month, views: formatReachCount(locale, views) })),
+            }),
+        [locale, t, trend],
+    );
 
     return (
         <figure className="flex flex-col gap-2">
@@ -21,9 +29,9 @@ export function BusinessTrendChart({ trend }: { trend: { month: string; views: n
             <figcaption className="text-sm font-semibold text-ink">{t('trendTitle')}</figcaption>
 
             {/* Chart */}
-            <div role="img" aria-label={t('trendTitle')} className="h-44 min-w-0">
+            <div role="img" aria-label={label} className="h-44 min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={trend} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
+                    <BarChart data={trend} accessibilityLayer={false} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
                         <CartesianGrid stroke="var(--border)" vertical={false} />
                         <XAxis
                             dataKey="month"

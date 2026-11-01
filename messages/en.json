@@ -9753,13 +9753,28 @@
         "unnamed": "Your business",
         "edit": "Edit",
         "partnerPill": "Partner",
+        "retryProfile": "Reload details",
         "notVendor": {
-            "title": "This page is for businesses working at events",
-            "description": "Join an event from the link a host sent you."
+            "title": "This page is for businesses",
+            "body": "Join an event from the link a host sent you.",
+            "profile": "Go to profile"
         },
         "unavailable": {
             "title": "Couldn't load this page",
-            "description": "Try again in a moment."
+            "body": "Check your connection and try again.",
+            "retry": "Try again"
+        },
+        "setup": {
+            "title": "Set up your business profile",
+            "body": "Add your logo and details so hosts and guests see who you are.",
+            "action": "Set up"
+        },
+        "earnings": {
+            "notVerified": "Verify your email to see your earnings.",
+            "notLinked": "This account isn't linked to a partner.",
+            "contact": "Contact us",
+            "failed": "Couldn't load your earnings.",
+            "retry": "Try again"
         },
         "insights": {
             "title": "Insights",
@@ -9771,12 +9786,17 @@
             "listTaps": "Profile taps",
             "trendTitle": "Views per month",
             "trendViews": "Views",
+            "trendLabel": "Views per month: {values}",
+            "trendPoint": "{month}: {views}",
+            "emptyTitle": "No numbers yet",
+            "emptyBody": "Your numbers show up here once guests see you at an event.",
             "partnerPrompt": "Partners also see views and card taps.",
             "becomePartner": "Become a partner"
         },
         "events": {
             "title": "Your events",
-            "empty": "You haven't joined an event yet.",
+            "emptyTitle": "No events yet",
+            "emptyBody": "Events you join as a vendor show up here.",
             "rowGuests": "{count, plural, one {# guest} other {# guests}}",
             "rowViews": "{count, plural, one {# view} other {# views}}",
             "ended": "Access ended",
@@ -9814,6 +9834,7 @@
             "send": "Send",
             "sending": "Sending…",
             "sent": "Sent. We'll reply to {email}.",
+            "sentNoEmail": "Sent. We'll reply by email.",
             "close": "Close",
             "topicRequired": "Pick a topic.",
             "messageRequired": "Write a message."

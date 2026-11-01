@@ -15,7 +15,10 @@ export function PrintPricesLinkSection({ includedRow }: { includedRow?: ReactNod
     return (
         <VendorMeSection id="vendor-print-prices-title" title={t('title')}>
             {/* Link */}
-            <AppLink href={`${routes.business}#print-prices`} className="flex min-h-11 items-center justify-between gap-3 text-sm font-medium text-ink">
+            <AppLink
+                href={routes.businessSection('printPrices')}
+                className="flex min-h-11 items-center justify-between gap-3 text-sm font-medium text-ink"
+            >
                 {t('openBusiness')}
                 <ChevronRight className="h-4 w-4 text-ink-muted" aria-hidden="true" />
             </AppLink>

@@ -16,15 +16,17 @@ export function useBusinessEvents(enabled = true) {
         initialPageParam: 0,
         getNextPageParam: (last) => (last.page.number + 1 < last.page.totalPages ? last.page.number + 1 : undefined),
         enabled,
-        retry: false,
     });
     const events = query.data?.pages.flatMap((page) => page.content) ?? [];
+    // Only a read with nothing to show counts as failed.
+    const loadFailed = Boolean(query.error) && events.length === 0;
 
     return {
         events,
         isLoading: query.isLoading,
-        // Only a read with nothing to show counts as failed.
-        loadFailed: Boolean(query.error) && events.length === 0,
+        loadFailed,
+        // The first page came back empty: no events yet.
+        isEmpty: query.isSuccess && events.length === 0,
         hasMore: Boolean(query.hasNextPage),
         isLoadingMore: query.isFetchingNextPage,
         loadMore: () => void query.fetchNextPage(),

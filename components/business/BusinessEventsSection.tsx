@@ -1,7 +1,9 @@
 'use client';
 
+import { CalendarDays } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { BusinessEmptyState } from '@/components/business/BusinessEmptyState';
 import { BusinessEventRow } from '@/components/business/BusinessEventRow';
 import { BusinessSectionIcon } from '@/components/business/BusinessSectionIcon';
 import { Button } from '@/components/ui/button';
@@ -41,7 +43,8 @@ export function BusinessEventsSection({
                     </Button>
                 </div>
             ) : events.length === 0 ? (
-                <p className="text-sm text-ink-muted">{t('empty')}</p>
+                /* Empty */
+                <BusinessEmptyState icon={CalendarDays} title={t('emptyTitle')} body={t('emptyBody')} />
             ) : (
                 <>
                     {/* Rows */}

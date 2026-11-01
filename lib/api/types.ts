@@ -1761,11 +1761,15 @@ export interface PartnerTierProgressDto {
     nextTierMinActivations: number | null;
     nextTierPercent: number | null;
 }
-// GET /api/me/business (spec 2026-11-01). Every vendor gets events, guests and listTaps; the other totals and trend
-// come only for partners. content is absent for types without a Pro album. 403 4039 when the account is not a vendor.
+// GET /api/me/business (spec 2026-11-01), for vendors and approved partners. Every vendor gets events, guests and
+// listTaps; the other totals and trend come only for partners. content is absent for types without a Pro album.
+// An approved partner with no vendor data gets partner: true, zeros and no content. 403 4039 for anyone else.
 export interface BusinessOverviewDto {
     partner: boolean;
-    vendorType: PartnerRole | null;
+    // Show "Become a partner": false for partners, pending applicants, a dismissed prompt and accounts with no profile.
+    showPartnerPrompt: boolean;
+    // Absent when there is none (a partner without a role, say).
+    vendorType?: PartnerRole;
     totals: {
         events: number;
         guests: number;

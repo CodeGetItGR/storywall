@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '@/hooks/useAuth';
+import { businessKeys } from '@/hooks/useBusinessOverview';
 import { isAccountRole } from '@/lib/accountRole';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -47,6 +48,8 @@ function useProfileMutation<TInput>(mutationFn: (input: TInput) => Promise<Vendo
         onSuccess: (profile) => {
             queryClient.setQueryData(vendorProfileKeys.mine, profile);
             queryClient.invalidateQueries({ predicate: (query) => isEventVendorKey(query.queryKey) });
+            // The business page's overview follows the profile (its type, and whether "Become a partner" shows).
+            queryClient.invalidateQueries({ queryKey: businessKeys.overview });
         },
     });
 }

@@ -52,7 +52,7 @@ describe('BusinessEventsSection', () => {
 
     it('shows a placeholder while loading', () => {
         renderSection({ events: [], isLoading: true });
-        expect(screen.queryByText("You haven't joined an event yet.")).not.toBeInTheDocument();
+        expect(screen.queryByText('No events yet')).not.toBeInTheDocument();
         expect(screen.queryByRole('list')).not.toBeInTheDocument();
     });
 
@@ -63,9 +63,17 @@ describe('BusinessEventsSection', () => {
         expect(onRetryAction).toHaveBeenCalledTimes(1);
     });
 
-    it('says so when there are no events', () => {
+    it('keeps the section with an empty state when there are no events', () => {
         renderSection({ events: [] });
-        expect(screen.getByText("You haven't joined an event yet.")).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Your events' })).toBeInTheDocument();
+        expect(screen.getByText('No events yet')).toBeInTheDocument();
+        expect(screen.getByText('Events you join as a vendor show up here.')).toBeInTheDocument();
+        expect(screen.queryByRole('list')).not.toBeInTheDocument();
+    });
+
+    it('shows the vendor type on each row', () => {
+        renderSection({ events: [OPEN_EVENT] });
+        expect(screen.getByText(/Photographer/)).toBeInTheDocument();
     });
 
     it('shows views only for rows that have them', () => {

@@ -1,36 +1,40 @@
 'use client';
 
-import { Pencil } from 'lucide-react';
+import { Pencil, RefreshCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import type { ReactNode } from 'react';
 
-import { PartnerBalances } from '@/components/partners/PartnerBalances';
-import { PartnerTierProgress } from '@/components/partners/PartnerTierProgress';
 import { Button } from '@/components/ui/button';
 import { VENDOR_SECTION_SURFACE } from '@/components/vendors/me/VendorMeSection';
 import { VendorLogo } from '@/components/vendors/VendorLogo';
-import type { PartnerRole, PartnerTierProgressDto, VendorProfileDto } from '@/lib/api/types';
-import type { PartnerBalance } from '@/lib/partnerPortal';
+import type { PartnerRole } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
+import type { ProfileLoadState } from '@/lib/vendors';
 
-// Who the business is, and for partners what they are owed and their commission.
+// Who the business is, with Edit once their details have loaded (a retry if they failed), and for partners the
+// earnings passed in as children.
 export function BusinessHero({
-    profile,
+    name,
+    logoUrl,
     vendorType,
     partner,
-    balances,
-    tierProgress,
+    profileState,
     onEditAction,
+    onRetryProfileAction,
+    children,
 }: {
-    profile: VendorProfileDto | null;
+    name: string | null;
+    logoUrl: string | null;
     vendorType: PartnerRole | null;
     partner: boolean;
-    balances: PartnerBalance[] | null;
-    tierProgress: PartnerTierProgressDto | null;
+    profileState: ProfileLoadState;
     onEditAction: () => void;
+    onRetryProfileAction: () => void;
+    children?: ReactNode;
 }) {
     const t = useTranslations('BusinessPage');
     const tVendors = useTranslations('Vendors');
-    const name = profile?.businessName ?? t('unnamed');
+    const displayName = name ?? t('unnamed');
 
     return (
         <section aria-labelledby="business-name" className={cn(VENDOR_SECTION_SURFACE, 'relative overflow-hidden p-5 sm:p-7 lg:col-span-2')}>
@@ -39,10 +43,10 @@ export function BusinessHero({
 
             {/* Identity */}
             <div className="relative flex items-center gap-3.5">
-                <VendorLogo logoUrl={profile?.logoUrl ?? null} name={name} className="size-12" />
+                <VendorLogo logoUrl={logoUrl} name={displayName} className="size-12" />
                 <div className="min-w-0 flex-1">
                     <h2 id="business-name" className="truncate text-xl leading-tight font-bold tracking-tight text-ink sm:text-2xl">
-                        {name}
+                        {displayName}
                     </h2>
                     <p className="flex items-center gap-2 text-sm text-ink-muted">
                         {vendorType && <span>{tVendors(`types.${vendorType}`)}</span>}
@@ -53,21 +57,29 @@ export function BusinessHero({
                         )}
                     </p>
                 </div>
-                <Button type="button" variant="outline" onClick={onEditAction} className="shrink-0 gap-2 rounded-full px-3">
-                    <Pencil className="size-4" aria-hidden="true" />
-                    {t('edit')}
-                </Button>
+
+                {/* Edit, or retry when the details failed to load */}
+                {profileState === 'failed' ? (
+                    <Button type="button" variant="outline" onClick={onRetryProfileAction} className="shrink-0 gap-2 rounded-full px-3">
+                        <RefreshCw className="size-4" aria-hidden="true" />
+                        {t('retryProfile')}
+                    </Button>
+                ) : (
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={onEditAction}
+                        disabled={profileState === 'loading'}
+                        className="shrink-0 gap-2 rounded-full px-3"
+                    >
+                        <Pencil className="size-4" aria-hidden="true" />
+                        {t('edit')}
+                    </Button>
+                )}
             </div>
 
             {/* Earnings */}
-            {partner && balances && (
-                <div className={cn('relative mt-7 grid gap-7 border-t border-border pt-6', tierProgress && 'sm:grid-cols-2 sm:gap-0')}>
-                    <div className={cn(tierProgress && 'sm:pr-8')}>
-                        <PartnerBalances balances={balances} />
-                    </div>
-                    {tierProgress && <PartnerTierProgress progress={tierProgress} className="sm:border-l sm:border-border sm:pl-8" />}
-                </div>
-            )}
+            {children}
         </section>
     );
 }

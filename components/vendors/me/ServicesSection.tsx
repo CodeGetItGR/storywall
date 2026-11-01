@@ -28,6 +28,7 @@ export function ServicesSection({
     error,
     includedRow,
     canApply,
+    icon,
     onAddAction,
     onEditAction,
     onBecomePartnerAction,
@@ -42,6 +43,7 @@ export function ServicesSection({
     error: string | null;
     includedRow?: ReactNode;
     canApply: boolean;
+    icon?: ReactNode;
     onAddAction: () => void;
     onEditAction: (item: VendorServiceItemDto) => void;
     onBecomePartnerAction: () => void;
@@ -56,6 +58,7 @@ export function ServicesSection({
             id="vendor-services-title"
             title={t('title')}
             hint={tHints('printPrices')}
+            icon={icon}
             action={
                 approved &&
                 !needsProfile && (

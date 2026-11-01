@@ -6,6 +6,7 @@ import { type ChangeEvent, type MouseEvent, useId } from 'react';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { VENDOR_CONTACT_MESSAGE_MAX } from '@/hooks/useBusinessContact';
+import { useBusinessContactFocus } from '@/hooks/useBusinessContactFocus';
 import { useRadioGroupKeys } from '@/hooks/useRadioGroupKeys';
 import type { VendorContactTopic } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
@@ -17,7 +18,7 @@ function isTopic(value: string | undefined): value is VendorContactTopic {
     return TOPICS.some((topic) => topic === value);
 }
 
-// "Write to us": a topic, a message, and a short confirmation once sent.
+// "Write to us": a topic, a message, and a short confirmation once sent. It can't be dismissed while sending.
 export function BusinessContactSheet({
     topic,
     message,
@@ -39,7 +40,7 @@ export function BusinessContactSheet({
     sendError: string | null;
     sent: boolean;
     isSending: boolean;
-    replyEmail: string;
+    replyEmail: string | null;
     onTopicChangeAction: (topic: VendorContactTopic) => void;
     onMessageChangeAction: (message: string) => void;
     onSubmitAction: () => void;
@@ -49,6 +50,7 @@ export function BusinessContactSheet({
     const topicLabelId = useId();
     const topicErrorId = useId();
     const messageErrorId = useId();
+    const { sentRef, errorRef } = useBusinessContactFocus(sent, sendError);
     // The one topic Tab lands on: the pick, or the first topic while none is picked.
     const tabStop = topic ?? TOPICS[0];
     const handleTopicKeys = useRadioGroupKeys(TOPIC_IDS, topic, (id) => {
@@ -68,7 +70,7 @@ export function BusinessContactSheet({
     }
 
     return (
-        <Modal open onClose={onCloseAction} variant="sheet" size="sm" ariaLabel={t('sheetTitle')} closeLabel={t('close')}>
+        <Modal open onClose={onCloseAction} variant="sheet" size="sm" closeDisabled={isSending} ariaLabel={t('sheetTitle')} closeLabel={t('close')}>
             <Modal.Body className="px-5 pt-5 pb-6">
                 {/* Header */}
                 <h2 className="pr-8 text-base font-bold text-ink">{t('sheetTitle')}</h2>
@@ -76,8 +78,8 @@ export function BusinessContactSheet({
                 {sent ? (
                     /* Sent */
                     <div className="mt-4 flex flex-col gap-4">
-                        <p role="status" className="text-sm text-ink">
-                            {t('sent', { email: replyEmail })}
+                        <p ref={sentRef} role="status" tabIndex={-1} className="text-sm text-ink outline-none">
+                            {replyEmail ? t('sent', { email: replyEmail }) : t('sentNoEmail')}
                         </p>
                         <Button type="button" size="lg" onClick={onCloseAction}>
                             {t('close')}
@@ -145,7 +147,7 @@ export function BusinessContactSheet({
 
                         {/* Send error */}
                         {sendError && (
-                            <p role="alert" className="text-sm text-status-danger">
+                            <p ref={errorRef} role="alert" tabIndex={-1} className="text-sm text-status-danger outline-none">
                                 {sendError}
                             </p>
                         )}
