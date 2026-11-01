@@ -19,11 +19,11 @@ export function GuestOfferCode({ code, endsAt, isCopied, onCopy }: GuestOfferCod
 
     return (
         <div className="w-full">
-            {/* Code */}
-            <div className="flex items-center justify-between gap-3 rounded-2xl bg-white/70 py-3 pr-3 pl-4">
-                <div className="min-w-0">
+            {/* Code: kept on one line; Copy moves under it when the card is too narrow for both */}
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white/70 py-3 pr-3 pl-4">
+                <div>
                     <p className="text-xs text-ink-muted">{t('codeLabel')}</p>
-                    <code className="mt-0.5 block font-mono text-lg font-medium tracking-wider text-ink">{code}</code>
+                    <code className="mt-0.5 block font-mono text-lg font-medium tracking-wider whitespace-nowrap text-ink">{code}</code>
                 </div>
                 <button
                     type="button"
