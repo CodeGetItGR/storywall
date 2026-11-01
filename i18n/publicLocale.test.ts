@@ -31,17 +31,17 @@ describe('isForBusinessPath', () => {
 
 describe('getQrWeddingPath', () => {
     it('gives each locale its own slug', () => {
-        expect(getQrWeddingPath('en')).toBe('/wedding-qr-code');
+        expect(getQrWeddingPath('en')).toBe('/qr-code-for-wedding-photos');
         expect(getQrWeddingPath('el')).toBe('/el/qr-code-gamou');
     });
 });
 
 describe('isQrWeddingPath', () => {
     it('matches only the two wedding QR URLs', () => {
-        expect(isQrWeddingPath('/wedding-qr-code')).toBe(true);
+        expect(isQrWeddingPath('/qr-code-for-wedding-photos')).toBe(true);
         expect(isQrWeddingPath('/el/qr-code-gamou')).toBe(true);
-        expect(isQrWeddingPath('/en/wedding-qr-code')).toBe(false);
-        expect(isQrWeddingPath('/el/wedding-qr-code')).toBe(false);
+        expect(isQrWeddingPath('/en/qr-code-for-wedding-photos')).toBe(false);
+        expect(isQrWeddingPath('/el/qr-code-for-wedding-photos')).toBe(false);
         expect(isQrWeddingPath(null)).toBe(false);
     });
 });
@@ -55,7 +55,7 @@ describe('publicPageLocale', () => {
     });
 
     it('reads the locale from the wedding QR URLs', () => {
-        expect(publicPageLocale('/wedding-qr-code')).toBe('en');
+        expect(publicPageLocale('/qr-code-for-wedding-photos')).toBe('en');
         expect(publicPageLocale('/el/qr-code-gamou')).toBe('el');
         expect(publicPageLocale('/en/qr-code-gamou')).toBeNull();
     });

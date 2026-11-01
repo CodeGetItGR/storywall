@@ -21,12 +21,15 @@ type ServicePageGraphInput = {
     title: string;
     description: string;
     home: { name: string; url: string };
+    // A page between home and this one in the breadcrumb, if any.
+    parent?: { name: string; url: string } | null;
     faq: FaqEntry[];
 };
 
 // A page about one service: the organization, the page, the service, a breadcrumb and the FAQ. No offers: prices come from config.
-export function servicePageGraph({ locale, url, name, title, description, home, faq }: ServicePageGraphInput) {
+export function servicePageGraph({ locale, url, name, title, description, home, parent, faq }: ServicePageGraphInput) {
     const breadcrumbId = `${url}#breadcrumb`;
+    const crumbs = [home, ...(parent ? [parent] : []), { name, url }];
     return {
         '@context': 'https://schema.org',
         '@graph': [
@@ -58,10 +61,7 @@ export function servicePageGraph({ locale, url, name, title, description, home, 
             {
                 '@type': 'BreadcrumbList',
                 '@id': breadcrumbId,
-                itemListElement: [
-                    { '@type': 'ListItem', position: 1, name: home.name, item: home.url },
-                    { '@type': 'ListItem', position: 2, name, item: url },
-                ],
+                itemListElement: crumbs.map((crumb, index) => ({ '@type': 'ListItem', position: index + 1, name: crumb.name, item: crumb.url })),
             },
             faqPageNode(faq),
         ],

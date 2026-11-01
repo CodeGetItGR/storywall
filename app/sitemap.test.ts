@@ -47,7 +47,7 @@ describe('sitemap', () => {
         expect(urls).toEqual([
             SITE_URL,
             `${SITE_URL}/el`,
-            `${SITE_URL}/wedding-qr-code`,
+            `${SITE_URL}/qr-code-for-wedding-photos`,
             `${SITE_URL}/el/qr-code-gamou`,
             `${SITE_URL}/for-business`,
             `${SITE_URL}/el/epaggelmaties`,
@@ -90,14 +90,14 @@ describe('sitemap', () => {
     it('gives the wedding QR pages their language alternates', async () => {
         serverPublicConfigGet.mockResolvedValue({ eventTypes: [{ eventTypeKey: 'WEDDING', isEnabled: true }] });
         const byUrl = new Map((await sitemap()).map((entry) => [entry.url, entry]));
-        expect(byUrl.get(`${SITE_URL}/wedding-qr-code`)?.alternates?.languages).toEqual(qrWeddingLanguageAlternates());
+        expect(byUrl.get(`${SITE_URL}/qr-code-for-wedding-photos`)?.alternates?.languages).toEqual(qrWeddingLanguageAlternates());
         expect(byUrl.get(`${SITE_URL}/el/qr-code-gamou`)?.alternates?.languages).toEqual(qrWeddingLanguageAlternates());
     });
 
     it('leaves out the wedding QR pages while weddings are off', async () => {
         serverPublicConfigGet.mockResolvedValue({ eventTypes: [{ eventTypeKey: 'WEDDING', isEnabled: false }] });
         const urls = (await sitemap()).map((entry) => entry.url);
-        expect(urls).not.toContain(`${SITE_URL}/wedding-qr-code`);
+        expect(urls).not.toContain(`${SITE_URL}/qr-code-for-wedding-photos`);
         expect(urls).not.toContain(`${SITE_URL}/el/qr-code-gamou`);
     });
 

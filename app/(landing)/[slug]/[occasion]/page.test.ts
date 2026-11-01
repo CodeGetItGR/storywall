@@ -11,11 +11,11 @@ function open(slug: string, occasion: string) {
 }
 
 describe('LocalizedOccasionPage', () => {
-    it('sends /en/wedding-qr-code to /wedding-qr-code for good', async () => {
-        await expect(open('en', 'wedding-qr-code')).rejects.toMatchObject({ digest: expect.stringContaining(';/wedding-qr-code;308;') });
+    it('sends /en/qr-code-for-wedding-photos to /qr-code-for-wedding-photos for good', async () => {
+        await expect(open('en', 'qr-code-for-wedding-photos')).rejects.toMatchObject({ digest: expect.stringContaining(';/qr-code-for-wedding-photos;308;') });
     });
 
     it('has no wedding QR page under the Greek locale with the English slug', async () => {
-        await expect(open('el', 'wedding-qr-code')).rejects.toMatchObject({ digest: expect.stringContaining('404') });
+        await expect(open('el', 'qr-code-for-wedding-photos')).rejects.toMatchObject({ digest: expect.stringContaining('404') });
     });
 });

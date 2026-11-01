@@ -150,13 +150,12 @@ export function buildForBusinessMetadata(locale: Locale, copy: PageMetadataCopy)
     });
 }
 
-// The wedding QR page shares the landing's OG image.
+// The wedding QR page's OG image is its route's own opengraph-image.
 export function buildQrWeddingMetadata(locale: Locale, copy: PageMetadataCopy): Metadata {
     return buildIndexableMetadata({
         locale,
         path: getQrWeddingPath(locale),
         languages: qrWeddingLanguageAlternates(),
-        imagePath: OG_IMAGE_PATH,
         copy,
     });
 }
