@@ -29,6 +29,7 @@ import { useReachSection } from '@/hooks/useReachSection';
 import { useSneakPeekSection } from '@/hooks/useSneakPeekSection';
 import { useVendorHeroPhotos } from '@/hooks/useVendorHeroPhotos';
 import { useVendorMePage } from '@/hooks/useVendorMePage';
+import { useVendorPageSectionTarget } from '@/hooks/useVendorPageSectionTarget';
 import { useVendorPrintsSection } from '@/hooks/useVendorPrintsSection';
 import { useVendorServicesSection } from '@/hooks/useVendorServicesSection';
 import { formatDate } from '@/lib/datetime';
@@ -48,6 +49,12 @@ export function VendorMeScreen() {
     const reach = useReachSection(eventId, me);
     const partner = usePartnerBenefits(me);
     const heroPhotos = useVendorHeroPhotos(eventId, page.hasProAlbum);
+    useVendorPageSectionTarget({
+        ready: !page.isLoading && me !== null,
+        sneakPeekLoading: sneakPeek.isLoadingItems,
+        sneakPeekReady: sneakPeek.state === 'ready',
+        openSneakPeek: sneakPeek.openNew,
+    });
     const hasEventWork = page.tools.length > 0 || prints.open || page.hasProAlbum || sneakPeek.visible || reach.visible;
 
     return (

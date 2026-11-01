@@ -93,6 +93,8 @@ export function useSneakPeekSection(eventId: string, me: VendorMeDto | null, has
     return {
         visible: state !== 'hidden',
         state,
+        // 'ready' needs the vendor's own items, so state isn't final while they load.
+        isLoadingItems: applies && pro.isLoading,
         thumbnails,
         feedHref: summary?.postId ? routes.events.feed(eventId, { post: summary.postId }) : null,
         candidates,

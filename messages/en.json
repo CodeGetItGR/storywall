@@ -240,6 +240,7 @@
         }
     },
     "MobileTabBar": {
+        "menu": "Menu",
         "eventNavigation": "Event navigation",
         "eventMenu": "Event menu",
         "toolsMenu": "Tools",
@@ -8452,11 +8453,7 @@
             "body": "Put your wedding QR code on the reception tables. Guests scan it with their phone camera and upload photos and videos, with no app to download and no sign-up. Everything stays in your private StoryWall in full resolution, together with your invitation, RSVPs and guestbook messages.",
             "cta": "Create your<br></br>StoryWall",
             "trustLabel": "Key features",
-            "trust": [
-                "No app",
-                "No sign-up",
-                "Full resolution"
-            ],
+            "trust": ["No app", "No sign-up", "Full resolution"],
             "price": "Included with StoryWall, <b>from {price}</b>",
             "videoLabel": "A guest scans the StoryWall QR code on a wedding table to upload photos",
             "images": {
@@ -8563,11 +8560,7 @@
             "titleSub": "See what your guests see.",
             "bodyDesktop": "Open your phone camera and scan. The upload page will open, exactly as your guests will see it on your wedding day.",
             "bodyMobile": "Ask someone near you to scan the QR code, or tap the button. The upload page will open, exactly as your guests will see it on your wedding day.",
-            "checks": [
-                "No app",
-                "No sign-up",
-                "In the phone's browser"
-            ],
+            "checks": ["No app", "No sign-up", "In the phone's browser"],
             "button": "Open the upload page",
             "qr": "Scan me",
             "qrAlt": "StoryWall QR code to try uploading wedding photos"
@@ -8671,11 +8664,7 @@
                 "Wedding QR code card with pampas grass",
                 "Wedding QR code card with blue flowers"
             ],
-            "checks": [
-                "Your wedding QR code, ready to print",
-                "Designs that match your wedding style",
-                "Your QR code never changes"
-            ]
+            "checks": ["Your wedding QR code, ready to print", "Designs that match your wedding style", "Your QR code never changes"]
         },
         "features": {
             "kicker": "Digital wedding album and much more",
@@ -8820,6 +8809,16 @@
         }
     },
     "Vendors": {
+        "quickActions": {
+            "schedule": "Schedule",
+            "announcement": "Announcement",
+            "rsvpReport": "RSVP report",
+            "qr": "Share links",
+            "liveRequests": "Live requests",
+            "proAlbum": "Pro album",
+            "sneakPeek": "Sneak peek",
+            "prints": "Print order"
+        },
         "hints": {
             "tools": "What you can help run in this event.",
             "proAlbum": "Your photos and videos in the gallery's Pro tab, with your name on them.",

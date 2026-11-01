@@ -59,4 +59,23 @@ describe('ContextMenuTab', () => {
         expect((await screen.findByText('Share links')).closest('[role="menuitem"]')).toHaveClass('bg-surface-muted');
         expect(screen.getByText('Manage').closest('[role="menuitem"]')).not.toHaveClass('bg-surface-muted');
     });
+    it('names the tab under its icon only when asked', () => {
+        const { rerender } = render(
+            <ContextMenuTab active={false} items={items} label="Tools" pathname="/events/e1/feed" searchParams="" onItemClick={mocks.onItemClick} />,
+        );
+        expect(screen.queryByText('Tools')).not.toBeInTheDocument();
+
+        rerender(
+            <ContextMenuTab
+                active={false}
+                items={items}
+                label="Tools"
+                showLabel
+                pathname="/events/e1/feed"
+                searchParams=""
+                onItemClick={mocks.onItemClick}
+            />,
+        );
+        expect(screen.getByText('Tools')).toBeInTheDocument();
+    });
 });

@@ -24,6 +24,7 @@ import { StoriesRow } from '@/components/feed/StoriesRow';
 import { InstallAppBanner } from '@/components/pwa/InstallAppBanner';
 import { StoryModal } from '@/components/story/StoryModal';
 import { AppLink } from '@/components/ui/AppLink';
+import { VendorQuickActions } from '@/components/vendors/feed/VendorQuickActions';
 import { VendorProfilePrompt } from '@/components/vendors/VendorProfilePrompt';
 import { eventKeys } from '@/hooks/useEvent';
 import { useFeedItems } from '@/hooks/useFeedItems';
@@ -114,6 +115,9 @@ export function FeedPageContent() {
             <section className="mt-3">
                 <EventInfoSection event={event} />
             </section>
+
+            {/* Vendor tools */}
+            <VendorQuickActions eventId={eventId} isHost={isHost} />
 
             {/* Stories */}
             {moduleFlags.stories && (

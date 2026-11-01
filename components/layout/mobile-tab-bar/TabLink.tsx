@@ -4,26 +4,30 @@ import type { MouseEvent } from 'react';
 import { AppLink } from '@/components/ui/AppLink';
 import { cn } from '@/lib/utils';
 
+import { tabBoxClass, tabIconBoxClass, TabLabel } from './TabLabel';
+
 interface TabLinkProps {
     href: string;
     icon: string;
     label: string;
     active: boolean;
+    showLabel?: boolean;
     onClick?: (event: MouseEvent<HTMLAnchorElement>) => void;
 }
 
-export function TabLink({ href, icon, label, active, onClick }: TabLinkProps) {
+export function TabLink({ href, icon, label, active, showLabel = false, onClick }: TabLinkProps) {
     return (
         <AppLink
             href={href}
             onClick={onClick}
-            className="flex min-w-12 flex-col items-center gap-0.5 px-3 py-1"
+            className={cn('flex flex-col items-center gap-0.5 py-1', tabBoxClass(showLabel))}
             aria-label={label}
             aria-current={active ? 'page' : undefined}
         >
             <span
                 className={cn(
-                    'flex h-10 w-10 items-center justify-center transition-all duration-200',
+                    'flex items-center justify-center transition-all duration-200',
+                    tabIconBoxClass(showLabel),
                     active ? 'scale-105 opacity-100' : 'scale-100 opacity-50',
                 )}
             >
@@ -37,6 +41,7 @@ export function TabLink({ href, icon, label, active, onClick }: TabLinkProps) {
                     unoptimized
                 />
             </span>
+            {showLabel && <TabLabel label={label} active={active} />}
         </AppLink>
     );
 }
