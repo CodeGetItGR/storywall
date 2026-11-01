@@ -17,7 +17,12 @@ export async function VendorPageApply({ type }: { type: VendorPageType }) {
             {/* A narrower column than other sections, so the form fields stay short. */}
             <div className="mx-auto w-full max-w-160">
                 <h2 className={H2}>{t('apply')}</h2>
-                <ForBusinessApplyForm countries={countryOptions(locale)} defaultCountry={defaultCountryCode(locale)} defaults={{ role: type }} />
+                <ForBusinessApplyForm
+                    countries={countryOptions(locale)}
+                    defaultCountry={defaultCountryCode(locale)}
+                    defaults={{ role: type }}
+                    source={type}
+                />
             </div>
         </section>
     );

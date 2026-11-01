@@ -14,6 +14,7 @@ import { VendorPageFaq } from '@/components/vendorPages/VendorPageFaq';
 import { VendorPageHero } from '@/components/vendorPages/VendorPageHero';
 import { VendorPageLinks } from '@/components/vendorPages/VendorPageLinks';
 import { VendorPagePartner } from '@/components/vendorPages/VendorPagePartner';
+import { VendorPageShell } from '@/components/vendorPages/VendorPageShell';
 import { VendorPageSteps } from '@/components/vendorPages/VendorPageSteps';
 import { VendorPageStructuredData } from '@/components/vendorPages/VendorPageStructuredData';
 import { VendorPageTools } from '@/components/vendorPages/VendorPageTools';
@@ -42,7 +43,7 @@ export async function VendorPage({ type }: { type: VendorPageType }) {
         <HydrationBoundary state={dehydrate(queryClient)}>
             <VendorPageStructuredData type={type} />
             <LandingMotionProvider>
-                <main id="top" className="landing-page overflow-x-clip bg-white text-[#151313]">
+                <VendorPageShell>
                     <GradientIconDefs />
                     {/* Header */}
                     <ForBusinessHeader />
@@ -66,7 +67,7 @@ export async function VendorPage({ type }: { type: VendorPageType }) {
                     <VendorPageLinks type={type} />
                     {/* Footer */}
                     <LandingFooter anchorBase={getPublicLandingPath(locale)} topHref="#top" />
-                </main>
+                </VendorPageShell>
                 {/* Cookie consent */}
                 <CookieConsent />
             </LandingMotionProvider>

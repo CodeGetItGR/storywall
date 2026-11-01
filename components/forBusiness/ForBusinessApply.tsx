@@ -15,7 +15,7 @@ export async function ForBusinessApply() {
             {/* A narrower column than other sections, so the form fields stay short. */}
             <div className="mx-auto w-full max-w-160">
                 <h2 className={H2}>{t('heading')}</h2>
-                <ForBusinessApplyForm countries={countryOptions(locale)} defaultCountry={defaultCountryCode(locale)} />
+                <ForBusinessApplyForm countries={countryOptions(locale)} defaultCountry={defaultCountryCode(locale)} source="all" />
             </div>
         </section>
     );

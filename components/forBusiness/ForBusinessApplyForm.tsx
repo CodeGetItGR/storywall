@@ -10,17 +10,25 @@ import { useForBusinessApplication } from '@/hooks/useForBusinessApplication';
 import { APPLICATION_ROLES, type ApplyFormDefaults, type CountryOption, type PrefillableApplyField } from '@/lib/forBusinessApplication';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
+import type { VendorPageSource } from '@/lib/vendorPageTracking';
 
 // The form sits on the landing's white sections and in the vendor page's sheet, so it carries its own ink instead of
 // the app's theme tokens. Fields are rows on two grouped surfaces, label on the left, so the form reads short.
 const GROUP = 'overflow-hidden rounded-[1.125rem] bg-[#151313]/[0.045] divide-y divide-[#151313]/[0.07]';
 const CONTROL = 'min-w-0 flex-1 bg-transparent py-4 text-base text-[#151313] outline-none placeholder:text-[#151313]/35';
 
-type Props = { countries: CountryOption[]; defaultCountry: string; defaults?: ApplyFormDefaults; search?: string };
+type Props = {
+    countries: CountryOption[];
+    defaultCountry: string;
+    defaults?: ApplyFormDefaults;
+    search?: string;
+    // The public page the form is on, counted when an application is sent. The in-app sheet passes none.
+    source?: VendorPageSource;
+};
 
-export function ForBusinessApplyForm({ countries, defaultCountry, defaults, search }: Props) {
+export function ForBusinessApplyForm({ countries, defaultCountry, defaults, search, source }: Props) {
     const t = useTranslations('ForBusinessPage.apply');
-    const form = useForBusinessApplication({ search });
+    const form = useForBusinessApplication({ search, source });
     const summary = useApplyFormSummary(defaults, form.fieldErrors);
 
     if (form.isSent) {
