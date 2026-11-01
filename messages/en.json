@@ -9734,5 +9734,11 @@
             }
         },
         "others": "See everything professionals get"
+    },
+    "BusinessPage": {
+        "contact": {
+            "topicRequired": "Pick a topic.",
+            "messageRequired": "Write a message."
+        }
     }
 }
