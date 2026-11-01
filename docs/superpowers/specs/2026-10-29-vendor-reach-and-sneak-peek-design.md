@@ -167,7 +167,7 @@ Following the CLAUDE.md structure, prefetch and copy rules:
 - Gallery and post viewers call the recorder when a Pro item is shown.
 - `components/partners/` gains a reach section for the portal.
 - **Prefetch:** the vendor page's server `page.tsx` seeds `vendorReachKeys.me(eventId)` with the same gating as its existing vendor prefetch.
-- Copy in en and el, plain and short. Greek uses συντελεστής for vendors. "Sneak peek" in Greek: «Πρώτη ματιά». Final wording through `design:ux-copy`.
+- Copy in en and el, plain and short. Greek uses επαγγελματίας for vendors. "Sneak peek" in Greek: «Πρώτη ματιά». Final wording through `design:ux-copy`.
 
 SEO: no new public routes. The partner portal is under `/partners/`, already private. No blockers.
 
