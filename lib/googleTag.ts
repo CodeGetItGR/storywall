@@ -64,5 +64,6 @@ export function configureGoogleTag(tagId: string, params?: Record<string, unknow
     if (configured.has(tagId)) return;
     configured.add(tagId);
     configuredIds.set(gtag, configured);
-    gtag('config', tagId, params);
+    // gtag.js throws on an undefined third argument, so pass an empty object.
+    gtag('config', tagId, params ?? {});
 }
