@@ -7,40 +7,19 @@ import { QR_WEDDING_DEMO_HREF, QR_WEDDING_GALLERY_HREF, QR_WEDDING_MEDIA, QR_WED
 import { cn } from '@/lib/utils';
 
 const BUTTON =
-    'group items-center justify-center gap-6 rounded-full font-[Arial,sans-serif] text-xs leading-[normal] font-black tracking-[0.14em] text-[#151313] uppercase transition-[transform,background,color,box-shadow] duration-300 ease-[ease]';
+    'items-center justify-center rounded-full font-[Arial,sans-serif] text-xs leading-[normal] font-black tracking-[0.14em] text-[#151313] uppercase transition-[transform,background,color,box-shadow] duration-300 ease-[ease]';
 const BUTTON_SOLID =
     'bg-white shadow-[0_10px_28px_rgba(21,19,19,.1)] min-[1001px]:hover:-translate-y-0.75 min-[1001px]:hover:shadow-[0_14px_34px_rgba(21,19,19,.15)]';
 const BUTTON_GHOST =
     'border-[1.5px] border-[#151313] bg-transparent hover:bg-[#151313] hover:text-white min-[1001px]:hover:-translate-y-0.75 min-[1001px]:hover:shadow-[0_14px_34px_rgba(21,19,19,.15)]';
 // The desktop pair sits under the copy; the full-width pair sits under the phones at 760px and narrower.
-const BUTTON_DESKTOP = 'inline-flex min-h-17 flex-none pr-7.5 pl-8.5 max-[761px]:hidden';
-const BUTTON_MOBILE = 'hidden min-h-17.5 w-full gap-5.5 px-5.5 max-[761px]:flex';
+const BUTTON_DESKTOP = 'inline-flex min-h-17 flex-none px-8 max-[761px]:hidden';
+const BUTTON_MOBILE = 'hidden min-h-17.5 w-full px-5.5 max-[761px]:flex';
 
-function DemoButton({
-    href,
-    label,
-    text,
-    className,
-    arrowClassName,
-}: {
-    href: string;
-    label: string;
-    text: string;
-    className: string;
-    arrowClassName: string;
-}) {
+function DemoButton({ href, label, text, className }: { href: string; label: string; text: string; className: string }) {
     return (
         <a aria-label={label} className={cn(BUTTON, className)} href={href}>
             <span>{text}</span>
-            <span
-                aria-hidden="true"
-                className={cn(
-                    'leading-none transition-transform duration-300 ease-[ease] min-[1001px]:group-hover:translate-x-0.75 min-[1001px]:group-hover:-translate-y-0.75',
-                    arrowClassName,
-                )}
-            >
-                ↗
-            </span>
         </a>
     );
 }
@@ -49,17 +28,10 @@ function DemoButton({
 export async function QrWeddingDemo({ locale }: { locale: Locale }) {
     const t = await getTranslations({ locale, namespace: 'QrWeddingPage.demo' });
     const strong = (chunks: ReactNode) => <strong className="font-bold">{chunks}</strong>;
-    const buttons = (placement: string, arrow: string) => (
+    const buttons = (placement: string) => (
         <>
+            <DemoButton className={cn(placement, BUTTON_SOLID)} href={QR_WEDDING_DEMO_HREF} label={t('demoLabel')} text={t('demo')} />
             <DemoButton
-                arrowClassName={arrow}
-                className={cn(placement, BUTTON_SOLID)}
-                href={QR_WEDDING_DEMO_HREF}
-                label={t('demoLabel')}
-                text={t('demo')}
-            />
-            <DemoButton
-                arrowClassName={arrow}
                 className={cn(placement, BUTTON_GHOST, 'max-[761px]:mt-3')}
                 href={QR_WEDDING_GALLERY_HREF}
                 label={t('galleryLabel')}
@@ -91,7 +63,7 @@ export async function QrWeddingDemo({ locale }: { locale: Locale }) {
                     <p className="m-0 max-w-125 font-[Arial,sans-serif] text-[clamp(22px,1.4vw,28px)] leading-[1.45] max-[1200px]:max-w-92.5 max-[941px]:max-w-67.5 max-[761px]:max-w-[92%] max-[761px]:text-lg max-[761px]:leading-normal">
                         {t.rich('body', { strong })}
                     </p>
-                    <div className="flex flex-wrap gap-3.5">{buttons(BUTTON_DESKTOP, 'text-2xl')}</div>
+                    <div className="flex flex-wrap gap-3.5">{buttons(BUTTON_DESKTOP)}</div>
                 </div>
             </div>
 
@@ -108,7 +80,7 @@ export async function QrWeddingDemo({ locale }: { locale: Locale }) {
             </div>
 
             {/* Buttons under the phones on small screens */}
-            <div className="hidden max-[761px]:mt-6.5 max-[761px]:block">{buttons(BUTTON_MOBILE, 'text-[23px]')}</div>
+            <div className="hidden max-[761px]:mt-6.5 max-[761px]:block">{buttons(BUTTON_MOBILE)}</div>
         </section>
     );
 }

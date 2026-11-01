@@ -149,11 +149,12 @@ export function QrWeddingPlanCard({
 
             {/* Choose */}
             <LandingPricingCta
-                className="mt-auto flex min-h-14 w-full gap-6 px-6 py-0 text-sm leading-[normal] font-bold tracking-[0.035em] hover:-translate-y-px max-[601px]:min-h-13.5 max-[601px]:text-[13px] min-[761px]:px-6 min-[761px]:text-sm min-[761px]:tracking-[0.035em]"
+                className="mt-auto flex min-h-14 w-full px-6 py-0 text-sm leading-[normal] font-bold tracking-[0.035em] hover:-translate-y-px max-[601px]:min-h-13.5 max-[601px]:text-[13px] min-[761px]:px-6 min-[761px]:text-sm min-[761px]:tracking-[0.035em]"
                 durationId={durationId}
                 eventType={eventType}
                 label={chooseLabel}
                 plan={plan}
+                plain
             />
         </article>
     );

@@ -63,11 +63,10 @@ export async function QrWeddingTryIt({ locale }: { locale: Locale }) {
                         ))}
                     </ul>
                     <a
-                        className="mt-5 hidden items-center gap-3 self-center rounded-full bg-[#151313] px-6 py-4 font-[Arial,sans-serif] text-xs leading-[normal] font-bold tracking-widest text-white uppercase max-[761px]:order-5 max-[761px]:inline-flex"
+                        className="mt-5 hidden items-center self-center rounded-full bg-[#151313] px-6 py-4 font-[Arial,sans-serif] text-xs leading-[normal] font-bold tracking-widest text-white uppercase max-[761px]:order-5 max-[761px]:inline-flex"
                         href={QR_WEDDING_UPLOAD_HREF}
                     >
-                        <span>{t('button')}</span>
-                        <span aria-hidden="true">↗</span>
+                        {t('button')}
                     </a>
                 </div>
             </div>

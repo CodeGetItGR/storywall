@@ -20,16 +20,10 @@ export async function QrWeddingDemoStrip({ locale }: { locale: Locale }) {
 
                 {/* Link to the demo */}
                 <a
-                    className="group relative z-3 -mt-1.5 inline-flex min-h-17 shrink-0 items-center gap-5.5 rounded-full bg-white pr-7 pl-8 text-[13px] font-black tracking-[0.13em] text-nowrap text-[#151313] transition-[transform,background] duration-280 ease-[ease] hover:-translate-y-px max-[761px]:-mt-1 max-[761px]:min-h-15.5 max-[761px]:gap-3 max-[761px]:pr-5 max-[761px]:pl-5.5 max-[761px]:text-[11px] max-[761px]:tracking-[0.11em]"
+                    className="relative z-3 -mt-1.5 inline-flex min-h-17 shrink-0 items-center rounded-full bg-white px-8 text-[13px] font-black tracking-[0.13em] text-nowrap text-[#151313] transition-[transform,background] duration-280 ease-[ease] hover:-translate-y-px max-[761px]:-mt-1 max-[761px]:min-h-15.5 max-[761px]:px-5.5 max-[761px]:text-[11px] max-[761px]:tracking-[0.11em]"
                     href={`#${QR_WEDDING_SECTION.demo}`}
                 >
                     <span>{t('cta')}</span>
-                    <span
-                        aria-hidden="true"
-                        className="text-[25px] leading-none transition-transform duration-280 ease-[ease] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 max-[761px]:text-[23px]"
-                    >
-                        ↗
-                    </span>
                 </a>
             </div>
         </section>
