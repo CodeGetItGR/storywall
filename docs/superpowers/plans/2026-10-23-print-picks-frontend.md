@@ -19,7 +19,7 @@
 - Checks: `npx vitest run <path>` for one file, `npm test` for all, `npm run lint`, `npx tsc --noEmit`.
 - Visual checks: never start a dev server with `preview_start {name}` (it breaks the shared `.next`); run `npm run dev` from the worktree on port 3000 in a terminal and open `preview_start {url: "http://localhost:3000/"}`. The local Spring backend only allows CORS from :3000. Signed-in screens need the user's local test login: ask for it.
 - Commit after every task. Messages end with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. Do not push or open a PR until the user says so.
-- Repo `CLAUDE.md` rules that bite here: hooks own logic and components stay declarative; a JSX comment above every visual section; every visible string localized in en and el (Greek vendor word: συντελεστής); `React.SubmitEvent` for form submits; one home per fact on a page; creation and edit forms in a sheet, not inline; destructive actions behind `ConfirmActionModal`; mobile-first for host, guest and vendor screens; admin uses a segmented control for multi-value config.
+- Repo `CLAUDE.md` rules that bite here: hooks own logic and components stay declarative; a JSX comment above every visual section; every visible string localized in en and el (Greek vendor word: επαγγελματίας); `React.SubmitEvent` for form submits; one home per fact on a page; creation and edit forms in a sheet, not inline; destructive actions behind `ConfirmActionModal`; mobile-first for host, guest and vendor screens; admin uses a segmented control for multi-value config.
 
 ## Numbers that come from the backend
 

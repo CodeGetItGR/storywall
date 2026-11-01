@@ -6816,18 +6816,9 @@
                 "grad": "or a DJ?"
             },
             "body": "StoryWall has tools for every wedding and event professional, inside your client’s event.",
-            "points": ["Join free with the host’s link", "Guests see your name and your work", "Partners get a discount code and commission"],
-            "highlights": {
-                "PLANNER": "Schedule, announcements and RSVPs",
-                "VENUE": "Your venue in the vendor list",
-                "PHOTOGRAPHER": "Pro album, sneak peek and prints",
-                "VIDEOGRAPHER": "Your videos with your name on them",
-                "DECORATION": "Guests see who made it",
-                "CATERING": "Guests can find you again",
-                "MUSIC": "Song requests from guests’ phones"
-            },
+            "points": ["Join free with the host’s link", "Guests see your name and your work", "Partners get a discount code for their clients"],
             "all": "Everything for professionals",
-            "allBody": "Partner program, steps and how to apply"
+            "more": "More"
         },
         "imageAlts": {
             "heroBackground": "Soft pastel background with sparkles",
@@ -9339,7 +9330,7 @@
         "partner": {
             "discount": {
                 "title": "A discount for your clients",
-                "body": "Your own code, and commission when clients use it."
+                "body": "Your own discount code for your clients."
             },
             "feedCard": {
                 "title": "Your card in the feed",
@@ -9355,7 +9346,7 @@
             },
             "portal": {
                 "title": "Partner page",
-                "body": "Your earnings, your commission rate and your reach across all your events."
+                "body": "Your code and your reach across all your events."
             }
         },
         "steps": [
@@ -9567,10 +9558,7 @@
                         "What does a wedding venue get from StoryWall?",
                         "Guests see your venue’s name and link in the event’s vendor list, and you see how many opened your details."
                     ],
-                    [
-                        "Can I recommend StoryWall to my couples?",
-                        "Yes. As a partner you get your own discount code for your clients, and commission when they use it."
-                    ],
+                    ["Can I recommend StoryWall to my couples?", "Yes. As a partner you get your own discount code for your clients."],
                     [
                         "How do guests upload photos?",
                         "They scan the event’s QR code at the table and upload photos and videos, with no app and no account."
@@ -9705,10 +9693,7 @@
                         "What does a caterer get from StoryWall?",
                         "Guests see your name and link in the event’s vendor list, and you see how many opened your details."
                     ],
-                    [
-                        "Can I recommend StoryWall to my clients?",
-                        "Yes. As a partner you get your own discount code for your clients, and commission when they use it."
-                    ],
+                    ["Can I recommend StoryWall to my clients?", "Yes. As a partner you get your own discount code for your clients."],
                     ["How do I join an event?", "The host sends you a link. Open it and add your business details."]
                 ]
             },

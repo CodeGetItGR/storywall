@@ -41,14 +41,7 @@ export async function LandingForBusiness() {
             <div className="mx-auto w-full max-w-295">
                 <div className="grid gap-9 min-[1000px]:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] min-[1000px]:items-end min-[1000px]:gap-16">
                     {/* Heading */}
-                    <div className="relative">
-                        <ProtectedImage
-                            alt={alts('heartEyes')}
-                            className="absolute -top-9 right-0 size-14 rotate-12 min-[761px]:-top-12 min-[761px]:size-18 min-[1000px]:right-10"
-                            height={440}
-                            src="/landing/sw-scene-item-sw-love.webp"
-                            width={441}
-                        />
+                    <div>
                         <h2
                             className="m-0 max-w-[13ch] [font-family:var(--editorial)] text-[clamp(42px,11.5vw,60px)] leading-[.95] font-normal tracking-[-.05em] min-[761px]:text-[clamp(52px,5.2vw,78px)]"
                             id="landing-business-title"
@@ -73,19 +66,19 @@ export async function LandingForBusiness() {
                 <ul className="m-0 mt-12 grid list-none grid-cols-2 gap-3 p-0 min-[761px]:mt-16 min-[761px]:grid-cols-4 min-[761px]:gap-5">
                     {VENDOR_PAGE_TYPES.map((type) => (
                         <LandingForBusinessCard
-                            body={t(`highlights.${type}`)}
                             href={getVendorPagePath(type, locale)}
                             icon={TYPE_ICONS[type]}
                             key={type}
+                            more={t('more')}
                             title={types(`${type}.label`)}
                             tools={vendorCardIcons(type)}
                         />
                     ))}
                     {/* The business page */}
-                    <LandingForBusinessCard dark body={t('allBody')} href={getForBusinessPath(locale)} icon={Sparkles} title={t('all')}>
+                    <LandingForBusinessCard dark href={getForBusinessPath(locale)} icon={Sparkles} more={t('more')} title={t('all')}>
                         <ProtectedImage
                             alt={alts('sparkle')}
-                            className="absolute -right-2 -bottom-3 w-16 rotate-12 opacity-90 min-[761px]:w-20"
+                            className="absolute -top-3 -right-2 w-14 rotate-12 opacity-90 min-[761px]:w-18"
                             height={181}
                             src="/landing/sw-scene-item-sw-flash.webp"
                             width={124}

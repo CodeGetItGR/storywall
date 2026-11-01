@@ -19,7 +19,7 @@
 - Checks: `npx vitest run <path>` for one file, `npm test` for all, `npm run lint`, `npx tsc --noEmit`.
 - Visual checks: never `preview_start {name}` (it breaks the shared `.next`). Run `npm run dev` from the worktree on port 3000 in a terminal and open `preview_start {url: "http://localhost:3000/"}`. The local Spring backend only allows CORS from :3000. Signed-in screens need the user's local test login: ask for it.
 - Commit after every task. Messages end with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. Do not push or open a PR until the user says so.
-- Repo `CLAUDE.md` rules that bite here: hooks own logic, components stay declarative; a JSX comment above every visual section; every visible string and every alt text localized in en and el (Greek: συντελεστής for vendor, συνεργάτης for partner, «Πρώτη ματιά» for sneak peek); `React.SubmitEvent` for form submits; one home per fact; edit flows in a sheet; destructive actions behind `ConfirmActionModal`; mobile-first for vendor and guest screens; server prefetch for route-derivable data.
+- Repo `CLAUDE.md` rules that bite here: hooks own logic, components stay declarative; a JSX comment above every visual section; every visible string and every alt text localized in en and el (Greek: επαγγελματίας for vendor, συνεργάτης for partner, «Πρώτη ματιά» for sneak peek); `React.SubmitEvent` for form submits; one home per fact; edit flows in a sheet; destructive actions behind `ConfirmActionModal`; mobile-first for vendor and guest screens; server prefetch for route-derivable data.
 
 ## Numbers that come from the backend
 
@@ -2543,7 +2543,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
     "date": "Ημερομηνία",
     "type": "Τύπος",
     "views": "Προβολές",
-    "empty": "Δεν υπάρχουν ακόμη εκδηλώσεις ως συντελεστής."
+    "empty": "Δεν έχετε ακόμη εκδηλώσεις ως επαγγελματίας."
 }
 ```
 
@@ -2716,7 +2716,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 - [ ] **Step 1: Review the copy**
 
-Run the `design:ux-copy` skill on every string this plan added (`Vendors.sneakPeek`, `Vendors.reach`, `PostCard.sneakPeek`, `NotificationsPage.types.SNEAK_PEEK_POSTED`/`VENDOR_REACH_SUMMARY`, `PartnerPortalPage.reach`, the three `ApiErrors`) and the backend's `notification.sneak_peek.*` and `notification.vendor.reach.*`. Keep keys and placeholders; change words only. Greek keeps συντελεστής, συνεργάτης, διοργανωτής and «Πρώτη ματιά». Show the user the final en and el wording before committing it (spec "Legal": copy reviewed before release). If a backend string changes, note it for the backend branch.
+Run the `design:ux-copy` skill on every string this plan added (`Vendors.sneakPeek`, `Vendors.reach`, `PostCard.sneakPeek`, `NotificationsPage.types.SNEAK_PEEK_POSTED`/`VENDOR_REACH_SUMMARY`, `PartnerPortalPage.reach`, the three `ApiErrors`) and the backend's `notification.sneak_peek.*` and `notification.vendor.reach.*`. Keep keys and placeholders; change words only. Greek keeps επαγγελματίας, συνεργάτης, διοργανωτής and «Πρώτη ματιά». Show the user the final en and el wording before committing it (spec "Legal": copy reviewed before release). If a backend string changes, note it for the backend branch.
 
 - [ ] **Step 2: Run every check**
 
