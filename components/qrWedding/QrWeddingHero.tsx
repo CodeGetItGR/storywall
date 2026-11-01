@@ -1,12 +1,12 @@
 import { getTranslations } from 'next-intl/server';
 import { preload } from 'react-dom';
 
+import { OccasionHeroActions } from '@/components/occasions/OccasionHeroActions';
 import { QR_GRADIENT_TEXT } from '@/components/qrWedding/qrWeddingClasses';
-import { QrWeddingCreateCta } from '@/components/qrWedding/QrWeddingCreateCta';
 import { type QrWeddingHeroImageAlts, QrWeddingHeroVisual } from '@/components/qrWedding/QrWeddingHeroVisual';
 import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
-import { QR_WEDDING_DEMO_HREF, QR_WEDDING_MEDIA, QR_WEDDING_SECTION, qrWeddingParentPath } from '@/lib/qrWeddingPage';
+import { QR_WEDDING_CREATE_HREF, QR_WEDDING_DEMO_HREF, QR_WEDDING_MEDIA, QR_WEDDING_SECTION, qrWeddingParentPath } from '@/lib/qrWeddingPage';
 
 const POSTER = `${QR_WEDDING_MEDIA}/guest-scanning-wedding-qr-code-poster.webp`;
 const VIDEO = `${QR_WEDDING_MEDIA}/guest-scanning-wedding-qr-code.mp4`;
@@ -17,6 +17,10 @@ const TRUST_ITEM = "before:mx-2.5 before:content-['·'] first:before:hidden";
 export async function QrWeddingHero({ locale, price }: { locale: Locale; price: string }) {
     const page = await getTranslations({ locale, namespace: 'QrWeddingPage' });
     const t = await getTranslations({ locale, namespace: 'QrWeddingPage.hero' });
+    // The buttons share their labels with the wedding occasion page's hero.
+    const occasion = await getTranslations({ locale, namespace: 'OccasionPages.WEDDING' });
+    const common = await getTranslations({ locale, namespace: 'OccasionPages.common' });
+    const landing = await getTranslations({ locale, namespace: 'LandingPage' });
     const parentPath = qrWeddingParentPath(locale);
     // The poster is the first thing painted in the hero: fetch it with the page.
     preload(POSTER, { as: 'image', fetchPriority: 'high' });
@@ -32,7 +36,7 @@ export async function QrWeddingHero({ locale, price }: { locale: Locale; price: 
                     {/* Breadcrumb */}
                     <nav
                         aria-label={t('crumbLabel')}
-                        className="mb-4.5 ml-1 flex items-center gap-2 font-[Arial,sans-serif] text-[11px] font-bold tracking-[0.06em] text-[rgba(21,19,19,.55)] uppercase max-[768px]:mb-3.5"
+                        className="mb-4.5 ml-1 flex items-center gap-2 font-[Arial,sans-serif] text-[11px] font-bold tracking-[0.06em] text-[rgba(21,19,19,.55)] uppercase max-[768px]:mb-3.5 max-[768px]:ml-0"
                     >
                         <a className="text-[#151313]" href={getPublicLandingPath(locale)}>
                             StoryWall
@@ -67,21 +71,13 @@ export async function QrWeddingHero({ locale, price }: { locale: Locale; price: 
                     </p>
 
                     {/* Actions */}
-                    <div className="mt-7.5 flex flex-wrap items-center gap-x-5.5 gap-y-3.5 max-[768px]:mt-6 max-[768px]:gap-3.75">
-                        <QrWeddingCreateCta>{t.rich('cta', { br: () => <br /> })}</QrWeddingCreateCta>
-                        <a
-                            className="inline-flex items-center gap-3 font-[Arial,sans-serif] text-[11px] font-extrabold tracking-[0.12em] uppercase max-[768px]:gap-2 max-[768px]:text-[10px]"
-                            href={QR_WEDDING_DEMO_HREF}
-                        >
-                            {t('demo')}
-                            <i
-                                aria-hidden="true"
-                                className="grid size-10.5 place-items-center rounded-full border border-[#151313] text-base max-[768px]:size-9"
-                            >
-                                ↗
-                            </i>
-                        </a>
-                    </div>
+                    <OccasionHeroActions
+                        createHref={QR_WEDDING_CREATE_HREF}
+                        createLabel={occasion('hero.cta')}
+                        demoHref={QR_WEDDING_DEMO_HREF}
+                        demoLabel={common('heroDemo')}
+                        plansLabel={landing('hero.plansCta')}
+                    />
 
                     {/* Trust line */}
                     <p

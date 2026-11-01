@@ -56,10 +56,10 @@ export async function QrWeddingFeatures({ locale }: { locale: Locale }) {
                 {weddingPath && (
                     <div className="mt-[clamp(36px,4vw,56px)] flex justify-center">
                         <a
-                            className="inline-flex items-center gap-3 rounded-full border border-[rgba(255,255,255,.4)] px-7 py-4 font-[Arial,Helvetica,sans-serif] text-[13px] font-bold tracking-[0.12em] text-white uppercase transition-colors duration-200 hover:bg-white hover:text-[#151313]"
+                            className="inline-flex items-center rounded-full border border-[rgba(255,255,255,.4)] px-7 py-4 font-[Arial,Helvetica,sans-serif] text-[13px] font-bold tracking-[0.12em] text-white uppercase transition-colors duration-200 hover:bg-white hover:text-[#151313]"
                             href={weddingPath}
                         >
-                            {t('more')} <span aria-hidden="true">↗</span>
+                            {t('more')}
                         </a>
                     </div>
                 )}
