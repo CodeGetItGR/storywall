@@ -7,11 +7,12 @@ import { cn } from '@/lib/utils';
 
 import { tabBoxClass, tabIconBoxClass, TabLabel } from './TabLabel';
 
-// The vendor's own page, named and drawn after their type ("Photographer", "Music") so they know their tools are there.
+// The vendor's own page, named and drawn after their type ("Photographer", "DJ") so they know their tools are there.
 export function VendorTab({ href, vendorType, active }: { href: string; vendorType: PartnerRole; active: boolean }) {
-    const t = useTranslations('Vendors.types');
+    const t = useTranslations('Vendors');
     const Icon = TYPE_ICONS[vendorType];
-    const label = t(vendorType);
+    // "DJ", because the type name "Music" would match the playlist tab in Greek.
+    const label = vendorType === 'MUSIC' ? t('musicTab') : t(`types.${vendorType}`);
 
     return (
         <AppLink

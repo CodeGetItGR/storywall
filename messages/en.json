@@ -8918,6 +8918,7 @@
             "MUSIC": "Music",
             "OTHER": "Vendor"
         },
+        "musicTab": "DJ",
         "manage": {
             "title": "Vendors",
             "back": "Back",
