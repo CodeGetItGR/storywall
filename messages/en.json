@@ -9739,6 +9739,34 @@
         "unnamed": "Your business",
         "edit": "Edit",
         "partnerPill": "Partner",
+        "insights": {
+            "title": "Insights",
+            "events": "Events",
+            "guests": "Guests",
+            "proViews": "Photo and video views",
+            "postViewers": "Post viewers",
+            "cardTaps": "Feed card taps",
+            "listTaps": "Profile taps",
+            "trendTitle": "Views per month",
+            "trendViews": "Views",
+            "partnerPrompt": "Partners also see views and card taps.",
+            "becomePartner": "Become a partner"
+        },
+        "events": {
+            "title": "Your events",
+            "empty": "You haven't joined an event yet.",
+            "rowGuests": "{count, plural, one {# guest} other {# guests}}",
+            "rowViews": "{count, plural, one {# view} other {# views}}",
+            "ended": "Access ended",
+            "more": "Show more",
+            "loadFailed": "Couldn't load your events.",
+            "retry": "Try again"
+        },
+        "content": {
+            "title": "Your content",
+            "proItems": "Photos and videos",
+            "storage": "Storage used"
+        },
         "contact": {
             "topicRequired": "Pick a topic.",
             "messageRequired": "Write a message."
