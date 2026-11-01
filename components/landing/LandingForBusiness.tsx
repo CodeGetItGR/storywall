@@ -4,16 +4,22 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { LandingForBusinessCard } from '@/components/landing/LandingForBusinessCard';
 import { GradientIcon, GradientIconDefs } from '@/components/vendorPages/GradientIcon';
-import { TYPE_ICONS } from '@/components/vendorPages/vendorPageIcons';
+import { ALWAYS_ICONS, TOOL_ICONS, TYPE_ICONS } from '@/components/vendorPages/vendorPageIcons';
 import { GRADIENT_TEXT } from '@/components/vendorPages/vendorPageStyles';
 import type { Locale } from '@/i18n/config';
-import { getForBusinessPath, getVendorPagePath, VENDOR_PAGE_TYPES } from '@/i18n/publicLocale';
+import { getForBusinessPath, getVendorPagePath, VENDOR_PAGE_TYPES, type VendorPageType } from '@/i18n/publicLocale';
 import { LANDING_TOKENS_CLASS } from '@/lib/landingTokens';
 import { showsUnreleasedPages } from '@/lib/unreleasedPages';
 import { VENDOR_PAGES } from '@/lib/vendorPages';
 
 // One icon per LandingPage.forBusiness.points item, in order.
 const POINT_ICONS = [Link2, Eye, TicketPercent];
+
+// A card's small icon row: the type's tools, or what every vendor gets when it has none. Skips the card's own icon.
+function vendorCardIcons(type: VendorPageType) {
+    const tools = VENDOR_PAGES[type].tools.map((tool) => TOOL_ICONS[tool]).filter((icon) => icon !== TYPE_ICONS[type]);
+    return tools.length > 0 ? tools : [ALWAYS_ICONS.listing, ALWAYS_ICONS.posts, ALWAYS_ICONS.reach];
+}
 
 // Points professionals to their vendor page. Hidden wherever the vendor pages are.
 export async function LandingForBusiness() {
@@ -64,7 +70,7 @@ export async function LandingForBusiness() {
                     </ul>
                 </div>
                 {/* Vendor pages */}
-                <ul className="-mx-5 mt-12 flex list-none snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto px-5 pb-2 [scrollbar-width:none] min-[761px]:mt-16 min-[1000px]:mx-0 min-[1000px]:grid min-[1000px]:grid-cols-4 min-[1000px]:gap-5 min-[1000px]:overflow-visible min-[1000px]:px-0 min-[1000px]:pb-0 [&::-webkit-scrollbar]:hidden">
+                <ul className="m-0 mt-12 grid list-none grid-cols-2 gap-3 p-0 min-[761px]:mt-16 min-[761px]:grid-cols-4 min-[761px]:gap-5">
                     {VENDOR_PAGE_TYPES.map((type) => (
                         <LandingForBusinessCard
                             body={t(`highlights.${type}`)}
@@ -72,28 +78,14 @@ export async function LandingForBusiness() {
                             icon={TYPE_ICONS[type]}
                             key={type}
                             title={types(`${type}.label`)}
-                        >
-                            <ProtectedImage
-                                fill
-                                alt={types(`${type}.imageAlt`)}
-                                className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] motion-reduce:transition-none"
-                                sizes="(min-width: 1000px) 25vw, (min-width: 761px) 34vw, 72vw"
-                                src={VENDOR_PAGES[type].heroImage}
-                            />
-                            <span aria-hidden="true" className="absolute inset-0 bg-linear-to-t from-[#151313]/85 via-[#151313]/20 to-transparent" />
-                        </LandingForBusinessCard>
+                            tools={vendorCardIcons(type)}
+                        />
                     ))}
                     {/* The business page */}
-                    <LandingForBusinessCard
-                        body={t('allBody')}
-                        className="bg-[linear-gradient(125deg,#3b2529,#2e2328,#302523,#402a26)]"
-                        href={getForBusinessPath(locale)}
-                        icon={Sparkles}
-                        title={t('all')}
-                    >
+                    <LandingForBusinessCard dark body={t('allBody')} href={getForBusinessPath(locale)} icon={Sparkles} title={t('all')}>
                         <ProtectedImage
                             alt={alts('sparkle')}
-                            className="absolute top-1/2 right-[-4%] w-[44%] -translate-y-[58%] rotate-12 opacity-90"
+                            className="absolute -right-2 -bottom-3 w-16 rotate-12 opacity-90 min-[761px]:w-20"
                             height={181}
                             src="/landing/sw-scene-item-sw-flash.webp"
                             width={124}
