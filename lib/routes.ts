@@ -39,6 +39,9 @@ export const routes = {
     // Straight to the demo's feed: /demo and /demo/{slug} only redirect there, which costs a round trip.
     demo: `/demo/${DEFAULT_DEMO_EVENT_TYPE_SLUG}/feed`,
     demoEventType: (eventTypeSlug: string) => `/demo/${eventTypeSlug}/feed`,
+    // The demo's guest upload page (what the event's QR code opens) and its photo gallery.
+    demoUpload: (eventTypeSlug: string) => `/demo/${eventTypeSlug}/upload`,
+    demoGallery: (eventTypeSlug: string) => `/demo/${eventTypeSlug}/tools/gallery`,
     invite: '/invite',
     home: '/home',
     profile: '/profile',
@@ -84,7 +87,8 @@ export const routes = {
             schedule: (eventId: string, params: { section?: string | null } = {}) => withQuery(`${eventBasePath(eventId)}/tools/schedule`, params),
             wishbook: (eventId: string) => `${eventBasePath(eventId)}/tools/wishbook`,
             vendors: (eventId: string) => `${eventBasePath(eventId)}/tools/vendors`,
-            vendorMe: (eventId: string) => `${eventBasePath(eventId)}/tools/vendors/me`,
+            // section: a part of the page to scroll to on arrival (VendorPageSection).
+            vendorMe: (eventId: string, params: { section?: string | null } = {}) => withQuery(`${eventBasePath(eventId)}/tools/vendors/me`, params),
             playlistLive: (eventId: string) => `${eventBasePath(eventId)}/tools/playlist/live`,
             announcement: (eventId: string) => `${eventBasePath(eventId)}/tools/announcement`,
         },

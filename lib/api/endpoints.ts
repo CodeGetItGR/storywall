@@ -59,6 +59,7 @@ export const endpoints = {
         deletionRequests: '/api/me/deletion-requests',
         vendorProfile: '/api/me/vendor-profile',
         vendorProfileLogo: '/api/me/vendor-profile/logo',
+        vendorProfileBanner: '/api/me/vendor-profile/banner',
         vendorServices: '/api/me/vendor-profile/services',
         vendorService: (serviceId: string) => `/api/me/vendor-profile/services/${serviceId}`,
     },
@@ -149,6 +150,11 @@ export const endpoints = {
         wishbookBook: (eventId: string) => `/api/events/${eventId}/wishbook/book`,
         wishbookBookTexts: (eventId: string) => `/api/events/${eventId}/wishbook/book-texts`,
         // Boy or Girl? quiz (module he_or_she, he-or-she-quiz-fe-integration.md).
+        // The guest offer card: 204 means it does not show.
+        guestOffer: (eventId: string) => `/api/events/${eventId}/guest-offer`,
+        guestOfferClaim: (eventId: string) => `/api/events/${eventId}/guest-offer/claim`,
+        guestOfferDismiss: (eventId: string) => `/api/events/${eventId}/guest-offer/dismiss`,
+        guestOfferActivity: (eventId: string) => `/api/events/${eventId}/guest-offer/activity`,
         heOrShe: (eventId: string) => `/api/events/${eventId}/he-or-she`,
         heOrSheAnswers: (eventId: string) => `/api/events/${eventId}/he-or-she/answers`,
         heOrSheSettings: (eventId: string) => `/api/events/${eventId}/he-or-she/settings`,
@@ -512,6 +518,8 @@ export const endpoints = {
         collaborationCodes: {
             byId: (id: string) => `/api/admin/collaboration-codes/${id}`,
         },
+        guestOffer: '/api/admin/guest-offer',
+        guestOfferStats: '/api/admin/guest-offer/stats',
         discountCodes: {
             list: '/api/admin/discount-codes',
             options: '/api/admin/discount-codes/options',

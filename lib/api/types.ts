@@ -248,6 +248,34 @@ export interface AppLandingCategoryDto {
 export type AppReviewRole = 'HOST' | 'GUEST';
 export type AppReviewStatus = 'PENDING' | 'APPROVED' | 'HIDDEN';
 
+// GET /api/events/{id}/guest-offer → 200 with this, or 204 (null) when the card does not show.
+// code and endsAt stay null until the guest claims; discountPercent is then the code's own.
+export interface GuestOfferDto {
+    discountPercent: number;
+    code: string | null;
+    endsAt: string | null;
+}
+
+// GET/PUT /api/admin/guest-offer.
+export interface GuestOfferSettingsDto {
+    enabled: boolean;
+    discountPercent: number;
+    validityMonths: number;
+}
+
+// POST /api/events/{id}/guest-offer/activity. Counted once per person per day.
+export type GuestOfferAction = 'SEEN' | 'DISCOVER' | 'COPY';
+
+// GET /api/admin/guest-offer/stats?days=. People, each counted once; used = codes paid for at checkout.
+export interface GuestOfferStatsDto {
+    seen: number;
+    discovered: number;
+    claimed: number;
+    copied: number;
+    closed: number;
+    used: number;
+}
+
 // GET /api/me/review-prompt → 200 with this, or 204 (null) when there is nothing to ask.
 export interface AppReviewPromptDto {
     eventId: string;
@@ -958,6 +986,18 @@ export interface AdminProvisionEventRequestDto {
     event: EventRequestDto;
     // Emails the host a welcome; the server treats a missing value as true.
     notifyHost?: boolean;
+    // Module settings saved with the event, in the same request (max 50). One refused setting
+    // (400, 409) and no event is created. A vendors setting turns vendors on for this event.
+    moduleConfigs?: AdminProvisionModuleConfig[];
+}
+
+// One setting as PUT .../modules/{moduleKey}/config/{configKey} takes it: extra, enabled or value, exactly one.
+export interface AdminProvisionModuleConfig {
+    moduleKey: ModuleKey;
+    configKey: string;
+    extra?: number | null;
+    enabled?: boolean | null;
+    value?: unknown;
 }
 
 export type AdminEmailTemplateKey = 'PASSWORD_RESET' | 'PROVISIONED_HOST_WELCOME' | 'EMAIL_VERIFICATION' | 'CUSTOM';
@@ -1200,8 +1240,20 @@ export interface VendorRowDto {
     vendorType: PartnerRole;
     // Null for a host's view of a vendor who hasn't filled in their profile yet.
     businessName: string | null;
+    // Absent when the vendor has none.
+    description?: string | null;
+    serviceTags?: VendorServiceTag[];
+    // The handle, without the @.
+    instagram?: string | null;
+    website?: string | null;
+    // The Instagram link as @handle, else the website. Kept for older screens; use instagram and website.
     link: string | null;
+    // Only for an approved partner who chose to show them.
+    phone?: string | null;
+    email?: string | null;
     logoUrl: string | null;
+    // The vendor's wide cover photo; absent when they have none.
+    bannerUrl?: string | null;
     joinedAt: string;
     hiddenByHost?: boolean;
     optedOut?: boolean;
@@ -1365,18 +1417,77 @@ export interface VendorPatchDto {
 }
 
 // GET/PUT /api/me/vendor-profile — GET is 404 until the first save.
+// A service a vendor shows on their card, from their type's list (lib/vendors VENDOR_SERVICE_TAGS).
+export type VendorServiceTag =
+    | 'DRONE'
+    | 'ALBUM'
+    | 'PRINTS'
+    | 'PHOTO_BOOTH'
+    | 'PRE_WEDDING'
+    | 'SAME_DAY_EDIT'
+    | 'HIGHLIGHTS'
+    | 'FULL_FILM'
+    | 'LIVE_STREAMING'
+    | 'DJ'
+    | 'LIVE_MUSIC'
+    | 'SOUND'
+    | 'LIGHTING'
+    | 'CHURCH'
+    | 'DANCE_FLOOR'
+    | 'FLOWERS'
+    | 'TABLES'
+    | 'BALLOONS'
+    | 'BAPTISM'
+    | 'BUFFET'
+    | 'SERVED'
+    | 'SWEETS'
+    | 'CAKE'
+    | 'BAR'
+    | 'FINGER_FOOD'
+    | 'OUTDOOR'
+    | 'INDOOR'
+    | 'SEASIDE'
+    | 'ACCOMMODATION'
+    | 'PARKING'
+    | 'CHURCH_NEARBY'
+    | 'FULL_PLANNING'
+    | 'DAY_COORDINATION'
+    | 'DESTINATION'
+    | 'BUDGET'
+    | 'SUPPLIERS';
+
 export interface VendorProfileDto {
     businessName: string;
     vendorType: PartnerRole;
-    link: string;
+    description?: string | null;
+    serviceTags?: VendorServiceTag[];
+    // The handle, without the @.
+    instagram?: string | null;
+    website?: string | null;
+    // As in VendorRowDto.
+    link: string | null;
+    // The vendor's own; guests see them only while the vendor is an approved partner and the switch is on.
+    contactPhone?: string | null;
+    contactEmail?: string | null;
+    showPhone?: boolean;
+    showEmail?: boolean;
     logoUrl: string | null;
+    bannerUrl?: string | null;
     partnerPromptDismissed: boolean;
 }
 
+// PUT /api/me/vendor-profile. Every field after the type is optional; null or "" clears it.
 export interface VendorProfileRequestDto {
     businessName: string;
     vendorType: PartnerRole;
-    link: string;
+    description: string | null;
+    serviceTags: VendorServiceTag[];
+    instagram: string | null;
+    website: string | null;
+    contactPhone: string | null;
+    contactEmail: string | null;
+    showPhone: boolean;
+    showEmail: boolean;
 }
 
 export interface ProCreditDto {
@@ -1778,7 +1889,16 @@ export interface DiscountCodeResponseDto extends DiscountCodeRequestDto {
 // event plans, archived ones too, cut down so marketing can read them without the plan admin.
 export type DiscountCodePlanOption = Pick<
     PlanTierResponseDto,
-    'code' | 'name' | 'scope' | 'eventTypeKey' | 'sortOrder' | 'isAssignable' | 'priceCurrency' | 'discountPercent' | 'discountStartsAt' | 'discountEndsAt'
+    | 'code'
+    | 'name'
+    | 'scope'
+    | 'eventTypeKey'
+    | 'sortOrder'
+    | 'isAssignable'
+    | 'priceCurrency'
+    | 'discountPercent'
+    | 'discountStartsAt'
+    | 'discountEndsAt'
 > & { initialOptions: Pick<PlanTierResponseDto['initialOptions'][number], 'priceAmountMinor' | 'promoPriceAmountMinor' | 'active'>[] };
 export interface DiscountCodeOptionsDto {
     eventTypes: Pick<PlatformEventTypeResponseDto, 'eventTypeKey' | 'name' | 'sortOrder'>[];
@@ -4205,7 +4325,32 @@ export type AdminAuditAction =
     | 'EVENT_STORAGE_GRANTED'
     | 'EVENT_MEMBERS_GRANTED'
     | 'EVENT_MODULE_GRANTED'
-    | 'EVENT_MODULE_REVOKED';
+    | 'EVENT_MODULE_REVOKED'
+    | 'EVENT_MODULE_CONFIG_SET'
+    | 'EVENT_MODULE_CONFIG_RESET'
+    | 'LANDING_CATEGORY_CREATED'
+    | 'LANDING_CATEGORY_UPDATED'
+    | 'LANDING_CATEGORY_DELETED'
+    | 'LANDING_CATEGORY_EVENT_TYPES_CHANGED'
+    | 'EMAIL_SENT'
+    | 'APP_REVIEW_UPDATED'
+    | 'SITE_NOTICE_CREATED'
+    | 'SITE_NOTICE_UPDATED'
+    | 'SITE_NOTICE_DELETED'
+    | 'CAMPAIGN_LINK_CREATED'
+    | 'CAMPAIGN_LINK_RENAMED'
+    | 'CAMPAIGN_LINK_DELETED'
+    | 'ADMIN_DEVICE_PAIRED'
+    | 'ADMIN_DEVICE_REVOKED'
+    | 'OUTREACH_CREATED'
+    | 'OUTREACH_UPDATED'
+    | 'OUTREACH_DELETED'
+    | 'OUTREACH_REQUESTED'
+    | 'OUTREACH_REQUEST_APPROVED'
+    | 'OUTREACH_REQUEST_DECLINED'
+    | 'EVENT_PROVISIONED'
+    | 'PLAN_MODULES_CHANGED'
+    | 'PLAN_MODULE_CONFIG_CHANGED';
 
 // The statement of reasons sent with every moderation action (Guidelines §22).
 export type StatementGround = 'ILLEGAL_CONTENT' | 'GUIDELINES_BREACH';
@@ -4435,10 +4580,13 @@ export interface NoticeCloseRequestDto {
     note?: string | null;
 } // note max 2000
 
-// GET /api/admin/audit-log?targetId=&adminUserId=&page=&size= (Page, newest first).
+// GET /api/admin/audit-log?targetId=&adminUserId=&eventId=&action=&page=&size= (Page, newest first, size ≤ 100).
 export interface AdminAuditLogResponseDto {
     id: string;
     adminUserId: string;
+    // Null when the admin's account is gone.
+    adminEmail: string | null;
+    adminName: string | null;
     action: AdminAuditAction;
     targetType: string;
     targetId: string | null;
@@ -4656,24 +4804,35 @@ export interface AdminEventDetailDto {
     suspension: { suspendedAt: string; closedAt: string | null; decision: ModerationDecisionDto | null } | null;
 }
 
-// A cap (COUNT: a number, null = unlimited) or a flag (FLAG: absent counts as off).
-export type ModuleConfigKind = 'COUNT' | 'FLAG';
+// A cap (COUNT: a number, null = unlimited), a flag (FLAG: absent counts as off) or a value
+// (VALUE: the vendors settings, a number or a list of vendor types, set exactly).
+export type ModuleConfigKind = 'COUNT' | 'FLAG' | 'VALUE';
 
 // One module setting of an event: the plan's value, the admin override if any, and what the event gets.
-// A cap's override is an extra on top of the plan's; a flag's replaces it.
+// A cap's override is an extra on top of the plan's; a flag's and a value's replace it.
 export interface AdminEventModuleConfig {
     moduleKey: ModuleKey;
     configKey: string;
     kind: ModuleConfigKind;
-    planValue: number | boolean | null;
-    effectiveValue: number | boolean | null;
-    override: { extra: number | null; enabled: boolean | null; reason: string; setByUserId: string; setAt: string } | null;
+    planValue: number | boolean | string[] | null;
+    effectiveValue: number | boolean | string[] | null;
+    override: {
+        extra: number | null;
+        enabled: boolean | null;
+        value: number | string[] | null;
+        reason: string;
+        setByUserId: string;
+        setAt: string;
+    } | null;
 }
 
-// PUT /api/admin/events/{id}/modules/{moduleKey}/config/{configKey}. extra for a cap, enabled for a flag, never both.
+// PUT /api/admin/events/{id}/modules/{moduleKey}/config/{configKey}. extra for a cap, enabled for
+// a flag, value for a value; exactly one. A setting of a module the event doesn't have turns that
+// module on for the event (an admin grant with the same reason); the plan doesn't change.
 export interface AdminModuleConfigOverrideRequestDto {
     extra: number | null;
     enabled: boolean | null;
+    value?: number | string[] | null;
     reason: string;
 }
 

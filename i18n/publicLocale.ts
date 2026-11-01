@@ -25,7 +25,7 @@ export function isForBusinessPath(pathname: string | null): boolean {
 
 // The wedding QR page, one URL per language. Same rules as the partner page's slugs.
 export const QR_WEDDING_PATHS: Record<Locale, string> = {
-    en: '/wedding-qr-code',
+    en: '/qr-code-for-wedding-photos',
     el: '/el/qr-code-gamou',
 };
 

@@ -12,6 +12,7 @@ import { EventInfoSection } from '@/components/feed/EventInfoSection';
 import { EventSessionActionButtons } from '@/components/feed/EventSessionActionButtons';
 import { FeedEmptyState } from '@/components/feed/FeedEmptyState';
 import { FeedPostRenderer } from '@/components/feed/FeedPostRenderer';
+import { GuestOfferCard } from '@/components/feed/guestOffer/GuestOfferCard';
 import { Header } from '@/components/feed/Header';
 import { HeOrShePromptCard } from '@/components/feed/HeOrShePromptCard';
 import { PartnerBrandingPromptModal } from '@/components/feed/partner/PartnerBrandingPromptModal';
@@ -23,6 +24,7 @@ import { StoriesRow } from '@/components/feed/StoriesRow';
 import { InstallAppBanner } from '@/components/pwa/InstallAppBanner';
 import { StoryModal } from '@/components/story/StoryModal';
 import { AppLink } from '@/components/ui/AppLink';
+import { VendorQuickActions } from '@/components/vendors/feed/VendorQuickActions';
 import { VendorProfilePrompt } from '@/components/vendors/VendorProfilePrompt';
 import { eventKeys } from '@/hooks/useEvent';
 import { useFeedItems } from '@/hooks/useFeedItems';
@@ -114,6 +116,9 @@ export function FeedPageContent() {
                 <EventInfoSection event={event} />
             </section>
 
+            {/* Vendor tools */}
+            <VendorQuickActions eventId={eventId} isHost={isHost} />
+
             {/* Stories */}
             {moduleFlags.stories && (
                 <section id="stories" className={cn('top-0 bg-event/90 backdrop-blur-sm')}>
@@ -140,6 +145,8 @@ export function FeedPageContent() {
                     >
                         <ComposerCard />
                         <PublishQueueCards />
+                        {/* Guest offer */}
+                        <GuestOfferCard eventId={eventId} isHost={isHost} />
                         {/* Boy or Girl? prompt */}
                         <HeOrShePromptCard eventId={eventId} eventType={event.eventType} enabled={moduleFlags.he_or_she} />
                         <div className="flex flex-col">

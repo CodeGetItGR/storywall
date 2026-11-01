@@ -9,7 +9,9 @@ import {
     Flag,
     Footprints,
     GalleryVerticalEnd,
+    Gift,
     Handshake,
+    History,
     Inbox,
     LayoutGrid,
     Link2,
@@ -60,6 +62,7 @@ export type AdminTab =
     | 'outreach'
     | 'outreachRequests'
     | 'discountCodes'
+    | 'guestOffer'
     | 'partnerApplications'
     | 'collaborations'
     | 'partnerCards'
@@ -80,6 +83,7 @@ export type AdminTab =
     | 'campaignOverview'
     | 'campaigns'
     | 'siteNotices'
+    | 'auditLog'
     | 'phones';
 
 export type AdminTabItem = {
@@ -114,6 +118,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#paid-services': 'paidServices',
     '#outreach-requests': 'outreachRequests',
     '#discount-codes': 'discountCodes',
+    '#guest-offer': 'guestOffer',
     '#partner-cards': 'partnerCards',
     '#reaction-types': 'reactionTypes',
     '#theme-presets': 'themePresets',
@@ -128,6 +133,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#campaign-overview': 'campaignOverview',
     '#campaigns': 'campaigns',
     '#site-notices': 'siteNotices',
+    '#audit-log': 'auditLog',
     '#phones': 'phones',
 };
 
@@ -142,6 +148,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     outreach: OUTREACH_HASH_ROOT,
     outreachRequests: '#outreach-requests',
     discountCodes: '#discount-codes',
+    guestOffer: '#guest-offer',
     partnerApplications: PARTNER_APPLICATIONS_HASH_ROOT,
     collaborations: COLLABORATIONS_HASH_ROOT,
     partnerCards: '#partner-cards',
@@ -162,6 +169,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     errorEvents: '#errors',
     appReviews: '#reviews',
     siteNotices: '#site-notices',
+    auditLog: '#audit-log',
     phones: '#phones',
 };
 
@@ -262,6 +270,7 @@ export function AdminNavigationProvider({ children, role = 'ADMIN' }: { children
             { key: 'outreach', label: t('outreach'), icon: Send },
             { key: 'outreachRequests', label: t('outreachRequests'), icon: ListChecks },
             { key: 'discountCodes', label: t('discountCodes'), icon: TicketPercent },
+            { key: 'guestOffer', label: t('guestOffer'), icon: Gift },
             { key: 'appReviews', label: t('appReviews'), icon: Star },
             { key: 'campaignOverview', label: t('campaignOverview'), icon: ChartLine },
             { key: 'campaigns', label: t('campaigns'), icon: Link2 },
@@ -282,6 +291,7 @@ export function AdminNavigationProvider({ children, role = 'ADMIN' }: { children
             { key: 'reports', label: t('reports'), icon: Flag },
             { key: 'bugReports', label: t('bugReports'), icon: Bug },
             { key: 'errorEvents', label: t('errorEvents'), icon: OctagonAlert },
+            { key: 'auditLog', label: t('auditLog'), icon: History },
             { key: 'phones', label: t('phones'), icon: Smartphone },
         ],
         [t],

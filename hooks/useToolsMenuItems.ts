@@ -29,7 +29,7 @@ import { isEventDeleted, readableModuleKeys } from '@/lib/eventLifecycle';
 import { canEditOwnRole, ROLE_SHEET_VALUE } from '@/lib/memberRoles';
 import { isGalleryOpenToGuests, isGalleryQrFeatureEnabled } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
-import { hasVendorCapability, listedVendors } from '@/lib/vendors';
+import { hasVendorCapability, listedVendors, type VendorActionKey } from '@/lib/vendors';
 import { useActiveEvent, useActiveMember, useContentAccessMode, useIsHost, useRouteEventId } from '@/providers/EventProvider';
 
 export interface ToolMenuItem {
@@ -38,6 +38,8 @@ export interface ToolMenuItem {
     icon: LucideIcon;
     label: string;
     description: string;
+    // A vendor tool, drawn with its mini icon instead of the plain one.
+    vendorTool?: VendorActionKey;
 }
 
 /** Only the tools whose backing module is actually available for the active event, plus the always-on schedule. */
@@ -113,16 +115,28 @@ export function useToolsMenuItems(): ToolMenuItem[] {
             .map((tool) => {
                 const copyKey = tool.copyKey ?? tool.moduleKey;
                 const copy = copyKey && copyKey !== 'member_roles' ? moduleCopy(copyKey) : null;
+                // The schedule is everyone's; only a vendor who edits it sees it as their tool.
+                const vendorTool = tool.key === 'schedule' && !hasVendorCapability(me, 'SCHEDULE_EDIT') ? undefined : VENDOR_TOOL_KEYS[tool.key];
                 return {
                     key: tool.key,
                     href: tool.href,
                     icon: tool.icon,
+                    vendorTool,
                     label: copy?.name ?? t(`items.${tool.key}.label`),
                     description: copy?.description ?? t(`items.${tool.key}.description`),
                 };
             })
     );
 }
+
+// Menu entries that are vendor tools, by menu key.
+const VENDOR_TOOL_KEYS: Partial<Record<string, VendorActionKey>> = {
+    schedule: 'schedule',
+    announcement: 'announcement',
+    rsvpReport: 'rsvpReport',
+    vendorQr: 'qr',
+    liveRequests: 'liveRequests',
+};
 
 /** The host's own administrative destinations. The dashboard is one
  * destination: its own section list handles RSVP, invitations, settings and

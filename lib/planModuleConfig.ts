@@ -1,17 +1,19 @@
+import { PARTNER_ROLES } from '@/lib/adminPartnerBranding';
 import { STORAGE_UNITS, storageBytesToInput, storageInputToBytes, type StorageUnit } from '@/lib/adminPlanForm';
-import type { EventModuleResponseDto, ModuleKey, PlanTierResponseDto } from '@/lib/api/types';
+import type { EventModuleResponseDto, ModuleKey, PartnerRole, PlanTierResponseDto } from '@/lib/api/types';
 
 // The per-plan module config keys the backend documents. Each gets a labelled
-// control in the plan grid (AdminPage.plans.grid.cell.fields.<key>); anything
-// else stays editable through the collapsed Advanced JSON field, so a new key
-// works before it gets a control here. `hint` adds fieldHints.<key> under it.
+// control in the plan grid (AdminPage.plans.grid.cell.fields.<key>); any other
+// key the server sends is kept as it is on save. `hint` adds fieldHints.<key> under it.
 // A `required` number has no "Unlimited": the server wants the key with a value
 // (a blank would drop it), so the grid shows a plain number input. `max` mirrors
 // the server's upper bound. A `storage` number is bytes on the wire but edited as
-// an amount and an MB/GB/TB unit; its draft holds both ("5 GB").
+// an amount and an MB/GB/TB unit; its draft holds both ("5 GB"). A `types` field is
+// a list of vendor types, edited as checkboxes; its draft is the types joined by commas.
 export type KnownConfigField =
     | { key: string; type: 'number'; min?: number; max?: number; required?: boolean; storage?: boolean }
-    | { key: string; type: 'boolean'; hint?: boolean };
+    | { key: string; type: 'boolean'; hint?: boolean }
+    | { key: string; type: 'types' };
 
 // The vendors config PATCH replaces the whole map and refuses anything else:
 // whole numbers of 0 to 2^31-1 (bytes: 0 to the largest exact JS integer, the server allows more).
@@ -25,13 +27,31 @@ const KNOWN_CONFIG_FIELDS: Record<string, KnownConfigField[]> = {
     ],
     co_hosts: [{ key: 'maxCoHosts', type: 'number', min: 0 }],
     member_roles: [{ key: 'allowCustom', type: 'boolean', hint: true }],
-    // allowedTypes (a list of vendor types) stays in the Advanced JSON; it rides along as an unknown key.
     vendors: [
         { key: 'maxVendors', type: 'number', min: 0, max: INT32_MAX, required: true },
+        { key: 'allowedTypes', type: 'types' },
         { key: 'accessDaysAfterEvent', type: 'number', min: 0, max: INT32_MAX, required: true },
         { key: 'proStorageBytes', type: 'number', min: 0, max: Number.MAX_SAFE_INTEGER, required: true, storage: true },
     ],
 };
+
+// A types draft is the picked types in PARTNER_ROLES order, joined by commas ("" = none).
+export function typesDraft(value: unknown): string {
+    const picked: unknown[] = Array.isArray(value) ? value : [];
+    return PARTNER_ROLES.filter((role) => picked.includes(role)).join(',');
+}
+
+export function typesFromDraft(text: string): PartnerRole[] {
+    const picked = text.split(',');
+    return PARTNER_ROLES.filter((role) => picked.includes(role));
+}
+
+export function toggleTypeDraft(text: string, role: PartnerRole, checked: boolean): string {
+    const picked = new Set(typesFromDraft(text));
+    if (checked) picked.add(role);
+    else picked.delete(role);
+    return typesDraft([...picked]);
+}
 
 // A storage field's draft: the amount and unit the admin sees, e.g. "5 GB".
 export function storageDraft(amount: string, unit: StorageUnit): string {
@@ -128,23 +148,37 @@ export function splitConfig(moduleKey: ModuleKey, config: ConfigObject): { known
     return { known, unknown };
 }
 
-export type ParsedConfigJson = { ok: true; value: ConfigObject } | { ok: false };
-
-export function parseConfigJson(text: string): ParsedConfigJson {
-    const trimmed = text.trim();
-    if (!trimmed) return { ok: true, value: {} };
-    try {
-        const value: unknown = JSON.parse(trimmed);
-        if (value === null || typeof value !== 'object' || Array.isArray(value)) return { ok: false };
-        return { ok: true, value: value as ConfigObject };
-    } catch {
-        return { ok: false };
+// One known field's draft back to its typed value; undefined drops the key (a blank
+// number, an untouched switch). An untouched draft keeps `before`'s exact value: a storage
+// amount is rounded, and a types list may be in another order.
+export function fieldValueFromDraft(field: KnownConfigField, raw: string | undefined, before?: unknown): unknown {
+    if (field.type === 'boolean') {
+        if (raw === 'true') return true;
+        if (raw === 'false') return false;
+        return undefined;
     }
+    if (field.type === 'types') {
+        if (raw === undefined) return undefined;
+        return Array.isArray(before) && raw === typesDraft(before) ? before : typesFromDraft(raw);
+    }
+    if (field.storage) {
+        const bytes = raw === storageDraftFromBytes(before) ? before : storageDraftToBytes(raw ?? '');
+        return typeof bytes === 'number' ? bytes : undefined;
+    }
+    const text = (raw ?? '').trim();
+    if (!text) return undefined;
+    const parsed = Number(text);
+    return Number.isNaN(parsed) ? undefined : parsed;
+}
+
+export function fieldDraftFromValue(field: KnownConfigField, value: unknown): string {
+    if (field.type === 'types') return typesDraft(value);
+    if (field.type === 'number' && field.storage) return storageDraftFromBytes(value);
+    return value === undefined || value === null ? '' : String(value);
 }
 
 // Known fields are edited as strings (input values); this turns them back into
-// typed values and merges the untouched unknown keys. A blank number means "unset".
-// An untouched storage draft keeps `before`'s exact bytes, which its rounded amount may not.
+// typed values and merges the untouched unknown keys.
 export function mergeConfigDraft(
     moduleKey: ModuleKey,
     knownDraft: Record<string, string>,
@@ -153,32 +187,15 @@ export function mergeConfigDraft(
 ): ConfigObject {
     const merged: ConfigObject = { ...unknown };
     for (const field of knownConfigFields(moduleKey)) {
-        const raw = knownDraft[field.key];
-        if (field.type === 'boolean') {
-            if (raw === 'true') merged[field.key] = true;
-            else if (raw === 'false') merged[field.key] = false;
-            continue;
-        }
-        if (field.storage) {
-            const bytes = raw === storageDraftFromBytes(before[field.key]) ? before[field.key] : storageDraftToBytes(raw ?? '');
-            if (typeof bytes === 'number') merged[field.key] = bytes;
-            continue;
-        }
-        const text = (raw ?? '').trim();
-        if (!text) continue;
-        const parsed = Number(text);
-        if (!Number.isNaN(parsed)) merged[field.key] = parsed;
+        const value = fieldValueFromDraft(field, knownDraft[field.key], before[field.key]);
+        if (value !== undefined) merged[field.key] = value;
     }
     return merged;
 }
 
 export function knownDraftFromConfig(moduleKey: ModuleKey, config: ConfigObject): Record<string, string> {
     const draft: Record<string, string> = {};
-    for (const field of knownConfigFields(moduleKey)) {
-        const value = config[field.key];
-        if (field.type === 'number' && field.storage) draft[field.key] = storageDraftFromBytes(value);
-        else draft[field.key] = value === undefined || value === null ? '' : String(value);
-    }
+    for (const field of knownConfigFields(moduleKey)) draft[field.key] = fieldDraftFromValue(field, config[field.key]);
     return draft;
 }
 
@@ -220,20 +237,61 @@ export type ConfigValueLabels = {
     on: string;
     off: string;
     none: string;
+    type: (role: PartnerRole) => string;
+    allTypes: string;
+    typeCount: (count: number, total: number) => string;
 };
+
+// More types than this read as a count in a plan grid cell; the full list stays in the popover.
+const SHORT_TYPES_MAX = 2;
+
+// A known setting's value in words: On/Off, "Up to 3" or Unlimited for a cap, the plain
+// number (or size) for a required one, and the vendor types by name (All when every type).
+export function describeConfigValue(field: KnownConfigField, value: unknown, labels: ConfigValueLabels): string {
+    if (field.type === 'boolean') return value === true ? labels.on : labels.off;
+    if (field.type === 'types') {
+        const types = typesFromDraft(typesDraft(value));
+        if (types.length === 0) return labels.none;
+        if (types.length === PARTNER_ROLES.length) return labels.allTypes;
+        return types.map(labels.type).join(', ');
+    }
+    if (typeof value !== 'number') return field.required ? labels.none : labels.unlimited;
+    const amount = field.storage ? storageDraftFromBytes(value) : value;
+    return field.required ? String(amount) : labels.upTo(amount);
+}
 
 // The confirm step's change list in words for known settings
 // ("Co-hosts: Up to 3 → Unlimited"); unknown keys keep the raw key and JSON.
 export function readableConfigChanges(moduleKey: ModuleKey, before: ConfigObject, after: ConfigObject, labels: ConfigValueLabels): ConfigChange[] {
     const fields = new Map(knownConfigFields(moduleKey).map((field) => [field.key, field]));
-    return configChangeSummary(before, after, labels.none).map((change) => {
+    return configChangeSummary(before, after, labels.none).flatMap((change) => {
         const field = fields.get(change.key);
-        if (!field) return change;
-        const describe = (value: unknown) => {
-            if (field.type === 'boolean') return value === true ? labels.on : labels.off;
-            if (typeof value !== 'number') return labels.unlimited;
-            return labels.upTo(field.storage ? storageDraftFromBytes(value) : value);
-        };
-        return { key: labels.field(field.key), before: describe(before[field.key]), after: describe(after[field.key]) };
+        if (!field) return [change];
+        const left = describeConfigValue(field, before[field.key], labels);
+        const right = describeConfigValue(field, after[field.key], labels);
+        // The same types in another order is no change.
+        return left === right ? [] : [{ key: labels.field(field.key), before: left, after: right }];
     });
+}
+
+export type ConfigSummaryItem = { key: string; label: string; value: string };
+
+// A plan grid cell's settings in words, known settings first in field order; any other key
+// shows its raw key and JSON. A long list of types reads as a count ("6 of 8 types").
+export function configSummary(moduleKey: ModuleKey, config: ConfigObject, labels: ConfigValueLabels): ConfigSummaryItem[] {
+    const fields = knownConfigFields(moduleKey);
+    const known = fields
+        .filter((field) => field.key in config)
+        .map((field) => ({ key: field.key, label: labels.field(field.key), value: summaryValue(field, config[field.key], labels) }));
+    const { unknown } = splitConfig(moduleKey, config);
+    const rest = Object.entries(unknown).map(([key, value]) => ({ key, label: key, value: formatConfigValue(value) }));
+    return [...known, ...rest];
+}
+
+function summaryValue(field: KnownConfigField, value: unknown, labels: ConfigValueLabels): string {
+    if (field.type !== 'types') return describeConfigValue(field, value, labels);
+    const count = typesFromDraft(typesDraft(value)).length;
+    return count > SHORT_TYPES_MAX && count < PARTNER_ROLES.length
+        ? labels.typeCount(count, PARTNER_ROLES.length)
+        : describeConfigValue(field, value, labels);
 }

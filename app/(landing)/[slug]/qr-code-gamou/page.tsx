@@ -7,7 +7,7 @@ import { getQrWeddingMetadata } from '@/lib/qrWeddingMetadata';
 type PageProps = { params: Promise<{ slug: string }> };
 
 // Only /el/qr-code-gamou exists; /en/qr-code-gamou and any other slug 404.
-// The English page lives at /wedding-qr-code. The segment is [slug] because it also
+// The English page lives at /qr-code-for-wedding-photos. The segment is [slug] because it also
 // serves English occasion pages (see ../page.tsx).
 export function generateStaticParams() {
     return [{ slug: 'el' }];

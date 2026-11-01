@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 
 import { adminKeys } from '@/hooks/useAdmin';
 import { invalidatePublicConfig } from '@/hooks/useAppConfig';
+import { auditLogKeys } from '@/lib/adminAuditLog';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { PlanTierModuleConfigDto, PlanTierModuleConfigPatchDto } from '@/lib/api/types';
@@ -44,6 +45,7 @@ export function useUpdatePlanModuleConfig() {
             api.patch<PlanTierModuleConfigDto>(endpoints.admin.planTiers.moduleConfig(planId, moduleKey), input),
         onSuccess: (_result, { planId }) => {
             queryClient.invalidateQueries({ queryKey: adminKeys.planTierModuleConfigs(planId) });
+            queryClient.invalidateQueries({ queryKey: auditLogKeys.all });
             invalidatePublicConfig(queryClient);
         },
     });

@@ -2,11 +2,12 @@
 
 import { useInvalidate } from '@refinedev/core';
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { useSetPlanModules } from '@/hooks/useAdmin';
+import { useConfigValueLabels } from '@/hooks/useConfigValueLabels';
 import { useUpdatePlanModuleConfig } from '@/hooks/usePlanModuleConfigs';
-import type { PlanTierResponseDto } from '@/lib/api/types';
+import type { PartnerRole, PlanTierResponseDto } from '@/lib/api/types';
 import {
     type ConfigChange,
     type ConfigObject,
@@ -15,9 +16,9 @@ import {
     knownDraftFromConfig,
     limitedKeysFromDraft,
     mergeConfigDraft,
-    parseConfigJson,
     readableConfigChanges,
     splitConfig,
+    toggleTypeDraft,
 } from '@/lib/planModuleConfig';
 import type { PlanModuleCell } from '@/lib/planModuleGrid';
 
@@ -36,6 +37,7 @@ export function usePlanModuleCellDraft({ cell, plan, onSavedAction }: { cell: Ed
     const updateConfig = useUpdatePlanModuleConfig();
     const setPlanModules = useSetPlanModules();
     const invalidate = useInvalidate();
+    const labels = useConfigValueLabels();
 
     const initialSplit = useMemo(() => splitConfig(cell.moduleKey, cell.config), [cell.config, cell.moduleKey]);
     const [included, setIncluded] = useState(cell.kind === 'included');
@@ -43,11 +45,9 @@ export function usePlanModuleCellDraft({ cell, plan, onSavedAction }: { cell: Ed
     const [limitedKeys, setLimitedKeys] = useState<string[]>(() =>
         limitedKeysFromDraft(cell.moduleKey, knownDraftFromConfig(cell.moduleKey, cell.config)),
     );
-    const [jsonText, setJsonText] = useState(() => (Object.keys(initialSplit.unknown).length ? JSON.stringify(initialSplit.unknown, null, 2) : ''));
     const [pending, setPending] = useState<PendingCellSave | null>(null);
 
     const fields = useMemo(() => knownConfigFields(cell.moduleKey), [cell.moduleKey]);
-    const parsedJson = useMemo(() => parseConfigJson(jsonText), [jsonText]);
 
     const fieldErrors = useMemo(() => {
         const errors: Record<string, string> = {};
@@ -66,26 +66,14 @@ export function usePlanModuleCellDraft({ cell, plan, onSavedAction }: { cell: Ed
         return errors;
     }, [fields, knownDraft, limitedKeys, t]);
 
-    const jsonError = parsedJson.ok ? null : t('plans.grid.cell.invalidJson');
-
+    // Keys without a control here are sent back as they are.
     const configAfter = useMemo(
-        () => mergeConfigDraft(cell.moduleKey, knownDraft, parsedJson.ok ? parsedJson.value : initialSplit.unknown, cell.config),
-        [cell.config, cell.moduleKey, initialSplit.unknown, knownDraft, parsedJson],
+        () => mergeConfigDraft(cell.moduleKey, knownDraft, initialSplit.unknown, cell.config),
+        [cell.config, cell.moduleKey, initialSplit.unknown, knownDraft],
     );
-    const changes = useMemo(
-        () =>
-            readableConfigChanges(cell.moduleKey, cell.config, configAfter, {
-                field: (key) => t(`plans.grid.cell.fields.${key}`),
-                unlimited: t('plans.grid.cell.unlimited'),
-                upTo: (count) => t('plans.grid.cell.upToValue', { count }),
-                on: t('plans.grid.cell.on'),
-                off: t('plans.grid.cell.off'),
-                none: t('none'),
-            }),
-        [cell.config, cell.moduleKey, configAfter, t],
-    );
+    const changes = useMemo(() => readableConfigChanges(cell.moduleKey, cell.config, configAfter, labels), [cell.config, cell.moduleKey, configAfter, labels]);
     const includedChanged = included !== (cell.kind === 'included');
-    const canSave = !jsonError && Object.keys(fieldErrors).length === 0 && (changes.length > 0 || includedChanged);
+    const canSave = Object.keys(fieldErrors).length === 0 && (changes.length > 0 || includedChanged);
 
     const handleLimitModeChange = useCallback(
         (key: string, limited: boolean) => {
@@ -102,15 +90,17 @@ export function usePlanModuleCellDraft({ cell, plan, onSavedAction }: { cell: Ed
         (key: string, checked: boolean) => setKnownDraft((current) => ({ ...current, [key]: String(checked) })),
         [],
     );
-    const handleJsonChange = useCallback((event: ChangeEvent<HTMLTextAreaElement>) => setJsonText(event.currentTarget.value), []);
+    const handleTypeChange = useCallback(
+        (key: string, role: PartnerRole, checked: boolean) =>
+            setKnownDraft((current) => ({ ...current, [key]: toggleTypeDraft(current[key] ?? '', role, checked) })),
+        [],
+    );
     const handleIncludedChange = useCallback((next: boolean) => setIncluded(next), []);
 
     const resetToSeed = useCallback(() => {
-        const seedSplit = splitConfig(cell.moduleKey, cell.seedConfig);
         const seedDraft = knownDraftFromConfig(cell.moduleKey, cell.seedConfig);
         setKnownDraft(seedDraft);
         setLimitedKeys(limitedKeysFromDraft(cell.moduleKey, seedDraft));
-        setJsonText(Object.keys(seedSplit.unknown).length ? JSON.stringify(seedSplit.unknown, null, 2) : '');
     }, [cell.moduleKey, cell.seedConfig]);
 
     const requestSave = useCallback(() => {
@@ -145,9 +135,7 @@ export function usePlanModuleCellDraft({ cell, plan, onSavedAction }: { cell: Ed
         fields,
         included,
         knownDraft,
-        jsonText,
         fieldErrors,
-        jsonError,
         canSave,
         pending,
         isSaving: updateConfig.isPending || setPlanModules.isPending,
@@ -156,7 +144,7 @@ export function usePlanModuleCellDraft({ cell, plan, onSavedAction }: { cell: Ed
         handleLimitModeChange,
         handleLimitValueChange,
         handleSwitchChange,
-        handleJsonChange,
+        handleTypeChange,
         handleIncludedChange,
         resetToSeed,
         requestSave,

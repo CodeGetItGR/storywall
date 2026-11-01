@@ -6,7 +6,6 @@ import { useTranslations } from 'next-intl';
 
 import { AdminSwitch } from '@/components/admin/AdminSwitch';
 import { PlanModuleChangeList } from '@/components/admin/plans/PlanModuleChangeList';
-import { PlanModuleConfigAdvanced } from '@/components/admin/plans/PlanModuleConfigAdvanced';
 import { PlanModuleConfigFields } from '@/components/admin/plans/PlanModuleConfigFields';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { type EditableCell, usePlanModuleCellDraft } from '@/hooks/usePlanModuleCellDraft';
@@ -63,10 +62,8 @@ export function PlanModuleConfigPopover({
                                     onLimitModeChangeAction={draft.handleLimitModeChange}
                                     onLimitValueChangeAction={draft.handleLimitValueChange}
                                     onSwitchChangeAction={draft.handleSwitchChange}
+                                    onTypeChangeAction={draft.handleTypeChange}
                                 />
-
-                                {/* Advanced */}
-                                <PlanModuleConfigAdvanced value={draft.jsonText} error={draft.jsonError} onChangeAction={draft.handleJsonChange} />
 
                                 {/* Reset */}
                                 <button

@@ -13,7 +13,7 @@ import { useAdminPlatformModules } from '@/hooks/useAdmin';
 import { useEventConfirmActions } from '@/hooks/useEventConfirmActions';
 import type { EventDetailOverlays as Overlays } from '@/hooks/useEventDetailOverlays';
 import { useLocalizedModuleLabel } from '@/hooks/useLocalizedModuleLabel';
-import { findModuleConfig } from '@/lib/adminEvents';
+import { eventHasModule, findModuleConfig } from '@/lib/adminEvents';
 import type { AdminEventDetailDto } from '@/lib/api/types';
 
 // Every drawer and confirmation the event page opens. Only the last one opened is mounted.
@@ -58,6 +58,7 @@ export function EventDetailOverlays({ event, overlays }: { event: AdminEventDeta
                     eventId={event.id}
                     config={config}
                     moduleName={moduleLabel(overlay.moduleKey).name}
+                    hasModule={eventHasModule(event, overlay.moduleKey)}
                     onCloseAction={overlays.close}
                 />
             );

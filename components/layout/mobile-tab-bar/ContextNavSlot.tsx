@@ -12,6 +12,7 @@ interface ContextNavSlotProps {
     TriggerIcon?: LucideIcon;
     items: ContextNavItem[];
     menuLabel: string;
+    showLabel?: boolean;
     pathname: string;
     searchParams: string;
     onItemClick: (event: MouseEvent<HTMLElement>) => void;
@@ -23,6 +24,7 @@ export function ContextNavSlot({
     TriggerIcon,
     items,
     menuLabel,
+    showLabel = false,
     pathname,
     searchParams,
     onItemClick,
@@ -40,6 +42,7 @@ export function ContextNavSlot({
             TriggerIcon={TriggerIcon}
             items={items}
             label={menuLabel}
+            showLabel={showLabel}
             pathname={pathname}
             searchParams={searchParams}
             onItemClick={onItemClick}

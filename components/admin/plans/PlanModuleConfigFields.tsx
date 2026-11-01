@@ -1,6 +1,7 @@
 'use client';
 
 import { PlanModuleConfigField } from '@/components/admin/plans/PlanModuleConfigField';
+import type { PartnerRole } from '@/lib/api/types';
 import type { KnownConfigField } from '@/lib/planModuleConfig';
 
 export function PlanModuleConfigFields({
@@ -11,6 +12,7 @@ export function PlanModuleConfigFields({
     onLimitModeChangeAction,
     onLimitValueChangeAction,
     onSwitchChangeAction,
+    onTypeChangeAction,
 }: {
     fields: KnownConfigField[];
     draft: Record<string, string>;
@@ -19,6 +21,7 @@ export function PlanModuleConfigFields({
     onLimitModeChangeAction: (key: string, limited: boolean) => void;
     onLimitValueChangeAction: (key: string, value: string) => void;
     onSwitchChangeAction: (key: string, checked: boolean) => void;
+    onTypeChangeAction: (key: string, role: PartnerRole, checked: boolean) => void;
 }) {
     if (fields.length === 0) return null;
 
@@ -34,6 +37,7 @@ export function PlanModuleConfigFields({
                     onLimitModeChangeAction={onLimitModeChangeAction}
                     onLimitValueChangeAction={onLimitValueChangeAction}
                     onSwitchChangeAction={onSwitchChangeAction}
+                    onTypeChangeAction={onTypeChangeAction}
                 />
             ))}
         </div>

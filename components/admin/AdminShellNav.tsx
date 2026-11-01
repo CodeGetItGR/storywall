@@ -22,6 +22,7 @@ const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operat
     outreach: 'marketing',
     outreachRequests: 'marketing',
     discountCodes: 'marketing',
+    guestOffer: 'marketing',
     appReviews: 'marketing',
     campaignOverview: 'marketing',
     campaigns: 'marketing',
@@ -43,6 +44,7 @@ const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operat
     reports: 'operations',
     bugReports: 'operations',
     errorEvents: 'operations',
+    auditLog: 'operations',
 };
 const GROUP_ORDER = ['overview', 'catalog', 'marketing', 'operations'] as const;
 

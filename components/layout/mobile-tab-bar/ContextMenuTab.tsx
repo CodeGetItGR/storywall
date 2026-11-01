@@ -2,10 +2,12 @@ import { Menu } from '@base-ui/react/menu';
 import { type LucideIcon, Menu as MenuIcon, X } from 'lucide-react';
 import { type MouseEvent, useState } from 'react';
 
+import { VendorToolIcon } from '@/components/vendors/VendorToolIcon';
 import { useRegisterOverlayPresence } from '@/hooks/useOverlayPresence';
 import { usePrefetchRoutes } from '@/hooks/usePrefetchRoutes';
 import { cn } from '@/lib/utils';
 
+import { tabBoxClass, tabIconBoxClass, TabLabel } from './TabLabel';
 import type { ContextNavItem } from './types';
 import { mostSpecificActiveHref } from './utils';
 
@@ -14,12 +16,22 @@ interface ContextMenuTabProps {
     TriggerIcon?: LucideIcon;
     items: ContextNavItem[];
     label: string;
+    showLabel?: boolean;
     pathname: string;
     searchParams: string;
     onItemClick: (event: MouseEvent<HTMLElement>) => void;
 }
 
-export function ContextMenuTab({ active, TriggerIcon = MenuIcon, items, label, pathname, searchParams, onItemClick }: ContextMenuTabProps) {
+export function ContextMenuTab({
+    active,
+    TriggerIcon = MenuIcon,
+    items,
+    label,
+    showLabel = false,
+    pathname,
+    searchParams,
+    onItemClick,
+}: ContextMenuTabProps) {
     const [open, setOpen] = useState(false);
     useRegisterOverlayPresence(open);
     const prefetchItems = usePrefetchRoutes(items.map((item) => item.href));
@@ -38,12 +50,13 @@ export function ContextMenuTab({ active, TriggerIcon = MenuIcon, items, label, p
         <Menu.Root open={open} onOpenChange={handleOpenChange}>
             <Menu.Trigger
                 aria-label={label}
-                className="group flex min-w-12 flex-col items-center gap-0.5 px-3 py-1 transition-opacity md:hidden"
+                className={cn('group flex flex-col items-center gap-0.5 py-1 transition-opacity md:hidden', tabBoxClass(showLabel))}
                 aria-current={active ? 'page' : undefined}
             >
                 <span
                     className={cn(
-                        'relative flex h-10 w-10 items-center justify-center transition-all duration-200',
+                        'relative flex items-center justify-center transition-all duration-200',
+                        tabIconBoxClass(showLabel),
                         active ? 'scale-105 opacity-100' : 'scale-100 opacity-50',
                         'group-data-popup-open:scale-105 group-data-popup-open:opacity-100',
                     )}
@@ -61,6 +74,7 @@ export function ContextMenuTab({ active, TriggerIcon = MenuIcon, items, label, p
                         aria-hidden="true"
                     />
                 </span>
+                {showLabel && <TabLabel label={label} active={active} className="group-data-popup-open:opacity-100" />}
             </Menu.Trigger>
             <Menu.Portal>
                 <Menu.Positioner
@@ -86,7 +100,11 @@ export function ContextMenuTab({ active, TriggerIcon = MenuIcon, items, label, p
                                         itemActive ? 'bg-surface-muted' : 'hover:bg-surface-muted',
                                     )}
                                 >
-                                    <Icon className="h-4 w-4 shrink-0 text-ink-muted" aria-hidden="true" />
+                                    {item.vendorTool ? (
+                                        <VendorToolIcon tool={item.vendorTool} size="sm" className="-mx-1" />
+                                    ) : (
+                                        <Icon className="h-4 w-4 shrink-0 text-ink-muted" aria-hidden="true" />
+                                    )}
                                     <span className="min-w-0 flex-1">
                                         <span className="block truncate text-sm font-medium text-ink">{item.label}</span>
                                         {item.description && <span className="block truncate text-xs text-ink-muted">{item.description}</span>}

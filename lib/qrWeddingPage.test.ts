@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { AppConfigResponseDto } from '@/lib/api/types';
-import { QR_WEDDING_CREATE_HREF, qrWeddingPageLive, qrWeddingRedirectPath } from '@/lib/qrWeddingPage';
+import { QR_WEDDING_CREATE_HREF, qrWeddingFaqItems, qrWeddingMovedPath, qrWeddingPageLive, qrWeddingRedirectPath } from '@/lib/qrWeddingPage';
 
 function config(eventTypes: { eventTypeKey: string; isEnabled: boolean }[]): AppConfigResponseDto {
     return { eventTypes } as unknown as AppConfigResponseDto;
@@ -39,6 +39,7 @@ describe('qrWeddingRedirectPath', () => {
 
     it('sends each language to its wedding page on the production site before launch', () => {
         vi.stubEnv('VERCEL_ENV', 'production');
+        expect(qrWeddingRedirectPath('/qr-code-for-wedding-photos')).toBe('/weddings');
         expect(qrWeddingRedirectPath('/wedding-qr-code')).toBe('/weddings');
         expect(qrWeddingRedirectPath('/el/qr-code-gamou')).toBe('/el/gamos');
     });
@@ -54,6 +55,38 @@ describe('qrWeddingRedirectPath', () => {
         vi.stubEnv('VERCEL_ENV', 'production');
         vi.stubEnv('NEXT_PUBLIC_APP_ENV', 'staging');
         expect(qrWeddingRedirectPath('/el/qr-code-gamou')).toBeNull();
+    });
+});
+
+describe('qrWeddingMovedPath', () => {
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    it('sends the earlier English URLs to the current one', () => {
+        expect(qrWeddingMovedPath('/wedding-qr-code')).toBe('/qr-code-for-wedding-photos');
+        expect(qrWeddingMovedPath('/en/wedding-qr-code')).toBe('/qr-code-for-wedding-photos');
+        expect(qrWeddingMovedPath('/qr-code-for-wedding-photos')).toBeNull();
+    });
+
+    it('leaves them to the pre-launch redirect on the production site', () => {
+        vi.stubEnv('VERCEL_ENV', 'production');
+        expect(qrWeddingMovedPath('/wedding-qr-code')).toBeNull();
+    });
+});
+
+describe('qrWeddingFaqItems', () => {
+    const items = [
+        { q: 'Free?', a: 'No.' },
+        { q: 'Cost?', a: 'From {price}.' },
+    ];
+
+    it('fills in the price', () => {
+        expect(qrWeddingFaqItems(items, '119€')).toEqual([items[0], { q: 'Cost?', a: 'From 119€.' }]);
+    });
+
+    it('leaves out an answer that needs a price it does not have', () => {
+        expect(qrWeddingFaqItems(items, '')).toEqual([items[0]]);
     });
 });
 

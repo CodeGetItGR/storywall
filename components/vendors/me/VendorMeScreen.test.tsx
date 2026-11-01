@@ -9,6 +9,7 @@ vi.mock('next-intl', () => ({
 }));
 vi.mock('@/components/tools/ModulePageShell', () => ({ ModulePageShell: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
 vi.mock('@/lib/datetime', () => ({ formatDate: () => '12 July 2027' }));
+vi.mock('@/hooks/useVendorPageSectionTarget', () => ({ useVendorPageSectionTarget: () => undefined }));
 vi.mock('@/components/routing/EventRouteGate', () => ({ useEventRouteContext: () => ({ eventId: 'e1', activeEvent: { id: 'e1' }, isHost: false }) }));
 vi.mock('@/components/vendors/me/ProAlbumSection', () => ({ ProAlbumSection: () => <p>pro album</p> }));
 vi.mock('@/components/vendors/me/PartnerBenefitsSection', () => ({ PartnerBenefitsSection: () => <p>partner block</p> }));

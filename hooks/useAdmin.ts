@@ -2,6 +2,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 
 import { invalidatePublicConfig } from '@/hooks/useAppConfig';
 import { notificationKeys } from '@/hooks/useNotifications';
+import { auditLogKeys } from '@/lib/adminAuditLog';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
@@ -485,6 +486,7 @@ export function useSetPlanModules() {
             queryClient.setQueryData<PlanTierResponseDto[]>(plansKey, (plans = []) =>
                 plans.map((plan) => (plan.id === updatedPlan.id ? updatedPlan : plan)),
             );
+            queryClient.invalidateQueries({ queryKey: auditLogKeys.all });
             invalidatePublicConfig(queryClient);
         },
         onSettled: () => {

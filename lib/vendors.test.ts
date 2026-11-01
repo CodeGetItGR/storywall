@@ -6,16 +6,23 @@ import {
     capabilitiesOfType,
     hasProAllowance,
     hasVendorCapability,
-    isValidVendorLink,
+    instagramHandle,
+    instagramHref,
+    isValidVendorEmail,
+    isValidVendorPhone,
+    isValidVendorWebsite,
+    isVendorPageSection,
     listedVendors,
     proStorageState,
+    serviceTagsForType,
     sortByVendorType,
     VENDOR_TYPES,
     vendorApplySearch,
+    vendorCardActions,
     vendorInviteUrl,
-    vendorLinkHref,
-    vendorLinkKind,
+    vendorQuickActions,
     vendorToolLinks,
+    websiteHref,
 } from '@/lib/vendors';
 
 function me(overrides: Partial<VendorMeDto> = {}): VendorMeDto {
@@ -98,17 +105,29 @@ describe('vendorApplySearch', () => {
     });
 });
 
-describe('isValidVendorLink', () => {
-    it('accepts an https URL or an @handle', () => {
-        expect(isValidVendorLink('https://studio.gr')).toBe(true);
-        expect(isValidVendorLink('@studio.x')).toBe(true);
+describe('instagramHandle', () => {
+    it('takes a handle with or without the @, or a profile address', () => {
+        expect(instagramHandle('@studio.x')).toBe('studio.x');
+        expect(instagramHandle(' studio_x ')).toBe('studio_x');
+        expect(instagramHandle('https://www.instagram.com/studio.x/?hl=el')).toBe('studio.x');
     });
 
-    it('refuses http, bare words and long handles', () => {
-        expect(isValidVendorLink('http://studio.gr')).toBe(false);
-        expect(isValidVendorLink('studio')).toBe(false);
-        expect(isValidVendorLink(`@${'a'.repeat(61)}`)).toBe(false);
-        expect(isValidVendorLink('https://studio.gr/a b')).toBe(false);
+    it('refuses anything else', () => {
+        expect(instagramHandle('https://instagram.com/p/abc/xyz')).toBeNull();
+        expect(instagramHandle('bad handle')).toBeNull();
+        expect(instagramHandle(`@${'a'.repeat(61)}`)).toBeNull();
+    });
+});
+
+describe('website, phone and email rules', () => {
+    it('take https sites, phone numbers and emails only', () => {
+        expect(isValidVendorWebsite('https://studio.gr')).toBe(true);
+        expect(isValidVendorWebsite('http://studio.gr')).toBe(false);
+        expect(isValidVendorWebsite('https://studio.gr/a b')).toBe(false);
+        expect(isValidVendorPhone('+30 210 123 4567')).toBe(true);
+        expect(isValidVendorPhone('call me')).toBe(false);
+        expect(isValidVendorEmail('hi@studio.gr')).toBe(true);
+        expect(isValidVendorEmail('hi@studio')).toBe(false);
     });
 });
 
@@ -161,18 +180,26 @@ describe('sortByVendorType', () => {
     });
 });
 
-describe('vendorLinkHref', () => {
-    it('opens https links as they are and handles on Instagram', () => {
-        expect(vendorLinkHref('https://studio.gr')).toBe('https://studio.gr');
-        expect(vendorLinkHref('@studio.x')).toBe('https://instagram.com/studio.x');
-        expect(vendorLinkHref('  @studio.x ')).toBe('https://instagram.com/studio.x');
+describe('instagramHref and websiteHref', () => {
+    it('open a handle on Instagram and an https site as it is', () => {
+        expect(instagramHref('studio.x')).toBe('https://instagram.com/studio.x');
+        expect(websiteHref(' https://studio.gr ')).toBe('https://studio.gr');
     });
 
-    it('opens nothing for anything else', () => {
-        expect(vendorLinkHref('javascript:alert(1)')).toBeNull();
-        expect(vendorLinkHref('http://studio.gr')).toBeNull();
-        expect(vendorLinkHref('')).toBeNull();
-        expect(vendorLinkHref(null)).toBeNull();
+    it('open nothing for anything else', () => {
+        expect(instagramHref(null)).toBeNull();
+        expect(instagramHref('bad handle')).toBeNull();
+        expect(websiteHref('javascript:alert(1)')).toBeNull();
+        expect(websiteHref('http://studio.gr')).toBeNull();
+        expect(websiteHref(null)).toBeNull();
+    });
+});
+
+describe('serviceTagsForType', () => {
+    it('keeps the type’s own tags, each once, in order, at most five', () => {
+        expect(serviceTagsForType(['DJ', 'DRONE', 'DJ', 'SOUND'], 'MUSIC')).toEqual(['DJ', 'SOUND']);
+        expect(serviceTagsForType(['DJ', 'LIVE_MUSIC', 'SOUND', 'LIGHTING', 'CHURCH', 'DANCE_FLOOR'], 'MUSIC')).toHaveLength(5);
+        expect(serviceTagsForType(undefined, 'OTHER')).toEqual([]);
     });
 });
 
@@ -214,15 +241,66 @@ describe('vendorToolLinks', () => {
     });
 });
 
-describe('vendorLinkKind', () => {
-    it('names Instagram for a handle or an instagram.com link, and Website for any other link', () => {
-        expect(vendorLinkKind('@studio.x')).toBe('instagram');
-        expect(vendorLinkKind('https://www.instagram.com/studio.x')).toBe('instagram');
-        expect(vendorLinkKind('https://studio.gr')).toBe('website');
+describe('vendorQuickActions', () => {
+    const allModules = new Set(['vendors', 'gallery', 'posts', 'rsvp', 'playlist']);
+    const started = '2027-07-01T18:00:00Z';
+    const now = new Date('2027-07-02T00:00:00Z');
+    const photographer = (overrides: Partial<VendorMeDto> = {}) =>
+        me({
+            vendorType: 'PHOTOGRAPHER',
+            capabilities: ['PRO_ALBUM', 'SNEAK_PEEK', 'PRINT_PICKS'],
+            sneakPeek: { postId: null, mediaIds: [], content: null, used: false },
+            ...overrides,
+        });
+    const keys = (actions: { key: string }[]) => actions.map((action) => action.key);
+
+    it('gives a photographer the Pro album, sneak peek and print order, each opening its section', () => {
+        const actions = vendorQuickActions('e1', photographer(), allModules, started, now);
+        expect(keys(actions)).toEqual(['proAlbum', 'sneakPeek', 'prints']);
+        expect(actions[1].href).toBe('/events/e1/tools/vendors/me?section=sneakPeek');
     });
 
-    it('names nothing without a usable link', () => {
-        expect(vendorLinkKind(null)).toBeNull();
-        expect(vendorLinkKind('http://studio.gr')).toBeNull();
+    it('drops the sneak peek before the event starts, once posted or used, and without posts', () => {
+        expect(keys(vendorQuickActions('e1', photographer(), allModules, '2027-07-03T00:00:00Z', now))).not.toContain('sneakPeek');
+        const posted = photographer({ sneakPeek: { postId: 'p1', mediaIds: ['m1'], content: null, used: true } });
+        expect(keys(vendorQuickActions('e1', posted, allModules, started, now))).not.toContain('sneakPeek');
+        expect(keys(vendorQuickActions('e1', photographer(), new Set(['vendors', 'gallery']), started, now))).toEqual(['proAlbum', 'prints']);
+    });
+
+    it('hides the Pro album without the gallery module', () => {
+        expect(keys(vendorQuickActions('e1', photographer(), new Set(['vendors', 'posts']), started, now))).toEqual(['prints']);
+    });
+
+    it('lists a planner’s tools after any page sections, and nothing once access closes', () => {
+        expect(keys(vendorQuickActions('e1', me(), allModules, started, now))).toEqual(['schedule', 'announcement', 'rsvpReport', 'qr']);
+        expect(vendorQuickActions('e1', me({ accessOpen: false }), allModules, started, now)).toEqual([]);
+        expect(vendorQuickActions('e1', photographer({ accessOpen: false }), allModules, started, now)).toEqual([]);
+    });
+
+    it('gives a type without tools nothing', () => {
+        expect(vendorQuickActions('e1', me({ vendorType: 'CATERING', capabilities: [] }), allModules, started, now)).toEqual([]);
+    });
+});
+
+describe('isVendorPageSection', () => {
+    it('accepts only the page sections', () => {
+        expect(isVendorPageSection('prints')).toBe(true);
+        expect(isVendorPageSection('schedule')).toBe(false);
+        expect(isVendorPageSection(null)).toBe(false);
+    });
+});
+
+describe('vendorCardActions', () => {
+    it('lists Instagram, website, call and email in that order', () => {
+        expect(vendorCardActions({ instagram: 'studio.x', website: 'https://studio.gr', phone: '+30 210 123-4567', email: 'hi@studio.gr' })).toEqual([
+            { kind: 'instagram', href: 'https://instagram.com/studio.x' },
+            { kind: 'website', href: 'https://studio.gr' },
+            { kind: 'call', href: 'tel:+302101234567' },
+            { kind: 'email', href: 'mailto:hi@studio.gr' },
+        ]);
+    });
+
+    it('leaves out what is missing or unsafe to open', () => {
+        expect(vendorCardActions({ website: 'javascript:alert(1)', phone: 'call me', email: null })).toEqual([]);
     });
 });

@@ -5,11 +5,12 @@ import { useTranslations } from 'next-intl';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { Button } from '@/components/ui/button';
+import { VendorBanner } from '@/components/vendors/VendorBanner';
 import { VendorLogo } from '@/components/vendors/VendorLogo';
 import type { MediaResponseDto, PartnerRole, VendorProfileDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
-// The top of the vendor page: the vendor's own photos as a mosaic, then who they are, the edit action for their
+// The top of the vendor page: the vendor's banner, else their own photos as a mosaic, then who they are, the edit action for their
 // details, and their access in this event (the date the tools stop, or why they are off). Without photos (no Pro
 // album, or nothing uploaded yet) the mosaic is a plain backdrop.
 export function VendorMeHero({
@@ -31,8 +32,20 @@ export function VendorMeHero({
 
     return (
         <section aria-labelledby="vendor-details-title">
-            {/* Mosaic */}
-            <PhotoMosaic photos={photos} />
+            {/* Cover: their banner, else their photos */}
+            {profile?.bannerUrl ? (
+                <div className="relative">
+                    <VendorBanner
+                        bannerUrl={profile.bannerUrl}
+                        alt={t('bannerAlt', { name: profile.businessName })}
+                        sizes="(min-width: 672px) 672px, 100vw"
+                        className="h-44 rounded-[1.75rem] sm:h-56"
+                    />
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 rounded-b-[1.75rem] bg-linear-to-t from-event/80 to-transparent" />
+                </div>
+            ) : (
+                <PhotoMosaic photos={photos} />
+            )}
 
             {/* Identity */}
             <div className="relative -mt-9 flex items-end gap-3 px-3">

@@ -4,11 +4,19 @@ import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
 // eventType: the slug of the event type the pricing shows; durationId: the one picked on the card.
-type LandingPricingCtaProps = { className?: string; label: string; eventType: string; plan: LandingPlan; durationId: string | undefined };
+// plain: no arrow, for the wedding QR page.
+type LandingPricingCtaProps = {
+    className?: string;
+    label: string;
+    eventType: string;
+    plan: LandingPlan;
+    durationId: string | undefined;
+    plain?: boolean;
+};
 
 // One plan card's button: opens the creation form on its details step with the card's type, plan and
 // duration picked. The proxy sends signed-out visitors through login with this destination in `next`.
-export function LandingPricingCta({ className, label, eventType, plan, durationId }: LandingPricingCtaProps) {
+export function LandingPricingCta({ className, label, eventType, plan, durationId, plain = false }: LandingPricingCtaProps) {
     const { id: option, months } = pickedLandingDuration(plan, durationId);
 
     return (
@@ -24,9 +32,11 @@ export function LandingPricingCta({ className, label, eventType, plan, durationI
                 {label}
                 <span className="sr-only"> · {plan.name}</span>
             </span>
-            <span aria-hidden="true" className="text-[18px] leading-none">
-                ↗
-            </span>
+            {plain ? null : (
+                <span aria-hidden="true" className="text-[18px] leading-none">
+                    ↗
+                </span>
+            )}
         </a>
     );
 }

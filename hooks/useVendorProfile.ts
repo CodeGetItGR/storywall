@@ -67,3 +67,16 @@ export function useUploadVendorLogo() {
 export function useDeleteVendorLogo() {
     return useProfileMutation<void>(() => api.del<VendorProfileDto>(endpoints.me.vendorProfileLogo));
 }
+
+// Like the logo: offered after (or with) the first save.
+export function useUploadVendorBanner() {
+    return useProfileMutation((file: File) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return api.postForm<VendorProfileDto>(endpoints.me.vendorProfileBanner, formData);
+    });
+}
+
+export function useDeleteVendorBanner() {
+    return useProfileMutation<void>(() => api.del<VendorProfileDto>(endpoints.me.vendorProfileBanner));
+}

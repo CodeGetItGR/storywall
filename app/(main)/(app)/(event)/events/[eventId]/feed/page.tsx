@@ -1,12 +1,13 @@
 import { dehydrate, HydrationBoundary, type QueryClient } from '@tanstack/react-query';
 
+import { guestOfferKeys } from '@/hooks/useGuestOffer';
 import { HE_OR_SHE_MODULE, heOrSheKeys } from '@/hooks/useHeOrShe';
 import { storyKeys } from '@/hooks/useStories';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList, type Page } from '@/lib/api/pagination';
-import { serverGet, serverModuleReadable } from '@/lib/api/serverFetch';
-import type { HeOrSheViewDto, PostResponseDto, StoryResponseDto } from '@/lib/api/types';
-import { prefetchAccessToken, resolveServerEventDetail } from '@/lib/auth/serverEventContext';
+import { serverGet, serverGetOrNull, serverModuleReadable } from '@/lib/api/serverFetch';
+import type { GuestOfferDto, HeOrSheViewDto, PostResponseDto, StoryResponseDto } from '@/lib/api/types';
+import { prefetchAccessToken, resolveServerEventContext, resolveServerEventDetail } from '@/lib/auth/serverEventContext';
 import { preloadBannerImage } from '@/lib/feed/bannerImage';
 import { postKeys, POSTS_PAGE_SIZE } from '@/lib/postQueries';
 import { makeQueryClient } from '@/lib/queryClient';
@@ -40,6 +41,18 @@ async function prefetchHeOrShe(queryClient: QueryClient, eventId: string, access
     }
 }
 
+// The guest offer card sits at the top of the posts, for guests only. 204 caches as null: no card.
+async function prefetchGuestOffer(queryClient: QueryClient, eventId: string, accessToken: string): Promise<void> {
+    try {
+        const [context, postsReadable] = await Promise.all([resolveServerEventContext(eventId), serverModuleReadable(eventId, 'posts', accessToken)]);
+        if (!context || context.isHost || !postsReadable) return;
+        const offer = await serverGetOrNull<GuestOfferDto>(endpoints.events.guestOffer(eventId), accessToken);
+        queryClient.setQueryData(guestOfferKeys.card(eventId), offer);
+    } catch {
+        // Best-effort — useGuestOffer fetches normally on the client if this fails.
+    }
+}
+
 // Starts the banner image, the feed's largest paint, with the page. The event detail is deduped with
 // events/[eventId]/layout.tsx.
 async function preloadBanner(eventId: string): Promise<void> {
@@ -58,7 +71,7 @@ async function prefetchStories(queryClient: QueryClient, eventId: string, access
 }
 
 // Prefetches what the top of the feed shows: the first page of posts, the Boy or Girl? view for its
-// prompt card, and the stories row, all at once. FeedPageBoundary then finds them cached and skips
+// prompt card, the guest offer card, and the stories row, all at once. FeedPageBoundary then finds them cached and skips
 // its skeletons. The event itself is already prefetched one level up by the (event) layout.
 export default async function Page({ params }: PageProps) {
     const { eventId } = await params;
@@ -71,6 +84,7 @@ export default async function Page({ params }: PageProps) {
             prefetchPosts(queryClient, eventId, accessToken),
             prefetchHeOrShe(queryClient, eventId, accessToken),
             prefetchStories(queryClient, eventId, accessToken),
+            prefetchGuestOffer(queryClient, eventId, accessToken),
         ]);
     }
 

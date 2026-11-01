@@ -8,6 +8,8 @@ const mocks = vi.hoisted(() => ({
     moduleKeys: [] as string[],
     presetsArg: undefined as string | null | undefined,
     calls: [] as unknown[],
+    vendorsApplicability: null as string | null,
+    planVendorsConfig: null as Record<string, unknown> | null,
 }));
 
 vi.mock('next-intl', () => ({
@@ -30,6 +32,22 @@ vi.mock('@/hooks/useAdmin', () => ({
                 initialOptions: [{ id: 'opt-1', months: 12, kind: 'INITIAL', isActive: true }],
             } as unknown as PlanTierResponseDto,
         ],
+        isLoading: false,
+    }),
+}));
+vi.mock('@/hooks/useEventTypeModuleMatrix', () => ({
+    useEventTypeModuleMatrix: (eventTypeKey: string | null) => ({
+        data:
+            eventTypeKey && mocks.vendorsApplicability
+                ? [{ moduleKey: 'vendors', applicability: mocks.vendorsApplicability, defaultConfig: { maxVendors: 3, allowedTypes: [], accessDaysAfterEvent: 7, proStorageBytes: 0 } }]
+                : [],
+    }),
+}));
+vi.mock('@/hooks/usePlanModuleConfigs', () => ({
+    usePlanModuleConfigs: (planIds: string[]) => ({
+        configsByPlanId: new Map(
+            planIds.map((id) => [id, mocks.planVendorsConfig ? [{ moduleKey: 'vendors', defaultConfig: mocks.planVendorsConfig }] : []]),
+        ),
         isLoading: false,
     }),
 }));
@@ -88,6 +106,8 @@ beforeEach(() => {
     mocks.moduleKeys = [];
     mocks.presetsArg = undefined;
     mocks.calls = [];
+    mocks.vendorsApplicability = null;
+    mocks.planVendorsConfig = null;
 });
 
 describe('useProvisionEventForm', () => {
@@ -176,5 +196,88 @@ describe('useProvisionEventForm', () => {
         act(() => fillRequired(result.current));
         await submitTwice(result);
         expect((mocks.calls.at(-1) as AdminProvisionEventRequestDto).notifyHost).toBe(false);
+    });
+});
+
+describe('useProvisionEventForm vendor settings', () => {
+    const PLAN_VENDORS = { maxVendors: 5, allowedTypes: ['PLANNER', 'MUSIC'], accessDaysAfterEvent: 30, proStorageBytes: 5368709120 };
+
+    beforeEach(() => {
+        mocks.moduleKeys = ['vendors'];
+        mocks.vendorsApplicability = 'OPTIONAL';
+        mocks.planVendorsConfig = PLAN_VENDORS;
+    });
+
+    it("starts from the plan's settings and sends none when they are left alone", async () => {
+        const { result } = renderHook(() => useProvisionEventForm(HOST));
+        act(() => fillRequired(result.current));
+        expect(result.current.vendorSettings.isSupported).toBe(true);
+        expect(result.current.vendorSettings.draft).toEqual({ maxVendors: '5', allowedTypes: 'PLANNER,MUSIC', accessDaysAfterEvent: '30', proStorageBytes: '5 GB' });
+
+        await submitTwice(result);
+        expect((mocks.calls[0] as AdminProvisionEventRequestDto).moduleConfigs).toBeUndefined();
+    });
+
+    it('sends the changed settings with the event', async () => {
+        const { result } = renderHook(() => useProvisionEventForm(HOST));
+        act(() => fillRequired(result.current));
+        act(() => result.current.vendorSettings.handleValueChange('maxVendors', '1'));
+        act(() => result.current.vendorSettings.handleTypeChange('allowedTypes', 'MUSIC', false));
+        expect(result.current.vendorSettings.changes).toEqual([
+            { key: 'maxVendors', label: 'plans.grid.cell.fields.maxVendors', value: '1' },
+            { key: 'allowedTypes', label: 'plans.grid.cell.fields.allowedTypes', value: 'collaborations.feedCard.roles.PLANNER' },
+        ]);
+        expect(result.current.vendorSettings.turnsVendorsOn).toBe(false);
+
+        await submitTwice(result);
+        expect((mocks.calls[0] as AdminProvisionEventRequestDto).moduleConfigs).toEqual([
+            { moduleKey: 'vendors', configKey: 'maxVendors', value: 1 },
+            { moduleKey: 'vendors', configKey: 'allowedTypes', value: ['PLANNER'] },
+        ]);
+    });
+
+    it('blocks review while a setting is not a valid number', () => {
+        const { result } = renderHook(() => useProvisionEventForm(HOST));
+        act(() => fillRequired(result.current));
+        expect(result.current.canReview).toBe(true);
+        act(() => result.current.vendorSettings.handleValueChange('maxVendors', '-1'));
+        expect(result.current.vendorSettings.errorKeys).toEqual(['maxVendors']);
+        expect(result.current.canReview).toBe(false);
+    });
+
+    it('warns that settings on a plan without vendors turn vendors on', async () => {
+        mocks.moduleKeys = [];
+        mocks.planVendorsConfig = null;
+        const { result } = renderHook(() => useProvisionEventForm(HOST));
+        act(() => fillRequired(result.current));
+        // No plan row: the type's default is the starting point.
+        expect(result.current.vendorSettings.draft.maxVendors).toBe('3');
+        expect(result.current.vendorSettings.turnsVendorsOn).toBe(false);
+        act(() => result.current.vendorSettings.handleValueChange('maxVendors', '1'));
+        expect(result.current.vendorSettings.turnsVendorsOn).toBe(true);
+
+        await submitTwice(result);
+        expect((mocks.calls[0] as AdminProvisionEventRequestDto).moduleConfigs).toEqual([{ moduleKey: 'vendors', configKey: 'maxVendors', value: 1 }]);
+    });
+
+    it('has no vendor settings for a type without vendors, and sends none', async () => {
+        mocks.vendorsApplicability = 'UNSUPPORTED';
+        const { result } = renderHook(() => useProvisionEventForm(HOST));
+        act(() => fillRequired(result.current));
+        act(() => result.current.vendorSettings.handleValueChange('maxVendors', 'x'));
+        expect(result.current.vendorSettings.isSupported).toBe(false);
+        expect(result.current.canReview).toBe(true);
+
+        await submitTwice(result);
+        expect((mocks.calls[0] as AdminProvisionEventRequestDto).moduleConfigs).toBeUndefined();
+    });
+
+    it('opens and closes the section', () => {
+        const { result } = renderHook(() => useProvisionEventForm(HOST));
+        expect(result.current.vendorSettings.open).toBe(false);
+        act(() => result.current.vendorSettings.toggleOpen());
+        expect(result.current.vendorSettings.open).toBe(true);
+        act(() => result.current.vendorSettings.reset());
+        expect(result.current.vendorSettings.open).toBe(false);
     });
 });

@@ -5,9 +5,9 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { VendorLogo } from '@/components/vendors/VendorLogo';
-import { useVendorLogoPicker } from '@/hooks/useVendorLogoPicker';
+import { useVendorImagePicker } from '@/hooks/useVendorImagePicker';
 
-const LOGO_ACCEPT = 'image/jpeg,image/png,image/webp,image/gif';
+export const VENDOR_IMAGE_ACCEPT = 'image/jpeg,image/png,image/webp,image/gif';
 
 // A hidden file input opened by a button, with a preview and a remove action.
 export function VendorLogoField({
@@ -28,12 +28,12 @@ export function VendorLogoField({
     setRemoveLogo: (remove: boolean) => void;
 }) {
     const t = useTranslations('Vendors.profile');
-    const { inputRef, previewUrl, openPicker, handleChange, handleRemove } = useVendorLogoPicker({
+    const { inputRef, previewUrl, openPicker, handleChange, handleRemove } = useVendorImagePicker({
         file,
-        currentLogoUrl,
-        removeLogo,
-        setLogo,
-        setRemoveLogo,
+        currentUrl: currentLogoUrl,
+        remove: removeLogo,
+        setFile: setLogo,
+        setRemove: setRemoveLogo,
     });
 
     return (
@@ -63,7 +63,7 @@ export function VendorLogoField({
                         <X className="h-4 w-4" aria-hidden="true" />
                     </Button>
                 )}
-                <input ref={inputRef} type="file" accept={LOGO_ACCEPT} onChange={handleChange} className="hidden" />
+                <input ref={inputRef} type="file" accept={VENDOR_IMAGE_ACCEPT} onChange={handleChange} className="hidden" />
             </div>
         </div>
     );

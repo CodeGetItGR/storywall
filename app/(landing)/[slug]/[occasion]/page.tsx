@@ -32,7 +32,7 @@ export default async function LocalizedOccasionPage({ params }: LocalizedOccasio
         // `/en/weddings` → `/weddings`, as `/en` → `/`.
         const english = slug === defaultLocale ? findReadyOccasion(defaultLocale, occasion) : null;
         if (english) permanentRedirect(occasionPath(english, defaultLocale));
-        // `/en/wedding-qr-code` → `/wedding-qr-code`.
+        // `/en/qr-code-for-wedding-photos` → `/qr-code-for-wedding-photos`.
         const qrWeddingPath = getQrWeddingPath(defaultLocale);
         if (slug === defaultLocale && `/${occasion}` === qrWeddingPath) permanentRedirect(qrWeddingPath);
         notFound();

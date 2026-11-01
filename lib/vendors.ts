@@ -1,4 +1,4 @@
-import type { EventUsageResponseDto, PartnerRole, VendorCapability, VendorMeDto, VendorRowDto } from '@/lib/api/types';
+import type { EventUsageResponseDto, PartnerRole, VendorCapability, VendorMeDto, VendorRowDto, VendorServiceTag } from '@/lib/api/types';
 import { APPLICATION_ROLES } from '@/lib/forBusinessApplication';
 import { routes } from '@/lib/routes';
 import { absoluteUrl } from '@/lib/seo';
@@ -16,11 +16,85 @@ export function vendorProfileStatus(query: { isSuccess: boolean; isError: boolea
 // One order everywhere vendor types are listed: the partner application's.
 export const VENDOR_TYPES: readonly PartnerRole[] = APPLICATION_ROLES;
 
-// The partner application's link rule, shared with the vendor profile (backend LINK_PATTERN).
-const VENDOR_LINK_PATTERN = /^(https:\/\/\S{1,492}|@[A-Za-z0-9._]{1,60})$/;
-
 export const VENDOR_BUSINESS_NAME_MAX = 80;
-export const VENDOR_LINK_MAX = 500;
+export const VENDOR_DESCRIPTION_MAX = 120;
+export const VENDOR_WEBSITE_MAX = 500;
+export const VENDOR_PHONE_MAX = 40;
+export const VENDOR_EMAIL_MAX = 254;
+export const VENDOR_SERVICE_TAGS_MAX = 5;
+
+// The services each type can show on its card, in the order the sheet offers them (backend VendorServiceTag).
+export const VENDOR_SERVICE_TAGS: Record<PartnerRole, readonly VendorServiceTag[]> = {
+    PHOTOGRAPHER: ['DRONE', 'ALBUM', 'PRINTS', 'PHOTO_BOOTH', 'PRE_WEDDING', 'SAME_DAY_EDIT'],
+    VIDEOGRAPHER: ['DRONE', 'HIGHLIGHTS', 'FULL_FILM', 'SAME_DAY_EDIT', 'LIVE_STREAMING'],
+    MUSIC: ['DJ', 'LIVE_MUSIC', 'SOUND', 'LIGHTING', 'CHURCH', 'DANCE_FLOOR'],
+    DECORATION: ['FLOWERS', 'CHURCH', 'TABLES', 'LIGHTING', 'BALLOONS', 'BAPTISM'],
+    CATERING: ['BUFFET', 'SERVED', 'SWEETS', 'CAKE', 'BAR', 'FINGER_FOOD'],
+    VENUE: ['OUTDOOR', 'INDOOR', 'SEASIDE', 'ACCOMMODATION', 'PARKING', 'CHURCH_NEARBY'],
+    PLANNER: ['FULL_PLANNING', 'DAY_COORDINATION', 'DESTINATION', 'BUDGET', 'SUPPLIERS'],
+    OTHER: [],
+};
+
+// The backend's rules for the card's links and contact details.
+const INSTAGRAM_HANDLE = /^@?[A-Za-z0-9._]{1,60}$/;
+const INSTAGRAM_PROFILE_URL = /^https:\/\/(?:www\.)?instagram\.com\/([A-Za-z0-9._]{1,60})\/?(?:\?\S*)?$/i;
+const WEBSITE = /^https:\/\/\S{1,492}$/;
+const PHONE = /^\+?[0-9 ()-]{6,40}$/;
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// The Instagram field as a handle without the @: a handle, with or without the @, or the profile's address.
+// Null for anything else.
+export function instagramHandle(value: string): string | null {
+    const input = value.trim();
+    const url = INSTAGRAM_PROFILE_URL.exec(input);
+    if (url) return url[1];
+    return INSTAGRAM_HANDLE.test(input) ? input.replace(/^@/, '') : null;
+}
+
+export function isValidVendorWebsite(value: string): boolean {
+    return WEBSITE.test(value.trim());
+}
+
+export function isValidVendorPhone(value: string): boolean {
+    return PHONE.test(value.trim());
+}
+
+export function isValidVendorEmail(value: string): boolean {
+    return EMAIL.test(value.trim());
+}
+
+// The card's Instagram link. Null without a valid handle.
+export function instagramHref(handle: string | null | undefined): string | null {
+    const value = handle ? instagramHandle(handle) : null;
+    return value ? `https://instagram.com/${value}` : null;
+}
+
+// The card's website link: https only, so a stored value can never open anything else.
+export function websiteHref(website: string | null | undefined): string | null {
+    return website && isValidVendorWebsite(website) ? website.trim() : null;
+}
+
+// The type's own tags from a list, each once, in the vendor's order, at most VENDOR_SERVICE_TAGS_MAX.
+export function serviceTagsForType(tags: readonly VendorServiceTag[] | null | undefined, type: PartnerRole): VendorServiceTag[] {
+    const allowed = VENDOR_SERVICE_TAGS[type];
+    return [...new Set(tags ?? [])].filter((tag) => allowed.includes(tag)).slice(0, VENDOR_SERVICE_TAGS_MAX);
+}
+
+export type VendorCardActionKind = 'instagram' | 'website' | 'call' | 'email';
+export type VendorCardAction = { kind: VendorCardActionKind; href: string };
+
+// The buttons on a guest's vendor card, in this order, for each detail the row carries and that is safe to open.
+// The backend sends a phone and an email only for an approved partner who chose to show them.
+export function vendorCardActions(vendor: Pick<VendorRowDto, 'instagram' | 'website' | 'phone' | 'email'>): VendorCardAction[] {
+    const actions: VendorCardAction[] = [];
+    const instagram = instagramHref(vendor.instagram);
+    if (instagram) actions.push({ kind: 'instagram', href: instagram });
+    const website = websiteHref(vendor.website);
+    if (website) actions.push({ kind: 'website', href: website });
+    if (vendor.phone && isValidVendorPhone(vendor.phone)) actions.push({ kind: 'call', href: `tel:${vendor.phone.replace(/[^\d+]/g, '')}` });
+    if (vendor.email && isValidVendorEmail(vendor.email)) actions.push({ kind: 'email', href: `mailto:${vendor.email.trim()}` });
+    return actions;
+}
 
 // Mirrors the backend VendorCapability enum. The backend sends an empty list while a vendor's
 // tools are off, so this is how the screens know which tools a type has at all.
@@ -54,10 +128,6 @@ export function vendorApplySearch(vendorType: PartnerRole): string {
     return `?utm_source=storywall-vendor&utm_medium=${vendorType}`;
 }
 
-export function isValidVendorLink(value: string): boolean {
-    return VENDOR_LINK_PATTERN.test(value.trim());
-}
-
 // What guests see: a filled-in profile that neither the host nor the vendor hid.
 // A host's list also carries hidden rows, so every guest-facing count goes through this.
 export function listedVendors(rows: readonly VendorRowDto[]): VendorRowDto[] {
@@ -83,28 +153,6 @@ export function sortByVendorType<T extends { vendorType: PartnerRole }>(rows: re
     return [...rows].sort((a, b) => VENDOR_TYPES.indexOf(a.vendorType) - VENDOR_TYPES.indexOf(b.vendorType));
 }
 
-// The outgoing link for a stored profile link: https as is, an @handle on Instagram.
-export function vendorLinkHref(link: string | null | undefined): string | null {
-    if (!link) return null;
-    const value = link.trim();
-    if (!isValidVendorLink(value)) return null;
-    return value.startsWith('@') ? `https://instagram.com/${value.slice(1)}` : value;
-}
-
-export type VendorLinkKind = 'instagram' | 'website';
-
-// What the guest list's button names: Instagram for a handle or an instagram.com link, else Website.
-export function vendorLinkKind(link: string | null | undefined): VendorLinkKind | null {
-    const href = vendorLinkHref(link);
-    if (!href) return null;
-    try {
-        const host = new URL(href).hostname.replace(/^www\./, '');
-        return host === 'instagram.com' ? 'instagram' : 'website';
-    } catch {
-        return 'website';
-    }
-}
-
 // The vendors module gives this plan a Pro album allowance (0 or absent without the module).
 export function hasProAllowance(usage: Pick<EventUsageResponseDto, 'proStorageBytes'> | null | undefined): boolean {
     return (usage?.proStorageBytes ?? 0) > 0;
@@ -127,6 +175,51 @@ export function vendorToolLinks(eventId: string, me: VendorMeDto, readableModule
     return VENDOR_TOOLS.filter((tool) => hasVendorCapability(me, tool.capability))
         .filter((tool) => !readableModules || !tool.moduleKey || readableModules.has(tool.moduleKey))
         .map((tool) => ({ key: tool.key, href: tool.href(eventId) }));
+}
+
+// Parts of the vendor page the feed's quick actions open straight at.
+export type VendorPageSection = 'proAlbum' | 'sneakPeek' | 'prints';
+export const VENDOR_PAGE_SECTIONS: readonly VendorPageSection[] = ['proAlbum', 'sneakPeek', 'prints'];
+
+export function isVendorPageSection(value: string | null | undefined): value is VendorPageSection {
+    return VENDOR_PAGE_SECTIONS.includes(value as VendorPageSection);
+}
+
+export type VendorActionKey = VendorToolKey | VendorPageSection;
+
+// The vendor's quick actions on the feed: the photo work that lives on the vendor page, then the tool links.
+// Mirrors the vendor page's own gates, so an action never opens a section the page hides.
+export function vendorQuickActions(
+    eventId: string,
+    me: VendorMeDto,
+    readableModules: ReadonlySet<string>,
+    eventStartAt: string | null | undefined,
+    now: Date = new Date(),
+): { key: VendorActionKey; href: string }[] {
+    const proAlbumOn = capabilitiesOfType(me.vendorType).includes('PRO_ALBUM') && readableModules.has('vendors') && readableModules.has('gallery');
+    const peek = me.sneakPeek;
+    const started = !eventStartAt || now >= new Date(eventStartAt);
+    const sections: { key: VendorPageSection; open: boolean }[] = [
+        { key: 'proAlbum', open: proAlbumOn && hasVendorCapability(me, 'PRO_ALBUM') },
+        // Only while one can be posted: from the event's start, and not once it's posted or used.
+        {
+            key: 'sneakPeek',
+            open:
+                proAlbumOn &&
+                readableModules.has('posts') &&
+                hasVendorCapability(me, 'SNEAK_PEEK') &&
+                Boolean(peek && !peek.postId && !peek.used) &&
+                started,
+        },
+        { key: 'prints', open: hasVendorCapability(me, 'PRINT_PICKS') },
+    ];
+
+    return [
+        ...sections
+            .filter((section) => section.open)
+            .map((section) => ({ key: section.key, href: routes.events.tools.vendorMe(eventId, { section: section.key }) })),
+        ...vendorToolLinks(eventId, me, readableModules),
+    ];
 }
 
 export type PartnerBenefitKey = 'discount' | 'feedCard' | 'reach' | 'printPrices';
