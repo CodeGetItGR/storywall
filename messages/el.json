@@ -9768,6 +9768,9 @@
         "others": "Δείτε όλα όσα παίρνουν οι επαγγελματίες"
     },
     "BusinessPage": {
+        "unnamed": "Η επιχείρησή σας",
+        "edit": "Επεξεργασία",
+        "partnerPill": "Συνεργάτης",
         "contact": {
             "topicRequired": "Επιλέξτε θέμα.",
             "messageRequired": "Γράψτε ένα μήνυμα."

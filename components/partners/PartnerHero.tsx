@@ -1,12 +1,12 @@
 'use client';
 
 import { Handshake } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
+import { PartnerBalances } from '@/components/partners/PartnerBalances';
 import { PartnerTierProgress } from '@/components/partners/PartnerTierProgress';
 import { VENDOR_SECTION_SURFACE } from '@/components/vendors/me/VendorMeSection';
 import type { PartnerTierProgressDto } from '@/lib/api/types';
-import { formatMoney } from '@/lib/billing';
 import type { PartnerBalance } from '@/lib/partnerPortal';
 import { cn } from '@/lib/utils';
 
@@ -21,7 +21,6 @@ export function PartnerHero({
     tierProgress: PartnerTierProgressDto | null;
 }) {
     const t = useTranslations('PartnerPortalPage');
-    const locale = useLocale();
 
     return (
         <section aria-labelledby="partner-name" className={cn(VENDOR_SECTION_SURFACE, 'relative overflow-hidden p-5 sm:p-7')}>
@@ -44,26 +43,7 @@ export function PartnerHero({
             <div className={cn('relative mt-7 grid gap-7', tierProgress && 'sm:grid-cols-2 sm:gap-0')}>
                 {/* Balance */}
                 <div className={cn(tierProgress && 'sm:pr-8')}>
-                    <p className="text-xs font-semibold tracking-wide text-ink-muted uppercase">{t('totals.title')}</p>
-                    {balances.length === 0 ? (
-                        <p className="mt-2 text-lg font-semibold text-ink">{t('totals.empty')}</p>
-                    ) : (
-                        <ul className="mt-1 flex flex-col gap-3">
-                            {balances.map((balance) => (
-                                <li key={balance.currency}>
-                                    <p className="text-4xl font-extrabold tracking-tight text-ink tabular-nums">
-                                        {formatMoney(locale, balance.owedMinor, balance.currency)}
-                                    </p>
-                                    <p className="mt-1 text-sm text-ink-muted tabular-nums">
-                                        {t('totals.earnedPaid', {
-                                            earned: formatMoney(locale, balance.earnedMinor, balance.currency),
-                                            paid: formatMoney(locale, balance.paidMinor, balance.currency),
-                                        })}
-                                    </p>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
+                    <PartnerBalances balances={balances} />
                 </div>
 
                 {/* Commission */}

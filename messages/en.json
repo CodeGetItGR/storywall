@@ -9736,6 +9736,9 @@
         "others": "See everything professionals get"
     },
     "BusinessPage": {
+        "unnamed": "Your business",
+        "edit": "Edit",
+        "partnerPill": "Partner",
         "contact": {
             "topicRequired": "Pick a topic.",
             "messageRequired": "Write a message."
