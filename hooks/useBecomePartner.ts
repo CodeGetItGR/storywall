@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
+import { businessKeys } from '@/hooks/useBusinessOverview';
 import { isEventVendorKey, useVendorProfile } from '@/hooks/useVendorProfile';
 import type { ApplyFormDefaults } from '@/lib/forBusinessApplication';
 import { vendorApplySearch } from '@/lib/vendors';
@@ -33,10 +34,12 @@ export function useBecomePartner() {
     );
 
     const openSheet = useCallback(() => setSheetOpen(true), []);
-    // A sent application ends the prompt on the server; refresh only once the sheet is closed, so the "Thanks" stays visible.
+    // A sent application ends the prompt on the server (the event pages' and the business page's); refresh only once
+    // the sheet is closed, so the "Thanks" stays visible.
     const closeSheet = useCallback(() => {
         setSheetOpen(false);
         queryClient.invalidateQueries({ predicate: (query) => isEventVendorKey(query.queryKey) });
+        queryClient.invalidateQueries({ queryKey: businessKeys.overview });
     }, [queryClient]);
 
     return { defaults, search: vendorApplySearch(vendorType), sheetOpen, openSheet, closeSheet };

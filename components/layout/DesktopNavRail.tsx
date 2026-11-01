@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, CalendarDays, Home as HomeIcon, Pencil, UserRound } from 'lucide-react';
+import { Bell, BriefcaseBusiness, CalendarDays, Home as HomeIcon, Pencil, UserRound } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
@@ -15,6 +15,7 @@ import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useDesktopAccountSidebar } from '@/hooks/useDesktopAccountSidebar';
 import { useIsDemoRoute } from '@/hooks/useIsDemoRoute';
+import { useMe } from '@/hooks/useMe';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { isEventDeleted } from '@/lib/eventLifecycle';
 import { getInitials } from '@/lib/format';
@@ -30,6 +31,7 @@ export function DesktopNavRail() {
     const { expanded, handleMouseEnter, handleMouseLeave, togglePinned } = useDesktopAccountSidebar();
     const activeEvent = useActiveEvent();
     const { data: unreadCount = 0 } = useUnreadNotificationCount();
+    const { data: me } = useMe();
     // Events and profile need a real session; in the demo they would dead-end on the login page.
     const isDemoRoute = useIsDemoRoute();
     const isDraft = activeEvent?.status === 'DRAFT';
@@ -44,6 +46,7 @@ export function DesktopNavRail() {
     const homeActive = Boolean(homeHref) && (isPathActive(pathname, homeHref!) || isPathActive(pathname, routes.feed));
     const eventsActive = isPathActive(pathname, routes.home);
     const profileActive = isPathActive(pathname, routes.profile);
+    const businessActive = isPathActive(pathname, routes.business);
     const notificationsActive = isPathActive(pathname, routes.notifications);
 
     // The avatar keeps its large picture and only its box shrinks, so the size change animates with the rail.
@@ -151,6 +154,15 @@ export function DesktopNavRail() {
                             active={profileActive}
                             expanded={expanded}
                         />
+                        {(me?.vendor || me?.partner) && (
+                            <DesktopAccountNavLink
+                                href={routes.business}
+                                icon={BriefcaseBusiness}
+                                label={tAccount('business')}
+                                active={businessActive}
+                                expanded={expanded}
+                            />
+                        )}
                         <DesktopAccountNavLink
                             href={routes.notifications}
                             icon={Bell}

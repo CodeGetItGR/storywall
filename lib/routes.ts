@@ -45,7 +45,10 @@ export const routes = {
     invite: '/invite',
     home: '/home',
     profile: '/profile',
-    partner: '/partner',
+    // The vendor's page across their events (spec 2026-11-01). /partner redirects here.
+    business: '/business',
+    // A section of the business page to scroll to on arrival (see useBusinessSectionTarget).
+    businessSection: (section: 'printPrices') => withQuery('/business', { section }),
     events: {
         // run: the wizard run the entry belongs to (see CREATE_EVENT_RUN_PARAM).
         new: (

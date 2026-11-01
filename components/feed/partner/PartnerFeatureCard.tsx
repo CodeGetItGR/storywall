@@ -6,8 +6,12 @@ import { PartnerCardLink } from '@/components/feed/partner/PartnerCardLink';
 import { PartnerLogo } from '@/components/feed/partner/PartnerLogo';
 import type { PartnerBrandingCardContent } from '@/hooks/usePartnerBrandingCard';
 
-// Variant FEATURE_CARD: cover photo, tagline and a button.
-export function PartnerFeatureCard({ content }: { content: PartnerBrandingCardContent }) {
+// The feed's width: the full screen on phones, the feed column on desktop.
+const FEED_COVER_SIZES = '(min-width: 1024px) 672px, 100vw';
+
+// Variant FEATURE_CARD: cover photo, tagline and a button. coverSizes is the cover's rendered width when the card
+// sits somewhere narrower than the feed (a preview).
+export function PartnerFeatureCard({ content, coverSizes = FEED_COVER_SIZES }: { content: PartnerBrandingCardContent; coverSizes?: string }) {
     return (
         <article className="border-b border-event-card-line bg-event-card px-2 py-4">
             <PartnerCardLink
@@ -18,7 +22,7 @@ export function PartnerFeatureCard({ content }: { content: PartnerBrandingCardCo
                 {/* Cover */}
                 <div className="relative aspect-[16/9] w-full bg-surface-muted">
                     {content.coverUrl && (
-                        <ProtectedImage src={content.coverUrl} alt={content.name} fill sizes="(min-width: 1024px) 672px, 100vw" className="object-cover" />
+                        <ProtectedImage src={content.coverUrl} alt={content.name} fill sizes={coverSizes} className="object-cover" />
                     )}
                 </div>
 

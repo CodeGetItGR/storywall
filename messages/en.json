@@ -678,6 +678,7 @@
         "modules": "Modules",
         "plans": "Plans",
         "profile": "Profile",
+        "business": "My business",
         "notifications": "Notifications",
         "editProfile": "Edit profile",
         "logout": "Log out",
@@ -700,8 +701,8 @@
         "showPreview": "Show {name} preview"
     },
     "ProfilePage": {
-        "partner": {
-            "title": "Partner page"
+        "myBusiness": {
+            "title": "My business"
         },
         "dataExport": {
             "title": "Your data",
@@ -2067,24 +2068,6 @@
         "redirectCountdown": "Opening the feed in {seconds, plural, one {# second} other {# seconds}}."
     },
     "PartnerPortalPage": {
-        "back": "Back",
-        "loading": "Loading partner report",
-        "title": "Partner report",
-        "summary": "Partner summary",
-        "eventsReferred": "Events referred",
-        "unavailable": {
-            "title": "Couldn't load your partner page",
-            "description": "Try again in a moment."
-        },
-        "notVerified": {
-            "title": "Verify your email to open your partner page",
-            "description": "Open the link we sent to your email."
-        },
-        "notLinked": {
-            "title": "This account isn't linked to a partner",
-            "description": "Sign in with your partner email, or contact us.",
-            "contact": "Contact us"
-        },
         "totals": {
             "title": "To be paid",
             "empty": "No earnings yet.",
@@ -2096,19 +2079,6 @@
             "progressLabel": "Progress to the next rate",
             "activationsThisYear": "{count, plural, one {# activation} other {# activations}} this year",
             "next": "Your {number, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} activation earns {percent}%"
-        },
-        "brandingClicks": "Card taps",
-        "reach": {
-            "title": "Reach",
-            "eventCount": "{count, plural, one {# event} other {# events}}",
-            "guests": "Guests",
-            "proViews": "Photo and video views",
-            "postViewers": "Saw your posts",
-            "listTaps": "Opened your details",
-            "recentTitle": "Recent events",
-            "rowViews": "{count, plural, one {# view} other {# views}}",
-            "rowGuests": "{count, plural, one {# guest} other {# guests}}",
-            "empty": "No events as a vendor yet."
         }
     },
     "SchedulePage": {
@@ -3020,6 +2990,7 @@
             "lifecycle": "Lifecycle",
             "reports": "Reports",
             "bugReports": "Bug reports",
+            "vendorMessages": "Vendor messages",
             "errorEvents": "Errors",
             "auditLog": "Audit log",
             "demoEvents": "Demo events",
@@ -3543,6 +3514,45 @@
                 "RESOLVED": "Resolved",
                 "DISMISSED": "Dismissed"
             }
+        },
+        "vendorMessagesPanel": {
+            "title": "Vendor messages",
+            "loading": "Loading messages",
+            "empty": "No messages.",
+            "count": "{count, plural, one {# message} other {# messages}}",
+            "filterLabel": "Status",
+            "filters": {
+                "NEW": "New",
+                "ANSWERED": "Answered",
+                "ALL": "All"
+            },
+            "open": "Open message from {name}",
+            "columns": {
+                "received": "Received",
+                "business": "Business",
+                "topic": "Topic",
+                "message": "Message",
+                "status": "Status"
+            },
+            "statuses": {
+                "NEW": "New",
+                "ANSWERED": "Answered"
+            },
+            "topics": {
+                "QUESTION": "Question",
+                "PROBLEM": "Problem",
+                "PARTNERSHIP": "Partnership",
+                "OTHER": "Other"
+            },
+            "detailTitle": "Vendor message",
+            "replyTo": "Reply to",
+            "notVerified": "Not verified",
+            "reply": "Reply by email",
+            "markAnswered": "Mark answered",
+            "markNew": "Mark as new",
+            "close": "Close",
+            "messageId": "Message ID",
+            "userId": "Account ID"
         },
         "bugReports": {
             "title": "Bug reports",
@@ -6680,6 +6690,7 @@
         "partnerRequired": "Only approved partners can list prices.",
         "partnerEmailNotVerified": "Verify your email to open your partner page.",
         "partnerNotLinked": "This account isn't linked to a partner.",
+        "notAVendor": "This account has no business page.",
         "printPicksUnavailable": "You can't pick this photo for print.",
         "printPricesMissing": "The photographer hasn't set print prices yet.",
         "printListLocked": "This list was sent and can't change.",
@@ -9068,7 +9079,12 @@
             "listingHiddenByHost": "The host hid you from the list.",
             "profileEdit": "Edit",
             "groupEvent": "For this event",
-            "groupSettings": "Your settings"
+            "groupSettings": "Your settings",
+            "myBusiness": "My business",
+            "printPrices": {
+                "title": "Print prices",
+                "openBusiness": "Change them in My business"
+            }
         },
         "meter": {
             "label": "Pro album",
@@ -9105,9 +9121,7 @@
                 "websiteInvalid": "The link must start with https://",
                 "phoneInvalid": "Enter a valid phone number.",
                 "emailInvalid": "Enter a valid email."
-            },
-            "sectionTitle": "Vendor details",
-            "edit": "Edit"
+            }
         },
         "partner": {
             "title": "Become a StoryWall partner",
@@ -9718,5 +9732,98 @@
             }
         },
         "others": "See everything professionals get"
+    },
+    "BusinessPage": {
+        "title": "My business",
+        "back": "Profile",
+        "unnamed": "Your business",
+        "edit": "Edit",
+        "partnerPill": "Partner",
+        "retryProfile": "Reload details",
+        "notVendor": {
+            "title": "This page is for businesses",
+            "body": "Join an event from the link a host sent you.",
+            "profile": "Go to profile"
+        },
+        "unavailable": {
+            "title": "Couldn't load this page",
+            "body": "Check your connection and try again.",
+            "retry": "Try again"
+        },
+        "setup": {
+            "title": "Set up your business profile",
+            "body": "Add your logo and details so hosts and guests see who you are.",
+            "action": "Set up"
+        },
+        "earnings": {
+            "notVerified": "Verify your email to see your earnings.",
+            "notLinked": "This account isn't linked to a partner.",
+            "contact": "Contact us",
+            "failed": "Couldn't load your earnings.",
+            "retry": "Try again"
+        },
+        "insights": {
+            "title": "Insights",
+            "events": "Events",
+            "guests": "Guests",
+            "proViews": "Photo and video views",
+            "postViewers": "Post viewers",
+            "cardTaps": "Feed card taps",
+            "listTaps": "Profile taps",
+            "trendTitle": "Views per month",
+            "trendViews": "Views",
+            "trendLabel": "Views per month: {values}",
+            "trendPoint": "{month}: {views}",
+            "emptyTitle": "No numbers yet",
+            "emptyBody": "Your numbers show up here once guests see you at an event.",
+            "partnerPrompt": "Partners also see views and card taps.",
+            "becomePartner": "Become a partner"
+        },
+        "events": {
+            "title": "Your events",
+            "emptyTitle": "No events yet",
+            "emptyBody": "Events you join as a vendor show up here.",
+            "rowGuests": "{count, plural, one {# guest} other {# guests}}",
+            "rowViews": "{count, plural, one {# view} other {# views}}",
+            "ended": "Access ended",
+            "more": "Show more",
+            "loadFailed": "Couldn't load your events.",
+            "retry": "Try again"
+        },
+        "content": {
+            "title": "Your content",
+            "proItems": "Photos and videos",
+            "storage": "Storage used"
+        },
+        "previews": {
+            "title": "How guests see you",
+            "feedCard": "Your card in the feed",
+            "variants": {
+                "FEATURE_CARD": "Large card",
+                "COMPACT_ROW": "Compact row",
+                "CREDIT": "Credit line"
+            },
+            "sneakPeek": "A first look post",
+            "sampleCaption": "A first look at the day."
+        },
+        "contact": {
+            "title": "Contact us",
+            "sheetTitle": "Write to us",
+            "topic": "Topic",
+            "topics": {
+                "QUESTION": "Question",
+                "PROBLEM": "Problem",
+                "PARTNERSHIP": "Partnership",
+                "OTHER": "Other"
+            },
+            "message": "Message",
+            "send": "Send",
+            "sending": "Sending…",
+            "sent": "Sent. We'll reply to {email}.",
+            "sentNoEmail": "Sent. We'll reply by email.",
+            "close": "Close",
+            "topicRequired": "Pick a topic.",
+            "messageRequired": "Write a message."
+        }
     }
 }

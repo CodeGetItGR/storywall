@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, CalendarDays, Pencil, UserRound } from 'lucide-react';
+import { Bell, BriefcaseBusiness, CalendarDays, Pencil, UserRound } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { AccountInstallAppButton } from '@/components/account/AccountInstallAppButton';
@@ -12,6 +12,7 @@ import { AppLink } from '@/components/ui/AppLink';
 import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsDemoRoute } from '@/hooks/useIsDemoRoute';
+import { useMe } from '@/hooks/useMe';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { getInitials } from '@/lib/format';
 import { routes } from '@/lib/routes';
@@ -19,6 +20,7 @@ import { routes } from '@/lib/routes';
 export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => void }) {
     const t = useTranslations('AccountDrawer');
     const { user } = useAuth();
+    const { data: me } = useMe();
     const { data: unreadCount = 0 } = useUnreadNotificationCount();
     // These nav destinations (account-wide event list, plans, modules, profile edit) all
     // require a real signed-in session and have no demo equivalent — linking to them from
@@ -79,6 +81,9 @@ export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => 
                     <nav className="mt-7 flex max-w-[52vw] flex-col gap-4">
                         <AccountSidebarNavLink href={routes.home} icon={CalendarDays} label={t('events')} onNavigateAction={onCloseAction} />
                         <AccountSidebarNavLink href={routes.profile} icon={UserRound} label={t('profile')} onNavigateAction={onCloseAction} />
+                        {(me?.vendor || me?.partner) && (
+                            <AccountSidebarNavLink href={routes.business} icon={BriefcaseBusiness} label={t('business')} onNavigateAction={onCloseAction} />
+                        )}
                         <AccountSidebarNavLink
                             href={routes.notifications}
                             icon={Bell}

@@ -22,16 +22,18 @@ export function queryRetryDelayMs(failureCount: number, error: unknown): number 
     return Math.min(1000 * 2 ** failureCount, 30 * 1000);
 }
 
+// 4xx responses (bad auth, validation, not-found, a 403 like NOT_A_VENDOR) won't
+// succeed on retry — only retry transient/server errors, twice.
+export function shouldRetryQuery(failureCount: number, error: unknown): boolean {
+    if (error instanceof ApiError && error.status >= 400 && error.status < 500) return false;
+    return failureCount < 2;
+}
+
 export function makeQueryClient() {
     return new QueryClient({
         defaultOptions: {
             queries: {
-                retry: (failureCount, error) => {
-                    // 4xx responses (bad auth, validation, not-found, etc.) won't
-                    // succeed on retry — only retry transient/server errors.
-                    if (error instanceof ApiError && error.status >= 400 && error.status < 500) return false;
-                    return failureCount < 2;
-                },
+                retry: shouldRetryQuery,
                 retryDelay: queryRetryDelayMs,
                 // Most reads change rarely and every mutation invalidates what it
                 // touches, so cached data stays fresh for a while instead of being

@@ -12,6 +12,7 @@ export function VendorMeSection({
     title,
     hint,
     action,
+    icon,
     busy = false,
     children,
     className,
@@ -20,6 +21,7 @@ export function VendorMeSection({
     title: string;
     hint?: string;
     action?: ReactNode;
+    icon?: ReactNode;
     busy?: boolean;
     children?: ReactNode;
     className?: string;
@@ -27,12 +29,16 @@ export function VendorMeSection({
     return (
         <section aria-labelledby={id} aria-busy={busy || undefined} className={cn(VENDOR_SECTION_SURFACE, 'p-4 sm:p-5', className)}>
             {/* Header */}
-            <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                    <h3 id={id} className="text-base font-semibold text-ink">
-                        {title}
-                    </h3>
-                    {hint && <p className="mt-0.5 text-sm leading-snug text-ink-muted">{hint}</p>}
+            {/* The action drops below the title when the column is too narrow for both. */}
+            <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="flex min-w-[min(100%,14rem)] flex-1 items-center gap-3">
+                    {icon}
+                    <div className="min-w-0">
+                        <h3 id={id} className="text-base font-semibold text-ink">
+                            {title}
+                        </h3>
+                        {hint && <p className="mt-0.5 text-sm leading-snug text-ink-muted">{hint}</p>}
+                    </div>
                 </div>
                 {action && <div className="shrink-0">{action}</div>}
             </div>

@@ -89,6 +89,12 @@ describe('proxy', () => {
         expect(res.status).toBe(307);
     });
 
+    it('sends a signed-out visit to /business to login', async () => {
+        const res = await proxy(request({}, 'http://localhost/business'));
+        expect(res.status).toBe(307);
+        expect(new URL(res.headers.get('location') ?? '').pathname).toBe('/login');
+    });
+
     it('redirects a signed-out visit to /events/new to login with the destination in next', async () => {
         const res = await proxy(request({}, 'http://localhost/events/new?step=plan'));
         expect(res.status).toBe(307);

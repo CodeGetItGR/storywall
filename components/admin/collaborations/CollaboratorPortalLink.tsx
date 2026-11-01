@@ -11,7 +11,7 @@ import { absoluteUrl } from '@/lib/seo';
 // Every partner has the same page address; it opens for the account signed in with the contact email.
 export function CollaboratorPortalLink({ collaborator }: { collaborator: CollaboratorResponseDto }) {
     const t = useTranslations('AdminPage.collaborations.portal');
-    const url = absoluteUrl(routes.partner);
+    const url = absoluteUrl(routes.business);
     const { copied, copy } = useCopyText(url);
 
     return (

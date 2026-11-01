@@ -907,6 +907,8 @@ export interface UserResponseDto {
     currentTermsVersion: string | null;
     // The account opens a partner page (verified email matching an active partner). Null off /api/me.
     partner?: boolean | null;
+    // The account opens the business page (a vendor profile, or a vendor in an event). Null off /api/me.
+    vendor?: boolean | null;
     signupSource?: SignupSourceDto | null;
 }
 
@@ -1213,9 +1215,10 @@ export interface PartnerBrandingDto {
     coverUrl: string; // presigned
     tagline: PartnerBrandingTextDto;
     services: PartnerBrandingTextDto;
-    // Relative to the API origin: a public 302 redirect that counts the tap.
-    linkUrl: string;
-    placement: PartnerBrandingPlacementDto;
+    // Relative to the API origin: a public 302 redirect that counts the tap. Null in a card preview.
+    linkUrl: string | null;
+    // Null in a card preview.
+    placement: PartnerBrandingPlacementDto | null;
 }
 
 // --- Vendors in the event ---
@@ -1729,6 +1732,8 @@ export interface PartnerPortalResponseDto {
     brandingClicks: number;
     // Across every event where the partner's account was a vendor (2026-10-29). Never null.
     reach: PartnerPortalReachDto;
+    // The partner's feed card for the preview on their business page; null while branding is off. No link, no placement.
+    cardPreview: PartnerBrandingDto | null;
 }
 // No titles or ids: the portal opens with the link alone (KAN-28).
 export interface PartnerPortalReachEventDto {
@@ -1755,6 +1760,62 @@ export interface PartnerTierProgressDto {
     // Both null at the top tier.
     nextTierMinActivations: number | null;
     nextTierPercent: number | null;
+}
+// GET /api/me/business (spec 2026-11-01), for vendors and approved partners. Every vendor gets events, guests and
+// listTaps; the other totals and trend come only for partners. content is absent for types without a Pro album.
+// An approved partner with no vendor data gets partner: true, zeros and no content. 403 4039 for anyone else.
+export interface BusinessOverviewDto {
+    partner: boolean;
+    // Show "Become a partner": false for partners, pending applicants, a dismissed prompt and accounts with no profile.
+    showPartnerPrompt: boolean;
+    // Absent when there is none (a partner without a role, say).
+    vendorType?: PartnerRole;
+    totals: {
+        events: number;
+        guests: number;
+        listTaps: number;
+        proViews?: number;
+        postViewers?: number;
+        cardTaps?: number;
+    };
+    // Six months, oldest first; month is YYYY-MM in Athens time.
+    trend?: { month: string; views: number }[];
+    content?: { proItems: number; sneakPeeks: number; proUsedBytes: number };
+}
+// GET /api/me/business/events, newest first. views only for partners; open is false once access ended.
+export interface BusinessEventDto {
+    eventId: string;
+    title: string;
+    startAt: string;
+    vendorType: PartnerRole;
+    guests: number;
+    views?: number;
+    open: boolean;
+}
+export type VendorContactTopic = 'QUESTION' | 'PROBLEM' | 'PARTNERSHIP' | 'OTHER';
+export type VendorContactStatus = 'NEW' | 'ANSWERED';
+// POST /api/me/business/messages. At most 2,000 characters; 5 a day.
+export interface VendorContactRequestDto {
+    topic: VendorContactTopic;
+    message: string;
+}
+export interface VendorContactCreatedDto {
+    id: string;
+    createdAt: string;
+}
+// GET /api/admin/vendor-messages. userId is absent once the account is deleted.
+export interface VendorContactMessageDto {
+    id: string;
+    userId?: string;
+    businessName?: string;
+    replyEmail: string;
+    // False when the reply address was not confirmed by the sender.
+    emailVerified: boolean;
+    topic: VendorContactTopic;
+    message: string;
+    status: VendorContactStatus;
+    createdAt: string;
+    answeredAt?: string;
 }
 export type CollaboratorStatus = 'ACTIVE' | 'SUSPENDED';
 export type CollaborationCodeStatus = 'ACTIVE' | 'DISABLED';
