@@ -101,6 +101,7 @@ export type ApiErrorMessageKey =
     | 'partnerRequired'
     | 'partnerEmailNotVerified'
     | 'partnerNotLinked'
+    | 'notAVendor'
     | 'printPicksUnavailable'
     | 'printPricesMissing'
     | 'printListLocked'
@@ -613,6 +614,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.PARTNER_REQUIRED]: 'partnerRequired',
     [ERROR_CODES.PARTNER_EMAIL_NOT_VERIFIED]: 'partnerEmailNotVerified',
     [ERROR_CODES.PARTNER_NOT_LINKED]: 'partnerNotLinked',
+    [ERROR_CODES.NOT_A_VENDOR]: 'notAVendor',
     [ERROR_CODES.PRINT_PICKS_UNAVAILABLE]: 'printPicksUnavailable',
     [ERROR_CODES.PRINT_PRICES_MISSING]: 'printPricesMissing',
     [ERROR_CODES.PRINT_LIST_LOCKED]: 'printListLocked',

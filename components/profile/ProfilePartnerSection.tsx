@@ -17,7 +17,7 @@ export function ProfilePartnerSection() {
     return (
         <section className="rounded-[1.5rem] bg-card shadow-[0_18px_48px_rgba(35,28,22,0.08)]">
             {/* Partner page link */}
-            <AppLink href={routes.partner} className="flex min-h-14 items-center gap-2 p-4 sm:p-5">
+            <AppLink href={routes.business} className="flex min-h-14 items-center gap-2 p-4 sm:p-5">
                 <Handshake className="h-4 w-4 text-primary" aria-hidden="true" />
                 <span className="flex-1 text-base font-semibold text-ink">{t('title')}</span>
                 <ChevronRight className="h-4 w-4 text-ink-muted" aria-hidden="true" />

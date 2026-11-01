@@ -6680,6 +6680,7 @@
         "partnerRequired": "Only approved partners can list prices.",
         "partnerEmailNotVerified": "Verify your email to open your partner page.",
         "partnerNotLinked": "This account isn't linked to a partner.",
+        "notAVendor": "This account has no business page.",
         "printPicksUnavailable": "You can't pick this photo for print.",
         "printPricesMissing": "The photographer hasn't set print prices yet.",
         "printListLocked": "This list was sent and can't change.",
