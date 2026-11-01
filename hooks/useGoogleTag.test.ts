@@ -142,6 +142,13 @@ describe('useGoogleTag analytics', () => {
         expect(pageviews(gtag)).toHaveLength(0);
     });
 
+    it('never passes gtag.js an undefined config', () => {
+        writeConsent(ADS_ONLY);
+        renderHook(() => useGoogleTag());
+
+        expect(gtag).toHaveBeenCalledWith('config', 'AW-TEST', {});
+    });
+
     it('loads nothing without consent', () => {
         writeConsent(NONE);
         const { result } = renderHook(() => useGoogleTag());
