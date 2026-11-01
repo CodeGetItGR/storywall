@@ -11,6 +11,12 @@
 - `main` only receives merges from `staging`. Never branch from `main` or open a feature or fix PR into it.
 - Before merging a PR into `staging`, bring its branch up to date with `staging` and re-run the checks.
 
+## Jira tickets
+
+- Tickets live in the KAN project on storywall.atlassian.net, which is linked to GitHub. When work has a ticket, put its key in the branch name (`claude/kan-12-org-structured-data`), the PR title (`KAN-12: ...`) and each commit message, so Jira links them to the ticket.
+- Opening the PR moves the ticket to In Review. Merging into `staging` does not make it Done.
+- A ticket is Done only after its change has been tested and released: move it to Done once the release PR that contains it is merged into `main` and the **After deploying** checks pass.
+
 ## Production releases
 
 A release PR merges `staging` into `main`. Everything in it must be tested before it is opened, and it must not be merged until a person has tested it too.
@@ -27,7 +33,7 @@ A release PR merges `staging` into `main`. Everything in it must be tested befor
 Use these sections, in this order:
 
 1. **Summary**: one or two sentences on what the release is.
-2. **Release notes**: every included PR with its number, grouped by area.
+2. **Release notes**: every included PR with its number and Jira key when it has one, grouped by area.
 3. **What's new / Τι αλλάζει**: plain-language notes in English and in Greek for people who don't read code. One short line per change, written from the user's side (what a host, guest or vendor will notice). No PR numbers, file names, or technical terms. Use the app's own Greek words (διοργανωτής, συντελεστής).
 4. **Deploy**: env vars, backend release and order, migrations, flags, manual steps. Write "Nothing" if there are none.
 5. **Test cases**: a table with one row per case: ID, what it covers (PR number), steps, expected result, and your result on staging (pass/fail, with the commit tested).
@@ -46,6 +52,7 @@ Use these sections, in this order:
 - Tag it with the date, `vYYYY.MM.DD` (add `.2`, `.3` for a second or third release that day), and title it like the PR.
 - Its notes are the PR's **What's new / Τι αλλάζει** and **Release notes** sections, copied as they are, with a link to the release PR.
 - Comment on the release PR with the link to the Release.
+- Move every Jira ticket in the release to Done.
 
 ## Workflow
 
