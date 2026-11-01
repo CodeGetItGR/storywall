@@ -28,7 +28,7 @@ export function GuestOfferCode({ code, endsAt, isCopied, onCopy }: GuestOfferCod
                 <button
                     type="button"
                     onClick={onCopy}
-                    className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full bg-white px-3.5 text-[0.8125rem] font-semibold text-ink ring-1 ring-border"
+                    className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full bg-white px-3.5 text-[0.8125rem] font-medium text-ink ring-1 ring-border"
                 >
                     {isCopied ? <Check className="h-4 w-4" aria-hidden="true" /> : <Copy className="h-4 w-4" aria-hidden="true" />}
                     {isCopied ? t('copied') : t('copy')}
