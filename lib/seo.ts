@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 import { defaultLocale, type Locale, locales } from '@/i18n/config';
-import { getForBusinessPath, getPublicLandingPath, getQrWeddingPath, localizeLegalHref } from '@/i18n/publicLocale';
+import { getForBusinessPath, getPublicLandingPath, getQrWeddingPath, getVendorPagePath, localizeLegalHref, type VendorPageType } from '@/i18n/publicLocale';
 
 // Single source for the production origin. Canonicals, alternates, the
 // sitemap and structured data all build absolute URLs from it, so it must
@@ -57,6 +57,14 @@ export function forBusinessLanguageAlternates(): Record<string, string> {
     const languages: Record<string, string> = {};
     for (const locale of locales) languages[locale] = absoluteUrl(getForBusinessPath(locale));
     languages['x-default'] = absoluteUrl(getForBusinessPath(defaultLocale));
+    return languages;
+}
+
+// Same shape for one vendor type's page.
+export function vendorPageLanguageAlternates(type: VendorPageType): Record<string, string> {
+    const languages: Record<string, string> = {};
+    for (const locale of locales) languages[locale] = absoluteUrl(getVendorPagePath(type, locale));
+    languages['x-default'] = absoluteUrl(getVendorPagePath(type, defaultLocale));
     return languages;
 }
 
@@ -146,6 +154,16 @@ export function buildForBusinessMetadata(locale: Locale, copy: PageMetadataCopy)
         locale,
         path: getForBusinessPath(locale),
         languages: forBusinessLanguageAlternates(),
+        copy,
+    });
+}
+
+// A vendor type's OG image is the opengraph-image.tsx in its own route folder.
+export function buildVendorPageMetadata(type: VendorPageType, locale: Locale, copy: PageMetadataCopy): Metadata {
+    return buildIndexableMetadata({
+        locale,
+        path: getVendorPagePath(type, locale),
+        languages: vendorPageLanguageAlternates(type),
         copy,
     });
 }

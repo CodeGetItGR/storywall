@@ -5,6 +5,7 @@ const serverPublicConfigGet = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/api/serverFetch', () => ({ serverPublicConfigGet: (...args: unknown[]) => serverPublicConfigGet(...args) }));
 
 import sitemap from '@/app/sitemap';
+import { getVendorPagePath, VENDOR_PAGE_TYPES } from '@/i18n/publicLocale';
 import {
     forBusinessLanguageAlternates,
     landingLanguageAlternates,
@@ -28,6 +29,12 @@ const LEGAL_URLS = [
     `${SITE_URL}/el/legal/community-guidelines`,
 ];
 
+// Each vendor type's English page, then its Greek one.
+const VENDOR_URLS = VENDOR_PAGE_TYPES.flatMap((type) => [
+    `${SITE_URL}${getVendorPagePath(type, 'en')}`,
+    `${SITE_URL}${getVendorPagePath(type, 'el')}`,
+]);
+
 describe('sitemap', () => {
     afterEach(() => {
         vi.unstubAllEnvs();
@@ -41,7 +48,7 @@ describe('sitemap', () => {
         expect(serverPublicConfigGet).toHaveBeenCalledTimes(1);
     });
 
-    it('lists the landing, wedding QR, partner, every enabled ready occasion page and the legal pages', async () => {
+    it('lists the landing, wedding QR, partner, vendor, every enabled ready occasion page and the legal pages', async () => {
         serverPublicConfigGet.mockResolvedValue({ eventTypes: [{ eventTypeKey: 'WEDDING', isEnabled: true }] });
         const urls = (await sitemap()).map((entry) => entry.url);
         expect(urls).toEqual([
@@ -51,6 +58,7 @@ describe('sitemap', () => {
             `${SITE_URL}/el/qr-code-gamou`,
             `${SITE_URL}/for-business`,
             `${SITE_URL}/el/epaggelmaties`,
+            ...VENDOR_URLS,
             `${SITE_URL}/weddings`,
             `${SITE_URL}/el/gamos`,
             ...LEGAL_URLS,
@@ -62,6 +70,11 @@ describe('sitemap', () => {
         const byUrl = new Map((await sitemap()).map((entry) => [entry.url, entry]));
         expect(byUrl.get(`${SITE_URL}/el`)?.alternates?.languages).toEqual(landingLanguageAlternates());
         expect(byUrl.get(`${SITE_URL}/el/epaggelmaties`)?.alternates?.languages).toEqual(forBusinessLanguageAlternates());
+        expect(byUrl.get(`${SITE_URL}/el/epaggelmaties/fotografoi-gamou`)?.alternates?.languages).toEqual({
+            en: `${SITE_URL}/for-business/wedding-photographers`,
+            el: `${SITE_URL}/el/epaggelmaties/fotografoi-gamou`,
+            'x-default': `${SITE_URL}/for-business/wedding-photographers`,
+        });
     });
 
     it('lists only the landing, the launched occasion pages and the legal pages on the production site', async () => {
