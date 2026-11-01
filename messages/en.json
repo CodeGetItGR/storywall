@@ -9767,7 +9767,32 @@
             "proItems": "Photos and videos",
             "storage": "Storage used"
         },
+        "previews": {
+            "title": "How guests see you",
+            "feedCard": "Your card in the feed",
+            "variants": {
+                "FEATURE_CARD": "Large card",
+                "COMPACT_ROW": "Compact row",
+                "CREDIT": "Credit line"
+            },
+            "sneakPeek": "A first look post",
+            "sampleCaption": "A first look at the day."
+        },
         "contact": {
+            "title": "Contact us",
+            "sheetTitle": "Write to us",
+            "topic": "Topic",
+            "topics": {
+                "QUESTION": "Question",
+                "PROBLEM": "Problem",
+                "PARTNERSHIP": "Partnership",
+                "OTHER": "Other"
+            },
+            "message": "Message",
+            "send": "Send",
+            "sending": "Sending…",
+            "sent": "Sent. We'll reply to {email}.",
+            "close": "Close",
             "topicRequired": "Pick a topic.",
             "messageRequired": "Write a message."
         }

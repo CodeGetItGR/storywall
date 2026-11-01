@@ -9799,7 +9799,32 @@
             "proItems": "Φωτογραφίες και βίντεο",
             "storage": "Χώρος σε χρήση"
         },
+        "previews": {
+            "title": "Πώς σας βλέπουν οι καλεσμένοι",
+            "feedCard": "Η κάρτα σας στη ροή",
+            "variants": {
+                "FEATURE_CARD": "Μεγάλη κάρτα",
+                "COMPACT_ROW": "Μικρή γραμμή",
+                "CREDIT": "Γραμμή αναφοράς"
+            },
+            "sneakPeek": "Ανάρτηση «Πρώτη ματιά»",
+            "sampleCaption": "Μια πρώτη ματιά στη μέρα."
+        },
         "contact": {
+            "title": "Επικοινωνία",
+            "sheetTitle": "Γράψτε μας",
+            "topic": "Θέμα",
+            "topics": {
+                "QUESTION": "Ερώτηση",
+                "PROBLEM": "Πρόβλημα",
+                "PARTNERSHIP": "Συνεργασία",
+                "OTHER": "Άλλο"
+            },
+            "message": "Μήνυμα",
+            "send": "Αποστολή",
+            "sending": "Αποστολή…",
+            "sent": "Στάλθηκε. Θα απαντήσουμε στο {email}.",
+            "close": "Κλείσιμο",
             "topicRequired": "Επιλέξτε θέμα.",
             "messageRequired": "Γράψτε ένα μήνυμα."
         }
