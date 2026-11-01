@@ -3,14 +3,13 @@
 import { Camera, CheckCircle2, Loader2, Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { ProfileBusinessLink } from '@/components/profile/ProfileBusinessLink';
 import { ProfileBusinessSection } from '@/components/profile/ProfileBusinessSection';
 import { ProfileDataSection } from '@/components/profile/ProfileDataSection';
 import { ProfileDeleteAccountSection } from '@/components/profile/ProfileDeleteAccountSection';
 import { ProfileNewsletterSection } from '@/components/profile/ProfileNewsletterSection';
-import { ProfilePartnerSection } from '@/components/profile/ProfilePartnerSection';
 import { ProfilePasswordSection } from '@/components/profile/ProfilePasswordSection';
 import { ProfilePictureDialog } from '@/components/profile/ProfilePictureDialog';
-import { ProfileVendorSection } from '@/components/profile/ProfileVendorSection';
 import Avatar from '@/components/ui/avatar';
 import { BackButton } from '@/components/ui/BackButton';
 import { Button } from '@/components/ui/button';
@@ -181,11 +180,8 @@ export function ProfileContent() {
                 {/* Business details */}
                 <ProfileBusinessSection />
 
-                {/* Vendor details */}
-                <ProfileVendorSection />
-
-                {/* Partner page */}
-                <ProfilePartnerSection />
+                {/* My business page */}
+                <ProfileBusinessLink />
 
                 {/* Newsletter */}
                 <ProfileNewsletterSection />

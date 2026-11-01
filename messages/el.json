@@ -800,6 +800,7 @@
         "modules": "Λειτουργίες",
         "plans": "Πλάνα",
         "profile": "Προφίλ",
+        "business": "Η επιχείρησή μου",
         "notifications": "Ειδοποιήσεις",
         "editProfile": "Επεξεργασία προφίλ",
         "logout": "Αποσύνδεση",
@@ -822,8 +823,8 @@
         "showPreview": "Προβολή προεπισκόπησης για {name}"
     },
     "ProfilePage": {
-        "partner": {
-            "title": "Σελίδα συνεργάτη"
+        "myBusiness": {
+            "title": "Η επιχείρησή μου"
         },
         "dataExport": {
             "title": "Τα δεδομένα σας",
@@ -2189,24 +2190,6 @@
         "redirectCountdown": "Άνοιγμα ροής σε {seconds, plural, one {# δευτερόλεπτο} other {# δευτερόλεπτα}}."
     },
     "PartnerPortalPage": {
-        "back": "Πίσω",
-        "loading": "Φόρτωση αναφοράς συνεργάτη",
-        "title": "Αναφορά συνεργάτη",
-        "summary": "Σύνοψη συνεργάτη",
-        "eventsReferred": "Εκδηλώσεις από παραπομπή",
-        "unavailable": {
-            "title": "Δεν ήταν δυνατή η φόρτωση της σελίδας συνεργάτη",
-            "description": "Δοκιμάστε ξανά σε λίγο."
-        },
-        "notVerified": {
-            "title": "Επιβεβαιώστε το email σας για να ανοίξει η σελίδα συνεργάτη",
-            "description": "Ανοίξτε τον σύνδεσμο που στείλαμε στο email σας."
-        },
-        "notLinked": {
-            "title": "Αυτός ο λογαριασμός δεν είναι συνδεδεμένος με συνεργάτη",
-            "description": "Συνδεθείτε με το email συνεργάτη σας ή επικοινωνήστε μαζί μας.",
-            "contact": "Επικοινωνία"
-        },
         "totals": {
             "title": "Προς πληρωμή",
             "empty": "Δεν υπάρχουν αμοιβές ακόμα.",
@@ -2218,19 +2201,6 @@
             "progressLabel": "Πρόοδος προς το επόμενο ποσοστό",
             "activationsThisYear": "{count, plural, one {# ενεργοποίηση} other {# ενεργοποιήσεις}} φέτος",
             "next": "Η {number}η ενεργοποίησή σας αποδίδει {percent}%"
-        },
-        "brandingClicks": "Πατήματα κάρτας",
-        "reach": {
-            "title": "Απήχηση",
-            "eventCount": "{count, plural, one {# εκδήλωση} other {# εκδηλώσεις}}",
-            "guests": "Καλεσμένοι",
-            "proViews": "Προβολές φωτογραφιών και βίντεο",
-            "postViewers": "Είδαν τις αναρτήσεις σας",
-            "listTaps": "Άνοιξαν τα στοιχεία σας",
-            "recentTitle": "Πρόσφατες εκδηλώσεις",
-            "rowViews": "{count, plural, one {# προβολή} other {# προβολές}}",
-            "rowGuests": "{count, plural, one {# καλεσμένος} other {# καλεσμένοι}}",
-            "empty": "Δεν υπάρχουν ακόμη εκδηλώσεις ως συντελεστής."
         }
     },
     "SchedulePage": {
@@ -9095,7 +9065,11 @@
             "listingHiddenByHost": "Ο διοργανωτής σας έκρυψε από τη λίστα.",
             "profileEdit": "Επεξεργασία",
             "groupEvent": "Για την εκδήλωση",
-            "groupSettings": "Οι ρυθμίσεις σας"
+            "groupSettings": "Οι ρυθμίσεις σας",
+            "printPrices": {
+                "title": "Τιμές εκτυπώσεων",
+                "openBusiness": "Αλλάξτε τες στη σελίδα «Η επιχείρησή μου»"
+            }
         },
         "meter": {
             "label": "Pro άλμπουμ",
@@ -9132,9 +9106,7 @@
                 "websiteInvalid": "Ο σύνδεσμος πρέπει να ξεκινά με https://",
                 "phoneInvalid": "Γράψτε έναν έγκυρο αριθμό τηλεφώνου.",
                 "emailInvalid": "Γράψτε ένα έγκυρο email."
-            },
-            "sectionTitle": "Στοιχεία συντελεστή",
-            "edit": "Επεξεργασία"
+            }
         },
         "partner": {
             "title": "Γίνετε συνεργάτης του StoryWall",

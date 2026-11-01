@@ -678,6 +678,7 @@
         "modules": "Modules",
         "plans": "Plans",
         "profile": "Profile",
+        "business": "My business",
         "notifications": "Notifications",
         "editProfile": "Edit profile",
         "logout": "Log out",
@@ -700,8 +701,8 @@
         "showPreview": "Show {name} preview"
     },
     "ProfilePage": {
-        "partner": {
-            "title": "Partner page"
+        "myBusiness": {
+            "title": "My business"
         },
         "dataExport": {
             "title": "Your data",
@@ -2067,24 +2068,6 @@
         "redirectCountdown": "Opening the feed in {seconds, plural, one {# second} other {# seconds}}."
     },
     "PartnerPortalPage": {
-        "back": "Back",
-        "loading": "Loading partner report",
-        "title": "Partner report",
-        "summary": "Partner summary",
-        "eventsReferred": "Events referred",
-        "unavailable": {
-            "title": "Couldn't load your partner page",
-            "description": "Try again in a moment."
-        },
-        "notVerified": {
-            "title": "Verify your email to open your partner page",
-            "description": "Open the link we sent to your email."
-        },
-        "notLinked": {
-            "title": "This account isn't linked to a partner",
-            "description": "Sign in with your partner email, or contact us.",
-            "contact": "Contact us"
-        },
         "totals": {
             "title": "To be paid",
             "empty": "No earnings yet.",
@@ -2096,19 +2079,6 @@
             "progressLabel": "Progress to the next rate",
             "activationsThisYear": "{count, plural, one {# activation} other {# activations}} this year",
             "next": "Your {number, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} activation earns {percent}%"
-        },
-        "brandingClicks": "Card taps",
-        "reach": {
-            "title": "Reach",
-            "eventCount": "{count, plural, one {# event} other {# events}}",
-            "guests": "Guests",
-            "proViews": "Photo and video views",
-            "postViewers": "Saw your posts",
-            "listTaps": "Opened your details",
-            "recentTitle": "Recent events",
-            "rowViews": "{count, plural, one {# view} other {# views}}",
-            "rowGuests": "{count, plural, one {# guest} other {# guests}}",
-            "empty": "No events as a vendor yet."
         }
     },
     "SchedulePage": {
@@ -9078,7 +9048,11 @@
             "listingHiddenByHost": "The host hid you from the list.",
             "profileEdit": "Edit",
             "groupEvent": "For this event",
-            "groupSettings": "Your settings"
+            "groupSettings": "Your settings",
+            "printPrices": {
+                "title": "Print prices",
+                "openBusiness": "Change them in My business"
+            }
         },
         "meter": {
             "label": "Pro album",
@@ -9115,9 +9089,7 @@
                 "websiteInvalid": "The link must start with https://",
                 "phoneInvalid": "Enter a valid phone number.",
                 "emailInvalid": "Enter a valid email."
-            },
-            "sectionTitle": "Vendor details",
-            "edit": "Edit"
+            }
         },
         "partner": {
             "title": "Become a StoryWall partner",
