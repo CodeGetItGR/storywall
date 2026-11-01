@@ -49,7 +49,8 @@ function renderPanel() {
 }
 
 async function openFirstMessage() {
-    fireEvent.click(await screen.findByRole('button', { name: copy.open }));
+    // Each row's button names who wrote, so rows are told apart by ear.
+    fireEvent.click(await screen.findByRole('button', { name: copy.open.replace('{name}', 'Lens & Light') }));
     return screen.findByRole('dialog');
 }
 

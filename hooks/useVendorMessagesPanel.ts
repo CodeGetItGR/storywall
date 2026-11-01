@@ -56,7 +56,6 @@ export function useVendorMessagesPanel() {
     );
 
     return {
-        status,
         filter: (status ?? 'ALL') as VendorMessageFilter,
         filterOptions,
         changeFilter,
@@ -64,7 +63,6 @@ export function useVendorMessagesPanel() {
         setPage,
         query,
         selected,
-        open,
         openById,
         close,
         mark,

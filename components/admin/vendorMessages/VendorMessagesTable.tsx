@@ -48,7 +48,7 @@ export function VendorMessagesTable({ messages, onOpenAction }: { messages: Vend
                                     type="button"
                                     data-message-id={message.id}
                                     onClick={handleOpen}
-                                    aria-label={t('open')}
+                                    aria-label={t('open', { name: message.businessName ?? message.replyEmail })}
                                     className="block max-w-md truncate text-left text-ink hover:underline"
                                 >
                                     {firstLine(message.message)}

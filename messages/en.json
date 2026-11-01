@@ -3526,7 +3526,7 @@
                 "ANSWERED": "Answered",
                 "ALL": "All"
             },
-            "open": "Open message",
+            "open": "Open message from {name}",
             "columns": {
                 "received": "Received",
                 "business": "Business",
