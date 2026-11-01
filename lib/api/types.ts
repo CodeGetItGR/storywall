@@ -248,6 +248,34 @@ export interface AppLandingCategoryDto {
 export type AppReviewRole = 'HOST' | 'GUEST';
 export type AppReviewStatus = 'PENDING' | 'APPROVED' | 'HIDDEN';
 
+// GET /api/events/{id}/guest-offer → 200 with this, or 204 (null) when the card does not show.
+// code and endsAt stay null until the guest claims; discountPercent is then the code's own.
+export interface GuestOfferDto {
+    discountPercent: number;
+    code: string | null;
+    endsAt: string | null;
+}
+
+// GET/PUT /api/admin/guest-offer.
+export interface GuestOfferSettingsDto {
+    enabled: boolean;
+    discountPercent: number;
+    validityMonths: number;
+}
+
+// POST /api/events/{id}/guest-offer/activity. Counted once per person per day.
+export type GuestOfferAction = 'SEEN' | 'DISCOVER' | 'COPY';
+
+// GET /api/admin/guest-offer/stats?days=. People, each counted once; used = codes paid for at checkout.
+export interface GuestOfferStatsDto {
+    seen: number;
+    discovered: number;
+    claimed: number;
+    copied: number;
+    closed: number;
+    used: number;
+}
+
 // GET /api/me/review-prompt → 200 with this, or 204 (null) when there is nothing to ask.
 export interface AppReviewPromptDto {
     eventId: string;

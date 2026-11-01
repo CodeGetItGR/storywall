@@ -9,6 +9,7 @@ const MARKETING_TABS: ReadonlySet<AdminTab> = new Set<AdminTab>([
     'campaignOverview',
     'campaigns',
     'discountCodes',
+    'guestOffer',
     'appReviews',
     'phones',
 ]);

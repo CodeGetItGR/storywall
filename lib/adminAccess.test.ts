@@ -13,7 +13,7 @@ describe('admin console access', () => {
     });
 
     it('shows marketing only the marketing group and phones', () => {
-        for (const tab of ['outreach', 'campaigns', 'campaignOverview', 'discountCodes', 'appReviews', 'phones'] as const) {
+        for (const tab of ['outreach', 'campaigns', 'campaignOverview', 'discountCodes', 'guestOffer', 'appReviews', 'phones'] as const) {
             expect(canOpenAdminTab('MARKETING', tab)).toBe(true);
         }
         for (const tab of ['metrics', 'orders', 'withdrawals', 'collaborations', 'accounts', 'errorEvents', 'partnerApplications'] as const) {

@@ -136,6 +136,18 @@
         "back": "Back",
         "locationMissing": "Location not set"
     },
+    "GuestOffer": {
+        "title": "Planning your own event?",
+        "line": "Storywall works for weddings, baptisms, birthdays and more.",
+        "discover": "Discover Storywall",
+        "claim": "Get <pct>{percent}%</pct> off",
+        "codeLabel": "Your discount code",
+        "copy": "Copy",
+        "copied": "Copied",
+        "expires": "Use it when you activate an event. Valid until {date}.",
+        "close": "Close",
+        "claimFailed": "Your code could not be created. Try again."
+    },
     "PostCard": {
         "justNow": "just now",
         "timeAgo": {
@@ -2994,6 +3006,7 @@
             "plans": "Plans",
             "paidServices": "Paid services",
             "discountCodes": "Discount codes",
+            "guestOffer": "Guest offer",
             "partnerApplications": "Applications",
             "collaborations": "Collaborations",
             "reactionTypes": "Reactions",
@@ -5771,6 +5784,34 @@
                     }
                 }
             }
+        },
+        "guestOffer": {
+            "title": "Guest offer",
+            "description": "The card guests see at the top of an event feed.",
+            "loading": "Loading guest offer...",
+            "loadFailed": "Could not load the guest offer.",
+            "stats": {
+                "range": "Date range",
+                "days": "Last {days} days",
+                "all": "All time",
+                "people": "Each person counts once.",
+                "loadFailed": "Could not load the numbers.",
+                "seen": "Saw the card",
+                "discovered": "Tapped Discover",
+                "claimed": "Claimed a code",
+                "copied": "Copied the code",
+                "closed": "Closed the card",
+                "used": "Used the code"
+            },
+            "enabled": "Show the card",
+            "percent": "Discount (%)",
+            "percentInvalid": "A whole number from 1 to 99.",
+            "months": "Valid for (months)",
+            "monthsInvalid": "A whole number from 1 to 60.",
+            "appliesToNew": "Changes apply to codes claimed from now on.",
+            "save": "Save",
+            "saved": "Saved",
+            "saveFailed": "Could not save. Try again."
         },
         "discountCodes": {
             "title": "Discount codes",
