@@ -25,7 +25,7 @@ export function GuestOfferCard({ eventId, isHost }: { eventId: string; isHost: b
             target="_blank"
             rel="noopener"
             onClick={markDiscovered}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white/55 px-5 text-sm font-semibold text-ink ring-1 ring-[#d69696]/35 transition-colors ring-inset hover:bg-white/80"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white/55 px-5 text-sm font-medium text-ink ring-1 ring-[#d69696]/35 transition-colors ring-inset hover:bg-white/80"
         >
             {t('discover')}
             <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
@@ -56,7 +56,7 @@ export function GuestOfferCard({ eventId, isHost }: { eventId: string; isHost: b
                 <div className="@lg:grid @lg:grid-cols-[1fr_auto] @lg:items-center @lg:gap-8">
                     {/* Message */}
                     <div className="mt-4">
-                        <h2 className="font-[family-name:var(--font-alegreya)] text-[1.625rem] leading-tight text-ink">{t('title')}</h2>
+                        <h2 className="text-xl leading-snug font-semibold text-ink">{t('title')}</h2>
                         <p className="mt-1.5 max-w-[34ch] text-[0.9375rem] leading-relaxed text-ink-muted">{t('line')}</p>
                     </div>
 
@@ -72,7 +72,7 @@ export function GuestOfferCard({ eventId, isHost }: { eventId: string; isHost: b
                                 type="button"
                                 onClick={claimCode}
                                 disabled={isClaiming}
-                                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-ink px-5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-70"
+                                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-ink px-5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-70"
                             >
                                 {isClaiming && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
                                 {t.rich('claim', {
