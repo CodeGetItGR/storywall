@@ -24,6 +24,7 @@ function mountLanding() {
             <a href="#pricing" id="plans" ${attributes(landingClickAttributes({ event: 'plans', placement: 'hero' }))}>See plans</a>
             <a href="#pricing" id="nav" ${attributes(landingClickAttributes({ event: 'nav', placement: 'header', target: 'pricing' }))}>Plans</a>
             <a href="#plan" id="plan" ${attributes(landingClickAttributes({ event: 'plan', plan: 'wedding/STORY', months: 6 }))}>Choose plan</a>
+            <a href="#business" id="business" ${attributes(landingClickAttributes({ event: 'business', target: 'PHOTOGRAPHER' }))}>Photographers</a>
             <a href="#plain" id="plain">Untracked</a>
             <div role="group">
                 <button type="button" data-locale="en" aria-pressed="true" id="current">EN</button>
@@ -63,6 +64,13 @@ describe('useLandingClickTracking', () => {
 
         expect(track).toHaveBeenNthCalledWith(1, 'Landing Nav', { placement: 'header', target: 'pricing' });
         expect(track).toHaveBeenNthCalledWith(2, 'Landing Plan', { plan: 'wedding/STORY', months: 6 });
+    });
+
+    it('sends the business card that was picked, without a campaign click', () => {
+        click('business');
+
+        expect(track).toHaveBeenCalledExactlyOnceWith('Landing Business', { target: 'PHOTOGRAPHER' });
+        expect(sendCampaignClick).not.toHaveBeenCalled();
     });
 
     it('ignores untagged links', () => {

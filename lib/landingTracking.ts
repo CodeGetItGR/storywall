@@ -1,5 +1,6 @@
 import { track } from '@vercel/analytics';
 
+import type { VendorPageType } from '@/i18n/publicLocale';
 import { sendCampaignClick } from '@/lib/campaignVisits';
 import { trackAnalyticsEvent } from '@/lib/googleAnalytics';
 
@@ -11,12 +12,25 @@ import { trackAnalyticsEvent } from '@/lib/googleAnalytics';
 export type LandingPlacement = 'header' | 'mobile_menu' | 'hero' | 'hero_band' | 'stories' | 'themes' | 'demo' | 'final_cta';
 
 export type LandingSection =
-    'how_it_works' | 'stories' | 'demo' | 'social_host' | 'features' | 'feature_details' | 'reviews' | 'pricing' | 'faq' | 'final_cta' | 'footer';
+    | 'how_it_works'
+    | 'stories'
+    | 'demo'
+    | 'social_host'
+    | 'features'
+    | 'feature_details'
+    | 'reviews'
+    | 'pricing'
+    | 'for_business'
+    | 'faq'
+    | 'final_cta'
+    | 'footer';
 
 export type LandingClick =
     | { event: 'create' | 'plans' | 'demo' | 'login'; placement: LandingPlacement }
     | { event: 'nav'; placement: LandingPlacement; target: string }
-    | { event: 'plan'; plan: string; months: number };
+    | { event: 'plan'; plan: string; months: number }
+    // A card in the business section: its vendor page, or 'all' for the business page.
+    | { event: 'business'; target: VendorPageType | 'all' };
 
 const CLICK_EVENT_NAMES: Record<LandingClick['event'], string> = {
     create: 'Landing Create',
@@ -25,6 +39,7 @@ const CLICK_EVENT_NAMES: Record<LandingClick['event'], string> = {
     login: 'Landing Login',
     nav: 'Landing Nav',
     plan: 'Landing Plan',
+    business: 'Landing Business',
 };
 
 const CLICK_ATTRIBUTE = 'data-landing-click';
@@ -80,7 +95,7 @@ export function landingNavTarget(href: string): LandingSection | string {
 }
 
 // Google Analytics gets the same event under a snake_case name: 'Landing Plan' is landing_plan.
-function sendLandingEvent(name: string, properties: Record<string, string | number>) {
+export function sendLandingEvent(name: string, properties: Record<string, string | number>) {
     track(name, properties);
     trackAnalyticsEvent(name.toLowerCase().replaceAll(' ', '_'), properties);
 }

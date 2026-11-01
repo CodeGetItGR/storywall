@@ -9,6 +9,7 @@ import { GRADIENT_TEXT } from '@/components/vendorPages/vendorPageStyles';
 import type { Locale } from '@/i18n/config';
 import { getForBusinessPath, getVendorPagePath, VENDOR_PAGE_TYPES, type VendorPageType } from '@/i18n/publicLocale';
 import { LANDING_TOKENS_CLASS } from '@/lib/landingTokens';
+import { landingSectionAttributes } from '@/lib/landingTracking';
 import { showsUnreleasedPages } from '@/lib/unreleasedPages';
 import { VENDOR_PAGES } from '@/lib/vendorPages';
 
@@ -36,6 +37,7 @@ export async function LandingForBusiness() {
             aria-labelledby="landing-business-title"
             className={`${LANDING_TOKENS_CLASS} overflow-hidden bg-[#f4f0e8] bg-[radial-gradient(circle_at_92%_6%,rgba(248,165,96,0.22),transparent_38%),radial-gradient(circle_at_4%_96%,rgba(210,123,155,0.16),transparent_40%)] px-5 py-16 text-[#151313] min-[761px]:px-[clamp(24px,4vw,72px)] min-[761px]:py-24`}
             id="for-business"
+            {...landingSectionAttributes('for_business')}
         >
             <GradientIconDefs />
             <div className="mx-auto w-full max-w-295">
@@ -66,6 +68,7 @@ export async function LandingForBusiness() {
                 <ul className="m-0 mt-12 grid list-none grid-cols-2 gap-3 p-0 min-[761px]:mt-16 min-[761px]:grid-cols-4 min-[761px]:gap-5">
                     {VENDOR_PAGE_TYPES.map((type) => (
                         <LandingForBusinessCard
+                            click={{ event: 'business', target: type }}
                             href={getVendorPagePath(type, locale)}
                             icon={TYPE_ICONS[type]}
                             key={type}
@@ -75,7 +78,14 @@ export async function LandingForBusiness() {
                         />
                     ))}
                     {/* The business page */}
-                    <LandingForBusinessCard dark href={getForBusinessPath(locale)} icon={Sparkles} more={t('more')} title={t('all')}>
+                    <LandingForBusinessCard
+                        click={{ event: 'business', target: 'all' }}
+                        dark
+                        href={getForBusinessPath(locale)}
+                        icon={Sparkles}
+                        more={t('more')}
+                        title={t('all')}
+                    >
                         <ProtectedImage
                             alt={alts('sparkle')}
                             className="absolute -top-3 -right-2 w-14 rotate-12 opacity-90 min-[761px]:w-18"

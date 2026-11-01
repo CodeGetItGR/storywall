@@ -2,11 +2,13 @@ import { ArrowRight, type LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { GradientIcon } from '@/components/vendorPages/GradientIcon';
+import { type LandingClick, landingClickAttributes } from '@/lib/landingTracking';
 import { cn } from '@/lib/utils';
 
 type LandingForBusinessCardProps = {
     // A sticker in the dark card's corner.
     children?: ReactNode;
+    click: LandingClick;
     // The dark card that opens the business page.
     dark?: boolean;
     href: string;
@@ -18,11 +20,12 @@ type LandingForBusinessCardProps = {
 };
 
 // One vendor type: its icon, name and the icons of its tools, with a link to its page.
-export function LandingForBusinessCard({ children, dark, href, icon, more, title, tools = [] }: LandingForBusinessCardProps) {
+export function LandingForBusinessCard({ children, click, dark, href, icon, more, title, tools = [] }: LandingForBusinessCardProps) {
     return (
         <li className="min-w-0">
             <a
                 href={href}
+                {...landingClickAttributes(click)}
                 className={cn(
                     'group relative flex h-full flex-col overflow-hidden rounded-[24px] p-4 no-underline outline-offset-4 transition-transform duration-300 hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-[#e78274] motion-reduce:transition-none min-[761px]:rounded-[28px] min-[761px]:p-6',
                     dark
