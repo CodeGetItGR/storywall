@@ -8,6 +8,7 @@ import { type AdminTab, useAdminNavigation } from '@/components/admin/AdminNavig
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { usePendingOutreachRequestsCount } from '@/hooks/useAdminOutreachRequests';
 import { usePendingApplicationsCount } from '@/hooks/useAdminPartnerApplications';
+import { useNewVendorMessagesCount } from '@/hooks/useAdminVendorMessages';
 import { canOpenAdminTab } from '@/lib/adminAccess';
 import { cn } from '@/lib/utils';
 
@@ -43,6 +44,7 @@ const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operat
     events: 'operations',
     reports: 'operations',
     bugReports: 'operations',
+    vendorMessages: 'operations',
     errorEvents: 'operations',
     auditLog: 'operations',
 };
@@ -66,7 +68,12 @@ export function AdminShellNav({
     // Only admins see Partner applications; the count would 403 for anyone else.
     const pendingApplications = usePendingApplicationsCount(canOpenAdminTab(role, 'partnerApplications'));
     const pendingRequests = usePendingOutreachRequestsCount(canOpenAdminTab(role, 'outreachRequests'));
-    const pendingCounts: Partial<Record<AdminTab, number>> = { partnerApplications: pendingApplications, outreachRequests: pendingRequests };
+    const newVendorMessages = useNewVendorMessagesCount(canOpenAdminTab(role, 'vendorMessages'));
+    const pendingCounts: Partial<Record<AdminTab, number>> = {
+        partnerApplications: pendingApplications,
+        outreachRequests: pendingRequests,
+        vendorMessages: newVendorMessages,
+    };
 
     function handleNavClick(event: MouseEvent<HTMLButtonElement>) {
         const nextTab = event.currentTarget.dataset.tab as Parameters<typeof setTab>[0] | undefined;
@@ -126,7 +133,7 @@ export function AdminShellNav({
                                     >
                                         <Icon className="h-4 w-4 shrink-0 opacity-85" />
                                         <span className="truncate">{label}</span>
-                                        {/* Pending applications and outreach requests */}
+                                        {/* Pending applications, outreach requests and new vendor messages */}
                                         {pendingCount > 0 && (
                                             <span className="ml-auto rounded-full bg-status-warn-wash px-1.5 font-mono text-[11px] font-bold text-status-warn tabular-nums">
                                                 <span aria-hidden="true">{pendingCount}</span>

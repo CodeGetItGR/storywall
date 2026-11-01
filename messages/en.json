@@ -2990,6 +2990,7 @@
             "lifecycle": "Lifecycle",
             "reports": "Reports",
             "bugReports": "Bug reports",
+            "vendorMessages": "Vendor messages",
             "errorEvents": "Errors",
             "auditLog": "Audit log",
             "demoEvents": "Demo events",
@@ -3513,6 +3514,45 @@
                 "RESOLVED": "Resolved",
                 "DISMISSED": "Dismissed"
             }
+        },
+        "vendorMessagesPanel": {
+            "title": "Vendor messages",
+            "loading": "Loading messages",
+            "empty": "No messages.",
+            "count": "{count, plural, one {# message} other {# messages}}",
+            "filterLabel": "Status",
+            "filters": {
+                "NEW": "New",
+                "ANSWERED": "Answered",
+                "ALL": "All"
+            },
+            "open": "Open message",
+            "columns": {
+                "received": "Received",
+                "business": "Business",
+                "topic": "Topic",
+                "message": "Message",
+                "status": "Status"
+            },
+            "statuses": {
+                "NEW": "New",
+                "ANSWERED": "Answered"
+            },
+            "topics": {
+                "QUESTION": "Question",
+                "PROBLEM": "Problem",
+                "PARTNERSHIP": "Partnership",
+                "OTHER": "Other"
+            },
+            "detailTitle": "Vendor message",
+            "replyTo": "Reply to",
+            "notVerified": "Not verified",
+            "reply": "Reply by email",
+            "markAnswered": "Mark answered",
+            "markNew": "Mark as new",
+            "close": "Close",
+            "messageId": "Message ID",
+            "userId": "Account ID"
         },
         "bugReports": {
             "title": "Bug reports",

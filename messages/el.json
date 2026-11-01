@@ -3110,6 +3110,7 @@
             "lifecycle": "Κύκλος ζωής",
             "reports": "Αναφορές",
             "bugReports": "Αναφορές προβλημάτων",
+            "vendorMessages": "Μηνύματα επιχειρήσεων",
             "errorEvents": "Σφάλματα",
             "auditLog": "Αρχείο ενεργειών",
             "metrics": "Στατιστικά",
@@ -3635,6 +3636,45 @@
                 "RESOLVED": "Επιλύθηκε",
                 "DISMISSED": "Απορρίφθηκε"
             }
+        },
+        "vendorMessagesPanel": {
+            "title": "Μηνύματα επιχειρήσεων",
+            "loading": "Φόρτωση μηνυμάτων",
+            "empty": "Κανένα μήνυμα.",
+            "count": "{count, plural, one {# μήνυμα} other {# μηνύματα}}",
+            "filterLabel": "Κατάσταση",
+            "filters": {
+                "NEW": "Νέα",
+                "ANSWERED": "Απαντημένα",
+                "ALL": "Όλα"
+            },
+            "open": "Άνοιγμα μηνύματος",
+            "columns": {
+                "received": "Λήψη",
+                "business": "Επιχείρηση",
+                "topic": "Θέμα",
+                "message": "Μήνυμα",
+                "status": "Κατάσταση"
+            },
+            "statuses": {
+                "NEW": "Νέο",
+                "ANSWERED": "Απαντήθηκε"
+            },
+            "topics": {
+                "QUESTION": "Ερώτηση",
+                "PROBLEM": "Πρόβλημα",
+                "PARTNERSHIP": "Συνεργασία",
+                "OTHER": "Άλλο"
+            },
+            "detailTitle": "Μήνυμα επιχείρησης",
+            "replyTo": "Απάντηση σε",
+            "notVerified": "Μη επιβεβαιωμένο",
+            "reply": "Απάντηση με email",
+            "markAnswered": "Σήμανση ως απαντημένο",
+            "markNew": "Σήμανση ως νέο",
+            "close": "Κλείσιμο",
+            "messageId": "ID μηνύματος",
+            "userId": "ID λογαριασμού"
         },
         "bugReports": {
             "title": "Αναφορές προβλημάτων",

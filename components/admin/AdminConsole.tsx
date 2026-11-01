@@ -34,6 +34,7 @@ import { ReactionTypesCatalogPanel } from '@/components/admin/ReactionTypesCatal
 import { SiteNoticesPanel } from '@/components/admin/siteNotices/SiteNoticesPanel';
 import { ThemeFontsPanel } from '@/components/admin/themeFonts/ThemeFontsPanel';
 import { ThemePresetsPanel } from '@/components/admin/themePresets/ThemePresetsPanel';
+import { VendorMessagesPanel } from '@/components/admin/vendorMessages/VendorMessagesPanel';
 import { VisitorsPanel } from '@/components/admin/visitors/VisitorsPanel';
 import { WithdrawalsSection } from '@/components/admin/WithdrawalsSection';
 
@@ -105,6 +106,13 @@ export function AdminConsole() {
         return (
             <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
                 {tab === 'bugReports' ? <BugReportsPanel /> : <ErrorEventsPanel />}
+            </div>
+        );
+    }
+    if (tab === 'vendorMessages') {
+        return (
+            <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
+                <VendorMessagesPanel />
             </div>
         );
     }
