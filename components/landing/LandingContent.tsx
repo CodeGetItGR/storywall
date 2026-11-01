@@ -8,6 +8,7 @@ import { LandingFeatureDetails } from '@/components/landing/LandingFeatureDetail
 import { LandingFeatures } from '@/components/landing/LandingFeatures';
 import { LandingFinalCta } from '@/components/landing/LandingFinalCta';
 import { LandingFooter } from '@/components/landing/LandingFooter';
+import { LandingForBusiness } from '@/components/landing/LandingForBusiness';
 import { LandingHero } from '@/components/landing/LandingHero';
 import { LandingHeroTransition } from '@/components/landing/LandingHeroTransition';
 import { LandingHowItWorks } from '@/components/landing/LandingHowItWorks';
@@ -52,6 +53,9 @@ export function LandingContent() {
 
                 {/* Pricing */}
                 <LandingPricing />
+
+                {/* For businesses */}
+                <LandingForBusiness />
 
                 <div className="landing-page">
                     {/* FAQ */}
