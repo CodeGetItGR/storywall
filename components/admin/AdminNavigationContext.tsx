@@ -17,6 +17,7 @@ import {
     Link2,
     ListChecks,
     type LucideIcon,
+    Mail,
     Megaphone,
     MonitorPlay,
     OctagonAlert,
@@ -78,6 +79,7 @@ export type AdminTab =
     | 'accounts'
     | 'reports'
     | 'bugReports'
+    | 'vendorMessages'
     | 'errorEvents'
     | 'appReviews'
     | 'campaignOverview'
@@ -128,6 +130,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#accounts': 'accounts',
     '#reports': 'reports',
     '#bug-reports': 'bugReports',
+    '#vendor-messages': 'vendorMessages',
     '#errors': 'errorEvents',
     '#reviews': 'appReviews',
     '#campaign-overview': 'campaignOverview',
@@ -166,6 +169,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     campaigns: '#campaigns',
     reports: '#reports',
     bugReports: '#bug-reports',
+    vendorMessages: '#vendor-messages',
     errorEvents: '#errors',
     appReviews: '#reviews',
     siteNotices: '#site-notices',
@@ -290,6 +294,7 @@ export function AdminNavigationProvider({ children, role = 'ADMIN' }: { children
             { key: 'withdrawals', label: t('withdrawals'), icon: Undo2 },
             { key: 'reports', label: t('reports'), icon: Flag },
             { key: 'bugReports', label: t('bugReports'), icon: Bug },
+            { key: 'vendorMessages', label: t('vendorMessages'), icon: Mail },
             { key: 'errorEvents', label: t('errorEvents'), icon: OctagonAlert },
             { key: 'auditLog', label: t('auditLog'), icon: History },
             { key: 'phones', label: t('phones'), icon: Smartphone },

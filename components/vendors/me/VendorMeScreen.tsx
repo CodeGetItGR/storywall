@@ -7,14 +7,14 @@ import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { BecomePartnerSheet } from '@/components/vendors/BecomePartnerSheet';
+import { BusinessLinkSection } from '@/components/vendors/me/BusinessLinkSection';
 import { PartnerBenefitsSection } from '@/components/vendors/me/PartnerBenefitsSection';
+import { PrintPricesLinkSection } from '@/components/vendors/me/PrintPricesLinkSection';
 import { PrintsIncludedRow } from '@/components/vendors/me/PrintsIncludedRow';
 import { PrintsIncludedSheet } from '@/components/vendors/me/PrintsIncludedSheet';
 import { PrintsSection } from '@/components/vendors/me/PrintsSection';
 import { ProAlbumSection } from '@/components/vendors/me/ProAlbumSection';
 import { ReachSection } from '@/components/vendors/me/ReachSection';
-import { ServiceSheet } from '@/components/vendors/me/ServiceSheet';
-import { ServicesSection } from '@/components/vendors/me/ServicesSection';
 import { SneakPeekSection } from '@/components/vendors/me/SneakPeekSection';
 import { SneakPeekSheet } from '@/components/vendors/me/SneakPeekSheet';
 import { VendorListingSection } from '@/components/vendors/me/VendorListingSection';
@@ -31,20 +31,19 @@ import { useVendorHeroPhotos } from '@/hooks/useVendorHeroPhotos';
 import { useVendorMePage } from '@/hooks/useVendorMePage';
 import { useVendorPageSectionTarget } from '@/hooks/useVendorPageSectionTarget';
 import { useVendorPrintsSection } from '@/hooks/useVendorPrintsSection';
-import { useVendorServicesSection } from '@/hooks/useVendorServicesSection';
 import { formatDate } from '@/lib/datetime';
 import { routes } from '@/lib/routes';
 
 export function VendorMeScreen() {
     const t = useTranslations('Vendors');
-    const tServices = useTranslations('Vendors.services');
     const tSneakPeek = useTranslations('Vendors.sneakPeek');
     const locale = useLocale();
     const { eventId } = useEventRouteContext();
     const page = useVendorMePage(eventId);
     const { me, profile } = page;
     const prints = useVendorPrintsSection(eventId, me);
-    const services = useVendorServicesSection(me, page.profileStatus);
+    // Print prices are set on the business page; this page only links to them.
+    const showPrintPrices = me?.vendorType === 'PHOTOGRAPHER';
     const sneakPeek = useSneakPeekSection(eventId, me, page.hasProAlbum);
     const reach = useReachSection(eventId, me);
     const partner = usePartnerBenefits(me);
@@ -146,48 +145,37 @@ export function VendorMeScreen() {
                     )}
 
                     {/* Settings: set once, change rarely */}
-                    {(services.visible || page.canChooseListing) && (
-                        <VendorMeGroup id="vendor-settings-title" title={t('me.groupSettings')}>
-                            {/* Print prices */}
-                            {services.visible && (
-                                <ServicesSection
-                                    approved={services.approved}
-                                    sizes={services.sizes}
-                                    canAdd={services.canAdd}
-                                    needsProfile={services.needsProfile}
-                                    profileLoading={services.profileLoading}
-                                    isLoading={services.isLoading}
-                                    loadFailed={services.loadFailed}
-                                    error={services.sectionError}
-                                    includedRow={
-                                        prints.open &&
-                                        !prints.includedFailed && (
-                                            <PrintsIncludedRow
-                                                included={prints.included}
-                                                isLoading={prints.isLoadingIncluded}
-                                                onEditAction={prints.openIncluded}
-                                            />
-                                        )
-                                    }
-                                    canApply={partner.canApply}
-                                    onAddAction={services.openNew}
-                                    onEditAction={services.openEdit}
-                                    onBecomePartnerAction={partner.sheet.openSheet}
-                                />
-                            )}
+                    <VendorMeGroup id="vendor-settings-title" title={t('me.groupSettings')}>
+                        {/* My business: every vendor's page across their events */}
+                        <BusinessLinkSection />
 
-                            {/* Listing */}
-                            {page.canChooseListing && (
-                                <VendorListingSection
-                                    listed={page.listed}
-                                    hiddenByHost={page.hiddenByHost}
-                                    disabled={page.isTogglingListed}
-                                    error={page.error}
-                                    onToggleAction={page.toggleListed}
-                                />
-                            )}
-                        </VendorMeGroup>
-                    )}
+                        {/* Print prices */}
+                        {showPrintPrices && (
+                            <PrintPricesLinkSection
+                                includedRow={
+                                    prints.open &&
+                                    !prints.includedFailed && (
+                                        <PrintsIncludedRow
+                                            included={prints.included}
+                                            isLoading={prints.isLoadingIncluded}
+                                            onEditAction={prints.openIncluded}
+                                        />
+                                    )
+                                }
+                            />
+                        )}
+
+                        {/* Listing */}
+                        {page.canChooseListing && (
+                            <VendorListingSection
+                                listed={page.listed}
+                                hiddenByHost={page.hiddenByHost}
+                                disabled={page.isTogglingListed}
+                                error={page.error}
+                                onToggleAction={page.toggleListed}
+                            />
+                        )}
+                    </VendorMeGroup>
 
                     {/* Partner */}
                     {partner.visible && (
@@ -215,19 +203,6 @@ export function VendorMeScreen() {
                     error={prints.sheetError}
                     onSaveAction={prints.saveIncluded}
                     onCloseAction={prints.closeIncluded}
-                />
-            )}
-
-            {/* Service sheet */}
-            {services.editing && (
-                <ServiceSheet
-                    key={services.editing === 'new' ? 'new' : services.editing.id}
-                    item={services.editing}
-                    isSaving={services.isSaving}
-                    error={services.sheetError}
-                    onSaveAction={services.save}
-                    onDeleteAction={services.requestDelete}
-                    onCloseAction={services.close}
                 />
             )}
 
@@ -272,18 +247,6 @@ export function VendorMeScreen() {
                 defaults={partner.sheet.defaults}
                 search={partner.sheet.search}
                 onCloseAction={partner.sheet.closeSheet}
-            />
-
-            {/* Service delete confirmation */}
-            <ConfirmActionModal
-                open={services.confirmDelete}
-                onCloseAction={services.cancelDelete}
-                onConfirmAction={services.confirmRemove}
-                title={tServices('deleteTitle')}
-                body={tServices('deleteBody')}
-                confirmLabel={tServices('deleteConfirm')}
-                cancelLabel={tServices('cancel')}
-                isConfirming={services.isDeleting}
             />
         </ModulePageShell>
     );

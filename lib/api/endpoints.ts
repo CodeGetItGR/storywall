@@ -3,7 +3,7 @@
 // since flipped every route; reconcile against Swagger (/v3/api-docs) if a
 // path here 404s.
 
-import type { OutreachProspectQuery, OutreachRequestStatus, PartnerApplicationStatus, RsvpReportType, SignupChannel } from '@/lib/api/types';
+import type { OutreachProspectQuery, OutreachRequestStatus, PartnerApplicationStatus, RsvpReportType, SignupChannel, VendorContactStatus } from '@/lib/api/types';
 
 export const endpoints = {
     betaFeedback: {
@@ -62,6 +62,9 @@ export const endpoints = {
         vendorProfileBanner: '/api/me/vendor-profile/banner',
         vendorServices: '/api/me/vendor-profile/services',
         vendorService: (serviceId: string) => `/api/me/vendor-profile/services/${serviceId}`,
+        business: '/api/me/business',
+        businessEvents: (page: number, size: number) => `/api/me/business/events?page=${page}&size=${size}`,
+        businessMessages: '/api/me/business/messages',
     },
 
     contentNotices: { submit: '/api/content-notices' },
@@ -559,6 +562,11 @@ export const endpoints = {
         campaignLinks: {
             list: '/api/admin/campaign-links',
             byId: (id: string) => `/api/admin/campaign-links/${id}`,
+        },
+        vendorMessages: {
+            list: ({ status, page, size }: { status: VendorContactStatus | null; page: number; size: number }) =>
+                `/api/admin/vendor-messages?${new URLSearchParams({ ...(status ? { status } : {}), page: String(page), size: String(size) })}`,
+            byId: (id: string) => `/api/admin/vendor-messages/${id}`,
         },
         outreach: {
             prospects: (query: OutreachProspectQuery) => {

@@ -7,8 +7,16 @@ import { type PartnerBrandingCardContent, usePartnerBrandingCard } from '@/hooks
 import type { BrandingVariant, PartnerBrandingDto } from '@/lib/api/types';
 
 // One variant from ready content; the admin preview renders all three this way.
-export function PartnerCardVariant({ variant, content }: { variant: BrandingVariant; content: PartnerBrandingCardContent }) {
-    if (variant === 'FEATURE_CARD') return <PartnerFeatureCard content={content} />;
+export function PartnerCardVariant({
+    variant,
+    content,
+    coverSizes,
+}: {
+    variant: BrandingVariant;
+    content: PartnerBrandingCardContent;
+    coverSizes?: string;
+}) {
+    if (variant === 'FEATURE_CARD') return <PartnerFeatureCard content={content} coverSizes={coverSizes} />;
     if (variant === 'COMPACT_ROW') return <PartnerCompactRow content={content} />;
     return <PartnerCredit content={content} />;
 }

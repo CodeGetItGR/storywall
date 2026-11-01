@@ -48,9 +48,11 @@ describe('useBecomePartner', () => {
         act(() => result.current.openSheet());
         expect(invalidate).not.toHaveBeenCalled();
         act(() => result.current.closeSheet());
-        expect(invalidate).toHaveBeenCalledTimes(1);
+        expect(invalidate).toHaveBeenCalledTimes(2);
         const { predicate } = invalidate.mock.calls[0][0] as { predicate: (query: { queryKey: readonly unknown[] }) => boolean };
         expect(predicate({ queryKey: ['events', 'e1', 'vendors', 'me'] })).toBe(true);
         expect(predicate({ queryKey: ['events', 'e1', 'media'] })).toBe(false);
+        // The business page's "Become a partner" prompt follows the overview.
+        expect(invalidate).toHaveBeenLastCalledWith({ queryKey: ['business', 'overview'] });
     });
 });

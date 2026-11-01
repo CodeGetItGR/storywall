@@ -16,16 +16,15 @@ vi.mock('@/components/vendors/me/PartnerBenefitsSection', () => ({ PartnerBenefi
 vi.mock('@/components/vendors/VendorProfileSheet', () => ({ VendorProfileSheet: () => <p>profile sheet</p> }));
 vi.mock('@/components/vendors/me/PrintsSection', () => ({ PrintsSection: () => <p>prints section</p> }));
 vi.mock('@/components/vendors/me/PrintsIncludedSheet', () => ({ PrintsIncludedSheet: () => null }));
-vi.mock('@/components/vendors/me/ServicesSection', () => ({ ServicesSection: () => <p>services section</p> }));
+vi.mock('@/components/vendors/me/PrintPricesLinkSection', () => ({
+    PrintPricesLinkSection: () => <p>print prices link</p>,
+}));
 vi.mock('@/components/vendors/me/SneakPeekSection', () => ({ SneakPeekSection: () => <p>sneak peek section</p> }));
 vi.mock('@/components/vendors/me/SneakPeekSheet', () => ({ SneakPeekSheet: () => <p>sneak peek sheet</p> }));
 vi.mock('@/components/vendors/BecomePartnerSheet', () => ({ BecomePartnerSheet: () => null }));
-vi.mock('@/components/vendors/me/ServiceSheet', () => ({ ServiceSheet: () => <p>service sheet</p> }));
 vi.mock('@/components/ui/ConfirmActionModal', () => ({ ConfirmActionModal: () => null }));
 const prints = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
-const services = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
 vi.mock('@/hooks/useVendorPrintsSection', () => ({ useVendorPrintsSection: () => prints.value }));
-vi.mock('@/hooks/useVendorServicesSection', () => ({ useVendorServicesSection: () => services.value }));
 const sneakPeek = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
 vi.mock('@/hooks/useSneakPeekSection', () => ({ useSneakPeekSection: () => sneakPeek.value }));
 const reach = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
@@ -68,7 +67,6 @@ function state(overrides: Record<string, unknown> = {}) {
 beforeEach(() => {
     page.value = state();
     prints.value = { open: false, includedOpen: false, error: null };
-    services.value = { visible: false, editing: null, confirmDelete: false, error: null };
     sneakPeek.value = { visible: false, state: 'hidden', sheet: null, confirmDelete: false };
     reach.value = {
         visible: false,
@@ -104,15 +102,18 @@ describe('VendorMeScreen', () => {
         prints.value = { open: true, includedOpen: false, error: null };
         render(<VendorMeScreen />);
         expect(screen.getByText('prints section')).toBeTruthy();
-        expect(screen.queryByText('services section')).toBeNull();
+        expect(screen.queryByText('print prices link')).toBeNull();
     });
 
-    it('shows the Services section and the size sheet while a size is open', () => {
-        services.value = { visible: true, editing: 'new', confirmDelete: false, error: null };
+    it('links a photographer to the print prices on the business page', () => {
+        page.value = state({ me: { ...(state().me as object), vendorType: 'PHOTOGRAPHER' } });
         render(<VendorMeScreen />);
-        expect(screen.getByText('services section')).toBeTruthy();
-        expect(screen.getByText('service sheet')).toBeTruthy();
-        expect(screen.queryByText('prints section')).toBeNull();
+        expect(screen.getByText('print prices link')).toBeTruthy();
+    });
+
+    it('hides the print prices link for other vendors', () => {
+        render(<VendorMeScreen />);
+        expect(screen.queryByText('print prices link')).toBeNull();
     });
 
     it('shows the Sneak peek section and its sheet while it is open', () => {
@@ -147,10 +148,11 @@ describe('VendorMeScreen', () => {
         expect(screen.getByText('pro album')).toBeTruthy();
     });
 
-    it('drops the settings heading when no setting applies', () => {
+    it('links every vendor to My business, whatever their type', () => {
         page.value = state({ canChooseListing: false });
         render(<VendorMeScreen />);
-        expect(screen.queryByText('me.groupSettings')).toBeNull();
+        expect(screen.getByText('me.groupSettings')).toBeTruthy();
+        expect(screen.getByRole('link', { name: 'myBusiness' }).getAttribute('href')).toBe('/business');
     });
 
     it('says when the tools have stopped', () => {

@@ -40,7 +40,7 @@ export function usePartnerBrandingCard(branding: PartnerBrandingDto): PartnerBra
     const locale = useLocale();
 
     return {
-        href: partnerBrandingHref(branding.linkUrl),
+        href: branding.linkUrl ? partnerBrandingHref(branding.linkUrl) : null,
         name: branding.displayName,
         roleLabel: labels.roleLabel(branding.role),
         partnerLabel: labels.partnerLabel,

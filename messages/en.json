@@ -678,6 +678,7 @@
         "modules": "Modules",
         "plans": "Plans",
         "profile": "Profile",
+        "business": "My business",
         "notifications": "Notifications",
         "editProfile": "Edit profile",
         "logout": "Log out",
@@ -700,8 +701,8 @@
         "showPreview": "Show {name} preview"
     },
     "ProfilePage": {
-        "partner": {
-            "title": "Partner page"
+        "myBusiness": {
+            "title": "My business"
         },
         "dataExport": {
             "title": "Your data",
@@ -2067,24 +2068,6 @@
         "redirectCountdown": "Opening the feed in {seconds, plural, one {# second} other {# seconds}}."
     },
     "PartnerPortalPage": {
-        "back": "Back",
-        "loading": "Loading partner report",
-        "title": "Partner report",
-        "summary": "Partner summary",
-        "eventsReferred": "Events referred",
-        "unavailable": {
-            "title": "Couldn't load your partner page",
-            "description": "Try again in a moment."
-        },
-        "notVerified": {
-            "title": "Verify your email to open your partner page",
-            "description": "Open the link we sent to your email."
-        },
-        "notLinked": {
-            "title": "This account isn't linked to a partner",
-            "description": "Sign in with your partner email, or contact us.",
-            "contact": "Contact us"
-        },
         "totals": {
             "title": "To be paid",
             "empty": "No earnings yet.",
@@ -2096,19 +2079,6 @@
             "progressLabel": "Progress to the next rate",
             "activationsThisYear": "{count, plural, one {# activation} other {# activations}} this year",
             "next": "Your {number, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} activation earns {percent}%"
-        },
-        "brandingClicks": "Card taps",
-        "reach": {
-            "title": "Reach",
-            "eventCount": "{count, plural, one {# event} other {# events}}",
-            "guests": "Guests",
-            "proViews": "Photo and video views",
-            "postViewers": "Saw your posts",
-            "listTaps": "Opened your details",
-            "recentTitle": "Recent events",
-            "rowViews": "{count, plural, one {# view} other {# views}}",
-            "rowGuests": "{count, plural, one {# guest} other {# guests}}",
-            "empty": "No events as a vendor yet."
         }
     },
     "SchedulePage": {
@@ -3020,6 +2990,7 @@
             "lifecycle": "Lifecycle",
             "reports": "Reports",
             "bugReports": "Bug reports",
+            "vendorMessages": "Vendor messages",
             "errorEvents": "Errors",
             "auditLog": "Audit log",
             "demoEvents": "Demo events",
@@ -3543,6 +3514,45 @@
                 "RESOLVED": "Resolved",
                 "DISMISSED": "Dismissed"
             }
+        },
+        "vendorMessagesPanel": {
+            "title": "Vendor messages",
+            "loading": "Loading messages",
+            "empty": "No messages.",
+            "count": "{count, plural, one {# message} other {# messages}}",
+            "filterLabel": "Status",
+            "filters": {
+                "NEW": "New",
+                "ANSWERED": "Answered",
+                "ALL": "All"
+            },
+            "open": "Open message from {name}",
+            "columns": {
+                "received": "Received",
+                "business": "Business",
+                "topic": "Topic",
+                "message": "Message",
+                "status": "Status"
+            },
+            "statuses": {
+                "NEW": "New",
+                "ANSWERED": "Answered"
+            },
+            "topics": {
+                "QUESTION": "Question",
+                "PROBLEM": "Problem",
+                "PARTNERSHIP": "Partnership",
+                "OTHER": "Other"
+            },
+            "detailTitle": "Vendor message",
+            "replyTo": "Reply to",
+            "notVerified": "Not verified",
+            "reply": "Reply by email",
+            "markAnswered": "Mark answered",
+            "markNew": "Mark as new",
+            "close": "Close",
+            "messageId": "Message ID",
+            "userId": "Account ID"
         },
         "bugReports": {
             "title": "Bug reports",
@@ -6680,6 +6690,7 @@
         "partnerRequired": "Only approved partners can list prices.",
         "partnerEmailNotVerified": "Verify your email to open your partner page.",
         "partnerNotLinked": "This account isn't linked to a partner.",
+        "notAVendor": "This account has no business page.",
         "printPicksUnavailable": "You can't pick this photo for print.",
         "printPricesMissing": "The photographer hasn't set print prices yet.",
         "printListLocked": "This list was sent and can't change.",
@@ -6799,6 +6810,16 @@
         "partnerBrandingNoticeOutdated": "The partner notice has changed. Please review it again."
     },
     "LandingPage": {
+        "forBusiness": {
+            "heading": {
+                "plain": "Are you a photographer, a wedding planner",
+                "grad": "or a DJ?"
+            },
+            "body": "StoryWall has tools for every wedding and event professional, inside your client’s event.",
+            "points": ["Join free with the host’s link", "Guests see your name and your work", "Partners get a discount code for their clients"],
+            "all": "Everything for professionals",
+            "more": "More"
+        },
         "imageAlts": {
             "heroBackground": "Soft pastel background with sparkles",
             "phone": "Phone showing a StoryWall feed",
@@ -9058,7 +9079,12 @@
             "listingHiddenByHost": "The host hid you from the list.",
             "profileEdit": "Edit",
             "groupEvent": "For this event",
-            "groupSettings": "Your settings"
+            "groupSettings": "Your settings",
+            "myBusiness": "My business",
+            "printPrices": {
+                "title": "Print prices",
+                "openBusiness": "Change them in My business"
+            }
         },
         "meter": {
             "label": "Pro album",
@@ -9095,9 +9121,7 @@
                 "websiteInvalid": "The link must start with https://",
                 "phoneInvalid": "Enter a valid phone number.",
                 "emailInvalid": "Enter a valid email."
-            },
-            "sectionTitle": "Vendor details",
-            "edit": "Edit"
+            }
         },
         "partner": {
             "title": "Become a StoryWall partner",
@@ -9208,5 +9232,598 @@
         "location": "Location",
         "guestPhoto": "Guest photo",
         "photoBy": "Photo by {name}"
+    },
+    "VendorPages": {
+        "breadcrumb": "For business",
+        "business": "Your business",
+        "reactionAlt": {
+            "love": "Hearts reaction",
+            "cheers": "Cheers reaction"
+        },
+        "sections": {
+            "tools": {
+                "eyebrow": "Your tools",
+                "plain": "Inside",
+                "grad": "your client’s event."
+            },
+            "always": {
+                "eyebrow": "In every event",
+                "plain": "For every professional,",
+                "grad": "whatever the work."
+            },
+            "partner": {
+                "eyebrow": "Partner program",
+                "plain": "For those who become",
+                "grad": "StoryWall partners."
+            },
+            "steps": {
+                "eyebrow": "How you start",
+                "plain": "Three steps",
+                "grad": "to the event."
+            },
+            "clients": {
+                "eyebrow": "What your clients get",
+                "plain": "Everything",
+                "grad": "the hosts and the guests see."
+            },
+            "faq": "Questions",
+            "apply": "Become a partner",
+            "others": "Also for other professionals"
+        },
+        "heroCta": "Apply to partner",
+        "tools": {
+            "proAlbum": {
+                "title": "Pro album",
+                "body": "Upload your photos and videos to the gallery’s Pro tab. Each one carries your name."
+            },
+            "sneakPeek": {
+                "title": "Sneak peek",
+                "body": "Share up to 20 photos and videos with every guest, once per event. Guests get a notification."
+            },
+            "prints": {
+                "title": "Print order",
+                "body": "The host picks which gallery photos to print, at which size and how many copies. You see the list and download the files."
+            },
+            "included": {
+                "title": "Prints in your package",
+                "body": "Set how many prints your package includes. The host sees how many are left."
+            },
+            "schedule": {
+                "title": "Schedule",
+                "body": "Add and edit the event’s sessions: time, place and a map link."
+            },
+            "announce": {
+                "title": "Announcements",
+                "body": "Post a message for every guest."
+            },
+            "rsvpReport": {
+                "title": "RSVP report",
+                "body": "See who is coming and how many, as a full list."
+            },
+            "shareLinks": {
+                "title": "Share links and QR codes",
+                "body": "The QR codes and links guests use to join. Print them for the venue."
+            },
+            "liveRequests": {
+                "title": "Song requests",
+                "body": "The songs guests suggest, with votes and Spotify or YouTube links. Mark the ones you played."
+            }
+        },
+        "always": {
+            "listing": {
+                "title": "In the vendor list",
+                "body": "Guests see your name, logo and link in the event’s vendor list. You choose whether to appear."
+            },
+            "posts": {
+                "title": "Posts with your role",
+                "body": "Post to the feed like everyone else. Your work shows next to your name."
+            },
+            "reach": {
+                "title": "Reach",
+                "body": "How many guests are in the event and how many opened your details."
+            },
+            "myPage": {
+                "title": "Your vendor page",
+                "body": "One page with your tools, your details and your reach."
+            }
+        },
+        "partner": {
+            "discount": {
+                "title": "A discount for your clients",
+                "body": "Your own discount code for your clients."
+            },
+            "feedCard": {
+                "title": "Your card in the feed",
+                "body": "Guests see who made the day happen, with a link to your website."
+            },
+            "fullReach": {
+                "title": "Full reach report",
+                "body": "Views, reactions and comments on your work."
+            },
+            "printPrices": {
+                "title": "Print prices",
+                "body": "Your price per size. The host sees it when picking photos."
+            },
+            "portal": {
+                "title": "Partner page",
+                "body": "Your code and your reach across all your events."
+            }
+        },
+        "steps": [
+            {
+                "title": "The host sends you a link",
+                "body": "Each professional has their own link and QR code. Open it and you join the event."
+            },
+            {
+                "title": "Add your details",
+                "body": "Business name, website or Instagram, and a logo. Guests see them."
+            },
+            {
+                "title": "Open your vendor page",
+                "body": "Your tools and your reach are there. They work until the date shown on the page."
+            }
+        ],
+        "planNote": "Professional tools work when the event’s plan includes them.",
+        "clients": {
+            "hosts": "The hosts",
+            "guests": "The guests",
+            "phases": {
+                "before": "Before",
+                "during": "On the day",
+                "after": "After"
+            },
+            "host": {
+                "before": [
+                    {
+                        "title": "Host dashboard",
+                        "body": "Members, invitations, RSVPs and days to go, on one page."
+                    },
+                    {
+                        "title": "Personal invitations",
+                        "body": "Invite each guest by name and email."
+                    },
+                    {
+                        "title": "Printable QR cards",
+                        "body": "Designed A6 or A5 cards with the event’s code, as PDF or PNG."
+                    },
+                    {
+                        "title": "Co-hosts",
+                        "body": "Other people help run the event."
+                    },
+                    {
+                        "title": "Theme",
+                        "body": "An illustration and background colour for the event."
+                    }
+                ],
+                "during": [
+                    {
+                        "title": "Announcements",
+                        "body": "One message for everyone, when it’s needed."
+                    },
+                    {
+                        "title": "Quiz and polls",
+                        "body": "Questions with a right answer and a leaderboard, or simple polls."
+                    }
+                ],
+                "after": [
+                    {
+                        "title": "Download everything",
+                        "body": "Every photo and video in one archive."
+                    },
+                    {
+                        "title": "Wishbook as a PDF",
+                        "body": "Every message in a printable book. Favourites get a page of their own."
+                    },
+                    {
+                        "title": "Pick prints",
+                        "body": "Choose photos, sizes and copies for the photographer."
+                    }
+                ]
+            },
+            "guest": {
+                "before": [
+                    {
+                        "title": "Join with a QR code",
+                        "body": "Scan or open the link. Works on any phone, no app needed."
+                    },
+                    {
+                        "title": "RSVP",
+                        "body": "Say if they’re coming, how many adults and children, and to which parts."
+                    },
+                    {
+                        "title": "Schedule and maps",
+                        "body": "Each session with time, place and directions."
+                    },
+                    {
+                        "title": "Gift account",
+                        "body": "Bank details for a monetary gift, with a copy-IBAN button."
+                    }
+                ],
+                "during": [
+                    {
+                        "title": "Posts and stories",
+                        "body": "Messages, photos, reactions and comments on the event wall."
+                    },
+                    {
+                        "title": "Upload without signing in",
+                        "body": "With the gallery QR they upload photos and videos without an account."
+                    },
+                    {
+                        "title": "Playlist",
+                        "body": "Suggest songs and vote for their favourites."
+                    },
+                    {
+                        "title": "Vendor list",
+                        "body": "See who worked on the event and how to find them."
+                    }
+                ],
+                "after": [
+                    {
+                        "title": "Gallery",
+                        "body": "Every photo and video, from guests and professionals, in one place."
+                    },
+                    {
+                        "title": "Wishbook",
+                        "body": "Leave a message for the hosts to keep."
+                    },
+                    {
+                        "title": "Download everything",
+                        "body": "A day after the event ends, every member can download all photos and videos."
+                    }
+                ]
+            }
+        },
+        "strip": {
+            "qr": {
+                "caption": "Guests upload with a QR code",
+                "alt": "A guest scanning the StoryWall QR code at the table"
+            },
+            "wish": {
+                "caption": "Guests leave wishes in the wishbook",
+                "alt": "A guest writing a wish on StoryWall"
+            },
+            "invite": {
+                "caption": "The invitation on their phone",
+                "alt": "A guest viewing the invitation on a phone"
+            },
+            "rsvp": {
+                "caption": "Guests answer the RSVP",
+                "alt": "A guest confirming the RSVP"
+            }
+        },
+        "types": {
+            "PLANNER": {
+                "meta": {
+                    "title": "Wedding planner app for RSVPs, schedules and QR codes",
+                    "description": "Edit the wedding schedule, send announcements, track RSVPs and print guest QR codes, all inside your client’s event. For wedding and event planners.",
+                    "keywords": [
+                        "wedding planner app",
+                        "wedding RSVP management",
+                        "wedding guest list tool",
+                        "wedding day timeline app",
+                        "event planner app",
+                        "wedding QR code"
+                    ]
+                },
+                "label": "Wedding planners",
+                "linkLabel": "Wedding planner",
+                "h1": {
+                    "plain": "The wedding planner app",
+                    "grad": "that puts the whole event in one place"
+                },
+                "lede": "Edit the schedule, send announcements, see who is coming and print the QR codes, for weddings, baptisms and every event.",
+                "tag": {
+                    "label": "RSVP report",
+                    "value": "Who’s coming"
+                },
+                "imageAlt": "The couple celebrating with guests under a lit arch",
+                "faq": [
+                    [
+                        "Can a wedding planner see the RSVPs?",
+                        "Yes. The RSVP report shows who is coming and how many, as a full list, without asking the couple."
+                    ],
+                    [
+                        "Can I edit the wedding schedule?",
+                        "Yes. Add and edit sessions with a time, a place and a map link. Guests see the change right away."
+                    ],
+                    ["Do guests need an app?", "No. They scan a QR code or open a link on any phone."]
+                ]
+            },
+            "VENUE": {
+                "meta": {
+                    "title": "StoryWall for wedding venues: guest photos by QR code",
+                    "description": "Guests share photos with a QR code and find your venue in the event’s vendor list. For wedding and baptism venues, estates and reception halls.",
+                    "keywords": [
+                        "wedding venue guest photos",
+                        "wedding venue QR code",
+                        "wedding venue marketing",
+                        "reception venue",
+                        "event venue app"
+                    ]
+                },
+                "label": "Wedding venues",
+                "linkLabel": "Venue",
+                "h1": {
+                    "plain": "For wedding venues,",
+                    "grad": "your venue on every guest’s phone"
+                },
+                "lede": "Guests share their photos from your venue and find your details in the event’s vendor list.",
+                "tag": {
+                    "label": "Venue",
+                    "value": "Your venue"
+                },
+                "imageAlt": "The couple dancing with guests at a wedding reception in Santorini",
+                "faq": [
+                    [
+                        "What does a wedding venue get from StoryWall?",
+                        "Guests see your venue’s name and link in the event’s vendor list, and you see how many opened your details."
+                    ],
+                    ["Can I recommend StoryWall to my couples?", "Yes. As a partner you get your own discount code for your clients."],
+                    [
+                        "How do guests upload photos?",
+                        "They scan the event’s QR code at the table and upload photos and videos, with no app and no account."
+                    ]
+                ]
+            },
+            "PHOTOGRAPHER": {
+                "meta": {
+                    "title": "App for wedding photographers: galleries, sneak peeks, prints",
+                    "description": "A wedding gallery with your name on every photo, a same-day sneak peek for every guest, and print orders from the couple. For wedding and event photographers.",
+                    "keywords": [
+                        "app for wedding photographers",
+                        "wedding photo gallery for clients",
+                        "share wedding photos with guests",
+                        "wedding photo print orders",
+                        "wedding photographer sneak peek"
+                    ]
+                },
+                "label": "Wedding photographers",
+                "linkLabel": "Photographer",
+                "h1": {
+                    "plain": "The app for wedding photographers",
+                    "grad": "that puts your work in front of every guest"
+                },
+                "lede": "Upload your photos with your name on them, send a sneak peek on the day, and get the prints the couple picked.",
+                "tag": {
+                    "label": "Photo:",
+                    "value": "Your studio"
+                },
+                "imageAlt": "A wedding ceremony in Santorini",
+                "faq": [
+                    [
+                        "How do I share wedding photos with the guests?",
+                        "Upload them to the event’s Pro album. Guests see them in the gallery, with your name on every photo."
+                    ],
+                    [
+                        "What is a sneak peek?",
+                        "Up to 20 photos or videos you send to every guest, once per event. They get a notification, usually on the day."
+                    ],
+                    [
+                        "How do I get print orders?",
+                        "The couple picks photos, sizes and copies in the gallery. You see the list and download the files to print."
+                    ]
+                ]
+            },
+            "VIDEOGRAPHER": {
+                "meta": {
+                    "title": "App for wedding videographers: same-day teasers for guests",
+                    "description": "Upload your wedding clips with your name on them and send a teaser to every guest on the day. For wedding and event videographers.",
+                    "keywords": [
+                        "app for wedding videographers",
+                        "wedding videographer",
+                        "wedding video teaser",
+                        "share wedding video with guests",
+                        "wedding highlight video"
+                    ]
+                },
+                "label": "Wedding videographers",
+                "linkLabel": "Videographer",
+                "h1": {
+                    "plain": "The app for wedding videographers",
+                    "grad": "that gets your films out on the same day"
+                },
+                "lede": "Upload your clips with your name on them and send a teaser to every guest while the party is still on.",
+                "tag": {
+                    "label": "Video:",
+                    "value": "Your company"
+                },
+                "imageAlt": "Friends and family celebrating at sunset",
+                "faq": [
+                    [
+                        "Can I send a wedding teaser to the guests?",
+                        "Yes. With a sneak peek you send up to 20 videos or photos to every guest, once per event."
+                    ],
+                    ["Does my name show on the videos?", "Yes. Every file in the Pro album carries your name."],
+                    ["Do I pay to join an event?", "No. The host invites you with a link. The tools work when the event’s plan includes them."]
+                ]
+            },
+            "DECORATION": {
+                "meta": {
+                    "title": "StoryWall for wedding decorators and florists",
+                    "description": "Guests photograph your decoration all day. On StoryWall they also see who made it, with a link to you. For wedding decorators and florists.",
+                    "keywords": ["wedding decorator", "wedding florist", "wedding decoration", "wedding decorator marketing", "event decorator"]
+                },
+                "label": "Wedding decorators",
+                "linkLabel": "Decorator",
+                "h1": {
+                    "plain": "For wedding decorators,",
+                    "grad": "every photo a showcase for you"
+                },
+                "lede": "Guests photograph your decoration all day. On StoryWall they also see who made it, with a link to you.",
+                "tag": {
+                    "label": "Decoration",
+                    "value": "Your studio"
+                },
+                "imageAlt": "A decorated table at a baptism reception",
+                "faq": [
+                    [
+                        "How does StoryWall help a wedding decorator?",
+                        "Guests find your name, logo and link in the event’s vendor list, next to the photos of your work."
+                    ],
+                    [
+                        "Can I post photos of the decoration?",
+                        "Yes. Post to the event’s feed like everyone else, with your work shown next to your name."
+                    ],
+                    [
+                        "How do I know how many people saw my work?",
+                        "Your page shows how many guests are in the event and how many opened your details. Partners also see views, reactions and comments."
+                    ]
+                ]
+            },
+            "CATERING": {
+                "meta": {
+                    "title": "StoryWall for wedding caterers",
+                    "description": "Guests find your catering in the event’s vendor list, with a link to find you again. For wedding, baptism and event caterers.",
+                    "keywords": ["wedding caterer", "wedding catering", "event catering", "wedding caterer marketing"]
+                },
+                "label": "Wedding caterers",
+                "linkLabel": "Caterer",
+                "h1": {
+                    "plain": "For wedding caterers,",
+                    "grad": "your table with your name on it"
+                },
+                "lede": "Guests find your catering in the event’s vendor list, with a link to find you again when they plan their own party.",
+                "tag": {
+                    "label": "Catering",
+                    "value": "Your kitchen"
+                },
+                "imageAlt": "Guests with champagne at an elegant reception",
+                "faq": [
+                    [
+                        "What does a caterer get from StoryWall?",
+                        "Guests see your name and link in the event’s vendor list, and you see how many opened your details."
+                    ],
+                    ["Can I recommend StoryWall to my clients?", "Yes. As a partner you get your own discount code for your clients."],
+                    ["How do I join an event?", "The host sends you a link. Open it and add your business details."]
+                ]
+            },
+            "MUSIC": {
+                "meta": {
+                    "title": "Song request app for wedding DJs, with a QR code",
+                    "description": "Guests suggest and vote for songs from their phones. You see the list live and mark what you played. For wedding DJs and bands.",
+                    "keywords": [
+                        "song request app for wedding DJs",
+                        "wedding song requests",
+                        "wedding DJ app",
+                        "song request QR code",
+                        "wedding band"
+                    ]
+                },
+                "label": "Wedding DJs",
+                "linkLabel": "DJ or band",
+                "h1": {
+                    "plain": "Song requests for wedding DJs,",
+                    "grad": "without the napkins"
+                },
+                "lede": "Guests suggest and vote for songs from their phones. You see the list live and mark what you played.",
+                "tag": {
+                    "label": "Requests",
+                    "value": "Live list"
+                },
+                "imageAlt": "Guests dancing at an evening party",
+                "faq": [
+                    [
+                        "How do guests send song requests?",
+                        "From their phones, in the event’s playlist. They add a title and artist, and can add a Spotify or YouTube link."
+                    ],
+                    ["Can I see which songs they want most?", "Yes. Every song shows the guests’ votes, so you know what the dance floor wants."],
+                    ["Can I mark the songs I played?", "Yes. While the event is live you mark each song you played, and the list stays clean."]
+                ]
+            }
+        },
+        "others": "See everything professionals get"
+    },
+    "BusinessPage": {
+        "title": "My business",
+        "back": "Profile",
+        "unnamed": "Your business",
+        "edit": "Edit",
+        "partnerPill": "Partner",
+        "retryProfile": "Reload details",
+        "notVendor": {
+            "title": "This page is for businesses",
+            "body": "Join an event from the link a host sent you.",
+            "profile": "Go to profile"
+        },
+        "unavailable": {
+            "title": "Couldn't load this page",
+            "body": "Check your connection and try again.",
+            "retry": "Try again"
+        },
+        "setup": {
+            "title": "Set up your business profile",
+            "body": "Add your logo and details so hosts and guests see who you are.",
+            "action": "Set up"
+        },
+        "earnings": {
+            "notVerified": "Verify your email to see your earnings.",
+            "notLinked": "This account isn't linked to a partner.",
+            "contact": "Contact us",
+            "failed": "Couldn't load your earnings.",
+            "retry": "Try again"
+        },
+        "insights": {
+            "title": "Insights",
+            "events": "Events",
+            "guests": "Guests",
+            "proViews": "Photo and video views",
+            "postViewers": "Post viewers",
+            "cardTaps": "Feed card taps",
+            "listTaps": "Profile taps",
+            "trendTitle": "Views per month",
+            "trendViews": "Views",
+            "trendLabel": "Views per month: {values}",
+            "trendPoint": "{month}: {views}",
+            "emptyTitle": "No numbers yet",
+            "emptyBody": "Your numbers show up here once guests see you at an event.",
+            "partnerPrompt": "Partners also see views and card taps.",
+            "becomePartner": "Become a partner"
+        },
+        "events": {
+            "title": "Your events",
+            "emptyTitle": "No events yet",
+            "emptyBody": "Events you join as a vendor show up here.",
+            "rowGuests": "{count, plural, one {# guest} other {# guests}}",
+            "rowViews": "{count, plural, one {# view} other {# views}}",
+            "ended": "Access ended",
+            "more": "Show more",
+            "loadFailed": "Couldn't load your events.",
+            "retry": "Try again"
+        },
+        "content": {
+            "title": "Your content",
+            "proItems": "Photos and videos",
+            "storage": "Storage used"
+        },
+        "previews": {
+            "title": "How guests see you",
+            "feedCard": "Your card in the feed",
+            "variants": {
+                "FEATURE_CARD": "Large card",
+                "COMPACT_ROW": "Compact row",
+                "CREDIT": "Credit line"
+            },
+            "sneakPeek": "A first look post",
+            "sampleCaption": "A first look at the day."
+        },
+        "contact": {
+            "title": "Contact us",
+            "sheetTitle": "Write to us",
+            "topic": "Topic",
+            "topics": {
+                "QUESTION": "Question",
+                "PROBLEM": "Problem",
+                "PARTNERSHIP": "Partnership",
+                "OTHER": "Other"
+            },
+            "message": "Message",
+            "send": "Send",
+            "sending": "Sending…",
+            "sent": "Sent. We'll reply to {email}.",
+            "sentNoEmail": "Sent. We'll reply by email.",
+            "close": "Close",
+            "topicRequired": "Pick a topic.",
+            "messageRequired": "Write a message."
+        }
     }
 }

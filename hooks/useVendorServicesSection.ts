@@ -4,12 +4,13 @@ import { useCallback, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useCreateVendorService, useDeleteVendorService, useUpdateVendorService, useVendorServices } from '@/hooks/useVendorServices';
-import type { VendorMeDto, VendorServiceItemDto } from '@/lib/api/types';
+import type { PartnerRole, VendorServiceItemDto } from '@/lib/api/types';
 import { PRINT_SIZES_MAX } from '@/lib/printPicks';
 import type { ProfileStatus } from '@/lib/vendors';
 
 // The Services section: print sizes for approved-partner photographers, one line for other photographers.
-export function useVendorServicesSection(me: VendorMeDto | null, profileStatus: ProfileStatus) {
+// Takes the event's vendor row on the event page, or the business overview's type and partner flag on /business.
+export function useVendorServicesSection(me: { vendorType: PartnerRole | null; approvedPartner: boolean } | null, profileStatus: ProfileStatus) {
     const toErrorMessage = useApiErrorMessage();
     const isPhotographer = me?.vendorType === 'PHOTOGRAPHER';
     const approved = Boolean(me?.approvedPartner);

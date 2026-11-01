@@ -4,12 +4,17 @@ import {
     getForBusinessPath,
     getLegalPagePath,
     getQrWeddingPath,
+    getVendorPagePath,
     isForBusinessPath,
     isQrWeddingPath,
     legalPageForPath,
     localizeLegalHref,
     publicPageLocale,
     publicTwinPath,
+    VENDOR_PAGE_SLUGS,
+    VENDOR_PAGE_TYPES,
+    vendorPageForPath,
+    vendorPageTypeForSlug,
 } from '@/i18n/publicLocale';
 
 describe('getForBusinessPath', () => {
@@ -46,12 +51,44 @@ describe('isQrWeddingPath', () => {
     });
 });
 
+describe('vendor pages', () => {
+    it('puts each vendor page under the partner page in its language', () => {
+        expect(getVendorPagePath('PHOTOGRAPHER', 'en')).toBe('/for-business/wedding-photographers');
+        expect(getVendorPagePath('VENUE', 'el')).toBe('/el/epaggelmaties/xoroi-dexioseon');
+    });
+
+    it('gives every type a unique slug per language', () => {
+        for (const locale of ['en', 'el'] as const) {
+            const slugs = VENDOR_PAGE_TYPES.map((type) => VENDOR_PAGE_SLUGS[type][locale]);
+            expect(new Set(slugs).size).toBe(slugs.length);
+        }
+    });
+
+    it('reads the type from a slug only in its own language', () => {
+        expect(vendorPageTypeForSlug('dj-gamou', 'el')).toBe('MUSIC');
+        expect(vendorPageTypeForSlug('dj-gamou', 'en')).toBeNull();
+        expect(vendorPageTypeForSlug('wedding-planners', 'el')).toBe('PLANNER');
+    });
+
+    it('reads the type and language from a URL', () => {
+        expect(vendorPageForPath('/for-business/wedding-djs')).toEqual({ type: 'MUSIC', locale: 'en' });
+        expect(vendorPageForPath('/el/epaggelmaties/fotografoi-gamou')).toEqual({ type: 'PHOTOGRAPHER', locale: 'el' });
+        expect(vendorPageForPath('/for-business/fotografoi-gamou')).toBeNull();
+        expect(vendorPageForPath(null)).toBeNull();
+    });
+});
+
 describe('publicPageLocale', () => {
     it('reads the locale from the landing and partner URLs', () => {
         expect(publicPageLocale('/')).toBe('en');
         expect(publicPageLocale('/el')).toBe('el');
         expect(publicPageLocale('/for-business')).toBe('en');
         expect(publicPageLocale('/el/epaggelmaties')).toBe('el');
+    });
+
+    it('reads the locale from the vendor page URLs', () => {
+        expect(publicPageLocale('/for-business/wedding-planners')).toBe('en');
+        expect(publicPageLocale('/el/epaggelmaties/wedding-planners')).toBe('el');
     });
 
     it('reads the locale from the wedding QR URLs', () => {
@@ -76,6 +113,11 @@ describe('publicTwinPath', () => {
     it('maps the partner page to the partner page', () => {
         expect(publicTwinPath('/for-business', 'el')).toBe('/el/epaggelmaties');
         expect(publicTwinPath('/el/epaggelmaties', 'en')).toBe('/for-business');
+    });
+
+    it('maps a vendor page to the same type in the other language', () => {
+        expect(publicTwinPath('/for-business/wedding-venues', 'el')).toBe('/el/epaggelmaties/xoroi-dexioseon');
+        expect(publicTwinPath('/el/epaggelmaties/dj-gamou', 'en')).toBe('/for-business/wedding-djs');
     });
 
     it('maps a legal page to the same page', () => {

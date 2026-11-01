@@ -34,7 +34,7 @@ Use these sections, in this order:
 
 1. **Summary**: one or two sentences on what the release is.
 2. **Release notes**: every included PR with its number and Jira key when it has one, grouped by area.
-3. **What's new / Τι αλλάζει**: plain-language notes in English and in Greek for people who don't read code. One short line per change, written from the user's side (what a host, guest or vendor will notice). No PR numbers, file names, or technical terms. Use the app's own Greek words (διοργανωτής, συντελεστής).
+3. **What's new / Τι αλλάζει**: plain-language notes in English and in Greek for people who don't read code. One short line per change, written from the user's side (what a host, guest or vendor will notice). No PR numbers, file names, or technical terms. Use the app's own Greek words (διοργανωτής, επαγγελματίας).
 4. **Deploy**: env vars, backend release and order, migrations, flags, manual steps. Write "Nothing" if there are none.
 5. **Test cases**: a table with one row per case: ID, what it covers (PR number), steps, expected result, and your result on staging (pass/fail, with the commit tested).
 6. **How to test / Πώς να το ελέγξετε**: step-by-step instructions in English and in Greek that someone with no technical knowledge can follow on staging.storywall.gr. Group the steps by change. Each step says which page to open, what to tap or type, and what they should see, and has a checkbox. Name the test account to use, never its password. End with what to do if something looks wrong: leave a comment on the PR with a screenshot and the step number.

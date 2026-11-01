@@ -1,7 +1,15 @@
 import type { MetadataRoute } from 'next';
 
 import { defaultLocale, locales } from '@/i18n/config';
-import { getForBusinessPath, getLegalPagePath, getPublicLandingPath, getQrWeddingPath, LEGAL_PAGE_PATHS } from '@/i18n/publicLocale';
+import {
+    getForBusinessPath,
+    getLegalPagePath,
+    getPublicLandingPath,
+    getQrWeddingPath,
+    getVendorPagePath,
+    LEGAL_PAGE_PATHS,
+    VENDOR_PAGE_TYPES,
+} from '@/i18n/publicLocale';
 import { endpoints } from '@/lib/api/endpoints';
 import { serverPublicConfigGet } from '@/lib/api/serverFetch';
 import type { AppConfigResponseDto } from '@/lib/api/types';
@@ -13,6 +21,7 @@ import {
     landingLanguageAlternates,
     legalPageLanguageAlternates,
     qrWeddingLanguageAlternates,
+    vendorPageLanguageAlternates,
 } from '@/lib/seo';
 import { showsUnreleasedPages } from '@/lib/unreleasedPages';
 
@@ -26,7 +35,7 @@ async function loadConfig(): Promise<AppConfigResponseDto | null> {
     }
 }
 
-// Only the public landing, wedding QR, partner, occasion, contact and legal pages are indexable. Every
+// Only the public landing, wedding QR, partner, vendor type, occasion, contact and legal pages are indexable. Every
 // other route is either behind a session or a tokenised guest link, so it stays out on purpose.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const config = await loadConfig();
@@ -55,6 +64,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         alternates: { languages: forBusinessLanguages },
     }));
 
+    const vendorPages: MetadataRoute.Sitemap = (showsUnreleasedPages() ? VENDOR_PAGE_TYPES : []).flatMap((type) => {
+        const languages = vendorPageLanguageAlternates(type);
+        return locales.map((locale) => ({
+            url: absoluteUrl(getVendorPagePath(type, locale)),
+            changeFrequency: 'monthly' as const,
+            priority: 0.7,
+            alternates: { languages },
+        }));
+    });
+
     const occasions: MetadataRoute.Sitemap = liveOccasionsInConfig(config).flatMap((occasion) => {
         const languages = occasionLanguageAlternates(occasion);
         return locales.map((locale) => ({
@@ -75,5 +94,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }));
     });
 
-    return [...landing, ...qrWedding, ...forBusiness, ...occasions, ...legal];
+    return [...landing, ...qrWedding, ...forBusiness, ...vendorPages, ...occasions, ...legal];
 }
