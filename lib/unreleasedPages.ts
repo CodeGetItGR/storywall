@@ -1,8 +1,6 @@
-// The wedding QR page, the partner page for businesses and every occasion page not marked
-// `launched` (lib/occasions/occasions.ts) aren't launched yet. Until then they render everywhere
-// but the production site; there they 404 and drop out of the sitemap and every link. Set this to
-// true to put them all live.
-export const UNRELEASED_PAGES_LAUNCHED = false;
+// The wedding QR page and the partner and vendor pages for businesses. While this is false they render
+// everywhere but the production site; there they 404 and drop out of the sitemap and every link.
+export const UNRELEASED_PAGES_LAUNCHED = true;
 
 type DeploymentEnv = { VERCEL_ENV?: string; NEXT_PUBLIC_APP_ENV?: string };
 
@@ -15,4 +13,9 @@ function currentEnv(): DeploymentEnv {
 export function showsUnreleasedPages(env: DeploymentEnv = currentEnv(), launched = UNRELEASED_PAGES_LAUNCHED): boolean {
     if (launched) return true;
     return env.VERCEL_ENV !== 'production' || env.NEXT_PUBLIC_APP_ENV === 'staging';
+}
+
+// Occasion pages not marked `launched` (lib/occasions/occasions.ts) launch one by one, apart from the pages above.
+export function showsUnlaunchedOccasions(env: DeploymentEnv = currentEnv()): boolean {
+    return showsUnreleasedPages(env, false);
 }

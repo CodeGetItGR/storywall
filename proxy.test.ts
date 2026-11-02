@@ -316,21 +316,23 @@ describe('proxy wedding QR page earlier URLs', () => {
     });
 });
 
-describe('proxy wedding QR page before launch', () => {
+describe('proxy wedding QR page on the production site', () => {
     afterEach(() => {
         vi.unstubAllEnvs();
     });
 
-    it.each([
-        ['/qr-code-for-wedding-photos', '/weddings'],
-        ['/wedding-qr-code', '/weddings'],
-        ['/el/qr-code-gamou', '/el/gamos'],
-    ])('sends %s to %s for now, keeping the query string', async (from, to) => {
+    it.each(['/qr-code-for-wedding-photos', '/el/qr-code-gamou'])('serves %s', async (path) => {
         vi.stubEnv('VERCEL_ENV', 'production');
-        const res = await proxy(new NextRequest(`http://localhost${from}?utm_source=instagram`));
-        expect(res.status).toBe(307);
+        const res = await proxy(new NextRequest(`http://localhost${path}?utm_source=instagram`));
+        expect(res.status).toBe(200);
+    });
+
+    it('moves /wedding-qr-code to the current URL for good, keeping the query string', async () => {
+        vi.stubEnv('VERCEL_ENV', 'production');
+        const res = await proxy(new NextRequest('http://localhost/wedding-qr-code?utm_source=instagram'));
+        expect(res.status).toBe(308);
         const location = new URL(res.headers.get('location') ?? '');
-        expect(location.pathname).toBe(to);
+        expect(location.pathname).toBe('/qr-code-for-wedding-photos');
         expect(location.searchParams.get('utm_source')).toBe('instagram');
     });
 });

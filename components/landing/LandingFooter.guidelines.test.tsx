@@ -82,8 +82,8 @@ describe('LandingFooter', () => {
         vi.stubEnv('VERCEL_ENV', 'production');
         render(await LandingFooter());
 
-        expect(screen.queryByRole('link', { name: 'exploreLinks.forBusiness' })).not.toBeInTheDocument();
-        expect(screen.queryByRole('link', { name: 'exploreLinks.qrWedding' })).not.toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'exploreLinks.forBusiness' })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'exploreLinks.qrWedding' })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'WEDDING.name' })).toHaveAttribute('href', '/el/gamos');
         expect(screen.queryByRole('link', { name: 'BAPTISM.name' })).not.toBeInTheDocument();
     });
