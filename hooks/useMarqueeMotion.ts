@@ -3,6 +3,7 @@
 import { type MotionValue, useAnimationFrame, useMotionValue, useReducedMotion } from 'framer-motion';
 import { useRef, useState } from 'react';
 
+import { useIsHydrated } from '@/hooks/useIsHydrated';
 import { useLandingMotion } from '@/providers/LandingMotionProvider';
 
 type MarqueeMotion = {
@@ -14,15 +15,17 @@ type MarqueeMotion = {
     onPointerLeave: () => void;
 };
 
-// Slides a track that holds its tiles twice, one copy per `duration` seconds, and stops on hover.
+// Slides a track that holds its tiles twice, one copy per `duration` seconds, and stops on hover. The
+// server can't see the motion setting, so it applies once the marquee has hydrated.
 export function useMarqueeMotion(duration: number): MarqueeMotion {
     const reduceMotion = useReducedMotion();
+    const isHydrated = useIsHydrated();
     const { paused } = useLandingMotion();
     const [hovered, setHovered] = useState(false);
     // Share of one copy travelled, 0 to 1. x is set in the same frame (useTransform would lag one frame).
     const progress = useRef(0);
     const x = useMotionValue('0%');
-    const still = Boolean(reduceMotion) || paused;
+    const still = (isHydrated && Boolean(reduceMotion)) || paused;
 
     useAnimationFrame((_, delta) => {
         if (still) {

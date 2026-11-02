@@ -7,7 +7,7 @@ import { LandingHeader } from '@/components/landing/LandingHeader';
 import { LandingHeroActions } from '@/components/landing/LandingHeroActions';
 import { LandingHeroTypewriter } from '@/components/landing/LandingHeroTypewriter';
 import { LandingHeroVisual } from '@/components/landing/LandingHeroVisual';
-import { useAuth } from '@/hooks/useAuth';
+import { useLandingSignedIn } from '@/hooks/useLandingSignedIn';
 import { landingHeroMainAction } from '@/lib/landingHero';
 import { useLandingMotion } from '@/providers/LandingMotionProvider';
 
@@ -15,9 +15,8 @@ const NAV_HREFS = ['#platformStories', '#howItWorks', '#experience', '#pricing']
 
 export function LandingHero() {
     const t = useTranslations('LandingPage.hero');
-    const { isAuthenticated, isBootstrapping } = useAuth();
+    const isSignedIn = useLandingSignedIn();
     const { paused } = useLandingMotion();
-    const isSignedIn = isAuthenticated && !isBootstrapping;
     const navLabels = t.raw('nav') as string[];
     const mobileNavLabels = t.raw('mobileNav') as string[];
     const mainAction = landingHeroMainAction(isSignedIn);
