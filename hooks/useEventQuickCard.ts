@@ -8,6 +8,7 @@ import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCo
 import { useMemberRoleLabel } from '@/hooks/useMemberRoleLabel';
 import { formatDate, formatEventListDate } from '@/lib/datetime';
 import { eventCardStatus, isEventDeleted } from '@/lib/eventLifecycle';
+import { eventHomeHref } from '@/lib/liteEvents';
 import { routes } from '@/lib/routes';
 
 // Display values for one card in the home events rail.
@@ -21,8 +22,7 @@ export function useEventQuickCard({ member, event }: EventGridItem) {
     const memberRole = useMemberRoleLabel(member, event?.eventType);
     const roleLabel = memberRole ?? (isHost ? tEvents('roleFallback.host') : null);
     const typeLabel = event ? eventTypeCopy(event.eventType).name : null;
-    // A deleted event opens on its manage page (the only place left to land)
-    // and shows its purge date instead of the event date; the status says why.
+    // A deleted event shows its purge date instead of the event date; the status says why.
     const isDeleted = isEventDeleted(event);
     const dateLabel =
         isDeleted && event?.deletionScheduledFor
@@ -32,7 +32,8 @@ export function useEventQuickCard({ member, event }: EventGridItem) {
     const status = event ? eventCardStatus(event, now) : null;
 
     return {
-        href: isDeleted ? routes.events.manage(member.eventId) : routes.events.feed(member.eventId),
+        // Until the detail loads, the feed link stands in; the route guards forward from there.
+        href: event ? eventHomeHref(event) : routes.events.feed(member.eventId),
         coverUrl: event?.coverMedia?.mediaUrl ?? null,
         title: event?.title ?? tEvents('eventUnavailable'),
         detailLabel: [typeLabel, roleLabel].filter(Boolean).join(' · '),

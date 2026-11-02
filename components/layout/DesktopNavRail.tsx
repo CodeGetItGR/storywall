@@ -17,8 +17,8 @@ import { useDesktopAccountSidebar } from '@/hooks/useDesktopAccountSidebar';
 import { useIsDemoRoute } from '@/hooks/useIsDemoRoute';
 import { useMe } from '@/hooks/useMe';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
-import { isEventDeleted } from '@/lib/eventLifecycle';
 import { getInitials } from '@/lib/format';
+import { eventHomeHref } from '@/lib/liteEvents';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 import { useActiveEvent } from '@/providers/EventProvider';
@@ -34,15 +34,9 @@ export function DesktopNavRail() {
     const { data: me } = useMe();
     // Events and profile need a real session; in the demo they would dead-end on the login page.
     const isDemoRoute = useIsDemoRoute();
-    const isDraft = activeEvent?.status === 'DRAFT';
     const showEventActions = Boolean(activeEvent) && isEventRoute(pathname);
     const accountName = [authUser?.firstName, authUser?.lastName].filter(Boolean).join(' ') || authUser?.firstName || tAccount('fallbackName');
-    // Draft and deleted events have no feed to land on; the manage page is home.
-    const homeHref = activeEvent
-        ? isDraft || isEventDeleted(activeEvent)
-            ? routes.events.manage(activeEvent.id)
-            : routes.events.feed(activeEvent.id)
-        : null;
+    const homeHref = activeEvent ? eventHomeHref(activeEvent) : null;
     const homeActive = Boolean(homeHref) && (isPathActive(pathname, homeHref!) || isPathActive(pathname, routes.feed));
     const eventsActive = isPathActive(pathname, routes.home);
     const profileActive = isPathActive(pathname, routes.profile);
