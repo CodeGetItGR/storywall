@@ -28,6 +28,13 @@ describe('MarkdownDocument', () => {
         expect(screen.getByRole('heading', { level: 3, name: '6.1 Examples' }).id).toBe('');
         expect(screen.getByRole('heading', { level: 1 }).id).toBe('');
     });
+
+    it('moves every heading down by headingOffset, keeping its look', () => {
+        render(<MarkdownDocument source={source} headingOffset={1} />);
+        expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
+        expect(screen.getByRole('heading', { level: 2, name: 'Community Guidelines' })).toHaveClass('text-2xl');
+        expect(screen.getByRole('heading', { level: 3, name: '6. Harassment, threats and bullying' }).id).toBe('section-6');
+    });
 });
 
 describe('MarkdownDocument links', () => {
