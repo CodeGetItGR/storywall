@@ -68,7 +68,7 @@ A `textStyles` key is the dot path to a text field in `data`, such as `title`, `
 
 | Field | Meaning |
 | --- | --- |
-| `background` | One of three kinds: `{kind:'theme', slot:'auto'\|'top'\|'content'\|'extra'}`, `{kind:'color', color}` or `{kind:'image', image}`. `auto` alternates top and content backgrounds by position. |
+| `background` | One of three kinds: `{kind:'theme', slot:'auto'\|'top'\|'content'\|'extra'}`, `{kind:'color', color?}` (no colour means the theme's secondary colour) or `{kind:'image', image}`. `auto` alternates top and content backgrounds by position. |
 | `themeBackgroundDefault` | The slot that "reset" returns to (set by the admin). |
 | `hostBackgrounds` | `{enabled, allowed[]}`: which theme backgrounds the host may pick. |
 | `effect` | `{type, speed: slow\|normal, intensity: subtle\|strong}`, with the 31 effect types of the old effects engine. |
@@ -110,7 +110,7 @@ Elements are what the editor's "Add" menu inserts. Their ids are unique across t
 | parentsSimple | `parentsTitle`, `parentAName`, `parentBName`, `godparentsTitle`, `godparents[]` (`{id, name}`), `decoration?` |
 | invitation | `text` |
 | date | `iso` (`YYYY-MM-DDTHH:mm`), `displayStyle` (8 styles), `displayLanguage` (el/en), `day`, `number`, `month`, `monthName`, `monthGenitive?`, `monthNumber`, `time`, `yearLabel`, `yearShort`, `periodLabel?` |
-| countdown | `numberStyle?` (`{font, size, color}`) |
+| countdown | `label`, `numberStyle?` (`{font, size, color}`) |
 | locations | `ceremony`, `ceremonyAddress`, `ceremonyMap`, `welcomeEnabled`, `welcome`, `welcomeAddress`, `welcomeMap`, `note`, `reception`, `receptionAddress`, `receptionMap`, `desktopColumns` (1–3) |
 | parents | `parents`, `godparents` (free text) |
 | rsvp | `title`, `deadline`, `formStyle?`. Answers go to the Storywall event; there is no RSVP data in the document. |
@@ -168,7 +168,7 @@ The ticket said 32 section types; the old registry has 30 (29 addable types plus
 
 ## Mapping the old state
 
-The real themes are not available yet; they will arrive with the Supabase export (KAN-77). This mapping was done by hand against the old default state (`lib/editorDefaultState.ts`), every section factory in `public/legacy/section-runtime.js`, and every key that `lib/sanitizeEditorState.ts` and `persistence-runtime.js` keep. **Re-check it against 3 real exported themes before KAN-77 starts**; that part of the ticket's "done when" is still open.
+Checked against the backup of 2 November 2026: the 41 templates and the 12 customer sites (draft and published). The converter in [lib/invitation/convert/](../../../lib/invitation/convert/) does this mapping and reports every old key it neither reads nor drops on purpose; on that backup there are none.
 
 ### Document and theme
 
@@ -180,7 +180,7 @@ The real themes are not available yet; they will arrive with the Supabase export
 | `theme.primary`, `secondary`, `textColor`, `buttonBg`, `buttonTextColor` | `theme.colors.*` |
 | `theme.titleFont`, `bodyFont`, `buttonFont` | `theme.fonts.*` |
 | `theme.typographyPresetId`, `autoTextContrast`, `photoShape`, `textAnimation` | the same names in `theme` |
-| `theme.elements` (list of URLs) | `theme.elements[]` with generated ids and uploaded files |
+| `theme.elements` (list of URLs) | `theme.elements[]`, ids made from the URL, named "<theme name>, διακοσμητικό <n>" |
 | `theme.frames`, `theme.transitions` | the same, with uploaded files |
 | `theme.ogImage`, `cardThumb`, `productPhotos`, `productPhotoAlts` | the theme record (KAN-45) |
 | A host's own `typographyPresetId` (it differs from the theme's, or `typographyPresetForce` is true or missing) / `textColor` | `overrides` |
@@ -192,12 +192,14 @@ The real themes are not available yet; they will arrive with the Supabase export
 | --- | --- |
 | `liveVisible` | `visible` |
 | `locked`, `id`, `type`, `name` | the same |
-| `data._style[key]` | `textStyles[path]`, with list positions rewritten to item ids and renamed fields rewritten (`dad.name` → `parentA.name`) |
+| `data._style[key]` | `textStyles[path]`, with list positions rewritten to item ids and renamed fields rewritten (`dad.name` → `parentA.name`). `marginY` fills in a missing `marginTop` or `marginBottom`. A style whose field no longer exists is left out with a warning. |
 | `texts[]` | `elements[]`. A text with no kind or `kind: 'title'/'subtitle'` becomes `kind: 'text'` with a role. Other kinds keep their name; `src` becomes `image`. |
 | `style.mode` + `color` / `image` / `themeBg` | `style.background` |
 | `style.clientThemeBgConfigured`, `clientThemeBgEnabled`, `clientThemeBgAllowed` | `style.hostBackgrounds`. When not configured, everything is allowed (old behaviour). |
 | `style.bgEffect` | `style.effect`. `parallax` becomes `cinematicPulse` and `tsFireworks` becomes `canvasFireworks`, as the old sanitizer did. |
 | `style.textContrast` | the same; a missing value becomes `auto` |
+| `style.transition`, a frame element's `frameId` pointing at another theme's asset | removed / left empty, as the old app drew them (no transition, an empty frame) |
+| type `actionButton` | an empty custom section (`blank`). The old app never drew it. |
 
 ### Renamed section fields
 
@@ -213,9 +215,11 @@ The real themes are not available yet; they will arrive with the Supabase export
   - `name2` → `partnerBName`
 - **coupleContact:** `bride` → `partnerA`, `groom` → `partnerB` (the order they render in).
 - **coupleProfiles / coupleProfilesSimple:** `groom` → `partnerA`, `bride` → `partnerB` (the order they render in).
-- **weddingSponsorsSimple:** `element1` → `decoration`
-- **locations:** `church*` → `ceremony*`
-- **countdown:** `numStyle` → `numberStyle`
+- **weddingSponsorsSimple:**
+  - `element1` → `decoration`
+  - older `sponsor1Name` + `sponsor2Name` → `sponsorsNames` (one per line), keeping `sponsor1Name`'s style, as the old editor did
+- **locations:** `church*` → `ceremony*`; the older `churchMapUrl` / `receptionMapUrl` fill in an empty map link
+- **countdown:** `numStyle` → `numberStyle`; a missing `label` becomes "Ραντεβού σε..."
 - **rsvp:** `rsvpStyle` → `formStyle`; `btn*` → `button*`
 - **accommodation:** `stayStyle` → `cardStyle`
 - **faq:**
@@ -237,14 +241,20 @@ The real themes are not available yet; they will arrive with the Supabase export
 | `theme.name`, `theme.typographyPresetName` | Read from the theme record and the preset. |
 | `theme.typographyPresetForce` | It marked a preset the host picked (true) versus one the admin set (false). That is now where the preset lives: a host's preset is in `overrides` and replaces every font on the page; the theme's preset only fills in text with no font of its own. |
 | `style.columnLayoutVersion` | A one-off migration flag of the old editor. |
-| `gallery.active` | The carousel's current slide, which is UI state. |
+| `gallery.active`, image `id` and `name` | The carousel's current slide and the upload's file name. |
+| `recentTextColors`, `_bgEffectEditingSectionId`, `pendingTextSection` | Editor UI state. |
+| `dressCode.code` and its style | Never shown on the page. |
+| `contact.phone1`, `phone2` | From an early default; nothing showed them. |
+| `faq` item `open` | Whether the answer was open in the editor. |
+| `columnBreak.color` | Only tinted the editor's column marker. |
+| `actionButton` `title`, `buttonText`, `url` | The section was never drawn. |
+| `data` keys with a dot (`items.0.address`) | Strays the old editor wrote next to the real field. |
+| `theme.openingEnvelope*` | Off in every exported state. |
 | Legacy `data.frameId`, `zoom`, `imageX` and similar on `photoFrame` sections | Superseded by the frame element in the old editor itself; the converter reads them only as a fallback. |
 
 ## Open points
 
-- **Confirm against the exported themes:**
-  - Any key found in the export that is not in this mapping blocks KAN-77 until it is placed or dropped on purpose here.
-  - The `desktopColumns` range (1–3) is assumed; confirm it from the export.
+- **desktopColumns:** every exported value is 2; the 1–3 range stays.
 - **Program icons:** the 19 preset keys come from the old picker. `auto` keeps picking an icon from the row's label, as before.
 
 ## Files
