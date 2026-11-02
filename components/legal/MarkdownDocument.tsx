@@ -7,6 +7,8 @@ import { localizeLegalHref } from '@/i18n/publicLocale';
 import { type MarkdownBlock, type MarkdownInline, parseMarkdown } from '@/lib/markdown';
 import { cn } from '@/lib/utils';
 
+type MarkdownHeadingLevel = Extract<MarkdownBlock, { type: 'heading' }>['level'];
+
 const HEADING_CLASS_NAMES = {
     1: 'text-2xl font-bold text-ink',
     2: 'mt-2 text-lg font-bold text-ink',
@@ -61,15 +63,16 @@ function sectionId(block: Extract<MarkdownBlock, { type: 'heading' }>): string |
     return match ? `section-${match[1]}` : undefined;
 }
 
-// Renders the backend's Markdown legal texts as plain React nodes (no raw HTML).
-export function MarkdownDocument({ source, className }: { source: string; className?: string }) {
+// Renders the backend's Markdown legal texts as plain React nodes (no raw HTML). headingOffset moves every
+// heading down that many levels, keeping its look, for a second document on a page that already has its h1.
+export function MarkdownDocument({ source, className, headingOffset = 0 }: { source: string; className?: string; headingOffset?: number }) {
     const blocks = parseMarkdown(source);
 
     return (
         <div className={cn('flex flex-col gap-3 text-sm leading-relaxed text-ink-muted', className)}>
             {blocks.map((block, index) => {
                 if (block.type === 'heading') {
-                    const Tag = `h${block.level}` as const;
+                    const Tag = `h${Math.min(block.level + headingOffset, 6) as MarkdownHeadingLevel}` as const;
                     return (
                         <Tag key={index} id={sectionId(block)} className={HEADING_CLASS_NAMES[block.level]}>
                             <InlineText content={block.content} />

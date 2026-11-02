@@ -42,7 +42,7 @@ export default async function WithdrawalTermsPage({ searchParams }: PageProps) {
                     <MarkdownDocument source={terms.withdrawalInformation} />
 
                     {/* Model form */}
-                    <MarkdownDocument source={terms.modelForm} className="mt-10 border-t border-border/70 pt-8" />
+                    <MarkdownDocument source={terms.modelForm} headingOffset={1} className="mt-10 border-t border-border/70 pt-8" />
                 </>
             ) : (
                 /* Unavailable */
