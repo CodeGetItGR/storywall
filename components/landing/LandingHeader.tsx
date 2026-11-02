@@ -6,8 +6,8 @@ import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { LandingMotionToggle } from '@/components/landing/LandingMotionToggle';
 import { LandingProfileBadge } from '@/components/landing/LandingProfileBadge';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
-import { useAuth } from '@/hooks/useAuth';
 import { useLandingMobileMenu } from '@/hooks/useLandingMobileMenu';
+import { useLandingSignedIn } from '@/hooks/useLandingSignedIn';
 import type { Locale } from '@/i18n/config';
 import { landingClickAttributes, landingNavTarget } from '@/lib/landingTracking';
 import { routes } from '@/lib/routes';
@@ -30,9 +30,8 @@ type LandingHeaderProps = {
 
 export function LandingHeader({ alternatePaths, className, homeHref, links, loginLabel, mobileLoginLabel }: LandingHeaderProps) {
     const t = useTranslations('LandingPage.hero');
-    const { isAuthenticated, isBootstrapping } = useAuth();
+    const isSignedIn = useLandingSignedIn();
     const { isOpen, menuRef, toggleRef, close, toggle } = useLandingMobileMenu();
-    const isSignedIn = isAuthenticated && !isBootstrapping;
 
     return (
         <header

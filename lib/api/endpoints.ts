@@ -71,6 +71,7 @@ export const endpoints = {
 
     // Straight from the browser to Spring: no cookie, always 204.
     campaignVisits: { record: '/api/public/campaign-visits' },
+    linkClicks: { record: '/api/public/link-clicks' },
 
     newsletter: {
         subscribe: '/api/newsletter/subscribe',
@@ -399,6 +400,10 @@ export const endpoints = {
                     source ? `source=${encodeURIComponent(source)}` : null,
                 ].filter(Boolean);
                 return `/api/admin/metrics/campaigns/overview${params.length ? `?${params.join('&')}` : ''}`;
+            },
+            linkClicks: (since?: string | null, until?: string | null) => {
+                const params = [since ? `since=${encodeURIComponent(since)}` : null, until ? `until=${encodeURIComponent(until)}` : null].filter(Boolean);
+                return `/api/admin/metrics/link-clicks${params.length ? `?${params.join('&')}` : ''}`;
             },
             visitors: (since?: string | null, until?: string | null, fresh = false) => {
                 const params = [

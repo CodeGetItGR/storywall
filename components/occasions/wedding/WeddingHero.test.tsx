@@ -26,6 +26,7 @@ function hero(overrides: Partial<Parameters<typeof WeddingHero>[0]> = {}) {
         demoHref: '/demo/wedding/feed',
         locale: 'el',
         price: SPAN,
+        qrHref: null,
         ...overrides,
     });
 }
@@ -58,6 +59,16 @@ describe('WeddingHero', () => {
         render(await hero({ price: NONE }));
         expect(screen.getByText('Με ένα link')).toBeInTheDocument();
         expect(screen.queryByText(/€/)).toBeNull();
+    });
+
+    it('links to the QR page while it is live, and counts the clicks', async () => {
+        render(await hero({ qrHref: '/el/qr-code-gamou' }));
+        const link = screen.getByRole('link', { name: 'QR code για φωτογραφίες γάμου' });
+        expect(link).toHaveAttribute('href', '/el/qr-code-gamou');
+        expect(link).toHaveAttribute('data-link-click', 'QR_WEDDING:hero');
+        cleanup();
+        render(await hero());
+        expect(screen.queryByRole('link', { name: /QR code/ })).toBeNull();
     });
 
     it('shows signed-out visitors the plans first, and the demo when there is one', async () => {

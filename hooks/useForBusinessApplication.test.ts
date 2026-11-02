@@ -11,6 +11,8 @@ vi.mock('@/lib/api/client', async (importOriginal) => {
     return { ...actual, api: { ...actual.api, publicPost: (...args: unknown[]) => post(...args) } };
 });
 vi.mock('next-intl', () => ({ useLocale: () => 'en' }));
+const track = vi.hoisted(() => vi.fn());
+vi.mock('@vercel/analytics', () => ({ track }));
 
 function submitEvent(): SubmitEvent<HTMLFormElement> {
     const form = document.createElement('form');
@@ -33,6 +35,7 @@ function submitEvent(): SubmitEvent<HTMLFormElement> {
 
 beforeEach(() => {
     post.mockReset();
+    track.mockClear();
 });
 
 describe('useForBusinessApplication', () => {
@@ -69,6 +72,23 @@ describe('useForBusinessApplication', () => {
         const { result } = renderHook(() => useForBusinessApplication());
         await act(() => result.current.handleSubmit(submitEvent()));
         expect(post).toHaveBeenCalledWith('/api/public/partner-applications', expect.objectContaining({ utmSource: 'google', utmMedium: null }));
+    });
+
+    it('counts a sent application for its public page', async () => {
+        post.mockResolvedValue({ id: 'a1' });
+        const { result } = renderHook(() => useForBusinessApplication({ source: 'PHOTOGRAPHER' }));
+        await act(() => result.current.handleSubmit(submitEvent()));
+        expect(track).toHaveBeenCalledExactlyOnceWith('Vendor Page Apply', { type: 'PHOTOGRAPHER', locale: 'en' });
+    });
+
+    it('counts nothing when the application fails or the form has no page', async () => {
+        post.mockRejectedValueOnce(new ApiError(409, null));
+        const { result } = renderHook(() => useForBusinessApplication({ source: 'all' }));
+        await act(() => result.current.handleSubmit(submitEvent()));
+        post.mockResolvedValue({ id: 'a1' });
+        const sheet = renderHook(() => useForBusinessApplication({ search: '?utm_source=storywall-vendor' }));
+        await act(() => sheet.result.current.handleSubmit(submitEvent()));
+        expect(track).not.toHaveBeenCalled();
     });
 
     it('names an existing application (409) and the rate limit (429) from the vendor sheet', async () => {

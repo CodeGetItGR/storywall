@@ -1,7 +1,7 @@
 import { defaultLocale, type Locale, locales } from '@/i18n/config';
 import type { AppConfigResponseDto, EventTypeConvention } from '@/lib/api/types';
 import { absoluteUrl } from '@/lib/seo';
-import { showsUnreleasedPages } from '@/lib/unreleasedPages';
+import { showsUnlaunchedOccasions } from '@/lib/unreleasedPages';
 
 export type Occasion = {
     eventType: EventTypeConvention;
@@ -25,10 +25,10 @@ export const OCCASIONS: readonly Occasion[] = [
     { eventType: 'SOCIAL_EVENT', slugs: { en: 'social-events', el: 'koinonikes-ekdiloseis' }, ready: false, launched: false },
 ];
 
-// On the production site, only the launched ones (lib/unreleasedPages.ts).
+// On the production site, only the launched ones (showsUnlaunchedOccasions in lib/unreleasedPages.ts).
 export function readyOccasions(): Occasion[] {
-    const showsUnreleased = showsUnreleasedPages();
-    return OCCASIONS.filter((occasion) => occasion.ready && (occasion.launched || showsUnreleased));
+    const showsUnlaunched = showsUnlaunchedOccasions();
+    return OCCASIONS.filter((occasion) => occasion.ready && (occasion.launched || showsUnlaunched));
 }
 
 // Ready occasions whose event type is enabled. null (config unknown) → every ready occasion,
