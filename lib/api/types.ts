@@ -2756,6 +2756,25 @@ export interface CampaignVisitRequestDto {
     page: string;
 }
 
+// POST /api/public/link-clicks. A click on one of our links between public pages.
+export type LinkClickTarget = 'QR_WEDDING';
+export type LinkClickPlacement = 'footer' | 'faq' | 'hero' | 'why';
+
+export interface LinkClickRequestDto {
+    target: LinkClickTarget;
+    placement: LinkClickPlacement;
+    page: string;
+    language: VisitorLanguage;
+}
+
+// GET /api/admin/metrics/link-clicks. Visitors who clicked, each counted once a day per link, page and placement.
+export interface LinkClickRowDto {
+    target: LinkClickTarget;
+    page: string;
+    placement: string;
+    clicks: number;
+}
+
 // GET /api/admin/metrics/visitors. Google Analytics numbers for the public pages over a range.
 export type VisitorLanguage = 'el' | 'en';
 export type VisitorDevice = 'PHONE' | 'DESKTOP' | 'TABLET';

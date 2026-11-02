@@ -66,6 +66,7 @@ export async function WeddingContent({ campaign, demoHref, featureKeys, length, 
             href={entry.link ? occasionFaqLinkHref(entry.link.to, qrHref) : null}
             key={entry.q}
             label={entry.link?.label}
+            toQrPage={entry.link?.to === 'qr'}
         />,
     ]);
     const finalCta: LandingFinalCtaCopy = { ...(t.raw('finalCta') as LandingFinalCtaCopy), cta: t.rich('finalCta.cta', { b: bold }) };
@@ -85,6 +86,7 @@ export async function WeddingContent({ campaign, demoHref, featureKeys, length, 
                     demoHref={demoHref}
                     locale={locale}
                     price={price}
+                    qrHref={qrHref}
                 />
 
                 {/* How it works */}

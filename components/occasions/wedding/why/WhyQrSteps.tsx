@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { qrLinkAttributes } from '@/lib/linkClicks';
 import type { OccasionPhoto } from '@/lib/occasions/occasionMedia';
 
 type WhyQrStepsProps = {
@@ -46,7 +47,7 @@ export function WhyQrSteps({ alt, photo, qrHref, steps }: WhyQrStepsProps) {
                         </span>
                         <h3 className="mt-2 mb-1.5 [font-family:var(--editorial)] text-[25px] leading-[1.1] font-normal tracking-[-0.025em]">
                             {index === 0 && qrHref ? (
-                                <a className="text-inherit no-underline underline-offset-3 focus-ring hover:underline" href={qrHref}>
+                                <a className="text-inherit no-underline underline-offset-3 focus-ring hover:underline" href={qrHref} {...qrLinkAttributes('why')}>
                                     {step.title}
                                 </a>
                             ) : (

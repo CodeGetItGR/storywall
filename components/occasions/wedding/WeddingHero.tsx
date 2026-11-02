@@ -6,6 +6,7 @@ import { OccasionHeroActions } from '@/components/occasions/OccasionHeroActions'
 import { OccasionHeroVisual } from '@/components/occasions/OccasionHeroVisual';
 import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
+import { qrLinkAttributes } from '@/lib/linkClicks';
 import type { OccasionCampaign } from '@/lib/occasions/campaigns';
 import type { OccasionPriceValues } from '@/lib/occasions/occasionPrice';
 import { occasionHeaderLinks } from '@/lib/occasions/occasionSections';
@@ -30,9 +31,11 @@ type WeddingHeroProps = {
     demoHref: string | null;
     locale: Locale;
     price: OccasionPriceValues;
+    // The QR wedding page while it is live, else null and no link.
+    qrHref: string | null;
 };
 
-export async function WeddingHero({ alternatePaths, campaign, createHref, demoHref, locale, price }: WeddingHeroProps) {
+export async function WeddingHero({ alternatePaths, campaign, createHref, demoHref, locale, price, qrHref }: WeddingHeroProps) {
     const t = await getTranslations({ locale, namespace: 'OccasionPages.WEDDING' });
     const common = await getTranslations({ locale, namespace: 'OccasionPages.common' });
     const landing = await getTranslations({ locale, namespace: 'LandingPage' });
@@ -103,6 +106,17 @@ export async function WeddingHero({ alternatePaths, campaign, createHref, demoHr
                             demoLabel={common('heroDemo')}
                             plansLabel={landing('hero.plansCta')}
                         />
+                        {/* QR page link */}
+                        {qrHref ? (
+                            <a
+                                className="mt-3.5 inline-block text-[13px] font-semibold text-[#151313] underline underline-offset-3 focus-ring min-[768px]:mt-4.5 min-[768px]:ml-1"
+                                href={qrHref}
+                                {...qrLinkAttributes('hero')}
+                            >
+                                {t('hero.qrLink')}
+                                <span aria-hidden="true"> →</span>
+                            </a>
+                        ) : null}
                         {/* Trust line */}
                         <p className="mt-4.25 mb-0 flex flex-wrap gap-y-1.25 text-[10px] leading-[1.4] font-bold tracking-[0.035em] text-[#151313]/66 min-[768px]:mt-6 min-[768px]:ml-1 min-[768px]:gap-y-1.75 min-[768px]:text-[11px] min-[768px]:leading-[1.25]">
                             {trust.map((item, index) => (

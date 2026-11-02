@@ -2690,6 +2690,15 @@
                 "DESKTOP": "Desktop",
                 "TABLET": "Tablet"
             },
+            "linkClicks": {
+                "title": "Link clicks",
+                "link": "Link",
+                "clicks": "Clicks",
+                "note": "Every visitor, counted once a day per link. No cookies needed.",
+                "error": "Couldn't load link clicks.",
+                "targets": { "QR_WEDDING": "QR page" },
+                "placements": { "footer": "Footer", "faq": "FAQ", "hero": "Top of page", "why": "Why StoryWall" }
+            },
             "landing": {
                 "title": "Landing page",
                 "sections": "How far visitors scroll",
@@ -7258,6 +7267,7 @@
             "eyebrow": "FAQ",
             "heading": "Frequently asked questions",
             "intro": "Everything you need to know before you create your StoryWall.",
+            "qrMore": "See how the <link>wedding photo QR code</link> works.",
             "items": [
                 [
                     "What exactly is StoryWall?",
@@ -7876,6 +7886,7 @@
                 "h1": "Wedding website & <em>QR photo sharing</em>",
                 "cta": "Create your StoryWall",
                 "breadcrumb": "Wedding",
+                "qrLink": "Wedding photo QR code",
                 "kicker": "THE PRIVATE SOCIAL FOR <b>YOUR WEDDING</b>",
                 "subtitle": "A wedding full of moments worth keeping.",
                 "body": "Create your wedding website with a digital invitation, RSVP, schedule and maps, wherever you're getting married. On the day, guests scan a QR code to upload their photos, and everything stays in your own private StoryWall.",

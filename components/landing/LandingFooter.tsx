@@ -8,6 +8,7 @@ import { AppLink } from '@/components/ui/AppLink';
 import type { Locale } from '@/i18n/config';
 import { getForBusinessPath, getQrWeddingPath, localizeLegalHref } from '@/i18n/publicLocale';
 import { landingSectionAttributes } from '@/lib/landingTracking';
+import { qrLinkAttributes } from '@/lib/linkClicks';
 import { loadLiveOccasions } from '@/lib/occasions/liveOccasions.server';
 import { occasionPath } from '@/lib/occasions/occasions';
 import { loadQrWeddingPageLive } from '@/lib/qrWeddingPage.server';
@@ -87,7 +88,7 @@ export async function LandingFooter({ anchorBase = '', topHref = TOP_HREF }: { a
                         </a>
                     ))}
                     {showsQrWedding && (
-                        <a className={COLUMN_LINK} href={getQrWeddingPath(locale)}>
+                        <a className={COLUMN_LINK} href={getQrWeddingPath(locale)} {...qrLinkAttributes('footer')}>
                             {t('exploreLinks.qrWedding')}
                         </a>
                     )}

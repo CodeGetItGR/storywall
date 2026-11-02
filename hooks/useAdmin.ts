@@ -25,6 +25,7 @@ import type {
     FunnelChannelRowDto,
     FunnelCohortDto,
     FunnelMetricsResponseDto,
+    LinkClickRowDto,
     LinkDiscountCodeRequestDto,
     MarkCollaborationEarningsPaidRequestDto,
     ModuleKey,
@@ -73,6 +74,7 @@ export const adminKeys = {
     funnelCohorts: (weeks: number, channel: SignupChannel | null) => ['admin', 'metrics', 'funnel', 'cohorts', weeks, channel] as const,
     funnelChannels: (since: string | null, until: string | null) => ['admin', 'metrics', 'funnel', 'channels', since, until] as const,
     visitors: (since: string | null, until: string | null) => ['admin', 'metrics', 'visitors', since, until] as const,
+    linkClicks: (since: string | null, until: string | null) => ['admin', 'metrics', 'link-clicks', since, until] as const,
     moduleUsage: (filters: AdminModuleUsageFilters) =>
         ['admin', 'metrics', 'module-usage', filters.since, filters.until, filters.eventTypeKey, filters.planCode] as const,
     paidServices: (kind?: PaidServiceKind, includeArchived?: boolean) => ['admin', 'paid-services', kind ?? 'ALL', Boolean(includeArchived)] as const,
@@ -293,6 +295,15 @@ export function useAdminVisitors(since: string | null, until: string | null, opt
     return useQuery({
         queryKey: adminKeys.visitors(since, until),
         queryFn: () => api.get<VisitorMetricsDto>(endpoints.admin.metrics.visitors(since, until)),
+        placeholderData: keepPreviousData,
+        enabled: options.enabled ?? true,
+    });
+}
+
+export function useAdminLinkClicks(since: string | null, until: string | null, options: { enabled?: boolean } = {}) {
+    return useQuery({
+        queryKey: adminKeys.linkClicks(since, until),
+        queryFn: () => api.get<LinkClickRowDto[]>(endpoints.admin.metrics.linkClicks(since, until)),
         placeholderData: keepPreviousData,
         enabled: options.enabled ?? true,
     });
