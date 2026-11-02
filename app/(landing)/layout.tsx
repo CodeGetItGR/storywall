@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { getMessages } from 'next-intl/server';
 import { type ReactNode } from 'react';
 
+import { LinkClickTracker } from '@/components/landing/LinkClickTracker';
 import { RootDocument } from '@/components/layout/RootDocument';
 import { SiteNoticeBar } from '@/components/siteNotices/SiteNoticeBar';
 import { siteNoticeKeys } from '@/hooks/useSiteNotices';
@@ -41,6 +42,7 @@ export default async function LandingLayout({ children }: Readonly<{ children: R
                     <SiteNoticeBar area="PUBLIC" initialDismissed={dismissed} />
                     {children}
                 </HydrationBoundary>
+                <LinkClickTracker />
             </PublicProviders>
         </RootDocument>
     );

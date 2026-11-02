@@ -7,6 +7,7 @@ import { FunnelRangeControl } from '@/components/admin/funnel/FunnelRangeControl
 import { VisitorsChannels } from '@/components/admin/visitors/VisitorsChannels';
 import { VisitorsDaily } from '@/components/admin/visitors/VisitorsDaily';
 import { VisitorsLanding } from '@/components/admin/visitors/VisitorsLanding';
+import { VisitorsLinkClicks } from '@/components/admin/visitors/VisitorsLinkClicks';
 import { VisitorsPages } from '@/components/admin/visitors/VisitorsPages';
 import { VisitorsSkeleton } from '@/components/admin/visitors/VisitorsSkeleton';
 import { VisitorsTotals } from '@/components/admin/visitors/VisitorsTotals';
@@ -14,7 +15,7 @@ import { useVisitorsDashboard } from '@/hooks/useVisitorsDashboard';
 
 export function VisitorsPanel() {
     const t = useTranslations('AdminPage.visitors');
-    const { range, data, isLoading, isFetching, error, updatedAt, refresh } = useVisitorsDashboard();
+    const { range, data, isLoading, isFetching, error, updatedAt, refresh, linkClicks, linkClicksFailed } = useVisitorsDashboard();
 
     return (
         <div className="mx-auto max-w-6xl px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
@@ -60,6 +61,9 @@ export function VisitorsPanel() {
                         <VisitorsLanding landing={data.landing} visitors={data.visitors} />
                     </>
                 )}
+
+                {/* Link clicks */}
+                <VisitorsLinkClicks rows={linkClicks} failed={linkClicksFailed} />
             </div>
         </div>
     );

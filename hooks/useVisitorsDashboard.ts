@@ -3,7 +3,7 @@
 import { useLocale } from 'next-intl';
 import { useCallback, useEffect } from 'react';
 
-import { useAdminVisitors, useRefreshAdminVisitors } from '@/hooks/useAdmin';
+import { useAdminLinkClicks, useAdminVisitors, useRefreshAdminVisitors } from '@/hooks/useAdmin';
 import { useFunnelRange } from '@/hooks/useFunnelRange';
 import { dateTimeFormat } from '@/lib/format';
 
@@ -13,6 +13,8 @@ export function useVisitorsDashboard() {
     const { since, until, isValid } = range.bounds;
     const query = useAdminVisitors(since, until, { enabled: isValid });
     const refreshMutation = useRefreshAdminVisitors();
+    // Spring's own counter: shown even when Google Analytics isn't connected.
+    const linkClicksQuery = useAdminLinkClicks(since, until, { enabled: isValid });
 
     const data = isValid ? query.data : undefined;
     // When Spring asked GA, not when this page fetched: a cached answer can be up to an hour old.
@@ -33,5 +35,7 @@ export function useVisitorsDashboard() {
         error: query.error ?? refreshMutation.error,
         updatedAt,
         refresh,
+        linkClicks: isValid ? linkClicksQuery.data : undefined,
+        linkClicksFailed: linkClicksQuery.isError,
     };
 }

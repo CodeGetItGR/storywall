@@ -1,10 +1,18 @@
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import type { ReactNode } from 'react';
 
 import { LandingFaqItem } from '@/components/landing/LandingFaqItem';
+import type { Locale } from '@/i18n/config';
+import { getQrWeddingPath } from '@/i18n/publicLocale';
 import { landingSectionAttributes } from '@/lib/landingTracking';
+import { qrLinkAttributes } from '@/lib/linkClicks';
+import { loadQrWeddingPageLive } from '@/lib/qrWeddingPage.server';
 
 type FaqItem = [question: string, answer: ReactNode];
+
+// The landing question about guests needing an app ("Do guests need to download an app?"): its
+// answer ends with a link to the QR wedding page while that page is live.
+export const LANDING_QR_FAQ_INDEX = 1;
 
 export type LandingFaqCopy = { heading: string; intro: string; items: FaqItem[] };
 
@@ -19,7 +27,7 @@ type LandingFaqProps = {
 
 export async function LandingFaq({ copy, centered = false, group }: LandingFaqProps) {
     const t = await getTranslations('LandingPage.faq');
-    const { heading, intro, items } = copy ?? { heading: t('heading'), intro: t('intro'), items: t.raw('items') as FaqItem[] };
+    const { heading, intro, items } = copy ?? { heading: t('heading'), intro: t('intro'), items: await landingFaqItems() };
 
     return (
         /* FAQ */
@@ -54,5 +62,30 @@ export async function LandingFaq({ copy, centered = false, group }: LandingFaqPr
                 ))}
             </div>
         </section>
+    );
+}
+
+// The landing's own questions, with the QR page link while that page is live.
+async function landingFaqItems(): Promise<FaqItem[]> {
+    const t = await getTranslations('LandingPage.faq');
+    const items = t.raw('items') as [string, string][];
+    if (!(await loadQrWeddingPageLive())) return items;
+    const href = getQrWeddingPath((await getLocale()) as Locale);
+    return items.map(([question, answer], index): FaqItem =>
+        index === LANDING_QR_FAQ_INDEX
+            ? [
+                  question,
+                  <>
+                      {answer}{' '}
+                      {t.rich('qrMore', {
+                          link: (chunks) => (
+                              <a className="text-inherit underline! underline-offset-3 focus-ring" href={href} {...qrLinkAttributes('faq')}>
+                                  {chunks}
+                              </a>
+                          ),
+                      })}
+                  </>,
+              ]
+            : [question, answer],
     );
 }

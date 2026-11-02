@@ -12,9 +12,11 @@ import { VisitorsPanel } from '@/components/admin/visitors/VisitorsPanel';
 import messages from '@/messages/en.json';
 
 const apiGet = vi.fn();
+// Spring's link click count, asked for separately from the GA numbers.
+const linkClicksGet = vi.fn();
 vi.mock('@/lib/api/client', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@/lib/api/client')>()),
-    api: { get: (...args: unknown[]) => apiGet(...args) },
+    api: { get: (url: string, ...rest: unknown[]) => (url.includes('/link-clicks') ? linkClicksGet(url) : apiGet(url, ...rest)) },
 }));
 
 class InertResizeObserver {
@@ -37,6 +39,8 @@ function renderPanel() {
 beforeEach(() => {
     vi.stubGlobal('ResizeObserver', InertResizeObserver);
     apiGet.mockReset();
+    linkClicksGet.mockReset();
+    linkClicksGet.mockResolvedValue([]);
 });
 
 afterEach(() => {
@@ -90,8 +94,8 @@ describe('VisitorsPanel', () => {
         renderPanel();
 
         expect(await screen.findByText('Totals')).toBeInTheDocument();
-        // Daily line, sources, pages, and the four landing lists.
-        expect(screen.getAllByText('No data yet')).toHaveLength(7);
+        // Daily line, sources, pages, the four landing lists, and link clicks.
+        expect(screen.getAllByText('No data yet')).toHaveLength(8);
     });
 
     it('offers Retry after an error and asks GA again', async () => {
@@ -129,5 +133,19 @@ describe('VisitorsPanel', () => {
 
         await waitFor(() => expect(screen.queryByText("Couldn't load visitor numbers.")).not.toBeInTheDocument());
         expect(await screen.findByText('2,400')).toBeInTheDocument();
+    });
+
+    it('shows link clicks even when Google Analytics is not connected', async () => {
+        apiGet.mockResolvedValue(notConfiguredVisitorMetricsFixture());
+        linkClicksGet.mockResolvedValue([
+            { target: 'QR_WEDDING', page: '/el', placement: 'faq', clicks: 12 },
+            { target: 'QR_WEDDING', page: '/el/gamos', placement: 'hero', clicks: 3 },
+        ]);
+        renderPanel();
+
+        const table = await screen.findByRole('table', { name: 'Link' });
+        expect(within(table).getByText('/el')).toBeInTheDocument();
+        expect(within(table).getByText('12')).toBeInTheDocument();
+        expect(within(table).getByText(/QR page · Top of page/)).toBeInTheDocument();
     });
 });

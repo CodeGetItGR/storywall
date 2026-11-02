@@ -1,5 +1,5 @@
 import { EMPTY_VALUE, funnelBreakdown, type FunnelBreakdownRow, rateOf } from '@/lib/adminFunnel';
-import type { VisitorMetricsDto } from '@/lib/api/types';
+import type { LinkClickRowDto, VisitorMetricsDto } from '@/lib/api/types';
 import { numberFormat } from '@/lib/format';
 
 // Below this many visits a channel's sign-up rate says little: its row is tagged and shows no rate.
@@ -33,4 +33,9 @@ export function deviceRows(devices: VisitorMetricsDto['devices']): FunnelBreakdo
 // Sections arrive in page order. Each one's share is of all visitors in the range.
 export function sectionRows(sections: VisitorMetricsDto['landing']['sections'], visitors: number): FunnelBreakdownRow[] {
     return sections.map((row) => ({ key: row.section, value: row.visitors, ratio: rateOf(row.visitors, visitors) }));
+}
+
+// A link click row's key: one row per link, page and placement.
+export function linkClickRowKey(row: LinkClickRowDto): string {
+    return `${row.target}|${row.page}|${row.placement}`;
 }
