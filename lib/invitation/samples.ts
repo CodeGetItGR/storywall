@@ -72,7 +72,7 @@ export const SAMPLE_SECTIONS: { [T in SectionType]: SectionOf<T> } = {
         yearLabel: '2026',
         yearShort: '26',
     }),
-    countdown: section('countdown', { numberStyle: { size: 44, color: '#2f2b2d' } }),
+    countdown: section('countdown', { label: 'Ραντεβού σε...', numberStyle: { size: 44, color: '#2f2b2d' } }),
     locations: section('locations', {
         ceremony: 'Ιερός Ναός Αγίου Νικολάου',
         ceremonyAddress: 'Παραλία Ρόδου',

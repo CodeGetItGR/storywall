@@ -134,6 +134,8 @@ export const SECTION_DATA_SCHEMAS = {
         .strict(),
     countdown: z
         .object({
+            // The line above the numbers ("Ραντεβού σε...").
+            label: text,
             numberStyle: z
                 .object({ font: fontSchema.optional(), size: size.optional(), color: colorSchema.optional() })
                 .strict()

@@ -17,7 +17,8 @@ export const themeBackgroundSlotSchema = z.enum(THEME_BACKGROUND_SLOTS);
 export const sectionBackgroundSchema = z.discriminatedUnion('kind', [
     // 'auto' alternates top/content backgrounds by section position.
     z.object({ kind: z.literal('theme'), slot: z.union([z.literal('auto'), themeBackgroundSlotSchema]) }).strict(),
-    z.object({ kind: z.literal('color'), color: colorSchema }).strict(),
+    // Left out, the theme's secondary colour.
+    z.object({ kind: z.literal('color'), color: colorSchema.optional() }).strict(),
     z.object({ kind: z.literal('image'), image: imageRefSchema }).strict(),
 ]);
 
