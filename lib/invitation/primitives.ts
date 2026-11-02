@@ -24,6 +24,8 @@ export const fontSchema = z.string().max(300).regex(/^[^<>"`;\\\r\n{}]*$/);
 export const linkSchema = z
     .string()
     .max(5000)
+    // The allowed schemes as a pattern too, so the exported JSON Schema keeps them.
+    .regex(/^$|^#|^(?:[hH][tT][tT][pP][sS]?|[mM][aA][iI][lL][tT][oO]|[tT][eE][lL]|[sS][mM][sS]):/)
     .refine((value) => value === '' || isAllowedLink(value), 'Unsupported link');
 
 function isAllowedLink(value: string): boolean {
