@@ -77,7 +77,7 @@ describe('sitemap', () => {
         });
     });
 
-    it('lists only the landing, the launched occasion pages and the legal pages on the production site', async () => {
+    it('leaves out the occasion pages not launched yet on the production site', async () => {
         vi.stubEnv('VERCEL_ENV', 'production');
         serverPublicConfigGet.mockResolvedValue({
             eventTypes: [
@@ -86,7 +86,18 @@ describe('sitemap', () => {
             ],
         });
         const urls = (await sitemap()).map((entry) => entry.url);
-        expect(urls).toEqual([SITE_URL, `${SITE_URL}/el`, `${SITE_URL}/weddings`, `${SITE_URL}/el/gamos`, ...LEGAL_URLS]);
+        expect(urls).toEqual([
+            SITE_URL,
+            `${SITE_URL}/el`,
+            `${SITE_URL}/qr-code-for-wedding-photos`,
+            `${SITE_URL}/el/qr-code-gamou`,
+            `${SITE_URL}/for-business`,
+            `${SITE_URL}/el/epaggelmaties`,
+            ...VENDOR_URLS,
+            `${SITE_URL}/weddings`,
+            `${SITE_URL}/el/gamos`,
+            ...LEGAL_URLS,
+        ]);
     });
 
     it('gives each legal page both language URLs', async () => {
