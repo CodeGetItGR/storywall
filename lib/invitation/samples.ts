@@ -155,8 +155,10 @@ export const SAMPLE_SECTIONS: { [T in SectionType]: SectionOf<T> } = {
         desktopColumns: 2,
     }),
     weddingSponsorsSimple: section('weddingSponsorsSimple', { sponsorsTitle: 'Κουμπάροι', sponsorsNames: 'Κώστας\nΔήμητρα' }),
-    photoFrame: section('photoFrame', {
-        frame: {
+    photoFrame: section('photoFrame', {}, {
+        elements: [{
+            id: 'e-frame',
+            kind: 'photoFrame',
             frameId: 'fr-oval',
             photo: photo('m-framed'),
             imageX: 50,
@@ -166,8 +168,9 @@ export const SAMPLE_SECTIONS: { [T in SectionType]: SectionOf<T> } = {
             imageWidth: 1200,
             imageHeight: 800,
             animation: 'fade-in',
-        },
-    }, { style: { ...themeStyle, minHeight: 420, transition: { assetId: 'tr-wave', edge: 'bottom' } } }),
+        }],
+        style: { ...themeStyle, minHeight: 420, transition: { assetId: 'tr-wave', edge: 'bottom' } },
+    }),
     footer: section('footer', { text: 'Made with Storywall', link: '' }, {
         locked: true,
         style: { ...themeStyle, background: { kind: 'color', color: '#efe7ec' } },
@@ -180,7 +183,7 @@ export const SAMPLE_THEME: ThemeDesign = {
         content: { desktop: { mediaId: 'm-content' }, mode: 'repeat', stableRepeat: true },
         extra: { mode: 'cover', stableRepeat: false },
     },
-    art: { main: { image: { mediaId: 'm-main-art' }, scale: 1 } },
+    art: { main: { image: { mediaId: 'm-main-art' }, scale: 1, animation: 'none' } },
     colors: { primary: '#b8dfd3', secondary: '#efe7ec', text: '#2f2b2d' },
     fonts: { title: 'Georgia,serif', body: 'Arial,sans-serif' },
     autoTextContrast: false,

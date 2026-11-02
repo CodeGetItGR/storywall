@@ -9874,5 +9874,13 @@
             "topicRequired": "Επιλέξτε θέμα.",
             "messageRequired": "Γράψτε ένα μήνυμα."
         }
+    },
+    "InvitationRenderer": {
+        "mainArtAlt": "Σχέδιο πρόσκλησης",
+        "imageAlt": "Διακόσμηση πρόσκλησης",
+        "linkFallback": "Δείτε περισσότερα"
+    },
+    "SaveMyDatePreview": {
+        "metaTitle": "Προεπισκόπηση πρόσκλησης"
     }
 }

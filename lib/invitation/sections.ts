@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { elementSchema, photoFrameFieldsSchema } from '@/lib/invitation/elements';
+import { elementSchema } from '@/lib/invitation/elements';
 import {
     colorSchema,
     fontSchema,
@@ -306,7 +306,8 @@ export const SECTION_DATA_SCHEMAS = {
     weddingSponsorsSimple: z
         .object({ sponsorsTitle: text, sponsorsNames: text, decoration: decorationSchema.optional() })
         .strict(),
-    photoFrame: z.object({ frame: photoFrameFieldsSchema }).strict(),
+    // Like a custom section: its frames are photoFrame elements. It starts with one.
+    photoFrame: z.object({}).strict(),
     footer: z
         .object({ text, textColor: colorSchema.optional(), font: fontSchema.optional(), link: linkSchema })
         .strict(),

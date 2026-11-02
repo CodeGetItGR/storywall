@@ -91,7 +91,6 @@ function themeAssetIdsInSection(section: InvitationSection): string[] {
         if (element.kind === 'photoFrame' && element.frameId) ids.push(element.frameId);
         collectThemeImages(element, ids);
     }
-    if (section.type === 'photoFrame' && section.data.frame.frameId) ids.push(section.data.frame.frameId);
     return ids;
 }
 
