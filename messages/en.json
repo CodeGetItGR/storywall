@@ -9836,5 +9836,13 @@
             "topicRequired": "Pick a topic.",
             "messageRequired": "Write a message."
         }
+    },
+    "InvitationRenderer": {
+        "mainArtAlt": "Invitation artwork",
+        "imageAlt": "Invitation decoration",
+        "linkFallback": "See more"
+    },
+    "SaveMyDatePreview": {
+        "metaTitle": "Invitation preview"
     }
 }

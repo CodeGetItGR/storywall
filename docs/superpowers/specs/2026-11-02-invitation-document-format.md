@@ -86,7 +86,7 @@ Elements are what the editor's "Add" menu inserts. Their ids are unique across t
 | `spacer` | `height` | |
 | `image` | `image`, `width` | Usually a theme element. |
 | `link` | `text`, `url` | Rendered as a theme button. |
-| `photoFrame` | frame fields (below) | Only admins can add these; the editor enforces that. |
+| `photoFrame` | frame fields (below) | Only admins can add these; the editor enforces that. Any section may hold them. |
 | `columnBreak` | (no fields) | Allowed only in custom sections, at most one. Elements before it form column one. |
 
 **Frame fields:**
@@ -131,7 +131,7 @@ Elements are what the editor's "Add" menu inserts. Their ids are unique across t
 | coupleProfiles | `partnerA` and `partnerB` (`{name, role, familyLabel, familyNames, photo?}`), `desktopColumns` |
 | coupleProfilesSimple | the same without `photo`, plus `decoration?` |
 | weddingSponsorsSimple | `sponsorsTitle`, `sponsorsNames` (one name per line), `decoration?` |
-| photoFrame | `frame` (the frame fields) |
+| photoFrame | `{}`. Like a custom section, its frames are `photoFrame` elements; a new one starts with one frame. |
 | footer | `text`, `textColor?`, `font?`, `link` |
 
 **Notes on the table:**
@@ -145,7 +145,7 @@ The ticket said 32 section types; the old registry has 30 (29 addable types plus
 | Field | Contents |
 | --- | --- |
 | `backgrounds` | `top`, `content` and `extra`, each `{desktop?, mobile?, mode: cover\|repeat\|texture, stableRepeat}` |
-| `art` | `main`, `ceremonyIcon`, `welcomeIcon` and `receptionIcon`, each `{image, scale 0.4–2.5}` |
+| `art` | `main`, `ceremonyIcon`, `welcomeIcon` and `receptionIcon`, each `{image, scale 0.4–2.5, animation}` (20 artwork animations) |
 | `colors` | `primary`, `secondary`, `text`, `buttonBg?`, `buttonText?` |
 | `fonts` | `title`, `body`, `button?` |
 | Other settings | `typographyPresetId?`, `autoTextContrast`, `photoShape` (13 shapes), `textAnimation` (26 animations) |
@@ -175,15 +175,15 @@ The real themes are not available yet; they will arrive with the Supabase export
 | Old | New |
 | --- | --- |
 | `theme.topBg`, `topBgMobile`, `topBgMode`, `topBgStableRepeat` (and the same for `content` and `extra`) | `theme.backgrounds.<slot>` |
-| `theme.mainArt` + `mainArtScale` | `theme.art.main` |
-| `theme.churchIcon`, `welcomeIcon`, `receptionIcon` + `*Scale` | `theme.art.ceremonyIcon`, `welcomeIcon`, `receptionIcon` |
+| `theme.mainArt` + `mainArtScale` + `mainArtScaleAnim` | `theme.art.main` |
+| `theme.churchIcon`, `welcomeIcon`, `receptionIcon` + `*Scale` + `*ScaleAnim` | `theme.art.ceremonyIcon`, `welcomeIcon`, `receptionIcon` |
 | `theme.primary`, `secondary`, `textColor`, `buttonBg`, `buttonTextColor` | `theme.colors.*` |
 | `theme.titleFont`, `bodyFont`, `buttonFont` | `theme.fonts.*` |
 | `theme.typographyPresetId`, `autoTextContrast`, `photoShape`, `textAnimation` | the same names in `theme` |
 | `theme.elements` (list of URLs) | `theme.elements[]` with generated ids and uploaded files |
 | `theme.frames`, `theme.transitions` | the same, with uploaded files |
 | `theme.ogImage`, `cardThumb`, `productPhotos`, `productPhotoAlts` | the theme record (KAN-45) |
-| A host's own `typographyPresetId` / `textColor` | `overrides` |
+| A host's own `typographyPresetId` (it differs from the theme's, or `typographyPresetForce` is true or missing) / `textColor` | `overrides` |
 | `sections[]` | `sections[]` (below) |
 
 ### Section envelope
@@ -224,9 +224,7 @@ The real themes are not available yet; they will arrive with the Supabase export
 - **programIcons:**
   - `iconKey` with `customIconSrc` / `customIconMode` / `customIconName` → `icon`
 - **photo:** `src` → `photo`
-- **photoFrame:** the frame element in `texts[0]` → `data.frame`
-  - `src` → `photo`
-  - `frameAnimation` → `animation`
+- **photoFrame elements:** `src` → `photo`, `frameAnimation` → `animation`
 - **Lists without ids** get generated ids.
 
 ### Dropped on purpose
@@ -237,7 +235,7 @@ The real themes are not available yet; they will arrive with the Supabase export
 | `lastSectionColor` | An editor preference; it moves to the editor's local settings. |
 | `_wedart` (renderer and schema stamp) | Replaced by `schemaVersion`. |
 | `theme.name`, `theme.typographyPresetName` | Read from the theme record and the preset. |
-| `theme.typographyPresetForce` | It was true for hosts and false for admins, which the editor decides, so it is not data. |
+| `theme.typographyPresetForce` | It marked a preset the host picked (true) versus one the admin set (false). That is now where the preset lives: a host's preset is in `overrides` and replaces every font on the page; the theme's preset only fills in text with no font of its own. |
 | `style.columnLayoutVersion` | A one-off migration flag of the old editor. |
 | `gallery.active` | The carousel's current slide, which is UI state. |
 | Legacy `data.frameId`, `zoom`, `imageX` and similar on `photoFrame` sections | Superseded by the frame element in the old editor itself; the converter reads them only as a fallback. |

@@ -22,12 +22,20 @@ const backgroundSchema = z
         desktop: mediaRefSchema.optional(),
         mobile: mediaRefSchema.optional(),
         mode: z.enum(['cover', 'repeat', 'texture']),
-        // Keeps a repeating texture fixed in place while the page scrolls.
+        // Fits the art to the section width once, anchored at the top, and
+        // repeats it down a taller section instead of rescaling it.
         stableRepeat: z.boolean(),
     })
     .strict();
 
-const artSchema = z.object({ image: mediaRefSchema, scale: z.number().min(0.4).max(2.5) }).strict();
+export const ART_ANIMATIONS = [
+    'none', 'fade', 'slideup', 'slideleft', 'slideright', 'zoom', 'rotatein', 'float', 'drift', 'pulse',
+    'heartbeat', 'glow', 'bounce', 'elastic', 'sway', 'wiggle', 'shake', 'spin', 'flip', 'flash',
+] as const;
+
+const artSchema = z
+    .object({ image: mediaRefSchema, scale: z.number().min(0.4).max(2.5), animation: z.enum(ART_ANIMATIONS) })
+    .strict();
 
 export const themeDesignSchema = z
     .object({

@@ -1,0 +1,187 @@
+/*
+ * Save my date invitation styles, ported from the old renderer
+ * (save-my-date public/legacy/editor.html) so converted invitations look the
+ * same. Every rule is scoped under .smd-invitation and keeps the old class
+ * names, so it can be compared with the old CSS line by line. Only rules
+ * guests see live here; editor controls are styled separately.
+ *
+ * New styling written after the migration uses Tailwind, not this file.
+ */
+
+/* Root: the old .device + .site, as the published page used them. */
+.smd-invitation {
+    --radius: 24px;
+    --section-pad: 56px;
+    --smd-bg-tile-size: 720px;
+    container-type: inline-size;
+    container-name: smd-invitation;
+    width: 100%;
+    background: #fff;
+    font-family: var(--body-font);
+    color: var(--site-text);
+    line-height: normal;
+    text-align: left;
+}
+
+/* The app's reset (Tailwind preflight) clears browser defaults the old page relied on. Restore them here. */
+.smd-invitation *,
+.smd-invitation *::before,
+.smd-invitation *::after {
+    box-sizing: border-box;
+}
+.smd-invitation h1 { margin: 0.67em 0; font-size: 2em; }
+.smd-invitation h2 { margin: 0.83em 0; font-size: 1.5em; }
+.smd-invitation h3 { margin: 1em 0; font-size: 1.17em; }
+.smd-invitation h4 { margin: 1.33em 0; font-size: 1em; }
+.smd-invitation p { margin: 1em 0; }
+.smd-invitation img { display: inline; max-width: none; height: auto; vertical-align: baseline; }
+.smd-invitation a { color: inherit; }
+
+/* Headings inside the invitation use the theme's title font. */
+.smd-invitation h1,
+.smd-invitation h2,
+.smd-invitation h3,
+.smd-invitation h4 { font-family: var(--title-font); font-weight: 400; }
+.smd-invitation h1 { font-size: 34px; }
+.smd-invitation h2 { font-size: 34px; }
+.smd-invitation h3 { font-size: 22px; }
+.smd-invitation p { line-height: 1.7; color: var(--site-muted); }
+
+@container smd-invitation (max-width: 760px) {
+    .smd-invitation { --smd-bg-tile-size: 390px; }
+}
+
+/* Section shell */
+.smd-invitation .section {
+    position: relative;
+    min-height: 180px;
+    padding: var(--section-pad) 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background-size: cover;
+    background-position: center;
+    overflow: visible;
+}
+.smd-invitation .section-inner { width: 100%; max-width: 760px; position: relative; z-index: 2; }
+.smd-invitation .footer { min-height: 44px; padding: 10px 20px; font-size: 12px; color: #777; position: relative; }
+
+/* Theme backgrounds carry a desktop and a mobile image; the invitation's own width picks one. */
+.smd-invitation .has-theme-bg { background-image: var(--smd-bg-desktop); }
+@container smd-invitation (max-width: 760px) {
+    .smd-invitation .has-theme-bg { background-image: var(--smd-bg-mobile); }
+}
+
+/* Light text on dark backgrounds wins over the text's own colour. */
+.smd-invitation .section.wedart-text-contrast-light .section-inner,
+.smd-invitation .section.wedart-text-contrast-light .section-inner .text-block,
+.smd-invitation .section.wedart-text-contrast-light .section-inner h1,
+.smd-invitation .section.wedart-text-contrast-light .section-inner h2,
+.smd-invitation .section.wedart-text-contrast-light .section-inner h3,
+.smd-invitation .section.wedart-text-contrast-light .section-inner h4,
+.smd-invitation .section.wedart-text-contrast-light .section-inner p,
+.smd-invitation .section.wedart-text-contrast-light .section-inner small,
+.smd-invitation .section.wedart-text-contrast-light .section-inner label { color: #fff !important; }
+
+/* Text */
+.smd-invitation .text-block {
+    position: relative;
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 2px;
+    white-space: pre-wrap;
+}
+.smd-invitation .text-block:empty { display: none; }
+
+/* Elements */
+.smd-invitation .wedart-spacer { position: relative; width: 100%; min-height: 8px; }
+.smd-invitation .wedart-el-wrap { position: relative; display: block; max-width: 100%; margin: 14px auto 0; }
+.smd-invitation .wedart-el-wrap img { width: 100%; display: block; }
+.smd-invitation .wedart-link-el { position: relative; display: block; width: fit-content; margin: 18px auto; text-align: center; }
+.smd-invitation .theme-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 17px;
+    border: 0;
+    border-radius: var(--radius);
+    background: var(--btn-bg, var(--primary));
+    color: var(--btn-text, #24332f);
+    font-family: var(--btn-font, var(--body-font));
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Custom sections: an optional full-width header, then two columns that stack on narrow screens. */
+.smd-invitation .wedart-custom-section-inner.has-columns { max-width: 980px; }
+.smd-invitation .wedart-custom-fullwidth { width: 100%; max-width: 100%; margin: 0 auto clamp(18px, 3vw, 34px); text-align: center; }
+.smd-invitation .wedart-custom-columns {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(28px, 5vw, 64px);
+    align-items: start;
+    width: 100%;
+    margin: 0 auto;
+}
+.smd-invitation .wedart-custom-column { min-width: 0; width: 100%; }
+.smd-invitation .wedart-custom-column.is-left { grid-column: 1; grid-row: 1; }
+.smd-invitation .wedart-custom-column.is-right { grid-column: 2; grid-row: 1; }
+@container smd-invitation (max-width: 599px) {
+    .smd-invitation .wedart-custom-columns { grid-template-columns: 1fr; gap: 0; }
+    .smd-invitation .wedart-custom-column.is-left { grid-column: 1; grid-row: 1; }
+    .smd-invitation .wedart-custom-column.is-right { grid-column: 1; grid-row: 3; margin-top: 80px; }
+}
+
+/* Theme artwork */
+.smd-invitation .wedart-asset-wrap { position: relative; display: inline-block; max-width: 100%; }
+.smd-invitation .hero-art,
+.smd-invitation .section-art { display: block; max-width: min(420px, 88%); max-height: 380px; object-fit: contain; margin: 0 auto 18px; }
+
+.smd-invitation .wedart-anim-slideup { animation: wedartSlideUp 0.8s ease both; }
+.smd-invitation .wedart-anim-zoom { animation: wedartZoomIn 0.7s ease both; }
+.smd-invitation .wedart-anim-sway { animation: wedartSway 3.6s ease-in-out infinite; transform-origin: 50% 0; }
+.smd-invitation .wedart-anim-flip { animation: wedartFlipIn 0.8s ease both; }
+.smd-invitation .wedart-anim-fade { animation: wedartFadeIn 1s ease both; }
+.smd-invitation .wedart-anim-float { animation: wedartFloat 3.2s ease-in-out infinite; }
+.smd-invitation .wedart-anim-pulse { animation: wedartPulse 2.4s ease-in-out infinite; }
+.smd-invitation .wedart-anim-bounce { animation: wedartBounceIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.smd-invitation .wedart-anim-spin { animation: wedartSpinSlow 7s linear infinite; }
+.smd-invitation .wedart-anim-wiggle { animation: wedartWiggle 2.6s ease-in-out infinite; transform-origin: 50% 50%; }
+.smd-invitation .wedart-anim-drift { animation: wedartDrift 4s ease-in-out infinite; }
+.smd-invitation .wedart-anim-glow { animation: wedartGlow 2.6s ease-in-out infinite; }
+.smd-invitation .wedart-anim-rotatein { animation: wedartRotateIn 0.8s ease both; }
+.smd-invitation .wedart-anim-heartbeat { animation: wedartHeartbeat 2.4s ease-in-out infinite; }
+.smd-invitation .wedart-anim-slideleft { animation: wedartSlideLeft 0.8s ease both; }
+.smd-invitation .wedart-anim-slideright { animation: wedartSlideRight 0.8s ease both; }
+.smd-invitation .wedart-anim-elastic { animation: wedartElastic 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.smd-invitation .wedart-anim-shake { animation: wedartShake 2.6s ease-in-out infinite; }
+.smd-invitation .wedart-anim-flash { animation: wedartFlash 2.2s ease-in-out infinite; }
+
+@keyframes wedartFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes wedartFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes wedartPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+@keyframes wedartBounceIn { 0% { transform: scale(0.7); opacity: 0; } 60% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); } }
+@keyframes wedartSpinSlow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes wedartSlideUp { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes wedartZoomIn { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes wedartSway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+@keyframes wedartFlipIn { from { transform: rotateY(90deg); opacity: 0; } to { transform: rotateY(0); opacity: 1; } }
+@keyframes wedartWiggle { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-6deg); } 40% { transform: rotate(5deg); } 60% { transform: rotate(-4deg); } 80% { transform: rotate(3deg); } }
+@keyframes wedartDrift { 0%, 100% { transform: translateX(-6px); } 50% { transform: translateX(6px); } }
+@keyframes wedartGlow { 0%, 100% { filter: drop-shadow(0 0 0 rgba(184, 223, 211, 0)); } 50% { filter: drop-shadow(0 0 14px rgba(184, 223, 211, 0.85)); } }
+@keyframes wedartRotateIn { from { transform: rotate(-18deg) scale(0.8); opacity: 0; } to { transform: rotate(0) scale(1); opacity: 1; } }
+@keyframes wedartHeartbeat { 0%, 100% { transform: scale(1); } 20% { transform: scale(1.12); } 35% { transform: scale(1); } 50% { transform: scale(1.12); } 65% { transform: scale(1); } }
+@keyframes wedartSlideLeft { from { transform: translateX(-28px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes wedartSlideRight { from { transform: translateX(28px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes wedartElastic { 0% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(1.15); } 70% { transform: scale(0.92); } 100% { transform: scale(1); opacity: 1; } }
+@keyframes wedartShake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(3px); } }
+@keyframes wedartFlash { 0%, 50%, 100% { opacity: 1; } 25%, 75% { opacity: 0.25; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .smd-invitation [class*='wedart-anim-'] { animation: none; }
+}
