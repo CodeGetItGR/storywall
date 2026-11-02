@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { QrCardTemplateDto } from '@/lib/api/types';
+import type { EventModuleResponseDto, QrCardTemplateDto } from '@/lib/api/types';
 import {
     estimateTextWidth,
     fitText,
@@ -9,10 +9,10 @@ import {
     layoutTitle,
     PLAIN_QR_CARD_STYLE,
     QR_CARD_LINE_BOXES,
-    QR_CARD_LINE_KEYS,
     QR_CARD_SIZES,
     QR_CARD_TITLE_BOX,
     qrCardFileName,
+    qrCardLineKey,
     qrCardStyleOf,
 } from '@/lib/qrCard';
 import { DEFAULT_QR_CARD_LAYOUT } from '@/lib/qrCardLayout';
@@ -177,11 +177,27 @@ describe('QR_CARD_SIZES', () => {
     });
 });
 
-describe('default lines', () => {
-    it('picks the line by what the QR opens', () => {
-        expect(QR_CARD_LINE_KEYS).toEqual({ EVENT_JOIN: 'join', INVITATION: 'invitation', MEDIA_UPLOAD: 'gallery' });
+describe('qrCardLineKey', () => {
+    const modules = (gallery: boolean, wishbook: boolean) =>
+        [
+            { moduleKey: 'gallery', isEnabled: gallery, isAvailable: gallery, configuration: { qrUploadEnabled: true } },
+            { moduleKey: 'wishbook', isEnabled: wishbook, isAvailable: wishbook, configuration: null },
+        ] as EventModuleResponseDto[];
+
+    it('keeps the line of every other code', () => {
+        expect(qrCardLineKey('EVENT_JOIN', modules(true, true))).toBe('join');
+        expect(qrCardLineKey('INVITATION', modules(true, true))).toBe('invitation');
+        expect(qrCardLineKey('MEDIA_UPLOAD', modules(true, true))).toBe('gallery');
     });
 
+    it('words the guest code by what it offers', () => {
+        expect(qrCardLineKey('GUEST', modules(true, false))).toBe('gallery');
+        expect(qrCardLineKey('GUEST', modules(false, true))).toBe('guestWish');
+        expect(qrCardLineKey('GUEST', modules(true, true))).toBe('guestBoth');
+    });
+});
+
+describe('default lines', () => {
     it('stacks the gift card lines, leaving out a missing PIN or email', () => {
         expect(giftQrCardLines({ line: 'Scan', pin: 'PIN: 1234', email: null, giver: 'Eleni' })).toEqual([
             { text: 'Scan', tone: 'body' },

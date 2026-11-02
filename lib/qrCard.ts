@@ -1,4 +1,5 @@
-import type { EventThemeFontDto, QrCardSize, QrCardTemplateDto, QrCardTextAlign, QrTargetType } from '@/lib/api/types';
+import type { EventModuleResponseDto, EventThemeFontDto, QrCardSize, QrCardTemplateDto, QrCardTextAlign, QrTargetType } from '@/lib/api/types';
+import { guestCodeActions } from '@/lib/liteEvents';
 import { DEFAULT_QR_CARD_LAYOUT, type QrCardLayout } from '@/lib/qrCardLayout';
 
 // A6 portrait in millimetres: the card SVG's user units.
@@ -66,12 +67,18 @@ export function qrCardStyleOf(template: QrCardTemplateDto): QrCardStyle {
     };
 }
 
-// The default line under the code (a QrCardPage.lines key), by what the QR opens.
-export const QR_CARD_LINE_KEYS = {
-    EVENT_JOIN: 'join',
-    INVITATION: 'invitation',
-    MEDIA_UPLOAD: 'gallery',
-} as const satisfies Record<QrTargetType, string>;
+// The default line under the code (a QrCardPage.lines key), by what the QR opens. A guest code's line follows
+// what it offers: photos, wishes or both.
+export type QrCardLineKey = 'join' | 'invitation' | 'gallery' | 'guestWish' | 'guestBoth';
+
+export function qrCardLineKey(targetType: QrTargetType, modules: EventModuleResponseDto[]): QrCardLineKey {
+    if (targetType === 'EVENT_JOIN') return 'join';
+    if (targetType === 'INVITATION') return 'invitation';
+    if (targetType === 'MEDIA_UPLOAD') return 'gallery';
+    const actions = guestCodeActions(modules);
+    if (actions.includes('UPLOAD') && actions.includes('WISH')) return 'guestBoth';
+    return actions.includes('WISH') ? 'guestWish' : 'gallery';
+}
 
 export type QrCardLineTone = 'body' | 'strong' | 'code' | 'small';
 export type QrCardLine = { text: string; tone: QrCardLineTone };

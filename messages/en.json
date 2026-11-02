@@ -6441,7 +6441,9 @@
         "lines": {
             "join": "Scan to join",
             "invitation": "Scan to open your invitation",
-            "gallery": "Scan to add your photos"
+            "gallery": "Scan to add your photos",
+            "guestWish": "Scan to leave a wish",
+            "guestBoth": "Scan to add your photos or leave a wish"
         }
     },
     "InvitationsQrPage": {
@@ -7636,7 +7638,8 @@
     "qrLink": {
         "default": {
             "eventJoinLabel": "Event Invite",
-            "mediaUploadLabel": "Photo upload"
+            "mediaUploadLabel": "Photo upload",
+            "guestLabel": "Guest code"
         }
     },
     "GiftMode": {
