@@ -9,29 +9,23 @@ import {
     useCreateQrCardTemplate,
     useDuplicateQrCardTemplate,
     usePatchQrCardTemplate,
-    useUploadQrCardArtwork,
 } from '@/hooks/useAdminQrCardTemplates';
-import { adminThemeFontKeys, useAdminThemeFonts } from '@/hooks/useAdminThemeFonts';
 import {
     buildQrCardTemplateCreatePayload,
     buildQrCardTemplatePatchPayload,
-    codeContrastRatio,
     draftFromQrCardTemplate,
-    qrCardArtworkFileError,
     type QrCardTemplateDraft,
     validateQrCardTemplateDraft,
 } from '@/lib/adminQrCards';
-import { themeFontOptions, toggleEventType } from '@/lib/adminThemePresets';
-import { ERROR_CODES, getErrorCode, isNotFoundError } from '@/lib/api/errors';
-import type { AdminQrCardTemplateDto, EventThemeFontDto, EventTypeConvention } from '@/lib/api/types';
-import { isHexColor } from '@/lib/eventTheme';
+import { toggleEventType } from '@/lib/adminThemePresets';
+import { isNotFoundError } from '@/lib/api/errors';
+import type { AdminQrCardTemplateDto, EventTypeConvention } from '@/lib/api/types';
 import { resolveLocalizedText } from '@/lib/localizedText';
-import { QR_CARD_INK, type QrCardStyle } from '@/lib/qrCard';
+import { PLAIN_QR_CARD_STYLE, type QrCardStyle } from '@/lib/qrCard';
 import { qrCardLayoutOf } from '@/lib/qrCardLayout';
 
 export type QrCardTemplateDrawerError = { kind: 'notFound' } | { kind: 'other'; error: unknown };
 export type QrCardTemplateAvailability = 'AVAILABLE' | 'ARCHIVED';
-export type QrCardFontsStatus = 'loading' | 'error' | 'ready';
 
 // 404 means another admin's change removed the design from under this drawer.
 function classifyError(error: unknown): QrCardTemplateDrawerError {
@@ -39,12 +33,9 @@ function classifyError(error: unknown): QrCardTemplateDrawerError {
     return { kind: 'other', error };
 }
 
-// A colour input only takes a lower-case #rrggbb; a half-typed colour shows ink.
-function colorInputValue(value: string): string {
-    return (isHexColor(value) ? value : QR_CARD_INK).toLowerCase();
-}
-
-// onDuplicatedAction: the copy was made; the caller opens it.
+// The side panel edits a design's names, event types and availability; its look and layout are the layout
+// editor's. A new design opens the layout editor as soon as it's created. onDuplicatedAction: the copy was
+// made; the caller opens it.
 export function useQrCardTemplateDrawer({
     template,
     sortOrder,
@@ -60,23 +51,18 @@ export function useQrCardTemplateDrawer({
     const queryClient = useQueryClient();
     const create = useCreateQrCardTemplate();
     const patch = usePatchQrCardTemplate();
-    const upload = useUploadQrCardArtwork();
     const duplicateMutation = useDuplicateQrCardTemplate();
-    const fonts = useAdminThemeFonts();
 
-    // After a create the drawer edits the new design, so retrying a failed upload doesn't create it twice.
+    // After a create the drawer edits the new design, so a second save patches it instead of creating it twice.
     const [saved, setSaved] = useState<AdminQrCardTemplateDto | null>(template);
     const isCreate = saved === null;
     const [draft, setDraft] = useState<QrCardTemplateDraft>(() => draftFromQrCardTemplate(template));
     const [submitted, setSubmitted] = useState(false);
     const [failure, setFailure] = useState<QrCardTemplateDrawerError | null>(null);
-    const [file, setFile] = useState<File | null>(null);
-    const [fileError, setFileError] = useState<'type' | 'size' | null>(null);
-    const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
     // Set synchronously: a fast double click submits twice before isSaving re-renders.
     const submitting = useRef(false);
-    // Cleared on unmount: a save still in flight then stops before the upload and never calls
-    // onDoneAction, which would otherwise act on whatever drawer is open by then.
+    // Cleared on unmount: a save still in flight then never calls onDoneAction, which would otherwise act
+    // on whatever drawer is open by then.
     const mounted = useRef(true);
     useEffect(() => {
         mounted.current = true;
@@ -85,47 +71,36 @@ export function useQrCardTemplateDrawer({
         };
     }, []);
 
-    // Revokes the previous preview whenever it's replaced, and the last one on unmount.
-    useEffect(() => {
-        return () => {
-            if (filePreviewUrl) URL.revokeObjectURL(filePreviewUrl);
-        };
-    }, [filePreviewUrl]);
+    const errors = useMemo(() => validateQrCardTemplateDraft(draft), [draft]);
 
-    const errors = useMemo(() => validateQrCardTemplateDraft(draft, saved?.codeColor), [draft, saved]);
-
-    const fontOptions = useMemo(() => themeFontOptions(fonts.data, saved?.headingFont ?? null), [fonts.data, saved]);
-    // What the preview draws the title in: the list's copy of the selected font, else the design's own.
-    const previewFont = useMemo<EventThemeFontDto | null>(() => {
-        if (!draft.headingFontId) return null;
-        const font =
-            fonts.data?.find((item) => item.id === draft.headingFontId) ??
-            (saved?.headingFont?.id === draft.headingFontId ? saved.headingFont : null);
-        return font?.url ? { key: font.key, fallback: font.fallback, url: font.url } : null;
-    }, [draft.headingFontId, fonts.data, saved]);
-
+    // The saved look and layout; a design not yet created shows as Plain.
     const previewStyle = useMemo<QrCardStyle>(
-        () => ({
-            id: saved?.id ?? 'new',
-            artworkUrl: filePreviewUrl ?? saved?.artworkUrl ?? null,
-            textColor: isHexColor(draft.textColor) ? draft.textColor : QR_CARD_INK,
-            headingFont: previewFont,
-            codeColor: isHexColor(draft.codeColor) ? draft.codeColor : QR_CARD_INK,
-            centerLogo: draft.centerLogo,
-            layout: qrCardLayoutOf(saved?.layout),
-            // The preview never prints, so its sizes don't matter.
-            sizes: ['A6'],
-        }),
-        [draft, filePreviewUrl, previewFont, saved],
+        () =>
+            saved
+                ? {
+                      id: saved.id,
+                      artworkUrl: saved.artworkUrl,
+                      textColor: saved.textColor,
+                      headingFont: saved.headingFont?.url
+                          ? { key: saved.headingFont.key, fallback: saved.headingFont.fallback, url: saved.headingFont.url }
+                          : null,
+                      codeColor: saved.codeColor,
+                      centerLogo: saved.centerLogo,
+                      layout: qrCardLayoutOf(saved.layout),
+                      // The preview never prints, so its sizes don't matter.
+                      sizes: ['A6'],
+                  }
+                : PLAIN_QR_CARD_STYLE,
+        [saved],
     );
 
     const [layoutEditorOpen, setLayoutEditorOpen] = useState(false);
     const openLayoutEditor = useCallback(() => setLayoutEditorOpen(true), []);
     const closeLayoutEditor = useCallback(() => setLayoutEditorOpen(false), []);
-    // The editor saved the layout: the drawer's copy follows, so its preview shows it.
+    // The editor saved the look or layout: the drawer's copy follows, so its preview shows it.
     const handleLayoutSaved = useCallback((updated: AdminQrCardTemplateDto) => setSaved(updated), []);
 
-    const handleFieldChange = useCallback((event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleFieldChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.currentTarget;
         setDraft((current) => ({ ...current, [name]: value }));
     }, []);
@@ -135,23 +110,8 @@ export function useQrCardTemplateDrawer({
         setDraft((current) => ({ ...current, eventTypes: toggleEventType(current.eventTypes, eventType) }));
     }, []);
 
-    const handleCenterLogoChange = useCallback((centerLogo: boolean) => setDraft((current) => ({ ...current, centerLogo })), []);
-
     const handleAvailabilityChange = useCallback((availability: QrCardTemplateAvailability) => {
         setDraft((current) => ({ ...current, archived: availability === 'ARCHIVED' }));
-    }, []);
-
-    // Type and size only; the server checks the A6 shape and the 1748 px width (3111).
-    const handleFileChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-        const next = event.currentTarget.files?.[0] ?? null;
-        // Lets the same file be picked again after a refusal.
-        event.currentTarget.value = '';
-        if (!next) return;
-        const problem = qrCardArtworkFileError(next);
-        setFileError(problem);
-        if (problem) return;
-        setFile(next);
-        setFilePreviewUrl(URL.createObjectURL(next));
     }, []);
 
     const handleSubmit = useCallback(
@@ -162,44 +122,36 @@ export function useQrCardTemplateDrawer({
             if (Object.keys(errors).length > 0 || submitting.current) return;
             submitting.current = true;
 
-            let current = saved;
             try {
-                if (current === null) {
-                    current = await create.mutateAsync(buildQrCardTemplateCreatePayload(draft, sortOrder));
+                if (saved === null) {
+                    const created = await create.mutateAsync(buildQrCardTemplateCreatePayload(draft, sortOrder));
                     if (!mounted.current) return;
-                    setSaved(current);
-                } else {
-                    const input = buildQrCardTemplatePatchPayload(current, draft);
-                    if (Object.keys(input).length > 0) {
-                        current = await patch.mutateAsync({ id: current.id, input });
-                        setSaved(current);
-                    }
+                    // Its look and layout come next, in the editor.
+                    setSaved(created);
+                    setLayoutEditorOpen(true);
+                    return;
                 }
-                if (!mounted.current) return;
-                if (file) {
-                    setSaved(await upload.mutateAsync({ id: current.id, file }));
-                    setFile(null);
+                const input = buildQrCardTemplatePatchPayload(saved, draft);
+                if (Object.keys(input).length > 0) {
+                    const updated = await patch.mutateAsync({ id: saved.id, input });
+                    if (!mounted.current) return;
+                    setSaved(updated);
                 }
-                if (!mounted.current) return;
                 onDoneAction();
             } catch (error) {
                 if (!mounted.current) return;
                 const classified = classifyError(error);
                 if (classified.kind === 'notFound') void queryClient.invalidateQueries({ queryKey: adminQrCardTemplateKeys.all });
-                // The picked font can no longer be assigned: refetch the list so the select stops offering it.
-                if (getErrorCode(error) === ERROR_CODES.THEME_FONT_NOT_ASSIGNABLE) {
-                    void queryClient.invalidateQueries({ queryKey: adminThemeFontKeys.all });
-                }
                 setFailure(classified);
             } finally {
                 submitting.current = false;
             }
         },
-        [create, draft, errors, file, onDoneAction, patch, queryClient, saved, sortOrder, upload],
+        [create, draft, errors, onDoneAction, patch, queryClient, saved, sortOrder],
     );
 
     // The copy is of the saved design, so unsaved changes must be saved first.
-    const hasUnsavedChanges = saved !== null && (file !== null || Object.keys(buildQrCardTemplatePatchPayload(saved, draft)).length > 0);
+    const hasUnsavedChanges = saved !== null && Object.keys(buildQrCardTemplatePatchPayload(saved, draft)).length > 0;
     const duplicate = useCallback(async () => {
         if (saved === null || submitting.current) return;
         submitting.current = true;
@@ -221,34 +173,21 @@ export function useQrCardTemplateDrawer({
         draft,
         errors: submitted ? errors : {},
         failure,
-        fileError,
-        hasPendingFile: file !== null,
-        textColorInputValue: colorInputValue(draft.textColor),
-        codeColorInputValue: colorInputValue(draft.codeColor),
-        // The code colour against the white panel; null while it isn't a valid colour.
-        codeContrastRatio: isHexColor(draft.codeColor) ? codeContrastRatio(draft.codeColor) : null,
         availability: (draft.archived ? 'ARCHIVED' : 'AVAILABLE') as QrCardTemplateAvailability,
         previewStyle,
         previewTitle: (locale === 'el' ? draft.nameEl : draft.nameEn).trim(),
-        fontOptions,
-        // Fonts a design can newly take: live, with a file.
-        hasUsableFonts: fonts.data?.some((font) => !font.archived && font.url) ?? false,
-        // A failed refetch over cached data still has a list to offer.
-        fontsStatus: (fonts.isPending ? 'loading' : fonts.isError && !fonts.data ? 'error' : 'ready') as QrCardFontsStatus,
         savedTemplate: saved,
         layoutEditorOpen,
         openLayoutEditor,
         closeLayoutEditor,
         handleLayoutSaved,
-        isSaving: create.isPending || patch.isPending || upload.isPending || duplicateMutation.isPending,
+        isSaving: create.isPending || patch.isPending || duplicateMutation.isPending,
         isDuplicating: duplicateMutation.isPending,
         hasUnsavedChanges,
         duplicate,
         handleFieldChange,
         handleEventTypeChange,
-        handleCenterLogoChange,
         handleAvailabilityChange,
-        handleFileChange,
         handleSubmit,
     };
 }

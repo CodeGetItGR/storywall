@@ -6,6 +6,7 @@ import { ThemeFontFace } from '@/components/event/ThemeFontFace';
 import { QrCardSvg } from '@/components/qrCard/QrCardSvg';
 import { QR_CARD_SAMPLE_URL } from '@/lib/adminQrCards';
 import { qrCardSampleFieldTexts, type QrCardStyle } from '@/lib/qrCard';
+import { qrCardLineWording } from '@/lib/qrCardLayout';
 
 // The card as a host would print it, drawn by the same QrCardSvg with a sample link and line.
 export function QrCardTemplatePreview({ style, title }: { style: QrCardStyle; title: string }) {
@@ -22,7 +23,7 @@ export function QrCardTemplatePreview({ style, title }: { style: QrCardStyle; ti
                     style={style}
                     url={QR_CARD_SAMPLE_URL}
                     title={title}
-                    lines={[{ text: t('sampleLine'), tone: 'body' }]}
+                    lines={[{ text: qrCardLineWording(style.layout, 'join', locale) ?? t('sampleLine'), tone: 'body' }]}
                     fields={qrCardSampleFieldTexts(style.layout, locale)}
                     label={t('cardLabel', { title })}
                     className="block h-auto w-full"

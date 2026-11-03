@@ -32,11 +32,16 @@ export const QR_CARD_STATUS_FILTERS = ['ALL', 'LIVE', 'NO_ARTWORK', 'ARCHIVED'] 
 export type QrCardStatusFilter = (typeof QR_CARD_STATUS_FILTERS)[number];
 export type QrCardTemplateStatus = Exclude<QrCardStatusFilter, 'ALL'>;
 
+// The side panel's part of a design: what it's called, who sees it and whether it's offered.
 export type QrCardTemplateDraft = {
     nameEn: string;
     nameEl: string;
     eventTypes: EventTypeConvention[];
     archived: boolean;
+};
+
+// The layout editor's part of a design besides the layout: its colours, title font and logo.
+export type QrCardLookDraft = {
     textColor: string;
     // '' means none: the card's own font.
     headingFontId: string;
@@ -44,25 +49,33 @@ export type QrCardTemplateDraft = {
     centerLogo: boolean;
 };
 
+export type QrCardTemplateDraftErrors = Partial<Record<'nameEn' | 'nameEl' | 'eventTypes', true>>;
 // textColor / codeColor: not #RRGGBB. codeContrast: valid, but too light to scan on white.
-export type QrCardTemplateDraftErrors = Partial<Record<'nameEn' | 'nameEl' | 'textColor' | 'codeColor' | 'codeContrast' | 'eventTypes', true>>;
+export type QrCardLookDraftErrors = Partial<Record<'textColor' | 'codeColor' | 'codeContrast', true>>;
 
 // The ratio of a #RRGGBB code colour against the white panel.
 export function codeContrastRatio(hex: string): number {
     return contrastRatio(hex, CODE_PANEL_COLOR);
 }
 
-// A new design starts as Plain looks: ink text and code, the logo on.
 export function draftFromQrCardTemplate(template: AdminQrCardTemplateDto | null): QrCardTemplateDraft {
     return {
         nameEn: template?.name.en ?? '',
         nameEl: template?.name.el ?? '',
         eventTypes: template?.eventTypes ?? [],
         archived: template?.archived ?? false,
-        textColor: template?.textColor ?? QR_CARD_INK,
-        headingFontId: template?.headingFont?.id ?? '',
-        codeColor: template?.codeColor ?? QR_CARD_INK,
-        centerLogo: template?.centerLogo ?? true,
+    };
+}
+
+// A new design starts as Plain looks: ink text and code, the logo on.
+const NEW_QR_CARD_LOOK: QrCardLookDraft = { textColor: QR_CARD_INK, headingFontId: '', codeColor: QR_CARD_INK, centerLogo: true };
+
+export function lookDraftFromQrCardTemplate(template: AdminQrCardTemplateDto): QrCardLookDraft {
+    return {
+        textColor: template.textColor,
+        headingFontId: template.headingFont?.id ?? '',
+        codeColor: template.codeColor,
+        centerLogo: template.centerLogo,
     };
 }
 
@@ -75,16 +88,21 @@ function sameColor(left: string, right: string | null | undefined): boolean {
     return left.toUpperCase() === (right ?? '').toUpperCase();
 }
 
-// savedCodeColor: the colour the design already has. The server re-checks contrast only when a PATCH
-// sends codeColor, and the patch sends it only when changed, so an untouched colour never blocks a save.
-export function validateQrCardTemplateDraft(draft: QrCardTemplateDraft, savedCodeColor?: string | null): QrCardTemplateDraftErrors {
+export function validateQrCardTemplateDraft(draft: QrCardTemplateDraft): QrCardTemplateDraftErrors {
     const errors: QrCardTemplateDraftErrors = {};
     if (!isValidName(draft.nameEn)) errors.nameEn = true;
     if (!isValidName(draft.nameEl)) errors.nameEl = true;
-    if (!isHexColor(draft.textColor)) errors.textColor = true;
-    if (!isHexColor(draft.codeColor)) errors.codeColor = true;
-    else if (!sameColor(draft.codeColor, savedCodeColor) && codeContrastRatio(draft.codeColor) < MIN_CODE_CONTRAST) errors.codeContrast = true;
     if (draft.eventTypes.length === 0) errors.eventTypes = true;
+    return errors;
+}
+
+// savedCodeColor: the colour the design already has. The server re-checks contrast only when a PATCH
+// sends codeColor, and the patch sends it only when changed, so an untouched colour never blocks a save.
+export function validateQrCardLookDraft(look: QrCardLookDraft, savedCodeColor: string): QrCardLookDraftErrors {
+    const errors: QrCardLookDraftErrors = {};
+    if (!isHexColor(look.textColor)) errors.textColor = true;
+    if (!isHexColor(look.codeColor)) errors.codeColor = true;
+    else if (!sameColor(look.codeColor, savedCodeColor) && codeContrastRatio(look.codeColor) < MIN_CODE_CONTRAST) errors.codeContrast = true;
     return errors;
 }
 
@@ -93,10 +111,10 @@ export function buildQrCardTemplateCreatePayload(draft: QrCardTemplateDraft, sor
         name: { en: draft.nameEn.trim(), el: draft.nameEl.trim() },
         eventTypes: draft.eventTypes,
         sortOrder,
-        textColor: draft.textColor.toUpperCase(),
-        headingFontId: draft.headingFontId || null,
-        codeColor: draft.codeColor.toUpperCase(),
-        centerLogo: draft.centerLogo,
+        textColor: NEW_QR_CARD_LOOK.textColor,
+        headingFontId: null,
+        codeColor: NEW_QR_CARD_LOOK.codeColor,
+        centerLogo: NEW_QR_CARD_LOOK.centerLogo,
     };
 }
 
@@ -111,15 +129,21 @@ export function buildQrCardTemplatePatchPayload(template: AdminQrCardTemplateDto
     if (name.en !== template.name.en || name.el !== template.name.el) patch.name = name;
     if (!sameMembers(draft.eventTypes, template.eventTypes)) patch.eventTypes = draft.eventTypes;
     if (draft.archived !== template.archived) patch.archived = draft.archived;
-    if (!sameColor(draft.textColor, template.textColor)) patch.textColor = draft.textColor.toUpperCase();
+    return patch;
+}
+
+// The look's changes only, like the side panel's.
+export function buildQrCardLookPatchPayload(template: AdminQrCardTemplateDto, look: QrCardLookDraft): AdminQrCardTemplatePatchDto {
+    const patch: AdminQrCardTemplatePatchDto = {};
+    if (!sameColor(look.textColor, template.textColor)) patch.textColor = look.textColor.toUpperCase();
     // Emptied means back to the card's own font, which only a clear flag does.
-    if (!draft.headingFontId) {
+    if (!look.headingFontId) {
         if (template.headingFont) patch.clearHeadingFont = true;
-    } else if (draft.headingFontId !== template.headingFont?.id) {
-        patch.headingFontId = draft.headingFontId;
+    } else if (look.headingFontId !== template.headingFont?.id) {
+        patch.headingFontId = look.headingFontId;
     }
-    if (!sameColor(draft.codeColor, template.codeColor)) patch.codeColor = draft.codeColor.toUpperCase();
-    if (draft.centerLogo !== template.centerLogo) patch.centerLogo = draft.centerLogo;
+    if (!sameColor(look.codeColor, template.codeColor)) patch.codeColor = look.codeColor.toUpperCase();
+    if (look.centerLogo !== template.centerLogo) patch.centerLogo = look.centerLogo;
     return patch;
 }
 

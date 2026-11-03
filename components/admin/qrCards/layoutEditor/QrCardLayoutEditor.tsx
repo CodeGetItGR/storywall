@@ -10,26 +10,25 @@ import { QrCardLayoutToolbar } from '@/components/admin/qrCards/layoutEditor/QrC
 import { ThemeFontFace } from '@/components/event/ThemeFontFace';
 import { useQrCardLayoutEditor } from '@/hooks/useQrCardLayoutEditor';
 import { useQrCardLayoutPointer } from '@/hooks/useQrCardLayoutPointer';
+import { useQrCardLook } from '@/hooks/useQrCardLook';
 import type { AdminQrCardTemplateDto } from '@/lib/api/types';
-import type { QrCardStyle } from '@/lib/qrCard';
 
-// The full-screen layout editor for one template. `style` is the drawer's live look (colours, font,
-// a picked but unsaved artwork); the layout is the editor's own draft. × and Esc are the editor's
+// The full-screen editor for one design's look and layout: artwork, colours, title font, logo, wording and
+// where everything sits, all drawn live on the card. × and Esc are the editor's
 // (closeDisabled hands them over): Esc deselects, then asks before discarding changes. The browser's
 // Back still closes it, as it does every drawer.
 export function QrCardLayoutEditor({
     template,
-    style,
     onSavedAction,
     onCloseAction,
 }: {
     template: AdminQrCardTemplateDto;
-    style: QrCardStyle;
     onSavedAction: (template: AdminQrCardTemplateDto) => void;
     onCloseAction: () => void;
 }) {
     const t = useTranslations('AdminPage.qrCards.layout');
-    const editor = useQrCardLayoutEditor({ template, textColor: style.textColor, onSavedAction, onCloseAction });
+    const look = useQrCardLook(template);
+    const editor = useQrCardLayoutEditor({ template, look, onSavedAction, onCloseAction });
     const pointer = useQrCardLayoutPointer({ layout: editor.layout, setLayout: editor.setLayout, select: editor.select });
 
     return (
@@ -46,7 +45,7 @@ export function QrCardLayoutEditor({
             <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_17rem]">
                 {/* Canvas */}
                 <QrCardLayoutCanvas
-                    style={{ ...style, layout: editor.layout }}
+                    style={{ ...look.style, layout: editor.layout }}
                     title={editor.sampleTitle}
                     lines={editor.sampleLines}
                     fields={editor.sampleFields}
@@ -56,10 +55,10 @@ export function QrCardLayoutEditor({
                 />
                 {/* Inspector */}
                 <aside className="md:border-l md:border-border md:pl-6">
-                    <QrCardLayoutInspector editor={editor} />
+                    <QrCardLayoutInspector editor={editor} look={look} />
                 </aside>
             </div>
-            <ThemeFontFace font={style.headingFont} />
+            <ThemeFontFace font={look.style.headingFont} />
             <QrCardLayoutDiscardModal open={editor.confirmingDiscard} onDiscardAction={onCloseAction} onKeepAction={editor.keepEditing} />
         </AdminDrawer>
     );

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+    buildQrCardLookPatchPayload,
     buildQrCardTemplateCreatePayload,
     buildQrCardTemplatePatchPayload,
     codeContrastRatio,
@@ -8,11 +9,14 @@ import {
     filterQrCardTemplates,
     formatMm,
     isQrCardDetailError,
+    lookDraftFromQrCardTemplate,
     QR_CARD_ARTWORK_MAX_BYTES,
     qrCardArtworkFileError,
+    type QrCardLookDraft,
     type QrCardTemplateDraft,
     qrCardTemplateStatus,
     sortQrCardTemplates,
+    validateQrCardLookDraft,
     validateQrCardTemplateDraft,
 } from '@/lib/adminQrCards';
 import { ApiError } from '@/lib/api/client';
@@ -48,23 +52,19 @@ function valid(overrides: Partial<QrCardTemplateDraft> = {}): QrCardTemplateDraf
     return { ...draftFromQrCardTemplate(null), nameEn: 'Linen', nameEl: 'Λινό', eventTypes: ['WEDDING'], ...overrides };
 }
 
+function look(overrides: Partial<QrCardLookDraft> = {}): QrCardLookDraft {
+    return { ...lookDraftFromQrCardTemplate(LINEN), ...overrides };
+}
+
 describe('draftFromQrCardTemplate', () => {
-    it('starts a new design as Plain: ink, logo on', () => {
-        expect(draftFromQrCardTemplate(null)).toEqual({
-            nameEn: '',
-            nameEl: '',
-            eventTypes: [],
-            archived: false,
-            textColor: '#241F1A',
-            headingFontId: '',
-            codeColor: '#241F1A',
-            centerLogo: true,
-        });
+    it('starts a new design blank, offered', () => {
+        expect(draftFromQrCardTemplate(null)).toEqual({ nameEn: '', nameEl: '', eventTypes: [], archived: false });
     });
 
-    it('copies a saved design', () => {
-        expect(draftFromQrCardTemplate({ ...LINEN, headingFont: ALEGREYA })).toMatchObject({
-            nameEn: 'Linen',
+    it('copies a saved design, and its look', () => {
+        expect(draftFromQrCardTemplate(LINEN)).toMatchObject({ nameEn: 'Linen', eventTypes: ['WEDDING'] });
+        expect(lookDraftFromQrCardTemplate({ ...LINEN, headingFont: ALEGREYA })).toEqual({
+            textColor: '#5A3E2B',
             codeColor: '#1F3A5A',
             centerLogo: false,
             headingFontId: 'f1',
@@ -81,57 +81,67 @@ describe('validateQrCardTemplateDraft', () => {
         expect(validateQrCardTemplateDraft(valid({ nameEn: 'x'.repeat(61) }))).toEqual({ nameEn: true });
         expect(validateQrCardTemplateDraft(valid({ nameEn: 'x'.repeat(60) }))).toEqual({});
     });
+});
 
+describe('validateQrCardLookDraft', () => {
     it('needs #RRGGBB colours', () => {
-        expect(validateQrCardTemplateDraft(valid({ textColor: 'red', codeColor: '#12' }))).toEqual({ textColor: true, codeColor: true });
+        expect(validateQrCardLookDraft(look({ textColor: 'red', codeColor: '#12' }), LINEN.codeColor)).toEqual({ textColor: true, codeColor: true });
     });
 
     it('needs 4.5:1 for the code against white', () => {
         expect(codeContrastRatio('#767676')).toBeGreaterThanOrEqual(4.5);
-        expect(validateQrCardTemplateDraft(valid({ codeColor: '#767676' }))).toEqual({});
-        expect(validateQrCardTemplateDraft(valid({ codeColor: '#777777' }))).toEqual({ codeContrast: true });
+        expect(validateQrCardLookDraft(look({ codeColor: '#767676' }), LINEN.codeColor)).toEqual({});
+        expect(validateQrCardLookDraft(look({ codeColor: '#777777' }), LINEN.codeColor)).toEqual({ codeContrast: true });
     });
 
     it('lets a saved code colour stand while other fields change', () => {
-        expect(validateQrCardTemplateDraft(valid({ codeColor: '#777777' }), '#777777')).toEqual({});
+        expect(validateQrCardLookDraft(look({ codeColor: '#777777' }), '#777777')).toEqual({});
     });
 });
 
 describe('buildQrCardTemplateCreatePayload', () => {
-    it('sends trimmed names, upper-case colours and no font as null', () => {
-        const draft = valid({ nameEn: ' Linen ', textColor: '#5a3e2b', codeColor: '#1f3a5a' });
-        expect(buildQrCardTemplateCreatePayload(draft, 4)).toEqual({
+    it('sends trimmed names and Plain looks', () => {
+        expect(buildQrCardTemplateCreatePayload(valid({ nameEn: ' Linen ' }), 4)).toEqual({
             name: { en: 'Linen', el: 'Λινό' },
             eventTypes: ['WEDDING'],
             sortOrder: 4,
-            textColor: '#5A3E2B',
+            textColor: '#241F1A',
             headingFontId: null,
-            codeColor: '#1F3A5A',
+            codeColor: '#241F1A',
             centerLogo: true,
         });
     });
 });
 
 describe('buildQrCardTemplatePatchPayload', () => {
-    it('sends nothing when nothing changed, whatever the colour case', () => {
-        expect(buildQrCardTemplatePatchPayload(LINEN, { ...draftFromQrCardTemplate(LINEN), codeColor: '#1f3a5a' })).toEqual({});
+    it('sends nothing when nothing changed', () => {
+        expect(buildQrCardTemplatePatchPayload(LINEN, draftFromQrCardTemplate(LINEN))).toEqual({});
     });
 
     it('sends only what changed', () => {
-        const draft: QrCardTemplateDraft = { ...draftFromQrCardTemplate(LINEN), nameEl: 'Λινάρι', centerLogo: true, archived: true };
-        expect(buildQrCardTemplatePatchPayload(LINEN, draft)).toEqual({
-            name: { en: 'Linen', el: 'Λινάρι' },
+        const draft: QrCardTemplateDraft = { ...draftFromQrCardTemplate(LINEN), nameEl: 'Λινάρι', archived: true };
+        expect(buildQrCardTemplatePatchPayload(LINEN, draft)).toEqual({ name: { en: 'Linen', el: 'Λινάρι' }, archived: true });
+    });
+});
+
+describe('buildQrCardLookPatchPayload', () => {
+    it('sends nothing when nothing changed, whatever the colour case', () => {
+        expect(buildQrCardLookPatchPayload(LINEN, look({ codeColor: '#1f3a5a' }))).toEqual({});
+    });
+
+    it('sends only what changed, colours in upper case', () => {
+        expect(buildQrCardLookPatchPayload(LINEN, look({ textColor: '#2b2b2b', centerLogo: true }))).toEqual({
+            textColor: '#2B2B2B',
             centerLogo: true,
-            archived: true,
         });
     });
 
     it('clears the font with a flag and sets a new one by id', () => {
         const withFont = { ...LINEN, headingFont: ALEGREYA };
-        expect(buildQrCardTemplatePatchPayload(withFont, { ...draftFromQrCardTemplate(withFont), headingFontId: '' })).toEqual({
+        expect(buildQrCardLookPatchPayload(withFont, { ...lookDraftFromQrCardTemplate(withFont), headingFontId: '' })).toEqual({
             clearHeadingFont: true,
         });
-        expect(buildQrCardTemplatePatchPayload(LINEN, { ...draftFromQrCardTemplate(LINEN), headingFontId: 'f2' })).toEqual({ headingFontId: 'f2' });
+        expect(buildQrCardLookPatchPayload(LINEN, look({ headingFontId: 'f2' }))).toEqual({ headingFontId: 'f2' });
     });
 });
 
