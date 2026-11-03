@@ -63,7 +63,8 @@ export function ManageScreen() {
         rsvpAvailable,
         giftAvailable: giftSection.available,
         themeAvailable: canPickTheme(activeEvent),
-        membersAvailable: !isLiteEvent(activeEvent),
+        // A lite event takes no guests, so its Members tab is only for co-hosts, when its plan has them.
+        membersAvailable: !isLiteEvent(activeEvent) || isModuleAvailable(activeEvent.modules, 'co_hosts'),
     });
     const section = resolveManageSection(requestedSection, {
         isDraft,
