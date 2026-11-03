@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationElement } from '@/lib/invitation/elements';
+import { INVITATION_LABELS, type InvitationLabels, invitationLanguage } from '@/lib/invitation/labels';
 import type { ImageRef, TextStyle } from '@/lib/invitation/primitives';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import type { ThemeDesign } from '@/lib/invitation/theme';
@@ -26,6 +27,10 @@ export type RenderContext = {
     presetMode: boolean;
     // A preset the host picked replaces every font on the page.
     forcePreset: boolean;
+    // The date the countdown counts to: the first date section's, hidden or not.
+    eventIso?: string;
+    // Fixed labels in the invitation's own language.
+    labels: InvitationLabels;
 };
 
 const DEFAULT_TEXT_COLOR = '#2f2b2d';
@@ -38,6 +43,7 @@ export function buildRenderContext(
     hostPreset?: TypographyPreset,
 ): RenderContext {
     const forcePreset = Boolean(document.overrides.typographyPresetId && hostPreset);
+    const dateSection = document.sections.find((section) => section.type === 'date');
     return {
         theme,
         media,
@@ -47,6 +53,8 @@ export function buildRenderContext(
         textColor: document.overrides.textColor ?? theme.colors.text ?? DEFAULT_TEXT_COLOR,
         presetMode: forcePreset || Boolean(theme.typographyPresetId),
         forcePreset,
+        eventIso: dateSection?.type === 'date' ? dateSection.data.iso : undefined,
+        labels: INVITATION_LABELS[invitationLanguage(document)],
     };
 }
 
@@ -204,6 +212,8 @@ export function sectionShell(section: InvitationSection, index: number, ctx: Ren
         '--site-text': baseText,
         '--site-muted': baseText,
     };
+    // The countdown's numbers need almost the full width on phones.
+    if (section.type === 'countdown') style['--section-side-pad-mobile'] = '4px';
     if (minHeight) style.minHeight = `${minHeight}px`;
     if (paddingY !== undefined) {
         style.paddingTop = `${paddingY}px`;

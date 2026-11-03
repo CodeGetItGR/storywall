@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
 import { InvitationRenderer } from '@/components/saveMyDate/invitation/InvitationRenderer';
-import { PREVIEW_DOCUMENT, PREVIEW_THEME, previewMedia } from '@/lib/saveMyDatePreview';
+import { PREVIEW_THEME, previewDateOptions, previewDocument, previewMedia } from '@/lib/saveMyDatePreview';
 import { showsSaveMyDate } from '@/lib/saveMyDateRelease';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -11,9 +11,13 @@ export async function generateMetadata(): Promise<Metadata> {
     return { title: t('metaTitle'), robots: { index: false, follow: false } };
 }
 
-// Staging only: a sample invitation drawn by the shared renderer.
-export default function SaveMyDatePreviewPage() {
-    if (!showsSaveMyDate()) notFound();
+type PreviewPageProps = { searchParams: Promise<{ date?: string | string[]; lang?: string | string[] }> };
 
-    return <InvitationRenderer document={PREVIEW_DOCUMENT} theme={PREVIEW_THEME} media={previewMedia} />;
+// Staging only: a sample invitation drawn by the shared renderer.
+// ?date=<layout>&lang=en picks the date section's layout and language.
+export default async function SaveMyDatePreviewPage({ searchParams }: PreviewPageProps) {
+    if (!showsSaveMyDate()) notFound();
+    const { style, lang } = previewDateOptions(await searchParams);
+
+    return <InvitationRenderer document={previewDocument(style, lang)} theme={PREVIEW_THEME} media={previewMedia} />;
 }

@@ -82,7 +82,19 @@
 .smd-invitation .section.wedart-text-contrast-light .section-inner h4,
 .smd-invitation .section.wedart-text-contrast-light .section-inner p,
 .smd-invitation .section.wedart-text-contrast-light .section-inner small,
-.smd-invitation .section.wedart-text-contrast-light .section-inner label { color: #fff !important; }
+.smd-invitation .section.wedart-text-contrast-light .section-inner label,
+.smd-invitation .section.wedart-text-contrast-light .section-inner .date-cal-label,
+.smd-invitation .section.wedart-text-contrast-light .section-inner .wedart-countdown-num,
+.smd-invitation .section.wedart-text-contrast-light .section-inner .wedart-countdown-unit-label,
+.smd-invitation .section.wedart-text-contrast-light .section-inner .wedart-countdown-dot,
+.smd-invitation .section.wedart-text-contrast-light .section-inner .faq-q,
+.smd-invitation .section.wedart-text-contrast-light .section-inner .faq-a,
+.smd-invitation .section.wedart-text-contrast-light .section-inner .footer-link { color: #fff !important; }
+
+/* Phones: sections keep a narrow side gutter; the countdown sets its own. */
+@container smd-invitation (max-width: 599px) {
+    .smd-invitation .section { padding-left: var(--section-side-pad-mobile, 10px); padding-right: var(--section-side-pad-mobile, 10px); }
+}
 
 /* Text */
 .smd-invitation .text-block {
@@ -185,3 +197,234 @@
 @media (prefers-reduced-motion: reduce) {
     .smd-invitation [class*='wedart-anim-'] { animation: none; }
 }
+
+/* Invitation text */
+.smd-invitation .invitation-text-lh { line-height: 1.3; }
+
+/* Couple names */
+.smd-invitation .couple-names-block { position: relative; text-align: center; }
+.smd-invitation .couple-names-block .couple-name { display: block; text-align: center; font-size: clamp(38px, 9vw, 64px); font-family: var(--title-font); line-height: 1.15; letter-spacing: 0.02em; }
+.smd-invitation .couple-names-amp { text-align: center; font-size: clamp(24px, 5vw, 38px); line-height: 1.4; opacity: 0.85; font-family: var(--title-font); }
+
+/* Date: add to calendar */
+.smd-invitation .date-cal-row { width: 100%; max-width: 270px; margin: 18px auto 0; }
+.smd-invitation .date-cal-divider { height: 1px; background: currentColor; opacity: 0.16; margin-bottom: 14px; }
+.smd-invitation .date-cal-icons { display: flex; justify-content: center; align-items: center; gap: 18px; }
+.smd-invitation .date-cal-icons a,
+.smd-invitation .date-cal-icons button { background: none; border: 0; padding: 0; cursor: pointer; display: flex; opacity: 0.85; transition: opacity 0.15s ease, transform 0.15s ease; }
+.smd-invitation .date-cal-icons a:hover,
+.smd-invitation .date-cal-icons button:hover { opacity: 1; transform: translateY(-2px); }
+.smd-invitation .date-cal-icons img { width: 30px; height: 30px; display: block; border-radius: 7px; }
+.smd-invitation .date-cal-label { text-align: center; font-size: 16px; line-height: 1.3; letter-spacing: 0.02em; opacity: 0.65; margin-top: 9px; }
+
+/* Date: shared preset parts. A host's own size and margins arrive as variables the preset clamps. */
+.smd-invitation .date-visual { width: 100%; max-width: 360px; margin: 0 auto; text-align: center; overflow: visible; }
+.smd-invitation .date-visual .text-block { margin-top: var(--wedart-date-margin-top, 0px) !important; margin-bottom: var(--wedart-date-margin-bottom, 0px) !important; margin-left: auto !important; margin-right: auto !important; text-align: center !important; white-space: nowrap !important; line-height: 1 !important; overflow-wrap: normal !important; word-break: normal !important; }
+.smd-invitation .date-preset-label { font-family: var(--body-font); font-size: clamp(18px, var(--wedart-date-user-size, 22px), 28px) !important; line-height: 1.05 !important; text-transform: uppercase; letter-spacing: 0.01em !important; }
+.smd-invitation .date-preset-number { font-family: var(--title-font); font-size: clamp(94px, var(--wedart-date-user-size, 120px), 145px) !important; line-height: 0.82 !important; font-weight: 400; }
+.smd-invitation .date-triple-number { font-family: var(--title-font); font-size: clamp(70px, var(--wedart-date-user-size, 88px), 106px) !important; line-height: 0.9 !important; font-weight: 400; }
+.smd-invitation .date-preset-year { font-family: var(--body-font); font-size: clamp(18px, var(--wedart-date-user-size, 24px), 30px) !important; line-height: 1 !important; }
+.smd-invitation .date-preset-time { font-family: var(--title-font); font-size: clamp(54px, var(--wedart-date-user-size, 70px), 86px) !important; line-height: 0.95 !important; white-space: nowrap !important; }
+.smd-invitation .date-period { font-family: var(--body-font); font-size: clamp(17px, var(--wedart-date-user-size, 21px), 26px) !important; line-height: 1.05 !important; text-transform: uppercase; margin-top: 10px !important; }
+.smd-invitation .date-preset-rule { width: min(250px, 72%); height: 1px; background: currentColor; opacity: 0.35; margin: 28px auto 24px; }
+
+/* Date: original */
+.smd-invitation .date-visual-original { max-width: 340px; }
+.smd-invitation .date-original-stack { display: grid; justify-items: center; gap: 14px; }
+.smd-invitation .date-original-day { font-family: var(--title-font); font-size: clamp(22px, var(--wedart-date-user-size, 28px), 36px) !important; }
+.smd-invitation .date-original-number { font-family: var(--title-font); font-size: clamp(86px, var(--wedart-date-user-size, 112px), 140px) !important; line-height: 0.88 !important; margin-bottom: 4px !important; }
+.smd-invitation .date-original-month { font-family: var(--body-font); font-size: clamp(16px, var(--wedart-date-user-size, 20px), 26px) !important; letter-spacing: 0.08em !important; text-transform: uppercase; margin-top: 4px !important; }
+.smd-invitation .date-original-time { font-family: var(--title-font); font-size: clamp(30px, var(--wedart-date-user-size, 38px), 48px) !important; margin-top: 12px !important; }
+
+/* Date: stacked */
+.smd-invitation .date-visual-stacked { max-width: 330px; }
+.smd-invitation .date-stacked-day { margin-bottom: 16px !important; }
+.smd-invitation .date-stacked-number { margin-bottom: 18px !important; }
+.smd-invitation .date-stacked-month { margin-bottom: 8px !important; }
+.smd-invitation .date-stacked-year { margin-bottom: 0 !important; }
+
+/* Date: editorial */
+.smd-invitation .date-visual-editorial { max-width: 350px; }
+.smd-invitation .date-editorial-top { display: grid; grid-template-columns: minmax(0, 1fr) 112px minmax(0, 1fr); align-items: center; gap: 10px; width: 100%; }
+.smd-invitation .date-editorial-side { display: grid; grid-template-rows: 1px auto 1px; gap: 9px; align-items: center; min-width: 0; }
+.smd-invitation .date-editorial-side i { display: block; height: 1px; background: currentColor; opacity: 0.5; width: 100%; }
+.smd-invitation .date-editorial-label { font-size: clamp(15px, var(--wedart-date-user-size, 18px), 22px) !important; }
+.smd-invitation .date-editorial-number { font-size: clamp(90px, var(--wedart-date-user-size, 112px), 132px) !important; }
+.smd-invitation .date-editorial-year { margin-top: 13px !important; }
+.smd-invitation .date-editorial-time { margin-top: 30px !important; }
+
+/* Date: vertical */
+.smd-invitation .date-visual-vertical { max-width: 290px; display: grid; justify-items: center; gap: 8px; }
+.smd-invitation .date-visual-vertical .date-preset-rule { margin-top: 24px; margin-bottom: 22px; }
+
+/* Date: bullet */
+.smd-invitation .date-visual-bullet { width: fit-content; max-width: min(330px, 100%); text-align: left; margin-left: auto !important; margin-right: auto !important; }
+.smd-invitation .date-visual-bullet .text-block { text-align: left !important; margin-left: 0 !important; margin-right: 0 !important; }
+.smd-invitation .date-bullet-number { display: block; margin: 0 0 10px; }
+.smd-invitation .date-bullet-label { display: flex; align-items: center; gap: 12px; margin: 2px 0 12px; }
+.smd-invitation .date-bullet-label > span { font-size: 30px; line-height: 1; }
+.smd-invitation .date-visual-bullet .date-preset-rule { width: 100%; margin: 24px 0 24px; }
+.smd-invitation .date-visual-bullet .date-preset-time,
+.smd-invitation .date-visual-bullet .date-period { text-align: left !important; }
+
+/* Date: split */
+.smd-invitation .date-visual-split { max-width: 350px; }
+.smd-invitation .date-split-main { display: grid; grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1.16fr); align-items: center; gap: 20px; text-align: left; }
+.smd-invitation .date-split-rule { width: 1px; height: 100%; min-height: 220px; background: currentColor; opacity: 0.55; }
+.smd-invitation .date-split-copy { display: grid; gap: 18px; justify-items: start; }
+.smd-invitation .date-split-copy .text-block { text-align: left !important; margin-left: 0 !important; margin-right: 0 !important; }
+.smd-invitation .date-split-number { font-size: clamp(112px, var(--wedart-date-user-size, 142px), 166px) !important; }
+.smd-invitation .date-split-time { font-size: clamp(46px, var(--wedart-date-user-size, 60px), 72px) !important; }
+
+/* Date: triple */
+.smd-invitation .date-visual-triple { max-width: 350px; }
+.smd-invitation .date-triple-day { margin-bottom: 22px !important; }
+.smd-invitation .date-triple-row { display: grid; grid-template-columns: 1fr 1px 1fr 1px 1fr; align-items: center; gap: 12px; width: 100%; margin-bottom: 24px; }
+.smd-invitation .date-triple-row i { display: block; width: 1px; height: 100%; min-height: 100px; background: currentColor; opacity: 0.55; }
+.smd-invitation .date-triple-month { margin-bottom: 24px !important; }
+
+/* Date: calendar */
+.smd-invitation .date-visual-calendar { max-width: 342px; }
+.smd-invitation .date-calendar-title { display: flex; justify-content: center; align-items: baseline; flex-wrap: nowrap; margin: 0 auto 18px; max-width: 100%; font-family: var(--title-font); line-height: 1; white-space: nowrap; overflow: visible; }
+.smd-invitation .date-calendar-title-gap { width: 0.24em; flex: 0 0 0.24em; }
+.smd-invitation .date-calendar-month,
+.smd-invitation .date-calendar-year { display: inline-block !important; flex: 0 0 auto !important; width: auto !important; max-width: none !important; font-family: var(--title-font); font-size: clamp(27px, var(--wedart-date-user-size, 32px), 36px) !important; line-height: 1 !important; letter-spacing: -0.02em !important; white-space: nowrap !important; }
+.smd-invitation .date-calendar { width: 100%; margin: 0 auto; }
+.smd-invitation .date-calendar-heading,
+.smd-invitation .date-calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); width: 100%; }
+.smd-invitation .date-calendar-heading { margin-bottom: 5px; font-family: var(--body-font); font-size: 11px; line-height: 1; letter-spacing: 0.04em; font-weight: 650; }
+.smd-invitation .date-calendar-heading span { padding: 4px 0; opacity: 0.74; white-space: nowrap; }
+.smd-invitation .date-calendar-grid { row-gap: 2px; }
+.smd-invitation .date-calendar-cell { display: grid; place-items: center; min-width: 0; height: 40px; font-family: var(--title-font); font-size: 22px; line-height: 1; }
+.smd-invitation .date-calendar-cell span { display: grid; place-items: center; width: 35px; height: 35px; border-radius: 50%; line-height: 1; }
+.smd-invitation .date-calendar-cell.is-adjacent { opacity: 0.24; }
+.smd-invitation .date-calendar-cell.is-event span { border: 2.5px solid currentColor; font-weight: 600; }
+.smd-invitation .date-calendar-time { margin-top: 18px !important; }
+.smd-invitation .date-calendar-period { margin-top: 8px !important; }
+
+/* Date: the invitation's own width picks the size, so mobile preview and a real phone match. */
+@container smd-invitation (max-width: 420px) {
+    .smd-invitation .date-visual { max-width: 330px; }
+    .smd-invitation .date-preset-label { font-size: clamp(16px, var(--wedart-date-user-size, 20px), 24px) !important; }
+    .smd-invitation .date-preset-number { font-size: clamp(88px, var(--wedart-date-user-size, 108px), 126px) !important; }
+    .smd-invitation .date-triple-number { font-size: clamp(64px, var(--wedart-date-user-size, 78px), 92px) !important; }
+    .smd-invitation .date-preset-time { font-size: clamp(48px, var(--wedart-date-user-size, 62px), 72px) !important; }
+    .smd-invitation .date-period { font-size: clamp(15px, var(--wedart-date-user-size, 18px), 22px) !important; }
+    .smd-invitation .date-editorial-top { grid-template-columns: minmax(0, 1fr) 98px minmax(0, 1fr); gap: 8px; }
+    .smd-invitation .date-editorial-label { font-size: 15px !important; }
+    .smd-invitation .date-editorial-number { font-size: 96px !important; }
+    .smd-invitation .date-split-main { gap: 15px; }
+    .smd-invitation .date-split-rule { min-height: 205px; }
+    .smd-invitation .date-split-number { font-size: 118px !important; }
+    .smd-invitation .date-split-copy { gap: 15px; }
+    .smd-invitation .date-split-time { font-size: 49px !important; }
+    .smd-invitation .date-triple-row { gap: 9px; }
+    .smd-invitation .date-triple-row i { min-height: 88px; }
+    .smd-invitation .date-visual-calendar { max-width: 330px; }
+    .smd-invitation .date-calendar-month,
+    .smd-invitation .date-calendar-year { font-size: clamp(25px, var(--wedart-date-user-size, 30px), 34px) !important; }
+    .smd-invitation .date-calendar-cell { height: 38px; font-size: 21px; }
+    .smd-invitation .date-calendar-cell span { width: 34px; height: 34px; }
+}
+@container smd-invitation (min-width: 560px) {
+    .smd-invitation .date-visual { max-width: 560px; }
+    .smd-invitation .date-visual-stacked { max-width: 390px; }
+    .smd-invitation .date-visual-vertical { max-width: 330px; }
+    .smd-invitation .date-visual-bullet { max-width: 390px; }
+    .smd-invitation .date-preset-label { font-size: clamp(21px, var(--wedart-date-user-size, 26px), 32px) !important; }
+    .smd-invitation .date-preset-number { font-size: clamp(118px, var(--wedart-date-user-size, 144px), 170px) !important; }
+    .smd-invitation .date-triple-number { font-size: clamp(86px, var(--wedart-date-user-size, 106px), 124px) !important; }
+    .smd-invitation .date-preset-time { font-size: clamp(66px, var(--wedart-date-user-size, 82px), 96px) !important; }
+    .smd-invitation .date-period { font-size: clamp(20px, var(--wedart-date-user-size, 24px), 30px) !important; }
+    .smd-invitation .date-visual-editorial { max-width: 560px; }
+    .smd-invitation .date-editorial-top { grid-template-columns: minmax(120px, 1fr) 150px minmax(120px, 1fr); gap: 18px; }
+    .smd-invitation .date-editorial-label { font-size: 22px !important; }
+    .smd-invitation .date-editorial-number { font-size: 142px !important; }
+    .smd-invitation .date-visual-split { max-width: 560px; }
+    .smd-invitation .date-split-main { gap: 28px; }
+    .smd-invitation .date-split-rule { min-height: 260px; }
+    .smd-invitation .date-split-number { font-size: 178px !important; }
+    .smd-invitation .date-split-copy { gap: 22px; }
+    .smd-invitation .date-split-time { font-size: 72px !important; }
+    .smd-invitation .date-visual-triple { max-width: 560px; }
+    .smd-invitation .date-triple-row { gap: 18px; }
+    .smd-invitation .date-triple-row i { min-height: 118px; }
+    .smd-invitation .date-visual-calendar { max-width: 560px; }
+    .smd-invitation .date-calendar-month,
+    .smd-invitation .date-calendar-year { font-size: clamp(36px, var(--wedart-date-user-size, 46px), 54px) !important; }
+    .smd-invitation .date-calendar-heading { font-size: 13px; margin-bottom: 7px; }
+    .smd-invitation .date-calendar-grid { row-gap: 4px; }
+    .smd-invitation .date-calendar-cell { height: 48px; font-size: 27px; }
+    .smd-invitation .date-calendar-cell span { width: 42px; height: 42px; }
+    .smd-invitation .date-calendar-time { margin-top: 20px !important; }
+    .smd-invitation .date-cal-row { margin-top: 20px; max-width: 290px; }
+}
+
+/* Countdown */
+.smd-invitation .wedart-countdown-label { font-family: var(--cd-font, var(--body-font)); font-size: 15px; margin: 0 auto 14px; color: var(--cd-color, var(--site-text)); }
+.smd-invitation .wedart-countdown-wrap { position: relative; display: flex; flex-direction: column; align-items: center; max-width: 100%; }
+.smd-invitation .wedart-countdown { display: flex; align-items: flex-start; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.smd-invitation .wedart-countdown-unit { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 44px; }
+.smd-invitation .wedart-countdown-num { font-family: var(--cd-font, var(--title-font)); font-size: var(--cd-size, clamp(34px, 9vw, 48px)); line-height: 1; color: var(--cd-color, var(--site-text)); font-variant-numeric: tabular-nums; }
+.smd-invitation .wedart-countdown-unit-label { font-family: var(--cd-font, var(--body-font)); font-size: calc(var(--cd-size, clamp(34px, 9vw, 48px)) * 0.25); letter-spacing: 0.04em; color: var(--cd-color, var(--site-text)); }
+.smd-invitation .wedart-countdown-dot { font-family: var(--cd-font, var(--title-font)); font-size: calc(var(--cd-size, clamp(34px, 9vw, 48px)) * 0.42); line-height: 1; color: var(--cd-color, var(--site-text)); align-self: center; margin-top: 6px; }
+@media (max-width: 420px) {
+    .smd-invitation .wedart-countdown { gap: 5px; }
+}
+
+/* Contact */
+.smd-invitation .contact-wrap { position: relative; display: flex; flex-direction: column; align-items: center; max-width: 100%; }
+.smd-invitation .contact-title { font-family: var(--contact-font, var(--title-font)); color: var(--contact-color, var(--site-text)); margin-bottom: 18px; }
+.smd-invitation .contact-icons { display: flex; flex-wrap: nowrap; justify-content: center; gap: 14px; }
+.smd-invitation .contact-icon-link { width: 46px; height: 46px; border-radius: 50%; background: var(--contact-color, var(--primary)); color: #fff; display: flex; align-items: center; justify-content: center; text-decoration: none; flex: 0 0 auto; }
+.smd-invitation .contact-icon-link svg { width: 22px; height: 22px; }
+.smd-invitation .couple-contact-wrap { position: relative; max-width: 600px; margin: 0 auto; text-align: center; }
+.smd-invitation .couple-contact-grid { display: grid; gap: 30px; justify-items: center; }
+.smd-invitation .couple-contact-person { text-align: center; max-width: 320px; width: 100%; }
+.smd-invitation .couple-contact-name { margin-top: 0; margin-bottom: 12px; font-family: var(--contact-font, var(--title-font)); color: var(--contact-color, var(--site-text)); text-align: center; }
+@container smd-invitation (min-width: 560px) {
+    .smd-invitation .couple-contact-grid { grid-template-columns: 1fr 1fr; }
+}
+@container smd-invitation (max-width: 420px) {
+    .smd-invitation .contact-icons { gap: 8px; }
+    .smd-invitation .contact-icon-link { width: 38px; height: 38px; }
+    .smd-invitation .contact-icon-link svg { width: 18px; height: 18px; }
+}
+
+/* Dress code */
+.smd-invitation .dress-code-head { position: relative; text-align: center; margin-bottom: 6px; display: flex; justify-content: center; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.smd-invitation .dress-code-head .text-block { display: inline-block; margin: 0; }
+.smd-invitation .dress-code-title { font-weight: 700; letter-spacing: 0.04em; }
+.smd-invitation .dress-code-note { text-align: center; max-width: 480px; margin: 0 auto 22px; opacity: 0.85; }
+.smd-invitation .dress-code-colors { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; align-items: center; }
+.smd-invitation .dress-code-swatch { position: relative; width: 52px; height: 52px; border-radius: 50%; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); }
+
+/* FAQ. The question is a button, so it first drops the browser's button look. */
+.smd-invitation .faq-list { width: 100%; max-width: 520px; margin: 14px auto; text-align: left; display: grid; gap: 8px; }
+.smd-invitation .faq-item { border-style: solid; border-width: var(--faq-border-width, 1px); border-color: var(--faq-border-color, rgba(0, 0, 0, 0.1)); border-radius: 12px; overflow: hidden; background: var(--faq-fill-color, rgba(255, 255, 255, 0.5)); }
+.smd-invitation .faq-q {
+    width: 100%;
+    margin: 0;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    line-height: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 12px 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: var(--faq-q-font, var(--title-font));
+    font-size: var(--faq-q-size, 16px);
+    color: var(--faq-q-color, inherit);
+}
+.smd-invitation .faq-q-right { display: flex; align-items: center; gap: 8px; flex: none; }
+.smd-invitation .faq-chevron { flex: none; transition: transform 0.2s ease; color: var(--primary); opacity: 0.85; }
+.smd-invitation .faq-chevron.open { transform: rotate(180deg); }
+.smd-invitation .faq-a { max-height: 0; overflow: hidden; padding: 0 14px; font-family: var(--faq-a-font, var(--body-font)); font-size: var(--faq-a-size, 14px); color: var(--faq-a-color, inherit); opacity: 0.85; transition: max-height 0.2s ease, padding 0.2s ease; }
+.smd-invitation .faq-a.open { max-height: 400px; padding: 0 14px 14px; }
+
+/* Footer */
+.smd-invitation .footer .footer-link { display: inline-block; padding: 0; border-radius: 0; background: transparent; text-decoration: none; color: inherit; font-weight: 600; }

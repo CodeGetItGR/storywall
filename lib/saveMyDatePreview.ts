@@ -1,6 +1,7 @@
 import { INVITATION_SCHEMA_VERSION, type InvitationDocument } from '@/lib/invitation/document';
 import type { MediaResolver } from '@/lib/invitation/render';
 import { SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
+import { DATE_DISPLAY_STYLES, type InvitationSection } from '@/lib/invitation/sections';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 
 // The invitation the staging preview page shows. Its texts are a host's
@@ -28,7 +29,90 @@ export const PREVIEW_THEME: ThemeDesign = {
 
 const blank = SAMPLE_SECTIONS.blank;
 
-export const PREVIEW_DOCUMENT: InvitationDocument = {
+type DateData = Extract<InvitationSection, { type: 'date' }>['data'];
+
+export type PreviewDateStyle = DateData['displayStyle'];
+export type PreviewDateLanguage = DateData['displayLanguage'];
+
+// The date as a host would write it in each language.
+const PREVIEW_DATES: Record<PreviewDateLanguage, Omit<DateData, 'displayStyle'>> = {
+    el: {
+        iso: '2027-06-12T18:00',
+        displayLanguage: 'el',
+        day: 'Σάββατο',
+        number: '12',
+        month: 'Ιουνίου 2027',
+        monthName: 'Ιούνιος',
+        monthGenitive: 'Ιουνίου',
+        monthNumber: '06',
+        time: '18:00',
+        yearLabel: '2027',
+        yearShort: '27',
+    },
+    en: {
+        iso: '2027-06-12T18:00',
+        displayLanguage: 'en',
+        day: 'Saturday',
+        number: '12',
+        month: 'June 2027',
+        monthName: 'June',
+        monthNumber: '06',
+        time: '18:00',
+        yearLabel: '2027',
+        yearShort: '27',
+    },
+};
+
+// The preview's date layout and language come from the address, so every
+// layout can be checked: ?date=calendar&lang=en.
+export function previewDateOptions(params: { date?: string | string[]; lang?: string | string[] }): {
+    style: PreviewDateStyle;
+    lang: PreviewDateLanguage;
+} {
+    const date = typeof params.date === 'string' ? params.date : '';
+    const style = (DATE_DISPLAY_STYLES as readonly string[]).includes(date) ? (date as PreviewDateStyle) : 'original';
+    return { style, lang: params.lang === 'en' ? 'en' : 'el' };
+}
+
+const textSections = (style: PreviewDateStyle, lang: PreviewDateLanguage): InvitationSection[] => [
+    {
+        ...SAMPLE_SECTIONS.invitation,
+        data: { text: 'Με μεγάλη χαρά σας προσκαλούμε\nνα μοιραστείτε μαζί μας την πιο όμορφη μέρα της ζωής μας.' },
+    },
+    { ...SAMPLE_SECTIONS.coupleNames, data: { partnerAName: 'Μαρία', partnerBName: 'Γιώργος' } },
+    { ...SAMPLE_SECTIONS.date, data: { ...PREVIEW_DATES[lang], displayStyle: style } },
+    SAMPLE_SECTIONS.countdown,
+    {
+        ...SAMPLE_SECTIONS.faq,
+        data: {
+            ...SAMPLE_SECTIONS.faq.data,
+            items: [
+                { id: 'q1', question: 'Υπάρχει πάρκινγκ;', answer: 'Ναι, δίπλα στον χώρο.' },
+                { id: 'q2', question: 'Μπορώ να φέρω τα παιδιά μου;', answer: 'Φυσικά!' },
+            ],
+        },
+    },
+    SAMPLE_SECTIONS.dressCode,
+    {
+        ...SAMPLE_SECTIONS.contact,
+        data: { ...SAMPLE_SECTIONS.contact.data, email: 'maria@example.com', instagram: 'instagram.com/example' },
+    },
+    SAMPLE_SECTIONS.coupleContact,
+    SAMPLE_SECTIONS.footer,
+];
+
+// The preview theme's top background is a photo, so the text sections sit
+// on the plain content background instead of alternating onto it.
+const onContent = (section: InvitationSection): InvitationSection =>
+    section.style.background.kind === 'theme'
+        ? { ...section, style: { ...section.style, background: { kind: 'theme', slot: 'content' } } }
+        : section;
+
+export function previewDocument(style: PreviewDateStyle = 'original', lang: PreviewDateLanguage = 'el'): InvitationDocument {
+    return { ...PREVIEW_DOCUMENT, sections: [...PREVIEW_DOCUMENT.sections, ...textSections(style, lang).map(onContent)] };
+}
+
+const PREVIEW_DOCUMENT: InvitationDocument = {
     schemaVersion: INVITATION_SCHEMA_VERSION,
     themeId: 'preview',
     overrides: {},
