@@ -94,6 +94,14 @@ describe('QrCardLayoutEditor', () => {
         renderEditor();
         fireEvent.focus(screen.getByRole('button', { name: /^elements\.title/ }));
         expect(screen.getByRole('combobox', { name: 'headingFont' })).toHaveValue('');
+        expect(screen.getByLabelText('textColorHex')).toHaveValue('#5A3E2B');
+    });
+
+    it('colours the text from the lines too', () => {
+        renderEditor();
+        fireEvent.focus(screen.getByRole('button', { name: /^elements\.lines/ }));
+        fireEvent.change(screen.getByLabelText('textColorHex'), { target: { value: '#2B2B2B' } });
+        expect(screen.getByRole('button', { name: 'save' })).toBeEnabled();
     });
 
     it("words the lines in both languages, the standard line as each input's placeholder", async () => {
