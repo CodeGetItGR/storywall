@@ -5129,7 +5129,8 @@ export interface OutreachProspectUpdateRequestDto {
     subcategory?: string | null;
     emailEl?: OutreachEmailDto;
     emailEn?: OutreachEmailDto;
-}\n
+}
+
 // Shop (plan 2026-10-27-shopify-shop). Prices are cents.
 export interface ShopCategoryDto {
     slug: string;
