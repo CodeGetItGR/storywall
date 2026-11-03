@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { LandingStoryCopy, type LandingTextSegment } from '@/components/landing/LandingStoryCopy';
 import { LandingStoryGallery } from '@/components/landing/LandingStoryGallery';
 import type { Locale } from '@/i18n/config';
+import { eventTypeSlug } from '@/lib/eventTypeSlug';
 import { type LandingStoryMedia } from '@/lib/landingMedia';
 import { type Occasion, occasionPath } from '@/lib/occasions/occasions';
 import { routes } from '@/lib/routes';
@@ -27,14 +28,17 @@ type LandingStoryRowProps = {
     media: LandingStoryMedia;
     // Live occasion pages; a row links to its own when it is one of them.
     occasions: readonly Occasion[];
+    // The label of the link down to the plans, for a row with a pricing event type.
+    plansLabel?: string;
 };
 
-export function LandingStoryRow({ children, copy, demoLabel, index, locale, media, occasions }: LandingStoryRowProps) {
+export function LandingStoryRow({ children, copy, demoLabel, index, locale, media, occasions, plansLabel }: LandingStoryRowProps) {
     const isOdd = index % 2 === 0;
     const wide = index === 0 || index === 4;
     const demo = media.demoEventTypeSlug ? { href: routes.demoEventType(media.demoEventTypeSlug), label: demoLabel } : undefined;
     const occasion = occasions.find((candidate) => candidate.eventType === media.occasion);
     const more = occasion && copy.occasionLink ? { href: occasionPath(occasion, locale), label: copy.occasionLink } : undefined;
+    const plans = media.pricingEventType && plansLabel ? { eventTypeSlug: eventTypeSlug(media.pricingEventType), label: plansLabel } : undefined;
 
     return (
         <article
@@ -60,6 +64,7 @@ export function LandingStoryRow({ children, copy, demoLabel, index, locale, medi
                 <LandingStoryCopy
                     demo={demo}
                     more={more}
+                    plans={plans}
                     paragraphSegments={copy.paragraphSegments}
                     tag={copy.tag}
                     titleSegments={copy.titleSegments}

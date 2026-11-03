@@ -13,6 +13,8 @@ export type LandingStoryMedia = {
     main: LandingImageAsset;
     // The occasion page this row links to, when it is live (lib/occasions/occasions.ts).
     occasion?: EventTypeConvention;
+    // The event type the row's plans link picks in the landing pricing; no link without one.
+    pricingEventType?: EventTypeConvention;
     // Event type whose theme presets are shown under the row.
     themeEventType?: EventTypeConvention;
 };
@@ -21,6 +23,7 @@ export const landingStoryMedia: LandingStoryMedia[] = [
     {
         demoEventTypeSlug: 'wedding',
         occasion: 'WEDDING',
+        pricingEventType: 'WEDDING',
         main: { src: '/landing/wedding-party-celebrating-with-social-storywall-overlays.webp', width: 2048, height: 1152 },
         gallery: [
             { src: '/landing/01-bachelor-santorini.webp', width: 1536, height: 1024 },
@@ -32,6 +35,7 @@ export const landingStoryMedia: LandingStoryMedia[] = [
     },
     {
         occasion: 'BAPTISM',
+        pricingEventType: 'BAPTISM',
         themeEventType: 'BAPTISM',
         main: { src: '/landing/happy-baptism-celebration-outside-the-church-on-a-greek-island.webp', width: 1536, height: 1024 },
         gallery: [
@@ -41,6 +45,7 @@ export const landingStoryMedia: LandingStoryMedia[] = [
         ],
     },
     {
+        pricingEventType: 'GENDER_REVEAL',
         main: { src: '/landing/gender-reveal-box-opening-with-blue-balloons-and-confetti.webp', width: 1536, height: 1024 },
         gallery: [
             { src: '/landing/gender-reveal-box-opening-with-blue-balloons-and-confetti.webp', width: 1536, height: 1024 },
@@ -49,6 +54,7 @@ export const landingStoryMedia: LandingStoryMedia[] = [
         ],
     },
     {
+        pricingEventType: 'PRIVATE_PARTY',
         main: { src: '/landing/close-up-selfie-of-stylish-guests-and-influencers-celebrating-at.webp', width: 1370, height: 1148 },
         gallery: [
             { src: '/landing/close-up-selfie-of-stylish-guests-and-influencers-celebrating-at.webp', width: 1370, height: 1148 },

@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { useLandingPricingEventType } from '@/hooks/useLandingPricingEventType';
+import { pickLandingEventType, useLandingPricingEventType } from '@/hooks/useLandingPricingEventType';
 
 const IDS = ['wedding', 'baby-shower', 'reunion'];
 
@@ -41,6 +41,15 @@ describe('useLandingPricingEventType', () => {
         act(() => result.current.selectEventType('graduation'));
         expect(result.current.selectedId).toBe('wedding');
         expect(window.location.search).toBe('');
+    });
+
+    it('shows a type picked from elsewhere on the page', () => {
+        const { result } = renderHook(() => useLandingPricingEventType(IDS, 'wedding'));
+
+        act(() => pickLandingEventType('reunion'));
+
+        expect(result.current.selectedId).toBe('reunion');
+        expect(window.location.search).toBe('?event=reunion');
     });
 
     it('has nothing selected when there are no ids', () => {

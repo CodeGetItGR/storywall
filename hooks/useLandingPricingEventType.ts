@@ -27,6 +27,13 @@ function readServerSlug(): string | null {
     return null;
 }
 
+// Puts slug in ?event= for the landing pricing to show, e.g. from a link elsewhere on the page.
+// An id the pricing doesn't offer falls back to its default there.
+export function pickLandingEventType(slug: string) {
+    replacePageUrl(landingEventHref(window.location.href, slug));
+    listeners.forEach((listener) => listener());
+}
+
 // Which event type the landing pricing shows: the one in ?event= if it is among ids, else defaultId,
 // else the first. Picking one replaces ?event= in place, with no navigation or server render.
 export function useLandingPricingEventType(ids: readonly string[], defaultId: string | null) {
@@ -37,8 +44,7 @@ export function useLandingPricingEventType(ids: readonly string[], defaultId: st
     const selectEventType = useCallback(
         (id: string) => {
             if (!ids.includes(id)) return;
-            replacePageUrl(landingEventHref(window.location.href, id));
-            listeners.forEach((listener) => listener());
+            pickLandingEventType(id);
         },
         [ids],
     );

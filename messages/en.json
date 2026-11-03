@@ -7236,7 +7236,7 @@
         },
         "demo": {
             "eyebrow": "SEE IT IN ACTION",
-            "heading": ["Try the demo", "photo wall."],
+            "heading": ["Don't imagine it.", "See it."],
             "copyStart": "Open the",
             "copyDemo": "DEMO",
             "copyMiddle": "and see",
@@ -7285,6 +7285,7 @@
             "previous": "Previous feature",
             "next": "Next feature",
             "interactionHint": "Swipe or click",
+            "more": "Learn more",
             "items": [
                 {
                     "title": "INVITATION",
