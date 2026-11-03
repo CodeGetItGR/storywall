@@ -24,6 +24,64 @@ export const QR_CARD_SIZES: Record<
     A5: { widthMm: 148, heightMm: 210, widthPx: 1748, heightPx: 2480, widthPt: 419.53, heightPt: 595.28 },
 };
 
+// One card per page at its own size, or as many as fit on one A4 sheet.
+export type QrCardPerPage = 'one' | 'sheet';
+
+const A4_SHORT_MM = 210;
+const A4_LONG_MM = 297;
+// A thin grey line where two cards meet, to cut along.
+export const QR_CARD_CUT_COLOR = '#9CA3AF';
+export const QR_CARD_CUT_WIDTH_MM = 0.2;
+
+export type QrCardCut = { x1: number; y1: number; x2: number; y2: number };
+
+// An A4 sheet of cards at true size, in millimetres from the sheet's top left. The sheet turns to
+// whichever way holds more cards (portrait on a tie); the grid sits centred.
+export type QrCardSheet = {
+    widthMm: number;
+    heightMm: number;
+    cardWidthMm: number;
+    cardHeightMm: number;
+    columns: number;
+    rows: number;
+    cards: { x: number; y: number }[];
+    cuts: QrCardCut[];
+};
+
+export function qrCardSheet(size: QrCardSize): QrCardSheet {
+    const { widthMm: cardWidthMm, heightMm: cardHeightMm } = QR_CARD_SIZES[size];
+    const fit = (widthMm: number, heightMm: number) => ({
+        widthMm,
+        heightMm,
+        columns: Math.floor(widthMm / cardWidthMm),
+        rows: Math.floor(heightMm / cardHeightMm),
+    });
+    const portrait = fit(A4_SHORT_MM, A4_LONG_MM);
+    const landscape = fit(A4_LONG_MM, A4_SHORT_MM);
+    const page = landscape.columns * landscape.rows > portrait.columns * portrait.rows ? landscape : portrait;
+    const { widthMm, heightMm, columns, rows } = page;
+    const left = (widthMm - columns * cardWidthMm) / 2;
+    const top = (heightMm - rows * cardHeightMm) / 2;
+    const right = left + columns * cardWidthMm;
+    const bottom = top + rows * cardHeightMm;
+
+    const cards = Array.from({ length: rows * columns }, (_, index) => ({
+        x: left + (index % columns) * cardWidthMm,
+        y: top + Math.floor(index / columns) * cardHeightMm,
+    }));
+    const cuts: QrCardCut[] = [
+        ...Array.from({ length: columns - 1 }, (_, index) => {
+            const x = left + (index + 1) * cardWidthMm;
+            return { x1: x, y1: top, x2: x, y2: bottom };
+        }),
+        ...Array.from({ length: rows - 1 }, (_, index) => {
+            const y = top + (index + 1) * cardHeightMm;
+            return { x1: left, y1: y, x2: right, y2: y };
+        }),
+    ];
+    return { widthMm, heightMm, cardWidthMm, cardHeightMm, columns, rows, cards, cuts };
+}
+
 export const QR_CARD_TITLE_MAX = 40;
 export const QR_CARD_LINE_MAX = 60;
 

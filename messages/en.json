@@ -6532,6 +6532,11 @@
             "A6": "A6 · 10.5 × 14.8 cm",
             "A5": "A5 · 14.8 × 21 cm"
         },
+        "perPage": {
+            "label": "Cards per page",
+            "one": "1 card",
+            "sheet": "{count} on A4"
+        },
         "templatesFailed": "Couldn't load the designs.",
         "retry": "Try again",
         "fields": {

@@ -1,7 +1,8 @@
-import { PDFDocument } from 'pdf-lib';
+import { decodePDFRawStream, PDFArray, PDFDocument, type PDFPage, PDFRawStream } from 'pdf-lib';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { EventThemeFontDto } from '@/lib/api/types';
+import { qrCardSheet } from '@/lib/qrCard';
 import { qrCardPdfBytes, selfContainedQrSvg, standaloneQrCardSvg, toDataUri } from '@/lib/qrCardExport';
 
 // A 1 × 1 transparent PNG.
@@ -11,6 +12,17 @@ const FONT: EventThemeFontDto = { key: 'alegreya', fallback: 'serif', url: '/api
 
 function bytes(base64: string): ArrayBuffer {
     return Uint8Array.from(atob(base64), (char) => char.charCodeAt(0)).buffer;
+}
+
+// The page's drawing operators as text.
+function pageContent(page: PDFPage): string {
+    const contents = page.node.Contents();
+    const refs = contents instanceof PDFArray ? contents.asArray() : [contents];
+    return refs
+        .map((ref) => page.doc.context.lookup(ref))
+        .filter((stream): stream is PDFRawStream => stream instanceof PDFRawStream)
+        .map((stream) => new TextDecoder().decode(decodePDFRawStream(stream).decode()))
+        .join('\n');
 }
 
 function respond(type: string, body: Uint8Array) {
@@ -123,6 +135,30 @@ describe('qrCardPdfBytes', () => {
         const pdf = await PDFDocument.load(await qrCardPdfBytes(bytes(PNG_BASE64), 'A5'));
         const { width, height } = pdf.getPage(0).getSize();
         expect(width).toBeCloseTo(419.53, 1);
+        expect(height).toBeCloseTo(595.28, 1);
+    });
+
+    it('puts four A6 cards on one A4 sheet with cut lines', async () => {
+        const pdf = await PDFDocument.load(await qrCardPdfBytes(bytes(PNG_BASE64), 'A6', qrCardSheet('A6')));
+
+        expect(pdf.getPageCount()).toBe(1);
+        const page = pdf.getPage(0);
+        const { width, height } = page.getSize();
+        expect(width).toBeCloseTo(595.28, 1);
+        expect(height).toBeCloseTo(841.89, 1);
+        const content = pageContent(page);
+        // One image draw per card, each scaled to 105 × 148 mm in points, the bottom row 0.5 mm up.
+        expect(content.match(/ Do$/gm)).toHaveLength(4);
+        expect(content.match(/^297\.6\d* 0 0 419\.5\d* 0 0 cm$/gm)).toHaveLength(4);
+        expect(content).toContain('1 0 0 1 297.6377952755906 1.417322834645688 cm');
+        // Two cut lines.
+        expect(content.match(/ l$/gm)).toHaveLength(2);
+    });
+
+    it('puts two A5 cards on one A4 landscape sheet', async () => {
+        const pdf = await PDFDocument.load(await qrCardPdfBytes(bytes(PNG_BASE64), 'A5', qrCardSheet('A5')));
+        const { width, height } = pdf.getPage(0).getSize();
+        expect(width).toBeCloseTo(841.89, 1);
         expect(height).toBeCloseTo(595.28, 1);
     });
 });
