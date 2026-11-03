@@ -67,6 +67,7 @@ export function useToolsMenuItems(): ToolMenuItem[] {
     // A deleted event is download-only: the gallery archive and the wishbook
     // PDF are the only tools that still do anything.
     const isDeleted = isEventDeleted(activeEvent);
+    const isLite = isLiteEvent(activeEvent);
 
     const vendorsOn = availableModules.has('vendors');
     // The vendor page stays while the module is off: it says the tools are closed.
@@ -113,6 +114,8 @@ export function useToolsMenuItems(): ToolMenuItem[] {
             .filter((tool) => tool.key !== 'vendorQr' || hasVendorCapability(me, 'QR_READ'))
             .filter((tool) => tool.key !== 'liveRequests' || (availableModules.has('playlist') && hasVendorCapability(me, 'SONG_REQUESTS')))
             .filter((tool) => !isDeleted || tool.key === 'gallery' || tool.key === 'wishbook')
+            // A lite event (no feed in its plan) has only its gallery and wishbook; every other tool sends its host home.
+            .filter((tool) => !isLite || tool.key === 'gallery' || tool.key === 'wishbook')
             .map((tool) => {
                 const copyKey = tool.copyKey ?? tool.moduleKey;
                 const copy = copyKey && copyKey !== 'member_roles' ? moduleCopy(copyKey) : null;
