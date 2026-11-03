@@ -24,7 +24,9 @@ vi.mock('@/hooks/useRightContextPanel', () => ({ useRightContextPanel: () => ({}
 vi.mock('@/components/layout/right-context-panel/HostContextSections', () => ({ HostContextSections: () => null }));
 vi.mock('@/components/manage/CoverageStatusStrip', () => ({ CoverageStatusStrip: () => null }));
 vi.mock('@/components/manage/ManageSkeletons', () => ({ ManageDraftOverviewSkeleton: () => null }));
-vi.mock('@/components/ui/MetricStrip', () => ({ MetricStrip: () => null }));
+vi.mock('@/components/ui/MetricStrip', () => ({
+    MetricStrip: ({ items }: { items: { key: string }[] }) => <p data-testid="metrics">{items.map((item) => item.key).join(',')}</p>,
+}));
 vi.mock('@/components/manage/OverviewDraftPanel', () => ({
     OverviewDraftPanel: ({ themeSection }: { themeSection?: ReactNode }) => <div data-testid="draft-panel">{themeSection}</div>,
 }));
@@ -38,8 +40,11 @@ vi.mock('@/components/manage/ThemePicker', () => ({
 
 const schedule = { startAt: '2026-11-01T10:00:00Z', endAt: null, projectedCoverage: null } as unknown as EventScheduleDto;
 
-function renderOverview(status: EventStatus) {
-    const event = { id: 'e1', status, modules: [] } as unknown as EventDetailResponseDto;
+const fullModules = [{ moduleKey: 'posts', isEnabled: true, isAvailable: true }];
+const liteModules = [{ moduleKey: 'gallery', isEnabled: true, isAvailable: true }];
+
+function renderOverview(status: EventStatus, modules: unknown[] = fullModules) {
+    const event = { id: 'e1', status, deletedAt: null, modules } as unknown as EventDetailResponseDto;
     render(
         <OverviewTab
             event={event}
@@ -75,5 +80,15 @@ describe('OverviewTab', () => {
     it("leaves an active event's picker to the settings tab", () => {
         renderOverview('ACTIVE');
         expect(screen.queryByTestId('theme-picker')).toBeNull();
+    });
+
+    it('shows members and invitations on a full event', () => {
+        renderOverview('ACTIVE');
+        expect(screen.getByTestId('metrics')).toHaveTextContent('members,days,invitations');
+    });
+
+    it('leaves members and invitations out on a lite event, which takes no guests', () => {
+        renderOverview('ACTIVE', liteModules);
+        expect(screen.getByTestId('metrics')).toHaveTextContent(/^days$/);
     });
 });

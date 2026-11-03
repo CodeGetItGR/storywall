@@ -12,6 +12,7 @@ export type Metric = {
 // gap, so an odd count must never leave an empty grid slot - it would paint as a
 // stray block of border colour. Each count picks a layout that always fills up.
 const columnClass: Record<number, string> = {
+    1: 'grid-cols-1',
     2: 'grid-cols-2',
     3: 'grid-cols-3',
     4: 'grid-cols-2 sm:grid-cols-4',

@@ -61,6 +61,22 @@ describe('manageSections', () => {
         ]);
     });
 
+    it('visibleManageSections hides Members on an event that takes no guests', () => {
+        expect(visibleManageSections({ canDelete: true, rsvpAvailable: true })).toContain('members');
+        expect(visibleManageSections({ canDelete: true, rsvpAvailable: false, membersAvailable: false })).toEqual([
+            'overview',
+            'settings',
+            'billing',
+            'help',
+            'danger',
+        ]);
+    });
+
+    it('resolveManageSection sends a hidden Members tab back to the overview', () => {
+        const visibleSections = visibleManageSections({ canDelete: true, rsvpAvailable: false, membersAvailable: false });
+        expect(resolveManageSection('members', { isDraft: false, visibleSections })).toBe('overview');
+    });
+
     it('resolveManageSection keeps a section that is still loading and drops a hidden one', () => {
         const visibleSections = visibleManageSections({ canDelete: true, rsvpAvailable: true });
         expect(resolveManageSection('gift', { isDraft: false, visibleSections, pendingSections: ['gift'] })).toBe('gift');

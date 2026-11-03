@@ -22,6 +22,7 @@ import { useEventUsage } from '@/hooks/useUsage';
 import { countPendingCoHostInvitations } from '@/lib/eventInvitations';
 import { isEventDeleted, isEventWritable, isModuleAvailable, isPrimaryHost } from '@/lib/eventLifecycle';
 import { canPickTheme } from '@/lib/eventTheme';
+import { isLiteEvent } from '@/lib/liteEvents';
 import { type ManageSection, parseManageSection, resolveManageSection, visibleManageSections } from '@/lib/manageSections';
 import { replacePageUrl } from '@/lib/overlayHistory';
 import { routes } from '@/lib/routes';
@@ -62,6 +63,7 @@ export function ManageScreen() {
         rsvpAvailable,
         giftAvailable: giftSection.available,
         themeAvailable: canPickTheme(activeEvent),
+        membersAvailable: !isLiteEvent(activeEvent),
     });
     const section = resolveManageSection(requestedSection, {
         isDraft,
