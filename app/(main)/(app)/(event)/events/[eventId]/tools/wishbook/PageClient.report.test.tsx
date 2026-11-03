@@ -60,8 +60,11 @@ vi.mock('@/hooks/useWishbook', () => ({
 }));
 vi.mock('@/hooks/useWishbookBook', () => ({ useSetWishHighlighted: () => ({ mutate: setHighlighted, isPending: false }) }));
 vi.mock('@/components/wishbook/WishbookBookPanel', () => ({
+    WISHBOOK_BOOK_ID: 'wishbook-book',
     WishbookBookPanel: ({ canEditTexts }: { canEditTexts: boolean }) => <div data-testid="book-panel" data-can-edit-texts={String(canEditTexts)} />,
 }));
+// A full event: the page is not a lite event's home.
+vi.mock('@/hooks/useLiteHome', () => ({ useLiteHome: () => ({ isHome: false }) }));
 vi.mock('@/hooks/useContentAccess', () => ({ useContentAccess: () => ({ isDemoBuilder, isLocked: () => false }) }));
 vi.mock('@/providers/EventProvider', () => ({
     useActiveEvent: () => ({ id: 'event-1', status: eventStatus, deletedAt, deletionScheduledFor: null }),

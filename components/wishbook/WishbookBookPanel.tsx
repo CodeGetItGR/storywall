@@ -11,6 +11,9 @@ import { WishbookBookTextsModal } from './WishbookBookTextsModal';
 
 const secondaryButton =
     'inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-ink-muted transition-colors hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-60';
+// The panel's id, for the lite home's Download all, which scrolls here.
+export const WISHBOOK_BOOK_ID = 'wishbook-book';
+
 const primaryButton =
     'inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold text-white bg-gradient-brand disabled:cursor-not-allowed disabled:opacity-60';
 
@@ -68,7 +71,7 @@ export function WishbookBookPanel({ eventId, canEditTexts }: { eventId: string; 
     if (book.isLoading) return null;
 
     return (
-        <section className="mt-8 rounded-[1.5rem] bg-amber-50/70 px-5 py-5">
+        <section id={WISHBOOK_BOOK_ID} className="mt-8 rounded-[1.5rem] bg-amber-50/70 px-5 py-5">
             <div className="flex items-start gap-3">
                 <BookOpen className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" aria-hidden="true" />
                 <div className="min-w-0 flex-1">

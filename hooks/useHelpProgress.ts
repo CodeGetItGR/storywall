@@ -36,7 +36,8 @@ export function useHelpProgress({
             rsvp: Boolean(schedule.rsvpDeadline),
             giftAccount: Boolean(giftAccount.data),
             schedule: sessions.some((session) => !session.deletedAt),
-            invitations: (qrLinks.data ?? []).some((link) => link.status !== 'REVOKED'),
+            // The guest code an upgraded lite event keeps is not an invitation.
+            invitations: (qrLinks.data ?? []).some((link) => link.targetType !== 'GUEST' && link.status !== 'REVOKED'),
         }),
         [title, schedule, location, sessions, giftAccount.data, qrLinks.data],
     );

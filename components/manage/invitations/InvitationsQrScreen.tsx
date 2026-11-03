@@ -18,6 +18,7 @@ import { useEventQrLinks, useEventQrLinkStats } from '@/hooks/useQrLinks';
 import { useEventUsage } from '@/hooks/useUsage';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { findPlanByCode } from '@/lib/planTiers';
+import { isInvitationQrLink } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
 
 export function InvitationsQrScreen() {
@@ -43,9 +44,10 @@ export function InvitationsQrScreen() {
     const nextUpgradeOption = upgradeOptions[0];
     const isLoading = qrLinksLoading || statsLoading || usageLoading || upgradesLoading;
     // The gallery upload code has its own dedicated page and its own summary
-    // row in the right context panel (see QrLinksSection) — exclude it here
-    // so this "Share links" list and its count only cover join-type links.
-    const shareQrLinks = qrLinks.filter((qrLink) => qrLink.targetType !== 'MEDIA_UPLOAD');
+    // row in the right context panel (see QrLinksSection), and the guest code
+    // lives on a lite event's home — exclude both here so this "Share links"
+    // list and its count only cover join-type links.
+    const shareQrLinks = qrLinks.filter(isInvitationQrLink);
 
     const handleClampNotice = useCallback((message: string) => setLimitNotice(message), []);
 

@@ -10,7 +10,8 @@ import { useQrCardExport } from '@/hooks/useQrCardExport';
 import { useQrCardTemplates } from '@/hooks/useQrCardTemplates';
 import { useEventQrLinks } from '@/hooks/useQrLinks';
 import type { QrCardTemplateDto } from '@/lib/api/types';
-import { QR_CARD_LINE_KEYS, type QrCardLine } from '@/lib/qrCard';
+import { eventHomeHref } from '@/lib/liteEvents';
+import { type QrCardLine, qrCardLineKey } from '@/lib/qrCard';
 import { routes } from '@/lib/routes';
 
 const NO_TEMPLATES: QrCardTemplateDto[] = [];
@@ -38,7 +39,7 @@ export function useQrCardScreen() {
 
     const designer = useQrCardDesigner({
         templates: templates.data?.templates ?? NO_TEMPLATES,
-        defaults: { title: activeEvent.title, line: qrLink ? t(`lines.${QR_CARD_LINE_KEYS[qrLink.targetType]}`) : '' },
+        defaults: { title: activeEvent.title, line: qrLink ? t(`lines.${qrCardLineKey(qrLink.targetType, activeEvent.modules)}`) : '' },
     });
     const exporter = useQrCardExport({ font: designer.style.headingFont, title: designer.text.title, size: designer.size });
     const lines: QrCardLine[] = [{ text: designer.text.line, tone: 'body' }];
@@ -50,7 +51,13 @@ export function useQrCardScreen() {
         status,
         unavailable,
         qrUrl: qrLink?.publicUrl ?? '',
-        backHref: qrLink?.targetType === 'MEDIA_UPLOAD' ? routes.events.tools.galleryQr(eventId) : routes.events.invitationsQr(eventId),
+        // A guest code's card goes back to the event's home.
+        backHref:
+            qrLink?.targetType === 'GUEST'
+                ? eventHomeHref(activeEvent)
+                : qrLink?.targetType === 'MEDIA_UPLOAD'
+                  ? routes.events.tools.galleryQr(eventId)
+                  : routes.events.invitationsQr(eventId),
         designer,
         exporter,
         lines,

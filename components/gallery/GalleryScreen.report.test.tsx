@@ -29,6 +29,8 @@ vi.mock('@/components/gallery/GalleryUploadSection', () => ({ GalleryUploadSecti
 vi.mock('@/components/tools/ModuleNotice', () => ({ ModuleNotice: () => null }));
 vi.mock('@/components/tools/ModulePageShell', () => ({ ModulePageShell: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
 vi.mock('@/components/ui/ConfirmActionModal', () => ({ ConfirmActionModal: () => null }));
+// A full event: the page is not a lite event's home.
+vi.mock('@/hooks/useLiteHome', () => ({ useLiteHome: () => ({ isHome: false }) }));
 vi.mock('@/components/routing/EventRouteGate', () => ({ useEventRouteContext: () => ({ eventId: 'event-1', isHost: false }) }));
 vi.mock('@/hooks/useGalleryPrint', () => ({
     usePrintAvailability: () => ({ available: false, photographers: [] }),

@@ -13,7 +13,7 @@ import { useRecentEventItems } from '@/hooks/useEventGridItems';
 import { useMemberRoleLabel } from '@/hooks/useMemberRoleLabel';
 import { formatEventListDate } from '@/lib/datetime';
 import { isEventDeleted } from '@/lib/eventLifecycle';
-import { routes } from '@/lib/routes';
+import { eventHomeHref } from '@/lib/liteEvents';
 
 const NO_ROLE = { relationshipRole: null, customRelationshipRole: null };
 
@@ -41,7 +41,7 @@ export function HomeNextEventCard({ items }: { items: EventGridItem[] }) {
                 {t('nextEvent.title')}
             </h2>
             <AppLink
-                href={routes.events.feed(member.eventId)}
+                href={eventHomeHref(event)}
                 className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card/60 transition-colors hover:border-ink-muted"
             >
                 {event.coverMedia?.mediaUrl && (

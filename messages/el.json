@@ -6413,7 +6413,8 @@
     "qrLink": {
         "default": {
             "eventJoinLabel": "Πρόσκληση εκδήλωσης",
-            "mediaUploadLabel": "Μεταφόρτωση φωτογραφιών"
+            "mediaUploadLabel": "Μεταφόρτωση φωτογραφιών",
+            "guestLabel": "Κωδικός καλεσμένων"
         }
     },
     "ReviewPrompt": {
@@ -6781,6 +6782,18 @@
         "collaboratorBrandingIncomplete": "Η κάρτα του συνεργάτη δεν είναι πλήρης.",
         "partnerBrandingNoticeOutdated": "Η ενημέρωση για τον συνεργάτη άλλαξε. Δείτε την ξανά."
     },
+    "LiteHome": {
+        "actionsTitle": "Γρήγορες ενέργειες",
+        "actions": {
+            "qr": "Κωδικός QR",
+            "share": "Κοινοποίηση συνδέσμου",
+            "download": "Λήψη όλων",
+            "upgrade": "Πλήρες StoryWall"
+        },
+        "shareCopied": "Ο σύνδεσμος αντιγράφηκε",
+        "qrSheetTitle": "Κωδικός καλεσμένων",
+        "tabsLabel": "Ενότητες"
+    },
     "GalleryPage": {
         "print": {
             "action": "Εκτύπωση",
@@ -6936,7 +6949,9 @@
         "lines": {
             "join": "Σκάναρε για να συμμετάσχεις",
             "invitation": "Σκάναρε για να ανοίξεις την πρόσκλησή σου",
-            "gallery": "Σκάναρε για να ανεβάσεις τις φωτογραφίες σου"
+            "gallery": "Σκάναρε για να ανεβάσεις τις φωτογραφίες σου",
+            "guestWish": "Σκάναρε για να αφήσεις μια ευχή",
+            "guestBoth": "Σκάναρε για να ανεβάσεις φωτογραφίες ή να αφήσεις μια ευχή"
         }
     },
     "InvitationsQrPage": {

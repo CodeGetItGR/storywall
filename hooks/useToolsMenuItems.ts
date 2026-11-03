@@ -26,6 +26,7 @@ import { useGiftAccount } from '@/hooks/useGiftAccount';
 import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { useEventVendors, useMyVendorRole } from '@/hooks/useVendors';
 import { isEventDeleted, readableModuleKeys } from '@/lib/eventLifecycle';
+import { isLiteEvent } from '@/lib/liteEvents';
 import { canEditOwnRole, ROLE_SHEET_VALUE } from '@/lib/memberRoles';
 import { isGalleryOpenToGuests, isGalleryQrFeatureEnabled } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
@@ -66,6 +67,7 @@ export function useToolsMenuItems(): ToolMenuItem[] {
     // A deleted event is download-only: the gallery archive and the wishbook
     // PDF are the only tools that still do anything.
     const isDeleted = isEventDeleted(activeEvent);
+    const isLite = isLiteEvent(activeEvent);
 
     const vendorsOn = availableModules.has('vendors');
     // The vendor page stays while the module is off: it says the tools are closed.
@@ -112,6 +114,8 @@ export function useToolsMenuItems(): ToolMenuItem[] {
             .filter((tool) => tool.key !== 'vendorQr' || hasVendorCapability(me, 'QR_READ'))
             .filter((tool) => tool.key !== 'liveRequests' || (availableModules.has('playlist') && hasVendorCapability(me, 'SONG_REQUESTS')))
             .filter((tool) => !isDeleted || tool.key === 'gallery' || tool.key === 'wishbook')
+            // A lite event (no feed in its plan) has only its gallery and wishbook; every other tool sends its host home.
+            .filter((tool) => !isLite || tool.key === 'gallery' || tool.key === 'wishbook')
             .map((tool) => {
                 const copyKey = tool.copyKey ?? tool.moduleKey;
                 const copy = copyKey && copyKey !== 'member_roles' ? moduleCopy(copyKey) : null;
@@ -155,11 +159,13 @@ export function useHostMenuItems(): ToolMenuItem[] {
     const isDraft = activeEvent.status === 'DRAFT';
     // Deleted events keep the manage page (deletion notice + billing) and nothing else.
     const isDeleted = isEventDeleted(activeEvent);
+    // A lite event has no upload or invitation codes: its guest code lives in its home's quick actions.
+    const isLite = isLiteEvent(activeEvent);
 
     const hostAdminDefinitions: { key: string; href: string; icon: LucideIcon; hidden?: boolean }[] = [
         { key: 'manage', href: routes.events.manage(activeEvent.id), icon: LayoutDashboard },
-        { key: 'galleryQr', href: routes.events.tools.galleryQr(activeEvent.id), icon: QrCode, hidden: isDeleted || !galleryQrEnabled },
-        { key: 'invitationsQr', href: routes.events.invitationsQr(activeEvent.id), icon: Ticket, hidden: isDeleted || isDraft },
+        { key: 'galleryQr', href: routes.events.tools.galleryQr(activeEvent.id), icon: QrCode, hidden: isDeleted || isLite || !galleryQrEnabled },
+        { key: 'invitationsQr', href: routes.events.invitationsQr(activeEvent.id), icon: Ticket, hidden: isDeleted || isDraft || isLite },
         { key: 'vendors', href: routes.events.manageVendors(activeEvent.id), icon: Store, hidden: isDeleted || isDraft || !vendorsOn },
         { key: 'announcement', href: routes.events.tools.announcement(activeEvent.id), icon: Megaphone, hidden: isDeleted || isDraft || !postsOn },
         { key: 'help', href: routes.events.manage(activeEvent.id, { tab: 'help' }), icon: HelpCircle, hidden: isDeleted },
