@@ -6,10 +6,11 @@ import { LiteQuickActions } from '@/components/liteHome/LiteQuickActions';
 import type { LiteHomeState } from '@/hooks/useLiteHome';
 
 // A lite event's home: the event's banner, the Bundle's Gallery / Wishbook tabs and the host's quick actions,
-// in place of a module page's back-link header. The banner's title is the page's h1.
+// in place of a module page's back-link header. The banner's title is the page's h1. The bottom gap keeps the
+// page's own content (the gallery's album tabs, say) apart from the header's tabs and actions.
 export function LiteHomeHeader({ home }: { home: LiteHomeState }) {
     return (
-        <>
+        <div className="mb-6">
             {/* Banner */}
             <section className="mt-3">
                 <Banner
@@ -25,6 +26,6 @@ export function LiteHomeHeader({ home }: { home: LiteHomeState }) {
 
             {/* Quick actions */}
             {home.actions.length > 0 && <LiteQuickActions home={home} />}
-        </>
+        </div>
     );
 }
