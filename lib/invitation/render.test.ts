@@ -32,6 +32,19 @@ describe('buildRenderContext', () => {
         expect(ctx.forcePreset).toBe(false);
     });
 
+    it('takes the event date from the first date section, even when hidden', () => {
+        expect(ctx.eventIso).toBe('2026-07-12T18:00');
+        const hidden = { ...SAMPLE_SECTIONS.date, visible: false };
+        expect(buildRenderContext({ ...SAMPLE_DOCUMENT, sections: [hidden] }, SAMPLE_THEME, media).eventIso).toBe('2026-07-12T18:00');
+        expect(buildRenderContext({ ...SAMPLE_DOCUMENT, sections: [blank] }, SAMPLE_THEME, media).eventIso).toBeUndefined();
+    });
+
+    it('takes its fixed labels from the date section language', () => {
+        expect(ctx.labels.countdownDays).toBe('ΜΕΡΕΣ');
+        const english = { ...SAMPLE_SECTIONS.date, data: { ...SAMPLE_SECTIONS.date.data, displayLanguage: 'en' as const } };
+        expect(buildRenderContext({ ...SAMPLE_DOCUMENT, sections: [english] }, SAMPLE_THEME, media).labels.countdownDays).toBe('DAYS');
+    });
+
     it('lets a host preset replace every font', () => {
         const document = { ...SAMPLE_DOCUMENT, overrides: { typographyPresetId: 'p1', textColor: '#111111' } };
         const forced = buildRenderContext(document, SAMPLE_THEME, media, { titleFont: 'Cinzel', bodyFont: 'Lora' });
