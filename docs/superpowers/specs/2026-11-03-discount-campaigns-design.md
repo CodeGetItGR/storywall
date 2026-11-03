@@ -1,7 +1,7 @@
 # Discount campaigns — design
 
 Date: 2026-11-03
-Status: design approved in chat; wording in "Copy" awaits sign-off
+Status: design and wording approved. Jira epic KAN-113.
 
 ## Goal
 
@@ -34,11 +34,11 @@ Table `discount_campaigns` (next free migration number in `guestwall-be`):
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid | |
-| `name` | varchar(100) | Admin only. |
+| `name` | varchar(50) | Admin only. Short enough that a link's name, `<name> · Instagram story · Paid · EL`, fits the links' 80 character limit. |
 | `percent` | numeric(5,2) | Above 0, below 100. |
 | `label` | varchar(100) null | Shown at checkout as the discount's name, like a plan's `discountLabel`. |
 | `link_name` | varchar(60) | The links' base name, see "Links". Latin letters, digits, dot, dash, underscore. Unique, and fixed after creation. |
-| `starts_at` | timestamptz null | Null means from now. |
+| `starts_at` | timestamptz | An empty start on the form saves as now. A live campaign keeps its start. |
 | `ends_at` | timestamptz | Must be after `starts_at` and in the future when saved. |
 | `active` | boolean | False once stopped. |
 
@@ -49,6 +49,10 @@ Status is derived, never stored, using the site notice words: `LIVE`, `SCHEDULED
 A save is rejected when:
 - its window overlaps another campaign that is not off;
 - the percent would take any live duration of a public plan below the payment provider's minimum charge. The error names the plans.
+
+An ended or stopped campaign can't be edited, and a stopped one can't be restarted.
+
+The minimum price error comes from the server in the admin's language, because only the server knows which plans it names.
 
 Every create, edit, stop and delete goes in the admin audit log. Only a campaign that has not started can be deleted. Stopping is immediate and goes through a confirmation modal.
 
@@ -82,7 +86,7 @@ The banner is **generated from the campaign, not stored as a site notice**, so t
 
 `useSiteNoticeBar` adds the campaign as an `OFFER` candidate for `PUBLIC` and `HOST`:
 - It ranks above other `OFFER` notices and below `WARNING` and `CRITICAL`. The built-in outage notice also takes priority.
-- Closing it uses the existing dismissal cookie, under the key `campaign:<id>`.
+- Closing it uses the existing dismissal cookie, under the key `<id>:1`, the format that cookie accepts.
 - `SiteNoticeBanner` gains an optional countdown, using `hooks/useCountdown.ts`.
 - The link goes to the viewer's language landing page plus `#pricing`. That page doesn't redirect signed-in users, so it works for hosts too. Its plan buttons open the event creation form.
 
