@@ -3126,7 +3126,7 @@
             "moduleUsage": "Χρήση λειτουργιών",
             "plans": "Πλάνα",
             "paidServices": "Υπηρεσίες επί πληρωμή",
-            "shop": "Κατάστημα",
+            "inviart": "INVIART",
             "discountCodes": "Κωδικοί έκπτωσης",
             "guestOffer": "Προσφορά καλεσμένων",
             "partnerApplications": "Αιτήσεις",
@@ -3154,6 +3154,14 @@
             "campaignOverview": "Επισκόπηση καμπανιών",
             "outreach": "Προσέγγιση συνεργατών",
             "outreachRequests": "Αιτήματα"
+        },
+        "inviart": {
+            "title": "Συλλογές INVIART",
+            "occasion": "Περίσταση",
+            "collection": "Handle συλλογής",
+            "notSet": "Δεν έχει οριστεί",
+            "hint": "Από τη διεύθυνση της συλλογής στο Shopify. Αφήστε το κενό για να μη φαίνονται κάρτες.",
+            "invalid": "Χρησιμοποιήστε πεζά γράμματα, αριθμούς και παύλες."
         },
         "outreach": {
             "cityNames": {
@@ -4644,63 +4652,6 @@
                 "reset": "Επαναφορά προεπιλογής",
                 "resetTitle": "Επαναφορά του {module} στην προεπιλογή;",
                 "resetBody": "Το προεπιλεγμένο όνομα και η περιγραφή εμφανίζονται ξανά παντού για αυτόν τον τύπο εκδήλωσης."
-            }
-        },
-        "shop": {
-            "title": "Κατάστημα",
-            "visible": "Εμφανίζεται στο κατάστημα",
-            "visibility": "Ορατότητα",
-            "shown": "Εμφανίζεται",
-            "hidden": "Δεν εμφανίζεται",
-            "slugInvalid": "Χρησιμοποιήστε 2–40 πεζά λατινικά γράμματα, αριθμούς ή παύλες.",
-            "stores": {
-                "title": "Καταστήματα Shopify",
-                "add": "Προσθήκη καταστήματος",
-                "empty": "Δεν υπάρχουν καταστήματα ακόμα.",
-                "createTitle": "Προσθήκη καταστήματος",
-                "editTitle": "Επεξεργασία καταστήματος",
-                "name": "Όνομα",
-                "slug": "Σύντομο όνομα",
-                "slugHint": "Χρησιμοποιείται στον σύνδεσμο του καταστήματος.",
-                "domain": "Διεύθυνση Shopify",
-                "domainInvalid": "Χρησιμοποιήστε τη διεύθυνση yourstore.myshopify.com.",
-                "clientId": "Client ID",
-                "clientSecret": "Client secret",
-                "secretUnchanged": "Χωρίς αλλαγή",
-                "products": "Προϊόντα",
-                "status": "Κατάσταση",
-                "synced": "Συγχρονίστηκε {time}",
-                "syncFailed": "Αποτυχία συγχρονισμού",
-                "syncing": "Συγχρονισμός…",
-                "syncNow": "Συγχρονισμός τώρα",
-                "syncStarted": "Ο συγχρονισμός ξεκίνησε",
-                "remove": "Αφαίρεση καταστήματος",
-                "keep": "Διατήρηση καταστήματος",
-                "removeTitle": "Αφαίρεση του {name};",
-                "removeBody": "Τα προϊόντα του φεύγουν από το κατάστημα."
-            },
-            "categories": {
-                "title": "Κατηγορίες",
-                "add": "Προσθήκη κατηγορίας",
-                "empty": "Δεν υπάρχουν ακόμη κατηγορίες.",
-                "createTitle": "Νέα κατηγορία",
-                "editTitle": "Επεξεργασία κατηγορίας",
-                "name": "Όνομα",
-                "nameEn": "Όνομα (Αγγλικά)",
-                "nameEl": "Όνομα (Ελληνικά)",
-                "slug": "Σύντομο όνομα",
-                "slugHint": "Χρησιμοποιείται στον σύνδεσμο του καταστήματος.",
-                "order": "Σειρά",
-                "orderInvalid": "Χρησιμοποιήστε έναν ακέραιο από 0 έως {max}.",
-                "collections": "Συλλογές",
-                "collectionsLimit": "Έως {max} συλλογές.",
-                "searchCollections": "Αναζήτηση συλλογών",
-                "noCollections": "Δεν βρέθηκαν συλλογές.",
-                "noStores": "Προσθέστε πρώτα ένα κατάστημα.",
-                "delete": "Διαγραφή κατηγορίας",
-                "keep": "Διατήρηση κατηγορίας",
-                "deleteTitle": "Διαγραφή της κατηγορίας {name};",
-                "deleteBody": "Τα προϊόντα της παραμένουν στο Shopify."
             }
         },
         "appReviews": {
@@ -6814,9 +6765,6 @@
         "vendorLimitReached": "Η εκδήλωση έχει ήδη όσους επαγγελματίες χωράει.",
         "vendorIsHost": "Διοργανώνετε αυτή την εκδήλωση, οπότε δεν μπορείτε να μπείτε ως επαγγελματίας.",
         "alreadyAVendor": "Συμμετέχετε ήδη σε αυτή την εκδήλωση ως επαγγελματίας.",
-        "shopStoreDomainTaken": "Αυτό το κατάστημα είναι ήδη συνδεδεμένο.",
-        "shopSlugTaken": "Αυτό το σύντομο όνομα χρησιμοποιείται ήδη.",
-        "shopCredentialsInvalid": "Το Shopify δεν δέχτηκε το client ID ή το secret.",
         "partnerApplicationPending": "Έχουμε ήδη την αίτησή σας. Θα σας απαντήσουμε με email.",
         "partnerApplicationNotPending": "Αυτή η αίτηση έχει ήδη αποφασιστεί.",
         "foundingSpotsFull": "Δεν υπάρχουν άλλες ιδρυτικές θέσεις.",
@@ -10024,22 +9972,10 @@
     },
     "SaveMyDatePreview": {
         "metaTitle": "Προεπισκόπηση πρόσκλησης"
-    },
-    "Shop": {
-        "metaTitle": "Κατάστημα | StoryWall",
-        "productMetaTitle": "{title} | Κατάστημα StoryWall",
-        "title": "Κατάστημα",
-        "all": "Όλα",
-        "categoriesLabel": "Κατηγορίες",
-        "empty": "Δεν υπάρχουν προϊόντα ακόμα.",
-        "digital": "Ψηφιακό",
-        "printed": "Έντυπο",
-        "pagesLabel": "Σελίδες",
-        "previous": "Προηγούμενη",
-        "next": "Επόμενη",
-        "pageOf": "Σελίδα {page} από {total}",
-        "back": "Κατάστημα",
-        "buyAt": "Αγορά στο {store}",
-        "home": "Αρχική StoryWall"
+    },
+    "Inviart": {
+        "heading": "Προσκλητήρια και άλλα από την INVIART",
+        "cta": "Δείτε το στην INVIART",
+        "was": "Αρχική τιμή"
     }
 }

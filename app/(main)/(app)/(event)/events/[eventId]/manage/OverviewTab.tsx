@@ -1,5 +1,6 @@
 import { useTranslations } from 'next-intl';
 
+import { InviartOverviewSection } from '@/components/inviart/InviartOverviewSection';
 import { HostContextSections } from '@/components/layout/right-context-panel/HostContextSections';
 import { CoverageStatusStrip } from '@/components/manage/CoverageStatusStrip';
 import { ManageDraftOverviewSkeleton } from '@/components/manage/ManageSkeletons';
@@ -136,6 +137,9 @@ export default function OverviewTab({
             <div className="border-t border-border pt-4">
                 <HostContextSections panel={hostContextPanel} showMembersUsage={false} />
             </div>
+
+            {/* INVIART */}
+            <InviartOverviewSection eventType={eventType} />
         </div>
     );
 }
