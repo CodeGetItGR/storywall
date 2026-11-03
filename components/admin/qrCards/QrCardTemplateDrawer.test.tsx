@@ -60,24 +60,12 @@ function state(overrides: Record<string, unknown> = {}) {
             nameEl: 'Λινό',
             eventTypes: ['WEDDING'],
             archived: false,
-            textColor: '#5A3E2B',
-            headingFontId: '',
-            codeColor: '#1F3A5A',
-            centerLogo: false,
         },
         errors: {},
         failure: null,
-        fileError: null,
-        hasPendingFile: false,
-        textColorInputValue: '#5a3e2b',
-        codeColorInputValue: '#1f3a5a',
-        codeContrastRatio: 11.2,
         availability: 'AVAILABLE',
         previewStyle: PLAIN_QR_CARD_STYLE,
         previewTitle: 'Linen',
-        fontOptions: [],
-        hasUsableFonts: true,
-        fontsStatus: 'ready',
         isSaving: false,
         savedTemplate: LINEN,
         layoutEditorOpen: false,
@@ -86,9 +74,7 @@ function state(overrides: Record<string, unknown> = {}) {
         handleLayoutSaved: vi.fn(),
         handleFieldChange: vi.fn(),
         handleEventTypeChange: vi.fn(),
-        handleCenterLogoChange: vi.fn(),
         handleAvailabilityChange: vi.fn(),
-        handleFileChange: vi.fn(),
         handleSubmit: vi.fn((event: Event) => event.preventDefault()),
         ...overrides,
     };
@@ -107,23 +93,10 @@ describe('QrCardTemplateDrawer', () => {
         renderDrawer();
         expect(screen.getByRole('heading', { name: 'Linen' })).toBeInTheDocument();
         expect(screen.getByDisplayValue('Λινό')).toBeInTheDocument();
-        expect(screen.getByLabelText('codeColorHex')).toHaveValue('#1F3A5A');
         expect(screen.getByRole('checkbox', { name: 'Wedding' })).toBeChecked();
-        expect(screen.getByText('codeContrastOk {"ratio":"11.20"}')).toBeInTheDocument();
-    });
-
-    it('warns while the code colour is too light', () => {
-        state({ codeContrastRatio: 3.2 });
-        renderDrawer();
-        expect(screen.getByText('codeContrastLow {"ratio":"3.20","min":"4.5"}')).toBeInTheDocument();
-    });
-
-    it('ties the contrast hint to the code colour inputs', () => {
-        state({ codeContrastRatio: 3.2 });
-        renderDrawer();
-        const hint = 'codeContrastLow {"ratio":"3.20","min":"4.5"}';
-        expect(screen.getByLabelText('codeColorHex')).toHaveAccessibleDescription(hint);
-        expect(screen.getByLabelText('codeColor')).toHaveAccessibleDescription(hint);
+        // The look is the layout editor's.
+        expect(screen.queryByLabelText('codeColorHex')).toBeNull();
+        expect(screen.queryByText('artwork')).toBeNull();
     });
 
     it('titles a design saved from a create with its name', () => {
@@ -132,17 +105,10 @@ describe('QrCardTemplateDrawer', () => {
         expect(screen.getByRole('heading', { name: 'Marble' })).toBeInTheDocument();
     });
 
-    it('turns the logo on', () => {
-        const form = state();
+    it("shows the server's detail for a rejected name", () => {
+        state({ failure: { kind: 'other', error: new ApiError(400, { errorCode: 3091, detail: 'The Greek name is too long.' }) } });
         renderDrawer();
-        fireEvent.click(screen.getByRole('switch', { name: 'centerLogo' }));
-        expect(form.handleCenterLogoChange).toHaveBeenCalledWith(true);
-    });
-
-    it("shows the server's detail for rejected artwork", () => {
-        state({ failure: { kind: 'other', error: new ApiError(400, { errorCode: 3111, detail: 'The artwork must be A6 portrait.' }) } });
-        renderDrawer();
-        expect(screen.getByRole('alert')).toHaveTextContent('The artwork must be A6 portrait.');
+        expect(screen.getByRole('alert')).toHaveTextContent('The Greek name is too long.');
     });
 
     it('asks for availability only on a saved design', () => {
@@ -159,11 +125,10 @@ describe('QrCardTemplateDrawer', () => {
         expect(drawerState.current.openLayoutEditor).toHaveBeenCalled();
     });
 
-    it('asks to save a new design before its layout', () => {
+    it('leaves the design button off a new design, whose save opens the editor', () => {
         state({ isCreate: true, savedTemplate: null });
         renderDrawer(null);
-        expect(screen.getByRole('button', { name: 'edit' })).toBeDisabled();
-        expect(screen.getByText('editSaveFirst')).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'edit' })).toBeNull();
     });
 
     it('shows the editor while it is open', () => {

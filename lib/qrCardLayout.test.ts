@@ -15,6 +15,7 @@ import {
     qrCardHitOrder,
     type QrCardLayout,
     qrCardLayoutOf,
+    qrCardLineWording,
     rectsOverlap,
     removeField,
     resizeElement,
@@ -22,6 +23,7 @@ import {
     sameQrCardLayout,
     setCodeOptions,
     setLinesOptions,
+    setLineWording,
     setTitleOptions,
     setTitleShown,
     snapPosition,
@@ -229,5 +231,21 @@ describe('sameQrCardLayout', () => {
         expect(sameQrCardLayout(withText, updateField(withText, 'a', { text: { el: '', en: '' } }))).toBe(true);
         expect(sameQrCardLayout(withText, updateField(withText, 'a', { text: { en: 'x', el: '' } }))).toBe(false);
         expect(sameQrCardLayout(L, withText)).toBe(false);
+    });
+});
+
+describe('line wording', () => {
+    it('sets one language at a time and drops emptied ones', () => {
+        const worded = setLineWording(setLineWording(L, 'join', 'en', 'Scan to celebrate'), 'gift', 'el', 'Σκάναρε');
+        expect(worded.lines.text).toEqual({ join: { en: 'Scan to celebrate' }, gift: { el: 'Σκάναρε' } });
+        expect(qrCardLineWording(worded, 'join', 'en')).toBe('Scan to celebrate');
+        expect(qrCardLineWording(worded, 'join', 'el')).toBeNull();
+        const cleared = setLineWording(setLineWording(worded, 'join', 'en', ''), 'gift', 'el', '');
+        expect(cleared.lines.text).toBeNull();
+        expect(sameQrCardLayout(cleared, L)).toBe(true);
+    });
+
+    it('reads blank wording as the standard line', () => {
+        expect(qrCardLineWording(setLineWording(L, 'join', 'en', '   '), 'join', 'en')).toBeNull();
     });
 });
