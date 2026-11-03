@@ -13,7 +13,8 @@ export type LandingStoryMedia = {
     main: LandingImageAsset;
     // The occasion page this row links to, when it is live (lib/occasions/occasions.ts).
     occasion?: EventTypeConvention;
-    // The event type the row's plans link picks in the landing pricing; no link without one.
+    // The event type the row's plans link picks in the landing pricing. The link shows only on a row
+    // without a live occasion page, and not without this.
     pricingEventType?: EventTypeConvention;
     // Event type whose theme presets are shown under the row.
     themeEventType?: EventTypeConvention;

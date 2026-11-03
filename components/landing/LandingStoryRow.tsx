@@ -38,7 +38,9 @@ export function LandingStoryRow({ children, copy, demoLabel, index, locale, medi
     const demo = media.demoEventTypeSlug ? { href: routes.demoEventType(media.demoEventTypeSlug), label: demoLabel } : undefined;
     const occasion = occasions.find((candidate) => candidate.eventType === media.occasion);
     const more = occasion && copy.occasionLink ? { href: occasionPath(occasion, locale), label: copy.occasionLink } : undefined;
-    const plans = media.pricingEventType && plansLabel ? { eventTypeSlug: eventTypeSlug(media.pricingEventType), label: plansLabel } : undefined;
+    // A row links to its occasion page or down to the plans, never both.
+    const plans =
+        !more && media.pricingEventType && plansLabel ? { eventTypeSlug: eventTypeSlug(media.pricingEventType), label: plansLabel } : undefined;
 
     return (
         <article
