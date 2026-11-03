@@ -9,10 +9,19 @@ import { usePlanMarketingCopy } from '@/hooks/usePlanMarketingCopy';
 import type { EventTypeConvention } from '@/lib/api/types';
 import { eventTypeSlug } from '@/lib/eventTypeSlug';
 import { resolveLandingCategoryPlans } from '@/lib/landingCategories';
-import { buildLandingPlan, type LandingPlan } from '@/lib/landingPricing';
+import { buildLandingRow, cheapestLandingPrice, type LandingPlan } from '@/lib/landingPricing';
+import { splitLitePlans } from '@/lib/planTiers';
 
-// One event type in the landing pricing picker. id is its LANDING_EVENT_PARAM value.
-export type LandingPricingEventType = { id: string; eventTypeKey: EventTypeConvention; label: string; plans: LandingPlan[] };
+// One event type in the landing pricing picker. id is its LANDING_EVENT_PARAM value. plans are the full
+// plans; litePlans (no posts) are their own row behind the teaser, with liteFromPrice their cheapest price.
+export type LandingPricingEventType = {
+    id: string;
+    eventTypeKey: EventTypeConvention;
+    label: string;
+    plans: LandingPlan[];
+    litePlans: LandingPlan[];
+    liteFromPrice: string | null;
+};
 // A landing category: only groups its event types in the picker. Each type shows its own plans.
 export type LandingPricingGroup = { id: string; label: string; items: LandingPricingEventType[] };
 type LandingPricingPlans = { groups: LandingPricingGroup[] | null; defaultEventTypeId: string | null };
@@ -38,22 +47,27 @@ export function useLandingPricingPlans(): LandingPricingPlans {
                     seen.add(eventTypeKey);
                     // Only plans that get a card come back (see isLandingPlanOnSale).
                     const { plans } = resolveLandingCategoryPlans(data.planTiers, [eventTypeKey], data.memberRolesByEventType);
-                    // "Everything in X" rolls up the previous card when the plan has all its modules.
-                    const landingPlans = plans.flatMap((plan, index) => {
-                        const before = plans.slice(0, index);
-                        const landingPlan = buildLandingPlan(
-                            plan,
-                            before.at(-1),
-                            data.modules,
-                            data.media,
-                            moduleName,
-                            copy,
-                            data.memberRolesByEventType,
+                    // Each row rolls a card up into the previous one in it ("Everything in X"). A type with
+                    // only lite plans shows them as its plans, with no teaser.
+                    const split = splitLitePlans(plans);
+                    const hasFull = split.full.length > 0;
+                    const row = (rowPlans: typeof plans) =>
+                        buildLandingRow(rowPlans, data.modules, data.media, moduleName, copy, data.memberRolesByEventType).map(
+                            (entry) => entry.presentation,
                         );
-                        return landingPlan === null ? [] : [landingPlan];
-                    });
+                    const landingPlans = row(hasFull ? split.full : split.lite);
                     if (landingPlans.length === 0) return [];
-                    return [{ id: eventTypeSlug(eventTypeKey), eventTypeKey, label: eventTypeCopy(eventTypeKey).name, plans: landingPlans }];
+                    const litePlans = hasFull ? row(split.lite) : [];
+                    return [
+                        {
+                            id: eventTypeSlug(eventTypeKey),
+                            eventTypeKey,
+                            label: eventTypeCopy(eventTypeKey).name,
+                            plans: landingPlans,
+                            litePlans,
+                            liteFromPrice: litePlans.length > 0 ? cheapestLandingPrice(split.lite) : null,
+                        },
+                    ];
                 });
                 return { id: category.id, isDefault: category.isDefault, label: localizedText(category.name), items };
             })

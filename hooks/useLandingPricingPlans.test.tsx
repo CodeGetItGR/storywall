@@ -247,6 +247,56 @@ describe('useLandingPricingPlans', () => {
         expect(reunion.plans[0].includedFeatures).toBeUndefined();
     });
 
+    it('splits lite plans (no posts) into their own row and prices the teaser from the cheapest', async () => {
+        const config = makeConfig();
+        config.modules = [
+            { id: 'm1', moduleKey: 'gallery', name: 'Gallery', description: null, isEnabled: true, sortOrder: 0 },
+            { id: 'm2', moduleKey: 'posts', name: 'Posts', description: null, isEnabled: true, sortOrder: 1 },
+            { id: 'm3', moduleKey: 'wishbook', name: 'Wishbook', description: null, isEnabled: true, sortOrder: 2 },
+        ];
+        const option = (id: string, amount: number) => [
+            { id, kind: 'INITIAL' as const, months: 3, priceAmountMinor: amount, promoPriceAmountMinor: null, sortOrder: 0, active: true },
+        ];
+        config.planTiers = [
+            planTier({ id: 'l1', code: 'QR', name: 'QR', sortOrder: 0, moduleKeys: ['gallery'], initialOptions: option('o1', 4900) }),
+            planTier({
+                id: 'l2',
+                code: 'BUNDLE',
+                name: 'Bundle',
+                sortOrder: 1,
+                moduleKeys: ['gallery', 'wishbook'],
+                initialOptions: option('o2', 6900),
+            }),
+            planTier({ id: 'f1', code: 'START', name: 'START', sortOrder: 2, moduleKeys: ['gallery', 'posts'], initialOptions: option('o3', 7900) }),
+        ];
+        config.landingCategories = [{ id: 'wed', name: { en: 'Weddings' }, description: {}, isDefault: true, eventTypeKeys: ['WEDDING'] }];
+        publicGet.mockResolvedValue(config);
+
+        const { result } = renderHook(() => useLandingPricingPlans(), { wrapper });
+
+        await waitFor(() => expect(result.current.groups).not.toBeNull());
+        const wedding = result.current.groups?.[0].items[0];
+        expect(wedding?.plans.map((plan) => plan.code)).toEqual(['START']);
+        expect(wedding?.plans[0].features).toEqual(['Gallery', 'Posts']);
+        expect(wedding?.litePlans.map((plan) => plan.code)).toEqual(['QR', 'BUNDLE']);
+        expect(wedding?.litePlans[1].features).toEqual(['Everything in QR', 'Wishbook']);
+        expect(wedding?.liteFromPrice).toBe('49€');
+    });
+
+    it('has no lite row or price for a type without lite plans', async () => {
+        const config = makeConfig();
+        config.landingCategories = [{ id: 'wed', name: { en: 'Weddings' }, description: {}, isDefault: true, eventTypeKeys: ['WEDDING'] }];
+        config.planTiers = [planTier({ moduleKeys: ['gallery', 'posts'] })];
+        publicGet.mockResolvedValue(config);
+
+        const { result } = renderHook(() => useLandingPricingPlans(), { wrapper });
+
+        await waitFor(() => expect(result.current.groups).not.toBeNull());
+        const wedding = result.current.groups?.[0].items[0];
+        expect(wedding?.litePlans).toEqual([]);
+        expect(wedding?.liteFromPrice).toBeNull();
+    });
+
     it('keeps the same groups across renders while the config is unchanged', async () => {
         const config = makeConfig();
         config.landingCategories = [{ id: 'wed', name: { en: 'Weddings' }, description: {}, isDefault: true, eventTypeKeys: ['WEDDING'] }];

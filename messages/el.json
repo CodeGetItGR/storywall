@@ -7430,6 +7430,7 @@
             "guestsUnlimited": "Απεριόριστοι χρήστες",
             "storageUnlimited": "Απεριόριστος χώρος",
             "mediaUnlimited": "Απεριόριστο",
+            "liteTeaser": "Μόνο φωτογραφίες ή ευχές; Από {price}",
             "everythingIn": "Όλα όσα περιλαμβάνει το {plan}",
             "scheduleSessions": "{count, plural, one {έως # ενότητα} other {έως # ενότητες}}",
             "scheduleSessionsUnlimited": "απεριόριστες ενότητες",

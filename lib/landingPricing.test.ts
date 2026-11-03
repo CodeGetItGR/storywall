@@ -9,6 +9,7 @@ import type {
 } from '@/lib/api/types';
 import {
     buildLandingPlan,
+    cheapestLandingPrice,
     formatLandingListPrice,
     formatLandingOptionPrice,
     type LandingPlan,
@@ -370,5 +371,24 @@ describe('buildLandingPlan member roles line', () => {
 
         expect(result?.features).toEqual(['Everything in START', '3 member roles (a, b) + your own']);
         expect(result?.includedFeatures).toBeUndefined();
+    });
+});
+
+describe('cheapestLandingPrice', () => {
+    it('is the cheapest live duration across the plans, after promotions', () => {
+        const dear = makePlan({ code: 'DEAR', initialOptions: [makeOption({ id: 'a', priceAmountMinor: 6900 })] });
+        const cheap = makePlan({
+            code: 'CHEAP',
+            initialOptions: [
+                makeOption({ id: 'b', priceAmountMinor: 5900 }),
+                makeOption({ id: 'c', months: 6, priceAmountMinor: 4900, sortOrder: 1 }),
+            ],
+        });
+        expect(cheapestLandingPrice([dear, cheap])).toBe('49€');
+    });
+
+    it('is null without a plan on sale', () => {
+        expect(cheapestLandingPrice([])).toBeNull();
+        expect(cheapestLandingPrice([makePlan({ initialOptions: [] })])).toBeNull();
     });
 });

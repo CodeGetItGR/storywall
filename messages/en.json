@@ -7288,6 +7288,7 @@
             "guestsUnlimited": "Unlimited guests",
             "storageUnlimited": "Unlimited storage",
             "mediaUnlimited": "Unlimited",
+            "liteTeaser": "Just photos or wishes? From {price}",
             "everythingIn": "Everything in {plan}",
             "scheduleSessions": "{count, plural, one {up to # session} other {up to # sessions}}",
             "scheduleSessionsUnlimited": "unlimited sessions",

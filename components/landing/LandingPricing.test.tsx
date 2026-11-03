@@ -45,14 +45,32 @@ const GROUPS: LandingPricingGroup[] = [
                 eventTypeKey: 'WEDDING',
                 label: 'Wedding',
                 plans: [landingPlan('START'), landingPlan('STORY'), landingPlan('SIGNATURE')],
+                litePlans: [landingPlan('QR'), landingPlan('BUNDLE')],
+                liteFromPrice: '49€',
             },
-            { id: 'baby-shower', eventTypeKey: 'BABY_SHOWER', label: 'Baby shower', plans: [landingPlan('SHOWER')] },
+            {
+                id: 'baby-shower',
+                eventTypeKey: 'BABY_SHOWER',
+                label: 'Baby shower',
+                plans: [landingPlan('SHOWER')],
+                litePlans: [],
+                liteFromPrice: null,
+            },
         ],
     },
     {
         id: 'vip',
         label: 'VIP',
-        items: [{ id: 'reunion', eventTypeKey: 'REUNION', label: 'Reunion', plans: [landingPlan('GOLD'), landingPlan('PLATINUM')] }],
+        items: [
+            {
+                id: 'reunion',
+                eventTypeKey: 'REUNION',
+                label: 'Reunion',
+                plans: [landingPlan('GOLD'), landingPlan('PLATINUM')],
+                litePlans: [],
+                liteFromPrice: null,
+            },
+        ],
     },
 ];
 
@@ -86,6 +104,27 @@ describe('LandingPricing', () => {
             '/events/new?step=details&type=wedding&plan=SIGNATURE&option=o',
         ]);
         expect(screen.getByRole('link', { name: /choose.*STORY/ })).toBeInTheDocument();
+    });
+
+    it('keeps the lite plans behind the teaser until it is opened, and closes them on a type switch', async () => {
+        state.result = { groups: GROUPS, defaultEventTypeId: 'wedding' };
+        render(<LandingPricing />);
+
+        const teaser = screen.getByRole('button', { name: 'liteTeaser' });
+        expect(teaser).toHaveAttribute('aria-expanded', 'false');
+        expect(cardNames()).toEqual(['START', 'STORY', 'SIGNATURE']);
+
+        fireEvent.click(teaser);
+        expect(teaser).toHaveAttribute('aria-expanded', 'true');
+        expect(cardNames()).toEqual(['START', 'STORY', 'SIGNATURE', 'QR', 'BUNDLE']);
+        expect(screen.getByRole('link', { name: /choose.*BUNDLE/ })).toHaveAttribute(
+            'href',
+            '/events/new?step=details&type=wedding&plan=BUNDLE&option=o',
+        );
+
+        await act(async () => fireEvent.click(screen.getByRole('combobox', { name: 'eventTypeLabel' })));
+        await act(async () => fireEvent.click(screen.getByRole('option', { name: 'Baby shower' })));
+        expect(screen.queryByRole('button', { name: 'liteTeaser' })).not.toBeInTheDocument();
     });
 
     it('opens on the type in ?event=', () => {

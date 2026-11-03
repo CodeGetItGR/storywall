@@ -15,7 +15,8 @@ export function QrWeddingPlans({ chooseLabel, durationGroup }: { chooseLabel: st
 
     return (
         <div className="mx-auto mt-12 grid grid-cols-3 gap-[clamp(24px,3vw,48px)] max-[1051px]:gap-4 max-[901px]:max-w-140 max-[901px]:grid-cols-1 max-[901px]:gap-5.5 max-[781px]:mt-8 max-[601px]:max-w-120">
-            {active.plans.map((plan, index) => (
+            {/* Task D picks the QR page's plans; until then every plan shows, the lite ones first. */}
+            {[...active.litePlans, ...active.plans].map((plan, index) => (
                 <QrWeddingPlanCard
                     chooseLabel={chooseLabel}
                     durationGroupLabel={durationGroup.replace('{plan}', plan.name)}

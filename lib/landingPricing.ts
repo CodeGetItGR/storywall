@@ -233,3 +233,35 @@ export function buildLandingPlan(
         defaultDurationId: defaultDuration.id,
     };
 }
+
+// A plan with the card built for it.
+export type LandingRowEntry = { config: PlanTierResponseDto; presentation: LandingPlan };
+
+// One row of cards: each plan rolls up into the one before it in the row. A plan with nothing on sale gets no card.
+export function buildLandingRow(
+    plans: PlanTierResponseDto[],
+    modules: PlatformModuleResponseDto[],
+    media: AppMediaConfigDto,
+    moduleName: ModuleCardLabel,
+    copy: LandingPlanCopy,
+    memberRoles: MemberRoleCatalog = {},
+): LandingRowEntry[] {
+    return plans.flatMap((plan, index) => {
+        const presentation = buildLandingPlan(plan, plans[index - 1], modules, media, moduleName, copy, memberRoles);
+        return presentation ? [{ config: plan, presentation }] : [];
+    });
+}
+
+// The cheapest price across the plans' live durations, after promotions, formatted like a card's price.
+// Null when no plan has a duration on sale.
+export function cheapestLandingPrice(plans: PlanTierResponseDto[]): string | null {
+    const cheapest = plans
+        .flatMap((plan) =>
+            liveInitialOptions(plan).flatMap((option) => {
+                const price = formatLandingOptionPrice(plan, option);
+                return price === null ? [] : [{ amountMinor: promotedOptionAmountMinor(option, plan), price }];
+            }),
+        )
+        .reduce<{ amountMinor: number; price: string } | null>((best, entry) => (!best || entry.amountMinor < best.amountMinor ? entry : best), null);
+    return cheapest?.price ?? null;
+}
