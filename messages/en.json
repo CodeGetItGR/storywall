@@ -637,6 +637,11 @@
         "defaultHeroImageAlt": "Event cover photo",
         "mediaUploadEyebrow": "Share your photos",
         "guestCode": {
+            "uploadLine": "Add your photos and videos.",
+            "uploadButton": "Upload photos",
+            "or": "or",
+            "wishLine": "Write a message for their wishbook.",
+            "wishButton": "Leave a wish",
             "wish": {
                 "nameLabel": "Your name",
                 "messageLabel": "Your wish",
@@ -9250,6 +9255,7 @@
     },
     "ImageAlt": {
         "gift": "Gift",
+        "photoUpload": "Photo upload",
         "wishbook": "Wishbook",
         "eventCover": "Event cover photo",
         "eventCoverOf": "Cover photo of {name}",

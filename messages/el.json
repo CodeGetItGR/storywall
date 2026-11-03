@@ -759,6 +759,11 @@
         "defaultHeroImageAlt": "Φωτογραφία εκδήλωσης",
         "mediaUploadEyebrow": "Μοιραστείτε φωτογραφίες",
         "guestCode": {
+            "uploadLine": "Προσθέστε τις φωτογραφίες και τα βίντεό σας.",
+            "uploadButton": "Ανεβάστε φωτογραφίες",
+            "or": "ή",
+            "wishLine": "Γράψτε ένα μήνυμα για το βιβλίο ευχών τους.",
+            "wishButton": "Αφήστε μια ευχή",
             "wish": {
                 "nameLabel": "Το όνομά σας",
                 "messageLabel": "Η ευχή σας",
@@ -9267,6 +9272,7 @@
     },
     "ImageAlt": {
         "gift": "Δώρο",
+        "photoUpload": "Ανέβασμα φωτογραφιών",
         "wishbook": "Ευχολόγιο",
         "eventCover": "Φωτογραφία εξωφύλλου εκδήλωσης",
         "eventCoverOf": "Φωτογραφία εξωφύλλου: {name}",
