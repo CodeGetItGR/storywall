@@ -4,7 +4,7 @@ import { ImagePlus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { AdminField } from '@/components/admin/AdminField';
-import { QrCardLookColorField } from '@/components/admin/qrCards/layoutEditor/QrCardLookColorField';
+import { QrCardLookTextColorField } from '@/components/admin/qrCards/layoutEditor/QrCardLookTextColorField';
 import type { QrCardLookState } from '@/hooks/useQrCardLook';
 import { THEME_ILLUSTRATION_ACCEPT } from '@/lib/adminThemePresets';
 
@@ -24,16 +24,7 @@ export function QrCardLookCardPanel({ look, artworkHint }: { look: QrCardLookSta
             </AdminField>
 
             {/* Text colour */}
-            <QrCardLookColorField
-                name="textColor"
-                label={t('textColor')}
-                hexLabel={t('textColorHex')}
-                value={look.draft.textColor}
-                swatchValue={look.textColorInputValue}
-                hint={look.errors.textColor ? t('textColorInvalid') : undefined}
-                invalid={Boolean(look.errors.textColor)}
-                onChangeAction={look.handleChange}
-            />
+            <QrCardLookTextColorField look={look} />
         </div>
     );
 }

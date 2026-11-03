@@ -12,6 +12,7 @@ import { QrCardLineWordingPanel } from '@/components/admin/qrCards/layoutEditor/
 import { QrCardLookCardPanel } from '@/components/admin/qrCards/layoutEditor/QrCardLookCardPanel';
 import { QrCardLookCodePanel } from '@/components/admin/qrCards/layoutEditor/QrCardLookCodePanel';
 import { QrCardLookFontSelect } from '@/components/admin/qrCards/layoutEditor/QrCardLookFontSelect';
+import { QrCardLookTextColorField } from '@/components/admin/qrCards/layoutEditor/QrCardLookTextColorField';
 import type { QrCardLayoutEditorState } from '@/hooks/useQrCardLayoutEditor';
 import type { QrCardLookState } from '@/hooks/useQrCardLook';
 import { useQrCardLookCopy } from '@/hooks/useQrCardLookCopy';
@@ -86,6 +87,7 @@ export function QrCardLayoutInspector({ editor, look }: { editor: QrCardLayoutEd
                                 onChangeAction={editor.handleTitleSizeChange}
                             />
                             <QrCardLookFontSelect look={look} fontHint={copy.fontHint} fontLabel={copy.fontLabel} />
+                            <QrCardLookTextColorField look={look} />
                         </>
                     )}
 
@@ -106,6 +108,7 @@ export function QrCardLayoutInspector({ editor, look }: { editor: QrCardLayoutEd
                                 max={QR_CARD_LAYOUT_LIMITS.linesTextSize.max}
                                 onChangeAction={editor.handleLinesSizeChange}
                             />
+                            <QrCardLookTextColorField look={look} />
                             <QrCardLineWordingPanel editor={editor} />
                         </>
                     )}
