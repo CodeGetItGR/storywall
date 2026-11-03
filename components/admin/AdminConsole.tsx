@@ -16,6 +16,7 @@ import { CampaignOverviewPanel } from '@/components/admin/campaigns/overview/Cam
 import { CollaborationsSection } from '@/components/admin/collaborations/CollaborationsSection';
 import { CostTrackingPanel } from '@/components/admin/CostTrackingPanel';
 import { DemoEventsSection } from '@/components/admin/demoEvents/DemoEventsSection';
+import { DiscountCampaignsPanel } from '@/components/admin/discountCampaigns/DiscountCampaignsPanel';
 import { EventsSection } from '@/components/admin/events/EventsSection';
 import { FunnelPanel } from '@/components/admin/funnel/FunnelPanel';
 import { InviartCollectionsPanel } from '@/components/admin/inviart/InviartCollectionsPanel';
@@ -56,6 +57,7 @@ export function AdminConsole() {
     if (tab === 'paidServices') return <PaidServicesCatalogPanel />;
     if (tab === 'plans') return <PlansSection />;
     if (tab === 'discountCodes') return <AdminDiscountCodesPanel />;
+    if (tab === 'discountCampaigns') return <DiscountCampaignsPanel />;
     if (tab === 'guestOffer') return <AdminGuestOfferPanel />;
     if (tab === 'partnerApplications') return <PartnerApplicationsSection />;
     if (tab === 'collaborations') return <CollaborationsSection />;

@@ -3015,6 +3015,7 @@
             "paidServices": "Paid services",
             "inviart": "INVIART",
             "discountCodes": "Discount codes",
+            "discountCampaigns": "Discount campaigns",
             "guestOffer": "Guest offer",
             "partnerApplications": "Applications",
             "collaborations": "Collaborations",
@@ -6152,6 +6153,34 @@
             "testSent": "Sent.",
             "push": { "on": "On", "off": "Off" },
             "problems": { "name": "Enter a name." }
+        },
+        "discountCampaigns": {
+            "create": "New discount campaign",
+            "createTitle": "New discount campaign",
+            "editTitle": "Edit discount campaign",
+            "empty": "No discount campaigns yet.",
+            "columns": {
+                "name": "Name",
+                "percent": "Discount %",
+                "status": "Status",
+                "dates": "Dates"
+            },
+            "fields": {
+                "name": "Name",
+                "percent": "Discount %",
+                "label": "Name at checkout",
+                "linkName": "Link name",
+                "startsAt": "Starts",
+                "endsAt": "Ends"
+            },
+            "stop": "Stop campaign",
+            "stopTitle": "Stop this campaign?",
+            "stopBody": "Prices go back to normal now.",
+            "stopConfirm": "Stop campaign",
+            "stopCancel": "Keep it running",
+            "delete": "Delete campaign",
+            "deleteTitle": "Delete this campaign?",
+            "deleteBody": "It won't go live."
         },
         "siteNotices": {
             "create": "New notice",
