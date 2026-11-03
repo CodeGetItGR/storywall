@@ -5301,7 +5301,7 @@
                 "codeContrastOk": "Contrast {ratio}:1 on white",
                 "codeContrastLow": "Contrast {ratio}:1. Needs at least {min}:1 on white to scan, so pick a darker colour.",
                 "codeContrastInvalid": "This colour is too light to scan on white. Pick a darker one.",
-                "centerLogo": "Logo in the middle of the code",
+                "centerLogo": "Logo in the middle",
                 "eventTypes": "Event types",
                 "eventTypesInvalid": "Pick at least one event type.",
                 "artwork": "Artwork",
