@@ -3,7 +3,7 @@
 import { useCallback, useState } from 'react';
 
 import type { QrGuestAction } from '@/lib/api/types';
-import { guestCodeStartView,type GuestCodeView } from '@/lib/qrGuestCode';
+import { guestCodeStartView, type GuestCodeView } from '@/lib/qrGuestCode';
 
 // The open view on a guest code's page. Only a code with a chooser has somewhere to go back to.
 export function useGuestCodeScreen(actions: QrGuestAction[]) {
