@@ -5,6 +5,7 @@ import { DeletedEventRouteGuard } from '@/components/event/DeletedEventRouteGuar
 import { DraftEventRouteGuard } from '@/components/event/DraftEventRouteGuard';
 import { EventLifecycleBanner } from '@/components/event/EventLifecycleBanner';
 import { EventThemeScope } from '@/components/event/EventThemeScope';
+import { LiteEventRouteGuard } from '@/components/event/LiteEventRouteGuard';
 import { SuspendedEventRouteGuard } from '@/components/event/SuspendedEventRouteGuard';
 import { MyRoleSheetHost } from '@/components/memberRoles/MyRoleSheetHost';
 import { myEventsKeys } from '@/hooks/useMyEvents';
@@ -28,11 +29,13 @@ export default async function EventLayout({ children }: { children: ReactNode })
                     <EventLifecycleBanner />
                     <DraftEventRouteGuard>
                         <DeletedEventRouteGuard>
-                            <div className="lg:max-w-none">{children}</div>
-                            {/* Role sheet */}
-                            <Suspense fallback={null}>
-                                <MyRoleSheetHost />
-                            </Suspense>
+                            <LiteEventRouteGuard>
+                                <div className="lg:max-w-none">{children}</div>
+                                {/* Role sheet */}
+                                <Suspense fallback={null}>
+                                    <MyRoleSheetHost />
+                                </Suspense>
+                            </LiteEventRouteGuard>
                         </DeletedEventRouteGuard>
                     </DraftEventRouteGuard>
                 </SuspendedEventRouteGuard>
