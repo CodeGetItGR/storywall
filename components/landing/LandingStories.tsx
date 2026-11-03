@@ -12,6 +12,7 @@ import { loadLiveOccasions } from '@/lib/occasions/liveOccasions.server';
 export async function LandingStories() {
     const locale = (await getLocale()) as Locale;
     const t = await getTranslations('LandingPage.stories');
+    const hero = await getTranslations('LandingPage.hero');
     const heading = t.raw('heading') as string[];
     const rows = t.raw('rows') as LandingStoryCopyData[];
     const moreStories = t.raw('moreStories') as LandingMoreStory[];
@@ -57,6 +58,7 @@ export async function LandingStories() {
                             locale={locale}
                             media={landingStoryMedia[index]}
                             occasions={occasions}
+                            plansLabel={hero('plansCta')}
                         >
                             {/* Themes */}
                             {themes && themes.length > 0 && <LandingStoryThemes copy={themesCopy} themes={themes} />}

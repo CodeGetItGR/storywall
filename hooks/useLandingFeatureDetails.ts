@@ -21,14 +21,15 @@ type TransitionDirection = 'next' | 'previous';
 // Matches the strip's px-5 gutter so a revealed tab never sits flush to the edge.
 const TAB_STRIP_GUTTER = 20;
 
-export function useLandingFeatureDetails() {
+// links: each card's "Learn more" page, in the cards' order; null or missing for none.
+export function useLandingFeatureDetails(links: readonly (string | null)[]) {
     const t = useTranslations('LandingPage.featureDetails');
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [transitionDirection, setTransitionDirection] = useState<TransitionDirection>('next');
     const swipeStartX = useRef<number | null>(null);
     const tabListRef = useRef<HTMLDivElement | null>(null);
     const details = t.raw('items') as FeatureDetail[];
-    const availableDetails = details.map((detail, index) => ({ ...detail, imagePath: FEATURE_IMAGES[index]! }));
+    const availableDetails = details.map((detail, index) => ({ ...detail, href: links[index] ?? null, imagePath: FEATURE_IMAGES[index]! }));
 
     const activeIndex = selectedIndex >= availableDetails.length ? 0 : selectedIndex;
     const lastIndex = Math.max(availableDetails.length - 1, 0);

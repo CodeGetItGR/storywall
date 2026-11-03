@@ -2,10 +2,11 @@
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { LandingFeatureDetailCard } from '@/components/landing/LandingFeatureDetailCard';
+import { LandingFeatureDetailLink } from '@/components/landing/LandingFeatureDetailLink';
 import { useLandingFeatureDetails } from '@/hooks/useLandingFeatureDetails';
 import { landingSectionAttributes } from '@/lib/landingTracking';
 
-export function LandingFeatureDetails() {
+export function LandingFeatureDetails({ links }: { links: readonly (string | null)[] }) {
     const {
         activeDetail,
         availableDetails,
@@ -20,7 +21,7 @@ export function LandingFeatureDetails() {
         t,
         tabListRef,
         transitionDirection,
-    } = useLandingFeatureDetails();
+    } = useLandingFeatureDetails(links);
 
     if (!activeDetail) return null;
 
@@ -51,7 +52,7 @@ export function LandingFeatureDetails() {
                     className="mx-auto mt-12 grid max-w-4xl grid-cols-2 gap-6 min-[1024px]:max-w-340 min-[1024px]:grid-cols-4 min-[1024px]:gap-4"
                 >
                     {availableDetails.map((detail) => (
-                        <LandingFeatureDetailCard {...detail} key={detail.title} />
+                        <LandingFeatureDetailCard {...detail} key={detail.title} moreLabel={t('more')} />
                     ))}
                 </div>
             </div>
@@ -113,6 +114,9 @@ export function LandingFeatureDetails() {
                         <p className="mt-5 max-w-[39rem] text-[15px] leading-[1.55] text-white/86 min-[761px]:text-[16px]">
                             {activeDetail.description}
                         </p>
+
+                        {/* Feature page link */}
+                        {activeDetail.href ? <LandingFeatureDetailLink className="mt-5" href={activeDetail.href} label={t('more')} /> : null}
                         <ul className="mt-8 space-y-4 text-[15px] leading-[1.35] font-bold text-white min-[761px]:mt-10 min-[761px]:text-[16px]">
                             {activeDetail.items.map((item) => (
                                 <li

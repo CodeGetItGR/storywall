@@ -4,7 +4,7 @@ import { CookieConsent } from '@/components/consent/CookieConsent';
 import { LandingDeferredExperience } from '@/components/landing/LandingDeferredExperience';
 import { LandingDemo } from '@/components/landing/LandingDemo';
 import { LandingFaq } from '@/components/landing/LandingFaq';
-import { LandingFeatureDetails } from '@/components/landing/LandingFeatureDetails';
+import { LandingFeatureDetailsSection } from '@/components/landing/LandingFeatureDetailsSection';
 import { LandingFeatures } from '@/components/landing/LandingFeatures';
 import { LandingFinalCta } from '@/components/landing/LandingFinalCta';
 import { LandingFooter } from '@/components/landing/LandingFooter';
@@ -45,7 +45,7 @@ export function LandingContent() {
                     <LandingFeatures />
 
                     {/* Feature details */}
-                    <LandingFeatureDetails />
+                    <LandingFeatureDetailsSection />
 
                     {/* Reviews */}
                     <LandingReviews />

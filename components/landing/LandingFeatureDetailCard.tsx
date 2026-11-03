@@ -1,15 +1,27 @@
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { LandingFeatureDetailLink } from '@/components/landing/LandingFeatureDetailLink';
 
 type LandingFeatureDetailCardProps = {
     description: string;
+    href: string | null;
     imageAlt: string;
     imagePath: string;
     items: string[];
+    moreLabel: string;
     subtitle: string;
     title: string;
 };
 
-export function LandingFeatureDetailCard({ description, imageAlt, imagePath, items, subtitle, title }: LandingFeatureDetailCardProps) {
+export function LandingFeatureDetailCard({
+    description,
+    href,
+    imageAlt,
+    imagePath,
+    items,
+    moreLabel,
+    subtitle,
+    title,
+}: LandingFeatureDetailCardProps) {
     return (
         <article className="flex h-full flex-col overflow-hidden rounded-[24px] border border-white/10 bg-[#101014]">
             {/* Feature image: a landscape crop, kept low so the phone stays in frame */}
@@ -32,6 +44,9 @@ export function LandingFeatureDetailCard({ description, imageAlt, imagePath, ite
                 </h3>
                 <p className="mt-4 text-[16px] leading-[1.35] font-black text-[#f2c66a]">{subtitle}</p>
                 <p className="mt-3 text-[15px] leading-[1.55] text-white/82">{description}</p>
+
+                {/* Feature page link, above the bullets so every card's list stays lined up */}
+                {href ? <LandingFeatureDetailLink className="mt-4" href={href} label={moreLabel} /> : null}
                 <ul className="mt-auto space-y-2.5 border-t border-white/14 pt-5 text-[13px] leading-[1.4] font-semibold text-white/90">
                     {items.map((item) => (
                         <li
