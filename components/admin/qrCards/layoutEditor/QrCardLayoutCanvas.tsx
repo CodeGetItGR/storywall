@@ -9,17 +9,19 @@ import { QrCardSvg } from '@/components/qrCard/QrCardSvg';
 import type { QrCardLayoutPointer } from '@/hooks/useQrCardLayoutPointer';
 import { QR_CARD_SAMPLE_URL } from '@/lib/adminQrCards';
 import { QR_CARD_HEIGHT, QR_CARD_WIDTH, type QrCardLine, type QrCardStyle } from '@/lib/qrCard';
-import { elementRect, QR_CARD_ELEMENTS, QR_CARD_SAFE_AREA, type QrCardElement } from '@/lib/qrCardLayout';
+import { elementName, elementRect, QR_CARD_SAFE_AREA, type QrCardElement, qrCardHitOrder } from '@/lib/qrCardLayout';
 import { cn } from '@/lib/utils';
 
 const SAFE = QR_CARD_SAFE_AREA;
 
 // The real card, with a transparent overlay of the same size on top for selecting, dragging and
-// resizing. The card's height follows the screen's, so the whole card always shows.
+// resizing. The card's height follows the screen's, so the whole card always shows. Overlay boxes
+// stack like the card: the code on top.
 export function QrCardLayoutCanvas({
     style,
     title,
     lines,
+    fields,
     selected,
     pointer,
     onElementFocusAction,
@@ -27,6 +29,7 @@ export function QrCardLayoutCanvas({
     style: QrCardStyle;
     title: string;
     lines: QrCardLine[];
+    fields: Record<string, string>;
     selected: QrCardElement | null;
     pointer: QrCardLayoutPointer;
     onElementFocusAction: (event: FocusEvent<SVGElement>) => void;
@@ -43,6 +46,7 @@ export function QrCardLayoutCanvas({
                     url={QR_CARD_SAMPLE_URL}
                     title={title}
                     lines={lines}
+                    fields={fields}
                     label={t('cardLabel', { title })}
                     className="block h-full w-full"
                 />
@@ -74,15 +78,16 @@ export function QrCardLayoutCanvas({
                     {/* Guides */}
                     <QrCardLayoutGuides guides={guides} />
                     {/* Elements */}
-                    {QR_CARD_ELEMENTS.map((element) => {
+                    {qrCardHitOrder(style.layout, selected).map((element) => {
                         const rect = elementRect(style.layout, element);
+                        const name = elementName(style.layout, element);
                         return (
                             <rect
                                 key={element}
                                 data-element={element}
                                 role="button"
                                 tabIndex={0}
-                                aria-label={t(`elements.${element}`)}
+                                aria-label={t(`elements.${name.key}`, { number: name.number })}
                                 aria-pressed={selected === element}
                                 x={rect.x}
                                 y={rect.y}

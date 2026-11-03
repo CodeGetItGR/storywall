@@ -1,10 +1,12 @@
 import { act, renderHook } from '@testing-library/react';
 import type { ChangeEvent } from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { useQrCardDesigner } from '@/hooks/useQrCardDesigner';
 import type { QrCardTemplateDto } from '@/lib/api/types';
 import { PLAIN_QR_CARD_ID, PLAIN_QR_CARD_STYLE } from '@/lib/qrCard';
+
+vi.mock('next-intl', () => ({ useLocale: () => 'en' }));
 
 const LINEN: QrCardTemplateDto = {
     id: 't1',

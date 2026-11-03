@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import { QrCardSvg } from '@/components/qrCard/QrCardSvg';
 import { PLAIN_QR_CARD_STYLE, type QrCardStyle } from '@/lib/qrCard';
-import { DEFAULT_QR_CARD_LAYOUT } from '@/lib/qrCardLayout';
+import { DEFAULT_QR_CARD_LAYOUT, DEFAULT_QR_CARD_TITLE } from '@/lib/qrCardLayout';
 
 // Rasterizes the card as a phone camera would see a print, and reads the code back.
 const SHORT_URL = 'https://storywall.gr/q/7Hk2pQx9Lm';
@@ -41,9 +41,10 @@ describe('QrCardSvg scans', () => {
 const L = DEFAULT_QR_CARD_LAYOUT;
 // The code moved to the bottom right, the text above it.
 const MOVED = {
-    title: { ...L.title, height: 20 },
+    title: { ...DEFAULT_QR_CARD_TITLE, height: 20 },
     code: { x: 47, y: 90, size: 50, panel: true, radius: 2 },
     lines: { ...L.lines, y: 40, height: 40 },
+    fields: [],
 };
 // The smallest code the backend allows.
 const SMALLEST = { ...L, code: { ...L.code, x: 37.5, y: 55, size: 30 } };

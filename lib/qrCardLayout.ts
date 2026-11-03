@@ -1,10 +1,13 @@
-import type { QrCardLayoutDto, QrCardTextAlign } from '@/lib/api/types';
+import type { LocalizedText, QrCardFieldKind, QrCardLayoutDto, QrCardTextAlign, QrCardTextFieldDto } from '@/lib/api/types';
 
-// Where a card's title, code and lines sit, in A6 millimetres. Mirrors the backend's
-// QrCardLayoutValidator; the server stays the authority.
-export type QrCardLayout = QrCardLayoutDto;
-export type QrCardElement = keyof QrCardLayout;
-export const QR_CARD_ELEMENTS: QrCardElement[] = ['title', 'code', 'lines'];
+// Where a card's title, code, lines and added text fields sit, in A6 millimetres. Mirrors the backend's
+// QrCardLayoutValidator; the server stays the authority. Boxes may overlap: the code draws on top, then
+// the fields in order.
+export type QrCardTextField = QrCardTextFieldDto;
+export type QrCardLayout = Omit<QrCardLayoutDto, 'fields'> & { fields: QrCardTextField[] };
+export type QrCardTitleBox = NonNullable<QrCardLayout['title']>;
+// An added field is selected as `field:<id>`.
+export type QrCardElement = 'title' | 'code' | 'lines' | `field:${string}`;
 
 export type Rect = { x: number; y: number; width: number; height: number };
 export type Point = { x: number; y: number };
@@ -23,21 +26,58 @@ export const QR_CARD_LAYOUT_LIMITS = {
     textMinWidth: 20,
     titleMinHeight: 6,
     linesMinHeight: 8,
+    fieldMinHeight: 6,
     titleMaxSize: { min: 5, max: 16 },
     linesTextSize: { min: 3, max: 10 },
+    fieldTextSize: { min: 3, max: 16 },
     codeSize: { min: 30, max: 89 },
     radius: { min: 0, max: 8 },
+    fields: 5,
+    fieldText: 60,
 } as const;
+
+export const DEFAULT_QR_CARD_TITLE: QrCardTitleBox = { x: 8, y: 10, width: 89, height: 26, maxSize: 9, align: 'center' };
 
 // Today's fixed spots. Plain and every template without a saved layout use it.
 export const DEFAULT_QR_CARD_LAYOUT: QrCardLayout = {
-    title: { x: 8, y: 10, width: 89, height: 26, maxSize: 9, align: 'center' },
+    title: DEFAULT_QR_CARD_TITLE,
     code: { x: 20.5, y: 40, size: 64, panel: true, radius: 4 },
     lines: { x: 8, y: 107, width: 89, height: 33, textSize: 5, align: 'center' },
+    fields: [],
 };
 
 const SAFE = QR_CARD_SAFE_AREA;
 const LIMITS = QR_CARD_LAYOUT_LIMITS;
+
+// A stored layout, or the default when there is none. Layouts saved before KAN-103 have no fields.
+export function qrCardLayoutOf(layout: QrCardLayoutDto | null | undefined): QrCardLayout {
+    if (!layout) return DEFAULT_QR_CARD_LAYOUT;
+    return { title: layout.title ?? null, code: layout.code, lines: layout.lines, fields: layout.fields ?? [] };
+}
+
+export function fieldElement(id: string): QrCardElement {
+    return `field:${id}`;
+}
+
+export function fieldIdOf(element: QrCardElement): string | null {
+    return element.startsWith('field:') ? element.slice('field:'.length) : null;
+}
+
+export function findField(layout: QrCardLayout, element: QrCardElement): QrCardTextField | null {
+    const id = fieldIdOf(element);
+    return id === null ? null : (layout.fields.find((field) => field.id === id) ?? null);
+}
+
+// Every element on the card, bottom to top: the order they draw and stack in.
+export function qrCardElements(layout: QrCardLayout): QrCardElement[] {
+    return [...(layout.title ? (['title'] as const) : []), 'lines', ...layout.fields.map((field) => fieldElement(field.id)), 'code'];
+}
+
+// The editor's hit targets: the selected element last, so it stays grabbable under the code.
+export function qrCardHitOrder(layout: QrCardLayout, selected: QrCardElement | null): QrCardElement[] {
+    const elements = qrCardElements(layout);
+    return selected && elements.includes(selected) ? [...elements.filter((element) => element !== selected), selected] : elements;
+}
 
 export function roundMm(value: number): number {
     return Math.round(value * 10) / 10;
@@ -52,7 +92,9 @@ export function elementRect(layout: QrCardLayout, element: QrCardElement): Rect 
         const { x, y, size } = layout.code;
         return { x, y, width: size, height: size };
     }
-    const { x, y, width, height } = layout[element];
+    const box = element === 'title' ? layout.title : element === 'lines' ? layout.lines : findField(layout, element);
+    if (!box) return { x: 0, y: 0, width: 0, height: 0 };
+    const { x, y, width, height } = box;
     return { x, y, width, height };
 }
 
@@ -74,52 +116,50 @@ function within(value: number, range: { min: number; max: number }): boolean {
     return value >= range.min - EPSILON && value <= range.max + EPSILON;
 }
 
-function otherRects(layout: QrCardLayout, element: QrCardElement): Rect[] {
-    return QR_CARD_ELEMENTS.filter((other) => other !== element).map((other) => elementRect(layout, other));
+function filled(text: LocalizedText | null, blankAllowed = false): boolean {
+    return (
+        text !== null &&
+        ['en', 'el'].every((locale) => (text[locale] ?? '').trim().length <= LIMITS.fieldText && (blankAllowed || (text[locale] ?? '').trim() !== ''))
+    );
+}
+
+// Whether a field has the words it needs: a fixed field its text, a host field its label, in English and Greek.
+export function isFieldComplete(field: QrCardTextField): boolean {
+    return field.kind === 'fixed' ? filled(field.text) : filled(field.label) && filled(field.placeholder, true);
 }
 
 export function isValidQrCardLayout(layout: QrCardLayout): boolean {
-    const rects = QR_CARD_ELEMENTS.map((element) => elementRect(layout, element));
-    if (!rects.every(insideSafeArea)) return false;
-    const { title, code, lines } = layout;
-    if (title.width < LIMITS.textMinWidth - EPSILON || title.height < LIMITS.titleMinHeight - EPSILON) return false;
+    const { title, code, lines, fields } = layout;
+    if (!qrCardElements(layout).every((element) => insideSafeArea(elementRect(layout, element)))) return false;
+    if (title && (title.width < LIMITS.textMinWidth - EPSILON || title.height < LIMITS.titleMinHeight - EPSILON)) return false;
+    if (title && !within(title.maxSize, LIMITS.titleMaxSize)) return false;
     if (lines.width < LIMITS.textMinWidth - EPSILON || lines.height < LIMITS.linesMinHeight - EPSILON) return false;
-    if (!within(title.maxSize, LIMITS.titleMaxSize) || !within(lines.textSize, LIMITS.linesTextSize)) return false;
+    if (!within(lines.textSize, LIMITS.linesTextSize)) return false;
     if (!within(code.size, LIMITS.codeSize) || !within(code.radius, LIMITS.radius)) return false;
-    return !rects.some((rect, index) => rects.slice(index + 1).some((other) => rectsOverlap(rect, other)));
+    if (fields.length > LIMITS.fields) return false;
+    return fields.every(
+        (field) =>
+            field.width >= LIMITS.textMinWidth - EPSILON &&
+            field.height >= LIMITS.fieldMinHeight - EPSILON &&
+            within(field.textSize, LIMITS.fieldTextSize) &&
+            isFieldComplete(field),
+    );
 }
 
 function withRect(layout: QrCardLayout, element: QrCardElement, rect: Rect): QrCardLayout {
-    if (element === 'code') return { ...layout, code: { ...layout.code, x: rect.x, y: rect.y, size: rect.width } };
-    return { ...layout, [element]: { ...layout[element], x: rect.x, y: rect.y, width: rect.width, height: rect.height } };
+    const { x, y, width, height } = rect;
+    if (element === 'code') return { ...layout, code: { ...layout.code, x, y, size: width } };
+    if (element === 'title') return layout.title ? { ...layout, title: { ...layout.title, x, y, width, height } } : layout;
+    if (element === 'lines') return { ...layout, lines: { ...layout.lines, x, y, width, height } };
+    const id = fieldIdOf(element);
+    return { ...layout, fields: layout.fields.map((field) => (field.id === id ? { ...field, x, y, width, height } : field)) };
 }
 
-// One axis from the rect's position toward `to`: clamped to the safe area, stopped at the first box
-// in its way. Only boxes sharing its band on the other axis can block it.
-function slide(rect: Rect, axis: 'x' | 'y', to: number, obstacles: Rect[]): number {
-    const size = axis === 'x' ? rect.width : rect.height;
-    const from = rect[axis];
-    let target = clamp(to, axis === 'x' ? SAFE.left : SAFE.top, (axis === 'x' ? SAFE.right : SAFE.bottom) - size);
-    for (const other of obstacles) {
-        const sharesBand =
-            axis === 'x'
-                ? rect.y < other.y + other.height - EPSILON && other.y < rect.y + rect.height - EPSILON
-                : rect.x < other.x + other.width - EPSILON && other.x < rect.x + rect.width - EPSILON;
-        if (!sharesBand) continue;
-        const otherStart = other[axis];
-        const otherEnd = otherStart + (axis === 'x' ? other.width : other.height);
-        if (target > from && otherStart >= from + size - EPSILON) target = Math.min(target, otherStart - size);
-        if (target < from && otherEnd <= from + EPSILON) target = Math.max(target, otherEnd);
-    }
-    return target;
-}
-
-// Moves an element toward a top-left point, x then y, never onto another box.
+// Moves an element's top-left toward a point, kept inside the safe area. Other boxes don't block it.
 export function moveElementTo(layout: QrCardLayout, element: QrCardElement, to: Point): QrCardLayout {
-    const obstacles = otherRects(layout, element);
     const start = elementRect(layout, element);
-    const x = roundMm(slide(start, 'x', to.x, obstacles));
-    const y = roundMm(slide({ ...start, x }, 'y', to.y, obstacles));
+    const x = roundMm(clamp(to.x, SAFE.left, SAFE.right - start.width));
+    const y = roundMm(clamp(to.y, SAFE.top, SAFE.bottom - start.height));
     return withRect(layout, element, { ...start, x, y });
 }
 
@@ -135,26 +175,15 @@ export function handlePoint(rect: Rect, handle: QrCardHandle): Point {
 }
 
 // Resizes from a handle by (dx, dy) measured from `start`, the rect when the drag began. Clamped to
-// the minimum and maximum sizes and the safe area. A resize onto another box stops at the largest
-// part of the drag that fits, so a fast drag still meets the other box's edge.
+// the minimum and maximum sizes and the safe area.
 export function resizeElement(layout: QrCardLayout, element: QrCardElement, handle: QrCardHandle, start: Rect, dx: number, dy: number): QrCardLayout {
-    const others = otherRects(layout, element);
-    const fits = (rect: Rect) => !others.some((other) => rectsOverlap(rect, other));
-    const full = resizedRect(element, handle, start, dx, dy);
-    if (fits(full)) return withRect(layout, element, full);
-    // Halve toward the start until the step is under the 0.1 mm rounding.
-    let low = 0;
-    let high = 1;
-    let best: Rect | null = null;
-    for (let i = 0; i < 12; i++) {
-        const mid = (low + high) / 2;
-        const rect = resizedRect(element, handle, start, dx * mid, dy * mid);
-        if (fits(rect)) {
-            best = rect;
-            low = mid;
-        } else high = mid;
-    }
-    return best ? withRect(layout, element, best) : layout;
+    return withRect(layout, element, resizedRect(element, handle, start, dx, dy));
+}
+
+function minHeightOf(element: QrCardElement): number {
+    if (element === 'title') return LIMITS.titleMinHeight;
+    if (element === 'lines') return LIMITS.linesMinHeight;
+    return LIMITS.fieldMinHeight;
 }
 
 function resizedRect(element: QrCardElement, handle: QrCardHandle, start: Rect, dx: number, dy: number): Rect {
@@ -174,7 +203,7 @@ function resizedRect(element: QrCardElement, handle: QrCardHandle, start: Rect, 
         width = size;
         height = size;
     } else {
-        const minHeight = element === 'title' ? LIMITS.titleMinHeight : LIMITS.linesMinHeight;
+        const minHeight = minHeightOf(element);
         if (handle.includes('e')) width = clamp(width + dx, LIMITS.textMinWidth, SAFE.right - x);
         if (handle.includes('w')) {
             x = clamp(x + dx, SAFE.left, right - LIMITS.textMinWidth);
@@ -205,7 +234,9 @@ function snapAxis(start: number, size: number, targets: number[]): { value: numb
 // other boxes' edges and centres. Returns the guides to draw.
 export function snapPosition(layout: QrCardLayout, element: QrCardElement, to: Point): Point & { guides: QrCardGuide[] } {
     const rect = elementRect(layout, element);
-    const others = otherRects(layout, element);
+    const others = qrCardElements(layout)
+        .filter((other) => other !== element)
+        .map((other) => elementRect(layout, other));
     const x = snapAxis(to.x, rect.width, [SAFE.left, CENTER_X, SAFE.right, ...others.flatMap((o) => [o.x, o.x + o.width / 2, o.x + o.width])]);
     const y = snapAxis(to.y, rect.height, [SAFE.top, CENTER_Y, SAFE.bottom, ...others.flatMap((o) => [o.y, o.y + o.height / 2, o.y + o.height])]);
     const guides: QrCardGuide[] = [];
@@ -215,6 +246,7 @@ export function snapPosition(layout: QrCardLayout, element: QrCardElement, to: P
 }
 
 export function setTitleOptions(layout: QrCardLayout, options: { maxSize?: number; align?: QrCardTextAlign }): QrCardLayout {
+    if (!layout.title) return layout;
     const { min, max } = LIMITS.titleMaxSize;
     const maxSize = roundMm(clamp(options.maxSize ?? layout.title.maxSize, min, max));
     return { ...layout, title: { ...layout.title, maxSize, align: options.align ?? layout.title.align } };
@@ -232,10 +264,82 @@ export function setCodeOptions(layout: QrCardLayout, options: { panel?: boolean;
     return { ...layout, code: { ...layout.code, radius, panel: options.panel ?? layout.code.panel } };
 }
 
+// Removes the title, or puts it back at its default spot.
+export function setTitleShown(layout: QrCardLayout, shown: boolean): QrCardLayout {
+    if (shown === (layout.title !== null)) return layout;
+    return { ...layout, title: shown ? DEFAULT_QR_CARD_TITLE : null };
+}
+
+export type QrCardFieldChange = Partial<Pick<QrCardTextField, 'textSize' | 'align' | 'font' | 'bold' | 'color' | 'text' | 'label' | 'placeholder'>>;
+
+export function updateField(layout: QrCardLayout, id: string, change: QrCardFieldChange): QrCardLayout {
+    const { min, max } = LIMITS.fieldTextSize;
+    return {
+        ...layout,
+        fields: layout.fields.map((field) =>
+            field.id === id ? { ...field, ...change, textSize: roundMm(clamp(change.textSize ?? field.textSize, min, max)) } : field,
+        ),
+    };
+}
+
+// A new field across the card's middle, in the template's text colour. Its words start blank.
+const NEW_FIELD_HEIGHT = 12;
+
+// The highest full-width band clear of every element, or across the middle when none is.
+function freeFieldY(layout: QrCardLayout): number {
+    const rects = qrCardElements(layout).map((element) => elementRect(layout, element));
+    for (let y = SAFE.top; y <= SAFE.bottom - NEW_FIELD_HEIGHT; y++) {
+        const band = { x: SAFE.left, y, width: SAFE.right - SAFE.left, height: NEW_FIELD_HEIGHT };
+        if (!rects.some((rect) => rectsOverlap(band, rect))) return y;
+    }
+    return CENTER_Y - NEW_FIELD_HEIGHT / 2;
+}
+
+export function addField(layout: QrCardLayout, { id, kind, color }: { id: string; kind: QrCardFieldKind; color: string }): QrCardLayout {
+    if (layout.fields.length >= LIMITS.fields) return layout;
+    const blank = { en: '', el: '' };
+    const field: QrCardTextField = {
+        id,
+        kind,
+        x: SAFE.left,
+        y: freeFieldY(layout),
+        width: SAFE.right - SAFE.left,
+        height: NEW_FIELD_HEIGHT,
+        textSize: 6,
+        align: 'center',
+        font: 'body',
+        bold: false,
+        color,
+        text: kind === 'fixed' ? blank : null,
+        label: kind === 'host' ? blank : null,
+        placeholder: kind === 'host' ? blank : null,
+    };
+    return { ...layout, fields: [...layout.fields, field] };
+}
+
+export function removeField(layout: QrCardLayout, id: string): QrCardLayout {
+    return { ...layout, fields: layout.fields.filter((field) => field.id !== id) };
+}
+
+// Deep value equality for the JSON-shaped layout: key order and identity don't matter.
+function sameValue(a: unknown, b: unknown): boolean {
+    if (a === b) return true;
+    if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object') return false;
+    if (Array.isArray(a) !== Array.isArray(b)) return false;
+    const left = a as Record<string, unknown>;
+    const right = b as Record<string, unknown>;
+    const keys = new Set([...Object.keys(left), ...Object.keys(right)]);
+    return [...keys].every((key) => sameValue(left[key], right[key]));
+}
+
 export function sameQrCardLayout(a: QrCardLayout, b: QrCardLayout): boolean {
-    return QR_CARD_ELEMENTS.every((element) => {
-        const left = a[element] as Record<string, unknown>;
-        const right = b[element] as Record<string, unknown>;
-        return Object.keys(left).every((key) => left[key] === right[key]);
-    });
+    return sameValue(a, b);
+}
+
+// How the editor names an element: a field by its kind and its number among fields of that kind.
+export function elementName(layout: QrCardLayout, element: QrCardElement): { key: 'title' | 'code' | 'lines' | QrCardFieldKind; number: number } {
+    const field = findField(layout, element);
+    if (!field) return { key: element as 'title' | 'code' | 'lines', number: 0 };
+    const sameKind = layout.fields.filter((other) => other.kind === field.kind);
+    return { key: field.kind, number: sameKind.indexOf(field) + 1 };
 }

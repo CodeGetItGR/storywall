@@ -96,7 +96,7 @@ function state(overrides: Record<string, unknown> = {}) {
 }
 
 function renderDrawer(template: AdminQrCardTemplateDto | null = LINEN) {
-    render(<QrCardTemplateDrawer template={template} sortOrder={0} eventTypes={EVENT_TYPES} onCloseAction={vi.fn()} />);
+    render(<QrCardTemplateDrawer template={template} sortOrder={0} eventTypes={EVENT_TYPES} onCloseAction={vi.fn()} onDuplicatedAction={vi.fn()} />);
 }
 
 afterEach(cleanup);
