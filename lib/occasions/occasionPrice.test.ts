@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { AppConfigResponseDto, CoverageOptionResponseDto, PlanTierResponseDto } from '@/lib/api/types';
-import { occasionPriceValues } from '@/lib/occasions/occasionPrice';
+import { occasionPriceValues, photoPlansFromPrice } from '@/lib/occasions/occasionPrice';
 
 function makeOption(overrides: Partial<CoverageOptionResponseDto> = {}): CoverageOptionResponseDto {
     return {
@@ -37,7 +37,7 @@ function makePlan(overrides: Partial<PlanTierResponseDto> = {}): PlanTierRespons
         discountLabel: null,
         discountStartsAt: null,
         discountEndsAt: null,
-        moduleKeys: ['gallery'],
+        moduleKeys: ['gallery', 'posts'],
         paidModules: [],
         moduleConfigs: null,
         eventTypeKey: 'WEDDING',
@@ -118,5 +118,38 @@ describe('occasionPriceValues', () => {
         const inactive = makePlan({ id: 'inactive', name: 'INACTIVE', initialOptions: [makeOption({ active: false })] });
         expect(occasionPriceValues(config([hidden, inactive]), 'WEDDING')).toEqual(NONE);
         expect(occasionPriceValues(config([hidden, makePlan()]), 'WEDDING')).toMatchObject({ range: 'single', from: '119€' });
+    });
+});
+
+const LITE = { id: 'lite', code: 'QR', name: 'QR', sortOrder: 0, moduleKeys: ['gallery', 'qr_cards'] };
+const WISHBOOK = { id: 'wb', code: 'WISHBOOK', name: 'WISHBOOK', sortOrder: 0, moduleKeys: ['qr_cards', 'wishbook'] };
+
+describe('lite plans in occasionPriceValues', () => {
+    it('counts full plans only', () => {
+        const plans = [makePlan({ ...LITE, initialOptions: [makeOption({ priceAmountMinor: 4900 })] }), makePlan()];
+        expect(occasionPriceValues(config(plans), 'WEDDING')).toMatchObject({ range: 'single', from: '119€', fromName: 'START' });
+    });
+
+    it('has no prices when only lite plans are on sale', () => {
+        expect(occasionPriceValues(config([makePlan(LITE)]), 'WEDDING')).toEqual(NONE);
+    });
+});
+
+describe('photoPlansFromPrice', () => {
+    it('is empty without config', () => {
+        expect(photoPlansFromPrice(null, 'WEDDING')).toBe('');
+    });
+
+    it('quotes the cheapest plan with the gallery, lite ones included', () => {
+        const plans = [
+            makePlan({ ...WISHBOOK, initialOptions: [makeOption({ priceAmountMinor: 2900 })] }),
+            makePlan({ ...LITE, initialOptions: [makeOption({ priceAmountMinor: 4900 })] }),
+            makePlan({ id: 'start', code: 'START', sortOrder: 3 }),
+        ];
+        expect(photoPlansFromPrice(config(plans), 'WEDDING')).toBe('49€');
+    });
+
+    it('is empty when no plan has the gallery', () => {
+        expect(photoPlansFromPrice(config([makePlan(WISHBOOK)]), 'WEDDING')).toBe('');
     });
 });

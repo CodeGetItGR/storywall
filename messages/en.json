@@ -7365,6 +7365,7 @@
             "guestsUnlimited": "Unlimited guests",
             "storageUnlimited": "Unlimited storage",
             "mediaUnlimited": "Unlimited",
+            "liteTeaser": "Just photos or wishes? From {price}",
             "everythingIn": "Everything in {plan}",
             "scheduleSessions": "{count, plural, one {up to # session} other {up to # sessions}}",
             "scheduleSessionsUnlimited": "unlimited sessions",
@@ -8851,8 +8852,8 @@
         },
         "pricing": {
             "kicker": "PRICING",
-            "title": "Every StoryWall package includes the wedding QR code.",
-            "body": "It isn't sold separately. Choose your package and how long it stays online, and you get the QR code with your whole wedding StoryWall.",
+            "title": "The wedding QR code, on its own or with your whole StoryWall.",
+            "body": "Every package here comes with the QR code for photos. Choose the one you need.",
             "choose": "CHOOSE PACKAGE",
             "durationGroup": "{plan} package duration",
             "secure": "Secure payment",
@@ -8925,7 +8926,7 @@
                 },
                 {
                     "q": "How much does a QR code for wedding photos cost?",
-                    "a": "The QR code isn't sold separately. It's included in every StoryWall wedding package, together with your invitation, RSVPs and wedding wall, from {price}.",
+                    "a": "On its own, the QR code costs from {price}, with the photo gallery and printable QR cards. Every full wedding package includes it too, together with the wedding wall.",
                     "link": {
                         "label": "See the packages →",
                         "to": "pricing"

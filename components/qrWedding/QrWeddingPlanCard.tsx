@@ -60,13 +60,13 @@ export function QrWeddingPlanCard({
             )}
 
             {/* Name and price */}
-            <div className="relative flex min-h-23 w-full items-center justify-between gap-3.5 max-[901px]:min-w-0 max-[601px]:min-h-20.5 max-[601px]:gap-2.5">
-                <h3
-                    className={cn(
-                        'm-0 font-[Arial,sans-serif] text-[clamp(23px,2.1vw,30px)] font-extrabold tracking-[0.045em] uppercase max-[1051px]:text-[22px] max-[781px]:text-[25px] max-[601px]:text-[clamp(23px,6vw,28px)]',
-                        featured && 'pr-35 max-[761px]:pr-30',
-                    )}
-                >
+            <div
+                className={cn(
+                    'relative flex min-h-23 w-full items-center justify-between gap-3.5 max-[901px]:min-w-0 max-[601px]:min-h-20.5 max-[601px]:gap-2.5',
+                    featured && 'mt-4.5',
+                )}
+            >
+                <h3 className="m-0 min-w-0 font-[Arial,sans-serif] text-[clamp(23px,2.1vw,30px)] font-extrabold tracking-[0.045em] uppercase max-[1051px]:text-[22px] max-[781px]:text-[25px] max-[601px]:text-[clamp(23px,6vw,28px)]">
                     {plan.name}
                 </h3>
                 <div className="flex min-w-0 flex-none flex-col items-end justify-center self-center text-right">

@@ -37,7 +37,7 @@ function makePlan(overrides: Partial<PlanTierResponseDto> = {}): PlanTierRespons
         discountLabel: null,
         discountStartsAt: null,
         discountEndsAt: null,
-        moduleKeys: ['gallery'],
+        moduleKeys: ['gallery', 'posts'],
         paidModules: [],
         moduleConfigs: null,
         eventTypeKey: 'WEDDING',
@@ -94,5 +94,18 @@ describe('occasionLengthValues', () => {
         expect(occasionLengthValues(config([makePlan({ extensionOptions: [{ ...extension, active: false }] })]), 'WEDDING', 'en').extendable).toBe(
             'no',
         );
+    });
+});
+
+describe('lite plans in occasionLengthValues', () => {
+    it('counts full plans only', () => {
+        const lite = makePlan({
+            id: 'lite',
+            code: 'QR',
+            name: 'QR',
+            moduleKeys: ['gallery'],
+            initialOptions: [makeOption({ id: 'lite-6', months: 6 })],
+        });
+        expect(occasionLengthValues(config([lite, makePlan()]), 'WEDDING', 'en')).toMatchObject({ lengths: 'single', months: '3', monthCount: 3 });
     });
 });
