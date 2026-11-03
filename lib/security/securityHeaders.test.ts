@@ -90,6 +90,20 @@ describe('contentSecurityPolicy', () => {
         expect(policy).not.toContain('ws:');
     });
 
+    // Save my date invitation fonts are self-hosted (components/saveMyDate/invitation/invitationFonts.ts).
+    it('never allows Google Fonts, in any build', () => {
+        for (const env of [
+            PRODUCTION,
+            { ...PRODUCTION, NODE_ENV: 'development' },
+            { ...PRODUCTION, VERCEL_ENV: 'preview' },
+            { ...PRODUCTION, NEXT_PUBLIC_GOOGLE_ADS_ID: 'AW-123', NEXT_PUBLIC_GA_MEASUREMENT_ID: 'G-123' },
+        ]) {
+            const policy = contentSecurityPolicy(env);
+            expect(policy).not.toContain('fonts.googleapis.com');
+            expect(policy).not.toContain('fonts.gstatic.com');
+        }
+    });
+
     it('allows eval and the HMR socket on the dev server', () => {
         const csp = directives({ ...PRODUCTION, NODE_ENV: 'development' });
         expect(csp.get('script-src')).toContain("'unsafe-eval'");
