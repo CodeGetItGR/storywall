@@ -26,6 +26,7 @@ import { useGiftAccount } from '@/hooks/useGiftAccount';
 import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { useEventVendors, useMyVendorRole } from '@/hooks/useVendors';
 import { isEventDeleted, readableModuleKeys } from '@/lib/eventLifecycle';
+import { isLiteEvent } from '@/lib/liteEvents';
 import { canEditOwnRole, ROLE_SHEET_VALUE } from '@/lib/memberRoles';
 import { isGalleryOpenToGuests, isGalleryQrFeatureEnabled } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
@@ -155,11 +156,13 @@ export function useHostMenuItems(): ToolMenuItem[] {
     const isDraft = activeEvent.status === 'DRAFT';
     // Deleted events keep the manage page (deletion notice + billing) and nothing else.
     const isDeleted = isEventDeleted(activeEvent);
+    // A lite event has no upload or invitation codes: its guest code lives in its home's quick actions.
+    const isLite = isLiteEvent(activeEvent);
 
     const hostAdminDefinitions: { key: string; href: string; icon: LucideIcon; hidden?: boolean }[] = [
         { key: 'manage', href: routes.events.manage(activeEvent.id), icon: LayoutDashboard },
-        { key: 'galleryQr', href: routes.events.tools.galleryQr(activeEvent.id), icon: QrCode, hidden: isDeleted || !galleryQrEnabled },
-        { key: 'invitationsQr', href: routes.events.invitationsQr(activeEvent.id), icon: Ticket, hidden: isDeleted || isDraft },
+        { key: 'galleryQr', href: routes.events.tools.galleryQr(activeEvent.id), icon: QrCode, hidden: isDeleted || isLite || !galleryQrEnabled },
+        { key: 'invitationsQr', href: routes.events.invitationsQr(activeEvent.id), icon: Ticket, hidden: isDeleted || isDraft || isLite },
         { key: 'vendors', href: routes.events.manageVendors(activeEvent.id), icon: Store, hidden: isDeleted || isDraft || !vendorsOn },
         { key: 'announcement', href: routes.events.tools.announcement(activeEvent.id), icon: Megaphone, hidden: isDeleted || isDraft || !postsOn },
         { key: 'help', href: routes.events.manage(activeEvent.id, { tab: 'help' }), icon: HelpCircle, hidden: isDeleted },

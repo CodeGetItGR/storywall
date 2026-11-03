@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
 import type { EventModuleResponseDto, QrLinkResolutionDto, QrLinkResponseDto } from '@/lib/api/types';
-import { findAutoInviteQrLink, findGuestQrLink, getQrRedirectPath, isGalleryOpenToGuests, isMemberArchiveEnabled } from '@/lib/qrLinks';
+import {
+    findAutoInviteQrLink,
+    findGuestQrLink,
+    getQrRedirectPath,
+    isGalleryOpenToGuests,
+    isInvitationQrLink,
+    isMemberArchiveEnabled,
+} from '@/lib/qrLinks';
 
 const active = (targetType: QrLinkResolutionDto['targetType'], inviteToken?: string): QrLinkResolutionDto => ({
     status: 'ACTIVE',
@@ -79,5 +86,16 @@ describe('findGuestQrLink', () => {
         expect(findGuestQrLink([join, guest])).toBe(guest);
         expect(findGuestQrLink([{ ...guest, status: 'REVOKED' }])).toBeNull();
         expect(findGuestQrLink([join])).toBeNull();
+    });
+});
+
+describe('isInvitationQrLink', () => {
+    // The gallery upload code and the guest code bring no one into the event.
+    it('counts join links and personal invitations only', () => {
+        const link = (targetType: QrLinkResponseDto['targetType']) => ({ id: targetType, targetType, status: 'ACTIVE' }) as QrLinkResponseDto;
+        expect(isInvitationQrLink(link('EVENT_JOIN'))).toBe(true);
+        expect(isInvitationQrLink(link('INVITATION'))).toBe(true);
+        expect(isInvitationQrLink(link('MEDIA_UPLOAD'))).toBe(false);
+        expect(isInvitationQrLink(link('GUEST'))).toBe(false);
     });
 });

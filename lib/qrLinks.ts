@@ -46,6 +46,12 @@ export function findGuestQrLink(qrLinks: QrLinkResponseDto[]): QrLinkResponseDto
     return qrLinks.find((link) => link.targetType === 'GUEST' && link.status !== 'REVOKED') ?? null;
 }
 
+// A link that brings a guest into the event: the join link or a personal invitation. The gallery upload code
+// and a lite event's guest code aren't invitations, even on an upgraded event that keeps its guest code.
+export function isInvitationQrLink(qrLink: QrLinkResponseDto): boolean {
+    return qrLink.targetType !== 'MEDIA_UPLOAD' && qrLink.targetType !== 'GUEST';
+}
+
 export function hasGalleryQrLink(qrLinks: QrLinkResponseDto[]): boolean {
     return findGalleryQrLink(qrLinks) !== null;
 }

@@ -195,6 +195,16 @@ describe('useHostMenuItems', () => {
         const { result } = renderHook(() => useHostMenuItems());
         expect(result.current.map((item) => item.key)).not.toContain('galleryQr');
     });
+
+    // A lite event (no posts) has no upload or invitation codes: its guest code lives on its home.
+    it('hides both QR pages on a lite event and keeps its gallery and wishbook tools', () => {
+        mocks.isHost = true;
+        mocks.activeEvent = event();
+        expect(renderHook(() => useHostMenuItems()).result.current.map((item) => item.key)).toEqual(['manage', 'help']);
+        expect(renderHook(() => useToolsMenuItems()).result.current.map((item) => item.key)).toEqual(
+            expect.arrayContaining(['gallery', 'wishbook']),
+        );
+    });
 });
 
 function vendorEvent() {

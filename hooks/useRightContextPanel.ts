@@ -13,7 +13,7 @@ import { useEventUsage } from '@/hooks/useUsage';
 import { useWishbook } from '@/hooks/useWishbook';
 import { isEventDeleted } from '@/lib/eventLifecycle';
 import { findPlanByCode } from '@/lib/planTiers';
-import { findGalleryQrLink, isGalleryQrFeatureEnabled } from '@/lib/qrLinks';
+import { findGalleryQrLink, isGalleryQrFeatureEnabled, isInvitationQrLink } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 
@@ -108,7 +108,7 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
         showGalleryQr,
         galleryQrLink: findGalleryQrLink(qrLinks.data ?? []),
         showInvitationsQr,
-        invitationsQrCount: (qrLinks.data ?? []).filter((link) => link.targetType !== 'MEDIA_UPLOAD' && link.status !== 'REVOKED').length,
+        invitationsQrCount: (qrLinks.data ?? []).filter((link) => isInvitationQrLink(link) && link.status !== 'REVOKED').length,
         showWishbookSummary,
         wishbookTitle: moduleCopy('wishbook').name,
         wishbookEntries: wishbook.data?.pages[0]?.content.slice(0, 2) ?? [],
