@@ -1,4 +1,5 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
+import type { ChangeEvent } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const exportMocks = vi.hoisted(() => ({
@@ -63,7 +64,7 @@ describe('useQrCardExport', () => {
         await waitFor(() => expect(downloadBlob).toHaveBeenCalled());
         expect(exportMocks.standaloneQrCardSvg).toHaveBeenCalledWith(result.current.svgRef.current, FONT, 'A5');
         expect(exportMocks.qrCardPng).toHaveBeenCalledWith('<svg/>', 'A5');
-        expect(exportMocks.qrCardPdfBytes).toHaveBeenCalledWith(expect.anything(), 'A5');
+        expect(exportMocks.qrCardPdfBytes).toHaveBeenCalledWith(expect.anything(), 'A5', null);
     });
 
     it('says so when a save fails, and lets the next one run', async () => {
@@ -89,5 +90,28 @@ describe('useQrCardExport', () => {
 
         await waitFor(() => expect(result.current.busy).toBeNull());
         expect(exportMocks.qrCardPng).toHaveBeenCalledTimes(1);
+    });
+
+    it('prints one card per page until the host picks a sheet', () => {
+        const { result } = renderExport();
+
+        expect(result.current.perPage).toBe('one');
+        expect(result.current.sheet).toBeNull();
+        expect(result.current.sheetCount).toBe(4);
+    });
+
+    it('saves a PDF of a full A4 sheet, and keeps the PNG to one card', async () => {
+        const { result } = renderExport('A5');
+
+        act(() => result.current.handlePerPageChange({ target: { value: 'sheet' } } as ChangeEvent<HTMLInputElement>));
+
+        expect(result.current.sheet?.cards).toHaveLength(2);
+        act(() => result.current.savePdf());
+        await waitFor(() => expect(downloadBlob).toHaveBeenCalledTimes(1));
+        expect(exportMocks.qrCardPdfBytes).toHaveBeenCalledWith(expect.anything(), 'A5', result.current.sheet);
+        act(() => result.current.savePng());
+        await waitFor(() => expect(downloadBlob).toHaveBeenCalledTimes(2));
+        expect(exportMocks.qrCardPng).toHaveBeenLastCalledWith('<svg/>', 'A5');
+        expect(downloadBlob.mock.calls[1][0]).toBe(PNG);
     });
 });
