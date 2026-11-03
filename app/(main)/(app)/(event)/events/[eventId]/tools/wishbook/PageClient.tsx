@@ -152,7 +152,7 @@ export default function WishbookPage() {
             {...(liteHome.isHome
                 ? { header: <LiteHomeHeader home={liteHome} /> }
                 : { backLabel: t('goBack'), backHref: isDeleted ? routes.events.manage(eventId) : routes.events.feed(eventId) })}
-            subtitle={subtitle}
+            subtitle={liteHome.isHome ? undefined : subtitle}
             notice={
                 isDeleted && deletionDate ? <ModuleNotice tone="warning">{t('deletedReadOnly', { date: deletionDate })}</ModuleNotice> : undefined
             }

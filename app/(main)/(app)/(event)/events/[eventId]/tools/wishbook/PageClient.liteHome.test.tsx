@@ -82,6 +82,7 @@ describe('Wishbook page as a lite event home', () => {
 
         expect(screen.getByRole('link', { name: 'goBack' })).toBeTruthy();
         expect(screen.getByRole('heading', { level: 1, name: 'wishbook' })).toBeTruthy();
+        expect(screen.getByText('wishbook description')).toBeTruthy();
         expect(screen.queryByRole('heading', { name: 'actionsTitle' })).toBeNull();
     });
 
@@ -90,6 +91,7 @@ describe('Wishbook page as a lite event home', () => {
         render(<WishbookPage />);
 
         expect(screen.queryByRole('link', { name: 'goBack' })).toBeNull();
+        expect(screen.queryByText('wishbook description')).toBeNull();
         // One h1: the banner's event title.
         expect(screen.getAllByRole('heading', { level: 1 }).map((heading) => heading.textContent)).toEqual(['Anna & Nick']);
         expect(screen.getByRole('heading', { name: 'actionsTitle' })).toBeTruthy();

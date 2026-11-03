@@ -127,7 +127,7 @@ export function GalleryScreen() {
             {...(liteHome.isHome
                 ? { header: <LiteHomeHeader home={liteHome} /> }
                 : { backLabel: t('backToTools'), backHref: isDeleted ? routes.events.manage(eventId) : routes.events.feed(eventId) })}
-            subtitle={isHost ? (liteHome.isHome ? undefined : t('hostSubtitle')) : galleryCopy.description}
+            subtitle={liteHome.isHome ? undefined : isHost ? t('hostSubtitle') : galleryCopy.description}
             notice={
                 <>
                     {!galleryEnabled && <ModuleNotice>{t('moduleUnavailable')}</ModuleNotice>}
