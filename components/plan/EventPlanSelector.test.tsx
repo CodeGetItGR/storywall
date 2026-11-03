@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { EventPlanSelector } from '@/components/plan/EventPlanSelector';
@@ -6,7 +6,7 @@ import type { MarketingPlanOption } from '@/hooks/useMarketingPlanOptions';
 import type { PlanTierResponseDto } from '@/lib/api/types';
 import type { LandingPlan } from '@/lib/landingPricing';
 
-const state = vi.hoisted(() => ({ options: { full: [], lite: [], liteFromPrice: null } as unknown }));
+const state = vi.hoisted(() => ({ options: { full: [], lite: [] } as unknown }));
 
 vi.mock('next-intl', () => ({
     useTranslations: () => (key: string, values?: { price?: string }) => (values?.price ? `${key} ${values.price}` : key),
@@ -48,25 +48,17 @@ const cardNames = () => screen.getAllByTestId('plan-card').map((card) => card.te
 afterEach(cleanup);
 
 describe('EventPlanSelector', () => {
-    it('keeps the lite plans behind the teaser while a full plan is selected', () => {
-        state.options = { full: [option('START')], lite: [option('QR')], liteFromPrice: '49€' };
+    it('shows the lite plans in their own section under the full plans', () => {
+        state.options = { full: [option('START')], lite: [option('QR')] };
         renderSelector('START');
+        expect(screen.getByRole('region', { name: 'liteHeading' })).toHaveTextContent('liteIntro');
+        expect(cardNames()).toEqual(['START', 'QR']);
+    });
+
+    it('shows no lite section without lite plans', () => {
+        state.options = { full: [option('START')], lite: [] };
+        renderSelector('START');
+        expect(screen.queryByRole('region', { name: 'liteHeading' })).not.toBeInTheDocument();
         expect(cardNames()).toEqual(['START']);
-
-        fireEvent.click(screen.getByRole('button', { name: 'liteTeaser 49€' }));
-        expect(cardNames()).toEqual(['START', 'QR']);
-    });
-
-    it('starts with the lite plans open when a lite plan is selected', () => {
-        state.options = { full: [option('START')], lite: [option('QR')], liteFromPrice: '49€' };
-        renderSelector('QR');
-        expect(screen.getByRole('button', { name: 'liteTeaser 49€' })).toHaveAttribute('aria-expanded', 'true');
-        expect(cardNames()).toEqual(['START', 'QR']);
-    });
-
-    it('shows no teaser without lite plans', () => {
-        state.options = { full: [option('START')], lite: [], liteFromPrice: null };
-        renderSelector('START');
-        expect(screen.queryByRole('button', { name: /liteTeaser/ })).not.toBeInTheDocument();
     });
 });

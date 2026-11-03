@@ -3,9 +3,8 @@
 import { useTranslations } from 'next-intl';
 
 import { LandingPricingCta } from '@/components/landing/LandingPricingCta';
-import { LitePlansTeaser } from '@/components/plan/LitePlansTeaser';
+import { LitePlansSection } from '@/components/plan/LitePlansSection';
 import { MarketingPlanCard } from '@/components/plan/MarketingPlanCard';
-import { useDisclosure } from '@/hooks/useDisclosure';
 import type { LandingPricingEventType } from '@/hooks/useLandingPricingPlans';
 import { cn } from '@/lib/utils';
 
@@ -20,17 +19,15 @@ type LandingLitePlansProps = {
     className?: string;
 };
 
-// The teaser line and, once opened, the event type's lite plans. Nothing without lite plans. Key it by
-// event type so it starts closed again after a switch.
+// The event type's lite plans in their own titled section. Nothing without lite plans.
 export function LandingLitePlans({ eventType, picks, onPickDurationAction, className }: LandingLitePlansProps) {
     const t = useTranslations('LandingPage.pricing');
-    const { open, toggle } = useDisclosure();
-    const { litePlans, liteFromPrice } = eventType;
-    if (litePlans.length === 0 || liteFromPrice === null) return null;
+    const { litePlans } = eventType;
+    if (litePlans.length === 0) return null;
     const count = Math.min(litePlans.length, 3);
 
     return (
-        <LitePlansTeaser className={className} label={t('liteTeaser', { price: liteFromPrice })} onToggleAction={toggle} open={open}>
+        <LitePlansSection className={className} heading={t('liteHeading')} intro={t('liteIntro')}>
             {/* Lite plan cards */}
             <div className={cn('mx-auto grid gap-5 min-[761px]:gap-6', LITE_WIDTH[count], LITE_COLUMNS[count])}>
                 {litePlans.map((plan) => (
@@ -57,6 +54,6 @@ export function LandingLitePlans({ eventType, picks, onPickDurationAction, class
                     />
                 ))}
             </div>
-        </LitePlansTeaser>
+        </LitePlansSection>
     );
 }

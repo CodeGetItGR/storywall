@@ -251,17 +251,3 @@ export function buildLandingRow(
         return presentation ? [{ config: plan, presentation }] : [];
     });
 }
-
-// The cheapest price across the plans' live durations, after promotions, formatted like a card's price.
-// Null when no plan has a duration on sale.
-export function cheapestLandingPrice(plans: PlanTierResponseDto[]): string | null {
-    const cheapest = plans
-        .flatMap((plan) =>
-            liveInitialOptions(plan).flatMap((option) => {
-                const price = formatLandingOptionPrice(plan, option);
-                return price === null ? [] : [{ amountMinor: promotedOptionAmountMinor(option, plan), price }];
-            }),
-        )
-        .reduce<{ amountMinor: number; price: string } | null>((best, entry) => (!best || entry.amountMinor < best.amountMinor ? entry : best), null);
-    return cheapest?.price ?? null;
-}

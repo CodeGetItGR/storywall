@@ -46,7 +46,6 @@ const GROUPS: LandingPricingGroup[] = [
                 label: 'Wedding',
                 plans: [landingPlan('START'), landingPlan('STORY'), landingPlan('SIGNATURE')],
                 litePlans: [landingPlan('QR'), landingPlan('BUNDLE')],
-                liteFromPrice: '49€',
                 qrPagePlans: [],
             },
             {
@@ -55,7 +54,6 @@ const GROUPS: LandingPricingGroup[] = [
                 label: 'Baby shower',
                 plans: [landingPlan('SHOWER')],
                 litePlans: [],
-                liteFromPrice: null,
                 qrPagePlans: [],
             },
         ],
@@ -70,7 +68,6 @@ const GROUPS: LandingPricingGroup[] = [
                 label: 'Reunion',
                 plans: [landingPlan('GOLD'), landingPlan('PLATINUM')],
                 litePlans: [],
-                liteFromPrice: null,
                 qrPagePlans: [],
             },
         ],
@@ -100,8 +97,13 @@ describe('LandingPricing', () => {
         render(<LandingPricing />);
 
         expect(screen.getByRole('combobox', { name: 'eventTypeLabel' })).toHaveTextContent('Wedding');
-        expect(cardNames()).toEqual(['START', 'STORY', 'SIGNATURE']);
-        expect(screen.getAllByRole('link', { name: /choose/ }).map((link) => link.getAttribute('href'))).toEqual([
+        expect(cardNames().slice(0, 3)).toEqual(['START', 'STORY', 'SIGNATURE']);
+        expect(
+            screen
+                .getAllByRole('link', { name: /choose/ })
+                .slice(0, 3)
+                .map((link) => link.getAttribute('href')),
+        ).toEqual([
             '/events/new?step=details&type=wedding&plan=START&option=o',
             '/events/new?step=details&type=wedding&plan=STORY&option=o',
             '/events/new?step=details&type=wedding&plan=SIGNATURE&option=o',
@@ -109,16 +111,12 @@ describe('LandingPricing', () => {
         expect(screen.getByRole('link', { name: /choose.*STORY/ })).toBeInTheDocument();
     });
 
-    it('keeps the lite plans behind the teaser until it is opened, and closes them on a type switch', async () => {
+    it('shows the lite plans in their own section under the full plans, and none for a type without them', async () => {
         state.result = { groups: GROUPS, defaultEventTypeId: 'wedding' };
         render(<LandingPricing />);
 
-        const teaser = screen.getByRole('button', { name: 'liteTeaser' });
-        expect(teaser).toHaveAttribute('aria-expanded', 'false');
-        expect(cardNames()).toEqual(['START', 'STORY', 'SIGNATURE']);
-
-        fireEvent.click(teaser);
-        expect(teaser).toHaveAttribute('aria-expanded', 'true');
+        const section = screen.getByRole('region', { name: 'liteHeading' });
+        expect(section).toHaveTextContent('liteIntro');
         expect(cardNames()).toEqual(['START', 'STORY', 'SIGNATURE', 'QR', 'BUNDLE']);
         expect(screen.getByRole('link', { name: /choose.*BUNDLE/ })).toHaveAttribute(
             'href',
@@ -127,7 +125,8 @@ describe('LandingPricing', () => {
 
         await act(async () => fireEvent.click(screen.getByRole('combobox', { name: 'eventTypeLabel' })));
         await act(async () => fireEvent.click(screen.getByRole('option', { name: 'Baby shower' })));
-        expect(screen.queryByRole('button', { name: 'liteTeaser' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('region', { name: 'liteHeading' })).not.toBeInTheDocument();
+        expect(cardNames()).toEqual(['SHOWER']);
     });
 
     it('opens on the type in ?event=', () => {

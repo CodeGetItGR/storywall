@@ -48,14 +48,13 @@ const PLANS = [
 ];
 
 describe('useMarketingPlanOptions', () => {
-    it('splits full and lite plans into their own rows and prices the teaser from the cheapest lite plan', () => {
+    it('splits full and lite plans into their own rows', () => {
         const { result } = renderHook(() => useMarketingPlanOptions({ plans: PLANS, modules: [], media: MEDIA }));
 
         expect(result.current.full.map((option) => option.config.code)).toEqual(['START', 'STORY']);
         expect(result.current.full.map((option) => option.featured)).toEqual([false, true]);
         expect(result.current.lite.map((option) => option.config.code)).toEqual(['QR', 'BUNDLE']);
         expect(result.current.lite.some((option) => option.featured)).toBe(false);
-        expect(result.current.liteFromPrice).toBe('49€');
     });
 
     it('shows lite plans as the whole picker when there are no full plans', () => {
@@ -63,12 +62,11 @@ describe('useMarketingPlanOptions', () => {
 
         expect(result.current.full.map((option) => option.config.code)).toEqual(['QR', 'BUNDLE']);
         expect(result.current.lite).toEqual([]);
-        expect(result.current.liteFromPrice).toBeNull();
     });
 
     it('returns nothing before the media config loads', () => {
         const { result } = renderHook(() => useMarketingPlanOptions({ plans: PLANS, modules: [], media: null }));
 
-        expect(result.current).toEqual({ full: [], lite: [], liteFromPrice: null });
+        expect(result.current).toEqual({ full: [], lite: [] });
     });
 });
