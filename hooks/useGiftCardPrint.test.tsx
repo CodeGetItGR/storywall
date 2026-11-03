@@ -10,6 +10,8 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('next-intl', () => ({
     useTranslations: () => (key: string, values?: Record<string, unknown>) => (values ? `${key} ${JSON.stringify(values)}` : key),
+
+    useLocale: () => 'en',
 }));
 vi.mock('@/hooks/useGift', () => ({ useEventGift: () => mocks.gift, useIssuedGiftCard: () => mocks.issued }));
 vi.mock('@/hooks/useQrCardTemplates', () => ({ useQrCardTemplates: () => mocks.templates }));

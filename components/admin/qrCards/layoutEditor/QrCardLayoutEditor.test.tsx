@@ -62,9 +62,9 @@ describe('QrCardLayoutEditor', () => {
 
     it('moves the code with the keyboard and saves the layout', async () => {
         const { onSaved, onClose } = renderEditor();
-        const code = screen.getByRole('button', { name: 'elements.code' });
+        const code = screen.getByRole('button', { name: /^elements\.code/ });
         fireEvent.focus(code);
-        // Sideways: nothing shares the code's rows, so it moves the full 5 mm.
+        // Shift moves 5 mm.
         fireEvent.keyDown(code, { key: 'ArrowRight', shiftKey: true });
 
         expect(screen.getByText(/position .*"x":"25.5"/)).toBeInTheDocument();
@@ -77,14 +77,33 @@ describe('QrCardLayoutEditor', () => {
 
     it('turns the panel off and shows the scan note', () => {
         renderEditor();
-        fireEvent.focus(screen.getByRole('button', { name: 'elements.code' }));
+        fireEvent.focus(screen.getByRole('button', { name: /^elements\.code/ }));
         fireEvent.click(screen.getByRole('switch', { name: 'panel' }));
         expect(screen.getByText('panelOffNote')).toBeInTheDocument();
     });
 
+    it('adds a text field, saves its words, and removes the title', async () => {
+        renderEditor();
+        fireEvent.click(screen.getByRole('button', { name: 'addFixed' }));
+        expect(screen.getByRole('button', { name: /^elements\.fixed/ })).toBeInTheDocument();
+        fireEvent.change(screen.getByRole('textbox', { name: 'fieldText.en' }), { target: { value: 'Thank you' } });
+        fireEvent.change(screen.getByRole('textbox', { name: 'fieldText.el' }), { target: { value: 'Ευχαριστούμε' } });
+
+        fireEvent.focus(screen.getByRole('button', { name: /^elements\.title/ }));
+        fireEvent.click(screen.getByRole('button', { name: 'removeTitle' }));
+        expect(screen.queryByRole('button', { name: /^elements\.title/ })).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'restoreTitle' })).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'save' }));
+        await vi.waitFor(() => expect(patch.mutateAsync).toHaveBeenCalled());
+        const layout = patch.mutateAsync.mock.calls[0][0].input.layout;
+        expect(layout.title).toBeNull();
+        expect(layout.fields).toEqual([expect.objectContaining({ kind: 'fixed', text: { en: 'Thank you', el: 'Ευχαριστούμε' } })]);
+    });
+
     it('asks before discarding changes', () => {
         const { onClose } = renderEditor();
-        fireEvent.focus(screen.getByRole('button', { name: 'elements.title' }));
+        fireEvent.focus(screen.getByRole('button', { name: /^elements\.title/ }));
         fireEvent.click(screen.getByRole('radio', { name: 'alignOptions.left' }));
         fireEvent.click(screen.getByRole('button', { name: 'cancel' }));
         expect(onClose).not.toHaveBeenCalled();
@@ -93,7 +112,7 @@ describe('QrCardLayoutEditor', () => {
 
     it('asks before discarding on Escape from the toolbar', () => {
         const { onClose } = renderEditor();
-        fireEvent.focus(screen.getByRole('button', { name: 'elements.title' }));
+        fireEvent.focus(screen.getByRole('button', { name: /^elements\.title/ }));
         fireEvent.click(screen.getByRole('radio', { name: 'alignOptions.left' }));
         const reset = screen.getByRole('button', { name: 'reset' });
         // The first Escape deselects, the second asks.

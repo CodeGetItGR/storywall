@@ -11,6 +11,8 @@ const mocks = vi.hoisted(() => ({
 vi.mock('next/navigation', () => ({ useParams: () => ({ qrLinkId: 'qr-1' }), useRouter: () => ({ replace: mocks.replace }) }));
 vi.mock('next-intl', () => ({
     useTranslations: () => (key: string, values?: Record<string, unknown>) => (values ? `${key} ${JSON.stringify(values)}` : key),
+
+    useLocale: () => 'en',
 }));
 vi.mock('@/components/routing/EventRouteGate', () => ({
     useEventRouteContext: () => ({ eventId: 'e1', activeEvent: { title: 'Maria & Nikos' }, isHost: true }),

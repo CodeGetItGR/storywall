@@ -6,12 +6,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useQrCardTemplateDrawer } from '@/hooks/useQrCardTemplateDrawer';
 import { ApiError } from '@/lib/api/client';
 import type { AdminQrCardTemplateDto, AdminThemeFontDto } from '@/lib/api/types';
-import { DEFAULT_QR_CARD_LAYOUT } from '@/lib/qrCardLayout';
+import { DEFAULT_QR_CARD_LAYOUT, DEFAULT_QR_CARD_TITLE } from '@/lib/qrCardLayout';
 
 const mocks = vi.hoisted(() => ({
     create: vi.fn(),
     patch: vi.fn(),
     upload: vi.fn(),
+    duplicate: vi.fn(),
     fonts: { data: [] as AdminThemeFontDto[] | undefined, isPending: false, isError: false },
 }));
 
@@ -20,6 +21,7 @@ vi.mock('@/hooks/useAdminQrCardTemplates', () => ({
     useCreateQrCardTemplate: () => ({ mutateAsync: mocks.create, isPending: false }),
     usePatchQrCardTemplate: () => ({ mutateAsync: mocks.patch, isPending: false }),
     useUploadQrCardArtwork: () => ({ mutateAsync: mocks.upload, isPending: false }),
+    useDuplicateQrCardTemplate: () => ({ mutateAsync: mocks.duplicate, isPending: false }),
 }));
 vi.mock('@/hooks/useAdminThemeFonts', () => ({ adminThemeFontKeys: { all: ['admin', 'theme-fonts'] }, useAdminThemeFonts: () => mocks.fonts }));
 vi.mock('next-intl', () => ({ useLocale: () => 'en' }));
@@ -57,8 +59,8 @@ function submitEvent() {
     return { preventDefault: vi.fn() } as unknown as React.SubmitEvent<HTMLFormElement>;
 }
 
-function renderDrawer(template: AdminQrCardTemplateDto | null = null, onDoneAction = vi.fn()) {
-    return renderHook(() => useQrCardTemplateDrawer({ template, sortOrder: 2, onDoneAction }), { wrapper });
+function renderDrawer(template: AdminQrCardTemplateDto | null = null, onDoneAction = vi.fn(), onDuplicatedAction = vi.fn()) {
+    return renderHook(() => useQrCardTemplateDrawer({ template, sortOrder: 2, onDoneAction, onDuplicatedAction }), { wrapper });
 }
 
 beforeEach(() => {
@@ -67,6 +69,7 @@ beforeEach(() => {
     mocks.create.mockReset();
     mocks.patch.mockReset();
     mocks.upload.mockReset();
+    mocks.duplicate.mockReset();
     URL.createObjectURL = vi.fn(() => 'blob:artwork');
     URL.revokeObjectURL = vi.fn();
 });
@@ -76,8 +79,27 @@ afterEach(() => {
 });
 
 describe('useQrCardTemplateDrawer', () => {
+    it('duplicates the saved design and opens the copy', async () => {
+        const copy = { ...LINEN, id: 't2', archived: true };
+        mocks.duplicate.mockResolvedValue(copy);
+        const onDuplicatedAction = vi.fn();
+        const { result } = renderDrawer(LINEN, vi.fn(), onDuplicatedAction);
+        expect(result.current.hasUnsavedChanges).toBe(false);
+
+        await act(() => result.current.duplicate());
+
+        expect(mocks.duplicate).toHaveBeenCalledWith('t1');
+        expect(onDuplicatedAction).toHaveBeenCalledWith(copy);
+    });
+
+    it('counts an edit as unsaved, so the copy waits for a save', () => {
+        const { result } = renderDrawer(LINEN);
+        act(() => result.current.handleFieldChange(field('nameEn', 'Linen 2')));
+        expect(result.current.hasUnsavedChanges).toBe(true);
+    });
+
     it('previews the saved layout, or the default without one', () => {
-        const layout = { ...DEFAULT_QR_CARD_LAYOUT, title: { ...DEFAULT_QR_CARD_LAYOUT.title, align: 'left' as const } };
+        const layout = { ...DEFAULT_QR_CARD_LAYOUT, title: { ...DEFAULT_QR_CARD_TITLE, align: 'left' as const } };
         expect(renderDrawer({ ...LINEN, layout }).result.current.previewStyle.layout).toEqual(layout);
         expect(renderDrawer(LINEN).result.current.previewStyle.layout).toEqual(DEFAULT_QR_CARD_LAYOUT);
     });

@@ -3,7 +3,14 @@
 // since flipped every route; reconcile against Swagger (/v3/api-docs) if a
 // path here 404s.
 
-import type { OutreachProspectQuery, OutreachRequestStatus, PartnerApplicationStatus, RsvpReportType, SignupChannel, VendorContactStatus } from '@/lib/api/types';
+import type {
+    OutreachProspectQuery,
+    OutreachRequestStatus,
+    PartnerApplicationStatus,
+    RsvpReportType,
+    SignupChannel,
+    VendorContactStatus,
+} from '@/lib/api/types';
 
 export const endpoints = {
     betaFeedback: {
@@ -403,7 +410,9 @@ export const endpoints = {
                 return `/api/admin/metrics/campaigns/overview${params.length ? `?${params.join('&')}` : ''}`;
             },
             linkClicks: (since?: string | null, until?: string | null) => {
-                const params = [since ? `since=${encodeURIComponent(since)}` : null, until ? `until=${encodeURIComponent(until)}` : null].filter(Boolean);
+                const params = [since ? `since=${encodeURIComponent(since)}` : null, until ? `until=${encodeURIComponent(until)}` : null].filter(
+                    Boolean,
+                );
                 return `/api/admin/metrics/link-clicks${params.length ? `?${params.join('&')}` : ''}`;
             },
             visitors: (since?: string | null, until?: string | null, fresh = false) => {
@@ -476,6 +485,7 @@ export const endpoints = {
             list: '/api/admin/qr-card-templates',
             byId: (id: string) => `/api/admin/qr-card-templates/${id}`,
             artwork: (id: string) => `/api/admin/qr-card-templates/${id}/artwork`,
+            duplicate: (id: string) => `/api/admin/qr-card-templates/${id}/duplicate`,
         },
         themeFonts: {
             list: '/api/admin/theme-fonts',
