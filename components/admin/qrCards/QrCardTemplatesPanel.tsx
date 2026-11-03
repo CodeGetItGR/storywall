@@ -101,6 +101,7 @@ export function QrCardTemplatesPanel() {
                     sortOrder={catalog.createSortOrder}
                     eventTypes={catalog.eventTypes}
                     onCloseAction={catalog.closeDrawer}
+                    onDuplicatedAction={catalog.openTemplate}
                 />
             )}
         </div>

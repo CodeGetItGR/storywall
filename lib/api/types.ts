@@ -1048,10 +1048,32 @@ export interface EventThemeFontDto {
 
 // QR card layout (qr-card-layout-editor spec): boxes in A6 millimetres from the card's top-left corner.
 export type QrCardTextAlign = 'left' | 'center' | 'right';
+// Boxes may overlap (KAN-103): the code draws on top, then the fields in order.
 export interface QrCardLayoutDto {
-    title: { x: number; y: number; width: number; height: number; maxSize: number; align: QrCardTextAlign };
+    title: { x: number; y: number; width: number; height: number; maxSize: number; align: QrCardTextAlign } | null; // null = removed
     code: { x: number; y: number; size: number; panel: boolean; radius: number };
     lines: { x: number; y: number; width: number; height: number; textSize: number; align: QrCardTextAlign };
+    fields?: QrCardTextFieldDto[]; // up to 5; absent on layouts saved before KAN-103
+}
+
+// fixed: prints `text`. host: prints what the host types (nothing when empty), with `label` and `placeholder` on the input.
+export type QrCardFieldKind = 'fixed' | 'host';
+export type QrCardFieldFont = 'heading' | 'body';
+export interface QrCardTextFieldDto {
+    id: string;
+    kind: QrCardFieldKind;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    textSize: number;
+    align: QrCardTextAlign;
+    font: QrCardFieldFont;
+    bold: boolean;
+    color: string; // #RRGGBB
+    text: LocalizedText | null; // fixed only, en + el
+    label: LocalizedText | null; // host only, en + el
+    placeholder: LocalizedText | null; // host only, en + el, may be blank
 }
 
 // The paper sizes a card prints at. One SVG serves both: A5 is A6 drawn larger.

@@ -50,6 +50,8 @@ export function useQrCardTemplatesCatalog() {
         },
         [templates],
     );
+    // A fresh copy isn't in the list until it refetches, so it opens from the server's answer.
+    const openTemplate = useCallback((template: AdminQrCardTemplateDto) => setDrawer({ open: true, template }), []);
     const closeDrawer = useCallback(() => setDrawer({ open: false }), []);
 
     return {
@@ -69,6 +71,7 @@ export function useQrCardTemplatesCatalog() {
         handleSearchChange,
         openCreate,
         openEdit,
+        openTemplate,
         closeDrawer,
         moveTemplate: move.move,
         reorderTemplate: move.reorder,

@@ -29,7 +29,7 @@ export function QrCardLayoutEditor({
     onCloseAction: () => void;
 }) {
     const t = useTranslations('AdminPage.qrCards.layout');
-    const editor = useQrCardLayoutEditor({ template, onSavedAction, onCloseAction });
+    const editor = useQrCardLayoutEditor({ template, textColor: style.textColor, onSavedAction, onCloseAction });
     const pointer = useQrCardLayoutPointer({ layout: editor.layout, setLayout: editor.setLayout, select: editor.select });
 
     return (
@@ -49,6 +49,7 @@ export function QrCardLayoutEditor({
                     style={{ ...style, layout: editor.layout }}
                     title={editor.sampleTitle}
                     lines={editor.sampleLines}
+                    fields={editor.sampleFields}
                     selected={editor.selected}
                     pointer={pointer}
                     onElementFocusAction={editor.handleElementFocus}

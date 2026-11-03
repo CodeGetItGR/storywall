@@ -1,6 +1,6 @@
 'use client';
 
-import { ImagePlus, LayoutTemplate, Loader2 } from 'lucide-react';
+import { Copy, ImagePlus, LayoutTemplate, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useId } from 'react';
 
@@ -25,16 +25,18 @@ export function QrCardTemplateDrawer({
     sortOrder,
     eventTypes,
     onCloseAction,
+    onDuplicatedAction,
 }: {
     template: AdminQrCardTemplateDto | null;
     sortOrder: number;
     eventTypes: Array<{ eventTypeKey: EventTypeConvention; label: string }>;
     onCloseAction: () => void;
+    onDuplicatedAction: (copy: AdminQrCardTemplateDto) => void;
 }) {
     const t = useTranslations('AdminPage.qrCards.drawer');
     const tPreview = useTranslations('AdminPage.qrCards.preview');
     const tLayout = useTranslations('AdminPage.qrCards.layout');
-    const form = useQrCardTemplateDrawer({ template, sortOrder, onDoneAction: onCloseAction });
+    const form = useQrCardTemplateDrawer({ template, sortOrder, onDoneAction: onCloseAction, onDuplicatedAction });
     const { codeHint, fontHint, fontLabel, serverError, artworkHint } = useQrCardTemplateDrawerCopy(form);
     const hintIdPrefix = useId();
     const nameEnHintId = `${hintIdPrefix}-name-en`;
@@ -44,7 +46,26 @@ export function QrCardTemplateDrawer({
     const layoutHintId = `${hintIdPrefix}-layout`;
 
     const footer = (
-        <div className="flex w-full items-center justify-end gap-2">
+        <div className="flex w-full flex-wrap items-center justify-end gap-2">
+            {/* Duplicate */}
+            {!form.isCreate && (
+                <div className="mr-auto flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={form.duplicate}
+                        disabled={form.isSaving || form.hasUnsavedChanges || form.failure?.kind === 'notFound'}
+                        className="inline-flex h-9 items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold text-ink hover:bg-canvas disabled:opacity-50"
+                    >
+                        {form.isDuplicating ? (
+                            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                        ) : (
+                            <Copy className="h-4 w-4" aria-hidden="true" />
+                        )}
+                        {t('duplicate')}
+                    </button>
+                    {form.hasUnsavedChanges && <span className="text-xs text-ink-muted">{t('duplicateUnsaved')}</span>}
+                </div>
+            )}
             {/* Save */}
             <button
                 type="button"

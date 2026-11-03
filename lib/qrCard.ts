@@ -1,6 +1,14 @@
 import type { EventModuleResponseDto, EventThemeFontDto, QrCardSize, QrCardTemplateDto, QrCardTextAlign, QrTargetType } from '@/lib/api/types';
 import { guestCodeActions } from '@/lib/liteEvents';
-import { DEFAULT_QR_CARD_LAYOUT, type QrCardLayout } from '@/lib/qrCardLayout';
+import { resolveLocalizedText } from '@/lib/localizedText';
+import {
+    DEFAULT_QR_CARD_LAYOUT,
+    DEFAULT_QR_CARD_TITLE,
+    type QrCardLayout,
+    qrCardLayoutOf,
+    type QrCardTextField,
+    type QrCardTitleBox,
+} from '@/lib/qrCardLayout';
 
 // A6 portrait in millimetres: the card SVG's user units.
 export const QR_CARD_WIDTH = 105;
@@ -62,7 +70,7 @@ export function qrCardStyleOf(template: QrCardTemplateDto): QrCardStyle {
         headingFont: template.headingFont,
         codeColor: template.codeColor,
         centerLogo: template.centerLogo,
-        layout: template.layout ?? DEFAULT_QR_CARD_LAYOUT,
+        layout: qrCardLayoutOf(template.layout),
         sizes: template.sizes,
     };
 }
@@ -112,7 +120,7 @@ export type TextBox = { width: number; maxLines: number; maxSize: number; minSiz
 const TITLE_MIN_SIZE = 5;
 
 // The title's text box: up to two lines, shrinking from the layout's maximum to 5 mm to fit.
-export function titleTextBox(title: QrCardLayout['title']): TextBox {
+export function titleTextBox(title: QrCardTitleBox): TextBox {
     return { width: title.width, maxLines: 2, maxSize: title.maxSize, minSize: Math.min(TITLE_MIN_SIZE, title.maxSize), maxHeight: title.height };
 }
 
@@ -135,7 +143,7 @@ export function lineTextBoxes(width: number, textSize: number): Record<QrCardLin
 }
 
 // The default layout's boxes: today's.
-export const QR_CARD_TITLE_BOX = titleTextBox(DEFAULT_QR_CARD_LAYOUT.title);
+export const QR_CARD_TITLE_BOX = titleTextBox(DEFAULT_QR_CARD_TITLE);
 export const QR_CARD_LINE_BOXES = lineTextBoxes(DEFAULT_QR_CARD_LAYOUT.lines.width, DEFAULT_QR_CARD_LAYOUT.lines.textSize);
 
 const LINE_HEIGHT = 1.2;
@@ -267,9 +275,44 @@ function place<T extends FittedText>(
 }
 
 // The title, centred vertically in its box and aligned across it.
-export function layoutTitle(title: string, box: QrCardLayout['title'] = DEFAULT_QR_CARD_LAYOUT.title): PlacedText {
+export function layoutTitle(title: string, box: QrCardTitleBox = DEFAULT_QR_CARD_TITLE): PlacedText {
     const fitted = fitText(title, titleTextBox(box));
     return place(fitted, box.y + (box.height - blockHeight(fitted)) / 2, anchorOf(box));
+}
+
+// An added field: up to three lines, shrinking from its text size to fit its box, centred vertically in it.
+const FIELD_MAX_LINES = 3;
+const FIELD_MIN_SIZE = 3;
+
+export function layoutField(text: string, field: QrCardTextField): PlacedText {
+    const box: TextBox = {
+        width: field.width,
+        maxLines: FIELD_MAX_LINES,
+        maxSize: field.textSize,
+        minSize: Math.min(FIELD_MIN_SIZE, field.textSize),
+        maxHeight: field.height,
+    };
+    const fitted = fitText(text, box);
+    return place(fitted, field.y + (field.height - blockHeight(fitted)) / 2, anchorOf(field));
+}
+
+// What each added field prints, by id: a fixed field its text in the card's language, a host field what the
+// host typed (nothing when empty).
+export function qrCardFieldTexts(layout: QrCardLayout, locale: string, values: Record<string, string>): Record<string, string> {
+    return Object.fromEntries(
+        layout.fields.map((field) => [field.id, field.kind === 'fixed' ? resolveLocalizedText(field.text, locale) : (values[field.id] ?? '')]),
+    );
+}
+
+// The admin's sample: a host field shows its placeholder, or its label when that is blank, so its spot is visible.
+export function qrCardSampleFieldTexts(layout: QrCardLayout, locale: string): Record<string, string> {
+    return Object.fromEntries(
+        layout.fields.map((field) => {
+            if (field.kind === 'fixed') return [field.id, resolveLocalizedText(field.text, locale)];
+            const placeholder = resolveLocalizedText(field.placeholder, locale).trim();
+            return [field.id, placeholder || resolveLocalizedText(field.label, locale)];
+        }),
+    );
 }
 
 function fitLines(lines: QrCardLine[], boxes: Record<QrCardLineTone, TextBox>, scale: number): Array<FittedText & { tone: QrCardLineTone }> {

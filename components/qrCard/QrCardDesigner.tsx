@@ -46,6 +46,7 @@ export function QrCardDesigner({
                     url={url}
                     title={designer.text.title}
                     lines={lines}
+                    fields={designer.fieldTexts}
                     label={label}
                     className="block h-auto w-full"
                 />
@@ -63,7 +64,14 @@ export function QrCardDesigner({
             />
 
             {/* Text */}
-            <QrCardTextFields text={designer.text} showGiver={designer.showGiver} onChangeAction={designer.handleTextChange} />
+            <QrCardTextFields
+                text={designer.text}
+                showTitle={designer.showTitle}
+                showGiver={designer.showGiver}
+                hostFields={designer.hostFields}
+                onChangeAction={designer.handleTextChange}
+                onFieldChangeAction={designer.handleFieldChange}
+            />
 
             {/* Options */}
             {children}

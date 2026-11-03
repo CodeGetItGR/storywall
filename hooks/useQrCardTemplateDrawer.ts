@@ -4,7 +4,13 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useLocale } from 'next-intl';
 import { type ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { adminQrCardTemplateKeys, useCreateQrCardTemplate, usePatchQrCardTemplate, useUploadQrCardArtwork } from '@/hooks/useAdminQrCardTemplates';
+import {
+    adminQrCardTemplateKeys,
+    useCreateQrCardTemplate,
+    useDuplicateQrCardTemplate,
+    usePatchQrCardTemplate,
+    useUploadQrCardArtwork,
+} from '@/hooks/useAdminQrCardTemplates';
 import { adminThemeFontKeys, useAdminThemeFonts } from '@/hooks/useAdminThemeFonts';
 import {
     buildQrCardTemplateCreatePayload,
@@ -21,7 +27,7 @@ import type { AdminQrCardTemplateDto, EventThemeFontDto, EventTypeConvention } f
 import { isHexColor } from '@/lib/eventTheme';
 import { resolveLocalizedText } from '@/lib/localizedText';
 import { QR_CARD_INK, type QrCardStyle } from '@/lib/qrCard';
-import { DEFAULT_QR_CARD_LAYOUT } from '@/lib/qrCardLayout';
+import { qrCardLayoutOf } from '@/lib/qrCardLayout';
 
 export type QrCardTemplateDrawerError = { kind: 'notFound' } | { kind: 'other'; error: unknown };
 export type QrCardTemplateAvailability = 'AVAILABLE' | 'ARCHIVED';
@@ -38,20 +44,24 @@ function colorInputValue(value: string): string {
     return (isHexColor(value) ? value : QR_CARD_INK).toLowerCase();
 }
 
+// onDuplicatedAction: the copy was made; the caller opens it.
 export function useQrCardTemplateDrawer({
     template,
     sortOrder,
     onDoneAction,
+    onDuplicatedAction,
 }: {
     template: AdminQrCardTemplateDto | null;
     sortOrder: number;
     onDoneAction: () => void;
+    onDuplicatedAction: (copy: AdminQrCardTemplateDto) => void;
 }) {
     const locale = useLocale();
     const queryClient = useQueryClient();
     const create = useCreateQrCardTemplate();
     const patch = usePatchQrCardTemplate();
     const upload = useUploadQrCardArtwork();
+    const duplicateMutation = useDuplicateQrCardTemplate();
     const fonts = useAdminThemeFonts();
 
     // After a create the drawer edits the new design, so retrying a failed upload doesn't create it twice.
@@ -102,7 +112,7 @@ export function useQrCardTemplateDrawer({
             headingFont: previewFont,
             codeColor: isHexColor(draft.codeColor) ? draft.codeColor : QR_CARD_INK,
             centerLogo: draft.centerLogo,
-            layout: saved?.layout ?? DEFAULT_QR_CARD_LAYOUT,
+            layout: qrCardLayoutOf(saved?.layout),
             // The preview never prints, so its sizes don't matter.
             sizes: ['A6'],
         }),
@@ -188,6 +198,22 @@ export function useQrCardTemplateDrawer({
         [create, draft, errors, file, onDoneAction, patch, queryClient, saved, sortOrder, upload],
     );
 
+    // The copy is of the saved design, so unsaved changes must be saved first.
+    const hasUnsavedChanges = saved !== null && (file !== null || Object.keys(buildQrCardTemplatePatchPayload(saved, draft)).length > 0);
+    const duplicate = useCallback(async () => {
+        if (saved === null || submitting.current) return;
+        submitting.current = true;
+        setFailure(null);
+        try {
+            const copy = await duplicateMutation.mutateAsync(saved.id);
+            if (mounted.current) onDuplicatedAction(copy);
+        } catch (error) {
+            if (mounted.current) setFailure(classifyError(error));
+        } finally {
+            submitting.current = false;
+        }
+    }, [duplicateMutation, onDuplicatedAction, saved]);
+
     return {
         isCreate,
         // The saved design's name, for the heading once a create has gone through.
@@ -214,7 +240,10 @@ export function useQrCardTemplateDrawer({
         openLayoutEditor,
         closeLayoutEditor,
         handleLayoutSaved,
-        isSaving: create.isPending || patch.isPending || upload.isPending,
+        isSaving: create.isPending || patch.isPending || upload.isPending || duplicateMutation.isPending,
+        isDuplicating: duplicateMutation.isPending,
+        hasUnsavedChanges,
+        duplicate,
         handleFieldChange,
         handleEventTypeChange,
         handleCenterLogoChange,

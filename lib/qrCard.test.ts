@@ -15,7 +15,7 @@ import {
     qrCardLineKey,
     qrCardStyleOf,
 } from '@/lib/qrCard';
-import { DEFAULT_QR_CARD_LAYOUT } from '@/lib/qrCardLayout';
+import { DEFAULT_QR_CARD_LAYOUT, DEFAULT_QR_CARD_TITLE } from '@/lib/qrCardLayout';
 
 describe('fitText', () => {
     it('keeps a short title at the largest size, on one line', () => {
@@ -139,7 +139,7 @@ describe('layoutLines', () => {
 });
 
 describe('layout boxes', () => {
-    const title = DEFAULT_QR_CARD_LAYOUT.title;
+    const title = DEFAULT_QR_CARD_TITLE;
 
     it('anchors the title to the left or right edge of its box', () => {
         expect(layoutTitle('Anna', { ...title, x: 10, width: 50, align: 'left' })).toMatchObject({ x: 10, anchor: 'start' });
