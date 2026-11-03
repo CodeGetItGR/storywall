@@ -4,7 +4,7 @@ import { useLocale } from 'next-intl';
 import { type ChangeEvent, useCallback, useMemo, useState } from 'react';
 
 import { useAdminPlatformEventTypes } from '@/hooks/useAdmin';
-import { useAdminQrCardTemplates, useMoveQrCardTemplate } from '@/hooks/useAdminQrCardTemplates';
+import { useAdminQrCardTemplates, useDuplicateQrCardTemplate, useMoveQrCardTemplate } from '@/hooks/useAdminQrCardTemplates';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import type { Locale } from '@/i18n/config';
 import { filterQrCardTemplates, type QrCardStatusFilter, sortQrCardTemplates } from '@/lib/adminQrCards';
@@ -54,6 +54,16 @@ export function useQrCardTemplatesCatalog() {
     const openTemplate = useCallback((template: AdminQrCardTemplateDto) => setDrawer({ open: true, template }), []);
     const closeDrawer = useCallback(() => setDrawer({ open: false }), []);
 
+    // A row's copy opens as soon as the server makes it.
+    const duplicateMutation = useDuplicateQrCardTemplate();
+    const duplicateTemplate = useCallback(
+        (templateId: string) => {
+            if (duplicateMutation.isPending) return;
+            duplicateMutation.mutate(templateId, { onSuccess: openTemplate });
+        },
+        [duplicateMutation, openTemplate],
+    );
+
     return {
         templates,
         visibleTemplates: move.arrange(visibleTemplates),
@@ -64,6 +74,8 @@ export function useQrCardTemplatesCatalog() {
         setStatus,
         canReorder,
         moveError: move.error,
+        duplicateError: duplicateMutation.error,
+        duplicatingId: duplicateMutation.isPending ? (duplicateMutation.variables ?? null) : null,
         drawer,
         createSortOrder: nextSortOrder(templates),
         isLoading: templatesQuery.isLoading || eventTypesQuery.isLoading,
@@ -73,6 +85,7 @@ export function useQrCardTemplatesCatalog() {
         openEdit,
         openTemplate,
         closeDrawer,
+        duplicateTemplate,
         moveTemplate: move.move,
         reorderTemplate: move.reorder,
     };

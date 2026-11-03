@@ -1,6 +1,6 @@
 'use client';
 
-import { Pencil } from 'lucide-react';
+import { Copy, Loader2, Pencil } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { AdminOrderArrows } from '@/components/admin/AdminOrderArrows';
@@ -27,6 +27,9 @@ export function QrCardTemplateRow({
     canReorder,
     onMoveAction,
     onEditAction,
+    isDuplicating,
+    canDuplicate,
+    onDuplicateAction,
 }: {
     template: AdminQrCardTemplateDto;
     eventTypeLabels: Record<string, string>;
@@ -35,6 +38,9 @@ export function QrCardTemplateRow({
     canReorder: boolean;
     onMoveAction: (templateId: string, direction: MoveDirection) => void;
     onEditAction: (templateId: string) => void;
+    isDuplicating: boolean;
+    canDuplicate: boolean;
+    onDuplicateAction: (templateId: string) => void;
 }) {
     const t = useTranslations('AdminPage.qrCards');
     const tAlt = useTranslations('ImageAlt');
@@ -44,6 +50,10 @@ export function QrCardTemplateRow({
 
     function handleEdit() {
         onEditAction(template.id);
+    }
+
+    function handleDuplicate() {
+        onDuplicateAction(template.id);
     }
 
     return (
@@ -96,8 +106,21 @@ export function QrCardTemplateRow({
             <td className="px-3 py-2.5">
                 <AdminOrderArrows id={template.id} name={name} isFirst={isFirst} isLast={isLast} disabled={!canReorder} onMoveAction={onMoveAction} />
             </td>
-            {/* Edit */}
-            <td className="px-3 py-2.5 text-right">
+            {/* Actions */}
+            <td className="px-3 py-2.5 text-right whitespace-nowrap">
+                <button
+                    type="button"
+                    onClick={handleDuplicate}
+                    disabled={!canDuplicate}
+                    aria-label={t('duplicate', { name })}
+                    className="rounded-md p-1.5 text-ink-muted hover:bg-canvas hover:text-ink disabled:opacity-50"
+                >
+                    {isDuplicating ? (
+                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    ) : (
+                        <Copy className="h-4 w-4" aria-hidden="true" />
+                    )}
+                </button>
                 <button
                     type="button"
                     onClick={handleEdit}

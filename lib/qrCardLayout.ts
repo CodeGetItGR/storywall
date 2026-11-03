@@ -1,4 +1,4 @@
-import type { LocalizedText, QrCardFieldKind, QrCardLayoutDto, QrCardTextAlign, QrCardTextFieldDto } from '@/lib/api/types';
+import type { LocalizedText, QrCardFieldKind, QrCardLayoutDto, QrCardTextAlign, QrCardTextFieldDto, QrCardWordingKey } from '@/lib/api/types';
 
 // Where a card's title, code, lines and added text fields sit, in A6 millimetres. Mirrors the backend's
 // QrCardLayoutValidator; the server stays the authority. Boxes may overlap: the code draws on top, then
@@ -258,6 +258,22 @@ export function setLinesOptions(layout: QrCardLayout, options: { textSize?: numb
     return { ...layout, lines: { ...layout.lines, textSize, align: options.align ?? layout.lines.align } };
 }
 
+export const QR_CARD_WORDING_KEYS: QrCardWordingKey[] = ['join', 'invitation', 'gallery', 'guestWish', 'guestBoth', 'gift'];
+
+// Sets one scan line's wording in one language. Emptied, it goes back to the standard line.
+export function setLineWording(layout: QrCardLayout, key: QrCardWordingKey, locale: string, value: string): QrCardLayout {
+    const words: Record<string, string> = { ...layout.lines.text?.[key], [locale]: value };
+    if (!value) delete words[locale];
+    const text: Partial<Record<QrCardWordingKey, Record<string, string>>> = { ...layout.lines.text, [key]: words };
+    if (Object.keys(words).length === 0) delete text[key];
+    return { ...layout, lines: { ...layout.lines, text: Object.keys(text).length > 0 ? text : null } };
+}
+
+// The design's own wording for a scan line in this language, or null for the standard line.
+export function qrCardLineWording(layout: QrCardLayout, key: QrCardWordingKey, locale: string): string | null {
+    return layout.lines.text?.[key]?.[locale]?.trim() || null;
+}
+
 export function setCodeOptions(layout: QrCardLayout, options: { panel?: boolean; radius?: number }): QrCardLayout {
     const { min, max } = LIMITS.radius;
     const radius = roundMm(clamp(options.radius ?? layout.code.radius, min, max));
@@ -324,6 +340,8 @@ export function removeField(layout: QrCardLayout, id: string): QrCardLayout {
 // Deep value equality for the JSON-shaped layout: key order and identity don't matter.
 function sameValue(a: unknown, b: unknown): boolean {
     if (a === b) return true;
+    // Absent and null both mean none: older layouts leave out what newer ones send as null.
+    if ((a === null || a === undefined) && (b === null || b === undefined)) return true;
     if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object') return false;
     if (Array.isArray(a) !== Array.isArray(b)) return false;
     const left = a as Record<string, unknown>;

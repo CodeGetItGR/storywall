@@ -1052,9 +1052,21 @@ export type QrCardTextAlign = 'left' | 'center' | 'right';
 export interface QrCardLayoutDto {
     title: { x: number; y: number; width: number; height: number; maxSize: number; align: QrCardTextAlign } | null; // null = removed
     code: { x: number; y: number; size: number; panel: boolean; radius: number };
-    lines: { x: number; y: number; width: number; height: number; textSize: number; align: QrCardTextAlign };
+    // text: the design's scan-line wording by QrCardWordingKey, en and/or el. A missing one prints the standard line.
+    lines: {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        textSize: number;
+        align: QrCardTextAlign;
+        text?: Partial<Record<QrCardWordingKey, LocalizedText>> | null;
+    };
     fields?: QrCardTextFieldDto[]; // up to 5; absent on layouts saved before KAN-103
 }
+
+// The scan lines a design can word: one per thing a code opens (QrCardPage.lines), and the gift card's.
+export type QrCardWordingKey = 'join' | 'invitation' | 'gallery' | 'guestWish' | 'guestBoth' | 'gift';
 
 // fixed: prints `text`. host: prints what the host types (nothing when empty), with `label` and `placeholder` on the input.
 export type QrCardFieldKind = 'fixed' | 'host';

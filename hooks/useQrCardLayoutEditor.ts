@@ -1,13 +1,24 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { type ChangeEvent, type FocusEvent, type KeyboardEvent, useCallback, useMemo, useState } from 'react';
 
-import { usePatchQrCardTemplate } from '@/hooks/useAdminQrCardTemplates';
+import { usePatchQrCardTemplate, useUploadQrCardArtwork } from '@/hooks/useAdminQrCardTemplates';
+import { adminThemeFontKeys } from '@/hooks/useAdminThemeFonts';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import type { QrCardLookState } from '@/hooks/useQrCardLook';
 import { isQrCardDetailError } from '@/lib/adminQrCards';
 import { ApiError } from '@/lib/api/client';
-import type { AdminQrCardTemplateDto, QrCardFieldFont, QrCardFieldKind, QrCardTextAlign } from '@/lib/api/types';
+import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
+import type {
+    AdminQrCardTemplateDto,
+    AdminQrCardTemplatePatchDto,
+    QrCardFieldFont,
+    QrCardFieldKind,
+    QrCardTextAlign,
+    QrCardWordingKey,
+} from '@/lib/api/types';
 import { resolveLocalizedText } from '@/lib/localizedText';
 import { giftQrCardLines, type QrCardLine, qrCardSampleFieldTexts } from '@/lib/qrCard';
 import {
@@ -25,10 +36,12 @@ import {
     type QrCardFieldChange,
     type QrCardLayout,
     qrCardLayoutOf,
+    qrCardLineWording,
     removeField,
     sameQrCardLayout,
     setCodeOptions,
     setLinesOptions,
+    setLineWording,
     setTitleOptions,
     setTitleShown,
     updateField,
@@ -44,16 +57,16 @@ const ARROWS: Record<string, [number, number]> = { ArrowLeft: [-1, 0], ArrowRigh
 type FieldTextPart = 'text' | 'label' | 'placeholder';
 
 // The layout editor's draft, selection and sample card, its keyboard, adding and removing text, and the
-// save. Only Save sends anything; closing with changes asks first. `textColor` is the drawer's live text
-// colour, which new fields start with.
+// save. Only Save sends anything: the layout, the `look` (colours, font, logo) and a picked artwork together.
+// Closing with changes asks first.
 export function useQrCardLayoutEditor({
     template,
-    textColor,
+    look,
     onSavedAction,
     onCloseAction,
 }: {
     template: AdminQrCardTemplateDto;
-    textColor: string;
+    look: QrCardLookState;
     onSavedAction: (template: AdminQrCardTemplateDto) => void;
     onCloseAction: () => void;
 }) {
@@ -61,33 +74,38 @@ export function useQrCardLayoutEditor({
     const tGift = useTranslations('GiftMode.card');
     const locale = useLocale();
     const apiErrorMessage = useApiErrorMessage();
+    const queryClient = useQueryClient();
     const patch = usePatchQrCardTemplate();
+    const upload = useUploadQrCardArtwork();
+    const textColor = look.style.textColor;
 
     const saved = useMemo(() => qrCardLayoutOf(template.layout), [template.layout]);
     const [layout, setLayout] = useState<QrCardLayout>(saved);
     const [picked, setSelected] = useState<QrCardElement | null>(null);
     const [incomplete, setIncomplete] = useState(false);
+    const [lookBlocked, setLookBlocked] = useState(false);
     // A removed element can't stay selected.
     const selected = picked && qrCardElements(layout).includes(picked) ? picked : null;
     const selectedField = selected ? findField(layout, selected) : null;
     const [sample, setSample] = useState<QrCardLayoutSample>('short');
     const [confirmingDiscard, setConfirmingDiscard] = useState(false);
     const [failure, setFailure] = useState<unknown>(null);
-    const dirty = !sameQrCardLayout(layout, saved);
+    const layoutDirty = !sameQrCardLayout(layout, saved);
+    const dirty = layoutDirty || look.hasChanges;
 
     const sampleFields = useMemo(() => qrCardSampleFieldTexts(layout, locale), [layout, locale]);
 
     const sampleLines = useMemo<QrCardLine[]>(
         () =>
             sample === 'short'
-                ? [{ text: t('preview.sampleLine'), tone: 'body' }]
+                ? [{ text: qrCardLineWording(layout, 'join', locale) ?? t('preview.sampleLine'), tone: 'body' }]
                 : giftQrCardLines({
-                      line: tGift('scan'),
+                      line: qrCardLineWording(layout, 'gift', locale) ?? tGift('scan'),
                       pin: tGift('pin', { pin: '4821 9934' }),
                       email: tGift('email', { email: 'maria@example.com' }),
                       giver: t('layout.sampleGiver'),
                   }),
-        [sample, t, tGift],
+        [layout, locale, sample, t, tGift],
     );
 
     const select = useCallback((element: QrCardElement | null) => setSelected(element), []);
@@ -183,6 +201,13 @@ export function useQrCardLayoutEditor({
         [changeField, selectedField],
     );
 
+    // Wording inputs are named <key>.<locale>, e.g. gift.el.
+    const handleWordingChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+        const [key, wordingLocale] = event.currentTarget.name.split('.') as [QrCardWordingKey, string];
+        const { value } = event.currentTarget;
+        setLayout((current) => setLineWording(current, key, wordingLocale, value));
+    }, []);
+
     // A new field is selected at once, so its words can be typed in the side panel.
     const add = useCallback(
         (kind: QrCardFieldKind) => {
@@ -215,6 +240,7 @@ export function useQrCardLayoutEditor({
 
     const save = useCallback(async () => {
         setFailure(null);
+        look.markSubmitted();
         // A field without its words would be refused: point at the first one instead of sending.
         const unfinished = layout.fields.find((field) => !isFieldComplete(field));
         setIncomplete(Boolean(unfinished));
@@ -222,17 +248,32 @@ export function useQrCardLayoutEditor({
             setSelected(fieldElement(unfinished.id));
             return;
         }
+        // So would a bad colour: point at the code or the card, where it's set.
+        setLookBlocked(!look.isValid);
+        if (!look.isValid) {
+            setSelected(look.codeBlocksSave ? 'code' : null);
+            return;
+        }
         try {
-            const updated = await patch.mutateAsync({ id: template.id, input: { layout } });
-            onSavedAction(updated);
+            const input: AdminQrCardTemplatePatchDto = { ...look.patch, ...(layoutDirty ? { layout } : {}) };
+            if (Object.keys(input).length > 0) onSavedAction(await patch.mutateAsync({ id: template.id, input }));
+            if (look.file) {
+                onSavedAction(await upload.mutateAsync({ id: template.id, file: look.file }));
+                look.clearFile();
+            }
             onCloseAction();
         } catch (error) {
+            // The picked font can no longer be assigned: refetch the list so the select stops offering it.
+            if (getErrorCode(error) === ERROR_CODES.THEME_FONT_NOT_ASSIGNABLE)
+                void queryClient.invalidateQueries({ queryKey: adminThemeFontKeys.all });
             setFailure(error);
         }
-    }, [layout, onCloseAction, onSavedAction, patch, template.id]);
+    }, [layout, layoutDirty, look, onCloseAction, onSavedAction, patch, queryClient, template.id, upload]);
 
     // A non-ApiError is fetch failing before any response; a layout rejection's detail names the rule.
-    let saveError: string | null = incomplete ? t('layout.fieldIncomplete') : null;
+    let saveError: string | null = null;
+    if (incomplete) saveError = t('layout.fieldIncomplete');
+    else if (lookBlocked && !look.isValid) saveError = t('layout.lookInvalid');
     if (failure !== null) {
         if (!(failure instanceof ApiError)) saveError = t('layout.network');
         else if (isQrCardDetailError(failure)) saveError = failure.problem?.detail?.trim() || apiErrorMessage(failure);
@@ -252,7 +293,7 @@ export function useQrCardLayoutEditor({
         sampleFields,
         dirty,
         confirmingDiscard,
-        isSaving: patch.isPending,
+        isSaving: patch.isPending || upload.isPending,
         saveError,
         handleElementFocus,
         handleKeyDown,
@@ -268,6 +309,7 @@ export function useQrCardLayoutEditor({
         handleFieldBoldChange,
         handleFieldColorChange,
         handleFieldTextChange,
+        handleWordingChange,
         canAddField,
         addFixedField,
         addHostField,

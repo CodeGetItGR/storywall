@@ -3,9 +3,10 @@
 import { useLocale } from 'next-intl';
 import { type ChangeEvent, useCallback, useMemo, useState } from 'react';
 
-import type { QrCardSize, QrCardTemplateDto } from '@/lib/api/types';
+import type { QrCardSize, QrCardTemplateDto, QrCardWordingKey } from '@/lib/api/types';
 import { resolveLocalizedText } from '@/lib/localizedText';
 import { PLAIN_QR_CARD_ID, PLAIN_QR_CARD_STYLE, qrCardFieldTexts, qrCardStyleOf } from '@/lib/qrCard';
+import { qrCardLineWording } from '@/lib/qrCardLayout';
 
 export type QrCardText = { title: string; line: string; giver: string };
 type QrCardDefaults = { title: string; line: string; giver?: string };
@@ -13,8 +14,17 @@ type QrCardDefaults = { title: string; line: string; giver?: string };
 export type QrCardHostField = { id: string; label: string; placeholder: string; value: string };
 
 // The picked design, paper size and the card's text. Nothing is saved: every visit starts on Plain with the
-// defaults. A field the host hasn't touched follows its default, so it fills in when the data lands.
-export function useQrCardDesigner({ templates, defaults }: { templates: QrCardTemplateDto[]; defaults: QrCardDefaults }) {
+// defaults. A field the host hasn't touched follows its default, so it fills in when the data lands. The line's
+// default is the picked design's wording for `lineKey` in the host's language, else `defaults.line`.
+export function useQrCardDesigner({
+    templates,
+    defaults,
+    lineKey,
+}: {
+    templates: QrCardTemplateDto[];
+    defaults: QrCardDefaults;
+    lineKey: QrCardWordingKey | null;
+}) {
     const [pickedId, setPickedId] = useState(PLAIN_QR_CARD_ID);
     const [pickedSize, setPickedSize] = useState<QrCardSize>('A6');
     const [edits, setEdits] = useState<Partial<QrCardText>>({});
@@ -31,7 +41,7 @@ export function useQrCardDesigner({ templates, defaults }: { templates: QrCardTe
 
     const text: QrCardText = {
         title: edits.title ?? defaults.title,
-        line: edits.line ?? defaults.line,
+        line: edits.line ?? (lineKey ? qrCardLineWording(style.layout, lineKey, locale) : null) ?? defaults.line,
         giver: edits.giver ?? defaults.giver ?? '',
     };
 
