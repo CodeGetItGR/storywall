@@ -32,6 +32,10 @@ export type ApiErrorMessageKey =
     | 'collaborationEarningNotPayable'
     | 'collaboratorPayoutDetailsIncomplete'
     | 'campaignLinkTaken'
+    | 'discountCampaignInvalid'
+    | 'discountCampaignOverlap'
+    | 'discountCampaignPriceTooLow'
+    | 'discountCampaignLinkNameTaken'
     | 'collaboratorBrandingIncomplete'
     | 'outreachRequestDecided'
     | 'outreachRequestPending'
@@ -347,6 +351,10 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.COLLABORATION_EARNING_NOT_PAYABLE]: 'collaborationEarningNotPayable',
     [ERROR_CODES.COLLABORATOR_PAYOUT_DETAILS_INCOMPLETE]: 'collaboratorPayoutDetailsIncomplete',
     [ERROR_CODES.CAMPAIGN_LINK_TAKEN]: 'campaignLinkTaken',
+    [ERROR_CODES.DISCOUNT_CAMPAIGN_INVALID]: 'discountCampaignInvalid',
+    [ERROR_CODES.DISCOUNT_CAMPAIGN_OVERLAP]: 'discountCampaignOverlap',
+    [ERROR_CODES.DISCOUNT_CAMPAIGN_PRICE_TOO_LOW]: 'discountCampaignPriceTooLow',
+    [ERROR_CODES.DISCOUNT_CAMPAIGN_LINK_NAME_TAKEN]: 'discountCampaignLinkNameTaken',
     [ERROR_CODES.CONFLICT]: 'conflict',
     [ERROR_CODES.CONCURRENT_MODIFICATION]: 'concurrentModification',
     [ERROR_CODES.COVERAGE_ENDED]: 'coverageEnded',

@@ -158,6 +158,12 @@ export interface PlanTierResponseDto {
     // The promotion window, for the percent and every duration's promo price alike. null = open bound.
     discountStartsAt: string | null;
     discountEndsAt: string | null;
+    // The discount campaign that is live or next up, on public responses only. The browser checks the
+    // dates itself, because the catalog is cached. Always compared with the plan's own promotion.
+    campaignDiscountPercent?: number | null;
+    campaignDiscountLabel?: string | null;
+    campaignDiscountStartsAt?: string | null;
+    campaignDiscountEndsAt?: string | null;
     moduleKeys: ModuleKey[];
     // MODULE_UNLOCK upsells for this plan, server-cross-referenced. Only null
     // from the admin catalog endpoints (GET /api/admin/plan-tiers, .../{id}),
@@ -355,6 +361,36 @@ export interface AdminLandingCategoryEventTypesDto {
 export type SiteNoticeTone = 'INFO' | 'OFFER' | 'WARNING' | 'CRITICAL';
 export type SiteNoticeArea = 'EVERYWHERE' | 'PUBLIC' | 'HOST' | 'GUEST' | 'ADMIN';
 export type SiteNoticeStatus = 'LIVE' | 'SCHEDULED' | 'ENDED' | 'OFF';
+
+// GET /api/public/discount-campaign, read through the app's own route. Null without a live campaign.
+export interface DiscountCampaignLiveDto {
+    id: string;
+    percent: number;
+    startsAt: string;
+    endsAt: string;
+}
+
+export interface AdminDiscountCampaignDto {
+    id: string;
+    name: string;
+    percent: number;
+    label: string | null;
+    linkName: string;
+    startsAt: string;
+    endsAt: string;
+    status: SiteNoticeStatus;
+    createdAt: string;
+}
+
+export interface DiscountCampaignRequestDto {
+    name: string;
+    percent: number;
+    label: string | null;
+    linkName: string;
+    // Null means now.
+    startsAt: string | null;
+    endsAt: string;
+}
 
 export interface SiteNoticeLiveDto {
     id: string;
