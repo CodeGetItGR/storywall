@@ -13,7 +13,14 @@
     },
     "SiteNotice": {
         "apiDown": "Αντιμετωπίζουμε κάποια προβλήματα. Δουλεύουμε για να τα διορθώσουμε.",
-        "close": "Κλείσιμο"
+        "close": "Κλείσιμο",
+        "campaign": "{percent}% έκπτωση σε όλα τα πλάνα.",
+        "campaignEndsIn": "Λήγει σε {countdown}.",
+        "campaignEndsOn": "Λήγει στις {date}",
+        "seePlans": "Δείτε τα πλάνα",
+        "countdownDays": "{days}ημ {hours}ώ {minutes}λ",
+        "countdownHours": "{hours}ώ {minutes}λ",
+        "countdownMinutes": "{minutes}λ {seconds}δ"
     },
     "DemoActAs": {
         "postingAs": "Δημοσίευση ως",

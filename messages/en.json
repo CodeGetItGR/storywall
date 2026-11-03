@@ -13,7 +13,14 @@
     },
     "SiteNotice": {
         "apiDown": "We're having some issues. We're working on a fix.",
-        "close": "Close"
+        "close": "Close",
+        "campaign": "{percent}% off all plans.",
+        "campaignEndsIn": "Ends in {countdown}.",
+        "campaignEndsOn": "Ends on {date}",
+        "seePlans": "See plans",
+        "countdownDays": "{days}d {hours}h {minutes}m",
+        "countdownHours": "{hours}h {minutes}m",
+        "countdownMinutes": "{minutes}m {seconds}s"
     },
     "DemoActAs": {
         "postingAs": "Posting as",

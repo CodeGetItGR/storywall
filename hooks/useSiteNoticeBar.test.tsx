@@ -1,9 +1,14 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import type { SiteNoticeLiveDto } from '@/lib/api/types';
+import type { DiscountCampaignLiveDto, SiteNoticeLiveDto } from '@/lib/api/types';
 
-const state = vi.hoisted(() => ({ notices: [] as SiteNoticeLiveDto[], apiDown: false }));
+const state = vi.hoisted(() => ({
+    notices: [] as SiteNoticeLiveDto[],
+    apiDown: false,
+    campaign: null as DiscountCampaignLiveDto | null,
+}));
+vi.mock('@/hooks/useLiveDiscountCampaign', () => ({ useLiveDiscountCampaign: () => state.campaign }));
 vi.mock('@/hooks/useSiteNotices', () => ({ useSiteNotices: () => ({ data: state.notices }) }));
 vi.mock('@/hooks/useApiHealth', () => ({ useApiDown: () => state.apiDown }));
 vi.mock('next-intl', () => ({ useLocale: () => 'el', useTranslations: () => (key: string) => key }));
@@ -28,6 +33,7 @@ describe('useSiteNoticeBar', () => {
     afterEach(() => {
         state.notices = [];
         state.apiDown = false;
+        state.campaign = null;
         document.cookie = `${DISMISSED_COOKIE}=; Max-Age=0; Path=/`;
     });
 
@@ -62,5 +68,50 @@ describe('useSiteNoticeBar', () => {
         state.apiDown = true;
         const { result } = renderHook(() => useSiteNoticeBar(null, ''));
         expect(result.current).toBeNull();
+    });
+
+    const campaign: DiscountCampaignLiveDto = { id: 'c1', percent: 20, startsAt: '2026-11-01T00:00:00Z', endsAt: '2026-11-08T00:00:00Z' };
+
+    it('shows the campaign, with its end and a link to the plans', () => {
+        state.campaign = campaign;
+        const { result } = renderHook(() => useSiteNoticeBar('PUBLIC', ''));
+        expect(result.current).toMatchObject({
+            tone: 'OFFER',
+            message: 'campaign',
+            link: { href: '/el#pricing', label: 'seePlans' },
+            countdownEndsAt: campaign.endsAt,
+        });
+    });
+
+    it('takes the bar from an offer but not from a warning', () => {
+        state.campaign = campaign;
+        state.notices = [offer];
+        const { result, rerender } = renderHook(() => useSiteNoticeBar('PUBLIC', ''));
+        expect(result.current?.message).toBe('campaign');
+
+        state.notices = [{ ...offer, tone: 'WARNING' }];
+        rerender();
+        expect(result.current?.message).toBe('20% έκπτωση');
+    });
+
+    it('gives way to the notice once closed', () => {
+        state.campaign = campaign;
+        state.notices = [offer];
+        const { result } = renderHook(() => useSiteNoticeBar('PUBLIC', ''));
+        act(() => result.current?.onDismiss?.());
+        expect(result.current?.message).toBe('20% έκπτωση');
+    });
+
+    it('never shows to a guest', () => {
+        state.campaign = campaign;
+        const { result } = renderHook(() => useSiteNoticeBar('GUEST', ''));
+        expect(result.current).toBeNull();
+    });
+
+    it('loses to the outage notice', () => {
+        state.campaign = campaign;
+        state.apiDown = true;
+        const { result } = renderHook(() => useSiteNoticeBar('PUBLIC', ''));
+        expect(result.current?.tone).toBe('CRITICAL');
     });
 });
