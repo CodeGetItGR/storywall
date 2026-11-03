@@ -5,9 +5,12 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { Logo } from '@/components/common/Logo';
 import { GuestOfferCode } from '@/components/feed/guestOffer/GuestOfferCode';
+import { CampaignCountdown } from '@/components/siteNotices/CampaignCountdown';
 import { useGuestOffer } from '@/hooks/useGuestOffer';
+import { useLiveDiscountCampaign } from '@/hooks/useLiveDiscountCampaign';
 import type { Locale } from '@/i18n/config';
-import { guestOfferLandingHref } from '@/lib/guestOffer';
+import { numberFormat } from '@/lib/format';
+import { guestOfferLandingHref, guestOfferPlansHref } from '@/lib/guestOffer';
 
 const BRAND_GRADIENT = 'bg-[linear-gradient(132deg,#C777B1_20%,#E48279_43%,#F2885C_54%,#FEC463_99%)]';
 
@@ -15,9 +18,14 @@ const BRAND_GRADIENT = 'bg-[linear-gradient(132deg,#C777B1_20%,#E48279_43%,#F288
 // Display only: no reactions, comments or menu.
 export function GuestOfferCard({ eventId, isHost }: { eventId: string; isHost: boolean }) {
     const t = useTranslations('GuestOffer');
+    const tNotice = useTranslations('SiteNotice');
     const locale = useLocale() as Locale;
+    const campaign = useLiveDiscountCampaign();
     const { offer, claimCode, isClaiming, claimFailed, close, copyCode, isCopied, markDiscovered, seenRef } = useGuestOffer(eventId, isHost);
     if (!offer) return null;
+
+    // A code the guest already holds stays; otherwise the campaign takes the claim's place.
+    const liveCampaign = offer.code ? null : campaign;
 
     const discoverLink = (
         <a
@@ -57,11 +65,33 @@ export function GuestOfferCard({ eventId, isHost }: { eventId: string; isHost: b
                     {/* Message */}
                     <div className="mt-4">
                         <h2 className="text-xl leading-snug font-semibold text-ink">{t('title')}</h2>
-                        <p className="mt-1.5 max-w-[34ch] text-[0.9375rem] leading-relaxed text-ink-muted">{t('line')}</p>
+                        <p className="mt-1.5 max-w-[34ch] text-[0.9375rem] leading-relaxed text-ink-muted">
+                            {liveCampaign ? (
+                                <>
+                                    {tNotice('campaign', { percent: numberFormat(locale).format(liveCampaign.percent) })}{' '}
+                                    <CampaignCountdown endsAt={liveCampaign.endsAt} />
+                                </>
+                            ) : (
+                                t('line')
+                            )}
+                        </p>
                     </div>
 
                     {/* Actions */}
-                    {offer.code ? (
+                    {liveCampaign ? (
+                        <div className="mt-5 flex flex-wrap gap-2.5 @lg:flex-col @lg:items-stretch">
+                            <a
+                                href={guestOfferPlansHref(locale)}
+                                target="_blank"
+                                rel="noopener"
+                                onClick={markDiscovered}
+                                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-ink px-5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+                            >
+                                {tNotice('seePlans')}
+                                <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+                            </a>
+                        </div>
+                    ) : offer.code ? (
                         <div className="mt-5 flex flex-col items-start gap-3.5 @lg:w-72 @lg:items-stretch">
                             <GuestOfferCode code={offer.code} endsAt={offer.endsAt} isCopied={isCopied} onCopy={copyCode} />
                             {discoverLink}
