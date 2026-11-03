@@ -9,7 +9,7 @@ import { QrCardSvg } from '@/components/qrCard/QrCardSvg';
 import type { QrCardLayoutPointer } from '@/hooks/useQrCardLayoutPointer';
 import { QR_CARD_SAMPLE_URL } from '@/lib/adminQrCards';
 import { QR_CARD_HEIGHT, QR_CARD_WIDTH, type QrCardLine, type QrCardStyle } from '@/lib/qrCard';
-import { elementName, elementRect, QR_CARD_SAFE_AREA, type QrCardElement, qrCardElements } from '@/lib/qrCardLayout';
+import { elementName, elementRect, QR_CARD_SAFE_AREA, type QrCardElement, qrCardHitOrder } from '@/lib/qrCardLayout';
 import { cn } from '@/lib/utils';
 
 const SAFE = QR_CARD_SAFE_AREA;
@@ -78,7 +78,7 @@ export function QrCardLayoutCanvas({
                     {/* Guides */}
                     <QrCardLayoutGuides guides={guides} />
                     {/* Elements */}
-                    {qrCardElements(style.layout).map((element) => {
+                    {qrCardHitOrder(style.layout, selected).map((element) => {
                         const rect = elementRect(style.layout, element);
                         const name = elementName(style.layout, element);
                         return (

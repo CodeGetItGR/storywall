@@ -77,6 +77,7 @@ export function QrCardLayoutFieldPanel({
                     <span className="font-mono text-xs text-ink-muted">{field.color}</span>
                     <input
                         type="color"
+                        aria-label={t('color')}
                         value={field.color.toLowerCase()}
                         onChange={editor.handleFieldColorChange}
                         className="h-8 w-10 cursor-pointer rounded-md border border-border bg-white p-1"

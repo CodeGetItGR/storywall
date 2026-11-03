@@ -12,6 +12,7 @@ import {
     isValidQrCardLayout,
     moveElementTo,
     qrCardElements,
+    qrCardHitOrder,
     type QrCardLayout,
     qrCardLayoutOf,
     rectsOverlap,
@@ -106,6 +107,16 @@ describe('fields', () => {
         const host = addField(L, { id: 'h', kind: 'host', color: '#000000' });
         expect(isFieldComplete(updateField(host, 'h', { label: { en: 'Date', el: 'Ημερομηνία' } }).fields[0])).toBe(true);
         expect(isFieldComplete(updateField(host, 'h', { label: { en: 'Date', el: ' ' } }).fields[0])).toBe(false);
+    });
+
+    it('starts in the first clear band when there is one', () => {
+        const short = { ...L, lines: { ...L.lines, y: 120, height: 20 } };
+        expect(addField(short, { id: 'a', kind: 'fixed', color: '#000000' }).fields[0].y).toBe(104);
+    });
+
+    it('puts the selected element on top of the hit targets', () => {
+        expect(qrCardHitOrder(withText, 'field:a')).toEqual(['title', 'lines', 'code', 'field:a']);
+        expect(qrCardHitOrder(withText, null)).toEqual(qrCardElements(withText));
     });
 
     it('stops at five', () => {

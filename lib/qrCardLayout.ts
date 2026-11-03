@@ -73,6 +73,12 @@ export function qrCardElements(layout: QrCardLayout): QrCardElement[] {
     return [...(layout.title ? (['title'] as const) : []), 'lines', ...layout.fields.map((field) => fieldElement(field.id)), 'code'];
 }
 
+// The editor's hit targets: the selected element last, so it stays grabbable under the code.
+export function qrCardHitOrder(layout: QrCardLayout, selected: QrCardElement | null): QrCardElement[] {
+    const elements = qrCardElements(layout);
+    return selected && elements.includes(selected) ? [...elements.filter((element) => element !== selected), selected] : elements;
+}
+
 export function roundMm(value: number): number {
     return Math.round(value * 10) / 10;
 }
@@ -277,6 +283,18 @@ export function updateField(layout: QrCardLayout, id: string, change: QrCardFiel
 }
 
 // A new field across the card's middle, in the template's text colour. Its words start blank.
+const NEW_FIELD_HEIGHT = 12;
+
+// The highest full-width band clear of every element, or across the middle when none is.
+function freeFieldY(layout: QrCardLayout): number {
+    const rects = qrCardElements(layout).map((element) => elementRect(layout, element));
+    for (let y = SAFE.top; y <= SAFE.bottom - NEW_FIELD_HEIGHT; y++) {
+        const band = { x: SAFE.left, y, width: SAFE.right - SAFE.left, height: NEW_FIELD_HEIGHT };
+        if (!rects.some((rect) => rectsOverlap(band, rect))) return y;
+    }
+    return CENTER_Y - NEW_FIELD_HEIGHT / 2;
+}
+
 export function addField(layout: QrCardLayout, { id, kind, color }: { id: string; kind: QrCardFieldKind; color: string }): QrCardLayout {
     if (layout.fields.length >= LIMITS.fields) return layout;
     const blank = { en: '', el: '' };
@@ -284,9 +302,9 @@ export function addField(layout: QrCardLayout, { id, kind, color }: { id: string
         id,
         kind,
         x: SAFE.left,
-        y: CENTER_Y - 6,
+        y: freeFieldY(layout),
         width: SAFE.right - SAFE.left,
-        height: 12,
+        height: NEW_FIELD_HEIGHT,
         textSize: 6,
         align: 'center',
         font: 'body',

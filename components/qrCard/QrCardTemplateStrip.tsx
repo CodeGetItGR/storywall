@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 
 function optionClass(selected: boolean) {
     return cn(
-        'flex w-20 shrink-0 flex-col items-center gap-1.5 rounded-xl p-1.5 text-xs font-semibold transition-colors outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink',
+        'flex w-24 shrink-0 flex-col items-center gap-1.5 rounded-xl p-1.5 text-xs font-semibold transition-colors outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink',
         selected ? 'bg-surface-muted text-ink ring-2 ring-primary' : 'text-ink-muted hover:bg-surface-muted/60 hover:text-ink',
     );
 }
@@ -67,7 +67,7 @@ export function QrCardTemplateStrip({
                     onClick={handleClick}
                     className={optionClass(selectedId === PLAIN_QR_CARD_ID)}
                 >
-                    <span className="flex aspect-105/148 w-full items-center justify-center rounded-lg bg-white shadow-sm">
+                    <span className="flex aspect-105/148 w-full items-center justify-center rounded-sm bg-white shadow-sm">
                         <QrCode className="h-6 w-6 text-ink" aria-hidden="true" />
                     </span>
                     {t('plain')}
@@ -86,13 +86,13 @@ export function QrCardTemplateStrip({
                             onClick={handleClick}
                             className={optionClass(selectedId === template.id)}
                         >
-                            <span className="relative aspect-105/148 w-full overflow-hidden rounded-lg shadow-sm">
+                            <span className="relative aspect-105/148 w-full overflow-hidden rounded-sm bg-white shadow-sm">
                                 <ProtectedImage
                                     src={template.artworkUrl}
                                     alt={tAlt('qrCardTemplate', { name })}
                                     fill
-                                    sizes="80px"
-                                    className="object-cover"
+                                    sizes="96px"
+                                    className="object-contain"
                                 />
                             </span>
                             <span aria-hidden="true" className="w-full truncate text-center">
