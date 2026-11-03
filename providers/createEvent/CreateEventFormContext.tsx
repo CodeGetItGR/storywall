@@ -29,8 +29,15 @@ export interface CreateEventFormValue {
     goToDetails: () => void;
     goToTheme: () => void;
     goToOverview: () => void;
-    // The steps shown for the current type and plan (the theme step only when there is one to pick).
+    goToNextStep: () => void;
+    goToPreviousStep: () => void;
+    // The steps shown for the current type and plan (details only when the plan asks for them, the theme step
+    // only when there is one to pick).
     steps: CreateEventStep[];
+    // The plan asks for the date and place. When it doesn't, the title and gift are asked on the overview step.
+    asksDetails: boolean;
+    // The step the plan step continues to.
+    stepAfterPlan: CreateEventStep;
 
     // Type step
     eventTypes: AppEventTypeResponseDto[];

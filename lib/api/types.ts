@@ -983,9 +983,11 @@ export interface EventRequestDto {
     description?: string;
     eventType: EventTypeConvention;
     visibility: EventVisibility; // required on this DTO despite the entity's DB default of PRIVATE
-    startAt: string;
+    // Optional since KAN-108: a plan with requirements.needsSchedule false sends none of startAt, endAt, timezone
+    // or location. A plan that needs a schedule gets 400 3122 without startAt, and startAt needs timezone (3008).
+    startAt?: string;
     endAt?: string; // optional — omitted, the server fills startAt + 24h
-    timezone: string;
+    timezone?: string;
     locationName?: string;
     locationAddress?: string;
     mapsUrl?: string;

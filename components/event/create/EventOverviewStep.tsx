@@ -7,8 +7,10 @@ import { ActivationDisclosures } from '@/components/checkout/ActivationDisclosur
 import { ActivationEventSummary } from '@/components/checkout/ActivationEventSummary';
 import { PartnerBrandingNotice } from '@/components/checkout/PartnerBrandingNotice';
 import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
+import { EventGiftFields } from '@/components/event/create/EventGiftFields';
 import { EventOverviewDiscountCode } from '@/components/event/create/EventOverviewDiscountCode';
 import { EventOverviewPriceRow } from '@/components/event/create/EventOverviewPriceRow';
+import { EventTitleField } from '@/components/event/create/EventTitleField';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
 import { formatMoney } from '@/lib/billing';
 import { getOptionPriceDetails } from '@/lib/planTiers';
@@ -20,6 +22,7 @@ export function EventOverviewStep() {
     const locale = useLocale();
     const eventTypeCopy = useLocalizedAppEventTypeCopy();
     const {
+        asksDetails,
         trimmedTitle: title,
         selectedEventType: eventType,
         eventTypes,
@@ -55,9 +58,11 @@ export function EventOverviewStep() {
 
     return (
         <div className="flex h-full flex-col">
-            {/* Event Summary */}
-            <div className="border-b border-border/70 pb-5">
-                <ActivationEventSummary eventTitle={title} eventTypeName={eventTypeName} startAt={startAt} />
+            {/* Event Summary: the title is asked here on a plan without a details step */}
+            <div className="space-y-4 border-b border-border/70 pb-5">
+                <ActivationEventSummary eventTitle={asksDetails ? title : null} eventTypeName={eventTypeName} startAt={asksDetails ? startAt : null} />
+                {!asksDetails && <EventTitleField />}
+                {!asksDetails && <EventGiftFields />}
             </div>
 
             {/* Pricing */}
@@ -116,7 +121,7 @@ export function EventOverviewStep() {
 
             {/* Activation disclosures */}
             <div className="border-t border-border/70 py-5">
-                <ActivationDisclosures projectedCoverage={projectedCoverage} />
+                <ActivationDisclosures projectedCoverage={projectedCoverage} hasEventDate={asksDetails} />
             </div>
 
             {/* Withdrawal consent */}

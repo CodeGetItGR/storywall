@@ -8,11 +8,22 @@ import {
     getOptionPriceDetails,
     isLitePlan,
     liveInitialOptions,
+    planAsksEventDetails,
     qrPagePlans,
     resolveInitialOption,
     shortestInitialOption,
     splitLitePlans,
 } from '@/lib/planTiers';
+
+describe('planAsksEventDetails', () => {
+    it('reads the plan requirements, and asks until the plan is known', () => {
+        expect(planAsksEventDetails({ requirements: planRequirementsOf(['gallery']) })).toBe(false);
+        expect(planAsksEventDetails({ requirements: planRequirementsOf(['wishbook']) })).toBe(false);
+        expect(planAsksEventDetails({ requirements: planRequirementsOf(['posts', 'gallery']) })).toBe(true);
+        expect(planAsksEventDetails({ requirements: null })).toBe(true);
+        expect(planAsksEventDetails(undefined)).toBe(true);
+    });
+});
 
 function makeOption(overrides: Partial<CoverageOptionResponseDto> = {}): CoverageOptionResponseDto {
     return {

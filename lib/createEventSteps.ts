@@ -1,8 +1,9 @@
-import type { EventTypeConvention, ThemePresetDto } from '@/lib/api/types';
+import type { EventRequestDto, EventTypeConvention, ThemePresetDto } from '@/lib/api/types';
 import { eventTypeSlug } from '@/lib/eventTypeSlug';
 import type { CreateEventStep } from '@/providers/createEvent/CreateEventFormContext';
 
-// Every step, in order. The theme step is shown only when themeStepAvailable says so.
+// Every step, in order. The details step is shown only when the plan asks for them, the theme step only when
+// themeStepAvailable says so.
 export const CREATE_EVENT_STEPS: CreateEventStep[] = ['type', 'plan', 'details', 'theme', 'overview'];
 
 export function parseCreateEventStep(value: string | null): CreateEventStep {
@@ -20,9 +21,32 @@ export function resolveCreateEventStep(
     return parseCreateEventStep(stepParam);
 }
 
-// The steps the host walks through: the theme step only when there is something to pick.
-export function visibleCreateEventSteps(themeStepAvailable: boolean): CreateEventStep[] {
-    return themeStepAvailable ? CREATE_EVENT_STEPS : CREATE_EVENT_STEPS.filter((step) => step !== 'theme');
+// The steps the host walks through: details only when the plan asks for them, the theme step only when there is
+// something to pick.
+export function visibleCreateEventSteps(themeStepAvailable: boolean, asksDetails: boolean): CreateEventStep[] {
+    return CREATE_EVENT_STEPS.filter((step) => (step !== 'theme' || themeStepAvailable) && (step !== 'details' || asksDetails));
+}
+
+// The step before or after this one among the shown steps; the same step at either end.
+export function adjacentCreateEventStep(steps: readonly CreateEventStep[], step: CreateEventStep, offset: 1 | -1): CreateEventStep {
+    return steps[steps.indexOf(step) + offset] ?? step;
+}
+
+// The date, place and first session of the event to create. A plan that doesn't ask for them sends none, whatever
+// was typed before switching to it.
+export function createEventDetailsRequest(
+    asksDetails: boolean,
+    details: { startAt: string; timezone: string; locationName: string; locationAddress: string; mapsUrl: string; initialSessionTitle?: string },
+): Pick<EventRequestDto, 'startAt' | 'timezone' | 'locationName' | 'locationAddress' | 'mapsUrl' | 'initialSessionTitle'> {
+    if (!asksDetails) return {};
+    return {
+        startAt: new Date(details.startAt).toISOString(),
+        timezone: details.timezone,
+        locationName: details.locationName.trim(),
+        locationAddress: details.locationAddress.trim(),
+        mapsUrl: details.mapsUrl.trim() || undefined,
+        initialSessionTitle: details.initialSessionTitle,
+    };
 }
 
 // Whether to offer the theme step: the chosen plan lists the theme module and the type
