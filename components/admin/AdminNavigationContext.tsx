@@ -63,7 +63,7 @@ export type AdminTab =
     | 'paidServices'
     | 'outreach'
     | 'outreachRequests'
-    | 'shop'
+    | 'inviart'
     | 'discountCodes'
     | 'guestOffer'
     | 'partnerApplications'
@@ -121,7 +121,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#cost-tracking': 'costTracking',
     '#paid-services': 'paidServices',
     '#outreach-requests': 'outreachRequests',
-    '#shop': 'shop',
+    '#inviart': 'inviart',
     '#discount-codes': 'discountCodes',
     '#guest-offer': 'guestOffer',
     '#partner-cards': 'partnerCards',
@@ -153,7 +153,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     paidServices: '#paid-services',
     outreach: OUTREACH_HASH_ROOT,
     outreachRequests: '#outreach-requests',
-    shop: '#shop',
+    inviart: '#inviart',
     discountCodes: '#discount-codes',
     guestOffer: '#guest-offer',
     partnerApplications: PARTNER_APPLICATIONS_HASH_ROOT,
@@ -277,7 +277,7 @@ export function AdminNavigationProvider({ children, role = 'ADMIN' }: { children
             { key: 'paidServices', label: t('paidServices'), icon: PackagePlus },
             { key: 'outreach', label: t('outreach'), icon: Send },
             { key: 'outreachRequests', label: t('outreachRequests'), icon: ListChecks },
-            { key: 'shop', label: t('shop'), icon: Store },
+            { key: 'inviart', label: t('inviart'), icon: Store },
             { key: 'discountCodes', label: t('discountCodes'), icon: TicketPercent },
             { key: 'guestOffer', label: t('guestOffer'), icon: Gift },
             { key: 'appReviews', label: t('appReviews'), icon: Star },

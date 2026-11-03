@@ -168,18 +168,3 @@ describe('localizeLegalHref', () => {
         expect(localizeLegalHref('/', 'el')).toBe('/');
     });
 });
-
-describe('shop pages', () => {
-    it('reads the shop pages’ language from the URL', () => {
-        expect(publicPageLocale('/shop')).toBe('en');
-        expect(publicPageLocale('/el/shop')).toBe('el');
-        expect(publicPageLocale('/el/shop/inviart/passport')).toBe('el');
-        expect(publicPageLocale('/shop/inviart/passport')).toBe('en');
-        expect(publicPageLocale('/shopping')).toBeNull();
-    });
-
-    it('links the shop list to its twin', () => {
-        expect(publicTwinPath('/shop', 'el')).toBe('/el/shop');
-        expect(publicTwinPath('/el/shop', 'en')).toBe('/shop');
-    });
-});

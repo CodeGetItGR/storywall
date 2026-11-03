@@ -613,14 +613,9 @@ export const endpoints = {
                 decline: (id: string) => `/api/admin/outreach/requests/${encodeURIComponent(id)}/decline`,
             },
         },
-        shop: {
-            stores: '/api/admin/shop/stores',
-            store: (id: string) => `/api/admin/shop/stores/${id}`,
-            storeSync: (id: string) => `/api/admin/shop/stores/${id}/sync`,
-            storeCollections: (id: string) => `/api/admin/shop/stores/${id}/collections`,
-            categories: '/api/admin/shop/categories',
-            category: (id: string) => `/api/admin/shop/categories/${id}`,
-            categoryCollections: (id: string) => `/api/admin/shop/categories/${id}/collections`,
+        inviart: {
+            collections: '/api/admin/inviart/collections',
+            collection: (eventType: string) => `/api/admin/inviart/collections/${encodeURIComponent(eventType)}`,
         },
         appReviews: {
             list: '/api/admin/app-reviews',
@@ -656,15 +651,9 @@ export const endpoints = {
         },
     },
 
-    shop: {
-        categories: '/api/shop/categories',
-        products: ({ category, page }: { category?: string; page: number }) => {
-            const params = new URLSearchParams();
-            if (category) params.set('category', category);
-            params.set('page', String(page));
-            return `/api/shop/products?${params.toString()}`;
-        },
-        product: (storeSlug: string, handle: string) => `/api/shop/products/${encodeURIComponent(storeSlug)}/${encodeURIComponent(handle)}`,
+    // Which INVIART collection each occasion shows; read by our server only.
+    inviart: {
+        collections: '/api/inviart/collections',
     },
 
     checkout: {

@@ -3006,7 +3006,7 @@
             "costTracking": "Cost tracking",
             "plans": "Plans",
             "paidServices": "Paid services",
-            "shop": "Shop",
+            "inviart": "INVIART",
             "discountCodes": "Discount codes",
             "guestOffer": "Guest offer",
             "partnerApplications": "Applications",
@@ -3032,6 +3032,14 @@
             "campaignOverview": "Campaign overview",
             "outreach": "Partner outreach",
             "outreachRequests": "Requests"
+        },
+        "inviart": {
+            "title": "INVIART collections",
+            "occasion": "Occasion",
+            "collection": "Collection handle",
+            "notSet": "Not set",
+            "hint": "From the collection's web address in Shopify. Leave empty to show no cards.",
+            "invalid": "Use lowercase letters, numbers and dashes."
         },
         "outreach": {
             "cityNames": {
@@ -4516,63 +4524,6 @@
                 "reset": "Reset to default",
                 "resetTitle": "Reset {module} to default?",
                 "resetBody": "The default name and description show again everywhere for this event type."
-            }
-        },
-        "shop": {
-            "title": "Shop",
-            "visible": "Shown in shop",
-            "visibility": "Visible",
-            "shown": "Shown",
-            "hidden": "Hidden",
-            "slugInvalid": "Use 2–40 lowercase letters, numbers or dashes.",
-            "stores": {
-                "title": "Stores",
-                "add": "Add store",
-                "empty": "No stores yet.",
-                "createTitle": "Add store",
-                "editTitle": "Edit store",
-                "name": "Name",
-                "slug": "Short name",
-                "slugHint": "Used in the shop link.",
-                "domain": "Shopify domain",
-                "domainInvalid": "Use the yourstore.myshopify.com address.",
-                "clientId": "Client ID",
-                "clientSecret": "Client secret",
-                "secretUnchanged": "Unchanged",
-                "products": "Products",
-                "status": "Status",
-                "synced": "Synced {time}",
-                "syncFailed": "Sync failed",
-                "syncing": "Syncing…",
-                "syncNow": "Sync now",
-                "syncStarted": "Sync started",
-                "remove": "Remove store",
-                "keep": "Keep store",
-                "removeTitle": "Remove {name}?",
-                "removeBody": "Its products leave the shop."
-            },
-            "categories": {
-                "title": "Categories",
-                "add": "Add category",
-                "empty": "No categories yet.",
-                "createTitle": "New category",
-                "editTitle": "Edit category",
-                "name": "Name",
-                "nameEn": "Name (English)",
-                "nameEl": "Name (Greek)",
-                "slug": "Short name",
-                "slugHint": "Used in the shop link.",
-                "order": "Order",
-                "orderInvalid": "Use a whole number from 0 to {max}.",
-                "collections": "Collections",
-                "collectionsLimit": "Up to {max} collections.",
-                "searchCollections": "Search collections",
-                "noCollections": "No collections found.",
-                "noStores": "Add a store first.",
-                "delete": "Delete category",
-                "keep": "Keep category",
-                "deleteTitle": "Delete {name}?",
-                "deleteBody": "Its products stay in Shopify."
             }
         },
         "appReviews": {
@@ -6827,9 +6778,6 @@
         "sneakPeekMediaInvalid": "Pick from your own photos and videos.",
         "sneakPeekNotOpen": "You can share a sneak peek once the event starts.",
         "sneakPeekUsed": "You already shared your sneak peek for this event.",
-        "shopStoreDomainTaken": "This store is already connected.",
-        "shopSlugTaken": "This short name is already used.",
-        "shopCredentialsInvalid": "Shopify didn't accept the client ID or secret.",
         "vendorLimitReached": "This event has all the vendors it can take.",
         "vendorIsHost": "You host this event, so you can't join it as a vendor.",
         "alreadyAVendor": "You're already a vendor in this event.",
@@ -9965,22 +9913,10 @@
     },
     "SaveMyDatePreview": {
         "metaTitle": "Invitation preview"
-    },
-    "Shop": {
-        "metaTitle": "Shop | StoryWall",
-        "productMetaTitle": "{title} | StoryWall shop",
-        "title": "Shop",
-        "all": "All",
-        "categoriesLabel": "Categories",
-        "empty": "No products here yet.",
-        "digital": "Digital",
-        "printed": "Printed",
-        "pagesLabel": "Pages",
-        "previous": "Previous",
-        "next": "Next",
-        "pageOf": "Page {page} of {total}",
-        "back": "Shop",
-        "buyAt": "Buy at {store}",
-        "home": "StoryWall home"
+    },
+    "Inviart": {
+        "heading": "Invitations and more by INVIART",
+        "cta": "See it on INVIART",
+        "was": "Was"
     }
 }

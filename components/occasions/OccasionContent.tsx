@@ -3,6 +3,7 @@ import '@/components/landing/landing.css';
 import { getTranslations } from 'next-intl/server';
 
 import { CookieConsent } from '@/components/consent/CookieConsent';
+import { InviartOccasionSection } from '@/components/inviart/InviartOccasionSection';
 import { LandingDemo } from '@/components/landing/LandingDemo';
 import { LandingFaq } from '@/components/landing/LandingFaq';
 import { LandingFinalCta, type LandingFinalCtaCopy } from '@/components/landing/LandingFinalCta';
@@ -118,6 +119,9 @@ export async function OccasionContent({ campaign, demoHref, featureKeys, locale,
                 />
 
                 <div className="landing-page">
+                    {/* INVIART */}
+                    <InviartOccasionSection eventType={occasion.eventType} locale={locale} />
+
                     {/* FAQ */}
                     <LandingFaq
                         copy={{

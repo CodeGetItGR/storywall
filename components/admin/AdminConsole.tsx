@@ -18,6 +18,7 @@ import { CostTrackingPanel } from '@/components/admin/CostTrackingPanel';
 import { DemoEventsSection } from '@/components/admin/demoEvents/DemoEventsSection';
 import { EventsSection } from '@/components/admin/events/EventsSection';
 import { FunnelPanel } from '@/components/admin/funnel/FunnelPanel';
+import { InviartCollectionsPanel } from '@/components/admin/inviart/InviartCollectionsPanel';
 import { ModerationPanel } from '@/components/admin/moderation/ModerationPanel';
 import { ModuleUsagePanel } from '@/components/admin/moduleUsage/ModuleUsagePanel';
 import { OrdersSection } from '@/components/admin/orders/OrdersSection';
@@ -31,7 +32,6 @@ import { PlansSection } from '@/components/admin/plans/PlansSection';
 import { PlatformMetricsPanel } from '@/components/admin/PlatformMetricsPanel';
 import { QrCardTemplatesPanel } from '@/components/admin/qrCards/QrCardTemplatesPanel';
 import { ReactionTypesCatalogPanel } from '@/components/admin/ReactionTypesCatalogPanel';
-import { ShopPanel } from '@/components/admin/shop/ShopPanel';
 import { SiteNoticesPanel } from '@/components/admin/siteNotices/SiteNoticesPanel';
 import { ThemeFontsPanel } from '@/components/admin/themeFonts/ThemeFontsPanel';
 import { ThemePresetsPanel } from '@/components/admin/themePresets/ThemePresetsPanel';
@@ -75,10 +75,10 @@ export function AdminConsole() {
             </div>
         );
     }
-    if (tab === 'shop') {
+    if (tab === 'inviart') {
         return (
             <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
-                <ShopPanel />
+                <InviartCollectionsPanel />
             </div>
         );
     }
