@@ -4,7 +4,6 @@ import type { InvitationElement } from '@/lib/invitation/elements';
 import {
     buildRenderContext,
     customSectionLayout,
-    googleFontsHref,
     isDarkColor,
     resolveFont,
     sectionBackground,
@@ -12,7 +11,6 @@ import {
     sectionTextContrast,
     textStyleCss,
     themeAssetName,
-    usedFontFamilies,
 } from '@/lib/invitation/render';
 import { SAMPLE_DOCUMENT, SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
 import type { ThemeDesign } from '@/lib/invitation/theme';
@@ -139,21 +137,6 @@ describe('customSectionLayout', () => {
     it('splits around the break and lifts full-width text above', () => {
         const layout = customSectionLayout([text('head', true), text('a'), { id: 'br', kind: 'columnBreak' }, text('b')]);
         expect(layout).toEqual({ columns: true, fullWidth: [text('head', true)], left: [text('a')], right: [text('b')] });
-    });
-});
-
-describe('fonts', () => {
-    it('loads only the Google fonts the invitation uses', () => {
-        const theme = { ...SAMPLE_THEME, fonts: { title: "'Playfair Display',serif", body: 'Lora' } };
-        const fonts = usedFontFamilies(SAMPLE_DOCUMENT, buildRenderContext(SAMPLE_DOCUMENT, theme, media));
-        expect(fonts).toContain('Playfair Display');
-        expect(googleFontsHref(fonts)).toBe(
-            'https://fonts.googleapis.com/css2?family=Lora:ital@0;1&family=Playfair+Display:ital@0;1&display=swap',
-        );
-    });
-
-    it('requests nothing for system fonts', () => {
-        expect(googleFontsHref(['Georgia', 'Arial'])).toBeUndefined();
     });
 });
 
