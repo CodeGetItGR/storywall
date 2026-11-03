@@ -72,6 +72,20 @@ export function isQrWeddingPath(pathname: string | null): boolean {
     return locales.some((locale) => QR_WEDDING_PATHS[locale] === pathname);
 }
 
+// The shop, one URL per language. Product pages live under it: /shop/{store}/{handle}.
+export const SHOP_PATHS: Record<Locale, string> = {
+    en: '/shop',
+    el: '/el/shop',
+};
+
+export function isShopPath(pathname: string | null): boolean {
+    return locales.some((locale) => pathname === SHOP_PATHS[locale]);
+}
+
+function shopPageLocale(pathname: string): Locale | null {
+    return locales.find((locale) => pathname === SHOP_PATHS[locale] || pathname.startsWith(`${SHOP_PATHS[locale]}/`)) ?? null;
+}
+
 // The contact and legal pages: the English path, and the same path under /el for Greek.
 // Each page lives once at its English path; proxy.ts renders the Greek URL from it in Greek.
 export const LEGAL_PAGE_PATHS = [
@@ -115,6 +129,7 @@ export function publicPageLocale(pathname: string): Locale | null {
             (locale) => pathname === getPublicLandingPath(locale) || pathname === FOR_BUSINESS_PATHS[locale] || pathname === QR_WEDDING_PATHS[locale],
         ) ??
         vendorPageForPath(pathname)?.locale ??
+        shopPageLocale(pathname) ??
         null
     );
 }
@@ -125,6 +140,7 @@ export function publicTwinPath(pathname: string | null, target: Locale): string 
     if (isForBusinessPath(pathname)) return getForBusinessPath(target);
     const vendorPage = vendorPageForPath(pathname);
     if (vendorPage) return getVendorPagePath(vendorPage.type, target);
+    if (isShopPath(pathname)) return SHOP_PATHS[target];
     const legalPage = pathname ? legalPageForPath(pathname) : null;
     if (legalPage) return getLegalPagePath(legalPage.path, target);
     return null;

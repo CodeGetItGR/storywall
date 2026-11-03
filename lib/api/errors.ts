@@ -319,6 +319,9 @@ export const ERROR_CODES = {
     SNEAK_PEEK_USED: 5188,
     PUSH_UNAVAILABLE: 9003,
     PUSH_SEND_FAILED: 9004,
+    SHOP_STORE_DOMAIN_TAKEN: 5204,
+    SHOP_SLUG_TAKEN: 5205,
+    SHOP_CREDENTIALS_INVALID: 5206,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the

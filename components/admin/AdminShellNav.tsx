@@ -22,6 +22,7 @@ const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operat
     paidServices: 'catalog',
     outreach: 'marketing',
     outreachRequests: 'marketing',
+    shop: 'catalog',
     discountCodes: 'marketing',
     guestOffer: 'marketing',
     appReviews: 'marketing',

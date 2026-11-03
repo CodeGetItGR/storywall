@@ -5152,3 +5152,110 @@ export interface OutreachProspectUpdateRequestDto {
     emailEl?: OutreachEmailDto;
     emailEn?: OutreachEmailDto;
 }
+
+// Shop (plan 2026-10-27-shopify-shop). Prices are cents.
+export interface ShopCategoryDto {
+    slug: string;
+    name: LocalizedText;
+}
+
+export interface ShopProductCardDto {
+    storeSlug: string;
+    handle: string;
+    title: string;
+    imageUrl: string | null;
+    imageAlt: string | null;
+    minPriceCents: number;
+    maxPriceCents: number;
+    currency: string;
+    isDigital: boolean;
+}
+
+export interface ShopProductPageDto {
+    items: ShopProductCardDto[];
+    page: number;
+    totalPages: number;
+    totalItems: number;
+}
+
+export interface ShopImageDto {
+    url: string;
+    alt: string | null;
+}
+
+export interface ShopVariantDto {
+    title: string;
+    priceCents: number;
+}
+
+export interface ShopProductDto {
+    storeSlug: string;
+    storeName: string;
+    handle: string;
+    title: string;
+    description: string;
+    productUrl: string;
+    minPriceCents: number;
+    maxPriceCents: number;
+    currency: string;
+    isDigital: boolean;
+    images: ShopImageDto[];
+    variants: ShopVariantDto[];
+}
+
+export interface AdminShopStoreDto {
+    id: string;
+    name: string;
+    slug: string;
+    shopDomain: string;
+    clientId: string;
+    isVisible: boolean;
+    lastSyncedAt: string | null;
+    lastSyncError: string | null;
+    productCount: number;
+}
+
+export interface AdminShopStoreCreateDto {
+    name: string;
+    slug: string;
+    shopDomain: string;
+    clientId: string;
+    clientSecret: string;
+    isVisible: boolean;
+}
+
+export type AdminShopStorePatchDto = Partial<Pick<AdminShopStoreCreateDto, 'name' | 'clientId' | 'clientSecret' | 'isVisible'>>;
+
+export interface AdminShopCollectionDto {
+    gid: string;
+    handle: string;
+    title: string;
+}
+
+export interface AdminShopCategoryMappingDto {
+    storeId: string;
+    collectionGid: string;
+    collectionTitle: string;
+}
+
+export interface AdminShopCategoryDto {
+    id: string;
+    name: LocalizedText;
+    slug: string;
+    sortOrder: number;
+    isVisible: boolean;
+    collections: AdminShopCategoryMappingDto[];
+}
+
+export interface AdminShopCategoryCreateDto {
+    name: LocalizedText;
+    slug: string;
+    sortOrder?: number;
+    isVisible?: boolean;
+}
+
+export type AdminShopCategoryPatchDto = Partial<Omit<AdminShopCategoryCreateDto, 'slug'>>;
+
+export interface AdminShopCategoryCollectionsDto {
+    collections: AdminShopCategoryMappingDto[];
+}
