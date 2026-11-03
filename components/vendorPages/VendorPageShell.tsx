@@ -8,8 +8,9 @@ export function VendorPageShell({ children }: { children: ReactNode }) {
     const pageRef = useRef<HTMLElement>(null);
     useVendorPageClickTracking(pageRef);
 
+    // Important, or .landing-page's beige page background wins over bg-white.
     return (
-        <main id="top" className="landing-page overflow-x-clip bg-white text-[#151313]" ref={pageRef}>
+        <main id="top" className="landing-page overflow-x-clip bg-white! text-[#151313]" ref={pageRef}>
             {children}
         </main>
     );
