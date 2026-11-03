@@ -11,8 +11,8 @@ import type { LiteHomeState } from '@/hooks/useLiteHome';
 export function LiteHomeHeader({ home }: { home: LiteHomeState }) {
     return (
         <div className="mb-6">
-            {/* Banner */}
-            <section className="mt-3">
+            {/* Banner: the feed's width, so the gallery's wider page doesn't blow it up to a whole screen */}
+            <section className="mx-auto mt-3 w-full max-w-2xl">
                 <Banner
                     image={home.event.coverMedia?.mediaUrl ?? null}
                     illustrationUrl={home.event.theme?.illustrationUrl ?? null}
