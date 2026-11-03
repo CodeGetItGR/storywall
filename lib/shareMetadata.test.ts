@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { serverPublicCachedGet } from '@/lib/api/serverFetch';
-import { formatShareDetails, getQrShareEvent } from '@/lib/shareMetadata';
+import { formatShareDetails, getQrShareEvent, qrShareDescriptionKey } from '@/lib/shareMetadata';
 
 vi.mock('next-intl/server', () => ({ getLocale: vi.fn(async () => 'en'), getTranslations: vi.fn() }));
 vi.mock('@/lib/api/serverFetch', () => ({ serverPublicCachedGet: vi.fn(), serverPublicGet: vi.fn() }));
@@ -71,5 +71,28 @@ describe('getQrShareEvent', () => {
 
         expect(await getQrShareEvent('code')).toMatchObject({ title: 'Code title', targetType: 'MEDIA_UPLOAD' });
         expect(get).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('qrShareDescriptionKey', () => {
+    const base = { title: 'Event', subtitle: null, cover: null };
+
+    it('describes an upload code and a guest code that only uploads as an upload', () => {
+        expect(qrShareDescriptionKey({ ...base, targetType: 'MEDIA_UPLOAD' })).toBe('uploadDescription');
+        expect(qrShareDescriptionKey({ ...base, targetType: 'GUEST', guestActions: ['UPLOAD'] })).toBe('uploadDescription');
+    });
+
+    it('describes a guest code that only takes wishes', () => {
+        expect(qrShareDescriptionKey({ ...base, targetType: 'GUEST', guestActions: ['WISH'] })).toBe('wishDescription');
+    });
+
+    it('describes a guest code that offers both', () => {
+        expect(qrShareDescriptionKey({ ...base, targetType: 'GUEST', guestActions: ['UPLOAD', 'WISH'] })).toBe('guestDescription');
+    });
+
+    it('falls back to the invite line for anything else', () => {
+        expect(qrShareDescriptionKey({ ...base, targetType: 'EVENT_JOIN' })).toBe('inviteDescription');
+        expect(qrShareDescriptionKey({ ...base, targetType: 'GUEST', guestActions: [] })).toBe('inviteDescription');
+        expect(qrShareDescriptionKey(null)).toBe('inviteDescription');
     });
 });

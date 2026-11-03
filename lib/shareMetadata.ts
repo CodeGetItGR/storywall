@@ -4,7 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { getServerLocale } from '@/i18n/serverLocale';
 import { endpoints } from '@/lib/api/endpoints';
 import { serverPublicCachedGet, serverPublicGet } from '@/lib/api/serverFetch';
-import type { EventInvitationPreviewDto, MediaResponseDto, QrLinkResolutionDto, QrTargetType } from '@/lib/api/types';
+import type { EventInvitationPreviewDto, MediaResponseDto, QrGuestAction, QrLinkResolutionDto, QrTargetType } from '@/lib/api/types';
 import { formatEventDateParts } from '@/lib/datetime';
 import { SITE_URL } from '@/lib/seo';
 
@@ -33,7 +33,9 @@ export type ShareEvent = {
     cover: MediaResponseDto | null;
 };
 
-export type QrShareEvent = ShareEvent & { targetType: QrTargetType };
+export type QrShareEvent = ShareEvent & { targetType: QrTargetType; guestActions?: QrGuestAction[] };
+
+type ShareDescriptionKey = 'uploadDescription' | 'wishDescription' | 'guestDescription' | 'inviteDescription';
 
 // Only an active code shows its event, matching QrCodeLandingBoundary. A code
 // that leads to an invitation opens the invite page (see getQrRedirectPath),
@@ -53,6 +55,7 @@ export async function getQrShareEvent(token: string, options: ShareLookupOptions
             subtitle: resolution.eventSubtitle ?? null,
             cover: resolution.coverMedia ?? null,
             targetType: resolution.targetType,
+            guestActions: resolution.guestActions,
         };
     } catch {
         return null;
@@ -100,7 +103,7 @@ export function coverImageUrl(cover: MediaResponseDto | null): string | null {
 // The og:image comes from the route's opengraph-image file, which Next adds on
 // its own. Without an event the preview uses the app's name and description.
 // Token pages stay out of search results either way.
-async function buildShareMetadata(event: ShareEvent | null, descriptionKey: 'uploadDescription' | 'inviteDescription'): Promise<Metadata> {
+async function buildShareMetadata(event: ShareEvent | null, descriptionKey: ShareDescriptionKey): Promise<Metadata> {
     const [tRoot, tShare] = await Promise.all([getTranslations('RootLayout'), getTranslations('ShareMetadata')]);
     const title = event?.title ?? tRoot('title');
     const description = event ? [event.details, event.description ?? tShare(descriptionKey)].filter(Boolean).join('. ') : tRoot('description');
@@ -124,9 +127,21 @@ async function buildShareMetadata(event: ShareEvent | null, descriptionKey: 'upl
     };
 }
 
+// What the preview says the code is for: a guest code follows what it offers.
+export function qrShareDescriptionKey(event: Pick<QrShareEvent, 'targetType' | 'guestActions'> | null): ShareDescriptionKey {
+    if (event?.targetType === 'MEDIA_UPLOAD') return 'uploadDescription';
+    if (event?.targetType !== 'GUEST') return 'inviteDescription';
+
+    const actions = event.guestActions ?? [];
+    if (actions.length > 1) return 'guestDescription';
+    if (actions[0] === 'UPLOAD') return 'uploadDescription';
+    if (actions[0] === 'WISH') return 'wishDescription';
+    return 'inviteDescription';
+}
+
 export async function qrShareMetadata(token: string): Promise<Metadata> {
     const event = await getQrShareEvent(token);
-    return buildShareMetadata(event, event?.targetType === 'MEDIA_UPLOAD' ? 'uploadDescription' : 'inviteDescription');
+    return buildShareMetadata(event, qrShareDescriptionKey(event));
 }
 
 export async function inviteShareMetadata(token: string): Promise<Metadata> {
