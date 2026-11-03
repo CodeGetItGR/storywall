@@ -25,7 +25,7 @@ const WASH: Record<VendorToolKey, string> = {
 };
 
 // A paper card the drawings sit on.
-const PAPER = 'rounded-md bg-card shadow-sm ring-1 ring-ink/5';
+export const PAPER = 'rounded-md bg-card shadow-sm ring-1 ring-ink/5';
 
 // Three time slots on a sheet, one being edited.
 function ScheduleArt() {
