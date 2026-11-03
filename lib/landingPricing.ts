@@ -183,13 +183,12 @@ function moduleFeatureLabel(
     }
 }
 
-// Builds one landing pricing card from a plan tier plus the tier directly
-// below it (on the landing: the previous card of the same event type — see
-// useLandingPricingPlans). Each tier after the first rolls up the
-// previous card and lists only its additional modules and raised limits, so
-// catalog rows do not need to repeat every inherited module. Returns null for a plan with no
-// duration on sale — it can't be bought, so it doesn't belong on a pricing
-// card or in the creation picker.
+// Builds one landing pricing card from a plan tier plus the card directly before it in the same
+// row (see useLandingPricingPlans). A card rolls up "Everything in X" only when its plan has every
+// module of X; then it lists the modules it adds or changes, and the rest go in includedFeatures. A
+// plan that isn't a superset of the previous one lists its own modules in full. A card never lists
+// a module its plan doesn't have. Returns null for a plan with no duration on sale — it can't be
+// bought, so it doesn't belong on a pricing card or in the creation picker.
 export function buildLandingPlan(
     plan: PlanTierResponseDto,
     previousPlan: PlanTierResponseDto | undefined,
@@ -197,7 +196,6 @@ export function buildLandingPlan(
     media: AppMediaConfigDto,
     moduleName: ModuleCardLabel,
     copy: LandingPlanCopy,
-    inheritedModuleKeys?: string[],
     memberRoles: MemberRoleCatalog = {},
 ): LandingPlan | null {
     const durations = landingDurations(plan);
@@ -206,20 +204,21 @@ export function buildLandingPlan(
     if (durations.length === 0 || !defaultDuration) return null;
 
     const estimate = mediaEstimate(plan.storageBytes, media);
-    const inheritedKeys = [...new Set(inheritedModuleKeys ?? previousPlan?.moduleKeys ?? [])];
+    const ownKeys = sortedModuleKeys(plan.moduleKeys, modules);
+    const rollsUp = previousPlan !== undefined && enabledModuleKeys(previousPlan.moduleKeys, modules).every((key) => ownKeys.includes(key));
     const labelFor = (moduleKey: string, tier: PlanTierResponseDto) => moduleFeatureLabel(moduleKey, tier, moduleName, copy, memberRoles);
 
-    // A later tier lists the modules it adds, plus inherited ones whose limit
-    // or setting changed; unchanged inherited modules go in the rollup.
+    // A rolled-up card lists the modules it adds, plus inherited ones whose limit or setting
+    // changed; unchanged inherited modules go in the rollup.
     const features: string[] = [];
     const includedFeatures: string[] = [];
-    for (const moduleKey of sortedModuleKeys([...new Set([...inheritedKeys, ...plan.moduleKeys])], modules)) {
+    for (const moduleKey of ownKeys) {
         const label = labelFor(moduleKey, plan);
         if (label === null) continue;
-        if (previousPlan && inheritedKeys.includes(moduleKey) && labelFor(moduleKey, previousPlan) === label) includedFeatures.push(label);
+        if (rollsUp && previousPlan.moduleKeys.includes(moduleKey) && labelFor(moduleKey, previousPlan) === label) includedFeatures.push(label);
         else features.push(label);
     }
-    if (previousPlan) features.unshift(copy.everythingIn(previousPlan.name));
+    if (rollsUp) features.unshift(copy.everythingIn(previousPlan.name));
 
     return {
         code: plan.code,

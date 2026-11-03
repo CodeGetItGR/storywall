@@ -144,3 +144,18 @@ export function findNextPlan(plans: PlanTierResponseDto[], scope: PlanScope, cod
 export function findPlansUnlockingModule(plans: PlanTierResponseDto[], moduleKey: ModuleKey): PlanTierResponseDto[] {
     return publicAssignablePlans(plans, 'EVENT').filter((plan) => plan.moduleKeys.includes(moduleKey));
 }
+
+// A lite plan is sold without the posts module (photos or wishes only), so it sits apart from the full plans.
+export function isLitePlan(plan: PlanTierResponseDto): boolean {
+    return !plan.moduleKeys.includes('posts');
+}
+
+// The plans split into full and lite, each in the input order.
+export function splitLitePlans<T extends PlanTierResponseDto>(plans: T[]): { full: T[]; lite: T[] } {
+    return { full: plans.filter((plan) => !isLitePlan(plan)), lite: plans.filter(isLitePlan) };
+}
+
+// The plan a flow starts on: the one asked for when it is offered, else the first full plan, else the first plan.
+export function defaultSelectedPlan<T extends PlanTierResponseDto>(plans: T[], code: string | null | undefined): T | undefined {
+    return plans.find((plan) => plan.code === code) ?? splitLitePlans(plans).full[0] ?? plans[0];
+}

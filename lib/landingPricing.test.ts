@@ -230,15 +230,6 @@ describe('buildLandingPlan', () => {
         expect(card?.includedFeatures).toEqual(['Gallery']);
     });
 
-    it('keeps the prior-tier rollup when catalog rows do not repeat inherited modules', () => {
-        const previous = makePlan({ name: 'START', moduleKeys: ['gallery', 'rsvp'] });
-        const plan = makePlan({ name: 'STORY', moduleKeys: ['stories'] });
-
-        const card = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY);
-
-        expect(card?.features).toEqual(['Everything in START', 'Stories']);
-    });
-
     it('omits the rollup detail when the previous tier has no modules', () => {
         const previous = makePlan({ name: 'START', moduleKeys: [] });
         const plan = makePlan({ name: 'STORY', moduleKeys: ['stories'] });
@@ -248,14 +239,44 @@ describe('buildLandingPlan', () => {
         expect(card?.includedFeatures).toBeUndefined();
     });
 
-    it('uses the cumulative inherited modules for later tiers with sparse catalog rows', () => {
-        const previous = makePlan({ name: 'STORY', moduleKeys: ['stories'] });
-        const plan = makePlan({ name: 'SIGNATURE', moduleKeys: ['wishbook'] });
+    it('rolls up only the previous card, so a card never lists a module its plan lacks', () => {
+        const wishbook = makePlan({ name: 'WISHBOOK', moduleKeys: ['wishbook'] });
+        const qr = makePlan({ name: 'QR', moduleKeys: ['gallery'] });
 
-        const card = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY, ['gallery', 'rsvp', 'stories', 'gallery']);
+        const card = buildLandingPlan(qr, wishbook, MODULES, MEDIA, MODULE_NAME, COPY);
 
-        expect(card?.features).toEqual(['Everything in STORY', 'Guestbook']);
-        expect(card?.includedFeatures).toEqual(['Gallery', 'RSVP', 'Stories']);
+        expect(card?.features).toEqual(['Gallery']);
+        expect(card?.includedFeatures).toBeUndefined();
+    });
+
+    it('rolls up a lite plan that adds to the one before it', () => {
+        const qr = makePlan({ name: 'QR', moduleKeys: ['gallery'] });
+        const bundle = makePlan({ name: 'BUNDLE', moduleKeys: ['gallery', 'wishbook'] });
+
+        const card = buildLandingPlan(bundle, qr, MODULES, MEDIA, MODULE_NAME, COPY);
+
+        expect(card?.features).toEqual(['Everything in QR', 'Guestbook']);
+        expect(card?.includedFeatures).toEqual(['Gallery']);
+    });
+
+    it('lists a full plan in full after a lite one that has modules it lacks', () => {
+        const bundle = makePlan({ name: 'BUNDLE', moduleKeys: ['gallery', 'wishbook'] });
+        const start = makePlan({ name: 'START', moduleKeys: ['gallery', 'rsvp'] });
+
+        const card = buildLandingPlan(start, bundle, MODULES, MEDIA, MODULE_NAME, COPY);
+
+        expect(card?.features).toEqual(['Gallery', 'RSVP']);
+        expect(card?.includedFeatures).toBeUndefined();
+    });
+
+    it('still rolls up STORY after START', () => {
+        const start = makePlan({ name: 'START', moduleKeys: ['gallery', 'posts'] });
+        const story = makePlan({ name: 'STORY', moduleKeys: ['gallery', 'posts', 'rsvp'] });
+
+        const card = buildLandingPlan(story, start, MODULES, MEDIA, MODULE_NAME, COPY);
+
+        expect(card?.features).toEqual(['Everything in START', 'RSVP']);
+        expect(card?.includedFeatures).toEqual(['Gallery']);
     });
 
     it("labels modules from the plan's own config", () => {
@@ -317,7 +338,7 @@ describe('buildLandingPlan', () => {
 describe('buildLandingPlan member roles line', () => {
     function card(allowCustom: boolean | undefined, catalog: Record<string, MemberRoleCatalogDto[]> = ROLES) {
         const plan = makePlan({ moduleKeys: ['member_roles'], moduleConfigs: { member_roles: allowCustom === undefined ? {} : { allowCustom } } });
-        return buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY, undefined, catalog);
+        return buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY, catalog);
     }
 
     it('counts active roles only and names the first two in catalog order', () => {
@@ -338,14 +359,14 @@ describe('buildLandingPlan member roles line', () => {
 
     it('falls back to the module name without moduleConfigs', () => {
         const plan = makePlan({ moduleKeys: ['member_roles'], moduleConfigs: null });
-        expect(buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY, undefined, ROLES)?.features).toEqual(['Member roles']);
+        expect(buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY, ROLES)?.features).toEqual(['Member roles']);
     });
 
     it('lists the line on a higher tier that turns on custom roles', () => {
         const previous = makePlan({ name: 'START', moduleKeys: ['member_roles'], moduleConfigs: { member_roles: { allowCustom: false } } });
         const plan = makePlan({ name: 'STORY', moduleKeys: ['member_roles'], moduleConfigs: { member_roles: { allowCustom: true } } });
 
-        const result = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY, undefined, ROLES);
+        const result = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY, ROLES);
 
         expect(result?.features).toEqual(['Everything in START', '3 member roles (a, b) + your own']);
         expect(result?.includedFeatures).toBeUndefined();

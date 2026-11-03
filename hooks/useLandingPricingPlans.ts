@@ -38,8 +38,7 @@ export function useLandingPricingPlans(): LandingPricingPlans {
                     seen.add(eventTypeKey);
                     // Only plans that get a card come back (see isLandingPlanOnSale).
                     const { plans } = resolveLandingCategoryPlans(data.planTiers, [eventTypeKey], data.memberRolesByEventType);
-                    // "Everything in X" rolls up the previous card: the first card lists its own
-                    // features in full.
+                    // "Everything in X" rolls up the previous card when the plan has all its modules.
                     const landingPlans = plans.flatMap((plan, index) => {
                         const before = plans.slice(0, index);
                         const landingPlan = buildLandingPlan(
@@ -49,7 +48,6 @@ export function useLandingPricingPlans(): LandingPricingPlans {
                             data.media,
                             moduleName,
                             copy,
-                            before.flatMap((previousPlan) => previousPlan.moduleKeys),
                             data.memberRolesByEventType,
                         );
                         return landingPlan === null ? [] : [landingPlan];

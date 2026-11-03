@@ -29,16 +29,7 @@ export function useMarketingPlanOptions({
         if (!media) return [];
 
         return plans.flatMap((plan, index) => {
-            const presentation = buildLandingPlan(
-                plan,
-                plans[index - 1],
-                modules,
-                media,
-                moduleName,
-                copy,
-                plans.slice(0, index).flatMap((previousPlan) => previousPlan.moduleKeys),
-                memberRoles,
-            );
+            const presentation = buildLandingPlan(plan, plans[index - 1], modules, media, moduleName, copy, memberRoles);
             return presentation ? [{ config: plan, featured: index === 1, presentation }] : [];
         });
     }, [copy, media, memberRoles, moduleName, modules, plans]);
