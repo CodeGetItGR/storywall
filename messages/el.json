@@ -2687,6 +2687,8 @@
     },
     "ShareMetadata": {
         "uploadDescription": "Μοιραστείτε τις φωτογραφίες και τα βίντεό σας.",
+        "wishDescription": "Αφήστε μια ευχή.",
+        "guestDescription": "Μοιραστείτε τις φωτογραφίες σας και αφήστε μια ευχή.",
         "inviteDescription": "Έχετε πρόσκληση."
     },
     "RightContextPanel": {

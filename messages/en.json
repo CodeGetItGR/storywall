@@ -2565,6 +2565,8 @@
     },
     "ShareMetadata": {
         "uploadDescription": "Share your photos and videos.",
+        "wishDescription": "Leave a wish.",
+        "guestDescription": "Share your photos and leave a wish.",
         "inviteDescription": "You're invited."
     },
     "RightContextPanel": {
