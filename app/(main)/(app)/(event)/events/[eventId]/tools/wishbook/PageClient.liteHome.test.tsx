@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { capabilitiesOf } from '@/lib/__fixtures__/eventCapabilities';
 import type { EventModuleResponseDto } from '@/lib/api/types';
 
 import WishbookPage from './PageClient';
@@ -54,6 +55,7 @@ vi.mock('@/providers/EventProvider', () => ({
         deletedAt: null,
         deletionScheduledFor: null,
         modules: state.modules,
+        capabilities: capabilitiesOf(state.modules),
     }),
     useActiveMember: () => ({ id: 'm1', displayName: 'Me' }),
     useIsHost: () => state.isHost,

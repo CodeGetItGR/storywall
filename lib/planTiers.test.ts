@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { planRequirementsOf } from '@/lib/__fixtures__/planRequirements';
 import type { CoverageOptionResponseDto, PlanTierResponseDto } from '@/lib/api/types';
 import {
     defaultSelectedPlan,
@@ -54,6 +55,7 @@ function makePlan(overrides: Partial<PlanTierResponseDto> = {}): PlanTierRespons
         sharedGroupKey: null,
         initialOptions: [],
         extensionOptions: [],
+        requirements: planRequirementsOf(overrides.moduleKeys ?? []),
         ...overrides,
     };
 }

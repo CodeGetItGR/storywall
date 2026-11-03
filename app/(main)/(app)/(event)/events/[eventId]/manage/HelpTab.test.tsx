@@ -1,6 +1,7 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { capabilitiesOf } from '@/lib/__fixtures__/eventCapabilities';
 import type { EventLocationDto, EventModuleResponseDto, EventScheduleDto } from '@/lib/api/types';
 
 import HelpTab from './HelpTab';
@@ -23,7 +24,7 @@ function modules(keys: string[]): EventModuleResponseDto[] {
 
 function renderHelp(moduleKeys: string[]) {
     const eventModules = modules(moduleKeys);
-    active.event = { id: 'e1', status: 'ACTIVE', deletedAt: null, modules: eventModules };
+    active.event = { id: 'e1', status: 'ACTIVE', deletedAt: null, modules: eventModules, capabilities: capabilitiesOf(eventModules) };
     render(
         <HelpTab
             eventId="e1"
@@ -44,9 +45,10 @@ describe('HelpTab', () => {
     });
 
     // A lite event takes no guests: they use its guest code.
-    it('leaves the invitations step out on a lite event', () => {
+    it('leaves the invitations and schedule steps out on a lite event', () => {
         renderHelp(['gallery', 'wishbook']);
         expect(screen.queryByText('steps.invitations.title')).toBeNull();
+        expect(screen.queryByText('schedule')).toBeNull();
         expect(screen.getByText('steps.details.title')).toBeTruthy();
     });
 });

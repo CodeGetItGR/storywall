@@ -5,6 +5,7 @@ import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { useLandingPricingPlans } from '@/hooks/useLandingPricingPlans';
+import { planRequirementsOf } from '@/lib/__fixtures__/planRequirements';
 import type { AppConfigResponseDto, PlanTierResponseDto } from '@/lib/api/types';
 
 const publicGet = vi.fn();
@@ -62,6 +63,7 @@ function planTier(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto 
             { id: 'opt-3', kind: 'INITIAL', months: 3, priceAmountMinor: 7900, promoPriceAmountMinor: null, sortOrder: 0, active: true },
         ],
         extensionOptions: [],
+        requirements: planRequirementsOf(overrides.moduleKeys ?? ['gallery']),
         ...overrides,
     };
 }

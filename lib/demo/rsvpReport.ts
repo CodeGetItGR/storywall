@@ -15,7 +15,7 @@ const LABELS = {
 export function buildDemoRsvpReport(input: {
     members: DemoMember[];
     rsvps: DemoRsvp[];
-    event: { title: string; schedule: { startAt: string } };
+    event: { title: string; schedule: { startAt: string | null } };
     reportType: RsvpReportType;
     locale: string;
 }): RsvpReportDto {
@@ -32,7 +32,7 @@ export function buildDemoRsvpReport(input: {
         header: {
             eventTitle: input.event.title,
             eventTypeName: null,
-            eventDate: input.event.schedule.startAt.slice(0, 10),
+            eventDate: input.event.schedule.startAt?.slice(0, 10) ?? '',
             generatedAt: new Date().toISOString(),
         },
         totals: { responses: answered.length, people: adults + children, adults, children },
