@@ -181,10 +181,11 @@ describe('lite plans', () => {
         expect(defaultSelectedPlan([], null)).toBeUndefined();
     });
 
-    it('picks the QR page plans: lite plans with the gallery, then the first full plan', () => {
+    it('picks the QR page plans: lite plans with the gallery, then the first full plan, else every full plan', () => {
         const bundle = makePlan({ code: 'BUNDLE', moduleKeys: ['gallery', 'qr_cards', 'wishbook'] });
         expect(qrPagePlans([wishbook, qr, bundle, start, story]).map((plan) => plan.code)).toEqual(['QR', 'BUNDLE', 'START']);
         expect(qrPagePlans([wishbook, start]).map((plan) => plan.code)).toEqual(['START']);
+        expect(qrPagePlans([start, story]).map((plan) => plan.code)).toEqual(['START', 'STORY']);
         expect(qrPagePlans([wishbook])).toEqual([]);
     });
 });
