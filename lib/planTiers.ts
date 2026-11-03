@@ -156,10 +156,11 @@ export function splitLitePlans<T extends PlanTierResponseDto>(plans: T[]): { ful
 }
 
 // The plans the QR wedding page sells, from the wedding plans on sale in sortOrder: the lite plans with
-// the gallery, then the first full plan.
+// the gallery, then the first full plan. With no such lite plan, every full plan, as before lite plans.
 export function qrPagePlans<T extends PlanTierResponseDto>(plans: T[]): T[] {
     const { full, lite } = splitLitePlans(plans);
-    return [...lite.filter((plan) => plan.moduleKeys.includes('gallery')), ...full.slice(0, 1)];
+    const photoPlans = lite.filter((plan) => plan.moduleKeys.includes('gallery'));
+    return photoPlans.length > 0 ? [...photoPlans, ...full.slice(0, 1)] : full;
 }
 
 // The plan a flow starts on: the one asked for when it is offered, else the first full plan, else the first plan.
