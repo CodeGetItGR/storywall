@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { useQrCardDesigner } from '@/hooks/useQrCardDesigner';
 import type { QrCardTemplateDto } from '@/lib/api/types';
 import { PLAIN_QR_CARD_ID, PLAIN_QR_CARD_STYLE } from '@/lib/qrCard';
+import { DEFAULT_QR_CARD_LAYOUT } from '@/lib/qrCardLayout';
 
 vi.mock('next-intl', () => ({ useLocale: () => 'en' }));
 
@@ -27,7 +28,7 @@ function typed(name: string, value: string) {
 }
 
 function renderDesigner(templates: QrCardTemplateDto[] = [LINEN], defaults: Defaults = { title: 'Maria & Nikos', line: 'Scan to join' }) {
-    return renderHook((props: { templates: QrCardTemplateDto[]; defaults: Defaults }) => useQrCardDesigner(props), {
+    return renderHook((props: { templates: QrCardTemplateDto[]; defaults: Defaults }) => useQrCardDesigner({ ...props, lineKey: 'join' }), {
         initialProps: { templates, defaults },
     });
 }
@@ -48,6 +49,20 @@ describe('useQrCardDesigner', () => {
         expect(result.current.style).toMatchObject({ artworkUrl: '/api/qr-card-artwork/t1/1', codeColor: '#1F3A5A', centerLogo: false });
         act(() => result.current.selectTemplate(PLAIN_QR_CARD_ID));
         expect(result.current.style).toEqual(PLAIN_QR_CARD_STYLE);
+    });
+
+    it("follows the picked design's wording for the line until the host types one", () => {
+        const layout = {
+            ...DEFAULT_QR_CARD_LAYOUT,
+            lines: { ...DEFAULT_QR_CARD_LAYOUT.lines, text: { join: { en: 'Scan to celebrate with us', el: 'Σκάναρε' } } },
+        };
+        const { result } = renderDesigner([{ ...LINEN, layout }]);
+        act(() => result.current.selectTemplate('t1'));
+        expect(result.current.text.line).toBe('Scan to celebrate with us');
+        act(() => result.current.handleTextChange(typed('line', 'Our line')));
+        expect(result.current.text.line).toBe('Our line');
+        act(() => result.current.selectTemplate(PLAIN_QR_CARD_ID));
+        expect(result.current.text.line).toBe('Our line');
     });
 
     it('falls back to Plain when the picked template leaves the list', () => {

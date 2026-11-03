@@ -1,23 +1,20 @@
 'use client';
 
-import { Copy, ImagePlus, LayoutTemplate, Loader2 } from 'lucide-react';
+import { Copy, LayoutTemplate, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useId } from 'react';
 
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
-import { AdminSwitch } from '@/components/admin/AdminSwitch';
 import { QrCardLayoutEditor } from '@/components/admin/qrCards/layoutEditor/QrCardLayoutEditor';
 import { QrCardTemplatePreview } from '@/components/admin/qrCards/QrCardTemplatePreview';
 import { ReactionTypeAvailabilityControl } from '@/components/admin/ReactionTypeAvailabilityControl';
 import { useQrCardTemplateDrawer } from '@/hooks/useQrCardTemplateDrawer';
 import { useQrCardTemplateDrawerCopy } from '@/hooks/useQrCardTemplateDrawerCopy';
 import { QR_CARD_NAME_MAX } from '@/lib/adminQrCards';
-import { THEME_ILLUSTRATION_ACCEPT } from '@/lib/adminThemePresets';
 import type { AdminQrCardTemplateDto, EventTypeConvention } from '@/lib/api/types';
 
 const FORM_ID = 'qr-card-template-form';
-const SWATCH_CLASS = 'h-10 w-12 shrink-0 cursor-pointer rounded-md border border-border bg-white p-1';
 const GROUP_LABEL_CLASS = 'text-[11px] font-bold tracking-wide text-ink-muted uppercase';
 
 export function QrCardTemplateDrawer({
@@ -37,13 +34,10 @@ export function QrCardTemplateDrawer({
     const tPreview = useTranslations('AdminPage.qrCards.preview');
     const tLayout = useTranslations('AdminPage.qrCards.layout');
     const form = useQrCardTemplateDrawer({ template, sortOrder, onDoneAction: onCloseAction, onDuplicatedAction });
-    const { codeHint, fontHint, fontLabel, serverError, artworkHint } = useQrCardTemplateDrawerCopy(form);
+    const { serverError } = useQrCardTemplateDrawerCopy(form);
     const hintIdPrefix = useId();
     const nameEnHintId = `${hintIdPrefix}-name-en`;
     const nameElHintId = `${hintIdPrefix}-name-el`;
-    const textColorHintId = `${hintIdPrefix}-text-color`;
-    const codeColorHintId = `${hintIdPrefix}-code-color`;
-    const layoutHintId = `${hintIdPrefix}-layout`;
 
     const footer = (
         <div className="flex w-full flex-wrap items-center justify-end gap-2">
@@ -136,92 +130,6 @@ export function QrCardTemplateDrawer({
                         />
                     </AdminField>
 
-                    {/* Text */}
-                    <AdminField
-                        label={t('textColor')}
-                        required
-                        hint={form.errors.textColor ? t('textColorInvalid') : undefined}
-                        hintId={textColorHintId}
-                    >
-                        <div className="flex items-center gap-2">
-                            <input
-                                type="color"
-                                name="textColor"
-                                value={form.textColorInputValue}
-                                onChange={form.handleFieldChange}
-                                aria-label={t('textColor')}
-                                aria-describedby={form.errors.textColor ? textColorHintId : undefined}
-                                className={SWATCH_CLASS}
-                            />
-                            <input
-                                name="textColor"
-                                value={form.draft.textColor}
-                                onChange={form.handleFieldChange}
-                                maxLength={7}
-                                aria-label={t('textColorHex')}
-                                aria-describedby={form.errors.textColor ? textColorHintId : undefined}
-                                aria-invalid={Boolean(form.errors.textColor)}
-                                className={adminInputClass('font-mono uppercase')}
-                            />
-                        </div>
-                    </AdminField>
-                    <div className="space-y-1">
-                        <AdminField label={t('headingFont')} hint={fontHint}>
-                            <select
-                                name="headingFontId"
-                                value={form.draft.headingFontId}
-                                onChange={form.handleFieldChange}
-                                className={adminInputClass()}
-                            >
-                                <option value="">{t('headingFontDefault')}</option>
-                                {form.fontOptions.map((option) => (
-                                    <option key={option.id} value={option.id}>
-                                        {fontLabel(option)}
-                                    </option>
-                                ))}
-                            </select>
-                        </AdminField>
-                        {form.fontsStatus === 'ready' && !form.hasUsableFonts && (
-                            <p className="text-[11px] leading-4 text-ink-faint">
-                                {t('headingFontEmpty')}{' '}
-                                <a href="#theme-fonts" className="font-semibold text-primary underline-offset-2 hover:underline">
-                                    {t('headingFontEmptyLink')}
-                                </a>
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Code */}
-                    <AdminField label={t('codeColor')} required hint={codeHint} hintId={codeColorHintId} hintLive={false}>
-                        <div className="flex items-center gap-2">
-                            <input
-                                type="color"
-                                name="codeColor"
-                                value={form.codeColorInputValue}
-                                onChange={form.handleFieldChange}
-                                aria-label={t('codeColor')}
-                                aria-describedby={codeHint ? codeColorHintId : undefined}
-                                className={SWATCH_CLASS}
-                            />
-                            <input
-                                name="codeColor"
-                                value={form.draft.codeColor}
-                                onChange={form.handleFieldChange}
-                                maxLength={7}
-                                aria-label={t('codeColorHex')}
-                                aria-describedby={codeHint ? codeColorHintId : undefined}
-                                aria-invalid={Boolean(form.errors.codeColor || form.errors.codeContrast)}
-                                className={adminInputClass('font-mono uppercase')}
-                            />
-                        </div>
-                        {form.errors.codeContrast && (
-                            <span role="alert" className="text-[11px] leading-4 font-semibold text-status-danger">
-                                {t('codeContrastInvalid')}
-                            </span>
-                        )}
-                    </AdminField>
-                    <AdminSwitch label={t('centerLogo')} checked={form.draft.centerLogo} onCheckedChangeAction={form.handleCenterLogoChange} />
-
                     {/* Event types */}
                     <fieldset>
                         <legend className={GROUP_LABEL_CLASS}>{t('eventTypes')}</legend>
@@ -245,35 +153,18 @@ export function QrCardTemplateDrawer({
                         {form.errors.eventTypes && <p className="mt-1 text-[11px] text-status-danger">{t('eventTypesInvalid')}</p>}
                     </fieldset>
 
-                    {/* Artwork */}
-                    <AdminField label={t('artwork')} hint={artworkHint}>
-                        <label className="relative inline-flex min-h-10 w-fit cursor-pointer items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold text-ink focus-within:ring-2 focus-within:ring-primary/20 hover:bg-canvas">
-                            <ImagePlus className="h-4 w-4" aria-hidden="true" />
-                            {t('artworkChoose')}
-                            <input type="file" accept={THEME_ILLUSTRATION_ACCEPT} onChange={form.handleFileChange} className="sr-only" />
-                        </label>
-                    </AdminField>
-
-                    {/* Layout */}
-                    {/* Not an AdminField: a label around the button would rename it to the label's whole text. */}
-                    <div className="flex min-w-0 flex-col gap-0.5">
-                        <span className="text-[11px] font-bold tracking-wide text-ink-muted uppercase">{t('layout')}</span>
+                    {/* Design */}
+                    {!form.isCreate && (
                         <button
                             type="button"
                             onClick={form.openLayoutEditor}
-                            disabled={form.isCreate || form.isSaving}
-                            aria-describedby={form.isCreate ? layoutHintId : undefined}
-                            className="mt-1.5 inline-flex min-h-10 w-fit items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold text-ink hover:bg-canvas disabled:opacity-50"
+                            disabled={form.isSaving}
+                            className="inline-flex min-h-10 w-fit items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold text-ink hover:bg-canvas disabled:opacity-50"
                         >
                             <LayoutTemplate className="h-4 w-4" aria-hidden="true" />
                             {tLayout('edit')}
                         </button>
-                        {form.isCreate && (
-                            <span id={layoutHintId} className="text-[11px] leading-4 text-ink-faint">
-                                {tLayout('editSaveFirst')}
-                            </span>
-                        )}
-                    </div>
+                    )}
 
                     {/* Availability */}
                     {!form.isCreate && (
@@ -293,12 +184,7 @@ export function QrCardTemplateDrawer({
 
             {/* Layout editor */}
             {form.layoutEditorOpen && form.savedTemplate && (
-                <QrCardLayoutEditor
-                    template={form.savedTemplate}
-                    style={form.previewStyle}
-                    onSavedAction={form.handleLayoutSaved}
-                    onCloseAction={form.closeLayoutEditor}
-                />
+                <QrCardLayoutEditor template={form.savedTemplate} onSavedAction={form.handleLayoutSaved} onCloseAction={form.closeLayoutEditor} />
             )}
         </AdminDrawer>
     );

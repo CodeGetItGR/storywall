@@ -37,9 +37,11 @@ export function useQrCardScreen() {
     const status: QrCardScreenStatus =
         links.isLoading || templates.isLoading ? 'loading' : !qrLink || qrLink.status === 'REVOKED' ? 'missing' : 'ready';
 
+    const lineKey = qrLink ? qrCardLineKey(qrLink.targetType, activeEvent.modules) : null;
     const designer = useQrCardDesigner({
         templates: templates.data?.templates ?? NO_TEMPLATES,
-        defaults: { title: activeEvent.title, line: qrLink ? t(`lines.${qrCardLineKey(qrLink.targetType, activeEvent.modules)}`) : '' },
+        defaults: { title: activeEvent.title, line: lineKey ? t(`lines.${lineKey}`) : '' },
+        lineKey,
     });
     const exporter = useQrCardExport({ font: designer.style.headingFont, title: designer.text.title, size: designer.size });
     const lines: QrCardLine[] = [{ text: designer.text.line, tone: 'body' }];

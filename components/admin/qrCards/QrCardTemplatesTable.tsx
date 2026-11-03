@@ -17,6 +17,8 @@ export function QrCardTemplatesTable({
     onMoveAction,
     onReorderAction,
     onEditAction,
+    duplicatingId,
+    onDuplicateAction,
 }: {
     templates: AdminQrCardTemplateDto[];
     hasAnyTemplates: boolean;
@@ -25,6 +27,8 @@ export function QrCardTemplatesTable({
     onMoveAction: (templateId: string, direction: MoveDirection) => void;
     onReorderAction: (activeId: string, overId: string) => void;
     onEditAction: (templateId: string) => void;
+    duplicatingId: string | null;
+    onDuplicateAction: (templateId: string) => void;
 }) {
     const t = useTranslations('AdminPage.qrCards');
 
@@ -59,6 +63,9 @@ export function QrCardTemplatesTable({
                                 canReorder={canReorder}
                                 onMoveAction={onMoveAction}
                                 onEditAction={onEditAction}
+                                isDuplicating={duplicatingId === template.id}
+                                canDuplicate={duplicatingId === null}
+                                onDuplicateAction={onDuplicateAction}
                             />
                         ))}
                     </AdminSortableList>
