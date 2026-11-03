@@ -155,6 +155,13 @@ export function splitLitePlans<T extends PlanTierResponseDto>(plans: T[]): { ful
     return { full: plans.filter((plan) => !isLitePlan(plan)), lite: plans.filter(isLitePlan) };
 }
 
+// The plans the QR wedding page sells, from the wedding plans on sale in sortOrder: the lite plans with
+// the gallery, then the first full plan.
+export function qrPagePlans<T extends PlanTierResponseDto>(plans: T[]): T[] {
+    const { full, lite } = splitLitePlans(plans);
+    return [...lite.filter((plan) => plan.moduleKeys.includes('gallery')), ...full.slice(0, 1)];
+}
+
 // The plan a flow starts on: the one asked for when it is offered, else the first full plan, else the first plan.
 export function defaultSelectedPlan<T extends PlanTierResponseDto>(plans: T[], code: string | null | undefined): T | undefined {
     return plans.find((plan) => plan.code === code) ?? splitLitePlans(plans).full[0] ?? plans[0];

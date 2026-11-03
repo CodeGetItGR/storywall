@@ -7,6 +7,7 @@ import {
     getOptionPriceDetails,
     isLitePlan,
     liveInitialOptions,
+    qrPagePlans,
     resolveInitialOption,
     shortestInitialOption,
     splitLitePlans,
@@ -178,5 +179,12 @@ describe('lite plans', () => {
     it('falls back to the first plan when there are no full plans', () => {
         expect(defaultSelectedPlan([wishbook, qr], null)?.code).toBe('WISHBOOK');
         expect(defaultSelectedPlan([], null)).toBeUndefined();
+    });
+
+    it('picks the QR page plans: lite plans with the gallery, then the first full plan', () => {
+        const bundle = makePlan({ code: 'BUNDLE', moduleKeys: ['gallery', 'qr_cards', 'wishbook'] });
+        expect(qrPagePlans([wishbook, qr, bundle, start, story]).map((plan) => plan.code)).toEqual(['QR', 'BUNDLE', 'START']);
+        expect(qrPagePlans([wishbook, start]).map((plan) => plan.code)).toEqual(['START']);
+        expect(qrPagePlans([wishbook])).toEqual([]);
     });
 });

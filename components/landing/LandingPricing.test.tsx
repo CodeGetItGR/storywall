@@ -47,6 +47,7 @@ const GROUPS: LandingPricingGroup[] = [
                 plans: [landingPlan('START'), landingPlan('STORY'), landingPlan('SIGNATURE')],
                 litePlans: [landingPlan('QR'), landingPlan('BUNDLE')],
                 liteFromPrice: '49€',
+                qrPagePlans: [],
             },
             {
                 id: 'baby-shower',
@@ -55,6 +56,7 @@ const GROUPS: LandingPricingGroup[] = [
                 plans: [landingPlan('SHOWER')],
                 litePlans: [],
                 liteFromPrice: null,
+                qrPagePlans: [],
             },
         ],
     },
@@ -69,6 +71,7 @@ const GROUPS: LandingPricingGroup[] = [
                 plans: [landingPlan('GOLD'), landingPlan('PLATINUM')],
                 litePlans: [],
                 liteFromPrice: null,
+                qrPagePlans: [],
             },
         ],
     },

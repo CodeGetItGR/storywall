@@ -283,6 +283,31 @@ describe('useLandingPricingPlans', () => {
         expect(wedding?.liteFromPrice).toBe('49€');
     });
 
+    it('builds the QR page row from the photo plans and the first full plan, rolling up only what a plan contains', async () => {
+        const config = makeConfig();
+        config.modules = [
+            { id: 'm1', moduleKey: 'gallery', name: 'Gallery', description: null, isEnabled: true, sortOrder: 0 },
+            { id: 'm2', moduleKey: 'posts', name: 'Posts', description: null, isEnabled: true, sortOrder: 1 },
+            { id: 'm3', moduleKey: 'wishbook', name: 'Wishbook', description: null, isEnabled: true, sortOrder: 2 },
+        ];
+        config.planTiers = [
+            planTier({ id: 'w', code: 'WISHBOOK', name: 'Wishbook', sortOrder: 0, moduleKeys: ['wishbook'] }),
+            planTier({ id: 'l1', code: 'QR', name: 'QR', sortOrder: 1, moduleKeys: ['gallery'] }),
+            planTier({ id: 'l2', code: 'BUNDLE', name: 'Bundle', sortOrder: 2, moduleKeys: ['gallery', 'wishbook'] }),
+            planTier({ id: 'f1', code: 'START', name: 'START', sortOrder: 3, moduleKeys: ['gallery', 'posts'] }),
+            planTier({ id: 'f2', code: 'STORY', name: 'STORY', sortOrder: 4, moduleKeys: ['gallery', 'posts', 'wishbook'] }),
+        ];
+        config.landingCategories = [{ id: 'wed', name: { en: 'Weddings' }, description: {}, isDefault: true, eventTypeKeys: ['WEDDING'] }];
+        publicGet.mockResolvedValue(config);
+
+        const { result } = renderHook(() => useLandingPricingPlans(), { wrapper });
+
+        await waitFor(() => expect(result.current.groups).not.toBeNull());
+        const row = result.current.groups?.[0].items[0].qrPagePlans ?? [];
+        expect(row.map((plan) => plan.code)).toEqual(['QR', 'BUNDLE', 'START']);
+        expect(row.map((plan) => plan.features)).toEqual([['Gallery'], ['Everything in QR', 'Wishbook'], ['Gallery', 'Posts']]);
+    });
+
     it('has no lite row or price for a type without lite plans', async () => {
         const config = makeConfig();
         config.landingCategories = [{ id: 'wed', name: { en: 'Weddings' }, description: {}, isDefault: true, eventTypeKeys: ['WEDDING'] }];

@@ -10,10 +10,11 @@ import type { EventTypeConvention } from '@/lib/api/types';
 import { eventTypeSlug } from '@/lib/eventTypeSlug';
 import { resolveLandingCategoryPlans } from '@/lib/landingCategories';
 import { buildLandingRow, cheapestLandingPrice, type LandingPlan } from '@/lib/landingPricing';
-import { splitLitePlans } from '@/lib/planTiers';
+import { qrPagePlans, splitLitePlans } from '@/lib/planTiers';
 
 // One event type in the landing pricing picker. id is its LANDING_EVENT_PARAM value. plans are the full
 // plans; litePlans (no posts) are their own row behind the teaser, with liteFromPrice their cheapest price.
+// qrPagePlans is the QR wedding page's row (see qrPagePlans in lib/planTiers.ts).
 export type LandingPricingEventType = {
     id: string;
     eventTypeKey: EventTypeConvention;
@@ -21,6 +22,7 @@ export type LandingPricingEventType = {
     plans: LandingPlan[];
     litePlans: LandingPlan[];
     liteFromPrice: string | null;
+    qrPagePlans: LandingPlan[];
 };
 // A landing category: only groups its event types in the picker. Each type shows its own plans.
 export type LandingPricingGroup = { id: string; label: string; items: LandingPricingEventType[] };
@@ -66,6 +68,7 @@ export function useLandingPricingPlans(): LandingPricingPlans {
                             plans: landingPlans,
                             litePlans,
                             liteFromPrice: litePlans.length > 0 ? cheapestLandingPrice(split.lite) : null,
+                            qrPagePlans: row(qrPagePlans(plans)),
                         },
                     ];
                 });
