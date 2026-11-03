@@ -24,7 +24,9 @@ import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/E
 // non-host members the panel only ever shows their plain tool links (same
 // set MobileTabBar's member context menu shows), so every host-only
 // summary/fetch below is also gated on `isHost`.
-export function useRightContextPanel({ includeManageLinks = true }: { includeManageLinks?: boolean } = {}) {
+// `liteHome` is the panel beside a lite event's home: the page itself already shows its gallery and wishbook,
+// their counts and the guest code, so the panel keeps to manage, help and the plan.
+export function useRightContextPanel({ includeManageLinks = true, liteHome = false }: { includeManageLinks?: boolean; liteHome?: boolean } = {}) {
     const activeEvent = useActiveEvent();
     const moduleCopy = useModuleCopy(activeEvent?.eventType);
     const isHost = useIsHost();
@@ -43,8 +45,8 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
 
     const isLiveHost = isHost && !isDraft && !isDeleted;
     const showRsvpSummary = isLiveHost && availableModuleKeys.has('rsvp');
-    const showMediaSummary = isLiveHost && availableModuleKeys.has('gallery');
-    const showWishbookSummary = isLiveHost && availableModuleKeys.has('wishbook');
+    const showMediaSummary = isLiveHost && !liteHome && availableModuleKeys.has('gallery');
+    const showWishbookSummary = isLiveHost && !liteHome && availableModuleKeys.has('wishbook');
     // A lite event has no upload or share links: its one guest code sits in the home's quick actions.
     const showsLinks = isLiveHost && Boolean(eventCapabilities(activeEvent)?.showsShareLinks);
     const showGalleryQr = showsLinks && isGalleryQrFeatureEnabled(activeEvent?.modules);
@@ -69,7 +71,7 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
     // The shared tools menu leaves the playlist out because MobileTabBar gives
     // it its own tab; the desktop host actions have no such tab, so add it here.
     const playlistItems: ToolMenuItem[] =
-        isLiveHost && activeEvent && availableModuleKeys.has('playlist')
+        isLiveHost && !liteHome && activeEvent && availableModuleKeys.has('playlist')
             ? [
                   {
                       key: 'playlist',
@@ -84,7 +86,9 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
         ? toolItems
         : isDraft
           ? hostItemsForActions.filter((item) => item.key !== 'help')
-          : [...hostItemsForActions, ...toolItems.filter((item) => item.key !== 'rsvp'), ...playlistItems];
+          : liteHome
+            ? hostItemsForActions
+            : [...hostItemsForActions, ...toolItems.filter((item) => item.key !== 'rsvp'), ...playlistItems];
 
     const currentPlan = eventUsage ? findPlanByCode(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
     const nextUpgradeOption = upgradeOptions[0];
