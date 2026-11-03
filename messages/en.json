@@ -642,6 +642,8 @@
             "or": "or",
             "wishLine": "Write a message for their wishbook.",
             "wishButton": "Leave a wish",
+            "back": "Back",
+            "wishEyebrow": "Leave a wish",
             "wish": {
                 "nameLabel": "Your name",
                 "messageLabel": "Your wish",
