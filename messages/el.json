@@ -758,6 +758,18 @@
         "fallbackTitle": "Έχετε πρόσκληση",
         "defaultHeroImageAlt": "Φωτογραφία εκδήλωσης",
         "mediaUploadEyebrow": "Μοιραστείτε φωτογραφίες",
+        "guestCode": {
+            "wish": {
+                "nameLabel": "Το όνομά σας",
+                "messageLabel": "Η ευχή σας",
+                "charactersLeft": "{current} / {max} χαρακτήρες",
+                "submit": "Στείλτε την ευχή",
+                "sent": "Η ευχή στάλθηκε",
+                "writeAnother": "Γράψτε κι άλλη",
+                "rateLimited": "Στάλθηκαν πολλές ευχές μόλις τώρα. Δοκιμάστε ξανά σε ένα λεπτό.",
+                "notAvailable": "Αυτός ο κωδικός δεν δέχεται ευχές αυτή τη στιγμή."
+            }
+        },
         "anonymousUpload": {
             "nameLabel": "Το όνομά σας",
             "namePlaceholder": "Πώς να αναφέρουμε τις φωτογραφίες σας;",

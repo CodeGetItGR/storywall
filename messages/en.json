@@ -636,6 +636,18 @@
         "fallbackTitle": "You're invited",
         "defaultHeroImageAlt": "Event cover photo",
         "mediaUploadEyebrow": "Share your photos",
+        "guestCode": {
+            "wish": {
+                "nameLabel": "Your name",
+                "messageLabel": "Your wish",
+                "charactersLeft": "{current} / {max} characters",
+                "submit": "Send wish",
+                "sent": "Wish sent",
+                "writeAnother": "Write another",
+                "rateLimited": "Too many wishes were sent just now. Try again in a minute.",
+                "notAvailable": "This code doesn't take wishes right now."
+            }
+        },
         "anonymousUpload": {
             "nameLabel": "Your name",
             "namePlaceholder": "How should we credit your photos?",
