@@ -7,10 +7,13 @@ import {
     canExtendCoverage,
     discountedAmountMinor,
     formatMoney,
+    isCampaignDiscountLive,
     isOrderPaidByAnother,
     lastWithdrawalMoment,
     paidBillingTotal,
     partnerBrandingCheckoutFields,
+    promotedAmount,
+    promotedOption,
     promotedOptionAmountMinor,
 } from './billing';
 
@@ -52,6 +55,56 @@ describe('plan promotions', () => {
 
     it('never applies a promo price to an extension', () => {
         expect(activePromoPriceMinor(option({ kind: 'EXTENSION', promoPriceAmountMinor: 9_900 }), plan(), now)).toBeNull();
+    });
+
+    const campaign = {
+        campaignDiscountPercent: 20,
+        campaignDiscountLabel: 'Black Friday',
+        campaignDiscountStartsAt: '2026-10-07T09:00:00Z',
+        campaignDiscountEndsAt: '2026-10-07T11:00:00Z',
+    };
+
+    it('reads a campaign as live only inside its dates', () => {
+        expect(isCampaignDiscountLive(plan(campaign), now)).toBe(true);
+        expect(isCampaignDiscountLive(plan(campaign), new Date('2026-10-07T08:59:00Z'))).toBe(false);
+        expect(isCampaignDiscountLive(plan(campaign), new Date('2026-10-07T11:00:00Z'))).toBe(false);
+        expect(isCampaignDiscountLive(plan(), now)).toBe(false);
+    });
+
+    it('takes the campaign when it is cheaper, under its own label', () => {
+        expect(promotedAmount(10_000, plan({ ...campaign, discountPercent: 10, discountLabel: 'Sale' }), now)).toEqual({
+            amountMinor: 8_000,
+            discountActive: true,
+            discountLabel: 'Black Friday',
+        });
+    });
+
+    it("keeps the plan's own percent when it is cheaper or the same", () => {
+        expect(promotedAmount(10_000, plan({ ...campaign, discountPercent: 30, discountLabel: 'Sale' }), now)).toEqual({
+            amountMinor: 7_000,
+            discountActive: true,
+            discountLabel: 'Sale',
+        });
+        expect(promotedAmount(10_000, plan({ ...campaign, discountPercent: 20, discountLabel: 'Sale' }), now).discountLabel).toBe('Sale');
+    });
+
+    it('compares a promo price with the campaign price', () => {
+        const below = option({ priceAmountMinor: 10_000, promoPriceAmountMinor: 7_000 });
+        const above = option({ priceAmountMinor: 10_000, promoPriceAmountMinor: 9_000 });
+
+        expect(promotedOption(below, plan({ ...campaign, discountLabel: 'Sale' }), now).amountMinor).toBe(7_000);
+        expect(promotedOption(above, plan({ ...campaign, discountLabel: 'Sale' }), now)).toEqual({
+            amountMinor: 8_000,
+            discountActive: true,
+            discountLabel: 'Black Friday',
+        });
+        expect(promotedOptionAmountMinor(above, plan(campaign), now)).toBe(8_000);
+    });
+
+    it('drops back to the normal price at the second a campaign ends', () => {
+        const atEnd = new Date('2026-10-07T11:00:00Z');
+
+        expect(discountedAmountMinor(10_000, plan(campaign), atEnd)).toBe(10_000);
     });
 });
 
