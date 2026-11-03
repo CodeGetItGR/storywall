@@ -9943,5 +9943,22 @@
     },
     "SaveMyDatePreview": {
         "metaTitle": "Invitation preview"
+    },
+    "Shop": {
+        "metaTitle": "Shop | StoryWall",
+        "productMetaTitle": "{title} | StoryWall shop",
+        "title": "Shop",
+        "all": "All",
+        "categoriesLabel": "Categories",
+        "empty": "No products here yet.",
+        "digital": "Digital",
+        "printed": "Printed",
+        "pagesLabel": "Pages",
+        "previous": "Previous",
+        "next": "Next",
+        "pageOf": "Page {page} of {total}",
+        "back": "Shop",
+        "buyAt": "Buy at {store}",
+        "home": "StoryWall home"
     }
 }

@@ -9981,5 +9981,22 @@
     },
     "SaveMyDatePreview": {
         "metaTitle": "Προεπισκόπηση πρόσκλησης"
+    },
+    "Shop": {
+        "metaTitle": "Κατάστημα | StoryWall",
+        "productMetaTitle": "{title} | Κατάστημα StoryWall",
+        "title": "Κατάστημα",
+        "all": "Όλα",
+        "categoriesLabel": "Κατηγορίες",
+        "empty": "Δεν υπάρχουν προϊόντα ακόμα.",
+        "digital": "Ψηφιακό",
+        "printed": "Έντυπο",
+        "pagesLabel": "Σελίδες",
+        "previous": "Προηγούμενη",
+        "next": "Επόμενη",
+        "pageOf": "Σελίδα {page} από {total}",
+        "back": "Κατάστημα",
+        "buyAt": "Αγορά στο {store}",
+        "home": "Αρχική StoryWall"
     }
 }
