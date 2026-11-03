@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import { useMemberRoleCatalog } from '@/hooks/useAppConfig';
 import { usePlanMarketingCopy } from '@/hooks/usePlanMarketingCopy';
 import type { AppMediaConfigDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
-import { buildLandingRow, cheapestLandingPrice, type LandingPlan } from '@/lib/landingPricing';
+import { buildLandingRow, type LandingPlan } from '@/lib/landingPricing';
 import { splitLitePlans } from '@/lib/planTiers';
 
 export type MarketingPlanOption = {
@@ -19,11 +19,9 @@ type MarketingPlanOptions = {
     full: MarketingPlanOption[];
     // The lite plans (no posts), never featured. Empty when there are no full plans: they then show as `full`.
     lite: MarketingPlanOption[];
-    // The cheapest lite price, for the teaser line. Null without lite options.
-    liteFromPrice: string | null;
 };
 
-const NONE: MarketingPlanOptions = { full: [], lite: [], liteFromPrice: null };
+const NONE: MarketingPlanOptions = { full: [], lite: [] };
 
 // The plans as picker cards: full and lite plans are separate rows, each rolling a card up into the previous one in it.
 export function useMarketingPlanOptions({
@@ -51,6 +49,6 @@ export function useMarketingPlanOptions({
             }));
         const full = row(hasFull ? split.full : split.lite, 1);
         const lite = hasFull ? row(split.lite, null) : [];
-        return { full, lite, liteFromPrice: lite.length > 0 ? cheapestLandingPrice(lite.map((option) => option.config)) : null };
+        return { full, lite };
     }, [copy, media, memberRoles, moduleName, modules, plans]);
 }

@@ -2,11 +2,9 @@
 
 import { useTranslations } from 'next-intl';
 
-import { LitePlansTeaser } from '@/components/plan/LitePlansTeaser';
+import { LitePlansSection } from '@/components/plan/LitePlansSection';
 import { MarketingPlanCard } from '@/components/plan/MarketingPlanCard';
-import { useLitePlansOpen } from '@/hooks/useLitePlansOpen';
 import type { MarketingPlanOption } from '@/hooks/useMarketingPlanOptions';
-import type { PlanTierResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
 // A narrower grid than the full plans', so the lite cards come out smaller.
@@ -15,9 +13,6 @@ const LITE_COLUMNS: Record<number, string> = { 1: '', 2: 'min-[761px]:grid-cols-
 
 type EventLitePlansProps = {
     options: MarketingPlanOption[];
-    price: string;
-    // All the offered plans, to tell whether the selected one is lite.
-    plans: PlanTierResponseDto[];
     selectedCode: string;
     durationPicks: Record<string, string>;
     selectedLabel: string;
@@ -26,12 +21,9 @@ type EventLitePlansProps = {
     className?: string;
 };
 
-// The creation picker's teaser line and lite plans. Mount it once the plans are known: it starts open
-// when the selected plan is a lite one.
+// The creation picker's lite plans in their own titled section.
 export function EventLitePlans({
     options,
-    price,
-    plans,
     selectedCode,
     durationPicks,
     selectedLabel,
@@ -40,11 +32,10 @@ export function EventLitePlans({
     className,
 }: EventLitePlansProps) {
     const tPricing = useTranslations('LandingPage.pricing');
-    const { open, toggle } = useLitePlansOpen(plans, selectedCode);
     const count = Math.min(options.length, 3);
 
     return (
-        <LitePlansTeaser className={className} label={tPricing('liteTeaser', { price })} onToggleAction={toggle} open={open}>
+        <LitePlansSection className={className} heading={tPricing('liteHeading')} intro={tPricing('liteIntro')}>
             {/* Lite plan cards */}
             <div className={cn('mx-auto grid gap-5 min-[761px]:gap-6', LITE_WIDTH[count], LITE_COLUMNS[count])}>
                 {options.map(({ config, presentation }) => (
@@ -65,6 +56,6 @@ export function EventLitePlans({
                     />
                 ))}
             </div>
-        </LitePlansTeaser>
+        </LitePlansSection>
     );
 }
