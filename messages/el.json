@@ -6782,6 +6782,18 @@
         "collaboratorBrandingIncomplete": "Η κάρτα του συνεργάτη δεν είναι πλήρης.",
         "partnerBrandingNoticeOutdated": "Η ενημέρωση για τον συνεργάτη άλλαξε. Δείτε την ξανά."
     },
+    "LiteHome": {
+        "actionsTitle": "Γρήγορες ενέργειες",
+        "actions": {
+            "qr": "Κωδικός QR",
+            "share": "Κοινοποίηση συνδέσμου",
+            "download": "Λήψη όλων",
+            "upgrade": "Πλήρες StoryWall"
+        },
+        "shareCopied": "Ο σύνδεσμος αντιγράφηκε",
+        "qrSheetTitle": "Κωδικός καλεσμένων",
+        "tabsLabel": "Ενότητες"
+    },
     "GalleryPage": {
         "print": {
             "action": "Εκτύπωση",

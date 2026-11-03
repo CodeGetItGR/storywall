@@ -6286,6 +6286,18 @@
         },
         "includedModules": "Included modules"
     },
+    "LiteHome": {
+        "actionsTitle": "Quick actions",
+        "actions": {
+            "qr": "QR code",
+            "share": "Share link",
+            "download": "Download all",
+            "upgrade": "Full StoryWall"
+        },
+        "shareCopied": "Link copied",
+        "qrSheetTitle": "Guest code",
+        "tabsLabel": "Sections"
+    },
     "GalleryPage": {
         "print": {
             "action": "Print",
