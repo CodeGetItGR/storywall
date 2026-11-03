@@ -90,7 +90,7 @@ export function LandingPricing({ eventType, heading, intro, kicker }: LandingPri
                 </div>
             )}
 
-            {/* Plans and lite plans: the teaser sits above the full plans on phones and under them from 761px */}
+            {/* Plans and lite plans */}
             <div className={cn('mx-auto flex flex-col', eventType ? 'mt-12 min-[761px]:mt-16' : 'mt-9', PLAN_WIDTH[planCount])}>
                 {/* Plans */}
                 <div className={cn('grid gap-5 min-[761px]:gap-[clamp(24px,3vw,52px)]', PLAN_COLUMNS[planCount])}>
@@ -121,13 +121,7 @@ export function LandingPricing({ eventType, heading, intro, kicker }: LandingPri
                 </div>
 
                 {/* Lite plans */}
-                <LandingLitePlans
-                    className="max-[760px]:order-first max-[760px]:mb-6 min-[761px]:order-last min-[761px]:mt-10"
-                    eventType={active}
-                    key={active.id}
-                    onPickDurationAction={pickDuration}
-                    picks={picks}
-                />
+                <LandingLitePlans className="mt-16 min-[761px]:mt-20" eventType={active} onPickDurationAction={pickDuration} picks={picks} />
             </div>
         </section>
     );

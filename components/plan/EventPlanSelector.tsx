@@ -32,7 +32,7 @@ export function EventPlanSelector({
 }: EventPlanSelectorProps) {
     const t = useTranslations('CreateEventPage');
     const tPricing = useTranslations('LandingPage.pricing');
-    const { full: options, lite, liteFromPrice } = useMarketingPlanOptions({ plans, modules, media });
+    const { full: options, lite } = useMarketingPlanOptions({ plans, modules, media });
     const showLoading = isLoading || !media;
 
     return (
@@ -72,16 +72,14 @@ export function EventPlanSelector({
                             ))}
                         </div>
 
-                        {/* Lite plans: above the full plans on phones, under them from 761px */}
-                        {liteFromPrice !== null && (
+                        {/* Lite plans */}
+                        {lite.length > 0 && (
                             <EventLitePlans
-                                className="max-[760px]:order-first max-[760px]:mb-6 min-[761px]:order-last min-[761px]:mt-8"
+                                className="mt-12 min-[761px]:mt-14"
                                 durationPicks={durationPicks}
                                 onSelectAction={onSelectAction}
                                 onSelectDurationAction={onSelectDurationAction}
                                 options={lite}
-                                plans={plans}
-                                price={liteFromPrice}
                                 selectedCode={selectedCode}
                                 selectedLabel={t('planSelected')}
                             />

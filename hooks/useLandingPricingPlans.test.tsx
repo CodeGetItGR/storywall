@@ -247,7 +247,7 @@ describe('useLandingPricingPlans', () => {
         expect(reunion.plans[0].includedFeatures).toBeUndefined();
     });
 
-    it('splits lite plans (no posts) into their own row and prices the teaser from the cheapest', async () => {
+    it('splits lite plans (no posts) into their own row', async () => {
         const config = makeConfig();
         config.modules = [
             { id: 'm1', moduleKey: 'gallery', name: 'Gallery', description: null, isEnabled: true, sortOrder: 0 },
@@ -280,7 +280,6 @@ describe('useLandingPricingPlans', () => {
         expect(wedding?.plans[0].features).toEqual(['Gallery', 'Posts']);
         expect(wedding?.litePlans.map((plan) => plan.code)).toEqual(['QR', 'BUNDLE']);
         expect(wedding?.litePlans[1].features).toEqual(['Everything in QR', 'Wishbook']);
-        expect(wedding?.liteFromPrice).toBe('49€');
     });
 
     it('builds the QR page row from the photo plans and the first full plan, rolling up only what a plan contains', async () => {
@@ -308,7 +307,7 @@ describe('useLandingPricingPlans', () => {
         expect(row.map((plan) => plan.features)).toEqual([['Gallery'], ['Everything in QR', 'Wishbook'], ['Gallery', 'Posts']]);
     });
 
-    it('has no lite row or price for a type without lite plans', async () => {
+    it('has no lite row for a type without lite plans', async () => {
         const config = makeConfig();
         config.landingCategories = [{ id: 'wed', name: { en: 'Weddings' }, description: {}, isDefault: true, eventTypeKeys: ['WEDDING'] }];
         config.planTiers = [planTier({ moduleKeys: ['gallery', 'posts'] })];
@@ -319,7 +318,6 @@ describe('useLandingPricingPlans', () => {
         await waitFor(() => expect(result.current.groups).not.toBeNull());
         const wedding = result.current.groups?.[0].items[0];
         expect(wedding?.litePlans).toEqual([]);
-        expect(wedding?.liteFromPrice).toBeNull();
     });
 
     it('keeps the same groups across renders while the config is unchanged', async () => {
