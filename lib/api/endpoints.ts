@@ -247,6 +247,7 @@ export const endpoints = {
         resolve: (token: string) => `/api/qr/${token}`,
         media: (token: string) => `/api/qr/${token}/media`,
         mediaBatch: (token: string) => `/api/qr/${token}/media/batch`,
+        wishes: (token: string) => `/api/qr/${token}/wishes`,
     },
 
     partners: {

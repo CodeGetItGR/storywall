@@ -3022,6 +3022,21 @@ export interface QrLinkResolutionDto {
     requiresGuestKey?: boolean;
 }
 
+// POST /api/qr/{token}/wishes: a wish left through a GUEST code, with no account. See
+// guestwall-be docs/fe-guides/lite-tiers-fe-integration.md §4.
+export interface QrWishRequestDto {
+    guestName: string;
+    message: string;
+    ageConfirmed: true;
+    acceptedTermsVersion: string;
+    acceptedGuidelinesVersion: string;
+}
+
+export interface QrWishResponseDto {
+    id: string;
+    createdAt: string;
+}
+
 // provider + providerEventId identify a delivery; there is no separate id.
 export interface UnprocessedWebhookDto {
     provider: string;

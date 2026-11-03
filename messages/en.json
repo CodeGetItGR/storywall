@@ -6538,6 +6538,7 @@
         "addonNotActive": "That add-on is not active.",
         "eventNotActive": "This event is not live yet.",
         "qrUploadAcceptanceRequired": "Confirm you are 16 or older and accept the Terms of Use and Community Guidelines to upload.",
+        "qrWishAcceptanceRequired": "Tick both boxes to send your wish.",
         "rateLimited": "Too many requests. Please wait a moment and try again.",
         "reportOwnContent": "You can't report your own content.",
         "rateLimitedWithWait": "Too many requests. Try again in {seconds}s.",

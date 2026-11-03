@@ -221,6 +221,7 @@ export type ApiErrorMessageKey =
     | 'moduleUnavailable'
     | 'qrMediaUploadDisabled'
     | 'qrUploadAcceptanceRequired'
+    | 'qrWishAcceptanceRequired'
     | 'oauthTokenInvalid'
     | 'oauthEmailRequired'
     | 'qrLinkNotAvailable'
@@ -398,6 +399,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.ACCOUNT_DELETE_ADMIN]: 'accountDeleteAdmin',
     [ERROR_CODES.ACCOUNT_DELETE_HAS_HOSTED_EVENTS]: 'accountDeleteHasHostedEvents',
     [ERROR_CODES.QR_UPLOAD_ACCEPTANCE_REQUIRED]: 'qrUploadAcceptanceRequired',
+    [ERROR_CODES.QR_WISH_ACCEPTANCE_REQUIRED]: 'qrWishAcceptanceRequired',
     [ERROR_CODES.POST_EDIT_NOT_AUTHOR]: 'postEditNotAuthor',
     [ERROR_CODES.MEMBER_ARCHIVE_NOT_ENABLED]: 'memberArchiveNotEnabled',
     [ERROR_CODES.EVENT_CO_HOST_LIMIT_EXCEEDED]: 'eventCoHostLimitExceeded',
