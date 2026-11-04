@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { AdminDiscountCampaignDto } from '@/lib/api/types';
-import { EMPTY_DISCOUNT_CAMPAIGN_FORM, formOfCampaign, requestOfCampaignForm } from '@/lib/discountCampaignForm';
+import { EMPTY_DISCOUNT_CAMPAIGN_FORM, formOfCampaign, isCampaignOver, requestOfCampaignForm } from '@/lib/discountCampaignForm';
 
 describe('requestOfCampaignForm', () => {
     const form = { name: ' Black Friday ', percent: '12.5', label: '  ', linkName: 'black-friday', startsAt: '', endsAt: '2026-11-30T23:59' };
@@ -44,5 +44,15 @@ describe('formOfCampaign', () => {
 
     it('starts empty for a new one', () => {
         expect(EMPTY_DISCOUNT_CAMPAIGN_FORM.name).toBe('');
+    });
+});
+
+describe('isCampaignOver', () => {
+    it('is true for an ended or stopped campaign only', () => {
+        expect(isCampaignOver('ENDED')).toBe(true);
+        expect(isCampaignOver('OFF')).toBe(true);
+        expect(isCampaignOver('LIVE')).toBe(false);
+        expect(isCampaignOver('SCHEDULED')).toBe(false);
+        expect(isCampaignOver(null)).toBe(false);
     });
 });

@@ -2769,6 +2769,9 @@ export interface CampaignLinkDto {
     utmMedium: string;
     utmCampaign: string;
     createdAt: string;
+    // On links made as a set: the set's name, and the anchor added after the query.
+    linkGroup?: string | null;
+    destinationAnchor?: string | null;
 }
 
 export interface CampaignLinkRequestDto {
@@ -2777,6 +2780,20 @@ export interface CampaignLinkRequestDto {
     utmSource: string;
     utmMedium: string;
     utmCampaign: string;
+}
+
+export type CampaignLinkLanguage = 'en' | 'el';
+
+// POST /api/admin/campaign-links/sets. Creates whichever of the 8 links are missing.
+export interface CampaignLinkSetRequestDto {
+    name: string;
+    linkName: string;
+    language: CampaignLinkLanguage;
+}
+
+export interface CampaignLinkSetDto {
+    links: CampaignLinkDto[];
+    created: number;
 }
 
 // GET /api/admin/metrics/campaigns. Visits and landing page clicks (saved links only) and sign-ups in

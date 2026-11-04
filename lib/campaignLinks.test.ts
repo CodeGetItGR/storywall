@@ -77,3 +77,17 @@ describe('campaignDestinations', () => {
         ]);
     });
 });
+
+describe('campaignUrl with an anchor', () => {
+    const parts = { destinationPath: '/el', utmSource: 'instagram', utmMedium: 'social', utmCampaign: 'bf-post-el' };
+
+    it('puts the anchor after the query', () => {
+        expect(campaignUrl({ ...parts, destinationAnchor: 'pricing' }, 'https://www.storywall.gr')).toBe(
+            'https://www.storywall.gr/el?utm_source=instagram&utm_medium=social&utm_campaign=bf-post-el#pricing',
+        );
+    });
+
+    it('leaves a link with no anchor as it was', () => {
+        expect(campaignUrl({ ...parts, destinationAnchor: null }, 'https://www.storywall.gr')).not.toContain('#');
+    });
+});

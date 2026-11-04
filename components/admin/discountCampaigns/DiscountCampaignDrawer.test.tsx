@@ -14,6 +14,11 @@ vi.mock('@/hooks/useAdminDiscountCampaigns', () => ({
     useDeleteDiscountCampaign: () => idle,
 }));
 
+vi.mock('@/hooks/useAdminCampaigns', () => ({
+    useAdminCampaigns: () => ({ data: [], isLoading: false, error: null }),
+    useGenerateCampaignLinkSet: () => ({ mutateAsync: vi.fn(), isPending: false }),
+}));
+
 const campaign = (status: AdminDiscountCampaignDto['status']): AdminDiscountCampaignDto => ({
     id: 'c1',
     name: 'Black Friday',
@@ -85,5 +90,19 @@ describe('DiscountCampaignDrawer', () => {
         fireEvent.click(screen.getByRole('button', { name: messages.AdminPage.save }));
 
         expect(await screen.findByRole('alert')).toBeInTheDocument();
+    });
+
+    it('shows the links section for a saved campaign', () => {
+        renderDrawer(campaign('LIVE'));
+
+        expect(screen.getByRole('heading', { name: 'Links' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'English links' })).toBeInTheDocument();
+    });
+
+    it('shows no links section for a new campaign', () => {
+        renderDrawer(null);
+
+        expect(screen.queryByRole('heading', { name: 'Links' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'English links' })).not.toBeInTheDocument();
     });
 });
