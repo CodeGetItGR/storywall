@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { renderToString } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { appConfigKeys } from '@/hooks/useAppConfig';
 import { useLiveDiscountCampaign } from '@/hooks/useLiveDiscountCampaign';
 import { discountCampaignKeys } from '@/lib/discountCampaign';
 
@@ -71,5 +72,52 @@ describe('useLiveDiscountCampaign', () => {
 
         const { result } = renderHook(() => useLiveDiscountCampaign(), { wrapper: Wrapper });
         expect(result.current).toBeNull();
+    });
+
+    describe('the prices on an open page', () => {
+        const longCampaign = { ...campaign, endsAt: '2026-11-10T10:00:00Z' };
+
+        function setup(data: typeof campaign | null) {
+            const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, refetchInterval: false } } });
+            client.setQueryData(discountCampaignKeys.live(), data);
+            client.setQueryData(appConfigKeys.all, { planTiers: [] });
+            const configStale = () => client.getQueryState(appConfigKeys.all)?.isInvalidated ?? false;
+            function Wrapper({ children }: { children: ReactNode }) {
+                return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+            }
+            renderHook(() => useLiveDiscountCampaign(), { wrapper: Wrapper });
+            return { client, configStale };
+        }
+
+        it('refreshes them when the campaign is stopped', () => {
+            const { client, configStale } = setup(longCampaign);
+            expect(configStale()).toBe(false);
+
+            act(() => {
+                client.setQueryData(discountCampaignKeys.live(), null);
+                vi.advanceTimersByTime(1);
+            });
+            expect(configStale()).toBe(true);
+        });
+
+        it('refreshes them when a campaign starts', () => {
+            const { client, configStale } = setup(null);
+
+            act(() => {
+                client.setQueryData(discountCampaignKeys.live(), longCampaign);
+                vi.advanceTimersByTime(1);
+            });
+            expect(configStale()).toBe(true);
+        });
+
+        it('leaves them alone while the campaign stays the same', () => {
+            const { client, configStale } = setup(longCampaign);
+
+            act(() => {
+                client.setQueryData(discountCampaignKeys.live(), { ...longCampaign });
+                vi.advanceTimersByTime(1);
+            });
+            expect(configStale()).toBe(false);
+        });
     });
 });

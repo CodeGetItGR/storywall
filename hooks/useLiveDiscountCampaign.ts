@@ -1,8 +1,9 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef, useState } from 'react';
 
+import { appConfigKeys } from '@/hooks/useAppConfig';
 import { useIsHydrated } from '@/hooks/useIsHydrated';
 import type { DiscountCampaignLiveDto } from '@/lib/api/types';
 import { discountCampaignKeys } from '@/lib/discountCampaign';
@@ -33,8 +34,20 @@ export function useLiveDiscountCampaign(): DiscountCampaignLiveDto | null {
         refetchInterval: REFETCH_MS,
         refetchOnWindowFocus: true,
     });
+    const queryClient = useQueryClient();
     const [now, setNow] = useState(() => Date.now());
     const endsAt = data ? Date.parse(data.endsAt) : null;
+
+    // Prices come from the app config, so an open page needs a new copy when an admin starts or stops a
+    // campaign. undefined means nothing has loaded yet, which is not a change.
+    const campaignId = data === undefined ? undefined : (data?.id ?? null);
+    const seenCampaignId = useRef(campaignId);
+    useEffect(() => {
+        if (campaignId === seenCampaignId.current) return;
+        const hadLoaded = seenCampaignId.current !== undefined;
+        seenCampaignId.current = campaignId;
+        if (hadLoaded) void queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+    }, [campaignId, queryClient]);
 
     useEffect(() => {
         if (endsAt === null || endsAt <= now) return;
