@@ -16,8 +16,8 @@ export type Consent = ConsentChoice & {
 export const CONSENT_COOKIE = 'sw_consent';
 // The last campaign link, kept only with analytics consent. Defined here so lib/campaignAttribution.ts can read the consent without a cycle.
 export const CAMPAIGN_ATTRIBUTION_COOKIE = 'sw_campaign';
-// Bump to ask everyone again, e.g. when a new optional category is added.
-export const CONSENT_VERSION = 2;
+// Bump to ask everyone again, e.g. when a new optional category is added or a switch's meaning widens.
+export const CONSENT_VERSION = 3;
 // Six months, then the banner asks again.
 const CONSENT_MAX_AGE_SECONDS = 60 * 60 * 24 * 182;
 // Google Ads' click and conversion cookies.

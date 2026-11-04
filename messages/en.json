@@ -7971,7 +7971,7 @@
         "essentialLabel": "Essential",
         "essentialBody": "Keep the site working. Always on.",
         "analyticsLabel": "Analytics",
-        "analyticsBody": "Lets Google Analytics count visits and see which pages people use.",
+        "analyticsBody": "Lets Google Analytics count visits and see which pages people use, and lets us see which of our links led to a sign-up or a sale.",
         "adsLabel": "Advertising",
         "adsBody": "Lets Google Ads measure which ads bring people to StoryWall.",
         "save": "Save",
