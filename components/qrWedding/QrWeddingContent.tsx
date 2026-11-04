@@ -1,4 +1,5 @@
 import { CookieConsent } from '@/components/consent/CookieConsent';
+import { LandingSaleButton } from '@/components/landing/LandingSaleButton';
 import { QrWeddingCompare } from '@/components/qrWedding/QrWeddingCompare';
 import { QrWeddingDemo } from '@/components/qrWedding/QrWeddingDemo';
 import { QrWeddingDemoStrip } from '@/components/qrWedding/QrWeddingDemoStrip';
@@ -16,7 +17,7 @@ import { QrWeddingTimeline } from '@/components/qrWedding/QrWeddingTimeline';
 import { QrWeddingTryIt } from '@/components/qrWedding/QrWeddingTryIt';
 import type { Locale } from '@/i18n/config';
 import { LANDING_TOKENS_CLASS } from '@/lib/landingTokens';
-import type { QrWeddingFaqItem } from '@/lib/qrWeddingPage';
+import { QR_WEDDING_SECTION, type QrWeddingFaqItem } from '@/lib/qrWeddingPage';
 import { cn } from '@/lib/utils';
 
 // The page's sections in order. price: the cheapest wedding package, or empty; faq: with the price filled in.
@@ -76,6 +77,9 @@ export function QrWeddingContent({ locale, price, faq }: { locale: Locale; price
                 {/* Footer */}
                 <QrWeddingFooter locale={locale} />
             </div>
+
+            {/* Sale button */}
+            <LandingSaleButton pricingId={QR_WEDDING_SECTION.pricing} />
 
             {/* Cookie consent */}
             <CookieConsent />
