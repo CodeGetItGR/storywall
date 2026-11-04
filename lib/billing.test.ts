@@ -101,6 +101,10 @@ describe('plan promotions', () => {
         expect(promotedOptionAmountMinor(above, plan(campaign), now)).toBe(8_000);
     });
 
+    it('truncates the discount, not the price', () => {
+        expect(promotedAmount(999, plan({ ...campaign, campaignDiscountPercent: 12.5 }), now).amountMinor).toBe(875);
+    });
+
     it('drops back to the normal price at the second a campaign ends', () => {
         const atEnd = new Date('2026-10-07T11:00:00Z');
 
