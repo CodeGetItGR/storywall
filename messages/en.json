@@ -6180,7 +6180,13 @@
             "stopCancel": "Keep it running",
             "delete": "Delete campaign",
             "deleteTitle": "Delete this campaign?",
-            "deleteBody": "It won't go live."
+            "deleteBody": "It won't go live.",
+            "links": {
+                "title": "Links",
+                "english": "English links",
+                "greek": "Greek links",
+                "visits": "Visits"
+            }
         },
         "siteNotices": {
             "create": "New notice",

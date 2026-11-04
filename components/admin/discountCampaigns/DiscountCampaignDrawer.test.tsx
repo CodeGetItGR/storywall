@@ -14,6 +14,11 @@ vi.mock('@/hooks/useAdminDiscountCampaigns', () => ({
     useDeleteDiscountCampaign: () => idle,
 }));
 
+vi.mock('@/hooks/useAdminCampaigns', () => ({
+    useAdminCampaigns: () => ({ data: [], isLoading: false, error: null }),
+    useGenerateCampaignLinkSet: () => ({ mutateAsync: vi.fn(), isPending: false }),
+}));
+
 const campaign = (status: AdminDiscountCampaignDto['status']): AdminDiscountCampaignDto => ({
     id: 'c1',
     name: 'Black Friday',

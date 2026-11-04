@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
+import { DiscountCampaignLinks } from '@/components/admin/discountCampaigns/DiscountCampaignLinks';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { DateTimeField } from '@/components/ui/DateTimeField';
 import { useDiscountCampaignForm } from '@/hooks/useDiscountCampaignForm';
@@ -162,6 +163,13 @@ export function DiscountCampaignDrawer({
                         </p>
                     )}
                 </form>
+
+                {/* Links */}
+                {campaign && (
+                    <div className="mt-6 border-t border-border pt-5">
+                        <DiscountCampaignLinks campaign={campaign} />
+                    </div>
+                )}
             </AdminDrawer>
 
             <ConfirmActionModal
