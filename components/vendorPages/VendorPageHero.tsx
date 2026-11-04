@@ -7,6 +7,7 @@ import { TYPE_ICONS } from '@/components/vendorPages/vendorPageIcons';
 import { GRADIENT_TEXT } from '@/components/vendorPages/vendorPageStyles';
 import type { Locale } from '@/i18n/config';
 import { getForBusinessPath, type VendorPageType } from '@/i18n/publicLocale';
+import { showsForBusinessHub } from '@/lib/forBusinessRelease';
 import { VENDOR_PAGES } from '@/lib/vendorPages';
 
 const FLOAT_CARD =
@@ -29,15 +30,19 @@ export async function VendorPageHero({ type }: { type: VendorPageType }) {
                 <div className="min-w-0">
                     {/* Breadcrumb */}
                     <nav aria-label={t('breadcrumb')} className="mb-6 text-sm">
-                        <a
-                            href={getForBusinessPath(locale)}
-                            className="font-semibold text-[#151313]/70 underline! underline-offset-4 hover:opacity-70"
-                        >
-                            {t('breadcrumb')}
-                        </a>
-                        <span aria-hidden="true" className="mx-2 text-[#151313]/40">
-                            ›
-                        </span>
+                        {showsForBusinessHub() && (
+                            <>
+                                <a
+                                    href={getForBusinessPath(locale)}
+                                    className="font-semibold text-[#151313]/70 underline! underline-offset-4 hover:opacity-70"
+                                >
+                                    {t('breadcrumb')}
+                                </a>
+                                <span aria-hidden="true" className="mx-2 text-[#151313]/40">
+                                    ›
+                                </span>
+                            </>
+                        )}
                         <span aria-current="page">{copy('label')}</span>
                     </nav>
                     {/* Heading */}
