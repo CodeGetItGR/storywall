@@ -41,6 +41,10 @@ export function buildReturnPath(pathname: string, search: string): string {
     return search.startsWith('?') ? `${pathname}${search}` : `${pathname}?${search}`;
 }
 
+export function isCreateEventPath(path: string): boolean {
+    return new URL(path, APP_ORIGIN).pathname === routes.events.new();
+}
+
 function isAdminPath(path: string): boolean {
     const pathname = new URL(path, APP_ORIGIN).pathname;
     return pathname === routes.admin || pathname.startsWith(`${routes.admin}/`);
@@ -59,10 +63,13 @@ export function getPostAuthRedirectPath(role: PlatformRole, returnPath: string |
 
 // A brand-new account has nothing to show in a feed unless it was invited
 // to an event, so it lands on home (which also explains email verification).
-// `next` is only followed with an invite: the invite page sets it to that
-// event's feed, since bare /feed opens whichever event is active.
+// `next` is followed with an invite: the invite page sets it to that event's
+// feed, since bare /feed opens whichever event is active. Without one, only a
+// create form link is followed, so a plan picked on a landing page is kept; the
+// form sends an unverified account home and remembers the link.
 export function getPostRegisterRedirectPath(role: PlatformRole, hasInvite: boolean, returnPath: string | null = null): string {
     if (role === 'ADMIN') return routes.admin;
-    if (!hasInvite) return routes.home;
-    return getSafeReturnPath(returnPath) ?? routes.feed;
+    const safePath = getSafeReturnPath(returnPath);
+    if (!hasInvite) return safePath && isCreateEventPath(safePath) ? safePath : routes.home;
+    return safePath ?? routes.feed;
 }
