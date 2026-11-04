@@ -28,6 +28,8 @@ const ROW: CampaignRowDto = {
     createdEvent: 9,
     paidHost: 5,
     revenueMinorByCurrency: { EUR: 72000 },
+    sales: 3,
+    salesRevenueMinorByCurrency: { EUR: 14_700 },
 };
 
 afterEach(cleanup);
@@ -53,7 +55,9 @@ describe('CampaignsTable', () => {
             'Sign-ups',
             'Created an event',
             'Paid',
+            'Sales',
             'Revenue',
+            'Sales revenue',
         ]);
         const cells = within(screen.getAllByRole('row')[1])
             .getAllByRole('cell')
@@ -64,12 +68,28 @@ describe('CampaignsTable', () => {
     it('drops the revenue column for marketing, who get revenue as null', () => {
         render(
             <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
-                <CampaignsTable rows={[{ ...ROW, revenueMinorByCurrency: null }]} onLinkAction={vi.fn()} />
+                <CampaignsTable rows={[{ ...ROW, revenueMinorByCurrency: null, salesRevenueMinorByCurrency: null }]} onLinkAction={vi.fn()} />
             </NextIntlClientProvider>,
         );
 
         const headers = screen.getAllByRole('columnheader').map((cell) => cell.textContent);
         expect(headers).not.toContain('Revenue');
+        expect(headers).not.toContain('Sales revenue');
+        expect(headers).toContain('Sales');
         expect(within(screen.getAllByRole('row')[1]).getAllByRole('cell')).toHaveLength(headers.length);
+    });
+
+    it('shows sales and their revenue', () => {
+        render(
+            <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
+                <CampaignsTable rows={[ROW]} onLinkAction={vi.fn()} />
+            </NextIntlClientProvider>,
+        );
+
+        const cells = within(screen.getAllByRole('row')[1])
+            .getAllByRole('cell')
+            .map((cell) => cell.textContent);
+        expect(cells).toContain('3');
+        expect(cells.some((text) => text?.includes('147'))).toBe(true);
     });
 });

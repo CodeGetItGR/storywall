@@ -8,6 +8,20 @@ import { isCampaignOver } from '@/lib/discountCampaignForm';
 
 const NO_ROWS: CampaignRowDto[] = [];
 
+export type CampaignLinksTotal = { visits: number; sales: number; salesRevenueMinorByCurrency: Record<string, number> };
+
+function totalOf(rows: CampaignRowDto[]): CampaignLinksTotal {
+    const total: CampaignLinksTotal = { visits: 0, sales: 0, salesRevenueMinorByCurrency: {} };
+    for (const row of rows) {
+        total.visits += row.visits;
+        total.sales += row.sales;
+        for (const [currency, minor] of Object.entries(row.salesRevenueMinorByCurrency ?? {})) {
+            total.salesRevenueMinorByCurrency[currency] = (total.salesRevenueMinorByCurrency[currency] ?? 0) + minor;
+        }
+    }
+    return total;
+}
+
 // One discount campaign's links in its drawer, counted over all time, and the two buttons that
 // create a language's set. A repeat click creates nothing, and a click while a request is running
 // is ignored: the server answers a second request at the same moment with a 409. The ref closes the
@@ -19,6 +33,8 @@ export function useDiscountCampaignLinks(campaign: Pick<AdminDiscountCampaignDto
     const inFlight = useRef(false);
     const allRows = query.data ?? NO_ROWS;
     const rows = useMemo(() => allRows.filter((row) => row.link?.linkGroup === campaign.linkName), [allRows, campaign.linkName]);
+
+    const total = useMemo(() => totalOf(rows), [rows]);
 
     function handleGenerateClick(event: MouseEvent<HTMLButtonElement>) {
         if (inFlight.current || generate.isPending) return;
@@ -36,5 +52,5 @@ export function useDiscountCampaignLinks(campaign: Pick<AdminDiscountCampaignDto
     // An over campaign keeps its links listed, but gets no new ones and a warning not to use them.
     const over = isCampaignOver(campaign.status);
 
-    return { rows, over, isLoading: query.isLoading, busy: generate.isPending, error: error ?? query.error, handleGenerateClick };
+    return { rows, total, over, isLoading: query.isLoading, busy: generate.isPending, error: error ?? query.error, handleGenerateClick };
 }

@@ -2824,6 +2824,10 @@ export interface CampaignRowDto {
     paidHost: number;
     // Null for a MARKETING caller: the server leaves revenue out.
     revenueMinorByCurrency: Record<string, number> | null;
+    // Paid orders credited to this link in the range, whenever the buyer signed up.
+    sales: number;
+    // Null for a MARKETING caller, like revenue.
+    salesRevenueMinorByCurrency: Record<string, number> | null;
 }
 
 // GET /api/admin/metrics/campaigns/overview. Every saved link, one utm source (?source=) or one link

@@ -6045,7 +6045,9 @@
                 "signedUp": "Sign-ups",
                 "createdEvent": "Created an event",
                 "paidHost": "Paid",
-                "revenue": "Revenue"
+                "revenue": "Revenue",
+                "sales": "Sales",
+                "salesRevenue": "Sales revenue"
             },
             "fields": {
                 "preset": "Where you'll share it",
@@ -6193,6 +6195,9 @@
                 "english": "English links",
                 "greek": "Greek links",
                 "visits": "Visits",
+                "sales": "Sales",
+                "salesRevenue": "Sales revenue",
+                "total": "Total",
                 "over": "This campaign is over. Don't use these links any more."
             }
         },

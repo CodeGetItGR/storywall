@@ -16,7 +16,7 @@ export function CampaignsTable({ rows, onLinkAction }: { rows: CampaignRowDto[];
 
     return (
         <div className="overflow-x-auto">
-            <table aria-label={t('title')} className="w-full min-w-[1080px] border-collapse text-left text-sm">
+            <table aria-label={t('title')} className="w-full min-w-[1240px] border-collapse text-left text-sm">
                 {/* Columns */}
                 <thead>
                     <tr className="border-b border-border text-[11px] font-bold tracking-wide text-ink-faint uppercase">
@@ -31,7 +31,9 @@ export function CampaignsTable({ rows, onLinkAction }: { rows: CampaignRowDto[];
                         <th className="px-3 py-3 text-right font-bold">{t('columns.signedUp')}</th>
                         <th className="px-3 py-3 text-right font-bold">{t('columns.createdEvent')}</th>
                         <th className="px-3 py-3 text-right font-bold">{t('columns.paidHost')}</th>
+                        <th className="px-3 py-3 text-right font-bold">{t('columns.sales')}</th>
                         {showRevenue && <th className="px-4 py-3 text-right font-bold">{t('columns.revenue')}</th>}
+                        {showRevenue && <th className="px-4 py-3 text-right font-bold">{t('columns.salesRevenue')}</th>}
                     </tr>
                 </thead>
 
@@ -39,6 +41,7 @@ export function CampaignsTable({ rows, onLinkAction }: { rows: CampaignRowDto[];
                 <tbody>
                     {rows.map((row) => {
                         const revenue = row.revenueMinorByCurrency && Object.entries(row.revenueMinorByCurrency);
+                        const salesRevenue = row.salesRevenueMinorByCurrency && Object.entries(row.salesRevenueMinorByCurrency);
                         return (
                             <tr key={campaignRowKey(row)} className="border-b border-border last:border-b-0 hover:bg-canvas/55">
                                 {/* Name */}
@@ -71,10 +74,19 @@ export function CampaignsTable({ rows, onLinkAction }: { rows: CampaignRowDto[];
                                 <td className="px-3 py-3 text-right font-mono tabular-nums">{format.count(row.signedUp)}</td>
                                 <td className="px-3 py-3 text-right font-mono tabular-nums">{format.count(row.createdEvent)}</td>
                                 <td className="px-3 py-3 text-right font-mono tabular-nums">{format.count(row.paidHost)}</td>
+                                {/* Sales */}
+                                <td className="px-3 py-3 text-right font-mono tabular-nums">{format.count(row.sales)}</td>
                                 {/* Revenue */}
                                 {revenue && (
                                     <td className="px-4 py-3 text-right font-mono tabular-nums">
                                         {revenue.length ? revenue.map(([currency, minor]) => format.money(minor, currency)).join(' · ') : EMPTY_VALUE}
+                                    </td>
+                                )}
+                                {salesRevenue && (
+                                    <td className="px-4 py-3 text-right font-mono tabular-nums">
+                                        {salesRevenue.length
+                                            ? salesRevenue.map(([currency, minor]) => format.money(minor, currency)).join(' · ')
+                                            : EMPTY_VALUE}
                                     </td>
                                 )}
                             </tr>
