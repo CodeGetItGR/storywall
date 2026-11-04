@@ -19,8 +19,8 @@ export function CampaignSetLinkRow({ row }: { row: CampaignRowDto }) {
     return (
         <tr className="border-b border-border last:border-b-0">
             {/* Name */}
-            <td className="w-full max-w-0 py-2 pr-3">
-                <span className="block truncate text-ink">{link.name}</span>
+            <td className="w-full py-2 pr-3">
+                <span className="block break-words text-ink">{link.name}</span>
             </td>
 
             {/* Visits */}
