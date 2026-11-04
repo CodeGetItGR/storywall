@@ -9428,6 +9428,61 @@
             "apply": "Γίνετε συνεργάτης",
             "others": "Και για άλλους επαγγελματίες"
         },
+        "renders": {
+            "vendors": {
+                "PLANNER": "Ημέρα Events",
+                "VENUE": "Κτήμα Ελαιώνας",
+                "PHOTOGRAPHER": "Studio Φως",
+                "VIDEOGRAPHER": "Κάδρο Films",
+                "DECORATION": "Άνθος Decor",
+                "CATERING": "Γεύσεις Catering",
+                "MUSIC": "DJ Νότος"
+            },
+            "feedCard": {
+                "tagline": "Μαζί σας από την αρχή ως το τέλος."
+            },
+            "posts": {
+                "body": "Τι όμορφη βραδιά. Σας ευχαριστούμε!"
+            },
+            "live": {
+                "songs": [
+                    {
+                        "title": "Ο Χορός του Ζορμπά",
+                        "artist": "Μίκης Θεοδωράκης"
+                    },
+                    {
+                        "title": "Dancing Queen",
+                        "artist": "ABBA"
+                    },
+                    {
+                        "title": "Perfect",
+                        "artist": "Ed Sheeran"
+                    }
+                ]
+            },
+            "portal": {
+                "events": [
+                    "Άννα & Νίκος",
+                    "Βάπτιση της Λυδίας"
+                ]
+            },
+            "schedule": {
+                "ceremonyPlace": "Ιερός Ναός Αγίου Νικολάου",
+                "receptionPlace": "Κτήμα Ελαιώνας"
+            },
+            "announce": {
+                "author": "Ελένη Ρούσσου",
+                "body": "Τα λεωφορεία για την τελετή φεύγουν από το ξενοδοχείο στις 17:00."
+            },
+            "rsvp": {
+                "couple": "Νεφέλη & Ορέστης",
+                "guests": [
+                    "Νάντια Ευθυμίου",
+                    "Στέλιος Ράπτης",
+                    "Αλέξανδρος Μάρκου"
+                ]
+            }
+        },
         "heroCta": "Κάντε αίτηση συνεργασίας",
         "tools": {
             "proAlbum": {
