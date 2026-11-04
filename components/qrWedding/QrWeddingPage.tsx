@@ -27,7 +27,7 @@ export async function QrWeddingPage({ locale }: { locale: Locale }) {
     if (!qrWeddingPageLive(config)) notFound();
 
     // The cheapest wedding package with the gallery, quoted in the hero, the comparison and the FAQ; empty without config.
-    const price = photoPlansFromPrice(config, 'WEDDING');
+    const price = photoPlansFromPrice(config, 'WEDDING', locale);
     const t = await getTranslations({ locale, namespace: 'QrWeddingPage.faq' });
     const faq = qrWeddingFaqItems(t.raw('items') as QrWeddingFaqItem[], price);
 

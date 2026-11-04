@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useMarketingPlanOptions } from '@/hooks/useMarketingPlanOptions';
 import type { AppMediaConfigDto, PlanTierResponseDto } from '@/lib/api/types';
 
+vi.mock('next-intl', () => ({ useLocale: () => 'en' }));
 vi.mock('@/hooks/useAppConfig', () => ({ useMemberRoleCatalog: () => ({}) }));
 vi.mock('@/hooks/usePlanMarketingCopy', () => {
     const copy = {
