@@ -112,12 +112,17 @@ In `PlanTierResponseDto`, after `discountEndsAt`:
 Below `export type SiteNoticeStatus = ...`:
 
 ```ts
-// GET /api/public/discount-campaign, read through the app's own route. Null without a live campaign.
+// The live campaign. The app's own route sends it bare, or null without one.
 export interface DiscountCampaignLiveDto {
     id: string;
     percent: number;
     startsAt: string;
     endsAt: string;
+}
+
+// GET /api/public/discount-campaign: always 200, campaign null without a live one.
+export interface DiscountCampaignLiveResponseDto {
+    campaign: DiscountCampaignLiveDto | null;
 }
 
 export interface AdminDiscountCampaignDto {
@@ -420,6 +425,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 describe('fetchLiveDiscountCampaign', () => {
     afterEach(() => {
+        vi.useRealTimers();
         vi.unstubAllGlobals();
         vi.resetModules();
     });
@@ -428,7 +434,7 @@ describe('fetchLiveDiscountCampaign', () => {
 
     it('returns the live campaign and keeps it through an outage', async () => {
         const { fetchLiveDiscountCampaign } = await import('@/lib/discountCampaign.server');
-        vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(campaign), { status: 200 })));
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ campaign }), { status: 200 })));
         expect(await fetchLiveDiscountCampaign()).toEqual(campaign);
 
         vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(null, { status: 503 })));
@@ -440,11 +446,27 @@ describe('fetchLiveDiscountCampaign', () => {
 
     it('clears the copy when Spring says there is none', async () => {
         const { fetchLiveDiscountCampaign } = await import('@/lib/discountCampaign.server');
-        vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(campaign), { status: 200 })));
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ campaign }), { status: 200 })));
         await fetchLiveDiscountCampaign();
 
-        vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(null, { status: 204 })));
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ campaign: null }), { status: 200 })));
         expect(await fetchLiveDiscountCampaign()).toBeNull();
+    });
+
+    it('returns null for a campaign that has already ended, also from the last good copy', async () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-11-07T00:00:00Z'));
+        const { fetchLiveDiscountCampaign } = await import('@/lib/discountCampaign.server');
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ campaign }), { status: 200 })));
+        expect(await fetchLiveDiscountCampaign()).toEqual(campaign);
+
+        vi.setSystemTime(new Date('2026-11-08T00:00:00Z'));
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(null, { status: 503 })));
+        expect(await fetchLiveDiscountCampaign()).toBeNull();
+
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ campaign }), { status: 200 })));
+        expect(await fetchLiveDiscountCampaign()).toBeNull();
+        vi.useRealTimers();
     });
 
     it('returns null when Spring has never answered', async () => {
@@ -608,11 +630,12 @@ export function plansHref(locale: Locale): string {
 
 ```ts
 import { endpoints } from '@/lib/api/endpoints';
-import type { DiscountCampaignLiveDto } from '@/lib/api/types';
+import type { DiscountCampaignLiveDto, DiscountCampaignLiveResponseDto } from '@/lib/api/types';
 
-// Server-only: the live discount campaign from Spring, cached for a minute in Next's data cache. When
-// Spring fails, the last good copy this server instance saw is served instead; the browser still
-// hides it at its end. Never throws.
+// Server-only: the live discount campaign from Spring, cached for a minute in Next's data cache. Spring
+// always answers 200 with { campaign }, null without one, because only 200s are stored in that cache.
+// When Spring fails, the last good copy this server instance saw is served instead. A campaign past
+// its end is never returned. Never throws.
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 const REVALIDATE_SECONDS = 60;
@@ -620,21 +643,21 @@ const TIMEOUT_MS = 3000;
 
 let lastGood: DiscountCampaignLiveDto | null = null;
 
+function unlessEnded(campaign: DiscountCampaignLiveDto | null): DiscountCampaignLiveDto | null {
+    return campaign && Date.parse(campaign.endsAt) > Date.now() ? campaign : null;
+}
+
 export async function fetchLiveDiscountCampaign(): Promise<DiscountCampaignLiveDto | null> {
     try {
         const res = await fetch(`${API_BASE_URL}${endpoints.discountCampaign.live}`, {
             next: { revalidate: REVALIDATE_SECONDS },
             signal: AbortSignal.timeout(TIMEOUT_MS),
         });
-        if (res.status === 204) {
-            lastGood = null;
-            return null;
-        }
-        if (!res.ok) return lastGood;
-        lastGood = (await res.json()) as DiscountCampaignLiveDto;
-        return lastGood;
+        if (!res.ok) return unlessEnded(lastGood);
+        lastGood = ((await res.json()) as DiscountCampaignLiveResponseDto).campaign;
+        return unlessEnded(lastGood);
     } catch {
-        return lastGood;
+        return unlessEnded(lastGood);
     }
 }
 ```

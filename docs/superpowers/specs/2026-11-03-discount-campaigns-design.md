@@ -80,7 +80,7 @@ Public plan responses (`GET /api/config`, `GET /api/plan-tiers`) gain `campaignD
 
 ## Banner
 
-`GET /api/public/discount-campaign` returns the live campaign's `id`, `percent`, `startsAt` and `endsAt`, or nothing. The browser reads it through a cached `/api/discount-campaign` route, and both root layouts seed it, the same way as `/api/site-notices`.
+`GET /api/public/discount-campaign` always answers 200 with `{"campaign": ...}`: the live campaign's `id`, `percent`, `startsAt` and `endsAt`, or `null` without one (never 204, because Next's data cache only stores 200s). The browser reads it through a cached `/api/discount-campaign` route, and both root layouts seed it, the same way as `/api/site-notices`.
 
 The banner is **generated from the campaign, not stored as a site notice**, so there is no notice to create or delete and it can't outlive the discount.
 

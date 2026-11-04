@@ -362,12 +362,17 @@ export type SiteNoticeTone = 'INFO' | 'OFFER' | 'WARNING' | 'CRITICAL';
 export type SiteNoticeArea = 'EVERYWHERE' | 'PUBLIC' | 'HOST' | 'GUEST' | 'ADMIN';
 export type SiteNoticeStatus = 'LIVE' | 'SCHEDULED' | 'ENDED' | 'OFF';
 
-// GET /api/public/discount-campaign, read through the app's own route. Null without a live campaign.
+// The live campaign. The app's own route sends it bare, or null without one.
 export interface DiscountCampaignLiveDto {
     id: string;
     percent: number;
     startsAt: string;
     endsAt: string;
+}
+
+// GET /api/public/discount-campaign: always 200, campaign null without a live one.
+export interface DiscountCampaignLiveResponseDto {
+    campaign: DiscountCampaignLiveDto | null;
 }
 
 export interface AdminDiscountCampaignDto {

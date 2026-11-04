@@ -1499,13 +1499,13 @@ package event_social_media.controller.campaign;
 import event_social_media.dto.campaign.DiscountCampaignLiveDto;
 import event_social_media.service.campaign.DiscountCampaignService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * The live discount campaign, for anyone, or 204 without one. The Next.js app reads this through its
+ * The live discount campaign, for anyone: always 200 with {"campaign": ...}, null without one (Next's data
+ * cache only stores 200s, so a 204 would never replace a cached campaign). The Next.js app reads this through its
  * own cached route (/api/discount-campaign), so Spring sees about one call per minute per server instance.
  */
 @RestController
@@ -1515,9 +1515,11 @@ public class DiscountCampaignPublicController {
 
     private final DiscountCampaignService discountCampaignService;
 
+    public record LiveResponse(DiscountCampaignLiveDto campaign) {}
+
     @GetMapping
-    public ResponseEntity<DiscountCampaignLiveDto> findLive() {
-        return discountCampaignService.findLive().map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.noContent().build());
+    public LiveResponse findLive() {
+        return new LiveResponse(discountCampaignService.findLive().orElse(null));
     }
 }
 ```
