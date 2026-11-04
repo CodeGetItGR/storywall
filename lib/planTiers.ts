@@ -150,6 +150,12 @@ export function isLitePlan(plan: PlanTierResponseDto): boolean {
     return plan.requirements?.takesGuests === false;
 }
 
+// Whether creating an event on the plan asks for its date and place. A lite plan asks for the title only.
+// True until the plan is known, so a full plan's steps don't flicker.
+export function planAsksEventDetails(plan: Pick<PlanTierResponseDto, 'requirements'> | null | undefined): boolean {
+    return plan?.requirements?.needsSchedule !== false;
+}
+
 // The plans split into full and lite, each in the input order.
 export function splitLitePlans<T extends PlanTierResponseDto>(plans: T[]): { full: T[]; lite: T[] } {
     return { full: plans.filter((plan) => !isLitePlan(plan)), lite: plans.filter(isLitePlan) };

@@ -9,9 +9,16 @@ import { formatDate } from '@/lib/datetime';
 /**
  * What activation means, said before the pay button. The kept-until line
  * renders from `projectedCoverage` (the server's for a draft, an estimate from
- * the picked duration in the create wizard) and drops out when it is absent.
+ * the picked duration in the create wizard) and drops out when it is absent. The line about moving the
+ * event's date is left out when the event has no date to move.
  */
-export function ActivationDisclosures({ projectedCoverage }: { projectedCoverage: ProjectedCoverageDto | null }) {
+export function ActivationDisclosures({
+    projectedCoverage,
+    hasEventDate = true,
+}: {
+    projectedCoverage: ProjectedCoverageDto | null;
+    hasEventDate?: boolean;
+}) {
     const t = useTranslations('CheckoutReviewPage.activation');
     const locale = useLocale();
     const dateOf = (value: string) => formatDate(locale, value, { dateStyle: 'medium' });
@@ -28,7 +35,7 @@ export function ActivationDisclosures({ projectedCoverage }: { projectedCoverage
                   },
               ]
             : []),
-        { key: 'datesFixed', icon: Lock, title: t('datesFixedTitle'), body: t('datesFixedBody') },
+        ...(hasEventDate ? [{ key: 'datesFixed', icon: Lock, title: t('datesFixedTitle'), body: t('datesFixedBody') }] : []),
     ];
 
     return (

@@ -10,13 +10,13 @@ import { isPlanGiftable, sameGiftRequest } from '@/lib/gift';
 /**
  * "Buy as a gift" in the create wizard: offered only on a plan that can be
  * given. The gift is declared on the draft right before checkout, and again only
- * when its details changed since.
+ * when its details or the draft changed since.
  */
 export function useCreateEventGift(selectedPlan: PlanTierResponseDto | undefined) {
     const details = useGiftDetailsInput();
     const saveGift = useSaveGift(null);
     const [isGift, setIsGift] = useState(false);
-    const [savedRequest, setSavedRequest] = useState<GiftHandoverRequestDto | null>(null);
+    const [saved, setSaved] = useState<{ eventId: string; request: GiftHandoverRequestDto } | null>(null);
 
     const available = isPlanGiftable(selectedPlan);
     const enabled = available && isGift;
@@ -24,17 +24,17 @@ export function useCreateEventGift(selectedPlan: PlanTierResponseDto | undefined
     const handleToggle = useCallback((event: ChangeEvent<HTMLInputElement>) => setIsGift(event.target.checked), []);
 
     // A fresh draft has no gift yet, so a change of draft forgets what was saved.
-    const reset = useCallback(() => setSavedRequest(null), []);
+    const reset = useCallback(() => setSaved(null), []);
 
     const { mutateAsync } = saveGift;
     // Throws the API error; the caller shows it and stops before checkout.
     const saveToDraft = useCallback(
         async (eventId: string) => {
-            if (!enabled || !details.request || sameGiftRequest(savedRequest, details.request)) return;
+            if (!enabled || !details.request || (saved?.eventId === eventId && sameGiftRequest(saved.request, details.request))) return;
             await mutateAsync({ eventId, input: details.request });
-            setSavedRequest(details.request);
+            setSaved({ eventId, request: details.request });
         },
-        [details.request, enabled, mutateAsync, savedRequest],
+        [details.request, enabled, mutateAsync, saved],
     );
 
     return {
