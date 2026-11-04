@@ -15,7 +15,7 @@
         "apiDown": "Αντιμετωπίζουμε κάποια προβλήματα. Δουλεύουμε για να τα διορθώσουμε.",
         "close": "Κλείσιμο",
         "campaign": "{percent}% έκπτωση σε όλα τα πλάνα.",
-        "campaignButton": "Τώρα με έκπτωση",
+        "campaignButton": "{percent}% έκπτωση",
         "campaignEndsIn": "Λήγει σε {countdown}.",
         "campaignEndsOn": "Λήγει στις {date}",
         "seePlans": "Δείτε τα πλάνα",

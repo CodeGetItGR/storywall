@@ -6,13 +6,13 @@ import { useLandingSaleButton } from '@/hooks/useLandingSaleButton';
 import { landingClickAttributes } from '@/lib/landingTracking';
 import { cn } from '@/lib/utils';
 
-// Phones and tablets, during a discount campaign: a floating link down to the plans. The percent and
-// countdown stay in the notice bar. Ink text, as white on this gradient is too low in contrast.
+// Phones and tablets, during a discount campaign: a floating link down to the plans. The countdown
+// stays in the notice bar. Ink text, as white on this gradient is too low in contrast.
 export function LandingSaleButton({ pricingId = 'pricing' }: { pricingId?: string }) {
     const t = useTranslations('SiteNotice');
-    const { eligible, visible } = useLandingSaleButton(pricingId);
+    const { percent, visible } = useLandingSaleButton(pricingId);
 
-    if (!eligible) return null;
+    if (percent === null) return null;
 
     return (
         <a
@@ -24,7 +24,7 @@ export function LandingSaleButton({ pricingId = 'pricing' }: { pricingId?: strin
             {...landingClickAttributes({ event: 'plans', placement: 'sale_button' })}
         >
             {/* Offer */}
-            <span className="min-w-0 font-medium">{t('campaignButton')}</span>
+            <span className="min-w-0 font-medium">{t('campaignButton', { percent })}</span>
 
             {/* Action */}
             <span className="flex shrink-0 items-center gap-2 font-bold">

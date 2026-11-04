@@ -9,7 +9,10 @@ const state = vi.hoisted(() => ({
 }));
 vi.mock('@/hooks/useLiveDiscountCampaign', () => ({ useLiveDiscountCampaign: () => state.campaign }));
 vi.mock('@/hooks/useCookieConsent', () => ({ useCookieConsent: () => ({ consent: state.consent }) }));
-vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
+vi.mock('next-intl', () => ({
+    useLocale: () => 'en',
+    useTranslations: () => (key: string, values?: { percent: string }) => (values ? `${key}:${values.percent}` : key),
+}));
 
 import { LandingSaleButton } from '@/components/landing/LandingSaleButton';
 import { discountCampaignDismissalKey } from '@/lib/discountCampaign';
@@ -68,7 +71,7 @@ describe('LandingSaleButton', () => {
         scrollTo(900);
         expect(link()).toHaveClass('visible');
         expect(link()).toHaveAttribute('href', '#pricing');
-        expect(link()).toHaveTextContent('campaignButton');
+        expect(link()).toHaveTextContent('campaignButton:20');
         expect(link()).toHaveTextContent('seePlans');
     });
 
