@@ -6192,7 +6192,8 @@
                 "title": "Links",
                 "english": "English links",
                 "greek": "Greek links",
-                "visits": "Visits"
+                "visits": "Visits",
+                "over": "This campaign is over. Don't use these links any more."
             }
         },
         "siteNotices": {
@@ -9992,7 +9993,8 @@
     },
     "SaveMyDatePreview": {
         "metaTitle": "Invitation preview"
-    },
+    }
+,
     "Inviart": {
         "heading": "Invitations and more by INVIART",
         "cta": "See it on INVIART",

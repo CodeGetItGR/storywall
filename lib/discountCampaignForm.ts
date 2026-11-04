@@ -10,6 +10,11 @@ export const DISCOUNT_CAMPAIGN_NAME_MAX = 50;
 export const DISCOUNT_CAMPAIGN_LABEL_MAX = 100;
 export const DISCOUNT_CAMPAIGN_LINK_NAME_MAX = 60;
 
+// A campaign that has ended or was stopped: it can no longer be edited and its links are not to be used.
+export function isCampaignOver(status: AdminDiscountCampaignDto['status'] | null | undefined): boolean {
+    return status === 'ENDED' || status === 'OFF';
+}
+
 export type DiscountCampaignForm = {
     name: string;
     percent: string;

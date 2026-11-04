@@ -37,10 +37,10 @@ const row = (id: string, linkGroup: string | null, visits: number) =>
         },
     }) as CampaignRowDto;
 
-function renderLinks() {
+function renderLinks(status?: AdminDiscountCampaignDto['status']) {
     render(
         <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
-            <DiscountCampaignLinks campaign={campaign} />
+            <DiscountCampaignLinks campaign={{ ...campaign, status } as AdminDiscountCampaignDto} />
         </NextIntlClientProvider>,
     );
 }
@@ -105,5 +105,48 @@ describe('DiscountCampaignLinks', () => {
 
         fireEvent.click(screen.getByRole('button', { name: 'Greek links' }));
         await waitFor(() => expect(screen.queryByText("Check the campaign's details.")).not.toBeInTheDocument());
+    });
+
+    describe.each(['ENDED', 'OFF'] as const)('on a %s campaign', (status) => {
+        const OVER = "This campaign is over. Don't use these links any more.";
+
+        it('hides the create buttons and warns above the listed links', () => {
+            rows = [row('a', 'bf', 12)];
+            renderLinks(status);
+
+            expect(screen.queryByRole('button', { name: 'English links' })).not.toBeInTheDocument();
+            expect(screen.queryByRole('button', { name: 'Greek links' })).not.toBeInTheDocument();
+            const warning = screen.getByText(OVER);
+            expect(warning).toHaveClass('text-status-warn');
+            expect(warning.compareDocumentPosition(screen.getByRole('table')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+            expect(screen.getByText('Link a')).toBeInTheDocument();
+        });
+
+        it('shows no warning when no link is listed', () => {
+            rows = [row('b', 'other', 1)];
+            renderLinks(status);
+
+            expect(screen.queryByText(OVER)).not.toBeInTheDocument();
+        });
+
+        it('still copies a listed link', async () => {
+            const writeText = vi.fn().mockResolvedValue(undefined);
+            Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+            rows = [row('a', 'bf', 12)];
+            renderLinks(status);
+
+            fireEvent.click(screen.getByRole('button', { name: 'Copy link Link a' }));
+
+            await waitFor(() => expect(writeText).toHaveBeenCalledOnce());
+        });
+    });
+
+    it.each(['LIVE', 'SCHEDULED'] as const)('keeps the buttons and shows no warning on a %s campaign', (status) => {
+        rows = [row('a', 'bf', 12)];
+        renderLinks(status);
+
+        expect(screen.getByRole('button', { name: 'English links' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Greek links' })).toBeInTheDocument();
+        expect(screen.queryByText(/This campaign is over/)).not.toBeInTheDocument();
     });
 });

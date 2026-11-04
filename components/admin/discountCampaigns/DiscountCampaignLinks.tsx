@@ -14,22 +14,27 @@ const BUTTON = 'min-h-9 rounded-md border border-border px-3 text-sm font-semibo
 // A saved discount campaign's links with their visits, and the buttons that create each language's set.
 export function DiscountCampaignLinks({ campaign }: { campaign: AdminDiscountCampaignDto }) {
     const t = useTranslations('AdminPage');
-    const { rows, isLoading, busy, error, handleGenerateClick } = useDiscountCampaignLinks(campaign);
+    const { rows, over, isLoading, busy, error, handleGenerateClick } = useDiscountCampaignLinks(campaign);
 
     return (
         <section className="space-y-3">
             {/* Header */}
             <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="text-[11px] font-bold tracking-wide text-ink-muted uppercase">{t('discountCampaigns.links.title')}</h3>
-                <div className="flex gap-2">
-                    <button type="button" data-language="en" onClick={handleGenerateClick} disabled={busy} className={BUTTON}>
-                        {t('discountCampaigns.links.english')}
-                    </button>
-                    <button type="button" data-language="el" onClick={handleGenerateClick} disabled={busy} className={BUTTON}>
-                        {t('discountCampaigns.links.greek')}
-                    </button>
-                </div>
+                {!over && (
+                    <div className="flex gap-2">
+                        <button type="button" data-language="en" onClick={handleGenerateClick} disabled={busy} className={BUTTON}>
+                            {t('discountCampaigns.links.english')}
+                        </button>
+                        <button type="button" data-language="el" onClick={handleGenerateClick} disabled={busy} className={BUTTON}>
+                            {t('discountCampaigns.links.greek')}
+                        </button>
+                    </div>
+                )}
             </div>
+
+            {/* Over */}
+            {over && rows.length > 0 && <p className="text-sm text-status-warn">{t('discountCampaigns.links.over')}</p>}
 
             {/* List */}
             {isLoading && <LoadingState className="justify-start py-2" />}
