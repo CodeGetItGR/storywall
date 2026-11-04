@@ -12,7 +12,7 @@ const NO_ROWS: CampaignRowDto[] = [];
 // is ignored: the server answers a second request at the same moment with a 409. The ref closes the
 // gap before the mutation reports it is pending, so two clicks in a row send one request.
 export function useDiscountCampaignLinks(campaign: Pick<AdminDiscountCampaignDto, 'name' | 'linkName'>) {
-    const query = useAdminCampaigns(null, null);
+    const query = useAdminCampaigns(null, null, { refetchOnMount: 'always' });
     const generate = useGenerateCampaignLinkSet();
     const [error, setError] = useState<unknown>(null);
     const inFlight = useRef(false);

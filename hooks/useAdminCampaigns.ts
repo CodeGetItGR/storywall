@@ -25,12 +25,17 @@ export const adminCampaignKeys = {
         ['admin', 'campaigns', 'overview', since, until, linkId, source] as const,
 };
 
-export function useAdminCampaigns(since: string | null, until: string | null, options: { enabled?: boolean } = {}) {
+export function useAdminCampaigns(
+    since: string | null,
+    until: string | null,
+    options: { enabled?: boolean; refetchOnMount?: boolean | 'always' } = {},
+) {
     return useQuery({
         queryKey: adminCampaignKeys.report(since, until),
         queryFn: () => api.get<CampaignRowDto[]>(endpoints.admin.metrics.campaigns(since, until)),
         placeholderData: keepPreviousData,
         enabled: options.enabled ?? true,
+        refetchOnMount: options.refetchOnMount,
     });
 }
 
