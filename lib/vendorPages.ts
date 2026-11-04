@@ -7,16 +7,6 @@ export const VENDOR_ALWAYS = ['listing', 'posts', 'reach', 'myPage'] as const;
 // What partners get (VendorPages.partner.*). Print prices are for photographers only.
 export type VendorPartnerPerk = 'discount' | 'feedCard' | 'fullReach' | 'printPrices' | 'portal';
 
-export const VENDOR_CLIENT_PHASES = ['before', 'during', 'after'] as const;
-
-// The photos at the end of the clients section, one per guest flow (VendorPages.strip.*).
-export const VENDOR_STRIP = [
-    { key: 'qr', src: '/landing/guest-scanning-the-storywall-qr-code.webp' },
-    { key: 'wish', src: '/landing/guest-sharing-a-wish-in-the-storywall-guestbook.webp' },
-    { key: 'invite', src: '/landing/guest-viewing-the-storywall-invitation-on-a-phone.webp' },
-    { key: 'rsvp', src: '/landing/guest-confirming-the-storywall-rsvp.webp' },
-] as const;
-
 type VendorPageConfig = { heroImage: string; tools: readonly VendorTool[]; partner: readonly VendorPartnerPerk[] };
 
 const PARTNER: readonly VendorPartnerPerk[] = ['discount', 'feedCard', 'fullReach', 'portal'];
@@ -39,3 +29,8 @@ export const VENDOR_PAGES: Record<VendorPageType, VendorPageConfig> = {
     CATERING: { heroImage: '/landing/guests-mingling-with-champagne-at-an-elegant-vip-social-party.webp', tools: [], partner: PARTNER },
     MUSIC: { heroImage: '/landing/guests-dancing-at-an-elegant-vip-social-party-at-night.webp', tools: ['liveRequests'], partner: PARTNER },
 };
+
+// A type with no tools of its own shows what every vendor gets in the tools spot instead, once.
+export function vendorPageHasTools(type: VendorPageType) {
+    return VENDOR_PAGES[type].tools.length > 0;
+}
