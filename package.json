@@ -15,7 +15,8 @@
         "format:check": "prettier . --check",
         "check": "npm run lint && npm run format",
         "type:check": "npx tsc --noEmit",
-        "test": "vitest run"
+        "test": "vitest run",
+        "parity:save-my-date": "jiti scripts/save-my-date/parity.ts"
     },
     "dependencies": {
         "@base-ui/react": "^1.5.0",
@@ -70,6 +71,7 @@
         "jsdom": "^29.1.1",
         "jsqr": "^1.4.0",
         "msw": "^2.15.0",
+        "playwright-core": "1.55.0",
         "postcss": "^8.5.29",
         "prettier": "^3.9.6",
         "prettier-plugin-tailwindcss": "^0.8.1",
