@@ -76,11 +76,17 @@ describe('qrWeddingFaqItems', () => {
     ];
 
     it('fills in the price', () => {
-        expect(qrWeddingFaqItems(items, '119€')).toEqual([items[0], { q: 'Cost?', a: 'From 119€.' }]);
+        expect(qrWeddingFaqItems(items, '119€', true)).toEqual([items[0], { q: 'Cost?', a: 'From 119€.' }]);
     });
 
     it('leaves out an answer that needs a price it does not have', () => {
-        expect(qrWeddingFaqItems(items, '')).toEqual([items[0]]);
+        expect(qrWeddingFaqItems(items, '', true)).toEqual([items[0]]);
+    });
+
+    it('uses the included answer while the QR code is not sold alone', () => {
+        const faq = [{ q: 'Cost?', a: 'Alone from {price}.', aIncluded: 'Included, from {price}.' }];
+        expect(qrWeddingFaqItems(faq, '119€', false)).toEqual([{ q: 'Cost?', a: 'Included, from 119€.' }]);
+        expect(qrWeddingFaqItems(faq, '49€', true)).toEqual([{ q: 'Cost?', a: 'Alone from 49€.' }]);
     });
 });
 

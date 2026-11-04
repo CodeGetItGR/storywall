@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { AppConfigResponseDto, CoverageOptionResponseDto, PlanTierResponseDto } from '@/lib/api/types';
-import { occasionPriceValues, photoPlansFromPrice } from '@/lib/occasions/occasionPrice';
+import { occasionPriceValues, photoPlansFromPrice, sellsPhotoPlanAlone } from '@/lib/occasions/occasionPrice';
 
 function makeOption(overrides: Partial<CoverageOptionResponseDto> = {}): CoverageOptionResponseDto {
     return {
@@ -151,5 +151,22 @@ describe('photoPlansFromPrice', () => {
 
     it('is empty when no plan has the gallery', () => {
         expect(photoPlansFromPrice(config([makePlan(WISHBOOK)]), 'WEDDING', 'en')).toBe('');
+    });
+});
+
+describe('sellsPhotoPlanAlone', () => {
+    const START = { id: 'start', code: 'START', sortOrder: 3 };
+
+    it('is false without config', () => {
+        expect(sellsPhotoPlanAlone(null, 'WEDDING')).toBe(false);
+    });
+
+    it('is true with a lite plan that has the gallery', () => {
+        expect(sellsPhotoPlanAlone(config([makePlan(LITE), makePlan(START)]), 'WEDDING')).toBe(true);
+    });
+
+    it('is false with only full plans, or a lite plan without the gallery', () => {
+        expect(sellsPhotoPlanAlone(config([makePlan(START)]), 'WEDDING')).toBe(false);
+        expect(sellsPhotoPlanAlone(config([makePlan(WISHBOOK), makePlan(START)]), 'WEDDING')).toBe(false);
     });
 });
