@@ -9,7 +9,7 @@ import type { Locale } from '@/i18n/config';
 import { endpoints } from '@/lib/api/endpoints';
 import { serverPublicConfigGet } from '@/lib/api/serverFetch';
 import type { AppConfigResponseDto } from '@/lib/api/types';
-import { photoPlansFromPrice } from '@/lib/occasions/occasionPrice';
+import { photoPlansFromPrice, sellsPhotoPlanAlone } from '@/lib/occasions/occasionPrice';
 import { type QrWeddingFaqItem, qrWeddingFaqItems, qrWeddingPageLive } from '@/lib/qrWeddingPage';
 import { makeQueryClient } from '@/lib/queryClient';
 
@@ -29,12 +29,13 @@ export async function QrWeddingPage({ locale }: { locale: Locale }) {
     // The cheapest wedding package with the gallery, quoted in the hero, the comparison and the FAQ; empty without config.
     const price = photoPlansFromPrice(config, 'WEDDING', locale);
     const t = await getTranslations({ locale, namespace: 'QrWeddingPage.faq' });
-    const faq = qrWeddingFaqItems(t.raw('items') as QrWeddingFaqItem[], price);
+    const soldAlone = sellsPhotoPlanAlone(config, 'WEDDING');
+    const faq = qrWeddingFaqItems(t.raw('items') as QrWeddingFaqItem[], price, soldAlone);
 
     return (
         <HydrationBoundary state={dehydrate(queryClient)}>
             <QrWeddingStructuredData faq={faq} locale={locale} />
-            <QrWeddingContent faq={faq} locale={locale} price={price} />
+            <QrWeddingContent faq={faq} locale={locale} price={price} soldAlone={soldAlone} />
         </HydrationBoundary>
     );
 }

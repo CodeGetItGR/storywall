@@ -20,8 +20,9 @@ import { LANDING_TOKENS_CLASS } from '@/lib/landingTokens';
 import { QR_WEDDING_SECTION, type QrWeddingFaqItem } from '@/lib/qrWeddingPage';
 import { cn } from '@/lib/utils';
 
-// The page's sections in order. price: the cheapest wedding package, or empty; faq: with the price filled in.
-export function QrWeddingContent({ locale, price, faq }: { locale: Locale; price: string; faq: QrWeddingFaqItem[] }) {
+// The page's sections in order. price: the cheapest wedding package, or empty; faq: with the price filled in;
+// soldAlone: a package with only the QR code is on sale.
+export function QrWeddingContent({ locale, price, faq, soldAlone }: { locale: Locale; price: string; faq: QrWeddingFaqItem[]; soldAlone: boolean }) {
     return (
         <>
             <div
@@ -65,7 +66,7 @@ export function QrWeddingContent({ locale, price, faq }: { locale: Locale; price
                     <QrWeddingDemo locale={locale} />
 
                     {/* Pricing */}
-                    <QrWeddingPricing locale={locale} />
+                    <QrWeddingPricing locale={locale} soldAlone={soldAlone} />
 
                     {/* FAQ */}
                     <QrWeddingFaq items={faq} locale={locale} />
