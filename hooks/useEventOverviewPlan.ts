@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 
 import { useEventBilling } from '@/hooks/useBilling';
+import { useCampaignPriceClock } from '@/hooks/useCampaignPriceClock';
 import type {
     EventModuleResponseDto,
     EventStatus,
@@ -22,7 +23,7 @@ export function useEventOverviewPlan({
     eventId,
     eventStatus,
     eventUsage,
-    planTiers,
+    planTiers: allPlanTiers,
     paidServices,
     modules,
     eventModules,
@@ -36,6 +37,8 @@ export function useEventOverviewPlan({
     eventModules: EventModuleResponseDto[];
 }) {
     const billing = useEventBilling(eventId, eventStatus === 'DRAFT');
+    // The draft's price changes when a campaign starts or ends, so it is worked out again then.
+    const planTiers = useCampaignPriceClock(allPlanTiers) ?? allPlanTiers;
 
     return useMemo(() => {
         const currentPlan = eventUsage ? findPlanByCode(planTiers, 'EVENT', eventUsage.planTier) : undefined;

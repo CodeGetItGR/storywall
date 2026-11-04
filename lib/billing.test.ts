@@ -10,6 +10,7 @@ import {
     isCampaignDiscountLive,
     isOrderPaidByAnother,
     lastWithdrawalMoment,
+    nextCampaignBoundary,
     paidBillingTotal,
     partnerBrandingCheckoutFields,
     promotedAmount,
@@ -103,6 +104,16 @@ describe('plan promotions', () => {
 
     it('truncates the discount, not the price', () => {
         expect(promotedAmount(999, plan({ ...campaign, campaignDiscountPercent: 12.5 }), now).amountMinor).toBe(875);
+    });
+
+    it('finds the next campaign start or end across the plans', () => {
+        const sooner = { ...campaign, campaignDiscountStartsAt: '2026-10-07T12:00:00Z', campaignDiscountEndsAt: '2026-10-07T13:00:00Z' };
+
+        expect(nextCampaignBoundary([plan(campaign), plan(sooner)], now)).toBe(Date.parse('2026-10-07T11:00:00Z'));
+        expect(nextCampaignBoundary([plan(sooner)], now)).toBe(Date.parse('2026-10-07T12:00:00Z'));
+        expect(nextCampaignBoundary([plan(campaign)], new Date('2026-10-07T11:00:00Z'))).toBeNull();
+        expect(nextCampaignBoundary([plan(), plan({ ...campaign, campaignDiscountPercent: null })], now)).toBeNull();
+        expect(nextCampaignBoundary([], now)).toBeNull();
     });
 
     it('drops back to the normal price at the second a campaign ends', () => {

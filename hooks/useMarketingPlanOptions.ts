@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 
 import { useMemberRoleCatalog } from '@/hooks/useAppConfig';
+import { useCampaignPriceClock } from '@/hooks/useCampaignPriceClock';
 import { usePlanMarketingCopy } from '@/hooks/usePlanMarketingCopy';
 import type { AppMediaConfigDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { buildLandingRow, type LandingPlan } from '@/lib/landingPricing';
@@ -25,7 +26,7 @@ const NONE: MarketingPlanOptions = { full: [], lite: [] };
 
 // The plans as picker cards: full and lite plans are separate rows, each rolling a card up into the previous one in it.
 export function useMarketingPlanOptions({
-    plans,
+    plans: allPlans,
     modules,
     media,
 }: {
@@ -35,6 +36,8 @@ export function useMarketingPlanOptions({
 }): MarketingPlanOptions {
     const { copy, moduleName } = usePlanMarketingCopy();
     const memberRoles = useMemberRoleCatalog();
+    // Prices change when a campaign starts or ends, so the cards are rebuilt then.
+    const plans = useCampaignPriceClock(allPlans) ?? allPlans;
 
     return useMemo(() => {
         if (!media) return NONE;

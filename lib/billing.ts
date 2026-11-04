@@ -138,6 +138,20 @@ export function isCampaignDiscountLive(plan: PlanTierResponseDto, now = new Date
     return startsAt.getTime() <= now.getTime() && endsAt.getTime() > now.getTime();
 }
 
+// The next moment after `now` (epoch ms) when a campaign carried by one of the plans starts or ends,
+// null when there is none. Prices change then, so a screen that is already open must redraw.
+export function nextCampaignBoundary(plans: PlanTierResponseDto[], now = new Date()): number | null {
+    let next: number | null = null;
+    for (const plan of plans) {
+        if (!plan.campaignDiscountPercent || plan.campaignDiscountPercent <= 0) continue;
+        for (const boundary of [plan.campaignDiscountStartsAt, plan.campaignDiscountEndsAt]) {
+            const moment = parseDiscountBoundary(boundary ?? null)?.getTime();
+            if (moment !== undefined && moment > now.getTime() && (next === null || moment < next)) next = moment;
+        }
+    }
+    return next;
+}
+
 // The discount is truncated, never the price, as the server does
 // (CollaborationPricing.applyDiscount): 12.5% off 999 takes 124, not 125. The percent carries at
 // most two decimals, so it is worked in hundredths to keep the arithmetic exact.
@@ -177,7 +191,9 @@ export function activePromoPriceMinor(option: CoverageOptionResponseDto, plan: P
 // and in both cases the campaign when that is lower.
 export function promotedOption(option: CoverageOptionResponseDto, plan: PlanTierResponseDto, now = new Date()): PromotedLine {
     const promoMinor = activePromoPriceMinor(option, plan, now);
-    return promoMinor !== null ? promotedLine(option.priceAmountMinor, promoMinor, true, plan, now) : promotedAmount(option.priceAmountMinor, plan, now);
+    return promoMinor !== null
+        ? promotedLine(option.priceAmountMinor, promoMinor, true, plan, now)
+        : promotedAmount(option.priceAmountMinor, plan, now);
 }
 
 export function discountedAmountMinor(amountMinor: number, plan: PlanTierResponseDto, now = new Date()): number {

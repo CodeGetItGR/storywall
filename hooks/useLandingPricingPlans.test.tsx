@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { useLandingPricingPlans } from '@/hooks/useLandingPricingPlans';
 import type { AppConfigResponseDto, PlanTierResponseDto } from '@/lib/api/types';
@@ -361,5 +361,44 @@ describe('useLandingPricingPlans', () => {
 
         expect(result.current.groups).toBeNull();
         expect(result.current.defaultEventTypeId).toBeNull();
+    });
+});
+
+describe('useLandingPricingPlans campaign prices', () => {
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    it('switches the price at the second a campaign starts and ends, with the page open', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        vi.setSystemTime(new Date('2026-11-03T10:00:00Z'));
+        const config = makeConfig();
+        config.planTiers = [
+            planTier({
+                id: 'p1',
+                code: 'START',
+                eventTypeKey: 'WEDDING',
+                campaignDiscountPercent: 20,
+                campaignDiscountStartsAt: '2026-11-03T10:00:30Z',
+                campaignDiscountEndsAt: '2026-11-03T11:00:00Z',
+            }),
+        ];
+        config.landingCategories = [{ id: 'wed', name: { en: 'Weddings' }, description: {}, isDefault: true, eventTypeKeys: ['WEDDING'] }];
+        publicGet.mockResolvedValue(config);
+
+        const { result } = renderHook(() => useLandingPricingPlans(), { wrapper });
+        await waitFor(() => expect(result.current.groups).not.toBeNull());
+        const duration = () => result.current.groups?.[0].items[0].plans[0].durations[0];
+        expect(duration()?.listPrice).toBeNull();
+
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(31_000);
+        });
+        expect(duration()?.listPrice).toBe('79€');
+
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(60 * 60 * 1000);
+        });
+        expect(duration()?.listPrice).toBeNull();
     });
 });
