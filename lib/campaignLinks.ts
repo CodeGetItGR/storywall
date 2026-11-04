@@ -138,6 +138,24 @@ export function requestOfCampaignLinkForm(form: CampaignLinkForm): CampaignLinkR
 }
 
 // A stable key for a report row: its saved link, or its three values.
+// Adds one currency-to-amount map into another.
+export function addMoneyByCurrency(into: Record<string, number>, from: Record<string, number>) {
+    for (const [currency, minor] of Object.entries(from)) into[currency] = (into[currency] ?? 0) + minor;
+}
+
+export type CampaignLinksTotal = { visits: number; sales: number; salesRevenueMinorByCurrency: Record<string, number> };
+
+// The visits, sales and sales revenue of a set of link rows.
+export function totalOf(rows: CampaignRowDto[]): CampaignLinksTotal {
+    const total: CampaignLinksTotal = { visits: 0, sales: 0, salesRevenueMinorByCurrency: {} };
+    for (const row of rows) {
+        total.visits += row.visits;
+        total.sales += row.sales;
+        addMoneyByCurrency(total.salesRevenueMinorByCurrency, row.salesRevenueMinorByCurrency ?? {});
+    }
+    return total;
+}
+
 export function campaignRowKey(row: CampaignRowDto): string {
     return row.link?.id ?? `${row.utmSource ?? ''}|${row.utmMedium ?? ''}|${row.utmCampaign ?? ''}`;
 }

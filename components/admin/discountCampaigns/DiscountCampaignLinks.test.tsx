@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -18,12 +18,14 @@ vi.mock('@/hooks/useAdminCampaigns', () => ({
 
 const campaign = { id: 'c1', name: 'Black Friday', linkName: 'bf' } as AdminDiscountCampaignDto;
 
-const row = (id: string, linkGroup: string | null, visits: number) =>
+const row = (id: string, linkGroup: string | null, visits: number, sales = 0, salesRevenueMinorByCurrency: Record<string, number> = {}) =>
     ({
         utmSource: 'instagram',
         utmMedium: 'social',
         utmCampaign: `${id}-post-el`,
         visits,
+        sales,
+        salesRevenueMinorByCurrency,
         link: {
             id,
             name: `Link ${id}`,
@@ -63,6 +65,16 @@ describe('DiscountCampaignLinks', () => {
         expect(screen.getByText('12')).toBeInTheDocument();
         expect(screen.queryByText('Link b')).not.toBeInTheDocument();
         expect(screen.queryByText('Link c')).not.toBeInTheDocument();
+    });
+
+    it('totals the links', () => {
+        rows = [row('a', 'bf', 12, 2, { EUR: 9_800 }), row('b', 'bf', 3, 1, { EUR: 4_900 })];
+        renderLinks();
+
+        const total = screen.getByRole('row', { name: /Total/ });
+        expect(within(total).getByText('15')).toBeInTheDocument();
+        expect(within(total).getByText('3')).toBeInTheDocument();
+        expect(within(total).getByText(/147/)).toBeInTheDocument();
     });
 
     it('creates a set for the language of the button', async () => {

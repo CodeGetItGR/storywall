@@ -6045,7 +6045,23 @@
                 "signedUp": "Sign-ups",
                 "createdEvent": "Created an event",
                 "paidHost": "Paid",
-                "revenue": "Revenue"
+                "revenue": "Revenue",
+                "sales": "Sales",
+                "salesRevenue": "Sales revenue"
+            },
+            "valueHelpLabel": "What {name} means",
+            "valueHelp": {
+                "visits": "Arrivals through the link. Repeats within 30 minutes count once.",
+                "visitors": "Different people who visited. Someone who returns on another day counts again.",
+                "createClicks": "Visitors who tapped Create on the page. Once per person each day.",
+                "plansClicks": "Visitors who tapped the plans button on the page. Once per person each day.",
+                "planPicks": "Visitors who picked a specific plan. Once per person each day.",
+                "signedUp": "Accounts that signed up through the link.",
+                "createdEvent": "Those accounts that have created an event.",
+                "paidHost": "Accounts that signed up through the link and have since paid.",
+                "revenue": "Everything those accounts have paid, at any time.",
+                "sales": "Paid orders where this was the buyer's last link. Existing accounts count too.",
+                "salesRevenue": "What those orders paid."
             },
             "fields": {
                 "preset": "Where you'll share it",
@@ -6193,6 +6209,9 @@
                 "english": "English links",
                 "greek": "Greek links",
                 "visits": "Visits",
+                "sales": "Sales",
+                "salesRevenue": "Sales revenue",
+                "total": "Total",
                 "over": "This campaign is over. Don't use these links any more."
             }
         },
@@ -7952,7 +7971,7 @@
         "essentialLabel": "Essential",
         "essentialBody": "Keep the site working. Always on.",
         "analyticsLabel": "Analytics",
-        "analyticsBody": "Lets Google Analytics count visits and see which pages people use.",
+        "analyticsBody": "Lets Google Analytics count visits and see which pages people use, and lets us see which of our links led to a sign-up or a sale.",
         "adsLabel": "Advertising",
         "adsBody": "Lets Google Ads measure which ads bring people to StoryWall.",
         "save": "Save",

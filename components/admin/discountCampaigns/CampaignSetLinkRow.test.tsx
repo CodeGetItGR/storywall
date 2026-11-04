@@ -13,6 +13,8 @@ const row = {
     utmMedium: 'social',
     utmCampaign: 'bf-story-el',
     visits: 3,
+    sales: 2,
+    salesRevenueMinorByCurrency: { EUR: 9800 },
     link: {
         id: 'l1',
         name: LONG_NAME,
@@ -24,7 +26,7 @@ const row = {
         utmCampaign: 'bf-story-el',
         createdAt: '2026-11-01T00:00:00Z',
     },
-} as CampaignRowDto;
+} as unknown as CampaignRowDto;
 
 function renderRow() {
     render(
@@ -57,6 +59,13 @@ describe('CampaignSetLinkRow', () => {
         await waitFor(() => expect(writeText).toHaveBeenCalledOnce());
         const url = writeText.mock.calls[0][0] as string;
         expect(url).toMatch(/\?utm_source=instagram&utm_medium=social&utm_campaign=bf-story-el#pricing$/);
+    });
+
+    it('shows its sales and what they paid', () => {
+        renderRow();
+
+        const cells = screen.getAllByRole('cell').map((cell) => cell.textContent);
+        expect(cells.slice(1, 4)).toEqual(['3', '2', '€98.00']);
     });
 
     it('wraps a long name instead of cutting it off', () => {

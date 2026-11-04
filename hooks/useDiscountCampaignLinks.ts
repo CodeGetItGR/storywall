@@ -4,6 +4,7 @@ import { type MouseEvent, useMemo, useRef, useState } from 'react';
 
 import { useAdminCampaigns, useGenerateCampaignLinkSet } from '@/hooks/useAdminCampaigns';
 import type { AdminDiscountCampaignDto, CampaignLinkLanguage, CampaignRowDto } from '@/lib/api/types';
+import { totalOf } from '@/lib/campaignLinks';
 import { isCampaignOver } from '@/lib/discountCampaignForm';
 
 const NO_ROWS: CampaignRowDto[] = [];
@@ -19,6 +20,8 @@ export function useDiscountCampaignLinks(campaign: Pick<AdminDiscountCampaignDto
     const inFlight = useRef(false);
     const allRows = query.data ?? NO_ROWS;
     const rows = useMemo(() => allRows.filter((row) => row.link?.linkGroup === campaign.linkName), [allRows, campaign.linkName]);
+
+    const total = useMemo(() => totalOf(rows), [rows]);
 
     function handleGenerateClick(event: MouseEvent<HTMLButtonElement>) {
         if (inFlight.current || generate.isPending) return;
@@ -36,5 +39,5 @@ export function useDiscountCampaignLinks(campaign: Pick<AdminDiscountCampaignDto
     // An over campaign keeps its links listed, but gets no new ones and a warning not to use them.
     const over = isCampaignOver(campaign.status);
 
-    return { rows, over, isLoading: query.isLoading, busy: generate.isPending, error: error ?? query.error, handleGenerateClick };
+    return { rows, total, over, isLoading: query.isLoading, busy: generate.isPending, error: error ?? query.error, handleGenerateClick };
 }

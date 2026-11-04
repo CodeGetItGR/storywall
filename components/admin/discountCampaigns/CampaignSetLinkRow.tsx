@@ -8,7 +8,7 @@ import { useFunnelFormat } from '@/hooks/useFunnelFormat';
 import type { CampaignRowDto } from '@/lib/api/types';
 import { campaignUrl } from '@/lib/campaignLinks';
 
-// One link of a campaign's set: its name, its visits and a copy button.
+// One link of a campaign's set: its name, its visits, sales and a copy button.
 export function CampaignSetLinkRow({ row }: { row: CampaignRowDto }) {
     const t = useTranslations('AdminPage.campaigns.share');
     const format = useFunnelFormat();
@@ -25,6 +25,12 @@ export function CampaignSetLinkRow({ row }: { row: CampaignRowDto }) {
 
             {/* Visits */}
             <td className="px-3 py-2 text-right font-mono tabular-nums">{format.count(row.visits)}</td>
+
+            {/* Sales */}
+            <td className="px-3 py-2 text-right font-mono tabular-nums">{format.count(row.sales)}</td>
+            <td className="px-3 py-2 text-right font-mono whitespace-nowrap tabular-nums">
+                {format.moneyByCurrency(row.salesRevenueMinorByCurrency ?? {})}
+            </td>
 
             {/* Copy */}
             <td className="py-2 pl-3">
