@@ -200,6 +200,62 @@ describe('useCreateEventFormController', () => {
         });
     });
 
+    describe('a plan picked after the draft was created', () => {
+        async function failFirstCheckout(result: { current: ReturnType<typeof useCreateEventFormController> }) {
+            mocks.post.mockRejectedValueOnce(new Error('declined'));
+            act(() => result.current.onTitleChange(changeEvent('Our wedding')));
+            await act(async () => result.current.handleSubmit(submitEvent()));
+            expect(mocks.create).toHaveBeenCalledTimes(1);
+        }
+
+        it('creates a draft on the new plan and checks that one out, leaving the old draft alone', async () => {
+            mocks.create.mockResolvedValueOnce({ id: 'e1' }).mockResolvedValueOnce({ id: 'e2' });
+            const { result } = openWizard('step=overview&plan=QR');
+            await failFirstCheckout(result);
+
+            act(() => {
+                result.current.onSelectPlan('START');
+                result.current.onStartAtChange('2027-01-15T18:00');
+                result.current.onLocationNameChange(changeEvent('Church'));
+                result.current.onLocationAddressChange(changeEvent('Main St 1'));
+            });
+            await act(async () => result.current.handleSubmit(submitEvent()));
+
+            expect(mocks.create).toHaveBeenCalledTimes(2);
+            expect(mocks.create.mock.calls[1][0]).toMatchObject({ planTierCode: 'START', locationName: 'Church' });
+            expect(mocks.update).not.toHaveBeenCalled();
+            expect(mocks.post).toHaveBeenLastCalledWith(expect.stringContaining('e2'), expect.anything());
+            expect(mocks.navigateToCheckout).toHaveBeenCalledWith('e2', expect.anything());
+        });
+
+        it('reuses the draft when the host comes back to its plan', async () => {
+            const { result } = openWizard('step=overview&plan=QR');
+            await failFirstCheckout(result);
+
+            act(() => result.current.onSelectPlan('START'));
+            act(() => result.current.onSelectPlan('QR'));
+            await act(async () => result.current.handleSubmit(submitEvent()));
+
+            expect(mocks.create).toHaveBeenCalledTimes(1);
+            expect(mocks.navigateToCheckout).toHaveBeenCalledWith('e1', expect.anything());
+        });
+
+        it('reuses the new draft on the next try', async () => {
+            mocks.create.mockResolvedValueOnce({ id: 'e1' }).mockResolvedValueOnce({ id: 'e2' });
+            mocks.plans = [START, QR, plan('WISHBOOK', ['wishbook'])];
+            const { result } = openWizard('step=overview&plan=QR');
+            await failFirstCheckout(result);
+
+            act(() => result.current.onSelectPlan('WISHBOOK'));
+            mocks.post.mockRejectedValueOnce(new Error('declined'));
+            await act(async () => result.current.handleSubmit(submitEvent()));
+            await act(async () => result.current.handleSubmit(submitEvent()));
+
+            expect(mocks.create).toHaveBeenCalledTimes(2);
+            expect(mocks.navigateToCheckout).toHaveBeenCalledWith('e2', expect.anything());
+        });
+    });
+
     describe('a plan that asks for details', () => {
         it('keeps the details step and its requirements', () => {
             const { result } = openWizard('step=details&plan=START');

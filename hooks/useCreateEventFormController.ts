@@ -329,7 +329,10 @@ export function useCreateEventFormController(): CreateEventFormValue {
             if (step !== 'overview') return;
             if (!isEmailVerified || !consent.consentSatisfied || !partnerBranding.satisfied || !selectedOption || !canSubmitDetails) return;
 
-            let eventId = createdDraftEventId;
+            // A host can't move a draft to another plan, so a plan picked since the draft was created gets its own
+            // draft (as a changed event type does). The old one stays among the host's events, unpaid.
+            const existingDraft = createdDraftSelection?.planCode === selectedCode ? createdDraftSelection : null;
+            let eventId = existingDraft ? createdDraftEventId : null;
             // A plan that doesn't ask for a date has none, whatever was typed before switching to it.
             const draftStartAt = asksDetails ? startAt : '';
 
@@ -388,10 +391,10 @@ export function useCreateEventFormController(): CreateEventFormValue {
 
             // The draft exists already: a title, duration or start picked since then is saved
             // to it first, because checkout charges the draft's duration and dates.
-            const durationChanged = createdDraftSelection?.planCode === selectedCode && createdDraftSelection.optionId !== selectedOption.id;
-            const startChanged = Boolean(draftStartAt && createdDraftSelection && createdDraftSelection.startAt !== draftStartAt);
-            const titleChanged = Boolean(createdDraftSelection && createdDraftSelection.title !== trimmedTitle);
-            if (createdDraftSelection && (durationChanged || startChanged || titleChanged)) {
+            const durationChanged = Boolean(existingDraft && existingDraft.optionId !== selectedOption.id);
+            const startChanged = Boolean(draftStartAt && existingDraft && existingDraft.startAt !== draftStartAt);
+            const titleChanged = Boolean(existingDraft && existingDraft.title !== trimmedTitle);
+            if (existingDraft && (durationChanged || startChanged || titleChanged)) {
                 const dates = startChanged ? eventWindowFromLocalStart(startAt) : null;
                 try {
                     setIsCheckoutPending(true);
@@ -401,10 +404,10 @@ export function useCreateEventFormController(): CreateEventFormValue {
                         ...(dates ?? {}),
                     });
                     setCreatedDraftSelection({
-                        ...createdDraftSelection,
+                        ...existingDraft,
                         title: trimmedTitle,
-                        optionId: durationChanged ? selectedOption.id : createdDraftSelection.optionId,
-                        startAt: draftStartAt || createdDraftSelection.startAt,
+                        optionId: durationChanged ? selectedOption.id : existingDraft.optionId,
+                        startAt: draftStartAt || existingDraft.startAt,
                     });
                 } catch (updateError) {
                     setIsCheckoutPending(false);
@@ -414,12 +417,12 @@ export function useCreateEventFormController(): CreateEventFormValue {
             }
 
             // A theme picked or cleared after the draft was created is saved to it too.
-            if (createdDraftSelection && createdDraftSelection.themePresetId !== selectedThemePresetId) {
+            if (existingDraft && existingDraft.themePresetId !== selectedThemePresetId) {
                 try {
                     setIsCheckoutPending(true);
                     const body: EventThemeRequestDto = { presetId: selectedThemePresetId };
                     await api.put(endpoints.events.theme(eventId), body);
-                    setCreatedDraftSelection({ ...createdDraftSelection, themePresetId: selectedThemePresetId });
+                    setCreatedDraftSelection({ ...existingDraft, themePresetId: selectedThemePresetId });
                 } catch (themeError) {
                     setIsCheckoutPending(false);
                     setError(toErrorMessage(themeError));
