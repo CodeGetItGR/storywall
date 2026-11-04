@@ -1,4 +1,4 @@
-import { Clock, Globe, Lock, Pencil, Phone } from 'lucide-react';
+import { Globe, Lock, Pencil, Phone } from 'lucide-react';
 import { getLocale, getTranslations } from 'next-intl/server';
 import type { ComponentType } from 'react';
 
@@ -6,7 +6,7 @@ import { PostSkeleton } from '@/components/feed/PostSkeleton';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RenderPost } from '@/components/vendorPages/renders/RenderPost';
-import { VENDOR_RENDER_DATE, VENDOR_RENDER_PHOTOS, VENDOR_RENDER_REACH, VENDOR_RENDER_TAGS } from '@/components/vendorPages/renders/renderSample';
+import { VENDOR_RENDER_PHOTOS, VENDOR_RENDER_REACH, VENDOR_RENDER_TAGS } from '@/components/vendorPages/renders/renderSample';
 import { RenderReachTiles, RenderSection } from '@/components/vendorPages/renders/RenderSection';
 import { InstagramIcon } from '@/components/vendors/InstagramIcon';
 import { VENDOR_SECTION_SURFACE } from '@/components/vendors/me/VendorMeSection';
@@ -14,7 +14,6 @@ import { VendorBanner } from '@/components/vendors/VendorBanner';
 import { VendorLogo } from '@/components/vendors/VendorLogo';
 import { VendorToolIcon } from '@/components/vendors/VendorToolIcon';
 import type { VendorPageType } from '@/i18n/publicLocale';
-import { formatDate } from '@/lib/datetime';
 import { VENDOR_ALWAYS, VENDOR_PAGES, type VendorTool } from '@/lib/vendorPages';
 import { formatReachCount } from '@/lib/vendorReach';
 import type { VendorActionKey } from '@/lib/vendors';
@@ -180,12 +179,6 @@ async function MyPageRender({ type }: RenderProps) {
                 <p className="m-0 text-2xl leading-tight font-bold tracking-tight text-ink">{name}</p>
                 <p className="m-0 mt-0.5 text-sm text-ink-muted">{t(`types.${type}`)}</p>
             </div>
-
-            {/* Access */}
-            <p className="m-0 mx-3 mt-3 inline-flex items-center gap-2 rounded-full bg-surface-muted px-3 py-1.5 text-xs text-ink">
-                <Clock className="size-3.5 shrink-0 text-ink-muted" />
-                {t('me.accessUntil', { date: formatDate(locale, `${VENDOR_RENDER_DATE}T00:00:00`, { dateStyle: 'long' }) })}
-            </p>
 
             {/* Tools */}
             {actions.length > 0 && (
