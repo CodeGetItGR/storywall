@@ -36,7 +36,6 @@ export async function VendorPageSteps() {
                         </li>
                     ))}
                 </ol>
-                <p className="m-0 mt-10 text-sm text-[#151313]/65">{t('planNote')}</p>
             </div>
         </section>
     );
