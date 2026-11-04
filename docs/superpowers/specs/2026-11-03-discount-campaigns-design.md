@@ -213,7 +213,7 @@ All new strings. No existing text changes, and no landing page or SEO copy chang
 
 ## Release
 
-Backend first, then the frontend. The new fields are optional in both directions, so neither side breaks during the gap. Nothing shows until a campaign is created.
+Backend first, then the frontend, strictly for step 3. The backend refuses unknown request fields (`fail-on-unknown-properties=true`), so a backend without step 3 answers 400 to the frontend's `attribution` field. A rollback of the backend must take the frontend back first. Nothing shows until a campaign is created.
 
 The work can land in three steps, each with its own backend and frontend PRs:
 1. Campaign, pricing, banner and guest card.
