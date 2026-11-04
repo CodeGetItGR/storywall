@@ -9,6 +9,7 @@ import { PartnerBrandingNotice } from '@/components/checkout/PartnerBrandingNoti
 import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
 import { EventOverviewDiscountCode } from '@/components/event/create/EventOverviewDiscountCode';
 import { EventOverviewPriceRow } from '@/components/event/create/EventOverviewPriceRow';
+import { useCampaignPriceClock } from '@/hooks/useCampaignPriceClock';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
 import { formatMoney } from '@/lib/billing';
 import { getOptionPriceDetails } from '@/lib/planTiers';
@@ -23,6 +24,7 @@ export function EventOverviewStep() {
         trimmedTitle: title,
         selectedEventType: eventType,
         eventTypes,
+        eventPlans,
         startAt,
         projectedCoverage,
         selectedPlan: plan,
@@ -38,6 +40,8 @@ export function EventOverviewStep() {
         partnerBrandingAccepted,
         onPartnerBrandingChange: onPartnerBrandingChangeAction,
     } = useCreateEventForm();
+    // The total below is worked out as it renders; this redraws it when a campaign starts or ends.
+    useCampaignPriceClock(eventPlans);
 
     if (!plan || !option) return null;
 

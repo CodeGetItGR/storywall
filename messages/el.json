@@ -13,7 +13,14 @@
     },
     "SiteNotice": {
         "apiDown": "Αντιμετωπίζουμε κάποια προβλήματα. Δουλεύουμε για να τα διορθώσουμε.",
-        "close": "Κλείσιμο"
+        "close": "Κλείσιμο",
+        "campaign": "{percent}% έκπτωση σε όλα τα πλάνα.",
+        "campaignEndsIn": "Λήγει σε {countdown}.",
+        "campaignEndsOn": "Λήγει στις {date}",
+        "seePlans": "Δείτε τα πλάνα",
+        "countdownDays": "{days}ημ {hours}ώ {minutes}λ",
+        "countdownHours": "{hours}ώ {minutes}λ",
+        "countdownMinutes": "{minutes}λ {seconds}δ"
     },
     "DemoActAs": {
         "postingAs": "Δημοσίευση ως",
@@ -3128,6 +3135,7 @@
             "paidServices": "Υπηρεσίες επί πληρωμή",
             "inviart": "INVIART",
             "discountCodes": "Κωδικοί έκπτωσης",
+            "discountCampaigns": "Εκπτωτικές καμπάνιες",
             "guestOffer": "Προσφορά καλεσμένων",
             "partnerApplications": "Αιτήσεις",
             "collaborations": "Συνεργασίες",
@@ -4773,6 +4781,10 @@
             "collaborationEarningNotPayable": "Μία ή περισσότερες επιλεγμένες αμοιβές δεν μπορούν να πληρωθούν. Ανανεώστε το καθολικό και επιλέξτε δεδουλευμένες εγγραφές.",
             "collaboratorPayoutDetailsIncomplete": "Τα επιχειρηματικά στοιχεία ή τα στοιχεία πληρωμής του συνεργάτη είναι ελλιπή, ή ο ΑΦΜ του δεν είναι έγκυρος στο VIES. Συμπληρώστε τα επιχειρηματικά του στοιχεία και δοκιμάστε ξανά.",
             "campaignLinkTaken": "Υπάρχει ήδη σύνδεσμος με αυτή την πηγή, μέσο και καμπάνια.",
+            "discountCampaignInvalid": "Ελέγξτε τα στοιχεία της καμπάνιας.",
+            "discountCampaignOverlap": "Άλλη καμπάνια τρέχει αυτές τις ημερομηνίες.",
+            "discountCampaignPriceTooLow": "Με αυτό το ποσοστό, κάποια πλάνα δεν μπορούν να χρεωθούν.",
+            "discountCampaignLinkNameTaken": "Αυτό το όνομα συνδέσμων χρησιμοποιείται ήδη.",
             "methodNotAllowed": "Αυτή η ενέργεια δεν είναι διαθέσιμη εδώ. Ανανεώστε και δοκιμάστε ξανά.",
             "invalidModuleKey": "Μία από τις επιλεγμένες λειτουργίες δεν είναι διαθέσιμη για αυτόν τον τύπο εκδήλωσης. Αφαιρέστε την και δοκιμάστε ξανά.",
             "orderNotManual": "Εδώ διακανονίζονται μόνο χειροκίνητες παραγγελίες. Οι παραγγελίες Stripe διακανονίζονται μέσω Stripe.",
@@ -6266,6 +6278,34 @@
             "push": { "on": "Ενεργές", "off": "Ανενεργές" },
             "problems": { "name": "Γράψτε ένα όνομα." }
         },
+        "discountCampaigns": {
+            "create": "Νέα εκπτωτική καμπάνια",
+            "createTitle": "Νέα εκπτωτική καμπάνια",
+            "editTitle": "Επεξεργασία εκπτωτικής καμπάνιας",
+            "empty": "Δεν υπάρχουν εκπτωτικές καμπάνιες.",
+            "columns": {
+                "name": "Όνομα",
+                "percent": "Έκπτωση %",
+                "status": "Κατάσταση",
+                "dates": "Ημερομηνίες"
+            },
+            "fields": {
+                "name": "Όνομα",
+                "percent": "Έκπτωση %",
+                "label": "Όνομα στην πληρωμή",
+                "linkName": "Όνομα συνδέσμων",
+                "startsAt": "Έναρξη",
+                "endsAt": "Λήξη"
+            },
+            "stop": "Διακοπή καμπάνιας",
+            "stopTitle": "Διακοπή της καμπάνιας;",
+            "stopBody": "Οι τιμές επιστρέφουν στο κανονικό τώρα.",
+            "stopConfirm": "Διακοπή καμπάνιας",
+            "stopCancel": "Να συνεχιστεί",
+            "delete": "Διαγραφή καμπάνιας",
+            "deleteTitle": "Διαγραφή της καμπάνιας;",
+            "deleteBody": "Δεν θα ξεκινήσει."
+        },
         "siteNotices": {
             "create": "Νέα ανακοίνωση",
             "empty": "Δεν υπάρχουν ανακοινώσεις.",
@@ -6619,6 +6659,10 @@
         "collaborationEarningNotPayable": "Αυτή η αμοιβή δεν μπορεί να σημειωθεί ως πληρωμένη.",
         "collaboratorPayoutDetailsIncomplete": "Τα επιχειρηματικά στοιχεία ή τα στοιχεία πληρωμής ενός συνεργάτη είναι ελλιπή.",
         "campaignLinkTaken": "Υπάρχει ήδη σύνδεσμος καμπάνιας με αυτές τις τιμές.",
+        "discountCampaignInvalid": "Ελέγξτε τα στοιχεία της καμπάνιας.",
+        "discountCampaignOverlap": "Άλλη καμπάνια τρέχει αυτές τις ημερομηνίες.",
+        "discountCampaignPriceTooLow": "Με αυτό το ποσοστό, κάποια πλάνα δεν μπορούν να χρεωθούν.",
+        "discountCampaignLinkNameTaken": "Αυτό το όνομα συνδέσμων χρησιμοποιείται ήδη.",
         "invalidCredentials": "Το email ή ο κωδικός πρόσβασης δεν είναι σωστός.",
         "invalidRefreshToken": "Η σύνδεσή σας έληξε. Συνδεθείτε ξανά.",
         "accountNotActive": "Αυτός ο λογαριασμός δεν είναι ενεργός.",

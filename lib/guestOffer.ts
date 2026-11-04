@@ -8,3 +8,8 @@ const GUEST_OFFER_CAMPAIGN = 'utm_source=storywall&utm_medium=feed&utm_campaign=
 export function guestOfferLandingHref(locale: Locale): string {
     return `${getPublicLandingPath(locale)}?${GUEST_OFFER_CAMPAIGN}`;
 }
+
+// The same page at its plans, for the card while a discount campaign is live.
+export function guestOfferPlansHref(locale: Locale): string {
+    return `${guestOfferLandingHref(locale)}#pricing`;
+}

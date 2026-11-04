@@ -11,6 +11,7 @@ const close = vi.fn();
 const copyCode = vi.fn();
 const markDiscovered = vi.fn();
 let offer: GuestOfferDto | null = null;
+let campaign: { id: string; percent: number; startsAt: string; endsAt: string } | null = null;
 
 vi.mock('next-intl', () => {
     const t = (key: string) => key;
@@ -25,6 +26,8 @@ vi.mock('next-intl', () => {
     return { useTranslations: () => t, useLocale: () => 'en' };
 });
 vi.mock('@/components/common/Logo', () => ({ Logo: () => <span>StoryWall</span> }));
+vi.mock('@/hooks/useLiveDiscountCampaign', () => ({ useLiveDiscountCampaign: () => campaign }));
+vi.mock('@/components/siteNotices/CampaignCountdown', () => ({ CampaignCountdown: () => <span>countdown</span> }));
 vi.mock('@/hooks/useGuestOffer', () => ({
     useGuestOffer: () => ({
         offer,
@@ -42,10 +45,53 @@ vi.mock('@/hooks/useGuestOffer', () => ({
 describe('GuestOfferCard', () => {
     beforeEach(() => {
         offer = null;
+        campaign = null;
         vi.clearAllMocks();
     });
 
     afterEach(cleanup);
+
+    const live = { id: 'c1', percent: 20, startsAt: '2026-11-01T00:00:00Z', endsAt: '2026-11-08T00:00:00Z' };
+
+    it('replaces the claim with the campaign and a link to the plans', () => {
+        offer = { discountPercent: 15, code: null, endsAt: null };
+        campaign = live;
+        render(<GuestOfferCard eventId="e1" isHost={false} />);
+
+        expect(screen.queryByRole('button', { name: /claim/ })).not.toBeInTheDocument();
+        expect(screen.getByText('countdown')).toBeInTheDocument();
+        expect(screen.getByText('campaign')).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'seePlans' })).toHaveAttribute(
+            'href',
+            '/?utm_source=storywall&utm_medium=feed&utm_campaign=guest-offer#pricing',
+        );
+    });
+
+    it('counts a tap on the plans link', () => {
+        offer = { discountPercent: 15, code: null, endsAt: null };
+        campaign = live;
+        render(<GuestOfferCard eventId="e1" isHost={false} />);
+
+        fireEvent.click(screen.getByRole('link', { name: 'seePlans' }));
+
+        expect(markDiscovered).toHaveBeenCalledOnce();
+    });
+
+    it('keeps a code the guest already claimed', () => {
+        offer = { discountPercent: 15, code: 'ABC123', endsAt: null };
+        campaign = live;
+        render(<GuestOfferCard eventId="e1" isHost={false} />);
+
+        expect(screen.queryByText('campaign')).not.toBeInTheDocument();
+        expect(screen.getByRole('link', { name: /discover/ })).toBeInTheDocument();
+    });
+
+    it('shows the claim again once the campaign ends', () => {
+        offer = { discountPercent: 15, code: null, endsAt: null };
+        render(<GuestOfferCard eventId="e1" isHost={false} />);
+
+        expect(screen.getByRole('button', { name: /claim/ })).toBeInTheDocument();
+    });
 
     it('renders nothing when the card does not show', () => {
         const { container } = render(<GuestOfferCard eventId="e1" isHost={false} />);

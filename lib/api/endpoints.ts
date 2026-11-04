@@ -96,6 +96,11 @@ export const endpoints = {
         live: '/api/public/site-notices',
     },
 
+    // Read through the app's own cached route (app/api/discount-campaign), never straight from the browser.
+    discountCampaign: {
+        live: '/api/public/discount-campaign',
+    },
+
     notifications: {
         list: '/api/notifications',
         byId: (id: string) => `/api/notifications/${id}`,
@@ -569,6 +574,11 @@ export const endpoints = {
         siteNotices: {
             list: '/api/admin/site-notices',
             byId: (id: string) => `/api/admin/site-notices/${id}`,
+        },
+        discountCampaigns: {
+            list: '/api/admin/discount-campaigns',
+            byId: (id: string) => `/api/admin/discount-campaigns/${id}`,
+            stop: (id: string) => `/api/admin/discount-campaigns/${id}/stop`,
         },
         devices: {
             list: '/api/admin/devices',

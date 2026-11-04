@@ -1,5 +1,5 @@
-import { renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { act, renderHook } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { useMarketingPlanOptions } from '@/hooks/useMarketingPlanOptions';
 import type { AppMediaConfigDto, PlanTierResponseDto } from '@/lib/api/types';
@@ -68,5 +68,35 @@ describe('useMarketingPlanOptions', () => {
         const { result } = renderHook(() => useMarketingPlanOptions({ plans: PLANS, modules: [], media: null }));
 
         expect(result.current).toEqual({ full: [], lite: [] });
+    });
+
+    describe('campaign prices', () => {
+        afterEach(() => {
+            vi.useRealTimers();
+        });
+
+        it('switches a card to the campaign price at its start and back at its end', () => {
+            vi.useFakeTimers();
+            vi.setSystemTime(new Date('2026-11-03T10:00:00Z'));
+            const campaign = {
+                campaignDiscountPercent: 20,
+                campaignDiscountStartsAt: '2026-11-03T10:00:30Z',
+                campaignDiscountEndsAt: '2026-11-03T11:00:00Z',
+            };
+            const plans = [{ ...plan('START', ['gallery', 'posts'], 10_000, 0), ...campaign }];
+            const { result } = renderHook(() => useMarketingPlanOptions({ plans, modules: [], media: MEDIA }));
+            const price = () => result.current.full[0].presentation.durations[0].price;
+            expect(price()).toBe('100€');
+
+            act(() => {
+                vi.advanceTimersByTime(30_000);
+            });
+            expect(price()).toBe('80€');
+
+            act(() => {
+                vi.advanceTimersByTime(60 * 60 * 1000);
+            });
+            expect(price()).toBe('100€');
+        });
     });
 });

@@ -27,6 +27,10 @@ export type AdminErrorMessageKey =
     | 'collaborationEarningNotPayable'
     | 'collaboratorPayoutDetailsIncomplete'
     | 'campaignLinkTaken'
+    | 'discountCampaignInvalid'
+    | 'discountCampaignOverlap'
+    | 'discountCampaignPriceTooLow'
+    | 'discountCampaignLinkNameTaken'
     | 'collaboratorBrandingIncomplete'
     | 'methodNotAllowed'
     | 'coverageOptionInvalid'
@@ -106,6 +110,10 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     // Mark-paid refused: a partner in the batch lacks business/payout details or a VIES-valid VAT number.
     if (code === ERROR_CODES.COLLABORATOR_PAYOUT_DETAILS_INCOMPLETE) return 'collaboratorPayoutDetailsIncomplete';
     if (code === ERROR_CODES.CAMPAIGN_LINK_TAKEN) return 'campaignLinkTaken';
+    if (code === ERROR_CODES.DISCOUNT_CAMPAIGN_INVALID) return 'discountCampaignInvalid';
+    if (code === ERROR_CODES.DISCOUNT_CAMPAIGN_OVERLAP) return 'discountCampaignOverlap';
+    if (code === ERROR_CODES.DISCOUNT_CAMPAIGN_PRICE_TOO_LOW) return 'discountCampaignPriceTooLow';
+    if (code === ERROR_CODES.DISCOUNT_CAMPAIGN_LINK_NAME_TAKEN) return 'discountCampaignLinkNameTaken';
     // Enabling, or clearing a field of an enabled partner, while the card would be incomplete.
     if (code === ERROR_CODES.COLLABORATOR_BRANDING_INCOMPLETE) return 'collaboratorBrandingIncomplete';
     if (code === ERROR_CODES.METHOD_NOT_ALLOWED) return 'methodNotAllowed';
