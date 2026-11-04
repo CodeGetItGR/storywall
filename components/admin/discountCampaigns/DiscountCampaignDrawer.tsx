@@ -157,7 +157,9 @@ export function DiscountCampaignDrawer({
 
                     {/* Errors */}
                     {f.error !== null && (
-                        <p className="mt-5 text-sm text-status-danger">{f.errorDetail ?? t(`errors.${adminErrorMessageKey(f.error)}`)}</p>
+                        <p role="alert" className="mt-5 text-sm text-status-danger">
+                            {f.errorDetail ?? t(`errors.${adminErrorMessageKey(f.error)}`)}
+                        </p>
                     )}
                 </form>
             </AdminDrawer>

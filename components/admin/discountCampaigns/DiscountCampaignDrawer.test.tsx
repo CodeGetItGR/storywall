@@ -77,4 +77,13 @@ describe('DiscountCampaignDrawer', () => {
         expect(startTime).toBeRequired();
         expect(startTime).toBeInvalid();
     });
+
+    it('announces a save error', async () => {
+        idle.mutateAsync.mockRejectedValueOnce(new Error('save failed'));
+        renderDrawer(campaign('SCHEDULED'));
+
+        fireEvent.click(screen.getByRole('button', { name: messages.AdminPage.save }));
+
+        expect(await screen.findByRole('alert')).toBeInTheDocument();
+    });
 });
