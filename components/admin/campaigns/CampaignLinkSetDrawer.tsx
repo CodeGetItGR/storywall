@@ -48,7 +48,7 @@ export function CampaignLinkSetDrawer({
                         <button
                             type="submit"
                             form={FORM_ID}
-                            disabled={f.busy}
+                            disabled={f.busy || !f.canSubmit}
                             className="inline-flex min-h-9 items-center gap-2 rounded-md bg-ink px-3.5 text-sm font-semibold text-white disabled:opacity-50"
                         >
                             {f.busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}

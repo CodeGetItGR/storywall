@@ -4,7 +4,7 @@ import { type ChangeEvent, useRef, useState } from 'react';
 
 import { useGenerateCampaignLinkSet } from '@/hooks/useAdminCampaigns';
 import type { CampaignLinkLanguage } from '@/lib/api/types';
-import { toUtmValue } from '@/lib/campaignLinks';
+import { isUtmValue, toUtmValue } from '@/lib/campaignLinks';
 import { DISCOUNT_CAMPAIGN_LINK_NAME_MAX } from '@/lib/discountCampaignForm';
 
 // A language's set of links with no discount campaign behind it. Remounted on every opening.
@@ -16,6 +16,8 @@ export function useCampaignLinkSetForm(language: CampaignLinkLanguage, onDone: (
     const [linkName, setLinkName] = useState('');
     const [error, setError] = useState<unknown>(null);
     const inFlight = useRef(false);
+    // The server refuses a blank name and a link name that is not a UTM value, with no way to fix it here.
+    const canSubmit = name.trim() !== '' && isUtmValue(linkName);
 
     function handleNameChange(event: ChangeEvent<HTMLInputElement>) {
         setName(event.currentTarget.value);
@@ -40,9 +42,9 @@ export function useCampaignLinkSetForm(language: CampaignLinkLanguage, onDone: (
 
     function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
-        if (inFlight.current || generate.isPending) return;
+        if (!canSubmit || inFlight.current || generate.isPending) return;
         void save();
     }
 
-    return { name, linkName, busy: generate.isPending, error, handleNameChange, handleLinkNameChange, handleSubmit };
+    return { name, linkName, canSubmit, busy: generate.isPending, error, handleNameChange, handleLinkNameChange, handleSubmit };
 }

@@ -64,4 +64,19 @@ describe('CampaignLinkSetDrawer', () => {
         expect(await screen.findByText("Check the campaign's details.")).toBeInTheDocument();
         expect(onClose).not.toHaveBeenCalled();
     });
+
+    it.each([
+        ['a link name that starts with a space', 'Summer', ' summer'],
+        ['a name of only spaces', '   ', 'summer'],
+        ['a link name of only spaces', 'Summer', '   '],
+        ['an empty link name', 'Summer', ''],
+    ])('sends nothing for %s', (_label, name, linkName) => {
+        renderDrawer();
+        fireEvent.change(screen.getByRole('textbox', { name: 'Name' }), { target: { value: name } });
+        fireEvent.change(screen.getByRole('textbox', { name: 'Link name' }), { target: { value: linkName } });
+
+        expect(screen.getByRole('button', { name: 'Create links' })).toBeDisabled();
+        fireEvent.submit(screen.getByRole('textbox', { name: 'Name' }).closest('form') as HTMLFormElement);
+        expect(mutateAsync).not.toHaveBeenCalled();
+    });
 });
