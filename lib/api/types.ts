@@ -1763,8 +1763,16 @@ export interface WithdrawalConsentDto {
     termsVersion: string;
 }
 
+// The last campaign link the browser came through. Kept only when it matches a saved link.
+export interface CheckoutAttributionDto {
+    source: string;
+    medium: string;
+    campaign: string;
+}
+
 // POST /api/events/{eventId}/checkout — host, DRAFT only (billing-fe-guide §6).
 export interface CheckoutRequestDto extends WithdrawalConsentDto {
+    attribution?: CheckoutAttributionDto;
     collaborationCode?: string;
     // Required when the code's preview carried partnerBranding (else 400); ignored otherwise.
     acceptsPartnerBranding?: boolean;
@@ -2083,6 +2091,7 @@ export interface VoidCollaborationRedemptionRequestDto {
 }
 // POST /api/events/{eventId}/upgrade-checkout — host, ACTIVE only (billing-fe-guide §7d).
 export interface UpgradeCheckoutRequestDto extends WithdrawalConsentDto {
+    attribution?: CheckoutAttributionDto;
     planTierCode: PlanTierCode;
     // Required since 2026-09-23: one of that plan's options[].coverageOptionId.
     coverageOptionId: string;
@@ -2769,6 +2778,9 @@ export interface CampaignLinkDto {
     utmMedium: string;
     utmCampaign: string;
     createdAt: string;
+    // On links made as a set: the set's name, and the anchor added after the query.
+    linkGroup?: string | null;
+    destinationAnchor?: string | null;
 }
 
 export interface CampaignLinkRequestDto {
@@ -2777,6 +2789,20 @@ export interface CampaignLinkRequestDto {
     utmSource: string;
     utmMedium: string;
     utmCampaign: string;
+}
+
+export type CampaignLinkLanguage = 'en' | 'el';
+
+// POST /api/admin/campaign-links/sets. Creates whichever of the 8 links are missing.
+export interface CampaignLinkSetRequestDto {
+    name: string;
+    linkName: string;
+    language: CampaignLinkLanguage;
+}
+
+export interface CampaignLinkSetDto {
+    links: CampaignLinkDto[];
+    created: number;
 }
 
 // GET /api/admin/metrics/campaigns. Visits and landing page clicks (saved links only) and sign-ups in
@@ -2798,6 +2824,10 @@ export interface CampaignRowDto {
     paidHost: number;
     // Null for a MARKETING caller: the server leaves revenue out.
     revenueMinorByCurrency: Record<string, number> | null;
+    // Paid orders credited to this link in the range, whenever the buyer signed up.
+    sales: number;
+    // Null for a MARKETING caller, like revenue.
+    salesRevenueMinorByCurrency: Record<string, number> | null;
 }
 
 // GET /api/admin/metrics/campaigns/overview. Every saved link, one utm source (?source=) or one link

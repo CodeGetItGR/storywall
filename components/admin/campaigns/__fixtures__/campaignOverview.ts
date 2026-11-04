@@ -80,6 +80,8 @@ function row(utmSource: string | null, utmMedium: string | null, utmCampaign: st
         createdEvent: 0,
         paidHost: 0,
         revenueMinorByCurrency: {},
+        sales: 0,
+        salesRevenueMinorByCurrency: {},
         ...counts,
     };
 }

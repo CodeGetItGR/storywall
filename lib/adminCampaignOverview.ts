@@ -1,5 +1,6 @@
 import { funnelBreakdown, type FunnelBreakdownRow, rateOf } from '@/lib/adminFunnel';
 import type { CampaignOverviewDto, CampaignRowDto } from '@/lib/api/types';
+import { addMoneyByCurrency } from '@/lib/campaignLinks';
 
 export type CampaignFunnelKey = 'visits' | 'visitors' | 'createClicks' | 'plansClicks' | 'planPicks' | 'signedUp' | 'paidHost';
 
@@ -54,9 +55,7 @@ function addUp(rows: CampaignRowDto[]): CampaignCounts {
             totals.revenueMinorByCurrency = null;
             continue;
         }
-        for (const [currency, minor] of Object.entries(row.revenueMinorByCurrency)) {
-            totals.revenueMinorByCurrency[currency] = (totals.revenueMinorByCurrency[currency] ?? 0) + minor;
-        }
+        addMoneyByCurrency(totals.revenueMinorByCurrency, row.revenueMinorByCurrency);
     }
     return totals;
 }

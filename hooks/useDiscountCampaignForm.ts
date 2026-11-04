@@ -17,6 +17,7 @@ import {
     type DiscountCampaignForm,
     EMPTY_DISCOUNT_CAMPAIGN_FORM,
     formOfCampaign,
+    isCampaignOver,
     requestOfCampaignForm,
 } from '@/lib/discountCampaignForm';
 
@@ -42,7 +43,7 @@ export function useDiscountCampaignForm(campaign: AdminDiscountCampaignDto | nul
 
     const busy = create.isPending || update.isPending || stop.isPending || remove.isPending;
     const status = campaign?.status ?? null;
-    const readOnly = status === 'ENDED' || status === 'OFF';
+    const readOnly = isCampaignOver(status);
 
     function handleTextChange(event: ChangeEvent<HTMLInputElement>) {
         const field = event.currentTarget.name as TextField;

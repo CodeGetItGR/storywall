@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
+import { adminCampaignKeys } from '@/hooks/useAdminCampaigns';
 import { invalidatePublicConfig } from '@/hooks/useAppConfig';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -34,10 +35,15 @@ function useRefreshDiscountCampaigns() {
 }
 
 export function useCreateDiscountCampaign() {
+    const queryClient = useQueryClient();
     const refresh = useRefreshDiscountCampaigns();
     return useMutation({
         mutationFn: (input: DiscountCampaignRequestDto) => api.post<AdminDiscountCampaignDto>(endpoints.admin.discountCampaigns.list, input),
-        onSuccess: refresh,
+        // The server creates the campaign's Greek links with it, so the Campaigns report is stale.
+        onSuccess: () => {
+            refresh();
+            void queryClient.invalidateQueries({ queryKey: adminCampaignKeys.all });
+        },
     });
 }
 

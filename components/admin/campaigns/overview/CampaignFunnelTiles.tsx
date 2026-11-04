@@ -2,18 +2,18 @@
 
 import { useTranslations } from 'next-intl';
 
+import { CampaignValueTip } from '@/components/admin/campaigns/CampaignValueTip';
 import { FunnelGroup } from '@/components/admin/funnel/FunnelGroup';
 import { PlatformMetricFigure } from '@/components/admin/PlatformMetricFigure';
 import { useFunnelFormat } from '@/hooks/useFunnelFormat';
 import { campaignFunnelTiles } from '@/lib/adminCampaignOverview';
-import { EMPTY_VALUE } from '@/lib/adminFunnel';
 import type { CampaignOverviewDto } from '@/lib/api/types';
 
 export function CampaignFunnelTiles({ data }: { data: CampaignOverviewDto }) {
     const t = useTranslations('AdminPage.campaignOverview.tiles');
     const format = useFunnelFormat();
     // Null for marketing, who don't see revenue.
-    const revenue = data.revenueMinorByCurrency && Object.entries(data.revenueMinorByCurrency);
+    const revenue = data.revenueMinorByCurrency;
 
     return (
         <FunnelGroup title={t('title')} window="visit">
@@ -23,6 +23,7 @@ export function CampaignFunnelTiles({ data }: { data: CampaignOverviewDto }) {
                         <PlatformMetricFigure
                             key={tile.key}
                             label={t(tile.key)}
+                            info={<CampaignValueTip value={tile.key} name={t(tile.key)} />}
                             value={format.count(tile.value)}
                             hint={tile.share === null ? undefined : t('share', { rate: format.rate(tile.share) })}
                         />
@@ -31,7 +32,8 @@ export function CampaignFunnelTiles({ data }: { data: CampaignOverviewDto }) {
                     {revenue && (
                         <PlatformMetricFigure
                             label={t('revenue')}
-                            value={revenue.length ? revenue.map(([currency, minor]) => format.money(minor, currency)).join(' · ') : EMPTY_VALUE}
+                            info={<CampaignValueTip value="revenue" name={t('revenue')} />}
+                            value={format.moneyByCurrency(revenue)}
                         />
                     )}
                 </div>
