@@ -42,6 +42,14 @@ describe('ForBusinessApplyForm', () => {
         expect(screen.queryByRole('button', { name: 'Edit details' })).not.toBeInTheDocument();
     });
 
+    it('keeps a single filled field as a pre-selected input, with no summary', () => {
+        renderIntl(<ForBusinessApplyForm countries={COUNTRIES} defaultCountry="GR" defaults={{ role: 'PHOTOGRAPHER' }} />);
+
+        expect(screen.getByLabelText('What you do')).toHaveValue('PHOTOGRAPHER');
+        expect(screen.getByLabelText('Your name')).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Edit details' })).not.toBeInTheDocument();
+    });
+
     it('collapses filled fields into a summary and still sends them', () => {
         renderIntl(<ForBusinessApplyForm countries={COUNTRIES} defaultCountry="GR" defaults={DEFAULTS} />);
 

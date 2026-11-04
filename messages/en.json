@@ -9457,10 +9457,9 @@
             },
             {
                 "title": "Open your vendor page",
-                "body": "Your tools and your reach are there. They work until the date shown on the page."
+                "body": "All your tools are in one place. You also see how many guests opened your details."
             }
         ],
-        "planNote": "Professional tools work when the event’s plan includes them.",
         "types": {
             "PLANNER": {
                 "meta": {

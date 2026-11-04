@@ -5,11 +5,13 @@ import { useState } from 'react';
 import { type ApplyFormDefaults, filledApplyFields, type PrefillableApplyField } from '@/lib/forBusinessApplication';
 
 // Fields the vendor's details already fill (the in-app sheet) collapse into a summary with an Edit button, so only
-// the missing ones show as inputs. A server error on a filled field opens them all again so it can be fixed.
+// the missing ones show as inputs. One filled field (the type on a public vendor page) just stays a pre-selected
+// input, since a summary of one value isn't worth it. A server error on a filled field opens them all again so it
+// can be fixed.
 export function useApplyFormSummary(defaults: ApplyFormDefaults | undefined, fieldErrors: Record<string, string>) {
     const [editing, setEditing] = useState(false);
     const filled = filledApplyFields(defaults);
-    const collapsed = filled.length > 0 && !editing && !filled.some((field) => !!fieldErrors[field]);
+    const collapsed = filled.length > 1 && !editing && !filled.some((field) => !!fieldErrors[field]);
 
     function showsInput(field: PrefillableApplyField) {
         return !collapsed || !filled.includes(field);
