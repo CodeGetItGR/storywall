@@ -50,9 +50,9 @@ export async function VendorPage({ type }: { type: VendorPageType }) {
                     {/* Hero */}
                     <VendorPageHero type={type} />
                     {/* Tools, or what every vendor gets in their place */}
-                    {vendorPageHasTools(type) ? <VendorPageTools type={type} /> : <VendorPageAlways banded />}
+                    {vendorPageHasTools(type) ? <VendorPageTools type={type} /> : <VendorPageAlways type={type} />}
                     {/* Every event */}
-                    {vendorPageHasTools(type) && <VendorPageAlways />}
+                    {vendorPageHasTools(type) && <VendorPageAlways type={type} />}
                     {/* Partner program */}
                     <VendorPagePartner type={type} />
                     {/* How you start */}

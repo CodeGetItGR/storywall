@@ -9445,6 +9445,61 @@
             "apply": "Become a partner",
             "others": "Also for other professionals"
         },
+        "renders": {
+            "vendors": {
+                "PLANNER": "Imera Events",
+                "VENUE": "Elaionas Estate",
+                "PHOTOGRAPHER": "Studio Fos",
+                "VIDEOGRAPHER": "Kadro Films",
+                "DECORATION": "Anthos Decor",
+                "CATERING": "Gefseis Catering",
+                "MUSIC": "DJ Notos"
+            },
+            "feedCard": {
+                "tagline": "With you from start to finish."
+            },
+            "posts": {
+                "body": "What a lovely evening. Thank you!"
+            },
+            "live": {
+                "songs": [
+                    {
+                        "title": "Zorba's Dance",
+                        "artist": "Mikis Theodorakis"
+                    },
+                    {
+                        "title": "Dancing Queen",
+                        "artist": "ABBA"
+                    },
+                    {
+                        "title": "Perfect",
+                        "artist": "Ed Sheeran"
+                    }
+                ]
+            },
+            "portal": {
+                "events": [
+                    "Anna & Nikos",
+                    "Lydia's baptism"
+                ]
+            },
+            "schedule": {
+                "ceremonyPlace": "Saint Nicholas Church",
+                "receptionPlace": "Elaionas Estate"
+            },
+            "announce": {
+                "author": "Eleni Roussou",
+                "body": "Buses to the ceremony leave the hotel at 17:00."
+            },
+            "rsvp": {
+                "couple": "Nefeli & Orestis",
+                "guests": [
+                    "Nantia Efthymiou",
+                    "Stelios Raptis",
+                    "Alexandros Markou"
+                ]
+            }
+        },
         "heroCta": "Apply to partner",
         "tools": {
             "proAlbum": {
