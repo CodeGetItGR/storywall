@@ -2,8 +2,8 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { CampaignsPanel } from '@/components/admin/campaigns/CampaignsPanel';
 import { CampaignLinkSetDrawer } from '@/components/admin/campaigns/CampaignLinkSetDrawer';
+import { CampaignsPanel } from '@/components/admin/campaigns/CampaignsPanel';
 import messages from '@/messages/en.json';
 
 vi.mock('@/hooks/useAdminCampaigns', () => ({
