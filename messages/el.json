@@ -1152,6 +1152,7 @@
         "validation": {
             "startInPast": "Η ώρα έναρξης πρέπει να είναι από τώρα και μετά.",
             "startTooFarAhead": "Με αυτό το πλάνο, η εκδήλωση πρέπει να ξεκινά έως {date}.",
+            "startBeforePayment": "Η ημερομηνία δεν μπορεί να είναι πριν από {date}, την ημέρα της πληρωμής.",
             "endBeforeStart": "Η ώρα λήξης πρέπει να είναι μετά την ώρα έναρξης.",
             "invalidTimezone": "Επιλέξτε ζώνη ώρας από τη λίστα."
         },
@@ -1235,6 +1236,7 @@
         "continueToPlan": "Συνέχεια στο πλάνο",
         "continueToDetails": "Συνέχεια στα στοιχεία",
         "continueToOverview": "Συνέχεια στην επισκόπηση",
+        "whenAndWhere": "Πότε και πού είναι η εκδήλωση;",
         "continueToTheme": "Συνέχεια στο θέμα",
         "backToPlans": "Πίσω στα πλάνα",
         "selectedPlan": "Επιλεγμένο πλάνο: {plan}",

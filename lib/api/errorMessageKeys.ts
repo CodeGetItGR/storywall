@@ -364,6 +364,8 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.EMAIL_TEMPLATE_UNAVAILABLE]: 'emailTemplateUnavailable',
     [ERROR_CODES.EVENT_DATES_INCOMPLETE]: 'eventDatesIncomplete',
     [ERROR_CODES.EVENT_START_PASSED]: 'eventStartPassed',
+    [ERROR_CODES.EVENT_SCHEDULE_REQUIRED]: 'eventDatesIncomplete',
+    [ERROR_CODES.EVENT_START_BEFORE_PURCHASE]: 'eventStartPassed',
     [ERROR_CODES.EVENT_START_TOO_FAR_AHEAD]: 'eventStartTooFarAhead',
     [ERROR_CODES.EVENT_CREATION_LOCKED]: 'eventCreationLocked',
     [ERROR_CODES.EVENT_DRAFT_LIMIT_REACHED]: 'eventDraftLimitReached',

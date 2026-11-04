@@ -2074,10 +2074,23 @@ export interface VoidCollaborationRedemptionRequestDto {
     reason: string;
 }
 // POST /api/events/{eventId}/upgrade-checkout — host, ACTIVE only (billing-fe-guide §7d).
+// The date and place an upgrade gives an event that has none (lite-events-without-date-fe-integration.md §5).
+// The server fills the end when it is left out.
+export interface EventDetailsRequestDto {
+    startAt: string;
+    endAt?: string;
+    timezone: string;
+    locationName: string;
+    locationAddress: string;
+    mapsUrl?: string;
+}
 export interface UpgradeCheckoutRequestDto extends WithdrawalConsentDto {
     planTierCode: PlanTierCode;
     // Required since 2026-09-23: one of that plan's options[].coverageOptionId.
     coverageOptionId: string;
+    // Needed when the option's requirements.needsSchedule is true and the event has no date (400 3122 without
+    // them); ignored otherwise. They reach the event only when the payment settles.
+    details?: EventDetailsRequestDto;
 }
 // POST /api/events/{eventId}/extension-checkout — primary host, ACTIVE only
 // (coverage-options-and-extensions-fe-integration.md §11). Never discounted.
