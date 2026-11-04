@@ -1763,8 +1763,16 @@ export interface WithdrawalConsentDto {
     termsVersion: string;
 }
 
+// The last campaign link the browser came through. Kept only when it matches a saved link.
+export interface CheckoutAttributionDto {
+    source: string;
+    medium: string;
+    campaign: string;
+}
+
 // POST /api/events/{eventId}/checkout — host, DRAFT only (billing-fe-guide §6).
 export interface CheckoutRequestDto extends WithdrawalConsentDto {
+    attribution?: CheckoutAttributionDto;
     collaborationCode?: string;
     // Required when the code's preview carried partnerBranding (else 400); ignored otherwise.
     acceptsPartnerBranding?: boolean;
@@ -2083,6 +2091,7 @@ export interface VoidCollaborationRedemptionRequestDto {
 }
 // POST /api/events/{eventId}/upgrade-checkout — host, ACTIVE only (billing-fe-guide §7d).
 export interface UpgradeCheckoutRequestDto extends WithdrawalConsentDto {
+    attribution?: CheckoutAttributionDto;
     planTierCode: PlanTierCode;
     // Required since 2026-09-23: one of that plan's options[].coverageOptionId.
     coverageOptionId: string;
