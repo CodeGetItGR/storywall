@@ -12,6 +12,7 @@ import { PriceBreakdownSummary } from '@/components/checkout/PriceBreakdownSumma
 import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
 import { EventOverviewPriceRow } from '@/components/event/create/EventOverviewPriceRow';
 import { DraftDeleteSection } from '@/components/manage/DraftDeleteSection';
+import { DraftEventDetailsModal } from '@/components/manage/DraftEventDetailsModal';
 import { DraftPayBar } from '@/components/manage/DraftPayBar';
 import { DraftStartDateModal } from '@/components/manage/DraftStartDateModal';
 import { GiftAccountSetup } from '@/components/manage/GiftAccountSetup';
@@ -19,6 +20,7 @@ import { TargetedSection } from '@/components/manage/TargetedSection';
 import { DurationPicker } from '@/components/plan/DurationPicker';
 import { useDraftActivationCheckout } from '@/hooks/useDraftActivationCheckout';
 import { useDraftDuration } from '@/hooks/useDraftDuration';
+import { useDraftEventDetails } from '@/hooks/useDraftEventDetails';
 import { useDraftStartDate } from '@/hooks/useDraftStartDate';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
 import type {
@@ -104,6 +106,7 @@ export function OverviewDraftPanel({
     const { consent, partnerBranding, collaborationPreview, breakdown, handleCollaborationPreviewChange, submit, error, startPassed, isPending } =
         useDraftActivationCheckout(eventId, { quoteEnabled: canPay && canCheckout, startAt });
     const startDate = useDraftStartDate(eventId, { startAt, endAt, coverageEndsAt: projectedCoverage?.coverageEndsAt ?? null });
+    const eventDetails = useDraftEventDetails(eventId, { hostingMonths: currentOption?.months });
     const consentReady = consent.consentSatisfied && partnerBranding.satisfied;
     const showConsent = useCallback(() => focusFirstUncheckedBox(DRAFT_CONSENT_ID), []);
 
@@ -299,11 +302,15 @@ export function OverviewDraftPanel({
                     onShowConsentAction={showConsent}
                     onPayAction={submit}
                     onChangeDateAction={startDate.open}
+                    onAddDetailsAction={eventDetails.open}
                 />
             </div>
 
             {/* Move the date */}
-            {asksStartDate && <DraftStartDateModal date={startDate} eventType={eventType} />}
+            {asksStartDate && startAt && <DraftStartDateModal date={startDate} eventType={eventType} />}
+
+            {/* Add the date and place */}
+            {!canPay && <DraftEventDetailsModal details={eventDetails} eventType={eventType} />}
         </div>
     );
 }

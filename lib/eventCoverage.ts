@@ -52,6 +52,14 @@ export function projectCoverage({
     return { coverageEndsAt: ends.toISOString(), hostingMonths };
 }
 
+// Where an upgrade moves a live event's coverage end to.
+export function upgradedCoverageEndsAt(coverageEndsAt: string | null | undefined, monthsAdded: number): string | null {
+    if (!coverageEndsAt) return null;
+    const ends = new Date(coverageEndsAt);
+    ends.setUTCMonth(ends.getUTCMonth() + monthsAdded);
+    return ends.toISOString();
+}
+
 /**
  * The latest start that leaves `minDaysAfterStart` of coverage after the event
  * (3032 past it). Pass the pinned `coverageEndsAt` of a live event, or the

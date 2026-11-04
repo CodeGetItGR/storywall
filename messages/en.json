@@ -1026,6 +1026,7 @@
         "validation": {
             "startInPast": "The start time must be now or later.",
             "startTooFarAhead": "For this plan, the event must start by {date}.",
+            "startBeforePayment": "The date can't be before {date}, the day you paid.",
             "endBeforeStart": "The end time must be after the start time.",
             "invalidTimezone": "Choose a timezone from the list."
         },
@@ -1109,6 +1110,7 @@
         "continueToPlan": "Continue to plan",
         "continueToDetails": "Continue to details",
         "continueToOverview": "Continue to overview",
+        "whenAndWhere": "When and where is the event?",
         "continueToTheme": "Continue to theme",
         "backToPlans": "Back to plans",
         "selectedPlan": "Selected plan: {plan}",
