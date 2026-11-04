@@ -7,6 +7,7 @@ import {
     emptyCampaignLinkForm,
     findCampaignPreset,
     isUtmValue,
+    totalOf,
     toUtmValue,
 } from '@/lib/campaignLinks';
 import { captureVisitSource } from '@/lib/signupSource';
@@ -89,5 +90,18 @@ describe('campaignUrl with an anchor', () => {
 
     it('leaves a link with no anchor as it was', () => {
         expect(campaignUrl({ ...parts, destinationAnchor: null }, 'https://www.storywall.gr')).not.toContain('#');
+    });
+});
+
+describe('totalOf', () => {
+    const row = (visits: number, sales: number, salesRevenueMinorByCurrency: Record<string, number> | null) =>
+        ({ visits, sales, salesRevenueMinorByCurrency }) as Parameters<typeof totalOf>[0][number];
+
+    it('adds up visits, sales and each currency', () => {
+        expect(totalOf([row(3, 1, { EUR: 4900 }), row(2, 2, { EUR: 9800, USD: 100 }), row(1, 0, null)])).toEqual({
+            visits: 6,
+            sales: 3,
+            salesRevenueMinorByCurrency: { EUR: 14_700, USD: 100 },
+        });
     });
 });

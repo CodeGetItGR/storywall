@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl';
 
 import { useCampaignLinkShare } from '@/hooks/useCampaignLinkShare';
 import { useFunnelFormat } from '@/hooks/useFunnelFormat';
-import { EMPTY_VALUE } from '@/lib/adminFunnel';
 import type { CampaignRowDto } from '@/lib/api/types';
 import { campaignUrl } from '@/lib/campaignLinks';
 
@@ -30,9 +29,7 @@ export function CampaignSetLinkRow({ row }: { row: CampaignRowDto }) {
             {/* Sales */}
             <td className="px-3 py-2 text-right font-mono tabular-nums">{format.count(row.sales)}</td>
             <td className="px-3 py-2 text-right font-mono whitespace-nowrap tabular-nums">
-                {Object.entries(row.salesRevenueMinorByCurrency ?? {})
-                    .map(([currency, minor]) => format.money(minor, currency))
-                    .join(' · ') || EMPTY_VALUE}
+                {format.moneyByCurrency(row.salesRevenueMinorByCurrency ?? {})}
             </td>
 
             {/* Copy */}

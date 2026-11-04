@@ -4,23 +4,10 @@ import { type MouseEvent, useMemo, useRef, useState } from 'react';
 
 import { useAdminCampaigns, useGenerateCampaignLinkSet } from '@/hooks/useAdminCampaigns';
 import type { AdminDiscountCampaignDto, CampaignLinkLanguage, CampaignRowDto } from '@/lib/api/types';
+import { totalOf } from '@/lib/campaignLinks';
 import { isCampaignOver } from '@/lib/discountCampaignForm';
 
 const NO_ROWS: CampaignRowDto[] = [];
-
-export type CampaignLinksTotal = { visits: number; sales: number; salesRevenueMinorByCurrency: Record<string, number> };
-
-function totalOf(rows: CampaignRowDto[]): CampaignLinksTotal {
-    const total: CampaignLinksTotal = { visits: 0, sales: 0, salesRevenueMinorByCurrency: {} };
-    for (const row of rows) {
-        total.visits += row.visits;
-        total.sales += row.sales;
-        for (const [currency, minor] of Object.entries(row.salesRevenueMinorByCurrency ?? {})) {
-            total.salesRevenueMinorByCurrency[currency] = (total.salesRevenueMinorByCurrency[currency] ?? 0) + minor;
-        }
-    }
-    return total;
-}
 
 // One discount campaign's links in its drawer, counted over all time, and the two buttons that
 // create a language's set. A repeat click creates nothing, and a click while a request is running

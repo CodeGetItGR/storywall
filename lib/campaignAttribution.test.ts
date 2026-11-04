@@ -7,7 +7,7 @@ import {
     rememberCampaignArrival,
     writeCampaignAttributionCookie,
 } from '@/lib/campaignAttribution';
-import { CAMPAIGN_ATTRIBUTION_COOKIE, CONSENT_COOKIE, clearAnalyticsCookies, writeConsent } from '@/lib/consent';
+import { CAMPAIGN_ATTRIBUTION_COOKIE, clearAnalyticsCookies, CONSENT_COOKIE, writeConsent } from '@/lib/consent';
 import { guestOfferLandingHref } from '@/lib/guestOffer';
 
 const campaign = { utmSource: 'instagram', utmMedium: 'social', utmCampaign: 'bf-post-el' };

@@ -33,6 +33,7 @@ export function DiscountCampaignDrawer({
         <>
             <AdminDrawer
                 open={open}
+                size="wide"
                 onClose={onCloseAction}
                 closeLabel={t('cancel')}
                 closeDisabled={f.busy}
