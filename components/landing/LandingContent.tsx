@@ -15,6 +15,7 @@ import { LandingHowItWorks } from '@/components/landing/LandingHowItWorks';
 import { LandingPageShell } from '@/components/landing/LandingPageShell';
 import { LandingPricing } from '@/components/landing/LandingPricing';
 import { LandingReviews } from '@/components/landing/LandingReviews';
+import { LandingSaleButton } from '@/components/landing/LandingSaleButton';
 import { LandingStories } from '@/components/landing/LandingStories';
 import { LandingMotionProvider } from '@/providers/LandingMotionProvider';
 
@@ -68,6 +69,9 @@ export function LandingContent() {
                     <LandingFooter />
                 </div>
             </LandingPageShell>
+
+            {/* Sale button */}
+            <LandingSaleButton />
 
             {/* Cookie consent */}
             <CookieConsent />

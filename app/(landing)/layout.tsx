@@ -6,7 +6,7 @@ import { type ReactNode } from 'react';
 
 import { LinkClickTracker } from '@/components/landing/LinkClickTracker';
 import { RootDocument } from '@/components/layout/RootDocument';
-import { SiteNoticeBar } from '@/components/siteNotices/SiteNoticeBar';
+import { SiteNoticeStickyBar } from '@/components/siteNotices/SiteNoticeStickyBar';
 import { siteNoticeKeys } from '@/hooks/useSiteNotices';
 import { pickPublicMessages } from '@/i18n/publicMessages';
 import { discountCampaignKeys } from '@/lib/discountCampaign';
@@ -43,7 +43,7 @@ export default async function LandingLayout({ children }: Readonly<{ children: R
             <PublicProviders>
                 <HydrationBoundary state={dehydrate(queryClient)}>
                     {/* Notice */}
-                    <SiteNoticeBar area="PUBLIC" initialDismissed={dismissed} />
+                    <SiteNoticeStickyBar initialDismissed={dismissed} />
                     {children}
                 </HydrationBoundary>
                 <LinkClickTracker />
