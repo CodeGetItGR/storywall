@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -64,5 +64,17 @@ describe('DiscountCampaignDrawer', () => {
 
         expect(screen.getByRole('textbox', { name: 'Name' })).toBeDisabled();
         expect(screen.queryByRole('button', { name: messages.AdminPage.save })).not.toBeInTheDocument();
+    });
+
+    it('does not let a start date without a time through', () => {
+        renderDrawer(null);
+        const startDate = document.querySelectorAll<HTMLInputElement>('input[type="date"]')[0];
+        const startTime = document.querySelectorAll<HTMLInputElement>('input[type="time"]')[0];
+
+        expect(startTime).not.toBeRequired();
+        fireEvent.change(startDate, { target: { value: '2026-11-10' } });
+
+        expect(startTime).toBeRequired();
+        expect(startTime).toBeInvalid();
     });
 });

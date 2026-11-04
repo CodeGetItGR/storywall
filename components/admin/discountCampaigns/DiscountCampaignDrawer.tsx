@@ -144,6 +144,7 @@ export function DiscountCampaignDrawer({
                                 <DateTimeField
                                     value={form.startsAt}
                                     onChange={f.setStartsAt}
+                                    requireBoth
                                     disabled={f.startLocked}
                                     inputClassName={adminInputClass()}
                                 />
