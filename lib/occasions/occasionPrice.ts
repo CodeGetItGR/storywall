@@ -1,3 +1,4 @@
+import type { Locale } from '@/i18n/config';
 import type { AppConfigResponseDto, EventTypeConvention } from '@/lib/api/types';
 import { promotedOptionAmountMinor } from '@/lib/billing';
 import { resolveLandingCategoryPlans } from '@/lib/landingCategories';
@@ -12,13 +13,13 @@ export type OccasionPriceValues = { range: 'span' | 'single' | 'none'; from: str
 const NO_PRICES: OccasionPriceValues = { range: 'none', from: '', fromName: '', to: '', toName: '' };
 
 // The cheapest and dearest price the occasion's pricing section sells, across its full plans and every duration.
-export function occasionPriceValues(config: AppConfigResponseDto | null, eventType: EventTypeConvention): OccasionPriceValues {
+export function occasionPriceValues(config: AppConfigResponseDto | null, eventType: EventTypeConvention, locale: Locale): OccasionPriceValues {
     if (!config) return NO_PRICES;
     const { plans } = resolveLandingCategoryPlans(config.planTiers, [eventType], config.memberRolesByEventType);
     const prices = splitLitePlans(plans)
         .full.flatMap((plan) =>
             liveInitialOptions(plan).flatMap((option) => {
-                const price = formatLandingOptionPrice(plan, option);
+                const price = formatLandingOptionPrice(plan, option, locale);
                 return price ? [{ amountMinor: promotedOptionAmountMinor(option, plan), name: plan.name, price }] : [];
             }),
         )
@@ -31,14 +32,14 @@ export function occasionPriceValues(config: AppConfigResponseDto | null, eventTy
 
 // The cheapest price, formatted, among the event type's plans that include the gallery (lite ones too),
 // for the QR page. Empty when no plan has it.
-export function photoPlansFromPrice(config: AppConfigResponseDto | null, eventType: EventTypeConvention): string {
+export function photoPlansFromPrice(config: AppConfigResponseDto | null, eventType: EventTypeConvention, locale: Locale): string {
     if (!config) return '';
     const { plans } = resolveLandingCategoryPlans(config.planTiers, [eventType], config.memberRolesByEventType);
     const cheapest = plans
         .filter((plan) => plan.moduleKeys.includes('gallery'))
         .flatMap((plan) =>
             liveInitialOptions(plan).flatMap((option) => {
-                const price = formatLandingOptionPrice(plan, option);
+                const price = formatLandingOptionPrice(plan, option, locale);
                 return price ? [{ amountMinor: promotedOptionAmountMinor(option, plan), price }] : [];
             }),
         )
