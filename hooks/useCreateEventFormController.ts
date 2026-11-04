@@ -28,6 +28,7 @@ import type {
     EventTypeConvention,
 } from '@/lib/api/types';
 import { navigateToCheckout } from '@/lib/billing';
+import { checkoutAttribution } from '@/lib/campaignAttribution';
 import { getInitialSessionTitleKey } from '@/lib/createEventCatalog';
 import {
     CREATE_EVENT_CODE_PARAM,
@@ -418,6 +419,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
                 const checkout = await api.post<CheckoutResponseDto>(endpoints.events.checkout(eventId), {
                     ...(appliedCheckoutCode ? { collaborationCode: appliedCheckoutCode } : {}),
                     ...partnerBranding.requestFields,
+                    ...checkoutAttribution(),
                     requestsImmediateStart: consent.requestsImmediateStart,
                     acknowledgesWithdrawalTerms: consent.acknowledgesWithdrawalTerms,
                     termsVersion: consent.termsVersion!,

@@ -39,7 +39,7 @@ export async function RootDocument({ children, messages, documentScroll = false 
     const locale = await getLocale();
 
     return (
-        <html lang={locale} className={`${geist.className} ${abhayaLibre.variable} ${alegreya.variable} h-dvh bg-background`}>
+        <html lang={locale} className={`${geist.className} ${abhayaLibre.variable} ${alegreya.variable} h-dvh scroll-pt-[var(--site-notice-h,0px)] bg-background`}>
             <body
                 className={
                     documentScroll

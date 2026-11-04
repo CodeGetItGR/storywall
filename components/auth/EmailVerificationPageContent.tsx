@@ -6,11 +6,10 @@ import { useTranslations } from 'next-intl';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { AppLink } from '@/components/ui/AppLink';
 import { useVerifyEmail } from '@/hooks/useVerifyEmail';
-import { routes } from '@/lib/routes';
 
 export function EmailVerificationPageContent() {
     const t = useTranslations('VerifyEmailPage');
-    const { errorMessage, state } = useVerifyEmail();
+    const { errorMessage, signInHref, state } = useVerifyEmail();
     const isPending = state === 'pending';
     const isVerified = state === 'verified';
 
@@ -34,7 +33,7 @@ export function EmailVerificationPageContent() {
             {/* Next action */}
             {!isPending && (
                 <AppLink
-                    href={routes.login}
+                    href={signInHref}
                     className="mt-7 flex w-full items-center justify-center rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
                 >
                     {t('signIn')}
