@@ -3,11 +3,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
+import { useIsHydrated } from '@/hooks/useIsHydrated';
 import type { DiscountCampaignLiveDto } from '@/lib/api/types';
 import { discountCampaignKeys } from '@/lib/discountCampaign';
 
 // The live discount campaign, null from the second it ends. Seeded on the server by both root
-// layouts; refetched on focus and every five minutes. Reads the app's own cached route.
+// layouts; refetched on focus and every five minutes. Reads the app's own cached route. The
+// hydrating render uses the data as seeded; the end check starts right after, as the browser's clock
+// can differ from the server's.
 
 const CAMPAIGN_URL = '/api/discount-campaign';
 const STALE_MS = 60 * 1000;
@@ -22,6 +25,7 @@ async function fetchCampaign(): Promise<DiscountCampaignLiveDto | null> {
 }
 
 export function useLiveDiscountCampaign(): DiscountCampaignLiveDto | null {
+    const hydrated = useIsHydrated();
     const { data } = useQuery({
         queryKey: discountCampaignKeys.live(),
         queryFn: fetchCampaign,
@@ -38,5 +42,6 @@ export function useLiveDiscountCampaign(): DiscountCampaignLiveDto | null {
         return () => clearTimeout(timer);
     }, [endsAt, now]);
 
+    if (!hydrated) return data ?? null;
     return data && endsAt !== null && endsAt > now ? data : null;
 }

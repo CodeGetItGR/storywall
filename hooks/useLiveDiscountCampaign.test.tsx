@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
+import { renderToString } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useLiveDiscountCampaign } from '@/hooks/useLiveDiscountCampaign';
@@ -22,7 +23,10 @@ describe('useLiveDiscountCampaign', () => {
     beforeEach(() => {
         vi.useFakeTimers();
         vi.setSystemTime(START);
-        vi.stubGlobal('fetch', vi.fn(() => new Promise(() => undefined)));
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(() => new Promise(() => undefined)),
+        );
     });
 
     afterEach(() => {
@@ -47,6 +51,25 @@ describe('useLiveDiscountCampaign', () => {
 
     it('returns null without a campaign', () => {
         const { result } = renderHook(() => useLiveDiscountCampaign(), { wrapper: wrapperWith(null) });
+        expect(result.current).toBeNull();
+    });
+
+    it('renders the campaign as seeded while hydrating, then hides it once it has ended', () => {
+        vi.setSystemTime(new Date('2026-11-03T10:00:06Z'));
+        const Wrapper = wrapperWith(campaign);
+        function Probe() {
+            return <p>{useLiveDiscountCampaign()?.id ?? 'none'}</p>;
+        }
+
+        expect(
+            renderToString(
+                <Wrapper>
+                    <Probe />
+                </Wrapper>,
+            ),
+        ).toContain('c1');
+
+        const { result } = renderHook(() => useLiveDiscountCampaign(), { wrapper: Wrapper });
         expect(result.current).toBeNull();
     });
 });
