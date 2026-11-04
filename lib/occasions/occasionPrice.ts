@@ -30,6 +30,13 @@ export function occasionPriceValues(config: AppConfigResponseDto | null, eventTy
     return { range: from === to ? 'single' : 'span', from: from.price, fromName: from.name, to: to.price, toName: to.name };
 }
 
+// Whether a lite plan with the gallery is on sale, so the QR page may say the QR code comes on its own.
+export function sellsPhotoPlanAlone(config: AppConfigResponseDto | null, eventType: EventTypeConvention): boolean {
+    if (!config) return false;
+    const { plans } = resolveLandingCategoryPlans(config.planTiers, [eventType], config.memberRolesByEventType);
+    return splitLitePlans(plans).lite.some((plan) => plan.moduleKeys.includes('gallery'));
+}
+
 // The cheapest price, formatted, among the event type's plans that include the gallery (lite ones too),
 // for the QR page. Empty when no plan has it.
 export function photoPlansFromPrice(config: AppConfigResponseDto | null, eventType: EventTypeConvention, locale: Locale): string {
