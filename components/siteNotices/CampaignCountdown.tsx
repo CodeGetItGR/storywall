@@ -9,7 +9,7 @@ export function CampaignCountdown({ endsAt }: { endsAt: string }) {
 
     return (
         <>
-            <span aria-hidden="true" className="tabular-nums">
+            <span aria-hidden="true" className="whitespace-nowrap tabular-nums">
                 {endsIn}
             </span>
             <span className="sr-only">{endsOn}</span>

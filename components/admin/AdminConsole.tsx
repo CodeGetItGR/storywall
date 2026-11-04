@@ -57,7 +57,6 @@ export function AdminConsole() {
     if (tab === 'paidServices') return <PaidServicesCatalogPanel />;
     if (tab === 'plans') return <PlansSection />;
     if (tab === 'discountCodes') return <AdminDiscountCodesPanel />;
-    if (tab === 'discountCampaigns') return <DiscountCampaignsPanel />;
     if (tab === 'guestOffer') return <AdminGuestOfferPanel />;
     if (tab === 'partnerApplications') return <PartnerApplicationsSection />;
     if (tab === 'collaborations') return <CollaborationsSection />;
@@ -95,6 +94,13 @@ export function AdminConsole() {
         return (
             <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
                 <AuditLogPanel />
+            </div>
+        );
+    }
+    if (tab === 'discountCampaigns') {
+        return (
+            <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
+                <DiscountCampaignsPanel />
             </div>
         );
     }
