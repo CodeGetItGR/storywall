@@ -3,6 +3,7 @@
 import { ChevronRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { CampaignValueLabel } from '@/components/admin/campaigns/CampaignValueTip';
 import { CampaignCountCells } from '@/components/admin/campaigns/overview/CampaignCountCells';
 import { FunnelGroup } from '@/components/admin/funnel/FunnelGroup';
 import { useExpandedKeys } from '@/hooks/useExpandedKeys';
@@ -45,14 +46,14 @@ export function CampaignSourceTable({ groups, picked }: { groups: CampaignSource
                     <thead>
                         <tr className="border-b border-border text-[11px] font-bold tracking-wide text-ink-faint uppercase">
                             <th className="px-4 py-3 font-bold">{picked ? t('campaign') : t('source')}</th>
-                            <th className="px-3 py-3 text-right font-bold">{c('visits')}</th>
-                            <th className="px-3 py-3 text-right font-bold">{c('visitors')}</th>
-                            <th className="px-3 py-3 text-right font-bold">{c('createClicks')}</th>
-                            <th className="px-3 py-3 text-right font-bold">{c('plansClicks')}</th>
-                            <th className="px-3 py-3 text-right font-bold">{c('planPicks')}</th>
-                            <th className="px-3 py-3 text-right font-bold">{c('signedUp')}</th>
-                            <th className="px-3 py-3 text-right font-bold">{c('paidHost')}</th>
-                            {showRevenue && <th className="px-4 py-3 text-right font-bold">{c('revenue')}</th>}
+                            <th className="px-3 py-3 text-right font-bold"><CampaignValueLabel value="visits" label={c('visits')} /></th>
+                            <th className="px-3 py-3 text-right font-bold"><CampaignValueLabel value="visitors" label={c('visitors')} /></th>
+                            <th className="px-3 py-3 text-right font-bold"><CampaignValueLabel value="createClicks" label={c('createClicks')} /></th>
+                            <th className="px-3 py-3 text-right font-bold"><CampaignValueLabel value="plansClicks" label={c('plansClicks')} /></th>
+                            <th className="px-3 py-3 text-right font-bold"><CampaignValueLabel value="planPicks" label={c('planPicks')} /></th>
+                            <th className="px-3 py-3 text-right font-bold"><CampaignValueLabel value="signedUp" label={c('signedUp')} /></th>
+                            <th className="px-3 py-3 text-right font-bold"><CampaignValueLabel value="paidHost" label={c('paidHost')} /></th>
+                            {showRevenue && <th className="px-4 py-3 text-right font-bold"><CampaignValueLabel value="revenue" label={c('revenue')} /></th>}
                         </tr>
                     </thead>
 

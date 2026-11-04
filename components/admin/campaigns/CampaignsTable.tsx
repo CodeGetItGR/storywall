@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { type MouseEvent } from 'react';
 
+import { CampaignValueLabel } from '@/components/admin/campaigns/CampaignValueTip';
 import { useFunnelFormat } from '@/hooks/useFunnelFormat';
 import { EMPTY_VALUE } from '@/lib/adminFunnel';
 import type { CampaignRowDto } from '@/lib/api/types';
@@ -23,25 +24,49 @@ export function CampaignsTable({ rows, onLinkAction }: { rows: CampaignRowDto[];
                         <th className="px-4 py-3 font-bold">{t('columns.name')}</th>
                         <th className="px-3 py-3 font-bold">{t('columns.source')}</th>
                         <th className="px-3 py-3 font-bold">{t('columns.campaign')}</th>
-                        <th className="px-3 py-3 text-right font-bold">{t('columns.visits')}</th>
-                        <th className="px-3 py-3 text-right font-bold">{t('columns.visitors')}</th>
-                        <th className="px-3 py-3 text-right font-bold">{t('columns.createClicks')}</th>
-                        <th className="px-3 py-3 text-right font-bold">{t('columns.plansClicks')}</th>
-                        <th className="px-3 py-3 text-right font-bold">{t('columns.planPicks')}</th>
-                        <th className="px-3 py-3 text-right font-bold">{t('columns.signedUp')}</th>
-                        <th className="px-3 py-3 text-right font-bold">{t('columns.createdEvent')}</th>
-                        <th className="px-3 py-3 text-right font-bold">{t('columns.paidHost')}</th>
-                        <th className="px-3 py-3 text-right font-bold">{t('columns.sales')}</th>
-                        {showRevenue && <th className="px-4 py-3 text-right font-bold">{t('columns.revenue')}</th>}
-                        {showRevenue && <th className="px-4 py-3 text-right font-bold">{t('columns.salesRevenue')}</th>}
+                        <th className="px-3 py-3 text-right font-bold">
+                            <CampaignValueLabel value="visits" label={t('columns.visits')} />
+                        </th>
+                        <th className="px-3 py-3 text-right font-bold">
+                            <CampaignValueLabel value="visitors" label={t('columns.visitors')} />
+                        </th>
+                        <th className="px-3 py-3 text-right font-bold">
+                            <CampaignValueLabel value="createClicks" label={t('columns.createClicks')} />
+                        </th>
+                        <th className="px-3 py-3 text-right font-bold">
+                            <CampaignValueLabel value="plansClicks" label={t('columns.plansClicks')} />
+                        </th>
+                        <th className="px-3 py-3 text-right font-bold">
+                            <CampaignValueLabel value="planPicks" label={t('columns.planPicks')} />
+                        </th>
+                        <th className="px-3 py-3 text-right font-bold">
+                            <CampaignValueLabel value="signedUp" label={t('columns.signedUp')} />
+                        </th>
+                        <th className="px-3 py-3 text-right font-bold">
+                            <CampaignValueLabel value="createdEvent" label={t('columns.createdEvent')} />
+                        </th>
+                        <th className="px-3 py-3 text-right font-bold">
+                            <CampaignValueLabel value="paidHost" label={t('columns.paidHost')} />
+                        </th>
+                        {showRevenue && (
+                            <th className="px-4 py-3 text-right font-bold">
+                                <CampaignValueLabel value="revenue" label={t('columns.revenue')} />
+                            </th>
+                        )}
+                        <th className="px-3 py-3 text-right font-bold">
+                            <CampaignValueLabel value="sales" label={t('columns.sales')} />
+                        </th>
+                        {showRevenue && (
+                            <th className="px-4 py-3 text-right font-bold">
+                                <CampaignValueLabel value="salesRevenue" label={t('columns.salesRevenue')} />
+                            </th>
+                        )}
                     </tr>
                 </thead>
 
                 {/* Rows */}
                 <tbody>
                     {rows.map((row) => {
-                        const revenue = row.revenueMinorByCurrency && Object.entries(row.revenueMinorByCurrency);
-                        const salesRevenue = row.salesRevenueMinorByCurrency && Object.entries(row.salesRevenueMinorByCurrency);
                         return (
                             <tr key={campaignRowKey(row)} className="border-b border-border last:border-b-0 hover:bg-canvas/55">
                                 {/* Name */}
@@ -74,19 +99,15 @@ export function CampaignsTable({ rows, onLinkAction }: { rows: CampaignRowDto[];
                                 <td className="px-3 py-3 text-right font-mono tabular-nums">{format.count(row.signedUp)}</td>
                                 <td className="px-3 py-3 text-right font-mono tabular-nums">{format.count(row.createdEvent)}</td>
                                 <td className="px-3 py-3 text-right font-mono tabular-nums">{format.count(row.paidHost)}</td>
+                                {/* Revenue */}
+                                {row.revenueMinorByCurrency && (
+                                    <td className="px-4 py-3 text-right font-mono tabular-nums">{format.moneyByCurrency(row.revenueMinorByCurrency)}</td>
+                                )}
                                 {/* Sales */}
                                 <td className="px-3 py-3 text-right font-mono tabular-nums">{format.count(row.sales)}</td>
-                                {/* Revenue */}
-                                {revenue && (
+                                {row.salesRevenueMinorByCurrency && (
                                     <td className="px-4 py-3 text-right font-mono tabular-nums">
-                                        {revenue.length ? revenue.map(([currency, minor]) => format.money(minor, currency)).join(' · ') : EMPTY_VALUE}
-                                    </td>
-                                )}
-                                {salesRevenue && (
-                                    <td className="px-4 py-3 text-right font-mono tabular-nums">
-                                        {salesRevenue.length
-                                            ? salesRevenue.map(([currency, minor]) => format.money(minor, currency)).join(' · ')
-                                            : EMPTY_VALUE}
+                                        {format.moneyByCurrency(row.salesRevenueMinorByCurrency)}
                                     </td>
                                 )}
                             </tr>

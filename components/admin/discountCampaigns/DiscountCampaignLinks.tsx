@@ -2,11 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 
+import { CampaignValueLabel } from '@/components/admin/campaigns/CampaignValueTip';
 import { CampaignSetLinkRow } from '@/components/admin/discountCampaigns/CampaignSetLinkRow';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useDiscountCampaignLinks } from '@/hooks/useDiscountCampaignLinks';
 import { useFunnelFormat } from '@/hooks/useFunnelFormat';
-import { EMPTY_VALUE } from '@/lib/adminFunnel';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { AdminDiscountCampaignDto } from '@/lib/api/types';
 import { campaignRowKey } from '@/lib/campaignLinks';
@@ -44,13 +44,16 @@ export function DiscountCampaignLinks({ campaign }: { campaign: AdminDiscountCam
             {rows.length > 0 && (
                 // Scrolls inside the drawer, so the names keep their width at phone size.
                 <div className="overflow-x-auto">
-                    <table className="w-full min-w-[26rem] border-collapse text-left text-sm">
+                    <table className="w-full min-w-[30rem] border-collapse text-left text-sm">
                         <thead>
                             <tr className="border-b border-border text-[11px] font-bold tracking-wide text-ink-faint uppercase">
                                 <th className="py-2 pr-3 font-bold">{t('discountCampaigns.columns.name')}</th>
-                                <th className="px-3 py-2 text-right font-bold">{t('discountCampaigns.links.visits')}</th>
-                                <th className="px-3 py-2 text-right font-bold">{t('discountCampaigns.links.sales')}</th>
-                                <th className="px-3 py-2 text-right font-bold whitespace-nowrap">{t('discountCampaigns.links.salesRevenue')}</th>
+                                <th className="px-3 py-2 text-right font-bold"><CampaignValueLabel value="visits" label={t('discountCampaigns.links.visits')} />
+                                </th>
+                                <th className="px-3 py-2 text-right font-bold"><CampaignValueLabel value="sales" label={t('discountCampaigns.links.sales')} />
+                                </th>
+                                <th className="px-3 py-2 text-right font-bold whitespace-nowrap"><CampaignValueLabel value="salesRevenue" label={t('discountCampaigns.links.salesRevenue')} />
+                                </th>
                                 <th className="w-8 py-2 pl-3" />
                             </tr>
                         </thead>
@@ -70,9 +73,7 @@ export function DiscountCampaignLinks({ campaign }: { campaign: AdminDiscountCam
                                     <td className="px-3 py-2 text-right font-mono tabular-nums">{format.count(total.visits)}</td>
                                     <td className="px-3 py-2 text-right font-mono tabular-nums">{format.count(total.sales)}</td>
                                     <td className="px-3 py-2 text-right font-mono whitespace-nowrap tabular-nums">
-                                        {Object.entries(total.salesRevenueMinorByCurrency)
-                                            .map(([currency, minor]) => format.money(minor, currency))
-                                            .join(' · ') || EMPTY_VALUE}
+                                        {format.moneyByCurrency(total.salesRevenueMinorByCurrency)}
                                     </td>
                                     <td />
                                 </tr>
