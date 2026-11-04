@@ -87,7 +87,9 @@ export function campaignDestinations(): CampaignDestination[] {
     return destinations;
 }
 
-type CampaignUrlParts = Pick<CampaignLinkRequestDto, 'destinationPath' | 'utmSource' | 'utmMedium' | 'utmCampaign'>;
+type CampaignUrlParts = Pick<CampaignLinkRequestDto, 'destinationPath' | 'utmSource' | 'utmMedium' | 'utmCampaign'> & {
+    destinationAnchor?: string | null;
+};
 
 // The address to share. Empty values are left out, so a half-filled form still previews.
 export function campaignUrl(parts: CampaignUrlParts, origin: string = SITE_URL): string {
@@ -95,6 +97,7 @@ export function campaignUrl(parts: CampaignUrlParts, origin: string = SITE_URL):
     if (parts.utmSource) url.searchParams.set('utm_source', parts.utmSource);
     if (parts.utmMedium) url.searchParams.set('utm_medium', parts.utmMedium);
     if (parts.utmCampaign) url.searchParams.set('utm_campaign', parts.utmCampaign);
+    if (parts.destinationAnchor) url.hash = parts.destinationAnchor;
     return url.toString();
 }
 

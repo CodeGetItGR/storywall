@@ -588,6 +588,7 @@ export const endpoints = {
         campaignLinks: {
             list: '/api/admin/campaign-links',
             byId: (id: string) => `/api/admin/campaign-links/${id}`,
+            sets: '/api/admin/campaign-links/sets',
         },
         vendorMessages: {
             list: ({ status, page, size }: { status: VendorContactStatus | null; page: number; size: number }) =>

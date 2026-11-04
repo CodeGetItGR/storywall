@@ -5,7 +5,14 @@ import { useCallback } from 'react';
 
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
-import type { CampaignLinkDto, CampaignLinkRequestDto, CampaignOverviewDto, CampaignRowDto } from '@/lib/api/types';
+import type {
+    CampaignLinkDto,
+    CampaignLinkRequestDto,
+    CampaignLinkSetDto,
+    CampaignLinkSetRequestDto,
+    CampaignOverviewDto,
+    CampaignRowDto,
+} from '@/lib/api/types';
 
 // The admin Campaigns report (/api/admin/metrics/campaigns), its overview (/campaigns/overview) and its
 // saved links (/api/admin/campaign-links). Every link write refetches both, since they list every saved
@@ -54,6 +61,14 @@ export function useCreateCampaignLink() {
     const refresh = useRefreshCampaigns();
     return useMutation({
         mutationFn: (input: CampaignLinkRequestDto) => api.post<CampaignLinkDto>(endpoints.admin.campaignLinks.list, input),
+        onSuccess: refresh,
+    });
+}
+
+export function useGenerateCampaignLinkSet() {
+    const refresh = useRefreshCampaigns();
+    return useMutation({
+        mutationFn: (input: CampaignLinkSetRequestDto) => api.post<CampaignLinkSetDto>(endpoints.admin.campaignLinks.sets, input),
         onSuccess: refresh,
     });
 }
