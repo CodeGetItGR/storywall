@@ -21,7 +21,7 @@ export function CampaignsTable({ rows, onLinkAction }: { rows: CampaignRowDto[];
                 {/* Columns */}
                 <thead>
                     <tr className="border-b border-border text-[11px] font-bold tracking-wide text-ink-faint uppercase">
-                        <th className="px-4 py-3 font-bold">{t('columns.name')}</th>
+                        <th className="min-w-44 px-4 py-3 font-bold">{t('columns.name')}</th>
                         <th className="px-3 py-3 font-bold">{t('columns.source')}</th>
                         <th className="px-3 py-3 font-bold">{t('columns.campaign')}</th>
                         <th className="px-3 py-3 text-right font-bold">

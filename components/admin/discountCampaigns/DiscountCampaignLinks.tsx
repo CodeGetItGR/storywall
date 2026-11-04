@@ -47,7 +47,7 @@ export function DiscountCampaignLinks({ campaign }: { campaign: AdminDiscountCam
                     <table className="w-full min-w-[30rem] border-collapse text-left text-sm">
                         <thead>
                             <tr className="border-b border-border text-[11px] font-bold tracking-wide text-ink-faint uppercase">
-                                <th className="py-2 pr-3 font-bold">{t('discountCampaigns.columns.name')}</th>
+                                <th className="min-w-44 py-2 pr-3 font-bold">{t('discountCampaigns.columns.name')}</th>
                                 <th className="px-3 py-2 text-right font-bold"><CampaignValueLabel value="visits" label={t('discountCampaigns.links.visits')} />
                                 </th>
                                 <th className="px-3 py-2 text-right font-bold"><CampaignValueLabel value="sales" label={t('discountCampaigns.links.sales')} />
