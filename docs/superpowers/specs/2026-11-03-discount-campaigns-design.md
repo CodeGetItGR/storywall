@@ -70,7 +70,7 @@ The drawer holds the fields above, the stop action, and the campaign's links wit
 
 For the line being priced, the resolver works out the plan's own price (promo price, else percent) and the price at the campaign percent, and returns the lower. A tie keeps the plan's own promotion.
 
-The winner goes into the calculator as a plan promotion. `PriceBreakdown` keeps `DiscountSource.PLAN_PROMOTION`, with the campaign's `label` when the campaign won, so the snapshot, Stripe rows, emails and billing view need no changes. Prices are decided on the server at checkout, so an ended campaign can't be bought. A checkout already open keeps the price it was opened at.
+The winner goes into the calculator as a plan promotion. `PriceBreakdown` keeps `DiscountSource.PLAN_PROMOTION`, with the campaign's `label` when the campaign won, so the snapshot, Stripe rows, emails and billing view need no changes. Prices are decided on the server at checkout, so an ended campaign can't be bought. A checkout already open keeps the price it was opened at, unless a campaign that started after it opened makes the price lower: then it is replaced with a new one at that price, so nobody who saw the banner pays more than it promises.
 
 ### Frontend
 
