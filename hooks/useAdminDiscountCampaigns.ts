@@ -54,7 +54,8 @@ export function useStopDiscountCampaign() {
     const refresh = useRefreshDiscountCampaigns();
     return useMutation({
         mutationFn: (id: string) => api.post<AdminDiscountCampaignDto>(endpoints.admin.discountCampaigns.stop(id), {}),
-        onSuccess: refresh,
+        // A failure usually means the campaign changed meanwhile, so the list is refreshed either way.
+        onSettled: refresh,
     });
 }
 
@@ -62,6 +63,6 @@ export function useDeleteDiscountCampaign() {
     const refresh = useRefreshDiscountCampaigns();
     return useMutation({
         mutationFn: (id: string) => api.del<void>(endpoints.admin.discountCampaigns.byId(id)),
-        onSuccess: refresh,
+        onSettled: refresh,
     });
 }
