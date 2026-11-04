@@ -1,7 +1,6 @@
 // The visitor's cookie choice. Read only in the browser so the landing page
 // stays static; the server never sees or depends on it.
 
-import { CAMPAIGN_ATTRIBUTION_COOKIE } from '@/lib/campaignAttribution';
 import { VISIT_SOURCE_COOKIE } from '@/lib/signupSource';
 
 export type ConsentChoice = {
@@ -15,6 +14,8 @@ export type Consent = ConsentChoice & {
 };
 
 export const CONSENT_COOKIE = 'sw_consent';
+// The last campaign link, kept only with analytics consent. Defined here so lib/campaignAttribution.ts can read the consent without a cycle.
+export const CAMPAIGN_ATTRIBUTION_COOKIE = 'sw_campaign';
 // Bump to ask everyone again, e.g. when a new optional category is added.
 export const CONSENT_VERSION = 2;
 // Six months, then the banner asks again.

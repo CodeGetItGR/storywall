@@ -1,20 +1,21 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
-    CAMPAIGN_ATTRIBUTION_COOKIE,
     checkoutAttribution,
     currentCampaignArrival,
     readCampaignAttributionCookie,
     rememberCampaignArrival,
     writeCampaignAttributionCookie,
 } from '@/lib/campaignAttribution';
-import { clearAnalyticsCookies } from '@/lib/consent';
+import { CAMPAIGN_ATTRIBUTION_COOKIE, CONSENT_COOKIE, clearAnalyticsCookies, writeConsent } from '@/lib/consent';
+import { guestOfferLandingHref } from '@/lib/guestOffer';
 
 const campaign = { utmSource: 'instagram', utmMedium: 'social', utmCampaign: 'bf-post-el' };
 
 describe('campaign attribution', () => {
     afterEach(() => {
         document.cookie = `${CAMPAIGN_ATTRIBUTION_COOKIE}=; Max-Age=0; Path=/`;
+        document.cookie = `${CONSENT_COOKIE}=; Max-Age=0; Path=/`;
     });
 
     it('remembers the latest link, and a plain page keeps it', () => {
@@ -31,10 +32,50 @@ describe('campaign attribution', () => {
     });
 
     it('sends the last link written', () => {
+        writeConsent({ ads: false, analytics: true });
         writeCampaignAttributionCookie(campaign);
         writeCampaignAttributionCookie({ ...campaign, utmCampaign: 'bf-story-el' });
 
         expect(checkoutAttribution()).toEqual({ attribution: { source: 'instagram', medium: 'social', campaign: 'bf-story-el' } });
+    });
+
+    it('sends nothing when there is a cookie but no consent', () => {
+        writeCampaignAttributionCookie(campaign);
+
+        expect(checkoutAttribution()).toEqual({});
+    });
+
+    it('sends nothing when analytics is declined', () => {
+        writeConsent({ ads: true, analytics: false });
+        writeCampaignAttributionCookie(campaign);
+
+        expect(checkoutAttribution()).toEqual({});
+    });
+
+    it('does not let the guest offer link replace a remembered campaign link', () => {
+        rememberCampaignArrival('https://www.storywall.gr/?utm_source=instagram&utm_medium=social&utm_campaign=bf-post-el');
+        rememberCampaignArrival(`https://www.storywall.gr${guestOfferLandingHref('el')}`);
+
+        expect(currentCampaignArrival()).toEqual(campaign);
+    });
+
+    it('remembers nothing from the guest offer link alone', async () => {
+        vi.resetModules();
+        const fresh = await import('@/lib/campaignAttribution');
+        const guestOffer = await import('@/lib/guestOffer');
+
+        fresh.rememberCampaignArrival(`https://www.storywall.gr${guestOffer.guestOfferLandingHref('en')}`);
+
+        expect(fresh.currentCampaignArrival()).toBeNull();
+    });
+
+    it('still remembers another storywall link', async () => {
+        vi.resetModules();
+        const fresh = await import('@/lib/campaignAttribution');
+
+        fresh.rememberCampaignArrival('https://www.storywall.gr/?utm_source=storywall&utm_medium=feed&utm_campaign=other');
+
+        expect(fresh.currentCampaignArrival()?.utmCampaign).toBe('other');
     });
 
     it('ignores a cookie it cannot read', () => {
