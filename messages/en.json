@@ -15,7 +15,7 @@
         "apiDown": "We're having some issues. We're working on a fix.",
         "close": "Close",
         "campaign": "{percent}% off all plans.",
-        "campaignButton": "Now on sale",
+        "campaignButton": "{percent}% off",
         "campaignEndsIn": "Ends in {countdown}.",
         "campaignEndsOn": "Ends on {date}",
         "seePlans": "See plans",
