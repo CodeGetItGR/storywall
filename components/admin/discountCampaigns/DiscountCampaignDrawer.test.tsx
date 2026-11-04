@@ -91,4 +91,18 @@ describe('DiscountCampaignDrawer', () => {
 
         expect(await screen.findByRole('alert')).toBeInTheDocument();
     });
+
+    it('shows the links section for a saved campaign', () => {
+        renderDrawer(campaign('LIVE'));
+
+        expect(screen.getByRole('heading', { name: 'Links' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'English links' })).toBeInTheDocument();
+    });
+
+    it('shows no links section for a new campaign', () => {
+        renderDrawer(null);
+
+        expect(screen.queryByRole('heading', { name: 'Links' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'English links' })).not.toBeInTheDocument();
+    });
 });
