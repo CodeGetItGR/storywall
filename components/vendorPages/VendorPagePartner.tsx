@@ -1,8 +1,8 @@
 import { getTranslations } from 'next-intl/server';
 
 import { INNER, SECTION } from '@/components/forBusiness/forBusinessStyles';
+import { PARTNER_ART } from '@/components/vendorPages/art/partnerArt';
 import { VendorFeatureList } from '@/components/vendorPages/VendorFeatureList';
-import { PARTNER_ICONS } from '@/components/vendorPages/vendorPageIcons';
 import { BAND } from '@/components/vendorPages/vendorPageStyles';
 import { VendorSectionHead } from '@/components/vendorPages/VendorSectionHead';
 import type { VendorPageType } from '@/i18n/publicLocale';
@@ -20,7 +20,7 @@ export async function VendorPagePartner({ type }: { type: VendorPageType }) {
                     bodyClassName="text-white/75"
                     features={VENDOR_PAGES[type].partner.map((key) => ({
                         key,
-                        icon: PARTNER_ICONS[key],
+                        art: PARTNER_ART[key],
                         title: t(`partner.${key}.title`),
                         body: t(`partner.${key}.body`),
                     }))}
