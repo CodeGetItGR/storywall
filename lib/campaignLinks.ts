@@ -1,6 +1,7 @@
 import { locales } from '@/i18n/config';
 import { getForBusinessPath, getQrWeddingPath } from '@/i18n/publicLocale';
 import type { CampaignLinkRequestDto, CampaignRowDto } from '@/lib/api/types';
+import { FOR_BUSINESS_HUB_LAUNCHED } from '@/lib/forBusinessRelease';
 import { occasionPath, readyOccasions } from '@/lib/occasions/occasions';
 import { SITE_URL } from '@/lib/seo';
 import { showsUnreleasedPages } from '@/lib/unreleasedPages';
@@ -79,7 +80,9 @@ export function campaignDestinations(): CampaignDestination[] {
     for (const locale of locales) destinations.push({ kind: 'home', path: locale === 'en' ? '/' : `/${locale}` });
     if (showsUnreleasedPages()) {
         for (const locale of locales) destinations.push({ kind: 'qrWedding', path: getQrWeddingPath(locale) });
-        for (const locale of locales) destinations.push({ kind: 'forBusiness', path: getForBusinessPath(locale) });
+        if (FOR_BUSINESS_HUB_LAUNCHED) {
+            for (const locale of locales) destinations.push({ kind: 'forBusiness', path: getForBusinessPath(locale) });
+        }
     }
     for (const occasion of readyOccasions()) {
         for (const locale of locales) destinations.push({ kind: 'occasion', path: occasionPath(occasion, locale) });
