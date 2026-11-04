@@ -6094,6 +6094,13 @@
                 "copied": "Copied",
                 "downloadQr": "Download QR",
                 "qr": "QR code for this link"
+            },
+            "linkSet": {
+                "english": "English links",
+                "greek": "Greek links",
+                "name": "Name",
+                "linkName": "Link name",
+                "create": "Create links"
             }
         },
         "campaignOverview": {

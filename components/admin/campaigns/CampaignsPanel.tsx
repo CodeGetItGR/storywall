@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { CampaignLinkCreateDrawer } from '@/components/admin/campaigns/CampaignLinkCreateDrawer';
 import { CampaignLinkDrawer } from '@/components/admin/campaigns/CampaignLinkDrawer';
+import { CampaignLinkSetDrawer } from '@/components/admin/campaigns/CampaignLinkSetDrawer';
 import { CampaignsTable } from '@/components/admin/campaigns/CampaignsTable';
 import { FunnelHeader } from '@/components/admin/funnel/FunnelHeader';
 import { FunnelRangeControl } from '@/components/admin/funnel/FunnelRangeControl';
@@ -27,14 +28,32 @@ export function CampaignsPanel() {
                 {/* Range and action */}
                 <div className="flex flex-wrap items-start justify-between gap-3">
                     <FunnelRangeControl range={d.range} presets={CAMPAIGN_RANGE_PRESETS} note={t('campaigns.rangeNote')} />
-                    <button
-                        type="button"
-                        onClick={d.handleCreateClick}
-                        className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white"
-                    >
-                        <Plus aria-hidden="true" className="h-4 w-4" />
-                        {t('campaigns.create')}
-                    </button>
+                    <div className="flex flex-wrap gap-2">
+                        <button
+                            type="button"
+                            data-language="en"
+                            onClick={d.handleLinkSetClick}
+                            className="min-h-10 rounded-lg border border-border px-4 text-sm font-semibold text-ink-muted"
+                        >
+                            {t('campaigns.linkSet.english')}
+                        </button>
+                        <button
+                            type="button"
+                            data-language="el"
+                            onClick={d.handleLinkSetClick}
+                            className="min-h-10 rounded-lg border border-border px-4 text-sm font-semibold text-ink-muted"
+                        >
+                            {t('campaigns.linkSet.greek')}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={d.handleCreateClick}
+                            className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white"
+                        >
+                            <Plus aria-hidden="true" className="h-4 w-4" />
+                            {t('campaigns.create')}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Table */}
@@ -58,6 +77,12 @@ export function CampaignsPanel() {
             ) : (
                 <CampaignLinkCreateDrawer key={d.drawer.token} open={d.drawer.open} onCloseAction={d.closeDrawer} />
             )}
+            <CampaignLinkSetDrawer
+                key={`set-${d.linkSet.token}`}
+                open={d.linkSet.open}
+                language={d.linkSet.language}
+                onCloseAction={d.closeLinkSet}
+            />
         </div>
     );
 }
