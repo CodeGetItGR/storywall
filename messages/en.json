@@ -3741,7 +3741,14 @@
                 "OUTREACH_REQUEST_APPROVED": "Outreach request approved",
                 "OUTREACH_REQUEST_DECLINED": "Outreach request declined",
                 "ADMIN_DEVICE_PAIRED": "Admin phone paired",
-                "ADMIN_DEVICE_REVOKED": "Admin phone removed"
+                "ADMIN_DEVICE_REVOKED": "Admin phone removed",
+                "INVITATION_THEME_CREATED": "Invitation theme created",
+                "INVITATION_THEME_UPDATED": "Invitation theme changed",
+                "INVITATION_THEME_IMAGE_UPLOADED": "Invitation theme image added",
+                "INVITATION_THEME_IMAGE_DELETED": "Invitation theme image deleted",
+                "INVITATION_FONT_PAIRING_CREATED": "Font pairing created",
+                "INVITATION_FONT_PAIRING_UPDATED": "Font pairing changed",
+                "QR_CARD_TEMPLATE_DUPLICATED": "QR card template copied"
             }
         },
         "errorEvents": {
