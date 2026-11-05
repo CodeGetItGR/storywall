@@ -1,26 +1,24 @@
 'use client';
 
-import { Check, Copy } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-
-import { useCampaignLinkShare } from '@/hooks/useCampaignLinkShare';
+import { CampaignLinkCopyButton } from '@/components/admin/campaigns/CampaignLinkCopyButton';
+import { CampaignPlatformIcon } from '@/components/admin/campaigns/CampaignPlatformIcon';
 import { useFunnelFormat } from '@/hooks/useFunnelFormat';
 import type { CampaignRowDto } from '@/lib/api/types';
-import { campaignShortUrl } from '@/lib/campaignLinks';
 
 // One link of a campaign's set: its name, its visits, sales and a copy button.
 export function CampaignSetLinkRow({ row }: { row: CampaignRowDto }) {
-    const t = useTranslations('AdminPage.campaigns.share');
     const format = useFunnelFormat();
     const link = row.link;
-    const { copied, handleCopyClick } = useCampaignLinkShare(link ? campaignShortUrl(link) : '', link?.name ?? '');
     if (!link) return null;
 
     return (
         <tr className="border-b border-border last:border-b-0">
             {/* Name */}
             <td className="w-full py-2 pr-3">
-                <span className="block break-words text-ink">{link.name}</span>
+                <div className="flex items-center gap-2">
+                    <CampaignPlatformIcon source={row.utmSource} medium={row.utmMedium} />
+                    <span className="min-w-0 break-words text-ink">{link.name}</span>
+                </div>
             </td>
 
             {/* Visits */}
@@ -34,14 +32,7 @@ export function CampaignSetLinkRow({ row }: { row: CampaignRowDto }) {
 
             {/* Copy */}
             <td className="py-2 pl-3">
-                <button
-                    type="button"
-                    onClick={handleCopyClick}
-                    aria-label={`${copied ? t('copied') : t('copy')} ${link.name}`}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-canvas hover:text-ink"
-                >
-                    {copied ? <Check aria-hidden="true" className="h-3.5 w-3.5" /> : <Copy aria-hidden="true" className="h-3.5 w-3.5" />}
-                </button>
+                <CampaignLinkCopyButton link={link} />
             </td>
         </tr>
     );

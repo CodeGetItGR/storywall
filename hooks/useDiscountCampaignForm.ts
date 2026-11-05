@@ -30,7 +30,7 @@ function priceTooLowDetail(error: unknown): string | null {
     return (error instanceof ApiError && error.problem?.detail) || null;
 }
 
-// The discount campaign drawer's state and actions. The drawer is remounted on every opening, so
+// The discount campaign page's state and actions. The page is remounted for each campaign, so
 // the form starts from the campaign's saved values (or the empty form).
 export function useDiscountCampaignForm(campaign: AdminDiscountCampaignDto | null, onDone: () => void) {
     const create = useCreateDiscountCampaign();

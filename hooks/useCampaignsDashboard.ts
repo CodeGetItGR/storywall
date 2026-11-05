@@ -1,17 +1,17 @@
 'use client';
 
 import { useLocale } from 'next-intl';
-import { type MouseEvent, useCallback, useRef, useState } from 'react';
+import { type MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAdminCampaigns } from '@/hooks/useAdminCampaigns';
+import { useAdminRecordPage } from '@/hooks/useAdminRecordPage';
 import { useFunnelRange } from '@/hooks/useFunnelRange';
+import { CAMPAIGNS_HASH_ROOT } from '@/lib/adminRecordRouting';
 import type { CampaignLinkDto, CampaignLinkLanguage, CampaignRowDto } from '@/lib/api/types';
 import { dateTimeFormat } from '@/lib/format';
 
-// token: which opening this is. The drawer is keyed on it, so each opening starts fresh.
-// link null with open true is the builder for a new link.
-type DrawerState = { open: boolean; link: CampaignLinkDto | null; token: number };
-// The same, for the drawer that creates a language's set of links.
+// token: which opening this is. The drawer that creates a language's set of links is keyed on it, so
+// each opening starts fresh.
 type LinkSetState = { open: boolean; language: CampaignLinkLanguage; token: number };
 
 const NO_ROWS: CampaignRowDto[] = [];
@@ -22,28 +22,30 @@ export function useCampaignsDashboard() {
     const { since, until, isValid } = range.bounds;
     const query = useAdminCampaigns(since, until, { enabled: isValid });
     const rows = (isValid ? query.data : undefined) ?? NO_ROWS;
-    const [drawer, setDrawer] = useState<DrawerState>({ open: false, link: null, token: 0 });
+    const page = useAdminRecordPage(CAMPAIGNS_HASH_ROOT);
+    const { recordId, replace, showList } = page;
+    // A link just saved opens before the report has refetched with it.
+    const [createdLink, setCreatedLink] = useState<CampaignLinkDto | null>(null);
     const [linkSet, setLinkSet] = useState<LinkSetState>({ open: false, language: 'el', token: 0 });
     const nextToken = useRef(0);
 
     const updatedAt = query.dataUpdatedAt ? dateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(query.dataUpdatedAt) : null;
 
-    const open = useCallback((link: CampaignLinkDto | null) => {
-        nextToken.current += 1;
-        setDrawer({ open: true, link, token: nextToken.current });
-    }, []);
+    const link = recordId ? (rows.find((row) => row.link?.id === recordId)?.link ?? (createdLink?.id === recordId ? createdLink : null)) : null;
+    const missing = recordId !== null && !query.isLoading && !link;
 
-    const handleCreateClick = useCallback(() => open(null), [open]);
+    // A deleted link, or an address that never was one, shows the list.
+    useEffect(() => {
+        if (missing) showList();
+    }, [missing, showList]);
 
-    const handleLinkClick = useCallback(
-        (event: MouseEvent<HTMLButtonElement>) => {
-            const found = rows.find((row) => row.link?.id === event.currentTarget.dataset.linkId)?.link;
-            if (found) open(found);
+    const handleLinkCreated = useCallback(
+        (created: CampaignLinkDto) => {
+            setCreatedLink(created);
+            replace(created.id);
         },
-        [open, rows],
+        [replace],
     );
-
-    const closeDrawer = useCallback(() => setDrawer((current) => ({ ...current, open: false })), []);
 
     const handleLinkSetClick = useCallback((event: MouseEvent<HTMLButtonElement>) => {
         const language = event.currentTarget.dataset.language as CampaignLinkLanguage;
@@ -65,11 +67,9 @@ export function useCampaignsDashboard() {
         error: query.error,
         updatedAt,
         refresh,
-        drawer,
-        handleCreateClick,
-        openLink: open,
-        handleLinkClick,
-        closeDrawer,
+        page,
+        link,
+        handleLinkCreated,
         linkSet,
         handleLinkSetClick,
         closeLinkSet,

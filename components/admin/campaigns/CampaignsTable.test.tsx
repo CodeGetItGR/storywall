@@ -39,11 +39,13 @@ describe('CampaignsTable', () => {
     it('shows the visit columns before Sign-ups', () => {
         render(
             <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
-                <CampaignsTable rows={[ROW]} onLinkAction={vi.fn()} />
+                <CampaignsTable rows={[ROW]} onLinkAction={vi.fn()} onRowAction={vi.fn()} />
             </NextIntlClientProvider>,
         );
 
-        const headers = screen.getAllByRole('columnheader').map((cell) => cell.textContent);
+        const headers = within(screen.getAllByRole('rowgroup')[0])
+            .getAllByRole('columnheader')
+            .map((cell) => cell.textContent);
         expect(headers).toEqual([
             'Name',
             'Source / medium',
@@ -60,7 +62,7 @@ describe('CampaignsTable', () => {
             'Sales',
             'Sales revenue',
         ]);
-        const cells = within(screen.getAllByRole('row')[1])
+        const cells = within(screen.getAllByRole('row')[2])
             .getAllByRole('cell')
             .map((cell) => cell.textContent);
         expect(cells.slice(3, 8)).toEqual(['620', '510', '88', '40', '12']);
@@ -69,22 +71,32 @@ describe('CampaignsTable', () => {
     it('drops the revenue column for marketing, who get revenue as null', () => {
         render(
             <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
-                <CampaignsTable rows={[{ ...ROW, revenueMinorByCurrency: null, salesRevenueMinorByCurrency: null }]} onLinkAction={vi.fn()} />
+                <CampaignsTable
+                    rows={[{ ...ROW, revenueMinorByCurrency: null, salesRevenueMinorByCurrency: null }]}
+                    onLinkAction={vi.fn()}
+                    onRowAction={vi.fn()}
+                />
             </NextIntlClientProvider>,
         );
 
-        const headers = screen.getAllByRole('columnheader').map((cell) => cell.textContent);
+        const headers = within(screen.getAllByRole('rowgroup')[0])
+            .getAllByRole('columnheader')
+            .map((cell) => cell.textContent);
         expect(headers).not.toContain('Revenue');
         expect(headers).not.toContain('Sales revenue');
         expect(headers).toContain('Sales');
         expect(headers.slice(-2)).toEqual(['Paid', 'Sales']);
-        expect(within(screen.getAllByRole('row')[1]).getAllByRole('cell')).toHaveLength(headers.length);
+        expect(within(screen.getAllByRole('row')[2]).getAllByRole('cell')).toHaveLength(headers.length);
     });
 
     it('has no tip for revenue or sales revenue for marketing, but keeps the others', () => {
         render(
             <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
-                <CampaignsTable rows={[{ ...ROW, revenueMinorByCurrency: null, salesRevenueMinorByCurrency: null }]} onLinkAction={vi.fn()} />
+                <CampaignsTable
+                    rows={[{ ...ROW, revenueMinorByCurrency: null, salesRevenueMinorByCurrency: null }]}
+                    onLinkAction={vi.fn()}
+                    onRowAction={vi.fn()}
+                />
             </NextIntlClientProvider>,
         );
 
@@ -97,7 +109,7 @@ describe('CampaignsTable', () => {
     it('puts a tip on every value column, with its description on tap', () => {
         render(
             <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
-                <CampaignsTable rows={[ROW]} onLinkAction={vi.fn()} />
+                <CampaignsTable rows={[ROW]} onLinkAction={vi.fn()} onRowAction={vi.fn()} />
             </NextIntlClientProvider>,
         );
 
@@ -109,13 +121,38 @@ describe('CampaignsTable', () => {
     it('shows sales and their revenue', () => {
         render(
             <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
-                <CampaignsTable rows={[ROW]} onLinkAction={vi.fn()} />
+                <CampaignsTable rows={[ROW]} onLinkAction={vi.fn()} onRowAction={vi.fn()} />
             </NextIntlClientProvider>,
         );
 
-        const cells = within(screen.getAllByRole('row')[1])
+        const cells = within(screen.getAllByRole('row')[2])
             .getAllByRole('cell')
             .map((cell) => cell.textContent);
         expect(cells.slice(10, 14)).toEqual(['5', '€720.00', '3', '€147.00']);
+    });
+
+    it('puts rows in named sections', () => {
+        render(
+            <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
+                <CampaignsTable rows={[{ ...ROW, utmMedium: 'cpc' }, ROW]} onLinkAction={vi.fn()} onRowAction={vi.fn()} />
+            </NextIntlClientProvider>,
+        );
+
+        const sections = screen.getAllByRole('columnheader').filter((cell) => cell.getAttribute('scope') === 'colgroup');
+        expect(sections.map((cell) => cell.textContent)).toEqual(['Social posts', 'Ads']);
+    });
+
+    it("links a saved link's name to its page and copies from the row", () => {
+        const onRowAction = vi.fn();
+        render(
+            <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
+                <CampaignsTable rows={[ROW]} onLinkAction={vi.fn()} onRowAction={onRowAction} />
+            </NextIntlClientProvider>,
+        );
+
+        expect(screen.getByRole('link', { name: 'Spring bio' })).toHaveAttribute('href', '#campaigns/l1');
+        expect(screen.getByRole('button', { name: 'Copy link Spring bio' })).toBeInTheDocument();
+        fireEvent.click(screen.getAllByRole('row')[2]);
+        expect(onRowAction).toHaveBeenCalledTimes(1);
     });
 });
