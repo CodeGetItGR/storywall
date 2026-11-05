@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
+import type { CampaignRowDto } from '@/lib/api/types';
 import {
     campaignDestinations,
     campaignLinkFormProblem,
+    campaignLinkSections,
     campaignRedirectUrl,
     campaignShortUrl,
     campaignUrl,
@@ -49,6 +51,33 @@ describe('campaignUrl', () => {
             'https://www.storywall.gr',
         );
         expect(captureVisitSource(url, '', {})).toMatchObject({ utmSource: 'facebook', utmMedium: 'paid_social', utmCampaign: 'launch' });
+    });
+});
+
+describe('campaignLinkSections', () => {
+    function row(utmSource: string | null, utmMedium: string | null, name: string | null) {
+        return { utmSource, utmMedium, utmCampaign: 'x', link: name ? { name } : null } as CampaignRowDto;
+    }
+
+    it('groups by type and sorts by platform, then name', () => {
+        const sections = campaignLinkSections([
+            row('tiktok', 'social', 'T'),
+            row('instagram', 'paid_social', 'Paid'),
+            row('instagram', 'social', 'B'),
+            row('google', 'cpc', 'Google'),
+            row('instagram', 'social', 'A'),
+            row('print', 'qr', 'Print'),
+            row(null, null, null),
+        ]);
+        expect(sections.map((section) => [section.group, section.rows.map((one) => one.link?.name ?? null)])).toEqual([
+            ['social', ['A', 'B', 'T']],
+            ['ads', ['Google', 'Paid']],
+            ['other', [null, 'Print']],
+        ]);
+    });
+
+    it('leaves out an empty section', () => {
+        expect(campaignLinkSections([row('instagram', 'social', 'A')]).map((section) => section.group)).toEqual(['social']);
     });
 });
 

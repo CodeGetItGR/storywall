@@ -50,6 +50,7 @@ import { isOrdersHash, ORDERS_HASH_ROOT } from '@/lib/adminOrders';
 import { isOutreachHash, OUTREACH_HASH_ROOT } from '@/lib/adminOutreachRouting';
 import { isPartnerApplicationsHash, PARTNER_APPLICATIONS_HASH_ROOT } from '@/lib/adminPartnerApplicationsRouting';
 import { isPlansHash, PLANS_HASH_ROOT } from '@/lib/adminPlansRouting';
+import { CAMPAIGNS_HASH_ROOT, DISCOUNT_CAMPAIGNS_HASH_ROOT, isRecordHash } from '@/lib/adminRecordRouting';
 import { isWithdrawalsHash, WITHDRAWALS_HASH_ROOT } from '@/lib/adminWithdrawalsRouting';
 import type { PlatformRole } from '@/lib/api/types';
 import { pushPageEntry, replacePageUrl } from '@/lib/overlayHistory';
@@ -158,7 +159,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     outreachRequests: '#outreach-requests',
     inviart: '#inviart',
     discountCodes: '#discount-codes',
-    discountCampaigns: '#discount-campaigns',
+    discountCampaigns: DISCOUNT_CAMPAIGNS_HASH_ROOT,
     guestOffer: '#guest-offer',
     partnerApplications: PARTNER_APPLICATIONS_HASH_ROOT,
     collaborations: COLLABORATIONS_HASH_ROOT,
@@ -174,7 +175,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     withdrawals: WITHDRAWALS_HASH_ROOT,
     accounts: '#accounts',
     campaignOverview: '#campaign-overview',
-    campaigns: '#campaigns',
+    campaigns: CAMPAIGNS_HASH_ROOT,
     reports: '#reports',
     bugReports: '#bug-reports',
     vendorMessages: '#vendor-messages',
@@ -212,6 +213,8 @@ function hashTab(): AdminTab | null {
     if (isWithdrawalsHash(hash)) return 'withdrawals';
     if (isOrdersHash(hash)) return 'orders';
     if (isEventsHash(hash)) return 'events';
+    if (isRecordHash(CAMPAIGNS_HASH_ROOT, hash)) return 'campaigns';
+    if (isRecordHash(DISCOUNT_CAMPAIGNS_HASH_ROOT, hash)) return 'discountCampaigns';
     return HASH_TO_TAB[hash] ?? null;
 }
 

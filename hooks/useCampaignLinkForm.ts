@@ -17,7 +17,7 @@ import {
 
 type UtmField = 'utmSource' | 'utmMedium' | 'utmCampaign';
 
-// The campaign link builder's state and actions. The drawer is remounted on every opening, so the
+// The campaign link builder's state and actions. The page is remounted on every opening, so the
 // form starts empty each time. A link can be shared once it is saved, since only then does it have a
 // short address.
 export function useCampaignLinkForm(onCreated: (link: CampaignLinkDto) => void) {
