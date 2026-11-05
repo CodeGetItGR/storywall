@@ -4223,6 +4223,7 @@
         "fields": {
             "code": "Code",
             "name": "Name",
+            "nameLengthWarning": "With a name over {count} characters, the price may drop to its own line on plan cards.",
             "description": "Description",
             "storage": "Storage",
             "unit": "Unit",
@@ -6031,6 +6032,7 @@
         "campaigns": {
             "title": "Campaigns",
             "create": "New link",
+            "back": "All campaigns",
             "createTitle": "New campaign link",
             "saveLink": "Save link",
             "rangeNote": "Counts visits and sign-ups in this range.",
@@ -6188,7 +6190,7 @@
         "discountCampaigns": {
             "create": "New discount campaign",
             "createTitle": "New discount campaign",
-            "editTitle": "Edit discount campaign",
+            "back": "All discount campaigns",
             "empty": "No discount campaigns yet.",
             "columns": {
                 "name": "Name",

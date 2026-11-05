@@ -4,7 +4,7 @@ import { type ChangeEvent, useState } from 'react';
 
 import { useDeleteCampaignLink, useRenameCampaignLink } from '@/hooks/useAdminCampaigns';
 import type { CampaignLinkDto } from '@/lib/api/types';
-import { CAMPAIGN_NAME_MAX, campaignUrl } from '@/lib/campaignLinks';
+import { CAMPAIGN_NAME_MAX, campaignShortUrl } from '@/lib/campaignLinks';
 
 // One saved campaign link: copy it, rename it, or delete it. Only the name changes, so a link
 // already shared keeps counting under the same values.
@@ -66,7 +66,7 @@ export function useCampaignLinkDetail(link: CampaignLinkDto, onDone: () => void)
 
     return {
         name,
-        url: campaignUrl(link),
+        url: campaignShortUrl(link),
         nameProblem: showProblem && nameInvalid,
         busy,
         deleting: remove.isPending,
