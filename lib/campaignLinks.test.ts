@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import {
     campaignDestinations,
     campaignLinkFormProblem,
+    campaignRedirectUrl,
+    campaignShortUrl,
     campaignUrl,
     emptyCampaignLinkForm,
     findCampaignPreset,
@@ -47,6 +49,25 @@ describe('campaignUrl', () => {
             'https://www.storywall.gr',
         );
         expect(captureVisitSource(url, '', {})).toMatchObject({ utmSource: 'facebook', utmMedium: 'paid_social', utmCampaign: 'launch' });
+    });
+});
+
+describe('campaignShortUrl', () => {
+    it('is the readable code on the site', () => {
+        expect(campaignShortUrl({ shortCode: 'instagram-paid-sale' }, 'https://www.storywall.gr')).toBe(
+            'https://www.storywall.gr/c/instagram-paid-sale',
+        );
+    });
+});
+
+describe('campaignRedirectUrl', () => {
+    const target = { destinationPath: '/el', destinationAnchor: 'pricing', utmSource: 'facebook', utmMedium: 'paid_social', utmCampaign: 'launch' };
+
+    it('is read back by the sign-up source capture, with the ad click id', () => {
+        const url = campaignRedirectUrl(target, new URLSearchParams('gclid=abc'), 'https://www.storywall.gr');
+        expect(captureVisitSource(url, '', {})).toMatchObject({ utmSource: 'facebook', utmMedium: 'paid_social', utmCampaign: 'launch' });
+        expect(new URL(url).searchParams.get('gclid')).toBe('abc');
+        expect(new URL(url).hash).toBe('#pricing');
     });
 });
 

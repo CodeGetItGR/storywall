@@ -78,6 +78,7 @@ export const endpoints = {
 
     // Straight from the browser to Spring: no cookie, always 204.
     campaignVisits: { record: '/api/public/campaign-visits' },
+    campaignLinks: { target: (shortCode: string) => `/api/public/campaign-links/${shortCode}` },
     linkClicks: { record: '/api/public/link-clicks' },
 
     newsletter: {
