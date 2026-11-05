@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 
+import { CAMPAIGN_SHORT_LINK_PREFIX } from '@/lib/campaignLinks';
 import { absoluteUrl, isStagingSite } from '@/lib/seo';
 import { SHARED_LINK_PREFIXES } from '@/lib/shareLinks';
 
@@ -18,7 +19,11 @@ const PRIVATE_PATHS = [
     '/business',
     '/partner',
     '/q/',
+    CAMPAIGN_SHORT_LINK_PREFIX,
 ];
+
+// Link previews may follow these to the page that builds the card.
+const LINK_PREVIEW_PATHS: readonly string[] = [...SHARED_LINK_PREFIXES, CAMPAIGN_SHORT_LINK_PREFIX];
 
 // Only fetchers that build link previews, never search crawlers. They may read
 // shared links to build the card; the pages carry noindex as well. A crawler
@@ -47,7 +52,7 @@ export default function robots(): MetadataRoute.Robots {
             {
                 userAgent: LINK_PREVIEW_BOTS,
                 allow: '/',
-                disallow: PRIVATE_PATHS.filter((path) => !(SHARED_LINK_PREFIXES as readonly string[]).includes(path)),
+                disallow: PRIVATE_PATHS.filter((path) => !LINK_PREVIEW_PATHS.includes(path)),
             },
         ],
         sitemap: absoluteUrl('/sitemap.xml'),

@@ -3863,7 +3863,14 @@
                 "OUTREACH_REQUEST_APPROVED": "Έγκριση αιτήματος προσέγγισης",
                 "OUTREACH_REQUEST_DECLINED": "Απόρριψη αιτήματος προσέγγισης",
                 "ADMIN_DEVICE_PAIRED": "Σύνδεση κινητού admin",
-                "ADMIN_DEVICE_REVOKED": "Αφαίρεση κινητού admin"
+                "ADMIN_DEVICE_REVOKED": "Αφαίρεση κινητού admin",
+                "INVITATION_THEME_CREATED": "Δημιουργία θέματος πρόσκλησης",
+                "INVITATION_THEME_UPDATED": "Αλλαγή θέματος πρόσκλησης",
+                "INVITATION_THEME_IMAGE_UPLOADED": "Προσθήκη εικόνας θέματος πρόσκλησης",
+                "INVITATION_THEME_IMAGE_DELETED": "Διαγραφή εικόνας θέματος πρόσκλησης",
+                "INVITATION_FONT_PAIRING_CREATED": "Δημιουργία συνδυασμού γραμματοσειρών",
+                "INVITATION_FONT_PAIRING_UPDATED": "Αλλαγή συνδυασμού γραμματοσειρών",
+                "QR_CARD_TEMPLATE_DUPLICATED": "Αντιγραφή προτύπου κάρτας QR"
             }
         },
         "errorEvents": {
@@ -4344,6 +4351,7 @@
         "fields": {
             "code": "Κωδικός",
             "name": "Όνομα",
+            "nameLengthWarning": "Με όνομα πάνω από {count} χαρακτήρες, η τιμή μπορεί να πέσει σε δική της γραμμή στις κάρτες πλάνων.",
             "description": "Περιγραφή",
             "storage": "Αποθήκευση",
             "unit": "Μονάδα",
@@ -6148,6 +6156,7 @@
         "campaigns": {
             "title": "Καμπάνιες",
             "create": "Νέος σύνδεσμος",
+            "back": "Όλες οι καμπάνιες",
             "createTitle": "Νέος σύνδεσμος καμπάνιας",
             "saveLink": "Αποθήκευση συνδέσμου",
             "rangeNote": "Μετράει επισκέψεις και εγγραφές σε αυτό το διάστημα.",
@@ -6305,7 +6314,7 @@
         "discountCampaigns": {
             "create": "Νέα εκπτωτική καμπάνια",
             "createTitle": "Νέα εκπτωτική καμπάνια",
-            "editTitle": "Επεξεργασία εκπτωτικής καμπάνιας",
+            "back": "Όλες οι εκπτωτικές καμπάνιες",
             "empty": "Δεν υπάρχουν εκπτωτικές καμπάνιες.",
             "columns": {
                 "name": "Όνομα",

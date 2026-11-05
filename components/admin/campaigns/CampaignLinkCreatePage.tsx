@@ -2,56 +2,37 @@
 
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import type { MouseEvent } from 'react';
 
-import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
-import { CampaignLinkShare } from '@/components/admin/campaigns/CampaignLinkShare';
+import { BackButton } from '@/components/ui/BackButton';
 import { useCampaignLinkForm } from '@/hooks/useCampaignLinkForm';
+import { CAMPAIGNS_HASH_ROOT } from '@/lib/adminRecordRouting';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
+import type { CampaignLinkDto } from '@/lib/api/types';
 import { CAMPAIGN_NAME_MAX, CAMPAIGN_PRESET_GROUPS, CAMPAIGN_PRESETS, CAMPAIGN_UTM_MAX } from '@/lib/campaignLinks';
 
-const FORM_ID = 'campaign-link-form';
-
-// The campaign link builder. The panel remounts it (key) on every opening.
-export function CampaignLinkCreateDrawer({ open, onCloseAction }: { open: boolean; onCloseAction: () => void }) {
+// The campaign link builder. Saving opens the new link, where it can be shared.
+export function CampaignLinkCreatePage({
+    onBackAction,
+    onCreatedAction,
+}: {
+    onBackAction: (event: MouseEvent<HTMLAnchorElement>) => void;
+    onCreatedAction: (link: CampaignLinkDto) => void;
+}) {
     const t = useTranslations('AdminPage');
-    const f = useCampaignLinkForm(onCloseAction);
+    const f = useCampaignLinkForm(onCreatedAction);
     const { form } = f;
 
     return (
-        <AdminDrawer
-            open={open}
-            onClose={onCloseAction}
-            closeLabel={t('cancel')}
-            closeDisabled={f.busy}
-            title={t('campaigns.createTitle')}
-            footer={
-                <>
-                    <div />
-                    {/* Actions */}
-                    <div className="flex items-center gap-2">
-                        <button
-                            type="button"
-                            onClick={onCloseAction}
-                            disabled={f.busy}
-                            className="min-h-9 rounded-md border border-border px-3.5 text-sm font-semibold text-ink-muted disabled:opacity-50"
-                        >
-                            {t('cancel')}
-                        </button>
-                        <button
-                            type="submit"
-                            form={FORM_ID}
-                            disabled={f.busy}
-                            className="inline-flex min-h-9 items-center gap-2 rounded-md bg-ink px-3.5 text-sm font-semibold text-white disabled:opacity-50"
-                        >
-                            {f.busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
-                            {t('campaigns.saveLink')}
-                        </button>
-                    </div>
-                </>
-            }
-        >
-            <form id={FORM_ID} onSubmit={f.handleSubmit} className="space-y-5">
+        <div className="max-w-2xl space-y-6">
+            {/* Back */}
+            <BackButton href={CAMPAIGNS_HASH_ROOT} label={t('campaigns.back')} onClick={onBackAction} />
+
+            {/* Header */}
+            <h2 className="text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">{t('campaigns.createTitle')}</h2>
+
+            <form onSubmit={f.handleSubmit} className="space-y-5">
                 {/* Where */}
                 <AdminField label={t('campaigns.fields.preset')}>
                     <select name="preset" value={form.preset} onChange={f.handlePresetChange} className={adminInputClass()}>
@@ -124,13 +105,22 @@ export function CampaignLinkCreateDrawer({ open, onCloseAction }: { open: boolea
                     />
                 </AdminField>
 
-                {/* Link */}
-                <CampaignLinkShare url={f.url} fileName={form.utmCampaign} />
-
                 {/* Errors */}
                 {f.problem && <p className="text-sm text-status-danger">{t(`campaigns.problems.${f.problem}`)}</p>}
                 {f.error !== null && <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(f.error)}`)}</p>}
+
+                {/* Actions */}
+                <div className="flex justify-end">
+                    <button
+                        type="submit"
+                        disabled={f.busy}
+                        className="inline-flex min-h-9 items-center gap-2 rounded-md bg-ink px-3.5 text-sm font-semibold text-white disabled:opacity-50"
+                    >
+                        {f.busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
+                        {t('campaigns.saveLink')}
+                    </button>
+                </div>
             </form>
-        </AdminDrawer>
+        </div>
     );
 }

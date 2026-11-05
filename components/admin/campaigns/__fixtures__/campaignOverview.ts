@@ -62,7 +62,7 @@ export const emptyCampaignOverviewFixture: CampaignOverviewDto = {
 };
 
 function link(id: string, name: string, utmSource: string, utmMedium: string, utmCampaign: string): CampaignLinkDto {
-    return { id, name, destinationPath: '/el', utmSource, utmMedium, utmCampaign, createdAt: '2027-02-01T10:00:00Z' };
+    return { id, name, destinationPath: '/el', utmSource, utmMedium, utmCampaign, createdAt: '2027-02-01T10:00:00Z', shortCode: `${utmSource}-${utmCampaign}` };
 }
 
 function row(utmSource: string | null, utmMedium: string | null, utmCampaign: string | null, counts: Partial<CampaignRowDto>): CampaignRowDto {

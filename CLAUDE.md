@@ -53,6 +53,7 @@ Use these sections, in this order:
 - Tag it with the date, `vYYYY.MM.DD` (add `.2`, `.3` for a second or third release that day), and title it like the PR.
 - Its notes are the PR's **What's new / Τι αλλάζει** and **Release notes** sections, copied as they are, with a link to the release PR.
 - Comment on the release PR with the link to the Release.
+- If a guestwall-be release went out with this one, publish its GitHub Release too, following that repo's `CLAUDE.md`.
 - Move every Jira ticket in the release to Done.
 
 ## Workflow

@@ -21,6 +21,7 @@ export function AdminField({
     hint,
     hintId,
     hintLive = true,
+    hintTone = 'neutral',
 }: {
     label: string;
     children: ReactNode;
@@ -32,6 +33,7 @@ export function AdminField({
     hintId?: string;
     // False for a hint that changes on every keystroke, which would flood a screen reader.
     hintLive?: boolean;
+    hintTone?: 'neutral' | 'warn';
 }) {
     return (
         <FormFieldLabel
@@ -42,7 +44,11 @@ export function AdminField({
         >
             {children}
             {hint && (
-                <span id={hintId} aria-live={hintId && hintLive ? 'polite' : undefined} className="text-[11px] leading-4 text-ink-faint">
+                <span
+                    id={hintId}
+                    aria-live={hintId && hintLive ? 'polite' : undefined}
+                    className={cn('text-[11px] leading-4', hintTone === 'warn' ? 'text-status-warn' : 'text-ink-faint')}
+                >
                     {hint}
                 </span>
             )}
