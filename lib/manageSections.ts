@@ -17,24 +17,28 @@ export function parseManageSection(value: string | null): ManageSection {
 
 // Danger is primary-host only; RSVP exists only when the event's plan includes it;
 // the gift section only on a gift event, or for a primary host whose plan can be given;
-// the theme section only while the event can pick a theme (canPickTheme).
+// the theme section only while the event can pick a theme (canPickTheme);
+// Members only on an event that takes guests (not a lite event).
 export function visibleManageSections({
     canDelete,
     rsvpAvailable,
     giftAvailable = false,
     themeAvailable = false,
+    membersAvailable = true,
 }: {
     canDelete: boolean;
     rsvpAvailable: boolean;
     giftAvailable?: boolean;
     themeAvailable?: boolean;
+    membersAvailable?: boolean;
 }): ManageSection[] {
     return manageSections.filter(
         (section) =>
             (section !== 'danger' || canDelete) &&
             (section !== 'rsvp' || rsvpAvailable) &&
             (section !== 'gift' || giftAvailable) &&
-            (section !== 'theme' || themeAvailable),
+            (section !== 'theme' || themeAvailable) &&
+            (section !== 'members' || membersAvailable),
     );
 }
 

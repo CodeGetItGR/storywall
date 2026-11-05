@@ -16,8 +16,10 @@ import { CampaignOverviewPanel } from '@/components/admin/campaigns/overview/Cam
 import { CollaborationsSection } from '@/components/admin/collaborations/CollaborationsSection';
 import { CostTrackingPanel } from '@/components/admin/CostTrackingPanel';
 import { DemoEventsSection } from '@/components/admin/demoEvents/DemoEventsSection';
+import { DiscountCampaignsPanel } from '@/components/admin/discountCampaigns/DiscountCampaignsPanel';
 import { EventsSection } from '@/components/admin/events/EventsSection';
 import { FunnelPanel } from '@/components/admin/funnel/FunnelPanel';
+import { InviartCollectionsPanel } from '@/components/admin/inviart/InviartCollectionsPanel';
 import { ModerationPanel } from '@/components/admin/moderation/ModerationPanel';
 import { ModuleUsagePanel } from '@/components/admin/moduleUsage/ModuleUsagePanel';
 import { OrdersSection } from '@/components/admin/orders/OrdersSection';
@@ -74,6 +76,13 @@ export function AdminConsole() {
             </div>
         );
     }
+    if (tab === 'inviart') {
+        return (
+            <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
+                <InviartCollectionsPanel />
+            </div>
+        );
+    }
     if (tab === 'appReviews') {
         return (
             <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
@@ -85,6 +94,13 @@ export function AdminConsole() {
         return (
             <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
                 <AuditLogPanel />
+            </div>
+        );
+    }
+    if (tab === 'discountCampaigns') {
+        return (
+            <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
+                <DiscountCampaignsPanel />
             </div>
         );
     }

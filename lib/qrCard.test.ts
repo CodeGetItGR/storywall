@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { QrCardTemplateDto } from '@/lib/api/types';
+import type { EventModuleResponseDto, QrCardTemplateDto } from '@/lib/api/types';
 import {
     estimateTextWidth,
     fitText,
@@ -9,13 +9,14 @@ import {
     layoutTitle,
     PLAIN_QR_CARD_STYLE,
     QR_CARD_LINE_BOXES,
-    QR_CARD_LINE_KEYS,
     QR_CARD_SIZES,
     QR_CARD_TITLE_BOX,
     qrCardFileName,
+    qrCardLineKey,
+    qrCardSheet,
     qrCardStyleOf,
 } from '@/lib/qrCard';
-import { DEFAULT_QR_CARD_LAYOUT } from '@/lib/qrCardLayout';
+import { DEFAULT_QR_CARD_LAYOUT, DEFAULT_QR_CARD_TITLE } from '@/lib/qrCardLayout';
 
 describe('fitText', () => {
     it('keeps a short title at the largest size, on one line', () => {
@@ -139,7 +140,7 @@ describe('layoutLines', () => {
 });
 
 describe('layout boxes', () => {
-    const title = DEFAULT_QR_CARD_LAYOUT.title;
+    const title = DEFAULT_QR_CARD_TITLE;
 
     it('anchors the title to the left or right edge of its box', () => {
         expect(layoutTitle('Anna', { ...title, x: 10, width: 50, align: 'left' })).toMatchObject({ x: 10, anchor: 'start' });
@@ -177,11 +178,27 @@ describe('QR_CARD_SIZES', () => {
     });
 });
 
-describe('default lines', () => {
-    it('picks the line by what the QR opens', () => {
-        expect(QR_CARD_LINE_KEYS).toEqual({ EVENT_JOIN: 'join', INVITATION: 'invitation', MEDIA_UPLOAD: 'gallery' });
+describe('qrCardLineKey', () => {
+    const modules = (gallery: boolean, wishbook: boolean) =>
+        [
+            { moduleKey: 'gallery', isEnabled: gallery, isAvailable: gallery, configuration: { qrUploadEnabled: true } },
+            { moduleKey: 'wishbook', isEnabled: wishbook, isAvailable: wishbook, configuration: null },
+        ] as EventModuleResponseDto[];
+
+    it('keeps the line of every other code', () => {
+        expect(qrCardLineKey('EVENT_JOIN', modules(true, true))).toBe('join');
+        expect(qrCardLineKey('INVITATION', modules(true, true))).toBe('invitation');
+        expect(qrCardLineKey('MEDIA_UPLOAD', modules(true, true))).toBe('gallery');
     });
 
+    it('words the guest code by what it offers', () => {
+        expect(qrCardLineKey('GUEST', modules(true, false))).toBe('gallery');
+        expect(qrCardLineKey('GUEST', modules(false, true))).toBe('guestWish');
+        expect(qrCardLineKey('GUEST', modules(true, true))).toBe('guestBoth');
+    });
+});
+
+describe('default lines', () => {
     it('stacks the gift card lines, leaving out a missing PIN or email', () => {
         expect(giftQrCardLines({ line: 'Scan', pin: 'PIN: 1234', email: null, giver: 'Eleni' })).toEqual([
             { text: 'Scan', tone: 'body' },
@@ -240,5 +257,53 @@ describe('qrCardStyleOf', () => {
     it('keeps Plain as today’s look', () => {
         expect(PLAIN_QR_CARD_STYLE).toMatchObject({ artworkUrl: null, codeColor: '#241F1A', centerLogo: true });
         expect(PLAIN_QR_CARD_STYLE).toMatchObject({ layout: DEFAULT_QR_CARD_LAYOUT, sizes: ['A6', 'A5'] });
+    });
+});
+
+describe('qrCardSheet', () => {
+    it('fits four A6 cards 2 × 2 on A4 portrait, centred, at true size', () => {
+        const sheet = qrCardSheet('A6');
+
+        expect([sheet.widthMm, sheet.heightMm]).toEqual([210, 297]);
+        expect([sheet.cardWidthMm, sheet.cardHeightMm]).toEqual([105, 148]);
+        expect([sheet.columns, sheet.rows]).toEqual([2, 2]);
+        expect(sheet.cards).toEqual([
+            { x: 0, y: 0.5 },
+            { x: 105, y: 0.5 },
+            { x: 0, y: 148.5 },
+            { x: 105, y: 148.5 },
+        ]);
+    });
+
+    it('cuts once down the middle and once across between the A6 cards', () => {
+        expect(qrCardSheet('A6').cuts).toEqual([
+            { x1: 105, y1: 0.5, x2: 105, y2: 296.5 },
+            { x1: 0, y1: 148.5, x2: 210, y2: 148.5 },
+        ]);
+    });
+
+    it('turns A4 to landscape for two A5 cards side by side', () => {
+        const sheet = qrCardSheet('A5');
+
+        expect([sheet.widthMm, sheet.heightMm]).toEqual([297, 210]);
+        expect([sheet.cardWidthMm, sheet.cardHeightMm]).toEqual([148, 210]);
+        expect([sheet.columns, sheet.rows]).toEqual([2, 1]);
+        expect(sheet.cards).toEqual([
+            { x: 0.5, y: 0 },
+            { x: 148.5, y: 0 },
+        ]);
+        expect(sheet.cuts).toEqual([{ x1: 148.5, y1: 0, x2: 148.5, y2: 210 }]);
+    });
+
+    it('keeps every card inside the sheet', () => {
+        for (const size of ['A6', 'A5'] as const) {
+            const sheet = qrCardSheet(size);
+            for (const card of sheet.cards) {
+                expect(card.x).toBeGreaterThanOrEqual(0);
+                expect(card.y).toBeGreaterThanOrEqual(0);
+                expect(card.x + sheet.cardWidthMm).toBeLessThanOrEqual(sheet.widthMm);
+                expect(card.y + sheet.cardHeightMm).toBeLessThanOrEqual(sheet.heightMm);
+            }
+        }
     });
 });

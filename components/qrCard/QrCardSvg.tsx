@@ -2,6 +2,7 @@ import { type Ref, useId, useMemo } from 'react';
 
 import { themeFontFamily } from '@/lib/eventTheme';
 import {
+    layoutField,
     layoutLines,
     layoutTitle,
     type PlacedText,
@@ -26,6 +27,8 @@ const LINE_LOOKS: Record<QrCardLineTone, TextLook> = {
     small: { fontFamily: QR_CARD_FONT, fontWeight: 400, opacity: 0.75 },
 };
 
+const NO_FIELDS: Record<string, string> = {};
+
 function CardText({ text, fill, look }: { text: PlacedText; fill: string; look: TextLook }) {
     if (text.lines.length === 0) return null;
     return (
@@ -39,8 +42,9 @@ function CardText({ text, fill, look }: { text: PlacedText; fill: string; look: 
     );
 }
 
-// One card in A6 millimetres: artwork (or white) full-bleed, then the title, the code (on a white panel
-// unless the layout turns it off) and the lines where the layout puts them. Print and the PNG/PDF export
+// One card in A6 millimetres: artwork (or white) full-bleed, then the title, the lines and the added fields,
+// and the code on top (on a white panel unless the layout turns it off), where the layout puts them.
+// `fields` is each added field's text by id (see qrCardFieldTexts). Print and the PNG/PDF export
 // reuse this exact node at A6 or A5, so it draws with attributes only (no classes inside). The whole card
 // is one image to assistive tech, named by its <title>.
 export function QrCardSvg({
@@ -48,6 +52,7 @@ export function QrCardSvg({
     url,
     title,
     lines,
+    fields = NO_FIELDS,
     label,
     className,
     ref,
@@ -56,6 +61,7 @@ export function QrCardSvg({
     url: string;
     title: string;
     lines: QrCardLine[];
+    fields?: Record<string, string>;
     label: string;
     className?: string;
     ref?: Ref<SVGSVGElement>;
@@ -70,6 +76,7 @@ export function QrCardSvg({
     const titleLook: TextLook = style.headingFont
         ? { fontFamily: themeFontFamily(style.headingFont), fontWeight: 400 }
         : { fontFamily: QR_CARD_FONT, fontWeight: 700 };
+    const headingFamily = style.headingFont ? themeFontFamily(style.headingFont) : QR_CARD_FONT;
 
     return (
         <svg
@@ -92,7 +99,20 @@ export function QrCardSvg({
                 <rect width={QR_CARD_WIDTH} height={QR_CARD_HEIGHT} fill="#FFFFFF" />
             )}
             {/* Title */}
-            <CardText text={layoutTitle(title, layout.title)} fill={style.textColor} look={titleLook} />
+            {layout.title && <CardText text={layoutTitle(title, layout.title)} fill={style.textColor} look={titleLook} />}
+            {/* Lines */}
+            {layoutLines(lines, layout.lines).map((line, index) => (
+                <CardText key={index} text={line} fill={style.textColor} look={LINE_LOOKS[line.tone]} />
+            ))}
+            {/* Fields */}
+            {layout.fields.map((field) => (
+                <CardText
+                    key={field.id}
+                    text={layoutField(fields[field.id] ?? '', field)}
+                    fill={field.color}
+                    look={{ fontFamily: field.font === 'heading' ? headingFamily : QR_CARD_FONT, fontWeight: field.bold ? 700 : 400 }}
+                />
+            ))}
             {/* Code */}
             {box.panel && <rect x={box.x} y={box.y} width={box.size} height={box.size} rx={box.radius} fill="#FFFFFF" />}
             <path d={code.d} transform={`translate(${codeX} ${codeY}) scale(${cell})`} fill={style.codeColor} />
@@ -105,10 +125,6 @@ export function QrCardSvg({
                     height={code.logo.span * cell}
                 />
             )}
-            {/* Lines */}
-            {layoutLines(lines, layout.lines).map((line, index) => (
-                <CardText key={index} text={line} fill={style.textColor} look={LINE_LOOKS[line.tone]} />
-            ))}
         </svg>
     );
 }

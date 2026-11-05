@@ -46,6 +46,7 @@ export function useGiftCardPrint(eventId: string) {
     const designer = useQrCardDesigner({
         templates: templates.data?.templates ?? NO_TEMPLATES,
         defaults: { title: card?.recipientLabel ?? '', line: t('scan'), giver: card?.giverDisplayName ?? '' },
+        lineKey: 'gift',
     });
     const exporter = useQrCardExport({ font: designer.style.headingFont, title: designer.text.title, size: designer.size });
 

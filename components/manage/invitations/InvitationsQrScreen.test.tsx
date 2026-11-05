@@ -9,10 +9,13 @@ const ctx = vi.hoisted(() => ({ isHost: false }));
 vi.mock('@/components/routing/EventRouteGate', () => ({
     useEventRouteContext: () => ({ eventId: 'e1', activeEvent: { id: 'e1', status: 'ACTIVE' }, isHost: ctx.isHost }),
 }));
+const links = vi.hoisted(() => ({
+    data: [] as Record<string, unknown>[],
+}));
 const calls = vi.hoisted(() => ({ stats: [] as unknown[], usage: [] as unknown[], upgrades: [] as unknown[] }));
 vi.mock('@/hooks/useQrLinks', () => ({
     useEventQrLinks: () => ({
-        data: [{ id: 'q1', targetType: 'EVENT_JOIN', label: 'Table', labelKey: null, publicUrl: 'https://x/q1' }],
+        data: links.data,
         isLoading: false,
     }),
     useEventQrLinkStats: (eventId: string | null) => {
@@ -43,7 +46,10 @@ vi.mock('@/components/manage/invitations/ShareLinkPanel', () => ({
 }));
 vi.mock('@/components/manage/invitations/ShareLanguageNote', () => ({ ShareLanguageNote: () => null }));
 
+const joinLink = { id: 'q1', targetType: 'EVENT_JOIN', label: 'Table', labelKey: null, publicUrl: 'https://x/q1' };
+
 beforeEach(() => {
+    links.data = [joinLink];
     calls.stats = [];
     calls.usage = [];
     calls.upgrades = [];
@@ -70,5 +76,15 @@ describe('InvitationsQrScreen for a planner', () => {
         expect(calls.stats).toContain('e1');
         expect(calls.usage).toContain('e1');
         expect(calls.upgrades).toEqual([true]);
+    });
+});
+
+describe('InvitationsQrScreen links', () => {
+    // An upgraded lite event keeps its guest code next to its new join code; it is not an invitation.
+    it('never lists the guest code', () => {
+        ctx.isHost = true;
+        links.data = [joinLink, { id: 'g1', targetType: 'GUEST', label: null, labelKey: 'guest', publicUrl: 'https://x/g1' }];
+        render(<InvitationsQrScreen />);
+        expect(screen.getAllByText('row')).toHaveLength(1);
     });
 });

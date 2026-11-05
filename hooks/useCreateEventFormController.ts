@@ -28,6 +28,7 @@ import type {
     EventTypeConvention,
 } from '@/lib/api/types';
 import { navigateToCheckout } from '@/lib/billing';
+import { checkoutAttribution } from '@/lib/campaignAttribution';
 import { getInitialSessionTitleKey } from '@/lib/createEventCatalog';
 import {
     CREATE_EVENT_CODE_PARAM,
@@ -46,7 +47,7 @@ import {
 import { eventWindowFromLocalStart, formatDate, getScheduleDatetimeLocalBounds, isDatetimeLocalAfter, isDatetimeLocalBefore } from '@/lib/datetime';
 import { getLatestStartAt, projectCoverage } from '@/lib/eventCoverage';
 import { normalizeEventTypeSlug } from '@/lib/eventTypeSlug';
-import { liveInitialOptions, resolveInitialOption } from '@/lib/planTiers';
+import { defaultSelectedPlan, liveInitialOptions, resolveInitialOption } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { getCurrentTimezone, getSupportedTimezones } from '@/lib/timezones';
 import type { CreateEventFormValue, CreateEventStep } from '@/providers/createEvent/CreateEventFormContext';
@@ -139,7 +140,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
     const planTiersQuery = usePlanTiersForEventType(selectedEventType, isAuthenticated && Boolean(appConfig));
     // A plan with no duration on sale can't be bought, so it isn't offered.
     const eventPlans = useMemo(() => (planTiersQuery.data ?? []).filter((plan) => liveInitialOptions(plan).length > 0), [planTiersQuery.data]);
-    const selectedPlan = eventPlans.find((plan) => plan.code === selectedPlanCode) ?? eventPlans[0];
+    const selectedPlan = defaultSelectedPlan(eventPlans, selectedPlanCode);
     const selectedCode = selectedPlan?.code ?? selectedPlanCode;
     const selectedOption = selectedPlan ? resolveInitialOption(selectedPlan, durationPicks.picks[selectedPlan.code]) : null;
     const gift = useCreateEventGift(selectedPlan);
@@ -418,6 +419,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
                 const checkout = await api.post<CheckoutResponseDto>(endpoints.events.checkout(eventId), {
                     ...(appliedCheckoutCode ? { collaborationCode: appliedCheckoutCode } : {}),
                     ...partnerBranding.requestFields,
+                    ...checkoutAttribution(),
                     requestsImmediateStart: consent.requestsImmediateStart,
                     acknowledgesWithdrawalTerms: consent.acknowledgesWithdrawalTerms,
                     termsVersion: consent.termsVersion!,

@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { useLandingPricingPlans } from '@/hooks/useLandingPricingPlans';
 import type { AppConfigResponseDto, PlanTierResponseDto } from '@/lib/api/types';
@@ -247,6 +247,79 @@ describe('useLandingPricingPlans', () => {
         expect(reunion.plans[0].includedFeatures).toBeUndefined();
     });
 
+    it('splits lite plans (no posts) into their own row', async () => {
+        const config = makeConfig();
+        config.modules = [
+            { id: 'm1', moduleKey: 'gallery', name: 'Gallery', description: null, isEnabled: true, sortOrder: 0 },
+            { id: 'm2', moduleKey: 'posts', name: 'Posts', description: null, isEnabled: true, sortOrder: 1 },
+            { id: 'm3', moduleKey: 'wishbook', name: 'Wishbook', description: null, isEnabled: true, sortOrder: 2 },
+        ];
+        const option = (id: string, amount: number) => [
+            { id, kind: 'INITIAL' as const, months: 3, priceAmountMinor: amount, promoPriceAmountMinor: null, sortOrder: 0, active: true },
+        ];
+        config.planTiers = [
+            planTier({ id: 'l1', code: 'QR', name: 'QR', sortOrder: 0, moduleKeys: ['gallery'], initialOptions: option('o1', 4900) }),
+            planTier({
+                id: 'l2',
+                code: 'BUNDLE',
+                name: 'Bundle',
+                sortOrder: 1,
+                moduleKeys: ['gallery', 'wishbook'],
+                initialOptions: option('o2', 6900),
+            }),
+            planTier({ id: 'f1', code: 'START', name: 'START', sortOrder: 2, moduleKeys: ['gallery', 'posts'], initialOptions: option('o3', 7900) }),
+        ];
+        config.landingCategories = [{ id: 'wed', name: { en: 'Weddings' }, description: {}, isDefault: true, eventTypeKeys: ['WEDDING'] }];
+        publicGet.mockResolvedValue(config);
+
+        const { result } = renderHook(() => useLandingPricingPlans(), { wrapper });
+
+        await waitFor(() => expect(result.current.groups).not.toBeNull());
+        const wedding = result.current.groups?.[0].items[0];
+        expect(wedding?.plans.map((plan) => plan.code)).toEqual(['START']);
+        expect(wedding?.plans[0].features).toEqual(['Gallery', 'Posts']);
+        expect(wedding?.litePlans.map((plan) => plan.code)).toEqual(['QR', 'BUNDLE']);
+        expect(wedding?.litePlans[1].features).toEqual(['Everything in QR', 'Wishbook']);
+    });
+
+    it('builds the QR page row from the photo plans and the first full plan, rolling up only what a plan contains', async () => {
+        const config = makeConfig();
+        config.modules = [
+            { id: 'm1', moduleKey: 'gallery', name: 'Gallery', description: null, isEnabled: true, sortOrder: 0 },
+            { id: 'm2', moduleKey: 'posts', name: 'Posts', description: null, isEnabled: true, sortOrder: 1 },
+            { id: 'm3', moduleKey: 'wishbook', name: 'Wishbook', description: null, isEnabled: true, sortOrder: 2 },
+        ];
+        config.planTiers = [
+            planTier({ id: 'w', code: 'WISHBOOK', name: 'Wishbook', sortOrder: 0, moduleKeys: ['wishbook'] }),
+            planTier({ id: 'l1', code: 'QR', name: 'QR', sortOrder: 1, moduleKeys: ['gallery'] }),
+            planTier({ id: 'l2', code: 'BUNDLE', name: 'Bundle', sortOrder: 2, moduleKeys: ['gallery', 'wishbook'] }),
+            planTier({ id: 'f1', code: 'START', name: 'START', sortOrder: 3, moduleKeys: ['gallery', 'posts'] }),
+            planTier({ id: 'f2', code: 'STORY', name: 'STORY', sortOrder: 4, moduleKeys: ['gallery', 'posts', 'wishbook'] }),
+        ];
+        config.landingCategories = [{ id: 'wed', name: { en: 'Weddings' }, description: {}, isDefault: true, eventTypeKeys: ['WEDDING'] }];
+        publicGet.mockResolvedValue(config);
+
+        const { result } = renderHook(() => useLandingPricingPlans(), { wrapper });
+
+        await waitFor(() => expect(result.current.groups).not.toBeNull());
+        const row = result.current.groups?.[0].items[0].qrPagePlans ?? [];
+        expect(row.map((plan) => plan.code)).toEqual(['QR', 'BUNDLE', 'START']);
+        expect(row.map((plan) => plan.features)).toEqual([['Gallery'], ['Everything in QR', 'Wishbook'], ['Gallery', 'Posts']]);
+    });
+
+    it('has no lite row for a type without lite plans', async () => {
+        const config = makeConfig();
+        config.landingCategories = [{ id: 'wed', name: { en: 'Weddings' }, description: {}, isDefault: true, eventTypeKeys: ['WEDDING'] }];
+        config.planTiers = [planTier({ moduleKeys: ['gallery', 'posts'] })];
+        publicGet.mockResolvedValue(config);
+
+        const { result } = renderHook(() => useLandingPricingPlans(), { wrapper });
+
+        await waitFor(() => expect(result.current.groups).not.toBeNull());
+        const wedding = result.current.groups?.[0].items[0];
+        expect(wedding?.litePlans).toEqual([]);
+    });
+
     it('keeps the same groups across renders while the config is unchanged', async () => {
         const config = makeConfig();
         config.landingCategories = [{ id: 'wed', name: { en: 'Weddings' }, description: {}, isDefault: true, eventTypeKeys: ['WEDDING'] }];
@@ -288,5 +361,44 @@ describe('useLandingPricingPlans', () => {
 
         expect(result.current.groups).toBeNull();
         expect(result.current.defaultEventTypeId).toBeNull();
+    });
+});
+
+describe('useLandingPricingPlans campaign prices', () => {
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    it('switches the price at the second a campaign starts and ends, with the page open', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        vi.setSystemTime(new Date('2026-11-03T10:00:00Z'));
+        const config = makeConfig();
+        config.planTiers = [
+            planTier({
+                id: 'p1',
+                code: 'START',
+                eventTypeKey: 'WEDDING',
+                campaignDiscountPercent: 20,
+                campaignDiscountStartsAt: '2026-11-03T10:00:30Z',
+                campaignDiscountEndsAt: '2026-11-03T11:00:00Z',
+            }),
+        ];
+        config.landingCategories = [{ id: 'wed', name: { en: 'Weddings' }, description: {}, isDefault: true, eventTypeKeys: ['WEDDING'] }];
+        publicGet.mockResolvedValue(config);
+
+        const { result } = renderHook(() => useLandingPricingPlans(), { wrapper });
+        await waitFor(() => expect(result.current.groups).not.toBeNull());
+        const duration = () => result.current.groups?.[0].items[0].plans[0].durations[0];
+        expect(duration()?.listPrice).toBeNull();
+
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(31_000);
+        });
+        expect(duration()?.listPrice).toBe('79€');
+
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(60 * 60 * 1000);
+        });
+        expect(duration()?.listPrice).toBeNull();
     });
 });

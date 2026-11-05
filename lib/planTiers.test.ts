@@ -1,10 +1,29 @@
 import { describe, expect, it } from 'vitest';
 
 import type { CoverageOptionResponseDto, PlanTierResponseDto } from '@/lib/api/types';
-import { findNextPlan, getOptionPriceDetails, liveInitialOptions, resolveInitialOption, shortestInitialOption } from '@/lib/planTiers';
+import {
+    defaultSelectedPlan,
+    findNextPlan,
+    getOptionPriceDetails,
+    isLitePlan,
+    liveInitialOptions,
+    qrPagePlans,
+    resolveInitialOption,
+    shortestInitialOption,
+    splitLitePlans,
+} from '@/lib/planTiers';
 
 function makeOption(overrides: Partial<CoverageOptionResponseDto> = {}): CoverageOptionResponseDto {
-    return { id: 'opt-3', kind: 'INITIAL', months: 3, priceAmountMinor: 4_900, promoPriceAmountMinor: null, sortOrder: 0, active: true, ...overrides };
+    return {
+        id: 'opt-3',
+        kind: 'INITIAL',
+        months: 3,
+        priceAmountMinor: 4_900,
+        promoPriceAmountMinor: null,
+        sortOrder: 0,
+        active: true,
+        ...overrides,
+    };
 }
 
 function makePlan(overrides: Partial<PlanTierResponseDto> = {}): PlanTierResponseDto {
@@ -126,5 +145,47 @@ describe('plan durations', () => {
             currency: 'EUR',
             discountActive: true,
         });
+    });
+});
+
+describe('lite plans', () => {
+    const wishbook = makePlan({ code: 'WISHBOOK', moduleKeys: ['qr_cards', 'wishbook'] });
+    const qr = makePlan({ code: 'QR', moduleKeys: ['gallery', 'qr_cards'] });
+    const start = makePlan({ code: 'START', moduleKeys: ['gallery', 'posts'] });
+    const story = makePlan({ code: 'STORY', moduleKeys: ['gallery', 'posts', 'rsvp'] });
+
+    it('calls a plan lite when it has no posts module', () => {
+        expect(isLitePlan(wishbook)).toBe(true);
+        expect(isLitePlan(start)).toBe(false);
+    });
+
+    it('splits full and lite plans, keeping the input order', () => {
+        expect(splitLitePlans([wishbook, qr, start, story])).toEqual({ full: [start, story], lite: [wishbook, qr] });
+        expect(splitLitePlans([])).toEqual({ full: [], lite: [] });
+    });
+
+    it('starts on the first full plan', () => {
+        expect(defaultSelectedPlan([wishbook, qr, start, story], undefined)?.code).toBe('START');
+    });
+
+    it('starts on the plan asked for, even a lite one', () => {
+        expect(defaultSelectedPlan([wishbook, qr, start], 'QR')?.code).toBe('QR');
+    });
+
+    it('ignores a code that is not offered', () => {
+        expect(defaultSelectedPlan([wishbook, start], 'GONE')?.code).toBe('START');
+    });
+
+    it('falls back to the first plan when there are no full plans', () => {
+        expect(defaultSelectedPlan([wishbook, qr], null)?.code).toBe('WISHBOOK');
+        expect(defaultSelectedPlan([], null)).toBeUndefined();
+    });
+
+    it('picks the QR page plans: lite plans with the gallery, then the first full plan, else every full plan', () => {
+        const bundle = makePlan({ code: 'BUNDLE', moduleKeys: ['gallery', 'qr_cards', 'wishbook'] });
+        expect(qrPagePlans([wishbook, qr, bundle, start, story]).map((plan) => plan.code)).toEqual(['QR', 'BUNDLE', 'START']);
+        expect(qrPagePlans([wishbook, start]).map((plan) => plan.code)).toEqual(['START']);
+        expect(qrPagePlans([start, story]).map((plan) => plan.code)).toEqual(['START', 'STORY']);
+        expect(qrPagePlans([wishbook])).toEqual([]);
     });
 });

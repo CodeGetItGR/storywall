@@ -21,6 +21,11 @@ export function useFunnelFormat() {
             },
             median: (value: number | null) => formatMedian(locale, value),
             money: (minor: number, currency: string) => formatMinorMoney(locale, minor, currency),
+            // Each currency's amount, side by side; "—" when there is none.
+            moneyByCurrency: (minorByCurrency: Record<string, number>) =>
+                Object.entries(minorByCurrency)
+                    .map(([currency, minor]) => formatMinorMoney(locale, minor, currency))
+                    .join(' · ') || EMPTY_VALUE,
         }),
         [locale, t],
     );

@@ -13,7 +13,15 @@
     },
     "SiteNotice": {
         "apiDown": "We're having some issues. We're working on a fix.",
-        "close": "Close"
+        "close": "Close",
+        "campaign": "{percent}% off all plans.",
+        "campaignButton": "{percent}% off",
+        "campaignEndsIn": "Ends in {countdown}.",
+        "campaignEndsOn": "Ends on {date}",
+        "seePlans": "See plans",
+        "countdownDays": "{days}d {hours}h {minutes}m",
+        "countdownHours": "{hours}h {minutes}m",
+        "countdownMinutes": "{minutes}m {seconds}s"
     },
     "DemoActAs": {
         "postingAs": "Posting as",
@@ -636,6 +644,25 @@
         "fallbackTitle": "You're invited",
         "defaultHeroImageAlt": "Event cover photo",
         "mediaUploadEyebrow": "Share your photos",
+        "guestCode": {
+            "uploadLine": "Add your photos and videos.",
+            "uploadButton": "Upload photos",
+            "or": "or",
+            "wishLine": "Write a message for their wishbook.",
+            "wishButton": "Leave a wish",
+            "back": "Back",
+            "wishEyebrow": "Leave a wish",
+            "wish": {
+                "nameLabel": "Your name",
+                "messageLabel": "Your wish",
+                "charactersLeft": "{current} / {max} characters",
+                "submit": "Send wish",
+                "sent": "Wish sent",
+                "writeAnother": "Write another",
+                "rateLimited": "Too many wishes were sent just now. Try again in a minute.",
+                "notAvailable": "This code doesn't take wishes right now."
+            }
+        },
         "anonymousUpload": {
             "nameLabel": "Your name",
             "namePlaceholder": "How should we credit your photos?",
@@ -2548,6 +2575,8 @@
     },
     "ShareMetadata": {
         "uploadDescription": "Share your photos and videos.",
+        "wishDescription": "Leave a wish.",
+        "guestDescription": "Share your photos and leave a wish.",
         "inviteDescription": "You're invited."
     },
     "RightContextPanel": {
@@ -2985,7 +3014,9 @@
             "costTracking": "Cost tracking",
             "plans": "Plans",
             "paidServices": "Paid services",
+            "inviart": "INVIART",
             "discountCodes": "Discount codes",
+            "discountCampaigns": "Discount campaigns",
             "guestOffer": "Guest offer",
             "partnerApplications": "Applications",
             "collaborations": "Collaborations",
@@ -3010,6 +3041,14 @@
             "campaignOverview": "Campaign overview",
             "outreach": "Partner outreach",
             "outreachRequests": "Requests"
+        },
+        "inviart": {
+            "title": "INVIART collections",
+            "occasion": "Occasion",
+            "collection": "Collection handle",
+            "notSet": "Not set",
+            "hint": "From the collection's web address in Shopify. Leave empty to show no cards.",
+            "invalid": "Use lowercase letters, numbers and dashes."
         },
         "outreach": {
             "cityNames": {
@@ -5018,6 +5057,10 @@
             "collaborationEarningNotPayable": "One or more selected earnings are not payable. Refresh the ledger and choose accrued rows.",
             "collaboratorPayoutDetailsIncomplete": "This partner's business or payout details are incomplete, or their VAT number isn't VIES-valid. Complete their business details and try again.",
             "campaignLinkTaken": "A link with this source, medium and campaign already exists.",
+            "discountCampaignInvalid": "Check the campaign's details.",
+            "discountCampaignOverlap": "Another campaign runs during these dates.",
+            "discountCampaignPriceTooLow": "This percent makes some plans too cheap to charge.",
+            "discountCampaignLinkNameTaken": "A campaign already uses this link name.",
             "methodNotAllowed": "That action is not available here. Refresh and try again.",
             "invalidModuleKey": "One of the selected modules isn't available for this event type. Remove it and try again.",
             "orderNotManual": "Only manual orders can be settled here. Stripe orders settle through Stripe.",
@@ -5236,6 +5279,7 @@
             "empty": "No designs yet.",
             "noMatches": "No designs match.",
             "edit": "Edit {name}",
+            "duplicate": "Duplicate {name}",
             "filters": {
                 "ALL": "All",
                 "LIVE": "Offered",
@@ -5273,14 +5317,13 @@
                 "headingFontLoading": "Loading fonts…",
                 "headingFontLoadFailed": "Couldn't load the fonts. The current choice is kept. Close and reopen this panel to try again.",
                 "headingFontEmpty": "No fonts are ready yet. A font needs an uploaded file and must not be archived.",
-                "headingFontEmptyLink": "Go to Theme fonts",
                 "codeColor": "Code colour",
                 "codeColorHex": "Code colour hex code",
                 "codeColorInvalid": "Use a colour like #1F3A5A.",
                 "codeContrastOk": "Contrast {ratio}:1 on white",
                 "codeContrastLow": "Contrast {ratio}:1. Needs at least {min}:1 on white to scan, so pick a darker colour.",
                 "codeContrastInvalid": "This colour is too light to scan on white. Pick a darker one.",
-                "centerLogo": "Logo in the middle of the code",
+                "centerLogo": "Logo in the middle",
                 "eventTypes": "Event types",
                 "eventTypesInvalid": "Pick at least one event type.",
                 "artwork": "Artwork",
@@ -5296,21 +5339,57 @@
                 "archivedHint": "Hosts can no longer pick it.",
                 "network": "Couldn't reach the server. Check your connection and try again.",
                 "notFound": "This design no longer exists.",
-                "layout": "Layout"
+                "duplicate": "Duplicate",
+                "duplicateUnsaved": "Save your changes first."
             },
             "layout": {
-                "edit": "Edit layout",
-                "editSaveFirst": "Save the design first.",
-                "title": "Layout: {name}",
+                "edit": "Edit design",
+                "title": "Design: {name}",
                 "canvas": "Card layout",
                 "cardLabel": "QR card: {title}",
-                "elements": { "title": "Title", "code": "Code", "lines": "Lines" },
+                "elements": {
+                    "card": "Card",
+                    "title": "Title",
+                    "code": "Code",
+                    "lines": "Lines",
+                    "fixed": "Text {number}",
+                    "host": "Host field {number}"
+                },
+                "addFixed": "Add text",
+                "addHost": "Add host field",
+                "addLimit": "Up to 5 text fields.",
+                "restoreTitle": "Add title back",
+                "removeTitle": "Remove title",
+                "removeField": "Remove field",
+                "fieldText": { "en": "English text", "el": "Greek text" },
+                "fieldLabel": { "en": "English label", "el": "Greek label" },
+                "fieldPlaceholder": { "en": "English placeholder", "el": "Greek placeholder" },
+                "font": "Font",
+                "fontOptions": { "heading": "Title font", "body": "Card font" },
+                "bold": "Bold",
+                "color": "Colour",
+                "fieldIncomplete": "Fill in the text in English and Greek for every field.",
+                "lookInvalid": "Fix the colours before saving.",
                 "selectHint": "Select something on the card to change it.",
                 "position": "X {x} · Y {y} · W {width} · H {height} mm",
                 "align": "Alignment",
                 "alignOptions": { "left": "Left", "center": "Centre", "right": "Right" },
                 "titleSize": "Largest text size",
                 "linesSize": "Text size",
+                "wording": {
+                    "legend": "Wording",
+                    "hint": "Leave empty for the standard line.",
+                    "keys": {
+                        "join": "Join code",
+                        "invitation": "Invitation code",
+                        "gallery": "Photo upload code",
+                        "guestWish": "Wish code",
+                        "guestBoth": "Photos or wish code",
+                        "gift": "Gift card"
+                    },
+                    "input": { "en": "{line}, English", "el": "{line}, Greek" },
+                    "short": { "en": "EN", "el": "EL" }
+                },
                 "panel": "White panel",
                 "panelOffNote": "Test-scan a printed card before offering this template.",
                 "radius": "Corner rounding",
@@ -5319,11 +5398,11 @@
                 "sampleGiver": "With love from Eleni",
                 "reset": "Reset layout",
                 "cancel": "Cancel",
-                "save": "Save layout",
+                "save": "Save",
                 "network": "Couldn't reach the server. Check your connection and try again.",
                 "discard": {
-                    "title": "Discard layout changes?",
-                    "body": "Your changes to this layout will be lost.",
+                    "title": "Discard changes?",
+                    "body": "Your changes to this design will be lost.",
                     "confirm": "Discard changes",
                     "keep": "Keep editing"
                 }
@@ -5967,7 +6046,23 @@
                 "signedUp": "Sign-ups",
                 "createdEvent": "Created an event",
                 "paidHost": "Paid",
-                "revenue": "Revenue"
+                "revenue": "Revenue",
+                "sales": "Sales",
+                "salesRevenue": "Sales revenue"
+            },
+            "valueHelpLabel": "What {name} means",
+            "valueHelp": {
+                "visits": "Arrivals through the link. Repeats within 30 minutes count once.",
+                "visitors": "Different people who visited. Someone who returns on another day counts again.",
+                "createClicks": "Visitors who tapped Create on the page. Once per person each day.",
+                "plansClicks": "Visitors who tapped the plans button on the page. Once per person each day.",
+                "planPicks": "Visitors who picked a specific plan. Once per person each day.",
+                "signedUp": "Accounts that signed up through the link.",
+                "createdEvent": "Those accounts that have created an event.",
+                "paidHost": "Accounts that signed up through the link and have since paid.",
+                "revenue": "Everything those accounts have paid, at any time.",
+                "sales": "Paid orders where this was the buyer's last link. Existing accounts count too.",
+                "salesRevenue": "What those orders paid."
             },
             "fields": {
                 "preset": "Where you'll share it",
@@ -6016,6 +6111,13 @@
                 "copied": "Copied",
                 "downloadQr": "Download QR",
                 "qr": "QR code for this link"
+            },
+            "linkSet": {
+                "english": "English links",
+                "greek": "Greek links",
+                "name": "Name",
+                "linkName": "Link name",
+                "create": "Create links"
             }
         },
         "campaignOverview": {
@@ -6075,6 +6177,44 @@
             "testSent": "Sent.",
             "push": { "on": "On", "off": "Off" },
             "problems": { "name": "Enter a name." }
+        },
+        "discountCampaigns": {
+            "create": "New discount campaign",
+            "createTitle": "New discount campaign",
+            "editTitle": "Edit discount campaign",
+            "empty": "No discount campaigns yet.",
+            "columns": {
+                "name": "Name",
+                "percent": "Discount %",
+                "status": "Status",
+                "dates": "Dates"
+            },
+            "fields": {
+                "name": "Name",
+                "percent": "Discount %",
+                "label": "Name at checkout",
+                "linkName": "Link name",
+                "startsAt": "Starts",
+                "endsAt": "Ends"
+            },
+            "stop": "Stop campaign",
+            "stopTitle": "Stop this campaign?",
+            "stopBody": "Prices go back to normal now.",
+            "stopConfirm": "Stop campaign",
+            "stopCancel": "Keep it running",
+            "delete": "Delete campaign",
+            "deleteTitle": "Delete this campaign?",
+            "deleteBody": "It won't go live.",
+            "links": {
+                "title": "Links",
+                "english": "English links",
+                "greek": "Greek links",
+                "visits": "Visits",
+                "sales": "Sales",
+                "salesRevenue": "Sales revenue",
+                "total": "Total",
+                "over": "This campaign is over. Don't use these links any more."
+            }
         },
         "siteNotices": {
             "create": "New notice",
@@ -6286,6 +6426,18 @@
         },
         "includedModules": "Included modules"
     },
+    "LiteHome": {
+        "actionsTitle": "Quick actions",
+        "actions": {
+            "qr": "QR code",
+            "share": "Share link",
+            "download": "Download all",
+            "upgrade": "Full StoryWall"
+        },
+        "shareCopied": "Link copied",
+        "qrSheetTitle": "Guest code",
+        "tabsLabel": "Sections"
+    },
     "GalleryPage": {
         "print": {
             "action": "Print",
@@ -6425,6 +6577,11 @@
             "A6": "A6 · 10.5 × 14.8 cm",
             "A5": "A5 · 14.8 × 21 cm"
         },
+        "perPage": {
+            "label": "Cards per page",
+            "one": "1 card",
+            "sheet": "{count} on A4"
+        },
         "templatesFailed": "Couldn't load the designs.",
         "retry": "Try again",
         "fields": {
@@ -6441,7 +6598,9 @@
         "lines": {
             "join": "Scan to join",
             "invitation": "Scan to open your invitation",
-            "gallery": "Scan to add your photos"
+            "gallery": "Scan to add your photos",
+            "guestWish": "Scan to leave a wish",
+            "guestBoth": "Scan to add your photos or leave a wish"
         }
     },
     "InvitationsQrPage": {
@@ -6524,6 +6683,7 @@
         "addonNotActive": "That add-on is not active.",
         "eventNotActive": "This event is not live yet.",
         "qrUploadAcceptanceRequired": "Confirm you are 16 or older and accept the Terms of Use and Community Guidelines to upload.",
+        "qrWishAcceptanceRequired": "Tick both boxes to send your wish.",
         "rateLimited": "Too many requests. Please wait a moment and try again.",
         "reportOwnContent": "You can't report your own content.",
         "rateLimitedWithWait": "Too many requests. Try again in {seconds}s.",
@@ -6567,6 +6727,10 @@
         "collaborationEarningNotPayable": "That earning cannot be marked paid.",
         "collaboratorPayoutDetailsIncomplete": "A partner's business or payout details are incomplete.",
         "campaignLinkTaken": "A campaign link with these values already exists.",
+        "discountCampaignInvalid": "Check the campaign's details.",
+        "discountCampaignOverlap": "Another campaign runs during these dates.",
+        "discountCampaignPriceTooLow": "This percent makes some plans too cheap to charge.",
+        "discountCampaignLinkNameTaken": "A campaign already uses this link name.",
         "subscriptionAlreadyActive": "A subscription is already running for this event.",
         "subscriptionNotLive": "There was no active subscription to stop - we have refreshed this page.",
         "subscriptionCancelFailed": "We couldn't stop it just now, so the subscription is still running and will still be charged. Please try again in a moment.",
@@ -7150,7 +7314,7 @@
         },
         "demo": {
             "eyebrow": "SEE IT IN ACTION",
-            "heading": ["Try the demo", "photo wall."],
+            "heading": ["Don't imagine it.", "See it."],
             "copyStart": "Open the",
             "copyDemo": "DEMO",
             "copyMiddle": "and see",
@@ -7199,6 +7363,7 @@
             "previous": "Previous feature",
             "next": "Next feature",
             "interactionHint": "Swipe or click",
+            "more": "Learn more",
             "items": [
                 {
                     "title": "INVITATION",
@@ -7252,6 +7417,8 @@
             "guestsUnlimited": "Unlimited guests",
             "storageUnlimited": "Unlimited storage",
             "mediaUnlimited": "Unlimited",
+            "liteHeading": "Only photos or wishes?",
+            "liteIntro": "Photo QR, wishbook, or both.",
             "everythingIn": "Everything in {plan}",
             "scheduleSessions": "{count, plural, one {up to # session} other {up to # sessions}}",
             "scheduleSessionsUnlimited": "unlimited sessions",
@@ -7636,7 +7803,8 @@
     "qrLink": {
         "default": {
             "eventJoinLabel": "Event Invite",
-            "mediaUploadLabel": "Photo upload"
+            "mediaUploadLabel": "Photo upload",
+            "guestLabel": "Guest code"
         }
     },
     "GiftMode": {
@@ -7804,7 +7972,7 @@
         "essentialLabel": "Essential",
         "essentialBody": "Keep the site working. Always on.",
         "analyticsLabel": "Analytics",
-        "analyticsBody": "Lets Google Analytics count visits and see which pages people use.",
+        "analyticsBody": "Lets Google Analytics count visits and see which pages people use, and lets us see which of our links led to a sign-up or a sale.",
         "adsLabel": "Advertising",
         "adsBody": "Lets Google Ads measure which ads bring people to StoryWall.",
         "save": "Save",
@@ -8737,8 +8905,10 @@
         },
         "pricing": {
             "kicker": "PRICING",
-            "title": "Every StoryWall package includes the wedding QR code.",
-            "body": "It isn't sold separately. Choose your package and how long it stays online, and you get the QR code with your whole wedding StoryWall.",
+            "title": "The wedding QR code, on its own or with your whole StoryWall.",
+            "body": "Every package here comes with the QR code for photos. Choose the one you need.",
+            "titleIncluded": "Every StoryWall package includes the wedding QR code.",
+            "bodyIncluded": "It isn't sold separately. Choose your package and how long it stays online, and you get the QR code with your whole wedding StoryWall.",
             "choose": "CHOOSE PACKAGE",
             "durationGroup": "{plan} package duration",
             "secure": "Secure payment",
@@ -8811,7 +8981,8 @@
                 },
                 {
                     "q": "How much does a QR code for wedding photos cost?",
-                    "a": "The QR code isn't sold separately. It's included in every StoryWall wedding package, together with your invitation, RSVPs and wedding wall, from {price}.",
+                    "a": "On its own, the QR code costs from {price}, with the photo gallery and printable QR cards. Every full wedding package includes it too, together with the wedding wall.",
+                    "aIncluded": "The QR code isn't sold separately. It's included in every StoryWall wedding package, together with your invitation, RSVPs and wedding wall, from {price}.",
                     "link": {
                         "label": "See the packages →",
                         "to": "pricing"
@@ -9222,6 +9393,7 @@
     },
     "ImageAlt": {
         "gift": "Gift",
+        "photoUpload": "Photo upload",
         "wishbook": "Wishbook",
         "eventCover": "Event cover photo",
         "eventCoverOf": "Cover photo of {name}",
@@ -9272,14 +9444,64 @@
                 "plain": "Three steps",
                 "grad": "to the event."
             },
-            "clients": {
-                "eyebrow": "What your clients get",
-                "plain": "Everything",
-                "grad": "the hosts and the guests see."
-            },
             "faq": "Questions",
             "apply": "Become a partner",
             "others": "Also for other professionals"
+        },
+        "renders": {
+            "vendors": {
+                "PLANNER": "Imera Events",
+                "VENUE": "Elaionas Estate",
+                "PHOTOGRAPHER": "Studio Fos",
+                "VIDEOGRAPHER": "Kadro Films",
+                "DECORATION": "Anthos Decor",
+                "CATERING": "Gefseis Catering",
+                "MUSIC": "DJ Notos"
+            },
+            "feedCard": {
+                "tagline": "With you from start to finish."
+            },
+            "posts": {
+                "body": "What a lovely evening. Thank you!"
+            },
+            "live": {
+                "songs": [
+                    {
+                        "title": "Zorba's Dance",
+                        "artist": "Mikis Theodorakis"
+                    },
+                    {
+                        "title": "Dancing Queen",
+                        "artist": "ABBA"
+                    },
+                    {
+                        "title": "Perfect",
+                        "artist": "Ed Sheeran"
+                    }
+                ]
+            },
+            "portal": {
+                "events": [
+                    "Anna & Nikos",
+                    "Lydia's baptism"
+                ]
+            },
+            "schedule": {
+                "ceremonyPlace": "Saint Nicholas Church",
+                "receptionPlace": "Elaionas Estate"
+            },
+            "announce": {
+                "author": "Eleni Roussou",
+                "body": "Buses to the ceremony leave the hotel at 17:00."
+            },
+            "rsvp": {
+                "couple": "Nefeli & Orestis",
+                "guests": [
+                    "Nantia Efthymiou",
+                    "Stelios Raptis",
+                    "Alexandros Markou"
+                ]
+            }
         },
         "heroCta": "Apply to partner",
         "tools": {
@@ -9371,137 +9593,9 @@
             },
             {
                 "title": "Open your vendor page",
-                "body": "Your tools and your reach are there. They work until the date shown on the page."
+                "body": "All your tools are in one place. You also see how many guests opened your details."
             }
         ],
-        "planNote": "Professional tools work when the event’s plan includes them.",
-        "clients": {
-            "hosts": "The hosts",
-            "guests": "The guests",
-            "phases": {
-                "before": "Before",
-                "during": "On the day",
-                "after": "After"
-            },
-            "host": {
-                "before": [
-                    {
-                        "title": "Host dashboard",
-                        "body": "Members, invitations, RSVPs and days to go, on one page."
-                    },
-                    {
-                        "title": "Personal invitations",
-                        "body": "Invite each guest by name and email."
-                    },
-                    {
-                        "title": "Printable QR cards",
-                        "body": "Designed A6 or A5 cards with the event’s code, as PDF or PNG."
-                    },
-                    {
-                        "title": "Co-hosts",
-                        "body": "Other people help run the event."
-                    },
-                    {
-                        "title": "Theme",
-                        "body": "An illustration and background colour for the event."
-                    }
-                ],
-                "during": [
-                    {
-                        "title": "Announcements",
-                        "body": "One message for everyone, when it’s needed."
-                    },
-                    {
-                        "title": "Quiz and polls",
-                        "body": "Questions with a right answer and a leaderboard, or simple polls."
-                    }
-                ],
-                "after": [
-                    {
-                        "title": "Download everything",
-                        "body": "Every photo and video in one archive."
-                    },
-                    {
-                        "title": "Wishbook as a PDF",
-                        "body": "Every message in a printable book. Favourites get a page of their own."
-                    },
-                    {
-                        "title": "Pick prints",
-                        "body": "Choose photos, sizes and copies for the photographer."
-                    }
-                ]
-            },
-            "guest": {
-                "before": [
-                    {
-                        "title": "Join with a QR code",
-                        "body": "Scan or open the link. Works on any phone, no app needed."
-                    },
-                    {
-                        "title": "RSVP",
-                        "body": "Say if they’re coming, how many adults and children, and to which parts."
-                    },
-                    {
-                        "title": "Schedule and maps",
-                        "body": "Each session with time, place and directions."
-                    },
-                    {
-                        "title": "Gift account",
-                        "body": "Bank details for a monetary gift, with a copy-IBAN button."
-                    }
-                ],
-                "during": [
-                    {
-                        "title": "Posts and stories",
-                        "body": "Messages, photos, reactions and comments on the event wall."
-                    },
-                    {
-                        "title": "Upload without signing in",
-                        "body": "With the gallery QR they upload photos and videos without an account."
-                    },
-                    {
-                        "title": "Playlist",
-                        "body": "Suggest songs and vote for their favourites."
-                    },
-                    {
-                        "title": "Vendor list",
-                        "body": "See who worked on the event and how to find them."
-                    }
-                ],
-                "after": [
-                    {
-                        "title": "Gallery",
-                        "body": "Every photo and video, from guests and professionals, in one place."
-                    },
-                    {
-                        "title": "Wishbook",
-                        "body": "Leave a message for the hosts to keep."
-                    },
-                    {
-                        "title": "Download everything",
-                        "body": "A day after the event ends, every member can download all photos and videos."
-                    }
-                ]
-            }
-        },
-        "strip": {
-            "qr": {
-                "caption": "Guests upload with a QR code",
-                "alt": "A guest scanning the StoryWall QR code at the table"
-            },
-            "wish": {
-                "caption": "Guests leave wishes in the wishbook",
-                "alt": "A guest writing a wish on StoryWall"
-            },
-            "invite": {
-                "caption": "The invitation on their phone",
-                "alt": "A guest viewing the invitation on a phone"
-            },
-            "rsvp": {
-                "caption": "Guests answer the RSVP",
-                "alt": "A guest confirming the RSVP"
-            }
-        },
         "types": {
             "PLANNER": {
                 "meta": {
@@ -9836,5 +9930,18 @@
             "topicRequired": "Pick a topic.",
             "messageRequired": "Write a message."
         }
+    },
+    "InvitationRenderer": {
+        "mainArtAlt": "Invitation artwork",
+        "imageAlt": "Invitation decoration",
+        "linkFallback": "See more"
+    },
+    "SaveMyDatePreview": {
+        "metaTitle": "Invitation preview"
+    },
+    "Inviart": {
+        "heading": "Invitations and more by INVIART",
+        "cta": "See it on INVIART",
+        "was": "Was"
     }
 }

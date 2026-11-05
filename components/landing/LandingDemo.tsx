@@ -14,8 +14,8 @@ type LandingDemoProps = {
     children?: ReactNode;
     // An occasion page's own sentence in place of the landing's; may hold bold words.
     copy?: ReactNode;
-    // true: the landing's eyebrow in its own column. false: no eyebrow, the heading starts on the left.
-    // A string: that kicker right above the heading, keeping the three columns.
+    // true: the landing's eyebrow right above the heading. false: no eyebrow, the heading starts on the left.
+    // A string: that kicker in its place.
     eyebrow?: boolean | string;
     heading?: string[];
     // An occasion page's own heading size, over the landing's.
@@ -36,7 +36,7 @@ export async function LandingDemo({
 }: LandingDemoProps) {
     const t = await getTranslations('LandingPage.demo');
     const heading = headingOverride ?? (t.raw('heading') as string[]);
-    const kicker = typeof eyebrow === 'string' ? eyebrow : null;
+    const kicker = typeof eyebrow === 'string' ? eyebrow : eyebrow ? t('eyebrow') : null;
 
     return (
         <section
@@ -45,19 +45,11 @@ export async function LandingDemo({
                 // With a kicker the columns keep their shares and the picture overflows its own, as in the occasion design.
                 kicker
                     ? 'min-[761px]:grid-cols-[minmax(0,0.5fr)_minmax(0,1.42fr)_minmax(0,0.92fr)] min-[761px]:gap-y-0'
-                    : eyebrow
-                      ? 'min-[761px]:grid-cols-[0.5fr_1.42fr_0.92fr]'
-                      : 'min-[761px]:grid-cols-[1.42fr_0.92fr]',
+                    : 'min-[761px]:grid-cols-[1.42fr_0.92fr]',
             )}
             id="demo"
             {...landingSectionAttributes('demo')}
         >
-            {/* Eyebrow */}
-            {eyebrow === true ? (
-                <div className="pt-3 text-[10px] font-black tracking-[0.15em] uppercase min-[761px]:col-start-1 min-[761px]:row-start-1 min-[761px]:mt-3 min-[761px]:self-start min-[761px]:pt-0">
-                    {t('eyebrow')}
-                </div>
-            ) : null}
             {/* Kicker, over the heading */}
             {kicker ? (
                 <div className="pt-3 text-[10px] font-black tracking-[0.15em] uppercase min-[761px]:col-start-2 min-[761px]:row-start-1 min-[761px]:mb-4 min-[761px]:self-end min-[761px]:pt-0 min-[761px]:text-[13px]">
@@ -70,9 +62,7 @@ export async function LandingDemo({
                     'min-[761px]:self-center',
                     kicker
                         ? 'min-[761px]:col-start-2 min-[761px]:row-start-2 min-[761px]:self-start'
-                        : eyebrow
-                          ? 'min-[761px]:col-start-2 min-[761px]:row-start-1'
-                          : 'min-[761px]:col-start-1 min-[761px]:row-start-1',
+                        : 'min-[761px]:col-start-1 min-[761px]:row-start-1',
                 )}
             >
                 <h2

@@ -9,7 +9,6 @@ import { LandingFooter } from '@/components/landing/LandingFooter';
 import { GradientIconDefs } from '@/components/vendorPages/GradientIcon';
 import { VendorPageAlways } from '@/components/vendorPages/VendorPageAlways';
 import { VendorPageApply } from '@/components/vendorPages/VendorPageApply';
-import { VendorPageClients } from '@/components/vendorPages/VendorPageClients';
 import { VendorPageFaq } from '@/components/vendorPages/VendorPageFaq';
 import { VendorPageHero } from '@/components/vendorPages/VendorPageHero';
 import { VendorPageLinks } from '@/components/vendorPages/VendorPageLinks';
@@ -25,6 +24,7 @@ import { endpoints } from '@/lib/api/endpoints';
 import { serverPublicConfigGet } from '@/lib/api/serverFetch';
 import type { AppConfigResponseDto } from '@/lib/api/types';
 import { makeQueryClient } from '@/lib/queryClient';
+import { vendorPageHasTools } from '@/lib/vendorPages';
 import { LandingMotionProvider } from '@/providers/LandingMotionProvider';
 
 // One page per vendor type, under the partner page.
@@ -49,16 +49,14 @@ export async function VendorPage({ type }: { type: VendorPageType }) {
                     <ForBusinessHeader />
                     {/* Hero */}
                     <VendorPageHero type={type} />
-                    {/* Tools */}
-                    <VendorPageTools type={type} />
+                    {/* Tools, or what every vendor gets in their place */}
+                    {vendorPageHasTools(type) ? <VendorPageTools type={type} /> : <VendorPageAlways type={type} />}
                     {/* Every event */}
-                    <VendorPageAlways />
+                    {vendorPageHasTools(type) && <VendorPageAlways type={type} />}
                     {/* Partner program */}
                     <VendorPagePartner type={type} />
                     {/* How you start */}
                     <VendorPageSteps />
-                    {/* What your clients get */}
-                    <VendorPageClients />
                     {/* FAQ */}
                     <VendorPageFaq type={type} />
                     {/* Apply */}

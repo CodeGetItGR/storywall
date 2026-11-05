@@ -24,6 +24,7 @@ import {
     PackagePlus,
     Palette,
     PartyPopper,
+    Percent,
     QrCode,
     Receipt,
     Send,
@@ -31,6 +32,7 @@ import {
     Smartphone,
     Smile,
     Star,
+    Store,
     TicketPercent,
     TrendingUp,
     Type,
@@ -62,7 +64,9 @@ export type AdminTab =
     | 'paidServices'
     | 'outreach'
     | 'outreachRequests'
+    | 'inviart'
     | 'discountCodes'
+    | 'discountCampaigns'
     | 'guestOffer'
     | 'partnerApplications'
     | 'collaborations'
@@ -119,7 +123,9 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#cost-tracking': 'costTracking',
     '#paid-services': 'paidServices',
     '#outreach-requests': 'outreachRequests',
+    '#inviart': 'inviart',
     '#discount-codes': 'discountCodes',
+    '#discount-campaigns': 'discountCampaigns',
     '#guest-offer': 'guestOffer',
     '#partner-cards': 'partnerCards',
     '#reaction-types': 'reactionTypes',
@@ -150,7 +156,9 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     paidServices: '#paid-services',
     outreach: OUTREACH_HASH_ROOT,
     outreachRequests: '#outreach-requests',
+    inviart: '#inviart',
     discountCodes: '#discount-codes',
+    discountCampaigns: '#discount-campaigns',
     guestOffer: '#guest-offer',
     partnerApplications: PARTNER_APPLICATIONS_HASH_ROOT,
     collaborations: COLLABORATIONS_HASH_ROOT,
@@ -273,7 +281,9 @@ export function AdminNavigationProvider({ children, role = 'ADMIN' }: { children
             { key: 'paidServices', label: t('paidServices'), icon: PackagePlus },
             { key: 'outreach', label: t('outreach'), icon: Send },
             { key: 'outreachRequests', label: t('outreachRequests'), icon: ListChecks },
+            { key: 'inviart', label: t('inviart'), icon: Store },
             { key: 'discountCodes', label: t('discountCodes'), icon: TicketPercent },
+            { key: 'discountCampaigns', label: t('discountCampaigns'), icon: Percent },
             { key: 'guestOffer', label: t('guestOffer'), icon: Gift },
             { key: 'appReviews', label: t('appReviews'), icon: Star },
             { key: 'campaignOverview', label: t('campaignOverview'), icon: ChartLine },

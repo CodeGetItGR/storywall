@@ -121,36 +121,54 @@ const MODULE_NAME = (moduleKey: string) => MODULES.find((module_) => module_.mod
 
 describe('formatLandingOptionPrice', () => {
     it('renders a whole-euro price in the existing landing style (no decimals, suffixed symbol)', () => {
-        expect(formatLandingOptionPrice(makePlan(), makeOption({ priceAmountMinor: 7900 }))).toBe('79€');
+        expect(formatLandingOptionPrice(makePlan(), makeOption({ priceAmountMinor: 7900 }), 'en')).toBe('79€');
+        expect(formatLandingOptionPrice(makePlan(), makeOption({ priceAmountMinor: 7900 }), 'el')).toBe('79€');
+    });
+
+    // The server and every browser must agree, or a Greek browser fails hydration on the plans.
+    it('writes cents in the same style, with the separator of the page language', () => {
+        const plan = makePlan({ discountPercent: 50 });
+        const option = makeOption({ priceAmountMinor: 7900 });
+
+        expect(formatLandingOptionPrice(plan, option, 'el')).toBe('39,50€');
+        expect(formatLandingOptionPrice(plan, option, 'en')).toBe('39.50€');
     });
 
     it("applies the plan's active discount before formatting", () => {
-        expect(formatLandingOptionPrice(makePlan({ discountPercent: 20 }), makeOption({ priceAmountMinor: 10000 }))).toBe('80€');
+        expect(formatLandingOptionPrice(makePlan({ discountPercent: 20 }), makeOption({ priceAmountMinor: 10000 }), 'en')).toBe('80€');
     });
 
     it('returns null when the plan has no currency', () => {
-        expect(formatLandingOptionPrice(makePlan({ priceCurrency: null }), makeOption())).toBeNull();
+        expect(formatLandingOptionPrice(makePlan({ priceCurrency: null }), makeOption(), 'en')).toBeNull();
     });
 
     it("shows a duration's promo price in place of the plan's percent", () => {
         expect(
-            formatLandingOptionPrice(makePlan({ discountPercent: 50 }), makeOption({ priceAmountMinor: 12900, promoPriceAmountMinor: 9900 })),
+            formatLandingOptionPrice(makePlan({ discountPercent: 50 }), makeOption({ priceAmountMinor: 12900, promoPriceAmountMinor: 9900 }), 'en'),
         ).toBe('99€');
     });
 });
 
 describe('formatLandingListPrice', () => {
     it('gives the price before a promotion that lowers the duration', () => {
-        expect(formatLandingListPrice(makePlan(), makeOption({ priceAmountMinor: 12900, promoPriceAmountMinor: 9900 }))).toBe('129€');
-        expect(formatLandingListPrice(makePlan({ discountPercent: 20 }), makeOption({ priceAmountMinor: 10000 }))).toBe('100€');
+        expect(formatLandingListPrice(makePlan(), makeOption({ priceAmountMinor: 12900, promoPriceAmountMinor: 9900 }), 'en')).toBe('129€');
+        expect(formatLandingListPrice(makePlan({ discountPercent: 20 }), makeOption({ priceAmountMinor: 10000 }), 'en')).toBe('100€');
+    });
+
+    it('writes cents in the same style as the price beside it', () => {
+        const option = makeOption({ priceAmountMinor: 7950, promoPriceAmountMinor: 3950 });
+
+        expect(formatLandingListPrice(makePlan(), option, 'el')).toBe('79,50€');
+        expect(formatLandingListPrice(makePlan(), option, 'en')).toBe('79.50€');
     });
 
     it('is null when nothing lowers the duration', () => {
-        expect(formatLandingListPrice(makePlan(), makeOption())).toBeNull();
+        expect(formatLandingListPrice(makePlan(), makeOption(), 'en')).toBeNull();
         expect(
             formatLandingListPrice(
                 makePlan({ discountEndsAt: '2000-01-01T00:00:00Z' }),
                 makeOption({ priceAmountMinor: 12900, promoPriceAmountMinor: 9900 }),
+                'en',
             ),
         ).toBeNull();
     });
@@ -186,7 +204,7 @@ describe('buildLandingPlan', () => {
     it('builds a full card for a plan with no previous tier', () => {
         const plan = makePlan({ moduleKeys: ['gallery'], maxMembers: 150, storageBytes: 16 * 1024 * 1024 * 1024 });
 
-        const card = buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY);
+        const card = buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY, 'en');
 
         expect(card).not.toBeNull();
         expect(card?.code).toBe('START');
@@ -202,7 +220,7 @@ describe('buildLandingPlan', () => {
         const plan = makePlan({ moduleKeys: ['gallery'] });
         const moduleName = (moduleKey: string, eventTypeKey: string | null) => (eventTypeKey === 'WEDDING' ? `${moduleKey} for weddings` : moduleKey);
 
-        expect(buildLandingPlan(plan, undefined, MODULES, MEDIA, moduleName, COPY)?.features).toEqual(['gallery for weddings']);
+        expect(buildLandingPlan(plan, undefined, MODULES, MEDIA, moduleName, COPY, 'en')?.features).toEqual(['gallery for weddings']);
     });
 
     it('lists live durations in display order and starts on the shortest', () => {
@@ -214,7 +232,7 @@ describe('buildLandingPlan', () => {
             ],
         });
 
-        const card = buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY);
+        const card = buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY, 'en');
 
         expect(card?.durations.map((duration) => duration.id)).toEqual(['opt-6', 'opt-3']);
         expect(card?.defaultDurationId).toBe('opt-3');
@@ -224,38 +242,59 @@ describe('buildLandingPlan', () => {
         const previous = makePlan({ name: 'START', moduleKeys: ['gallery'] });
         const plan = makePlan({ name: 'STORY', moduleKeys: ['gallery', 'stories', 'rsvp', 'wishbook'] });
 
-        const card = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY);
+        const card = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY, 'en');
 
         expect(card?.features).toEqual(['Everything in START', 'RSVP', 'Stories', 'Guestbook']);
         expect(card?.includedFeatures).toEqual(['Gallery']);
-    });
-
-    it('keeps the prior-tier rollup when catalog rows do not repeat inherited modules', () => {
-        const previous = makePlan({ name: 'START', moduleKeys: ['gallery', 'rsvp'] });
-        const plan = makePlan({ name: 'STORY', moduleKeys: ['stories'] });
-
-        const card = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY);
-
-        expect(card?.features).toEqual(['Everything in START', 'Stories']);
     });
 
     it('omits the rollup detail when the previous tier has no modules', () => {
         const previous = makePlan({ name: 'START', moduleKeys: [] });
         const plan = makePlan({ name: 'STORY', moduleKeys: ['stories'] });
 
-        const card = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY);
+        const card = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY, 'en');
 
         expect(card?.includedFeatures).toBeUndefined();
     });
 
-    it('uses the cumulative inherited modules for later tiers with sparse catalog rows', () => {
-        const previous = makePlan({ name: 'STORY', moduleKeys: ['stories'] });
-        const plan = makePlan({ name: 'SIGNATURE', moduleKeys: ['wishbook'] });
+    it('rolls up only the previous card, so a card never lists a module its plan lacks', () => {
+        const wishbook = makePlan({ name: 'WISHBOOK', moduleKeys: ['wishbook'] });
+        const qr = makePlan({ name: 'QR', moduleKeys: ['gallery'] });
 
-        const card = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY, ['gallery', 'rsvp', 'stories', 'gallery']);
+        const card = buildLandingPlan(qr, wishbook, MODULES, MEDIA, MODULE_NAME, COPY, 'en');
 
-        expect(card?.features).toEqual(['Everything in STORY', 'Guestbook']);
-        expect(card?.includedFeatures).toEqual(['Gallery', 'RSVP', 'Stories']);
+        expect(card?.features).toEqual(['Gallery']);
+        expect(card?.includedFeatures).toBeUndefined();
+    });
+
+    it('rolls up a lite plan that adds to the one before it', () => {
+        const qr = makePlan({ name: 'QR', moduleKeys: ['gallery'] });
+        const bundle = makePlan({ name: 'BUNDLE', moduleKeys: ['gallery', 'wishbook'] });
+
+        const card = buildLandingPlan(bundle, qr, MODULES, MEDIA, MODULE_NAME, COPY, 'en');
+
+        expect(card?.features).toEqual(['Everything in QR', 'Guestbook']);
+        expect(card?.includedFeatures).toEqual(['Gallery']);
+    });
+
+    it('lists a full plan in full after a lite one that has modules it lacks', () => {
+        const bundle = makePlan({ name: 'BUNDLE', moduleKeys: ['gallery', 'wishbook'] });
+        const start = makePlan({ name: 'START', moduleKeys: ['gallery', 'rsvp'] });
+
+        const card = buildLandingPlan(start, bundle, MODULES, MEDIA, MODULE_NAME, COPY, 'en');
+
+        expect(card?.features).toEqual(['Gallery', 'RSVP']);
+        expect(card?.includedFeatures).toBeUndefined();
+    });
+
+    it('still rolls up STORY after START', () => {
+        const start = makePlan({ name: 'START', moduleKeys: ['gallery', 'posts'] });
+        const story = makePlan({ name: 'STORY', moduleKeys: ['gallery', 'posts', 'rsvp'] });
+
+        const card = buildLandingPlan(story, start, MODULES, MEDIA, MODULE_NAME, COPY, 'en');
+
+        expect(card?.features).toEqual(['Everything in START', 'RSVP']);
+        expect(card?.includedFeatures).toEqual(['Gallery']);
     });
 
     it("labels modules from the plan's own config", () => {
@@ -264,7 +303,7 @@ describe('buildLandingPlan', () => {
             moduleConfigs: { gallery: { qrUploadEnabled: true }, co_hosts: { maxCoHosts: 2 }, schedule: {} },
         });
 
-        const card = buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY);
+        const card = buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY, 'en');
 
         expect(card?.features).toEqual(['Gallery · QR upload', 'Up to 2 co-hosts', 'Schedule · unlimited sessions']);
     });
@@ -272,7 +311,7 @@ describe('buildLandingPlan', () => {
     it('hides a module whose count cap is 0', () => {
         const plan = makePlan({ moduleKeys: ['gallery', 'co_hosts'], moduleConfigs: { gallery: {}, co_hosts: { maxCoHosts: 0 } } });
 
-        const card = buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY);
+        const card = buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY, 'en');
 
         expect(card?.features).toEqual(['Gallery']);
     });
@@ -289,7 +328,7 @@ describe('buildLandingPlan', () => {
             moduleConfigs: { gallery: { qrUploadEnabled: false }, schedule: { maxSections: 10 }, rsvp: {} },
         });
 
-        const card = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY);
+        const card = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY, 'en');
 
         expect(card?.features).toEqual(['Everything in START', 'RSVP', 'Schedule · up to 10 sessions']);
         expect(card?.includedFeatures).toEqual(['Gallery']);
@@ -298,7 +337,7 @@ describe('buildLandingPlan', () => {
     it('renders "Unlimited" copy for null storage and members', () => {
         const plan = makePlan({ storageBytes: null, maxMembers: null });
 
-        const card = buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY);
+        const card = buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY, 'en');
 
         expect(card?.storage).toBe('Unlimited storage');
         expect(card?.audience).toBe('Unlimited guests');
@@ -307,9 +346,9 @@ describe('buildLandingPlan', () => {
     });
 
     it('returns null for a plan with no duration on sale', () => {
-        expect(buildLandingPlan(makePlan({ initialOptions: [] }), undefined, MODULES, MEDIA, MODULE_NAME, COPY)).toBeNull();
+        expect(buildLandingPlan(makePlan({ initialOptions: [] }), undefined, MODULES, MEDIA, MODULE_NAME, COPY, 'en')).toBeNull();
         expect(
-            buildLandingPlan(makePlan({ initialOptions: [makeOption({ active: false })] }), undefined, MODULES, MEDIA, MODULE_NAME, COPY),
+            buildLandingPlan(makePlan({ initialOptions: [makeOption({ active: false })] }), undefined, MODULES, MEDIA, MODULE_NAME, COPY, 'en'),
         ).toBeNull();
     });
 });
@@ -317,7 +356,7 @@ describe('buildLandingPlan', () => {
 describe('buildLandingPlan member roles line', () => {
     function card(allowCustom: boolean | undefined, catalog: Record<string, MemberRoleCatalogDto[]> = ROLES) {
         const plan = makePlan({ moduleKeys: ['member_roles'], moduleConfigs: { member_roles: allowCustom === undefined ? {} : { allowCustom } } });
-        return buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY, undefined, catalog);
+        return buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY, 'en', catalog);
     }
 
     it('counts active roles only and names the first two in catalog order', () => {
@@ -338,14 +377,14 @@ describe('buildLandingPlan member roles line', () => {
 
     it('falls back to the module name without moduleConfigs', () => {
         const plan = makePlan({ moduleKeys: ['member_roles'], moduleConfigs: null });
-        expect(buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY, undefined, ROLES)?.features).toEqual(['Member roles']);
+        expect(buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY, 'en', ROLES)?.features).toEqual(['Member roles']);
     });
 
     it('lists the line on a higher tier that turns on custom roles', () => {
         const previous = makePlan({ name: 'START', moduleKeys: ['member_roles'], moduleConfigs: { member_roles: { allowCustom: false } } });
         const plan = makePlan({ name: 'STORY', moduleKeys: ['member_roles'], moduleConfigs: { member_roles: { allowCustom: true } } });
 
-        const result = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY, undefined, ROLES);
+        const result = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY, 'en', ROLES);
 
         expect(result?.features).toEqual(['Everything in START', '3 member roles (a, b) + your own']);
         expect(result?.includedFeatures).toBeUndefined();

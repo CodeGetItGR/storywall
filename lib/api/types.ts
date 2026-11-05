@@ -158,6 +158,12 @@ export interface PlanTierResponseDto {
     // The promotion window, for the percent and every duration's promo price alike. null = open bound.
     discountStartsAt: string | null;
     discountEndsAt: string | null;
+    // The discount campaign that is live or next up, on public responses only. The browser checks the
+    // dates itself, because the catalog is cached. Always compared with the plan's own promotion.
+    campaignDiscountPercent?: number | null;
+    campaignDiscountLabel?: string | null;
+    campaignDiscountStartsAt?: string | null;
+    campaignDiscountEndsAt?: string | null;
     moduleKeys: ModuleKey[];
     // MODULE_UNLOCK upsells for this plan, server-cross-referenced. Only null
     // from the admin catalog endpoints (GET /api/admin/plan-tiers, .../{id}),
@@ -355,6 +361,41 @@ export interface AdminLandingCategoryEventTypesDto {
 export type SiteNoticeTone = 'INFO' | 'OFFER' | 'WARNING' | 'CRITICAL';
 export type SiteNoticeArea = 'EVERYWHERE' | 'PUBLIC' | 'HOST' | 'GUEST' | 'ADMIN';
 export type SiteNoticeStatus = 'LIVE' | 'SCHEDULED' | 'ENDED' | 'OFF';
+
+// The live campaign. The app's own route sends it bare, or null without one.
+export interface DiscountCampaignLiveDto {
+    id: string;
+    percent: number;
+    startsAt: string;
+    endsAt: string;
+}
+
+// GET /api/public/discount-campaign: always 200, campaign null without a live one.
+export interface DiscountCampaignLiveResponseDto {
+    campaign: DiscountCampaignLiveDto | null;
+}
+
+export interface AdminDiscountCampaignDto {
+    id: string;
+    name: string;
+    percent: number;
+    label: string | null;
+    linkName: string;
+    startsAt: string;
+    endsAt: string;
+    status: SiteNoticeStatus;
+    createdAt: string;
+}
+
+export interface DiscountCampaignRequestDto {
+    name: string;
+    percent: number;
+    label: string | null;
+    linkName: string;
+    // Null means now.
+    startsAt: string | null;
+    endsAt: string;
+}
 
 export interface SiteNoticeLiveDto {
     id: string;
@@ -617,6 +658,12 @@ export interface MemberRoleOptionsDto {
 
 // PUT /api/event-members/{id}/role: exactly one field.
 export type MemberRoleRequestDto = { roleKey: string; customRole?: never } | { customRole: string; roleKey?: never };
+
+// GET /api/inviart/collections and the admin list: the INVIART collection an occasion shows.
+export interface InviartCollectionDto {
+    eventType: EventTypeConvention;
+    collectionHandle: string;
+}
 
 export interface AppConfigResponseDto {
     featureFlags: PlatformFeatureFlagResponseDto[];
@@ -1048,10 +1095,44 @@ export interface EventThemeFontDto {
 
 // QR card layout (qr-card-layout-editor spec): boxes in A6 millimetres from the card's top-left corner.
 export type QrCardTextAlign = 'left' | 'center' | 'right';
+// Boxes may overlap (KAN-103): the code draws on top, then the fields in order.
 export interface QrCardLayoutDto {
-    title: { x: number; y: number; width: number; height: number; maxSize: number; align: QrCardTextAlign };
+    title: { x: number; y: number; width: number; height: number; maxSize: number; align: QrCardTextAlign } | null; // null = removed
     code: { x: number; y: number; size: number; panel: boolean; radius: number };
-    lines: { x: number; y: number; width: number; height: number; textSize: number; align: QrCardTextAlign };
+    // text: the design's scan-line wording by QrCardWordingKey, en and/or el. A missing one prints the standard line.
+    lines: {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        textSize: number;
+        align: QrCardTextAlign;
+        text?: Partial<Record<QrCardWordingKey, LocalizedText>> | null;
+    };
+    fields?: QrCardTextFieldDto[]; // up to 5; absent on layouts saved before KAN-103
+}
+
+// The scan lines a design can word: one per thing a code opens (QrCardPage.lines), and the gift card's.
+export type QrCardWordingKey = 'join' | 'invitation' | 'gallery' | 'guestWish' | 'guestBoth' | 'gift';
+
+// fixed: prints `text`. host: prints what the host types (nothing when empty), with `label` and `placeholder` on the input.
+export type QrCardFieldKind = 'fixed' | 'host';
+export type QrCardFieldFont = 'heading' | 'body';
+export interface QrCardTextFieldDto {
+    id: string;
+    kind: QrCardFieldKind;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    textSize: number;
+    align: QrCardTextAlign;
+    font: QrCardFieldFont;
+    bold: boolean;
+    color: string; // #RRGGBB
+    text: LocalizedText | null; // fixed only, en + el
+    label: LocalizedText | null; // host only, en + el
+    placeholder: LocalizedText | null; // host only, en + el, may be blank
 }
 
 // The paper sizes a card prints at. One SVG serves both: A5 is A6 drawn larger.
@@ -1682,8 +1763,16 @@ export interface WithdrawalConsentDto {
     termsVersion: string;
 }
 
+// The last campaign link the browser came through. Kept only when it matches a saved link.
+export interface CheckoutAttributionDto {
+    source: string;
+    medium: string;
+    campaign: string;
+}
+
 // POST /api/events/{eventId}/checkout — host, DRAFT only (billing-fe-guide §6).
 export interface CheckoutRequestDto extends WithdrawalConsentDto {
+    attribution?: CheckoutAttributionDto;
     collaborationCode?: string;
     // Required when the code's preview carried partnerBranding (else 400); ignored otherwise.
     acceptsPartnerBranding?: boolean;
@@ -2002,6 +2091,7 @@ export interface VoidCollaborationRedemptionRequestDto {
 }
 // POST /api/events/{eventId}/upgrade-checkout — host, ACTIVE only (billing-fe-guide §7d).
 export interface UpgradeCheckoutRequestDto extends WithdrawalConsentDto {
+    attribution?: CheckoutAttributionDto;
     planTierCode: PlanTierCode;
     // Required since 2026-09-23: one of that plan's options[].coverageOptionId.
     coverageOptionId: string;
@@ -2688,6 +2778,9 @@ export interface CampaignLinkDto {
     utmMedium: string;
     utmCampaign: string;
     createdAt: string;
+    // On links made as a set: the set's name, and the anchor added after the query.
+    linkGroup?: string | null;
+    destinationAnchor?: string | null;
 }
 
 export interface CampaignLinkRequestDto {
@@ -2696,6 +2789,20 @@ export interface CampaignLinkRequestDto {
     utmSource: string;
     utmMedium: string;
     utmCampaign: string;
+}
+
+export type CampaignLinkLanguage = 'en' | 'el';
+
+// POST /api/admin/campaign-links/sets. Creates whichever of the 8 links are missing.
+export interface CampaignLinkSetRequestDto {
+    name: string;
+    linkName: string;
+    language: CampaignLinkLanguage;
+}
+
+export interface CampaignLinkSetDto {
+    links: CampaignLinkDto[];
+    created: number;
 }
 
 // GET /api/admin/metrics/campaigns. Visits and landing page clicks (saved links only) and sign-ups in
@@ -2717,6 +2824,10 @@ export interface CampaignRowDto {
     paidHost: number;
     // Null for a MARKETING caller: the server leaves revenue out.
     revenueMinorByCurrency: Record<string, number> | null;
+    // Paid orders credited to this link in the range, whenever the buyer signed up.
+    sales: number;
+    // Null for a MARKETING caller, like revenue.
+    salesRevenueMinorByCurrency: Record<string, number> | null;
 }
 
 // GET /api/admin/metrics/campaigns/overview. Every saved link, one utm source (?source=) or one link
@@ -2939,7 +3050,11 @@ export interface CostSummaryResponseDto {
     providerActuals: ProviderActualDto[];
 }
 
-export type QrTargetType = 'EVENT_JOIN' | 'MEDIA_UPLOAD' | 'INVITATION';
+// GUEST: the one code a lite event (a plan without posts) gets; only the system makes it. Its scan lists guestActions.
+// See guestwall-be docs/fe-guides/lite-tiers-fe-integration.md §3.
+export type QrTargetType = 'EVENT_JOIN' | 'MEDIA_UPLOAD' | 'INVITATION' | 'GUEST';
+// What a scanner can do without an account, in display order.
+export type QrGuestAction = 'UPLOAD' | 'WISH';
 export type QrLinkStatus = 'ACTIVE' | 'REVOKED' | 'EXPIRED' | 'TARGET_UNAVAILABLE';
 
 export interface QrLinkRequestDto {
@@ -3001,6 +3116,8 @@ export interface QrLinkStatsDto {
 export interface QrLinkResolutionDto {
     status: QrLinkStatus;
     targetType: QrTargetType;
+    // [] unless the code is ACTIVE: GUEST lists UPLOAD and/or WISH, MEDIA_UPLOAD lists UPLOAD.
+    guestActions?: QrGuestAction[];
     eventId?: string;
     eventTitle?: string;
     eventSubtitle?: string | null;
@@ -3014,6 +3131,21 @@ export interface QrLinkResolutionDto {
     inviteToken?: string;
     requiresAuth?: boolean;
     requiresGuestKey?: boolean;
+}
+
+// POST /api/qr/{token}/wishes: a wish left through a GUEST code, with no account. See
+// guestwall-be docs/fe-guides/lite-tiers-fe-integration.md §4.
+export interface QrWishRequestDto {
+    guestName: string;
+    message: string;
+    ageConfirmed: true;
+    acceptedTermsVersion: string;
+    acceptedGuidelinesVersion: string;
+}
+
+export interface QrWishResponseDto {
+    id: string;
+    createdAt: string;
 }
 
 // provider + providerEventId identify a delivery; there is no separate id.

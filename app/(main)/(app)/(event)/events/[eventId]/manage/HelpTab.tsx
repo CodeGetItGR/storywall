@@ -9,7 +9,9 @@ import { useModuleCopy } from '@/hooks/useModuleCopy';
 import type { EventLocationDto, EventModuleResponseDto, EventScheduleDto, EventSessionResponseDto, EventTypeConvention } from '@/lib/api/types';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import { isModuleAvailable } from '@/lib/eventLifecycle';
+import { isLiteEvent } from '@/lib/liteEvents';
 import { routes } from '@/lib/routes';
+import { useActiveEvent } from '@/providers/EventProvider';
 
 export default function HelpTab({
     eventId,
@@ -37,6 +39,8 @@ export default function HelpTab({
     const enabledModuleKeys = new Set(eventModules.filter((module_) => module_.isEnabled && module_.isAvailable).map((module_) => module_.moduleKey));
     const hasGiftAccountModule = enabledModuleKeys.has('wishlist');
     const rsvpAvailable = isModuleAvailable(eventModules, 'rsvp');
+    // A lite event takes no guests: they add photos and wishes through its guest code.
+    const isLite = isLiteEvent(useActiveEvent());
 
     const detailsActions: HelpStepAction[] = [
         { key: 'settings', href: routes.events.manage(eventId, { tab: 'settings' }), label: t('steps.details.edit') },
@@ -76,7 +80,7 @@ export default function HelpTab({
             complete: progress.schedule,
             actions: [{ key: 'schedule', href: routes.events.tools.schedule(eventId), label: t('steps.schedule.edit') }],
         },
-        {
+        !isLite && {
             key: 'invitations',
             title: t('steps.invitations.title'),
             body: t('steps.invitations.body'),

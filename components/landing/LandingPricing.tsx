@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
+import { LandingLitePlans } from '@/components/landing/LandingLitePlans';
 import { LandingPricingCta } from '@/components/landing/LandingPricingCta';
 import { LandingPricingEventSelect } from '@/components/landing/LandingPricingEventSelect';
 import { MarketingPlanCard } from '@/components/plan/MarketingPlanCard';
@@ -89,39 +90,38 @@ export function LandingPricing({ eventType, heading, intro, kicker }: LandingPri
                 </div>
             )}
 
-            {/* Plans */}
-            <div
-                className={cn(
-                    'mx-auto grid gap-5 min-[761px]:gap-[clamp(24px,3vw,52px)]',
-                    eventType ? 'mt-12 min-[761px]:mt-16' : 'mt-9',
-                    PLAN_WIDTH[planCount],
-                    PLAN_COLUMNS[planCount],
-                )}
-            >
-                {active.plans.map((plan, index) => (
-                    <MarketingPlanCard
-                        featured={index === 1}
-                        footer={
-                            <LandingPricingCta
-                                className="mt-5 flex w-full"
-                                durationId={picks[plan.code]}
-                                eventType={active.id}
-                                label={t('choose')}
-                                plan={plan}
-                            />
-                        }
-                        key={`${active.id}-${plan.code}`}
-                        plan={plan}
-                        durationId={picks[plan.code]}
-                        onDurationChangeAction={pickDuration}
-                        popularLabel={t('popular')}
-                        durationLabel={t('durationLabel')}
-                        listPriceLabel={t('listPrice')}
-                        expandLabel={t('showFeatures')}
-                        collapseLabel={t('hideFeatures')}
-                        defaultExpanded={index === 0}
-                    />
-                ))}
+            {/* Plans and lite plans */}
+            <div className={cn('mx-auto flex flex-col', eventType ? 'mt-12 min-[761px]:mt-16' : 'mt-9', PLAN_WIDTH[planCount])}>
+                {/* Plans */}
+                <div className={cn('grid gap-5 min-[761px]:gap-[clamp(24px,3vw,52px)]', PLAN_COLUMNS[planCount])}>
+                    {active.plans.map((plan, index) => (
+                        <MarketingPlanCard
+                            featured={index === 1}
+                            footer={
+                                <LandingPricingCta
+                                    className="mt-5 flex w-full"
+                                    durationId={picks[plan.code]}
+                                    eventType={active.id}
+                                    label={t('choose')}
+                                    plan={plan}
+                                />
+                            }
+                            key={`${active.id}-${plan.code}`}
+                            plan={plan}
+                            durationId={picks[plan.code]}
+                            onDurationChangeAction={pickDuration}
+                            popularLabel={t('popular')}
+                            durationLabel={t('durationLabel')}
+                            listPriceLabel={t('listPrice')}
+                            expandLabel={t('showFeatures')}
+                            collapseLabel={t('hideFeatures')}
+                            defaultExpanded={index === 0}
+                        />
+                    ))}
+                </div>
+
+                {/* Lite plans */}
+                <LandingLitePlans className="mt-16 min-[761px]:mt-20" eventType={active} onPickDurationAction={pickDuration} picks={picks} />
             </div>
         </section>
     );

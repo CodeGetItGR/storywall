@@ -34,6 +34,7 @@ function item(eventId: string, overrides: ItemOverrides = {}): EventGridItem {
             deletionScheduledFor: overrides.deletedAt ? '2099-11-01T00:00:00Z' : null,
             suspended: overrides.suspended ?? false,
             suspension: null,
+            modules: [{ moduleKey: 'posts', isEnabled: true, isAvailable: true }],
         } as unknown as EventGridItem['event'],
         isLoading: false,
     };

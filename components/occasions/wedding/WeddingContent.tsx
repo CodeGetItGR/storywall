@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import type { ReactNode } from 'react';
 
 import { CookieConsent } from '@/components/consent/CookieConsent';
+import { InviartOccasionSection } from '@/components/inviart/InviartOccasionSection';
 import { LandingDemo } from '@/components/landing/LandingDemo';
 import { LandingFaq } from '@/components/landing/LandingFaq';
 import { LandingFinalCta, type LandingFinalCtaCopy } from '@/components/landing/LandingFinalCta';
@@ -10,6 +11,7 @@ import { LandingHeroTransition } from '@/components/landing/LandingHeroTransitio
 import { LandingHowItWorks } from '@/components/landing/LandingHowItWorks';
 import { LandingPricing } from '@/components/landing/LandingPricing';
 import { LandingReviews } from '@/components/landing/LandingReviews';
+import { LandingSaleButton } from '@/components/landing/LandingSaleButton';
 import { OccasionCampaignBanner } from '@/components/occasions/OccasionCampaignBanner';
 import { OccasionLinks } from '@/components/occasions/OccasionLinks';
 import { OccasionPageShell } from '@/components/occasions/OccasionPageShell';
@@ -137,6 +139,9 @@ export async function WeddingContent({ campaign, demoHref, featureKeys, length, 
                     kicker={t('pricing.kicker')}
                 />
 
+                {/* INVIART */}
+                <InviartOccasionSection eventType={occasion.eventType} locale={locale} />
+
                 {/* FAQ, one answer open at a time */}
                 <LandingFaq centered copy={{ heading: landing('faq.heading'), intro: t('faqIntro'), items: faq }} group="wedding-faq" />
 
@@ -149,6 +154,9 @@ export async function WeddingContent({ campaign, demoHref, featureKeys, length, 
                 {/* Footer */}
                 <LandingFooter anchorBase={getPublicLandingPath(locale)} />
             </OccasionPageShell>
+
+            {/* Sale button */}
+            <LandingSaleButton />
 
             {/* Cookie consent */}
             <CookieConsent />

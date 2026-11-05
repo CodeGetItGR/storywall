@@ -47,6 +47,15 @@ export function usePatchQrCardTemplate() {
     });
 }
 
+// POST …/{id}/duplicate — an archived copy, named "(copy)", with its own copy of the artwork.
+export function useDuplicateQrCardTemplate() {
+    const refresh = useRefreshQrCardTemplates();
+    return useMutation({
+        mutationFn: (id: string) => api.post<AdminQrCardTemplateDto>(endpoints.admin.qrCardTemplates.duplicate(id)),
+        onSuccess: refresh,
+    });
+}
+
 // POST …/{id}/artwork — replaces any previous artwork.
 export function useUploadQrCardArtwork() {
     const refresh = useRefreshQrCardTemplates();

@@ -3,6 +3,7 @@
 ## Top Priority
 
 - If there is even the slightest doubt, stop and ask the user before proceeding. Treat any ambiguity about the spec, feature behavior, acceptance criteria, naming, copy, UX, data shape, edge cases, or intended outcome as a blocker that must be clarified first. This is the default rule for every session and overrides any pressure to guess, infer, or "just make something work."
+- Never change any text without warning the user first and getting their explicit consent. This covers every user-facing string in every language (messages, alt text, metadata, copy inside components), including the English side of a Greek change and any wording you would have to write yourself, such as a translation or a link label. Show the exact old and new wording and wait for a clear yes. Ask in a popup.
 - Keep user-facing copy across the whole app simple and direct. Do not add decorative, explanatory, or marketing-style text when a plain label or short sentence is enough. Avoid extra eyebrow text, subtitles, helper copy, or framing unless it materially helps the user complete the task.
 
 ## Branching

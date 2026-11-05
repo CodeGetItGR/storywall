@@ -1,3 +1,4 @@
+import type { Locale } from '@/i18n/config';
 import type {
     AppMediaConfigDto,
     CoverageOptionResponseDto,
@@ -70,26 +71,28 @@ export interface LandingPlanCopy {
 
 // One duration's price after the plan's promotion (its promo price, else the
 // plan's percent).
-export function formatLandingOptionPrice(plan: PlanTierResponseDto, option: CoverageOptionResponseDto): string | null {
+export function formatLandingOptionPrice(plan: PlanTierResponseDto, option: CoverageOptionResponseDto, locale: Locale): string | null {
     if (!plan.priceCurrency) return null;
-    return formatLandingAmount(promotedOptionAmountMinor(option, plan), plan.priceCurrency);
+    return formatLandingAmount(promotedOptionAmountMinor(option, plan), plan.priceCurrency, locale);
 }
 
 // The duration's price before the promotion, or null when no promotion lowers it.
-export function formatLandingListPrice(plan: PlanTierResponseDto, option: CoverageOptionResponseDto): string | null {
+export function formatLandingListPrice(plan: PlanTierResponseDto, option: CoverageOptionResponseDto, locale: Locale): string | null {
     if (!plan.priceCurrency || promotedOptionAmountMinor(option, plan) >= option.priceAmountMinor) return null;
-    return formatLandingAmount(option.priceAmountMinor, plan.priceCurrency);
+    return formatLandingAmount(option.priceAmountMinor, plan.priceCurrency, locale);
 }
 
-// Mirrors the landing page's existing static style exactly: a whole euro
-// amount with a suffixed symbol and no decimals ("79€"), not
+// Mirrors the landing page's existing static style exactly: a suffixed symbol
+// with no spacing, and decimals only when there are cents ("79€", "39,50€"), not
 // Intl.NumberFormat's default currency rendering (which would print "€79.00"
-// or add locale-specific spacing/decimals and change the visual design).
-function formatLandingAmount(amountMinor: number, currency: string): string {
+// or add locale-specific spacing/decimals and change the visual design). Always
+// the page's locale, never the browser's: the server has to render the same text.
+function formatLandingAmount(amountMinor: number, currency: string, locale: Locale): string {
     const amount = amountMinor / 100;
-    if (currency === 'EUR' && Number.isInteger(amount)) return `${amount}€`;
+    if (currency !== 'EUR') return numberFormat(locale, { style: 'currency', currency }).format(amount);
+    if (Number.isInteger(amount)) return `${amount}€`;
 
-    return numberFormat(undefined, { style: 'currency', currency }).format(amount);
+    return `${numberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount)}€`;
 }
 
 // The duration a card shows: the one picked, else the plan's default.
@@ -117,10 +120,10 @@ export function planCardPriceSize(name: string, price: string): number {
     return Math.min(CARD_PRICE_MAX_CQI, Math.max(fit, 0));
 }
 
-function landingDurations(plan: PlanTierResponseDto): LandingPlanDuration[] {
+function landingDurations(plan: PlanTierResponseDto, locale: Locale): LandingPlanDuration[] {
     return liveInitialOptions(plan).flatMap((option) => {
-        const price = formatLandingOptionPrice(plan, option);
-        return price === null ? [] : [{ id: option.id, months: option.months, price, listPrice: formatLandingListPrice(plan, option) }];
+        const price = formatLandingOptionPrice(plan, option, locale);
+        return price === null ? [] : [{ id: option.id, months: option.months, price, listPrice: formatLandingListPrice(plan, option, locale) }];
     });
 }
 
@@ -128,7 +131,7 @@ function landingDurations(plan: PlanTierResponseDto): LandingPlanDuration[] {
 // active initial option, priced in a currency). resolveLandingCategoryPlans filters through it, so
 // the landing and the admin panel's warnings agree on what a tab shows.
 export function isLandingPlanOnSale(plan: PlanTierResponseDto): boolean {
-    return landingDurations(plan).length > 0 && shortestInitialOption(plan) !== null;
+    return plan.priceCurrency !== null && liveInitialOptions(plan).length > 0 && shortestInitialOption(plan) !== null;
 }
 
 function sortedModuleKeys(moduleKeys: string[], modules: PlatformModuleResponseDto[]): string[] {
@@ -183,13 +186,12 @@ function moduleFeatureLabel(
     }
 }
 
-// Builds one landing pricing card from a plan tier plus the tier directly
-// below it (on the landing: the previous card of the same event type — see
-// useLandingPricingPlans). Each tier after the first rolls up the
-// previous card and lists only its additional modules and raised limits, so
-// catalog rows do not need to repeat every inherited module. Returns null for a plan with no
-// duration on sale — it can't be bought, so it doesn't belong on a pricing
-// card or in the creation picker.
+// Builds one landing pricing card from a plan tier plus the card directly before it in the same
+// row (see useLandingPricingPlans). A card rolls up "Everything in X" only when its plan has every
+// module of X; then it lists the modules it adds or changes, and the rest go in includedFeatures. A
+// plan that isn't a superset of the previous one lists its own modules in full. A card never lists
+// a module its plan doesn't have. Returns null for a plan with no duration on sale — it can't be
+// bought, so it doesn't belong on a pricing card or in the creation picker.
 export function buildLandingPlan(
     plan: PlanTierResponseDto,
     previousPlan: PlanTierResponseDto | undefined,
@@ -197,29 +199,30 @@ export function buildLandingPlan(
     media: AppMediaConfigDto,
     moduleName: ModuleCardLabel,
     copy: LandingPlanCopy,
-    inheritedModuleKeys?: string[],
+    locale: Locale,
     memberRoles: MemberRoleCatalog = {},
 ): LandingPlan | null {
-    const durations = landingDurations(plan);
+    const durations = landingDurations(plan, locale);
     const defaultDuration = shortestInitialOption(plan);
     // Keep in step with isLandingPlanOnSale.
     if (durations.length === 0 || !defaultDuration) return null;
 
     const estimate = mediaEstimate(plan.storageBytes, media);
-    const inheritedKeys = [...new Set(inheritedModuleKeys ?? previousPlan?.moduleKeys ?? [])];
+    const ownKeys = sortedModuleKeys(plan.moduleKeys, modules);
+    const rollsUp = previousPlan !== undefined && enabledModuleKeys(previousPlan.moduleKeys, modules).every((key) => ownKeys.includes(key));
     const labelFor = (moduleKey: string, tier: PlanTierResponseDto) => moduleFeatureLabel(moduleKey, tier, moduleName, copy, memberRoles);
 
-    // A later tier lists the modules it adds, plus inherited ones whose limit
-    // or setting changed; unchanged inherited modules go in the rollup.
+    // A rolled-up card lists the modules it adds, plus inherited ones whose limit or setting
+    // changed; unchanged inherited modules go in the rollup.
     const features: string[] = [];
     const includedFeatures: string[] = [];
-    for (const moduleKey of sortedModuleKeys([...new Set([...inheritedKeys, ...plan.moduleKeys])], modules)) {
+    for (const moduleKey of ownKeys) {
         const label = labelFor(moduleKey, plan);
         if (label === null) continue;
-        if (previousPlan && inheritedKeys.includes(moduleKey) && labelFor(moduleKey, previousPlan) === label) includedFeatures.push(label);
+        if (rollsUp && previousPlan.moduleKeys.includes(moduleKey) && labelFor(moduleKey, previousPlan) === label) includedFeatures.push(label);
         else features.push(label);
     }
-    if (previousPlan) features.unshift(copy.everythingIn(previousPlan.name));
+    if (rollsUp) features.unshift(copy.everythingIn(previousPlan.name));
 
     return {
         code: plan.code,
@@ -233,4 +236,23 @@ export function buildLandingPlan(
         durations,
         defaultDurationId: defaultDuration.id,
     };
+}
+
+// A plan with the card built for it.
+export type LandingRowEntry = { config: PlanTierResponseDto; presentation: LandingPlan };
+
+// One row of cards: each plan rolls up into the one before it in the row. A plan with nothing on sale gets no card.
+export function buildLandingRow(
+    plans: PlanTierResponseDto[],
+    modules: PlatformModuleResponseDto[],
+    media: AppMediaConfigDto,
+    moduleName: ModuleCardLabel,
+    copy: LandingPlanCopy,
+    locale: Locale,
+    memberRoles: MemberRoleCatalog = {},
+): LandingRowEntry[] {
+    return plans.flatMap((plan, index) => {
+        const presentation = buildLandingPlan(plan, plans[index - 1], modules, media, moduleName, copy, locale, memberRoles);
+        return presentation ? [{ config: plan, presentation }] : [];
+    });
 }

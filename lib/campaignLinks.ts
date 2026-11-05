@@ -1,6 +1,7 @@
 import { locales } from '@/i18n/config';
 import { getForBusinessPath, getQrWeddingPath } from '@/i18n/publicLocale';
 import type { CampaignLinkRequestDto, CampaignRowDto } from '@/lib/api/types';
+import { FOR_BUSINESS_HUB_LAUNCHED } from '@/lib/forBusinessRelease';
 import { occasionPath, readyOccasions } from '@/lib/occasions/occasions';
 import { SITE_URL } from '@/lib/seo';
 import { showsUnreleasedPages } from '@/lib/unreleasedPages';
@@ -79,7 +80,9 @@ export function campaignDestinations(): CampaignDestination[] {
     for (const locale of locales) destinations.push({ kind: 'home', path: locale === 'en' ? '/' : `/${locale}` });
     if (showsUnreleasedPages()) {
         for (const locale of locales) destinations.push({ kind: 'qrWedding', path: getQrWeddingPath(locale) });
-        for (const locale of locales) destinations.push({ kind: 'forBusiness', path: getForBusinessPath(locale) });
+        if (FOR_BUSINESS_HUB_LAUNCHED) {
+            for (const locale of locales) destinations.push({ kind: 'forBusiness', path: getForBusinessPath(locale) });
+        }
     }
     for (const occasion of readyOccasions()) {
         for (const locale of locales) destinations.push({ kind: 'occasion', path: occasionPath(occasion, locale) });
@@ -87,7 +90,9 @@ export function campaignDestinations(): CampaignDestination[] {
     return destinations;
 }
 
-type CampaignUrlParts = Pick<CampaignLinkRequestDto, 'destinationPath' | 'utmSource' | 'utmMedium' | 'utmCampaign'>;
+type CampaignUrlParts = Pick<CampaignLinkRequestDto, 'destinationPath' | 'utmSource' | 'utmMedium' | 'utmCampaign'> & {
+    destinationAnchor?: string | null;
+};
 
 // The address to share. Empty values are left out, so a half-filled form still previews.
 export function campaignUrl(parts: CampaignUrlParts, origin: string = SITE_URL): string {
@@ -95,6 +100,7 @@ export function campaignUrl(parts: CampaignUrlParts, origin: string = SITE_URL):
     if (parts.utmSource) url.searchParams.set('utm_source', parts.utmSource);
     if (parts.utmMedium) url.searchParams.set('utm_medium', parts.utmMedium);
     if (parts.utmCampaign) url.searchParams.set('utm_campaign', parts.utmCampaign);
+    if (parts.destinationAnchor) url.hash = parts.destinationAnchor;
     return url.toString();
 }
 
@@ -135,6 +141,24 @@ export function requestOfCampaignLinkForm(form: CampaignLinkForm): CampaignLinkR
 }
 
 // A stable key for a report row: its saved link, or its three values.
+// Adds one currency-to-amount map into another.
+export function addMoneyByCurrency(into: Record<string, number>, from: Record<string, number>) {
+    for (const [currency, minor] of Object.entries(from)) into[currency] = (into[currency] ?? 0) + minor;
+}
+
+export type CampaignLinksTotal = { visits: number; sales: number; salesRevenueMinorByCurrency: Record<string, number> };
+
+// The visits, sales and sales revenue of a set of link rows.
+export function totalOf(rows: CampaignRowDto[]): CampaignLinksTotal {
+    const total: CampaignLinksTotal = { visits: 0, sales: 0, salesRevenueMinorByCurrency: {} };
+    for (const row of rows) {
+        total.visits += row.visits;
+        total.sales += row.sales;
+        addMoneyByCurrency(total.salesRevenueMinorByCurrency, row.salesRevenueMinorByCurrency ?? {});
+    }
+    return total;
+}
+
 export function campaignRowKey(row: CampaignRowDto): string {
     return row.link?.id ?? `${row.utmSource ?? ''}|${row.utmMedium ?? ''}|${row.utmCampaign ?? ''}`;
 }

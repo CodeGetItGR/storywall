@@ -32,6 +32,10 @@ export type ApiErrorMessageKey =
     | 'collaborationEarningNotPayable'
     | 'collaboratorPayoutDetailsIncomplete'
     | 'campaignLinkTaken'
+    | 'discountCampaignInvalid'
+    | 'discountCampaignOverlap'
+    | 'discountCampaignPriceTooLow'
+    | 'discountCampaignLinkNameTaken'
     | 'collaboratorBrandingIncomplete'
     | 'outreachRequestDecided'
     | 'outreachRequestPending'
@@ -221,6 +225,7 @@ export type ApiErrorMessageKey =
     | 'moduleUnavailable'
     | 'qrMediaUploadDisabled'
     | 'qrUploadAcceptanceRequired'
+    | 'qrWishAcceptanceRequired'
     | 'oauthTokenInvalid'
     | 'oauthEmailRequired'
     | 'qrLinkNotAvailable'
@@ -346,6 +351,10 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.COLLABORATION_EARNING_NOT_PAYABLE]: 'collaborationEarningNotPayable',
     [ERROR_CODES.COLLABORATOR_PAYOUT_DETAILS_INCOMPLETE]: 'collaboratorPayoutDetailsIncomplete',
     [ERROR_CODES.CAMPAIGN_LINK_TAKEN]: 'campaignLinkTaken',
+    [ERROR_CODES.DISCOUNT_CAMPAIGN_INVALID]: 'discountCampaignInvalid',
+    [ERROR_CODES.DISCOUNT_CAMPAIGN_OVERLAP]: 'discountCampaignOverlap',
+    [ERROR_CODES.DISCOUNT_CAMPAIGN_PRICE_TOO_LOW]: 'discountCampaignPriceTooLow',
+    [ERROR_CODES.DISCOUNT_CAMPAIGN_LINK_NAME_TAKEN]: 'discountCampaignLinkNameTaken',
     [ERROR_CODES.CONFLICT]: 'conflict',
     [ERROR_CODES.CONCURRENT_MODIFICATION]: 'concurrentModification',
     [ERROR_CODES.COVERAGE_ENDED]: 'coverageEnded',
@@ -398,6 +407,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.ACCOUNT_DELETE_ADMIN]: 'accountDeleteAdmin',
     [ERROR_CODES.ACCOUNT_DELETE_HAS_HOSTED_EVENTS]: 'accountDeleteHasHostedEvents',
     [ERROR_CODES.QR_UPLOAD_ACCEPTANCE_REQUIRED]: 'qrUploadAcceptanceRequired',
+    [ERROR_CODES.QR_WISH_ACCEPTANCE_REQUIRED]: 'qrWishAcceptanceRequired',
     [ERROR_CODES.POST_EDIT_NOT_AUTHOR]: 'postEditNotAuthor',
     [ERROR_CODES.MEMBER_ARCHIVE_NOT_ENABLED]: 'memberArchiveNotEnabled',
     [ERROR_CODES.EVENT_CO_HOST_LIMIT_EXCEEDED]: 'eventCoHostLimitExceeded',

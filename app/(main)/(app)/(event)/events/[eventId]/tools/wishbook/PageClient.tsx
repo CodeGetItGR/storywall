@@ -5,20 +5,23 @@ import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import React, { useEffect, useState } from 'react';
 
+import { LiteHomeHeader } from '@/components/liteHome/LiteHomeHeader';
 import { ReportTargetModal } from '@/components/reports/ReportTargetModal';
 import { ModuleNotice } from '@/components/tools/ModuleNotice';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ModuleUnavailableState } from '@/components/tools/ModuleUnavailableState';
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { WishbookBookPanel } from '@/components/wishbook/WishbookBookPanel';
+import { WISHBOOK_BOOK_ID, WishbookBookPanel } from '@/components/wishbook/WishbookBookPanel';
 import { WishbookEntriesSkeleton } from '@/components/wishbook/WishbookSkeletons';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useContentAccess } from '@/hooks/useContentAccess';
+import { useLiteHome } from '@/hooks/useLiteHome';
 import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { usePlanUpgradeHref } from '@/hooks/usePlanUpgradeHref';
+import { useScrollToElement } from '@/hooks/useScrollToElement';
 import { useCreateWishbookEntry, useDeleteWishbookEntry, useWishbook } from '@/hooks/useWishbook';
 import { useSetWishHighlighted } from '@/hooks/useWishbookBook';
 import type { WishbookEntryResponseDto } from '@/lib/api/types';
@@ -66,6 +69,10 @@ export default function WishbookPage() {
     const maxMessageLength = appConfig?.contentLimits.wishbookMessageMaxLength ?? 2000;
     const showEmptyState = !wishbook.isLoading && !wishbook.error && entries.length === 0;
     const showHeaderArt = canWrite || !showEmptyState;
+    const showBookPanel = isHost && !isDemoVisitor && total > 0;
+    const scrollToBook = useScrollToElement(WISHBOOK_BOOK_ID);
+    // On a lite event this page is the home; its Download all scrolls to the book once there is one.
+    const liteHome = useLiteHome('wishbook', { onDownload: showBookPanel ? scrollToBook : undefined });
 
     useEffect(() => {
         if (!showSentConfirmation) return;
@@ -142,9 +149,10 @@ export default function WishbookPage() {
             icon={BookHeart}
             iconClassName="text-pink-500"
             showTitleIcon={false}
-            backLabel={t('goBack')}
-            backHref={isDeleted ? routes.events.manage(eventId) : routes.events.feed(eventId)}
-            subtitle={subtitle}
+            {...(liteHome.isHome
+                ? { header: <LiteHomeHeader home={liteHome} /> }
+                : { backLabel: t('goBack'), backHref: isDeleted ? routes.events.manage(eventId) : routes.events.feed(eventId) })}
+            subtitle={liteHome.isHome ? undefined : subtitle}
             notice={
                 isDeleted && deletionDate ? <ModuleNotice tone="warning">{t('deletedReadOnly', { date: deletionDate })}</ModuleNotice> : undefined
             }
@@ -192,7 +200,7 @@ export default function WishbookPage() {
             ) : null}
 
             {/* Keepsake book */}
-            {isHost && !isDemoVisitor && total > 0 && <WishbookBookPanel eventId={eventId} canEditTexts={!isDeleted} />}
+            {showBookPanel && <WishbookBookPanel eventId={eventId} canEditTexts={!isDeleted} />}
 
             {/* Entries */}
             <section className="mt-8" hidden={!isHost}>

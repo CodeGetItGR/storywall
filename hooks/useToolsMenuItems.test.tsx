@@ -56,7 +56,7 @@ function event(overrides: Record<string, unknown> = {}) {
         id: 'event-1',
         status: 'ACTIVE',
         deletedAt: null,
-        modules: ['rsvp', 'gallery', 'wishbook', 'wishlist'].map((moduleKey) => ({
+        modules: ['posts', 'rsvp', 'gallery', 'wishbook', 'wishlist'].map((moduleKey) => ({
             moduleKey,
             isEnabled: true,
             isAvailable: true,
@@ -96,7 +96,7 @@ describe('useToolsMenuItems', () => {
         expect(result.current.map((item) => item.key)).toEqual(['gallery', 'wishbook']);
     });
 
-    const withHeOrShe = () => event({ modules: [{ moduleKey: 'he_or_she', isEnabled: true, isAvailable: true, configuration: {} }] });
+    const withHeOrShe = () => event({ modules: [{ moduleKey: 'posts', isEnabled: true, isAvailable: true, configuration: {} }, { moduleKey: 'he_or_she', isEnabled: true, isAvailable: true, configuration: {} }] });
 
     it('lists Boy or Girl? when its module is readable', () => {
         mocks.activeEvent = withHeOrShe();
@@ -115,7 +115,7 @@ describe('useToolsMenuItems', () => {
 
     const withRoles = (overrides: Record<string, unknown> = {}) =>
         event({
-            modules: [{ moduleKey: 'member_roles', isEnabled: true, isAvailable: true, configuration: {} }],
+            modules: [{ moduleKey: 'posts', isEnabled: true, isAvailable: true, configuration: {} }, { moduleKey: 'member_roles', isEnabled: true, isAvailable: true, configuration: {} }],
             ...overrides,
         });
 
@@ -194,6 +194,14 @@ describe('useHostMenuItems', () => {
         });
         const { result } = renderHook(() => useHostMenuItems());
         expect(result.current.map((item) => item.key)).not.toContain('galleryQr');
+    });
+
+    // A lite event (no posts) has no upload or invitation codes: its guest code lives on its home.
+    it('hides both QR pages on a lite event and keeps only its gallery and wishbook tools', () => {
+        mocks.isHost = true;
+        mocks.activeEvent = { ...event(), modules: event().modules.filter((module) => module.moduleKey !== 'posts') };
+        expect(renderHook(() => useHostMenuItems()).result.current.map((item) => item.key)).toEqual(['manage', 'help']);
+        expect(renderHook(() => useToolsMenuItems()).result.current.map((item) => item.key)).toEqual(['gallery', 'wishbook']);
     });
 });
 

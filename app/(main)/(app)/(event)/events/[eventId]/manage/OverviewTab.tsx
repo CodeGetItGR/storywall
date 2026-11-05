@@ -1,5 +1,6 @@
 import { useTranslations } from 'next-intl';
 
+import { InviartOverviewSection } from '@/components/inviart/InviartOverviewSection';
 import { HostContextSections } from '@/components/layout/right-context-panel/HostContextSections';
 import { CoverageStatusStrip } from '@/components/manage/CoverageStatusStrip';
 import { ManageDraftOverviewSkeleton } from '@/components/manage/ManageSkeletons';
@@ -19,6 +20,7 @@ import type {
     PlanTierResponseDto,
     PlatformModuleResponseDto,
 } from '@/lib/api/types';
+import { isLiteEvent } from '@/lib/liteEvents';
 
 export default function OverviewTab({
     event,
@@ -113,6 +115,8 @@ export default function OverviewTab({
     // plan's headroom, so it reports storage and lets this cell carry members.
     const shownMemberCount = eventUsage?.memberCount ?? memberCount;
     const memberValue = eventUsage?.memberLimit ? `${shownMemberCount} / ${eventUsage.memberLimit}` : shownMemberCount;
+    // A lite event takes no guests, so it has no members or invitations to count.
+    const showGuestStats = !isLiteEvent(event);
 
     return (
         <div className="flex flex-col gap-5">
@@ -122,9 +126,9 @@ export default function OverviewTab({
             {/* Headline numbers */}
             <MetricStrip
                 items={[
-                    { key: 'members', label: t('stats.totalGuests.label'), value: memberValue },
+                    ...(showGuestStats ? [{ key: 'members', label: t('stats.totalGuests.label'), value: memberValue }] : []),
                     { key: 'days', label: t('stats.daysToGo.label'), value: daysToGo },
-                    { key: 'invitations', label: t('stats.invitations.label'), value: pendingCoHostInvitationCount },
+                    ...(showGuestStats ? [{ key: 'invitations', label: t('stats.invitations.label'), value: pendingCoHostInvitationCount }] : []),
                     ...(seatsClaimed === null ? [] : [{ key: 'seats', label: t('stats.seats.label'), value: seatsClaimed }]),
                 ]}
             />
@@ -133,6 +137,9 @@ export default function OverviewTab({
             <div className="border-t border-border pt-4">
                 <HostContextSections panel={hostContextPanel} showMembersUsage={false} />
             </div>
+
+            {/* INVIART */}
+            <InviartOverviewSection eventType={eventType} />
         </div>
     );
 }

@@ -1,5 +1,6 @@
 import { Fragment } from 'react';
 
+import { LandingStoryPlansLink } from '@/components/landing/LandingStoryPlansLink';
 import { landingClickAttributes } from '@/lib/landingTracking';
 import { cn } from '@/lib/utils';
 
@@ -12,12 +13,13 @@ type LandingStoryCopyProps = {
     demo?: { href: string; label: string };
     more?: { href: string; label: string };
     paragraphSegments: LandingTextSegment[][];
+    plans?: { eventTypeSlug: string; label: string };
     tag: string;
     titleSegments: LandingTextSegment[];
     wide: boolean;
 };
 
-export function LandingStoryCopy({ demo, more, paragraphSegments, tag, titleSegments, wide }: LandingStoryCopyProps) {
+export function LandingStoryCopy({ demo, more, paragraphSegments, plans, tag, titleSegments, wide }: LandingStoryCopyProps) {
     return (
         <div className="story-copy min-w-0">
             <span className="mb-3.5 block w-max max-w-full bg-[linear-gradient(135deg,#d27b9b_0%,#e78274_28%,#f4905f_58%,#fcba63_100%)] bg-clip-text text-[13px] leading-[1.15] font-black tracking-[0.12em] text-transparent min-[761px]:mb-[24px] min-[761px]:text-[clamp(16px,1.35vw,22px)] min-[761px]:tracking-[0.13em]">
@@ -52,9 +54,10 @@ export function LandingStoryCopy({ demo, more, paragraphSegments, tag, titleSegm
                     </p>
                 </div>
             ) : null}
-            {/* Links: the demo and the occasion page, as pills side by side, stacked full width when the column is too narrow for both */}
-            {demo || more ? (
-                <div className="@container mt-6 min-[761px]:mt-[clamp(20px,2vw,30px)]">
+            {/* Links: the demo, the plans and the occasion page, as pills side by side, stacked full width when the column is too narrow;
+                hidden when the plans link is the only one and hides itself */}
+            {demo || plans || more ? (
+                <div className="@container mt-6 min-[761px]:mt-[clamp(20px,2vw,30px)] [&:not(:has(a))]:hidden">
                     <div className="flex flex-col gap-3 @min-[27rem]:flex-row @min-[27rem]:flex-wrap @min-[27rem]:items-center">
                         {/* Demo link */}
                         {demo ? (
@@ -71,6 +74,14 @@ export function LandingStoryCopy({ demo, more, paragraphSegments, tag, titleSegm
                                     ↗
                                 </span>
                             </a>
+                        ) : null}
+                        {/* Plans link */}
+                        {plans ? (
+                            <LandingStoryPlansLink
+                                className={cn(PILL, 'bg-[var(--ink)] text-white! shadow-[0_16px_32px_rgba(21,19,19,.12)]')}
+                                eventTypeSlug={plans.eventTypeSlug}
+                                label={plans.label}
+                            />
                         ) : null}
                         {/* Occasion page link: sentence case so the longer label stays on one line on phones */}
                         {more ? (

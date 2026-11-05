@@ -7,9 +7,11 @@ import { TYPE_ICONS } from '@/components/vendorPages/vendorPageIcons';
 import { GRADIENT_TEXT } from '@/components/vendorPages/vendorPageStyles';
 import type { Locale } from '@/i18n/config';
 import { getForBusinessPath, type VendorPageType } from '@/i18n/publicLocale';
+import { showsForBusinessHub } from '@/lib/forBusinessRelease';
 import { VENDOR_PAGES } from '@/lib/vendorPages';
 
-const FLOAT_CARD = 'absolute flex items-center gap-3 rounded-2xl bg-white/95 px-4 py-3 text-sm shadow-[0_18px_40px_-18px_rgba(21,19,19,0.45)] backdrop-blur';
+const FLOAT_CARD =
+    'absolute flex items-center gap-3 rounded-2xl bg-white/95 px-4 py-3 text-sm shadow-[0_18px_40px_-18px_rgba(21,19,19,0.45)] backdrop-blur';
 
 export async function VendorPageHero({ type }: { type: VendorPageType }) {
     const locale = (await getLocale()) as Locale;
@@ -18,17 +20,29 @@ export async function VendorPageHero({ type }: { type: VendorPageType }) {
 
     return (
         /* Hero */
-        <section className="bg-[radial-gradient(circle_at_88%_8%,rgba(248,165,96,0.2),transparent_42%),radial-gradient(circle_at_6%_92%,rgba(210,123,155,0.16),transparent_44%)] px-5 pt-6 pb-16 min-[761px]:px-[clamp(24px,7vw,120px)] min-[761px]:pt-10 min-[761px]:pb-24">
+        <section className="relative isolate px-5 pt-6 pb-16 min-[761px]:px-[clamp(24px,7vw,120px)] min-[761px]:pt-10 min-[761px]:pb-24">
+            {/* Glow, faded out before the hero ends so it has no edge */}
+            <div
+                aria-hidden="true"
+                className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_88%_8%,rgba(248,165,96,0.2),transparent_42%),radial-gradient(circle_at_6%_92%,rgba(210,123,155,0.16),transparent_44%)] [mask-image:linear-gradient(to_bottom,#000_55%,transparent)]"
+            />
             <div className="mx-auto grid w-full max-w-295 items-center gap-12 min-[1000px]:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] min-[1000px]:gap-16">
                 <div className="min-w-0">
                     {/* Breadcrumb */}
                     <nav aria-label={t('breadcrumb')} className="mb-6 text-sm">
-                        <a href={getForBusinessPath(locale)} className="font-semibold text-[#151313]/70 underline! underline-offset-4 hover:opacity-70">
-                            {t('breadcrumb')}
-                        </a>
-                        <span aria-hidden="true" className="mx-2 text-[#151313]/40">
-                            ›
-                        </span>
+                        {showsForBusinessHub() && (
+                            <>
+                                <a
+                                    href={getForBusinessPath(locale)}
+                                    className="font-semibold text-[#151313]/70 underline! underline-offset-4 hover:opacity-70"
+                                >
+                                    {t('breadcrumb')}
+                                </a>
+                                <span aria-hidden="true" className="mx-2 text-[#151313]/40">
+                                    ›
+                                </span>
+                            </>
+                        )}
                         <span aria-current="page">{copy('label')}</span>
                     </nav>
                     {/* Heading */}
@@ -76,12 +90,17 @@ export async function VendorPageHero({ type }: { type: VendorPageType }) {
                     </div>
                     {/* The vendor in the event */}
                     <div className={`${FLOAT_CARD} bottom-0 left-4 min-[761px]:-left-4`}>
-                        <span aria-hidden="true" className="flex size-9 items-center justify-center rounded-full [background-image:var(--brand-gradient)] font-bold text-white">
+                        <span
+                            aria-hidden="true"
+                            className="flex size-9 items-center justify-center rounded-full [background-image:var(--brand-gradient)] font-bold text-white"
+                        >
                             {t('business').charAt(0)}
                         </span>
                         <div className="leading-tight">
                             <span className="block font-semibold">{t('business')}</span>
-                            <span className="mt-1 inline-block rounded-full bg-[#151313]/[0.06] px-2 py-0.5 text-xs font-semibold">{copy('linkLabel')}</span>
+                            <span className="mt-1 inline-block rounded-full bg-[#151313]/[0.06] px-2 py-0.5 text-xs font-semibold">
+                                {copy('linkLabel')}
+                            </span>
                         </div>
                     </div>
                 </figure>

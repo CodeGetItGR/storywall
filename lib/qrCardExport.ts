@@ -1,9 +1,10 @@
 import type { EventThemeFontDto, QrCardSize } from '@/lib/api/types';
 import { themeFontFaceCss } from '@/lib/eventTheme';
-import { QR_CARD_SIZES } from '@/lib/qrCard';
+import { QR_CARD_CUT_COLOR, QR_CARD_CUT_WIDTH_MM, QR_CARD_SIZES, type QrCardSheet } from '@/lib/qrCard';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const CHUNK = 0x8000;
+const PT_PER_MM = 72 / 25.4;
 
 // A same-origin file as a data: URI. An SVG drawn through an <img> loads nothing on its own, so
 // every image and font the card uses goes inline.
@@ -75,13 +76,37 @@ export async function qrCardPng(markup: string, size: QrCardSize): Promise<Blob>
     }
 }
 
-// One page of the paper size with the PNG edge to edge. pdf-lib loads only when a host saves a PDF.
-export async function qrCardPdfBytes(png: ArrayBuffer, size: QrCardSize): Promise<Uint8Array> {
-    const { widthPt, heightPt } = QR_CARD_SIZES[size];
-    const { PDFDocument } = await import('pdf-lib');
+// One page of the paper size with the PNG edge to edge, or with a sheet, one A4 page holding the
+// PNG once per card at true size and the cut lines between them. pdf-lib loads only when a host saves a PDF.
+export async function qrCardPdfBytes(png: ArrayBuffer, size: QrCardSize, sheet: QrCardSheet | null = null): Promise<Uint8Array> {
+    const { PDFDocument, rgb } = await import('pdf-lib');
     const pdf = await PDFDocument.create();
-    const page = pdf.addPage([widthPt, heightPt]);
     const image = await pdf.embedPng(png);
-    page.drawImage(image, { x: 0, y: 0, width: widthPt, height: heightPt });
+    if (!sheet) {
+        const { widthPt, heightPt } = QR_CARD_SIZES[size];
+        pdf.addPage([widthPt, heightPt]).drawImage(image, { x: 0, y: 0, width: widthPt, height: heightPt });
+        return pdf.save();
+    }
+
+    const pageHeightPt = sheet.heightMm * PT_PER_MM;
+    const page = pdf.addPage([sheet.widthMm * PT_PER_MM, pageHeightPt]);
+    // PDF measures y up from the bottom; the sheet measures it down from the top.
+    for (const card of sheet.cards) {
+        page.drawImage(image, {
+            x: card.x * PT_PER_MM,
+            y: pageHeightPt - (card.y + sheet.cardHeightMm) * PT_PER_MM,
+            width: sheet.cardWidthMm * PT_PER_MM,
+            height: sheet.cardHeightMm * PT_PER_MM,
+        });
+    }
+    const [red, green, blue] = [1, 3, 5].map((start) => parseInt(QR_CARD_CUT_COLOR.slice(start, start + 2), 16) / 255);
+    for (const cut of sheet.cuts) {
+        page.drawLine({
+            start: { x: cut.x1 * PT_PER_MM, y: pageHeightPt - cut.y1 * PT_PER_MM },
+            end: { x: cut.x2 * PT_PER_MM, y: pageHeightPt - cut.y2 * PT_PER_MM },
+            thickness: QR_CARD_CUT_WIDTH_MM * PT_PER_MM,
+            color: rgb(red, green, blue),
+        });
+    }
     return pdf.save();
 }

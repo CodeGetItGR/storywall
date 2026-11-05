@@ -12,6 +12,7 @@ import { GalleryViewer } from '@/components/gallery/GalleryViewer';
 import { MemberArchiveModal } from '@/components/gallery/MemberArchiveModal';
 import { PrintPill } from '@/components/gallery/print/PrintPill';
 import { PrintSheet } from '@/components/gallery/print/PrintSheet';
+import { LiteHomeHeader } from '@/components/liteHome/LiteHomeHeader';
 import { ReportTargetModal } from '@/components/reports/ReportTargetModal';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { ModuleNotice } from '@/components/tools/ModuleNotice';
@@ -21,6 +22,7 @@ import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { SubTabs } from '@/components/ui/SubTabs';
 import { useGalleryPrint, usePrintAvailability } from '@/hooks/useGalleryPrint';
 import { useGalleryScreen } from '@/hooks/useGalleryScreen';
+import { useLiteHome } from '@/hooks/useLiteHome';
 import { useActiveModuleCopy } from '@/hooks/useModuleCopy';
 import { formatDate } from '@/lib/datetime';
 import { isMemberArchiveEnabled } from '@/lib/qrLinks';
@@ -112,6 +114,8 @@ export function GalleryScreen() {
         viewerMedia: selectedMedia,
         onAdded: exitSelectionMode,
     });
+    // On a lite event this page is the home; its quick actions offer the archive download while there is media.
+    const liteHome = useLiteHome('gallery', { onDownload: showArchiveDownload && media.length > 0 ? openArchiveDownload : undefined });
     const deletionDate = activeEvent?.deletionScheduledFor ? formatDate(locale, activeEvent.deletionScheduledFor, { dateStyle: 'long' }) : null;
 
     return (
@@ -120,9 +124,10 @@ export function GalleryScreen() {
             title={galleryCopy.name}
             icon={Images}
             iconClassName="text-cyan-600"
-            backLabel={t('backToTools')}
-            backHref={isDeleted ? routes.events.manage(eventId) : routes.events.feed(eventId)}
-            subtitle={isHost ? t('hostSubtitle') : galleryCopy.description}
+            {...(liteHome.isHome
+                ? { header: <LiteHomeHeader home={liteHome} /> }
+                : { backLabel: t('backToTools'), backHref: isDeleted ? routes.events.manage(eventId) : routes.events.feed(eventId) })}
+            subtitle={liteHome.isHome ? undefined : isHost ? t('hostSubtitle') : galleryCopy.description}
             notice={
                 <>
                     {!galleryEnabled && <ModuleNotice>{t('moduleUnavailable')}</ModuleNotice>}
@@ -191,7 +196,8 @@ export function GalleryScreen() {
                                 </Button>
                                 <div className="flex gap-2">
                                     {print.showPill && <PrintPill count={print.pickCount} onOpenAction={print.openSheet} />}
-                                    {showArchiveDownload && (
+                                    {/* On a lite home, Download all is a quick action instead */}
+                                    {showArchiveDownload && !liteHome.isHome && (
                                         <Button
                                             type="button"
                                             size="sm"

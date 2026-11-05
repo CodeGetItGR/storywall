@@ -37,6 +37,8 @@ export function useDateTimeField({ value, onChange, min, max }: UseDateTimeField
         date: parts.date,
         time: parts.time,
         combined,
+        // Either input holds something, so a half-filled pair can be told from an empty one.
+        hasValue: Boolean(parts.date || parts.time),
         dateMin: minParts.date || undefined,
         dateMax: maxParts.date || undefined,
         // A time bound only applies on the bounding day itself.

@@ -91,8 +91,6 @@ describe('sitemap', () => {
             `${SITE_URL}/el`,
             `${SITE_URL}/qr-code-for-wedding-photos`,
             `${SITE_URL}/el/qr-code-gamou`,
-            `${SITE_URL}/for-business`,
-            `${SITE_URL}/el/epaggelmaties`,
             ...VENDOR_URLS,
             `${SITE_URL}/weddings`,
             `${SITE_URL}/el/gamos`,

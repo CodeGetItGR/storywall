@@ -1,18 +1,31 @@
 'use client';
 
+import { useLocale } from 'next-intl';
 import { useMemo } from 'react';
 
 import { useAppConfig } from '@/hooks/useAppConfig';
+import { useCampaignPriceClock } from '@/hooks/useCampaignPriceClock';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { usePlanMarketingCopy } from '@/hooks/usePlanMarketingCopy';
+import type { Locale } from '@/i18n/config';
 import type { EventTypeConvention } from '@/lib/api/types';
 import { eventTypeSlug } from '@/lib/eventTypeSlug';
 import { resolveLandingCategoryPlans } from '@/lib/landingCategories';
-import { buildLandingPlan, type LandingPlan } from '@/lib/landingPricing';
+import { buildLandingRow, type LandingPlan } from '@/lib/landingPricing';
+import { qrPagePlans, splitLitePlans } from '@/lib/planTiers';
 
-// One event type in the landing pricing picker. id is its LANDING_EVENT_PARAM value.
-export type LandingPricingEventType = { id: string; eventTypeKey: EventTypeConvention; label: string; plans: LandingPlan[] };
+// One event type in the landing pricing picker. id is its LANDING_EVENT_PARAM value. plans are the full
+// plans; litePlans (no posts) are their own row in the section under them.
+// qrPagePlans is the QR wedding page's row (see qrPagePlans in lib/planTiers.ts).
+export type LandingPricingEventType = {
+    id: string;
+    eventTypeKey: EventTypeConvention;
+    label: string;
+    plans: LandingPlan[];
+    litePlans: LandingPlan[];
+    qrPagePlans: LandingPlan[];
+};
 // A landing category: only groups its event types in the picker. Each type shows its own plans.
 export type LandingPricingGroup = { id: string; label: string; items: LandingPricingEventType[] };
 type LandingPricingPlans = { groups: LandingPricingGroup[] | null; defaultEventTypeId: string | null };
@@ -26,9 +39,12 @@ export function useLandingPricingPlans(): LandingPricingPlans {
     const { copy, moduleName } = usePlanMarketingCopy();
     const localizedText = useLocalizedText();
     const eventTypeCopy = useLocalizedAppEventTypeCopy();
+    const locale = useLocale() as Locale;
+    // Prices change when a campaign starts or ends, so the plans are rebuilt then.
+    const planTiers = useCampaignPriceClock(data?.planTiers);
 
     return useMemo(() => {
-        if (!data) return { groups: null, defaultEventTypeId: null };
+        if (!data || !planTiers) return { groups: null, defaultEventTypeId: null };
 
         const seen = new Set<EventTypeConvention>();
         const groups = (data.landingCategories ?? [])
@@ -37,25 +53,28 @@ export function useLandingPricingPlans(): LandingPricingPlans {
                     if (seen.has(eventTypeKey)) return [];
                     seen.add(eventTypeKey);
                     // Only plans that get a card come back (see isLandingPlanOnSale).
-                    const { plans } = resolveLandingCategoryPlans(data.planTiers, [eventTypeKey], data.memberRolesByEventType);
-                    // "Everything in X" rolls up the previous card: the first card lists its own
-                    // features in full.
-                    const landingPlans = plans.flatMap((plan, index) => {
-                        const before = plans.slice(0, index);
-                        const landingPlan = buildLandingPlan(
-                            plan,
-                            before.at(-1),
-                            data.modules,
-                            data.media,
-                            moduleName,
-                            copy,
-                            before.flatMap((previousPlan) => previousPlan.moduleKeys),
-                            data.memberRolesByEventType,
+                    const { plans } = resolveLandingCategoryPlans(planTiers, [eventTypeKey], data.memberRolesByEventType);
+                    // Each row rolls a card up into the previous one in it ("Everything in X"). A type with
+                    // only lite plans shows them as its plans, with no teaser.
+                    const split = splitLitePlans(plans);
+                    const hasFull = split.full.length > 0;
+                    const row = (rowPlans: typeof plans) =>
+                        buildLandingRow(rowPlans, data.modules, data.media, moduleName, copy, locale, data.memberRolesByEventType).map(
+                            (entry) => entry.presentation,
                         );
-                        return landingPlan === null ? [] : [landingPlan];
-                    });
+                    const landingPlans = row(hasFull ? split.full : split.lite);
                     if (landingPlans.length === 0) return [];
-                    return [{ id: eventTypeSlug(eventTypeKey), eventTypeKey, label: eventTypeCopy(eventTypeKey).name, plans: landingPlans }];
+                    const litePlans = hasFull ? row(split.lite) : [];
+                    return [
+                        {
+                            id: eventTypeSlug(eventTypeKey),
+                            eventTypeKey,
+                            label: eventTypeCopy(eventTypeKey).name,
+                            plans: landingPlans,
+                            litePlans,
+                            qrPagePlans: row(qrPagePlans(plans)),
+                        },
+                    ];
                 });
                 return { id: category.id, isDefault: category.isDefault, label: localizedText(category.name), items };
             })
@@ -63,5 +82,5 @@ export function useLandingPricingPlans(): LandingPricingPlans {
 
         const defaultEventTypeId = (groups.find((group) => group.isDefault) ?? groups[0])?.items[0]?.id ?? null;
         return { groups: groups.map(({ isDefault: _isDefault, ...group }) => group), defaultEventTypeId };
-    }, [data, copy, moduleName, localizedText, eventTypeCopy]);
+    }, [data, copy, moduleName, localizedText, eventTypeCopy, locale, planTiers]);
 }

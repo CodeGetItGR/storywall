@@ -3,6 +3,7 @@
 import { CircleAlert, Info, type LucideIcon, Tag, TriangleAlert, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { CampaignCountdown } from '@/components/siteNotices/CampaignCountdown';
 import { AppLink } from '@/components/ui/AppLink';
 import type { SiteNoticeTone } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
@@ -33,11 +34,13 @@ export function SiteNoticeBanner({
     message,
     link,
     onDismiss,
+    countdownEndsAt,
 }: {
     tone: SiteNoticeTone;
     message: string;
     link: { href: string; label: string } | null;
     onDismiss: (() => void) | null;
+    countdownEndsAt?: string;
 }) {
     const t = useTranslations('SiteNotice');
     const { className, iconClassName, icon: Icon } = TONE_STYLE[tone];
@@ -50,6 +53,12 @@ export function SiteNoticeBanner({
                 <Icon aria-hidden="true" className={cn('mt-0.5 h-4 w-4 shrink-0 sm:mt-0', iconClassName)} />
                 <span className="min-w-0">
                     {message}
+                    {countdownEndsAt && (
+                        <>
+                            {' '}
+                            <CampaignCountdown endsAt={countdownEndsAt} />
+                        </>
+                    )}
                     {link && (
                         <>
                             {' '}

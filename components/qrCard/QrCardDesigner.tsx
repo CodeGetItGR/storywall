@@ -4,6 +4,8 @@ import type { ReactNode } from 'react';
 
 import { ThemeFontFace } from '@/components/event/ThemeFontFace';
 import { QrCardActions } from '@/components/qrCard/QrCardActions';
+import { QrCardPerPageControl } from '@/components/qrCard/QrCardPerPageControl';
+import { QrCardPrintCopies } from '@/components/qrCard/QrCardPrintCopies';
 import { QrCardPrintStyle } from '@/components/qrCard/QrCardPrintStyle';
 import { QrCardSizeControl } from '@/components/qrCard/QrCardSizeControl';
 import { QrCardSvg } from '@/components/qrCard/QrCardSvg';
@@ -35,22 +37,16 @@ export function QrCardDesigner({
     children?: ReactNode;
 }) {
     const { svgRef } = exporter;
+    const card = { style: designer.style, url, title: designer.text.title, lines, fields: designer.fieldTexts, label };
 
     return (
         <div className="flex flex-col gap-6">
             {/* Card */}
             <div data-print-root data-qr-card-print className="mx-auto w-full max-w-xs overflow-hidden rounded-lg shadow-sm">
-                <QrCardSvg
-                    ref={svgRef}
-                    style={designer.style}
-                    url={url}
-                    title={designer.text.title}
-                    lines={lines}
-                    label={label}
-                    className="block h-auto w-full"
-                />
+                <QrCardSvg ref={svgRef} {...card} className="block h-auto w-full" />
+                {exporter.sheet && <QrCardPrintCopies sheet={exporter.sheet} card={card} />}
             </div>
-            <QrCardPrintStyle size={designer.size} />
+            <QrCardPrintStyle size={designer.size} sheet={exporter.sheet} />
             <ThemeFontFace font={designer.style.headingFont} />
 
             {/* Designs */}
@@ -63,13 +59,23 @@ export function QrCardDesigner({
             />
 
             {/* Text */}
-            <QrCardTextFields text={designer.text} showGiver={designer.showGiver} onChangeAction={designer.handleTextChange} />
+            <QrCardTextFields
+                text={designer.text}
+                showTitle={designer.showTitle}
+                showGiver={designer.showGiver}
+                hostFields={designer.hostFields}
+                onChangeAction={designer.handleTextChange}
+                onFieldChangeAction={designer.handleFieldChange}
+            />
 
             {/* Options */}
             {children}
 
             {/* Size */}
             <QrCardSizeControl sizes={designer.sizes} size={designer.size} onChangeAction={designer.handleSizeChange} />
+
+            {/* Per page */}
+            <QrCardPerPageControl perPage={exporter.perPage} sheetCount={exporter.sheetCount} onChangeAction={exporter.handlePerPageChange} />
 
             {/* Actions */}
             <QrCardActions exporter={exporter} />

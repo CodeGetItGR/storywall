@@ -4,7 +4,7 @@ import { CookieConsent } from '@/components/consent/CookieConsent';
 import { LandingDeferredExperience } from '@/components/landing/LandingDeferredExperience';
 import { LandingDemo } from '@/components/landing/LandingDemo';
 import { LandingFaq } from '@/components/landing/LandingFaq';
-import { LandingFeatureDetails } from '@/components/landing/LandingFeatureDetails';
+import { LandingFeatureDetailsSection } from '@/components/landing/LandingFeatureDetailsSection';
 import { LandingFeatures } from '@/components/landing/LandingFeatures';
 import { LandingFinalCta } from '@/components/landing/LandingFinalCta';
 import { LandingFooter } from '@/components/landing/LandingFooter';
@@ -15,6 +15,7 @@ import { LandingHowItWorks } from '@/components/landing/LandingHowItWorks';
 import { LandingPageShell } from '@/components/landing/LandingPageShell';
 import { LandingPricing } from '@/components/landing/LandingPricing';
 import { LandingReviews } from '@/components/landing/LandingReviews';
+import { LandingSaleButton } from '@/components/landing/LandingSaleButton';
 import { LandingStories } from '@/components/landing/LandingStories';
 import { LandingMotionProvider } from '@/providers/LandingMotionProvider';
 
@@ -45,7 +46,7 @@ export function LandingContent() {
                     <LandingFeatures />
 
                     {/* Feature details */}
-                    <LandingFeatureDetails />
+                    <LandingFeatureDetailsSection />
 
                     {/* Reviews */}
                     <LandingReviews />
@@ -68,6 +69,9 @@ export function LandingContent() {
                     <LandingFooter />
                 </div>
             </LandingPageShell>
+
+            {/* Sale button */}
+            <LandingSaleButton />
 
             {/* Cookie consent */}
             <CookieConsent />

@@ -1,5 +1,5 @@
 import type { CoverageOptionResponseDto, EventTypeConvention, ModuleKey, PlanScope, PlanTierResponseDto } from '@/lib/api/types';
-import { activePromoPriceMinor, discountedAmountMinor, isPlanDiscountActive, promotedOptionAmountMinor } from '@/lib/billing';
+import { promotedAmount, promotedOption } from '@/lib/billing';
 import { formatBytes, numberFormat } from '@/lib/format';
 
 export function scopedPlans(plans: PlanTierResponseDto[], scope: PlanScope): PlanTierResponseDto[] {
@@ -66,26 +66,13 @@ export function getPlanPriceDetails(plan: PlanTierResponseDto): PlanPriceDetails
 function optionPriceDetails(plan: PlanTierResponseDto, option: CoverageOptionResponseDto): PlanPriceDetails | null {
     if (!plan.priceCurrency) return null;
 
-    return {
-        amountMinor: promotedOptionAmountMinor(option, plan),
-        listAmountMinor: option.priceAmountMinor,
-        currency: plan.priceCurrency,
-        discountActive: activePromoPriceMinor(option, plan) !== null || isPlanDiscountActive(plan),
-        discountLabel: plan.discountLabel,
-    };
+    return { ...promotedOption(option, plan), listAmountMinor: option.priceAmountMinor, currency: plan.priceCurrency };
 }
 
 function priceDetails(plan: PlanTierResponseDto, listAmountMinor: number | null): PlanPriceDetails | null {
     if (listAmountMinor === null || !plan.priceCurrency) return null;
 
-    const discountActive = isPlanDiscountActive(plan);
-    return {
-        amountMinor: discountedAmountMinor(listAmountMinor, plan),
-        listAmountMinor,
-        currency: plan.priceCurrency,
-        discountActive,
-        discountLabel: plan.discountLabel,
-    };
+    return { ...promotedAmount(listAmountMinor, plan), listAmountMinor, currency: plan.priceCurrency };
 }
 
 function formatPlanAmount(plan: PlanTierResponseDto, locale?: string): string | null {
@@ -143,4 +130,27 @@ export function findNextPlan(plans: PlanTierResponseDto[], scope: PlanScope, cod
 
 export function findPlansUnlockingModule(plans: PlanTierResponseDto[], moduleKey: ModuleKey): PlanTierResponseDto[] {
     return publicAssignablePlans(plans, 'EVENT').filter((plan) => plan.moduleKeys.includes(moduleKey));
+}
+
+// A lite plan is sold without the posts module (photos or wishes only), so it sits apart from the full plans.
+export function isLitePlan(plan: PlanTierResponseDto): boolean {
+    return !plan.moduleKeys.includes('posts');
+}
+
+// The plans split into full and lite, each in the input order.
+export function splitLitePlans<T extends PlanTierResponseDto>(plans: T[]): { full: T[]; lite: T[] } {
+    return { full: plans.filter((plan) => !isLitePlan(plan)), lite: plans.filter(isLitePlan) };
+}
+
+// The plans the QR wedding page sells, from the wedding plans on sale in sortOrder: the lite plans with
+// the gallery, then the first full plan. With no such lite plan, every full plan, as before lite plans.
+export function qrPagePlans<T extends PlanTierResponseDto>(plans: T[]): T[] {
+    const { full, lite } = splitLitePlans(plans);
+    const photoPlans = lite.filter((plan) => plan.moduleKeys.includes('gallery'));
+    return photoPlans.length > 0 ? [...photoPlans, ...full.slice(0, 1)] : full;
+}
+
+// The plan a flow starts on: the one asked for when it is offered, else the first full plan, else the first plan.
+export function defaultSelectedPlan<T extends PlanTierResponseDto>(plans: T[], code: string | null | undefined): T | undefined {
+    return plans.find((plan) => plan.code === code) ?? splitLitePlans(plans).full[0] ?? plans[0];
 }

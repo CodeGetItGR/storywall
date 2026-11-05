@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
+import { EventLitePlans } from '@/components/plan/EventLitePlans';
 import { MarketingPlanCard } from '@/components/plan/MarketingPlanCard';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useMarketingPlanOptions } from '@/hooks/useMarketingPlanOptions';
@@ -31,7 +32,7 @@ export function EventPlanSelector({
 }: EventPlanSelectorProps) {
     const t = useTranslations('CreateEventPage');
     const tPricing = useTranslations('LandingPage.pricing');
-    const options = useMarketingPlanOptions({ plans, modules, media });
+    const { full: options, lite } = useMarketingPlanOptions({ plans, modules, media });
     const showLoading = isLoading || !media;
 
     return (
@@ -41,29 +42,48 @@ export function EventPlanSelector({
                 {showLoading && <LoadingState label={t('loadingPlans')} className="rounded-xl border border-border bg-white p-6" />}
                 {!showLoading && options.length === 0 && <p className="rounded-xl bg-rose-50 p-4 text-sm text-rose-600">{t('noPlans')}</p>}
                 {!showLoading && options.length > 0 && (
-                    <div
-                        className={cn('grid gap-5 min-[761px]:grid-cols-3 min-[761px]:gap-6', options.length === 1 && 'min-[761px]:*:col-start-2')}
-                        role="group"
-                        aria-label={t('steps.planSubtitle')}
-                    >
-                        {options.map(({ config, featured, presentation }, index) => (
-                            <MarketingPlanCard
-                                key={config.id}
-                                plan={presentation}
-                                durationId={durationPicks[config.code]}
-                                onDurationChangeAction={onSelectDurationAction}
-                                featured={featured}
-                                popularLabel={tPricing('popular')}
-                                durationLabel={tPricing('durationLabel')}
-                                listPriceLabel={tPricing('listPrice')}
-                                expandLabel={tPricing('showFeatures')}
-                                collapseLabel={tPricing('hideFeatures')}
-                                defaultExpanded={index === 0}
-                                selected={selectedCode === config.code}
-                                selectionLabel={selectedCode === config.code ? t('planSelected') : tPricing('choose')}
+                    <div className="flex flex-col">
+                        {/* Plans */}
+                        <div
+                            className={cn(
+                                'grid gap-5 min-[761px]:grid-cols-3 min-[761px]:gap-6',
+                                options.length === 1 && 'min-[761px]:*:col-start-2',
+                            )}
+                            role="group"
+                            aria-label={t('steps.planSubtitle')}
+                        >
+                            {options.map(({ config, featured, presentation }, index) => (
+                                <MarketingPlanCard
+                                    key={config.id}
+                                    plan={presentation}
+                                    durationId={durationPicks[config.code]}
+                                    onDurationChangeAction={onSelectDurationAction}
+                                    featured={featured}
+                                    popularLabel={tPricing('popular')}
+                                    durationLabel={tPricing('durationLabel')}
+                                    listPriceLabel={tPricing('listPrice')}
+                                    expandLabel={tPricing('showFeatures')}
+                                    collapseLabel={tPricing('hideFeatures')}
+                                    defaultExpanded={index === 0}
+                                    selected={selectedCode === config.code}
+                                    selectionLabel={selectedCode === config.code ? t('planSelected') : tPricing('choose')}
+                                    onSelectAction={onSelectAction}
+                                />
+                            ))}
+                        </div>
+
+                        {/* Lite plans */}
+                        {lite.length > 0 && (
+                            <EventLitePlans
+                                className="mt-12 min-[761px]:mt-14"
+                                durationPicks={durationPicks}
                                 onSelectAction={onSelectAction}
+                                onSelectDurationAction={onSelectDurationAction}
+                                options={lite}
+                                selectedCode={selectedCode}
+                                selectedLabel={t('planSelected')}
                             />
-                        ))}
+                        )}
                     </div>
                 )}
             </div>

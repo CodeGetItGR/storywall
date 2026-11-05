@@ -3,7 +3,14 @@
 // since flipped every route; reconcile against Swagger (/v3/api-docs) if a
 // path here 404s.
 
-import type { OutreachProspectQuery, OutreachRequestStatus, PartnerApplicationStatus, RsvpReportType, SignupChannel, VendorContactStatus } from '@/lib/api/types';
+import type {
+    OutreachProspectQuery,
+    OutreachRequestStatus,
+    PartnerApplicationStatus,
+    RsvpReportType,
+    SignupChannel,
+    VendorContactStatus,
+} from '@/lib/api/types';
 
 export const endpoints = {
     betaFeedback: {
@@ -87,6 +94,11 @@ export const endpoints = {
     // Read through the app's own cached route (app/api/site-notices), never straight from the browser.
     siteNotices: {
         live: '/api/public/site-notices',
+    },
+
+    // Read through the app's own cached route (app/api/discount-campaign), never straight from the browser.
+    discountCampaign: {
+        live: '/api/public/discount-campaign',
     },
 
     notifications: {
@@ -247,6 +259,7 @@ export const endpoints = {
         resolve: (token: string) => `/api/qr/${token}`,
         media: (token: string) => `/api/qr/${token}/media`,
         mediaBatch: (token: string) => `/api/qr/${token}/media/batch`,
+        wishes: (token: string) => `/api/qr/${token}/wishes`,
     },
 
     partners: {
@@ -402,7 +415,9 @@ export const endpoints = {
                 return `/api/admin/metrics/campaigns/overview${params.length ? `?${params.join('&')}` : ''}`;
             },
             linkClicks: (since?: string | null, until?: string | null) => {
-                const params = [since ? `since=${encodeURIComponent(since)}` : null, until ? `until=${encodeURIComponent(until)}` : null].filter(Boolean);
+                const params = [since ? `since=${encodeURIComponent(since)}` : null, until ? `until=${encodeURIComponent(until)}` : null].filter(
+                    Boolean,
+                );
                 return `/api/admin/metrics/link-clicks${params.length ? `?${params.join('&')}` : ''}`;
             },
             visitors: (since?: string | null, until?: string | null, fresh = false) => {
@@ -475,6 +490,7 @@ export const endpoints = {
             list: '/api/admin/qr-card-templates',
             byId: (id: string) => `/api/admin/qr-card-templates/${id}`,
             artwork: (id: string) => `/api/admin/qr-card-templates/${id}/artwork`,
+            duplicate: (id: string) => `/api/admin/qr-card-templates/${id}/duplicate`,
         },
         themeFonts: {
             list: '/api/admin/theme-fonts',
@@ -559,6 +575,11 @@ export const endpoints = {
             list: '/api/admin/site-notices',
             byId: (id: string) => `/api/admin/site-notices/${id}`,
         },
+        discountCampaigns: {
+            list: '/api/admin/discount-campaigns',
+            byId: (id: string) => `/api/admin/discount-campaigns/${id}`,
+            stop: (id: string) => `/api/admin/discount-campaigns/${id}/stop`,
+        },
         devices: {
             list: '/api/admin/devices',
             byId: (id: string) => `/api/admin/devices/${id}`,
@@ -567,6 +588,7 @@ export const endpoints = {
         campaignLinks: {
             list: '/api/admin/campaign-links',
             byId: (id: string) => `/api/admin/campaign-links/${id}`,
+            sets: '/api/admin/campaign-links/sets',
         },
         vendorMessages: {
             list: ({ status, page, size }: { status: VendorContactStatus | null; page: number; size: number }) =>
@@ -602,6 +624,10 @@ export const endpoints = {
                 decline: (id: string) => `/api/admin/outreach/requests/${encodeURIComponent(id)}/decline`,
             },
         },
+        inviart: {
+            collections: '/api/admin/inviart/collections',
+            collection: (eventType: string) => `/api/admin/inviart/collections/${encodeURIComponent(eventType)}`,
+        },
         appReviews: {
             list: '/api/admin/app-reviews',
             byId: (id: string) => `/api/admin/app-reviews/${id}`,
@@ -634,6 +660,11 @@ export const endpoints = {
             partnerBranding: (eventId: string) => `/api/admin/events/${eventId}/partner-branding`,
             vendors: (eventId: string) => `/api/admin/events/${eventId}/vendors`,
         },
+    },
+
+    // Which INVIART collection each occasion shows; read by our server only.
+    inviart: {
+        collections: '/api/inviart/collections',
     },
 
     checkout: {

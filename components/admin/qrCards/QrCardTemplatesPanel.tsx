@@ -80,6 +80,11 @@ export function QrCardTemplatesPanel() {
                 {catalog.moveError && (
                     <p className="px-3 pt-3 text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(catalog.moveError)}`)}</p>
                 )}
+                {catalog.duplicateError && (
+                    <p role="alert" className="px-3 pt-3 text-sm text-status-danger">
+                        {tAdmin(`errors.${adminErrorMessageKey(catalog.duplicateError)}`)}
+                    </p>
+                )}
                 {!catalog.isLoading && !catalog.error && (
                     <QrCardTemplatesTable
                         templates={catalog.visibleTemplates}
@@ -89,6 +94,8 @@ export function QrCardTemplatesPanel() {
                         onMoveAction={catalog.moveTemplate}
                         onReorderAction={catalog.reorderTemplate}
                         onEditAction={catalog.openEdit}
+                        duplicatingId={catalog.duplicatingId}
+                        onDuplicateAction={catalog.duplicateTemplate}
                     />
                 )}
             </section>
@@ -101,6 +108,7 @@ export function QrCardTemplatesPanel() {
                     sortOrder={catalog.createSortOrder}
                     eventTypes={catalog.eventTypes}
                     onCloseAction={catalog.closeDrawer}
+                    onDuplicatedAction={catalog.openTemplate}
                 />
             )}
         </div>

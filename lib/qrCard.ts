@@ -1,5 +1,14 @@
-import type { EventThemeFontDto, QrCardSize, QrCardTemplateDto, QrCardTextAlign, QrTargetType } from '@/lib/api/types';
-import { DEFAULT_QR_CARD_LAYOUT, type QrCardLayout } from '@/lib/qrCardLayout';
+import type { EventModuleResponseDto, EventThemeFontDto, QrCardSize, QrCardTemplateDto, QrCardTextAlign, QrTargetType } from '@/lib/api/types';
+import { guestCodeActions } from '@/lib/liteEvents';
+import { resolveLocalizedText } from '@/lib/localizedText';
+import {
+    DEFAULT_QR_CARD_LAYOUT,
+    DEFAULT_QR_CARD_TITLE,
+    type QrCardLayout,
+    qrCardLayoutOf,
+    type QrCardTextField,
+    type QrCardTitleBox,
+} from '@/lib/qrCardLayout';
 
 // A6 portrait in millimetres: the card SVG's user units.
 export const QR_CARD_WIDTH = 105;
@@ -14,6 +23,64 @@ export const QR_CARD_SIZES: Record<
     A6: { widthMm: 105, heightMm: 148, widthPx: 1240, heightPx: 1748, widthPt: 297.64, heightPt: 419.53 },
     A5: { widthMm: 148, heightMm: 210, widthPx: 1748, heightPx: 2480, widthPt: 419.53, heightPt: 595.28 },
 };
+
+// One card per page at its own size, or as many as fit on one A4 sheet.
+export type QrCardPerPage = 'one' | 'sheet';
+
+const A4_SHORT_MM = 210;
+const A4_LONG_MM = 297;
+// A thin grey line where two cards meet, to cut along.
+export const QR_CARD_CUT_COLOR = '#9CA3AF';
+export const QR_CARD_CUT_WIDTH_MM = 0.2;
+
+export type QrCardCut = { x1: number; y1: number; x2: number; y2: number };
+
+// An A4 sheet of cards at true size, in millimetres from the sheet's top left. The sheet turns to
+// whichever way holds more cards (portrait on a tie); the grid sits centred.
+export type QrCardSheet = {
+    widthMm: number;
+    heightMm: number;
+    cardWidthMm: number;
+    cardHeightMm: number;
+    columns: number;
+    rows: number;
+    cards: { x: number; y: number }[];
+    cuts: QrCardCut[];
+};
+
+export function qrCardSheet(size: QrCardSize): QrCardSheet {
+    const { widthMm: cardWidthMm, heightMm: cardHeightMm } = QR_CARD_SIZES[size];
+    const fit = (widthMm: number, heightMm: number) => ({
+        widthMm,
+        heightMm,
+        columns: Math.floor(widthMm / cardWidthMm),
+        rows: Math.floor(heightMm / cardHeightMm),
+    });
+    const portrait = fit(A4_SHORT_MM, A4_LONG_MM);
+    const landscape = fit(A4_LONG_MM, A4_SHORT_MM);
+    const page = landscape.columns * landscape.rows > portrait.columns * portrait.rows ? landscape : portrait;
+    const { widthMm, heightMm, columns, rows } = page;
+    const left = (widthMm - columns * cardWidthMm) / 2;
+    const top = (heightMm - rows * cardHeightMm) / 2;
+    const right = left + columns * cardWidthMm;
+    const bottom = top + rows * cardHeightMm;
+
+    const cards = Array.from({ length: rows * columns }, (_, index) => ({
+        x: left + (index % columns) * cardWidthMm,
+        y: top + Math.floor(index / columns) * cardHeightMm,
+    }));
+    const cuts: QrCardCut[] = [
+        ...Array.from({ length: columns - 1 }, (_, index) => {
+            const x = left + (index + 1) * cardWidthMm;
+            return { x1: x, y1: top, x2: x, y2: bottom };
+        }),
+        ...Array.from({ length: rows - 1 }, (_, index) => {
+            const y = top + (index + 1) * cardHeightMm;
+            return { x1: left, y1: y, x2: right, y2: y };
+        }),
+    ];
+    return { widthMm, heightMm, cardWidthMm, cardHeightMm, columns, rows, cards, cuts };
+}
 
 export const QR_CARD_TITLE_MAX = 40;
 export const QR_CARD_LINE_MAX = 60;
@@ -61,17 +128,23 @@ export function qrCardStyleOf(template: QrCardTemplateDto): QrCardStyle {
         headingFont: template.headingFont,
         codeColor: template.codeColor,
         centerLogo: template.centerLogo,
-        layout: template.layout ?? DEFAULT_QR_CARD_LAYOUT,
+        layout: qrCardLayoutOf(template.layout),
         sizes: template.sizes,
     };
 }
 
-// The default line under the code (a QrCardPage.lines key), by what the QR opens.
-export const QR_CARD_LINE_KEYS = {
-    EVENT_JOIN: 'join',
-    INVITATION: 'invitation',
-    MEDIA_UPLOAD: 'gallery',
-} as const satisfies Record<QrTargetType, string>;
+// The default line under the code (a QrCardPage.lines key), by what the QR opens. A guest code's line follows
+// what it offers: photos, wishes or both.
+export type QrCardLineKey = 'join' | 'invitation' | 'gallery' | 'guestWish' | 'guestBoth';
+
+export function qrCardLineKey(targetType: QrTargetType, modules: EventModuleResponseDto[]): QrCardLineKey {
+    if (targetType === 'EVENT_JOIN') return 'join';
+    if (targetType === 'INVITATION') return 'invitation';
+    if (targetType === 'MEDIA_UPLOAD') return 'gallery';
+    const actions = guestCodeActions(modules);
+    if (actions.includes('UPLOAD') && actions.includes('WISH')) return 'guestBoth';
+    return actions.includes('WISH') ? 'guestWish' : 'gallery';
+}
 
 export type QrCardLineTone = 'body' | 'strong' | 'code' | 'small';
 export type QrCardLine = { text: string; tone: QrCardLineTone };
@@ -105,7 +178,7 @@ export type TextBox = { width: number; maxLines: number; maxSize: number; minSiz
 const TITLE_MIN_SIZE = 5;
 
 // The title's text box: up to two lines, shrinking from the layout's maximum to 5 mm to fit.
-export function titleTextBox(title: QrCardLayout['title']): TextBox {
+export function titleTextBox(title: QrCardTitleBox): TextBox {
     return { width: title.width, maxLines: 2, maxSize: title.maxSize, minSize: Math.min(TITLE_MIN_SIZE, title.maxSize), maxHeight: title.height };
 }
 
@@ -128,7 +201,7 @@ export function lineTextBoxes(width: number, textSize: number): Record<QrCardLin
 }
 
 // The default layout's boxes: today's.
-export const QR_CARD_TITLE_BOX = titleTextBox(DEFAULT_QR_CARD_LAYOUT.title);
+export const QR_CARD_TITLE_BOX = titleTextBox(DEFAULT_QR_CARD_TITLE);
 export const QR_CARD_LINE_BOXES = lineTextBoxes(DEFAULT_QR_CARD_LAYOUT.lines.width, DEFAULT_QR_CARD_LAYOUT.lines.textSize);
 
 const LINE_HEIGHT = 1.2;
@@ -260,9 +333,44 @@ function place<T extends FittedText>(
 }
 
 // The title, centred vertically in its box and aligned across it.
-export function layoutTitle(title: string, box: QrCardLayout['title'] = DEFAULT_QR_CARD_LAYOUT.title): PlacedText {
+export function layoutTitle(title: string, box: QrCardTitleBox = DEFAULT_QR_CARD_TITLE): PlacedText {
     const fitted = fitText(title, titleTextBox(box));
     return place(fitted, box.y + (box.height - blockHeight(fitted)) / 2, anchorOf(box));
+}
+
+// An added field: up to three lines, shrinking from its text size to fit its box, centred vertically in it.
+const FIELD_MAX_LINES = 3;
+const FIELD_MIN_SIZE = 3;
+
+export function layoutField(text: string, field: QrCardTextField): PlacedText {
+    const box: TextBox = {
+        width: field.width,
+        maxLines: FIELD_MAX_LINES,
+        maxSize: field.textSize,
+        minSize: Math.min(FIELD_MIN_SIZE, field.textSize),
+        maxHeight: field.height,
+    };
+    const fitted = fitText(text, box);
+    return place(fitted, field.y + (field.height - blockHeight(fitted)) / 2, anchorOf(field));
+}
+
+// What each added field prints, by id: a fixed field its text in the card's language, a host field what the
+// host typed (nothing when empty).
+export function qrCardFieldTexts(layout: QrCardLayout, locale: string, values: Record<string, string>): Record<string, string> {
+    return Object.fromEntries(
+        layout.fields.map((field) => [field.id, field.kind === 'fixed' ? resolveLocalizedText(field.text, locale) : (values[field.id] ?? '')]),
+    );
+}
+
+// The admin's sample: a host field shows its placeholder, or its label when that is blank, so its spot is visible.
+export function qrCardSampleFieldTexts(layout: QrCardLayout, locale: string): Record<string, string> {
+    return Object.fromEntries(
+        layout.fields.map((field) => {
+            if (field.kind === 'fixed') return [field.id, resolveLocalizedText(field.text, locale)];
+            const placeholder = resolveLocalizedText(field.placeholder, locale).trim();
+            return [field.id, placeholder || resolveLocalizedText(field.label, locale)];
+        }),
+    );
 }
 
 function fitLines(lines: QrCardLine[], boxes: Record<QrCardLineTone, TextBox>, scale: number): Array<FittedText & { tone: QrCardLineTone }> {

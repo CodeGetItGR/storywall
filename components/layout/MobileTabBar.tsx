@@ -21,6 +21,7 @@ import { usePinchZoomBox } from '@/hooks/usePinchZoomBox';
 import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
 import { useMyVendorRole } from '@/hooks/useVendors';
 import { isEventDeleted } from '@/lib/eventLifecycle';
+import { eventHomeHref } from '@/lib/liteEvents';
 import { openMyRoleSheetFromHref } from '@/lib/myRoleSheetRequests';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
@@ -54,13 +55,8 @@ export function MobileTabBar() {
     const isFeedDetailPage = isFeedRoute(pathname);
     const showEventNavigation = !isLoading && Boolean(activeEvent) && !isAccountRoute(pathname);
     const isDraft = activeEvent?.status === 'DRAFT';
-    // Draft and deleted events have no feed to land on; the manage page is home.
     const isDeleted = isEventDeleted(activeEvent);
-    const homeHref = activeEvent
-        ? isDraft || isDeleted
-            ? routes.events.manage(activeEvent.id)
-            : routes.events.feed(activeEvent.id)
-        : homeTabItem.href;
+    const homeHref = activeEvent ? eventHomeHref(activeEvent) : homeTabItem.href;
 
     const homeActive = isPathActive(pathname, homeHref) || isPathActive(pathname, homeTabItem.href);
     const availableModules = new Set(activeEvent?.modules.filter((module) => module.isAvailable).map((module) => module.moduleKey) ?? []);

@@ -1,15 +1,17 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { ThemeFontFace } from '@/components/event/ThemeFontFace';
 import { QrCardSvg } from '@/components/qrCard/QrCardSvg';
 import { QR_CARD_SAMPLE_URL } from '@/lib/adminQrCards';
-import type { QrCardStyle } from '@/lib/qrCard';
+import { qrCardSampleFieldTexts, type QrCardStyle } from '@/lib/qrCard';
+import { qrCardLineWording } from '@/lib/qrCardLayout';
 
 // The card as a host would print it, drawn by the same QrCardSvg with a sample link and line.
 export function QrCardTemplatePreview({ style, title }: { style: QrCardStyle; title: string }) {
     const t = useTranslations('AdminPage.qrCards.preview');
+    const locale = useLocale();
 
     return (
         <figure>
@@ -21,7 +23,8 @@ export function QrCardTemplatePreview({ style, title }: { style: QrCardStyle; ti
                     style={style}
                     url={QR_CARD_SAMPLE_URL}
                     title={title}
-                    lines={[{ text: t('sampleLine'), tone: 'body' }]}
+                    lines={[{ text: qrCardLineWording(style.layout, 'join', locale) ?? t('sampleLine'), tone: 'body' }]}
+                    fields={qrCardSampleFieldTexts(style.layout, locale)}
                     label={t('cardLabel', { title })}
                     className="block h-auto w-full"
                 />
