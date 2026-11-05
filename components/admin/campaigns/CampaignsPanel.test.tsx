@@ -18,8 +18,6 @@ vi.mock('@/hooks/useAdminCampaigns', () => ({
 vi.mock('@/components/admin/campaigns/CampaignLinkSetDrawer', () => ({
     CampaignLinkSetDrawer: vi.fn(() => null),
 }));
-vi.mock('@/components/admin/campaigns/CampaignLinkCreateDrawer', () => ({ CampaignLinkCreateDrawer: () => null }));
-vi.mock('@/components/admin/campaigns/CampaignLinkDrawer', () => ({ CampaignLinkDrawer: () => null }));
 
 function lastDrawerProps() {
     const calls = vi.mocked(CampaignLinkSetDrawer).mock.calls;

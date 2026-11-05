@@ -13,6 +13,7 @@ import {
 import { endpoints } from '@/lib/api/endpoints';
 import { serverPublicConfigGet } from '@/lib/api/serverFetch';
 import type { AppConfigResponseDto } from '@/lib/api/types';
+import { showsForBusinessHub } from '@/lib/forBusinessRelease';
 import { liveOccasionsInConfig, occasionLanguageAlternates, occasionPath } from '@/lib/occasions/occasions';
 import { qrWeddingPageLive } from '@/lib/qrWeddingPage';
 import {
@@ -57,7 +58,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
 
     const forBusinessLanguages = forBusinessLanguageAlternates();
-    const forBusiness: MetadataRoute.Sitemap = (showsUnreleasedPages() ? locales : []).map((locale) => ({
+    const forBusiness: MetadataRoute.Sitemap = (showsForBusinessHub() ? locales : []).map((locale) => ({
         url: absoluteUrl(getForBusinessPath(locale)),
         changeFrequency: 'monthly',
         priority: 0.8,

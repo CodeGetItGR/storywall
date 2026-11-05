@@ -15,6 +15,7 @@
         "apiDown": "Αντιμετωπίζουμε κάποια προβλήματα. Δουλεύουμε για να τα διορθώσουμε.",
         "close": "Κλείσιμο",
         "campaign": "{percent}% έκπτωση σε όλα τα πλάνα.",
+        "campaignButton": "{percent}% έκπτωση",
         "campaignEndsIn": "Λήγει σε {countdown}.",
         "campaignEndsOn": "Λήγει στις {date}",
         "seePlans": "Δείτε τα πλάνα",
@@ -3854,6 +3855,10 @@
                 "CAMPAIGN_LINK_CREATED": "Δημιουργία συνδέσμου καμπάνιας",
                 "CAMPAIGN_LINK_RENAMED": "Μετονομασία συνδέσμου καμπάνιας",
                 "CAMPAIGN_LINK_DELETED": "Διαγραφή συνδέσμου καμπάνιας",
+                "DISCOUNT_CAMPAIGN_CREATED": "Δημιουργία εκπτωτικής καμπάνιας",
+                "DISCOUNT_CAMPAIGN_UPDATED": "Αλλαγή εκπτωτικής καμπάνιας",
+                "DISCOUNT_CAMPAIGN_STOPPED": "Διακοπή εκπτωτικής καμπάνιας",
+                "DISCOUNT_CAMPAIGN_DELETED": "Διαγραφή εκπτωτικής καμπάνιας",
                 "APP_REVIEW_UPDATED": "Αλλαγή κριτικής εφαρμογής",
                 "OUTREACH_CREATED": "Προσθήκη επαφής προσέγγισης",
                 "OUTREACH_UPDATED": "Αλλαγή επαφής προσέγγισης",
@@ -3862,7 +3867,22 @@
                 "OUTREACH_REQUEST_APPROVED": "Έγκριση αιτήματος προσέγγισης",
                 "OUTREACH_REQUEST_DECLINED": "Απόρριψη αιτήματος προσέγγισης",
                 "ADMIN_DEVICE_PAIRED": "Σύνδεση κινητού admin",
-                "ADMIN_DEVICE_REVOKED": "Αφαίρεση κινητού admin"
+                "ADMIN_DEVICE_REVOKED": "Αφαίρεση κινητού admin",
+                "INVITATION_THEME_CREATED": "Δημιουργία θέματος πρόσκλησης",
+                "INVITATION_THEME_UPDATED": "Αλλαγή θέματος πρόσκλησης",
+                "INVITATION_THEME_IMAGE_UPLOADED": "Προσθήκη εικόνας θέματος πρόσκλησης",
+                "INVITATION_THEME_IMAGE_DELETED": "Διαγραφή εικόνας θέματος πρόσκλησης",
+                "INVITATION_FONT_PAIRING_CREATED": "Δημιουργία συνδυασμού γραμματοσειρών",
+                "INVITATION_FONT_PAIRING_UPDATED": "Αλλαγή συνδυασμού γραμματοσειρών",
+                "QR_CARD_TEMPLATE_DUPLICATED": "Αντιγραφή προτύπου κάρτας QR",
+                "INVIART_COLLECTION_CHANGED": "Αλλαγή συλλογής INVIART",
+                "SHOP_STORE_CREATED": "Σύνδεση καταστήματος Shopify",
+                "SHOP_STORE_UPDATED": "Αλλαγή καταστήματος Shopify",
+                "SHOP_STORE_DELETED": "Αφαίρεση καταστήματος Shopify",
+                "SHOP_CATEGORY_CREATED": "Δημιουργία κατηγορίας καταστήματος",
+                "SHOP_CATEGORY_UPDATED": "Αλλαγή κατηγορίας καταστήματος",
+                "SHOP_CATEGORY_DELETED": "Διαγραφή κατηγορίας καταστήματος",
+                "SHOP_CATEGORY_COLLECTIONS_CHANGED": "Αλλαγή συλλογών κατηγορίας καταστήματος"
             }
         },
         "errorEvents": {
@@ -4343,6 +4363,7 @@
         "fields": {
             "code": "Κωδικός",
             "name": "Όνομα",
+            "nameLengthWarning": "Με όνομα πάνω από {count} χαρακτήρες, η τιμή μπορεί να πέσει σε δική της γραμμή στις κάρτες πλάνων.",
             "description": "Περιγραφή",
             "storage": "Αποθήκευση",
             "unit": "Μονάδα",
@@ -6147,6 +6168,7 @@
         "campaigns": {
             "title": "Καμπάνιες",
             "create": "Νέος σύνδεσμος",
+            "back": "Όλες οι καμπάνιες",
             "createTitle": "Νέος σύνδεσμος καμπάνιας",
             "saveLink": "Αποθήκευση συνδέσμου",
             "rangeNote": "Μετράει επισκέψεις και εγγραφές σε αυτό το διάστημα.",
@@ -6304,7 +6326,7 @@
         "discountCampaigns": {
             "create": "Νέα εκπτωτική καμπάνια",
             "createTitle": "Νέα εκπτωτική καμπάνια",
-            "editTitle": "Επεξεργασία εκπτωτικής καμπάνιας",
+            "back": "Όλες οι εκπτωτικές καμπάνιες",
             "empty": "Δεν υπάρχουν εκπτωτικές καμπάνιες.",
             "columns": {
                 "name": "Όνομα",
@@ -8923,6 +8945,8 @@
             "kicker": "ΠΑΚΕΤΑ",
             "title": "Το QR γάμου, μόνο του ή μαζί με όλο το StoryWall.",
             "body": "Κάθε πακέτο εδώ έχει το QR για φωτογραφίες. Διάλεξε αυτό που χρειάζεσαι.",
+            "titleIncluded": "Το QR γάμου περιλαμβάνεται σε κάθε πακέτο StoryWall.",
+            "bodyIncluded": "Δεν πωλείται ξεχωριστά. Διαλέγεις πακέτο και διάρκεια, και παίρνεις το QR μαζί με όλο το StoryWall του γάμου σου.",
             "choose": "ΕΠΙΛΕΞΕ ΠΑΚΕΤΟ",
             "durationGroup": "Διάρκεια πακέτου {plan}",
             "secure": "Ασφαλής πληρωμή",
@@ -8996,6 +9020,7 @@
                 {
                     "q": "Πόσο κοστίζει το QR code για φωτογραφίες γάμου;",
                     "a": "Μόνο του, το QR κοστίζει από {price}, μαζί με τη συλλογή φωτογραφιών και τις κάρτες QR. Το έχουν και όλα τα πλήρη πακέτα γάμου, μαζί με τον τοίχο του γάμου.",
+                    "aIncluded": "Το QR δεν πωλείται ξεχωριστά. Περιλαμβάνεται σε όλα τα πακέτα StoryWall για γάμο, μαζί με το προσκλητήριο, το RSVP και τον τοίχο του γάμου, από {price}.",
                     "link": {
                         "label": "Δες τα πακέτα →",
                         "to": "pricing"
@@ -9460,6 +9485,61 @@
             "faq": "Συχνές ερωτήσεις",
             "apply": "Γίνετε συνεργάτης",
             "others": "Και για άλλους επαγγελματίες"
+        },
+        "renders": {
+            "vendors": {
+                "PLANNER": "Ημέρα Events",
+                "VENUE": "Κτήμα Ελαιώνας",
+                "PHOTOGRAPHER": "Studio Φως",
+                "VIDEOGRAPHER": "Κάδρο Films",
+                "DECORATION": "Άνθος Decor",
+                "CATERING": "Γεύσεις Catering",
+                "MUSIC": "DJ Νότος"
+            },
+            "feedCard": {
+                "tagline": "Μαζί σας από την αρχή ως το τέλος."
+            },
+            "posts": {
+                "body": "Τι όμορφη βραδιά. Σας ευχαριστούμε!"
+            },
+            "live": {
+                "songs": [
+                    {
+                        "title": "Ο Χορός του Ζορμπά",
+                        "artist": "Μίκης Θεοδωράκης"
+                    },
+                    {
+                        "title": "Dancing Queen",
+                        "artist": "ABBA"
+                    },
+                    {
+                        "title": "Perfect",
+                        "artist": "Ed Sheeran"
+                    }
+                ]
+            },
+            "portal": {
+                "events": [
+                    "Άννα & Νίκος",
+                    "Βάπτιση της Λυδίας"
+                ]
+            },
+            "schedule": {
+                "ceremonyPlace": "Ιερός Ναός Αγίου Νικολάου",
+                "receptionPlace": "Κτήμα Ελαιώνας"
+            },
+            "announce": {
+                "author": "Ελένη Ρούσσου",
+                "body": "Τα λεωφορεία για την τελετή φεύγουν από το ξενοδοχείο στις 17:00."
+            },
+            "rsvp": {
+                "couple": "Νεφέλη & Ορέστης",
+                "guests": [
+                    "Νάντια Ευθυμίου",
+                    "Στέλιος Ράπτης",
+                    "Αλέξανδρος Μάρκου"
+                ]
+            }
         },
         "heroCta": "Κάντε αίτηση συνεργασίας",
         "tools": {

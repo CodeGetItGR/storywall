@@ -1,3 +1,4 @@
+import { ApiError } from '@/lib/api/client';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 
 export type AdminErrorMessageKey =
@@ -73,6 +74,16 @@ export function numberOrNull(value: FormDataEntryValue | null): number | null {
 
 export function checked(formData: FormData, key: string): boolean {
     return formData.has(key);
+}
+
+// 5207: a plan or duration change a live or scheduled discount campaign would make too cheap to
+// charge. The server names the campaign in the admin's language, so its text is shown as it is. Not in
+// ERROR_CODES, which needs a client message per code; this one only ever shows the server's.
+const DISCOUNT_CAMPAIGN_PLAN_PRICE_TOO_LOW = 5207;
+
+export function adminServerDetail(error: unknown): string | null {
+    if (getErrorCode(error) !== DISCOUNT_CAMPAIGN_PLAN_PRICE_TOO_LOW) return null;
+    return (error instanceof ApiError && error.problem?.detail) || null;
 }
 
 export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {

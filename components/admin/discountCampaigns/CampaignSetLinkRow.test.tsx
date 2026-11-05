@@ -25,6 +25,7 @@ const row = {
         utmMedium: 'social',
         utmCampaign: 'bf-story-el',
         createdAt: '2026-11-01T00:00:00Z',
+        shortCode: 'instagram-organic-bf-story-el',
     },
 } as unknown as CampaignRowDto;
 
@@ -51,14 +52,14 @@ describe('CampaignSetLinkRow', () => {
 
     afterEach(cleanup);
 
-    it('copies the link with its query first and its anchor last', async () => {
+    it('copies the short address', async () => {
         renderRow();
 
         fireEvent.click(screen.getByRole('button', { name: `Copy link ${LONG_NAME}` }));
 
         await waitFor(() => expect(writeText).toHaveBeenCalledOnce());
         const url = writeText.mock.calls[0][0] as string;
-        expect(url).toMatch(/\?utm_source=instagram&utm_medium=social&utm_campaign=bf-story-el#pricing$/);
+        expect(url).toBe('https://www.storywall.gr/c/instagram-organic-bf-story-el');
     });
 
     it('shows its sales and what they paid', () => {

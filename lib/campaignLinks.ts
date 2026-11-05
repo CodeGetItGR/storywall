@@ -1,6 +1,7 @@
 import { locales } from '@/i18n/config';
 import { getForBusinessPath, getQrWeddingPath } from '@/i18n/publicLocale';
-import type { CampaignLinkRequestDto, CampaignRowDto } from '@/lib/api/types';
+import type { CampaignLinkDto, CampaignLinkRequestDto, CampaignLinkTargetDto, CampaignRowDto } from '@/lib/api/types';
+import { FOR_BUSINESS_HUB_LAUNCHED } from '@/lib/forBusinessRelease';
 import { occasionPath, readyOccasions } from '@/lib/occasions/occasions';
 import { SITE_URL } from '@/lib/seo';
 import { showsUnreleasedPages } from '@/lib/unreleasedPages';
@@ -79,7 +80,9 @@ export function campaignDestinations(): CampaignDestination[] {
     for (const locale of locales) destinations.push({ kind: 'home', path: locale === 'en' ? '/' : `/${locale}` });
     if (showsUnreleasedPages()) {
         for (const locale of locales) destinations.push({ kind: 'qrWedding', path: getQrWeddingPath(locale) });
-        for (const locale of locales) destinations.push({ kind: 'forBusiness', path: getForBusinessPath(locale) });
+        if (FOR_BUSINESS_HUB_LAUNCHED) {
+            for (const locale of locales) destinations.push({ kind: 'forBusiness', path: getForBusinessPath(locale) });
+        }
     }
     for (const occasion of readyOccasions()) {
         for (const locale of locales) destinations.push({ kind: 'occasion', path: occasionPath(occasion, locale) });
@@ -98,6 +101,23 @@ export function campaignUrl(parts: CampaignUrlParts, origin: string = SITE_URL):
     if (parts.utmMedium) url.searchParams.set('utm_medium', parts.utmMedium);
     if (parts.utmCampaign) url.searchParams.set('utm_campaign', parts.utmCampaign);
     if (parts.destinationAnchor) url.hash = parts.destinationAnchor;
+    return url.toString();
+}
+
+export const CAMPAIGN_SHORT_LINK_PREFIX = '/c/';
+
+// The short address to share: it redirects to the link's full URL.
+export function campaignShortUrl(link: Pick<CampaignLinkDto, 'shortCode'>, origin: string = SITE_URL): string {
+    return `${origin}${CAMPAIGN_SHORT_LINK_PREFIX}${link.shortCode}`;
+}
+
+// Where a short address leads: the full URL, plus what the address itself carried, such as the click
+// id an ad platform adds. The saved link's own values win.
+export function campaignRedirectUrl(target: CampaignLinkTargetDto, incoming: URLSearchParams, origin: string): string {
+    const url = new URL(campaignUrl(target, origin));
+    incoming.forEach((value, key) => {
+        if (!url.searchParams.has(key)) url.searchParams.append(key, value);
+    });
     return url.toString();
 }
 
@@ -135,6 +155,30 @@ export function requestOfCampaignLinkForm(form: CampaignLinkForm): CampaignLinkR
         utmMedium: form.utmMedium,
         utmCampaign: form.utmCampaign,
     };
+}
+
+// The mediums of Spring's SignupSourceRules, so a link's section says the same as its channel.
+const SOCIAL_MEDIUMS: readonly string[] = ['social', 'social_media'];
+const PAID_MEDIUMS: readonly string[] = ['cpc', 'ppc', 'paid', 'paid_social', 'display'];
+
+function campaignRowGroup({ utmMedium }: CampaignRowDto): CampaignPresetGroup {
+    if (utmMedium && SOCIAL_MEDIUMS.includes(utmMedium)) return 'social';
+    if (utmMedium && PAID_MEDIUMS.includes(utmMedium)) return 'ads';
+    return 'other';
+}
+
+function compareCampaignRows(a: CampaignRowDto, b: CampaignRowDto): number {
+    return (a.utmSource ?? '').localeCompare(b.utmSource ?? '') || (a.link?.name ?? '').localeCompare(b.link?.name ?? '');
+}
+
+export type CampaignLinkSection = { group: CampaignPresetGroup; rows: CampaignRowDto[] };
+
+// Report rows in named sections, each sorted by platform, then name. Empty sections are left out.
+export function campaignLinkSections(rows: CampaignRowDto[]): CampaignLinkSection[] {
+    return CAMPAIGN_PRESET_GROUPS.map((group) => ({
+        group,
+        rows: rows.filter((row) => campaignRowGroup(row) === group).sort(compareCampaignRows),
+    })).filter((section) => section.rows.length > 0);
 }
 
 // A stable key for a report row: its saved link, or its three values.
