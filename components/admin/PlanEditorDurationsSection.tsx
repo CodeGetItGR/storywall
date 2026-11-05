@@ -7,7 +7,7 @@ import { AdminSortableList } from '@/components/admin/AdminSortableList';
 import { PlanDurationEditor } from '@/components/admin/PlanDurationEditor';
 import { PlanDurationRow } from '@/components/admin/PlanDurationRow';
 import type { PlanDurationsEditor } from '@/hooks/usePlanDurationsEditor';
-import { adminErrorMessageKey } from '@/lib/adminUtils';
+import { adminErrorMessageKey, adminServerDetail } from '@/lib/adminUtils';
 
 export function PlanEditorDurationsSection({ id, editor }: { id: string; editor: PlanDurationsEditor }) {
     const t = useTranslations('AdminPage');
@@ -75,7 +75,7 @@ export function PlanEditorDurationsSection({ id, editor }: { id: string; editor:
             )}
 
             {/* Error */}
-            {editor.error && <p className="mt-2 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(editor.error)}`)}</p>}
+            {editor.error && <p className="mt-2 text-sm text-status-danger">{adminServerDetail(editor.error) ?? t(`errors.${adminErrorMessageKey(editor.error)}`)}</p>}
         </section>
     );
 }
