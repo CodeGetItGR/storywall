@@ -4,6 +4,13 @@ export const STORAGE_UNITS = ['MB', 'GB', 'TB'] as const;
 
 export type StorageUnit = (typeof STORAGE_UNITS)[number];
 
+// The longest name that kept a plan card's price beside it when tried on the real card, down to a 360px phone with a price like 149.50€.
+export const PLAN_NAME_CARD_FIT_LENGTH = 12;
+
+export function planNameMayWrapPrice(name: string): boolean {
+    return name.trim().length > PLAN_NAME_CARD_FIT_LENGTH;
+}
+
 const STORAGE_FACTORS: Record<StorageUnit, number> = {
     MB: 1024 ** 2,
     GB: 1024 ** 3,

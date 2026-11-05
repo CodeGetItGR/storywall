@@ -48,7 +48,7 @@ export async function OccasionPage({ locale, occasion }: { locale: Locale; occas
     const copy = await getTranslations({ locale, namespace: `OccasionPages.${occasion.eventType}` });
     const featureKeys = occasionFeatureKeys(config, occasion.eventType, Object.keys(copy.raw('features') as Record<string, unknown>));
     const now = new Date();
-    const price = occasionPriceValues(config, occasion.eventType);
+    const price = occasionPriceValues(config, occasion.eventType, locale);
     const length = occasionLengthValues(config, occasion.eventType, locale);
     const campaign = activeCampaign(occasion.eventType, now);
     const demoHref = eventType?.hasDemo ? routes.demoEventType(eventTypeSlug(occasion.eventType)) : null;

@@ -67,13 +67,15 @@ export function qrWeddingMovedPath(pathname: string): string | null {
 }
 
 export type QrWeddingFaqLink = { label: string; to: 'gallery' | 'terms' | 'pricing' };
-export type QrWeddingFaqItem = { q: string; a: string; link?: QrWeddingFaqLink };
+// aIncluded: the answer while the QR code isn't on sale by itself.
+export type QrWeddingFaqItem = { q: string; a: string; aIncluded?: string; link?: QrWeddingFaqLink };
 
 // The FAQ with the cheapest package's price filled in. An answer that quotes the price is left out
 // when the packages can't be read, rather than shown with a gap.
-export function qrWeddingFaqItems(items: QrWeddingFaqItem[], price: string): QrWeddingFaqItem[] {
-    return items.flatMap((item) => {
-        if (!item.a.includes('{price}')) return [item];
-        return price ? [{ ...item, a: item.a.replaceAll('{price}', price) }] : [];
+export function qrWeddingFaqItems(rawItems: QrWeddingFaqItem[], price: string, soldAlone: boolean): QrWeddingFaqItem[] {
+    return rawItems.flatMap(({ aIncluded, ...item }) => {
+        const answer = soldAlone ? item.a : (aIncluded ?? item.a);
+        if (!answer.includes('{price}')) return [{ ...item, a: answer }];
+        return price ? [{ ...item, a: answer.replaceAll('{price}', price) }] : [];
     });
 }

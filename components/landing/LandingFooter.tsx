@@ -7,6 +7,7 @@ import { LandingNewsletter } from '@/components/landing/LandingNewsletter';
 import { AppLink } from '@/components/ui/AppLink';
 import type { Locale } from '@/i18n/config';
 import { getForBusinessPath, getQrWeddingPath, localizeLegalHref } from '@/i18n/publicLocale';
+import { showsForBusinessHub } from '@/lib/forBusinessRelease';
 import { landingSectionAttributes } from '@/lib/landingTracking';
 import { qrLinkAttributes } from '@/lib/linkClicks';
 import { loadLiveOccasions } from '@/lib/occasions/liveOccasions.server';
@@ -14,7 +15,6 @@ import { occasionPath } from '@/lib/occasions/occasions';
 import { loadQrWeddingPageLive } from '@/lib/qrWeddingPage.server';
 import { routes } from '@/lib/routes';
 import { SOCIAL_PROFILES } from '@/lib/seo';
-import { showsUnreleasedPages } from '@/lib/unreleasedPages';
 
 // Every in-page anchor here must match an id rendered by a landing section.
 const EXPLORE_LINKS = [
@@ -46,7 +46,7 @@ export async function LandingFooter({ anchorBase = '', topHref = TOP_HREF }: { a
     const locale = (await getLocale()) as Locale;
     const occasions = await loadLiveOccasions();
     const showsQrWedding = await loadQrWeddingPageLive();
-    const showsForBusiness = showsUnreleasedPages();
+    const showsForBusiness = showsForBusinessHub();
     const columns = occasions.length > 0 ? 'min-[761px]:grid-cols-[1.65fr_0.75fr_0.75fr_0.75fr]' : 'min-[761px]:grid-cols-[1.65fr_0.75fr_0.75fr]';
 
     return (

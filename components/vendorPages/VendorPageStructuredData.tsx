@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { vendorPageFaqItems } from '@/components/vendorPages/VendorPageFaq';
 import type { Locale } from '@/i18n/config';
 import { getForBusinessPath, getPublicLandingPath, getVendorPagePath, type VendorPageType } from '@/i18n/publicLocale';
+import { showsForBusinessHub } from '@/lib/forBusinessRelease';
 import { absoluteUrl, SITE_URL } from '@/lib/seo';
 
 // Same shape as the partner page's, one level deeper in the breadcrumb.
@@ -31,10 +32,10 @@ export async function VendorPageStructuredData({ type }: { type: VendorPageType 
                 '@type': 'BreadcrumbList',
                 '@id': `${url}#breadcrumb`,
                 itemListElement: [
-                    { '@type': 'ListItem', position: 1, name: business('meta.siteName'), item: absoluteUrl(getPublicLandingPath(locale)) },
-                    { '@type': 'ListItem', position: 2, name: t('breadcrumb'), item: absoluteUrl(getForBusinessPath(locale)) },
-                    { '@type': 'ListItem', position: 3, name: t(`types.${type}.label`), item: url },
-                ],
+                    { name: business('meta.siteName'), item: absoluteUrl(getPublicLandingPath(locale)) },
+                    ...(showsForBusinessHub() ? [{ name: t('breadcrumb'), item: absoluteUrl(getForBusinessPath(locale)) }] : []),
+                    { name: t(`types.${type}.label`), item: url },
+                ].map((crumb, index) => ({ '@type': 'ListItem', position: index + 1, ...crumb })),
             },
             {
                 '@type': 'FAQPage',

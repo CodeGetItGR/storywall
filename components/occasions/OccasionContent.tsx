@@ -12,6 +12,7 @@ import { LandingHeroTransition } from '@/components/landing/LandingHeroTransitio
 import { LandingHowItWorks } from '@/components/landing/LandingHowItWorks';
 import { LandingPricing } from '@/components/landing/LandingPricing';
 import { LandingReviews } from '@/components/landing/LandingReviews';
+import { LandingSaleButton } from '@/components/landing/LandingSaleButton';
 import { OccasionCampaignBanner } from '@/components/occasions/OccasionCampaignBanner';
 import { OccasionDemoPreview } from '@/components/occasions/OccasionDemoPreview';
 import { OccasionFeatures } from '@/components/occasions/OccasionFeatures';
@@ -141,6 +142,9 @@ export async function OccasionContent({ campaign, demoHref, featureKeys, locale,
                     <LandingFooter anchorBase={getPublicLandingPath(locale)} />
                 </div>
             </OccasionPageShell>
+
+            {/* Sale button */}
+            <LandingSaleButton />
 
             {/* Cookie consent */}
             <CookieConsent />

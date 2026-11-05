@@ -10,7 +10,7 @@ export async function getOccasionMetadata(occasion: Occasion, locale: Locale): P
     const t = await getTranslations({ locale, namespace: `OccasionPages.${occasion.eventType}.meta` });
     const common = await getTranslations({ locale, namespace: 'LandingPage.meta' });
     // The description may name the lowest price.
-    const price = await loadOccasionPriceValues(occasion.eventType);
+    const price = await loadOccasionPriceValues(occasion.eventType, locale);
     return buildOccasionMetadata(occasion, locale, {
         title: t('title'),
         description: t('description', price),

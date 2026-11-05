@@ -15,6 +15,7 @@
         "apiDown": "We're having some issues. We're working on a fix.",
         "close": "Close",
         "campaign": "{percent}% off all plans.",
+        "campaignButton": "{percent}% off",
         "campaignEndsIn": "Ends in {countdown}.",
         "campaignEndsOn": "Ends on {date}",
         "seePlans": "See plans",
@@ -3732,6 +3733,10 @@
                 "CAMPAIGN_LINK_CREATED": "Campaign link created",
                 "CAMPAIGN_LINK_RENAMED": "Campaign link renamed",
                 "CAMPAIGN_LINK_DELETED": "Campaign link deleted",
+                "DISCOUNT_CAMPAIGN_CREATED": "Discount campaign created",
+                "DISCOUNT_CAMPAIGN_UPDATED": "Discount campaign changed",
+                "DISCOUNT_CAMPAIGN_STOPPED": "Discount campaign stopped",
+                "DISCOUNT_CAMPAIGN_DELETED": "Discount campaign deleted",
                 "APP_REVIEW_UPDATED": "App review changed",
                 "OUTREACH_CREATED": "Outreach lead added",
                 "OUTREACH_UPDATED": "Outreach lead changed",
@@ -3740,7 +3745,22 @@
                 "OUTREACH_REQUEST_APPROVED": "Outreach request approved",
                 "OUTREACH_REQUEST_DECLINED": "Outreach request declined",
                 "ADMIN_DEVICE_PAIRED": "Admin phone paired",
-                "ADMIN_DEVICE_REVOKED": "Admin phone removed"
+                "ADMIN_DEVICE_REVOKED": "Admin phone removed",
+                "INVITATION_THEME_CREATED": "Invitation theme created",
+                "INVITATION_THEME_UPDATED": "Invitation theme changed",
+                "INVITATION_THEME_IMAGE_UPLOADED": "Invitation theme image added",
+                "INVITATION_THEME_IMAGE_DELETED": "Invitation theme image deleted",
+                "INVITATION_FONT_PAIRING_CREATED": "Font pairing created",
+                "INVITATION_FONT_PAIRING_UPDATED": "Font pairing changed",
+                "QR_CARD_TEMPLATE_DUPLICATED": "QR card template copied",
+                "INVIART_COLLECTION_CHANGED": "INVIART collection changed",
+                "SHOP_STORE_CREATED": "Shopify store connected",
+                "SHOP_STORE_UPDATED": "Shopify store changed",
+                "SHOP_STORE_DELETED": "Shopify store removed",
+                "SHOP_CATEGORY_CREATED": "Shop category created",
+                "SHOP_CATEGORY_UPDATED": "Shop category changed",
+                "SHOP_CATEGORY_DELETED": "Shop category deleted",
+                "SHOP_CATEGORY_COLLECTIONS_CHANGED": "Shop category collections changed"
             }
         },
         "errorEvents": {
@@ -4215,6 +4235,7 @@
         "fields": {
             "code": "Code",
             "name": "Name",
+            "nameLengthWarning": "With a name over {count} characters, the price may drop to its own line on plan cards.",
             "description": "Description",
             "storage": "Storage",
             "unit": "Unit",
@@ -6023,6 +6044,7 @@
         "campaigns": {
             "title": "Campaigns",
             "create": "New link",
+            "back": "All campaigns",
             "createTitle": "New campaign link",
             "saveLink": "Save link",
             "rangeNote": "Counts visits and sign-ups in this range.",
@@ -6180,7 +6202,7 @@
         "discountCampaigns": {
             "create": "New discount campaign",
             "createTitle": "New discount campaign",
-            "editTitle": "Edit discount campaign",
+            "back": "All discount campaigns",
             "empty": "No discount campaigns yet.",
             "columns": {
                 "name": "Name",
@@ -8906,6 +8928,8 @@
             "kicker": "PRICING",
             "title": "The wedding QR code, on its own or with your whole StoryWall.",
             "body": "Every package here comes with the QR code for photos. Choose the one you need.",
+            "titleIncluded": "Every StoryWall package includes the wedding QR code.",
+            "bodyIncluded": "It isn't sold separately. Choose your package and how long it stays online, and you get the QR code with your whole wedding StoryWall.",
             "choose": "CHOOSE PACKAGE",
             "durationGroup": "{plan} package duration",
             "secure": "Secure payment",
@@ -8979,6 +9003,7 @@
                 {
                     "q": "How much does a QR code for wedding photos cost?",
                     "a": "On its own, the QR code costs from {price}, with the photo gallery and printable QR cards. Every full wedding package includes it too, together with the wedding wall.",
+                    "aIncluded": "The QR code isn't sold separately. It's included in every StoryWall wedding package, together with your invitation, RSVPs and wedding wall, from {price}.",
                     "link": {
                         "label": "See the packages →",
                         "to": "pricing"
@@ -9443,6 +9468,61 @@
             "faq": "Questions",
             "apply": "Become a partner",
             "others": "Also for other professionals"
+        },
+        "renders": {
+            "vendors": {
+                "PLANNER": "Imera Events",
+                "VENUE": "Elaionas Estate",
+                "PHOTOGRAPHER": "Studio Fos",
+                "VIDEOGRAPHER": "Kadro Films",
+                "DECORATION": "Anthos Decor",
+                "CATERING": "Gefseis Catering",
+                "MUSIC": "DJ Notos"
+            },
+            "feedCard": {
+                "tagline": "With you from start to finish."
+            },
+            "posts": {
+                "body": "What a lovely evening. Thank you!"
+            },
+            "live": {
+                "songs": [
+                    {
+                        "title": "Zorba's Dance",
+                        "artist": "Mikis Theodorakis"
+                    },
+                    {
+                        "title": "Dancing Queen",
+                        "artist": "ABBA"
+                    },
+                    {
+                        "title": "Perfect",
+                        "artist": "Ed Sheeran"
+                    }
+                ]
+            },
+            "portal": {
+                "events": [
+                    "Anna & Nikos",
+                    "Lydia's baptism"
+                ]
+            },
+            "schedule": {
+                "ceremonyPlace": "Saint Nicholas Church",
+                "receptionPlace": "Elaionas Estate"
+            },
+            "announce": {
+                "author": "Eleni Roussou",
+                "body": "Buses to the ceremony leave the hotel at 17:00."
+            },
+            "rsvp": {
+                "couple": "Nefeli & Orestis",
+                "guests": [
+                    "Nantia Efthymiou",
+                    "Stelios Raptis",
+                    "Alexandros Markou"
+                ]
+            }
         },
         "heroCta": "Apply to partner",
         "tools": {
