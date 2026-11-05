@@ -4216,6 +4216,7 @@
         "fields": {
             "code": "Code",
             "name": "Name",
+            "nameLengthWarning": "With a name over {count} characters, the price may drop to its own line on plan cards.",
             "description": "Description",
             "storage": "Storage",
             "unit": "Unit",
