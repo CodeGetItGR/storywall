@@ -41,7 +41,7 @@ export function InvitationSection({ section, index, ctx }: InvitationSectionProp
     const shell = sectionShell(section, index, ctx);
 
     return (
-        <section className={shell.className} style={shell.style}>
+        <section className={shell.className} style={shell.style} data-section-id={section.id}>
             <SectionContent section={section} contrast={shell.contrast} ctx={ctx} />
         </section>
     );

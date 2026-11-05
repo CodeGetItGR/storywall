@@ -3,6 +3,7 @@ import './invitation.css';
 import { INVITATION_FONT_CLASSES } from '@/components/saveMyDate/invitation/invitationFonts';
 import { InvitationSection } from '@/components/saveMyDate/invitation/InvitationSection';
 import type { InvitationDocument } from '@/lib/invitation/document';
+import { invitationLanguage } from '@/lib/invitation/labels';
 import { buildRenderContext, type MediaResolver, themeCssVars, type TypographyPreset } from '@/lib/invitation/render';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 
@@ -20,7 +21,7 @@ export function InvitationRenderer({ document, theme, media, hostPreset }: Invit
     const ctx = buildRenderContext(document, theme, media, hostPreset);
 
     return (
-        <div className={`smd-invitation ${INVITATION_FONT_CLASSES}`} style={themeCssVars(ctx)}>
+        <div lang={invitationLanguage(document)} className={`smd-invitation ${INVITATION_FONT_CLASSES}`} style={themeCssVars(ctx)}>
             {/* Sections */}
             {document.sections.map((section, index) =>
                 section.visible ? <InvitationSection key={section.id} section={section} index={index} ctx={ctx} /> : null,

@@ -200,6 +200,8 @@ export function resolveTextColor(contrast: TextContrast, explicit: string | unde
 
 export type SectionShell = { className: string; style: CSSProperties; contrast: TextContrast };
 
+const KEEPS_SAVED_HEIGHT: ReadonlySet<InvitationSection['type']> = new Set(['photo', 'photoFrame', 'footer']);
+
 // The <section> around every section type (old sectionHtml).
 export function sectionShell(section: InvitationSection, index: number, ctx: RenderContext): SectionShell {
     const contrast = sectionTextContrast(section, index, ctx);
@@ -214,10 +216,14 @@ export function sectionShell(section: InvitationSection, index: number, ctx: Ren
     };
     // The countdown's numbers need almost the full width on phones.
     if (section.type === 'countdown') style['--section-side-pad-mobile'] = '4px';
-    if (minHeight) style.minHeight = `${minHeight}px`;
-    if (paddingY !== undefined) {
-        style.paddingTop = `${paddingY}px`;
-        style.paddingBottom = `${paddingY}px`;
+    // The saved height and padding are editor aids: guests only see them where
+    // they are part of the composition (old wedartStripEditingUI).
+    if (KEEPS_SAVED_HEIGHT.has(section.type)) {
+        if (minHeight) style.minHeight = `${minHeight}px`;
+        if (paddingY !== undefined) {
+            style.paddingTop = `${paddingY}px`;
+            style.paddingBottom = `${paddingY}px`;
+        }
     }
     const className = [
         'section',
