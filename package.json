@@ -16,7 +16,8 @@
         "check": "npm run lint && npm run format",
         "type:check": "npx tsc --noEmit",
         "test": "vitest run",
-        "parity:save-my-date": "jiti scripts/save-my-date/parity.ts"
+        "parity:save-my-date": "jiti scripts/save-my-date/parity.ts",
+        "import-fonts:save-my-date": "jiti scripts/save-my-date/import-fonts.ts"
     },
     "dependencies": {
         "@base-ui/react": "^1.5.0",

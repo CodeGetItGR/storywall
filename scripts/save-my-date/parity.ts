@@ -8,6 +8,9 @@
 // from the backup, so no Supabase or old Next server is needed. It starts its
 // own `next dev`, so nothing else may be using --port. The backup holds
 // customers' data: keep every folder out of the repo.
+//
+// The new page gets uploaded fonts the way any invitation does, from the backend
+// at NEXT_PUBLIC_API_BASE_URL, so that backend must have them (import-fonts.ts).
 
 import { type ChildProcess, execSync, spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -71,17 +74,6 @@ const converted = readJson<Converted>(join(convertedDir, 'templates', `${themeId
 const stateRows = readJson<{ theme_id: string; state: unknown }[]>(join(backupDir, 'data', 'editor-states.json'));
 const oldState = stateRows.find((row) => row.theme_id === themeId)?.state;
 if (!oldState) throw new Error(`Theme ${themeId} has no editor state in the backup`);
-
-type UploadedFont = { name: string; url: string };
-
-const uploadedFonts = readJson<UploadedFont[]>(join(backupDir, 'data', 'global-fonts.json'));
-const convertedText = JSON.stringify([converted.design, converted.document]);
-const fontsUsed = uploadedFonts.filter((font) => convertedText.includes(font.name)).map((font) => font.name);
-// The new renderer cannot load uploaded fonts yet, so the check adds them; the
-// report names them so the gap stays visible.
-const UPLOADED_FONTS_CSS = uploadedFonts
-    .map((font) => `@font-face{font-family:"${font.name}";src:url("${font.url}");font-display:block}`)
-    .join('');
 
 const CONTENT_TYPES: Record<string, string> = {
     '.html': 'text/html; charset=utf-8',
@@ -252,7 +244,6 @@ async function compareWidth(context: BrowserContext, oldUrl: string, width: (typ
     await oldPage.goto(oldUrl, { waitUntil: 'load' });
     await oldPage.waitForFunction(() => !document.body.classList.contains('wedart-awaiting-load'), undefined, { timeout: 30_000 });
     await newPage.goto(`${newOrigin}/save-my-date/parity`, { waitUntil: 'load' });
-    await newPage.addStyleTag({ content: UPLOADED_FONTS_CSS });
     await settle(oldPage);
     await settle(newPage);
 
@@ -299,12 +290,11 @@ function writeReport(rows: Row[]) {
 <style>body{font:14px system-ui;margin:24px;background:#f4f4f5}figure{margin:0 0 24px;background:#fff;padding:12px;border-left:4px solid #16a34a}
 figure.over{border-color:#dc2626}img{max-width:100%;display:block;margin-top:8px}</style>
 <h1>${escapeHtml(converted.record.name)} (${themeId})</h1>
-${fontsUsed.length ? `<p><b>Added by this check, the new renderer cannot load them yet:</b> ${fontsUsed.map(escapeHtml).join(', ')}</p>` : ''}
 <p>${compared.length} compared, ${over.length} above ${threshold}%, ${skipped.length} not compared. Each image: old, new, difference.</p>
 ${compared.map(card).join('\n')}
 <h2>Not compared</h2><ul>${skipped.map((row) => `<li>${row.width} · ${escapeHtml(row.type)} · ${row.status}</li>`).join('')}</ul>`;
     writeFileSync(join(outDir, 'report.html'), html);
-    writeFileSync(join(outDir, 'report.json'), `${JSON.stringify({ themeId, threshold, fontsAddedByCheck: fontsUsed, rows }, null, 2)}\n`);
+    writeFileSync(join(outDir, 'report.json'), `${JSON.stringify({ themeId, threshold, rows }, null, 2)}\n`);
     return { compared, over, skipped };
 }
 
@@ -319,7 +309,10 @@ function startNewServer(): ChildProcess {
 
 async function waitForNewServer() {
     for (let attempt = 0; attempt < 120; attempt += 1) {
-        const status = await fetch(`${newOrigin}/save-my-date/parity`).then((response) => response.status, () => 0);
+        const status = await fetch(`${newOrigin}/save-my-date/parity`).then(
+            (response) => response.status,
+            () => 0,
+        );
         if (status === 200) return;
         if (status === 404) throw new Error(`Something else is answering on ${newOrigin}: stop it and run again`);
         await new Promise((done) => setTimeout(done, 2000));
@@ -335,7 +328,10 @@ function stopNewServer(child: ChildProcess) {
 
 async function main() {
     writeFileSync(join(outDir, 'input.json'), JSON.stringify({ document: converted.document, theme: converted.design, media: newMediaMap() }));
-    const busy = await fetch(newOrigin).then(() => true, () => false);
+    const busy = await fetch(newOrigin).then(
+        () => true,
+        () => false,
+    );
     if (busy) throw new Error(`Port ${args.port} is in use: stop that server or pass --port`);
     const oldServer = await startOldServer();
     const oldPort = (oldServer.address() as AddressInfo).port;
@@ -357,7 +353,6 @@ async function main() {
             print(`${(row.percent ?? 0).toFixed(2).padStart(7)}%  ${row.width.padEnd(8)}${row.type.padEnd(16)}${row.oldHeight}/${row.newHeight}`);
         }
         print(`${compared.length} compared, ${over.length} above ${threshold}%, ${skipped.length} not compared`);
-        if (fontsUsed.length) print(`Fonts added by the check: ${fontsUsed.join(', ')}`);
         print(join(outDir, 'report.html'));
     } finally {
         stopNewServer(newServer);
