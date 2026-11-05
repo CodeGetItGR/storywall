@@ -2781,7 +2781,12 @@ export interface CampaignLinkDto {
     // On links made as a set: the set's name, and the anchor added after the query.
     linkGroup?: string | null;
     destinationAnchor?: string | null;
+    // The readable code in the link's short address, /c/{shortCode}.
+    shortCode: string;
 }
+
+// GET /api/public/campaign-links/{shortCode}: what a short address needs to build the full URL.
+export type CampaignLinkTargetDto = Pick<CampaignLinkDto, 'destinationPath' | 'destinationAnchor' | 'utmSource' | 'utmMedium' | 'utmCampaign'>;
 
 export interface CampaignLinkRequestDto {
     name: string;
@@ -4554,6 +4559,13 @@ export type AdminAuditAction =
     | 'CAMPAIGN_LINK_DELETED'
     | 'ADMIN_DEVICE_PAIRED'
     | 'ADMIN_DEVICE_REVOKED'
+    | 'INVITATION_THEME_CREATED'
+    | 'INVITATION_THEME_UPDATED'
+    | 'INVITATION_THEME_IMAGE_UPLOADED'
+    | 'INVITATION_THEME_IMAGE_DELETED'
+    | 'INVITATION_FONT_PAIRING_CREATED'
+    | 'INVITATION_FONT_PAIRING_UPDATED'
+    | 'QR_CARD_TEMPLATE_DUPLICATED'
     | 'OUTREACH_CREATED'
     | 'OUTREACH_UPDATED'
     | 'OUTREACH_DELETED'

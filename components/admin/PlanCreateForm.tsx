@@ -18,6 +18,7 @@ import { invalidatePublicConfig } from '@/hooks/useAppConfig';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { usePlanCreateAssignments } from '@/hooks/usePlanCreateAssignments';
 import { usePlanCreateDurations } from '@/hooks/usePlanCreateDurations';
+import { usePlanNameWarning } from '@/hooks/usePlanNameWarning';
 import { codeFromName, defaultCurrency, localInputToInstant, priceInputToMinor, STORAGE_UNITS, storageInputToBytes } from '@/lib/adminPlanForm';
 import { adminErrorMessageKey, checked, emptyToNull, numberOrNull } from '@/lib/adminUtils';
 import { type Visibility, visibilityFlags } from '@/lib/adminVisibility';
@@ -255,6 +256,8 @@ function PlanCloneTargetRow({
 }) {
     const t = useTranslations('AdminPage');
     const localizedText = useLocalizedText();
+    // A blank name keeps the source plan's name, so that is the one the card would show.
+    const nameWarning = usePlanNameWarning(row.name.trim() || sourcePlan.name);
 
     const handleEventTypeChange = useCallback(
         (changeEvent: ChangeEvent<HTMLSelectElement>) =>
@@ -293,7 +296,7 @@ function PlanCloneTargetRow({
                 <AdminField label={t('fields.code')} required hint={t('fields.codeHint')} className="col-span-2 sm:col-span-1">
                     <input required value={code} onChange={handleCodeChange} spellCheck={false} className={adminInputClass('font-mono')} />
                 </AdminField>
-                <AdminField label={t('fields.name')} optional className="col-span-2">
+                <AdminField label={t('fields.name')} optional hint={nameWarning} hintTone="warn" className="col-span-2">
                     <input value={row.name} onChange={handleNameChange} placeholder={sourcePlan.name} maxLength={100} className={adminInputClass()} />
                 </AdminField>
                 <AdminField label={t('fields.description')} optional className="col-span-2">
@@ -350,6 +353,7 @@ function PlanCreateNewForm({
     });
     const formRef = useRef<HTMLFormElement>(null);
     const [name, setName] = useState('');
+    const nameWarning = usePlanNameWarning(name);
     const [codeOverride, setCodeOverride] = useState<string | null>(null);
     const [visibility, setVisibility] = useState<Visibility>('LIVE');
     const [isGiftable, setIsGiftable] = useState(true);
@@ -480,7 +484,7 @@ function PlanCreateNewForm({
             <form id="plan-create-form" ref={formRef} onSubmit={handleSubmit} className="space-y-5">
                 <AdminSection title={t('plans.sections.identity')}>
                     <div className="grid grid-cols-2 gap-2.5">
-                        <AdminField label={t('fields.name')} required className="col-span-2">
+                        <AdminField label={t('fields.name')} required hint={nameWarning} hintTone="warn" className="col-span-2">
                             <input required name="name" maxLength={100} value={name} onChange={handleNameChange} className={adminInputClass()} />
                         </AdminField>
                         <AdminField label={t('fields.code')} required hint={t('fields.codeHint')} className="col-span-2">

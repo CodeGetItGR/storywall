@@ -4,12 +4,12 @@ import { type MouseEvent, useMemo, useRef, useState } from 'react';
 
 import { useAdminCampaigns, useGenerateCampaignLinkSet } from '@/hooks/useAdminCampaigns';
 import type { AdminDiscountCampaignDto, CampaignLinkLanguage, CampaignRowDto } from '@/lib/api/types';
-import { totalOf } from '@/lib/campaignLinks';
+import { campaignLinkSections, totalOf } from '@/lib/campaignLinks';
 import { isCampaignOver } from '@/lib/discountCampaignForm';
 
 const NO_ROWS: CampaignRowDto[] = [];
 
-// One discount campaign's links in its drawer, counted over all time, and the two buttons that
+// One discount campaign's links on its page, counted over all time, and the two buttons that
 // create a language's set. A repeat click creates nothing, and a click while a request is running
 // is ignored: the server answers a second request at the same moment with a 409. The ref closes the
 // gap before the mutation reports it is pending, so two clicks in a row send one request.
@@ -21,6 +21,7 @@ export function useDiscountCampaignLinks(campaign: Pick<AdminDiscountCampaignDto
     const allRows = query.data ?? NO_ROWS;
     const rows = useMemo(() => allRows.filter((row) => row.link?.linkGroup === campaign.linkName), [allRows, campaign.linkName]);
 
+    const sections = useMemo(() => campaignLinkSections(rows), [rows]);
     const total = useMemo(() => totalOf(rows), [rows]);
 
     function handleGenerateClick(event: MouseEvent<HTMLButtonElement>) {
@@ -39,5 +40,5 @@ export function useDiscountCampaignLinks(campaign: Pick<AdminDiscountCampaignDto
     // An over campaign keeps its links listed, but gets no new ones and a warning not to use them.
     const over = isCampaignOver(campaign.status);
 
-    return { rows, total, over, isLoading: query.isLoading, busy: generate.isPending, error: error ?? query.error, handleGenerateClick };
+    return { rows, sections, total, over, isLoading: query.isLoading, busy: generate.isPending, error: error ?? query.error, handleGenerateClick };
 }
