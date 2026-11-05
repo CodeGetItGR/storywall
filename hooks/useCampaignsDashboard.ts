@@ -67,6 +67,7 @@ export function useCampaignsDashboard() {
         refresh,
         drawer,
         handleCreateClick,
+        openLink: open,
         handleLinkClick,
         closeDrawer,
         linkSet,

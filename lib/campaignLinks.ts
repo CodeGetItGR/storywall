@@ -1,6 +1,6 @@
 import { locales } from '@/i18n/config';
 import { getForBusinessPath, getQrWeddingPath } from '@/i18n/publicLocale';
-import type { CampaignLinkRequestDto, CampaignRowDto } from '@/lib/api/types';
+import type { CampaignLinkDto, CampaignLinkRequestDto, CampaignLinkTargetDto, CampaignRowDto } from '@/lib/api/types';
 import { FOR_BUSINESS_HUB_LAUNCHED } from '@/lib/forBusinessRelease';
 import { occasionPath, readyOccasions } from '@/lib/occasions/occasions';
 import { SITE_URL } from '@/lib/seo';
@@ -101,6 +101,23 @@ export function campaignUrl(parts: CampaignUrlParts, origin: string = SITE_URL):
     if (parts.utmMedium) url.searchParams.set('utm_medium', parts.utmMedium);
     if (parts.utmCampaign) url.searchParams.set('utm_campaign', parts.utmCampaign);
     if (parts.destinationAnchor) url.hash = parts.destinationAnchor;
+    return url.toString();
+}
+
+export const CAMPAIGN_SHORT_LINK_PREFIX = '/c/';
+
+// The short address to share: it redirects to the link's full URL.
+export function campaignShortUrl(link: Pick<CampaignLinkDto, 'shortCode'>, origin: string = SITE_URL): string {
+    return `${origin}${CAMPAIGN_SHORT_LINK_PREFIX}${link.shortCode}`;
+}
+
+// Where a short address leads: the full URL, plus what the address itself carried, such as the click
+// id an ad platform adds. The saved link's own values win.
+export function campaignRedirectUrl(target: CampaignLinkTargetDto, incoming: URLSearchParams, origin: string): string {
+    const url = new URL(campaignUrl(target, origin));
+    incoming.forEach((value, key) => {
+        if (!url.searchParams.has(key)) url.searchParams.append(key, value);
+    });
     return url.toString();
 }
 

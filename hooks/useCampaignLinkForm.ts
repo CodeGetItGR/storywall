@@ -3,12 +3,12 @@
 import { type ChangeEvent, useMemo, useState } from 'react';
 
 import { useCreateCampaignLink } from '@/hooks/useAdminCampaigns';
+import type { CampaignLinkDto } from '@/lib/api/types';
 import {
     campaignDestinations,
     type CampaignLinkForm,
     campaignLinkFormProblem,
     type CampaignPresetKey,
-    campaignUrl,
     emptyCampaignLinkForm,
     findCampaignPreset,
     requestOfCampaignLinkForm,
@@ -18,8 +18,9 @@ import {
 type UtmField = 'utmSource' | 'utmMedium' | 'utmCampaign';
 
 // The campaign link builder's state and actions. The drawer is remounted on every opening, so the
-// form starts empty each time.
-export function useCampaignLinkForm(onDone: () => void) {
+// form starts empty each time. A link can be shared once it is saved, since only then does it have a
+// short address.
+export function useCampaignLinkForm(onCreated: (link: CampaignLinkDto) => void) {
     const create = useCreateCampaignLink();
     const destinations = useMemo(() => campaignDestinations(), []);
     const [form, setForm] = useState<CampaignLinkForm>(() => emptyCampaignLinkForm(destinations[0]?.path ?? '/'));
@@ -28,7 +29,6 @@ export function useCampaignLinkForm(onDone: () => void) {
     const [showProblem, setShowProblem] = useState(false);
 
     const problem = campaignLinkFormProblem(form);
-    const url = campaignUrl(form);
 
     function handlePresetChange(event: ChangeEvent<HTMLSelectElement>) {
         const preset = findCampaignPreset(event.currentTarget.value as CampaignPresetKey);
@@ -65,8 +65,7 @@ export function useCampaignLinkForm(onDone: () => void) {
         }
         setError(null);
         try {
-            await create.mutateAsync(requestOfCampaignLinkForm(form));
-            onDone();
+            onCreated(await create.mutateAsync(requestOfCampaignLinkForm(form)));
         } catch (caught) {
             setError(caught);
         }
@@ -81,7 +80,6 @@ export function useCampaignLinkForm(onDone: () => void) {
     return {
         form,
         destinations,
-        url,
         problem: showProblem ? problem : null,
         busy: create.isPending,
         error,

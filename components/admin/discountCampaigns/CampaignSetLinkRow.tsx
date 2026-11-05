@@ -6,14 +6,14 @@ import { useTranslations } from 'next-intl';
 import { useCampaignLinkShare } from '@/hooks/useCampaignLinkShare';
 import { useFunnelFormat } from '@/hooks/useFunnelFormat';
 import type { CampaignRowDto } from '@/lib/api/types';
-import { campaignUrl } from '@/lib/campaignLinks';
+import { campaignShortUrl } from '@/lib/campaignLinks';
 
 // One link of a campaign's set: its name, its visits, sales and a copy button.
 export function CampaignSetLinkRow({ row }: { row: CampaignRowDto }) {
     const t = useTranslations('AdminPage.campaigns.share');
     const format = useFunnelFormat();
     const link = row.link;
-    const { copied, handleCopyClick } = useCampaignLinkShare(link ? campaignUrl(link) : '', link?.name ?? '');
+    const { copied, handleCopyClick } = useCampaignLinkShare(link ? campaignShortUrl(link) : '', link?.name ?? '');
     if (!link) return null;
 
     return (

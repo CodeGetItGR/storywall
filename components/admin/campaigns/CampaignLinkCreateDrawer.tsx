@@ -5,17 +5,25 @@ import { useTranslations } from 'next-intl';
 
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
-import { CampaignLinkShare } from '@/components/admin/campaigns/CampaignLinkShare';
 import { useCampaignLinkForm } from '@/hooks/useCampaignLinkForm';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
+import type { CampaignLinkDto } from '@/lib/api/types';
 import { CAMPAIGN_NAME_MAX, CAMPAIGN_PRESET_GROUPS, CAMPAIGN_PRESETS, CAMPAIGN_UTM_MAX } from '@/lib/campaignLinks';
 
 const FORM_ID = 'campaign-link-form';
 
 // The campaign link builder. The panel remounts it (key) on every opening.
-export function CampaignLinkCreateDrawer({ open, onCloseAction }: { open: boolean; onCloseAction: () => void }) {
+export function CampaignLinkCreateDrawer({
+    open,
+    onCloseAction,
+    onCreatedAction,
+}: {
+    open: boolean;
+    onCloseAction: () => void;
+    onCreatedAction: (link: CampaignLinkDto) => void;
+}) {
     const t = useTranslations('AdminPage');
-    const f = useCampaignLinkForm(onCloseAction);
+    const f = useCampaignLinkForm(onCreatedAction);
     const { form } = f;
 
     return (
@@ -123,9 +131,6 @@ export function CampaignLinkCreateDrawer({ open, onCloseAction }: { open: boolea
                         onChange={f.handleNameChange}
                     />
                 </AdminField>
-
-                {/* Link */}
-                <CampaignLinkShare url={f.url} fileName={form.utmCampaign} />
 
                 {/* Errors */}
                 {f.problem && <p className="text-sm text-status-danger">{t(`campaigns.problems.${f.problem}`)}</p>}

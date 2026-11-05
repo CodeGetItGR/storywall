@@ -2781,7 +2781,12 @@ export interface CampaignLinkDto {
     // On links made as a set: the set's name, and the anchor added after the query.
     linkGroup?: string | null;
     destinationAnchor?: string | null;
+    // The readable code in the link's short address, /c/{shortCode}.
+    shortCode: string;
 }
+
+// GET /api/public/campaign-links/{shortCode}: what a short address needs to build the full URL.
+export type CampaignLinkTargetDto = Pick<CampaignLinkDto, 'destinationPath' | 'destinationAnchor' | 'utmSource' | 'utmMedium' | 'utmCampaign'>;
 
 export interface CampaignLinkRequestDto {
     name: string;

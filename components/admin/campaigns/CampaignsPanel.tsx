@@ -75,7 +75,7 @@ export function CampaignsPanel() {
                     onCloseAction={d.closeDrawer}
                 />
             ) : (
-                <CampaignLinkCreateDrawer key={d.drawer.token} open={d.drawer.open} onCloseAction={d.closeDrawer} />
+                <CampaignLinkCreateDrawer key={d.drawer.token} open={d.drawer.open} onCloseAction={d.closeDrawer} onCreatedAction={d.openLink} />
             )}
             <CampaignLinkSetDrawer
                 key={`set-${d.linkSet.token}`}
