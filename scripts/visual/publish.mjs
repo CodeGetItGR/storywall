@@ -13,7 +13,8 @@ import { createGitHub } from './publish/github.mjs';
 import { validateManifest } from './publish/manifest.mjs';
 import { pruneReports, updateReports, waitUntilLive } from './publish/reportsRepo.mjs';
 
-const { GITHUB_TOKEN, GITHUB_REPOSITORY, PR_NUMBER, HEAD_SHA, REPORT_DIR, RUN_URL, REPORTS_REPO, PAGES_BASE_URL, VISUAL_REPORTS_DEPLOY_KEY } = process.env;
+const { GITHUB_TOKEN, GITHUB_REPOSITORY, PR_NUMBER, HEAD_SHA, REPORT_DIR, RUN_URL, REPORTS_REPO, PAGES_BASE_URL, VISUAL_REPORTS_DEPLOY_KEY } =
+    process.env;
 
 const shortSha = HEAD_SHA.slice(0, 7);
 const github = createGitHub({ token: GITHUB_TOKEN, repo: GITHUB_REPOSITORY });

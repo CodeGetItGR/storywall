@@ -16,7 +16,10 @@ const { GITHUB_TOKEN, GITHUB_REPOSITORY, GITHUB_EVENT_PATH, VISUAL_APPROVERS } =
 const event = JSON.parse(readFileSync(GITHUB_EVENT_PATH, 'utf8'));
 const github = createGitHub({ token: GITHUB_TOKEN, repo: GITHUB_REPOSITORY });
 const pull = await github.getPull(event.issue.number);
-const approvers = (VISUAL_APPROVERS ?? '').split(',').map((login) => login.trim()).filter(Boolean);
+const approvers = (VISUAL_APPROVERS ?? '')
+    .split(',')
+    .map((login) => login.trim())
+    .filter(Boolean);
 const sender = event.sender.login;
 const body = event.comment.body;
 

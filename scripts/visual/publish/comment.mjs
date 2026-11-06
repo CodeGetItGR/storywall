@@ -51,7 +51,9 @@ export function renderComment({ manifest, state, deploying = false }) {
     if (manifest.entries.length === 0) {
         lines.push('No visual changes.');
     } else {
-        lines.push(`${changed} changed, ${manifest.counts.new} new, ${removed} removed, ${failed} failed, of ${manifest.totalCaptures.toLocaleString('en-US')} captures.`);
+        lines.push(
+            `${changed} changed, ${manifest.counts.new} new, ${removed} removed, ${failed} failed, of ${manifest.totalCaptures.toLocaleString('en-US')} captures.`,
+        );
         lines.push('', `[Open the full report](${state.reportUrl})`);
         if (deploying) lines.push('', 'Images may take a moment to appear.');
         const previews = selectPreviews(manifest.entries);
