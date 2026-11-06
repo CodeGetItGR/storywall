@@ -1,3 +1,4 @@
+import { planPromotionOpen } from '@/lib/adminCollaborations';
 import { localInputToInstant, priceInputToMinor, storageInputToBytes } from '@/lib/adminPlanForm';
 import { emptyToNull, numberOrNull } from '@/lib/adminUtils';
 import type { Visibility } from '@/lib/adminVisibility';
@@ -7,6 +8,8 @@ import { numberFormat } from '@/lib/format';
 import { formatLimitValue } from '@/lib/planTiers';
 
 export type PlanEditorTranslate = (key: string) => string;
+
+const SELLABLE_BILLING_PERIODS: BillingPeriod[] = ['ONE_TIME'];
 
 export type PlanMembershipChange = {
     label: string;
@@ -18,6 +21,7 @@ export type PendingPlanSave = {
     patch: PlanTierPatchDto;
     changes: Array<{ label: string; before: string; after: string }>;
     memberships: PlanMembershipChange[];
+    warnings: string[];
     // Non-null only when that list actually changed, so the save skips the call otherwise.
     moduleKeys: string[] | null;
 };
@@ -41,7 +45,7 @@ export function planPatchFromFormData(
     { visibility, isGiftable }: PlanEditorControls,
 ): PlanTierPatchDto {
     const flags = visibilityFlags(visibility);
-    return {
+    const values: PlanTierPatchDto = {
         name: String(formData.get('name') ?? '').trim(),
         description: emptyToNull(formData.get('description')),
         isPublic: flags.isPublic,
@@ -63,6 +67,49 @@ export function planPatchFromFormData(
         discountStartsAt: localInputToInstant(formData.get('discountStartsAt')),
         discountEndsAt: localInputToInstant(formData.get('discountEndsAt')),
     };
+    return { ...values, ...planClearFlags(plan, values) };
+}
+
+// The server reads a null as "leave it", so emptying a saved value needs its flag. Each flag goes
+// only when set, because the server refuses a property it does not know.
+function planClearFlags(plan: PlanTierResponseDto, values: PlanTierPatchDto): PlanTierPatchDto {
+    const emptied = (current: unknown, next: unknown) => (current ?? null) !== null && (next ?? null) === null;
+    return {
+        ...(plan.scope === 'EVENT' && emptied(plan.storageBytes, values.storageBytes) && { clearStorageBytes: true }),
+        ...(plan.scope === 'EVENT' && emptied(plan.maxMembers, values.maxMembers) && { clearMaxMembers: true }),
+        ...(emptied(plan.discountPercent, values.discountPercent) && { clearDiscountPercent: true }),
+        ...(emptied(plan.discountStartsAt, values.discountStartsAt) && { clearDiscountStartsAt: true }),
+        ...(emptied(plan.discountEndsAt, values.discountEndsAt) && { clearDiscountEndsAt: true }),
+    };
+}
+
+// Promotion consequences the field list alone does not show. The values are the plan as it will be
+// after this save, and the promotion window reads the same way the server's does.
+export function planSaveWarnings(plan: PlanTierResponseDto, patch: PlanTierPatchDto, t: PlanEditorTranslate, now = new Date()): string[] {
+    const after = {
+        discountPercent: patch.clearDiscountPercent ? null : (patch.discountPercent ?? plan.discountPercent),
+        discountStartsAt: patch.clearDiscountStartsAt ? null : (patch.discountStartsAt ?? plan.discountStartsAt),
+        discountEndsAt: patch.clearDiscountEndsAt ? null : (patch.discountEndsAt ?? plan.discountEndsAt),
+    };
+    const hasPromoPrice = plan.initialOptions.some((option) => option.active && option.promoPriceAmountMinor !== null);
+    const warnings: string[] = [];
+
+    if (hasPromoPrice && after.discountEndsAt === null && (patch.clearDiscountPercent || patch.clearDiscountEndsAt)) {
+        warnings.push(t('plans.saveSummary.promoPricesNoEnd'));
+    }
+
+    const dateEmptied = patch.clearDiscountStartsAt || patch.clearDiscountEndsAt;
+    const hasDiscount = hasPromoPrice || (after.discountPercent ?? 0) > 0;
+    if (dateEmptied && hasDiscount && !planPromotionOpen(plan, now) && planPromotionOpen(after, now)) {
+        warnings.push(t('plans.saveSummary.goesLiveOnSave'));
+    }
+
+    return warnings;
+}
+
+// A saved period the form no longer sells stays listed, so a save can't quietly move the plan off it.
+export function billingPeriodOptions(current: BillingPeriod | null): BillingPeriod[] {
+    return current && !SELLABLE_BILLING_PERIODS.includes(current) ? [...SELLABLE_BILLING_PERIODS, current] : SELLABLE_BILLING_PERIODS;
 }
 
 export function planChangeSummary(plan: PlanTierResponseDto, patch: PlanTierPatchDto, t: PlanEditorTranslate) {
@@ -81,22 +128,27 @@ export function planChangeSummary(plan: PlanTierResponseDto, patch: PlanTierPatc
         if (before !== after) changes.push({ label, before, after });
     };
 
+    // These can't be emptied: the server leaves them alone on a null, so a null is no change.
+    const currencyAfter = patch.priceCurrency ?? plan.priceCurrency;
+    const priceAfter = patch.priceAmountMinor ?? plan.priceAmountMinor;
+    const billingPeriodAfter = patch.billingPeriod ?? plan.billingPeriod;
+
     add(t('fields.name'), plan.name, patch.name ?? '');
     add(t('fields.description'), textLabel(plan.description), textLabel(patch.description));
 
     if (plan.scope === 'EVENT') {
         add(t('fields.storage'), storageLabel(plan.storageBytes), storageLabel(patch.storageBytes ?? null));
         add(t('fields.maxMembers'), countLabel(plan.maxMembers), countLabel(patch.maxMembers ?? null));
-        add(t('fields.priceCurrency'), textLabel(plan.priceCurrency), textLabel(patch.priceCurrency));
+        add(t('fields.priceCurrency'), textLabel(plan.priceCurrency), textLabel(currencyAfter));
     } else {
         add(
             t('fields.price'),
             moneyLabel(plan.priceAmountMinor, plan.priceCurrency),
-            moneyLabel(patch.priceAmountMinor ?? null, patch.priceCurrency ?? null),
+            moneyLabel(priceAfter, currencyAfter),
         );
     }
 
-    add(t('fields.billingPeriod'), textLabel(plan.billingPeriod), textLabel(patch.billingPeriod));
+    add(t('fields.billingPeriod'), textLabel(plan.billingPeriod), textLabel(billingPeriodAfter));
 
     // A promotion is money: a change here has to be visible in the confirmation,
     // not applied quietly because the field lives further down the form.

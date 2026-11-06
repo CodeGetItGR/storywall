@@ -15,6 +15,15 @@ export function PlanSaveSummary({ pendingSave }: { pendingSave: PendingPlanSave 
     return (
         <div className="space-y-4">
             <p>{t('review')}</p>
+
+            {/* Warnings */}
+            {pendingSave.warnings.map((warning) => (
+                <p key={warning} role="alert" className="font-semibold text-status-warn">
+                    {warning}
+                </p>
+            ))}
+
+            {/* Fields */}
             {pendingSave.changes.length > 0 && (
                 <div className="space-y-2">
                     <p className="text-[11px] font-bold tracking-wide text-ink uppercase">{t('fields')}</p>

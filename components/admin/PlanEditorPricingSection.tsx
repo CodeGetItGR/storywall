@@ -4,14 +4,14 @@ import { useTranslations } from 'next-intl';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { AdminSection } from '@/components/admin/AdminSection';
+import { billingPeriodOptions } from '@/lib/adminPlanEditor';
 import { defaultCurrency, instantToLocalInput, priceMinorToInput } from '@/lib/adminPlanForm';
-import type { BillingPeriod, PlanTierResponseDto } from '@/lib/api/types';
-
-const BILLING_PERIODS: BillingPeriod[] = ['ONE_TIME'];
+import type { PlanTierResponseDto } from '@/lib/api/types';
 
 export function PlanEditorPricingSection({ id, plan }: { id: string; plan: PlanTierResponseDto }) {
     const t = useTranslations('AdminPage');
     const isEvent = plan.scope === 'EVENT';
+    const currencyRequired = isEvent || plan.priceCurrency !== null;
 
     return (
         <section id={id} className="scroll-mt-14 pt-6">
@@ -34,13 +34,13 @@ export function PlanEditorPricingSection({ id, plan }: { id: string; plan: PlanT
                 {/* Every duration of an EVENT plan is sold in this currency. */}
                 <AdminField
                     label={t('fields.priceCurrency')}
-                    required={isEvent}
-                    optional={!isEvent}
+                    required={currencyRequired}
+                    optional={!currencyRequired}
                     hint={isEvent ? t('fields.priceCurrencyEventHint') : undefined}
                 >
                     <input
                         name="priceCurrency"
-                        required={isEvent}
+                        required={currencyRequired}
                         maxLength={3}
                         defaultValue={defaultCurrency(plan)}
                         className={adminInputClass('max-w-24')}
@@ -48,8 +48,9 @@ export function PlanEditorPricingSection({ id, plan }: { id: string; plan: PlanT
                 </AdminField>
                 <AdminField label={t('fields.billingPeriod')} optional className="col-span-2">
                     <select name="billingPeriod" defaultValue={plan.billingPeriod ?? ''} className={adminInputClass('max-w-44')}>
-                        <option value="">{t('none')}</option>
-                        {BILLING_PERIODS.map((item) => (
+                        {/* A saved period can be changed but not emptied. */}
+                        {!plan.billingPeriod && <option value="">{t('none')}</option>}
+                        {billingPeriodOptions(plan.billingPeriod).map((item) => (
                             <option key={item} value={item}>
                                 {item}
                             </option>
