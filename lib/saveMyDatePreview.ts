@@ -11,6 +11,10 @@ const PREVIEW_MEDIA: Record<string, string> = {
     'm-top': '/images/venue.png',
     'm-main-art': '/images/couple-hero.png',
     'm-leaf': '/images/post-florals.png',
+    'm-baby': '/images/couple-hero.png',
+    'm-dad': '/images/couple-hero.png',
+    'm-g1': '/images/couple-hero.png',
+    'm-a': '/images/couple-hero.png',
 };
 
 export const previewMedia: MediaResolver = (mediaId) => PREVIEW_MEDIA[mediaId];
@@ -98,6 +102,16 @@ const textSections = (style: PreviewDateStyle, lang: PreviewDateLanguage): Invit
         data: { ...SAMPLE_SECTIONS.contact.data, email: 'maria@example.com', instagram: 'instagram.com/example' },
     },
     SAMPLE_SECTIONS.coupleContact,
+    SAMPLE_SECTIONS.baby,
+    SAMPLE_SECTIONS.parents,
+    SAMPLE_SECTIONS.parentsSimple,
+    SAMPLE_SECTIONS.parentsPhoto,
+    SAMPLE_SECTIONS.godparents,
+    SAMPLE_SECTIONS.coupleProfiles,
+    SAMPLE_SECTIONS.coupleProfilesSimple,
+    SAMPLE_SECTIONS.weddingSponsors,
+    SAMPLE_SECTIONS.weddingSponsorsSimple,
+    SAMPLE_SECTIONS.ourStoryProposal,
     SAMPLE_SECTIONS.footer,
 ];
 

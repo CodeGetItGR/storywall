@@ -24,6 +24,9 @@ export type InvitationLabels = {
     contactFacebook: string;
     contactInstagram: string;
     contactTiktok: string;
+    parents: string;
+    godparents: string;
+    photoAlt: string;
 };
 
 const SHARED = {
@@ -49,6 +52,9 @@ export const INVITATION_LABELS: Record<DateLanguage, InvitationLabels> = {
         countdownSeconds: 'ΔΕΥΤ.',
         contactPhone: 'Τηλέφωνο',
         contactSms: 'Μήνυμα',
+        parents: 'Γονείς',
+        godparents: 'Νονοί',
+        photoAlt: 'Φωτογραφία προσώπου',
     },
     en: {
         ...SHARED,
@@ -61,6 +67,9 @@ export const INVITATION_LABELS: Record<DateLanguage, InvitationLabels> = {
         countdownSeconds: 'SECS',
         contactPhone: 'Phone',
         contactSms: 'Message',
+        parents: 'Parents',
+        godparents: 'Godparents',
+        photoAlt: 'Photo of a person',
     },
 };
 

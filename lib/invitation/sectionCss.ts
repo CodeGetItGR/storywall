@@ -16,7 +16,7 @@ import type { InvitationSection } from '@/lib/invitation/sections';
 // ported from the old renderer's tb(), wedartDateTextBlock() and section
 // markup.
 
-export type FieldTag = 'div' | 'span' | 'p' | 'h2' | 'h3' | 'h4';
+export type FieldTag = 'div' | 'span' | 'p' | 'small' | 'h2' | 'h3' | 'h4';
 
 // Headings, and fields the old renderer marked as names or big date parts,
 // take the title font.

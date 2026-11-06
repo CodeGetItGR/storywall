@@ -177,10 +177,19 @@ async function shot(page: Page, section: Locator): Promise<Buffer> {
     // A tab in the background draws no new frames.
     await page.bringToFront();
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    const viewport = page.viewportSize();
+    const first = await section.boundingBox();
+    if (!first || !viewport) throw new Error('A section has no size on the page');
+    // The old page scrolls inside its own box, so a full-page shot stops at the
+    // window's height. A section taller than that gets a taller window.
+    const tall = first.height > viewport.height;
+    if (tall) await page.setViewportSize({ width: viewport.width, height: Math.ceil(first.height) + 1 });
     const box = await section.boundingBox();
     if (!box) throw new Error('A section has no size on the page');
     const clip = { x: Math.round(box.x), y: Math.round(box.y), width: Math.round(box.width), height: Math.round(box.height) };
-    return page.screenshot({ fullPage: true, clip });
+    const png = await page.screenshot({ fullPage: true, clip });
+    if (tall) await page.setViewportSize(viewport);
+    return png;
 }
 
 type Raw = { data: Uint8Array; width: number; height: number };
