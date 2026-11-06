@@ -16,3 +16,25 @@ describe.each(['visual-check', 'visual-baseline'])('%s workflow', (name) => {
         expect(workflow).toContain(`-pw${version}`);
     });
 });
+
+describe('deploy key', () => {
+    it('publishes with the scripts from the base commit', () => {
+        const check = readFileSync('.github/workflows/visual-check.yml', 'utf8');
+        const publish = check.slice(check.indexOf('    publish:'), check.indexOf('    finish:'));
+        expect(publish).toContain('ref: ${{ github.event.pull_request.base.sha }}');
+        expect(publish).not.toContain('head.sha');
+    });
+
+    it('cleans up with the scripts from staging', () => {
+        const cleanup = readFileSync('.github/workflows/visual-cleanup.yml', 'utf8');
+        expect(cleanup).toContain('pull_request_target:');
+        expect(cleanup).toContain('branches: [staging]');
+        expect(cleanup).not.toContain('ref:');
+    });
+});
+
+describe('visual-check workflow', () => {
+    it('reports a cancelled or timed out run', () => {
+        expect(readFileSync('.github/workflows/visual-check.yml', 'utf8')).toContain('if: failure() || cancelled()');
+    });
+});

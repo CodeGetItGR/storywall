@@ -41,6 +41,7 @@ jobs:
               with:
                   ref: ${{ github.event.pull_request.head.sha }}
                   fetch-depth: 0
+                  persist-credentials: false
 
             - uses: actions/setup-node@v7
               with:
@@ -78,7 +79,8 @@ jobs:
                   path: visual-output/report
                   retention-days: 1
 
-    # Installs nothing and builds nothing. Only this job holds the deploy key.
+    # Installs nothing and builds nothing. Only this job holds the deploy key, so it runs the
+    # scripts from the base commit: a PR's own changes to them never see the key.
     publish:
         needs: capture
         runs-on: ubuntu-latest
@@ -90,7 +92,7 @@ jobs:
         steps:
             - uses: actions/checkout@v7
               with:
-                  ref: ${{ github.event.pull_request.head.sha }}
+                  ref: ${{ github.event.pull_request.base.sha }}
                   sparse-checkout: scripts/visual
 
             - uses: actions/setup-node@v7
@@ -110,10 +112,11 @@ jobs:
                   REPORTS_REPO: CodeGetItGR/storywall-visual-reports
                   PAGES_BASE_URL: https://codegetitgr.github.io/storywall-visual-reports
                   VISUAL_REPORTS_DEPLOY_KEY: ${{ secrets.VISUAL_REPORTS_DEPLOY_KEY }}
+                  VISUAL_APPROVERS: ${{ vars.VISUAL_APPROVERS }}
 
     finish:
         needs: [start, capture, publish]
-        if: failure()
+        if: failure() || cancelled()
         runs-on: ubuntu-latest
         timeout-minutes: 5
         permissions:

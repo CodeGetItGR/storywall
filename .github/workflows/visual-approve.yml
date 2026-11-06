@@ -10,6 +10,10 @@ permissions: {}
 jobs:
     approve:
         if: github.event.issue.pull_request && github.event.comment.user.login == 'github-actions[bot]' && github.event.sender.type != 'Bot' && contains(github.event.comment.body, '<!-- visual-regression ')
+        # One at a time per PR, and the newest waiting edit replaces older ones, so the last tick wins.
+        concurrency:
+            group: visual-approve-${{ github.event.issue.number }}
+            cancel-in-progress: false
         runs-on: ubuntu-latest
         timeout-minutes: 5
         permissions:

@@ -1,12 +1,13 @@
 name: Visual cleanup
 
+# Runs from staging, so a PR's own changes to the scripts never see the deploy key.
 on:
-    pull_request:
+    pull_request_target:
         types: [closed]
-        branches-ignore: [main]
+        branches: [staging]
 
 concurrency:
-    group: visual-cleanup
+    group: visual-cleanup-${{ github.event.pull_request.number }}
     cancel-in-progress: false
 
 permissions:
@@ -20,7 +21,6 @@ jobs:
         steps:
             - uses: actions/checkout@v7
               with:
-                  ref: ${{ github.event.pull_request.head.sha }}
                   sparse-checkout: scripts/visual
 
             - uses: actions/setup-node@v7

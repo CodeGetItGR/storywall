@@ -19,6 +19,8 @@ jobs:
         container: mcr.microsoft.com/playwright:v1.55.0-noble
         steps:
             - uses: actions/checkout@v7
+              with:
+                  persist-credentials: false
 
             - id: lookup
               uses: actions/cache/restore@v6
