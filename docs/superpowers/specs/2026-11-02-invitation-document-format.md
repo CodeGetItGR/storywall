@@ -72,7 +72,7 @@ A `textStyles` key is the dot path to a text field in `data`, such as `title`, `
 | `themeBackgroundDefault` | The slot that "reset" returns to (set by the admin). |
 | `hostBackgrounds` | `{enabled, allowed[]}`: which theme backgrounds the host may pick. |
 | `effect` | `{type, speed: slow\|normal, intensity: subtle\|strong}`, with the 31 effect types of the old effects engine. |
-| `minHeight`, `paddingY` | 80–3000 and 0–1000 px. |
+| `minHeight`, `paddingY` | 44–3000 and 0–1000 px. |
 | `transition` | `{assetId, edge: top\|bottom}`, pointing to a theme transition. |
 | `textContrast` | `auto`, `light` (white text) or `base` (theme text colour). |
 
