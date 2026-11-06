@@ -1,6 +1,6 @@
 import { locales } from '@/i18n/config';
 import { getForBusinessPath, getQrWeddingPath } from '@/i18n/publicLocale';
-import type { CampaignLinkDto, CampaignLinkRequestDto, CampaignLinkTargetDto, CampaignRowDto } from '@/lib/api/types';
+import type { CampaignLinkDto, CampaignLinkLanguage, CampaignLinkRequestDto, CampaignLinkTargetDto, CampaignRowDto } from '@/lib/api/types';
 import { FOR_BUSINESS_HUB_LAUNCHED } from '@/lib/forBusinessRelease';
 import { occasionPath, readyOccasions } from '@/lib/occasions/occasions';
 import { SITE_URL } from '@/lib/seo';
@@ -119,6 +119,28 @@ export function campaignRedirectUrl(target: CampaignLinkTargetDto, incoming: URL
         if (!url.searchParams.has(key)) url.searchParams.append(key, value);
     });
     return url.toString();
+}
+
+// How many links a campaign's set has in each language. Matches Spring's CampaignLinkSetService.
+export const CAMPAIGN_SET_SIZE = 9;
+
+export type CampaignSetLinkFormat = 'post' | 'story' | 'search';
+
+// The placement of a link in a campaign's set, from its `<link_name>-<format>-<lang>` campaign value.
+export function campaignSetLinkFormat(link: Pick<CampaignLinkDto, 'utmCampaign'>): CampaignSetLinkFormat | null {
+    const match = /-(post|story|search)-(?:en|el)$/.exec(link.utmCampaign);
+    return match ? (match[1] as CampaignSetLinkFormat) : null;
+}
+
+// A set's English links lead to `/` and its Greek links to `/el`.
+export function campaignSetLinkLanguage(link: Pick<CampaignLinkDto, 'destinationPath'>): CampaignLinkLanguage {
+    return link.destinationPath === '/el' ? 'el' : 'en';
+}
+
+// The address to copy. A Google ad gets the full address, as Google asks for the final page in an
+// ad instead of a redirect. Anything else gets the short one.
+export function campaignSetLinkUrl(link: CampaignUrlParts & Pick<CampaignLinkDto, 'shortCode' | 'utmCampaign'>): string {
+    return campaignSetLinkFormat(link) === 'search' ? campaignUrl(link) : campaignShortUrl(link);
 }
 
 export type CampaignLinkForm = {
