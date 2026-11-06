@@ -24,6 +24,9 @@ export const RETAKES = 2;
 // and retaking every capture would overrun the job.
 export const MAX_RETAKEN_CAPTURES = 50;
 
+// If this many captures at the start all fail, the run stops.
+export const EARLY_STOP_AFTER = 20;
+
 export const CONCURRENCY = 4;
 export const RENDER_TIMEOUT_MS = 30_000;
 export const STABLE_FRAME_ATTEMPTS = 10;

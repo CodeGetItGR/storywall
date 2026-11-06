@@ -85,7 +85,12 @@ async function loadOrBuildBase(browser: Browser, baseSha: string): Promise<Captu
             records = await captureBuild(browser, storybookDir, BASE_DIR);
         }
     } finally {
-        git('worktree', 'remove', '--force', source);
+        // A locked file on Windows must not hide the real error or discard finished captures.
+        try {
+            git('worktree', 'remove', '--force', source);
+        } catch (error) {
+            console.warn(`Could not remove the temporary worktree ${source}: ${error instanceof Error ? error.message : String(error)}`);
+        }
     }
     saveRecords(BASE_DIR, records, baseSha);
     return records;

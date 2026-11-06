@@ -1,15 +1,31 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { type Browser, chromium, type Page } from 'playwright-core';
+import { type Browser, chromium, errors, type Page } from 'playwright-core';
 
-import { BROWSER_LOCALES, CONCURRENCY, HOST_RESOLVER_RULES, RENDER_TIMEOUT_MS, STABLE_FRAME_ATTEMPTS, STABLE_FRAME_DELAY_MS, WIDTHS } from './config';
+import {
+    BROWSER_LOCALES,
+    CONCURRENCY,
+    EARLY_STOP_AFTER,
+    HOST_RESOLVER_RULES,
+    RENDER_TIMEOUT_MS,
+    STABLE_FRAME_ATTEMPTS,
+    STABLE_FRAME_DELAY_MS,
+    WIDTHS,
+} from './config';
 import { decodePng, hashRaw } from './images';
 import { runPool } from './pool';
 import type { CaptureRecord, CaptureTarget } from './types';
 
 type StoryStatus = { state: 'pending' | 'rendered' | 'failed'; error: string | null };
-type StoryChannel = { on: (event: string, listener: (payload?: { message?: string; title?: string } | { message?: string }[]) => void) => void };
+type StoryChannel = {
+    on: (
+        event: string,
+        listener: (
+            payload?: { message?: string; title?: string; description?: string } | { message?: string; title?: string; description?: string }[],
+        ) => void,
+    ) => void;
+};
 
 declare global {
     interface Window {
@@ -35,11 +51,11 @@ function watchStory() {
         channel.on('storyRendered', () => {
             if (status.state === 'pending') status.state = 'rendered';
         });
-        channel.on('storyMissing', () => fail('Story not found'));
-        for (const event of ['storyThrewException', 'storyErrored', 'playFunctionThrewException', 'unhandledErrorsWhilePlaying']) {
+        channel.on('storyMissing', () => fail('Story not found, or its file failed to load'));
+        for (const event of ['storyThrewException', 'storyErrored', 'playFunctionThrewException', 'unhandledErrorsWhilePlaying', 'configError']) {
             channel.on(event, (payload) => {
                 const first = Array.isArray(payload) ? payload[0] : payload;
-                fail(`${event}: ${first?.message ?? ''}`);
+                fail(`${event}: ${first?.message ?? first?.description ?? first?.title ?? ''}`);
             });
         }
     };
@@ -62,9 +78,30 @@ async function stableFrame(page: Page): Promise<Buffer | null> {
     return null;
 }
 
-async function shoot(browser: Browser, origin: string, target: CaptureTarget): Promise<{ png: Buffer } | { error: string }> {
+type Shot = { png: Buffer } | { error: string; retry: boolean };
+
+async function waitOrExplain(wait: Promise<unknown>, what: string) {
+    try {
+        await wait;
+    } catch (error) {
+        throw error instanceof errors.TimeoutError ? new Error(`Timed out waiting for ${what}`) : error;
+    }
+}
+
+// Storybook only reports uncaught errors while a play function runs, so the page's own errors count too.
+async function storyError(page: Page, pageErrors: string[]): Promise<string | null> {
+    if (pageErrors.length > 0) return `Uncaught error: ${pageErrors[0]}`;
+    const { status, errorPage } = await page.evaluate(() => ({
+        status: window.__visualStatus,
+        errorPage: document.body.classList.contains('sb-show-errordisplay'),
+    }));
+    if (status.state === 'failed') return status.error ?? 'Story failed';
+    return errorPage ? 'Storybook is showing its error page' : null;
+}
+
+async function shoot(browser: Browser, origin: string, target: CaptureTarget): Promise<Shot> {
     const size = WIDTHS.find((width) => width.name === target.width);
-    if (!size) return { error: `Unknown width ${target.width}` };
+    if (!size) return { error: `Unknown width ${target.width}`, retry: false };
     // A fresh context per capture, so nothing in localStorage leaks between stories.
     const context = await browser.newContext({
         viewport: { width: size.width, height: size.height },
@@ -77,43 +114,73 @@ async function shoot(browser: Browser, origin: string, target: CaptureTarget): P
     try {
         const page = await context.newPage();
         page.setDefaultTimeout(RENDER_TIMEOUT_MS);
+        const pageErrors: string[] = [];
+        page.on('pageerror', (error) => pageErrors.push(error.message));
         await page.addInitScript(watchStory);
         await page.goto(`${origin}/iframe.html?id=${encodeURIComponent(target.storyId)}&viewMode=story&globals=locale:${target.locale}`);
-        await page.waitForFunction(() => window.__visualStatus.state !== 'pending');
-        const status = await page.evaluate(() => window.__visualStatus);
-        if (status.state === 'failed') return { error: status.error ?? 'Story failed' };
+        await waitOrExplain(
+            page.waitForFunction(() => window.__visualStatus.state !== 'pending'),
+            'the story to render',
+        );
+        const thrown = await storyError(page, pageErrors);
+        if (thrown) return { error: thrown, retry: false };
         // next/image lazy-loads by default, which would leave holes in a full-page capture.
         await page.evaluate(() => {
             document.querySelectorAll<HTMLImageElement>('img[loading="lazy"]').forEach((image) => {
                 image.loading = 'eager';
             });
         });
-        await page.waitForFunction(() => document.fonts.status === 'loaded' && [...document.images].every((image) => image.complete));
+        await waitOrExplain(
+            page.waitForFunction(() => document.fonts.status === 'loaded' && [...document.images].every((image) => image.complete)),
+            'fonts and images',
+        );
+        // A failed font or image also counts as finished, so check that they actually loaded.
+        const broken = await page.evaluate(() => ({
+            fonts: [...document.fonts].filter((font) => font.status === 'error').map((font) => font.family),
+            images: [...document.images].filter((image) => image.naturalWidth === 0).map((image) => image.currentSrc || image.src),
+        }));
+        if (broken.fonts.length > 0) return { error: `Font failed to load: ${broken.fonts[0]}`, retry: true };
+        if (broken.images.length > 0) return { error: `Image failed to load: ${broken.images[0]}`, retry: true };
         const png = await stableFrame(page);
-        return png ? { png } : { error: 'Never stopped changing' };
+        // A story can throw after it has rendered, and Storybook then replaces it with its error page.
+        const late = await storyError(page, pageErrors);
+        if (late) return { error: late, retry: false };
+        return png ? { png } : { error: 'Never stopped changing', retry: true };
     } catch (error) {
-        return { error: error instanceof Error ? error.message : String(error) };
+        return { error: error instanceof Error ? error.message : String(error), retry: true };
     } finally {
         await context.close();
     }
 }
 
-// A failure is tried once more, because a timeout on a busy runner isn't a broken story.
+// A thrown error is the story's fault, so it isn't retried. Anything else can be a busy runner or a network blip.
 export async function captureTarget(browser: Browser, origin: string, target: CaptureTarget, outDir: string): Promise<CaptureRecord> {
     let result = await shoot(browser, origin, target);
-    if ('error' in result) result = await shoot(browser, origin, target);
+    if ('error' in result && result.retry) result = await shoot(browser, origin, target);
     if ('error' in result) return { ...target, status: 'failed', hash: null, error: result.error };
     writeFileSync(join(outDir, `${target.id}.png`), result.png);
     return { ...target, status: 'ok', hash: hashRaw(await decodePng(result.png)), error: null };
 }
 
+export const allFailedSoFar = (done: number, failed: number) => done === EARLY_STOP_AFTER && failed === done;
+
 export async function captureAll(browser: Browser, origin: string, targets: CaptureTarget[], outDir: string): Promise<CaptureRecord[]> {
     mkdirSync(outDir, { recursive: true });
     let done = 0;
+    let failed = 0;
+    let firstError = '';
     return runPool(targets, CONCURRENCY, async (target) => {
         const record = await captureTarget(browser, origin, target, outDir);
         done += 1;
-        if (done % 100 === 0 || done === targets.length) process.stdout.write(`Captured ${done}/${targets.length}\n`);
+        if (record.status === 'failed') {
+            failed += 1;
+            firstError = firstError || (record.error ?? '');
+        }
+        // Every capture failing means the build is broken, not the stories. Stopping here avoids running out the job's time limit.
+        if (allFailedSoFar(done, failed)) throw new Error(`The first ${done} captures all failed, so the run stopped. First error: ${firstError}`);
+        if (done % 100 === 0 || done === targets.length)
+            process.stdout.write(`Captured ${done}/${targets.length}
+`);
         return record;
     });
 }

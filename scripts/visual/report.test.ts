@@ -86,6 +86,18 @@ describe('buildReport', () => {
         expect(retake).toHaveBeenCalledTimes(1);
     });
 
+    it('reports a retake that fails as failed, with its error', async () => {
+        const baseRecord = await record(baseDir, 'a', 10);
+        const differs = await record(headDir, 'a', 200);
+        const retake = vi.fn(async (t: CaptureTarget): Promise<CaptureRecord> => ({ ...t, status: 'failed', hash: null, error: 'Boom on retake' }));
+        const manifest = await run([baseRecord], [differs], retake);
+        expect(manifest.entries).toHaveLength(1);
+        expect(manifest.entries[0].state).toBe('failed');
+        expect(manifest.entries[0].error).toBe('Boom on retake');
+        expect(manifest.counts.failed).toBe(1);
+        expect(manifest.counts.changed).toBe(0);
+    });
+
     it('stops retaking after the limit and still reports every change', async () => {
         const ids = Array.from({ length: MAX_RETAKEN_CAPTURES + 2 }, (_, index) => `story-${index}`);
         const baseRecords = await Promise.all(ids.map((id) => record(baseDir, id, 10)));

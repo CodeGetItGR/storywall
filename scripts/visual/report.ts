@@ -38,8 +38,22 @@ export async function buildReport(input: BuildReportInput): Promise<Manifest> {
         return `img/${name}`;
     }
 
+    const failedEntry = (record: CaptureRecord, base: CaptureRecord | undefined): ReportEntry => ({
+        ...targetOf(record),
+        state: 'failed',
+        beforeHash: base?.hash ?? null,
+        afterHash: null,
+        percent: 0,
+        error: record.error,
+        images: {},
+    });
+
     // A capture that differs is retaken, and counts as changed only if every attempt differs.
-    async function compareWithRetakes(base: CaptureRecord, head: CaptureRecord): Promise<{ record: CaptureRecord; diff: ImageDiff } | null> {
+    // A retake that fails ends as failed, because the story is broken, not different.
+    async function compareWithRetakes(
+        base: CaptureRecord,
+        head: CaptureRecord,
+    ): Promise<{ record: CaptureRecord; diff: ImageDiff } | CaptureRecord | null> {
         const before = readFileSync(pngPath(baseDir, base.id));
         let record = head;
         let diff = await comparePngs(before, readFileSync(pngPath(headDir, head.id)));
@@ -48,11 +62,14 @@ export async function buildReport(input: BuildReportInput): Promise<Manifest> {
         retakesLeft -= 1;
         for (let attempt = 0; attempt < attempts && isChanged(diff); attempt += 1) {
             const retaken = await retake(targetOf(head));
-            if (retaken.status !== 'ok') continue;
+            if (retaken.status !== 'ok') return retaken;
             record = retaken;
             diff = await comparePngs(before, readFileSync(pngPath(headDir, head.id)));
         }
-        return isChanged(diff) ? { record, diff } : null;
+        if (isChanged(diff)) return { record, diff };
+        process.stdout.write(`Cleared by a retake: ${head.id}
+`);
+        return null;
     }
 
     async function changedEntry(base: CaptureRecord, record: CaptureRecord, diff: ImageDiff): Promise<ReportEntry> {
@@ -99,12 +116,13 @@ export async function buildReport(input: BuildReportInput): Promise<Manifest> {
         const head = headById.get(id);
         if (!head) return base?.status === 'ok' ? singleImageEntry(base, 'removed', baseDir) : null;
         if (head.status === 'failed') {
-            return { ...targetOf(head), state: 'failed', beforeHash: base?.hash ?? null, afterHash: null, percent: 0, error: head.error, images: {} };
+            return failedEntry(head, base);
         }
         if (!base || base.status === 'failed') return singleImageEntry(head, 'new', headDir);
         if (base.hash === head.hash) return null;
         const result = await compareWithRetakes(base, head);
-        return result ? changedEntry(base, result.record, result.diff) : null;
+        if (!result) return null;
+        return 'diff' in result ? changedEntry(base, result.record, result.diff) : failedEntry(result, base);
     }
 
     const entries = (await runPool(ids, CONCURRENCY, entryFor)).filter((entry) => entry !== null);
