@@ -38,6 +38,8 @@
         "providers/**/*.tsx",
         "i18n/**/*.ts",
         "scripts/**/*.ts",
+        ".storybook/**/*.ts",
+        ".storybook/**/*.tsx",
         ".next/types/**/*.ts",
         ".next/dev/types/**/*.ts"
     ],
