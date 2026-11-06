@@ -5,6 +5,7 @@ import { useCallback, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
+import { trackFlow } from '@/lib/flowTracking';
 
 export type ResendState = 'idle' | 'pending' | 'sent' | 'error';
 
@@ -18,6 +19,7 @@ export function useResendVerificationEmail() {
         setState('pending');
         try {
             await api.post(endpoints.auth.resendVerification, { email: user.email });
+            trackFlow({ name: 'Verify Resend' });
             setState('sent');
         } catch {
             setState('error');

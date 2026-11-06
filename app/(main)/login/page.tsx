@@ -17,10 +17,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAuthPageRedirect } from '@/hooks/useAuthPageRedirect';
 import { useAuthReturnPath } from '@/hooks/useAuthReturnPath';
 import { useContentLimits } from '@/hooks/useContentLimits';
+import { useFlowEvent } from '@/hooks/useFlowEvent';
 import { useNavigateAfterSignIn } from '@/hooks/useNavigateAfterSignIn';
 import { useOAuthSignIn } from '@/hooks/useOAuthSignIn';
 import type { AuthSessionDto, OAuthProviderName } from '@/lib/api/types';
 import { getPostAuthRedirectPath } from '@/lib/auth/returnPath';
+import { authEntry, flowErrorCode, trackFlow } from '@/lib/flowTracking';
 import { routes } from '@/lib/routes';
 
 export default function LoginPage() {
@@ -36,6 +38,8 @@ export default function LoginPage() {
     const { login } = useAuth();
     const { shouldRenderAuthPage } = useAuthPageRedirect(returnPath);
     const toErrorMessage = useApiErrorMessage();
+    const entry = authEntry(inviteToken, returnPath);
+    useFlowEvent(shouldRenderAuthPage ? { name: 'Auth Page', page: 'login', from: entry } : null);
 
     const [showPw, setShowPw] = useState(false);
     const [email, setEmail] = useState(searchParams.get('email') ?? '');
@@ -62,8 +66,10 @@ export default function LoginPage() {
 
         try {
             const auth = await login({ email, password, inviteToken: inviteToken ?? undefined });
+            trackFlow({ name: 'Sign In', method: 'email', from: entry });
             navigateAfterSignIn(getPostAuthRedirectPath(auth.role, returnPath));
         } catch (err) {
+            trackFlow({ name: 'Sign In Error', method: 'email', code: flowErrorCode(err) });
             setError(toErrorMessage(err));
         } finally {
             setIsSubmitting(false);
@@ -84,7 +90,7 @@ export default function LoginPage() {
         [toErrorMessage],
     );
 
-    const oauthSignIn = useOAuthSignIn({ inviteToken, onSignedInAction: handleSignedIn, onErrorAction: handleOAuthError });
+    const oauthSignIn = useOAuthSignIn({ inviteToken, entry, onSignedInAction: handleSignedIn, onErrorAction: handleOAuthError });
     const { handleSignIn } = oauthSignIn;
 
     const handleOAuthSignIn = useCallback(
