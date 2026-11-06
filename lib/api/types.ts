@@ -4213,7 +4213,15 @@ export interface PlanTierRequestDto {
     eventTypeKey?: EventTypeConvention;
 }
 
-export type PlanTierPatchDto = Partial<Omit<PlanTierRequestDto, 'code' | 'scope' | 'eventTypeKey'>>;
+// A null field means "leave it". The clear flags are the only way to empty these fields, and a flag
+// sent with a value for the same field is 400.
+export type PlanTierPatchDto = Partial<Omit<PlanTierRequestDto, 'code' | 'scope' | 'eventTypeKey'>> & {
+    clearStorageBytes?: boolean;
+    clearMaxMembers?: boolean;
+    clearDiscountPercent?: boolean;
+    clearDiscountStartsAt?: boolean;
+    clearDiscountEndsAt?: boolean;
+};
 
 // POST /api/admin/plan-tiers/{id}/duplicate — clones storage/quotas/moduleKeys
 // and every coverage option (retired ones included) from the source plan into

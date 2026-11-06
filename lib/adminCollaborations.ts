@@ -448,7 +448,7 @@ const MIN_CHARGEABLE_AMOUNT_MINOR: Record<string, number> = {
     BGN: 100,
 };
 
-function planPromotionOpen(plan: DiscountCodePlanOption, now: Date): boolean {
+export function planPromotionOpen(plan: Pick<DiscountCodePlanOption, 'discountStartsAt' | 'discountEndsAt'>, now: Date): boolean {
     const startsAt = plan.discountStartsAt ? new Date(plan.discountStartsAt) : null;
     const endsAt = plan.discountEndsAt ? new Date(plan.discountEndsAt) : null;
     return (!startsAt || startsAt <= now) && (!endsAt || now < endsAt);

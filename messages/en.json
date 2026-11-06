@@ -4489,7 +4489,9 @@
                 "fields": "Plan fields",
                 "to": "to",
                 "added": "Added:",
-                "removed": "Removed:"
+                "removed": "Removed:",
+                "promoPricesNoEnd": "Promo prices on this plan's durations stay on and will have no end date. Remove them in Durations.",
+                "goesLiveOnSave": "This promotion goes live as soon as you save."
             },
             "create": {
                 "title": "Create plan",
