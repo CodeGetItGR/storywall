@@ -121,13 +121,6 @@ const preview: Preview = {
                 desktop: { name: 'Desktop', styles: { width: '1280px', height: '800px' }, type: 'desktop' },
             },
         },
-        // Every story is snapshotted at both breakpoints: host and guest screens are mobile-first.
-        chromatic: {
-            modes: {
-                mobile: { viewport: 'mobile' },
-                desktop: { viewport: 'desktop' },
-            },
-        },
         a11y: { test: 'todo' },
     },
 };
