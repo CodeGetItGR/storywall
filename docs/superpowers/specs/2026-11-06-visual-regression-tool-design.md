@@ -95,15 +95,15 @@ It reuses what the repo already has: `playwright-core` 1.55.0, `sharp`, and `com
 - `reducedMotion: 'reduce'`, `colorScheme: 'light'`, `timezoneId: 'Europe/Athens'`, browser locale `en-US` or `el-GR`.
 - The clock is already frozen by `.storybook/preview.tsx`.
 - Each capture gets a fresh browser context, so nothing in `localStorage` leaks between stories.
-- Hosts other than the local server and `fonts.gstatic.com` don't resolve, enforced with Chromium's `--host-resolver-rules`, so no story can depend on the network. `fonts.gstatic.com` stays reachable because Storybook's `next/font` support loads Google fonts from it at run time.
+- Hosts other than the local server and `fonts.gstatic.com` don't resolve, enforced with Chromium's `--host-resolver-rules`, so no story can depend on the network. `fonts.gstatic.com` stays reachable because Storybook's `next/font` support loads Google fonts from it at run time. Storybook's font plugin writes no fallback face, so `.storybook/preview-head.html` adds the Arial one Next generates, otherwise Greek text would show in a serif.
 - 4 pages run in parallel. Phase 3 adjusts this.
 
 **URL:** `/iframe.html?id=<storyId>&viewMode=story&globals=locale:<en|el>`.
 
 **Wait rules, in order**
 
-1. Storybook emits `storyRendered`, which comes after the play function finishes. The capture fails if Storybook emits `storyThrewException`, `storyErrored`, `storyMissing`, `playFunctionThrewException` or `unhandledErrorsWhilePlaying` instead, or after 30 seconds. These names were checked against Storybook 10.6.2's source.
-2. Lazy images are switched to eager, then fonts have loaded and every `img` on the page has finished loading.
+1. Storybook emits `storyRendered`, which comes after the play function finishes. The capture fails if Storybook emits `storyThrewException`, `storyErrored`, `storyMissing`, `playFunctionThrewException` or `unhandledErrorsWhilePlaying` instead, or after 30 seconds. These names were checked against Storybook 10.6.2's source. The capture also fails on an uncaught page error or if Storybook is showing its error page, and both are checked again after the frames are taken, because a story can throw after it has rendered.
+2. Lazy images are switched to eager, then fonts have loaded and every `img` on the page has finished loading. A font or image that failed to load fails the capture.
 3. Two identical frames in a row, 250ms apart, with up to 10 attempts. The tool never waits for network idle, because 6 stories use mocks that never answer on purpose.
 
 **Screenshot:** a full-page PNG with `animations: 'disabled'` and `caret: 'hide'`. It's taken of the page rather than the story root, so modals and menus in portals are included.
@@ -231,6 +231,8 @@ No route, landing copy or metadata changes, so there's no SEO blocker. The only 
 | Situation | What happens |
 |---|---|
 | Story throws, times out or never stabilizes | Marked failed, shown in the report with the reason, can't be approved |
+| Retrying a failed capture | A thrown error isn't retried. A timeout, a failed font or image, or unstable frames gets one more try, because those can be a busy runner or a network blip |
+| The first 20 captures all fail | The run stops with the first error, because that means the build is broken, not the stories |
 | Flaky capture | Retaken up to 2 times before it counts |
 | Capture or build job crashes | Check goes to error with a link to the run. Re-running the job retries |
 | Report upload or Pages deploy fails | Check goes to error. Nothing is approved by accident |
