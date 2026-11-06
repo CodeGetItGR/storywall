@@ -7,13 +7,21 @@ const LANGUAGES = { en: 'English', el: 'Greek' };
 const STATE_RANK = { changed: 0, new: 1, removed: 2 };
 const MAX_PREVIEWS = 6;
 
-const escapeMarkdown = (text) => String(text).replace(/[\\`*_{}[\]()<>#|!~]/g, '\\$&');
+const escapeMarkdown = (text) =>
+    String(text)
+        .replace(/[\r\n]+/g, ' ')
+        .replace(/[\\`*_{}[\]()<>#|!~]/g, '\\$&');
 
 const renderState = (state) => `${MARKER}${JSON.stringify(state)} -->`;
 
 export function parseState(body) {
     const match = STATE_PATTERN.exec(body ?? '');
-    return match ? JSON.parse(match[1]) : null;
+    if (!match) return null;
+    try {
+        return JSON.parse(match[1]);
+    } catch {
+        return null;
+    }
 }
 
 export const setState = (body, state) => body.replace(STATE_PATTERN, () => renderState(state));
@@ -26,6 +34,12 @@ export const isTicked = (body) => {
 };
 
 export const setBox = (body, ticked) => body.replace(BOX_PATTERN, `- [${ticked ? 'x' : ' '}] ${BOX_TEXT}`);
+
+// GitHub can store an edited comment with Windows line endings.
+export const normalizeBody = (body) => body.replaceAll('\r\n', '\n');
+
+// The box is the only part of the comment a person may change.
+export const onlyBoxChanged = (before, after) => normalizeBody(setBox(before, false)) === normalizeBody(setBox(after, false));
 
 export function selectPreviews(entries) {
     const sorted = entries

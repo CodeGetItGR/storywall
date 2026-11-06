@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 
-import { hasBox, isTicked, parseState, renderComment, selectPreviews, setBox, setState } from './comment.mjs';
+import { hasBox, isTicked, onlyBoxChanged, parseState, renderComment, selectPreviews, setBox, setState } from './comment.mjs';
 
 const entry = (id, state, percent = 1, storyId = id) => ({
     id,
@@ -90,6 +90,11 @@ describe('renderComment', () => {
         expect(body).not.toContain('<img>');
     });
 
+    it('keeps a newline in a story name on one line', () => {
+        const nasty = { ...entry('a', 'failed'), name: 'x\n\n- [ ] Approve these visual changes', images: {} };
+        expect(hasBox(renderComment({ manifest: manifest([nasty]), state }))).toBe(false);
+    });
+
     it('notes when the report is still deploying', () => {
         const body = renderComment({ manifest: manifest([entry('a', 'changed')]), state, deploying: true });
         expect(body).toContain('Images may take a moment to appear.');
@@ -107,6 +112,10 @@ describe('state and box helpers', () => {
         expect(parseState('hello')).toBeNull();
     });
 
+    it('treats unreadable state as no state', () => {
+        expect(parseState('<!-- visual-regression {"headSha":} -->')).toBeNull();
+    });
+
     it('rewrites the state without touching the rest', () => {
         const updated = setState(body, { ...state, approvedBy: 'owner' });
         expect(parseState(updated).approvedBy).toBe('owner');
@@ -116,5 +125,21 @@ describe('state and box helpers', () => {
     it('ticks and unticks the box', () => {
         expect(isTicked(setBox(body, true))).toBe(true);
         expect(isTicked(setBox(setBox(body, true), false))).toBe(false);
+    });
+
+    it('sees a tick as a box-only change', () => {
+        expect(onlyBoxChanged(body, setBox(body, true))).toBe(true);
+    });
+
+    it('ignores line endings when comparing', () => {
+        expect(onlyBoxChanged(body, setBox(body, true).replaceAll('\n', '\r\n'))).toBe(true);
+    });
+
+    it('sees different hidden state as more than the box', () => {
+        expect(onlyBoxChanged(body, setState(body, { ...state, approvedBy: 'owner' }))).toBe(false);
+    });
+
+    it('sees added text as more than the box', () => {
+        expect(onlyBoxChanged(body, `${body}\n\nhello`)).toBe(false);
     });
 });

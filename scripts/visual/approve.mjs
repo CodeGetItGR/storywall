@@ -6,7 +6,7 @@
 import { readFileSync } from 'node:fs';
 
 import { setBox, setState } from './publish/comment.mjs';
-import { changesStatus, decideTick } from './publish/decisions.mjs';
+import { changesStatus, decideEdit, parseApprovers } from './publish/decisions.mjs';
 import { createGitHub } from './publish/github.mjs';
 
 // The workflow only runs this for comments written by github-actions[bot], so a comment
@@ -16,17 +16,23 @@ const { GITHUB_TOKEN, GITHUB_REPOSITORY, GITHUB_EVENT_PATH, VISUAL_APPROVERS } =
 const event = JSON.parse(readFileSync(GITHUB_EVENT_PATH, 'utf8'));
 const github = createGitHub({ token: GITHUB_TOKEN, repo: GITHUB_REPOSITORY });
 const pull = await github.getPull(event.issue.number);
-const approvers = (VISUAL_APPROVERS ?? '')
-    .split(',')
-    .map((login) => login.trim())
-    .filter(Boolean);
 const sender = event.sender.login;
-const body = event.comment.body;
+// An earlier run may have changed the comment since this edit, so the event only says what the edit wanted.
+const current = await github.getComment(event.comment.id);
 
-const { action, state } = decideTick({ body, sender, approvers, headSha: pull.head.sha });
+const { action, state, body } = decideEdit({
+    edited: event.comment.body,
+    before: event.changes?.body?.from,
+    current: current.body,
+    sender,
+    approvers: parseApprovers(VISUAL_APPROVERS),
+    headSha: pull.head.sha,
+});
 process.stdout.write(`${sender}: ${action}\n`);
 
-if (action === 'approve') {
+if (action === 'restore') {
+    await github.updateComment(event.comment.id, body);
+} else if (action === 'approve') {
     await github.setStatus(state.headSha, { state: 'success', description: `Approved by ${sender}` }, state.reportUrl);
     await github.updateComment(event.comment.id, `${setState(body, { ...state, approvedBy: sender })}\n\nApproved by ${sender}.`);
 } else if (action === 'revoke') {

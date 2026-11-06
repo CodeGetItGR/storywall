@@ -2,7 +2,7 @@ import { MARKER } from './comment.mjs';
 
 export const STATUS_CONTEXT = 'visual-regression';
 
-const BOT_LOGIN = 'github-actions[bot]';
+export const BOT_LOGIN = 'github-actions[bot]';
 
 export function createGitHub({ token, repo }) {
     async function request(path, { method = 'GET', body } = {}) {
@@ -22,6 +22,11 @@ export function createGitHub({ token, repo }) {
 
     return {
         getPull: (number) => request(`/repos/${repo}/pulls/${number}`),
+
+        getComment: (id) => request(`/repos/${repo}/issues/comments/${id}`),
+
+        // Newest first, including older statuses for the same context.
+        listStatuses: (sha) => request(`/repos/${repo}/commits/${sha}/statuses?per_page=100`),
 
         async findComment(number) {
             for (let page = 1; ; page += 1) {
