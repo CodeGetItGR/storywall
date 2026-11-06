@@ -5,7 +5,7 @@ import Avatar from '@/components/ui/avatar';
 const meta = {
     title: 'UI/Avatar',
     component: Avatar,
-    args: { initials: 'MK', size: 'md' },
+    args: { initials: 'MK', alt: 'Maria and Kostas', size: 'md' },
     argTypes: {
         size: { control: 'select', options: ['xs', 'sm', 'md', 'lg', 'xl', '2xl'] },
     },
