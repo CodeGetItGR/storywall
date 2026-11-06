@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="robots" content="noindex, nofollow" />
+        <title>Visual check report</title>
+        <style>
+            :root {
+                color-scheme: light;
+                --ink: #1e293b;
+                --muted: #64748b;
+                --line: #e2e8f0;
+                --surface: #f8fafc;
+            }
+            body {
+                margin: 0;
+                padding: 16px;
+                color: var(--ink);
+                background: #fff;
+                font: 14px/1.5 system-ui, sans-serif;
+            }
+            h1 {
+                margin: 0;
+                font-size: 20px;
+            }
+            h2 {
+                margin: 32px 0 8px;
+                font-size: 16px;
+            }
+            h3 {
+                margin: 16px 0 8px;
+                color: var(--muted);
+                font-size: 13px;
+                font-weight: 500;
+            }
+            #summary {
+                margin: 4px 0 16px;
+                color: var(--muted);
+            }
+            .filters {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+            .images {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 12px;
+                align-items: flex-start;
+            }
+            figure {
+                margin: 0;
+                max-width: 100%;
+            }
+            figcaption {
+                margin-bottom: 4px;
+                color: var(--muted);
+                font-size: 12px;
+            }
+            img {
+                display: block;
+                max-width: min(100%, 640px);
+                height: auto;
+                background: var(--surface);
+                outline: 1px solid var(--line);
+            }
+            pre {
+                padding: 12px;
+                overflow-x: auto;
+                background: var(--surface);
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Header -->
+        <header>
+            <h1>Visual check</h1>
+            <p id="summary">Loading...</p>
+            <div class="filters">
+                <label>
+                    State
+                    <select id="state">
+                        <option value="">All</option>
+                        <option value="failed">Failed</option>
+                        <option value="changed">Changed</option>
+                        <option value="new">New</option>
+                        <option value="removed">Removed</option>
+                    </select>
+                </label>
+                <label>
+                    Width
+                    <select id="width">
+                        <option value="">All</option>
+                        <option value="mobile">Mobile</option>
+                        <option value="desktop">Desktop</option>
+                    </select>
+                </label>
+                <label>
+                    Language
+                    <select id="locale">
+                        <option value="">All</option>
+                        <option value="en">English</option>
+                        <option value="el">Greek</option>
+                    </select>
+                </label>
+            </div>
+        </header>
+
+        <!-- Results -->
+        <main id="results"></main>
+
+        <script>
+            const LANGUAGES = { en: 'English', el: 'Greek' };
+            const results = document.getElementById('results');
+            const filters = ['state', 'width', 'locale'].map((id) => document.getElementById(id));
+
+            const element = (tag, text) => {
+                const node = document.createElement(tag);
+                if (text !== undefined) node.textContent = text;
+                return node;
+            };
+
+            function figure(entry, label, src) {
+                const box = element('figure');
+                box.append(element('figcaption', label));
+                const image = element('img');
+                image.src = src;
+                image.loading = 'lazy';
+                image.alt = `${entry.title}, ${entry.name}, ${LANGUAGES[entry.locale]}, ${entry.width}, ${label.toLowerCase()}`;
+                box.append(image);
+                return box;
+            }
+
+            function renderEntry(entry) {
+                const fragment = document.createDocumentFragment();
+                const percent = entry.state === 'changed' ? `, ${entry.percent.toFixed(2)}% of pixels` : '';
+                fragment.append(element('h3', `${LANGUAGES[entry.locale]}, ${entry.width}: ${entry.state}${percent}`));
+                if (entry.error) fragment.append(element('pre', entry.error));
+                const images = element('div');
+                images.className = 'images';
+                if (entry.images.before) images.append(figure(entry, 'Before', entry.images.before));
+                if (entry.images.after) images.append(figure(entry, 'After', entry.images.after));
+                if (entry.images.diff) images.append(figure(entry, 'Diff', entry.images.diff));
+                fragment.append(images);
+                return fragment;
+            }
+
+            function render(manifest) {
+                const [state, width, locale] = filters.map((filter) => filter.value);
+                const shown = manifest.entries.filter(
+                    (entry) => (!state || entry.state === state) && (!width || entry.width === width) && (!locale || entry.locale === locale),
+                );
+                results.replaceChildren();
+                let group = null;
+                for (const entry of shown) {
+                    const heading = `${entry.title} / ${entry.name}`;
+                    if (heading !== group) {
+                        results.append(element('h2', heading));
+                        group = heading;
+                    }
+                    results.append(renderEntry(entry));
+                }
+                if (shown.length === 0) results.append(element('p', 'Nothing matches these filters.'));
+            }
+
+            fetch('manifest.json')
+                .then((response) => response.json())
+                .then((manifest) => {
+                    const { changed, removed, failed } = manifest.counts;
+                    document.getElementById('summary').textContent =
+                        `${changed} changed, ${manifest.counts.new} new, ${removed} removed, ${failed} failed, of ${manifest.totalCaptures} captures.`;
+                    filters.forEach((filter) => filter.addEventListener('change', () => render(manifest)));
+                    render(manifest);
+                })
+                .catch(() => {
+                    document.getElementById('summary').textContent = 'Could not load this report. It may have been deleted when the PR closed.';
+                });
+        </script>
+    </body>
+</html>
