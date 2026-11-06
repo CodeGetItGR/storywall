@@ -2,10 +2,19 @@ import { InvitationElements } from '@/components/saveMyDate/invitation/Invitatio
 import { ContactSection } from '@/components/saveMyDate/invitation/sections/contact/ContactSection';
 import { CoupleContactSection } from '@/components/saveMyDate/invitation/sections/contact/CoupleContactSection';
 import { CountdownSection } from '@/components/saveMyDate/invitation/sections/countdown/CountdownSection';
+import { CoupleProfilesSection } from '@/components/saveMyDate/invitation/sections/couple/CoupleProfilesSection';
+import { CoupleProfilesSimpleSection } from '@/components/saveMyDate/invitation/sections/couple/CoupleProfilesSimpleSection';
+import { OurStoryProposalSection } from '@/components/saveMyDate/invitation/sections/couple/OurStoryProposalSection';
+import { WeddingSponsorsSimpleSection } from '@/components/saveMyDate/invitation/sections/couple/WeddingSponsorsSimpleSection';
 import { CoupleNamesSection } from '@/components/saveMyDate/invitation/sections/CoupleNamesSection';
 import { CustomSection } from '@/components/saveMyDate/invitation/sections/CustomSection';
 import { DateSection } from '@/components/saveMyDate/invitation/sections/date/DateSection';
 import { DressCodeSection } from '@/components/saveMyDate/invitation/sections/DressCodeSection';
+import { BabySection } from '@/components/saveMyDate/invitation/sections/family/BabySection';
+import { ParentsPhotoSection } from '@/components/saveMyDate/invitation/sections/family/ParentsPhotoSection';
+import { ParentsSection } from '@/components/saveMyDate/invitation/sections/family/ParentsSection';
+import { ParentsSimpleSection } from '@/components/saveMyDate/invitation/sections/family/ParentsSimpleSection';
+import { PhotoPeopleSection } from '@/components/saveMyDate/invitation/sections/family/PhotoPeopleSection';
 import { FaqSection } from '@/components/saveMyDate/invitation/sections/faq/FaqSection';
 import { FooterSection } from '@/components/saveMyDate/invitation/sections/FooterSection';
 import { InvitationTextSection } from '@/components/saveMyDate/invitation/sections/InvitationTextSection';
@@ -34,6 +43,16 @@ const BUILT_SECTION_TYPES: ReadonlySet<SectionType> = new Set([
     'contact',
     'coupleContact',
     'footer',
+    'baby',
+    'parents',
+    'parentsSimple',
+    'parentsPhoto',
+    'godparents',
+    'weddingSponsors',
+    'weddingSponsorsSimple',
+    'coupleProfiles',
+    'coupleProfilesSimple',
+    'ourStoryProposal',
 ]);
 
 export function InvitationSection({ section, index, ctx }: InvitationSectionProps) {
@@ -41,7 +60,7 @@ export function InvitationSection({ section, index, ctx }: InvitationSectionProp
     const shell = sectionShell(section, index, ctx);
 
     return (
-        <section className={shell.className} style={shell.style}>
+        <section className={shell.className} style={shell.style} data-section-id={section.id}>
             <SectionContent section={section} contrast={shell.contrast} ctx={ctx} />
         </section>
     );
@@ -73,6 +92,25 @@ function SectionContent({ section, contrast, ctx }: SectionContentProps) {
             return <CoupleContactSection section={section} contrast={contrast} ctx={ctx} />;
         case 'footer':
             return <FooterSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'baby':
+            return <BabySection section={section} contrast={contrast} ctx={ctx} />;
+        case 'parents':
+            return <ParentsSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'parentsSimple':
+            return <ParentsSimpleSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'parentsPhoto':
+            return <ParentsPhotoSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'godparents':
+        case 'weddingSponsors':
+            return <PhotoPeopleSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'weddingSponsorsSimple':
+            return <WeddingSponsorsSimpleSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'coupleProfiles':
+            return <CoupleProfilesSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'coupleProfilesSimple':
+            return <CoupleProfilesSimpleSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'ourStoryProposal':
+            return <OurStoryProposalSection section={section} contrast={contrast} ctx={ctx} />;
         case 'photoFrame':
             return (
                 <div className="section-inner">

@@ -25,6 +25,8 @@ const decorationSchema = z
     .object({ image: imageRefSchema, width: z.number().min(20).max(2000) })
     .strict();
 
+export type SectionDecoration = z.infer<typeof decorationSchema>;
+
 const namedPhotoSchema = z
     .object({ id: idSchema, name: text, photo: imageRefSchema.optional() })
     .strict();

@@ -10,13 +10,13 @@ export function RsvpPictures({ alts, locale }: RsvpPicturesProps) {
 
     return (
         <div className="self-start">
-            {/* Both, side by side */}
+            {/* Both, side by side. Unoptimized so image search keeps its transparency: the optimizer turns it into a black-backed JPEG for crawlers. */}
             <ProtectedImage
+                unoptimized
                 alt={alts.both}
                 className="hidden h-auto w-full min-[761px]:block"
                 height={both.height}
                 loading="lazy"
-                sizes="(min-width: 1220px) 824px, (min-width: 901px) 69vw, 90vw"
                 src={both.src}
                 width={both.width}
             />

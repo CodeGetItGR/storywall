@@ -3855,6 +3855,10 @@
                 "CAMPAIGN_LINK_CREATED": "Δημιουργία συνδέσμου καμπάνιας",
                 "CAMPAIGN_LINK_RENAMED": "Μετονομασία συνδέσμου καμπάνιας",
                 "CAMPAIGN_LINK_DELETED": "Διαγραφή συνδέσμου καμπάνιας",
+                "DISCOUNT_CAMPAIGN_CREATED": "Δημιουργία εκπτωτικής καμπάνιας",
+                "DISCOUNT_CAMPAIGN_UPDATED": "Αλλαγή εκπτωτικής καμπάνιας",
+                "DISCOUNT_CAMPAIGN_STOPPED": "Διακοπή εκπτωτικής καμπάνιας",
+                "DISCOUNT_CAMPAIGN_DELETED": "Διαγραφή εκπτωτικής καμπάνιας",
                 "APP_REVIEW_UPDATED": "Αλλαγή κριτικής εφαρμογής",
                 "OUTREACH_CREATED": "Προσθήκη επαφής προσέγγισης",
                 "OUTREACH_UPDATED": "Αλλαγή επαφής προσέγγισης",
@@ -3870,7 +3874,15 @@
                 "INVITATION_THEME_IMAGE_DELETED": "Διαγραφή εικόνας θέματος πρόσκλησης",
                 "INVITATION_FONT_PAIRING_CREATED": "Δημιουργία συνδυασμού γραμματοσειρών",
                 "INVITATION_FONT_PAIRING_UPDATED": "Αλλαγή συνδυασμού γραμματοσειρών",
-                "QR_CARD_TEMPLATE_DUPLICATED": "Αντιγραφή προτύπου κάρτας QR"
+                "QR_CARD_TEMPLATE_DUPLICATED": "Αντιγραφή προτύπου κάρτας QR",
+                "INVIART_COLLECTION_CHANGED": "Αλλαγή συλλογής INVIART",
+                "SHOP_STORE_CREATED": "Σύνδεση καταστήματος Shopify",
+                "SHOP_STORE_UPDATED": "Αλλαγή καταστήματος Shopify",
+                "SHOP_STORE_DELETED": "Αφαίρεση καταστήματος Shopify",
+                "SHOP_CATEGORY_CREATED": "Δημιουργία κατηγορίας καταστήματος",
+                "SHOP_CATEGORY_UPDATED": "Αλλαγή κατηγορίας καταστήματος",
+                "SHOP_CATEGORY_DELETED": "Διαγραφή κατηγορίας καταστήματος",
+                "SHOP_CATEGORY_COLLECTIONS_CHANGED": "Αλλαγή συλλογών κατηγορίας καταστήματος"
             }
         },
         "errorEvents": {
@@ -6346,7 +6358,9 @@
                 "sales": "Πωλήσεις",
                 "salesRevenue": "Έσοδα πωλήσεων",
                 "total": "Σύνολο",
-                "over": "Η καμπάνια έχει τελειώσει. Μην χρησιμοποιείς πια αυτούς τους συνδέσμους."
+                "over": "Η καμπάνια έχει τελειώσει. Μην χρησιμοποιείς πια αυτούς τους συνδέσμους.",
+                "languages": { "en": "EN", "el": "EL" },
+                "formats": { "post": "Ανάρτηση", "story": "Story", "search": "Google" }
             }
         },
         "siteNotices": {

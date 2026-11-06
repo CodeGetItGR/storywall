@@ -3733,6 +3733,10 @@
                 "CAMPAIGN_LINK_CREATED": "Campaign link created",
                 "CAMPAIGN_LINK_RENAMED": "Campaign link renamed",
                 "CAMPAIGN_LINK_DELETED": "Campaign link deleted",
+                "DISCOUNT_CAMPAIGN_CREATED": "Discount campaign created",
+                "DISCOUNT_CAMPAIGN_UPDATED": "Discount campaign changed",
+                "DISCOUNT_CAMPAIGN_STOPPED": "Discount campaign stopped",
+                "DISCOUNT_CAMPAIGN_DELETED": "Discount campaign deleted",
                 "APP_REVIEW_UPDATED": "App review changed",
                 "OUTREACH_CREATED": "Outreach lead added",
                 "OUTREACH_UPDATED": "Outreach lead changed",
@@ -3748,7 +3752,15 @@
                 "INVITATION_THEME_IMAGE_DELETED": "Invitation theme image deleted",
                 "INVITATION_FONT_PAIRING_CREATED": "Font pairing created",
                 "INVITATION_FONT_PAIRING_UPDATED": "Font pairing changed",
-                "QR_CARD_TEMPLATE_DUPLICATED": "QR card template copied"
+                "QR_CARD_TEMPLATE_DUPLICATED": "QR card template copied",
+                "INVIART_COLLECTION_CHANGED": "INVIART collection changed",
+                "SHOP_STORE_CREATED": "Shopify store connected",
+                "SHOP_STORE_UPDATED": "Shopify store changed",
+                "SHOP_STORE_DELETED": "Shopify store removed",
+                "SHOP_CATEGORY_CREATED": "Shop category created",
+                "SHOP_CATEGORY_UPDATED": "Shop category changed",
+                "SHOP_CATEGORY_DELETED": "Shop category deleted",
+                "SHOP_CATEGORY_COLLECTIONS_CHANGED": "Shop category collections changed"
             }
         },
         "errorEvents": {
@@ -6222,7 +6234,9 @@
                 "sales": "Sales",
                 "salesRevenue": "Sales revenue",
                 "total": "Total",
-                "over": "This campaign is over. Don't use these links any more."
+                "over": "This campaign is over. Don't use these links any more.",
+                "languages": { "en": "EN", "el": "EL" },
+                "formats": { "post": "Post", "story": "Story", "search": "Google" }
             }
         },
         "siteNotices": {

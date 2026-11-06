@@ -28,6 +28,7 @@ A new route that fits none of these, or whose kind is unclear, is a **BLOCKER** 
 - **should:** an Open Graph image (the default `app/opengraph-image.tsx` is fine; occasion pages get their own).
 - **should:** structured data (JSON-LD) where a type fits, e.g. `FAQPage` for an FAQ block, `Organization`/`WebSite` on the landing ([components/landing/LandingStructuredData.tsx](../components/landing/LandingStructuredData.tsx)).
 - **should:** images use `next/image` with real `alt` text in the page's language, and explicit sizes to avoid layout shift.
+- **should:** a transparent picture on an indexable page either gets `unoptimized`, if it should appear in Google Images, or goes in the `Googlebot-Image` list in [app/robots.ts](../app/robots.ts). Through the optimizer, crawlers can get it as a JPEG on black.
 - **should:** links between indexable pages use plain `<a>`/`<Link>` with `href`, never `onClick` navigation, so crawlers can follow them.
 
 ## Utility and private pages

@@ -126,6 +126,25 @@ describe('AuditLogPanel', () => {
         expect(screen.getByText('6 actions')).toBeInTheDocument();
     });
 
+    it('shows discount campaign, INVIART and shop actions in words, in the rows and the filter', async () => {
+        server.entries = [
+            entry({ id: 'log-7', action: 'DISCOUNT_CAMPAIGN_STOPPED', eventId: null, targetType: 'DISCOUNT_CAMPAIGN', details: {} }),
+            entry({ id: 'log-8', action: 'INVIART_COLLECTION_CHANGED', eventId: null, targetType: 'INVIART_COLLECTION', details: {} }),
+            entry({ id: 'log-9', action: 'SHOP_STORE_CREATED', eventId: null, targetType: 'SHOP_STORE', details: {} }),
+        ];
+        server.totalElements = server.entries.length;
+        renderWithProviders(<AuditLogPanel />);
+        await screen.findByText('3 actions');
+
+        const filter = screen.getByRole('combobox', { name: 'Action' });
+        for (const label of ['Discount campaign stopped', 'INVIART collection changed', 'Shopify store connected']) {
+            expect(within(filter).getByRole('option', { name: label })).toBeInTheDocument();
+            // Once in the filter, once as the row's pill.
+            expect(screen.getAllByText(label)).toHaveLength(2);
+        }
+        expect(screen.queryByText('DISCOUNT_CAMPAIGN_STOPPED')).not.toBeInTheDocument();
+    });
+
     it('filters by action and goes back to the first page', async () => {
         renderWithProviders(<AuditLogPanel />);
         await screen.findByText('6 actions');

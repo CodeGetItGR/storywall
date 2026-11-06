@@ -110,9 +110,14 @@ describe('text contrast', () => {
 });
 
 describe('sectionShell', () => {
-    it('applies the section height and padding', () => {
-        const section = { ...blank, style: { ...blank.style, minHeight: 300, paddingY: 20 } };
-        expect(sectionShell(section, 0, ctx).style).toMatchObject({ minHeight: '300px', paddingTop: '20px', paddingBottom: '20px' });
+    it('keeps the saved height and padding only where they are part of the composition', () => {
+        const saved = { minHeight: 300, paddingY: 20 };
+        const footer = { ...SAMPLE_SECTIONS.footer, style: { ...SAMPLE_SECTIONS.footer.style, ...saved } };
+        expect(sectionShell(footer, 0, ctx).style).toMatchObject({ minHeight: '300px', paddingTop: '20px', paddingBottom: '20px' });
+
+        const style = sectionShell({ ...blank, style: { ...blank.style, ...saved } }, 0, ctx).style;
+        expect(style.minHeight).toBeUndefined();
+        expect(style.paddingTop).toBeUndefined();
     });
 
     it('names footers and theme backgrounds', () => {

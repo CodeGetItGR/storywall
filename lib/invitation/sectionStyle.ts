@@ -39,7 +39,8 @@ export const sectionStyleSchema = z
             })
             .strict()
             .optional(),
-        minHeight: z.number().min(80).max(3000).optional(),
+        // 44 is the footer's own smallest height.
+        minHeight: z.number().min(44).max(3000).optional(),
         paddingY: z.number().min(0).max(1000).optional(),
         transition: z.object({ assetId: idSchema, edge: z.enum(['top', 'bottom']) }).strict().optional(),
         textContrast: z.enum(['auto', 'light', 'base']),
