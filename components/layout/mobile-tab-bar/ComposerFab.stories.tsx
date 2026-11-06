@@ -3,7 +3,6 @@ import { userEvent, within } from 'storybook/test';
 
 import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
-import { mobileOnly } from '@/.storybook/modes';
 import { ComposerFab } from '@/components/layout/mobile-tab-bar/ComposerFab';
 
 const meta = {
@@ -11,7 +10,8 @@ const meta = {
     component: ComposerFab,
     args: { hidden: false },
     globals: { viewport: { value: 'mobile' } },
-    parameters: { layout: 'fullscreen', ...mobileOnly },
+    parameters: { layout: 'fullscreen' },
+    tags: ['visual-mobile-only'],
     decorators: [
         withAppContext,
         (Story) => (

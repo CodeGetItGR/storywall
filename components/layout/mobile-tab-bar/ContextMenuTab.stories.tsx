@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { BookHeart, CalendarDays, Gift, Settings } from 'lucide-react';
 import { fn, userEvent, within } from 'storybook/test';
 
-import { mobileOnly } from '@/.storybook/modes';
 import { ContextMenuTab } from '@/components/layout/mobile-tab-bar/ContextMenuTab';
 import type { ContextNavItem } from '@/components/layout/mobile-tab-bar/types';
 
@@ -24,7 +23,8 @@ const meta = {
         onItemClick: fn(),
     },
     globals: { viewport: { value: 'mobile' } },
-    parameters: { layout: 'fullscreen', ...mobileOnly },
+    parameters: { layout: 'fullscreen' },
+    tags: ['visual-mobile-only'],
     decorators: [
         (Story) => (
             <div className="flex h-screen items-end justify-end p-4">

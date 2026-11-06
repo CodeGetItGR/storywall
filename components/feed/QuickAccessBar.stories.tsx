@@ -3,7 +3,6 @@ import { http, HttpResponse } from 'msw';
 
 import { withAppContext } from '@/.storybook/appContext';
 import { storyEvent, storyHostMember, storyModules } from '@/.storybook/fixtures';
-import { desktopOnly } from '@/.storybook/modes';
 import { QuickAccessBar } from '@/components/feed/QuickAccessBar';
 import type { EventGiftAccountResponseDto } from '@/lib/api/types';
 
@@ -21,7 +20,7 @@ const giftAccount: EventGiftAccountResponseDto = {
 const meta = {
     title: 'Feed/QuickAccessBar',
     component: QuickAccessBar,
-    parameters: { ...desktopOnly },
+    tags: ['visual-desktop-only'],
     globals: { viewport: { value: 'desktop' } },
     decorators: [withAppContext],
     beforeEach({ msw }) {

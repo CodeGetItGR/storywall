@@ -21,7 +21,7 @@ export const LastMinutes: Story = {
 // Within half an hour of the start, fireworks play once per browser.
 export const JustStarted: Story = {
     args: { time: Date.parse('2026-06-15T11:50:00Z') },
-    parameters: { chromatic: { disableSnapshot: true } },
+    tags: ['visual-skip'],
     beforeEach() {
         window.localStorage.removeItem('countdown-celebrated:evt-story');
     },

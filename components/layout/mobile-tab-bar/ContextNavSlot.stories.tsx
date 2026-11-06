@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { BookHeart, CalendarDays } from 'lucide-react';
 import { fn } from 'storybook/test';
 
-import { mobileOnly } from '@/.storybook/modes';
 import { ContextNavSlot } from '@/components/layout/mobile-tab-bar/ContextNavSlot';
 
 const schedule = { key: 'schedule', href: '/events/evt-story/tools/schedule', icon: CalendarDays, label: 'Schedule' };
@@ -20,7 +19,7 @@ const meta = {
         onItemClick: fn(),
     },
     globals: { viewport: { value: 'mobile' } },
-    parameters: mobileOnly,
+    tags: ['visual-mobile-only'],
 } satisfies Meta<typeof ContextNavSlot>;
 
 export default meta;

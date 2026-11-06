@@ -78,6 +78,6 @@ function ToggleModal() {
 
 export const Interactive: Story = {
     render: () => <ToggleModal />,
-    // Closed at rest, so there is nothing new to snapshot.
-    parameters: { chromatic: { disableSnapshot: true } },
+    // Closed at rest, so there is nothing new to capture.
+    tags: ['visual-skip'],
 };

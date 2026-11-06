@@ -3,16 +3,15 @@ import { http, HttpResponse } from 'msw';
 import { userEvent, within } from 'storybook/test';
 
 import { withAppContext } from '@/.storybook/appContext';
-import { desktopOnly } from '@/.storybook/modes';
 import { DesktopNavRail } from '@/components/layout/DesktopNavRail';
 
 const meta = {
     title: 'Layout/DesktopNavRail',
     component: DesktopNavRail,
     globals: { viewport: { value: 'desktop' } },
+    tags: ['visual-desktop-only'],
     parameters: {
         layout: 'fullscreen',
-        ...desktopOnly,
         nextjs: { navigation: { pathname: '/home' } },
     },
     // The rail's warm gradient comes from the shell around it.

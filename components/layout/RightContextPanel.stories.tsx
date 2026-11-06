@@ -3,16 +3,15 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { withAppContext } from '@/.storybook/appContext';
 import { storyEvent, storyHostMember, storyModules } from '@/.storybook/fixtures';
 import { hostPanelHandlers } from '@/.storybook/handlers';
-import { desktopOnly } from '@/.storybook/modes';
 import { RightContextPanel } from '@/components/layout/RightContextPanel';
 
 const meta = {
     title: 'Layout/RightContextPanel',
     component: RightContextPanel,
     globals: { viewport: { value: 'desktop' } },
+    tags: ['visual-desktop-only'],
     parameters: {
         layout: 'fullscreen',
-        ...desktopOnly,
         nextjs: { navigation: { pathname: '/events/evt-story/feed' } },
     },
     decorators: [

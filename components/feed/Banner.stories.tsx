@@ -34,7 +34,7 @@ export const WithSessionButtons: Story = {
 
 export const WithGlow: Story = {
     args: { glowVisible: true },
-    parameters: { chromatic: { disableSnapshot: true } },
+    tags: ['visual-skip'],
 };
 
 export const NoCover: Story = {

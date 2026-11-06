@@ -5,7 +5,6 @@ import { userEvent, within } from 'storybook/test';
 import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
 import { storyEvent, storyHostMember, storyQrLink } from '@/.storybook/fixtures';
-import { mobileOnly } from '@/.storybook/modes';
 import { MobileTabBar } from '@/components/layout/MobileTabBar';
 
 const FEED_PATH = '/events/evt-story/feed';
@@ -14,9 +13,9 @@ const meta = {
     title: 'Layout/MobileTabBar',
     component: MobileTabBar,
     globals: { viewport: { value: 'mobile' } },
+    tags: ['visual-mobile-only'],
     parameters: {
         layout: 'fullscreen',
-        ...mobileOnly,
         nextjs: { navigation: { pathname: FEED_PATH } },
     },
     decorators: [
