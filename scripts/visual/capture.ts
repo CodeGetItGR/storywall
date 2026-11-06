@@ -5,6 +5,7 @@ import { type Browser, chromium, errors, type Page } from 'playwright-core';
 
 import {
     BROWSER_LOCALES,
+    CHROMIUM_ARGS,
     CONCURRENCY,
     EARLY_STOP_AFTER,
     HOST_RESOLVER_RULES,
@@ -62,7 +63,7 @@ function watchStory() {
     attach();
 }
 
-export const launchBrowser = () => chromium.launch({ args: [`--host-resolver-rules=${HOST_RESOLVER_RULES}`] });
+export const launchBrowser = () => chromium.launch({ args: [`--host-resolver-rules=${HOST_RESOLVER_RULES}`, ...CHROMIUM_ARGS] });
 
 const takeFrame = (page: Page) => page.screenshot({ fullPage: true, animations: 'disabled', caret: 'hide', scale: 'css' });
 
