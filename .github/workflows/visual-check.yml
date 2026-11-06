@@ -1,0 +1,124 @@
+name: Visual check
+
+# Forks never run this: they have no secrets, and it would run untrusted code.
+on:
+    pull_request:
+        types: [opened, synchronize, reopened]
+        branches-ignore: [main]
+
+concurrency:
+    group: visual-check-${{ github.event.pull_request.number }}
+    cancel-in-progress: true
+
+permissions: {}
+
+env:
+    HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+jobs:
+    start:
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions:
+            statuses: write
+        steps:
+            - run: gh api "repos/$GITHUB_REPOSITORY/statuses/$HEAD_SHA" -f state=pending -f context=visual-regression -f description="Capturing stories" -f target_url="$RUN_URL"
+              env:
+                  GH_TOKEN: ${{ github.token }}
+
+    # Runs the PR's dependencies and build, so it has no write access and no secrets.
+    capture:
+        needs: start
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        container: mcr.microsoft.com/playwright:v1.55.0-noble
+        permissions:
+            contents: read
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  ref: ${{ github.event.pull_request.head.sha }}
+                  fetch-depth: 0
+
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 22
+                  cache: npm
+
+            - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+            - run: npm ci
+
+            - id: base
+              run: echo "sha=$(git merge-base "origin/$BASE_REF" HEAD)" >> "$GITHUB_OUTPUT"
+              env:
+                  BASE_REF: ${{ github.event.pull_request.base.ref }}
+
+            - id: restore
+              uses: actions/cache/restore@v6
+              with:
+                  path: visual-output/base
+                  key: visual-base-${{ steps.base.outputs.sha }}-${{ hashFiles('scripts/visual/capture.ts', 'scripts/visual/stories.ts', 'scripts/visual/config.ts') }}-pw1.55.0
+
+            - run: npm run visual -- --base "$BASE_SHA"
+              env:
+                  BASE_SHA: ${{ steps.base.outputs.sha }}
+
+            - if: steps.restore.outputs.cache-hit != 'true'
+              uses: actions/cache/save@v6
+              with:
+                  path: visual-output/base
+                  key: ${{ steps.restore.outputs.cache-primary-key }}
+
+            - uses: actions/upload-artifact@v7
+              with:
+                  name: visual-report
+                  path: visual-output/report
+                  retention-days: 1
+
+    # Installs nothing and builds nothing. Only this job holds the deploy key.
+    publish:
+        needs: capture
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        permissions:
+            contents: read
+            statuses: write
+            pull-requests: write
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  ref: ${{ github.event.pull_request.head.sha }}
+                  sparse-checkout: scripts/visual
+
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 22
+
+            - uses: actions/download-artifact@v8
+              with:
+                  name: visual-report
+                  path: report-data
+
+            - run: node scripts/visual/publish.mjs
+              env:
+                  GITHUB_TOKEN: ${{ github.token }}
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  REPORT_DIR: report-data
+                  REPORTS_REPO: CodeGetItGR/storywall-visual-reports
+                  PAGES_BASE_URL: https://codegetitgr.github.io/storywall-visual-reports
+                  VISUAL_REPORTS_DEPLOY_KEY: ${{ secrets.VISUAL_REPORTS_DEPLOY_KEY }}
+
+    finish:
+        needs: [start, capture, publish]
+        if: failure()
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions:
+            statuses: write
+        steps:
+            - run: gh api "repos/$GITHUB_REPOSITORY/statuses/$HEAD_SHA" -f state=error -f context=visual-regression -f description="The visual check could not finish" -f target_url="$RUN_URL"
+              env:
+                  GH_TOKEN: ${{ github.token }}
