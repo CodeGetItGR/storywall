@@ -67,8 +67,7 @@ export async function buildReport(input: BuildReportInput): Promise<Manifest> {
             diff = await comparePngs(before, readFileSync(pngPath(headDir, head.id)));
         }
         if (isChanged(diff)) return { record, diff };
-        process.stdout.write(`Cleared by a retake: ${head.id}
-`);
+        process.stdout.write(`Cleared by a retake: ${head.id}\n`);
         return null;
     }
 

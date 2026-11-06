@@ -52,7 +52,7 @@ function watchStory() {
             if (status.state === 'pending') status.state = 'rendered';
         });
         channel.on('storyMissing', () => fail('Story not found, or its file failed to load'));
-        for (const event of ['storyThrewException', 'storyErrored', 'playFunctionThrewException', 'unhandledErrorsWhilePlaying', 'configError']) {
+        for (const event of ['storyThrewException', 'storyErrored', 'playFunctionThrewException', 'unhandledErrorsWhilePlaying']) {
             channel.on(event, (payload) => {
                 const first = Array.isArray(payload) ? payload[0] : payload;
                 fail(`${event}: ${first?.message ?? first?.description ?? first?.title ?? ''}`);
@@ -178,9 +178,7 @@ export async function captureAll(browser: Browser, origin: string, targets: Capt
         }
         // Every capture failing means the build is broken, not the stories. Stopping here avoids running out the job's time limit.
         if (allFailedSoFar(done, failed)) throw new Error(`The first ${done} captures all failed, so the run stopped. First error: ${firstError}`);
-        if (done % 100 === 0 || done === targets.length)
-            process.stdout.write(`Captured ${done}/${targets.length}
-`);
+        if (done % 100 === 0 || done === targets.length) process.stdout.write(`Captured ${done}/${targets.length}\n`);
         return record;
     });
 }
