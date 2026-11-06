@@ -15,6 +15,7 @@ const PREVIEW_MEDIA: Record<string, string> = {
     'm-dad': '/images/couple-hero.png',
     'm-g1': '/images/couple-hero.png',
     'm-a': '/images/couple-hero.png',
+    'm-icon': '/images/post-florals.png',
 };
 
 export const previewMedia: MediaResolver = (mediaId) => PREVIEW_MEDIA[mediaId];
@@ -26,7 +27,10 @@ export const PREVIEW_THEME: ThemeDesign = {
         content: { mode: 'cover', stableRepeat: false },
         extra: { mode: 'cover', stableRepeat: false },
     },
-    art: { main: { image: { mediaId: 'm-main-art' }, scale: 0.8, animation: 'fade' } },
+    art: {
+        main: { image: { mediaId: 'm-main-art' }, scale: 0.8, animation: 'fade' },
+        ceremonyIcon: { image: { mediaId: 'm-icon' }, scale: 1, animation: 'none' },
+    },
     fonts: { title: "'Playfair Display',serif", body: "'Lora',serif" },
     autoTextContrast: true,
 };
@@ -112,6 +116,12 @@ const textSections = (style: PreviewDateStyle, lang: PreviewDateLanguage): Invit
     SAMPLE_SECTIONS.weddingSponsors,
     SAMPLE_SECTIONS.weddingSponsorsSimple,
     SAMPLE_SECTIONS.ourStoryProposal,
+    SAMPLE_SECTIONS.program,
+    SAMPLE_SECTIONS.programIcons,
+    SAMPLE_SECTIONS.locations,
+    SAMPLE_SECTIONS.accommodation,
+    SAMPLE_SECTIONS.gift,
+    SAMPLE_SECTIONS.rsvp,
     SAMPLE_SECTIONS.footer,
 ];
 

@@ -4,6 +4,7 @@ import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationElement } from '@/lib/invitation/elements';
 import { INVITATION_LABELS, type InvitationLabels, invitationLanguage } from '@/lib/invitation/labels';
 import type { ImageRef, TextStyle } from '@/lib/invitation/primitives';
+import type { RsvpSender } from '@/lib/invitation/rsvp';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import { PHOTO_SHAPES } from '@/lib/invitation/theme';
@@ -31,6 +32,9 @@ export type RenderContext = {
     eventIso?: string;
     // Fixed labels in the invitation's own language.
     labels: InvitationLabels;
+    // Sends an RSVP reply. Without one (the preview) the form shows its
+    // success state and nothing is saved.
+    sendRsvp?: RsvpSender;
 };
 
 const DEFAULT_TEXT_COLOR = '#2f2b2d';
@@ -41,6 +45,7 @@ export function buildRenderContext(
     theme: ThemeDesign,
     media: MediaResolver,
     hostPreset?: TypographyPreset,
+    sendRsvp?: RsvpSender,
 ): RenderContext {
     const forcePreset = Boolean(document.overrides.typographyPresetId && hostPreset);
     const dateSection = document.sections.find((section) => section.type === 'date');
@@ -55,6 +60,7 @@ export function buildRenderContext(
         forcePreset,
         eventIso: dateSection?.type === 'date' ? dateSection.data.iso : undefined,
         labels: INVITATION_LABELS[invitationLanguage(document)],
+        sendRsvp,
     };
 }
 
