@@ -7,10 +7,10 @@ import { useCampaignLinkShare } from '@/hooks/useCampaignLinkShare';
 import type { CampaignLinkDto } from '@/lib/api/types';
 import { campaignShortUrl } from '@/lib/campaignLinks';
 
-// Copies a saved link's short address from a table row.
-export function CampaignLinkCopyButton({ link }: { link: Pick<CampaignLinkDto, 'name' | 'shortCode'> }) {
+// Copies a saved link's address from a table row: its short one, unless a row asks for another.
+export function CampaignLinkCopyButton({ link, url }: { link: Pick<CampaignLinkDto, 'name' | 'shortCode'>; url?: string }) {
     const t = useTranslations('AdminPage.campaigns.share');
-    const { copied, handleCopyClick } = useCampaignLinkShare(campaignShortUrl(link), link.name);
+    const { copied, handleCopyClick } = useCampaignLinkShare(url ?? campaignShortUrl(link), link.name);
 
     return (
         <button

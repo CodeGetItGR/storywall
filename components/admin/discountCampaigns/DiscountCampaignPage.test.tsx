@@ -107,7 +107,7 @@ describe('DiscountCampaignPage', () => {
         renderPage(campaign('LIVE'));
 
         expect(screen.getByRole('heading', { name: 'Links' })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'English links' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Greek links' })).toBeInTheDocument();
     });
 
     it('shows no links section for a new campaign', () => {

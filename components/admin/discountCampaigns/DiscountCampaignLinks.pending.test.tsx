@@ -9,7 +9,7 @@ import type { AdminDiscountCampaignDto } from '@/lib/api/types';
 import messages from '@/messages/en.json';
 
 // The real mutation, with a request that stays open until the test finishes it. Two requests at the
-// same moment would leave the right 8 links, but the server answers the second with a 409.
+// same moment would leave the right links, but the server answers the second with a 409.
 vi.mock('@/lib/api/client', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@/lib/api/client')>()),
     api: { get: vi.fn(), post: vi.fn() },
@@ -39,20 +39,18 @@ describe('DiscountCampaignLinks while a set is being created', () => {
 
     afterEach(cleanup);
 
-    it('sends one request for quick clicks, then lets the buttons work again', async () => {
+    it('sends one request for quick clicks, then lets the button work again', async () => {
         renderLinks();
 
-        fireEvent.click(screen.getByRole('button', { name: 'English links' }));
-        fireEvent.click(screen.getByRole('button', { name: 'English links' }));
-        fireEvent.click(screen.getByRole('button', { name: 'Greek links' }));
+        const create = await screen.findByRole('button', { name: 'Greek links' });
+        fireEvent.click(create);
+        fireEvent.click(create);
 
-        await waitFor(() => expect(screen.getByRole('button', { name: 'English links' })).toBeDisabled());
+        await waitFor(() => expect(screen.getByRole('button', { name: 'Greek links' })).toBeDisabled());
         expect(api.post).toHaveBeenCalledTimes(1);
-        expect(screen.getByRole('button', { name: 'Greek links' })).toBeDisabled();
 
-        await act(async () => finish({ links: [], created: 8 }));
+        await act(async () => finish({ links: [], created: 9 }));
 
-        await waitFor(() => expect(screen.getByRole('button', { name: 'English links' })).toBeEnabled());
-        expect(screen.getByRole('button', { name: 'Greek links' })).toBeEnabled();
+        await waitFor(() => expect(screen.getByRole('button', { name: 'Greek links' })).toBeEnabled());
     });
 });

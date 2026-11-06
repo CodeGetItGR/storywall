@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { CampaignSectionLabel } from '@/components/admin/campaigns/CampaignSectionLabel';
 import { CampaignValueLabel } from '@/components/admin/campaigns/CampaignValueTip';
 import { CampaignSetLinkRow } from '@/components/admin/discountCampaigns/CampaignSetLinkRow';
+import { FunnelSegmented } from '@/components/admin/funnel/FunnelSegmented';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useDiscountCampaignLinks } from '@/hooks/useDiscountCampaignLinks';
 import { useFunnelFormat } from '@/hooks/useFunnelFormat';
@@ -14,31 +15,42 @@ import { campaignRowKey } from '@/lib/campaignLinks';
 
 const BUTTON = 'min-h-9 rounded-md border border-border px-3 text-sm font-semibold text-ink-muted disabled:opacity-50';
 
-// A saved discount campaign's links with their visits, and the buttons that create each language's set.
+// A saved discount campaign's links in one language with their visits, and the button that creates what
+// that language is missing.
 export function DiscountCampaignLinks({ campaign }: { campaign: AdminDiscountCampaignDto }) {
     const t = useTranslations('AdminPage');
     const format = useFunnelFormat();
-    const { rows, sections, total, over, isLoading, busy, error, handleGenerateClick } = useDiscountCampaignLinks(campaign);
+    const { language, rows, sections, total, over, hasLinks, missingLinks, isLoading, busy, error, handleLanguageChange, handleGenerateClick } =
+        useDiscountCampaignLinks(campaign);
+    const languages = [
+        { value: 'en', label: t('discountCampaigns.links.languages.en') },
+        { value: 'el', label: t('discountCampaigns.links.languages.el') },
+    ] as const;
 
     return (
         <section className="space-y-3">
             {/* Header */}
             <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="text-[11px] font-bold tracking-wide text-ink-muted uppercase">{t('discountCampaigns.links.title')}</h3>
-                {!over && (
-                    <div className="flex gap-2">
-                        <button type="button" data-language="en" onClick={handleGenerateClick} disabled={busy} className={BUTTON}>
-                            {t('discountCampaigns.links.english')}
+                <div className="flex flex-wrap items-center gap-2">
+                    {missingLinks && (
+                        <button type="button" onClick={handleGenerateClick} disabled={busy} className={BUTTON}>
+                            {t(language === 'en' ? 'discountCampaigns.links.english' : 'discountCampaigns.links.greek')}
                         </button>
-                        <button type="button" data-language="el" onClick={handleGenerateClick} disabled={busy} className={BUTTON}>
-                            {t('discountCampaigns.links.greek')}
-                        </button>
-                    </div>
-                )}
+                    )}
+                    {(!over || hasLinks) && (
+                        <FunnelSegmented
+                            label={t('campaignOverview.splits.language')}
+                            options={languages}
+                            value={language}
+                            onChangeAction={handleLanguageChange}
+                        />
+                    )}
+                </div>
             </div>
 
             {/* Over */}
-            {over && rows.length > 0 && <p className="text-sm text-status-warn">{t('discountCampaigns.links.over')}</p>}
+            {over && hasLinks && <p className="text-sm text-status-warn">{t('discountCampaigns.links.over')}</p>}
 
             {/* List */}
             {isLoading && <LoadingState className="justify-start py-2" />}
