@@ -112,7 +112,15 @@ export async function buildReport(input: BuildReportInput): Promise<Manifest> {
     const counts: Record<CaptureState, number> = { changed: 0, new: 0, removed: 0, failed: 0 };
     for (const entry of entries) counts[entry.state] += 1;
 
-    const manifest: Manifest = { headSha, baseSha, totalCaptures: headRecords.length, counts, fingerprint: fingerprint(entries), entries, missingStories };
+    const manifest: Manifest = {
+        headSha,
+        baseSha,
+        totalCaptures: headRecords.length,
+        counts,
+        fingerprint: fingerprint(entries),
+        entries,
+        missingStories,
+    };
     writeFileSync(join(reportDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
     return manifest;
 }

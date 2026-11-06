@@ -50,7 +50,10 @@ export function diffImage(base: Raw, mask: Uint8Array): Raw {
 }
 
 export function rawToWebp(raw: Raw): Promise<Buffer> {
-    return fromRaw(raw).resize({ width: WEBP_MAX_SIDE, height: WEBP_MAX_SIDE, fit: 'inside', withoutEnlargement: true }).webp({ quality: 80 }).toBuffer();
+    return fromRaw(raw)
+        .resize({ width: WEBP_MAX_SIDE, height: WEBP_MAX_SIDE, fit: 'inside', withoutEnlargement: true })
+        .webp({ quality: 80 })
+        .toBuffer();
 }
 
 // One or two images side by side, 600px wide, for the PR comment.

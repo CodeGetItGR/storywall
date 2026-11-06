@@ -44,7 +44,17 @@ describe('buildReport', () => {
     const noRetake = () => Promise.reject(new Error('no retake expected'));
 
     const run = (baseRecords: CaptureRecord[], headRecords: CaptureRecord[], retake: (t: CaptureTarget) => Promise<CaptureRecord> = noRetake) =>
-        buildReport({ baseDir, headDir, reportDir, baseRecords, headRecords, baseSha: 'b', headSha: 'h', missingStories: ['components/x/Y.tsx'], retake });
+        buildReport({
+            baseDir,
+            headDir,
+            reportDir,
+            baseRecords,
+            headRecords,
+            baseSha: 'b',
+            headSha: 'h',
+            missingStories: ['components/x/Y.tsx'],
+            retake,
+        });
 
     it('leaves unchanged captures out of the report', async () => {
         const manifest = await run([await record(baseDir, 'a', 10)], [await record(headDir, 'a', 10)]);

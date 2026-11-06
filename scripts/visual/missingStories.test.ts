@@ -17,7 +17,10 @@ describe('findMissingStories', () => {
 
     it('skips tests, stories, non-components and other folders', () => {
         expect(
-            findMissingStories(['components/feed/Other.test.tsx', 'components/feed/Other.stories.tsx', 'components/feed/util.ts', 'app/page.tsx'], exists),
+            findMissingStories(
+                ['components/feed/Other.test.tsx', 'components/feed/Other.stories.tsx', 'components/feed/util.ts', 'app/page.tsx'],
+                exists,
+            ),
         ).toEqual([]);
     });
 });
