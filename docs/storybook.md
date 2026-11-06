@@ -1,9 +1,7 @@
-# Storybook and Chromatic
+# Storybook
 
 - `npm run storybook` starts Storybook on http://localhost:6006.
-- `npm run build-storybook` builds it into `storybook-static/` (what Chromatic uploads).
-- Chromatic runs only on PRs into `staging` that have the `chromatic` label and touch UI files (`.github/workflows/chromatic.yml`). Adding the label starts a build, and each push while it is on starts another. It needs the `CHROMATIC_PROJECT_TOKEN` repo secret.
-- Accept the changes in Chromatic on the PR before merging. Staging uses merge commits, so the accepted PR build stays the baseline for the next PRs.
+- `npm run build-storybook` builds it into `storybook-static/`.
 
 ## Writing stories
 
@@ -24,9 +22,13 @@
 - the Next.js App Router mocks (`next/navigation`, `next/link`, `next/image`). Set the route with `parameters: { nextjs: { navigation: { pathname, query } } }`.
 - an MSW fallback that answers any unmocked `/api/*` call with a 404, so a missing handler shows as an empty or error state instead of a hanging request.
 
-Chromatic snapshots every story at mobile (375px) and desktop (1280px). Turn off the snapshot for stories that look the same as another story at rest, with `parameters: { chromatic: { disableSnapshot: true } }`.
+The visual check captures every story at mobile (375px) and desktop (1280px), in English and Greek. Three tags change that. They must be plain arrays on the story or on `meta`, because Storybook reads them without running the file:
 
-For a component that only shows at one size (the desktop rail, the mobile tab bar), spread `desktopOnly` or `mobileOnly` from `.storybook/modes.ts` into `parameters` and set `globals: { viewport: { value: 'desktop' } }` (or `'mobile'`) so the canvas opens at that size too. A play function that opens a mobile-only menu will fail at the other width in the local test runner; Chromatic only runs the mode you kept.
+- `tags: ['visual-skip']`: not captured. Use it for stories that look the same as another story at rest, or that can't be made stable.
+- `tags: ['visual-desktop-only']`: captured at 1280px only.
+- `tags: ['visual-mobile-only']`: captured at 375px only.
+
+For a component that only shows at one size (the desktop rail, the mobile tab bar), also set `globals: { viewport: { value: 'desktop' } }` (or `'mobile'`) so the Storybook canvas opens at that size.
 
 ## App context
 
