@@ -138,11 +138,13 @@ A failed story is fixed, or tagged `visual-skip` if it can't be made stable.
 - It also ignores the tick if `headSha` is no longer the PR's head, since a newer run is on its way.
 - Tick: check goes green with "Approved by GiorgosTs19". Untick: check goes red.
 - A tick from anyone not on the list is ignored, and the box is unticked again.
+- The box is the only part of the comment that may change. Anything else edited by hand, such as the hidden state, is put back.
+- A tick is ignored if the check has run again since, because the report it was about has been replaced.
 - The tick covers the whole PR. Approving one story at a time is not in this version.
 
 **A new push**
 
-- Same fingerprint as an approved comment: the approval stays and the check goes green.
+- Same fingerprint as an approved comment: the approval stays and the check goes green. This needs the box to still be ticked, the approver to be on the list, and the check's own status on the old commit to say "Approved by" that person.
 - Different fingerprint: the box is cleared and the check goes red.
 - Merging `staging` into a PR keeps the approval unless another PR changed the same captures.
 
@@ -185,7 +187,7 @@ All four live in `.github/workflows/`.
 | `visual-check.yml` | `pull_request`: opened, synchronize, reopened. Not into `main`, not from forks | Capture, compare, publish |
 | `visual-baseline.yml` | `push` to `staging` | Captures the commit and saves it to the cache |
 | `visual-approve.yml` | `issue_comment`: edited | Runs `approve.mjs` |
-| `visual-cleanup.yml` | `pull_request`: closed | Deletes the PR's report |
+| `visual-cleanup.yml` | `pull_request_target`: closed, into `staging` | Deletes the PR's report. A PR into another branch keeps its report until the size limit removes it |
 
 `visual-check.yml` has these jobs:
 
@@ -193,8 +195,8 @@ All four live in `.github/workflows/`.
 |---|---|---|
 | `start` | `statuses: write` | Sets the check to pending |
 | `capture` | `contents: read`, no secrets | `npm ci`, Storybook build, capture and compare. Uploads the results as an artifact kept 1 day |
-| `publish` | `statuses: write`, `pull-requests: write`, the deploy key | `publish.mjs`, with no `npm ci` and no Storybook build. Treats the artifact as data and validates file names |
-| `finish` (`if: failure()`) | `statuses: write` | Sets the check to error, linking to the run |
+| `publish` | `statuses: write`, `pull-requests: write`, the deploy key | `publish.mjs` from the PR's base commit, with no `npm ci` and no Storybook build. Treats the artifact as data and validates it |
+| `finish` (`if: failure() \|\| cancelled()`) | `statuses: write` | Sets the check to error, linking to the run |
 
 New pushes cancel an older run for the same PR. The capture job has a 30-minute timeout, with a target of 15 minutes for the whole run. If phase 3 measures more, captures are split across parallel jobs by a stable hash of the story id.
 
@@ -202,7 +204,11 @@ New pushes cancel an older run for the same PR. The capture job has a 30-minute 
 
 If the branch point has no `.storybook/main.ts`, every story counts as new. That only happens while the tool is being introduced.
 
-**Security:** the repo is public, so the job that runs PR dependencies and builds has no write access and no secrets, which limits a malicious package. Fork PRs don't run at all. This doesn't protect against someone with push access editing a workflow in their own PR, which is already true of any workflow.
+**Security:** the repo is public, so the job that runs PR dependencies and builds has no write access and no secrets, which limits a malicious package. Fork PRs don't run at all.
+
+- **The deploy key** is only used by scripts from the PR's base commit or from `staging`, so a PR's own changes to those scripts never see it.
+- **The verdict** comes from the capture job, which runs the PR's dependencies. A malicious package could write an empty result and turn the check green. Fixing that would need a comparison the PR can't touch, which is out of scope here.
+- **People with write access** can edit a comment or a workflow in their own PR, and could use that to fake a green check. Comment edits are put back, but a workflow edit is already true of any workflow. A very fast series of edits can also get a changed fingerprint past the check, so people with write access stay trusted.
 
 ## Report repo
 
@@ -235,8 +241,8 @@ No route, landing copy or metadata changes, so there's no SEO blocker. The only 
 | The first 20 captures all fail | The run stops with the first error, because that means the build is broken, not the stories |
 | Flaky capture | Retaken up to 2 times before it counts |
 | Capture or build job crashes | Check goes to error with a link to the run. Re-running the job retries |
-| Report upload or Pages deploy fails | Check goes to error. Nothing is approved by accident |
-| Pages slow to go live | Comment is still posted after 5 minutes, with a note that images may take a moment |
+| Report upload fails | Check goes to error. Nothing is approved by accident |
+| Pages deploy fails or is slow | Comment is still posted after 5 minutes, with a note that images may take a moment |
 | No captures for the branch point | Built on the spot, which makes the run slower |
 | The check never reports at all | The merge stays blocked. The owner can bypass as repo admin in an emergency |
 | Very large change, such as a new font | The comment stays short, the report holds all changes, and old reports are deleted if the size limit is reached |
