@@ -12,7 +12,7 @@ const state = vi.hoisted(() => ({
 vi.mock('@/hooks/useAuth', () => ({
     useAuth: () => ({ user: { emailVerified: state.emailVerified } }),
 }));
-vi.mock('@/hooks/useMe', () => ({ useMe: () => undefined }));
+vi.mock('@/hooks/useEmailVerificationWatch', () => ({ useEmailVerificationWatch: () => undefined }));
 vi.mock('@/hooks/useMyEventList', () => ({
     useMyEventList: () => ({ eventQueries: [], isLoading: state.isLoading, memberships: state.memberships }),
 }));

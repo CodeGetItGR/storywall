@@ -5,17 +5,17 @@ import { type ChangeEvent, useCallback, useState } from 'react';
 import { useSaveGift } from '@/hooks/useGift';
 import { useGiftDetailsInput } from '@/hooks/useGiftDetailsInput';
 import type { GiftHandoverRequestDto, PlanTierResponseDto } from '@/lib/api/types';
-import { isPlanGiftable, sameGiftRequest } from '@/lib/gift';
+import { type GiftDetailsInput, isPlanGiftable, sameGiftRequest } from '@/lib/gift';
 
 /**
  * "Buy as a gift" in the create wizard: offered only on a plan that can be
  * given. The gift is declared on the draft right before checkout, and again only
  * when its details changed since.
  */
-export function useCreateEventGift(selectedPlan: PlanTierResponseDto | undefined) {
-    const details = useGiftDetailsInput();
+export function useCreateEventGift(selectedPlan: PlanTierResponseDto | undefined, initial?: { isGift: boolean; details: GiftDetailsInput }) {
+    const details = useGiftDetailsInput(initial?.details);
     const saveGift = useSaveGift(null);
-    const [isGift, setIsGift] = useState(false);
+    const [isGift, setIsGift] = useState(initial?.isGift ?? false);
     const [savedRequest, setSavedRequest] = useState<GiftHandoverRequestDto | null>(null);
 
     const available = isPlanGiftable(selectedPlan);
@@ -39,6 +39,7 @@ export function useCreateEventGift(selectedPlan: PlanTierResponseDto | undefined
 
     return {
         available,
+        isGift,
         enabled,
         handleToggle,
         details,

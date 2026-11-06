@@ -76,7 +76,6 @@ export interface CreateEventFormValue {
     onLocationAddressChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     mapsUrl: string;
     onMapsUrlChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    canSubmitDetails: boolean;
     // Theme step: shown when the plan lists `theme` and the type has presets.
     themeStepAvailable: boolean;
     themePresets: ThemePresetDto[];

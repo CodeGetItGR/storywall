@@ -40,7 +40,7 @@ export default function CreateEventPage() {
         // The proxy normally redirects signed-out requests before this
         // renders; this branch only runs when Spring was unreachable there.
         if (!isAuthenticated) {
-            router.replace(routes.auth.login({ next: returnPath }));
+            router.replace(routes.auth.register({ next: returnPath }));
             return;
         }
         if (user?.role === 'ADMIN') {

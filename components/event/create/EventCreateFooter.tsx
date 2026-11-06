@@ -17,7 +17,6 @@ export function EventCreateFooter() {
         canContinueType,
         canContinuePlan,
         isSubmitPending,
-        canSubmitDetails,
         isEmailVerified,
         consentSatisfied,
         goToType,
@@ -73,11 +72,11 @@ export function EventCreateFooter() {
                         >
                             {t('actions.back')}
                         </button>
+                        {/* Never disabled: tapping it shows which field is still missing */}
                         <button
                             form={formId}
                             type="submit"
-                            disabled={!canSubmitDetails}
-                            className="min-h-11 flex-2 rounded-full text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                            className="min-h-11 flex-2 rounded-full text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
                         >
                             {themeStepAvailable ? t('continueToTheme') : t('continueToOverview')}
                         </button>

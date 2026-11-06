@@ -109,6 +109,16 @@ export function readCreateEventCheckout(run: string): CreateEventCheckout | null
     }
 }
 
+// Takes the host to the first field holding them back that the browser's own check lets through:
+// one marked invalid, or a required one with only spaces in it.
+export function focusFirstInvalidField(formId: string): void {
+    const fields = Array.from(document.getElementById(formId)?.querySelectorAll('input') ?? []);
+    const field = fields.find((input) => input.getAttribute('aria-invalid') === 'true' || (input.required && !input.value.trim()));
+    if (!field) return;
+    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    field.focus({ preventScroll: true });
+}
+
 // Brings the first unticked checkbox in the form into view and focuses it, so a
 // host who can't pay yet lands on the box still blocking them.
 export function focusFirstUncheckedBox(formId: string): void {
