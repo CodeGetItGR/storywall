@@ -31,13 +31,19 @@ const WIDTHS = [
 // Fixed so the countdown shows the same numbers on both sides.
 const FROZEN_TIME = new Date('2026-06-01T12:00:00');
 const MEDIA_ORIGIN = 'https://parity.local/media/';
-// Effects are not built in the new renderer yet (KAN-59), so they are hidden on both sides.
-// The last rule undoes an old editor leftover: a theme saved with a selected
-// section dims every section on the old page.
+// Effects are not built in the new renderer yet (KAN-59), so they are hidden on
+// both sides, and the old effect layer is flattened: as its own compositor layer
+// it changes how the text above it is smoothed.
+// The last rules undo old editor leftovers: a theme saved with a selected section
+// dims every section, and empty contact links and family photos show editor
+// prompts. The new page never shows guests those prompts.
 const FREEZE_CSS = `*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important}
-.wedart-fx-canvas,.wedart-fx-layer,.wedart-bg-fx{visibility:hidden!important}
+.wedart-fx-canvas,.wedart-fx-layer,.wedart-bg-fx,.wedart-bg-particles{visibility:hidden!important}
+.section.wedart-bg-effect-active{isolation:auto!important}
+.wedart-section-bg,.wedart-section-bg-overlay{will-change:auto!important;transform:none!important;backface-visibility:visible!important}
 nextjs-portal{display:none!important}
-.site.has-selection .section:not(.selected){filter:none!important;opacity:1!important}`;
+.site.has-selection .section:not(.selected){filter:none!important;opacity:1!important}
+.contact-empty-hint,.family-photo:has(.family-photo-placeholder){display:none!important}`;
 
 const { values: args } = parseArgs({
     options: {
@@ -349,7 +355,9 @@ async function main() {
     try {
         await waitForNewServer();
         const browser = await chromium.launch({ channel: 'chrome' });
-        const context = await browser.newContext({ bypassCSP: true, deviceScaleFactor: 1, reducedMotion: 'reduce' });
+        // Not reduced motion: the old page then drops the letter spacing and opacity of
+        // themes with a text animation, which a guest does not see.
+        const context = await browser.newContext({ bypassCSP: true, deviceScaleFactor: 1 });
         await context.clock.setFixedTime(FROZEN_TIME);
         await serveBackupMedia(context);
         const rows: Row[] = [];

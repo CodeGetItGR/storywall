@@ -49,7 +49,7 @@ export function convertSectionStyle(style: Reader, ctx: ConvertContext, hasColum
     // The old editor dropped the stacked-layout height of custom sections
     // that got columns before its v2 fix.
     const staleColumnHeight = hasColumnBreak && (style.num('columnLayoutVersion') ?? 0) < 2;
-    const minHeight = staleColumnHeight ? undefined : clamp(style.num('minHeight'), 80, 3000);
+    const minHeight = staleColumnHeight ? undefined : clamp(style.num('minHeight'), 44, 3000);
     const paddingY = staleColumnHeight ? undefined : clamp(style.num('paddingY'), 0, 1000);
 
     const transition = style.obj('transition');
