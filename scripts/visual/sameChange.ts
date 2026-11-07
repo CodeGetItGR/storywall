@@ -164,6 +164,7 @@ function gapBetween(a: Box, b: Box): number {
 
 // Changed pixels less than CELL apart join into one area wherever they sit, so the letters of one word become one area.
 // Pixels in one grid cell are always that close and pixels two cells apart never are, so only neighboring cells are compared.
+// The gap is measured between the boxes around each cell's changed pixels, so a diagonal neighbor can now and then join early.
 function changedAreas(capture: ChangedCapture): string[] {
     const { boxes, columns, rows } = cellBoxes(capture);
     const seen = new Set<number>();

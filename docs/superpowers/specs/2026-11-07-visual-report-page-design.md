@@ -83,7 +83,7 @@ One color looks different in every story because it sits behind different text, 
 **Color shift.** For a capture of unchanged size:
 
 1. Over its changed pixels (the existing comparison mask), count each before and after color pair.
-2. If every changed pixel had one color before but not one color after, or the other way round, the change is content added to a plain background or removed from one, and the capture has no color shift. A flat block that changed color, one color on both sides, still counts.
+2. If every changed pixel had one color before but not one color after, or the other way round, the change is content added to a plain background or removed from one, and the capture has no color shift. A flat block that changed color, one color on both sides, still counts. Known limits: a new flat line with no soft edges still counts, and so does new text when even one changed pixel on the plain side had another color.
 3. The direction is the most common pair whose colors are at least 48 apart. Ties go to the lower pair value, so results don't depend on order. A capture with more than 65,536 such pairs has no color shift: one color change has far fewer, and stopping there keeps photo-like changes fast.
 4. A pixel fits when its alpha didn't change, it moves forward along that direction, and no channel strays more than 16 from the line. These are measured values: anti-aliased edges fit, and other changes don't. Moving forward is what keeps moved text out: its old place and its new place move in opposite directions.
 5. The capture has a color shift only if **every** changed pixel fits. On the test report 586 of 610 same-size captures had exactly 0 pixels outside, and the next lowest had 20.
@@ -91,7 +91,7 @@ One color looks different in every story because it sits behind different text, 
 
 **Identical changed areas.** Captures left over after step 6, or in color groups of one, are compared this way:
 
-1. Changed pixels less than 16px apart join into one area, wherever they sit. A 16px grid only speeds this up: pixels in one cell are always that close, so only neighboring cells are compared.
+1. Changed pixels less than 16px apart join into one area, wherever they sit. A 16px grid only speeds this up: pixels in one cell are always that close, so only neighboring cells are compared. The gap is measured between the boxes around each cell's changed pixels, so a diagonal neighbor can now and then join a little early, and that copy then isn't matched.
 2. Each area is hashed from its size and its before and after pixels. Its position isn't included, so a change that moved still matches.
 3. Captures with the same list of hashes form a group, duplicates included.
 
