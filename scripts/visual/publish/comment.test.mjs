@@ -61,6 +61,12 @@ describe('renderComment', () => {
         expect(hasBox(body)).toBe(true);
     });
 
+    it('names the state on previews that show one image', () => {
+        const body = renderComment({ manifest: manifest([entry('a', 'new'), entry('b', 'removed')]), state });
+        expect(body).toContain('![UI/Button, a, Greek, mobile, new](https://r.test/pr-1/abc/img/a-preview.webp)');
+        expect(body).toContain('![UI/Button, b, Greek, mobile, removed](https://r.test/pr-1/abc/img/b-preview.webp)');
+    });
+
     it('ticks the box when already approved', () => {
         const body = renderComment({ manifest: manifest([entry('a', 'changed')]), state: { ...state, approvedBy: 'owner' } });
         expect(isTicked(body)).toBe(true);

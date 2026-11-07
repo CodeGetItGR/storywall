@@ -56,7 +56,10 @@ export function selectPreviews(entries) {
     return picked;
 }
 
-const previewAlt = (entry) => escapeMarkdown(`${entry.title}, ${entry.name}, ${LANGUAGES[entry.locale]}, ${entry.width}, before and after`);
+const previewAlt = (entry) =>
+    escapeMarkdown(
+        `${entry.title}, ${entry.name}, ${LANGUAGES[entry.locale]}, ${entry.width}, ${entry.state === 'changed' ? 'before and after' : entry.state}`,
+    );
 
 export function renderComment({ manifest, state, deploying = false }) {
     const { changed, removed, failed } = manifest.counts;
