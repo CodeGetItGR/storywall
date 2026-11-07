@@ -30,7 +30,7 @@ const stable = {
     appConfig: { data: { eventTypes: [{ eventTypeKey: 'WEDDING', isEnabled: true }], modules: [], media: null, coverage: { minDaysAfterStart: 7 } }, refetch: vi.fn() },
     planTiers: { data: [plan], isLoading: false, refetch: vi.fn() },
     durationPicks: { picks: {}, resetPicks: vi.fn(), pickDuration: vi.fn() },
-    gift: { isValid: true, isSaving: false, reset: vi.fn(), saveToDraft: vi.fn().mockResolvedValue(undefined) },
+    gift: { isGift: false, details: { value: {} }, isValid: true, isSaving: false, reset: vi.fn(), saveToDraft: vi.fn().mockResolvedValue(undefined) },
     createEvent: { mutateAsync: vi.fn().mockResolvedValue({ id: 'event-1' }), reset: vi.fn(), isPending: false, error: null },
     updateDraft: { mutateAsync: vi.fn(), isPending: false },
     previewCode: { mutateAsync: vi.fn(), reset: vi.fn(), isPending: false },

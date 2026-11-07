@@ -16,6 +16,7 @@ import { useMe } from '@/hooks/useMe';
 import { usePartnerBrandingConsent } from '@/hooks/usePartnerBrandingConsent';
 import { usePlanTiersForEventType } from '@/hooks/usePlanTiersForEventType';
 import { useResetOnBfcacheRestore } from '@/hooks/useResetOnBfcacheRestore';
+import { useSaveCreateEventForm } from '@/hooks/useSaveCreateEventForm';
 import { useWithdrawalConsent } from '@/hooks/useWithdrawalConsent';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -30,6 +31,7 @@ import type {
 import { navigateToCheckout } from '@/lib/billing';
 import { checkoutAttribution } from '@/lib/campaignAttribution';
 import { getInitialSessionTitleKey } from '@/lib/createEventCatalog';
+import { clearSavedCreateEventForm, readSavedCreateEventForm } from '@/lib/createEventFormMemory';
 import {
     CREATE_EVENT_CODE_PARAM,
     CREATE_EVENT_OPTION_PARAM,
@@ -38,6 +40,7 @@ import {
     CREATE_EVENT_STEPS,
     CREATE_EVENT_TYPE_PARAM,
     effectiveThemePresetId,
+    focusFirstInvalidField,
     isThemeStepAvailable,
     rememberCreateEventCheckout,
     resolveCreateEventStep,
@@ -69,28 +72,31 @@ export function useCreateEventFormController(): CreateEventFormValue {
     // defense-in-depth backstop for anyone who still reaches this route.)
     const isEmailVerified = user?.emailVerified === true;
     const createEvent = useCreateEvent();
+    const run = searchParams.get(CREATE_EVENT_RUN_PARAM);
+    // What this run had filled in before a reload. This form mounts only once the run is known, on the client.
+    const [saved] = useState(() => readSavedCreateEventForm(run));
     // A link may pick the plan and its duration (?plan=, ?option=); a code or id not on sale falls back.
     const [linkedPlanCode] = useState(() => searchParams.get(CREATE_EVENT_PLAN_PARAM) ?? '');
     const [linkedOptionId] = useState(() => searchParams.get(CREATE_EVENT_OPTION_PARAM));
-    const durationPicks = useDurationPicks(linkedPlanCode && linkedOptionId ? { [linkedPlanCode]: linkedOptionId } : {});
+    const durationPicks = useDurationPicks(saved?.durationPicks ?? (linkedPlanCode && linkedOptionId ? { [linkedPlanCode]: linkedOptionId } : {}));
     const previewCreateEventCode = usePreviewCreateEventCode();
     const { data: appConfig, refetch: refetchAppConfig } = useAppConfig();
     const toErrorMessage = useApiErrorMessage();
     const consent = useWithdrawalConsent();
 
-    const [title, setTitle] = useState('');
+    const [title, setTitle] = useState(saved?.title ?? '');
     // The type picked here; until then, the one the link asked for (see resolveCreateEventType).
-    const [eventType, setEventType] = useState<EventTypeConvention | null>(null);
+    const [eventType, setEventType] = useState<EventTypeConvention | null>(saved?.eventType ?? null);
     const [requestedTypeSlug] = useState(() => normalizeEventTypeSlug(searchParams.get(CREATE_EVENT_TYPE_PARAM)));
-    const [startAt, setStartAt] = useState('');
-    const [timezone, setTimezone] = useState(getCurrentTimezone);
-    const [locationName, setLocationName] = useState('');
-    const [locationAddress, setLocationAddress] = useState('');
-    const [mapsUrl, setMapsUrl] = useState('');
+    const [startAt, setStartAt] = useState(saved?.startAt ?? '');
+    const [timezone, setTimezone] = useState(() => saved?.timezone ?? getCurrentTimezone());
+    const [locationName, setLocationName] = useState(saved?.locationName ?? '');
+    const [locationAddress, setLocationAddress] = useState(saved?.locationAddress ?? '');
+    const [mapsUrl, setMapsUrl] = useState(saved?.mapsUrl ?? '');
     const [error, setError] = useState<string | null>(null);
-    const [selectedPlanCode, setSelectedPlanCode] = useState(linkedPlanCode);
-    const [themePresetId, setThemePresetId] = useState<string | null>(null);
-    const [createdDraftEventId, setCreatedDraftEventId] = useState<string | null>(null);
+    const [selectedPlanCode, setSelectedPlanCode] = useState(saved?.selectedPlanCode ?? linkedPlanCode);
+    const [themePresetId, setThemePresetId] = useState<string | null>(saved?.themePresetId ?? null);
+    const [createdDraftEventId, setCreatedDraftEventId] = useState<string | null>(saved?.draftEventId ?? null);
     // What the draft was created with, so a duration changed afterwards is
     // saved to it before checkout.
     const [createdDraftSelection, setCreatedDraftSelection] = useState<{
@@ -98,12 +104,12 @@ export function useCreateEventFormController(): CreateEventFormValue {
         optionId: string;
         startAt: string;
         themePresetId: string | null;
-    } | null>(null);
+    } | null>(saved?.draftSelection ?? null);
     // Checkout refused the draft because its start date has passed (3035).
     const [startPassed, setStartPassed] = useState(false);
     const updateDraft = useUpdateEvent(createdDraftEventId);
     // A link may carry a discount code (?code=); the field opens with it filled (EventOverviewDiscountCode).
-    const [checkoutCode, setCheckoutCode] = useState(() => searchParams.get(CREATE_EVENT_CODE_PARAM)?.trim() ?? '');
+    const [checkoutCode, setCheckoutCode] = useState(() => saved?.checkoutCode ?? searchParams.get(CREATE_EVENT_CODE_PARAM)?.trim() ?? '');
     const [appliedCheckoutCode, setAppliedCheckoutCode] = useState<string | null>(null);
     const [checkoutCodePreview, setCheckoutCodePreview] = useState<CollaborationCodePreviewResponseDto | null>(null);
     const [checkoutCodeError, setCheckoutCodeError] = useState<string | null>(null);
@@ -118,7 +124,6 @@ export function useCreateEventFormController(): CreateEventFormValue {
         }, [createEvent]),
     );
 
-    const run = searchParams.get(CREATE_EVENT_RUN_PARAM);
     // Public config should already contain only enabled rows. Keep the picker
     // fail-closed if a stale or malformed response includes a disabled type.
     const eventTypes = appConfig?.eventTypes.filter((eventType) => eventType.isEnabled) ?? [];
@@ -143,7 +148,25 @@ export function useCreateEventFormController(): CreateEventFormValue {
     const selectedPlan = defaultSelectedPlan(eventPlans, selectedPlanCode);
     const selectedCode = selectedPlan?.code ?? selectedPlanCode;
     const selectedOption = selectedPlan ? resolveInitialOption(selectedPlan, durationPicks.picks[selectedPlan.code]) : null;
-    const gift = useCreateEventGift(selectedPlan);
+    const gift = useCreateEventGift(selectedPlan, saved?.gift);
+    // Once the run is off to checkout there is nothing to come back to: Back opens the draft (useCreateEventRun).
+    const [isOffToCheckout, setIsOffToCheckout] = useState(false);
+    useSaveCreateEventForm(isOffToCheckout ? null : run, {
+        eventType,
+        selectedPlanCode,
+        durationPicks: durationPicks.picks,
+        title,
+        startAt,
+        timezone,
+        locationName,
+        locationAddress,
+        mapsUrl,
+        themePresetId,
+        checkoutCode,
+        draftEventId: createdDraftEventId,
+        draftSelection: createdDraftSelection,
+        gift: { isGift: gift.isGift, details: gift.details.value },
+    });
     const planHasTheme = selectedPlan?.moduleKeys.includes('theme') ?? false;
     const themePresetsQuery = useThemePresetsForType(planHasTheme ? selectedEventType : null);
     const themePresets = planHasTheme ? themePresetsQuery.data : undefined;
@@ -317,7 +340,9 @@ export function useCreateEventFormController(): CreateEventFormValue {
             setError(null);
             setStartPassed(false);
             if (step === 'details') {
+                // The browser has already flagged an empty field. This catches what it can't see: only spaces, a bad date or time zone.
                 if (canSubmitDetails) goToStep(themeStepAvailable ? 'theme' : 'overview');
+                else focusFirstInvalidField(CREATE_EVENT_FORM_ID);
                 return;
             }
             if (step !== 'overview') return;
@@ -425,7 +450,11 @@ export function useCreateEventFormController(): CreateEventFormValue {
                     termsVersion: consent.termsVersion!,
                 });
                 // Back from checkout then opens the draft instead of an emptied wizard.
-                if (run) rememberCreateEventCheckout(run, eventId);
+                if (run) {
+                    rememberCreateEventCheckout(run, eventId);
+                    setIsOffToCheckout(true);
+                    clearSavedCreateEventForm(run);
+                }
                 navigateToCheckout(eventId, checkout);
             } catch (checkoutError) {
                 setIsCheckoutPending(false);
@@ -519,7 +548,6 @@ export function useCreateEventFormController(): CreateEventFormValue {
         onLocationAddressChange,
         mapsUrl,
         onMapsUrlChange,
-        canSubmitDetails,
 
         trimmedTitle,
         error,
