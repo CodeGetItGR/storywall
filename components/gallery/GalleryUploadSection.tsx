@@ -47,7 +47,7 @@ export function GalleryUploadSection({
                 </div>
                 <label
                     className={cn(
-                        'inline-flex cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-opacity',
+                        'relative inline-flex cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-opacity',
                         canUpload ? 'text-white bg-gradient-brand hover:opacity-90' : 'cursor-not-allowed bg-surface-muted text-ink-muted opacity-60',
                     )}
                 >

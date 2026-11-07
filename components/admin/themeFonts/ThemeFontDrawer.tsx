@@ -176,7 +176,7 @@ export function ThemeFontDrawer({ font, onCloseAction }: { font: AdminThemeFontD
 
                     {/* File */}
                     <AdminField label={t('file')} hint={fileHint}>
-                        <label className="inline-flex min-h-10 w-fit cursor-pointer items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold text-ink hover:bg-canvas">
+                        <label className="relative inline-flex min-h-10 w-fit cursor-pointer items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold text-ink hover:bg-canvas">
                             <Type className="h-4 w-4" aria-hidden="true" />
                             {t('fileChoose')}
                             <input type="file" accept={THEME_FONT_ACCEPT} onChange={form.handleFileChange} className="sr-only" />
