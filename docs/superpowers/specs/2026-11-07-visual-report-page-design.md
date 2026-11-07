@@ -123,10 +123,15 @@ The rule stays: **the publish job installs nothing and builds nothing, and the p
 **Keeping the committed file honest.** A person can't read a minified bundle, so the capture job rebuilds it on every PR and fails if the result differs:
 
 ```yaml
-- run: npm run visual:page && git diff --exit-code -- scripts/visual/report/dist/index.html || { echo "::error::The report page is out of date. Run npm run visual:page and commit the result."; exit 1; }
+- run: |
+      npm run visual:page
+      if [ -n "$(git status --porcelain -- scripts/visual/report/dist/index.html)" ]; then
+          echo "::error::The report page is out of date. Run npm run visual:page and commit the result."
+          exit 1
+      fi
 ```
 
-The check then shows an error with a link to the run. The build normalizes line endings so Windows and Linux produce the same file. `.gitattributes` marks the file as generated, so GitHub collapses it in PR diffs. As with any workflow, someone with write access could remove this step, and the tool's design already treats people with write access as trusted.
+It uses `git status` rather than `git diff`, so a deleted file is caught too. The check then shows an error with a link to the run. The build normalizes line endings so Windows and Linux produce the same file. `.gitattributes` marks the file as generated, so GitHub collapses it in PR diffs. As with any workflow, someone with write access could remove this step, and the tool's design already treats people with write access as trusted.
 
 **The manifest is still untrusted.**
 
@@ -158,6 +163,8 @@ Other changes:
 - `tsconfig.json` adds `scripts/**/*.tsx`.
 - `eslint.config.mjs` turns off `@next/next/no-img-element` for the report source, which isn't a Next page.
 - `package.json` adds `visual:page`.
+- `.gitattributes` is new, with the one line marking the built file as generated.
+- `.github/workflows/visual-check.yml` adds the rebuild check to the capture job.
 - `docs/storybook.md` gets the rebuild step.
 - The older design's "Report page" section points here.
 
@@ -224,10 +231,10 @@ The page's wording, for consent under the repo's text rule.
 
 | Where | Text |
 |---|---|
-| Sidebar | "N of M captures reviewed", "Find a story", "By area", "Same change", "Hide reviewed", "Overview", "On their own", "Stories", "Reviewed" |
+| Sidebar | "PR #N", "N of M captures reviewed", "Find a story", "By area", "Same change", "Hide reviewed", "Overview", "On their own", "Stories", "Reviewed" |
 | Story | "EN Mobile", "EN Desktop", "EL Mobile", "EL Desktop", "no change", "Side by side", "Slider", "Fit", "100%" |
 | Failed story | "This story failed", "No error message.", "Fix it before these changes can be approved." |
-| Group | "Color change", "N captures, M stories", "Showing <story>, EN Mobile", "Every capture with this change", "Show all N" |
+| Group | "Color change", "<component>: <names> and N more", "N captures, M stories", "Showing <story>, EN Mobile", "Every capture with this change", "Show all N" |
 | Overview | "Area", "Reviewed", "N captures", "Biggest changes", "Components with no story" |
 | Bottom bar | "← Previous", "Next →", "N of M", "N to review", "Start review", "Continue review", "Looks right", "Looks right for all N", "Undo reviewed", "Approve in the PR", "Fix the failed stories first" |
 | Shortcuts | "Keyboard shortcuts", "Previous or next", "Looks right, then next", "Next language or width", "Side by side, slider, diff", "Fit or 100%", "By area or same change", "Close" |
