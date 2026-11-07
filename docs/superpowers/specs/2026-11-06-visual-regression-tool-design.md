@@ -97,6 +97,8 @@ It reuses what the repo already has: `playwright-core` 1.55.0, `sharp`, and `com
 - Each capture gets a fresh browser context, so nothing in `localStorage` leaks between stories.
 - Hosts other than the local server and `fonts.gstatic.com` don't resolve, enforced with Chromium's `--host-resolver-rules`, so no story can depend on the network. `fonts.gstatic.com` stays reachable because Storybook's `next/font` support loads Google fonts from it at run time. Storybook's font plugin writes no fallback face, so `.storybook/preview-head.html` adds the Arial one Next generates, otherwise Greek text would show in a serif.
 - 4 pages run in parallel. Phase 3 adjusts this.
+- Chromium runs with `--disable-skia-runtime-opts`, `--disable-gpu`, `--disable-lcd-text`, `--disable-checker-imaging`, `--disable-partial-raster` and `--font-render-hinting=none`. Chromium picks drawing code by CPU, and draws text and images differently depending on timing. These flags took the differences between runs on different runners from 179 captures to 1.
+- Every page runs an empty `requestAnimationFrame` loop. Without it, a full-page screenshot can draw the page with some responsive rules off even though the page itself is right. In 400 tries of `FeedPageSkeleton` under load, 77 shots came out wrong without the loop and none with it. Of the 6 desktop stories taller than the window, 4 did this without the loop and none with it, across 1,080 shots each way. The cause inside Chromium isn't known.
 
 **URL:** `/iframe.html?id=<storyId>&viewMode=story&globals=locale:<en|el>`.
 
