@@ -41,7 +41,10 @@ const meta = {
     ],
     play: async ({ canvasElement, globals }) => {
         const trigger = within(canvasElement).getByRole('button', { name: copyFor(globals).PostCard.moreOptions });
-        if (!(trigger as HTMLButtonElement).disabled) await userEvent.click(trigger);
+        if ((trigger as HTMLButtonElement).disabled) return;
+        await userEvent.click(trigger);
+        // The menu opens a few frames after the click, so the story isn't ready until it's there.
+        await within(document.body).findByRole('menu', {}, { timeout: 10_000 });
     },
 } satisfies Meta<typeof PostMenu>;
 

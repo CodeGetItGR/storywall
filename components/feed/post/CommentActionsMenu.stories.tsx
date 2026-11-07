@@ -13,6 +13,8 @@ const myComment = storyComment('c-mine', {
 
 async function openMenu({ canvasElement, globals }: { canvasElement: HTMLElement; globals: Record<string, unknown> }) {
     await userEvent.click(within(canvasElement).getByRole('button', { name: copyFor(globals).PostModal.moreCommentOptions }));
+    // The menu opens a few frames after the click, so the story isn't ready until it's there.
+    await within(document.body).findByRole('menu', {}, { timeout: 10_000 });
 }
 
 // A guest looking at someone else's comment can report it.
