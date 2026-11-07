@@ -116,3 +116,4 @@ Reports are public and are deleted when the PR closes.
 To compare locally, run `npm run visual -- --base origin/staging --serve`. Run `npx playwright-core install chromium` once first. Windows renders differently from CI, so a local run only compares with itself, and CI decides.
 
 The code is in `scripts/visual/`, and the design is in `docs/superpowers/specs/2026-11-06-visual-regression-tool-design.md`.
+
