@@ -21,3 +21,9 @@ next-env.d.ts
 
 # Worktrees
 .worktrees/
+# Storybook
+storybook-static/
+*storybook.log
+
+# Visual check
+visual-output/

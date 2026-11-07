@@ -6,6 +6,9 @@ import {
     campaignLinkFormProblem,
     campaignLinkSections,
     campaignRedirectUrl,
+    campaignSetLinkFormat,
+    campaignSetLinkLanguage,
+    campaignSetLinkUrl,
     campaignShortUrl,
     campaignUrl,
     emptyCampaignLinkForm,
@@ -153,5 +156,40 @@ describe('totalOf', () => {
             sales: 3,
             salesRevenueMinorByCurrency: { EUR: 14_700, USD: 100 },
         });
+    });
+});
+
+describe('a link of a campaign set', () => {
+    const link = (utmCampaign: string, destinationPath = '/el') => ({
+        utmCampaign,
+        destinationPath,
+        destinationAnchor: 'pricing',
+        utmSource: 'google',
+        utmMedium: 'cpc',
+        shortCode: 'google-paid-bf-search-el',
+    });
+
+    it.each([
+        ['launch-50-post-el', 'post'],
+        ['launch-50-story-en', 'story'],
+        ['launch-50-search-el', 'search'],
+    ])('reads the placement of %s', (utmCampaign, format) => {
+        expect(campaignSetLinkFormat({ utmCampaign })).toBe(format);
+    });
+
+    it('has no placement outside the pattern', () => {
+        expect(campaignSetLinkFormat({ utmCampaign: 'october-bio' })).toBeNull();
+    });
+
+    it('reads the language from the page it leads to', () => {
+        expect(campaignSetLinkLanguage({ destinationPath: '/el' })).toBe('el');
+        expect(campaignSetLinkLanguage({ destinationPath: '/' })).toBe('en');
+    });
+
+    it('copies the full address for a Google ad and the short one for the rest', () => {
+        expect(campaignSetLinkUrl(link('bf-search-el'))).toBe(
+            'https://www.storywall.gr/el?utm_source=google&utm_medium=cpc&utm_campaign=bf-search-el#pricing',
+        );
+        expect(campaignSetLinkUrl(link('bf-post-el'))).toBe('https://www.storywall.gr/c/google-paid-bf-search-el');
     });
 });

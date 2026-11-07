@@ -287,3 +287,11 @@ describe('ThemeFontDrawer pending file check', () => {
         expect(screen.getByRole('button', { name: 'save' })).toBeDisabled();
     });
 });
+
+describe('ThemeFontDrawer file picker', () => {
+    it('anchors the hidden file input to its label, so focusing it does not shift the drawer', () => {
+        state();
+        renderDrawer();
+        expect(document.querySelector('input[type="file"]')?.closest('label')).toHaveClass('relative');
+    });
+});

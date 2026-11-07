@@ -4,6 +4,7 @@ import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationElement } from '@/lib/invitation/elements';
 import { INVITATION_LABELS, type InvitationLabels, invitationLanguage } from '@/lib/invitation/labels';
 import type { ImageRef, TextStyle } from '@/lib/invitation/primitives';
+import type { RsvpSender } from '@/lib/invitation/rsvp';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import { PHOTO_SHAPES } from '@/lib/invitation/theme';
@@ -31,6 +32,9 @@ export type RenderContext = {
     eventIso?: string;
     // Fixed labels in the invitation's own language.
     labels: InvitationLabels;
+    // Sends an RSVP reply. Without one (the preview) the form shows its
+    // success state and nothing is saved.
+    sendRsvp?: RsvpSender;
 };
 
 const DEFAULT_TEXT_COLOR = '#2f2b2d';
@@ -41,6 +45,7 @@ export function buildRenderContext(
     theme: ThemeDesign,
     media: MediaResolver,
     hostPreset?: TypographyPreset,
+    sendRsvp?: RsvpSender,
 ): RenderContext {
     const forcePreset = Boolean(document.overrides.typographyPresetId && hostPreset);
     const dateSection = document.sections.find((section) => section.type === 'date');
@@ -55,6 +60,7 @@ export function buildRenderContext(
         forcePreset,
         eventIso: dateSection?.type === 'date' ? dateSection.data.iso : undefined,
         labels: INVITATION_LABELS[invitationLanguage(document)],
+        sendRsvp,
     };
 }
 
@@ -200,6 +206,8 @@ export function resolveTextColor(contrast: TextContrast, explicit: string | unde
 
 export type SectionShell = { className: string; style: CSSProperties; contrast: TextContrast };
 
+const KEEPS_SAVED_HEIGHT: ReadonlySet<InvitationSection['type']> = new Set(['photo', 'photoFrame', 'footer']);
+
 // The <section> around every section type (old sectionHtml).
 export function sectionShell(section: InvitationSection, index: number, ctx: RenderContext): SectionShell {
     const contrast = sectionTextContrast(section, index, ctx);
@@ -214,10 +222,14 @@ export function sectionShell(section: InvitationSection, index: number, ctx: Ren
     };
     // The countdown's numbers need almost the full width on phones.
     if (section.type === 'countdown') style['--section-side-pad-mobile'] = '4px';
-    if (minHeight) style.minHeight = `${minHeight}px`;
-    if (paddingY !== undefined) {
-        style.paddingTop = `${paddingY}px`;
-        style.paddingBottom = `${paddingY}px`;
+    // The saved height and padding are editor aids: guests only see them where
+    // they are part of the composition (old wedartStripEditingUI).
+    if (KEEPS_SAVED_HEIGHT.has(section.type)) {
+        if (minHeight) style.minHeight = `${minHeight}px`;
+        if (paddingY !== undefined) {
+            style.paddingTop = `${paddingY}px`;
+            style.paddingBottom = `${paddingY}px`;
+        }
     }
     const className = [
         'section',

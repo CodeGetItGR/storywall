@@ -988,6 +988,7 @@
         "deleteComment": "Delete comment",
         "deleteCommentConfirmTitle": "Delete this comment?",
         "deleteCommentConfirmBody": "This comment will be removed for everyone and can't be undone.",
+        "cancel": "Cancel",
         "deleteCommentFailed": "Couldn't delete this comment. Please try again.",
         "reportComment": "Report comment"
     },
@@ -6234,7 +6235,9 @@
                 "sales": "Sales",
                 "salesRevenue": "Sales revenue",
                 "total": "Total",
-                "over": "This campaign is over. Don't use these links any more."
+                "over": "This campaign is over. Don't use these links any more.",
+                "languages": { "en": "EN", "el": "EL" },
+                "formats": { "post": "Post", "story": "Story", "search": "Google" }
             }
         },
         "siteNotices": {

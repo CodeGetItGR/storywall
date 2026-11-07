@@ -16,7 +16,7 @@ import type { InvitationSection } from '@/lib/invitation/sections';
 // ported from the old renderer's tb(), wedartDateTextBlock() and section
 // markup.
 
-export type FieldTag = 'div' | 'span' | 'p' | 'h2' | 'h3' | 'h4';
+export type FieldTag = 'div' | 'span' | 'p' | 'small' | 'h2' | 'h3' | 'h4';
 
 // Headings, and fields the old renderer marked as names or big date parts,
 // take the title font.
@@ -107,6 +107,56 @@ type IconStyle = { font?: string; color?: string };
 
 export function contactVars(iconStyle: IconStyle | undefined, ctx: RenderContext): CSSProperties | undefined {
     return cssVars({ '--contact-font': ownFont(iconStyle?.font, ctx), '--contact-color': iconStyle?.color });
+}
+
+type RsvpData = Extract<InvitationSection, { type: 'rsvp' }>['data'];
+
+export function rsvpVars(data: RsvpData, contrast: TextContrast, ctx: RenderContext): CSSProperties | undefined {
+    const style = data.formStyle ?? {};
+    return cssVars({
+        '--rsvp-label-font': ownFont(style.labelFont, ctx),
+        '--rsvp-label-color': resolveTextColor(contrast, style.labelColor, ctx),
+        '--rsvp-label-size': px(style.labelSize),
+        '--rsvp-field-fill-color': style.fieldFillColor,
+        '--rsvp-field-border-color': style.fieldBorderColor,
+        '--rsvp-field-border-width': px(style.fieldBorderWidth),
+        '--rsvp-field-radius': px(style.fieldRadius),
+        '--rsvp-option-selected-color': style.optionSelectedColor,
+        '--rsvp-btn-bg': style.buttonBg,
+        '--rsvp-btn-color': style.buttonColor,
+        '--rsvp-btn-font': ownFont(style.buttonFont, ctx),
+    });
+}
+
+type AccommodationData = Extract<InvitationSection, { type: 'accommodation' }>['data'];
+
+export function stayVars(data: AccommodationData): CSSProperties | undefined {
+    const style = data.cardStyle ?? {};
+    return cssVars({
+        '--stay-border-width': px(style.borderWidth),
+        '--stay-border-color': style.borderColor,
+        '--stay-fill-color': style.fillColor,
+    });
+}
+
+type ProgramStyle = NonNullable<Extract<InvitationSection, { type: 'program' }>['data']['programStyle']>;
+
+export function programVars(style: ProgramStyle | undefined, contrast: TextContrast, ctx: RenderContext): CSSProperties | undefined {
+    return cssVars({
+        '--program-color': style?.color,
+        '--program-time-font': ownFont(style?.timeFont, ctx),
+        '--program-time-size': px(style?.timeSize),
+        '--program-time-color': resolveTextColor(contrast, style?.timeColor, ctx),
+        '--program-label-font': ownFont(style?.labelFont, ctx),
+        '--program-label-size': px(style?.labelSize),
+        '--program-description-size': px(style?.descriptionSize),
+        '--program-label-color': resolveTextColor(contrast, style?.labelColor, ctx),
+        '--program-line-width': style?.lineWidth ? px(style.lineWidth) : undefined,
+        '--program-font': ownFont(style?.font, ctx),
+        '--program-size': px(style?.size),
+        '--program-icon-color': style?.iconColor,
+        '--program-node-color': style?.nodeColor,
+    });
 }
 
 type FooterData = Extract<InvitationSection, { type: 'footer' }>['data'];
