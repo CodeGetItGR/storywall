@@ -32,5 +32,16 @@ export const RENDER_TIMEOUT_MS = 30_000;
 export const STABLE_FRAME_ATTEMPTS = 10;
 export const STABLE_FRAME_DELAY_MS = 250;
 
+// Chromium picks drawing code by CPU and draws text and images differently depending on timing.
+// Runners have different CPUs, so these make the same page draw the same pixels every time.
+export const CHROMIUM_ARGS = [
+    '--disable-skia-runtime-opts',
+    '--disable-gpu',
+    '--disable-lcd-text',
+    '--disable-checker-imaging',
+    '--disable-partial-raster',
+    '--font-render-hinting=none',
+];
+
 // Fonts come from Google at run time in Storybook, so that host stays reachable.
 export const HOST_RESOLVER_RULES = 'MAP * ~NOTFOUND, EXCLUDE 127.0.0.1, EXCLUDE localhost, EXCLUDE fonts.gstatic.com';
