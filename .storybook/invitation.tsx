@@ -19,8 +19,14 @@ type SectionExtras<T extends SectionType> = Partial<Omit<SectionOf<T>, 'type' | 
 
 export const STORY_THEME = PREVIEW_THEME;
 
+// Theme art the preview doesn't carry. The sample wave transition needs thin,
+// see-through art, as real transitions are, or it would fall through to the
+// photo below and cover its section.
+const WAVE = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 90"><path d="M0 45 C240 0 480 90 720 45 S1200 0 1440 45 V90 H0 Z" fill="#b08d57" fill-opacity=".55"/></svg>';
+const STORY_ART: Record<string, string> = { 'm-wave': `data:image/svg+xml,${encodeURIComponent(WAVE)}` };
+
 // Every sample photo resolves to an image in public/images.
-export const storyInvitationMedia: MediaResolver = (mediaId) => previewMedia(mediaId) ?? '/images/couple-hero.png';
+export const storyInvitationMedia: MediaResolver = (mediaId) => previewMedia(mediaId) ?? STORY_ART[mediaId] ?? '/images/couple-hero.png';
 
 export const LONG_TITLE = 'Με μεγάλη χαρά και αγάπη σας προσκαλούμε στη μεγάλη μας μέρα';
 export const LONG_NAME = 'Αλεξάνδρα-Παναγιώτα Παπαδημητροπούλου';
