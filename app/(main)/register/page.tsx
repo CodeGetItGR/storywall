@@ -16,7 +16,9 @@ import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useAuthPageRedirect } from '@/hooks/useAuthPageRedirect';
 import { useAuthReturnPath } from '@/hooks/useAuthReturnPath';
 import { useContentLimits } from '@/hooks/useContentLimits';
+import { useFlowEvent } from '@/hooks/useFlowEvent';
 import { useRegisterForm } from '@/hooks/useRegisterForm';
+import { authEntry } from '@/lib/flowTracking';
 import { routes } from '@/lib/routes';
 
 export default function RegisterPage() {
@@ -27,6 +29,7 @@ export default function RegisterPage() {
     const returnPath = useAuthReturnPath();
 
     const { shouldRenderAuthPage } = useAuthPageRedirect(returnPath);
+    useFlowEvent(shouldRenderAuthPage ? { name: 'Auth Page', page: 'register', from: authEntry(inviteToken, returnPath) } : null);
     const form = useRegisterForm({
         inviteToken,
         returnPath,

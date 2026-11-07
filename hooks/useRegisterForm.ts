@@ -15,6 +15,7 @@ import { termsVersionQueryKey, useTermsVersion } from '@/hooks/useTermsVersion';
 import { isGuidelinesVersionMismatchError, isTermsVersionMismatchError } from '@/lib/api/errors';
 import type { AuthSessionDto, OAuthProviderName } from '@/lib/api/types';
 import { getPostRegisterRedirectPath } from '@/lib/auth/returnPath';
+import { authEntry, flowErrorCode, trackFlow } from '@/lib/flowTracking';
 
 export type RegisterFields = { firstName: string; lastName: string; email: string; password: string };
 
@@ -37,6 +38,7 @@ export function useRegisterForm({
     const guidelinesVersion = useCommunityGuidelinesVersion();
     const termsVersion = useTermsVersion();
     const queryClient = useQueryClient();
+    const entry = authEntry(inviteToken, returnPath);
 
     const [fields, setFields] = useState<RegisterFields>({ ...initialFields, password: '' });
     const [showPassword, setShowPassword] = useState(false);
@@ -84,6 +86,7 @@ export function useRegisterForm({
             e.preventDefault();
             setError(null);
             if (!accepted) {
+                trackFlow({ name: 'Sign Up Error', method: 'email', code: 'not_accepted' });
                 setError(t('acceptance.required'));
                 return;
             }
@@ -102,8 +105,10 @@ export function useRegisterForm({
                     acceptedTermsVersion: termsVersion.data,
                     adultConfirmed: true,
                 });
+                trackFlow({ name: 'Sign Up', method: 'email', from: entry });
                 handleSignedIn(session);
             } catch (err) {
+                trackFlow({ name: 'Sign Up Error', method: 'email', code: flowErrorCode(err) });
                 if (isGuidelinesVersionMismatchError(err) || isTermsVersionMismatchError(err)) await resetAfterVersionChange();
                 else setError(toErrorMessage(err));
             } finally {
@@ -112,6 +117,7 @@ export function useRegisterForm({
         },
         [
             accepted,
+            entry,
             fields,
             guidelinesVersion.data,
             guidelinesVersion.isError,
@@ -135,7 +141,7 @@ export function useRegisterForm({
         [toErrorMessage],
     );
 
-    const oauthSignIn = useOAuthSignIn({ inviteToken, onSignedInAction: handleSignedIn, onErrorAction: handleOAuthError });
+    const oauthSignIn = useOAuthSignIn({ inviteToken, entry, onSignedInAction: handleSignedIn, onErrorAction: handleOAuthError });
     const { handleSignIn } = oauthSignIn;
 
     const handleOAuthSignIn = useCallback(
