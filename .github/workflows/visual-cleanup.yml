@@ -1,8 +1,9 @@
 name: Visual cleanup
 
-# Runs from staging, so a PR's own changes to the scripts never see the deploy key.
+# Runs the scripts from staging, so a PR's own changes to them never see the deploy key.
+# Not pull_request_target: GitHub only runs it from main, and blocks it by default in public repos from December 2, 2026.
 on:
-    pull_request_target:
+    pull_request:
         types: [closed]
         branches: [staging]
 
@@ -21,6 +22,7 @@ jobs:
         steps:
             - uses: actions/checkout@v7
               with:
+                  ref: ${{ github.event.pull_request.base.ref }}
                   sparse-checkout: scripts/visual
 
             - uses: actions/setup-node@v7
