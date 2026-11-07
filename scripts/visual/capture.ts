@@ -63,6 +63,14 @@ function watchStory() {
     attach();
 }
 
+// Without a running frame loop, a full-page screenshot can now and then draw the page with some responsive rules
+// off, even though the page itself is right. In 400 tries of FeedPageSkeleton under load, about 1 shot in 25 came
+// out wrong without this and none with it.
+export function keepFramesRunning() {
+    const frame = () => requestAnimationFrame(frame);
+    requestAnimationFrame(frame);
+}
+
 export const launchBrowser = () => chromium.launch({ args: [`--host-resolver-rules=${HOST_RESOLVER_RULES}`, ...CHROMIUM_ARGS] });
 
 const takeFrame = (page: Page) => page.screenshot({ fullPage: true, animations: 'disabled', caret: 'hide', scale: 'css' });
@@ -118,6 +126,7 @@ async function shoot(browser: Browser, origin: string, target: CaptureTarget): P
         const pageErrors: string[] = [];
         page.on('pageerror', (error) => pageErrors.push(error.message));
         await page.addInitScript(watchStory);
+        await page.addInitScript(keepFramesRunning);
         await page.goto(`${origin}/iframe.html?id=${encodeURIComponent(target.storyId)}&viewMode=story&globals=locale:${target.locale}`);
         await waitOrExplain(
             page.waitForFunction(() => window.__visualStatus.state !== 'pending'),

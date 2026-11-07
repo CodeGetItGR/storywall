@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { launchBrowser } from './capture';
+import { keepFramesRunning, launchBrowser } from './capture';
 import { CONCURRENCY, STABLE_FRAME_ATTEMPTS, STABLE_FRAME_DELAY_MS } from './config';
 import { runPool } from './pool';
 import { serveStatic } from './server';
@@ -42,6 +42,7 @@ async function main() {
             locale: locale === 'el' ? 'el-GR' : 'en-US',
         });
         const page = await context.newPage();
+        await page.addInitScript(keepFramesRunning);
         await page.goto(`${server.origin}/iframe.html?id=${STORY}&viewMode=story&globals=locale:${locale}`);
         await page.waitForFunction(() => document.querySelector('[data-slot="skeleton"]'));
         await page.waitForFunction(() => document.fonts.status === 'loaded');
@@ -91,9 +92,15 @@ async function main() {
     await browser.close();
 
     const groups = new Map<string, Sample[]>();
-    for (const sample of samples) groups.set(`${sample.locale} ${sample.hash} ${sample.viewportHash}`, [...(groups.get(`${sample.locale} ${sample.hash} ${sample.viewportHash}`) ?? []), sample]);
+    for (const sample of samples)
+        groups.set(`${sample.locale} ${sample.hash} ${sample.viewportHash}`, [
+            ...(groups.get(`${sample.locale} ${sample.hash} ${sample.viewportHash}`) ?? []),
+            sample,
+        ]);
     for (const [key, group] of groups) {
-        process.stdout.write(`${key} x${group.length} size=${group[0].size} first=${group[0].try} attempts=${group[0].attempts} ${JSON.stringify(group[0].state)}\n`);
+        process.stdout.write(
+            `${key} x${group.length} size=${group[0].size} first=${group[0].try} attempts=${group[0].attempts} unsettled=${group.filter((sample) => sample.attempts > 0).length} ${JSON.stringify(group[0].state)}\n`,
+        );
     }
     writeFileSync(join(OUT, 'samples.json'), JSON.stringify(samples));
 }
