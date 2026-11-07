@@ -26,7 +26,10 @@ import { ProgramIconsSection } from '@/components/saveMyDate/invitation/sections
 import { ProgramSection } from '@/components/saveMyDate/invitation/sections/info/ProgramSection';
 import { RsvpSection } from '@/components/saveMyDate/invitation/sections/info/RsvpSection';
 import { InvitationTextSection } from '@/components/saveMyDate/invitation/sections/InvitationTextSection';
+import { GallerySection } from '@/components/saveMyDate/invitation/sections/media/GallerySection';
+import { PhotoSection } from '@/components/saveMyDate/invitation/sections/media/PhotoSection';
 import { TopSection } from '@/components/saveMyDate/invitation/sections/TopSection';
+import { isEmptyForGuests } from '@/lib/invitation/gallery';
 import { type RenderContext, sectionShell, type TextContrast } from '@/lib/invitation/render';
 import type { InvitationSection as Section, SectionType } from '@/lib/invitation/sections';
 
@@ -67,10 +70,12 @@ const BUILT_SECTION_TYPES: ReadonlySet<SectionType> = new Set([
     'accommodation',
     'gift',
     'rsvp',
+    'photo',
+    'gallery',
 ]);
 
 export function InvitationSection({ section, index, ctx }: InvitationSectionProps) {
-    if (!BUILT_SECTION_TYPES.has(section.type)) return null;
+    if (!BUILT_SECTION_TYPES.has(section.type) || isEmptyForGuests(section, ctx)) return null;
     const shell = sectionShell(section, index, ctx);
 
     return (
@@ -144,6 +149,10 @@ function SectionContent({ section, contrast, ctx }: SectionContentProps) {
             return <GiftSection section={section} contrast={contrast} ctx={ctx} />;
         case 'rsvp':
             return <RsvpSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'photo':
+            return <PhotoSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'gallery':
+            return <GallerySection section={section} contrast={contrast} ctx={ctx} />;
         case 'photoFrame':
             return (
                 <div className="section-inner">
