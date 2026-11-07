@@ -1,10 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { EventModuleResponseDto, QrCardTemplateDto } from '@/lib/api/types';
 import {
     estimateTextWidth,
     fitText,
     giftQrCardLines,
+    isAndroidBrowser,
     layoutLines,
     layoutTitle,
     PLAIN_QR_CARD_STYLE,
@@ -13,6 +14,7 @@ import {
     QR_CARD_TITLE_BOX,
     qrCardFileName,
     qrCardLineKey,
+    qrCardOrientedSheet,
     qrCardSheet,
     qrCardStyleOf,
 } from '@/lib/qrCard';
@@ -305,5 +307,81 @@ describe('qrCardSheet', () => {
                 expect(card.y + sheet.cardHeightMm).toBeLessThanOrEqual(sheet.heightMm);
             }
         }
+    });
+});
+
+describe('qrCardOrientedSheet', () => {
+    it('keeps A6 cards upright on portrait A4', () => {
+        const sheet = qrCardOrientedSheet('A6', 'portrait');
+
+        expect([sheet.widthMm, sheet.heightMm]).toEqual([210, 297]);
+        expect(sheet.turned).toBe(false);
+        expect([sheet.cellWidthMm, sheet.cellHeightMm]).toEqual([105, 148]);
+        expect([sheet.columns, sheet.rows]).toEqual([2, 2]);
+    });
+
+    it('turns A6 cards sideways on landscape A4', () => {
+        const sheet = qrCardOrientedSheet('A6', 'landscape');
+
+        expect([sheet.widthMm, sheet.heightMm]).toEqual([297, 210]);
+        expect(sheet.turned).toBe(true);
+        expect([sheet.cellWidthMm, sheet.cellHeightMm]).toEqual([148, 105]);
+        expect([sheet.columns, sheet.rows]).toEqual([2, 2]);
+    });
+
+    it('turns A5 cards sideways on portrait A4', () => {
+        const sheet = qrCardOrientedSheet('A5', 'portrait');
+
+        expect([sheet.widthMm, sheet.heightMm]).toEqual([210, 297]);
+        expect(sheet.turned).toBe(true);
+        expect([sheet.cellWidthMm, sheet.cellHeightMm]).toEqual([210, 148]);
+        expect([sheet.columns, sheet.rows]).toEqual([1, 2]);
+        expect(sheet.cuts).toEqual([{ x1: 0, y1: 148.5, x2: 210, y2: 148.5 }]);
+    });
+
+    it('keeps A5 cards upright on landscape A4', () => {
+        const sheet = qrCardOrientedSheet('A5', 'landscape');
+
+        expect(sheet.turned).toBe(false);
+        expect([sheet.columns, sheet.rows]).toEqual([2, 1]);
+    });
+
+    it.each(['A6', 'A5'] as const)('holds as many %s cards either way as the saved sheet', (size) => {
+        const count = qrCardSheet(size).cards.length;
+
+        expect(qrCardOrientedSheet(size, 'portrait').cards).toHaveLength(count);
+        expect(qrCardOrientedSheet(size, 'landscape').cards).toHaveLength(count);
+    });
+
+    it.each(['A6', 'A5'] as const)('keeps every %s cell inside the sheet', (size) => {
+        for (const orientation of ['portrait', 'landscape'] as const) {
+            const sheet = qrCardOrientedSheet(size, orientation);
+            for (const card of sheet.cards) {
+                expect(card.x).toBeGreaterThanOrEqual(0);
+                expect(card.y).toBeGreaterThanOrEqual(0);
+                expect(card.x + sheet.cellWidthMm).toBeLessThanOrEqual(sheet.widthMm);
+                expect(card.y + sheet.cellHeightMm).toBeLessThanOrEqual(sheet.heightMm);
+            }
+        }
+    });
+
+    it('leaves the saved sheet upright', () => {
+        expect(qrCardSheet('A5').turned).toBe(false);
+        expect(qrCardSheet('A6').turned).toBe(false);
+    });
+});
+
+describe('isAndroidBrowser', () => {
+    afterEach(() => vi.unstubAllGlobals());
+
+    it.each([
+        ['Chrome on Android', 'Mozilla/5.0 (Linux; Android 15; SM-S938B) AppleWebKit/537.36 Chrome/154.0 Mobile Safari/537.36', true],
+        ['Samsung Internet', 'Mozilla/5.0 (Linux; Android 15) AppleWebKit/537.36 SamsungBrowser/27.0 Chrome/125.0 Mobile Safari/537.36', true],
+        ['an iPhone', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1', false],
+        ['Chrome on Windows', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/154.0 Safari/537.36', false],
+    ])('reads %s', (_name, userAgent, expected) => {
+        vi.stubGlobal('navigator', { userAgent });
+
+        expect(isAndroidBrowser()).toBe(expected);
     });
 });

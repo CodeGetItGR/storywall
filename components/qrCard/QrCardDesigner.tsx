@@ -44,9 +44,9 @@ export function QrCardDesigner({
             {/* Card */}
             <div data-print-root data-qr-card-print className="mx-auto w-full max-w-xs overflow-hidden rounded-lg shadow-sm">
                 <QrCardSvg ref={svgRef} {...card} className="block h-auto w-full" />
-                {exporter.sheet && <QrCardPrintCopies sheet={exporter.sheet} card={card} />}
+                {exporter.sheet && <QrCardPrintCopies sheet={exporter.sheet} size={designer.size} adaptive={exporter.adaptivePrint} card={card} />}
             </div>
-            <QrCardPrintStyle size={designer.size} sheet={exporter.sheet} />
+            <QrCardPrintStyle size={designer.size} sheet={exporter.sheet} adaptive={exporter.adaptivePrint} />
             <ThemeFontFace font={designer.style.headingFont} />
 
             {/* Designs */}
