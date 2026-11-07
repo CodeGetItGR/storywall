@@ -9,6 +9,9 @@ const MAX_STEPS = 40;
 function fit(wrap: HTMLElement) {
     const text = wrap.querySelector<HTMLElement>('.text-block');
     if (!text) return;
+    // With reduced motion on, the app gives everything a short transition, and
+    // the loop below would measure the old size each time and shrink too far.
+    text.style.transitionProperty = 'none';
     text.style.fontSize = '';
     let size = parseFloat(getComputedStyle(text).fontSize) || 19;
     for (let step = 0; text.scrollWidth > wrap.clientWidth && size > MIN_SIZE && step < MAX_STEPS; step += 1) {
