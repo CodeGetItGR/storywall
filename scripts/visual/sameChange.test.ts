@@ -48,6 +48,23 @@ const patch = (x: number, y: number) =>
         ],
     );
 
+// The same text line with its anti-aliased edge above it, so the edge is read first.
+const edgeAbove = (color: Color): Spot[] => textLine(2, 2, 10, color).map((spot) => ({ ...spot, y: spot.y === 2 ? 3 : 2 }));
+
+function block(color: Color): Spot[] {
+    return Array.from({ length: 32 }, (_, index) => ({ x: 2 + (index % 8), y: 2 + Math.floor(index / 8), color }));
+}
+
+// Two marks with `gap` unchanged pixels between them.
+const twoMarks = (x: number, gap: number) =>
+    diffOf(
+        [],
+        [
+            { x, y: 2, color: [255, 0, 0] },
+            { x: x + gap + 1, y: 2, color: [0, 0, 255] },
+        ],
+    );
+
 const signatureOf = (diff: Parameters<typeof changeSignature>[0]) => changeSignature(diff) as ChangeSignature;
 
 describe('changeSignature', () => {
@@ -68,6 +85,38 @@ describe('changeSignature', () => {
     it('finds no shift when no color moves far enough', () => {
         const small = diffOf(textLine(2, 2, 4, [100, 100, 100]), textLine(2, 2, 4, [110, 110, 110]));
         expect(signatureOf(small).shift).toBeNull();
+    });
+
+    it('finds no shift when a text line moved', () => {
+        expect(signatureOf(diffOf(textLine(2, 2, 10, INK), textLine(6, 2, 10, INK))).shift).toBeNull();
+    });
+
+    it('finds no shift when text appears on a blank background', () => {
+        expect(signatureOf(diffOf([], textLine(2, 2, 20, INK))).shift).toBeNull();
+    });
+
+    it('finds no shift when text is removed from a blank background', () => {
+        expect(signatureOf(diffOf(textLine(2, 2, 20, INK), [])).shift).toBeNull();
+    });
+
+    it('finds a shift when a flat block changes color', () => {
+        expect(signatureOf(diffOf(block(INK), block(PURPLE))).shift).not.toBeNull();
+    });
+
+    it('finds no shift when too many colors change', () => {
+        // A brightness change on a photo: every pixel moves the same way, but it isn't one color change.
+        const width = 300;
+        const height = 300;
+        const before = new Uint8Array(width * height * 4);
+        const after = new Uint8Array(width * height * 4);
+        for (let index = 0; index < width * height; index += 1) {
+            const color = [60 + (index % 196), 60 + (Math.floor(index / 196) % 196), 60 + Math.floor(index / 196 ** 2)];
+            before.set([...color, 255], index * 4);
+            after.set([...color.map((value) => value - 60), 255], index * 4);
+        }
+        const { mask } = comparePixels(before, after, width, height, CHANNEL_TOLERANCE);
+        const capture = { before: { data: before, width, height }, after: { data: after, width, height }, mask, sizeChanged: false };
+        expect(signatureOf(capture).shift).toBeNull();
     });
 
     it('has no signature when the size changed', () => {
@@ -92,6 +141,23 @@ describe('changeSignature', () => {
             { x: 16, y: 2, color: [0, 0, 255] },
         ];
         expect(signatureOf(diffOf([], spots)).areas).toHaveLength(1);
+    });
+
+    it('joins diagonal neighbors into one area', () => {
+        const spots: Spot[] = [
+            { x: 15, y: 15, color: [255, 0, 0] },
+            { x: 16, y: 16, color: [0, 0, 255] },
+        ];
+        expect(signatureOf(diffOf([], spots)).areas).toHaveLength(1);
+    });
+
+    it('joins changes less than 16px apart', () => {
+        expect(signatureOf(twoMarks(2, 15)).areas).toHaveLength(1);
+        expect(signatureOf(twoMarks(2, 16)).areas).toHaveLength(2);
+    });
+
+    it('joins changes the same way wherever they sit on the grid', () => {
+        expect(signatureOf(twoMarks(0, 19)).areas).toEqual(signatureOf(twoMarks(12, 19)).areas);
     });
 });
 
@@ -161,5 +227,25 @@ describe('groupChanges', () => {
         const backward = groupChanges([...items].reverse());
         expect(backward.groups).toEqual(forward.groups);
         expect([...backward.keys].sort()).toEqual([...forward.keys].sort());
+    });
+
+    it('breaks a tie by the lower color, wherever it sits', () => {
+        const edgeFirst = () => diffOf(edgeAbove(INK), edgeAbove(PURPLE));
+        const { groups } = groupChanges([signed('a', edgeFirst()), signed('b', edgeFirst())]);
+        expect(groups).toEqual([{ key: 'color-1', kind: 'color', from: '#241f1a', to: '#7c3aed' }]);
+    });
+
+    it('numbers groups of the same size the same way in any order', () => {
+        const items = [
+            { id: 'a', signature: { shift: null, areas: ['p'] } },
+            { id: 'b', signature: { shift: null, areas: ['q'] } },
+            { id: 'c', signature: { shift: null, areas: ['q'] } },
+            { id: 'd', signature: { shift: null, areas: ['p'] } },
+        ];
+        for (const order of [items, [...items].reverse()]) {
+            const { keys } = groupChanges(order);
+            expect(keys.get('a')).toBe('same-1');
+            expect(keys.get('b')).toBe('same-2');
+        }
     });
 });

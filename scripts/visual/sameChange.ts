@@ -9,6 +9,9 @@ const MAX_RESIDUAL = 16;
 const SAME_DIRECTION = 0.995;
 const CELL = 16;
 
+// One color change has at most a few thousand strong pairs. Photo-like changes have far more, and stop here.
+const MAX_STRONG_PAIRS = 65_536;
+
 // A before and after color, as one number: before * PAIR_BASE + after.
 const PAIR_BASE = 2 ** 24;
 
@@ -33,6 +36,11 @@ function deltaOf(pair: number): Vector {
     return [to[0] - from[0], to[1] - from[1], to[2] - from[2]];
 }
 
+function isStrong(pair: number): boolean {
+    const delta = deltaOf(pair);
+    return dot(delta, delta) >= MIN_PAIR_DISTANCE ** 2;
+}
+
 // Ties go to the lower pair value, so results don't depend on order.
 function mostCommon(counts: Map<number, number>): number | null {
     let top: number | null = null;
@@ -53,25 +61,62 @@ function fits(pair: number, direction: Vector): boolean {
     return delta.every((value, channel) => Math.abs(value - along * direction[channel]) <= MAX_RESIDUAL);
 }
 
-function colorShift({ before, after, mask }: ChangedCapture): ColorShift | null {
-    const pairs = new Map<number, number>();
+// Counts the strong pairs over the changed pixels. Null means the capture can't be one color change.
+function strongPairs({ before, after, mask }: ChangedCapture): Map<number, number> | null {
+    const counts = new Map<number, number>();
+    let firstBefore = -1;
+    let firstAfter = -1;
+    let beforeVaries = false;
+    let afterVaries = false;
+    let lastPair = -1;
+    let lastStrong = false;
     for (let index = 0; index < mask.length; index += 1) {
         if (!mask[index]) continue;
         const offset = index * 4;
         if (before.data[offset + 3] !== after.data[offset + 3]) return null;
-        const pair = rgbAt(before.data, offset) * PAIR_BASE + rgbAt(after.data, offset);
-        pairs.set(pair, (pairs.get(pair) ?? 0) + 1);
+        const from = rgbAt(before.data, offset);
+        const to = rgbAt(after.data, offset);
+        if (firstBefore < 0) {
+            firstBefore = from;
+            firstAfter = to;
+        }
+        if (from !== firstBefore) beforeVaries = true;
+        if (to !== firstAfter) afterVaries = true;
+        const pair = from * PAIR_BASE + to;
+        if (pair !== lastPair) {
+            lastPair = pair;
+            lastStrong = isStrong(pair);
+        }
+        if (!lastStrong) continue;
+        counts.set(pair, (counts.get(pair) ?? 0) + 1);
+        if (counts.size > MAX_STRONG_PAIRS) return null;
     }
-    const strong = new Map([...pairs].filter(([pair]) => Math.hypot(...deltaOf(pair)) >= MIN_PAIR_DISTANCE));
-    const top = mostCommon(strong);
+    // One side in a single color is content added to a plain background, or removed from one.
+    if (beforeVaries !== afterVaries) return null;
+    return counts;
+}
+
+function everyPixelFits({ before, after, mask }: ChangedCapture, direction: Vector): boolean {
+    let lastPair = -1;
+    for (let index = 0; index < mask.length; index += 1) {
+        if (!mask[index]) continue;
+        const offset = index * 4;
+        const pair = rgbAt(before.data, offset) * PAIR_BASE + rgbAt(after.data, offset);
+        if (pair === lastPair) continue;
+        lastPair = pair;
+        if (!fits(pair, direction)) return false;
+    }
+    return true;
+}
+
+function colorShift(capture: ChangedCapture): ColorShift | null {
+    const counts = strongPairs(capture);
+    const top = counts ? mostCommon(counts) : null;
     if (top === null) return null;
     const delta = deltaOf(top);
     const length = Math.hypot(...delta);
     const direction: Vector = [delta[0] / length, delta[1] / length, delta[2] / length];
-    for (const pair of pairs.keys()) {
-        if (!fits(pair, direction)) return null;
-    }
-    return { direction, pair: top };
+    return everyPixelFits(capture, direction) ? { direction, pair: top } : null;
 }
 
 function cellBoxes({ before, mask }: ChangedCapture): { boxes: Map<number, Box>; columns: number; rows: number } {
@@ -110,7 +155,15 @@ function hashArea({ before, after }: ChangedCapture, box: Box): string {
     return hash.digest('hex');
 }
 
-// Changed pixels merge on a grid into connected areas, so the letters of one word become one area.
+// Unchanged pixels between two boxes, on the axis where they're furthest apart.
+function gapBetween(a: Box, b: Box): number {
+    const gapX = Math.max(0, b.x0 - a.x1 - 1, a.x0 - b.x1 - 1);
+    const gapY = Math.max(0, b.y0 - a.y1 - 1, a.y0 - b.y1 - 1);
+    return Math.max(gapX, gapY);
+}
+
+// Changed pixels less than CELL apart join into one area wherever they sit, so the letters of one word become one area.
+// Pixels in one grid cell are always that close and pixels two cells apart never are, so only neighboring cells are compared.
 function changedAreas(capture: ChangedCapture): string[] {
     const { boxes, columns, rows } = cellBoxes(capture);
     const seen = new Set<number>();
@@ -135,7 +188,8 @@ function changedAreas(capture: ChangedCapture): string[] {
                     const nextColumn = column + dx;
                     if (nextRow < 0 || nextColumn < 0 || nextRow >= rows || nextColumn >= columns) continue;
                     const next = nextRow * columns + nextColumn;
-                    if (boxes.has(next) && !seen.has(next)) {
+                    const nextBox = boxes.get(next);
+                    if (nextBox && !seen.has(next) && gapBetween(box, nextBox) < CELL) {
                         seen.add(next);
                         stack.push(next);
                     }
