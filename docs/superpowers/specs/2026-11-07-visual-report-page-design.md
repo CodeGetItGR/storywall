@@ -163,7 +163,8 @@ Other changes:
 - `tsconfig.json` adds `scripts/**/*.tsx`.
 - `eslint.config.mjs` turns off `@next/next/no-img-element` for the report source, which isn't a Next page.
 - `package.json` adds `visual:page`.
-- `.gitattributes` is new, with the one line marking the built file as generated.
+- `.gitattributes` is new, with one line marking the built file as generated and keeping its line endings exact.
+- `app/globals.css` tells Tailwind to skip `scripts/visual/report`, so the app's CSS isn't built from the page's bundle.
 - `.github/workflows/visual-check.yml` adds the rebuild check to the capture job.
 - `docs/storybook.md` gets the rebuild step.
 - The older design's "Report page" section points here.
