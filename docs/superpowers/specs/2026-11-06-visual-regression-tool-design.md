@@ -189,7 +189,7 @@ All four live in `.github/workflows/`.
 | `visual-check.yml` | `pull_request`: opened, synchronize, reopened. Not into `main`, not from forks | Capture, compare, publish |
 | `visual-baseline.yml` | `push` to `staging` | Captures the commit and saves it to the cache |
 | `visual-approve.yml` | `issue_comment`: edited | Runs `approve.mjs` |
-| `visual-cleanup.yml` | `pull_request_target`: closed, into `staging` | Deletes the PR's report. A PR into another branch keeps its report until the size limit removes it |
+| `visual-cleanup.yml` | `pull_request`: closed, into `staging` | Deletes the PR's report, using the scripts from `staging`. A PR into another branch, or closed with a merge conflict, keeps its report until the size limit removes it |
 
 `visual-check.yml` has these jobs:
 
