@@ -9,8 +9,9 @@ const meta = {
     component: ComposerCard,
     decorators: [
         withAppContext,
+        // The feed renders this card in a flex column, which is what stretches it to full width.
         (Story) => (
-            <div className="mx-auto max-w-2xl">
+            <div className="mx-auto flex max-w-2xl flex-col">
                 <Story />
             </div>
         ),
