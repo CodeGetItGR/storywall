@@ -136,7 +136,7 @@ It uses `git status` rather than `git diff`, so a deleted file is caught too. Th
 
 **The manifest is still untrusted.**
 
-- `validateManifest` also checks each entry's `id`, `storyId`, `title`, `name`, `locale`, `width`, `percent`, `error` and `changeKey`, and each group's key, kind and colors (`#rrggbb` only).
+- `validateManifest` also checks each entry's `id`, `storyId`, `title`, `name`, `locale`, `width`, `percent`, `error`, `changeKey` and `images` (an object with only `before`, `after`, `diff` and `preview`), each group's key, kind and colors (`#rrggbb` only), and `headSha` and `baseSha` (40 lowercase hex characters).
 - The page renders results as React text. `dangerouslySetInnerHTML` isn't used, and a test renders hostile story names and errors.
 - Image paths and colors are the only manifest values used as URLs or styles, and both are validated.
 
@@ -194,7 +194,7 @@ KAN-159 adds approve and comment. A static page on GitHub Pages can't sign anyon
 
 - `sameChange`: a color shift groups; one stray pixel inside a shift keeps that capture out; text added to or removed from a blank background, a moved text line and a photo-wide change have no color shift, and a flat block that changed color has one; a size change never groups; identical areas group, including when moved; areas join by distance wherever they sit on the grid; groups of one don't exist; results don't depend on input order.
 - `report`: entries carry `changeKey`, the manifest carries `groups`, and the fingerprint is the same with and without grouping.
-- `validateManifest`: accepts a manifest with no groups; rejects bad colors, keys, kinds, locales and widths.
+- `validateManifest`: accepts a manifest shaped like the report's, and one with no groups; rejects bad colors, keys, kinds, locales, widths, commit ids and image lists; its languages and widths match `config.ts`.
 - `publish`: the page path points at `dist/index.html`, and `pull` can't be set by the manifest.
 - `workflows`: the capture job has the rebuild check.
 - The built file: it exists, has `noindex`, and has no external script or stylesheet.
