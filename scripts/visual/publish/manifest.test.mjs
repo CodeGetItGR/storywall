@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 
-import { validateManifest } from './manifest.mjs';
+import { publishedManifest, validateManifest } from './manifest.mjs';
 
 const valid = () => ({
     headSha: 'a'.repeat(40),
@@ -81,5 +81,76 @@ describe('validateManifest', () => {
 
     it('rejects a negative totalCaptures', () => {
         expect(() => validateManifest({ ...valid(), totalCaptures: -1 })).toThrow(/totalCaptures/);
+    });
+
+    const withGroups = (groups, changeKey = groups[0]?.key) => {
+        const manifest = valid();
+        manifest.groups = groups;
+        manifest.entries[0].changeKey = changeKey;
+        return manifest;
+    };
+
+    it('accepts a manifest with no groups', () => {
+        expect(validateManifest(valid()).entries).toHaveLength(1);
+    });
+
+    it('accepts a color group and an exact group', () => {
+        const groups = [
+            { key: 'color-1', kind: 'color', from: '#241f1a', to: '#7c3aed' },
+            { key: 'same-1', kind: 'exact' },
+        ];
+        expect(validateManifest(withGroups(groups)).groups).toHaveLength(2);
+    });
+
+    it.each([
+        ['key', { key: '../evil', kind: 'exact' }, /key/],
+        ['kind', { key: 'same-1', kind: 'weird' }, /kind/],
+        ['color', { key: 'color-1', kind: 'color', from: 'url(https://evil)', to: '#7c3aed' }, /color/],
+        ['uppercase color', { key: 'color-1', kind: 'color', from: '#AAAAAA', to: '#7c3aed' }, /color/],
+    ])('rejects a group with a bad %s', (_name, group, message) => {
+        expect(() => validateManifest(withGroups([group]))).toThrow(message);
+    });
+
+    it('rejects groups that are not a list', () => {
+        expect(() => validateManifest({ ...valid(), groups: 'nope' })).toThrow(/groups/);
+    });
+
+    it('rejects a changeKey with no group', () => {
+        expect(() => validateManifest(withGroups([{ key: 'same-1', kind: 'exact' }], 'same-2'))).toThrow(/changeKey/);
+    });
+
+    it.each([
+        ['id', 7, /invalid id/],
+        ['storyId', '', /storyId/],
+        ['title', null, /title/],
+        ['name', undefined, /name/],
+        ['locale', 'fr', /locale/],
+        ['width', 'tablet', /width/],
+        ['percent', 'a lot', /percent/],
+        ['percent', 101, /percent/],
+        ['error', 5, /error/],
+    ])('rejects an entry with a bad %s (%s)', (field, value, message) => {
+        const manifest = valid();
+        manifest.entries[0][field] = value;
+        expect(() => validateManifest(manifest)).toThrow(message);
+    });
+});
+
+describe('publishedManifest', () => {
+    const options = { repo: 'CodeGetItGR/storywall', prNumber: '263', createdAt: '2026-11-07T00:00:00.000Z' };
+
+    it('adds the PR link', () => {
+        expect(publishedManifest(valid(), options).pull).toEqual({ number: 263, url: 'https://github.com/CodeGetItGR/storywall/pull/263' });
+    });
+
+    it("doesn't let the manifest choose where the link goes", () => {
+        const hostile = { ...valid(), pull: { number: 1, url: 'https://evil.example' } };
+        expect(publishedManifest(hostile, options).pull.url).toBe('https://github.com/CodeGetItGR/storywall/pull/263');
+    });
+
+    it('keeps the manifest and adds the time', () => {
+        const published = publishedManifest(valid(), options);
+        expect(published.fingerprint).toBe('c'.repeat(64));
+        expect(published.createdAt).toBe('2026-11-07T00:00:00.000Z');
     });
 });
