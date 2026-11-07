@@ -66,7 +66,7 @@ function watchStory() {
 // Without a running frame loop, a full-page screenshot can now and then draw the page with some responsive rules
 // off, even though the page itself is right. In 400 tries of FeedPageSkeleton under load, about 1 shot in 25 came
 // out wrong without this and none with it.
-export function keepFramesRunning() {
+function keepFramesRunning() {
     const frame = () => requestAnimationFrame(frame);
     requestAnimationFrame(frame);
 }
