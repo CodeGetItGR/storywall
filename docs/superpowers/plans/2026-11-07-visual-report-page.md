@@ -652,12 +652,19 @@ In `scripts/visual/report.test.ts`, add `import { fingerprint } from './fingerpr
 
 ```ts
     it('groups captures with the same change', async () => {
-        const heads = [await record(headDir, 'a', 200), await record(headDir, 'b', 200), await record(headDir, 'c', 10)];
+        // d gets darker, so its change matches no other capture.
+        const heads = [
+            await record(headDir, 'a', 200),
+            await record(headDir, 'b', 200),
+            await record(headDir, 'c', 10),
+            await record(headDir, 'd', 10),
+        ];
         const retake = vi.fn(async (t: CaptureTarget) => heads.find((item) => item.id === t.id) as CaptureRecord);
-        const manifest = await run([await record(baseDir, 'a', 10), await record(baseDir, 'b', 10)], heads, retake);
+        const bases = [await record(baseDir, 'a', 10), await record(baseDir, 'b', 10), await record(baseDir, 'd', 200)];
+        const manifest = await run(bases, heads, retake);
         expect(manifest.groups).toEqual([{ key: 'color-1', kind: 'color', from: '#0a0a0a', to: '#c8c8c8' }]);
         const keys = Object.fromEntries(manifest.entries.map((entry) => [entry.id, entry.changeKey]));
-        expect(keys).toEqual({ a: 'color-1', b: 'color-1', c: null });
+        expect(keys).toEqual({ a: 'color-1', b: 'color-1', c: null, d: null });
     });
 
     it('writes the groups to manifest.json', async () => {
@@ -673,6 +680,7 @@ In `scripts/visual/report.test.ts`, add `import { fingerprint } from './fingerpr
         const heads = [await record(headDir, 'a', 200), await record(headDir, 'b', 200)];
         const retake = vi.fn(async (t: CaptureTarget) => heads.find((item) => item.id === t.id) as CaptureRecord);
         const manifest = await run([await record(baseDir, 'a', 10), await record(baseDir, 'b', 10)], heads, retake);
+        expect(manifest.entries.map((entry) => entry.changeKey)).toEqual(['color-1', 'color-1']);
         const ungrouped = manifest.entries.map((entry) => ({ ...entry, changeKey: null }));
         expect(manifest.fingerprint).toBe(fingerprint(ungrouped));
     });
