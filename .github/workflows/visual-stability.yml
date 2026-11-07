@@ -34,6 +34,31 @@ jobs:
                   path: visual-output/base
                   retention-days: 3
 
+    skeleton:
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        container: mcr.microsoft.com/playwright:v1.55.0-noble
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  ref: ${{ github.event.pull_request.head.sha }}
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 22
+                  cache: npm
+            - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+            - run: npm ci
+            - run: npx storybook build --quiet -o storybook-static
+              env:
+                  STORYBOOK_DISABLE_TELEMETRY: '1'
+            - run: npx jiti scripts/visual/skeleton-stress.ts
+            - uses: actions/upload-artifact@v7
+              if: always()
+              with:
+                  name: skeleton-stress
+                  path: visual-output/skeleton
+                  retention-days: 3
+
     compare:
         needs: capture
         runs-on: ubuntu-latest
