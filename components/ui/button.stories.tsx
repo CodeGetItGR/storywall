@@ -74,10 +74,6 @@ export const WithIcon: Story = {
     },
 };
 
-export const IconOnly: Story = {
-    args: { size: 'icon', variant: 'destructive', 'aria-label': 'Delete', children: <Trash2 /> },
-};
-
 export const Disabled: Story = {
     args: { disabled: true },
 };
