@@ -1,12 +1,16 @@
 const STATES = new Set(['changed', 'new', 'removed', 'failed']);
-const LOCALES = new Set(['en', 'el']);
-const WIDTHS = new Set(['mobile', 'desktop']);
+// The same as config.ts, which this job can't import. A test keeps them equal. The publish job runs the base branch's copy,
+// so a new language or width has to be merged before a PR can capture it.
+export const LOCALES = new Set(['en', 'el']);
+export const WIDTHS = new Set(['mobile', 'desktop']);
 const GROUP_KINDS = new Set(['color', 'exact']);
 const TEXT_FIELDS = ['id', 'storyId', 'title', 'name'];
 const IMAGE_PATH = /^img\/[0-9a-f]{16}-(before|after|diff|preview)\.webp$/;
 const COMPONENT_PATH = /^components\/[\w./-]+\.tsx$/;
 const GROUP_KEY = /^(color|same)-\d+$/;
 const COLOR = /^#[0-9a-f]{6}$/;
+const SHA = /^[0-9a-f]{40}$/;
+const IMAGE_KINDS = new Set(['before', 'after', 'diff', 'preview']);
 const MAX_MISSING_STORIES = 200;
 
 // A report from before same-change grouping has no groups, and that's fine.
@@ -38,7 +42,10 @@ function validateEntry(entry, groupKeys) {
     if (entry.changeKey !== undefined && entry.changeKey !== null && !groupKeys.has(entry.changeKey)) {
         throw new Error(`Manifest entry has an unknown changeKey: ${entry.changeKey}`);
     }
-    for (const path of Object.values(entry.images ?? {})) {
+    const images = entry.images;
+    if (images === null || typeof images !== 'object' || Array.isArray(images)) throw new Error('Manifest entry has an invalid images list');
+    for (const [kind, path] of Object.entries(images)) {
+        if (!IMAGE_KINDS.has(kind)) throw new Error(`Manifest entry has an unknown image kind: ${kind}`);
         if (typeof path !== 'string' || !IMAGE_PATH.test(path)) throw new Error(`Manifest entry has an invalid image path: ${path}`);
     }
 }
@@ -46,6 +53,9 @@ function validateEntry(entry, groupKeys) {
 // The manifest was written by the job that ran the PR's dependencies, so nothing in it is trusted.
 export function validateManifest(manifest) {
     if (!/^[0-9a-f]{64}$/.test(manifest?.fingerprint ?? '')) throw new Error('Manifest has an invalid fingerprint');
+    for (const field of ['headSha', 'baseSha']) {
+        if (typeof manifest[field] !== 'string' || !SHA.test(manifest[field])) throw new Error(`Manifest has an invalid ${field}`);
+    }
     if (!Array.isArray(manifest.entries)) throw new Error('Manifest has no entries list');
     if (!Array.isArray(manifest.missingStories)) throw new Error('Manifest has no missingStories list');
     if (manifest.missingStories.length > MAX_MISSING_STORIES) throw new Error('Manifest lists too many components with no story');

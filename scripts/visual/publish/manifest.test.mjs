@@ -1,7 +1,8 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 
-import { publishedManifest, validateManifest } from './manifest.mjs';
+import { LOCALES as CAPTURE_LOCALES, WIDTHS as CAPTURE_WIDTHS } from '../config';
+import { LOCALES, publishedManifest, validateManifest, WIDTHS } from './manifest.mjs';
 
 const valid = () => ({
     headSha: 'a'.repeat(40),
@@ -21,9 +22,13 @@ const valid = () => ({
             state: 'changed',
             percent: 1,
             error: null,
+            beforeHash: 'before-hash',
+            afterHash: 'after-hash',
+            changeKey: null,
             images: { after: `img/${'d'.repeat(16)}-after.webp` },
         },
     ],
+    groups: [],
 });
 
 describe('validateManifest', () => {
@@ -90,8 +95,19 @@ describe('validateManifest', () => {
         return manifest;
     };
 
-    it('accepts a manifest with no groups', () => {
-        expect(validateManifest(valid()).entries).toHaveLength(1);
+    it('accepts a manifest with no groups, as the report writes it', () => {
+        expect(validateManifest(valid()).entries[0].changeKey).toBeNull();
+    });
+
+    it('accepts a manifest from before grouping', () => {
+        const manifest = valid();
+        delete manifest.groups;
+        delete manifest.entries[0].changeKey;
+        expect(validateManifest(manifest).entries).toHaveLength(1);
+    });
+
+    it('rejects a changeKey when there are no groups', () => {
+        expect(() => validateManifest(withGroups([], 'same-1'))).toThrow(/changeKey/);
     });
 
     it('accepts a color group and an exact group', () => {
@@ -107,6 +123,7 @@ describe('validateManifest', () => {
         ['kind', { key: 'same-1', kind: 'weird' }, /kind/],
         ['color', { key: 'color-1', kind: 'color', from: 'url(https://evil)', to: '#7c3aed' }, /color/],
         ['uppercase color', { key: 'color-1', kind: 'color', from: '#AAAAAA', to: '#7c3aed' }, /color/],
+        ['to color', { key: 'color-1', kind: 'color', from: '#241f1a', to: 'red' }, /color/],
     ])('rejects a group with a bad %s', (_name, group, message) => {
         expect(() => validateManifest(withGroups([group]))).toThrow(message);
     });
@@ -128,11 +145,50 @@ describe('validateManifest', () => {
         ['width', 'tablet', /width/],
         ['percent', 'a lot', /percent/],
         ['percent', 101, /percent/],
+        ['percent', -1, /percent/],
         ['error', 5, /error/],
     ])('rejects an entry with a bad %s (%s)', (field, value, message) => {
         const manifest = valid();
         manifest.entries[0][field] = value;
         expect(() => validateManifest(manifest)).toThrow(message);
+    });
+
+    it('accepts a failed entry with its error', () => {
+        const manifest = valid();
+        Object.assign(manifest.entries[0], { state: 'failed', error: 'Boom', images: {} });
+        manifest.counts = { changed: 0, new: 0, removed: 0, failed: 1 };
+        expect(validateManifest(manifest).entries[0].error).toBe('Boom');
+    });
+
+    it.each([
+        ['headSha', 12345],
+        ['headSha', undefined],
+        ['baseSha', 'main'],
+        ['baseSha', 'A'.repeat(40)],
+    ])('rejects a bad %s (%s)', (field, value) => {
+        expect(() => validateManifest({ ...valid(), [field]: value })).toThrow(new RegExp(field));
+    });
+
+    it.each([
+        ['an array', [`img/${'d'.repeat(16)}-after.webp`]],
+        ['null', null],
+        ['missing', undefined],
+        ['a number', 5],
+    ])('rejects images that are %s', (_name, images) => {
+        const manifest = valid();
+        manifest.entries[0].images = images;
+        expect(() => validateManifest(manifest)).toThrow(/images/);
+    });
+
+    it('rejects an unknown image kind', () => {
+        const manifest = valid();
+        manifest.entries[0].images = { thumb: `img/${'d'.repeat(16)}-after.webp` };
+        expect(() => validateManifest(manifest)).toThrow(/image kind/);
+    });
+
+    it('knows every language and width the tool captures', () => {
+        expect([...LOCALES]).toEqual([...CAPTURE_LOCALES]);
+        expect([...WIDTHS]).toEqual(CAPTURE_WIDTHS.map((width) => width.name));
     });
 });
 
@@ -146,6 +202,10 @@ describe('publishedManifest', () => {
     it("doesn't let the manifest choose where the link goes", () => {
         const hostile = { ...valid(), pull: { number: 1, url: 'https://evil.example' } };
         expect(publishedManifest(hostile, options).pull.url).toBe('https://github.com/CodeGetItGR/storywall/pull/263');
+    });
+
+    it("doesn't let the manifest choose its time", () => {
+        expect(publishedManifest({ ...valid(), createdAt: 'never' }, options).createdAt).toBe('2026-11-07T00:00:00.000Z');
     });
 
     it('keeps the manifest and adds the time', () => {
