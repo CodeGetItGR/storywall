@@ -1,3 +1,5 @@
+import { SectionEffectLayer } from '@/components/saveMyDate/invitation/effects/SectionEffectLayer';
+import { SectionTransition } from '@/components/saveMyDate/invitation/effects/SectionTransition';
 import { InvitationElements } from '@/components/saveMyDate/invitation/InvitationElements';
 import { ContactSection } from '@/components/saveMyDate/invitation/sections/contact/ContactSection';
 import { CoupleContactSection } from '@/components/saveMyDate/invitation/sections/contact/CoupleContactSection';
@@ -73,7 +75,14 @@ export function InvitationSection({ section, index, ctx }: InvitationSectionProp
 
     return (
         <section className={shell.className} style={shell.style} data-section-id={section.id}>
+            {/* Background effect */}
+            {shell.effect && <SectionEffectLayer effect={shell.effect} backgroundStyle={shell.effectBackground.style} hasThemeImage={shell.effectBackground.hasThemeImage} />}
+
+            {/* Content */}
             <SectionContent section={section} contrast={shell.contrast} ctx={ctx} />
+
+            {/* Transition art */}
+            {shell.transition && <SectionTransition art={shell.transition} />}
         </section>
     );
 }

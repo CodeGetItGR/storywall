@@ -1,0 +1,1338 @@
+{
+    "canvas": {
+        "canvasRealistic/slow/subtle": {
+            "calls": 88716,
+            "sha256": "b3714c365d237acfd1068dbbab8d0ee81de7c9e1188cfd81460f5c9fd7c05d79",
+            "head": [
+                [
+                    "setTransform",
+                    2,
+                    0,
+                    0,
+                    2,
+                    0,
+                    0
+                ],
+                [
+                    "clearRect",
+                    0,
+                    0,
+                    375,
+                    600
+                ],
+                [
+                    "save"
+                ],
+                [
+                    "translate",
+                    188.650878,
+                    467.119891
+                ],
+                [
+                    "rotate",
+                    1.778638
+                ],
+                [
+                    "set:globalAlpha",
+                    0.998637
+                ],
+                [
+                    "set:fillStyle",
+                    "#ffd166"
+                ],
+                [
+                    "fillRect",
+                    -4.625688,
+                    -2.035303,
+                    9.251376,
+                    4.070605
+                ],
+                [
+                    "restore"
+                ],
+                [
+                    "save"
+                ],
+                [
+                    "translate",
+                    205.7319,
+                    466.721288
+                ],
+                [
+                    "rotate",
+                    0.862357
+                ]
+            ]
+        },
+        "canvasRealistic/slow/strong": {
+            "calls": 195368,
+            "sha256": "179ac41835914cee15dbe812d51ba3c04f18de8dad962facbcab4b69c5f54a44",
+            "head": [
+                [
+                    "setTransform",
+                    2,
+                    0,
+                    0,
+                    2,
+                    0,
+                    0
+                ],
+                [
+                    "clearRect",
+                    0,
+                    0,
+                    375,
+                    600
+                ],
+                [
+                    "save"
+                ],
+                [
+                    "translate",
+                    188.650878,
+                    467.119891
+                ],
+                [
+                    "rotate",
+                    1.778638
+                ],
+                [
+                    "set:globalAlpha",
+                    0.998637
+                ],
+                [
+                    "set:fillStyle",
+                    "#ffd166"
+                ],
+                [
+                    "fillRect",
+                    -5.511458,
+                    -2.425042,
+                    11.022916,
+                    4.850083
+                ],
+                [
+                    "restore"
+                ],
+                [
+                    "save"
+                ],
+                [
+                    "translate",
+                    205.7319,
+                    466.721288
+                ],
+                [
+                    "rotate",
+                    0.862357
+                ]
+            ]
+        },
+        "canvasRealistic/normal/subtle": {
+            "calls": 121595,
+            "sha256": "e7362103530454dd087ad5fefda75ceda2df561ec1648ca78f4f17f7c85add3d",
+            "head": [
+                [
+                    "setTransform",
+                    2,
+                    0,
+                    0,
+                    2,
+                    0,
+                    0
+                ],
+                [
+                    "clearRect",
+                    0,
+                    0,
+                    375,
+                    600
+                ],
+                [
+                    "save"
+                ],
+                [
+                    "translate",
+                    188.722344,
+                    466.733502
+                ],
+                [
+                    "rotate",
+                    1.778638
+                ],
+                [
+                    "set:globalAlpha",
+                    0.998637
+                ],
+                [
+                    "set:fillStyle",
+                    "#ffd166"
+                ],
+                [
+                    "fillRect",
+                    -4.625688,
+                    -2.035303,
+                    9.251376,
+                    4.070605
+                ],
+                [
+                    "restore"
+                ],
+                [
+                    "save"
+                ],
+                [
+                    "translate",
+                    205.915533,
+                    466.159903
+                ],
+                [
+                    "rotate",
+                    0.862357
+                ]
+            ]
+        },
+        "canvasRealistic/normal/strong": {
+            "calls": 268539,
+            "sha256": "53ebcb722c9315a95f17e7d108f5706aa2ac42271124103bb5bf482365594205",
+            "head": [
+                [
+                    "setTransform",
+                    2,
+                    0,
+                    0,
+                    2,
+                    0,
+                    0
+                ],
+                [
+                    "clearRect",
+                    0,
+                    0,
+                    375,
+                    600
+                ],
+                [
+                    "save"
+                ],
+                [
+                    "translate",
+                    188.722344,
+                    466.733502
+                ],
+                [
+                    "rotate",
+                    1.778638
+                ],
+                [
+                    "set:globalAlpha",
+                    0.998637
+                ],
+                [
+                    "set:fillStyle",
+                    "#ffd166"
+                ],
+                [
+                    "fillRect",
+                    -5.511458,
+                    -2.425042,
+                    11.022916,
+                    4.850083
+                ],
+                [
+                    "restore"
+                ],
+                [
+                    "save"
+                ],
+                [
+                    "translate",
+                    205.915533,
+                    466.159903
+                ],
+                [
+                    "rotate",
+                    0.862357
+                ]
+            ]
+        },
+        "canvasFireworks/slow/subtle": {
+            "calls": 101618,
+            "sha256": "73cef5273f96e0884d6e312e04e6fa05e36abd7ae8f79701710c00be98d961e6",
+            "head": [
+                [
+                    "setTransform",
+                    2,
+                    0,
+                    0,
+                    2,
+                    0,
+                    0
+                ],
+                [
+                    "clearRect",
+                    0,
+                    0,
+                    375,
+                    600
+                ],
+                [
+                    "set:globalAlpha",
+                    0.99582
+                ],
+                [
+                    "set:fillStyle",
+                    "#9b7cff"
+                ],
+                [
+                    "beginPath"
+                ],
+                [
+                    "arc",
+                    219.032312,
+                    108.738153,
+                    2.119258,
+                    0,
+                    6.283185
+                ],
+                [
+                    "fill"
+                ],
+                [
+                    "set:globalAlpha",
+                    0.997215
+                ],
+                [
+                    "set:fillStyle",
+                    "#9b7cff"
+                ],
+                [
+                    "beginPath"
+                ],
+                [
+                    "arc",
+                    218.649741,
+                    108.771569,
+                    1.882907,
+                    0,
+                    6.283185
+                ],
+                [
+                    "fill"
+                ]
+            ]
+        },
+        "canvasFireworks/slow/strong": {
+            "calls": 230648,
+            "sha256": "3540cacd523ca95d9dce5d7a5f51b6d72c7de7849ef602ef823f667b4618061f",
+            "head": [
+                [
+                    "setTransform",
+                    2,
+                    0,
+                    0,
+                    2,
+                    0,
+                    0
+                ],
+                [
+                    "clearRect",
+                    0,
+                    0,
+                    375,
+                    600
+                ],
+                [
+                    "set:globalAlpha",
+                    0.99582
+                ],
+                [
+                    "set:fillStyle",
+                    "#9b7cff"
+                ],
+                [
+                    "beginPath"
+                ],
+                [
+                    "arc",
+                    219.032312,
+                    108.738153,
+                    2.500725,
+                    0,
+                    6.283185
+                ],
+                [
+                    "fill"
+                ],
+                [
+                    "set:globalAlpha",
+                    0.997215
+                ],
+                [
+                    "set:fillStyle",
+                    "#9b7cff"
+                ],
+                [
+                    "beginPath"
+                ],
+                [
+                    "arc",
+                    218.656465,
+                    108.721622,
+                    2.22183,
+                    0,
+                    6.283185
+                ],
+                [
+                    "fill"
+                ]
+            ]
+        },
+        "canvasFireworks/normal/subtle": {
+            "calls": 161653,
+            "sha256": "e9d03da74e51a6a6d8346b19a27d48902685668a077449a9da64d5744ddb51d6",
+            "head": [
+                [
+                    "setTransform",
+                    2,
+                    0,
+                    0,
+                    2,
+                    0,
+                    0
+                ],
+                [
+                    "clearRect",
+                    0,
+                    0,
+                    375,
+                    600
+                ],
+                [
+                    "set:globalAlpha",
+                    0.99582
+                ],
+                [
+                    "set:fillStyle",
+                    "#9b7cff"
+                ],
+                [
+                    "beginPath"
+                ],
+                [
+                    "arc",
+                    219.486512,
+                    108.773969,
+                    2.119258,
+                    0,
+                    6.283185
+                ],
+                [
+                    "fill"
+                ],
+                [
+                    "set:globalAlpha",
+                    0.997215
+                ],
+                [
+                    "set:fillStyle",
+                    "#9b7cff"
+                ],
+                [
+                    "beginPath"
+                ],
+                [
+                    "arc",
+                    218.935983,
+                    108.822054,
+                    1.882907,
+                    0,
+                    6.283185
+                ],
+                [
+                    "fill"
+                ]
+            ]
+        },
+        "canvasFireworks/normal/strong": {
+            "calls": 365758,
+            "sha256": "67faeef1553dbc241aff1118ace155d8c487ccfcbc23f34786fa44c9ae112c91",
+            "head": [
+                [
+                    "setTransform",
+                    2,
+                    0,
+                    0,
+                    2,
+                    0,
+                    0
+                ],
+                [
+                    "clearRect",
+                    0,
+                    0,
+                    375,
+                    600
+                ],
+                [
+                    "set:globalAlpha",
+                    0.99582
+                ],
+                [
+                    "set:fillStyle",
+                    "#9b7cff"
+                ],
+                [
+                    "beginPath"
+                ],
+                [
+                    "arc",
+                    219.486512,
+                    108.773969,
+                    2.500725,
+                    0,
+                    6.283185
+                ],
+                [
+                    "fill"
+                ],
+                [
+                    "set:globalAlpha",
+                    0.997215
+                ],
+                [
+                    "set:fillStyle",
+                    "#9b7cff"
+                ],
+                [
+                    "beginPath"
+                ],
+                [
+                    "arc",
+                    218.945659,
+                    108.75018,
+                    2.22183,
+                    0,
+                    6.283185
+                ],
+                [
+                    "fill"
+                ]
+            ]
+        },
+        "canvasStars/slow/subtle": {
+            "calls": 167199,
+            "sha256": "0ccc0801c7b032014f12516e83b34bd8bcd09e4d643432d6bd759dc6fafbb90c",
+            "head": [
+                [
+                    "setTransform",
+                    2,
+                    0,
+                    0,
+                    2,
+                    0,
+                    0
+                ],
+                [
+                    "clearRect",
+                    0,
+                    0,
+                    375,
+                    600
+                ],
+                [
+                    "save"
+                ],
+                [
+                    "translate",
+                    235.154078,
+                    1.698056
+                ],
+                [
+                    "rotate",
+                    4.937852
+                ],
+                [
+                    "set:globalAlpha",
+                    0.466139
+                ],
+                [
+                    "set:fillStyle",
+                    "#6ed6ff"
+                ],
+                [
+                    "beginPath"
+                ],
+                [
+                    "moveTo",
+                    0,
+                    -3.393381
+                ],
+                [
+                    "lineTo",
+                    0.815824,
+                    -0.815824
+                ],
+                [
+                    "lineTo",
+                    3.393381,
+                    0
+                ],
+                [
+                    "lineTo",
+                    0.815824,
+                    0.815824
+                ]
+            ]
+        },
+        "canvasStars/slow/strong": {
+            "calls": 356477,
+            "sha256": "a6026723bde82a4295899ad0fa3f815574855de46358b1147a5fff12b2d3154b",
+            "head": [
+                [
+                    "setTransform",
+                    2,
+                    0,
+                    0,
+                    2,
+                    0,
+                    0
+                ],
+                [
+                    "clearRect",
+                    0,
+                    0,
+                    375,
+                    600
+                ],
+                [
+                    "save"
+                ],
+                [
+                    "translate",
+                    235.154078,
+                    1.698056
+                ],
+                [
+                    "rotate",
+                    4.937852
+                ],
+                [
+                    "set:globalAlpha",
+                    0.466139
+                ],
+                [
+                    "set:fillStyle",
+                    "#6ed6ff"
+                ],
+                [
+                    "beginPath"
+                ],
+                [
+                    "moveTo",
+                    0,
+                    -4.139925
+                ],
+                [
+                    "lineTo",
+                    0.995305,
+                    -0.995305
+                ],
+                [
+                    "lineTo",
+                    4.139925,
+                    0
+                ],
+                [
+                    "lineTo",
+                    0.995305,
+                    0.995305
+                ]
+            ]
+        },
+        "canvasStars/normal/subtle": {
+            "calls": 202882,
+            "sha256": "910cf883c474d8cfeea805f67cab19b436fa628fa2fc547e17d8adeea98e7ba2",
+            "head": [
+                [
+                    "setTransform",
+                    2,
+                    0,
+                    0,
+                    2,
+                    0,
+                    0
+                ],
+                [
+                    "clearRect",
+                    0,
+                    0,
+                    375,
+                    600
+                ],
+                [
+                    "save"
+                ],
+                [
+                    "translate",
+                    235.154671,
+                    1.722915
+                ],
+                [
+                    "rotate",
+                    4.937852
+                ],
+                [
+                    "set:globalAlpha",
+                    0.466139
+                ],
+                [
+                    "set:fillStyle",
+                    "#6ed6ff"
+                ],
+                [
+                    "beginPath"
+                ],
+                [
+                    "moveTo",
+                    0,
+                    -3.393381
+                ],
+                [
+                    "lineTo",
+                    0.815824,
+                    -0.815824
+                ],
+                [
+                    "lineTo",
+                    3.393381,
+                    0
+                ],
+                [
+                    "lineTo",
+                    0.815824,
+                    0.815824
+                ]
+            ]
+        },
+        "canvasStars/normal/strong": {
+            "calls": 425973,
+            "sha256": "c22c54dc6e01c8897de52c343859d933090cda2cb17384d901bc0ac13fceacd1",
+            "head": [
+                [
+                    "setTransform",
+                    2,
+                    0,
+                    0,
+                    2,
+                    0,
+                    0
+                ],
+                [
+                    "clearRect",
+                    0,
+                    0,
+                    375,
+                    600
+                ],
+                [
+                    "save"
+                ],
+                [
+                    "translate",
+                    235.154671,
+                    1.722915
+                ],
+                [
+                    "rotate",
+                    4.937852
+                ],
+                [
+                    "set:globalAlpha",
+                    0.466139
+                ],
+                [
+                    "set:fillStyle",
+                    "#6ed6ff"
+                ],
+                [
+                    "beginPath"
+                ],
+                [
+                    "moveTo",
+                    0,
+                    -4.139925
+                ],
+                [
+                    "lineTo",
+                    0.995305,
+                    -0.995305
+                ],
+                [
+                    "lineTo",
+                    4.139925,
+                    0
+                ],
+                [
+                    "lineTo",
+                    0.995305,
+                    0.995305
+                ]
+            ]
+        },
+        "canvasSnow/slow/subtle": {
+            "calls": 143233,
+            "sha256": "1b5929b336278b9cfa4209030944d045e6f9ae1d696de4b3a153ff3cde7e5c53",
+            "head": [
+                [
+                    "setTransform",
+                    2,
+                    0,
+                    0,
+                    2,
+                    0,
+                    0
+                ],
+                [
+                    "clearRect",
+                    0,
+                    0,
+                    375,
+                    600
+                ],
+                [
+                    "set:globalAlpha",
+                    0.68
+                ],
+                [
+                    "set:fillStyle",
+                    "#fff"
+                ],
+                [
+                    "beginPath"
+                ],
+                [
+                    "arc",
+                    235.191956,
+                    1.823796,
+                    3.717783,
+                    0,
+                    6.283185
+                ],
+                [
+                    "fill"
+                ],
+                [
+                    "set:globalAlpha",
+                    0.68
+                ],
+                [
+                    "set:fillStyle",
+                    "#fff"
+                ],
+                [
+                    "beginPath"
+                ],
+                [
+                    "arc",
+                    229.810351,
+                    432.629801,
+                    2.383705,
+                    0,
+                    6.283185
+                ],
+                [
+                    "fill"
+                ]
+            ]
+        },
+        "canvasSnow/slow/strong": {
+            "calls": 303663,
+            "sha256": "4038ff3ba23c71ffee6d45a823d83387ec6081212524e3685708bdb4be8798b9",
+            "head": [
+                [
+                    "setTransform",
+                    2,
+                    0,
+                    0,
+                    2,
+                    0,
+                    0
+                ],
+                [
+                    "clearRect",
+                    0,
+                    0,
+                    375,
+                    600
+                ],
+                [
+                    "set:globalAlpha",
+                    0.9
+                ],
+                [
+                    "set:fillStyle",
+                    "#fff"
+                ],
+                [
+                    "beginPath"
+                ],
+                [
+                    "arc",
+                    235.191956,
+                    1.823796,
+                    4.461339,
+                    0,
+                    6.283185
+                ],
+                [
+                    "fill"
+                ],
+                [
+                    "set:globalAlpha",
+                    0.9
+                ],
+                [
+                    "set:fillStyle",
+                    "#fff"
+                ],
+                [
+                    "beginPath"
+                ],
+                [
+                    "arc",
+                    229.810351,
+                    432.629801,
+                    2.860446,
+                    0,
+                    6.283185
+                ],
+                [
+                    "fill"
+                ]
+            ]
+        },
+        "canvasSnow/normal/subtle": {
+            "calls": 200513,
+            "sha256": "9b344c0c8a21dc9fc42cf6d9b74c328c821a24f5ff80805e2173b9beb952d2e0",
+            "head": [
+                [
+                    "setTransform",
+                    2,
+                    0,
+                    0,
+                    2,
+                    0,
+                    0
+                ],
+                [
+                    "clearRect",
+                    0,
+                    0,
+                    375,
+                    600
+                ],
+                [
+                    "set:globalAlpha",
+                    0.68
+                ],
+                [
+                    "set:fillStyle",
+                    "#fff"
+                ],
+                [
+                    "beginPath"
+                ],
+                [
+                    "arc",
+                    235.193043,
+                    1.903858,
+                    3.717783,
+                    0,
+                    6.283185
+                ],
+                [
+                    "fill"
+                ],
+                [
+                    "set:globalAlpha",
+                    0.68
+                ],
+                [
+                    "set:fillStyle",
+                    "#fff"
+                ],
+                [
+                    "beginPath"
+                ],
+                [
+                    "arc",
+                    229.807412,
+                    432.710545,
+                    2.383705,
+                    0,
+                    6.283185
+                ],
+                [
+                    "fill"
+                ]
+            ]
+        },
+        "canvasSnow/normal/strong": {
+            "calls": 418223,
+            "sha256": "5c82ab6d53a015349197e7e4d713b70a11b8ba5e867926e256b42c46b2e08b75",
+            "head": [
+                [
+                    "setTransform",
+                    2,
+                    0,
+                    0,
+                    2,
+                    0,
+                    0
+                ],
+                [
+                    "clearRect",
+                    0,
+                    0,
+                    375,
+                    600
+                ],
+                [
+                    "set:globalAlpha",
+                    0.9
+                ],
+                [
+                    "set:fillStyle",
+                    "#fff"
+                ],
+                [
+                    "beginPath"
+                ],
+                [
+                    "arc",
+                    235.193043,
+                    1.903858,
+                    4.461339,
+                    0,
+                    6.283185
+                ],
+                [
+                    "fill"
+                ],
+                [
+                    "set:globalAlpha",
+                    0.9
+                ],
+                [
+                    "set:fillStyle",
+                    "#fff"
+                ],
+                [
+                    "beginPath"
+                ],
+                [
+                    "arc",
+                    229.807412,
+                    432.710545,
+                    2.860446,
+                    0,
+                    6.283185
+                ],
+                [
+                    "fill"
+                ]
+            ]
+        }
+    },
+    "particles": {
+        "confettiBurst/slow/subtle": {
+            "count": 28,
+            "sha256": "6fe27998cd725d76990aa8d78661f0d55132cfa906c274557596fe93971ac15c",
+            "first": {
+                "style": "--fx-x:-92px;--fx-x2:-112px;--fx-rise:-262px;--fx-fall:166px;--fx-rot:795deg;--fx-rot2:1670deg;--fx-size:12px;--fx-delay:0.000s;--fx-duration:2.52s;--fx-color:#ffcf4a",
+                "content": ""
+            }
+        },
+        "confettiBurst/slow/strong": {
+            "count": 42,
+            "sha256": "3687ca148e66e7c1ee326e8f37062e59380aeb8a45d6e7be1787460128c78007",
+            "first": {
+                "style": "--fx-x:-92px;--fx-x2:-112px;--fx-rise:-262px;--fx-fall:166px;--fx-rot:795deg;--fx-rot2:1670deg;--fx-size:14px;--fx-delay:0.000s;--fx-duration:2.52s;--fx-color:#ffcf4a",
+                "content": ""
+            }
+        },
+        "confettiBurst/normal/subtle": {
+            "count": 28,
+            "sha256": "4a2fcfb7bd2c3935d8a566afe3ea2b103a9ed6f7fd7815b48887162abe460759",
+            "first": {
+                "style": "--fx-x:-92px;--fx-x2:-112px;--fx-rise:-262px;--fx-fall:166px;--fx-rot:795deg;--fx-rot2:1670deg;--fx-size:12px;--fx-delay:0.000s;--fx-duration:1.97s;--fx-color:#ffcf4a",
+                "content": ""
+            }
+        },
+        "confettiBurst/normal/strong": {
+            "count": 42,
+            "sha256": "a22db943d0450e7cac7603df93b12d460dae6b2a8c8133b8af33c1739c61bcac",
+            "first": {
+                "style": "--fx-x:-92px;--fx-x2:-112px;--fx-rise:-262px;--fx-fall:166px;--fx-rot:795deg;--fx-rot2:1670deg;--fx-size:14px;--fx-delay:0.000s;--fx-duration:1.97s;--fx-color:#ffcf4a",
+                "content": ""
+            }
+        },
+        "floatingDust/slow/subtle": {
+            "count": 26,
+            "sha256": "30e88216e69627469b89e2deaf215863672fd9953654e8639f196a5b1da18a20",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-3.74s;--fx-duration:9.69s;--fx-size:7px;--fx-height:4px;--fx-glow:7px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.57;--fx-color:#ffffff",
+                "content": ""
+            }
+        },
+        "floatingDust/slow/strong": {
+            "count": 35,
+            "sha256": "202b1b3c7a9106bfaeccae0cc3cc264d8ae75b32c9bf579223d270684932e218",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-3.74s;--fx-duration:9.69s;--fx-size:8px;--fx-height:4px;--fx-glow:7px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.69;--fx-color:#ffffff",
+                "content": ""
+            }
+        },
+        "floatingDust/normal/subtle": {
+            "count": 26,
+            "sha256": "025fa20fcee70d62550cfa4443d07bf0f090c184c1eb143e85ecf8da08560721",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-2.92s;--fx-duration:7.56s;--fx-size:7px;--fx-height:4px;--fx-glow:7px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.57;--fx-color:#ffffff",
+                "content": ""
+            }
+        },
+        "floatingDust/normal/strong": {
+            "count": 35,
+            "sha256": "1344472606c54049b6e6cb51c58f1b81695e5befff4d3a81bad05ca73366b0de",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-2.92s;--fx-duration:7.56s;--fx-size:8px;--fx-height:4px;--fx-glow:7px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.69;--fx-color:#ffffff",
+                "content": ""
+            }
+        },
+        "softSparkles/slow/subtle": {
+            "count": 18,
+            "sha256": "a17858ad81f6baf3ada72973be38d4ff629916630e8e958860aeb55e87beebe9",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-3.74s;--fx-duration:9.69s;--fx-size:7px;--fx-height:4px;--fx-glow:7px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.57;--fx-color:#ffffff",
+                "content": "✦"
+            }
+        },
+        "softSparkles/slow/strong": {
+            "count": 24,
+            "sha256": "2d4306cf45f0ffd96288d03325d07bbbda52e419743a297cd0543e95a28400a1",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-3.74s;--fx-duration:9.69s;--fx-size:8px;--fx-height:4px;--fx-glow:7px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.69;--fx-color:#ffffff",
+                "content": "✦"
+            }
+        },
+        "softSparkles/normal/subtle": {
+            "count": 18,
+            "sha256": "9111d745c9e622e0a817b8e1d48d44deee7d6099446184b19a856209425b4c94",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-2.92s;--fx-duration:7.56s;--fx-size:7px;--fx-height:4px;--fx-glow:7px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.57;--fx-color:#ffffff",
+                "content": "✦"
+            }
+        },
+        "softSparkles/normal/strong": {
+            "count": 24,
+            "sha256": "47ce1a0edb1cef474dbbd8a9d532dea7140eea2b5478c6ab2825b7ecca38936f",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-2.92s;--fx-duration:7.56s;--fx-size:8px;--fx-height:4px;--fx-glow:7px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.69;--fx-color:#ffffff",
+                "content": "✦"
+            }
+        },
+        "fallingPetals/slow/subtle": {
+            "count": 18,
+            "sha256": "34135d2a2fa141d5a33d89aeac69311a40249fa67ce3d8cc440d8df73d943d9e",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-3.74s;--fx-duration:9.69s;--fx-size:14px;--fx-height:8px;--fx-glow:13px;--fx-drift:37px;--fx-rot:260deg;--fx-opacity:0.57;--fx-color:#f7b7c8",
+                "content": ""
+            }
+        },
+        "fallingPetals/slow/strong": {
+            "count": 24,
+            "sha256": "583071f2b66e6d5af3a0c77708fb169f06a3681b84777cd93d2b61823b852106",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-3.74s;--fx-duration:9.69s;--fx-size:17px;--fx-height:9px;--fx-glow:15px;--fx-drift:37px;--fx-rot:260deg;--fx-opacity:0.69;--fx-color:#f7b7c8",
+                "content": ""
+            }
+        },
+        "fallingPetals/normal/subtle": {
+            "count": 18,
+            "sha256": "246d3ac99dd0f34feb84397816e2f9fd28ba79147b81cab38b31a94352233217",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-2.92s;--fx-duration:7.56s;--fx-size:14px;--fx-height:8px;--fx-glow:13px;--fx-drift:37px;--fx-rot:260deg;--fx-opacity:0.57;--fx-color:#f7b7c8",
+                "content": ""
+            }
+        },
+        "fallingPetals/normal/strong": {
+            "count": 24,
+            "sha256": "17fb89b8c0b58261add6a5c489af2ba4a54b3a65b748f76fda64ccf8682b54d7",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-2.92s;--fx-duration:7.56s;--fx-size:17px;--fx-height:9px;--fx-glow:15px;--fx-drift:37px;--fx-rot:260deg;--fx-opacity:0.69;--fx-color:#f7b7c8",
+                "content": ""
+            }
+        },
+        "heartsDrift/slow/subtle": {
+            "count": 15,
+            "sha256": "fb972116843b5ddd6f57319681e3ce466c934e5276186dda79db0a9e2bafdb2a",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-3.74s;--fx-duration:9.69s;--fx-size:16px;--fx-height:9px;--fx-glow:14px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.57;--fx-color:#f38ba0",
+                "content": "♥"
+            }
+        },
+        "heartsDrift/slow/strong": {
+            "count": 20,
+            "sha256": "59d3d9ac69df98206d89d2d8276637be46b520f5c8ec52c04fb2079e9378db2c",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-3.74s;--fx-duration:9.69s;--fx-size:19px;--fx-height:10px;--fx-glow:17px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.69;--fx-color:#f38ba0",
+                "content": "♥"
+            }
+        },
+        "heartsDrift/normal/subtle": {
+            "count": 15,
+            "sha256": "b9986835df4d92246d78b016d2bce593e8e25d194d886dcd3d50387de019483c",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-2.92s;--fx-duration:7.56s;--fx-size:16px;--fx-height:9px;--fx-glow:14px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.57;--fx-color:#f38ba0",
+                "content": "♥"
+            }
+        },
+        "heartsDrift/normal/strong": {
+            "count": 20,
+            "sha256": "1a98c06da358c6c04d4fb0312de393dd29f34b57172df9c48f9def118e831524",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-2.92s;--fx-duration:7.56s;--fx-size:19px;--fx-height:10px;--fx-glow:17px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.69;--fx-color:#f38ba0",
+                "content": "♥"
+            }
+        },
+        "goldenDust/slow/subtle": {
+            "count": 30,
+            "sha256": "3b78ccf9eb5e4c51e9f8747104b05868f0c77bc4692e0780cc1d84937ade64c0",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-3.74s;--fx-duration:9.69s;--fx-size:7px;--fx-height:4px;--fx-glow:7px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.57;--fx-color:#f6d365",
+                "content": ""
+            }
+        },
+        "goldenDust/slow/strong": {
+            "count": 41,
+            "sha256": "97ca10646778de5f2a386b548384146b386fdda62823dcf15ff8dcb0382416b5",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-3.74s;--fx-duration:9.69s;--fx-size:8px;--fx-height:4px;--fx-glow:7px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.69;--fx-color:#f6d365",
+                "content": ""
+            }
+        },
+        "goldenDust/normal/subtle": {
+            "count": 30,
+            "sha256": "06ff8964966eedb7749620a3ae3572e2d1844d9c00c5be50f5cb24ee5be6a2e8",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-2.92s;--fx-duration:7.56s;--fx-size:7px;--fx-height:4px;--fx-glow:7px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.57;--fx-color:#f6d365",
+                "content": ""
+            }
+        },
+        "goldenDust/normal/strong": {
+            "count": 41,
+            "sha256": "b137d7a25f72147dbaf784b29e41205e0da7e616caa4cc841f78d54f2efcffcd",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-2.92s;--fx-duration:7.56s;--fx-size:8px;--fx-height:4px;--fx-glow:7px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.69;--fx-color:#f6d365",
+                "content": ""
+            }
+        },
+        "autumnLeaves/slow/subtle": {
+            "count": 18,
+            "sha256": "a82061c2c38f98d4eeb46aa0f359103e29eae9f5ec2cbfefdd84e21fd88c2d5e",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-3.74s;--fx-duration:9.69s;--fx-size:14px;--fx-height:8px;--fx-glow:13px;--fx-drift:37px;--fx-rot:260deg;--fx-opacity:0.57;--fx-color:#d88632",
+                "content": ""
+            }
+        },
+        "autumnLeaves/slow/strong": {
+            "count": 24,
+            "sha256": "531d87d4d7a52100b39be50e19b572e860ef748f8a5095bdf3f894073ab1c4f5",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-3.74s;--fx-duration:9.69s;--fx-size:17px;--fx-height:9px;--fx-glow:15px;--fx-drift:37px;--fx-rot:260deg;--fx-opacity:0.69;--fx-color:#d88632",
+                "content": ""
+            }
+        },
+        "autumnLeaves/normal/subtle": {
+            "count": 18,
+            "sha256": "482cec863e5bfd9efff620e644974d24e838ec3f5ff7a091999793ed00559e11",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-2.92s;--fx-duration:7.56s;--fx-size:14px;--fx-height:8px;--fx-glow:13px;--fx-drift:37px;--fx-rot:260deg;--fx-opacity:0.57;--fx-color:#d88632",
+                "content": ""
+            }
+        },
+        "autumnLeaves/normal/strong": {
+            "count": 24,
+            "sha256": "f89295b45c606d07dfdab7636af43489c0ff5c31acdae0cb690b016719d6edbc",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-2.92s;--fx-duration:7.56s;--fx-size:17px;--fx-height:9px;--fx-glow:15px;--fx-drift:37px;--fx-rot:260deg;--fx-opacity:0.69;--fx-color:#d88632",
+                "content": ""
+            }
+        },
+        "christmasTwinkle/slow/subtle": {
+            "count": 20,
+            "sha256": "dabaf745df3b863dcd4b0d55177bf85ea07598aafd96dc8627b9cd6a151079d6",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-3.74s;--fx-duration:9.69s;--fx-size:7px;--fx-height:4px;--fx-glow:7px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.57;--fx-color:#ffffff",
+                "content": "✦"
+            }
+        },
+        "christmasTwinkle/slow/strong": {
+            "count": 27,
+            "sha256": "8f03e6bec95193807dc496f4186a1bc9d1d6016edb1ece8bd1c841846de98934",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-3.74s;--fx-duration:9.69s;--fx-size:8px;--fx-height:4px;--fx-glow:7px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.69;--fx-color:#ffffff",
+                "content": "✦"
+            }
+        },
+        "christmasTwinkle/normal/subtle": {
+            "count": 20,
+            "sha256": "a2eee81530aa49308466296f524da2c51ad27ca5b3c81c9797e903d1ae5249a3",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-2.92s;--fx-duration:7.56s;--fx-size:7px;--fx-height:4px;--fx-glow:7px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.57;--fx-color:#ffffff",
+                "content": "✦"
+            }
+        },
+        "christmasTwinkle/normal/strong": {
+            "count": 27,
+            "sha256": "87d16f94822512717362700beb7f34733f228ee9af5cfb3ee1b645891d2f3140",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-2.92s;--fx-duration:7.56s;--fx-size:8px;--fx-height:4px;--fx-glow:7px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.69;--fx-color:#ffffff",
+                "content": "✦"
+            }
+        },
+        "bokehLights/slow/subtle": {
+            "count": 14,
+            "sha256": "8314eac6ce3d5e4a0832fcf53caaac80d2a3841ca6802795defd7b0e225c19c4",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-3.74s;--fx-duration:9.69s;--fx-size:32px;--fx-height:18px;--fx-glow:29px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.57;--fx-color:#ffffff",
+                "content": ""
+            }
+        },
+        "bokehLights/slow/strong": {
+            "count": 19,
+            "sha256": "aa941a41b4c4dcb708d07977ee16cfcd35ec2dd07681b634256c07105becfc8e",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-3.74s;--fx-duration:9.69s;--fx-size:38px;--fx-height:21px;--fx-glow:34px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.69;--fx-color:#ffffff",
+                "content": ""
+            }
+        },
+        "bokehLights/normal/subtle": {
+            "count": 14,
+            "sha256": "dbfddac3b9f3eb72001c64fdc3520ad52c83f632bff8eaee972e5e602cc831cc",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-2.92s;--fx-duration:7.56s;--fx-size:32px;--fx-height:18px;--fx-glow:29px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.57;--fx-color:#ffffff",
+                "content": ""
+            }
+        },
+        "bokehLights/normal/strong": {
+            "count": 19,
+            "sha256": "46f885ccc6164f2a5956ef969ece7804b379e0a13980d9a88b2bf31e14fb769f",
+            "first": {
+                "style": "--fx-left:33.60%;--fx-top:43.26%;--fx-delay:-2.92s;--fx-duration:7.56s;--fx-size:38px;--fx-height:21px;--fx-glow:34px;--fx-drift:21px;--fx-rot:260deg;--fx-opacity:0.69;--fx-color:#ffffff",
+                "content": ""
+            }
+        }
+    }
+}
