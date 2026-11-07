@@ -1,0 +1,97 @@
+import { useReducedMotion } from 'framer-motion';
+import { animate } from 'framer-motion/dom/mini';
+import { type RefObject, useLayoutEffect } from 'react';
+
+import {
+    propertiesToClear,
+    TEXT_OBSERVER_OPTIONS,
+    type TextAnimation,
+    textBlockIsOnScreen,
+    textReveal,
+    textRevealOptions,
+} from '@/lib/invitation/textReveal';
+
+const PENDING = 'wedart-text-anim-pending';
+const WAITING = 'wedart-text-anim-waiting';
+
+// The theme's text animation. Each text block plays it once, when that block
+// reaches the screen, rather than when its section does. Text already on screen
+// starts straight away. Works on the page's text blocks directly, like the old
+// engine, so the sections don't have to know about it.
+export function useTextReveal(rootRef: RefObject<HTMLElement | null>, animation: TextAnimation) {
+    const reduceMotion = useReducedMotion();
+
+    useLayoutEffect(() => {
+        const root = rootRef.current;
+        const reveal = textReveal(animation);
+        if (!root) return;
+        if (!reveal || reduceMotion) {
+            root.classList.remove(WAITING);
+            return;
+        }
+
+        const blocks = Array.from(root.querySelectorAll<HTMLElement>('.section .text-block'));
+        const running = new Set<{ cancel: () => void }>();
+        const clearStyles = (block: HTMLElement) => {
+            for (const property of propertiesToClear(reveal)) block.style.setProperty(kebabCase(property), '');
+        };
+
+        const revealBlock = (block: HTMLElement) => {
+            if (!block.classList.contains(PENDING)) return;
+            block.classList.remove(PENDING);
+            observer.unobserve(block);
+            const playback = animate(block, reveal.keyframes, textRevealOptions(reveal));
+            running.add(playback);
+            playback.then(() => {
+                running.delete(playback);
+                clearStyles(block);
+            });
+        };
+        const revealOnScreen = () => {
+            for (const block of blocks) {
+                if (block.classList.contains(PENDING) && textBlockIsOnScreen(block.getBoundingClientRect(), window.innerWidth, window.innerHeight)) {
+                    revealBlock(block);
+                }
+            }
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting || entry.intersectionRatio > 0) revealBlock(entry.target as HTMLElement);
+            });
+        }, TEXT_OBSERVER_OPTIONS);
+
+        for (const block of blocks) {
+            block.classList.add(PENDING);
+            observer.observe(block);
+        }
+        root.classList.remove(WAITING);
+        revealOnScreen();
+
+        // The scroll check covers scrolling inside other boxes, as the old engine's did.
+        let frame = 0;
+        const onViewportChange = () => {
+            if (frame) return;
+            frame = requestAnimationFrame(() => {
+                frame = 0;
+                revealOnScreen();
+            });
+        };
+        window.addEventListener('scroll', onViewportChange, { passive: true, capture: true });
+        window.addEventListener('resize', onViewportChange, { passive: true });
+
+        return () => {
+            observer.disconnect();
+            window.removeEventListener('scroll', onViewportChange, { capture: true });
+            window.removeEventListener('resize', onViewportChange);
+            if (frame) cancelAnimationFrame(frame);
+            running.forEach((playback) => playback.cancel());
+            for (const block of blocks) {
+                block.classList.remove(PENDING);
+                clearStyles(block);
+            }
+        };
+    }, [rootRef, animation, reduceMotion]);
+}
+
+const kebabCase = (property: string) => property.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
