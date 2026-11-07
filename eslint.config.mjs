@@ -150,5 +150,6 @@ export default defineConfig([
         '.claude/**',
         'docs/**',
         'public/mockServiceWorker.js',
+        'visual-output/**',
     ]),
 ]);

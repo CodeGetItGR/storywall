@@ -2135,6 +2135,8 @@ If no story needed fixing, close the PR instead of merging, and record that on K
 
 Nothing blocks a merge in this part. Once it's on `staging`, reports work, and the approve box starts working after it reaches `main` in a release.
 
+A review after these tasks were built changed the publish, approve and cleanup code. The code in the repo and the spec are correct where they differ from the listings below.
+
 ### Task 4.1: Manifest validation
 
 **Files:**
@@ -3505,7 +3507,7 @@ gh pr create --base staging --title "KAN-155: visual reports on PRs (report only
 gh pr checks --watch
 ```
 
-Expected: `visual-regression` goes green with `No visual changes`, since this PR changes no stories. Merge it into `staging` once checks pass, following the normal rules.
+Expected: the `capture` job passes and `visual-regression` shows an error from the `publish` job. That job runs its scripts from the PR's base commit, and `staging` doesn't have them until this PR merges. It only happens on this PR, and nothing blocks yet. Say so in the PR, then merge it into `staging` once the other checks pass, following the normal rules. The publish path is tested for real in Step 4.
 
 - [ ] **Step 3: Confirm a baseline was saved after the merge**
 
@@ -3569,6 +3571,11 @@ Push a change that doesn't affect any story, such as a comment in a script. Expe
 ### Task 5.2: Require the check on staging
 
 Confirm with the owner right before this step, because it changes how every PR merges.
+
+- [ ] **Step 0: Close two gaps that only matter once the check blocks**
+
+1. **A PR moved to another base branch keeps its old result.** Add a workflow on `pull_request` `edited` with `if: github.event.changes.base`, which sets `visual-regression` to failure on the head commit with a note to push again. Don't add `edited` to `visual-check.yml`: it cancels running checks, so a title edit would cancel a run.
+2. **Anyone with write access can post a status with this name.** In the rule below, pin the check to GitHub Actions by adding `integration_id` next to `context` in `required_status_checks`. Look up the current ID first, for example from `gh api repos/CodeGetItGR/storywall/commits/<sha>/check-runs --jq '.check_runs[].app | "\(.id) \(.slug)"'`, and confirm that a status posted by a workflow satisfies the pinned rule on a test PR.
 
 - [ ] **Step 1: Add the rule**
 

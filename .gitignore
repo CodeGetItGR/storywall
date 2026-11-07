@@ -24,3 +24,6 @@ next-env.d.ts
 # Storybook
 storybook-static/
 *storybook.log
+
+# Visual check
+visual-output/

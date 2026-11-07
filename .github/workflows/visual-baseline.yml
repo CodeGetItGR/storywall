@@ -1,0 +1,51 @@
+name: Visual baseline
+
+# Saves captures for each staging commit, so PRs branching from it don't have to build them.
+on:
+    push:
+        branches: [staging]
+
+concurrency:
+    group: visual-baseline
+    cancel-in-progress: false
+
+permissions:
+    contents: read
+
+jobs:
+    capture:
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        container: mcr.microsoft.com/playwright:v1.55.0-noble
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  persist-credentials: false
+
+            - id: lookup
+              uses: actions/cache/restore@v6
+              with:
+                  path: visual-output/base
+                  key: visual-base-${{ github.sha }}-${{ hashFiles('scripts/visual/capture.ts', 'scripts/visual/stories.ts', 'scripts/visual/config.ts') }}-pw1.55.0
+                  lookup-only: true
+
+            - if: steps.lookup.outputs.cache-hit != 'true'
+              uses: actions/setup-node@v7
+              with:
+                  node-version: 22
+                  cache: npm
+
+            - if: steps.lookup.outputs.cache-hit != 'true'
+              run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+            - if: steps.lookup.outputs.cache-hit != 'true'
+              run: npm ci
+
+            - if: steps.lookup.outputs.cache-hit != 'true'
+              run: npm run visual -- --capture-only
+
+            - if: steps.lookup.outputs.cache-hit != 'true'
+              uses: actions/cache/save@v6
+              with:
+                  path: visual-output/base
+                  key: ${{ steps.lookup.outputs.cache-primary-key }}

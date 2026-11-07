@@ -1,0 +1,14 @@
+<!-- Next's build gives Geist an Arial fallback, and that's what Greek text shows on the real site. Storybook's font plugin doesn't, so Greek would otherwise fall through to a serif. -->
+<style>
+    @font-face {
+        font-family: 'Geist Fallback';
+        src: local('Arial'), local('Liberation Sans');
+        ascent-override: 95.94%;
+        descent-override: 28.16%;
+        line-gap-override: 0%;
+        size-adjust: 104.76%;
+    }
+    html {
+        font-family: Geist, 'Geist Fallback', sans-serif !important;
+    }
+</style>

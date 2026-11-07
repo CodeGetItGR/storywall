@@ -68,6 +68,8 @@ play: async ({ canvasElement, globals }) => {
 
 Menus and modals render in a portal: look for their contents in `within(document.body)`.
 
+After a click that opens a menu or dialog, call `await waitForOpen('menu')` or `await waitForOpen('dialog')` from `.storybook/waitForOpen.ts`. Without it, the visual check can capture the story before it opens.
+
 ## Mocking Spring data
 
 Components that fetch through `lib/api` read from MSW in stories. Add handlers in the story's (or the file's) `beforeEach`. Start paths with `*/api/` so they match whatever the API base URL is:
@@ -102,3 +104,17 @@ export const Failed: Story = {
 ```
 
 A handler in a story's `beforeEach` takes precedence over one in the file's.
+
+## Visual check
+
+Every PR, except PRs into `main` and from forks, gets a check named `visual-regression`. It captures every story and compares it with the commit the PR branched from.
+
+- Nothing changed: the check is green.
+- A story changed, is new or was removed: the check is red, and one comment on the PR has the counts, previews, a link to the full report and an approve box. Ticking the box turns the check green. A new push with identical visuals keeps the approval, and any other change clears it.
+- A story failed to render: fix the story, or tag it `visual-skip` if it can't be made stable. This can't be approved.
+
+Reports are public and are deleted when the PR closes.
+
+To compare locally, run `npm run visual -- --base origin/staging --serve`. Run `npx playwright-core install chromium` once first. Windows renders differently from CI, so a local run only compares with itself, and CI decides.
+
+The code is in `scripts/visual/`, and the design is in `docs/superpowers/specs/2026-11-06-visual-regression-tool-design.md`.
