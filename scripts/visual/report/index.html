@@ -21,6 +21,7 @@
                 font:
                     14px/1.5 system-ui,
                     sans-serif;
+                overflow-wrap: anywhere;
             }
             h1 {
                 margin: 0;
@@ -46,14 +47,14 @@
                 gap: 12px;
             }
             .images {
-                display: flex;
-                flex-wrap: wrap;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
                 gap: 12px;
-                align-items: flex-start;
+                align-items: start;
             }
             figure {
                 margin: 0;
-                max-width: 100%;
+                min-width: 0;
             }
             figcaption {
                 margin-bottom: 4px;

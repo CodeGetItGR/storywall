@@ -1,0 +1,34 @@
+name: Visual cleanup
+
+# Runs from staging, so a PR's own changes to the scripts never see the deploy key.
+on:
+    pull_request_target:
+        types: [closed]
+        branches: [staging]
+
+concurrency:
+    group: visual-cleanup-${{ github.event.pull_request.number }}
+    cancel-in-progress: false
+
+permissions:
+    contents: read
+
+jobs:
+    cleanup:
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  sparse-checkout: scripts/visual
+
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 22
+
+            - run: node scripts/visual/cleanup.mjs
+              env:
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  REPORTS_REPO: CodeGetItGR/storywall-visual-reports
+                  VISUAL_REPORTS_DEPLOY_KEY: ${{ secrets.VISUAL_REPORTS_DEPLOY_KEY }}
