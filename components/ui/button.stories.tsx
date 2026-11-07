@@ -19,6 +19,12 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
+export const ReportTestThrows: Story = {
+    render: () => {
+        throw new Error('Thrown on purpose for test 5');
+    },
+};
+
 export const Variants: Story = {
     render: (args) => (
         <div className="flex flex-wrap items-center gap-3">
