@@ -4,6 +4,7 @@ import { userEvent, within } from 'storybook/test';
 import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
 import { STORY_GUEST_MEMBER_ID, storyAuthor, storyComment, storyHostMember } from '@/.storybook/fixtures';
+import { waitForOpen } from '@/.storybook/waitForOpen';
 import { CommentActionsMenu } from '@/components/feed/post/CommentActionsMenu';
 
 const myComment = storyComment('c-mine', {
@@ -13,8 +14,7 @@ const myComment = storyComment('c-mine', {
 
 async function openMenu({ canvasElement, globals }: { canvasElement: HTMLElement; globals: Record<string, unknown> }) {
     await userEvent.click(within(canvasElement).getByRole('button', { name: copyFor(globals).PostModal.moreCommentOptions }));
-    // The menu opens a few frames after the click, so the story isn't ready until it's there.
-    await within(document.body).findByRole('menu', {}, { timeout: 10_000 });
+    await waitForOpen('menu');
 }
 
 // A guest looking at someone else's comment can report it.
@@ -45,5 +45,6 @@ export const ConfirmDelete: Story = {
     play: async (context) => {
         await openMenu(context);
         await userEvent.click(await within(document.body).findByRole('menuitem', { name: copyFor(context.globals).PostModal.deleteComment }));
+        await waitForOpen('dialog');
     },
 };

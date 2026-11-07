@@ -68,6 +68,8 @@ play: async ({ canvasElement, globals }) => {
 
 Menus and modals render in a portal: look for their contents in `within(document.body)`.
 
+After a click that opens a menu or dialog, call `await waitForOpen('menu')` or `await waitForOpen('dialog')` from `.storybook/waitForOpen.ts`. Without it, the visual check can capture the story before it opens.
+
 ## Mocking Spring data
 
 Components that fetch through `lib/api` read from MSW in stories. Add handlers in the story's (or the file's) `beforeEach`. Start paths with `*/api/` so they match whatever the API base URL is:

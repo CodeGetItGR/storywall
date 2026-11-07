@@ -3,6 +3,7 @@ import { useTranslations } from 'next-intl';
 import { fn, userEvent, within } from 'storybook/test';
 
 import { copyFor } from '@/.storybook/copy';
+import { waitForOpen } from '@/.storybook/waitForOpen';
 import { PostActionsMenu } from '@/components/feed/post/PostActionsMenu';
 
 type MenuArgs = { canEdit: boolean; canDelete: boolean; canReport: boolean; canReportRole: boolean; isDeleting: boolean };
@@ -43,8 +44,7 @@ const meta = {
         const trigger = within(canvasElement).getByRole('button', { name: copyFor(globals).PostCard.moreOptions });
         if ((trigger as HTMLButtonElement).disabled) return;
         await userEvent.click(trigger);
-        // The menu opens a few frames after the click, so the story isn't ready until it's there.
-        await within(document.body).findByRole('menu', {}, { timeout: 10_000 });
+        await waitForOpen('menu');
     },
 } satisfies Meta<typeof PostMenu>;
 
