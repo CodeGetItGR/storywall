@@ -27,6 +27,26 @@ export type InvitationLabels = {
     parents: string;
     godparents: string;
     photoAlt: string;
+    map: string;
+    website: string;
+    copy: string;
+    copied: string;
+    rsvpName: string;
+    rsvpPhone: string;
+    rsvpEmail: string;
+    rsvpAttend: string;
+    rsvpYes: string;
+    rsvpNo: string;
+    rsvpAdults: string;
+    rsvpChildren: string;
+    rsvpNotes: string;
+    rsvpPlaceholder: string;
+    rsvpSubmit: string;
+    rsvpSending: string;
+    rsvpThanks: string;
+    rsvpError: string;
+    rsvpNameMissing: string;
+    rsvpPhoneMissing: string;
 };
 
 const SHARED = {
@@ -38,6 +58,7 @@ const SHARED = {
     contactFacebook: 'Facebook',
     contactInstagram: 'Instagram',
     contactTiktok: 'TikTok',
+    rsvpEmail: 'Email',
 };
 
 export const INVITATION_LABELS: Record<DateLanguage, InvitationLabels> = {
@@ -55,6 +76,25 @@ export const INVITATION_LABELS: Record<DateLanguage, InvitationLabels> = {
         parents: 'Γονείς',
         godparents: 'Νονοί',
         photoAlt: 'Φωτογραφία προσώπου',
+        map: 'Χάρτης',
+        website: 'Ιστοσελίδα',
+        copy: 'Αντιγραφή',
+        copied: 'Αντιγράφηκε ✓',
+        rsvpName: 'Ονοματεπώνυμο *',
+        rsvpPhone: 'Τηλέφωνο επικοινωνίας *',
+        rsvpAttend: 'Θα παραστείτε; *',
+        rsvpYes: 'Ναι, θα παραστώ',
+        rsvpNo: 'Δυστυχώς δεν θα μπορέσω',
+        rsvpAdults: 'Ενήλικοι',
+        rsvpChildren: 'Παιδιά',
+        rsvpNotes: 'Παρατηρήσεις',
+        rsvpPlaceholder: 'Η απάντησή σας',
+        rsvpSubmit: 'Υποβολή',
+        rsvpSending: 'Αποστολή...',
+        rsvpThanks: 'Ευχαριστούμε για την απάντηση σας',
+        rsvpError: 'Κάτι πήγε στραβά — δοκιμάστε ξανά.',
+        rsvpNameMissing: 'Συμπλήρωσε το ονοματεπώνυμό σου.',
+        rsvpPhoneMissing: 'Συμπλήρωσε το τηλέφωνο επικοινωνίας.',
     },
     en: {
         ...SHARED,
@@ -70,6 +110,25 @@ export const INVITATION_LABELS: Record<DateLanguage, InvitationLabels> = {
         parents: 'Parents',
         godparents: 'Godparents',
         photoAlt: 'Photo of a person',
+        map: 'Map',
+        website: 'Website',
+        copy: 'Copy',
+        copied: 'Copied ✓',
+        rsvpName: 'Full name *',
+        rsvpPhone: 'Contact phone *',
+        rsvpAttend: 'Will you attend? *',
+        rsvpYes: 'Yes, I will attend',
+        rsvpNo: "Sorry, I can't make it",
+        rsvpAdults: 'Adults',
+        rsvpChildren: 'Children',
+        rsvpNotes: 'Notes',
+        rsvpPlaceholder: 'Your answer',
+        rsvpSubmit: 'Submit',
+        rsvpSending: 'Sending...',
+        rsvpThanks: 'Thank you for your reply',
+        rsvpError: 'Something went wrong. Please try again.',
+        rsvpNameMissing: 'Fill in your full name.',
+        rsvpPhoneMissing: 'Fill in your contact phone.',
     },
 };
 

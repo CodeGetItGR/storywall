@@ -17,6 +17,12 @@ import { ParentsSimpleSection } from '@/components/saveMyDate/invitation/section
 import { PhotoPeopleSection } from '@/components/saveMyDate/invitation/sections/family/PhotoPeopleSection';
 import { FaqSection } from '@/components/saveMyDate/invitation/sections/faq/FaqSection';
 import { FooterSection } from '@/components/saveMyDate/invitation/sections/FooterSection';
+import { AccommodationSection } from '@/components/saveMyDate/invitation/sections/info/AccommodationSection';
+import { GiftSection } from '@/components/saveMyDate/invitation/sections/info/GiftSection';
+import { LocationsSection } from '@/components/saveMyDate/invitation/sections/info/LocationsSection';
+import { ProgramIconsSection } from '@/components/saveMyDate/invitation/sections/info/ProgramIconsSection';
+import { ProgramSection } from '@/components/saveMyDate/invitation/sections/info/ProgramSection';
+import { RsvpSection } from '@/components/saveMyDate/invitation/sections/info/RsvpSection';
 import { InvitationTextSection } from '@/components/saveMyDate/invitation/sections/InvitationTextSection';
 import { TopSection } from '@/components/saveMyDate/invitation/sections/TopSection';
 import { type RenderContext, sectionShell, type TextContrast } from '@/lib/invitation/render';
@@ -53,6 +59,12 @@ const BUILT_SECTION_TYPES: ReadonlySet<SectionType> = new Set([
     'coupleProfiles',
     'coupleProfilesSimple',
     'ourStoryProposal',
+    'program',
+    'programIcons',
+    'locations',
+    'accommodation',
+    'gift',
+    'rsvp',
 ]);
 
 export function InvitationSection({ section, index, ctx }: InvitationSectionProps) {
@@ -111,6 +123,18 @@ function SectionContent({ section, contrast, ctx }: SectionContentProps) {
             return <CoupleProfilesSimpleSection section={section} contrast={contrast} ctx={ctx} />;
         case 'ourStoryProposal':
             return <OurStoryProposalSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'program':
+            return <ProgramSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'programIcons':
+            return <ProgramIconsSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'locations':
+            return <LocationsSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'accommodation':
+            return <AccommodationSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'gift':
+            return <GiftSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'rsvp':
+            return <RsvpSection section={section} contrast={contrast} ctx={ctx} />;
         case 'photoFrame':
             return (
                 <div className="section-inner">

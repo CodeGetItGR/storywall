@@ -5,6 +5,7 @@ import { InvitationSection } from '@/components/saveMyDate/invitation/Invitation
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { invitationLanguage } from '@/lib/invitation/labels';
 import { buildRenderContext, type MediaResolver, themeCssVars, type TypographyPreset } from '@/lib/invitation/render';
+import type { RsvpSender } from '@/lib/invitation/rsvp';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import { type InvitationFontDto, uploadedFontFaceCss } from '@/lib/invitation/uploadedFonts';
 
@@ -16,12 +17,14 @@ type InvitationRendererProps = {
     hostPreset?: TypographyPreset;
     // The backend's font catalogue, for fonts uploaded in the admin.
     uploadedFonts?: InvitationFontDto[];
+    // Sends a guest's RSVP reply; leave it out where nothing should be saved.
+    sendRsvp?: RsvpSender;
 };
 
 // The invitation as guests see it. The staging preview, the editor canvas and
 // the published page all render through this.
-export function InvitationRenderer({ document, theme, media, hostPreset, uploadedFonts = [] }: InvitationRendererProps) {
-    const ctx = buildRenderContext(document, theme, media, hostPreset);
+export function InvitationRenderer({ document, theme, media, hostPreset, uploadedFonts = [], sendRsvp }: InvitationRendererProps) {
+    const ctx = buildRenderContext(document, theme, media, hostPreset, sendRsvp);
     const fontFaces = uploadedFontFaceCss(uploadedFonts, [document, theme, hostPreset]);
 
     return (
