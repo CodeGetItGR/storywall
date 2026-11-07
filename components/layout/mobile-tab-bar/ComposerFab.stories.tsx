@@ -3,6 +3,7 @@ import { userEvent, within } from 'storybook/test';
 
 import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
+import { waitForOpen } from '@/.storybook/waitForOpen';
 import { ComposerFab } from '@/components/layout/mobile-tab-bar/ComposerFab';
 
 const meta = {
@@ -30,6 +31,7 @@ export const Default: Story = {};
 export const MenuOpen: Story = {
     async play({ canvasElement, globals }) {
         await userEvent.click(within(canvasElement).getByRole('button', { name: copyFor(globals).MobileTabBar.compose }));
+        await waitForOpen('menu');
     },
 };
 

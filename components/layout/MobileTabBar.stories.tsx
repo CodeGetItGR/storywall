@@ -5,6 +5,7 @@ import { userEvent, within } from 'storybook/test';
 import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
 import { storyEvent, storyHostMember, storyQrLink } from '@/.storybook/fixtures';
+import { waitForOpen } from '@/.storybook/waitForOpen';
 import { MobileTabBar } from '@/components/layout/MobileTabBar';
 
 const FEED_PATH = '/events/evt-story/feed';
@@ -37,6 +38,7 @@ export const Guest: Story = {};
 export const GuestToolsOpen: Story = {
     async play({ canvasElement, globals }) {
         await userEvent.click(within(canvasElement).getByRole('button', { name: copyFor(globals).MobileTabBar.toolsMenu }));
+        await waitForOpen('menu');
     },
 };
 
