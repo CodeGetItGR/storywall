@@ -27,9 +27,11 @@ describe('deploy key', () => {
 
     it('cleans up with the scripts from staging', () => {
         const cleanup = readFileSync('.github/workflows/visual-cleanup.yml', 'utf8');
-        expect(cleanup).toContain('pull_request_target:');
+        expect(cleanup).toContain('pull_request:');
+        expect(cleanup).not.toMatch(/^\s+pull_request_target:/m);
+        expect(cleanup).toContain('types: [closed]');
         expect(cleanup).toContain('branches: [staging]');
-        expect(cleanup).not.toContain('ref:');
+        expect(cleanup).toContain('ref: ${{ github.event.pull_request.base.ref }}');
     });
 });
 
