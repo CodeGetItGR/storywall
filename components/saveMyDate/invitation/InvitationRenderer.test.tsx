@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { InvitationRenderer } from '@/components/saveMyDate/invitation/InvitationRenderer';
 import type { DateLanguage } from '@/lib/invitation/dateDisplay';
 import type { InvitationDocument } from '@/lib/invitation/document';
+import { stubIntersectionObserver } from '@/lib/invitation/fakeIntersectionObserver';
 import { INVITATION_LABELS } from '@/lib/invitation/labels';
 import type { RsvpSender } from '@/lib/invitation/rsvp';
 import { SAMPLE_DOCUMENT, SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
@@ -24,6 +25,9 @@ vi.stubGlobal('ResizeObserver', class {
     observe() {}
     disconnect() {}
 });
+
+// It has no IntersectionObserver either, and sections with effects need one.
+stubIntersectionObserver();
 
 // Where each section type's story is, from this folder. The file must use
 // storySection('<type>') from .storybook/invitation.tsx.
