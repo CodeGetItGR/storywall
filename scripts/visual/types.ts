@@ -24,3 +24,5 @@ export type Manifest = {
     entries: ReportEntry[];
     missingStories: string[];
 };
+
+export type ChangeGroup = { key: string; kind: 'color' | 'exact'; from?: string; to?: string };
