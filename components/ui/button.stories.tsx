@@ -19,6 +19,8 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
+export const ReportTestNew: Story = { args: { children: 'New story' } };
+
 export const Variants: Story = {
     render: (args) => (
         <div className="flex flex-wrap items-center gap-3">
