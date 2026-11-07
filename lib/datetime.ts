@@ -170,7 +170,7 @@ export function formatShortDateTime(value: string | number | Date, locale?: stri
     return formatDate(locale ?? undefined, value, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
-export function formatEventListDate(startAt: string | undefined, locale: string, atLabel: string): string | null {
+export function formatEventListDate(startAt: string | null | undefined, locale: string, atLabel: string): string | null {
     if (!startAt) return null;
 
     const date = parseDate(startAt);

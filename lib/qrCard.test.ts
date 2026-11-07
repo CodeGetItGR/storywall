@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { EventModuleResponseDto, QrCardTemplateDto } from '@/lib/api/types';
+import type { QrCardTemplateDto } from '@/lib/api/types';
 import {
     estimateTextWidth,
     fitText,
@@ -179,22 +179,16 @@ describe('QR_CARD_SIZES', () => {
 });
 
 describe('qrCardLineKey', () => {
-    const modules = (gallery: boolean, wishbook: boolean) =>
-        [
-            { moduleKey: 'gallery', isEnabled: gallery, isAvailable: gallery, configuration: { qrUploadEnabled: true } },
-            { moduleKey: 'wishbook', isEnabled: wishbook, isAvailable: wishbook, configuration: null },
-        ] as EventModuleResponseDto[];
-
     it('keeps the line of every other code', () => {
-        expect(qrCardLineKey('EVENT_JOIN', modules(true, true))).toBe('join');
-        expect(qrCardLineKey('INVITATION', modules(true, true))).toBe('invitation');
-        expect(qrCardLineKey('MEDIA_UPLOAD', modules(true, true))).toBe('gallery');
+        expect(qrCardLineKey('EVENT_JOIN', ['UPLOAD', 'WISH'])).toBe('join');
+        expect(qrCardLineKey('INVITATION', ['UPLOAD', 'WISH'])).toBe('invitation');
+        expect(qrCardLineKey('MEDIA_UPLOAD', ['UPLOAD', 'WISH'])).toBe('gallery');
     });
 
     it('words the guest code by what it offers', () => {
-        expect(qrCardLineKey('GUEST', modules(true, false))).toBe('gallery');
-        expect(qrCardLineKey('GUEST', modules(false, true))).toBe('guestWish');
-        expect(qrCardLineKey('GUEST', modules(true, true))).toBe('guestBoth');
+        expect(qrCardLineKey('GUEST', ['UPLOAD'])).toBe('gallery');
+        expect(qrCardLineKey('GUEST', ['WISH'])).toBe('guestWish');
+        expect(qrCardLineKey('GUEST', ['UPLOAD', 'WISH'])).toBe('guestBoth');
     });
 });
 

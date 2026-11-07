@@ -46,6 +46,7 @@ const upgradeOption: UpgradeOptionResponseDto = {
     ],
     discountPercent: null,
     discountLabel: null,
+    requirements: { takesGuests: true, needsSchedule: true, needsVenue: true },
 };
 
 function queryResult<T>(data: T, overrides: Record<string, unknown> = {}) {

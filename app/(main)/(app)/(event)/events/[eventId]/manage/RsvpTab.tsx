@@ -24,7 +24,7 @@ export default function RsvpTab({
     eventId: string;
     members: RosterMember[];
     rsvps: RosterRsvp[];
-    startAt: string;
+    startAt: string | null;
     rsvpDeadline: string | null;
     canWrite: boolean;
     origin: RsvpReportOrigin;

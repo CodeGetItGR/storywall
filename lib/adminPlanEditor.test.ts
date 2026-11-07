@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { planRequirementsOf } from '@/lib/__fixtures__/planRequirements';
 import { planChangeSummary, planPatchFromFormData } from '@/lib/adminPlanEditor';
 import type { PlanTierResponseDto } from '@/lib/api/types';
 
@@ -31,6 +32,7 @@ function plan(overrides: Partial<PlanTierResponseDto> = {}): PlanTierResponseDto
         sharedGroupKey: null,
         initialOptions: [],
         extensionOptions: [],
+        requirements: planRequirementsOf(overrides.moduleKeys ?? []),
         ...overrides,
     };
 }

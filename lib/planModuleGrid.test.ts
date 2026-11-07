@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { planRequirementsOf } from '@/lib/__fixtures__/planRequirements';
 import type {
     EventTypeModuleResponseDto,
     PaidServiceResponseDto,
@@ -37,6 +38,7 @@ function plan(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto {
         sharedGroupKey: null,
         initialOptions: [],
         extensionOptions: [],
+        requirements: planRequirementsOf(overrides.moduleKeys ?? []),
         ...overrides,
     };
 }
