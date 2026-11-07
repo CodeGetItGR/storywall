@@ -144,6 +144,23 @@ const patch = (x: number, y: number) =>
         ],
     );
 
+// The same text line with its anti-aliased edge above it, so the edge is read first.
+const edgeAbove = (color: Color): Spot[] => textLine(2, 2, 10, color).map((spot) => ({ ...spot, y: spot.y === 2 ? 3 : 2 }));
+
+function block(color: Color): Spot[] {
+    return Array.from({ length: 32 }, (_, index) => ({ x: 2 + (index % 8), y: 2 + Math.floor(index / 8), color }));
+}
+
+// Two marks with `gap` unchanged pixels between them.
+const twoMarks = (x: number, gap: number) =>
+    diffOf(
+        [],
+        [
+            { x, y: 2, color: [255, 0, 0] },
+            { x: x + gap + 1, y: 2, color: [0, 0, 255] },
+        ],
+    );
+
 const signatureOf = (diff: Parameters<typeof changeSignature>[0]) => changeSignature(diff) as ChangeSignature;
 
 describe('changeSignature', () => {
@@ -164,6 +181,38 @@ describe('changeSignature', () => {
     it('finds no shift when no color moves far enough', () => {
         const small = diffOf(textLine(2, 2, 4, [100, 100, 100]), textLine(2, 2, 4, [110, 110, 110]));
         expect(signatureOf(small).shift).toBeNull();
+    });
+
+    it('finds no shift when a text line moved', () => {
+        expect(signatureOf(diffOf(textLine(2, 2, 10, INK), textLine(6, 2, 10, INK))).shift).toBeNull();
+    });
+
+    it('finds no shift when text appears on a blank background', () => {
+        expect(signatureOf(diffOf([], textLine(2, 2, 20, INK))).shift).toBeNull();
+    });
+
+    it('finds no shift when text is removed from a blank background', () => {
+        expect(signatureOf(diffOf(textLine(2, 2, 20, INK), [])).shift).toBeNull();
+    });
+
+    it('finds a shift when a flat block changes color', () => {
+        expect(signatureOf(diffOf(block(INK), block(PURPLE))).shift).not.toBeNull();
+    });
+
+    it('finds no shift when too many colors change', () => {
+        // A brightness change on a photo: every pixel moves the same way, but it isn't one color change.
+        const width = 300;
+        const height = 300;
+        const before = new Uint8Array(width * height * 4);
+        const after = new Uint8Array(width * height * 4);
+        for (let index = 0; index < width * height; index += 1) {
+            const color = [60 + (index % 196), 60 + (Math.floor(index / 196) % 196), 60 + Math.floor(index / 196 ** 2)];
+            before.set([...color, 255], index * 4);
+            after.set([...color.map((value) => value - 60), 255], index * 4);
+        }
+        const { mask } = comparePixels(before, after, width, height, CHANNEL_TOLERANCE);
+        const capture = { before: { data: before, width, height }, after: { data: after, width, height }, mask, sizeChanged: false };
+        expect(signatureOf(capture).shift).toBeNull();
     });
 
     it('has no signature when the size changed', () => {
@@ -188,6 +237,23 @@ describe('changeSignature', () => {
             { x: 16, y: 2, color: [0, 0, 255] },
         ];
         expect(signatureOf(diffOf([], spots)).areas).toHaveLength(1);
+    });
+
+    it('joins diagonal neighbors into one area', () => {
+        const spots: Spot[] = [
+            { x: 15, y: 15, color: [255, 0, 0] },
+            { x: 16, y: 16, color: [0, 0, 255] },
+        ];
+        expect(signatureOf(diffOf([], spots)).areas).toHaveLength(1);
+    });
+
+    it('joins changes less than 16px apart', () => {
+        expect(signatureOf(twoMarks(2, 15)).areas).toHaveLength(1);
+        expect(signatureOf(twoMarks(2, 16)).areas).toHaveLength(2);
+    });
+
+    it('joins changes the same way wherever they sit on the grid', () => {
+        expect(signatureOf(twoMarks(0, 19)).areas).toEqual(signatureOf(twoMarks(12, 19)).areas);
     });
 });
 
@@ -258,6 +324,26 @@ describe('groupChanges', () => {
         expect(backward.groups).toEqual(forward.groups);
         expect([...backward.keys].sort()).toEqual([...forward.keys].sort());
     });
+
+    it('breaks a tie by the lower color, wherever it sits', () => {
+        const edgeFirst = () => diffOf(edgeAbove(INK), edgeAbove(PURPLE));
+        const { groups } = groupChanges([signed('a', edgeFirst()), signed('b', edgeFirst())]);
+        expect(groups).toEqual([{ key: 'color-1', kind: 'color', from: '#241f1a', to: '#7c3aed' }]);
+    });
+
+    it('numbers groups of the same size the same way in any order', () => {
+        const items = [
+            { id: 'a', signature: { shift: null, areas: ['p'] } },
+            { id: 'b', signature: { shift: null, areas: ['q'] } },
+            { id: 'c', signature: { shift: null, areas: ['q'] } },
+            { id: 'd', signature: { shift: null, areas: ['p'] } },
+        ];
+        for (const order of [items, [...items].reverse()]) {
+            const { keys } = groupChanges(order);
+            expect(keys.get('a')).toBe('same-1');
+            expect(keys.get('b')).toBe('same-2');
+        }
+    });
 });
 ```
 
@@ -281,6 +367,9 @@ const MIN_PAIR_DISTANCE = 48;
 const MAX_RESIDUAL = 16;
 const SAME_DIRECTION = 0.995;
 const CELL = 16;
+
+// One color change has at most a few thousand strong pairs. Photo-like changes have far more, and stop here.
+const MAX_STRONG_PAIRS = 65_536;
 
 // A before and after color, as one number: before * PAIR_BASE + after.
 const PAIR_BASE = 2 ** 24;
@@ -306,6 +395,11 @@ function deltaOf(pair: number): Vector {
     return [to[0] - from[0], to[1] - from[1], to[2] - from[2]];
 }
 
+function isStrong(pair: number): boolean {
+    const delta = deltaOf(pair);
+    return dot(delta, delta) >= MIN_PAIR_DISTANCE ** 2;
+}
+
 // Ties go to the lower pair value, so results don't depend on order.
 function mostCommon(counts: Map<number, number>): number | null {
     let top: number | null = null;
@@ -326,25 +420,62 @@ function fits(pair: number, direction: Vector): boolean {
     return delta.every((value, channel) => Math.abs(value - along * direction[channel]) <= MAX_RESIDUAL);
 }
 
-function colorShift({ before, after, mask }: ChangedCapture): ColorShift | null {
-    const pairs = new Map<number, number>();
+// Counts the strong pairs over the changed pixels. Null means the capture can't be one color change.
+function strongPairs({ before, after, mask }: ChangedCapture): Map<number, number> | null {
+    const counts = new Map<number, number>();
+    let firstBefore = -1;
+    let firstAfter = -1;
+    let beforeVaries = false;
+    let afterVaries = false;
+    let lastPair = -1;
+    let lastStrong = false;
     for (let index = 0; index < mask.length; index += 1) {
         if (!mask[index]) continue;
         const offset = index * 4;
         if (before.data[offset + 3] !== after.data[offset + 3]) return null;
-        const pair = rgbAt(before.data, offset) * PAIR_BASE + rgbAt(after.data, offset);
-        pairs.set(pair, (pairs.get(pair) ?? 0) + 1);
+        const from = rgbAt(before.data, offset);
+        const to = rgbAt(after.data, offset);
+        if (firstBefore < 0) {
+            firstBefore = from;
+            firstAfter = to;
+        }
+        if (from !== firstBefore) beforeVaries = true;
+        if (to !== firstAfter) afterVaries = true;
+        const pair = from * PAIR_BASE + to;
+        if (pair !== lastPair) {
+            lastPair = pair;
+            lastStrong = isStrong(pair);
+        }
+        if (!lastStrong) continue;
+        counts.set(pair, (counts.get(pair) ?? 0) + 1);
+        if (counts.size > MAX_STRONG_PAIRS) return null;
     }
-    const strong = new Map([...pairs].filter(([pair]) => Math.hypot(...deltaOf(pair)) >= MIN_PAIR_DISTANCE));
-    const top = mostCommon(strong);
+    // One side in a single color is content added to a plain background, or removed from one.
+    if (beforeVaries !== afterVaries) return null;
+    return counts;
+}
+
+function everyPixelFits({ before, after, mask }: ChangedCapture, direction: Vector): boolean {
+    let lastPair = -1;
+    for (let index = 0; index < mask.length; index += 1) {
+        if (!mask[index]) continue;
+        const offset = index * 4;
+        const pair = rgbAt(before.data, offset) * PAIR_BASE + rgbAt(after.data, offset);
+        if (pair === lastPair) continue;
+        lastPair = pair;
+        if (!fits(pair, direction)) return false;
+    }
+    return true;
+}
+
+function colorShift(capture: ChangedCapture): ColorShift | null {
+    const counts = strongPairs(capture);
+    const top = counts ? mostCommon(counts) : null;
     if (top === null) return null;
     const delta = deltaOf(top);
     const length = Math.hypot(...delta);
     const direction: Vector = [delta[0] / length, delta[1] / length, delta[2] / length];
-    for (const pair of pairs.keys()) {
-        if (!fits(pair, direction)) return null;
-    }
-    return { direction, pair: top };
+    return everyPixelFits(capture, direction) ? { direction, pair: top } : null;
 }
 
 function cellBoxes({ before, mask }: ChangedCapture): { boxes: Map<number, Box>; columns: number; rows: number } {
@@ -383,7 +514,15 @@ function hashArea({ before, after }: ChangedCapture, box: Box): string {
     return hash.digest('hex');
 }
 
-// Changed pixels merge on a grid into connected areas, so the letters of one word become one area.
+// Unchanged pixels between two boxes, on the axis where they're furthest apart.
+function gapBetween(a: Box, b: Box): number {
+    const gapX = Math.max(0, b.x0 - a.x1 - 1, a.x0 - b.x1 - 1);
+    const gapY = Math.max(0, b.y0 - a.y1 - 1, a.y0 - b.y1 - 1);
+    return Math.max(gapX, gapY);
+}
+
+// Changed pixels less than CELL apart join into one area wherever they sit, so the letters of one word become one area.
+// Pixels in one grid cell are always that close and pixels two cells apart never are, so only neighboring cells are compared.
 function changedAreas(capture: ChangedCapture): string[] {
     const { boxes, columns, rows } = cellBoxes(capture);
     const seen = new Set<number>();
@@ -408,7 +547,8 @@ function changedAreas(capture: ChangedCapture): string[] {
                     const nextColumn = column + dx;
                     if (nextRow < 0 || nextColumn < 0 || nextRow >= rows || nextColumn >= columns) continue;
                     const next = nextRow * columns + nextColumn;
-                    if (boxes.has(next) && !seen.has(next)) {
+                    const nextBox = boxes.get(next);
+                    if (nextBox && !seen.has(next) && gapBetween(box, nextBox) < CELL) {
                         seen.add(next);
                         stack.push(next);
                     }

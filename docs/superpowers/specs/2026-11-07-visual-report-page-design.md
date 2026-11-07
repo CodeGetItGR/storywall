@@ -83,14 +83,15 @@ One color looks different in every story because it sits behind different text, 
 **Color shift.** For a capture of unchanged size:
 
 1. Over its changed pixels (the existing comparison mask), count each before and after color pair.
-2. The direction is the most common pair whose colors are at least 48 apart. Ties go to the lower pair value, so results don't depend on order.
-3. A pixel fits when its alpha didn't change, it moves forward along that direction, and no channel strays more than 16 from the line. These are measured values: anti-aliased edges fit, and other changes don't.
-4. The capture has a color shift only if **every** changed pixel fits. On the test report 586 of 610 same-size captures had exactly 0 pixels outside, and the next lowest had 20.
-5. Captures join a group when their directions agree (cosine at least 0.995). The group's two swatches are the pair most often on top among its captures.
+2. If every changed pixel had one color before but not one color after, or the other way round, the change is content added to a plain background or removed from one, and the capture has no color shift. A flat block that changed color, one color on both sides, still counts.
+3. The direction is the most common pair whose colors are at least 48 apart. Ties go to the lower pair value, so results don't depend on order. A capture with more than 65,536 such pairs has no color shift: one color change has far fewer, and stopping there keeps photo-like changes fast.
+4. A pixel fits when its alpha didn't change, it moves forward along that direction, and no channel strays more than 16 from the line. These are measured values: anti-aliased edges fit, and other changes don't. Moving forward is what keeps moved text out: its old place and its new place move in opposite directions.
+5. The capture has a color shift only if **every** changed pixel fits. On the test report 586 of 610 same-size captures had exactly 0 pixels outside, and the next lowest had 20.
+6. Captures join a group when their directions agree (cosine at least 0.995). The group's two swatches are the pair most often on top among its captures.
 
-**Identical changed areas.** Captures left over after step 5, or in color groups of one, are compared this way:
+**Identical changed areas.** Captures left over after step 6, or in color groups of one, are compared this way:
 
-1. Changed pixels are merged on a 16px grid into connected areas.
+1. Changed pixels less than 16px apart join into one area, wherever they sit. A 16px grid only speeds this up: pixels in one cell are always that close, so only neighboring cells are compared.
 2. Each area is hashed from its size and its before and after pixels. Its position isn't included, so a change that moved still matches.
 3. Captures with the same list of hashes form a group, duplicates included.
 
@@ -191,7 +192,7 @@ KAN-159 adds approve and comment. A static page on GitHub Pages can't sign anyon
 
 **Unit tests (`vitest`)**
 
-- `sameChange`: a color shift groups; one stray pixel inside a shift keeps that capture out; a size change never groups; identical areas group, including when moved; groups of one don't exist; results don't depend on input order.
+- `sameChange`: a color shift groups; one stray pixel inside a shift keeps that capture out; text added to or removed from a blank background, a moved text line and a photo-wide change have no color shift, and a flat block that changed color has one; a size change never groups; identical areas group, including when moved; areas join by distance wherever they sit on the grid; groups of one don't exist; results don't depend on input order.
 - `report`: entries carry `changeKey`, the manifest carries `groups`, and the fingerprint is the same with and without grouping.
 - `validateManifest`: accepts a manifest with no groups; rejects bad colors, keys, kinds, locales and widths.
 - `publish`: the page path points at `dist/index.html`, and `pull` can't be set by the manifest.
