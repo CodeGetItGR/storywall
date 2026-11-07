@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { BookHeart, CalendarDays, Gift, Settings } from 'lucide-react';
 import { fn, userEvent, within } from 'storybook/test';
 
+import { waitForOpen } from '@/.storybook/waitForOpen';
 import { ContextMenuTab } from '@/components/layout/mobile-tab-bar/ContextMenuTab';
 import type { ContextNavItem } from '@/components/layout/mobile-tab-bar/types';
 
@@ -42,6 +43,7 @@ export const Closed: Story = {};
 export const Open: Story = {
     async play({ canvasElement }) {
         await userEvent.click(within(canvasElement).getByRole('button', { name: 'Tools' }));
+        await waitForOpen('menu');
     },
 };
 
