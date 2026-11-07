@@ -95,6 +95,14 @@ describe('isEmptyForGuests, frame sections', () => {
         expect(isEmptyForGuests({ ...section, elements: [{ ...element, frameId: '' }] }, ctx)).toBe(true);
     });
 
+    it('hides a custom section whose only frame has nothing to show', () => {
+        expect(isEmptyForGuests({ ...SAMPLE_SECTIONS.blank, elements: [{ ...element, photo: undefined }] }, ctx)).toBe(true);
+    });
+
+    it('keeps a section with its own content when its only frame is empty', () => {
+        expect(isEmptyForGuests({ ...SAMPLE_SECTIONS.top, elements: [{ ...element, frameId: '' }] }, ctx)).toBe(false);
+    });
+
     it('keeps a section with text beside an empty frame', () => {
         expect(isEmptyForGuests({ ...section, elements: [{ ...element, frameId: '' }, text] }, ctx)).toBe(false);
     });

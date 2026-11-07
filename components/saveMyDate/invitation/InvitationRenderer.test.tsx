@@ -25,18 +25,14 @@ vi.stubGlobal('ResizeObserver', class {
     disconnect() {}
 });
 
-// Section types the renderer doesn't draw yet. When you build one, move it from
-// this list to SECTION_STORIES below and add its story.
-const NOT_BUILT_YET = ['photo', 'gallery'] as const satisfies readonly SectionType[];
-
-type BuiltSectionType = Exclude<SectionType, (typeof NOT_BUILT_YET)[number]>;
-
-// Where each built section type's story is, from this folder. The file must use
+// Where each section type's story is, from this folder. The file must use
 // storySection('<type>') from .storybook/invitation.tsx.
-const SECTION_STORIES: Record<BuiltSectionType, string> = {
+const SECTION_STORIES: Record<SectionType, string> = {
     top: 'sections/TopSection.stories.tsx',
     blank: 'sections/CustomSection.stories.tsx',
-    photoFrame: 'InvitationSection.stories.tsx',
+    photo: 'sections/media/PhotoSection.stories.tsx',
+    gallery: 'sections/media/GallerySection.stories.tsx',
+    photoFrame: 'sections/media/PhotoFrame.stories.tsx',
     invitation: 'sections/InvitationTextSection.stories.tsx',
     coupleNames: 'sections/CoupleNamesSection.stories.tsx',
     dressCode: 'sections/DressCodeSection.stories.tsx',
@@ -67,8 +63,6 @@ const SECTION_STORIES: Record<BuiltSectionType, string> = {
 const LANGUAGES: DateLanguage[] = ['el', 'en'];
 const MESSAGES = { el, en };
 
-const isBuilt = (section: InvitationSection) => !(NOT_BUILT_YET as readonly SectionType[]).includes(section.type);
-
 const media = (mediaId: string) => `/images/${mediaId}.png`;
 
 function documentIn(language: DateLanguage, sections: InvitationSection[] = SAMPLE_DOCUMENT.sections): InvitationDocument {
@@ -98,15 +92,15 @@ const altTexts = (container: HTMLElement) => Array.from(container.querySelectorA
 afterEach(cleanup);
 
 describe('InvitationRenderer with a full document', () => {
-    it('draws every built section in the order of the document', () => {
+    it('draws every section in the order of the document', () => {
         const { container } = renderInvitation(SAMPLE_DOCUMENT);
-        expect(renderedIds(container)).toEqual(SAMPLE_DOCUMENT.sections.filter(isBuilt).map((section) => section.id));
+        expect(renderedIds(container)).toEqual(SAMPLE_DOCUMENT.sections.map((section) => section.id));
     });
 
     it('follows the document when its sections move', () => {
         const reversed = { ...SAMPLE_DOCUMENT, sections: [...SAMPLE_DOCUMENT.sections].reverse() };
         const { container } = renderInvitation(reversed);
-        expect(renderedIds(container)).toEqual(reversed.sections.filter(isBuilt).map((section) => section.id));
+        expect(renderedIds(container)).toEqual(reversed.sections.map((section) => section.id));
     });
 
     it('keeps hidden sections out', () => {
@@ -115,7 +109,7 @@ describe('InvitationRenderer with a full document', () => {
         const hidden = sections.filter((section) => !section.visible).map((section) => section.id);
 
         expect(hidden.length).toBeGreaterThan(0);
-        expect(renderedIds(container)).toEqual(sections.filter((section) => section.visible && isBuilt(section)).map((section) => section.id));
+        expect(renderedIds(container)).toEqual(sections.filter((section) => section.visible).map((section) => section.id));
     });
 
     it('takes its language from the date section, even a hidden one', () => {
@@ -212,15 +206,10 @@ describe('RSVP through the whole invitation', () => {
 });
 
 describe('Section coverage', () => {
-    it('knows every section type as either built or not built yet', () => {
-        const known = [...Object.keys(SECTION_STORIES), ...NOT_BUILT_YET].sort();
-        expect(known).toEqual([...SECTION_TYPES].sort());
-    });
-
-    it.each(SECTION_TYPES)('%s is drawn only if it is on the built list', (type) => {
+    it.each(SECTION_TYPES)('%s is drawn', (type) => {
         const section = SAMPLE_SECTIONS[type] as InvitationSection;
         const { container } = renderInvitation({ ...SAMPLE_DOCUMENT, sections: [section] });
-        expect(renderedIds(container)).toEqual(isBuilt(section) ? [section.id] : []);
+        expect(renderedIds(container)).toEqual([section.id]);
     });
 
     it.each(Object.entries(SECTION_STORIES))('%s has a story', (type, file) => {

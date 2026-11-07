@@ -22,6 +22,13 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+// The keys are handled on the dialog, and focus reaches it just after it opens.
+async function openWithFocus() {
+    const dialog = await waitForOpen('dialog');
+    await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
+    return dialog;
+}
+
 export const Default: Story = {
     play: async () => {
         await waitForOpen('dialog');
@@ -57,7 +64,7 @@ export const NextButton: Story = {
 export const GoesRoundFromTheFirstPhoto: Story = {
     tags: ['visual-skip'],
     play: async () => {
-        const dialog = await waitForOpen('dialog');
+        const dialog = await openWithFocus();
         await userEvent.keyboard('{ArrowLeft}');
         await waitFor(() => expect(dialog).toHaveAccessibleName(IMAGES[2].alt));
     },
@@ -66,7 +73,7 @@ export const GoesRoundFromTheFirstPhoto: Story = {
 export const ArrowKeys: Story = {
     tags: ['visual-skip'],
     play: async () => {
-        const dialog = await waitForOpen('dialog');
+        const dialog = await openWithFocus();
         await userEvent.keyboard('{ArrowRight}');
         await waitFor(() => expect(dialog).toHaveAccessibleName(IMAGES[1].alt));
     },
@@ -75,7 +82,7 @@ export const ArrowKeys: Story = {
 export const EscCloses: Story = {
     tags: ['visual-skip'],
     play: async ({ args }) => {
-        await waitForOpen('dialog');
+        await openWithFocus();
         await userEvent.keyboard('{Escape}');
         await waitFor(() => expect(args.onClose).toHaveBeenCalled());
     },

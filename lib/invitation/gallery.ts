@@ -50,7 +50,7 @@ export function stepGalleryIndex(index: number, direction: 1 | -1, count: number
 export function isEmptyForGuests(section: InvitationSection, ctx: RenderContext): boolean {
     if (section.type === 'gallery') return galleryImages(section.data, ctx).length === 0;
     if (section.type === 'photo') return !resolveImage(section.data.photo, ctx);
-    if (section.type === 'photoFrame') {
+    if (section.type === 'photoFrame' || section.type === 'blank') {
         const { elements } = section;
         return elements.length > 0 && elements.every((element) => element.kind === 'photoFrame' && !resolvePhotoFrame(element, ctx));
     }
