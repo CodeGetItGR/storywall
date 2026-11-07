@@ -12,6 +12,7 @@ export type ReportEntry = CaptureTarget & {
     afterHash: string | null;
     percent: number;
     error: string | null;
+    changeKey: string | null;
     images: { before?: string; after?: string; diff?: string; preview?: string };
 };
 
@@ -22,6 +23,7 @@ export type Manifest = {
     counts: Record<CaptureState, number>;
     fingerprint: string;
     entries: ReportEntry[];
+    groups: ChangeGroup[];
     missingStories: string[];
 };
 

@@ -7,6 +7,7 @@ import sharp from 'sharp';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { MAX_RETAKEN_CAPTURES, RETAKES } from './config';
+import { fingerprint } from './fingerprint';
 import { decodePng, hashRaw } from './images';
 import { buildReport } from './report';
 import type { CaptureRecord, CaptureTarget, Manifest } from './types';
@@ -131,5 +132,31 @@ describe('buildReport', () => {
         expect(written.fingerprint).toBe(manifest.fingerprint);
         expect(written.fingerprint).toMatch(/^[0-9a-f]{64}$/);
         expect(written.missingStories).toEqual(['components/x/Y.tsx']);
+    });
+
+    it('groups captures with the same change', async () => {
+        const heads = [await record(headDir, 'a', 200), await record(headDir, 'b', 200), await record(headDir, 'c', 10)];
+        const retake = vi.fn(async (t: CaptureTarget) => heads.find((item) => item.id === t.id) as CaptureRecord);
+        const manifest = await run([await record(baseDir, 'a', 10), await record(baseDir, 'b', 10)], heads, retake);
+        expect(manifest.groups).toEqual([{ key: 'color-1', kind: 'color', from: '#0a0a0a', to: '#c8c8c8' }]);
+        const keys = Object.fromEntries(manifest.entries.map((entry) => [entry.id, entry.changeKey]));
+        expect(keys).toEqual({ a: 'color-1', b: 'color-1', c: null });
+    });
+
+    it('writes the groups to manifest.json', async () => {
+        const heads = [await record(headDir, 'a', 200), await record(headDir, 'b', 200)];
+        const retake = vi.fn(async (t: CaptureTarget) => heads.find((item) => item.id === t.id) as CaptureRecord);
+        await run([await record(baseDir, 'a', 10), await record(baseDir, 'b', 10)], heads, retake);
+        const written = JSON.parse(readFileSync(join(reportDir, 'manifest.json'), 'utf8')) as Manifest;
+        expect(written.groups).toHaveLength(1);
+        expect(written.entries[0].changeKey).toBe('color-1');
+    });
+
+    it('keeps the fingerprint independent of grouping', async () => {
+        const heads = [await record(headDir, 'a', 200), await record(headDir, 'b', 200)];
+        const retake = vi.fn(async (t: CaptureTarget) => heads.find((item) => item.id === t.id) as CaptureRecord);
+        const manifest = await run([await record(baseDir, 'a', 10), await record(baseDir, 'b', 10)], heads, retake);
+        const ungrouped = manifest.entries.map((entry) => ({ ...entry, changeKey: null }));
+        expect(manifest.fingerprint).toBe(fingerprint(ungrouped));
     });
 });
