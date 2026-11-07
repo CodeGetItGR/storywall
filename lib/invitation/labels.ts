@@ -27,6 +27,12 @@ export type InvitationLabels = {
     parents: string;
     godparents: string;
     photoAlt: string;
+    eventPhotoAlt: string;
+    galleryPhotoAlt: string;
+    galleryDot: string;
+    previousPhoto: string;
+    nextPhoto: string;
+    close: string;
     map: string;
     website: string;
     copy: string;
@@ -76,6 +82,12 @@ export const INVITATION_LABELS: Record<DateLanguage, InvitationLabels> = {
         parents: 'Γονείς',
         godparents: 'Νονοί',
         photoAlt: 'Φωτογραφία προσώπου',
+        eventPhotoAlt: 'Φωτογραφία της εκδήλωσης',
+        galleryPhotoAlt: 'Φωτογραφία {n} από {total}',
+        galleryDot: 'Φωτογραφία {n}',
+        previousPhoto: 'Προηγούμενη φωτογραφία',
+        nextPhoto: 'Επόμενη φωτογραφία',
+        close: 'Κλείσιμο',
         map: 'Χάρτης',
         website: 'Ιστοσελίδα',
         copy: 'Αντιγραφή',
@@ -110,6 +122,12 @@ export const INVITATION_LABELS: Record<DateLanguage, InvitationLabels> = {
         parents: 'Parents',
         godparents: 'Godparents',
         photoAlt: 'Photo of a person',
+        eventPhotoAlt: 'Event photo',
+        galleryPhotoAlt: 'Photo {n} of {total}',
+        galleryDot: 'Photo {n}',
+        previousPhoto: 'Previous photo',
+        nextPhoto: 'Next photo',
+        close: 'Close',
         map: 'Map',
         website: 'Website',
         copy: 'Copy',

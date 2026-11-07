@@ -1,5 +1,6 @@
 import { useTranslations } from 'next-intl';
 
+import { PhotoFrame } from '@/components/saveMyDate/invitation/sections/media/PhotoFrame';
 import type { InvitationElement as Element } from '@/lib/invitation/elements';
 import {
     elementTextRole,
@@ -50,8 +51,9 @@ export function InvitationElement({ element, contrast, ctx }: InvitationElementP
                     </a>
                 </div>
             );
-        // Photo frames come with the frame renderer; a column break is layout only.
         case 'photoFrame':
+            return <PhotoFrame element={element} ctx={ctx} />;
+        // A column break is layout only.
         case 'columnBreak':
             return null;
     }
