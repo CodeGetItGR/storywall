@@ -4,14 +4,13 @@ import { useTranslations } from 'next-intl';
 
 import { HelpStep, type HelpStepAction } from '@/components/manage/help/HelpStep';
 import { HelpStepper } from '@/components/manage/help/HelpStepper';
+import { useEventCapabilities } from '@/hooks/useEventCapabilities';
 import { useHelpProgress } from '@/hooks/useHelpProgress';
 import { useModuleCopy } from '@/hooks/useModuleCopy';
 import type { EventLocationDto, EventModuleResponseDto, EventScheduleDto, EventSessionResponseDto, EventTypeConvention } from '@/lib/api/types';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import { isModuleAvailable } from '@/lib/eventLifecycle';
-import { isLiteEvent } from '@/lib/liteEvents';
 import { routes } from '@/lib/routes';
-import { useActiveEvent } from '@/providers/EventProvider';
 
 export default function HelpTab({
     eventId,
@@ -32,20 +31,23 @@ export default function HelpTab({
 }) {
     const t = useTranslations('HostOnboarding');
     const moduleCopy = useModuleCopy(eventType);
-    const progress = useHelpProgress({ eventId, title: eventTitle, schedule, location, sessions });
+    // A lite event takes no guests: they add photos and wishes through its guest code. It has no date, place,
+    // schedule or invitations to set up.
+    const capabilities = useEventCapabilities();
+    const takesGuests = capabilities?.takesGuests ?? true;
+    const showsDetails = capabilities?.showsDetailsSettings ?? true;
+    const progress = useHelpProgress({ eventId, title: eventTitle, schedule, location, sessions, showsDetails });
 
     const hasVenueConvention = Boolean(getCreateEventCatalogEntry(eventType)?.secondarySessionTitleKey);
     const hasVenue = sessions.some((session) => session.isSecondary && !session.deletedAt);
     const enabledModuleKeys = new Set(eventModules.filter((module_) => module_.isEnabled && module_.isAvailable).map((module_) => module_.moduleKey));
     const hasGiftAccountModule = enabledModuleKeys.has('wishlist');
     const rsvpAvailable = isModuleAvailable(eventModules, 'rsvp');
-    // A lite event takes no guests: they add photos and wishes through its guest code.
-    const isLite = isLiteEvent(useActiveEvent());
 
     const detailsActions: HelpStepAction[] = [
         { key: 'settings', href: routes.events.manage(eventId, { tab: 'settings' }), label: t('steps.details.edit') },
     ];
-    if (hasVenueConvention) {
+    if (takesGuests && hasVenueConvention) {
         detailsActions.push({
             key: 'venue',
             href: routes.events.tools.schedule(eventId, { section: 'venue-session' }),
@@ -74,13 +76,13 @@ export default function HelpTab({
             complete: progress.giftAccount,
             actions: [{ key: 'gifts', href: routes.events.tools.gifts(eventId), label: t('steps.giftAccount.edit') }],
         },
-        {
+        takesGuests && {
             key: 'schedule',
             title: moduleCopy('schedule').name,
             complete: progress.schedule,
             actions: [{ key: 'schedule', href: routes.events.tools.schedule(eventId), label: t('steps.schedule.edit') }],
         },
-        !isLite && {
+        takesGuests && {
             key: 'invitations',
             title: t('steps.invitations.title'),
             body: t('steps.invitations.body'),

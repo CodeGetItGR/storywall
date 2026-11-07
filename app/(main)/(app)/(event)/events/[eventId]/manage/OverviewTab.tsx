@@ -20,7 +20,7 @@ import type {
     PlanTierResponseDto,
     PlatformModuleResponseDto,
 } from '@/lib/api/types';
-import { isLiteEvent } from '@/lib/liteEvents';
+import { eventCapabilities } from '@/lib/eventCapabilities';
 
 export default function OverviewTab({
     event,
@@ -116,7 +116,16 @@ export default function OverviewTab({
     const shownMemberCount = eventUsage?.memberCount ?? memberCount;
     const memberValue = eventUsage?.memberLimit ? `${shownMemberCount} / ${eventUsage.memberLimit}` : shownMemberCount;
     // A lite event takes no guests, so it has no members or invitations to count.
-    const showGuestStats = !isLiteEvent(event);
+    const capabilities = eventCapabilities(event);
+    const showGuestStats = capabilities?.takesGuests ?? true;
+    // A lite event may have no date to count down to.
+    const showDaysToGo = capabilities?.hasSchedule ?? true;
+    const metrics = [
+        ...(showGuestStats ? [{ key: 'members', label: t('stats.totalGuests.label'), value: memberValue }] : []),
+        ...(showDaysToGo ? [{ key: 'days', label: t('stats.daysToGo.label'), value: daysToGo }] : []),
+        ...(showGuestStats ? [{ key: 'invitations', label: t('stats.invitations.label'), value: pendingCoHostInvitationCount }] : []),
+        ...(seatsClaimed === null ? [] : [{ key: 'seats', label: t('stats.seats.label'), value: seatsClaimed }]),
+    ];
 
     return (
         <div className="flex flex-col gap-5">
@@ -124,14 +133,7 @@ export default function OverviewTab({
             <CoverageStatusStrip eventId={eventId} schedule={schedule} />
 
             {/* Headline numbers */}
-            <MetricStrip
-                items={[
-                    ...(showGuestStats ? [{ key: 'members', label: t('stats.totalGuests.label'), value: memberValue }] : []),
-                    { key: 'days', label: t('stats.daysToGo.label'), value: daysToGo },
-                    ...(showGuestStats ? [{ key: 'invitations', label: t('stats.invitations.label'), value: pendingCoHostInvitationCount }] : []),
-                    ...(seatsClaimed === null ? [] : [{ key: 'seats', label: t('stats.seats.label'), value: seatsClaimed }]),
-                ]}
-            />
+            {metrics.length > 0 && <MetricStrip items={metrics} />}
 
             {/* Host context: same actions, usage and summaries the feed page's right panel shows */}
             <div className="border-t border-border pt-4">

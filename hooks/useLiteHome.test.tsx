@@ -2,6 +2,7 @@ import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { useLiteHome } from '@/hooks/useLiteHome';
+import { capabilitiesOf } from '@/lib/__fixtures__/eventCapabilities';
 import type { EventDetailResponseDto, EventModuleResponseDto, QrLinkResponseDto } from '@/lib/api/types';
 
 const state = vi.hoisted(() => ({
@@ -34,7 +35,7 @@ function module_(moduleKey: string, isEnabled: boolean) {
 }
 
 function event_(modules: EventModuleResponseDto[]): Partial<EventDetailResponseDto> {
-    return { id: 'e1', title: 'Anna & Nick', status: 'ACTIVE', deletedAt: null, suspended: false, modules };
+    return { id: 'e1', title: 'Anna & Nick', status: 'ACTIVE', deletedAt: null, suspended: false, modules, capabilities: capabilitiesOf(modules) };
 }
 
 const guestCode = { id: 'q1', targetType: 'GUEST', status: 'ACTIVE', publicUrl: 'https://storywall.gr/q/abc' } as Partial<QrLinkResponseDto>;

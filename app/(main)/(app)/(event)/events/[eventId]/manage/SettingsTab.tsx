@@ -25,6 +25,7 @@ import {
     isDatetimeLocalBefore,
     toDatetimeLocalValue,
 } from '@/lib/datetime';
+import { eventCapabilities } from '@/lib/eventCapabilities';
 import { getLatestStartAt } from '@/lib/eventCoverage';
 import { getEventEndPresets } from '@/lib/eventEndPresets';
 import { INCIDENT_MODE } from '@/lib/incident';
@@ -55,6 +56,8 @@ export default function SettingsTab({
     const limits = useContentLimits();
     const fieldLabels = useCreateEventFieldLabels(event.eventType);
     const uploadAccept = useUploadAccept();
+    // A lite event has no guests, so no date or place to set.
+    const showsDetails = eventCapabilities(event)?.showsDetailsSettings ?? true;
 
     const initial = {
         title: event.title,
@@ -258,7 +261,14 @@ export default function SettingsTab({
                     <TargetedSection id={COVER_PHOTO_SECTION_ID} className="mt-1.5">
                         {coverPreview ? (
                             <div className="relative aspect-21/9 overflow-hidden rounded-2xl bg-surface-muted">
-                                <ProtectedImage src={coverPreview} alt={tAlt('eventCover')} fill className="object-cover" sizes="700px" loading="lazy" />
+                                <ProtectedImage
+                                    src={coverPreview}
+                                    alt={tAlt('eventCover')}
+                                    fill
+                                    className="object-cover"
+                                    sizes="700px"
+                                    loading="lazy"
+                                />
                                 {isUploading && (
                                     <div className="absolute inset-0 flex items-center justify-center bg-ink/40">
                                         <Loader2 className="h-6 w-6 animate-spin text-white" />
@@ -341,94 +351,100 @@ export default function SettingsTab({
                     </span>
                 </FormFieldLabel>
 
-                {/* Location */}
-                <div className="grid gap-3 sm:grid-cols-2">
-                    <FormFieldLabel label={fieldLabels.locationName} required labelClassName={labelClass}>
-                        <input
-                            type="text"
-                            required
-                            maxLength={limits.locationNameMaxLength}
-                            value={locationName}
-                            onChange={handleLocationNameChange}
-                            disabled={disabled}
-                            className={inputClass}
-                        />
-                    </FormFieldLabel>
-                    <FormFieldLabel label={t('settings.fields.locationAddress')} required labelClassName={labelClass}>
-                        <input
-                            type="text"
-                            required
-                            maxLength={limits.locationAddressMaxLength}
-                            value={locationAddress}
-                            onChange={handleLocationAddressChange}
-                            disabled={disabled}
-                            placeholder={t('settings.placeholders.locationAddress')}
-                            className={inputClass}
-                        />
-                    </FormFieldLabel>
-                </div>
-
-                <FormFieldLabel label={t('settings.fields.mapsUrl')} optional labelClassName={labelClass}>
-                    <input
-                        type="url"
-                        maxLength={limits.urlMaxLength}
-                        value={mapsUrl}
-                        onChange={handleMapsUrlChange}
-                        disabled={disabled}
-                        placeholder={t('settings.placeholders.mapsUrl')}
-                        className={inputClass}
-                    />
-                </FormFieldLabel>
-
-                {/* Schedule */}
-                <div className="grid gap-3 sm:grid-cols-2">
-                    <FormFieldLabel label={fieldLabels.startAt} required labelClassName={labelClass}>
-                        <DateTimeField
-                            required
-                            value={startAt}
-                            onChange={handleStartAtChange}
-                            disabled={disabled || eventHasStarted}
-                            min={startAtMin}
-                            max={startAtMax}
-                            inputClassName={inputClass}
-                        />
-                        {eventHasStarted ? (
-                            <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('settings.startLocked')}</p>
-                        ) : startMovedOnLiveEvent && coverageKeptUntil ? (
-                            <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('settings.coverageFixed', { date: coverageKeptUntil })}</p>
-                        ) : coverageProjection ? (
-                            <p className="mt-1 text-xs leading-relaxed text-ink-muted">{coverageProjection}</p>
-                        ) : (
-                            <p className="mt-1 text-xs leading-relaxed text-ink-muted">{tCreateEvent('startAtHint')}</p>
-                        )}
-                    </FormFieldLabel>
-                    <FormFieldLabel label={t('settings.fields.endAt')} required labelClassName={labelClass}>
-                        <DateTimeField
-                            required
-                            value={endAt}
-                            onChange={handleEndAtChange}
-                            disabled={disabled}
-                            min={endAtMin}
-                            inputClassName={inputClass}
-                        />
-                        {/* End Presets */}
-                        <div className="flex flex-wrap gap-1.5">
-                            {endAtPresets.map((preset) => (
-                                <button
-                                    key={preset.key}
-                                    type="button"
-                                    data-value={preset.value ?? undefined}
-                                    disabled={disabled || !preset.value}
-                                    onClick={handleEndAtPresetClick}
-                                    className="rounded-full bg-surface-muted/70 px-2.5 py-1 text-[11px] font-medium text-ink-muted transition hover:bg-surface-muted hover:text-ink disabled:cursor-not-allowed disabled:opacity-45"
-                                >
-                                    {tCreateEvent(`endAtPresets.${preset.labelKey}`)}
-                                </button>
-                            ))}
+                {showsDetails && (
+                    <>
+                        {/* Location */}
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            <FormFieldLabel label={fieldLabels.locationName} required labelClassName={labelClass}>
+                                <input
+                                    type="text"
+                                    required
+                                    maxLength={limits.locationNameMaxLength}
+                                    value={locationName}
+                                    onChange={handleLocationNameChange}
+                                    disabled={disabled}
+                                    className={inputClass}
+                                />
+                            </FormFieldLabel>
+                            <FormFieldLabel label={t('settings.fields.locationAddress')} required labelClassName={labelClass}>
+                                <input
+                                    type="text"
+                                    required
+                                    maxLength={limits.locationAddressMaxLength}
+                                    value={locationAddress}
+                                    onChange={handleLocationAddressChange}
+                                    disabled={disabled}
+                                    placeholder={t('settings.placeholders.locationAddress')}
+                                    className={inputClass}
+                                />
+                            </FormFieldLabel>
                         </div>
-                    </FormFieldLabel>
-                </div>
-                {scheduleError && <p className="text-xs text-rose-500">{scheduleError}</p>}
+
+                        <FormFieldLabel label={t('settings.fields.mapsUrl')} optional labelClassName={labelClass}>
+                            <input
+                                type="url"
+                                maxLength={limits.urlMaxLength}
+                                value={mapsUrl}
+                                onChange={handleMapsUrlChange}
+                                disabled={disabled}
+                                placeholder={t('settings.placeholders.mapsUrl')}
+                                className={inputClass}
+                            />
+                        </FormFieldLabel>
+
+                        {/* Schedule */}
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            <FormFieldLabel label={fieldLabels.startAt} required labelClassName={labelClass}>
+                                <DateTimeField
+                                    required
+                                    value={startAt}
+                                    onChange={handleStartAtChange}
+                                    disabled={disabled || eventHasStarted}
+                                    min={startAtMin}
+                                    max={startAtMax}
+                                    inputClassName={inputClass}
+                                />
+                                {eventHasStarted ? (
+                                    <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('settings.startLocked')}</p>
+                                ) : startMovedOnLiveEvent && coverageKeptUntil ? (
+                                    <p className="mt-1 text-xs leading-relaxed text-ink-muted">
+                                        {t('settings.coverageFixed', { date: coverageKeptUntil })}
+                                    </p>
+                                ) : coverageProjection ? (
+                                    <p className="mt-1 text-xs leading-relaxed text-ink-muted">{coverageProjection}</p>
+                                ) : (
+                                    <p className="mt-1 text-xs leading-relaxed text-ink-muted">{tCreateEvent('startAtHint')}</p>
+                                )}
+                            </FormFieldLabel>
+                            <FormFieldLabel label={t('settings.fields.endAt')} required labelClassName={labelClass}>
+                                <DateTimeField
+                                    required
+                                    value={endAt}
+                                    onChange={handleEndAtChange}
+                                    disabled={disabled}
+                                    min={endAtMin}
+                                    inputClassName={inputClass}
+                                />
+                                {/* End Presets */}
+                                <div className="flex flex-wrap gap-1.5">
+                                    {endAtPresets.map((preset) => (
+                                        <button
+                                            key={preset.key}
+                                            type="button"
+                                            data-value={preset.value ?? undefined}
+                                            disabled={disabled || !preset.value}
+                                            onClick={handleEndAtPresetClick}
+                                            className="rounded-full bg-surface-muted/70 px-2.5 py-1 text-[11px] font-medium text-ink-muted transition hover:bg-surface-muted hover:text-ink disabled:cursor-not-allowed disabled:opacity-45"
+                                        >
+                                            {tCreateEvent(`endAtPresets.${preset.labelKey}`)}
+                                        </button>
+                                    ))}
+                                </div>
+                            </FormFieldLabel>
+                        </div>
+                        {scheduleError && <p className="text-xs text-rose-500">{scheduleError}</p>}
+                    </>
+                )}
 
                 {updateEvent.isError && !fieldErrors && <p className="text-xs text-rose-500">{toErrorMessage(updateEvent.error)}</p>}
 
@@ -453,10 +469,7 @@ export default function SettingsTab({
                             isUploading ||
                             !hasChanges ||
                             !title.trim() ||
-                            !locationName.trim() ||
-                            !locationAddress.trim() ||
-                            !startAt ||
-                            !endAt ||
+                            (showsDetails && (!locationName.trim() || !locationAddress.trim() || !startAt || !endAt)) ||
                             Boolean(scheduleError)
                         }
                         className={cn(
