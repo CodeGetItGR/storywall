@@ -53,6 +53,7 @@ The mockup is the reference for layout and look. These differ, and a reviewer sh
 | `scripts/visual/report/page.test.ts` | Checks the built file and the paths to it |
 | `report/src/main.tsx`, `App.tsx`, `styles.css`, `copy.ts` | Entry, load states, tokens and layout, all strings |
 | `report/src/testing/fixture.ts` | Test data |
+| `report/src/lib/captures.ts` | The languages and widths, in the order the page shows them |
 | `report/src/lib/labels.ts` | Text built from data: percent, capture names, alt text, group names |
 | `report/src/lib/model.ts` | Manifest to stories and groups |
 | `report/src/lib/marks.ts` | Reading, writing and checking review marks |
@@ -854,6 +855,7 @@ function validateGroups(groups) {
     const keys = new Set();
     for (const group of groups) {
         if (typeof group?.key !== 'string' || !GROUP_KEY.test(group.key)) throw new Error(`Manifest group has an invalid key: ${group?.key}`);
+        if (keys.has(group.key)) throw new Error(`Manifest has a repeated group key: ${group.key}`);
         if (!GROUP_KINDS.has(group.kind)) throw new Error(`Manifest group has an unknown kind: ${group.kind}`);
         for (const color of [group.from, group.to]) {
             if (color !== undefined && (typeof color !== 'string' || !COLOR.test(color)))
@@ -912,7 +914,7 @@ export function publishedManifest(manifest, { repo, prNumber, createdAt }) {
 }
 ```
 
-After review, the tests also cover: a `valid()` manifest shaped like `buildReport`'s output (`groups: []`, `changeKey: null`, hashes) and a legacy one without groups; a `changeKey` with no groups; a bad `to` color; a negative percent; a failed entry with its error; bad `headSha`/`baseSha`; `images` that are an array, null, missing or a number; an unknown image kind; `LOCALES` and `WIDTHS` matching `config.ts`; and a manifest that brings its own `createdAt`.
+After review, the tests also cover: a `valid()` manifest shaped like `buildReport`'s output (`groups: []`, `changeKey: null`, hashes) and a legacy one without groups; a `changeKey` with no groups; a repeated group key; a bad `to` color; a negative percent; a failed entry with its error; bad `headSha`/`baseSha`; `images` that are an array, null, missing or a number; an unknown image kind; `LOCALES` and `WIDTHS` matching `config.ts`; and a manifest that brings its own `createdAt`.
 
 - [ ] **Step 4: Run all publish tests**
 
@@ -933,9 +935,10 @@ git commit -m "KAN-158: validate every manifest value the new page shows"
 **Files:**
 - Create: `scripts/visual/report/src/copy.ts`
 - Create: `scripts/visual/report/src/testing/fixture.ts`
+- Create: `scripts/visual/report/src/lib/captures.ts`
 - Create: `scripts/visual/report/src/lib/labels.ts`
 - Create: `scripts/visual/report/src/lib/model.ts`
-- Test: `scripts/visual/report/src/lib/labels.test.ts`, `scripts/visual/report/src/lib/model.test.ts`
+- Test: `scripts/visual/report/src/copy.test.ts`, `scripts/visual/report/src/lib/captures.test.ts`, `scripts/visual/report/src/lib/labels.test.ts`, `scripts/visual/report/src/lib/model.test.ts`
 
 - [ ] **Step 1: Write `copy.ts`**
 
@@ -946,6 +949,8 @@ import type { CaptureLocale, WidthName } from '../../config';
 import type { CaptureState } from '../../types';
 
 const count = (value: number, one: string, many: string) => `${value} ${value === 1 ? one : many}`;
+
+const firstNames = (names: string[]) => `${names.slice(0, 2).join(', ')}${names.length > 2 ? ` and ${names.length - 2} more` : ''}`;
 
 // Every string on the page. The page is for developers, so it's in English only, like the PR comment.
 export const copy = {
@@ -961,7 +966,7 @@ export const copy = {
     // Sidebar
     pull: (number: number) => `PR #${number}`,
     position: (at: number, total: number) => `${at} of ${total}`,
-    capturesReviewed: 'captures reviewed',
+    capturesReviewed: (total: number) => (total === 1 ? 'capture reviewed' : 'captures reviewed'),
     findStory: 'Find a story',
     filterByState: 'Filter by state',
     organizeList: 'Organize the list',
@@ -994,10 +999,8 @@ export const copy = {
 
     // Group
     colorChange: 'Color change',
-    sameChangeName: (component: string, names: string[], where?: string) => {
-        const more = names.length > 2 ? ` and ${names.length - 2} more` : '';
-        return `${component}${where ? `, ${where}` : ''}: ${names.slice(0, 2).join(', ')}${more}`;
-    },
+    sameChangeName: (component: string, names: string[], where?: string) => `${component}${where ? `, ${where}` : ''}: ${firstNames(names)}`,
+    sameChangeStories: (names: string[], where?: string) => `${where ? `${where}: ` : ''}${firstNames(names)}`,
     captures: (value: number) => count(value, 'capture', 'captures'),
     groupSize: (captures: number, stories: number) => `${count(captures, 'capture', 'captures')}, ${count(stories, 'story', 'stories')}`,
     showing: (story: string, capture: string) => `Showing ${story}, ${capture}`,
@@ -1005,7 +1008,7 @@ export const copy = {
     showAll: (value: number) => `Show all ${value}`,
 
     // Overview
-    differ: (differing: number, total: number) => `${differing} of ${total} captures differ`,
+    differ: (differing: number, total: number) => `${differing} of ${total} captures ${differing === 1 ? 'differs' : 'differ'}`,
     area: 'Area',
     biggestChanges: 'Biggest changes',
     missingStories: 'Components with no story',
@@ -1122,13 +1125,55 @@ export const groupedEntries: ReportEntry[] = sampleEntries.map((entry, index) =>
 
 - [ ] **Step 3: Write the failing tests**
 
+Create `scripts/visual/report/src/copy.test.ts`:
+
+```ts
+import { describe, expect, it } from 'vitest';
+
+import { copy } from './copy';
+
+describe('copy', () => {
+    it('counts one capture in the singular', () => {
+        expect(copy.capturesReviewed(1)).toBe('capture reviewed');
+        expect(copy.capturesReviewed(5)).toBe('captures reviewed');
+        expect(copy.differ(1, 1078)).toBe('1 of 1078 captures differs');
+        expect(copy.differ(5, 1078)).toBe('5 of 1078 captures differ');
+    });
+});
+```
+
+Create `scripts/visual/report/src/lib/captures.test.ts`:
+
+```ts
+import { describe, expect, it } from 'vitest';
+
+import { testEntry } from '../testing/fixture';
+import { CAPTURE_ORDER, capturesInOrder } from './captures';
+
+describe('captures', () => {
+    it('takes each language, then each width', () => {
+        expect(CAPTURE_ORDER).toEqual([
+            { locale: 'en', width: 'mobile' },
+            { locale: 'en', width: 'desktop' },
+            { locale: 'el', width: 'mobile' },
+            { locale: 'el', width: 'desktop' },
+        ]);
+    });
+
+    it('orders captures by language, then width', () => {
+        const entries = [testEntry('el', { locale: 'el' }), testEntry('desktop', { width: 'desktop' }), testEntry('mobile')];
+        expect(capturesInOrder(entries).map((entry) => entry.id)).toEqual(['mobile', 'desktop', 'el']);
+    });
+});
+```
+
 Create `scripts/visual/report/src/lib/labels.test.ts`:
 
 ```ts
 import { describe, expect, it } from 'vitest';
 
 import { testEntry } from '../testing/fixture';
-import { altText, captureLabel, entryValue, groupLabels, percentText, shortName } from './labels';
+import { altText, captureLabel, componentOf, entryValue, groupLabels, percentText, shortName } from './labels';
 
 describe('labels', () => {
     it('shows percent with two decimals', () => {
@@ -1149,6 +1194,11 @@ describe('labels', () => {
         expect(shortName(testEntry('a'))).toBe('PostCard / Default');
     });
 
+    it('takes the component from the last part of the title', () => {
+        expect(componentOf('Feed/PostCard/')).toBe('PostCard');
+        expect(componentOf('Solo')).toBe('Solo');
+    });
+
     it('keeps the alt text pattern', () => {
         expect(altText(testEntry('a', { locale: 'el' }), 'before')).toBe('Feed/PostCard, Default, Greek, mobile, before');
     });
@@ -1166,7 +1216,9 @@ describe('groupLabels', () => {
     });
 
     it('says how many more stories there are', () => {
-        expect(groupLabels([{ key: 'same-1', kind: 'exact', entries: entries(['A', 'B', 'C', 'D']) }]).get('same-1')).toBe('ComposerCard: A, B and 2 more');
+        expect(groupLabels([{ key: 'same-1', kind: 'exact', entries: entries(['A', 'B', 'C', 'D']) }]).get('same-1')).toBe(
+            'ComposerCard: A, B and 2 more',
+        );
     });
 
     it('adds the language and width when two groups read the same', () => {
@@ -1177,6 +1229,39 @@ describe('groupLabels', () => {
         expect(labels.get('same-1')).toBe('ComposerCard, EN Desktop: A, B');
         expect(labels.get('same-2')).toBe('ComposerCard, EL Mobile: A, B');
     });
+
+    const acrossComponents = (overrides = {}) => [
+        testEntry('a', overrides),
+        testEntry('b', { storyId: 'feed-composer--default', title: 'Feed/Composer', ...overrides }),
+        testEntry('c', { storyId: 'ui-button--primary', title: 'UI/Button', name: 'Primary', ...overrides }),
+    ];
+
+    it('names each story when a group covers more than one component', () => {
+        expect(groupLabels([{ key: 'same-1', kind: 'exact', entries: acrossComponents() }]).get('same-1')).toBe(
+            'PostCard / Default, Composer / Default and 1 more',
+        );
+    });
+
+    it('puts the language and width first when two such groups read the same', () => {
+        const labels = groupLabels([
+            { key: 'same-1', kind: 'exact', entries: acrossComponents({ locale: 'en', width: 'mobile' }) },
+            { key: 'same-2', kind: 'exact', entries: acrossComponents({ locale: 'el', width: 'desktop' }) },
+        ]);
+        expect(labels.get('same-1')).toBe('EN Mobile: PostCard / Default, Composer / Default and 1 more');
+        expect(labels.get('same-2')).toBe('EL Desktop: PostCard / Default, Composer / Default and 1 more');
+    });
+
+    it('lists the languages and widths in capture order', () => {
+        const mixed = [
+            testEntry('a-el', { name: 'A', title: 'Feed/ComposerCard', locale: 'el', width: 'mobile' }),
+            testEntry('a-en', { name: 'A', title: 'Feed/ComposerCard', locale: 'en', width: 'desktop' }),
+        ];
+        const labels = groupLabels([
+            { key: 'same-1', kind: 'exact', entries: mixed },
+            { key: 'same-2', kind: 'exact', entries: entries(['A']) },
+        ]);
+        expect(labels.get('same-1')).toBe('ComposerCard, EN Desktop, EL Mobile: A');
+    });
 });
 ```
 
@@ -1186,12 +1271,17 @@ Create `scripts/visual/report/src/lib/model.test.ts`:
 import { describe, expect, it } from 'vitest';
 
 import { colorGroup, groupedEntries, sampleEntries, testEntry, testManifest } from '../testing/fixture';
-import { areaTree, buildModel, capturesInOrder, largestPercent, storyCapture, worstState } from './model';
+import { areaTree, buildModel, largestPercent, storyCapture, worstState } from './model';
 
 describe('buildModel', () => {
     it('makes stories from entries, sorted by area, component and name', () => {
         const model = buildModel(testManifest(sampleEntries));
-        expect(model.stories.map((story) => story.id)).toEqual(['feed-composer--default', 'feed-postcard--default', 'ui-badge--old', 'ui-button--primary']);
+        expect(model.stories.map((story) => story.id)).toEqual([
+            'feed-composer--default',
+            'feed-postcard--default',
+            'ui-badge--old',
+            'ui-button--primary',
+        ]);
         expect(model.storyById.get('feed-postcard--default')?.entries).toHaveLength(2);
     });
 
@@ -1216,6 +1306,8 @@ describe('buildModel', () => {
         });
         const model = buildModel(testManifest(entries, { groups: undefined }));
         expect(model.groups).toEqual([]);
+        expect(model.manifest.entries.map((entry) => entry.changeKey)).toEqual(entries.map(() => null));
+        expect(model.stories.flatMap((story) => story.entries).every((entry) => entry.changeKey === null)).toBe(true);
     });
 
     it('drops a group with fewer than two captures', () => {
@@ -1237,6 +1329,22 @@ describe('buildModel', () => {
         ];
         expect(buildModel(testManifest(entries, { groups })).groups.map((group) => group.key)).toEqual(['same-2', 'same-1']);
     });
+
+    it("names a group's stories in area order, whatever their percents", () => {
+        const entries = [
+            testEntry('zeta', { storyId: 'feed-composercard--zeta', title: 'Feed/ComposerCard', name: 'Zeta', percent: 9, changeKey: 'same-1' }),
+            testEntry('alpha', { storyId: 'feed-composercard--alpha', title: 'Feed/ComposerCard', name: 'Alpha', percent: 1, changeKey: 'same-1' }),
+        ];
+        const group = buildModel(testManifest(entries, { groups: [{ key: 'same-1', kind: 'exact' }] })).groups[0];
+        expect(group.label).toBe('ComposerCard: Alpha, Zeta');
+        expect(group.entries.map((entry) => entry.id)).toEqual(['zeta', 'alpha']);
+    });
+
+    it('breaks a tie in percent by id', () => {
+        const entries = ['b', 'a', 'B'].map((id) => testEntry(id, { changeKey: 'color-1', percent: 2 }));
+        const group = buildModel(testManifest(entries, { groups: [colorGroup] })).groupByKey.get('color-1');
+        expect(group?.entries.map((entry) => entry.id)).toEqual(['B', 'a', 'b']);
+    });
 });
 
 describe('stories', () => {
@@ -1244,11 +1352,6 @@ describe('stories', () => {
 
     it('shows the worst state', () => {
         expect(worstState([testEntry('a', { state: 'new' }), testEntry('b', { state: 'failed' })])).toBe('failed');
-    });
-
-    it('orders captures by language, then width', () => {
-        const entries = [testEntry('el', { locale: 'el' }), testEntry('desktop', { width: 'desktop' }), testEntry('mobile')];
-        expect(capturesInOrder(entries).map((entry) => entry.id)).toEqual(['mobile', 'desktop', 'el']);
     });
 
     it('keeps the chosen capture, or falls back to the first', () => {
@@ -1274,34 +1377,58 @@ describe('stories', () => {
 
 - [ ] **Step 4: Run them and see them fail**
 
-Run: `npx vitest run scripts/visual/report/src/lib`
-Expected: FAIL, it can't find `./labels` and `./model`.
+Run: `npx vitest run scripts/visual/report/src`
+Expected: FAIL, it can't find `./captures`, `./labels` and `./model`.
 
-- [ ] **Step 5: Write `lib/labels.ts`**
+- [ ] **Step 5: Write `lib/captures.ts`**
+
+The languages and widths come from `config.ts`, in their own file so `labels.ts` and `model.ts` can both use them without importing each other.
+
+```ts
+import { type CaptureLocale, LOCALES, type WidthName, WIDTHS } from '../../../config';
+import type { ReportEntry } from '../../../types';
+
+export type CaptureChoice = { locale: CaptureLocale; width: WidthName };
+
+// Each language, then each width in it.
+export const CAPTURE_ORDER: CaptureChoice[] = LOCALES.flatMap((locale) => WIDTHS.map(({ name }) => ({ locale, width: name })));
+
+export const capturesInOrder = (entries: ReportEntry[]) =>
+    CAPTURE_ORDER.flatMap(({ locale, width }) => entries.filter((entry) => entry.locale === locale && entry.width === width));
+```
+
+- [ ] **Step 6: Write `lib/labels.ts`**
 
 ```ts
 import type { ReportEntry } from '../../../types';
 import { copy } from '../copy';
+import { capturesInOrder } from './captures';
 
 type Capture = Pick<ReportEntry, 'locale' | 'width'>;
+// Entries come in story order, so the names in a label do too.
 type LabelledGroup = { key: string; kind: 'color' | 'exact'; entries: ReportEntry[] };
+
+const unique = (values: string[]) => [...new Set(values)];
 
 export const percentText = (percent: number) => (percent < 0.01 ? '<0.01%' : `${percent.toFixed(2)}%`);
 
 export const captureLabel = ({ locale, width }: Capture) => `${locale.toUpperCase()} ${copy.widths[width]}`;
 
-export const entryValue = ({ state, percent }: Pick<ReportEntry, 'state' | 'percent'>) => (state === 'changed' ? percentText(percent) : copy.states[state]);
+export const entryValue = ({ state, percent }: Pick<ReportEntry, 'state' | 'percent'>) =>
+    state === 'changed' ? percentText(percent) : copy.states[state];
 
-export const componentOf = (title: string) => title.split('/').pop() ?? title;
+export const componentOf = (title: string) => title.split('/').filter(Boolean).pop() ?? title;
 
 export const shortName = ({ title, name }: Pick<ReportEntry, 'title' | 'name'>) => `${componentOf(title)} / ${name}`;
 
 export const altText = (entry: Pick<ReportEntry, 'title' | 'name' | 'locale' | 'width'>, what: string) =>
     `${entry.title}, ${entry.name}, ${copy.languages[entry.locale]}, ${entry.width}, ${what}`;
 
+// A group across several components names each story with its component.
 function exactName(entries: ReportEntry[], where?: string): string {
-    const names = [...new Set(entries.map((entry) => entry.name))];
-    return copy.sameChangeName(componentOf(entries[0].title), names, where);
+    const components = unique(entries.map((entry) => componentOf(entry.title)));
+    if (components.length > 1) return copy.sameChangeStories(unique(entries.map(shortName)), where);
+    return copy.sameChangeName(components[0], unique(entries.map((entry) => entry.name)), where);
 }
 
 // Two groups can cover the same stories in different languages or widths, so those say which is which.
@@ -1311,24 +1438,23 @@ export function groupLabels(groups: LabelledGroup[]): Map<string, string> {
         groups.map((group, index): [string, string] => {
             const repeated = plain.filter((label) => label === plain[index]).length > 1;
             if (group.kind === 'color' || !repeated) return [group.key, plain[index]];
-            const where = [...new Set(group.entries.map(captureLabel))].join(', ');
+            const where = unique(capturesInOrder(group.entries).map(captureLabel)).join(', ');
             return [group.key, exactName(group.entries, where)];
         }),
     );
 }
 ```
 
-- [ ] **Step 6: Write `lib/model.ts`**
+- [ ] **Step 7: Write `lib/model.ts`**
 
 ```ts
-import type { CaptureLocale, WidthName } from '../../../config';
 import type { CaptureState, ChangeGroup, Manifest, ReportEntry } from '../../../types';
+import { type CaptureChoice, capturesInOrder } from './captures';
 import { groupLabels } from './labels';
 
 // A report from before same-change grouping has no groups, and a local run has no PR.
 export type ReportManifest = Omit<Manifest, 'groups'> & { groups?: ChangeGroup[]; pull?: { number: number; url: string } };
 
-export type CaptureChoice = { locale: CaptureLocale; width: WidthName };
 export type Story = { id: string; area: string; component: string; name: string; entries: ReportEntry[] };
 export type Group = ChangeGroup & { label: string; entries: ReportEntry[] };
 export type ComponentBranch = { key: string; component: string; stories: Story[] };
@@ -1344,17 +1470,13 @@ export type ReportModel = {
 
 export const STATES: CaptureState[] = ['failed', 'changed', 'new', 'removed'];
 
-export const CAPTURE_ORDER: CaptureChoice[] = [
-    { locale: 'en', width: 'mobile' },
-    { locale: 'en', width: 'desktop' },
-    { locale: 'el', width: 'mobile' },
-    { locale: 'el', width: 'desktop' },
-];
-
-const byTree = (a: Story, b: Story) => a.area.localeCompare(b.area) || a.component.localeCompare(b.component) || a.name.localeCompare(b.name);
+// One fixed language, so the order is the same on every machine.
+const collator = new Intl.Collator('en');
+const byTree = (a: Story, b: Story) =>
+    collator.compare(a.area, b.area) || collator.compare(a.component, b.component) || collator.compare(a.name, b.name);
 
 // The biggest change comes first, so the first capture shown is the easiest one to judge.
-const biggestFirst = (a: ReportEntry, b: ReportEntry) => b.percent - a.percent || a.id.localeCompare(b.id);
+const biggestFirst = (a: ReportEntry, b: ReportEntry) => b.percent - a.percent || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
 
 function buildStories(entries: ReportEntry[]): Map<string, Story> {
     const stories = new Map<string, Story>();
@@ -1370,31 +1492,29 @@ function buildStories(entries: ReportEntry[]): Map<string, Story> {
     return stories;
 }
 
-function buildGroups({ groups = [], entries }: ReportManifest): Group[] {
+function buildGroups({ groups = [], entries }: ReportManifest, stories: Story[]): Group[] {
     const filled = groups
-        .map((group) => ({ ...group, entries: entries.filter((entry) => entry.changeKey === group.key).sort(biggestFirst) }))
+        .map((group) => ({ ...group, entries: entries.filter((entry) => entry.changeKey === group.key) }))
         .filter((group) => group.entries.length > 1)
         .sort((a, b) => b.entries.length - a.entries.length);
-    const labels = groupLabels(filled);
-    return filled.map((group) => ({ ...group, label: labels.get(group.key) ?? '' }));
+    // Labels name stories in the order the area list shows them, so a label doesn't change with the percents.
+    const position = new Map(stories.map((story, index) => [story.id, index]));
+    const inStoryOrder = (a: ReportEntry, b: ReportEntry) => (position.get(a.storyId) as number) - (position.get(b.storyId) as number);
+    const labels = groupLabels(filled.map((group) => ({ ...group, entries: [...group.entries].sort(inStoryOrder) })));
+    return filled.map((group) => ({ ...group, entries: [...group.entries].sort(biggestFirst), label: labels.get(group.key) ?? '' }));
 }
 
-export function buildModel(manifest: ReportManifest): ReportModel {
+export function buildModel(loaded: ReportManifest): ReportModel {
+    // A report from before same-change grouping has no changeKey on its entries.
+    const manifest = { ...loaded, entries: loaded.entries.map((entry) => ({ ...entry, changeKey: entry.changeKey ?? null })) };
     const storyById = buildStories(manifest.entries);
-    const groups = buildGroups(manifest);
-    return {
-        manifest,
-        stories: [...storyById.values()].sort(byTree),
-        storyById,
-        groups,
-        groupByKey: new Map(groups.map((group) => [group.key, group])),
-    };
+    const stories = [...storyById.values()].sort(byTree);
+    const groups = buildGroups(manifest, stories);
+    return { manifest, stories, storyById, groups, groupByKey: new Map(groups.map((group) => [group.key, group])) };
 }
 
-export const worstState = (entries: ReportEntry[]): CaptureState => STATES.find((state) => entries.some((entry) => entry.state === state)) ?? 'changed';
-
-export const capturesInOrder = (entries: ReportEntry[]) =>
-    CAPTURE_ORDER.flatMap(({ locale, width }) => entries.filter((entry) => entry.locale === locale && entry.width === width));
+export const worstState = (entries: ReportEntry[]): CaptureState =>
+    STATES.find((state) => entries.some((entry) => entry.state === state)) ?? 'changed';
 
 export const storyCapture = (story: Story, { locale, width }: CaptureChoice) =>
     story.entries.find((entry) => entry.locale === locale && entry.width === width) ?? capturesInOrder(story.entries)[0];
@@ -1419,15 +1539,15 @@ export function areaTree(stories: Story[]): AreaBranch[] {
 }
 ```
 
-- [ ] **Step 7: Run the tests**
+- [ ] **Step 8: Run the tests**
 
-Run: `npx vitest run scripts/visual/report/src/lib`
+Run: `npx vitest run scripts/visual/report/src`
 Expected: PASS.
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
-git add scripts/visual/report/src/copy.ts scripts/visual/report/src/testing/fixture.ts scripts/visual/report/src/lib/labels.ts scripts/visual/report/src/lib/labels.test.ts scripts/visual/report/src/lib/model.ts scripts/visual/report/src/lib/model.test.ts
+git add scripts/visual/report/src/copy.ts scripts/visual/report/src/copy.test.ts scripts/visual/report/src/testing/fixture.ts scripts/visual/report/src/lib/captures.ts scripts/visual/report/src/lib/captures.test.ts scripts/visual/report/src/lib/labels.ts scripts/visual/report/src/lib/labels.test.ts scripts/visual/report/src/lib/model.ts scripts/visual/report/src/lib/model.test.ts
 git commit -m "KAN-158: add the report page's text and model"
 ```
 
@@ -2090,7 +2210,8 @@ Expected: FAIL, it can't find `./viewState`, `./shortcuts` and `./overview`.
 
 ```ts
 import type { CaptureState, ReportEntry } from '../../../types';
-import { type CaptureChoice, capturesInOrder, type ReportModel, type Story, storyCapture } from './model';
+import { type CaptureChoice, capturesInOrder } from './captures';
+import { type ReportModel, type Story, storyCapture } from './model';
 import type { Item, ListMode } from './reviewOrder';
 
 export type CompareMode = 'side' | 'slider' | 'diff';
@@ -2202,8 +2323,9 @@ export function shortcutFor({ code, key }: Pick<KeyboardEvent, 'code' | 'key'>):
 
 ```ts
 import type { CaptureState, ReportEntry } from '../../../types';
+import { capturesInOrder } from './captures';
 import { isMarked, type Marks } from './marks';
-import { capturesInOrder, type ReportModel, STATES, type Story } from './model';
+import { type ReportModel, STATES, type Story } from './model';
 import { reviewable } from './reviewOrder';
 
 const BIGGEST_LIMIT = 8;
@@ -2361,7 +2483,8 @@ export function useRoute(model: ReportModel): Route {
 import { useState } from 'react';
 
 import type { CaptureState } from '../../../types';
-import type { CaptureChoice, ReportModel } from '../lib/model';
+import type { CaptureChoice } from '../lib/captures';
+import type { ReportModel } from '../lib/model';
 import { allReviewed, currentIndex, type Item, itemEntries, type ListMode, reviewable, reviewQueue } from '../lib/reviewOrder';
 import { type CompareMode, currentEntry, initialView, nextCapture, revealItem, stepTarget, toggled, type ViewState, type ZoomMode } from '../lib/viewState';
 import type { Review } from './useReviewMarks';
@@ -2866,8 +2989,9 @@ export function CompareView({ entry, compare, slider, onSlider }: CompareViewPro
 ```tsx
 import type { ReportEntry } from '../../../../types';
 import { copy } from '../../copy';
+import { CAPTURE_ORDER, type CaptureChoice } from '../../lib/captures';
 import { captureLabel, entryValue } from '../../lib/labels';
-import { CAPTURE_ORDER, type CaptureChoice, type Story } from '../../lib/model';
+import type { Story } from '../../lib/model';
 
 type CaptureTabProps = { choice: CaptureChoice; story: Story; current: ReportEntry; onPick: (choice: CaptureChoice) => void };
 
@@ -3009,7 +3133,7 @@ export function SidebarHeader({ model, marks }: SidebarHeaderProps) {
             {/* Progress */}
             <div className="progress">
                 <span>
-                    <span className="mono">{copy.position(done, total)}</span> {copy.capturesReviewed}
+                    <span className="mono">{copy.position(done, total)}</span> {copy.capturesReviewed(total)}
                 </span>
                 <div className="progress-track">
                     <div className="progress-fill" style={{ width: `${total ? (done / total) * 100 : 0}%` }} />

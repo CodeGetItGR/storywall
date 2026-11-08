@@ -109,7 +109,7 @@ type ChangeGroup = { key: string; kind: 'color' | 'exact'; from?: string; to?: s
 // Manifest gains: groups: ChangeGroup[]
 ```
 
-Group labels are worked out by the page: "Color change", or the component and story names, with the language and width added when two groups would otherwise read the same.
+Group labels are worked out by the page: "Color change", or the component and story names, with the language and width added when two groups would otherwise read the same. A group across several components names each story with its component instead, and puts the language and width first when it needs them. Names follow the order of the area list, and languages and widths follow the capture order.
 
 `publish.mjs` adds `pull: { number, url }` to the published manifest from its own environment, after the manifest's own fields, so a manifest can't set it. On a local run it's missing, and the page hides the PR link and the approve link.
 
@@ -136,7 +136,7 @@ It uses `git status` rather than `git diff`, so a deleted file is caught too. Th
 
 **The manifest is still untrusted.**
 
-- `validateManifest` also checks each entry's `id`, `storyId`, `title`, `name`, `locale`, `width`, `percent`, `error`, `changeKey` and `images` (an object with only `before`, `after`, `diff` and `preview`), each group's key, kind and colors (`#rrggbb` only), and `headSha` and `baseSha` (40 lowercase hex characters).
+- `validateManifest` also checks each entry's `id`, `storyId`, `title`, `name`, `locale`, `width`, `percent`, `error`, `changeKey` and `images` (an object with only `before`, `after`, `diff` and `preview`), each group's key (never repeated), kind and colors (`#rrggbb` only), and `headSha` and `baseSha` (40 lowercase hex characters).
 - The page renders results as React text. `dangerouslySetInnerHTML` isn't used, and a test renders hostile story names and errors.
 - Image paths and colors are the only manifest values used as URLs or styles, and both are validated.
 
@@ -194,7 +194,7 @@ KAN-159 adds approve and comment. A static page on GitHub Pages can't sign anyon
 
 - `sameChange`: a color shift groups; one stray pixel inside a shift keeps that capture out; text added to or removed from a blank background, a moved text line and a photo-wide change have no color shift, and a flat block that changed color has one; a size change never groups; identical areas group, including when moved; areas join by distance wherever they sit on the grid; groups of one don't exist; results don't depend on input order.
 - `report`: entries carry `changeKey`, the manifest carries `groups`, and the fingerprint is the same with and without grouping.
-- `validateManifest`: accepts a manifest shaped like the report's, and one with no groups; rejects bad colors, keys, kinds, locales, widths, commit ids and image lists; its languages and widths match `config.ts`.
+- `validateManifest`: accepts a manifest shaped like the report's, and one with no groups; rejects bad colors, keys, repeated keys, kinds, locales, widths, commit ids and image lists; its languages and widths match `config.ts`.
 - `publish`: the page path points at `dist/index.html`, and `pull` can't be set by the manifest.
 - `workflows`: the capture job has the rebuild check.
 - The built file: it exists, has `noindex`, and has no external script or stylesheet.
@@ -224,7 +224,7 @@ The page's wording, for consent under the repo's text rule.
 
 | Today | New |
 |---|---|
-| "12 changed, 0 new, 0 removed, 0 failed, of 1078 captures." | "12 of 1078 captures differ", with the counts on the sidebar filters |
+| "12 changed, 0 new, 0 removed, 0 failed, of 1078 captures." | "12 of 1078 captures differ" ("1 of 1078 captures differs" for one), with the counts on the sidebar filters |
 | "English, mobile: changed, 3.67% of pixels" | A tab: "EN Mobile 3.67%" |
 
 **Removed:** the dropdowns "State", "Width" and "Language", their "All" options, and the "Mobile", "Desktop", "English" and "Greek" options.
@@ -233,10 +233,10 @@ The page's wording, for consent under the repo's text rule.
 
 | Where | Text |
 |---|---|
-| Sidebar | "PR #N", "N of M captures reviewed", "Find a story", "By area", "Same change", "Hide reviewed", "Overview", "On their own", "Stories", "Reviewed" |
+| Sidebar | "PR #N", "N of M captures reviewed" ("0 of 1 capture reviewed" for one), "Find a story", "By area", "Same change", "Hide reviewed", "Overview", "On their own", "Stories", "Reviewed" |
 | Story | "EN Mobile", "EN Desktop", "EL Mobile", "EL Desktop", "no change", "Side by side", "Slider", "Fit", "100%" |
 | Failed story | "This story failed", "No error message.", "Fix it before these changes can be approved." |
-| Group | "Color change", "<component>: <names> and N more", "N captures, M stories", "Showing <story>, EN Mobile", "Every capture with this change", "Show all N" |
+| Group | "Color change", "<component>: <names> and N more", "<component> / <name>, <component> / <name> and N more", "<language and width>: <component> / <name>, ... and N more", "N captures, M stories", "Showing <story>, EN Mobile", "Every capture with this change", "Show all N" |
 | Overview | "Area", "Reviewed", "N captures", "Biggest changes", "Components with no story" |
 | Bottom bar | "← Previous", "Next →", "N of M", "N to review", "Start review", "Continue review", "Looks right", "Looks right for all N", "Undo reviewed", "Approve in the PR", "Fix the failed stories first" |
 | Shortcuts | "Keyboard shortcuts", "Previous or next", "Looks right, then next", "Next language or width", "Side by side, slider, diff", "Fit or 100%", "By area or same change", "Close" |
