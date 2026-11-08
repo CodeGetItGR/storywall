@@ -2864,6 +2864,7 @@ export function useReportView(model: ReportModel, route: Route, { marks, mark, u
         index,
         entry,
         hasGroups: model.groups.length > 0,
+        searching,
         isRowOpen: (key: string) => view.expanded.has(key) || searching,
 
         go,
@@ -3558,7 +3559,7 @@ export function Swatches({ from, to }: SwatchesProps) {
     const fromStyle: CSSProperties = { background: from };
     const toStyle: CSSProperties = { background: to };
     return (
-        <span className="swatches">
+        <span className="swatches" aria-hidden="true">
             <span className="swatch" style={fromStyle} />→<span className="swatch" style={toStyle} />
         </span>
     );
@@ -3652,7 +3653,13 @@ export function SidebarFilters({ model, view }: SidebarFiltersProps) {
             {/* State filters */}
             <div className="chips" role="group" aria-label={copy.filterByState}>
                 {STATES.map((state) => (
-                    <StateChip key={state} state={state} count={model.manifest.counts[state]} pressed={view.states.has(state)} onToggle={view.toggleState} />
+                    <StateChip
+                        key={state}
+                        state={state}
+                        count={model.manifest.counts[state]}
+                        pressed={view.states.has(state)}
+                        onToggle={view.toggleState}
+                    />
                 ))}
             </div>
 
@@ -3664,10 +3671,13 @@ export function SidebarFilters({ model, view }: SidebarFiltersProps) {
                     placeholder={copy.findStory}
                     aria-label={copy.findStory}
                     autoComplete="off"
+                    aria-keyshortcuts="/"
                     value={view.search}
                     onChange={handleSearch}
                 />
-                <kbd className="keys">/</kbd>
+                <kbd className="keys" aria-hidden="true">
+                    /
+                </kbd>
             </label>
 
             {/* List tools */}
@@ -3683,9 +3693,11 @@ export function SidebarFilters({ model, view }: SidebarFiltersProps) {
 }
 ```
 
-`sidebar/TreeRows.tsx`:
+`sidebar/TreeRows.tsx`. Class names that depend on state are joined with `clsx`, because the Tailwind Prettier plugin trims a space written inside a template (`' is-done'` becomes `'is-done'`, which runs into the class before it):
 
 ```tsx
+import { clsx } from 'clsx';
+
 import { copy } from '../../copy';
 import type { ReportView } from '../../hooks/useReportView';
 import { percentText } from '../../lib/labels';
@@ -3720,6 +3732,7 @@ export function OverviewRow({ view }: { view: ReportView }) {
 type StoryRowProps = { story: Story; label: string; nested: boolean; view: ReportView; marks: Marks };
 
 export function StoryRow({ story, label, nested, view, marks }: StoryRowProps) {
+    const state = worstState(story.entries);
     const item: Item = { kind: 'story', id: story.id };
     const done = allReviewed(story.entries, marks);
     const percent = largestPercent(story);
@@ -3729,11 +3742,12 @@ export function StoryRow({ story, label, nested, view, marks }: StoryRowProps) {
     return (
         <button
             type="button"
-            className={`row${nested ? ' row-story' : ''}${done ? ' is-done' : ''}`}
+            className={clsx('row', nested && 'row-story', done && 'is-done')}
             aria-current={currentFlag(view, item)}
             onClick={handleClick}
         >
-            <span className={`dot s-${worstState(story.entries)}`} />
+            {/* The dot's color is the only sign of the state, so screen readers get the word. */}
+            <span className={`dot s-${state}`} role="img" aria-label={copy.states[state]} />
             <span className="name" title={label}>
                 {label}
             </span>
@@ -3743,16 +3757,27 @@ export function StoryRow({ story, label, nested, view, marks }: StoryRowProps) {
     );
 }
 
-type ToggleRowProps = { rowKey: string; label: string; count: number; className: string; view: ReportView };
+type ToggleRowProps = { rowKey: string; nameId: string; label: string; count: number; className: string; view: ReportView };
 
-export function ToggleRow({ rowKey, label, count, className, view }: ToggleRowProps) {
+// While searching every row is open, so a click does nothing until the search is cleared.
+export function ToggleRow({ rowKey, nameId, label, count, className, view }: ToggleRowProps) {
     function handleClick() {
         view.toggleRow(rowKey);
     }
     return (
-        <button type="button" className={`row ${className}`} aria-expanded={view.isRowOpen(rowKey)} onClick={handleClick}>
-            <span className="caret">›</span>
-            <span className="name">{label}</span>
+        <button
+            type="button"
+            className={`row ${className}`}
+            aria-expanded={view.isRowOpen(rowKey)}
+            aria-disabled={view.searching}
+            onClick={handleClick}
+        >
+            <span className="caret" aria-hidden="true">
+                ›
+            </span>
+            <span className="name" id={nameId}>
+                {label}
+            </span>
             <span className="value">{count}</span>
         </button>
     );
@@ -3767,7 +3792,7 @@ export function GroupRow({ group, view, marks }: GroupRowProps) {
         view.go(item);
     }
     return (
-        <button type="button" className={`row${done ? ' is-done' : ''}`} aria-current={currentFlag(view, item)} onClick={handleClick}>
+        <button type="button" className={clsx('row', done && 'is-done')} aria-current={currentFlag(view, item)} onClick={handleClick}>
             <Swatches from={group.from} to={group.to} />
             <span className="name" title={group.label}>
                 {group.label}
@@ -3782,11 +3807,59 @@ export function GroupRow({ group, view, marks }: GroupRowProps) {
 `sidebar/AreaTree.tsx`:
 
 ```tsx
+import { useId } from 'react';
+
 import type { ReportView } from '../../hooks/useReportView';
 import type { Marks } from '../../lib/marks';
-import { areaTree, type ReportModel } from '../../lib/model';
+import { type AreaBranch, areaTree, type ComponentBranch, type ReportModel } from '../../lib/model';
 import { shownStories } from '../../lib/reviewOrder';
 import { StoryRow, ToggleRow } from './TreeRows';
+
+type BranchProps<T> = { branch: T; view: ReportView; marks: Marks };
+
+// An open row's children form a group named after the row, so screen readers say which component a story is in.
+function ComponentRows({ branch, view, marks }: BranchProps<ComponentBranch>) {
+    const nameId = useId();
+    return (
+        <>
+            {/* Component */}
+            <ToggleRow
+                rowKey={branch.key}
+                nameId={nameId}
+                label={branch.component}
+                count={branch.stories.length}
+                className="row-component"
+                view={view}
+            />
+            {/* Stories */}
+            {view.isRowOpen(branch.key) && (
+                <div role="group" aria-labelledby={nameId}>
+                    {branch.stories.map((story) => (
+                        <StoryRow key={story.id} story={story} label={story.name} nested view={view} marks={marks} />
+                    ))}
+                </div>
+            )}
+        </>
+    );
+}
+
+function AreaRows({ branch, view, marks }: BranchProps<AreaBranch>) {
+    const nameId = useId();
+    return (
+        <>
+            {/* Area */}
+            <ToggleRow rowKey={branch.area} nameId={nameId} label={branch.area} count={branch.count} className="row-area" view={view} />
+            {/* Components */}
+            {view.isRowOpen(branch.area) && (
+                <div role="group" aria-labelledby={nameId}>
+                    {branch.components.map((component) => (
+                        <ComponentRows key={component.key} branch={component} view={view} marks={marks} />
+                    ))}
+                </div>
+            )}
+        </>
+    );
+}
 
 type AreaTreeProps = { model: ReportModel; view: ReportView; marks: Marks };
 
@@ -3795,20 +3868,7 @@ export function AreaTree({ model, view, marks }: AreaTreeProps) {
     return (
         <>
             {branches.map((branch) => (
-                <div key={branch.area}>
-                    {/* Area */}
-                    <ToggleRow rowKey={branch.area} label={branch.area} count={branch.count} className="row-area" view={view} />
-                    {view.isRowOpen(branch.area) &&
-                        branch.components.map((component) => (
-                            <div key={component.key}>
-                                {/* Component */}
-                                <ToggleRow rowKey={component.key} label={component.component} count={component.stories.length} className="row-component" view={view} />
-                                {/* Stories */}
-                                {view.isRowOpen(component.key) &&
-                                    component.stories.map((story) => <StoryRow key={story.id} story={story} label={story.name} nested view={view} marks={marks} />)}
-                            </div>
-                        ))}
-                </div>
+                <AreaRows key={branch.area} branch={branch} view={view} marks={marks} />
             ))}
         </>
     );
@@ -3820,6 +3880,7 @@ export function AreaTree({ model, view, marks }: AreaTreeProps) {
 ```tsx
 import { copy } from '../../copy';
 import type { ReportView } from '../../hooks/useReportView';
+import { shortName } from '../../lib/labels';
 import type { Marks } from '../../lib/marks';
 import type { ReportModel } from '../../lib/model';
 import { shownGroups, storiesOnTheirOwn } from '../../lib/reviewOrder';
@@ -3833,15 +3894,23 @@ export function SameChangeList({ model, view, marks }: SameChangeListProps) {
     return (
         <>
             {/* Groups */}
-            {groups.length > 0 && <div className="tree-title">{copy.sameChange}</div>}
+            {groups.length > 0 && (
+                <div className="tree-title" role="heading" aria-level={2}>
+                    {copy.sameChange}
+                </div>
+            )}
             {groups.map((group) => (
                 <GroupRow key={group.key} group={group} view={view} marks={marks} />
             ))}
 
             {/* Stories with no group */}
-            {alone.length > 0 && <div className="tree-title">{copy.onTheirOwn}</div>}
+            {alone.length > 0 && (
+                <div className="tree-title" role="heading" aria-level={2}>
+                    {copy.onTheirOwn}
+                </div>
+            )}
             {alone.map((story) => (
-                <StoryRow key={story.id} story={story} label={`${story.component} / ${story.name}`} nested={false} view={view} marks={marks} />
+                <StoryRow key={story.id} story={story} label={shortName(story.entries[0])} nested={false} view={view} marks={marks} />
             ))}
         </>
     );
@@ -3877,9 +3946,15 @@ export function Sidebar({ model, view, marks }: SidebarProps) {
             {/* Story list */}
             <nav className="tree" aria-label={copy.stories} ref={treeRef}>
                 <OverviewRow view={view} />
-                {view.mode === 'area' ? <AreaTree model={model} view={view} marks={marks} /> : <SameChangeList model={model} view={view} marks={marks} />}
-                {/* A report with no differences has nothing to filter, so it stays quiet. */}
-                {view.queue.length === 0 && model.manifest.entries.length > 0 && <div className="tree-empty">{copy.nothingMatches}</div>}
+                {view.mode === 'area' ? (
+                    <AreaTree model={model} view={view} marks={marks} />
+                ) : (
+                    <SameChangeList model={model} view={view} marks={marks} />
+                )}
+                {/* The region stays in place so the message is announced when it appears. A report with no differences has nothing to filter, so it stays quiet. */}
+                <div role="status">
+                    {view.queue.length === 0 && model.manifest.entries.length > 0 && <div className="tree-empty">{copy.nothingMatches}</div>}
+                </div>
             </nav>
         </aside>
     );
@@ -4220,6 +4295,18 @@ describe('report page', () => {
             fireEvent.click(button('Show all 62'));
             expect(document.querySelectorAll('.thumb')).toHaveLength(62);
         });
+
+        it('lists the groups, then the stories on their own', async () => {
+            const nested = testEntry('feed-post-count--default--en--mobile', { storyId: 'feed-post-count--default', title: 'Feed/Post/Count' });
+            await openReport(testManifest([...groupedEntries, nested], { groups: [colorGroup] }));
+            fireEvent.click(button('Same change'));
+            expect(list().getByRole('heading', { name: 'Same change' })).toBeInTheDocument();
+            expect(list().getByRole('button', { name: /Color change/ })).toBeInTheDocument();
+            expect(list().getByRole('heading', { name: 'On their own' })).toBeInTheDocument();
+            expect(list().getByRole('button', { name: /Badge \/ Old/ })).toBeInTheDocument();
+            expect(list().getByRole('button', { name: /Count \/ Default/ })).toBeInTheDocument();
+            expect(list().queryByRole('button', { name: /PostCard|Post \/ Count/ })).not.toBeInTheDocument();
+        });
     });
 
     describe('addresses', () => {
@@ -4328,12 +4415,51 @@ describe('report page', () => {
         });
     });
 
+    describe('sidebar', () => {
+        it('links to the PR and shows the commit', async () => {
+            await openReport(testManifest(sampleEntries));
+            expect(screen.getByRole('link', { name: 'PR #263' })).toHaveAttribute('href', 'https://github.com/CodeGetItGR/storywall/pull/263');
+            expect(screen.getByText('aaaaaaa')).toBeInTheDocument();
+        });
+
+        it('marks the open story, in a group named after its component, and scrolls to it', async () => {
+            window.location.hash = '#feed-postcard--default';
+            await openReport(testManifest(sampleEntries));
+            const row = list().getByRole('button', { name: /Default/ });
+            expect(row).toHaveAttribute('aria-current', 'true');
+            expect(row).toHaveAccessibleName(/^Changed.*Default/);
+            expect(list().getByRole('group', { name: 'PostCard' })).toContainElement(row);
+            expect(list().getByRole('button', { name: 'Overview' })).not.toHaveAttribute('aria-current');
+            expect(vi.mocked(Element.prototype.scrollIntoView).mock.contexts).toContain(row);
+        });
+
+        it('opens and closes areas and components', async () => {
+            await openReport(testManifest(sampleEntries));
+            expect(list().queryByRole('button', { name: /^Composer/ })).not.toBeInTheDocument();
+            fireEvent.click(list().getByRole('button', { name: /^Feed/ }));
+            expect(list().getByRole('button', { name: /^Feed/ })).toHaveAttribute('aria-expanded', 'true');
+            fireEvent.click(list().getByRole('button', { name: /^Composer/ }));
+            expect(list().getByRole('button', { name: /Default/ })).toBeInTheDocument();
+            fireEvent.click(list().getByRole('button', { name: /^Feed/ }));
+            expect(list().queryByRole('button', { name: /^Composer/ })).not.toBeInTheDocument();
+        });
+
+        it('ticks a reviewed story', async () => {
+            window.location.hash = '#feed-composer--default';
+            await openReport(testManifest(sampleEntries));
+            expect(list().queryByRole('img', { name: 'Reviewed' })).not.toBeInTheDocument();
+            fireEvent.click(button('Looks right'));
+            expect(await list().findByRole('img', { name: 'Reviewed' })).toBeInTheDocument();
+        });
+    });
+
     describe('filters', () => {
         it('narrow the list and the review order by search', async () => {
             await openReport(testManifest(sampleEntries));
             expect(screen.getByText('4 to review')).toBeInTheDocument();
             fireEvent.change(screen.getByRole('textbox', { name: 'Find a story' }), { target: { value: 'Button' } });
             expect(screen.getByText('1 to review')).toBeInTheDocument();
+            expect(list().queryByRole('button', { name: /^Feed/ })).not.toBeInTheDocument();
             fireEvent.click(list().getByRole('button', { name: /Primary/ }));
             expect(await screen.findByText('UI / Button')).toBeInTheDocument();
         });
@@ -4342,6 +4468,7 @@ describe('report page', () => {
             await openReport(testManifest(sampleEntries));
             fireEvent.click(button(/^New/));
             expect(screen.getByText('1 to review')).toBeInTheDocument();
+            expect(list().queryByRole('button', { name: /^Feed/ })).not.toBeInTheDocument();
         });
 
         it('hide reviewed captures', async () => {
@@ -4356,15 +4483,17 @@ describe('report page', () => {
             await openReport(testManifest(sampleEntries));
             const search = screen.getByRole('textbox', { name: 'Find a story' });
             fireEvent.change(search, { target: { value: 'Button' } });
+            expect(list().getByRole('button', { name: /^UI/ })).toHaveAttribute('aria-disabled', 'true');
             fireEvent.click(list().getByRole('button', { name: /^UI/ }));
             fireEvent.change(search, { target: { value: '' } });
             expect(list().getByRole('button', { name: /^UI/ })).toHaveAttribute('aria-expanded', 'false');
+            expect(list().getByRole('button', { name: /^UI/ })).toHaveAttribute('aria-disabled', 'false');
         });
 
         it('say when nothing matches', async () => {
             await openReport(testManifest(sampleEntries));
             fireEvent.change(screen.getByRole('textbox', { name: 'Find a story' }), { target: { value: 'nothing like this' } });
-            expect(screen.getByText('Nothing matches these filters.')).toBeInTheDocument();
+            expect(list().getByRole('status')).toHaveTextContent('Nothing matches these filters.');
         });
     });
 
@@ -5124,6 +5253,20 @@ Then append this to the end of `styles.css`:
     font: inherit;
     color: inherit;
     text-align: left;
+}
+
+/* Once it has slid out, the closed drawer leaves the tab order and screen readers. */
+@media (max-width: 880px) {
+    .side {
+        visibility: hidden;
+        transition:
+            transform 0.18s ease,
+            visibility 0s linear 0.18s;
+    }
+    .side.open {
+        visibility: visible;
+        transition: transform 0.18s ease;
+    }
 }
 ```
 

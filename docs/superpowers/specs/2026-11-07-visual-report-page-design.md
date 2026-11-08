@@ -29,12 +29,12 @@ The approved mockup, with a real report of 626 differing captures: https://claud
 
 - **Sidebar:** the PR link and short commit, review progress, filters for failed, changed, new and removed, story search (every word typed has to appear in the story's title or name), the list mode, and "Hide reviewed".
 - **Main pane:** one screen at a time, with a bar along the bottom.
-- **Under 880px:** the sidebar becomes a drawer opened from a "Stories" button. Desktop comes first, and a phone is good enough to review on.
+- **Under 880px:** the sidebar becomes a drawer opened from a "Stories" button. Once closed, it leaves the tab order and screen readers. Desktop comes first, and a phone is good enough to review on.
 
 ### Lists
 
-- **By area** (the default): area, then component, then story. Each story shows a state dot, its largest percent changed and a tick when reviewed. Areas and components collapse.
-- **Same change:** groups first, largest first, then stories "On their own". This mode only appears when the report has at least one group.
+- **By area** (the default): area, then component, then story. Each story shows a state dot, its largest percent changed and a tick when reviewed. Areas and components collapse. Screen readers hear the state from the dot, and each open row's children form a group named after the row, so a "Default" story is heard with its component.
+- **Same change:** groups first, largest first, then stories "On their own", named like the groups, component then story ("CommentCount / Default"). This mode only appears when the report has at least one group.
 
 Search and the state filters apply to both. The list follows the item opened, from a click, a link or the back button: a group opens Same change, and a story whose captures are all in groups opens By area, since Same change doesn't list it.
 
@@ -215,7 +215,8 @@ KAN-159 adds approve and comment. A static page on GitHub Pages can't sign anyon
 - Shortcuts work with `event.code` on a Greek layout, only the arrows repeat while held, nothing but `?` and `Esc` acts behind the shortcuts dialog, and `Z` does nothing where zoom is turned off.
 - A story listed only in groups opens the By area list, and a Biggest changes thumbnail opens the capture it shows.
 - New, removed and failed captures look the same in every compare mode, a control that's turned off shows nothing pressed, and the slider fits whatever zoom was chosen.
-- Search and filters narrow the list and the review order.
+- Search and filters narrow the list and the review order, and the rows they hide leave the list.
+- The sidebar links to the PR, marks the open story and scrolls to it, opens and closes rows, ticks reviewed stories, and in Same change lists the groups before the stories on their own.
 
 **On real data, before merging:** run `buildReport` over the saved test captures (626 entries), confirm the groups match the numbers above within a small margin, record how long grouping takes, and go through the page in a browser at desktop and phone widths, light and dark.
 
