@@ -9960,6 +9960,33 @@
         "imageAlt": "Invitation decoration",
         "linkFallback": "See more"
     },
+    "InvitationEditor": {
+        "metaTitle": "Edit invitation",
+        "back": "Back",
+        "undo": "Undo",
+        "redo": "Redo",
+        "preview": "Preview",
+        "publish": "Publish",
+        "saved": "Saved",
+        "saving": "Saving…",
+        "unsaved": "Unsaved changes",
+        "notSaved": "Not saved",
+        "retry": "Try again",
+        "themeAssets": "Theme assets",
+        "settings": "Typography and settings",
+        "close": "Close",
+        "noAssets": "No assets yet.",
+        "textColor": "Text color",
+        "conflictTitle": "This invitation has newer changes.",
+        "conflictBody": "It was saved on another device or tab. Changes not saved here will be lost.",
+        "conflictReload": "Load the newer version",
+        "leaveTitle": "Your changes aren't saved.",
+        "leaveBody": "If you leave now, they will be lost.",
+        "leave": "Leave",
+        "stay": "Stay",
+        "publishUnavailable": "Publishing isn't available yet.",
+        "loadFailed": "We couldn't load this invitation."
+    },
     "SaveMyDatePreview": {
         "metaTitle": "Invitation preview"
     },

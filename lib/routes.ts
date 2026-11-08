@@ -43,6 +43,9 @@ export const routes = {
     demoUpload: (eventTypeSlug: string) => `/demo/${eventTypeSlug}/upload`,
     demoGallery: (eventTypeSlug: string) => `/demo/${eventTypeSlug}/tools/gallery`,
     invite: '/invite',
+    // The Save my date editor: a draft, or a new draft from a theme.
+    saveMyDateEditor: (draftId: string) => `/save-my-date/editor/${draftId}`,
+    saveMyDateEditorStart: (themeSlug: string) => withQuery('/save-my-date/editor', { theme: themeSlug }),
     home: '/home',
     profile: '/profile',
     // The vendor's page across their events (spec 2026-11-01). /partner redirects here.

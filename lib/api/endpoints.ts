@@ -249,6 +249,12 @@ export const endpoints = {
         preview: (inviteToken: string) => `/api/event-invitations/${inviteToken}/preview`,
     },
 
+    // Save my date drafts (guestwall-be InvitationDraftController).
+    invitationDrafts: {
+        root: '/api/invitation-drafts',
+        byId: (id: string) => `/api/invitation-drafts/${id}`,
+    },
+
     wishbook: {
         byId: (id: string) => `/api/wishbook/${id}`,
         highlight: (id: string) => `/api/wishbook/${id}/highlight`,
