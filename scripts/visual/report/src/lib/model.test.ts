@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { colorGroup, groupedEntries, sampleEntries, testEntry, testManifest } from '../testing/fixture';
-import { areaTree, buildModel, capturesInOrder, largestPercent, storyCapture, worstState } from './model';
+import { areaTree, buildModel, largestPercent, storyCapture, worstState } from './model';
 
 describe('buildModel', () => {
     it('makes stories from entries, sorted by area, component and name', () => {
@@ -36,6 +36,8 @@ describe('buildModel', () => {
         });
         const model = buildModel(testManifest(entries, { groups: undefined }));
         expect(model.groups).toEqual([]);
+        expect(model.manifest.entries.map((entry) => entry.changeKey)).toEqual(entries.map(() => null));
+        expect(model.stories.flatMap((story) => story.entries).every((entry) => entry.changeKey === null)).toBe(true);
     });
 
     it('drops a group with fewer than two captures', () => {
@@ -57,6 +59,22 @@ describe('buildModel', () => {
         ];
         expect(buildModel(testManifest(entries, { groups })).groups.map((group) => group.key)).toEqual(['same-2', 'same-1']);
     });
+
+    it("names a group's stories in area order, whatever their percents", () => {
+        const entries = [
+            testEntry('zeta', { storyId: 'feed-composercard--zeta', title: 'Feed/ComposerCard', name: 'Zeta', percent: 9, changeKey: 'same-1' }),
+            testEntry('alpha', { storyId: 'feed-composercard--alpha', title: 'Feed/ComposerCard', name: 'Alpha', percent: 1, changeKey: 'same-1' }),
+        ];
+        const group = buildModel(testManifest(entries, { groups: [{ key: 'same-1', kind: 'exact' }] })).groups[0];
+        expect(group.label).toBe('ComposerCard: Alpha, Zeta');
+        expect(group.entries.map((entry) => entry.id)).toEqual(['zeta', 'alpha']);
+    });
+
+    it('breaks a tie in percent by id', () => {
+        const entries = ['b', 'a', 'B'].map((id) => testEntry(id, { changeKey: 'color-1', percent: 2 }));
+        const group = buildModel(testManifest(entries, { groups: [colorGroup] })).groupByKey.get('color-1');
+        expect(group?.entries.map((entry) => entry.id)).toEqual(['B', 'a', 'b']);
+    });
 });
 
 describe('stories', () => {
@@ -64,11 +82,6 @@ describe('stories', () => {
 
     it('shows the worst state', () => {
         expect(worstState([testEntry('a', { state: 'new' }), testEntry('b', { state: 'failed' })])).toBe('failed');
-    });
-
-    it('orders captures by language, then width', () => {
-        const entries = [testEntry('el', { locale: 'el' }), testEntry('desktop', { width: 'desktop' }), testEntry('mobile')];
-        expect(capturesInOrder(entries).map((entry) => entry.id)).toEqual(['mobile', 'desktop', 'el']);
     });
 
     it('keeps the chosen capture, or falls back to the first', () => {

@@ -20,6 +20,7 @@ function validateGroups(groups) {
     const keys = new Set();
     for (const group of groups) {
         if (typeof group?.key !== 'string' || !GROUP_KEY.test(group.key)) throw new Error(`Manifest group has an invalid key: ${group?.key}`);
+        if (keys.has(group.key)) throw new Error(`Manifest has a repeated group key: ${group.key}`);
         if (!GROUP_KINDS.has(group.kind)) throw new Error(`Manifest group has an unknown kind: ${group.kind}`);
         for (const color of [group.from, group.to]) {
             if (color !== undefined && (typeof color !== 'string' || !COLOR.test(color)))

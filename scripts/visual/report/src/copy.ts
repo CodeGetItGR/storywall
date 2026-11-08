@@ -3,6 +3,8 @@ import type { CaptureState } from '../../types';
 
 const count = (value: number, one: string, many: string) => `${value} ${value === 1 ? one : many}`;
 
+const firstNames = (names: string[]) => `${names.slice(0, 2).join(', ')}${names.length > 2 ? ` and ${names.length - 2} more` : ''}`;
+
 // Every string on the page. The page is for developers, so it's in English only, like the PR comment.
 export const copy = {
     title: 'Visual check',
@@ -17,7 +19,7 @@ export const copy = {
     // Sidebar
     pull: (number: number) => `PR #${number}`,
     position: (at: number, total: number) => `${at} of ${total}`,
-    capturesReviewed: 'captures reviewed',
+    capturesReviewed: (total: number) => (total === 1 ? 'capture reviewed' : 'captures reviewed'),
     findStory: 'Find a story',
     filterByState: 'Filter by state',
     organizeList: 'Organize the list',
@@ -50,10 +52,8 @@ export const copy = {
 
     // Group
     colorChange: 'Color change',
-    sameChangeName: (component: string, names: string[], where?: string) => {
-        const more = names.length > 2 ? ` and ${names.length - 2} more` : '';
-        return `${component}${where ? `, ${where}` : ''}: ${names.slice(0, 2).join(', ')}${more}`;
-    },
+    sameChangeName: (component: string, names: string[], where?: string) => `${component}${where ? `, ${where}` : ''}: ${firstNames(names)}`,
+    sameChangeStories: (names: string[], where?: string) => `${where ? `${where}: ` : ''}${firstNames(names)}`,
     captures: (value: number) => count(value, 'capture', 'captures'),
     groupSize: (captures: number, stories: number) => `${count(captures, 'capture', 'captures')}, ${count(stories, 'story', 'stories')}`,
     showing: (story: string, capture: string) => `Showing ${story}, ${capture}`,
@@ -61,7 +61,7 @@ export const copy = {
     showAll: (value: number) => `Show all ${value}`,
 
     // Overview
-    differ: (differing: number, total: number) => `${differing} of ${total} captures differ`,
+    differ: (differing: number, total: number) => `${differing} of ${total} captures ${differing === 1 ? 'differs' : 'differ'}`,
     area: 'Area',
     biggestChanges: 'Biggest changes',
     missingStories: 'Components with no story',

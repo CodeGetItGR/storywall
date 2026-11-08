@@ -110,6 +110,14 @@ describe('validateManifest', () => {
         expect(() => validateManifest(withGroups([], 'same-1'))).toThrow(/changeKey/);
     });
 
+    it('rejects a repeated group key', () => {
+        const groups = [
+            { key: 'same-1', kind: 'exact' },
+            { key: 'same-1', kind: 'exact' },
+        ];
+        expect(() => validateManifest(withGroups(groups))).toThrow(/repeated group key/);
+    });
+
     it('accepts a color group and an exact group', () => {
         const groups = [
             { key: 'color-1', kind: 'color', from: '#241f1a', to: '#7c3aed' },
