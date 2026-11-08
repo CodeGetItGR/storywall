@@ -6,8 +6,10 @@ import { defineConfig, type Plugin } from 'vite';
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // Text an inline script can't contain, or the browser would stop reading it as a script.
-// \x3C is valid in strings, templates and regular expressions.
-const safeInScript = (code: string) => code.replace(/<(\/script|!--)/gi, '\\x3C$1');
+// \x3C is valid in strings, templates and regular expressions, and a < that was already escaped keeps its meaning.
+// A tagged template's .raw text still changes, because \x3C stays literal there.
+export const safeInScript = (code: string) =>
+    code.replace(/(\\*)<(\/script|!--)/gi, (_, slashes: string, rest: string) => (slashes.length % 2 ? slashes.slice(1) : slashes) + '\\x3C' + rest);
 
 // Puts the script and styles inside the page, so a report is one file and loads nothing from elsewhere.
 export function inlineIntoPage(): Plugin {

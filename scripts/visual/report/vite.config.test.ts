@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 
-import { inlineIntoPage } from './vite.config';
+import { inlineIntoPage, safeInScript } from './vite.config';
 
 type Bundle = Record<string, { type: 'asset'; source: string } | { type: 'chunk'; code: string }>;
 
@@ -36,5 +36,46 @@ describe('inlineIntoPage', () => {
             'assets/b.png': { type: 'asset', source: 'png' },
         };
         expect(() => generate(bundle)).toThrow(/assets\/b\.png/);
+    });
+
+    it('puts a stylesheet inside the page as a style', () => {
+        const bundle: Bundle = {
+            'index.html': { type: 'asset', source: '<head><link rel="stylesheet" href="./assets/a.css"></head>' },
+            'assets/a.css': { type: 'asset', source: 'a{color:red}' },
+        };
+        generate(bundle);
+        expect(Object.keys(bundle)).toEqual(['index.html']);
+        expect(bundle['index.html']).toEqual({ type: 'asset', source: '<head><style>a{color:red}</style></head>' });
+    });
+
+    it('fails when the page has no tag for a stylesheet', () => {
+        const bundle: Bundle = {
+            'index.html': { type: 'asset', source: '<head></head>' },
+            'assets/a.css': { type: 'asset', source: 'a{color:red}' },
+        };
+        expect(() => generate(bundle)).toThrow(/assets\/a\.css/);
+    });
+});
+
+describe('safeInScript', () => {
+    const run = (code: string) => new Function(`return ${safeInScript(code)}`)() as unknown;
+
+    it('keeps a string holding a script end or a comment start the same', () => {
+        expect(run('"</script>"')).toBe('</script>');
+        expect(run('"<!--"')).toBe('<!--');
+    });
+
+    it('keeps a regular expression that escapes the < working', () => {
+        expect(run('/\\<!--/.test("<!--")')).toBe(true);
+    });
+
+    it('keeps an escaped backslash before the < as it was', () => {
+        expect(run('"\\\\<!--"')).toBe('\\<!--');
+    });
+
+    it('leaves nothing in the output that could end the script', () => {
+        for (const code of ['"</script>"', '"<!--"', '/\\<!--/', '"\\\\<!--"', '"</SCRIPT>"']) {
+            expect(safeInScript(code)).not.toMatch(/<\/script|<!--/i);
+        }
     });
 });

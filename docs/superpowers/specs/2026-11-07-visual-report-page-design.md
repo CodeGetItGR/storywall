@@ -118,7 +118,7 @@ Group labels are worked out by the page: "Color change", or the component and st
 
 The rule stays: **the publish job installs nothing and builds nothing, and the page comes from the base commit.**
 
-- The source is in `scripts/visual/report/src/`. `npm run visual:page` builds it with Vite, already in the repo, into one file with its script and styles inside: `scripts/visual/report/dist/index.html`. That file is committed. There are no new dependencies.
+- The source is `scripts/visual/report/src/` plus the `index.html` template and `vite.config.ts`. `npm run visual:page` builds it with Vite, already in the repo, into one file with its script and styles inside: `scripts/visual/report/dist/index.html`. That file is committed. There are no new dependencies.
 - `publish.mjs` copies that file from its base checkout, exactly as it does the page today, and `run.ts` copies it for local runs.
 - It's about 200 KB, once per report, and loads nothing from other hosts.
 
@@ -127,7 +127,7 @@ The rule stays: **the publish job installs nothing and builds nothing, and the p
 ```yaml
 - run: |
       npm run visual:page
-      if [ -n "$(git status --porcelain -- scripts/visual/report/dist/index.html)" ]; then
+      if [ -n "$(git status --porcelain -- scripts/visual/report/dist)" ]; then
           echo "::error::The report page is out of date. Run npm run visual:page and commit the result."
           exit 1
       fi
