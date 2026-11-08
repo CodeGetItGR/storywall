@@ -1736,6 +1736,7 @@ import {
     type Filters,
     firstOpenItem,
     type Item,
+    openCount,
     OVERVIEW,
     reviewable,
     reviewProgress,
@@ -1844,6 +1845,13 @@ describe('reviewing', () => {
     it('finds nothing open when everything shown is reviewed', () => {
         const queue = reviewQueue(model, 'area', none, noMarks);
         expect(firstOpenItem(model, queue, withMarks(noMarks, sampleEntries))).toBeNull();
+    });
+
+    it('counts only the items left to review', () => {
+        const queue = reviewQueue(model, 'area', none, noMarks);
+        expect(openCount(model, queue, noMarks)).toBe(4);
+        expect(openCount(model, queue, withMarks(noMarks, [sampleEntries[0]]))).toBe(3);
+        expect(openCount(model, queue, withMarks(noMarks, sampleEntries))).toBe(0);
     });
 
     it('finds items', () => {
@@ -2158,9 +2166,14 @@ export function reviewProgress({ manifest }: ReportModel, marks: Marks) {
     return { done: list.filter((entry) => isMarked(marks, entry)).length, total: list.length };
 }
 
+// An item with a capture still to mark. A story whose captures all failed has nothing to mark, so it never is.
+const isOpen = (model: ReportModel, marks: Marks) => (item: Item) => reviewable(itemEntries(model, item)).some((entry) => !isMarked(marks, entry));
+
 // Null when everything the list shows is reviewed, so the bar offers no Start or Continue.
-export const firstOpenItem = (model: ReportModel, queue: Item[], marks: Marks): Item | null =>
-    queue.find((item) => reviewable(itemEntries(model, item)).some((entry) => !isMarked(marks, entry))) ?? null;
+export const firstOpenItem = (model: ReportModel, queue: Item[], marks: Marks): Item | null => queue.find(isOpen(model, marks)) ?? null;
+
+// What "N to review" counts: the items Start and Continue can still go to.
+export const openCount = (model: ReportModel, queue: Item[], marks: Marks) => queue.filter(isOpen(model, marks)).length;
 
 function approveAction({ manifest }: ReportModel, marks: Marks): BarActions['approve'] {
     const list = reviewable(manifest.entries);
@@ -2445,10 +2458,10 @@ Create `scripts/visual/report/src/lib/overview.test.ts`:
 ```ts
 import { describe, expect, it } from 'vitest';
 
-import { failedEntry, sampleEntries, testManifest } from '../testing/fixture';
+import { failedEntry, sampleEntries, testEntry, testManifest } from '../testing/fixture';
 import { withMarks } from './marks';
 import { buildModel } from './model';
-import { areaRows, biggestChanges, failedStories } from './overview';
+import { areaRows, biggestChanges, failedCount, failedStories } from './overview';
 
 const model = buildModel(testManifest([...sampleEntries, failedEntry]));
 
@@ -2463,6 +2476,12 @@ describe('overview', () => {
 
     it('lists failed stories', () => {
         expect(failedStories(model).map((story) => story.id)).toEqual(['ui-card--broken']);
+        expect(failedStories(model).map(failedCount)).toEqual([1]);
+    });
+
+    it('counts only the failed captures of a story', () => {
+        const passing = testEntry('ui-card--broken--el--mobile', { storyId: 'ui-card--broken', title: 'UI/Card', name: 'Broken', locale: 'el' });
+        expect(failedStories(buildModel(testManifest([failedEntry, passing]))).map(failedCount)).toEqual([1]);
     });
 
     it('lists the biggest changes, one per story, largest first', () => {
@@ -2632,6 +2651,8 @@ function stateCounts(entries: ReportEntry[]): Record<CaptureState, number> {
     return counts;
 }
 
+export const failedCount = (story: Story) => story.entries.filter((entry) => entry.state === 'failed').length;
+
 export function areaRows(model: ReportModel, marks: Marks): AreaRow[] {
     return [...new Set(model.stories.map((story) => story.area))].map((area) => {
         const stories = model.stories.filter((story) => story.area === area);
@@ -2785,7 +2806,7 @@ export function useRoute(model: ReportModel): Route {
 ```ts
 import { useState } from 'react';
 
-import type { CaptureState } from '../../../types';
+import type { CaptureState, ReportEntry } from '../../../types';
 import type { CaptureChoice } from '../lib/captures';
 import type { ReportModel } from '../lib/model';
 import { allReviewed, currentIndex, type Item, itemEntries, type ListMode, reviewable, reviewQueue, sameItem } from '../lib/reviewOrder';
@@ -2833,6 +2854,12 @@ export function useReportView(model: ReportModel, route: Route, { marks, mark, u
         go(target);
     }
 
+    // Opens a story on one capture, the way a Biggest changes thumbnail does.
+    function openCapture(entry: ReportEntry) {
+        patch({ capture: { locale: entry.locale, width: entry.width } });
+        go({ kind: 'story', id: entry.storyId });
+    }
+
     function step(delta: 1 | -1) {
         const target = stepTarget(queue, index, delta);
         if (target) go(target);
@@ -2869,6 +2896,7 @@ export function useReportView(model: ReportModel, route: Route, { marks, mark, u
 
         go,
         goInAreaList,
+        openCapture,
         goNext: () => step(1),
         goPrevious: () => step(-1),
         markCurrent,
@@ -2906,12 +2934,22 @@ export function useReportView(model: ReportModel, route: Route, { marks, mark, u
 
 ```ts
 import { useEffect } from 'react';
+import { flushSync } from 'react-dom';
 
 import { type Shortcut, shortcutFor } from '../lib/shortcuts';
 import { canCompare, canZoom } from '../lib/viewState';
 import type { ReportView } from './useReportView';
 
 export const SEARCH_INPUT_ID = 'story-search';
+
+// Under 880px the search box is in the closed drawer, where it can't take focus, so the drawer opens first. Its own effect may move focus to the list, so the search box takes focus after that.
+function findStory(view: ReportView) {
+    const search = document.getElementById(SEARCH_INPUT_ID);
+    search?.focus();
+    if (!search || document.activeElement === search) return;
+    flushSync(view.openDrawer);
+    search.focus();
+}
 
 function run(shortcut: Shortcut, view: ReportView) {
     switch (shortcut) {
@@ -2932,7 +2970,7 @@ function run(shortcut: Shortcut, view: ReportView) {
         case 'mode':
             return view.hasGroups ? view.toggleMode() : undefined;
         case 'find':
-            return document.getElementById(SEARCH_INPUT_ID)?.focus();
+            return findStory(view);
         case 'help':
             return view.toggleHelp();
     }
@@ -3920,6 +3958,8 @@ export function SameChangeList({ model, view, marks }: SameChangeListProps) {
 `sidebar/Sidebar.tsx`:
 
 ```tsx
+import type { Ref } from 'react';
+
 import { copy } from '../../copy';
 import type { ReportView } from '../../hooks/useReportView';
 import { useScrollToCurrentRow } from '../../hooks/useScrollToCurrentRow';
@@ -3931,12 +3971,12 @@ import { SidebarFilters } from './SidebarFilters';
 import { SidebarHeader } from './SidebarHeader';
 import { OverviewRow } from './TreeRows';
 
-type SidebarProps = { model: ReportModel; view: ReportView; marks: Marks };
+type SidebarProps = { model: ReportModel; view: ReportView; marks: Marks; drawerRef: Ref<HTMLElement> };
 
-export function Sidebar({ model, view, marks }: SidebarProps) {
+export function Sidebar({ model, view, marks, drawerRef }: SidebarProps) {
     const treeRef = useScrollToCurrentRow(view.item, view.mode);
     return (
-        <aside className={view.drawerOpen ? 'side open' : 'side'}>
+        <aside className={view.drawerOpen ? 'side open' : 'side'} ref={drawerRef} inert={view.helpOpen}>
             {/* Identity, progress and filters */}
             <div className="side-head">
                 <SidebarHeader model={model} marks={marks} />
@@ -3979,6 +4019,7 @@ git commit -m "KAN-158: add the report page's sidebar"
 
 **Files:**
 - Create in `scripts/visual/report/src/components/screens/`: `CaptureThumb.tsx`, `StoryScreen.tsx`, `GroupScreen.tsx`, `OverviewScreen.tsx`, `OverviewSections.tsx`, `BottomBar.tsx`, `TopBar.tsx`, `ShortcutsHelp.tsx`
+- Create in `scripts/visual/report/src/hooks/`: `useBottomBar.ts`, `useGroupThumbs.ts`, `useDialogFocus.ts`, `useDrawerFocus.ts`
 - Create: `scripts/visual/report/src/components/ReportApp.tsx`
 - Create: `scripts/visual/report/src/App.tsx`
 - Test: `scripts/visual/report/src/App.test.tsx`
@@ -3998,7 +4039,10 @@ import type { ReportManifest } from './lib/model';
 import { colorGroup, failedEntry, groupedEntries, sampleEntries, testEntry, testManifest } from './testing/fixture';
 
 async function openReport(manifest: ReportManifest) {
-    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => manifest })));
+    vi.stubGlobal(
+        'fetch',
+        vi.fn(async () => ({ ok: true, json: async () => manifest })),
+    );
     render(<App />);
     await screen.findByRole('navigation', { name: 'Stories' });
 }
@@ -4025,19 +4069,28 @@ describe('report page', () => {
 
     describe('loading', () => {
         it('shows a message while it loads', () => {
-            vi.stubGlobal('fetch', vi.fn(() => new Promise(() => undefined)));
+            vi.stubGlobal(
+                'fetch',
+                vi.fn(() => new Promise(() => undefined)),
+            );
             render(<App />);
             expect(screen.getByText('Loading...')).toBeInTheDocument();
         });
 
         it('explains a report that is gone', async () => {
-            vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 404 })));
+            vi.stubGlobal(
+                'fetch',
+                vi.fn(async () => ({ ok: false, status: 404 })),
+            );
             render(<App />);
             expect(await screen.findByText('Could not load this report. It may have been deleted when the PR closed.')).toBeInTheDocument();
         });
 
         it('explains a report it cannot read', async () => {
-            vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({}) })));
+            vi.stubGlobal(
+                'fetch',
+                vi.fn(async () => ({ ok: true, json: async () => ({}) })),
+            );
             render(<App />);
             expect(await screen.findByText('Could not load this report. It may have been deleted when the PR closed.')).toBeInTheDocument();
         });
@@ -4084,6 +4137,35 @@ describe('report page', () => {
             expect(button(/EN Desktop/)).toHaveAttribute('aria-pressed', 'true');
         });
 
+        it('names failed stories like the other lists, and opens them', async () => {
+            const broken = testEntry('feed-post-count--broken--en--mobile', {
+                storyId: 'feed-post-count--broken',
+                title: 'Feed/Post/Count',
+                name: 'Broken',
+                state: 'failed',
+                percent: 0,
+                afterHash: null,
+                error: 'Boom',
+                images: {},
+            });
+            await openReport(testManifest([...sampleEntries, broken]));
+            const failed = within(screen.getByRole('heading', { name: 'Failed' }).closest('section') as HTMLElement);
+            fireEvent.click(failed.getByRole('button', { name: /^Count \/ Broken.*1 capture$/ }));
+            expect(await screen.findByRole('heading', { name: 'Broken' })).toBeInTheDocument();
+        });
+
+        it('lists up to 6 same-change groups, and opens one', async () => {
+            const entries = Array.from({ length: 14 }, (_, index) =>
+                testEntry(`capture-${index}`, { storyId: `story-${index}`, changeKey: `same-${Math.floor(index / 2)}` }),
+            );
+            const groups = Array.from({ length: 7 }, (_, index) => ({ key: `same-${index}`, kind: 'exact' as const }));
+            await openReport(testManifest(entries, { groups }));
+            const rows = within(screen.getByRole('heading', { name: 'Same change' }).closest('section') as HTMLElement).getAllByRole('button');
+            expect(rows).toHaveLength(6);
+            fireEvent.click(rows[0]);
+            expect(await screen.findByRole('button', { name: 'Looks right for all 2' })).toBeInTheDocument();
+        });
+
         it('survives a report with no differences', async () => {
             await openReport(testManifest([]));
             expect(screen.getByRole('heading', { name: '0 of 1078 captures differ' })).toBeInTheDocument();
@@ -4114,6 +4196,22 @@ describe('report page', () => {
             expect(button('Looks right')).toBeInTheDocument();
         });
 
+        it('keeps focus on the mark button when it turns into Undo', async () => {
+            window.location.hash = '#ui-button--primary';
+            await openReport(testManifest(sampleEntries));
+            button('Looks right').focus();
+            fireEvent.click(button('Looks right'));
+            expect(button('Undo reviewed')).toHaveFocus();
+        });
+
+        it('keeps focus on the review button from Start to Looks right', async () => {
+            await openReport(testManifest(sampleEntries));
+            button('Start review').focus();
+            fireEvent.click(button('Start review'));
+            expect(await screen.findByText('Feed / Composer')).toBeInTheDocument();
+            expect(button('Looks right')).toHaveFocus();
+        });
+
         it('continues from the first item not yet reviewed', async () => {
             const manifest = testManifest(sampleEntries);
             seedMarks(manifest, [sampleEntries[0]]);
@@ -4126,7 +4224,11 @@ describe('report page', () => {
             const manifest = testManifest(sampleEntries);
             seedMarks(manifest, sampleEntries);
             await openReport(manifest);
-            expect(screen.getByRole('link', { name: 'Approve in the PR' })).toHaveAttribute('href', 'https://github.com/CodeGetItGR/storywall/pull/263');
+            expect(screen.getByRole('link', { name: 'Approve in the PR' })).toHaveAttribute(
+                'href',
+                'https://github.com/CodeGetItGR/storywall/pull/263',
+            );
+            expect(screen.getByText('0 to review')).toBeInTheDocument();
         });
 
         it('has no PR links on a local run, and nothing to start once everything is reviewed', async () => {
@@ -4279,6 +4381,27 @@ describe('report page', () => {
             expect(await screen.findByText('UI / Badge')).toBeInTheDocument();
         });
 
+        it('undoes a whole group', async () => {
+            const manifest = grouped();
+            seedMarks(manifest, groupedEntries.slice(0, 3));
+            window.location.hash = '#group-color-1';
+            await openReport(manifest);
+            expect(progress()).toHaveTextContent('3 of 5 captures reviewed');
+            fireEvent.click(button('Undo reviewed'));
+            expect(progress()).toHaveTextContent('0 of 5 captures reviewed');
+        });
+
+        it('shows a picked thumbnail from the top', async () => {
+            window.location.hash = '#group-color-1';
+            await openReport(grouped());
+            const stage = document.querySelector('.stage') as HTMLElement;
+            // jsdom has no layout, so the stage keeps its scroll position here.
+            let top = 400;
+            Object.defineProperty(stage, 'scrollTop', { configurable: true, get: () => top, set: (value: number) => (top = value) });
+            fireEvent.click(button(/PostCard \/ Default.*EN Desktop/));
+            expect(top).toBe(0);
+        });
+
         it('shows the capture picked from the thumbnails', async () => {
             window.location.hash = '#group-color-1';
             await openReport(grouped());
@@ -4288,7 +4411,9 @@ describe('report page', () => {
         });
 
         it('shows the first 60 thumbnails, then all of them', async () => {
-            const entries = Array.from({ length: 62 }, (_, index) => testEntry(`capture-${index}`, { storyId: `story-${index}`, changeKey: 'same-1' }));
+            const entries = Array.from({ length: 62 }, (_, index) =>
+                testEntry(`capture-${index}`, { storyId: `story-${index}`, changeKey: 'same-1' }),
+            );
             window.location.hash = '#group-same-1';
             await openReport(testManifest(entries, { groups: [{ key: 'same-1', kind: 'exact' }] }));
             expect(document.querySelectorAll('.thumb')).toHaveLength(60);
@@ -4379,6 +4504,7 @@ describe('report page', () => {
             await openReport(testManifest(sampleEntries));
             fireEvent.keyDown(document, { code: 'Slash', key: '/' });
             expect(screen.getByRole('textbox', { name: 'Find a story' })).toHaveFocus();
+            expect(document.querySelector('.side')).not.toHaveClass('open');
         });
 
         it('open and close the help', async () => {
@@ -4397,6 +4523,45 @@ describe('report page', () => {
             expect(progress()).toHaveTextContent('0 of 5 captures reviewed');
             fireEvent.keyDown(document, { code: 'Slash', key: '?' });
             expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        });
+
+        it('the dialog takes focus, holds the page still, and gives focus back', async () => {
+            window.location.hash = '#feed-composer--default';
+            await openReport(testManifest(sampleEntries));
+            button('Looks right').focus();
+            fireEvent.keyDown(document, { code: 'Slash', key: '?' });
+            expect(screen.getByRole('dialog', { name: 'Keyboard shortcuts' })).toHaveAttribute('aria-modal', 'true');
+            expect(button('Close')).toHaveFocus();
+            expect(document.querySelector('main')).toHaveAttribute('inert');
+            expect(document.querySelector('.side')).toHaveAttribute('inert');
+            fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
+            expect(button('Looks right')).toHaveFocus();
+            expect(document.querySelector('main')).not.toHaveAttribute('inert');
+            expect(document.querySelector('.side')).not.toHaveAttribute('inert');
+        });
+
+        it('open the help from its button, and close it with Close or the backdrop', async () => {
+            await openReport(testManifest(sampleEntries));
+            fireEvent.click(button('Keyboard shortcuts'));
+            fireEvent.click(button('Close'));
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+            fireEvent.click(button('Keyboard shortcuts'));
+            fireEvent.click(document.querySelector('.scrim') as Element);
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        });
+
+        it('open the drawer to reach search in a narrow window', async () => {
+            await openReport(testManifest(sampleEntries));
+            const search = screen.getByRole('textbox', { name: 'Find a story' });
+            const side = document.querySelector('.side') as HTMLElement;
+            const focus = HTMLElement.prototype.focus;
+            // Under 880px the closed drawer hides the search box, and a hidden element can't take focus.
+            vi.spyOn(search, 'focus').mockImplementation(function (this: HTMLElement) {
+                if (side.classList.contains('open')) focus.call(this);
+            });
+            fireEvent.keyDown(document, { code: 'Slash', key: '/' });
+            expect(side).toHaveClass('open');
+            expect(search).toHaveFocus();
         });
 
         it('leave zoom alone where it is turned off', async () => {
@@ -4475,8 +4640,10 @@ describe('report page', () => {
             const manifest = testManifest(sampleEntries);
             seedMarks(manifest, [sampleEntries[0]]);
             await openReport(manifest);
-            fireEvent.click(screen.getByRole('checkbox', { name: 'Hide reviewed' }));
             expect(screen.getByText('3 to review')).toBeInTheDocument();
+            fireEvent.click(screen.getByRole('checkbox', { name: 'Hide reviewed' }));
+            window.location.hash = '#feed-postcard--default';
+            expect(await screen.findByText('1 of 3')).toBeInTheDocument();
         });
 
         it('keep the rows as they were once the search is cleared', async () => {
@@ -4498,10 +4665,50 @@ describe('report page', () => {
     });
 
     describe('phone drawer', () => {
+        it('puts focus back on Stories after a row is picked, or Esc in its search', async () => {
+            await openReport(testManifest(sampleEntries));
+            fireEvent.click(button('Stories'));
+            fireEvent.click(list().getByRole('button', { name: 'Overview' }));
+            expect(button('Stories')).toHaveFocus();
+            fireEvent.click(button('Stories'));
+            const search = screen.getByRole('textbox', { name: 'Find a story' });
+            search.focus();
+            fireEvent.keyDown(search, { key: 'Escape', code: 'Escape' });
+            expect(button('Stories')).toHaveFocus();
+        });
+
+        it('takes focus back from the help over it, and Esc closes both', async () => {
+            await openReport(testManifest(sampleEntries));
+            fireEvent.click(button('Stories'));
+            const row = list().getByRole('button', { name: 'Overview' });
+            expect(row).toHaveFocus();
+            fireEvent.keyDown(document, { code: 'Slash', key: '?' });
+            fireEvent.click(button('Close'));
+            expect(row).toHaveFocus();
+            fireEvent.keyDown(document, { code: 'Slash', key: '?' });
+            fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
+            expect(document.querySelector('.side')).not.toHaveClass('open');
+            expect(button('Stories')).toHaveFocus();
+        });
+
+        it('moves focus into the list and back, and closes on Esc', async () => {
+            await openReport(testManifest(sampleEntries));
+            const stories = button('Stories');
+            expect(stories).toHaveAttribute('aria-expanded', 'false');
+            stories.focus();
+            fireEvent.click(stories);
+            expect(stories).toHaveAttribute('aria-expanded', 'true');
+            expect(list().getByRole('button', { name: 'Overview' })).toHaveFocus();
+            fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
+            expect(document.querySelector('.side')).not.toHaveClass('open');
+            expect(stories).toHaveFocus();
+        });
+
         it('opens, and closes on a row or the backdrop', async () => {
             await openReport(testManifest(sampleEntries));
             fireEvent.click(button('Stories'));
             expect(document.querySelector('.side')).toHaveClass('open');
+            expect(document.querySelector('.scrim')).toHaveClass('scrim-drawer');
             fireEvent.click(document.querySelector('.scrim') as Element);
             expect(document.querySelector('.side')).not.toHaveClass('open');
             fireEvent.click(button('Stories'));
@@ -4517,7 +4724,136 @@ describe('report page', () => {
 Run: `npx vitest run scripts/visual/report/src/App.test.tsx`
 Expected: FAIL, it can't find `./App`.
 
-- [ ] **Step 3: Write the screens**
+- [ ] **Step 3: Write the screens and their hooks**
+
+The screens' logic lives in four hooks in `scripts/visual/report/src/hooks/`, so the screens only lay things out.
+
+`hooks/useBottomBar.ts`:
+
+```ts
+import { copy } from '../copy';
+import type { Marks } from '../lib/marks';
+import type { ReportModel } from '../lib/model';
+import { barActions, itemEntries, openCount, reviewable } from '../lib/reviewOrder';
+import type { ReportView } from './useReportView';
+
+// What the bottom bar shows for the open item, so the bar itself only lays it out.
+export function useBottomBar(model: ReportModel, view: ReportView, marks: Marks) {
+    const { item, queue, index } = view;
+    const actions = barActions(model, item, queue, marks);
+
+    function start() {
+        if (actions.start) view.go(actions.start.item);
+    }
+
+    // Start and the mark share one button, so keyboard focus stays on it as it changes.
+    function action() {
+        if (actions.start) return { label: actions.start.started ? copy.continueReview : copy.startReview, primary: true, run: start };
+        if (actions.mark === 'undo') return { label: copy.undoReviewed, primary: false, run: view.markCurrent };
+        if (actions.mark === 'looks-right') {
+            const label = item.kind === 'group' ? copy.looksRightForAll(reviewable(itemEntries(model, item)).length) : copy.looksRight;
+            return { label, primary: true, run: view.markCurrent };
+        }
+        return null;
+    }
+
+    return {
+        actions,
+        onOverview: item.kind === 'overview',
+        // Off the list, on the Overview or an item the filters hide, it counts what's left rather than where you are.
+        position: index === -1 ? copy.toReview(openCount(model, queue, marks)) : copy.position(index + 1, queue.length),
+        action: action(),
+        previousDisabled: index <= 0,
+        nextDisabled: queue.length === 0 || index === queue.length - 1,
+    };
+}
+```
+
+`hooks/useGroupThumbs.ts`:
+
+```ts
+import { useRef } from 'react';
+
+import type { ReportEntry } from '../../../types';
+import type { Group } from '../lib/model';
+import type { ReportView } from './useReportView';
+
+const THUMB_PAGE = 60;
+
+// A group's thumbnails, the first 60 until Show all. A picked one shows from the top of the stage.
+export function useGroupThumbs(group: Group, view: ReportView) {
+    const stageRef = useRef<HTMLDivElement>(null);
+    const showingAll = view.allThumbs.has(group.key);
+
+    function pick(entry: ReportEntry) {
+        view.pickGroupCapture(group.key, entry.id);
+        if (stageRef.current) stageRef.current.scrollTop = 0;
+    }
+
+    function showAll() {
+        view.showAllThumbs(group.key);
+    }
+
+    return {
+        stageRef,
+        shown: showingAll ? group.entries : group.entries.slice(0, THUMB_PAGE),
+        hasMore: !showingAll && group.entries.length > THUMB_PAGE,
+        storyCount: new Set(group.entries.map((entry) => entry.storyId)).size,
+        pick,
+        showAll,
+    };
+}
+```
+
+`hooks/useDialogFocus.ts`. A dialog takes focus when it opens, so Enter can't press a button hidden behind it:
+
+```ts
+import { useEffect, useRef } from 'react';
+
+// A dialog takes focus when it opens, so Enter can't press a button hidden behind it, and gives focus back when it closes.
+export function useDialogFocus<T extends HTMLElement>() {
+    const ref = useRef<T>(null);
+    useEffect(() => {
+        const previous = document.activeElement;
+        ref.current?.focus();
+        return () => {
+            if (previous instanceof HTMLElement && previous.isConnected) previous.focus();
+        };
+    }, []);
+    return ref;
+}
+```
+
+`hooks/useDrawerFocus.ts`:
+
+```ts
+import { useEffect, useRef } from 'react';
+
+// On a phone the drawer covers the page, so focus moves into its list when it opens and back to the Stories button when it closes.
+export function useDrawerFocus(open: boolean) {
+    const drawerRef = useRef<HTMLElement>(null);
+    const buttonRef = useRef<HTMLButtonElement>(null);
+    const wasOpen = useRef(open);
+
+    useEffect(() => {
+        if (open === wasOpen.current) return;
+        wasOpen.current = open;
+        const drawer = drawerRef.current;
+        if (!drawer) return;
+        const active = document.activeElement;
+        if (open) {
+            // Focus already in the drawer stays there.
+            if (drawer.contains(active)) return;
+            const row = drawer.querySelector<HTMLElement>('nav [aria-current="true"]') ?? drawer.querySelector<HTMLElement>('nav button');
+            row?.focus();
+        } else if (active === document.body || drawer.contains(active)) {
+            buttonRef.current?.focus();
+        }
+    }, [open]);
+
+    return { drawerRef, buttonRef };
+}
+```
 
 `screens/CaptureThumb.tsx`:
 
@@ -4594,10 +4930,9 @@ export function StoryScreen({ story, entry, view }: StoryScreenProps) {
 `screens/GroupScreen.tsx`:
 
 ```tsx
-import { useRef } from 'react';
-
 import type { ReportEntry } from '../../../../types';
 import { copy } from '../../copy';
+import { useGroupThumbs } from '../../hooks/useGroupThumbs';
 import type { ReportView } from '../../hooks/useReportView';
 import { captureLabel, shortName } from '../../lib/labels';
 import type { Group } from '../../lib/model';
@@ -4607,23 +4942,10 @@ import { ViewControls } from '../compare/ViewControls';
 import { Swatches } from '../Swatches';
 import { CaptureThumb } from './CaptureThumb';
 
-const THUMB_PAGE = 60;
-
 type GroupScreenProps = { group: Group; entry: ReportEntry; view: ReportView };
 
 export function GroupScreen({ group, entry, view }: GroupScreenProps) {
-    const stageRef = useRef<HTMLDivElement>(null);
-    const showAll = view.allThumbs.has(group.key);
-    const shown = showAll ? group.entries : group.entries.slice(0, THUMB_PAGE);
-    const storyCount = new Set(group.entries.map((item) => item.storyId)).size;
-
-    function handlePick(item: ReportEntry) {
-        view.pickGroupCapture(group.key, item.id);
-        if (stageRef.current) stageRef.current.scrollTop = 0;
-    }
-    function handleShowAll() {
-        view.showAllThumbs(group.key);
-    }
+    const { stageRef, shown, hasMore, storyCount, pick, showAll } = useGroupThumbs(group, view);
 
     return (
         <>
@@ -4655,12 +4977,19 @@ export function GroupScreen({ group, entry, view }: GroupScreenProps) {
                     <h2>{copy.everyCapture}</h2>
                     <div className="thumbs">
                         {shown.map((item) => (
-                            <CaptureThumb key={item.id} entry={item} title={shortName(item)} value={captureLabel(item)} current={item === entry} onPick={handlePick} />
+                            <CaptureThumb
+                                key={item.id}
+                                entry={item}
+                                title={shortName(item)}
+                                value={captureLabel(item)}
+                                current={item === entry}
+                                onPick={pick}
+                            />
                         ))}
                     </div>
-                    {!showAll && group.entries.length > THUMB_PAGE && (
+                    {hasMore && (
                         <div>
-                            <button type="button" className="btn" onClick={handleShowAll}>
+                            <button type="button" className="btn" onClick={showAll}>
                                 {copy.showAll(group.entries.length)}
                             </button>
                         </div>
@@ -4675,13 +5004,12 @@ export function GroupScreen({ group, entry, view }: GroupScreenProps) {
 `screens/OverviewSections.tsx`:
 
 ```tsx
-import type { ReportEntry } from '../../../../types';
 import { copy } from '../../copy';
 import type { ReportView } from '../../hooks/useReportView';
 import { percentText, shortName } from '../../lib/labels';
 import type { Marks } from '../../lib/marks';
 import { type Group, type ReportModel, STATES, type Story } from '../../lib/model';
-import { type AreaRow, areaRows, biggestChanges, failedStories } from '../../lib/overview';
+import { type AreaRow, areaRows, biggestChanges, failedCount, failedStories } from '../../lib/overview';
 import { Swatches } from '../Swatches';
 import { CaptureThumb } from './CaptureThumb';
 
@@ -4690,17 +5018,14 @@ const GROUPS_SHOWN = 6;
 type SectionProps = { model: ReportModel; view: ReportView };
 
 function FailedRow({ story, view }: { story: Story; view: ReportView }) {
-    const failed = story.entries.filter((entry) => entry.state === 'failed').length;
     function handleClick() {
         view.go({ kind: 'story', id: story.id });
     }
     return (
         <button type="button" className="row group-row" onClick={handleClick}>
             <span className="dot s-failed" />
-            <span className="name">
-                {story.component} / {story.name}
-            </span>
-            <span className="value">{copy.captures(failed)}</span>
+            <span className="name">{shortName(story.entries[0])}</span>
+            <span className="value">{copy.captures(failedCount(story))}</span>
         </button>
     );
 }
@@ -4803,17 +5128,18 @@ export function SameChangeSection({ model, view }: SectionProps) {
 export function BiggestSection({ model, view }: SectionProps) {
     const big = biggestChanges(model);
     if (big.length === 0) return null;
-    // The story opens on the capture the thumbnail showed.
-    function handlePick(entry: ReportEntry) {
-        view.pickCapture({ locale: entry.locale, width: entry.width });
-        view.go({ kind: 'story', id: entry.storyId });
-    }
     return (
         <section className="section">
             <h2>{copy.biggestChanges}</h2>
             <div className="thumbs">
                 {big.map(({ story, entry }) => (
-                    <CaptureThumb key={story.id} entry={entry} title={shortName(entry)} value={percentText(entry.percent)} onPick={handlePick} />
+                    <CaptureThumb
+                        key={story.id}
+                        entry={entry}
+                        title={shortName(entry)}
+                        value={percentText(entry.percent)}
+                        onPick={view.openCapture}
+                    />
                 ))}
             </div>
         </section>
@@ -4878,63 +5204,47 @@ export function OverviewScreen({ model, view, marks }: OverviewScreenProps) {
 `screens/BottomBar.tsx`:
 
 ```tsx
+import { clsx } from 'clsx';
+
 import { copy } from '../../copy';
+import { useBottomBar } from '../../hooks/useBottomBar';
 import type { ReportView } from '../../hooks/useReportView';
 import type { Marks } from '../../lib/marks';
 import type { ReportModel } from '../../lib/model';
-import { barActions, itemEntries, reviewable } from '../../lib/reviewOrder';
 
 type BottomBarProps = { model: ReportModel; view: ReportView; marks: Marks };
 
 export function BottomBar({ model, view, marks }: BottomBarProps) {
-    const { item, queue, index } = view;
-    const onOverview = item.kind === 'overview';
-    const actions = barActions(model, item, queue, marks);
-    const markCount = reviewable(itemEntries(model, item)).length;
-    const looksRight = item.kind === 'group' ? copy.looksRightForAll(markCount) : copy.looksRight;
-
-    function handleStart() {
-        if (actions.start) view.go(actions.start.item);
-    }
+    const bar = useBottomBar(model, view, marks);
 
     return (
         <footer className="bar">
             {/* Position */}
-            {!onOverview && (
-                <button type="button" className="btn" disabled={index <= 0} onClick={view.goPrevious}>
+            {!bar.onOverview && (
+                <button type="button" className="btn" disabled={bar.previousDisabled} onClick={view.goPrevious}>
                     {copy.previous}
                 </button>
             )}
-            <span className="position">{index === -1 ? copy.toReview(queue.length) : copy.position(index + 1, queue.length)}</span>
-            {!onOverview && (
-                <button type="button" className="btn" disabled={queue.length === 0 || index === queue.length - 1} onClick={view.goNext}>
+            <span className="position">{bar.position}</span>
+            {!bar.onOverview && (
+                <button type="button" className="btn" disabled={bar.nextDisabled} onClick={view.goNext}>
                     {copy.next}
                 </button>
             )}
             <span className="spacer" />
 
-            {/* Review actions */}
-            {actions.start && (
-                <button type="button" className="btn btn-primary" onClick={handleStart}>
-                    {actions.start.started ? copy.continueReview : copy.startReview}
+            {/* Review actions. Start and the mark share one button, so keyboard focus stays on it as it changes. */}
+            {bar.action && (
+                <button type="button" className={clsx('btn', bar.action.primary && 'btn-primary')} onClick={bar.action.run}>
+                    {bar.action.label}
                 </button>
             )}
-            {actions.mark === 'looks-right' && (
-                <button type="button" className="btn btn-primary" onClick={view.markCurrent}>
-                    {looksRight}
-                </button>
-            )}
-            {actions.mark === 'undo' && (
-                <button type="button" className="btn" onClick={view.markCurrent}>
-                    {copy.undoReviewed}
-                </button>
-            )}
-            {actions.approve === 'link' && (
+            {bar.actions.approve === 'link' && (
                 <a className="btn btn-primary" href={model.manifest.pull?.url} target="_blank" rel="noreferrer">
                     {copy.approve}
                 </a>
             )}
-            {actions.approve === 'blocked' && <span className="position">{copy.fixFailedFirst}</span>}
+            {bar.actions.approve === 'blocked' && <span className="position">{copy.fixFailedFirst}</span>}
 
             {/* Help */}
             <button type="button" className="btn help-button" aria-label={copy.shortcuts} onClick={view.openHelp}>
@@ -4948,13 +5258,17 @@ export function BottomBar({ model, view, marks }: BottomBarProps) {
 `screens/TopBar.tsx`:
 
 ```tsx
+import type { Ref } from 'react';
+
 import { copy } from '../../copy';
 
+type TopBarProps = { open: boolean; buttonRef: Ref<HTMLButtonElement>; onOpenDrawer: () => void };
+
 // Only shows on a phone, where the sidebar is a drawer.
-export function TopBar({ onOpenDrawer }: { onOpenDrawer: () => void }) {
+export function TopBar({ open, buttonRef, onOpenDrawer }: TopBarProps) {
     return (
         <div className="top">
-            <button type="button" className="btn" onClick={onOpenDrawer}>
+            <button type="button" className="btn" ref={buttonRef} aria-expanded={open} onClick={onOpenDrawer}>
                 {copy.stories}
             </button>
             <b>{copy.title}</b>
@@ -4969,6 +5283,7 @@ export function TopBar({ onOpenDrawer }: { onOpenDrawer: () => void }) {
 import { Fragment } from 'react';
 
 import { copy } from '../../copy';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
 
 const SHORTCUTS: { keys: string[]; text: string }[] = [
     { keys: ['←', '→'], text: copy.previousOrNext },
@@ -4981,10 +5296,14 @@ const SHORTCUTS: { keys: string[]; text: string }[] = [
 ];
 
 export function ShortcutsHelp({ onClose }: { onClose: () => void }) {
+    const closeRef = useDialogFocus<HTMLButtonElement>();
     return (
         <>
+            {/* Backdrop */}
             <div className="scrim" onClick={onClose} />
-            <div className="help" role="dialog" aria-label={copy.shortcuts}>
+
+            {/* Shortcuts */}
+            <div className="help" role="dialog" aria-modal="true" aria-label={copy.shortcuts}>
                 <h2>{copy.shortcuts}</h2>
                 <dl>
                     {SHORTCUTS.map(({ keys, text }) => (
@@ -4998,7 +5317,7 @@ export function ShortcutsHelp({ onClose }: { onClose: () => void }) {
                         </Fragment>
                     ))}
                 </dl>
-                <button type="button" className="btn" onClick={onClose}>
+                <button type="button" className="btn" ref={closeRef} onClick={onClose}>
                     {copy.close}
                 </button>
             </div>
@@ -5012,6 +5331,7 @@ export function ShortcutsHelp({ onClose }: { onClose: () => void }) {
 `components/ReportApp.tsx`:
 
 ```tsx
+import { useDrawerFocus } from '../hooks/useDrawerFocus';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { usePreloadNext } from '../hooks/usePreloadNext';
 import { type ReportView, useReportView } from '../hooks/useReportView';
@@ -5047,20 +5367,21 @@ export function ReportApp({ model }: { model: ReportModel }) {
     const review = useReviewMarks(model);
     const route = useRoute(model);
     const view = useReportView(model, route, review);
+    const drawer = useDrawerFocus(view.drawerOpen);
     useKeyboardShortcuts(view);
     usePreloadNext(model, view);
 
     return (
         <div className="app">
             {/* Story list */}
-            <Sidebar model={model} view={view} marks={review.marks} />
+            <Sidebar model={model} view={view} marks={review.marks} drawerRef={drawer.drawerRef} />
 
             {/* Backdrop behind the phone drawer */}
-            {view.drawerOpen && <div className="scrim" onClick={view.closeDrawer} />}
+            {view.drawerOpen && <div className="scrim scrim-drawer" onClick={view.closeDrawer} />}
 
             {/* One item at a time */}
-            <main className="main">
-                <TopBar onOpenDrawer={view.openDrawer} />
+            <main className="main" inert={view.helpOpen}>
+                <TopBar open={view.drawerOpen} buttonRef={drawer.buttonRef} onOpenDrawer={view.openDrawer} />
                 <CurrentScreen model={model} view={view} marks={review.marks} />
                 <BottomBar model={model} view={view} marks={review.marks} />
             </main>
@@ -5104,7 +5425,7 @@ Expected: no errors.
 - [ ] **Step 7: Commit**
 
 ```bash
-git add scripts/visual/report/src/components scripts/visual/report/src/App.tsx scripts/visual/report/src/App.test.tsx
+git add scripts/visual/report/src/components/screens scripts/visual/report/src/components/ReportApp.tsx scripts/visual/report/src/hooks/useBottomBar.ts scripts/visual/report/src/hooks/useGroupThumbs.ts scripts/visual/report/src/hooks/useDialogFocus.ts scripts/visual/report/src/hooks/useDrawerFocus.ts scripts/visual/report/src/App.tsx scripts/visual/report/src/App.test.tsx
 git commit -m "KAN-158: add the report page's screens"
 ```
 
@@ -5267,6 +5588,21 @@ Then append this to the end of `styles.css`:
         visibility: visible;
         transition: transform 0.18s ease;
     }
+}
+
+/* The sidebar is only a drawer under 880px, so its backdrop never covers the desktop layout. */
+@media not all and (max-width: 880px) {
+    .scrim-drawer {
+        display: none;
+    }
+}
+
+/* The help sits above the open drawer too, so the drawer dims behind it like the rest of the page. */
+.scrim:not(.scrim-drawer) {
+    z-index: 42;
+}
+.help {
+    z-index: 43;
 }
 ```
 

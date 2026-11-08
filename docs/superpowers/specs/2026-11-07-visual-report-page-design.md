@@ -29,7 +29,7 @@ The approved mockup, with a real report of 626 differing captures: https://claud
 
 - **Sidebar:** the PR link and short commit, review progress, filters for failed, changed, new and removed, story search (every word typed has to appear in the story's title or name), the list mode, and "Hide reviewed".
 - **Main pane:** one screen at a time, with a bar along the bottom.
-- **Under 880px:** the sidebar becomes a drawer opened from a "Stories" button. Once closed, it leaves the tab order and screen readers. Desktop comes first, and a phone is good enough to review on.
+- **Under 880px:** the sidebar becomes a drawer opened from a "Stories" button. Opening it moves focus into the list, on the open item's row, and closing it puts focus back on the button. Once closed, it leaves the tab order and screen readers, and its backdrop never shows above 880px. Desktop comes first, and a phone is good enough to review on.
 
 ### Lists
 
@@ -40,7 +40,7 @@ Search and the state filters apply to both. The list follows the item opened, fr
 
 ### Screens
 
-- **Overview**, shown first: failed stories at the top, a table of counts per area, same-change groups, the 8 biggest changes as thumbnails, and components with no story. A thumbnail opens its story on the capture it shows.
+- **Overview**, shown first: failed stories at the top, a table of counts per area, the 6 largest same-change groups, the 8 biggest changes as thumbnails, and components with no story. Failed stories are named like the other lists, component then story ("CommentCount / Default"). A thumbnail opens its story on the capture it shows.
 - **Story:** tabs for the four captures (EN Mobile, EN Desktop, EL Mobile, EL Desktop), each with its percent, state, or "no change". A capture that wasn't taken, such as the mobile one of a desktop-only story, also says "no change", because the report can't tell the two apart. The chosen tab carries over to the next story.
 - **Group:** the capture with the biggest change, then thumbnails of every capture in the group. The first 60 show, then "Show all N". Clicking a thumbnail shows that capture. Color groups show the before and after colors.
 
@@ -50,8 +50,9 @@ Side by side, a slider, or the diff image, at fit or 100%. New stories show only
 
 ### Reviewing
 
-- "Looks right" marks the item and moves to the next one. On a group it reads "Looks right for all N" and marks every capture in the group. On a reviewed item it becomes "Undo reviewed".
+- "Looks right" marks the item and moves to the next one. On a group it reads "Looks right for all N" and marks every capture in the group. On a reviewed item it becomes "Undo reviewed". "Start review", "Looks right" and "Undo reviewed" are one button that changes, so keyboard focus stays on it.
 - The Overview's bar shows "Start review", or "Continue review" once something is marked. It goes to the first item not yet reviewed, in the list mode currently selected. When the filters hide everything left to review, neither button shows.
+- Off the list, on the Overview or an item the filters hide, the bar says "N to review", where N counts the items the list shows that still have a capture to mark. It reads "0 to review" once they're all marked.
 - With everything reviewed, the bar shows "Approve in the PR", a link to the PR. If any story failed, it shows "Fix the failed stories first" instead.
 - Marks approve nothing, and the PR's box is still the only approval.
 
@@ -59,7 +60,7 @@ Side by side, a slider, or the diff image, at fit or 100%. New stories show only
 
 ### Keyboard
 
-`←` `→` previous and next, `R` looks right, `C` next language or width, `1` `2` `3` side by side, slider, diff, `Z` fit or 100%, `G` list mode, `/` find a story, `?` shortcuts, `Esc` close. Letters are matched by key position (`event.code`), so they also work on a Greek keyboard. Holding a key repeats only `←` and `→`. Every other shortcut acts once per press, so holding `R` can't mark items unseen. A shortcut does nothing where its control is turned off, and while the shortcuts dialog is open only `?` and `Esc` work. On an item the filters hide, next goes to the first item in the list and previous does nothing, for the keys and the bar's buttons alike.
+`←` `→` previous and next, `R` looks right, `C` next language or width, `1` `2` `3` side by side, slider, diff, `Z` fit or 100%, `G` list mode, `/` find a story, `?` shortcuts, `Esc` close. Letters are matched by key position (`event.code`), so they also work on a Greek keyboard. Holding a key repeats only `←` and `→`. Every other shortcut acts once per press, so holding `R` can't mark items unseen. A shortcut does nothing where its control is turned off, and while the shortcuts dialog is open only `?` and `Esc` work. The dialog takes focus when it opens, so Enter can't press a button hidden behind it, holds the page behind it still, the open drawer included, and gives focus back when it closes. Under 880px, `/` opens the drawer to reach the search box. On an item the filters hide, next goes to the first item in the list and previous does nothing, for the keys and the bar's buttons alike.
 
 ### Links
 
@@ -217,6 +218,10 @@ KAN-159 adds approve and comment. A static page on GitHub Pages can't sign anyon
 - New, removed and failed captures look the same in every compare mode, a control that's turned off shows nothing pressed, and the slider fits whatever zoom was chosen.
 - Search and filters narrow the list and the review order, and the rows they hide leave the list.
 - The sidebar links to the PR, marks the open story and scrolls to it, opens and closes rows, ticks reviewed stories, and in Same change lists the groups before the stories on their own.
+- "N to review" counts only what's left, and the review button keeps focus from Start to Looks right to Undo. Undo on a group unmarks all of it.
+- The Overview names failed stories like the other lists and opens them, and shows up to 6 groups, each opening its group. A thumbnail picked on a group screen shows from the top.
+- The shortcuts dialog takes focus, holds the page still and gives focus back, and closes from its button, Close or the backdrop.
+- The phone drawer moves focus into the list and back, also after a row is picked, Esc in its search, or the help opened over it. It closes on Esc, and `/` opens it in a narrow window.
 
 **On real data, before merging:** run `buildReport` over the saved test captures (626 entries), confirm the groups match the numbers above within a small margin, record how long grouping takes, and go through the page in a browser at desktop and phone widths, light and dark.
 
