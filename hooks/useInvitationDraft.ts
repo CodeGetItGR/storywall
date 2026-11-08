@@ -23,12 +23,22 @@ function editableOrNull(dto: InvitationDraftDto | undefined): EditableDraft | 'i
     }
 }
 
+type InvitationDraftOptions = {
+    // The server loaded the draft for this page, so the cached copy is the stored one.
+    prefetched?: boolean;
+};
+
 // The draft the editor opens. loadId changes when reload() brings in the stored copy,
 // so the editor can start over from it.
-export function useInvitationDraft(draftId: string) {
+export function useInvitationDraft(draftId: string, { prefetched = false }: InvitationDraftOptions = {}) {
     const queryClient = useQueryClient();
-    const query = useQuery(invitationDraftQueryOptions(draftId));
+    // A copy cached on an earlier visit may be older than the stored one (edited on another
+    // device since), so the editor reads the draft again and waits for it.
+    const query = useQuery({ ...invitationDraftQueryOptions(draftId), refetchOnMount: prefetched ? true : 'always' });
     const editable = useMemo(() => editableOrNull(query.data), [query.data]);
+    // Once open, the editor stays open: a later read that fails doesn't take it away.
+    const [isCurrent, setIsCurrent] = useState(prefetched);
+    if (!isCurrent && query.isFetchedAfterMount && query.isSuccess) setIsCurrent(true);
     const [loadId, setLoadId] = useState(0);
     const [isReloading, setIsReloading] = useState(false);
     const { refetch } = query;
@@ -50,8 +60,8 @@ export function useInvitationDraft(draftId: string) {
     }, [draftId, queryClient]);
 
     return {
-        draft: editable === 'invalid' ? null : editable,
-        isError: editable === 'invalid' || (query.isError && !query.data),
+        draft: isCurrent && editable !== 'invalid' ? editable : null,
+        isError: (isCurrent && editable === 'invalid') || (!isCurrent && query.isError),
         loadId,
         isReloading,
         retry,

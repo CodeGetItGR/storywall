@@ -28,22 +28,25 @@ export default async function Page({ params }: PageProps) {
     const queryClient = makeQueryClient();
     const accessToken = await prefetchAccessToken();
 
-    const [uploadedFonts] = await Promise.all([
+    // True when the draft is in the cache for this page.
+    const [uploadedFonts, prefetched] = await Promise.all([
         fetchUploadedFonts(),
         (async () => {
-            if (!accessToken) return;
+            if (!accessToken) return false;
             try {
                 const draft = await serverGet<InvitationDraftDto>(endpoints.invitationDrafts.byId(draftId), accessToken);
                 queryClient.setQueryData(invitationDraftKeys.detail(draftId), draft);
+                return true;
             } catch {
                 // Best-effort: the editor loads the draft itself.
+                return false;
             }
         })(),
     ]);
 
     return (
         <HydrationBoundary state={dehydrate(queryClient)}>
-            <InvitationEditorPage draftId={draftId} uploadedFonts={uploadedFonts} />
+            <InvitationEditorPage draftId={draftId} uploadedFonts={uploadedFonts} prefetched={prefetched} />
         </HydrationBoundary>
     );
 }

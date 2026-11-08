@@ -231,6 +231,65 @@ describe('createDraftAutosave', () => {
         expect(save).toHaveBeenCalledTimes(1);
     });
 
+    it('sends the latest copy after a save on its way when disposed with save', async () => {
+        let finish: (value: { revision: number }) => void = () => {};
+        const { change, save, autosave } = setup({
+            save: vi
+                .fn<(revision: number, document: Doc) => Promise<{ revision: number }>>()
+                .mockImplementationOnce(() => new Promise((resolve) => (finish = resolve)))
+                .mockImplementation(async (revision) => ({ revision: revision + 1 })),
+        });
+        change('b');
+        await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
+        change('c');
+        autosave.dispose({ save: true });
+        finish({ revision: 2 });
+        await vi.advanceTimersByTimeAsync(0);
+
+        expect(save).toHaveBeenCalledTimes(2);
+        expect(save).toHaveBeenLastCalledWith(2, { text: 'c' });
+        await vi.advanceTimersByTimeAsync(AUTOSAVE_SAFETY_MS * 2);
+        expect(save).toHaveBeenCalledTimes(2);
+    });
+
+    it('sends nothing more when disposed during a save that turns out to be stale', async () => {
+        let refuse: (error: unknown) => void = () => {};
+        const { change, save, autosave } = setup({
+            save: vi
+                .fn<(revision: number, document: Doc) => Promise<{ revision: number }>>()
+                .mockImplementationOnce(() => new Promise((_, reject) => (refuse = reject)))
+                .mockImplementation(async (revision) => ({ revision: revision + 1 })),
+        });
+        change('b');
+        await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
+        change('c');
+        autosave.dispose({ save: true });
+        refuse(stale());
+        await vi.advanceTimersByTimeAsync(AUTOSAVE_SAFETY_MS * 2);
+
+        expect(save).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([403, 404])('stops trying every 5 s once a save gets %i', async (status) => {
+        const { change, save, autosave } = setup({ save: async () => Promise.reject(new ApiError(status, null)) });
+        change('b');
+        await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
+        expect(save).toHaveBeenCalledTimes(1);
+        expect(autosave.status()).toBe('error');
+
+        await vi.advanceTimersByTimeAsync(AUTOSAVE_SAFETY_MS * 3);
+        expect(save).toHaveBeenCalledTimes(1);
+
+        // A new change, or saving on purpose, still tries.
+        change('c');
+        await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
+        expect(save).toHaveBeenCalledTimes(2);
+        await vi.advanceTimersByTimeAsync(AUTOSAVE_SAFETY_MS * 3);
+        expect(save).toHaveBeenCalledTimes(2);
+        await expect(autosave.flush()).resolves.toBe(false);
+        expect(save).toHaveBeenCalledTimes(3);
+    });
+
     it('saves a change made before it started, against the copy it was given', async () => {
         const save = vi.fn(async (revision: number) => ({ revision: revision + 1 }));
         const autosave = createDraftAutosave<Doc>({

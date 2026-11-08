@@ -6,6 +6,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 
 import { createDraftServer, TEST_API } from '@/hooks/invitationDraftTestServer';
 import { useInvitationDraft } from '@/hooks/useInvitationDraft';
+import { invitationDraftKeys } from '@/lib/invitation/drafts';
 
 // Hoisted above the imports, so the API client reads it when it loads. Same as TEST_API.
 vi.hoisted(() => {
@@ -14,10 +15,12 @@ vi.hoisted(() => {
 
 const backend = createDraftServer();
 
-function renderDraft() {
-    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+// Cached reads stay fresh for 10 minutes, as in the app's own query client.
+function renderDraft({ cached, prefetched = false }: { cached?: unknown; prefetched?: boolean } = {}) {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: 10 * 60 * 1000 } } });
+    if (cached) queryClient.setQueryData(invitationDraftKeys.detail('draft-1'), cached);
     const wrapper = ({ children }: { children: ReactNode }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
-    return renderHook(() => useInvitationDraft('draft-1'), { wrapper });
+    return renderHook(() => useInvitationDraft('draft-1', { prefetched }), { wrapper });
 }
 
 describe('useInvitationDraft', () => {
@@ -35,6 +38,39 @@ describe('useInvitationDraft', () => {
 
         expect(result.current.draft?.revision).toBe(4);
         expect(result.current.draft?.media('m-top')).toBe('/images/venue.png');
+        expect(result.current.isError).toBe(false);
+    });
+
+    it('opens the stored copy, not an older one left in the cache', async () => {
+        const older = { ...backend.stored(), revision: 2, document: { ...backend.stored().document, overrides: { textColor: '#111111' } } };
+        const { result } = renderDraft({ cached: older });
+        expect(result.current.draft).toBeNull();
+
+        await waitFor(() => expect(result.current.draft).not.toBeNull());
+        expect(result.current.draft?.revision).toBe(4);
+        expect(result.current.draft?.document.overrides.textColor).not.toBe('#111111');
+    });
+
+    it('fails rather than open an older cached copy when the stored one cannot be read', async () => {
+        backend.server.use(http.get(`${TEST_API}/api/invitation-drafts/:id`, () => HttpResponse.json({ status: 503 }, { status: 503 })));
+        const { result } = renderDraft({ cached: { ...backend.stored(), revision: 2 } });
+        await waitFor(() => expect(result.current.isError).toBe(true));
+        expect(result.current.draft).toBeNull();
+    });
+
+    it('opens the copy the server just loaded straight away', () => {
+        const { result } = renderDraft({ cached: backend.stored(), prefetched: true });
+        expect(result.current.draft?.revision).toBe(4);
+    });
+
+    it('stays open when a later read fails', async () => {
+        const { result } = renderDraft();
+        await waitFor(() => expect(result.current.draft).not.toBeNull());
+        backend.server.use(http.get(`${TEST_API}/api/invitation-drafts/:id`, () => HttpResponse.json({ status: 503 }, { status: 503 })));
+
+        await act(() => result.current.reload());
+
+        expect(result.current.draft?.revision).toBe(4);
         expect(result.current.isError).toBe(false);
     });
 

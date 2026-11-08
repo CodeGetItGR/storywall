@@ -1,4 +1,4 @@
-import { isStaleRevision, isTransientSaveError, sameDocument } from '@/lib/invitation/drafts';
+import { isLostDraftError, isStaleRevision, isTransientSaveError, sameDocument } from '@/lib/invitation/drafts';
 
 // Saves about 1.5 s after the last change, and every 5 s while changes stay unsaved
 // (someone who never stops typing, or a save that failed).
@@ -46,11 +46,14 @@ export function createDraftAutosave<D>(options: DraftAutosaveOptions<D>): DraftA
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
     let safetyTimer: ReturnType<typeof setInterval> | null = null;
     let disposed = false;
+    // The draft is gone or no longer theirs: the safety timer stops trying.
+    let gaveUp = false;
 
+    // Kept up after dispose too, so a last save knows whether it may still go out.
     const setStatus = (next: SaveStatus) => {
-        if (disposed || next === status) return;
+        if (next === status) return;
         status = next;
-        options.onStatus(next);
+        if (!disposed) options.onStatus(next);
     };
 
     const isDirty = () => options.read().changeCount !== savedChangeCount;
@@ -118,6 +121,7 @@ export function createDraftAutosave<D>(options: DraftAutosaveOptions<D>): DraftA
             } catch (error) {
                 if (isStaleRevision(error)) return resolveStale(document, changeCount);
                 if (!isTransientSaveError(error) || tries >= AUTOSAVE_RETRIES) {
+                    gaveUp = isLostDraftError(error);
                     setStatus('error');
                     return false;
                 }
@@ -135,7 +139,12 @@ export function createDraftAutosave<D>(options: DraftAutosaveOptions<D>): DraftA
         }
         // A failed save is tried again by the safety timer, not straight away.
         if (status === 'error') {
-            if (!safetyTimer) safetyTimer = setInterval(() => void run(), AUTOSAVE_SAFETY_MS);
+            if (gaveUp) {
+                if (safetyTimer) clearInterval(safetyTimer);
+                safetyTimer = null;
+            } else if (!safetyTimer) {
+                safetyTimer = setInterval(() => void run(), AUTOSAVE_SAFETY_MS);
+            }
             return;
         }
         setStatus('unsaved');
@@ -178,8 +187,14 @@ export function createDraftAutosave<D>(options: DraftAutosaveOptions<D>): DraftA
 
         dispose: ({ save = false } = {}) => {
             clearTimers();
-            if (save && status !== 'conflict' && isDirty()) void run();
             disposed = true;
+            if (!save) return;
+            const sendLatest = () => {
+                if (status !== 'conflict' && isDirty()) void attempt();
+            };
+            // A save on its way carries an older copy, so the latest goes out after it.
+            if (inFlight) void inFlight.then(sendLatest);
+            else sendLatest();
         },
     };
 }

@@ -5,10 +5,10 @@ import { InvitationEditorError, InvitationEditorLoading } from '@/components/sav
 import { useInvitationDraft } from '@/hooks/useInvitationDraft';
 import type { InvitationFontDto } from '@/lib/invitation/uploadedFonts';
 
-type InvitationEditorPageProps = { draftId: string; uploadedFonts?: InvitationFontDto[] };
+type InvitationEditorPageProps = { draftId: string; uploadedFonts?: InvitationFontDto[]; prefetched?: boolean };
 
-export default function InvitationEditorPage({ draftId, uploadedFonts }: InvitationEditorPageProps) {
-    const { draft, isError, loadId, isReloading, retry, reload } = useInvitationDraft(draftId);
+export default function InvitationEditorPage({ draftId, uploadedFonts, prefetched }: InvitationEditorPageProps) {
+    const { draft, isError, loadId, isReloading, retry, reload } = useInvitationDraft(draftId, { prefetched });
 
     if (draft) return <InvitationEditor key={loadId} draft={draft} uploadedFonts={uploadedFonts} onReload={reload} isReloading={isReloading} />;
     if (isError) return <InvitationEditorError onRetry={retry} />;

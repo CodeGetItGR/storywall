@@ -46,4 +46,22 @@ describe('useUndoShortcuts', () => {
         fireEvent.keyDown(input, { key: 'z', ctrlKey: true });
         expect(undo).not.toHaveBeenCalled();
     });
+
+    it('undoes after picking a colour, while the colour input has focus', () => {
+        const { undo } = setup();
+        const input = document.createElement('input');
+        input.type = 'color';
+        document.body.append(input);
+        fireEvent.keyDown(input, { key: 'z', ctrlKey: true });
+        expect(undo).toHaveBeenCalledTimes(1);
+    });
+
+    it.each(['text', 'search', 'url', 'email', 'number'])('leaves undo to the browser in a %s field', (type) => {
+        const { undo } = setup();
+        const input = document.createElement('input');
+        input.type = type;
+        document.body.append(input);
+        fireEvent.keyDown(input, { key: 'z', ctrlKey: true });
+        expect(undo).not.toHaveBeenCalled();
+    });
 });

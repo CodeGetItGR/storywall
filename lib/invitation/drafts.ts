@@ -67,6 +67,11 @@ export function isTransientSaveError(error: unknown): boolean {
     return error.status === 429 || error.status >= 500;
 }
 
+// The draft was deleted or is no longer theirs to edit: trying again won't help.
+export function isLostDraftError(error: unknown): boolean {
+    return error instanceof ApiError && (error.status === 403 || error.status === 404);
+}
+
 // The same content, whatever order the keys come back in (the database reorders them).
 export function sameDocument(a: unknown, b: unknown): boolean {
     return hashKey([a]) === hashKey([b]);

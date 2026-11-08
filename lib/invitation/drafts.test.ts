@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
 import { ApiError } from '@/lib/api/client';
-import { DRAFT_REVISION_STALE_ERROR_CODE, isStaleRevision, isTransientSaveError, readEditableDraft, sameDocument } from '@/lib/invitation/drafts';
+import {
+    DRAFT_REVISION_STALE_ERROR_CODE,
+    isLostDraftError,
+    isStaleRevision,
+    isTransientSaveError,
+    readEditableDraft,
+    sameDocument,
+} from '@/lib/invitation/drafts';
 import { sampleDraftDocument, sampleDraftDto as draftDto } from '@/lib/invitation/sampleDraft';
 import { PREVIEW_THEME } from '@/lib/saveMyDatePreview';
 
@@ -38,6 +45,16 @@ describe('isTransientSaveError', () => {
         expect(isTransientSaveError(new ApiError(429, null))).toBe(true);
         expect(isTransientSaveError(new ApiError(400, null))).toBe(false);
         expect(isTransientSaveError(new ApiError(404, null))).toBe(false);
+    });
+});
+
+describe('isLostDraftError', () => {
+    it('is a draft that was deleted or is no longer theirs', () => {
+        expect(isLostDraftError(new ApiError(403, null))).toBe(true);
+        expect(isLostDraftError(new ApiError(404, null))).toBe(true);
+        expect(isLostDraftError(new ApiError(400, null))).toBe(false);
+        expect(isLostDraftError(new ApiError(503, null))).toBe(false);
+        expect(isLostDraftError(new TypeError('Failed to fetch'))).toBe(false);
     });
 });
 

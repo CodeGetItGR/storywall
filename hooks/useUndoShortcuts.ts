@@ -2,9 +2,13 @@
 
 import { useEffect } from 'react';
 
+// Inputs where the browser undoes typing. A colour picker, checkbox or slider has no undo of its own.
+const TEXT_INPUT_TYPES = new Set(['text', 'search', 'url', 'tel', 'email', 'password', 'number']);
+
 function isTyping(target: EventTarget | null): boolean {
     if (!(target instanceof HTMLElement)) return false;
-    return target.isContentEditable || target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT';
+    if (target instanceof HTMLInputElement) return TEXT_INPUT_TYPES.has(target.type);
+    return target.isContentEditable || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT';
 }
 
 // Ctrl/Cmd+Z undoes, Ctrl/Cmd+Shift+Z and Ctrl/Cmd+Y redo, as in the old editor.
