@@ -3421,6 +3421,11 @@ export function SliderView({ entry, position, onMove }: SliderViewProps) {
     }
     return (
         <div className="slider-wrap">
+            {/* Labels */}
+            <div className="slider-tags">
+                <span>{copy.before}</span>
+                <span>{copy.after}</span>
+            </div>
             <div className="slider" style={{ '--pos': `${position}%` } as CSSProperties}>
                 {/* Images */}
                 <img key={entry.images.after} src={entry.images.after} alt={altText(entry, copy.after.toLowerCase())} decoding="async" />
@@ -3433,8 +3438,6 @@ export function SliderView({ entry, position, onMove }: SliderViewProps) {
                 />
 
                 {/* Divider */}
-                <span className="slider-tag slider-tag-before">{copy.before}</span>
-                <span className="slider-tag slider-tag-after">{copy.after}</span>
                 <span className="line" />
                 <input type="range" min={0} max={100} value={position} aria-label={copy.moveDivider} onChange={handleChange} />
             </div>
@@ -5434,7 +5437,7 @@ git commit -m "KAN-158: add the report page's screens"
 ## Task 11: Build it, and use it
 
 **Files:**
-- Create: `scripts/visual/report/src/main.tsx`, `scripts/visual/report/src/styles.css`, `scripts/visual/report/vite.config.ts`, `.gitattributes`, `scripts/visual/report/page.test.ts`, `scripts/visual/report/dist/index.html` (built)
+- Create: `scripts/visual/report/src/main.tsx`, `scripts/visual/report/src/styles.css`, `scripts/visual/report/vite.config.ts`, `.gitattributes`, `scripts/visual/report/page.test.ts`, `scripts/visual/report/vite.config.test.ts`, `scripts/visual/report/dist/index.html` (built)
 - Modify: `scripts/visual/report/index.html` (becomes the template), `package.json`, `app/globals.css`, `scripts/visual/publish.mjs`, `scripts/visual/run.ts`, `.github/workflows/visual-check.yml`, `scripts/visual/workflows.test.ts`, `docs/storybook.md`, `docs/superpowers/specs/2026-11-06-visual-regression-tool-design.md`
 
 - [ ] **Step 1: Write the failing tests**
@@ -5442,7 +5445,7 @@ git commit -m "KAN-158: add the report page's screens"
 Create `scripts/visual/report/page.test.ts`:
 
 ```ts
-// @vitest-environment node
+// @vitest-environment jsdom
 import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
@@ -5456,14 +5459,17 @@ describe('built report page', () => {
         expect(page).toContain('<meta name="robots" content="noindex, nofollow"');
     });
 
-    it('has its script and styles inside', () => {
-        expect(page).toContain('<script type="module">');
-        expect(page).toContain('<style>');
-    });
-
-    it('loads no script or stylesheet from elsewhere', () => {
-        expect(page).not.toMatch(/<script[^>]*\ssrc=/);
-        expect(page).not.toMatch(/<link[^>]*stylesheet/);
+    it('is one page with its script and styles inside and nothing loaded from elsewhere', () => {
+        const document = new DOMParser().parseFromString(page, 'text/html');
+        const scripts = [...document.querySelectorAll('script')];
+        expect(scripts).toHaveLength(1);
+        expect(scripts[0].getAttribute('type')).toBe('module');
+        expect(scripts[0].hasAttribute('src')).toBe(false);
+        expect(scripts[0].textContent).toMatch(/\.render\(/);
+        expect(document.querySelectorAll('style')).toHaveLength(1);
+        expect(document.querySelectorAll('link[rel=stylesheet]')).toHaveLength(0);
+        expect([...document.body.children].map((element) => element.id)).toEqual(['root']);
+        expect(page).not.toMatch(/import\(|assets\//);
     });
 
     it('uses one kind of line ending, so every machine builds the same file', () => {
@@ -5493,15 +5499,102 @@ In `scripts/visual/workflows.test.ts`, inside `describe('visual-check workflow',
         const check = readFileSync('.github/workflows/visual-check.yml', 'utf8');
         const capture = check.slice(check.indexOf('    capture:'), check.indexOf('    publish:'));
         expect(capture).toContain('npm run visual:page');
-        expect(capture).toContain('git status --porcelain -- scripts/visual/report/dist/index.html');
+        expect(capture).toContain('git status --porcelain -- scripts/visual/report/dist)');
+        expect(capture).toContain('exit 1');
         expect(capture.indexOf('npm ci')).toBeLessThan(capture.indexOf('npm run visual:page'));
     });
 
     it('never builds in the job that holds the deploy key', () => {
         const check = readFileSync('.github/workflows/visual-check.yml', 'utf8');
         const publish = check.slice(check.indexOf('    publish:'), check.indexOf('    finish:'));
-        expect(publish).not.toContain('npm ');
+        expect(publish).not.toMatch(/\b(npm|npx|pnpm|yarn|vite)\b/);
     });
+```
+
+Create `scripts/visual/report/vite.config.test.ts`. It tests the inlining plugin on its own, with small fake bundles:
+
+```ts
+// @vitest-environment node
+import { describe, expect, it } from 'vitest';
+
+import { inlineIntoPage, safeInScript } from './vite.config';
+
+type Bundle = Record<string, { type: 'asset'; source: string } | { type: 'chunk'; code: string }>;
+
+const plugin = inlineIntoPage();
+
+const transform = (html: string) => (plugin.transformIndexHtml as { handler: (html: string) => string }).handler(html);
+const generate = (bundle: Bundle) => (plugin.generateBundle as (this: unknown, options: unknown, bundle: Bundle) => void).call({}, {}, bundle);
+
+const page = '<body><script type="module" src="./assets/a.js"></script></body>';
+
+describe('inlineIntoPage', () => {
+    it('turns Windows line endings into Unix ones before the build reads the template', () => {
+        expect(transform('<div>\r\n</div>\r\n')).toBe('<div>\n</div>\n');
+    });
+
+    it('puts the script inside the page and leaves only index.html', () => {
+        const bundle: Bundle = { 'index.html': { type: 'asset', source: page }, 'assets/a.js': { type: 'chunk', code: 'x' } };
+        generate(bundle);
+        expect(Object.keys(bundle)).toEqual(['index.html']);
+        expect(bundle['index.html']).toEqual({ type: 'asset', source: '<body><script type="module">x</script></body>' });
+    });
+
+    it('fails when the page has no tag for a script', () => {
+        const bundle: Bundle = { 'index.html': { type: 'asset', source: '<body></body>' }, 'assets/a.js': { type: 'chunk', code: 'x' } };
+        expect(() => generate(bundle)).toThrow(/assets\/a\.js/);
+    });
+
+    it('fails when the build leaves another file behind', () => {
+        const bundle: Bundle = {
+            'index.html': { type: 'asset', source: page },
+            'assets/a.js': { type: 'chunk', code: 'x' },
+            'assets/b.png': { type: 'asset', source: 'png' },
+        };
+        expect(() => generate(bundle)).toThrow(/assets\/b\.png/);
+    });
+
+    it('puts a stylesheet inside the page as a style', () => {
+        const bundle: Bundle = {
+            'index.html': { type: 'asset', source: '<head><link rel="stylesheet" href="./assets/a.css"></head>' },
+            'assets/a.css': { type: 'asset', source: 'a{color:red}' },
+        };
+        generate(bundle);
+        expect(Object.keys(bundle)).toEqual(['index.html']);
+        expect(bundle['index.html']).toEqual({ type: 'asset', source: '<head><style>a{color:red}</style></head>' });
+    });
+
+    it('fails when the page has no tag for a stylesheet', () => {
+        const bundle: Bundle = {
+            'index.html': { type: 'asset', source: '<head></head>' },
+            'assets/a.css': { type: 'asset', source: 'a{color:red}' },
+        };
+        expect(() => generate(bundle)).toThrow(/assets\/a\.css/);
+    });
+});
+
+describe('safeInScript', () => {
+    const run = (code: string) => new Function(`return ${safeInScript(code)}`)() as unknown;
+
+    it('keeps a string holding a script end or a comment start the same', () => {
+        expect(run('"</script>"')).toBe('</script>');
+        expect(run('"<!--"')).toBe('<!--');
+    });
+
+    it('keeps a regular expression that escapes the < working', () => {
+        expect(run('/\\<!--/.test("<!--")')).toBe(true);
+    });
+
+    it('keeps an escaped backslash before the < as it was', () => {
+        expect(run('"\\\\<!--"')).toBe('\\<!--');
+    });
+
+    it('leaves nothing in the output that could end the script', () => {
+        for (const code of ['"</script>"', '"<!--"', '/\\<!--/', '"\\\\<!--"', '"</SCRIPT>"']) {
+            expect(safeInScript(code)).not.toMatch(/<\/script|<!--/i);
+        }
+    });
+});
 ```
 
 - [ ] **Step 2: Run them and see them fail**
@@ -5531,6 +5624,23 @@ Then check the result:
 - `grep -c "data-theme" scripts/visual/report/src/styles.css` prints `0`.
 - `grep -c "\.note\|\.root" scripts/visual/report/src/styles.css` prints `0`.
 
+Then change these copied rules. The browser check and the owner's review found them:
+- Add `grid-template-columns: minmax(0, 1fr);` to `.section` and to `.plain-list`. Without it, a long story name widens the grid column and the Overview's rows run off a phone screen instead of ending in "…".
+- Add `--swatch-ring: #ccd1db;` after `--line-strong` in `:root`, and `--swatch-ring: #7a8194;` after `--line-strong` in the dark block. Change `.swatch`'s outline to `1px solid var(--swatch-ring)`. The old dark outline was `#2e3341`, so a near-black swatch vanished. The new one is 4.69:1 against the sidebar, and light mode is unchanged.
+- Replace the whole `.slider-tag` rule with the rule below. The Before and After labels sit above the picture, because on the picture they covered small components:
+
+```css
+.slider-tags {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 5px;
+    color: var(--ink-muted);
+    font-size: 11px;
+    font-weight: 700;
+}
+```
+
 Then append this to the end of `styles.css`:
 
 ```css
@@ -5555,12 +5665,6 @@ Then append this to the end of `styles.css`:
 /* Small pieces */
 .row-overview {
     margin-top: 0;
-}
-.slider-tag-before {
-    left: 8px;
-}
-.slider-tag-after {
-    right: 8px;
 }
 /* The range is invisible, so its keyboard focus shows on the slider. */
 .slider:has(input:focus-visible) {
@@ -5649,45 +5753,65 @@ import { defineConfig, type Plugin } from 'vite';
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // Text an inline script can't contain, or the browser would stop reading it as a script.
-const safeInScript = (code: string) => code.replace(/<\/script/gi, '<\\/script').replaceAll('<!--', '<\\!--');
+// \x3C is valid in strings, templates and regular expressions, and a < that was already escaped keeps its meaning.
+// A tagged template's .raw text still changes, because \x3C stays literal there.
+export const safeInScript = (code: string) =>
+    code.replace(/(\\*)<(\/script|!--)/gi, (_, slashes: string, rest: string) => (slashes.length % 2 ? slashes.slice(1) : slashes) + '\\x3C' + rest);
 
 // Puts the script and styles inside the page, so a report is one file and loads nothing from elsewhere.
-function inlineIntoPage(): Plugin {
+export function inlineIntoPage(): Plugin {
     return {
         name: 'inline-into-page',
         enforce: 'post',
+        // A template saved with Windows line endings must build the same bytes.
+        transformIndexHtml: { order: 'pre', handler: (html) => html.replaceAll('\r\n', '\n') },
         generateBundle(_options, bundle) {
             const page = bundle['index.html'];
             if (page?.type !== 'asset') throw new Error('The build made no index.html');
             let html = String(page.source);
             for (const [name, file] of Object.entries(bundle)) {
                 const path = escapeRegExp(name);
+                const before = html;
                 if (file.type === 'chunk') {
-                    html = html.replace(new RegExp(`<script[^>]*src="[^"]*${path}"[^>]*></script>`), () => `<script type="module">${safeInScript(file.code)}</script>`);
+                    html = html.replace(
+                        new RegExp(`<script[^>]*src="[^"]*${path}"[^>]*></script>`),
+                        () => `<script type="module">${safeInScript(file.code)}</script>`,
+                    );
+                    if (html === before) throw new Error(`The page has no script tag for ${name}`);
                     delete bundle[name];
                 } else if (name.endsWith('.css')) {
                     html = html.replace(new RegExp(`<link[^>]*href="[^"]*${path}"[^>]*>`), () => `<style>${String(file.source)}</style>`);
+                    if (html === before) throw new Error(`The page has no link tag for ${name}`);
                     delete bundle[name];
                 }
             }
+            const left = Object.keys(bundle).filter((name) => name !== 'index.html');
+            if (left.length > 0) throw new Error(`The report must be one file, but the build also made: ${left.join(', ')}`);
             // Windows and Linux must build the same bytes.
             page.source = html.replaceAll('\r\n', '\n');
         },
     };
 }
 
-export default defineConfig({
-    root: fileURLToPath(new URL('.', import.meta.url)),
-    base: './',
-    // The repo's PostCSS config is Tailwind's, for the app. This page has its own CSS.
-    css: { postcss: { plugins: [] } },
-    plugins: [react(), inlineIntoPage()],
-    build: {
-        outDir: 'dist',
-        emptyOutDir: true,
-        cssCodeSplit: false,
-        modulePreload: false,
-    },
+export default defineConfig(() => {
+    // A development build is much bigger, and the committed page must be the production one.
+    if (process.env.NODE_ENV && process.env.NODE_ENV !== 'production') {
+        throw new Error('Build the report page with NODE_ENV unset or set to production.');
+    }
+    return {
+        root: fileURLToPath(new URL('.', import.meta.url)),
+        base: './',
+        // The repo's PostCSS config is Tailwind's, for the app. This page has its own CSS.
+        css: { postcss: { plugins: [] } },
+        plugins: [react(), inlineIntoPage()],
+        build: {
+            outDir: 'dist',
+            emptyOutDir: true,
+            cssCodeSplit: false,
+            modulePreload: false,
+            rollupOptions: { output: { inlineDynamicImports: true } },
+        },
+    };
 });
 ```
 
@@ -5758,23 +5882,26 @@ In `.github/workflows/visual-check.yml`, in the `capture` job, right after `- ru
             # The report page is committed as one built file, so make sure it matches its source.
             - run: |
                   npm run visual:page
-                  if [ -n "$(git status --porcelain -- scripts/visual/report/dist/index.html)" ]; then
+                  if [ -n "$(git status --porcelain -- scripts/visual/report/dist)" ]; then
                       echo "::error::The report page is out of date. Run npm run visual:page and commit the result."
                       exit 1
                   fi
 ```
+
+The pathspec is the whole `dist` folder, so a stray extra file fails the check too.
 
 - [ ] **Step 8: Update the docs**
 
 In `docs/storybook.md`, in the `## Visual check` section, add before the line that starts "The code is in `scripts/visual/`":
 
 ```markdown
-The report page's source is in `scripts/visual/report/src/`. After changing it, run `npm run visual:page` and commit `scripts/visual/report/dist/index.html`. The check fails if that file is out of date.
+The report page is built from `scripts/visual/report/` (`src/`, `index.html` and `vite.config.ts`). After changing any of these, `scripts/visual/config.ts`, or the React or Vite version, run `npm run visual:page` and commit `scripts/visual/report/dist/index.html`. The check fails if that file is out of date. If it conflicts in a merge, run `npm run visual:page` instead of resolving it by hand.
 
 ```
 
 In `docs/superpowers/specs/2026-11-06-visual-regression-tool-design.md`:
 - Change the code-layout row to: `` | `scripts/visual/report/` | Report page: source in `src/`, built file in `dist/` | ``.
+- In the "visual-check.yml has these jobs" table, change the `capture` row's steps to: "`npm ci`, a rebuild of the report page that fails if the committed file is out of date, Storybook build, capture and compare. Uploads the results as an artifact kept 1 day".
 - Add this right under `## Report page`:
 
 ```markdown
@@ -5803,7 +5930,7 @@ Run the server in the background. Open `http://127.0.0.1:4179/` with `preview_st
 Run `npm run visual:page` once more right before this, so the built file matches every source change so far.
 
 ```bash
-git add .gitattributes package.json app/globals.css .github/workflows/visual-check.yml docs/storybook.md docs/superpowers/specs/2026-11-06-visual-regression-tool-design.md scripts/visual/workflows.test.ts scripts/visual/publish.mjs scripts/visual/run.ts scripts/visual/report/index.html scripts/visual/report/vite.config.ts scripts/visual/report/page.test.ts scripts/visual/report/src/main.tsx scripts/visual/report/src/styles.css scripts/visual/report/dist/index.html
+git add .gitattributes package.json app/globals.css .github/workflows/visual-check.yml docs/storybook.md docs/superpowers/specs/2026-11-06-visual-regression-tool-design.md scripts/visual/workflows.test.ts scripts/visual/publish.mjs scripts/visual/run.ts scripts/visual/report/index.html scripts/visual/report/vite.config.ts scripts/visual/report/vite.config.test.ts scripts/visual/report/page.test.ts scripts/visual/report/src/main.tsx scripts/visual/report/src/styles.css scripts/visual/report/dist/index.html
 git commit -m "KAN-158: build the report page into one committed file"
 ```
 
@@ -5947,6 +6074,12 @@ Compare with the approved mockup at `http://127.0.0.1:4177/` for layout and look
 git add <the files you changed> scripts/visual/report/dist/index.html
 git commit -m "KAN-158: <what the fix does>"
 ```
+
+What this check found on PR #263's data, and what was done (the CSS is in Task 11 Step 3):
+- **Numbers:** 626 entries (614 changed, 4 new, 4 removed, 4 failed) and 9 groups, the largest with 586 captures. The build took 26.5 s, 3.7 s of it signing changes. Every interaction measured under 65 ms: opening a group 13 ms, Show all 62 ms, keys 3–4 ms, the slider 1.4–3.7 ms.
+- **Phone Overview rows ran off the screen:** a long story name widened the grid. Fixed with `minmax(0, 1fr)` on `.section` and `.plain-list`.
+- **The slider's Before tag covered small components** at the picture's top-left. The owner chose to move both labels above the picture.
+- **A near-black swatch vanished in dark mode.** The owner chose a stronger dark-mode outline.
 
 - [ ] **Step 7: Clean up the check**
 

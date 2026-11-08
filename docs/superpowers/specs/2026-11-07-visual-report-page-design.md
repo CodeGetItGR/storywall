@@ -46,7 +46,7 @@ Search and the state filters apply to both. The list follows the item opened, fr
 
 ### Comparing
 
-Side by side, a slider, or the diff image, at fit or 100%. New stories show only the after image, and removed stories only the before. A failed capture shows the error and can't be marked. The story's other captures still can. Scrolling one side at 100% scrolls the other too. A control that's turned off shows nothing pressed, and the choice comes back on the next story where it works. The slider always fits, whatever zoom was chosen, and its keyboard focus shows on the slider itself.
+Side by side, a slider, or the diff image, at fit or 100%. New stories show only the after image, and removed stories only the before. A failed capture shows the error and can't be marked. The story's other captures still can. Scrolling one side at 100% scrolls the other too. A control that's turned off shows nothing pressed, and the choice comes back on the next story where it works. The slider always fits, whatever zoom was chosen, and its keyboard focus shows on the slider itself. Its Before and After labels sit above the picture, so they never cover a small component.
 
 ### Reviewing
 
@@ -88,7 +88,7 @@ One color looks different in every story because it sits behind different text, 
 3. The direction is the most common pair whose colors are at least 48 apart. Ties go to the lower pair value, so results don't depend on order. A capture with more than 65,536 such pairs has no color shift: one color change has far fewer, and stopping there keeps photo-like changes fast.
 4. A pixel fits when its alpha didn't change, it moves forward along that direction, and no channel strays more than 16 from the line. These are measured values: anti-aliased edges fit, and other changes don't. Moving forward is what keeps moved text out: its old place and its new place move in opposite directions.
 5. The capture has a color shift only if **every** changed pixel fits. On the test report 586 of 610 same-size captures had exactly 0 pixels outside, and the next lowest had 20.
-6. Captures join a group when their directions agree (cosine at least 0.995). The group's two swatches are the pair most often on top among its captures.
+6. Captures join a group when their directions agree (cosine at least 0.995). The group's two swatches are the pair most often on top among its captures. A swatch's outline stays visible in both themes, so a near-black color still shows in dark mode.
 
 **Identical changed areas.** Captures left over after step 6, or in color groups of one, are compared this way:
 
@@ -133,7 +133,7 @@ The rule stays: **the publish job installs nothing and builds nothing, and the p
       fi
 ```
 
-It uses `git status` rather than `git diff`, so a deleted file is caught too. The check then shows an error with a link to the run. The build normalizes line endings so Windows and Linux produce the same file. `.gitattributes` marks the file as generated, so GitHub collapses it in PR diffs. As with any workflow, someone with write access could remove this step, and the tool's design already treats people with write access as trusted.
+It uses `git status` on the whole `dist` folder rather than `git diff`, so a deleted file or a stray extra one is caught too. The check then shows an error with a link to the run. The build normalizes the template's line endings before Vite reads it, and the page's after, so a Windows checkout builds the same bytes as Linux. It refuses a development build, and fails if a script, a stylesheet or any other file can't go inside the page. `.gitattributes` marks the file as generated, so GitHub collapses it in PR diffs. As with any workflow, someone with write access could remove this step, and the tool's design already treats people with write access as trusted.
 
 **The manifest is still untrusted.**
 
@@ -259,7 +259,7 @@ The page's wording, for consent under the repo's text rule.
 
 | Risk | How it's handled |
 |---|---|
-| Windows and Linux build different files | Line endings are normalized and the first CI run proves it. If they still differ, the check names the fix, and the file can be built on Linux |
+| Windows and Linux build different files | Line endings are normalized in the template and in the page. A CRLF template was shown to build the same bytes as an LF one, and the first CI run proves it on Linux. If they still differ, the check names the fix, and the file can be built on Linux |
 | A dependency bump changes the bundle, so a React or Vite PR fails the check | Accepted. It's rare, and the error says what to run |
 | The committed file adds to the repo's size | About 200 KB per page change, before compression, and the page rarely changes |
 | Grouping slows a big run | Measured on the real report before merging. It only runs on changed captures, so most PRs barely notice |
