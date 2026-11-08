@@ -511,12 +511,13 @@
 }
 
 /* Couple profiles */
-/* Both people end on the same line, so their names line up when only one has a photo. */
-.smd-invitation .couple-profiles-grid { display: grid; grid-template-columns: 1fr; gap: 36px; max-width: 640px; margin: 0 auto; justify-items: center; align-items: end; }
+.smd-invitation .couple-profiles-grid { display: grid; grid-template-columns: 1fr; gap: 36px; max-width: 640px; margin: 0 auto; justify-items: center; }
+/* Next to a partner with a photo, one without sits at the bottom, so the two names line up. */
+.smd-invitation .couple-profiles-grid:has(> .couple-profile-block img) > .couple-profile-block:not(:has(img)) { align-self: end; }
 .smd-invitation .couple-profile-block { text-align: center; width: 100%; }
 .smd-invitation .couple-profile-role { font-size: 16px; font-style: italic; letter-spacing: 0.02em; opacity: 0.85; margin-top: 2px; margin-bottom: 18px; text-align: center; }
 .smd-invitation .couple-profile-family-label { font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.8; margin-top: 0; margin-bottom: 4px; text-align: center; }
-.smd-invitation .couple-profile-family-names { font-size: 18px; font-weight: 600; margin-top: 2px; margin-bottom: 0; text-align: center; }
+.smd-invitation .couple-profile-family-names { font-size: 18px; font-weight: 700; margin-top: 2px; margin-bottom: 0; text-align: center; }
 .smd-invitation .couple-profiles-simple-wrap { max-width: 380px; margin: 0 auto; text-align: center; }
 .smd-invitation .couple-profile-simple-block { text-align: center; margin: 0 auto; }
 .smd-invitation .couple-profile-simple-name { text-align: center; }
@@ -527,7 +528,7 @@
 
 /* Wedding sponsors without photos */
 .smd-invitation .wedding-sponsors-simple-title { text-align: center; }
-.smd-invitation .wedding-sponsors-simple-list { max-width: 340px; margin: 16px auto 0; display: flex; flex-direction: column; gap: 10px; text-align: center; }
+.smd-invitation .wedding-sponsors-simple-list { max-width: 340px; margin: 16px auto 0; display: flex; flex-direction: column; gap: 6px; text-align: center; }
 .smd-invitation .wedding-sponsors-simple-name { text-align: center; }
 
 /* Our story */
