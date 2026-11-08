@@ -79,6 +79,7 @@ export function useReportView(model: ReportModel, route: Route, { marks, mark, u
         index,
         entry,
         hasGroups: model.groups.length > 0,
+        searching,
         isRowOpen: (key: string) => view.expanded.has(key) || searching,
 
         go,

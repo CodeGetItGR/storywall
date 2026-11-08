@@ -60,10 +60,13 @@ export function SidebarFilters({ model, view }: SidebarFiltersProps) {
                     placeholder={copy.findStory}
                     aria-label={copy.findStory}
                     autoComplete="off"
+                    aria-keyshortcuts="/"
                     value={view.search}
                     onChange={handleSearch}
                 />
-                <kbd className="keys">/</kbd>
+                <kbd className="keys" aria-hidden="true">
+                    /
+                </kbd>
             </label>
 
             {/* List tools */}

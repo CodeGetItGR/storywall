@@ -29,8 +29,10 @@ export function Sidebar({ model, view, marks }: SidebarProps) {
                 ) : (
                     <SameChangeList model={model} view={view} marks={marks} />
                 )}
-                {/* A report with no differences has nothing to filter, so it stays quiet. */}
-                {view.queue.length === 0 && model.manifest.entries.length > 0 && <div className="tree-empty">{copy.nothingMatches}</div>}
+                {/* The region stays in place so the message is announced when it appears. A report with no differences has nothing to filter, so it stays quiet. */}
+                <div role="status">
+                    {view.queue.length === 0 && model.manifest.entries.length > 0 && <div className="tree-empty">{copy.nothingMatches}</div>}
+                </div>
             </nav>
         </aside>
     );

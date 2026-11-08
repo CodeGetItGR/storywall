@@ -34,6 +34,7 @@ export function OverviewRow({ view }: { view: ReportView }) {
 type StoryRowProps = { story: Story; label: string; nested: boolean; view: ReportView; marks: Marks };
 
 export function StoryRow({ story, label, nested, view, marks }: StoryRowProps) {
+    const state = worstState(story.entries);
     const item: Item = { kind: 'story', id: story.id };
     const done = allReviewed(story.entries, marks);
     const percent = largestPercent(story);
@@ -47,7 +48,8 @@ export function StoryRow({ story, label, nested, view, marks }: StoryRowProps) {
             aria-current={currentFlag(view, item)}
             onClick={handleClick}
         >
-            <span className={`dot s-${worstState(story.entries)}`} />
+            {/* The dot's color is the only sign of the state, so screen readers get the word. */}
+            <span className={`dot s-${state}`} role="img" aria-label={copy.states[state]} />
             <span className="name" title={label}>
                 {label}
             </span>
@@ -57,16 +59,27 @@ export function StoryRow({ story, label, nested, view, marks }: StoryRowProps) {
     );
 }
 
-type ToggleRowProps = { rowKey: string; label: string; count: number; className: string; view: ReportView };
+type ToggleRowProps = { rowKey: string; nameId: string; label: string; count: number; className: string; view: ReportView };
 
-export function ToggleRow({ rowKey, label, count, className, view }: ToggleRowProps) {
+// While searching every row is open, so a click does nothing until the search is cleared.
+export function ToggleRow({ rowKey, nameId, label, count, className, view }: ToggleRowProps) {
     function handleClick() {
         view.toggleRow(rowKey);
     }
     return (
-        <button type="button" className={`row ${className}`} aria-expanded={view.isRowOpen(rowKey)} onClick={handleClick}>
-            <span className="caret">›</span>
-            <span className="name">{label}</span>
+        <button
+            type="button"
+            className={`row ${className}`}
+            aria-expanded={view.isRowOpen(rowKey)}
+            aria-disabled={view.searching}
+            onClick={handleClick}
+        >
+            <span className="caret" aria-hidden="true">
+                ›
+            </span>
+            <span className="name" id={nameId}>
+                {label}
+            </span>
             <span className="value">{count}</span>
         </button>
     );
