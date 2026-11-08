@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
 
 import { type Shortcut, shortcutFor } from '../lib/shortcuts';
+import { canCompare, canZoom } from '../lib/viewState';
 import type { ReportView } from './useReportView';
 
 export const SEARCH_INPUT_ID = 'story-search';
 
 function run(shortcut: Shortcut, view: ReportView) {
-    const canCompare = view.entry?.state === 'changed';
     switch (shortcut) {
         case 'next':
             return view.goNext();
@@ -19,9 +19,9 @@ function run(shortcut: Shortcut, view: ReportView) {
         case 'side':
         case 'slider':
         case 'diff':
-            return canCompare ? view.setCompare(shortcut) : undefined;
+            return canCompare(view.entry) ? view.setCompare(shortcut) : undefined;
         case 'zoom':
-            return view.toggleZoom();
+            return canZoom(view.entry, view.compare) ? view.toggleZoom() : undefined;
         case 'mode':
             return view.hasGroups ? view.toggleMode() : undefined;
         case 'find':
@@ -46,6 +46,8 @@ export function useKeyboardShortcuts(view: ReportView) {
             if (!shortcut) return;
             // Holding a key repeats it. Only the arrows should, so holding R doesn't mark item after item unseen.
             if (event.repeat && shortcut !== 'next' && shortcut !== 'previous') return;
+            // The help covers the page, so behind it only ? works, and Esc above.
+            if (view.helpOpen && shortcut !== 'help') return;
             // Arrow keys move the slider while it has focus.
             if (input?.type === 'range' && (shortcut === 'next' || shortcut === 'previous')) return;
             event.preventDefault();

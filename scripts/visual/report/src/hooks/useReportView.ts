@@ -32,6 +32,7 @@ export function useReportView(model: ReportModel, route: Route, { marks, mark, u
     const queue = reviewQueue(model, view.mode, filters, marks);
     const index = currentIndex(queue, item);
     const entry = currentEntry(model, item, view);
+    const searching = view.search.trim() !== '';
 
     function patch(change: Partial<ViewState>) {
         setView((previous) => ({ ...previous, ...change }));
@@ -59,7 +60,7 @@ export function useReportView(model: ReportModel, route: Route, { marks, mark, u
             unmark(entries);
             return;
         }
-        // Worked out before marking, because Hide reviewed can take this item out of the list.
+        // Taken from the list as it is now, because Hide reviewed drops this item once it's marked.
         const target = stepTarget(queue, index, 1);
         mark(entries);
         if (target) go(target);
@@ -78,7 +79,7 @@ export function useReportView(model: ReportModel, route: Route, { marks, mark, u
         index,
         entry,
         hasGroups: model.groups.length > 0,
-        isRowOpen: (key: string) => view.expanded.has(key) || view.search.trim() !== '',
+        isRowOpen: (key: string) => view.expanded.has(key) || searching,
 
         go,
         goInAreaList,
@@ -92,7 +93,10 @@ export function useReportView(model: ReportModel, route: Route, { marks, mark, u
         toggleState: (state: CaptureState) => patch({ states: toggled(view.states, state) }),
         setSearch: (search: string) => patch({ search }),
         setHideReviewed: (hideReviewed: boolean) => patch({ hideReviewed }),
-        toggleRow: (key: string) => patch({ expanded: toggled(view.expanded, key) }),
+        // While searching every row is open, so a click would only change what shows after the search is cleared.
+        toggleRow: (key: string) => {
+            if (!searching) patch({ expanded: toggled(view.expanded, key) });
+        },
 
         setCompare: (compare: CompareMode) => patch({ compare }),
         setZoom: (zoom: ZoomMode) => patch({ zoom }),

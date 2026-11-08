@@ -80,7 +80,15 @@ export function nextCapture(story: Story, choice: CaptureChoice): CaptureChoice 
     return { locale, width };
 }
 
+// Outside the list, next goes to the first item and previous does nothing, the same as the bar's buttons.
 export function stepTarget(queue: Item[], index: number, delta: 1 | -1): Item | null {
-    const target = index === -1 ? (delta > 0 ? 0 : queue.length - 1) : index + delta;
-    return queue[target] ?? null;
+    if (index === -1) return delta > 0 ? (queue[0] ?? null) : null;
+    return queue[index + delta] ?? null;
 }
+
+// Comparing needs a before and an after image.
+export const canCompare = (entry: ReportEntry | null) => entry?.state === 'changed';
+
+// A failed capture has no image to zoom, and the slider always fits.
+export const canZoom = (entry: ReportEntry | null, compare: CompareMode) =>
+    entry !== null && entry.state !== 'failed' && !(canCompare(entry) && compare === 'slider');

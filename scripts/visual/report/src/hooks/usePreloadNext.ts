@@ -10,10 +10,12 @@ export function usePreloadNext(model: ReportModel, view: ReportView) {
     const entry = next ? currentEntry(model, next, view) : null;
     const before = entry?.images.before;
     const after = entry?.images.after;
+    // The diff image only shows in Diff mode.
+    const diff = view.compare === 'diff' ? entry?.images.diff : undefined;
 
     useEffect(() => {
-        for (const src of [before, after]) {
+        for (const src of [before, after, diff]) {
             if (src) new Image().src = src;
         }
-    }, [before, after]);
+    }, [before, after, diff]);
 }

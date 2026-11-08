@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { colorGroup, groupedEntries, sampleEntries, testEntry, testManifest } from '../testing/fixture';
 import { buildModel } from './model';
 import { type Item, OVERVIEW } from './reviewOrder';
-import { currentEntry, initialView, nextCapture, revealItem, stepTarget, toggled } from './viewState';
+import { canCompare, canZoom, currentEntry, initialView, nextCapture, revealItem, stepTarget, toggled } from './viewState';
 
 const model = buildModel(testManifest(groupedEntries, { groups: [colorGroup] }));
 const story = (id: string): Item => ({ kind: 'story', id });
@@ -94,9 +94,9 @@ describe('stepTarget', () => {
         expect(stepTarget(queue, 0, -1)).toBeNull();
     });
 
-    it('enters the queue from outside it', () => {
+    it('enters the queue from outside it only going forward', () => {
         expect(stepTarget(queue, -1, 1)).toEqual(story('a'));
-        expect(stepTarget(queue, -1, -1)).toEqual(story('b'));
+        expect(stepTarget(queue, -1, -1)).toBeNull();
     });
 
     it('has nowhere to go in an empty queue', () => {
@@ -124,5 +124,23 @@ describe('currentEntry', () => {
         const id = testEntry('feed-composer--default--en--mobile').id;
         const picked = { ...view, groupEntry: new Map([['color-1', id]]) };
         expect(currentEntry(model, { kind: 'group', key: 'color-1' }, picked)?.id).toBe(id);
+    });
+});
+
+describe('canCompare and canZoom', () => {
+    const changed = testEntry('a');
+
+    it('compares only a change', () => {
+        expect(canCompare(changed)).toBe(true);
+        expect(canCompare(testEntry('a', { state: 'new' }))).toBe(false);
+        expect(canCompare(null)).toBe(false);
+    });
+
+    it('zooms anything with an image, except in the slider', () => {
+        expect(canZoom(changed, 'side')).toBe(true);
+        expect(canZoom(changed, 'slider')).toBe(false);
+        expect(canZoom(testEntry('a', { state: 'new' }), 'slider')).toBe(true);
+        expect(canZoom(testEntry('a', { state: 'failed' }), 'side')).toBe(false);
+        expect(canZoom(null, 'side')).toBe(false);
     });
 });
