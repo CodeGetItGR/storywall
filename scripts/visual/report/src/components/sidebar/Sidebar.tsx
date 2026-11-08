@@ -1,3 +1,5 @@
+import type { Ref } from 'react';
+
 import { copy } from '../../copy';
 import type { ReportView } from '../../hooks/useReportView';
 import { useScrollToCurrentRow } from '../../hooks/useScrollToCurrentRow';
@@ -9,12 +11,12 @@ import { SidebarFilters } from './SidebarFilters';
 import { SidebarHeader } from './SidebarHeader';
 import { OverviewRow } from './TreeRows';
 
-type SidebarProps = { model: ReportModel; view: ReportView; marks: Marks };
+type SidebarProps = { model: ReportModel; view: ReportView; marks: Marks; drawerRef: Ref<HTMLElement> };
 
-export function Sidebar({ model, view, marks }: SidebarProps) {
+export function Sidebar({ model, view, marks, drawerRef }: SidebarProps) {
     const treeRef = useScrollToCurrentRow(view.item, view.mode);
     return (
-        <aside className={view.drawerOpen ? 'side open' : 'side'}>
+        <aside className={view.drawerOpen ? 'side open' : 'side'} ref={drawerRef} inert={view.helpOpen}>
             {/* Identity, progress and filters */}
             <div className="side-head">
                 <SidebarHeader model={model} marks={marks} />

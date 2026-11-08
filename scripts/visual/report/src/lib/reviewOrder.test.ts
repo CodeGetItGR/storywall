@@ -11,6 +11,7 @@ import {
     type Filters,
     firstOpenItem,
     type Item,
+    openCount,
     OVERVIEW,
     reviewable,
     reviewProgress,
@@ -119,6 +120,13 @@ describe('reviewing', () => {
     it('finds nothing open when everything shown is reviewed', () => {
         const queue = reviewQueue(model, 'area', none, noMarks);
         expect(firstOpenItem(model, queue, withMarks(noMarks, sampleEntries))).toBeNull();
+    });
+
+    it('counts only the items left to review', () => {
+        const queue = reviewQueue(model, 'area', none, noMarks);
+        expect(openCount(model, queue, noMarks)).toBe(4);
+        expect(openCount(model, queue, withMarks(noMarks, [sampleEntries[0]]))).toBe(3);
+        expect(openCount(model, queue, withMarks(noMarks, sampleEntries))).toBe(0);
     });
 
     it('finds items', () => {

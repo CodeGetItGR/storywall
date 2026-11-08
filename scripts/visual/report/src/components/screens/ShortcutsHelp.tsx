@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 
 import { copy } from '../../copy';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
 
 const SHORTCUTS: { keys: string[]; text: string }[] = [
     { keys: ['←', '→'], text: copy.previousOrNext },
@@ -13,10 +14,14 @@ const SHORTCUTS: { keys: string[]; text: string }[] = [
 ];
 
 export function ShortcutsHelp({ onClose }: { onClose: () => void }) {
+    const closeRef = useDialogFocus<HTMLButtonElement>();
     return (
         <>
+            {/* Backdrop */}
             <div className="scrim" onClick={onClose} />
-            <div className="help" role="dialog" aria-label={copy.shortcuts}>
+
+            {/* Shortcuts */}
+            <div className="help" role="dialog" aria-modal="true" aria-label={copy.shortcuts}>
                 <h2>{copy.shortcuts}</h2>
                 <dl>
                     {SHORTCUTS.map(({ keys, text }) => (
@@ -30,7 +35,7 @@ export function ShortcutsHelp({ onClose }: { onClose: () => void }) {
                         </Fragment>
                     ))}
                 </dl>
-                <button type="button" className="btn" onClick={onClose}>
+                <button type="button" className="btn" ref={closeRef} onClick={onClose}>
                     {copy.close}
                 </button>
             </div>

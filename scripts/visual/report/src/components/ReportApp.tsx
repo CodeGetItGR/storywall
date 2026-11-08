@@ -1,3 +1,4 @@
+import { useDrawerFocus } from '../hooks/useDrawerFocus';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { usePreloadNext } from '../hooks/usePreloadNext';
 import { type ReportView, useReportView } from '../hooks/useReportView';
@@ -33,20 +34,21 @@ export function ReportApp({ model }: { model: ReportModel }) {
     const review = useReviewMarks(model);
     const route = useRoute(model);
     const view = useReportView(model, route, review);
+    const drawer = useDrawerFocus(view.drawerOpen);
     useKeyboardShortcuts(view);
     usePreloadNext(model, view);
 
     return (
         <div className="app">
             {/* Story list */}
-            <Sidebar model={model} view={view} marks={review.marks} />
+            <Sidebar model={model} view={view} marks={review.marks} drawerRef={drawer.drawerRef} />
 
             {/* Backdrop behind the phone drawer */}
-            {view.drawerOpen && <div className="scrim" onClick={view.closeDrawer} />}
+            {view.drawerOpen && <div className="scrim scrim-drawer" onClick={view.closeDrawer} />}
 
             {/* One item at a time */}
-            <main className="main">
-                <TopBar onOpenDrawer={view.openDrawer} />
+            <main className="main" inert={view.helpOpen}>
+                <TopBar open={view.drawerOpen} buttonRef={drawer.buttonRef} onOpenDrawer={view.openDrawer} />
                 <CurrentScreen model={model} view={view} marks={review.marks} />
                 <BottomBar model={model} view={view} marks={review.marks} />
             </main>

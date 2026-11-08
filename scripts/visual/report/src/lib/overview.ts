@@ -15,6 +15,8 @@ function stateCounts(entries: ReportEntry[]): Record<CaptureState, number> {
     return counts;
 }
 
+export const failedCount = (story: Story) => story.entries.filter((entry) => entry.state === 'failed').length;
+
 export function areaRows(model: ReportModel, marks: Marks): AreaRow[] {
     return [...new Set(model.stories.map((story) => story.area))].map((area) => {
         const stories = model.stories.filter((story) => story.area === area);

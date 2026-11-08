@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import type { CaptureState } from '../../../types';
+import type { CaptureState, ReportEntry } from '../../../types';
 import type { CaptureChoice } from '../lib/captures';
 import type { ReportModel } from '../lib/model';
 import { allReviewed, currentIndex, type Item, itemEntries, type ListMode, reviewable, reviewQueue, sameItem } from '../lib/reviewOrder';
@@ -48,6 +48,12 @@ export function useReportView(model: ReportModel, route: Route, { marks, mark, u
         go(target);
     }
 
+    // Opens a story on one capture, the way a Biggest changes thumbnail does.
+    function openCapture(entry: ReportEntry) {
+        patch({ capture: { locale: entry.locale, width: entry.width } });
+        go({ kind: 'story', id: entry.storyId });
+    }
+
     function step(delta: 1 | -1) {
         const target = stepTarget(queue, index, delta);
         if (target) go(target);
@@ -84,6 +90,7 @@ export function useReportView(model: ReportModel, route: Route, { marks, mark, u
 
         go,
         goInAreaList,
+        openCapture,
         goNext: () => step(1),
         goPrevious: () => step(-1),
         markCurrent,

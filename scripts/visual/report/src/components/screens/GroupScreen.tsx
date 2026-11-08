@@ -1,7 +1,6 @@
-import { useRef } from 'react';
-
 import type { ReportEntry } from '../../../../types';
 import { copy } from '../../copy';
+import { useGroupThumbs } from '../../hooks/useGroupThumbs';
 import type { ReportView } from '../../hooks/useReportView';
 import { captureLabel, shortName } from '../../lib/labels';
 import type { Group } from '../../lib/model';
@@ -11,23 +10,10 @@ import { ViewControls } from '../compare/ViewControls';
 import { Swatches } from '../Swatches';
 import { CaptureThumb } from './CaptureThumb';
 
-const THUMB_PAGE = 60;
-
 type GroupScreenProps = { group: Group; entry: ReportEntry; view: ReportView };
 
 export function GroupScreen({ group, entry, view }: GroupScreenProps) {
-    const stageRef = useRef<HTMLDivElement>(null);
-    const showAll = view.allThumbs.has(group.key);
-    const shown = showAll ? group.entries : group.entries.slice(0, THUMB_PAGE);
-    const storyCount = new Set(group.entries.map((item) => item.storyId)).size;
-
-    function handlePick(item: ReportEntry) {
-        view.pickGroupCapture(group.key, item.id);
-        if (stageRef.current) stageRef.current.scrollTop = 0;
-    }
-    function handleShowAll() {
-        view.showAllThumbs(group.key);
-    }
+    const { stageRef, shown, hasMore, storyCount, pick, showAll } = useGroupThumbs(group, view);
 
     return (
         <>
@@ -65,13 +51,13 @@ export function GroupScreen({ group, entry, view }: GroupScreenProps) {
                                 title={shortName(item)}
                                 value={captureLabel(item)}
                                 current={item === entry}
-                                onPick={handlePick}
+                                onPick={pick}
                             />
                         ))}
                     </div>
-                    {!showAll && group.entries.length > THUMB_PAGE && (
+                    {hasMore && (
                         <div>
-                            <button type="button" className="btn" onClick={handleShowAll}>
+                            <button type="button" className="btn" onClick={showAll}>
                                 {copy.showAll(group.entries.length)}
                             </button>
                         </div>

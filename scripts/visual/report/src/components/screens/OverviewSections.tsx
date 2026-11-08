@@ -1,10 +1,9 @@
-import type { ReportEntry } from '../../../../types';
 import { copy } from '../../copy';
 import type { ReportView } from '../../hooks/useReportView';
 import { percentText, shortName } from '../../lib/labels';
 import type { Marks } from '../../lib/marks';
 import { type Group, type ReportModel, STATES, type Story } from '../../lib/model';
-import { type AreaRow, areaRows, biggestChanges, failedStories } from '../../lib/overview';
+import { type AreaRow, areaRows, biggestChanges, failedCount, failedStories } from '../../lib/overview';
 import { Swatches } from '../Swatches';
 import { CaptureThumb } from './CaptureThumb';
 
@@ -13,17 +12,14 @@ const GROUPS_SHOWN = 6;
 type SectionProps = { model: ReportModel; view: ReportView };
 
 function FailedRow({ story, view }: { story: Story; view: ReportView }) {
-    const failed = story.entries.filter((entry) => entry.state === 'failed').length;
     function handleClick() {
         view.go({ kind: 'story', id: story.id });
     }
     return (
         <button type="button" className="row group-row" onClick={handleClick}>
             <span className="dot s-failed" />
-            <span className="name">
-                {story.component} / {story.name}
-            </span>
-            <span className="value">{copy.captures(failed)}</span>
+            <span className="name">{shortName(story.entries[0])}</span>
+            <span className="value">{copy.captures(failedCount(story))}</span>
         </button>
     );
 }
@@ -126,17 +122,18 @@ export function SameChangeSection({ model, view }: SectionProps) {
 export function BiggestSection({ model, view }: SectionProps) {
     const big = biggestChanges(model);
     if (big.length === 0) return null;
-    // The story opens on the capture the thumbnail showed.
-    function handlePick(entry: ReportEntry) {
-        view.pickCapture({ locale: entry.locale, width: entry.width });
-        view.go({ kind: 'story', id: entry.storyId });
-    }
     return (
         <section className="section">
             <h2>{copy.biggestChanges}</h2>
             <div className="thumbs">
                 {big.map(({ story, entry }) => (
-                    <CaptureThumb key={story.id} entry={entry} title={shortName(entry)} value={percentText(entry.percent)} onPick={handlePick} />
+                    <CaptureThumb
+                        key={story.id}
+                        entry={entry}
+                        title={shortName(entry)}
+                        value={percentText(entry.percent)}
+                        onPick={view.openCapture}
+                    />
                 ))}
             </div>
         </section>

@@ -1,10 +1,20 @@
 import { useEffect } from 'react';
+import { flushSync } from 'react-dom';
 
 import { type Shortcut, shortcutFor } from '../lib/shortcuts';
 import { canCompare, canZoom } from '../lib/viewState';
 import type { ReportView } from './useReportView';
 
 export const SEARCH_INPUT_ID = 'story-search';
+
+// Under 880px the search box is in the closed drawer, where it can't take focus, so the drawer opens first.
+function findStory(view: ReportView) {
+    const search = document.getElementById(SEARCH_INPUT_ID);
+    search?.focus();
+    if (!search || document.activeElement === search) return;
+    flushSync(view.openDrawer);
+    search.focus();
+}
 
 function run(shortcut: Shortcut, view: ReportView) {
     switch (shortcut) {
@@ -25,7 +35,7 @@ function run(shortcut: Shortcut, view: ReportView) {
         case 'mode':
             return view.hasGroups ? view.toggleMode() : undefined;
         case 'find':
-            return document.getElementById(SEARCH_INPUT_ID)?.focus();
+            return findStory(view);
         case 'help':
             return view.toggleHelp();
     }

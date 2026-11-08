@@ -72,9 +72,14 @@ export function reviewProgress({ manifest }: ReportModel, marks: Marks) {
     return { done: list.filter((entry) => isMarked(marks, entry)).length, total: list.length };
 }
 
+// An item with a capture still to mark. A story whose captures all failed has nothing to mark, so it never is.
+const isOpen = (model: ReportModel, marks: Marks) => (item: Item) => reviewable(itemEntries(model, item)).some((entry) => !isMarked(marks, entry));
+
 // Null when everything the list shows is reviewed, so the bar offers no Start or Continue.
-export const firstOpenItem = (model: ReportModel, queue: Item[], marks: Marks): Item | null =>
-    queue.find((item) => reviewable(itemEntries(model, item)).some((entry) => !isMarked(marks, entry))) ?? null;
+export const firstOpenItem = (model: ReportModel, queue: Item[], marks: Marks): Item | null => queue.find(isOpen(model, marks)) ?? null;
+
+// What "N to review" counts: the items Start and Continue can still go to.
+export const openCount = (model: ReportModel, queue: Item[], marks: Marks) => queue.filter(isOpen(model, marks)).length;
 
 function approveAction({ manifest }: ReportModel, marks: Marks): BarActions['approve'] {
     const list = reviewable(manifest.entries);

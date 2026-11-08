@@ -106,6 +106,35 @@ describe('report page', () => {
             expect(button(/EN Desktop/)).toHaveAttribute('aria-pressed', 'true');
         });
 
+        it('names failed stories like the other lists, and opens them', async () => {
+            const broken = testEntry('feed-post-count--broken--en--mobile', {
+                storyId: 'feed-post-count--broken',
+                title: 'Feed/Post/Count',
+                name: 'Broken',
+                state: 'failed',
+                percent: 0,
+                afterHash: null,
+                error: 'Boom',
+                images: {},
+            });
+            await openReport(testManifest([...sampleEntries, broken]));
+            const failed = within(screen.getByRole('heading', { name: 'Failed' }).closest('section') as HTMLElement);
+            fireEvent.click(failed.getByRole('button', { name: /^Count \/ Broken/ }));
+            expect(await screen.findByRole('heading', { name: 'Broken' })).toBeInTheDocument();
+        });
+
+        it('lists up to 6 same-change groups, and opens one', async () => {
+            const entries = Array.from({ length: 14 }, (_, index) =>
+                testEntry(`capture-${index}`, { storyId: `story-${index}`, changeKey: `same-${Math.floor(index / 2)}` }),
+            );
+            const groups = Array.from({ length: 7 }, (_, index) => ({ key: `same-${index}`, kind: 'exact' as const }));
+            await openReport(testManifest(entries, { groups }));
+            const rows = within(screen.getByRole('heading', { name: 'Same change' }).closest('section') as HTMLElement).getAllByRole('button');
+            expect(rows).toHaveLength(6);
+            fireEvent.click(rows[0]);
+            expect(await screen.findByRole('button', { name: 'Looks right for all 2' })).toBeInTheDocument();
+        });
+
         it('survives a report with no differences', async () => {
             await openReport(testManifest([]));
             expect(screen.getByRole('heading', { name: '0 of 1078 captures differ' })).toBeInTheDocument();
@@ -136,6 +165,14 @@ describe('report page', () => {
             expect(button('Looks right')).toBeInTheDocument();
         });
 
+        it('keeps focus on the mark button when it turns into Undo', async () => {
+            window.location.hash = '#ui-button--primary';
+            await openReport(testManifest(sampleEntries));
+            button('Looks right').focus();
+            fireEvent.click(button('Looks right'));
+            expect(button('Undo reviewed')).toHaveFocus();
+        });
+
         it('continues from the first item not yet reviewed', async () => {
             const manifest = testManifest(sampleEntries);
             seedMarks(manifest, [sampleEntries[0]]);
@@ -152,6 +189,7 @@ describe('report page', () => {
                 'href',
                 'https://github.com/CodeGetItGR/storywall/pull/263',
             );
+            expect(screen.getByText('0 to review')).toBeInTheDocument();
         });
 
         it('has no PR links on a local run, and nothing to start once everything is reviewed', async () => {
@@ -304,6 +342,27 @@ describe('report page', () => {
             expect(await screen.findByText('UI / Badge')).toBeInTheDocument();
         });
 
+        it('undoes a whole group', async () => {
+            const manifest = grouped();
+            seedMarks(manifest, groupedEntries.slice(0, 3));
+            window.location.hash = '#group-color-1';
+            await openReport(manifest);
+            expect(progress()).toHaveTextContent('3 of 5 captures reviewed');
+            fireEvent.click(button('Undo reviewed'));
+            expect(progress()).toHaveTextContent('0 of 5 captures reviewed');
+        });
+
+        it('shows a picked thumbnail from the top', async () => {
+            window.location.hash = '#group-color-1';
+            await openReport(grouped());
+            const stage = document.querySelector('.stage') as HTMLElement;
+            // jsdom has no layout, so the stage keeps its scroll position here.
+            let top = 400;
+            Object.defineProperty(stage, 'scrollTop', { configurable: true, get: () => top, set: (value: number) => (top = value) });
+            fireEvent.click(button(/PostCard \/ Default.*EN Desktop/));
+            expect(top).toBe(0);
+        });
+
         it('shows the capture picked from the thumbnails', async () => {
             window.location.hash = '#group-color-1';
             await openReport(grouped());
@@ -406,6 +465,7 @@ describe('report page', () => {
             await openReport(testManifest(sampleEntries));
             fireEvent.keyDown(document, { code: 'Slash', key: '/' });
             expect(screen.getByRole('textbox', { name: 'Find a story' })).toHaveFocus();
+            expect(document.querySelector('.side')).not.toHaveClass('open');
         });
 
         it('open and close the help', async () => {
@@ -424,6 +484,44 @@ describe('report page', () => {
             expect(progress()).toHaveTextContent('0 of 5 captures reviewed');
             fireEvent.keyDown(document, { code: 'Slash', key: '?' });
             expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        });
+
+        it('the dialog takes focus, holds the page still, and gives focus back', async () => {
+            window.location.hash = '#feed-composer--default';
+            await openReport(testManifest(sampleEntries));
+            button('Looks right').focus();
+            fireEvent.keyDown(document, { code: 'Slash', key: '?' });
+            expect(screen.getByRole('dialog', { name: 'Keyboard shortcuts' })).toHaveAttribute('aria-modal', 'true');
+            expect(button('Close')).toHaveFocus();
+            expect(document.querySelector('main')).toHaveAttribute('inert');
+            expect(document.querySelector('.side')).toHaveAttribute('inert');
+            fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
+            expect(button('Looks right')).toHaveFocus();
+            expect(document.querySelector('main')).not.toHaveAttribute('inert');
+        });
+
+        it('open the help from its button, and close it with Close or the backdrop', async () => {
+            await openReport(testManifest(sampleEntries));
+            fireEvent.click(button('Keyboard shortcuts'));
+            fireEvent.click(button('Close'));
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+            fireEvent.click(button('Keyboard shortcuts'));
+            fireEvent.click(document.querySelector('.scrim') as Element);
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        });
+
+        it('open the drawer to reach search in a narrow window', async () => {
+            await openReport(testManifest(sampleEntries));
+            const search = screen.getByRole('textbox', { name: 'Find a story' });
+            const side = document.querySelector('.side') as HTMLElement;
+            const focus = HTMLElement.prototype.focus;
+            // Under 880px the closed drawer hides the search box, and a hidden element can't take focus.
+            vi.spyOn(search, 'focus').mockImplementation(function (this: HTMLElement) {
+                if (side.classList.contains('open')) focus.call(this);
+            });
+            fireEvent.keyDown(document, { code: 'Slash', key: '/' });
+            expect(side).toHaveClass('open');
+            expect(search).toHaveFocus();
         });
 
         it('leave zoom alone where it is turned off', async () => {
@@ -502,8 +600,10 @@ describe('report page', () => {
             const manifest = testManifest(sampleEntries);
             seedMarks(manifest, [sampleEntries[0]]);
             await openReport(manifest);
-            fireEvent.click(screen.getByRole('checkbox', { name: 'Hide reviewed' }));
             expect(screen.getByText('3 to review')).toBeInTheDocument();
+            fireEvent.click(screen.getByRole('checkbox', { name: 'Hide reviewed' }));
+            window.location.hash = '#feed-postcard--default';
+            expect(await screen.findByText('1 of 3')).toBeInTheDocument();
         });
 
         it('keep the rows as they were once the search is cleared', async () => {
@@ -525,6 +625,19 @@ describe('report page', () => {
     });
 
     describe('phone drawer', () => {
+        it('moves focus into the list and back, and closes on Esc', async () => {
+            await openReport(testManifest(sampleEntries));
+            const stories = button('Stories');
+            expect(stories).toHaveAttribute('aria-expanded', 'false');
+            stories.focus();
+            fireEvent.click(stories);
+            expect(stories).toHaveAttribute('aria-expanded', 'true');
+            expect(list().getByRole('button', { name: 'Overview' })).toHaveFocus();
+            fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
+            expect(document.querySelector('.side')).not.toHaveClass('open');
+            expect(stories).toHaveFocus();
+        });
+
         it('opens, and closes on a row or the backdrop', async () => {
             await openReport(testManifest(sampleEntries));
             fireEvent.click(button('Stories'));
