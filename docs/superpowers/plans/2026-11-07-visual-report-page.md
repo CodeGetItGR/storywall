@@ -2246,7 +2246,7 @@ import { describe, expect, it } from 'vitest';
 import { colorGroup, groupedEntries, sampleEntries, testEntry, testManifest } from '../testing/fixture';
 import { buildModel } from './model';
 import { type Item, OVERVIEW } from './reviewOrder';
-import { currentEntry, initialView, nextCapture, revealItem, stepTarget, toggled } from './viewState';
+import { canCompare, canZoom, currentEntry, initialView, nextCapture, revealItem, stepTarget, toggled } from './viewState';
 
 const model = buildModel(testManifest(groupedEntries, { groups: [colorGroup] }));
 const story = (id: string): Item => ({ kind: 'story', id });
@@ -2337,9 +2337,9 @@ describe('stepTarget', () => {
         expect(stepTarget(queue, 0, -1)).toBeNull();
     });
 
-    it('enters the queue from outside it', () => {
+    it('enters the queue from outside it only going forward', () => {
         expect(stepTarget(queue, -1, 1)).toEqual(story('a'));
-        expect(stepTarget(queue, -1, -1)).toEqual(story('b'));
+        expect(stepTarget(queue, -1, -1)).toBeNull();
     });
 
     it('has nowhere to go in an empty queue', () => {
@@ -2367,6 +2367,24 @@ describe('currentEntry', () => {
         const id = testEntry('feed-composer--default--en--mobile').id;
         const picked = { ...view, groupEntry: new Map([['color-1', id]]) };
         expect(currentEntry(model, { kind: 'group', key: 'color-1' }, picked)?.id).toBe(id);
+    });
+});
+
+describe('canCompare and canZoom', () => {
+    const changed = testEntry('a');
+
+    it('compares only a change', () => {
+        expect(canCompare(changed)).toBe(true);
+        expect(canCompare(testEntry('a', { state: 'new' }))).toBe(false);
+        expect(canCompare(null)).toBe(false);
+    });
+
+    it('zooms anything with an image, except in the slider', () => {
+        expect(canZoom(changed, 'side')).toBe(true);
+        expect(canZoom(changed, 'slider')).toBe(false);
+        expect(canZoom(testEntry('a', { state: 'new' }), 'slider')).toBe(true);
+        expect(canZoom(testEntry('a', { state: 'failed' }), 'side')).toBe(false);
+        expect(canZoom(null, 'side')).toBe(false);
     });
 });
 ```
@@ -2538,10 +2556,18 @@ export function nextCapture(story: Story, choice: CaptureChoice): CaptureChoice 
     return { locale, width };
 }
 
+// Outside the list, next goes to the first item and previous does nothing, the same as the bar's buttons.
 export function stepTarget(queue: Item[], index: number, delta: 1 | -1): Item | null {
-    const target = index === -1 ? (delta > 0 ? 0 : queue.length - 1) : index + delta;
-    return queue[target] ?? null;
+    if (index === -1) return delta > 0 ? (queue[0] ?? null) : null;
+    return queue[index + delta] ?? null;
 }
+
+// Comparing needs a before and an after image.
+export const canCompare = (entry: ReportEntry | null) => entry?.state === 'changed';
+
+// A failed capture has no image to zoom, and the slider always fits.
+export const canZoom = (entry: ReportEntry | null, compare: CompareMode) =>
+    entry !== null && entry.state !== 'failed' && !(canCompare(entry) && compare === 'slider');
 ```
 
 - [ ] **Step 4: Write `lib/shortcuts.ts`**
@@ -2635,10 +2661,11 @@ git commit -m "KAN-158: add view state, shortcuts and Overview numbers"
 
 ## Task 7: Hooks
 
-These are tested through the page in Task 10. Here they only need to type check.
+Most of these are tested through the page in Task 10, so here they only need to type check. `useSyncedScroll` has its own test, because the page tests can't scroll.
 
 **Files:**
 - Create in `scripts/visual/report/src/hooks/`: `useManifest.ts`, `useReviewMarks.ts`, `useRoute.ts`, `useReportView.ts`, `useKeyboardShortcuts.ts`, `usePreloadNext.ts`, `useScrollToCurrentRow.ts`, `useSyncedScroll.ts`
+- Test: `scripts/visual/report/src/hooks/useSyncedScroll.test.ts`
 
 - [ ] **Step 1: Write `useManifest.ts`**
 
@@ -2746,7 +2773,17 @@ import type { CaptureState } from '../../../types';
 import type { CaptureChoice } from '../lib/captures';
 import type { ReportModel } from '../lib/model';
 import { allReviewed, currentIndex, type Item, itemEntries, type ListMode, reviewable, reviewQueue, sameItem } from '../lib/reviewOrder';
-import { type CompareMode, currentEntry, initialView, nextCapture, revealItem, stepTarget, toggled, type ViewState, type ZoomMode } from '../lib/viewState';
+import {
+    type CompareMode,
+    currentEntry,
+    initialView,
+    nextCapture,
+    revealItem,
+    stepTarget,
+    toggled,
+    type ViewState,
+    type ZoomMode,
+} from '../lib/viewState';
 import type { Review } from './useReviewMarks';
 import type { Route } from './useRoute';
 
@@ -2764,6 +2801,7 @@ export function useReportView(model: ReportModel, route: Route, { marks, mark, u
     const queue = reviewQueue(model, view.mode, filters, marks);
     const index = currentIndex(queue, item);
     const entry = currentEntry(model, item, view);
+    const searching = view.search.trim() !== '';
 
     function patch(change: Partial<ViewState>) {
         setView((previous) => ({ ...previous, ...change }));
@@ -2791,7 +2829,7 @@ export function useReportView(model: ReportModel, route: Route, { marks, mark, u
             unmark(entries);
             return;
         }
-        // Worked out before marking, because Hide reviewed can take this item out of the list.
+        // Taken from the list as it is now, because Hide reviewed drops this item once it's marked.
         const target = stepTarget(queue, index, 1);
         mark(entries);
         if (target) go(target);
@@ -2810,7 +2848,7 @@ export function useReportView(model: ReportModel, route: Route, { marks, mark, u
         index,
         entry,
         hasGroups: model.groups.length > 0,
-        isRowOpen: (key: string) => view.expanded.has(key) || view.search.trim() !== '',
+        isRowOpen: (key: string) => view.expanded.has(key) || searching,
 
         go,
         goInAreaList,
@@ -2824,7 +2862,10 @@ export function useReportView(model: ReportModel, route: Route, { marks, mark, u
         toggleState: (state: CaptureState) => patch({ states: toggled(view.states, state) }),
         setSearch: (search: string) => patch({ search }),
         setHideReviewed: (hideReviewed: boolean) => patch({ hideReviewed }),
-        toggleRow: (key: string) => patch({ expanded: toggled(view.expanded, key) }),
+        // While searching every row is open, so a click would only change what shows after the search is cleared.
+        toggleRow: (key: string) => {
+            if (!searching) patch({ expanded: toggled(view.expanded, key) });
+        },
 
         setCompare: (compare: CompareMode) => patch({ compare }),
         setZoom: (zoom: ZoomMode) => patch({ zoom }),
@@ -2850,12 +2891,12 @@ export function useReportView(model: ReportModel, route: Route, { marks, mark, u
 import { useEffect } from 'react';
 
 import { type Shortcut, shortcutFor } from '../lib/shortcuts';
+import { canCompare, canZoom } from '../lib/viewState';
 import type { ReportView } from './useReportView';
 
 export const SEARCH_INPUT_ID = 'story-search';
 
 function run(shortcut: Shortcut, view: ReportView) {
-    const canCompare = view.entry?.state === 'changed';
     switch (shortcut) {
         case 'next':
             return view.goNext();
@@ -2868,9 +2909,9 @@ function run(shortcut: Shortcut, view: ReportView) {
         case 'side':
         case 'slider':
         case 'diff':
-            return canCompare ? view.setCompare(shortcut) : undefined;
+            return canCompare(view.entry) ? view.setCompare(shortcut) : undefined;
         case 'zoom':
-            return view.toggleZoom();
+            return canZoom(view.entry, view.compare) ? view.toggleZoom() : undefined;
         case 'mode':
             return view.hasGroups ? view.toggleMode() : undefined;
         case 'find':
@@ -2895,6 +2936,8 @@ export function useKeyboardShortcuts(view: ReportView) {
             if (!shortcut) return;
             // Holding a key repeats it. Only the arrows should, so holding R doesn't mark item after item unseen.
             if (event.repeat && shortcut !== 'next' && shortcut !== 'previous') return;
+            // The help covers the page, so behind it only ? works, and Esc above.
+            if (view.helpOpen && shortcut !== 'help') return;
             // Arrow keys move the slider while it has focus.
             if (input?.type === 'range' && (shortcut === 'next' || shortcut === 'previous')) return;
             event.preventDefault();
@@ -2923,12 +2966,14 @@ export function usePreloadNext(model: ReportModel, view: ReportView) {
     const entry = next ? currentEntry(model, next, view) : null;
     const before = entry?.images.before;
     const after = entry?.images.after;
+    // The diff image only shows in Diff mode.
+    const diff = view.compare === 'diff' ? entry?.images.diff : undefined;
 
     useEffect(() => {
-        for (const src of [before, after]) {
+        for (const src of [before, after, diff]) {
             if (src) new Image().src = src;
         }
-    }, [before, after]);
+    }, [before, after, diff]);
 }
 ```
 
@@ -2959,17 +3004,92 @@ import { useRef } from 'react';
 export function useSyncedScroll() {
     const firstRef = useRef<HTMLDivElement>(null);
     const secondRef = useRef<HTMLDivElement>(null);
+    // The side moved to match fires its own scroll event, which mustn't move the first side back.
+    const movedRef = useRef<HTMLDivElement | null>(null);
+
+    function follow(from: HTMLDivElement | null, to: HTMLDivElement | null) {
+        if (!from || !to) return;
+        if (movedRef.current === from) {
+            movedRef.current = null;
+            return;
+        }
+        const was = to.scrollLeft;
+        to.scrollLeft = from.scrollLeft;
+        // Only a side that actually moved fires a scroll event.
+        if (to.scrollLeft !== was) movedRef.current = to;
+    }
 
     function handleFirstScroll() {
-        if (firstRef.current && secondRef.current) secondRef.current.scrollLeft = firstRef.current.scrollLeft;
+        follow(firstRef.current, secondRef.current);
     }
 
     function handleSecondScroll() {
-        if (firstRef.current && secondRef.current) firstRef.current.scrollLeft = secondRef.current.scrollLeft;
+        follow(secondRef.current, firstRef.current);
     }
 
     return { firstRef, secondRef, handleFirstScroll, handleSecondScroll };
 }
+```
+
+`useSyncedScroll.test.ts`:
+
+```ts
+import { cleanup, renderHook } from '@testing-library/react';
+import { afterEach, describe, expect, it } from 'vitest';
+
+import { useSyncedScroll } from './useSyncedScroll';
+
+// A scrollable side that stops at its widest point, like a real one.
+function side(max: number) {
+    let left = 0;
+    return {
+        get scrollLeft() {
+            return left;
+        },
+        set scrollLeft(value: number) {
+            left = Math.min(Math.max(value, 0), max);
+        },
+    } as HTMLDivElement;
+}
+
+function setUp() {
+    const { result } = renderHook(() => useSyncedScroll());
+    const wide = side(500);
+    const narrow = side(300);
+    result.current.firstRef.current = wide;
+    result.current.secondRef.current = narrow;
+    return { scroll: result.current, wide, narrow };
+}
+
+describe('useSyncedScroll', () => {
+    afterEach(cleanup);
+
+    it('scrolls the other side to match', () => {
+        const { scroll, wide, narrow } = setUp();
+        wide.scrollLeft = 100;
+        scroll.handleFirstScroll();
+        expect(narrow.scrollLeft).toBe(100);
+    });
+
+    it("doesn't pull the wider side back when the narrower one stops short", () => {
+        const { scroll, wide, narrow } = setUp();
+        wide.scrollLeft = 400;
+        scroll.handleFirstScroll();
+        scroll.handleSecondScroll();
+        expect(narrow.scrollLeft).toBe(300);
+        expect(wide.scrollLeft).toBe(400);
+    });
+
+    it('still follows a scroll on the other side afterwards', () => {
+        const { scroll, wide, narrow } = setUp();
+        wide.scrollLeft = 100;
+        scroll.handleFirstScroll();
+        scroll.handleSecondScroll();
+        narrow.scrollLeft = 50;
+        scroll.handleSecondScroll();
+        expect(wide.scrollLeft).toBe(50);
+    });
+});
 ```
 
 - [ ] **Step 7: Add `.tsx` to the type check, and turn off the Next image rule**
@@ -2989,10 +3109,10 @@ In `eslint.config.mjs`, add this block right before the `prettierConfig` comment
 
 ```
 
-- [ ] **Step 8: Check types and lint**
+- [ ] **Step 8: Check types and lint, and run the scroll test**
 
-Run: `npx tsc --noEmit` and then `npx eslint scripts/visual/report/src`
-Expected: no errors. If `react-hooks` complains about the `setView` call during render in `useReportView`, that is React's documented way of adjusting state from a changed input, so read the rule's message before changing it. If the rule genuinely rejects it, stop and report what it says.
+Run: `npx tsc --noEmit`, then `npx eslint scripts/visual/report/src`, then `npx vitest run scripts/visual/report/src/hooks`
+Expected: no errors, and the scroll test passes. If `react-hooks` complains about the `setView` call during render in `useReportView`, that is React's documented way of adjusting state from a changed input, so read the rule's message before changing it. If the rule genuinely rejects it, stop and report what it says.
 
 - [ ] **Step 9: Commit**
 
@@ -3288,7 +3408,7 @@ export function CaptureTabs({ story, current, onPick }: CaptureTabsProps) {
 ```tsx
 import type { ReportEntry } from '../../../../types';
 import { copy } from '../../copy';
-import type { CompareMode, ZoomMode } from '../../lib/viewState';
+import { canCompare, canZoom, type CompareMode, type ZoomMode } from '../../lib/viewState';
 import { Segment } from '../Segment';
 
 const COMPARE_OPTIONS: { value: CompareMode; label: string }[] = [
@@ -3310,13 +3430,12 @@ type ViewControlsProps = {
     onZoom: (mode: ZoomMode) => void;
 };
 
+// The same rules as the keyboard shortcuts, so a key never does what a disabled control can't.
 export function ViewControls({ entry, compare, zoom, onCompare, onZoom }: ViewControlsProps) {
-    const canCompare = entry.state === 'changed';
-    const canZoom = entry.state !== 'failed' && !(canCompare && compare === 'slider');
     return (
         <>
-            <Segment label={copy.compare} options={COMPARE_OPTIONS} value={compare} disabled={!canCompare} onPick={onCompare} />
-            <Segment label={copy.zoom} options={ZOOM_OPTIONS} value={zoom} disabled={!canZoom} onPick={onZoom} />
+            <Segment label={copy.compare} options={COMPARE_OPTIONS} value={compare} disabled={!canCompare(entry)} onPick={onCompare} />
+            <Segment label={copy.zoom} options={ZOOM_OPTIONS} value={zoom} disabled={!canZoom(entry, compare)} onPick={onZoom} />
         </>
     );
 }
@@ -3497,10 +3616,12 @@ import { Swatches } from '../Swatches';
 
 const currentFlag = (view: ReportView, item: Item) => (sameItem(view.item, item) ? 'true' : undefined);
 
+// The role makes screen readers read the label. A label on a plain span isn't always read.
 function Tick({ done }: { done: boolean }) {
+    if (!done) return <span className="tick" />;
     return (
-        <span className="tick" aria-label={done ? copy.reviewed : undefined}>
-            {done ? '✓' : ''}
+        <span className="tick" role="img" aria-label={copy.reviewed}>
+            ✓
         </span>
     );
 }
@@ -4089,6 +4210,25 @@ describe('report page', () => {
             expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
         });
 
+        it('do nothing behind the help but close it', async () => {
+            window.location.hash = '#feed-composer--default';
+            await openReport(testManifest(sampleEntries));
+            fireEvent.keyDown(document, { code: 'Slash', key: '?' });
+            fireEvent.keyDown(document, { code: 'KeyR', key: 'r' });
+            expect(progress()).toHaveTextContent('0 of 5 captures reviewed');
+            fireEvent.keyDown(document, { code: 'Slash', key: '?' });
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        });
+
+        it('leave zoom alone where it is turned off', async () => {
+            window.location.hash = '#feed-postcard--default';
+            await openReport(testManifest(sampleEntries));
+            fireEvent.keyDown(document, { code: 'Digit2', key: '2' });
+            fireEvent.keyDown(document, { code: 'KeyZ', key: 'z' });
+            fireEvent.keyDown(document, { code: 'Digit1', key: '1' });
+            expect(button('Fit')).toHaveAttribute('aria-pressed', 'true');
+        });
+
         it('switch list mode only when there are groups', async () => {
             await openReport(testManifest(sampleEntries));
             fireEvent.keyDown(document, { code: 'KeyG', key: 'g' });
@@ -4118,6 +4258,15 @@ describe('report page', () => {
             await openReport(manifest);
             fireEvent.click(screen.getByRole('checkbox', { name: 'Hide reviewed' }));
             expect(screen.getByText('3 to review')).toBeInTheDocument();
+        });
+
+        it('keep the rows as they were once the search is cleared', async () => {
+            await openReport(testManifest(sampleEntries));
+            const search = screen.getByRole('textbox', { name: 'Find a story' });
+            fireEvent.change(search, { target: { value: 'Button' } });
+            fireEvent.click(list().getByRole('button', { name: /^UI/ }));
+            fireEvent.change(search, { target: { value: '' } });
+            expect(list().getByRole('button', { name: /^UI/ })).toHaveAttribute('aria-expanded', 'false');
         });
 
         it('say when nothing matches', async () => {

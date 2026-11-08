@@ -59,7 +59,7 @@ Side by side, a slider, or the diff image, at fit or 100%. New stories show only
 
 ### Keyboard
 
-`←` `→` previous and next, `R` looks right, `C` next language or width, `1` `2` `3` side by side, slider, diff, `Z` fit or 100%, `G` list mode, `/` find a story, `?` shortcuts, `Esc` close. Letters are matched by key position (`event.code`), so they also work on a Greek keyboard. Holding a key repeats only `←` and `→`. Every other shortcut acts once per press, so holding `R` can't mark items unseen.
+`←` `→` previous and next, `R` looks right, `C` next language or width, `1` `2` `3` side by side, slider, diff, `Z` fit or 100%, `G` list mode, `/` find a story, `?` shortcuts, `Esc` close. Letters are matched by key position (`event.code`), so they also work on a Greek keyboard. Holding a key repeats only `←` and `→`. Every other shortcut acts once per press, so holding `R` can't mark items unseen. A shortcut does nothing where its control is turned off, and while the shortcuts dialog is open only `?` and `Esc` work. On an item the filters hide, next goes to the first item in the list and previous does nothing, for the keys and the bar's buttons alike.
 
 ### Links
 
@@ -212,7 +212,7 @@ KAN-159 adds approve and comment. A static page on GitHub Pages can't sign anyon
 - Same change appears only with groups, and marking a group marks all of it.
 - Marks survive a new commit when hashes match and clear when they don't.
 - Addresses open the right screen.
-- Shortcuts work with `event.code` on a Greek layout, and only the arrows repeat while held.
+- Shortcuts work with `event.code` on a Greek layout, only the arrows repeat while held, nothing but `?` and `Esc` acts behind the shortcuts dialog, and `Z` does nothing where zoom is turned off.
 - A story listed only in groups opens the By area list, and a Biggest changes thumbnail opens the capture it shows.
 - Search and filters narrow the list and the review order.
 
