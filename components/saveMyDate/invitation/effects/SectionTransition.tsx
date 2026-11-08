@@ -8,7 +8,7 @@ type SectionTransitionProps = { art: SectionTransitionArt };
 // the theme has one. It takes up no height.
 export function SectionTransition({ art }: SectionTransitionProps) {
     const t = useTranslations('InvitationRenderer');
-    const alt = art.name || t('imageAlt');
+    const alt = art.name.trim() || t('imageAlt');
     const edge = art.edge === 'top' ? 'is-top' : 'is-bottom';
 
     return (

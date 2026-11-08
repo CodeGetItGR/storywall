@@ -3,7 +3,8 @@ import { animate } from 'framer-motion/dom/mini';
 import { type RefObject, useLayoutEffect } from 'react';
 
 import {
-    propertiesToClear,
+    revealEndStyle,
+    revealProperties,
     TEXT_OBSERVER_OPTIONS,
     type TextAnimation,
     textBlockIsOnScreen,
@@ -13,6 +14,8 @@ import {
 
 const PENDING = 'wedart-text-anim-pending';
 const WAITING = 'wedart-text-anim-waiting';
+// The CSS animation in effects.css that shows waiting text if the script is late.
+const SHOW_ANYWAY = 'smdTextShowAnyway';
 
 // The theme's text animation. Each text block plays it once, when that block
 // reaches the screen, rather than when its section does. Text already on screen
@@ -32,9 +35,18 @@ export function useTextReveal(rootRef: RefObject<HTMLElement | null>, animation:
 
         const blocks = Array.from(root.querySelectorAll<HTMLElement>('.section .text-block'));
         const running = new Set<{ cancel: () => void }>();
-        const clearStyles = (block: HTMLElement) => {
-            for (const property of propertiesToClear(reveal)) block.style.setProperty(kebabCase(property), '');
+        const endStyle = revealEndStyle(reveal);
+        const holdEnd = (block: HTMLElement) => {
+            for (const [property, value] of Object.entries(endStyle)) block.style.setProperty(property, value);
         };
+        const clearStyles = (block: HTMLElement) => {
+            for (const property of revealProperties(reveal)) block.style.setProperty(property, '');
+        };
+        // Text the CSS fallback already showed, because the page took over 4s to
+        // start. Hiding it now would make it flash and play again.
+        const shownAnyway = (block: HTMLElement) =>
+            root.classList.contains(WAITING) &&
+            Boolean(block.getAnimations?.().some((playback) => (playback as CSSAnimation).animationName === SHOW_ANYWAY && playback.playState === 'finished'));
 
         const revealBlock = (block: HTMLElement) => {
             if (!block.classList.contains(PENDING)) return;
@@ -44,7 +56,7 @@ export function useTextReveal(rootRef: RefObject<HTMLElement | null>, animation:
             running.add(playback);
             playback.then(() => {
                 running.delete(playback);
-                clearStyles(block);
+                holdEnd(block);
             });
         };
         const revealOnScreen = () => {
@@ -62,6 +74,10 @@ export function useTextReveal(rootRef: RefObject<HTMLElement | null>, animation:
         }, TEXT_OBSERVER_OPTIONS);
 
         for (const block of blocks) {
+            if (shownAnyway(block)) {
+                holdEnd(block);
+                continue;
+            }
             block.classList.add(PENDING);
             observer.observe(block);
         }
@@ -93,5 +109,3 @@ export function useTextReveal(rootRef: RefObject<HTMLElement | null>, animation:
         };
     }, [rootRef, animation, reduceMotion]);
 }
-
-const kebabCase = (property: string) => property.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);

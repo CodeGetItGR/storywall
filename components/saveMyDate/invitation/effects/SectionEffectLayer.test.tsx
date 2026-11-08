@@ -2,9 +2,9 @@ import { act, cleanup, render } from '@testing-library/react';
 import { renderToString } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { stubIntersectionObserver } from '@/components/saveMyDate/invitation/effects/__fixtures__/fakeIntersectionObserver';
 import { SectionEffectLayer } from '@/components/saveMyDate/invitation/effects/SectionEffectLayer';
 import type { SectionEffect } from '@/lib/invitation/backgroundEffects';
-import { stubIntersectionObserver } from '@/lib/invitation/fakeIntersectionObserver';
 
 const mocks = vi.hoisted(() => ({ reduce: false }));
 

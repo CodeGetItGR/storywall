@@ -5,10 +5,10 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { stubIntersectionObserver } from '@/components/saveMyDate/invitation/effects/__fixtures__/fakeIntersectionObserver';
 import { InvitationRenderer } from '@/components/saveMyDate/invitation/InvitationRenderer';
 import type { DateLanguage } from '@/lib/invitation/dateDisplay';
 import type { InvitationDocument } from '@/lib/invitation/document';
-import { stubIntersectionObserver } from '@/lib/invitation/fakeIntersectionObserver';
 import { INVITATION_LABELS } from '@/lib/invitation/labels';
 import type { RsvpSender } from '@/lib/invitation/rsvp';
 import { SAMPLE_DOCUMENT, SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';

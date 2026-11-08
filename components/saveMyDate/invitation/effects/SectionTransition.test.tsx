@@ -40,5 +40,9 @@ describe('SectionTransition', () => {
         expect(transition({}).querySelector('img')).toHaveAttribute('alt', 'Wave');
         cleanup();
         expect(transition({ name: '' }).querySelector('img')).toHaveAttribute('alt', en.InvitationRenderer.imageAlt);
+        cleanup();
+        expect(transition({ name: '   ' }).querySelector('img')).toHaveAttribute('alt', en.InvitationRenderer.imageAlt);
+        cleanup();
+        expect(transition({ name: ' Wave ' }).querySelector('img')).toHaveAttribute('alt', 'Wave');
     });
 });

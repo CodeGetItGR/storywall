@@ -18,8 +18,9 @@ export function useSectionEffect(effect: SectionEffect) {
     useCanvasEffect(canvasRef, effect, inView);
     useBackgroundReveal(backgroundRef, effect, inView);
 
-    // Particles are random, so they are made once in the browser: never during the
-    // server render, and not again when this re-renders.
+    // Particles are only made while the section is on screen, so the server render
+    // has none. They come from fixed sums (fxFrac), so each one lands in the same
+    // place every time; they are rebuilt whenever the section comes back on screen.
     const { type, speed, intensity } = effect;
     const particles = useMemo(() => (inView ? effectParticles({ type, speed, intensity }) : []), [inView, type, speed, intensity]);
 

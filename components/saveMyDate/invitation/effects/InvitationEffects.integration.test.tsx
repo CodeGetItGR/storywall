@@ -2,9 +2,9 @@ import { act, cleanup, render } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { stubIntersectionObserver } from '@/components/saveMyDate/invitation/effects/__fixtures__/fakeIntersectionObserver';
 import { InvitationRenderer } from '@/components/saveMyDate/invitation/InvitationRenderer';
 import type { SectionEffect } from '@/lib/invitation/backgroundEffects';
-import { stubIntersectionObserver } from '@/lib/invitation/fakeIntersectionObserver';
 import { SAMPLE_DOCUMENT, SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import type { SectionStyle } from '@/lib/invitation/sectionStyle';

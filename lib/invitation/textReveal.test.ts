@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { propertiesToClear, textAnimationRootClasses, textBlockIsOnScreen, textReveal, textRevealOptions } from '@/lib/invitation/textReveal';
+import { revealEndStyle, revealProperties, textAnimationRootClasses, textBlockIsOnScreen, textReveal, textRevealOptions } from '@/lib/invitation/textReveal';
 import { TEXT_ANIMATIONS } from '@/lib/invitation/theme';
 
 const box = (top: number, height: number) => ({ top, bottom: top + height, left: 0, right: 375, width: 375, height });
@@ -53,13 +53,20 @@ describe('textRevealOptions', () => {
     });
 });
 
-describe('propertiesToClear', () => {
-    it('clears what ends where the text rests', () => {
-        expect(propertiesToClear(textReveal('soft-rise')!)).toEqual(['opacity', 'transform', 'filter']);
+describe('revealEndStyle', () => {
+    it('keeps every last frame, as the old `both` fill did', () => {
+        expect(revealEndStyle(textReveal('soft-rise')!)).toEqual({ opacity: '1', transform: 'translateY(0px)', filter: 'blur(0px)' });
     });
 
-    it('leaves the normal letter spacing the old animation ended on', () => {
-        expect(propertiesToClear(textReveal('letter-spacing-in')!)).toEqual(['opacity']);
+    it('names the CSS properties', () => {
+        expect(revealEndStyle(textReveal('letter-spacing-in')!)).toEqual({ opacity: '1', 'letter-spacing': 'normal' });
+    });
+});
+
+describe('revealProperties', () => {
+    it('lists every CSS property the reveal sets', () => {
+        expect(revealProperties(textReveal('glow-reveal')!)).toEqual(['opacity', 'filter', 'text-shadow']);
+        expect(revealProperties(textReveal('swing-in')!)).toEqual(['opacity', 'transform', 'transform-origin']);
     });
 });
 

@@ -2,8 +2,8 @@ import { act, cleanup, render } from '@testing-library/react';
 import { useRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { stubIntersectionObserver } from '@/components/saveMyDate/invitation/effects/__fixtures__/fakeIntersectionObserver';
 import { useTextReveal } from '@/hooks/useTextReveal';
-import { stubIntersectionObserver } from '@/lib/invitation/fakeIntersectionObserver';
 import type { TextAnimation } from '@/lib/invitation/textReveal';
 
 const mocks = vi.hoisted(() => ({ reduce: false, animate: vi.fn(), finish: [] as (() => void)[], cancel: vi.fn() }));
@@ -14,6 +14,12 @@ vi.mock('framer-motion/dom/mini', () => ({ animate: mocks.animate }));
 // jsdom has no layout, so everything is placed by the test before the hook runs.
 const PLACES: Record<string, number> = { first: 100, second: 3000 };
 const placeBeforeLayoutEffects = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect');
+// jsdom runs no CSS animations, so the test says where the show-anyway fallback is.
+let FALLBACK: Record<string, AnimationPlayState> = {};
+HTMLElement.prototype.getAnimations = function (this: HTMLElement) {
+    const playState = FALLBACK[this.dataset.testid ?? ''];
+    return playState ? [{ animationName: 'smdTextShowAnyway', playState } as unknown as CSSAnimation] : [];
+};
 
 function Page({ animation }: { animation: TextAnimation }) {
     const rootRef = useRef<HTMLDivElement>(null);
@@ -34,6 +40,7 @@ let io: ReturnType<typeof stubIntersectionObserver>;
 beforeEach(() => {
     mocks.reduce = false;
     mocks.finish = [];
+    FALLBACK = {};
     vi.clearAllMocks();
     mocks.animate.mockImplementation(() => ({
         cancel: mocks.cancel,
@@ -101,18 +108,32 @@ describe('useTextReveal', () => {
         expect(getByTestId('outside').classList.contains('wedart-text-anim-pending')).toBe(false);
     });
 
-    it('clears what it set when a block finishes', () => {
+    it('keeps the last frame when a block finishes, as the old page did', () => {
         const { getByTestId } = render(<Page animation="soft-rise" />);
         const block = getByTestId('first');
-        block.style.opacity = '1';
-        block.style.filter = 'blur(0px)';
-        block.style.transform = 'translateY(0px)';
         block.style.color = 'red';
         act(() => mocks.finish[0]());
-        expect(block.style.opacity).toBe('');
-        expect(block.style.filter).toBe('');
-        expect(block.style.transform).toBe('');
+        // A line with its own lower opacity stays at 1.
+        expect(block.style.opacity).toBe('1');
+        expect(block.style.filter).toBe('blur(0px)');
+        expect(block.style.transform).toBe('translateY(0px)');
         expect(block.style.color).toBe('red');
+    });
+
+    it('leaves text the late-script fallback already showed on screen', () => {
+        FALLBACK.first = 'finished';
+        FALLBACK.second = 'finished';
+        const { getByTestId } = render(<Page animation="soft-rise" />);
+        expect(mocks.animate).not.toHaveBeenCalled();
+        expect(getByTestId('second').classList.contains('wedart-text-anim-pending')).toBe(false);
+        expect(io.watching(getByTestId('second'))).toBe(false);
+        expect(getByTestId('second').style.opacity).toBe('1');
+    });
+
+    it('still hides text the fallback has not shown yet', () => {
+        FALLBACK.second = 'running';
+        const { getByTestId } = render(<Page animation="soft-rise" />);
+        expect(getByTestId('second').classList.contains('wedart-text-anim-pending')).toBe(true);
     });
 
     it('stops and shows everything when it leaves the page', () => {
@@ -122,6 +143,16 @@ describe('useTextReveal', () => {
         expect(mocks.cancel).toHaveBeenCalledTimes(1);
         expect(second.classList.contains('wedart-text-anim-pending')).toBe(false);
         expect(io.count()).toBe(0);
+    });
+
+    it('clears the last frame it kept when it leaves the page', () => {
+        const { getByTestId, unmount } = render(<Page animation="letter-spacing-in" />);
+        const first = getByTestId('first');
+        act(() => mocks.finish[0]());
+        expect(first.style.letterSpacing).toBe('normal');
+        unmount();
+        expect(first.style.opacity).toBe('');
+        expect(first.style.letterSpacing).toBe('');
     });
 
     it('hides and plays nothing for someone who prefers less motion', () => {

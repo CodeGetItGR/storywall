@@ -133,11 +133,19 @@ export function textRevealOptions({ duration, ease, times }: TextReveal) {
     return times ? { duration, times, ease: times.slice(1).map(() => [...ease] as [number, number, number, number]) } : { duration, ease: [...ease] as [number, number, number, number] };
 }
 
-// The old animations ended with `letter-spacing: normal` still applied, so it
-// stays. Everything else ends where the text already rests, so it is cleared.
-export function propertiesToClear({ keyframes }: TextReveal): string[] {
-    return Object.keys(keyframes).filter((property) => property !== 'letterSpacing');
+// The old animations ran with `both`, so a finished block keeps every last
+// keyframe value: a line with its own lower opacity stays at 1, as it did there.
+// Keyed by CSS property name.
+export function revealEndStyle({ keyframes }: TextReveal): Record<string, string> {
+    return Object.fromEntries(Object.entries(keyframes).map(([property, values]) => [cssProperty(property), String(values[values.length - 1])]));
 }
+
+// Every CSS property the reveal sets, to clear when it stops.
+export function revealProperties({ keyframes }: TextReveal): string[] {
+    return Object.keys(keyframes).map(cssProperty);
+}
+
+const cssProperty = (property: string) => property.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
 
 export function textAnimationRootClasses(animation: TextAnimation): string {
     return animation === 'none' ? '' : `wedart-text-anim-${animation} wedart-text-anim-waiting`;

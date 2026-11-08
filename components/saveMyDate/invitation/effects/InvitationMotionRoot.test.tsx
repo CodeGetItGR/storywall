@@ -1,8 +1,8 @@
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { stubIntersectionObserver } from '@/components/saveMyDate/invitation/effects/__fixtures__/fakeIntersectionObserver';
 import { InvitationMotionRoot } from '@/components/saveMyDate/invitation/effects/InvitationMotionRoot';
-import { stubIntersectionObserver } from '@/lib/invitation/fakeIntersectionObserver';
 
 vi.mock('framer-motion', () => ({ useReducedMotion: () => false }));
 vi.mock('framer-motion/dom/mini', () => ({ animate: () => ({ cancel: () => undefined, then: () => undefined }) }));
