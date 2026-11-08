@@ -39,6 +39,7 @@
 .smd-invitation h3 { margin: 1em 0; font-size: 1.17em; }
 .smd-invitation h4 { margin: 1.33em 0; font-size: 1em; }
 .smd-invitation p { margin: 1em 0; }
+.smd-invitation small { font-size: smaller; }
 .smd-invitation img { display: inline; max-width: none; height: auto; vertical-align: baseline; }
 .smd-invitation a { color: inherit; }
 
@@ -531,7 +532,8 @@
 .smd-invitation .story-proposal-block { position: relative; max-width: 520px; margin: 0 auto 30px; text-align: center; }
 .smd-invitation .story-proposal-block:last-of-type { margin-bottom: 0; }
 .smd-invitation .story-proposal-divider { border: 0; border-top: 1px solid var(--primary); opacity: 0.55; max-width: 400px; margin: 26px auto; }
-.smd-invitation .story-block-title { font-size: clamp(30px, 6vw, 44px); font-style: italic; margin-top: 0; margin-bottom: 2px; text-align: center; }
+/* No size of its own: like the old page, story titles take the 34px heading size at every width. */
+.smd-invitation .story-block-title { font-style: italic; margin-top: 0; margin-bottom: 2px; text-align: center; }
 .smd-invitation .story-block-subtitle { font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.75; margin-top: 0; margin-bottom: 16px; text-align: center; }
 .smd-invitation .story-block-body { font-size: 15px; line-height: 1.7; text-align: center; }
 
