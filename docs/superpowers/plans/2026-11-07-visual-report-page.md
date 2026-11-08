@@ -1312,7 +1312,7 @@ Create `scripts/visual/report/src/lib/model.test.ts`:
 import { describe, expect, it } from 'vitest';
 
 import { colorGroup, groupedEntries, sampleEntries, testEntry, testManifest } from '../testing/fixture';
-import { areaTree, buildModel, largestPercent, storyCapture, worstState } from './model';
+import { areaTree, buildModel, findCapture, largestPercent, storyCapture, worstState } from './model';
 
 describe('buildModel', () => {
     it('makes stories from entries, sorted by area, component and name', () => {
@@ -1398,6 +1398,11 @@ describe('stories', () => {
     it('keeps the chosen capture, or falls back to the first', () => {
         expect(storyCapture(postCard!, { locale: 'en', width: 'desktop' }).width).toBe('desktop');
         expect(storyCapture(postCard!, { locale: 'el', width: 'desktop' }).width).toBe('mobile');
+    });
+
+    it('finds a capture only where the story has one', () => {
+        expect(findCapture(postCard!, { locale: 'en', width: 'desktop' })?.width).toBe('desktop');
+        expect(findCapture(postCard!, { locale: 'el', width: 'desktop' })).toBeUndefined();
     });
 
     it('finds the largest percent among changes only', () => {
@@ -1557,8 +1562,10 @@ export function buildModel(loaded: ReportManifest): ReportModel {
 export const worstState = (entries: ReportEntry[]): CaptureState =>
     STATES.find((state) => entries.some((entry) => entry.state === state)) ?? 'changed';
 
-export const storyCapture = (story: Story, { locale, width }: CaptureChoice) =>
-    story.entries.find((entry) => entry.locale === locale && entry.width === width) ?? capturesInOrder(story.entries)[0];
+export const findCapture = (story: Story, { locale, width }: CaptureChoice) =>
+    story.entries.find((entry) => entry.locale === locale && entry.width === width);
+
+export const storyCapture = (story: Story, choice: CaptureChoice) => findCapture(story, choice) ?? capturesInOrder(story.entries)[0];
 
 export function largestPercent(story: Story): number | null {
     const changed = story.entries.filter((entry) => entry.state === 'changed');
@@ -2246,7 +2253,7 @@ import { describe, expect, it } from 'vitest';
 import { colorGroup, groupedEntries, sampleEntries, testEntry, testManifest } from '../testing/fixture';
 import { buildModel } from './model';
 import { type Item, OVERVIEW } from './reviewOrder';
-import { canCompare, canZoom, currentEntry, initialView, nextCapture, revealItem, stepTarget, toggled } from './viewState';
+import { appliedZoom, canCompare, canZoom, currentEntry, initialView, nextCapture, revealItem, stepTarget, toggled } from './viewState';
 
 const model = buildModel(testManifest(groupedEntries, { groups: [colorGroup] }));
 const story = (id: string): Item => ({ kind: 'story', id });
@@ -2385,6 +2392,12 @@ describe('canCompare and canZoom', () => {
         expect(canZoom(testEntry('a', { state: 'new' }), 'slider')).toBe(true);
         expect(canZoom(testEntry('a', { state: 'failed' }), 'side')).toBe(false);
         expect(canZoom(null, 'side')).toBe(false);
+    });
+
+    it('fits the images where zoom is off', () => {
+        expect(appliedZoom(changed, 'side', 'full')).toBe('full');
+        expect(appliedZoom(changed, 'slider', 'full')).toBe('fit');
+        expect(appliedZoom(testEntry('a', { state: 'failed' }), 'side', 'full')).toBe('fit');
     });
 });
 ```
@@ -2568,6 +2581,9 @@ export const canCompare = (entry: ReportEntry | null) => entry?.state === 'chang
 // A failed capture has no image to zoom, and the slider always fits.
 export const canZoom = (entry: ReportEntry | null, compare: CompareMode) =>
     entry !== null && entry.state !== 'failed' && !(canCompare(entry) && compare === 'slider');
+
+// The zoom the images get. Where zoom is off they fit, so the slider never depends on the CSS order.
+export const appliedZoom = (entry: ReportEntry | null, compare: CompareMode, zoom: ZoomMode): ZoomMode => (canZoom(entry, compare) ? zoom : 'fit');
 ```
 
 - [ ] **Step 4: Write `lib/shortcuts.ts`**
@@ -3128,9 +3144,11 @@ git commit -m "KAN-158: add the report page's hooks"
 **Files:**
 - Create: `scripts/visual/report/src/components/Segment.tsx`
 - Create in `scripts/visual/report/src/components/compare/`: `CaptureFigure.tsx`, `SingleImage.tsx`, `SideBySide.tsx`, `SliderView.tsx`, `FailedNotice.tsx`, `CompareView.tsx`, `CaptureTabs.tsx`, `ViewControls.tsx`
-- Test: `scripts/visual/report/src/components/compare/CompareView.test.tsx`
+- Test: `scripts/visual/report/src/components/compare/CompareView.test.tsx`, `scripts/visual/report/src/components/compare/ViewControls.test.tsx`
 
-- [ ] **Step 1: Write the failing test**
+- [ ] **Step 1: Write the failing tests**
+
+`components/compare/CompareView.test.tsx`:
 
 ```tsx
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
@@ -3140,6 +3158,7 @@ import { testEntry } from '../../testing/fixture';
 import { CompareView } from './CompareView';
 
 const entry = testEntry('a', { locale: 'el' });
+const MODES = ['side', 'slider', 'diff'] as const;
 
 function show(props: Partial<Parameters<typeof CompareView>[0]> = {}) {
     render(<CompareView entry={entry} compare="side" slider={50} onSlider={vi.fn()} {...props} />);
@@ -3160,6 +3179,15 @@ describe('CompareView', () => {
         expect(screen.getByRole('img', { name: /diff$/ })).toHaveAttribute('src', entry.images.diff);
     });
 
+    it('puts before over after in the slider', () => {
+        show({ compare: 'slider', slider: 30 });
+        const before = screen.getByRole('img', { name: 'Feed/PostCard, Default, Greek, mobile, before' });
+        expect(before).toHaveAttribute('src', entry.images.before);
+        expect(before).toHaveClass('upper');
+        expect(screen.getByRole('img', { name: 'Feed/PostCard, Default, Greek, mobile, after' })).toHaveAttribute('src', entry.images.after);
+        expect(screen.getByRole('slider', { name: 'Move the divider between before and after' })).toHaveValue('30');
+    });
+
     it('moves the slider', () => {
         const onSlider = vi.fn();
         show({ compare: 'slider', onSlider });
@@ -3167,38 +3195,80 @@ describe('CompareView', () => {
         expect(onSlider).toHaveBeenCalledWith(20);
     });
 
-    it('shows only after for a new story', () => {
-        show({ entry: testEntry('a', { state: 'new', images: { after: 'img/a.webp' } }), compare: 'slider' });
-        expect(screen.getAllByRole('img')).toHaveLength(1);
-        expect(screen.getByRole('img', { name: /after$/ })).toBeInTheDocument();
+    // The chosen mode carries over from the last story, so each state is checked in every mode.
+    it.each(MODES)('shows only after for a new story in %s', (compare) => {
+        show({ entry: testEntry('a', { state: 'new', images: { after: 'img/a.webp' } }), compare });
+        expect(screen.getByRole('img')).toHaveAccessibleName(/after$/);
     });
 
-    it('shows only before for a removed story', () => {
-        show({ entry: testEntry('a', { state: 'removed', images: { before: 'img/a.webp' } }) });
-        expect(screen.getAllByRole('img')).toHaveLength(1);
-        expect(screen.getByRole('img', { name: /before$/ })).toBeInTheDocument();
+    it.each(MODES)('shows only before for a removed story in %s', (compare) => {
+        show({ entry: testEntry('a', { state: 'removed', images: { before: 'img/a.webp' } }), compare });
+        expect(screen.getByRole('img')).toHaveAccessibleName(/before$/);
     });
 
-    it('shows the error of a failed story as text', () => {
+    it.each(MODES)('shows the error of a failed story as text in %s', (compare) => {
         const error = '<img src=x onerror=alert(1)>';
-        show({ entry: testEntry('a', { state: 'failed', error, images: {} }) });
+        show({ entry: testEntry('a', { state: 'failed', error, images: {} }), compare });
         expect(screen.getByText('This story failed')).toBeInTheDocument();
         expect(screen.getByText(error)).toBeInTheDocument();
         expect(screen.getByText('Fix it before these changes can be approved.')).toBeInTheDocument();
         expect(document.querySelector('img')).toBeNull();
     });
 
-    it('says when a failed story has no error message', () => {
-        show({ entry: testEntry('a', { state: 'failed', error: null, images: {} }) });
+    it.each([null, ''])('says when a failed story has no error message (%j)', (error) => {
+        show({ entry: testEntry('a', { state: 'failed', error, images: {} }) });
         expect(screen.getByText('No error message.')).toBeInTheDocument();
     });
 });
 ```
 
-- [ ] **Step 2: Run it and see it fail**
+`components/compare/ViewControls.test.tsx`:
+
+```tsx
+import { cleanup, render, screen, within } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { copy } from '../../copy';
+import { testEntry } from '../../testing/fixture';
+import { ViewControls } from './ViewControls';
+
+function show(props: Partial<Parameters<typeof ViewControls>[0]> = {}) {
+    render(<ViewControls entry={testEntry('a')} compare="side" zoom="full" onCompare={vi.fn()} onZoom={vi.fn()} {...props} />);
+}
+
+const pressed = (name: string) =>
+    within(screen.getByRole('group', { name }))
+        .queryAllByRole('button', { pressed: true })
+        .map((button) => button.textContent);
+
+describe('ViewControls', () => {
+    afterEach(cleanup);
+
+    it('shows the choices on a changed story', () => {
+        show();
+        expect(pressed(copy.compare)).toEqual([copy.sideBySide]);
+        expect(pressed(copy.zoom)).toEqual([copy.fullSize]);
+    });
+
+    it('shows nothing pressed on a control that is off', () => {
+        show({ entry: testEntry('a', { state: 'new' }), compare: 'slider' });
+        expect(pressed(copy.compare)).toEqual([]);
+        expect(within(screen.getByRole('group', { name: copy.compare })).getByRole('button', { name: copy.slider })).toBeDisabled();
+        expect(pressed(copy.zoom)).toEqual([copy.fullSize]);
+    });
+
+    it('shows no zoom while the slider is on', () => {
+        show({ compare: 'slider' });
+        expect(pressed(copy.compare)).toEqual([copy.slider]);
+        expect(pressed(copy.zoom)).toEqual([]);
+    });
+});
+```
+
+- [ ] **Step 2: Run them and see them fail**
 
 Run: `npx vitest run scripts/visual/report/src/components/compare`
-Expected: FAIL, it can't find `./CompareView`.
+Expected: FAIL, it can't find `./CompareView` or `./ViewControls`.
 
 - [ ] **Step 3: Write the components**
 
@@ -3220,7 +3290,7 @@ function SegmentButton<T extends string>({ option, selected, disabled, onPick }:
     );
 }
 
-type SegmentProps<T extends string> = { label: string; options: SegmentOption<T>[]; value: T; disabled?: boolean; onPick: (value: T) => void };
+type SegmentProps<T extends string> = { label: string; options: SegmentOption<T>[]; value: T | null; disabled?: boolean; onPick: (value: T) => void };
 
 export function Segment<T extends string>({ label, options, value, disabled, onPick }: SegmentProps<T>) {
     return (
@@ -3315,7 +3385,13 @@ export function SliderView({ entry, position, onMove }: SliderViewProps) {
             <div className="slider" style={{ '--pos': `${position}%` } as CSSProperties}>
                 {/* Images */}
                 <img key={entry.images.after} src={entry.images.after} alt={altText(entry, copy.after.toLowerCase())} decoding="async" />
-                <img key={entry.images.before} className="upper" src={entry.images.before} alt={altText(entry, copy.before.toLowerCase())} decoding="async" />
+                <img
+                    key={entry.images.before}
+                    className="upper"
+                    src={entry.images.before}
+                    alt={altText(entry, copy.before.toLowerCase())}
+                    decoding="async"
+                />
 
                 {/* Divider */}
                 <span className="slider-tag slider-tag-before">{copy.before}</span>
@@ -3337,7 +3413,8 @@ export function FailedNotice({ error }: { error: string | null }) {
     return (
         <div className="error">
             <b>{copy.storyFailed}</b>
-            <pre>{error ?? copy.noErrorMessage}</pre>
+            {/* Storybook can report an empty message. */}
+            <pre>{error || copy.noErrorMessage}</pre>
             <span>{copy.fixBeforeApproval}</span>
         </div>
     );
@@ -3373,17 +3450,17 @@ import type { ReportEntry } from '../../../../types';
 import { copy } from '../../copy';
 import { CAPTURE_ORDER, type CaptureChoice } from '../../lib/captures';
 import { captureLabel, entryValue } from '../../lib/labels';
-import type { Story } from '../../lib/model';
+import { findCapture, type Story } from '../../lib/model';
 
 type CaptureTabProps = { choice: CaptureChoice; story: Story; current: ReportEntry; onPick: (choice: CaptureChoice) => void };
 
 function CaptureTab({ choice, story, current, onPick }: CaptureTabProps) {
-    const match = story.entries.find((entry) => entry.locale === choice.locale && entry.width === choice.width);
+    const match = findCapture(story, choice);
     function handleClick() {
         onPick(choice);
     }
     return (
-        <button type="button" className="tab" disabled={!match} aria-pressed={match === current} onClick={handleClick}>
+        <button type="button" className="tab" disabled={!match} aria-pressed={match?.id === current.id} onClick={handleClick}>
             {captureLabel(choice)}
             <span className="value">{match ? entryValue(match) : copy.noChange}</span>
         </button>
@@ -3431,11 +3508,14 @@ type ViewControlsProps = {
 };
 
 // The same rules as the keyboard shortcuts, so a key never does what a disabled control can't.
+// A control that's off shows nothing pressed, so it never disagrees with the screen.
 export function ViewControls({ entry, compare, zoom, onCompare, onZoom }: ViewControlsProps) {
+    const comparable = canCompare(entry);
+    const zoomable = canZoom(entry, compare);
     return (
         <>
-            <Segment label={copy.compare} options={COMPARE_OPTIONS} value={compare} disabled={!canCompare(entry)} onPick={onCompare} />
-            <Segment label={copy.zoom} options={ZOOM_OPTIONS} value={zoom} disabled={!canZoom(entry, compare)} onPick={onZoom} />
+            <Segment label={copy.compare} options={COMPARE_OPTIONS} value={comparable ? compare : null} disabled={!comparable} onPick={onCompare} />
+            <Segment label={copy.zoom} options={ZOOM_OPTIONS} value={zoomable ? zoom : null} disabled={!zoomable} onPick={onZoom} />
         </>
     );
 }
@@ -4071,7 +4151,19 @@ describe('report page', () => {
             window.location.hash = '#ui-button--primary';
             await openReport(testManifest(sampleEntries));
             expect(button('Slider')).toBeDisabled();
+            expect(button('Side by side')).toHaveAttribute('aria-pressed', 'false');
             expect(button('Fit')).toBeEnabled();
+        });
+
+        it('fits the slider whatever zoom was chosen', async () => {
+            window.location.hash = '#feed-postcard--default';
+            await openReport(testManifest(sampleEntries));
+            fireEvent.keyDown(document, { code: 'KeyZ', key: 'z' });
+            fireEvent.keyDown(document, { code: 'Digit2', key: '2' });
+            expect(document.querySelector('.stage')).toHaveClass('zoom-fit');
+            expect(button('100%')).toHaveAttribute('aria-pressed', 'false');
+            fireEvent.keyDown(document, { code: 'Digit1', key: '1' });
+            expect(button('100%')).toHaveAttribute('aria-pressed', 'true');
         });
     });
 
@@ -4329,6 +4421,7 @@ import type { ReportEntry } from '../../../../types';
 import { copy } from '../../copy';
 import type { ReportView } from '../../hooks/useReportView';
 import { type Story, worstState } from '../../lib/model';
+import { appliedZoom } from '../../lib/viewState';
 import { CaptureTabs } from '../compare/CaptureTabs';
 import { CompareView } from '../compare/CompareView';
 import { ViewControls } from '../compare/ViewControls';
@@ -4361,7 +4454,7 @@ export function StoryScreen({ story, entry, view }: StoryScreenProps) {
             </header>
 
             {/* Images */}
-            <div className={`stage zoom-${view.zoom}`}>
+            <div className={`stage zoom-${appliedZoom(entry, view.compare, view.zoom)}`}>
                 <CompareView entry={entry} compare={view.compare} slider={view.slider} onSlider={view.setSlider} />
             </div>
         </>
@@ -4379,6 +4472,7 @@ import { copy } from '../../copy';
 import type { ReportView } from '../../hooks/useReportView';
 import { captureLabel, shortName } from '../../lib/labels';
 import type { Group } from '../../lib/model';
+import { appliedZoom } from '../../lib/viewState';
 import { CompareView } from '../compare/CompareView';
 import { ViewControls } from '../compare/ViewControls';
 import { Swatches } from '../Swatches';
@@ -4421,7 +4515,7 @@ export function GroupScreen({ group, entry, view }: GroupScreenProps) {
                 </div>
             </header>
 
-            <div className={`stage zoom-${view.zoom}`} ref={stageRef}>
+            <div className={`stage zoom-${appliedZoom(entry, view.compare, view.zoom)}`} ref={stageRef}>
                 {/* The capture being looked at */}
                 <div className="section">
                     <CompareView entry={entry} compare={view.compare} slider={view.slider} onSlider={view.setSlider} />
@@ -5017,6 +5111,11 @@ Then append this to the end of `styles.css`:
 }
 .slider-tag-after {
     right: 8px;
+}
+/* The range is invisible, so its keyboard focus shows on the slider. */
+.slider:has(input:focus-visible) {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
 }
 .link-button {
     padding: 0;

@@ -41,12 +41,12 @@ Search and the state filters apply to both. The list follows the item opened, fr
 ### Screens
 
 - **Overview**, shown first: failed stories at the top, a table of counts per area, same-change groups, the 8 biggest changes as thumbnails, and components with no story. A thumbnail opens its story on the capture it shows.
-- **Story:** tabs for the four captures (EN Mobile, EN Desktop, EL Mobile, EL Desktop), each with its percent, state, or "no change". The chosen tab carries over to the next story.
+- **Story:** tabs for the four captures (EN Mobile, EN Desktop, EL Mobile, EL Desktop), each with its percent, state, or "no change". A capture that wasn't taken, such as the mobile one of a desktop-only story, also says "no change", because the report can't tell the two apart. The chosen tab carries over to the next story.
 - **Group:** the capture with the biggest change, then thumbnails of every capture in the group. The first 60 show, then "Show all N". Clicking a thumbnail shows that capture. Color groups show the before and after colors.
 
 ### Comparing
 
-Side by side, a slider, or the diff image, at fit or 100%. New stories show only the after image, and removed stories only the before. A failed capture shows the error and can't be marked. The story's other captures still can. Scrolling one side at 100% scrolls the other too.
+Side by side, a slider, or the diff image, at fit or 100%. New stories show only the after image, and removed stories only the before. A failed capture shows the error and can't be marked. The story's other captures still can. Scrolling one side at 100% scrolls the other too. A control that's turned off shows nothing pressed, and the choice comes back on the next story where it works. The slider always fits, whatever zoom was chosen, and its keyboard focus shows on the slider itself.
 
 ### Reviewing
 
@@ -214,6 +214,7 @@ KAN-159 adds approve and comment. A static page on GitHub Pages can't sign anyon
 - Addresses open the right screen.
 - Shortcuts work with `event.code` on a Greek layout, only the arrows repeat while held, nothing but `?` and `Esc` acts behind the shortcuts dialog, and `Z` does nothing where zoom is turned off.
 - A story listed only in groups opens the By area list, and a Biggest changes thumbnail opens the capture it shows.
+- New, removed and failed captures look the same in every compare mode, a control that's turned off shows nothing pressed, and the slider fits whatever zoom was chosen.
 - Search and filters narrow the list and the review order.
 
 **On real data, before merging:** run `buildReport` over the saved test captures (626 entries), confirm the groups match the numbers above within a small margin, record how long grouping takes, and go through the page in a browser at desktop and phone widths, light and dark.
