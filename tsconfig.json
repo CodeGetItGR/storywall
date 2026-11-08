@@ -38,6 +38,7 @@
         "providers/**/*.tsx",
         "i18n/**/*.ts",
         "scripts/**/*.ts",
+        "scripts/**/*.tsx",
         ".storybook/**/*.ts",
         ".storybook/**/*.tsx",
         ".next/types/**/*.ts",
