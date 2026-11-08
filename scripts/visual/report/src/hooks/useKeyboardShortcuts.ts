@@ -7,7 +7,7 @@ import type { ReportView } from './useReportView';
 
 export const SEARCH_INPUT_ID = 'story-search';
 
-// Under 880px the search box is in the closed drawer, where it can't take focus, so the drawer opens first.
+// Under 880px the search box is in the closed drawer, where it can't take focus, so the drawer opens first. Its own effect may move focus to the list, so the search box takes focus after that.
 function findStory(view: ReportView) {
     const search = document.getElementById(SEARCH_INPUT_ID);
     search?.focus();

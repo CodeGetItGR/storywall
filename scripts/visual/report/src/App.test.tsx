@@ -119,7 +119,7 @@ describe('report page', () => {
             });
             await openReport(testManifest([...sampleEntries, broken]));
             const failed = within(screen.getByRole('heading', { name: 'Failed' }).closest('section') as HTMLElement);
-            fireEvent.click(failed.getByRole('button', { name: /^Count \/ Broken/ }));
+            fireEvent.click(failed.getByRole('button', { name: /^Count \/ Broken.*1 capture$/ }));
             expect(await screen.findByRole('heading', { name: 'Broken' })).toBeInTheDocument();
         });
 
@@ -171,6 +171,14 @@ describe('report page', () => {
             button('Looks right').focus();
             fireEvent.click(button('Looks right'));
             expect(button('Undo reviewed')).toHaveFocus();
+        });
+
+        it('keeps focus on the review button from Start to Looks right', async () => {
+            await openReport(testManifest(sampleEntries));
+            button('Start review').focus();
+            fireEvent.click(button('Start review'));
+            expect(await screen.findByText('Feed / Composer')).toBeInTheDocument();
+            expect(button('Looks right')).toHaveFocus();
         });
 
         it('continues from the first item not yet reviewed', async () => {
@@ -498,6 +506,7 @@ describe('report page', () => {
             fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
             expect(button('Looks right')).toHaveFocus();
             expect(document.querySelector('main')).not.toHaveAttribute('inert');
+            expect(document.querySelector('.side')).not.toHaveAttribute('inert');
         });
 
         it('open the help from its button, and close it with Close or the backdrop', async () => {
@@ -625,6 +634,32 @@ describe('report page', () => {
     });
 
     describe('phone drawer', () => {
+        it('puts focus back on Stories after a row is picked, or Esc in its search', async () => {
+            await openReport(testManifest(sampleEntries));
+            fireEvent.click(button('Stories'));
+            fireEvent.click(list().getByRole('button', { name: 'Overview' }));
+            expect(button('Stories')).toHaveFocus();
+            fireEvent.click(button('Stories'));
+            const search = screen.getByRole('textbox', { name: 'Find a story' });
+            search.focus();
+            fireEvent.keyDown(search, { key: 'Escape', code: 'Escape' });
+            expect(button('Stories')).toHaveFocus();
+        });
+
+        it('takes focus back from the help over it, and Esc closes both', async () => {
+            await openReport(testManifest(sampleEntries));
+            fireEvent.click(button('Stories'));
+            const row = list().getByRole('button', { name: 'Overview' });
+            expect(row).toHaveFocus();
+            fireEvent.keyDown(document, { code: 'Slash', key: '?' });
+            fireEvent.click(button('Close'));
+            expect(row).toHaveFocus();
+            fireEvent.keyDown(document, { code: 'Slash', key: '?' });
+            fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
+            expect(document.querySelector('.side')).not.toHaveClass('open');
+            expect(button('Stories')).toHaveFocus();
+        });
+
         it('moves focus into the list and back, and closes on Esc', async () => {
             await openReport(testManifest(sampleEntries));
             const stories = button('Stories');
@@ -642,6 +677,7 @@ describe('report page', () => {
             await openReport(testManifest(sampleEntries));
             fireEvent.click(button('Stories'));
             expect(document.querySelector('.side')).toHaveClass('open');
+            expect(document.querySelector('.scrim')).toHaveClass('scrim-drawer');
             fireEvent.click(document.querySelector('.scrim') as Element);
             expect(document.querySelector('.side')).not.toHaveClass('open');
             fireEvent.click(button('Stories'));

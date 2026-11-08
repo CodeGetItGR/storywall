@@ -1,4 +1,4 @@
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 
 import { copy } from '../../copy';
 import { useBottomBar } from '../../hooks/useBottomBar';
@@ -27,16 +27,10 @@ export function BottomBar({ model, view, marks }: BottomBarProps) {
             )}
             <span className="spacer" />
 
-            {/* Review actions */}
-            {bar.actions.start && (
-                <button type="button" className="btn btn-primary" onClick={bar.start}>
-                    {bar.startLabel}
-                </button>
-            )}
-            {/* One button for both, so keyboard focus stays on it when it turns into Undo. */}
-            {bar.actions.mark && (
-                <button type="button" className={clsx('btn', bar.actions.mark === 'looks-right' && 'btn-primary')} onClick={view.markCurrent}>
-                    {bar.markLabel}
+            {/* Review actions. Start and the mark share one button, so keyboard focus stays on it as it changes. */}
+            {bar.action && (
+                <button type="button" className={clsx('btn', bar.action.primary && 'btn-primary')} onClick={bar.action.run}>
+                    {bar.action.label}
                 </button>
             )}
             {bar.actions.approve === 'link' && (

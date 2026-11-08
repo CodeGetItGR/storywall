@@ -13,7 +13,7 @@ export function useDrawerFocus(open: boolean) {
         if (!drawer) return;
         const active = document.activeElement;
         if (open) {
-            // `/` opens the drawer with focus already in its search box.
+            // Focus already in the drawer stays there.
             if (drawer.contains(active)) return;
             const row = drawer.querySelector<HTMLElement>('nav [aria-current="true"]') ?? drawer.querySelector<HTMLElement>('nav button');
             row?.focus();

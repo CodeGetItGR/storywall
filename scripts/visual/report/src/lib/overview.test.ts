@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { failedEntry, sampleEntries, testManifest } from '../testing/fixture';
+import { failedEntry, sampleEntries, testEntry, testManifest } from '../testing/fixture';
 import { withMarks } from './marks';
 import { buildModel } from './model';
 import { areaRows, biggestChanges, failedCount, failedStories } from './overview';
@@ -19,6 +19,11 @@ describe('overview', () => {
     it('lists failed stories', () => {
         expect(failedStories(model).map((story) => story.id)).toEqual(['ui-card--broken']);
         expect(failedStories(model).map(failedCount)).toEqual([1]);
+    });
+
+    it('counts only the failed captures of a story', () => {
+        const passing = testEntry('ui-card--broken--el--mobile', { storyId: 'ui-card--broken', title: 'UI/Card', name: 'Broken', locale: 'el' });
+        expect(failedStories(buildModel(testManifest([failedEntry, passing]))).map(failedCount)).toEqual([1]);
     });
 
     it('lists the biggest changes, one per story, largest first', () => {
