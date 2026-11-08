@@ -793,12 +793,35 @@ In `manifest.test.mjs`, change the import to `import { publishedManifest, valida
         ['percent', 'a lot', /percent/],
         ['percent', 101, /percent/],
         ['error', 5, /error/],
+        ['storyId', 'overview', /storyId/],
+        ['storyId', 'group-color-1', /storyId/],
+        ['storyId', 'ui-a%41--b', /storyId/],
+        ['storyId', 'ui-a b--c', /storyId/],
+        ['id', 'ui-button--primary--el--mobile', /match its story/],
+        ['beforeHash', 'short', /beforeHash/],
+        ['afterHash', 5, /afterHash/],
     ])('rejects an entry with a bad %s (%s)', (field, value, message) => {
         const manifest = valid();
         manifest.entries[0][field] = value;
         expect(() => validateManifest(manifest)).toThrow(message);
     });
+
+    it('accepts a capture with no before hash', () => {
+        const manifest = valid();
+        Object.assign(manifest.entries[0], { state: 'new', beforeHash: null });
+        manifest.counts = { changed: 0, new: 1, removed: 0, failed: 0 };
+        expect(validateManifest(manifest).entries[0].beforeHash).toBeNull();
+    });
+
+    it('rejects a repeated capture id', () => {
+        const manifest = valid();
+        manifest.entries.push({ ...manifest.entries[0] });
+        manifest.counts.changed = 2;
+        expect(() => validateManifest(manifest)).toThrow(/repeated capture id/);
+    });
 ```
+
+These tests need `valid()`'s entry to look like a real capture: id `'ui-button--primary--en--mobile'`, storyId `'ui-button--primary'`, beforeHash `'e'.repeat(64)` and afterHash `'f'.repeat(64)`.
 
 And add at the end of the file:
 
@@ -845,6 +868,9 @@ const COMPONENT_PATH = /^components\/[\w./-]+\.tsx$/;
 const GROUP_KEY = /^(color|same)-\d+$/;
 const COLOR = /^#[0-9a-f]{6}$/;
 const SHA = /^[0-9a-f]{40}$/;
+// Story ids become page addresses, so one can't look like another address or need decoding.
+const STORY_ID = /^[^\s%#]+--[^\s%#]+$/;
+const HASH = /^[0-9a-f]{64}$/;
 const IMAGE_KINDS = new Set(['before', 'after', 'diff', 'preview']);
 const MAX_MISSING_STORIES = 200;
 
@@ -870,9 +896,17 @@ function validateEntry(entry, groupKeys) {
     for (const field of TEXT_FIELDS) {
         if (typeof entry[field] !== 'string' || entry[field] === '') throw new Error(`Manifest entry has an invalid ${field}`);
     }
+    if (!STORY_ID.test(entry.storyId)) throw new Error(`Manifest entry has an invalid storyId: ${entry.storyId}`);
     if (!STATES.has(entry.state)) throw new Error(`Manifest entry has an unknown state: ${entry.state}`);
     if (!LOCALES.has(entry.locale)) throw new Error(`Manifest entry has an unknown locale: ${entry.locale}`);
     if (!WIDTHS.has(entry.width)) throw new Error(`Manifest entry has an unknown width: ${entry.width}`);
+    // The same as captureId in stories.ts.
+    if (entry.id !== `${entry.storyId}--${entry.locale}--${entry.width}`)
+        throw new Error(`Manifest entry has an id that doesn't match its story: ${entry.id}`);
+    for (const field of ['beforeHash', 'afterHash']) {
+        if (entry[field] !== null && (typeof entry[field] !== 'string' || !HASH.test(entry[field])))
+            throw new Error(`Manifest entry has an invalid ${field}`);
+    }
     if (typeof entry.percent !== 'number' || !(entry.percent >= 0 && entry.percent <= 100)) throw new Error('Manifest entry has an invalid percent');
     if (entry.error !== null && typeof entry.error !== 'string') throw new Error('Manifest entry has an invalid error');
     if (entry.changeKey !== undefined && entry.changeKey !== null && !groupKeys.has(entry.changeKey)) {
@@ -900,7 +934,12 @@ export function validateManifest(manifest) {
     }
     if (!Number.isInteger(manifest.totalCaptures) || manifest.totalCaptures < 0) throw new Error('Manifest has no totalCaptures');
     const groupKeys = validateGroups(manifest.groups);
-    for (const entry of manifest.entries) validateEntry(entry, groupKeys);
+    const ids = new Set();
+    for (const entry of manifest.entries) {
+        validateEntry(entry, groupKeys);
+        if (ids.has(entry.id)) throw new Error(`Manifest has a repeated capture id: ${entry.id}`);
+        ids.add(entry.id);
+    }
     for (const state of STATES) {
         const actual = manifest.entries.filter((entry) => entry.state === state).length;
         if (manifest.counts?.[state] !== actual) throw new Error(`Manifest count for ${state} doesn't match its entries`);
@@ -913,6 +952,8 @@ export function publishedManifest(manifest, { repo, prNumber, createdAt }) {
     return { ...manifest, createdAt, pull: { number: Number(prNumber), url: `https://github.com/${repo}/pull/${prNumber}` } };
 }
 ```
+
+Story ids become page addresses, so the validator only takes ids with no space, `%` or `#`, and each capture id has to be `${storyId}--${locale}--${width}`, the same as `captureId` in `stories.ts`. Hashes are null or sha256 hex.
 
 After review, the tests also cover: a `valid()` manifest shaped like `buildReport`'s output (`groups: []`, `changeKey: null`, hashes) and a legacy one without groups; a `changeKey` with no groups; a repeated group key; a bad `to` color; a negative percent; a failed entry with its error; bad `headSha`/`baseSha`; `images` that are an array, null, missing or a number; an unknown image kind; `LOCALES` and `WIDTHS` matching `config.ts`; and a manifest that brings its own `createdAt`.
 
@@ -1582,7 +1623,12 @@ describe('marks', () => {
     });
 
     it('survives a new commit when both hashes match', () => {
-        expect(isMarked(withMarks(new Map(), [entry]), testEntry('a'))).toBe(true);
+        expect(isMarked(withMarks(new Map(), [entry]), testEntry('a', { percent: 50, images: {} }))).toBe(true);
+    });
+
+    it('never counts a failed capture as reviewed', () => {
+        const removed = testEntry('a', { state: 'removed', afterHash: null });
+        expect(isMarked(withMarks(new Map(), [removed]), { ...removed, state: 'failed' })).toBe(false);
     });
 
     it('clears when a hash changes', () => {
@@ -1591,9 +1637,10 @@ describe('marks', () => {
         expect(isMarked(marked, { ...entry, beforeHash: 'new' })).toBe(false);
     });
 
-    it('keeps marks in storage, per PR', () => {
-        const key = marksKey({ pull: { number: 263, url: 'x' } });
-        expect(key).not.toBe(marksKey({ pull: { number: 264, url: 'x' } }));
+    it('keeps marks in storage, per PR and repo', () => {
+        const key = marksKey({ pull: { number: 263, url: 'https://github.com/CodeGetItGR/storywall/pull/263' } });
+        expect(key).not.toBe(marksKey({ pull: { number: 264, url: 'https://github.com/CodeGetItGR/storywall/pull/264' } }));
+        expect(key).not.toBe(marksKey({ pull: { number: 263, url: 'https://github.com/CodeGetItGR/other/pull/263' } }));
         writeMarks(key, withMarks(new Map(), [entry]));
         expect(isMarked(readMarks(key), entry)).toBe(true);
     });
@@ -1607,7 +1654,9 @@ describe('marks', () => {
         expect(readMarks('k').size).toBe(0);
         localStorage.setItem('k', '{"a":"b"}');
         expect(readMarks('k').size).toBe(0);
-        localStorage.setItem('k', '[["a","b"],["c",1],"d"]');
+        localStorage.setItem('k', '[["a","b"]]');
+        expect(readMarks('k').size).toBe(0);
+        localStorage.setItem('k', '{"savedAt":1,"marks":[["a","b"],["c",1],"d"]}');
         expect([...readMarks('k')]).toEqual([['a', 'b']]);
     });
 
@@ -1628,6 +1677,39 @@ describe('marks', () => {
         expect(readMarks('k').size).toBe(0);
         expect(() => writeMarks('k', new Map())).not.toThrow();
     });
+
+    it('clears the marks saved longest ago when storage is full', () => {
+        const marks = withMarks(new Map(), [entry]);
+        writeMarks('visual-report-marks-newer', marks, 2);
+        writeMarks('visual-report-marks-older', marks, 1);
+        localStorage.setItem('other-site', 'kept');
+        const setItem = Storage.prototype.setItem;
+        vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function (this: Storage, name: string, value: string) {
+            if (localStorage.getItem('visual-report-marks-older') !== null) throw new DOMException('Full', 'QuotaExceededError');
+            setItem.call(this, name, value);
+        });
+        writeMarks('visual-report-marks-current', marks, 3);
+        expect(localStorage.getItem('visual-report-marks-older')).toBeNull();
+        expect(localStorage.getItem('visual-report-marks-newer')).not.toBeNull();
+        expect(localStorage.getItem('other-site')).toBe('kept');
+        expect(isMarked(readMarks('visual-report-marks-current'), entry)).toBe(true);
+    });
+
+    it("doesn't clear anything when saving fails for another reason", () => {
+        writeMarks('visual-report-marks-older', withMarks(new Map(), [entry]), 1);
+        vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+            throw new Error('blocked');
+        });
+        writeMarks('visual-report-marks-current', new Map(), 2);
+        expect(localStorage.getItem('visual-report-marks-older')).not.toBeNull();
+    });
+
+    it('stops when nothing is left to clear', () => {
+        vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+            throw new DOMException('Full', 'QuotaExceededError');
+        });
+        expect(() => writeMarks('visual-report-marks-current', new Map())).not.toThrow();
+    });
 });
 ```
 
@@ -1636,10 +1718,23 @@ Create `scripts/visual/report/src/lib/reviewOrder.test.ts`:
 ```ts
 import { describe, expect, it } from 'vitest';
 
-import { colorGroup, failedEntry, groupedEntries, sampleEntries, testManifest } from '../testing/fixture';
+import { colorGroup, failedEntry, groupedEntries, sampleEntries, testEntry, testManifest } from '../testing/fixture';
 import { withMarks } from './marks';
 import { buildModel } from './model';
-import { allReviewed, barActions, currentIndex, entryMatches, type Filters, firstOpenItem, type Item, OVERVIEW, reviewable, reviewProgress, reviewQueue, sameItem } from './reviewOrder';
+import {
+    allReviewed,
+    barActions,
+    currentIndex,
+    entryMatches,
+    type Filters,
+    firstOpenItem,
+    type Item,
+    OVERVIEW,
+    reviewable,
+    reviewProgress,
+    reviewQueue,
+    sameItem,
+} from './reviewOrder';
 
 const none: Filters = { states: new Set(), search: '', hideReviewed: false };
 const noMarks = new Map<string, string>();
@@ -1659,7 +1754,11 @@ describe('reviewQueue', () => {
     });
 
     it('lists groups first, then stories on their own', () => {
-        expect(reviewQueue(grouped, 'change', none, noMarks)).toEqual([{ kind: 'group', key: 'color-1' }, story('ui-badge--old'), story('ui-button--primary')]);
+        expect(reviewQueue(grouped, 'change', none, noMarks)).toEqual([
+            { kind: 'group', key: 'color-1' },
+            story('ui-badge--old'),
+            story('ui-button--primary'),
+        ]);
     });
 
     it('narrows by state', () => {
@@ -1672,6 +1771,10 @@ describe('reviewQueue', () => {
         expect(reviewQueue(model, 'area', { ...none, search: 'old' }, noMarks)).toEqual([story('ui-badge--old')]);
     });
 
+    it('finds a story typed the way the list shows it', () => {
+        expect(reviewQueue(model, 'area', { ...none, search: 'PostCard / Default' }, noMarks)).toEqual([story('feed-postcard--default')]);
+    });
+
     it('hides reviewed captures', () => {
         const marks = withMarks(noMarks, [sampleEntries[0]]);
         const queue = reviewQueue(model, 'area', { ...none, hideReviewed: true }, marks);
@@ -1680,6 +1783,21 @@ describe('reviewQueue', () => {
 
     it('hides a group when no capture in it matches', () => {
         expect(reviewQueue(grouped, 'change', { ...none, states: new Set(['new']) }, noMarks)).toEqual([story('ui-button--primary')]);
+    });
+
+    it('keeps a story with a capture left to review, and a failed story', () => {
+        const withFailed = buildModel(testManifest([...sampleEntries, failedEntry]));
+        const queue = reviewQueue(withFailed, 'area', { ...none, hideReviewed: true }, withMarks(noMarks, [sampleEntries[1]]));
+        expect(queue).toContainEqual(story('feed-postcard--default'));
+        expect(queue).toContainEqual(story('ui-card--broken'));
+    });
+
+    it('lists a story on its own only when a capture outside every group matches', () => {
+        const entries = sampleEntries.map((entry, index) => (index < 2 ? { ...entry, changeKey: colorGroup.key } : entry));
+        entries[2] = { ...entries[2], state: 'new', beforeHash: null };
+        const split = buildModel(testManifest(entries, { groups: [colorGroup] }));
+        expect(reviewQueue(split, 'change', none, noMarks)).toContainEqual(story('feed-postcard--default'));
+        expect(reviewQueue(split, 'change', { ...none, states: new Set(['changed']) }, noMarks)).toEqual([{ kind: 'group', key: 'color-1' }]);
     });
 });
 
@@ -1706,6 +1824,19 @@ describe('reviewing', () => {
         const queue = reviewQueue(model, 'area', none, noMarks);
         expect(firstOpenItem(model, queue, noMarks)).toEqual(story('feed-composer--default'));
         expect(firstOpenItem(model, queue, withMarks(noMarks, [sampleEntries[0]]))).toEqual(story('feed-postcard--default'));
+    });
+
+    it('skips a story that only failed', () => {
+        const broken = { ...failedEntry, id: 'aaa-card--broken--en--mobile', storyId: 'aaa-card--broken', title: 'Aaa/Card' };
+        const withBroken = buildModel(testManifest([broken, ...sampleEntries]));
+        const queue = reviewQueue(withBroken, 'area', none, noMarks);
+        expect(queue[0]).toEqual(story('aaa-card--broken'));
+        expect(firstOpenItem(withBroken, queue, noMarks)).toEqual(story('feed-composer--default'));
+    });
+
+    it('finds nothing open when everything shown is reviewed', () => {
+        const queue = reviewQueue(model, 'area', none, noMarks);
+        expect(firstOpenItem(model, queue, withMarks(noMarks, sampleEntries))).toBeNull();
     });
 
     it('finds items', () => {
@@ -1746,13 +1877,43 @@ describe('barActions', () => {
 
     it('blocks approval while a story failed', () => {
         const model = buildModel(testManifest([...sampleEntries, failedEntry]));
-        expect(barActions(model, OVERVIEW, queue, everything).approve).toBe('blocked');
-        expect(barActions(model, story('ui-card--broken'), queue, everything).mark).toBeNull();
+        const withFailed = reviewQueue(model, 'area', none, noMarks);
+        expect(barActions(model, OVERVIEW, withFailed, everything).approve).toBe('blocked');
+        expect(barActions(model, story('ui-card--broken'), withFailed, everything).mark).toBeNull();
     });
 
-    it('hides the approve link on a local run', () => {
+    it('blocks approval when every capture failed', () => {
+        const model = buildModel(testManifest([failedEntry]));
+        expect(barActions(model, OVERVIEW, reviewQueue(model, 'area', none, noMarks), noMarks)).toEqual({
+            start: null,
+            mark: null,
+            approve: 'blocked',
+        });
+    });
+
+    it('offers Looks right on a story with one failed capture', () => {
+        const failedOne = testEntry('feed-postcard--default--el--mobile', {
+            locale: 'el',
+            state: 'failed',
+            percent: 0,
+            afterHash: null,
+            error: 'Boom',
+            images: {},
+        });
+        const model = buildModel(testManifest([...sampleEntries, failedOne]));
+        const withFailed = reviewQueue(model, 'area', none, noMarks);
+        expect(barActions(model, story('feed-postcard--default'), withFailed, noMarks).mark).toBe('looks-right');
+        expect(barActions(model, story('feed-postcard--default'), withFailed, everything)).toMatchObject({ mark: 'undo', approve: 'blocked' });
+    });
+
+    it('offers no Start when the list shows nothing left to review', () => {
+        const onlyNew = reviewQueue(clean, 'area', { ...none, states: new Set(['new']) }, noMarks);
+        expect(barActions(clean, OVERVIEW, onlyNew, withMarks(noMarks, [sampleEntries[4]]))).toEqual({ start: null, mark: null, approve: null });
+    });
+
+    it('offers nothing on a local run once everything is reviewed', () => {
         const local = buildModel(testManifest(sampleEntries, { pull: undefined }));
-        expect(barActions(local, OVERVIEW, queue, everything).approve).toBeNull();
+        expect(barActions(local, OVERVIEW, queue, everything)).toEqual({ start: null, mark: null, approve: null });
     });
 
     it('offers nothing on an empty report', () => {
@@ -1767,10 +1928,10 @@ Create `scripts/visual/report/src/lib/addresses.test.ts`:
 ```ts
 import { describe, expect, it } from 'vitest';
 
-import { colorGroup, groupedEntries, testManifest } from '../testing/fixture';
+import { colorGroup, groupedEntries, testEntry, testManifest } from '../testing/fixture';
 import { hashOf, itemFromHash } from './addresses';
 import { buildModel } from './model';
-import { OVERVIEW } from './reviewOrder';
+import { type Item, OVERVIEW } from './reviewOrder';
 
 const model = buildModel(testManifest(groupedEntries, { groups: [colorGroup] }));
 
@@ -1796,6 +1957,13 @@ describe('addresses', () => {
         expect(itemFromHash('#group-nope', model)).toEqual(OVERVIEW);
         expect(itemFromHash('#%E0%A4%A', model)).toEqual(OVERVIEW);
     });
+
+    it('reads an address back as the same item', () => {
+        const items: Item[] = [{ kind: 'story', id: 'ui-badge--old' }, { kind: 'group', key: 'color-1' }, OVERVIEW];
+        for (const item of items) expect(itemFromHash(`#${hashOf(item)}`, model)).toEqual(item);
+        const odd = buildModel(testManifest([testEntry('x', { storyId: 'ui-a%41--b' })]));
+        expect(itemFromHash(`#${hashOf({ kind: 'story', id: 'ui-a%41--b' })}`, odd)).toEqual({ kind: 'story', id: 'ui-a%41--b' });
+    });
 });
 ```
 
@@ -1814,11 +1982,15 @@ import type { ReportManifest } from './model';
 // so a new push keeps the marks on captures it didn't change and clears the rest.
 export type Marks = ReadonlyMap<string, string>;
 
-type Markable = Pick<ReportEntry, 'id' | 'beforeHash' | 'afterHash'>;
+type Markable = Pick<ReportEntry, 'id' | 'state' | 'beforeHash' | 'afterHash'>;
+type Stored = { savedAt?: unknown; marks?: unknown };
+
+const PREFIX = 'visual-report-marks-';
 
 const markValue = ({ beforeHash, afterHash }: Markable) => `${beforeHash}|${afterHash}`;
 
-export const isMarked = (marks: Marks, entry: Markable) => marks.get(entry.id) === markValue(entry);
+// A failed capture can have the same hashes as a removed one, so it never counts as reviewed.
+export const isMarked = (marks: Marks, entry: Markable) => entry.state !== 'failed' && marks.get(entry.id) === markValue(entry);
 
 export function withMarks(marks: Marks, entries: Markable[]): Marks {
     const next = new Map(marks);
@@ -1832,29 +2004,75 @@ export function withoutMarks(marks: Marks, entries: Markable[]): Marks {
     return next;
 }
 
-// One key per PR, because every report on the site shares this browser's storage.
-export const marksKey = ({ pull }: Pick<ReportManifest, 'pull'>) => `visual-report-marks-${pull?.number ?? 'local'}`;
+// One key per PR, because every report on the site shares this browser's storage. The PR's address names the repo too.
+export const marksKey = ({ pull }: Pick<ReportManifest, 'pull'>) => `${PREFIX}${pull?.url ?? 'local'}`;
 
 const isPair = (value: unknown): value is [string, string] =>
     Array.isArray(value) && value.length === 2 && typeof value[0] === 'string' && typeof value[1] === 'string';
 
+const isFull = (error: unknown) => typeof error === 'object' && error !== null && 'name' in error && error.name === 'QuotaExceededError';
+
+// Stored as { savedAt, marks }, so the marks saved longest ago can be cleared first.
+function readStored(key: string): Stored {
+    const value: unknown = JSON.parse(localStorage.getItem(key) ?? '{}');
+    return typeof value === 'object' && value !== null ? (value as Stored) : {};
+}
+
 export function readMarks(key: string): Marks {
     try {
-        const stored: unknown = JSON.parse(localStorage.getItem(key) ?? '[]');
-        return new Map(Array.isArray(stored) ? stored.filter(isPair) : []);
+        const { marks } = readStored(key);
+        return new Map(Array.isArray(marks) ? marks.filter(isPair) : []);
     } catch {
         return new Map();
     }
 }
 
-export function writeMarks(key: string, marks: Marks) {
+function savedAt(key: string): number {
     try {
-        localStorage.setItem(key, JSON.stringify([...marks]));
+        const { savedAt: time } = readStored(key);
+        return typeof time === 'number' ? time : 0;
     } catch {
-        // The marks last until the page closes.
+        return 0;
+    }
+}
+
+function otherPrsOldestFirst(key: string): string[] {
+    const found: [string, number][] = [];
+    for (let index = 0; index < localStorage.length; index += 1) {
+        const name = localStorage.key(index);
+        if (name !== null && name !== key && name.startsWith(PREFIX)) found.push([name, savedAt(name)]);
+    }
+    return found.sort((a, b) => a[1] - b[1]).map(([name]) => name);
+}
+
+function trySave(key: string, value: string): boolean {
+    try {
+        localStorage.setItem(key, value);
+        return true;
+    } catch (error) {
+        if (isFull(error)) return false;
+        throw error;
+    }
+}
+
+// When storage is full, other PRs' marks are cleared, saved longest ago first, until these fit.
+export function writeMarks(key: string, marks: Marks, now = Date.now()) {
+    const value = JSON.stringify({ savedAt: now, marks: [...marks] });
+    try {
+        let older: string[] | null = null;
+        while (!trySave(key, value)) {
+            older ??= otherPrsOldestFirst(key);
+            const next = older.shift();
+            if (next === undefined) return;
+            localStorage.removeItem(next);
+        }
+    } catch {
+        // Storage is unavailable, so the marks last until the page closes.
     }
 }
 ```
+
+Note: the stored value is `{ savedAt, marks }`. When storage is full, `writeMarks` clears other PRs' marks, the ones saved longest ago first, until these fit. Any other storage error leaves storage alone, and the marks last until the page closes.
 
 - [ ] **Step 4: Write `lib/reviewOrder.ts`**
 
@@ -1880,8 +2098,12 @@ const storyItem = (story: Story): Item => ({ kind: 'story', id: story.id });
 export function entryMatches(entry: ReportEntry, filters: Filters, marks: Marks): boolean {
     if (filters.states.size > 0 && !filters.states.has(entry.state)) return false;
     if (filters.hideReviewed && isMarked(marks, entry)) return false;
-    const query = filters.search.trim().toLowerCase();
-    return !query || `${entry.title} ${entry.name}`.toLowerCase().includes(query);
+    // Every word has to appear, so a story typed the way the list shows it, like "PostCard / Default", still matches.
+    const text = `${entry.title} ${entry.name}`.toLowerCase();
+    return filters.search
+        .toLowerCase()
+        .split(/[\s/]+/)
+        .every((word) => text.includes(word));
 }
 
 export const shownStories = (model: ReportModel, filters: Filters, marks: Marks) =>
@@ -1891,7 +2113,9 @@ export const shownGroups = (model: ReportModel, filters: Filters, marks: Marks) 
     model.groups.filter((group) => group.entries.some((entry) => entryMatches(entry, filters, marks)));
 
 export const storiesOnTheirOwn = (model: ReportModel, filters: Filters, marks: Marks) =>
-    model.stories.filter((story) => story.entries.some((entry) => entryMatches(entry, filters, marks) && !model.groupByKey.has(entry.changeKey ?? '')));
+    model.stories.filter((story) =>
+        story.entries.some((entry) => entryMatches(entry, filters, marks) && !model.groupByKey.has(entry.changeKey ?? '')),
+    );
 
 // What next and previous walk through, in the order the list shows it.
 export function reviewQueue(model: ReportModel, mode: ListMode, filters: Filters, marks: Marks): Item[] {
@@ -1927,13 +2151,9 @@ export function reviewProgress({ manifest }: ReportModel, marks: Marks) {
     return { done: list.filter((entry) => isMarked(marks, entry)).length, total: list.length };
 }
 
-export function firstOpenItem(model: ReportModel, queue: Item[], marks: Marks): Item | null {
-    const open = queue.find((item) => {
-        const entries = itemEntries(model, item);
-        return reviewable(entries).length > 0 && !allReviewed(entries, marks);
-    });
-    return open ?? queue[0] ?? null;
-}
+// Null when everything the list shows is reviewed, so the bar offers no Start or Continue.
+export const firstOpenItem = (model: ReportModel, queue: Item[], marks: Marks): Item | null =>
+    queue.find((item) => reviewable(itemEntries(model, item)).some((entry) => !isMarked(marks, entry))) ?? null;
 
 function approveAction({ manifest }: ReportModel, marks: Marks): BarActions['approve'] {
     const list = reviewable(manifest.entries);
@@ -1956,7 +2176,7 @@ export function barActions(model: ReportModel, item: Item, queue: Item[], marks:
 }
 ```
 
-Note: when everything is reviewed on a local run, `approve` is `null`, so the Overview offers "Continue review" to the first item. That's harmless and keeps the logic simple.
+Note: when everything the list shows is reviewed, `start` is `null`, so the Overview offers no Start or Continue review. On a local run `approve` is `null` too, so the bar is empty once everything is reviewed.
 
 - [ ] **Step 5: Write `lib/addresses.ts`**
 
@@ -1967,7 +2187,8 @@ import { type Item, OVERVIEW } from './reviewOrder';
 const GROUP_PREFIX = 'group-';
 
 export function hashOf(item: Item): string {
-    if (item.kind === 'story') return item.id;
+    // Encoded, so the address reads back as the same id.
+    if (item.kind === 'story') return encodeURIComponent(item.id);
     if (item.kind === 'group') return `${GROUP_PREFIX}${item.key}`;
     return 'overview';
 }
@@ -2426,7 +2647,7 @@ export function useManifest(): ManifestState {
 - [ ] **Step 2: Write `useReviewMarks.ts`**
 
 ```ts
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import type { ReportEntry } from '../../../types';
 import { type Marks, marksKey, readMarks, withMarks, withoutMarks, writeMarks } from '../lib/marks';
@@ -2437,6 +2658,15 @@ export type Review = { marks: Marks; mark: (entries: ReportEntry[]) => void; unm
 export function useReviewMarks(model: ReportModel): Review {
     const key = marksKey(model.manifest);
     const [marks, setMarks] = useState<Marks>(() => readMarks(key));
+
+    // The same report open in another tab saves marks too, so take them in instead of saving over them.
+    useEffect(() => {
+        function handleStorage(event: StorageEvent) {
+            if (event.key === key || event.key === null) setMarks(readMarks(key));
+        }
+        window.addEventListener('storage', handleStorage);
+        return () => window.removeEventListener('storage', handleStorage);
+    }, [key]);
 
     function save(next: Marks) {
         setMarks(next);
@@ -3453,7 +3683,9 @@ Create `scripts/visual/report/src/App.test.tsx`:
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { ReportEntry } from '../../types';
 import { App } from './App';
+import { marksKey, withMarks, writeMarks } from './lib/marks';
 import type { ReportManifest } from './lib/model';
 import { colorGroup, failedEntry, groupedEntries, sampleEntries, testEntry, testManifest } from './testing/fixture';
 
@@ -3462,6 +3694,9 @@ async function openReport(manifest: ReportManifest) {
     render(<App />);
     await screen.findByRole('navigation', { name: 'Stories' });
 }
+
+// Saves marks the way the page does, so a report can open partly reviewed.
+const seedMarks = (manifest: ReportManifest, entries: ReportEntry[]) => writeMarks(marksKey(manifest), withMarks(new Map(), entries));
 
 const button = (name: string | RegExp) => screen.getByRole('button', { name });
 const list = () => within(screen.getByRole('navigation', { name: 'Stories' }));
@@ -3565,51 +3800,83 @@ describe('report page', () => {
         });
 
         it('continues from the first item not yet reviewed', async () => {
-            localStorage.setItem('visual-report-marks-263', JSON.stringify([[sampleEntries[0].id, `${sampleEntries[0].beforeHash}|${sampleEntries[0].afterHash}`]]));
-            await openReport(testManifest(sampleEntries));
+            const manifest = testManifest(sampleEntries);
+            seedMarks(manifest, [sampleEntries[0]]);
+            await openReport(manifest);
             fireEvent.click(button('Continue review'));
             expect(await screen.findByText('Feed / PostCard')).toBeInTheDocument();
         });
 
         it('links to the PR once everything is reviewed', async () => {
-            const marks = sampleEntries.map((entry) => [entry.id, `${entry.beforeHash}|${entry.afterHash}`]);
-            localStorage.setItem('visual-report-marks-263', JSON.stringify(marks));
-            await openReport(testManifest(sampleEntries));
+            const manifest = testManifest(sampleEntries);
+            seedMarks(manifest, sampleEntries);
+            await openReport(manifest);
             expect(screen.getByRole('link', { name: 'Approve in the PR' })).toHaveAttribute('href', 'https://github.com/CodeGetItGR/storywall/pull/263');
         });
 
-        it('has no PR links on a local run', async () => {
-            const marks = sampleEntries.map((entry) => [entry.id, `${entry.beforeHash}|${entry.afterHash}`]);
-            localStorage.setItem('visual-report-marks-local', JSON.stringify(marks));
-            await openReport(testManifest(sampleEntries, { pull: undefined }));
+        it('has no PR links on a local run, and nothing to start once everything is reviewed', async () => {
+            const manifest = testManifest(sampleEntries, { pull: undefined });
+            seedMarks(manifest, sampleEntries);
+            await openReport(manifest);
             expect(screen.queryByRole('link')).not.toBeInTheDocument();
+            expect(screen.queryByRole('button', { name: /review$/ })).not.toBeInTheDocument();
+        });
+
+        it('offers nothing to start when the filters hide everything left to review', async () => {
+            const manifest = testManifest(sampleEntries);
+            seedMarks(manifest, [sampleEntries[4]]);
+            await openReport(manifest);
+            fireEvent.click(button(/^New/));
+            expect(screen.queryByRole('button', { name: /review$/ })).not.toBeInTheDocument();
         });
 
         it('keeps marks through a new commit when hashes match, and clears them when not', async () => {
-            const kept = sampleEntries[0];
-            const stale = sampleEntries[1];
-            localStorage.setItem(
-                'visual-report-marks-263',
-                JSON.stringify([
-                    [kept.id, `${kept.beforeHash}|${kept.afterHash}`],
-                    [stale.id, `${stale.beforeHash}|an-older-hash`],
-                ]),
-            );
-            await openReport(testManifest(sampleEntries));
+            const manifest = testManifest(sampleEntries);
+            seedMarks(manifest, [sampleEntries[0], { ...sampleEntries[1], afterHash: 'an-older-hash' }]);
+            await openReport(manifest);
             expect(progress()).toHaveTextContent('1 of 5 captures reviewed');
+        });
+
+        it('takes in marks saved in another tab', async () => {
+            const manifest = testManifest(sampleEntries);
+            await openReport(manifest);
+            seedMarks(manifest, [sampleEntries[0]]);
+            fireEvent(window, new StorageEvent('storage', { key: marksKey(manifest) }));
+            expect(progress()).toHaveTextContent('1 of 5 captures reviewed');
+            fireEvent.click(button('Continue review'));
+            fireEvent.click(await screen.findByRole('button', { name: 'Looks right' }));
+            expect(progress()).toHaveTextContent('3 of 5 captures reviewed');
         });
     });
 
     describe('failed stories', () => {
         it('has no Looks right, and blocks the approve link', async () => {
-            const marks = sampleEntries.map((entry) => [entry.id, `${entry.beforeHash}|${entry.afterHash}`]);
-            localStorage.setItem('visual-report-marks-263', JSON.stringify(marks));
+            const manifest = testManifest([...sampleEntries, failedEntry]);
+            seedMarks(manifest, sampleEntries);
             window.location.hash = '#ui-card--broken';
-            await openReport(testManifest([...sampleEntries, failedEntry]));
+            await openReport(manifest);
             expect(screen.getByText('This story failed')).toBeInTheDocument();
             expect(screen.queryByRole('button', { name: 'Looks right' })).not.toBeInTheDocument();
             expect(screen.getByText('Fix the failed stories first')).toBeInTheDocument();
             expect(screen.queryByRole('link', { name: 'Approve in the PR' })).not.toBeInTheDocument();
+        });
+
+        it('keeps Looks right on a story with one failed capture', async () => {
+            const failedOne = testEntry('feed-postcard--default--el--desktop', {
+                locale: 'el',
+                width: 'desktop',
+                state: 'failed',
+                percent: 0,
+                afterHash: null,
+                error: 'Boom',
+                images: {},
+            });
+            window.location.hash = '#feed-postcard--default';
+            await openReport(testManifest([...sampleEntries, failedOne]));
+            fireEvent.click(button(/EL Desktop/));
+            expect(screen.getByText('This story failed')).toBeInTheDocument();
+            fireEvent.click(button('Looks right'));
+            expect(progress()).toHaveTextContent('2 of 5 captures reviewed');
         });
     });
 
@@ -3790,8 +4057,9 @@ describe('report page', () => {
         });
 
         it('hide reviewed captures', async () => {
-            localStorage.setItem('visual-report-marks-263', JSON.stringify([[sampleEntries[0].id, `${sampleEntries[0].beforeHash}|${sampleEntries[0].afterHash}`]]));
-            await openReport(testManifest(sampleEntries));
+            const manifest = testManifest(sampleEntries);
+            seedMarks(manifest, [sampleEntries[0]]);
+            await openReport(manifest);
             fireEvent.click(screen.getByRole('checkbox', { name: 'Hide reviewed' }));
             expect(screen.getByText('3 to review')).toBeInTheDocument();
         });

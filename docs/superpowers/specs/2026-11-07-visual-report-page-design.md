@@ -27,7 +27,7 @@ The approved mockup, with a real report of 626 differing captures: https://claud
 
 ### Layout
 
-- **Sidebar:** the PR link and short commit, review progress, filters for failed, changed, new and removed, story search, the list mode, and "Hide reviewed".
+- **Sidebar:** the PR link and short commit, review progress, filters for failed, changed, new and removed, story search (every word typed has to appear in the story's title or name), the list mode, and "Hide reviewed".
 - **Main pane:** one screen at a time, with a bar along the bottom.
 - **Under 880px:** the sidebar becomes a drawer opened from a "Stories" button. Desktop comes first, and a phone is good enough to review on.
 
@@ -46,16 +46,16 @@ Search and the state filters apply to both.
 
 ### Comparing
 
-Side by side, a slider, or the diff image, at fit or 100%. New stories show only the after image, and removed stories only the before. Failed stories show the error and can't be marked. Scrolling one side at 100% scrolls the other too.
+Side by side, a slider, or the diff image, at fit or 100%. New stories show only the after image, and removed stories only the before. A failed capture shows the error and can't be marked. The story's other captures still can. Scrolling one side at 100% scrolls the other too.
 
 ### Reviewing
 
 - "Looks right" marks the item and moves to the next one. On a group it reads "Looks right for all N" and marks every capture in the group. On a reviewed item it becomes "Undo reviewed".
-- The Overview's bar shows "Start review", or "Continue review" once something is marked. It goes to the first item not yet reviewed, in the list mode currently selected.
+- The Overview's bar shows "Start review", or "Continue review" once something is marked. It goes to the first item not yet reviewed, in the list mode currently selected. When the filters hide everything left to review, neither button shows.
 - With everything reviewed, the bar shows "Approve in the PR", a link to the PR. If any story failed, it shows "Fix the failed stories first" instead.
 - Marks approve nothing, and the PR's box is still the only approval.
 
-**Marks survive a push.** They're stored in `localStorage` per PR, as capture id → `beforeHash|afterHash`. A capture counts as reviewed only while both hashes match, so a new push keeps the marks on captures it didn't change and clears the rest. If storage is unavailable, marks last until the page closes.
+**Marks survive a push.** They're stored in `localStorage` per PR, as capture id → `beforeHash|afterHash`. A capture counts as reviewed only while both hashes match, so a new push keeps the marks on captures it didn't change and clears the rest. The key is the PR's address, so two repos using the tool never share marks. A failed capture never counts as reviewed, even if its hashes match a mark. When storage is full, the marks of other PRs are cleared, the ones saved longest ago first, until the new marks fit. If storage is unavailable, marks last until the page closes. With the same report open in two tabs, each tab takes in the marks the other saves, so neither saves over the other.
 
 ### Keyboard
 
@@ -136,7 +136,7 @@ It uses `git status` rather than `git diff`, so a deleted file is caught too. Th
 
 **The manifest is still untrusted.**
 
-- `validateManifest` also checks each entry's `id`, `storyId`, `title`, `name`, `locale`, `width`, `percent`, `error`, `changeKey` and `images` (an object with only `before`, `after`, `diff` and `preview`), each group's key (never repeated), kind and colors (`#rrggbb` only), and `headSha` and `baseSha` (40 lowercase hex characters).
+- `validateManifest` also checks each entry's `id`, `storyId`, `title`, `name`, `locale`, `width`, `percent`, `error`, `changeKey`, `beforeHash` and `afterHash` (64 lowercase hex characters, or null) and `images` (an object with only `before`, `after`, `diff` and `preview`). A story id needs `--` and can't hold whitespace, `%` or `#`, because it becomes a page address. A capture id has to be `<storyId>--<locale>--<width>` and can't repeat. It also checks each group's key (never repeated), kind and colors (`#rrggbb` only), and `headSha` and `baseSha` (40 lowercase hex characters).
 - The page renders results as React text. `dangerouslySetInnerHTML` isn't used, and a test renders hostile story names and errors.
 - Image paths and colors are the only manifest values used as URLs or styles, and both are validated.
 
@@ -184,8 +184,10 @@ KAN-159 adds approve and comment. A static page on GitHub Pages can't sign anyon
 | `manifest.json` missing or unreadable | The existing message: "Could not load this report. It may have been deleted when the PR closed." |
 | Filters match nothing | "Nothing matches these filters." |
 | Storage unavailable | Marks last until the page closes |
+| Storage full | Other PRs' marks are cleared, the ones saved longest ago first, until the new marks fit |
 | A report with no differences (local run only) | The Overview with nothing to review, and no crash |
-| A failed story | No "Looks right". It doesn't count toward progress, and it blocks "Approve in the PR" |
+| A failed capture | It can't be marked and doesn't count toward progress. A story whose captures all failed has no "Looks right", and any failed capture blocks "Approve in the PR" |
+| The filters hide everything left to review | The Overview shows no "Start review" or "Continue review" |
 | Page source changed without rebuilding | The check shows an error and the run explains the fix |
 
 ## Testing
@@ -194,7 +196,8 @@ KAN-159 adds approve and comment. A static page on GitHub Pages can't sign anyon
 
 - `sameChange`: a color shift groups; one stray pixel inside a shift keeps that capture out; text added to or removed from a blank background, a moved text line and a photo-wide change have no color shift, and a flat block that changed color has one; a size change never groups; identical areas group, including when moved; areas join by distance wherever they sit on the grid; groups of one don't exist; results don't depend on input order.
 - `report`: entries carry `changeKey`, the manifest carries `groups`, and the fingerprint is the same with and without grouping.
-- `validateManifest`: accepts a manifest shaped like the report's, and one with no groups; rejects bad colors, keys, repeated keys, kinds, locales, widths, commit ids and image lists; its languages and widths match `config.ts`.
+- `validateManifest`: accepts a manifest shaped like the report's, and one with no groups; rejects bad colors, keys, repeated keys, kinds, locales, widths, commit ids, image lists, story ids, capture ids and hashes, and repeated capture ids; its languages and widths match `config.ts`.
+- `marks`: a failed capture never counts as reviewed; the key holds the PR's address; when storage is full, the marks saved longest ago are cleared first, and nothing else in storage is touched.
 - `publish`: the page path points at `dist/index.html`, and `pull` can't be set by the manifest.
 - `workflows`: the capture job has the rebuild check.
 - The built file: it exists, has `noindex`, and has no external script or stylesheet.
@@ -203,7 +206,9 @@ KAN-159 adds approve and comment. A static page on GitHub Pages can't sign anyon
 
 - Hostile names and errors render as text.
 - Start, Looks right and Undo update progress and move on.
-- A failed story has no Looks right and blocks the approve link.
+- A story whose captures all failed has no Looks right, a story with one failed capture keeps it, and either blocks the approve link.
+- With the filters hiding everything left to review, the Overview offers no Start or Continue.
+- Marks saved in another tab show up without a reload.
 - Same change appears only with groups, and marking a group marks all of it.
 - Marks survive a new commit when hashes match and clear when they don't.
 - Addresses open the right screen.
