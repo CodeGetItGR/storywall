@@ -2262,6 +2262,21 @@ describe('revealItem', () => {
         expect(revealItem(initialView(model, OVERVIEW), model, { kind: 'group', key: 'color-1' }).mode).toBe('change');
     });
 
+    it('moves to the area list for a story listed only in groups', () => {
+        const inChange = { ...initialView(model, OVERVIEW), mode: 'change' as const };
+        expect(revealItem(inChange, model, story('feed-postcard--default')).mode).toBe('area');
+    });
+
+    it('stays on the same-change list for a story listed on its own', () => {
+        const inChange = { ...initialView(model, OVERVIEW), mode: 'change' as const };
+        expect(revealItem(inChange, model, story('ui-badge--old')).mode).toBe('change');
+    });
+
+    it('keeps open rows open', () => {
+        const view = { ...initialView(model, OVERVIEW), expanded: new Set(['UI']) };
+        expect(revealItem(view, model, story('feed-postcard--default')).expanded.has('UI')).toBe(true);
+    });
+
     it('closes the drawer and remembers the item', () => {
         const item = story('ui-badge--old');
         const view = revealItem({ ...initialView(model, OVERVIEW), drawerOpen: true }, model, item);
@@ -2272,11 +2287,18 @@ describe('revealItem', () => {
 
 describe('initialView', () => {
     it('starts by area with the first capture chosen', () => {
-        expect(initialView(model, OVERVIEW)).toMatchObject({ mode: 'area', compare: 'side', zoom: 'fit', slider: 50, capture: { locale: 'en', width: 'mobile' } });
+        expect(initialView(model, OVERVIEW)).toMatchObject({
+            mode: 'area',
+            compare: 'side',
+            zoom: 'fit',
+            slider: 50,
+            capture: { locale: 'en', width: 'mobile' },
+        });
     });
 
     it('reveals a story opened from a link', () => {
         expect(initialView(model, story('ui-badge--old')).expanded.has('UI')).toBe(true);
+        expect(initialView(model, story('ui-badge--old')).expanded.has('UI/Badge')).toBe(true);
     });
 });
 
@@ -2291,6 +2313,10 @@ describe('toggled', () => {
 
 describe('nextCapture', () => {
     const postCard = buildModel(testManifest(sampleEntries)).storyById.get('feed-postcard--default')!;
+
+    it('steps from the capture shown when the chosen one is missing', () => {
+        expect(nextCapture(postCard, { locale: 'el', width: 'desktop' })).toEqual({ locale: 'en', width: 'desktop' });
+    });
 
     it('moves to the next capture and wraps', () => {
         expect(nextCapture(postCard, { locale: 'en', width: 'mobile' })).toEqual({ locale: 'en', width: 'desktop' });
@@ -2431,7 +2457,7 @@ Expected: FAIL, it can't find `./viewState`, `./shortcuts` and `./overview`.
 
 ```ts
 import type { CaptureState, ReportEntry } from '../../../types';
-import { type CaptureChoice, capturesInOrder } from './captures';
+import { CAPTURE_ORDER, type CaptureChoice, capturesInOrder } from './captures';
 import { type ReportModel, type Story, storyCapture } from './model';
 import type { Item, ListMode } from './reviewOrder';
 
@@ -2461,13 +2487,17 @@ export function toggled<T>(set: ReadonlySet<T>, value: T): ReadonlySet<T> {
     return next;
 }
 
+// Only stories with a capture outside every group are listed under Same change.
+const inGroupsOnly = (model: ReportModel, story: Story) => story.entries.every((entry) => model.groupByKey.has(entry.changeKey ?? ''));
+
 // The list follows the item, whether it came from a click, a link or the back button.
 export function revealItem(view: ViewState, model: ReportModel, item: Item): ViewState {
     const next = { ...view, revealed: item, drawerOpen: false };
     if (item.kind === 'group') return { ...next, mode: 'change' };
     const story = item.kind === 'story' ? model.storyById.get(item.id) : undefined;
     if (!story) return next;
-    return { ...next, expanded: new Set([...view.expanded, story.area, `${story.area}/${story.component}`]) };
+    const expanded = new Set([...view.expanded, story.area, `${story.area}/${story.component}`]);
+    return { ...next, expanded, mode: view.mode === 'change' && inGroupsOnly(model, story) ? 'area' : view.mode };
 }
 
 export function initialView(model: ReportModel, item: Item): ViewState {
@@ -2480,7 +2510,7 @@ export function initialView(model: ReportModel, item: Item): ViewState {
         compare: 'side',
         zoom: 'fit',
         slider: 50,
-        capture: { locale: 'en', width: 'mobile' },
+        capture: CAPTURE_ORDER[0],
         groupEntry: new Map(),
         allThumbs: new Set(),
         expanded: new Set(),
@@ -2715,7 +2745,7 @@ import { useState } from 'react';
 import type { CaptureState } from '../../../types';
 import type { CaptureChoice } from '../lib/captures';
 import type { ReportModel } from '../lib/model';
-import { allReviewed, currentIndex, type Item, itemEntries, type ListMode, reviewable, reviewQueue } from '../lib/reviewOrder';
+import { allReviewed, currentIndex, type Item, itemEntries, type ListMode, reviewable, reviewQueue, sameItem } from '../lib/reviewOrder';
 import { type CompareMode, currentEntry, initialView, nextCapture, revealItem, stepTarget, toggled, type ViewState, type ZoomMode } from '../lib/viewState';
 import type { Review } from './useReviewMarks';
 import type { Route } from './useRoute';
@@ -2727,7 +2757,7 @@ export function useReportView(model: ReportModel, route: Route, { marks, mark, u
     const [stored, setView] = useState(() => initialView(model, item));
 
     // A link or the back button can change the item, so the list catches up here.
-    const view = stored.revealed === item ? stored : revealItem(stored, model, item);
+    const view = sameItem(stored.revealed, item) ? stored : revealItem(stored, model, item);
     if (view !== stored) setView(view);
 
     const filters = { states: view.states, search: view.search, hideReviewed: view.hideReviewed };
@@ -2863,6 +2893,8 @@ export function useKeyboardShortcuts(view: ReportView) {
             if (typing || event.metaKey || event.ctrlKey || event.altKey) return;
             const shortcut = shortcutFor(event);
             if (!shortcut) return;
+            // Holding a key repeats it. Only the arrows should, so holding R doesn't mark item after item unseen.
+            if (event.repeat && shortcut !== 'next' && shortcut !== 'previous') return;
             // Arrow keys move the slider while it has focus.
             if (input?.type === 'range' && (shortcut === 'next' || shortcut === 'previous')) return;
             event.preventDefault();
@@ -3769,6 +3801,13 @@ describe('report page', () => {
             expect(await screen.findByText('UI / Badge')).toBeInTheDocument();
         });
 
+        it('opens a biggest change on the capture it shows', async () => {
+            await openReport(testManifest([sampleEntries[1], { ...sampleEntries[2], percent: 9 }]));
+            fireEvent.click(button(/PostCard \/ Default/));
+            expect(await screen.findByText('Feed / PostCard')).toBeInTheDocument();
+            expect(button(/EN Desktop/)).toHaveAttribute('aria-pressed', 'true');
+        });
+
         it('survives a report with no differences', async () => {
             await openReport(testManifest([]));
             expect(screen.getByRole('heading', { name: '0 of 1078 captures differ' })).toBeInTheDocument();
@@ -3933,6 +3972,14 @@ describe('report page', () => {
             expect(screen.queryByRole('button', { name: 'Same change' })).not.toBeInTheDocument();
         });
 
+        it('moves the list to By area for a story listed only in groups', async () => {
+            await openReport(grouped());
+            fireEvent.click(button('Same change'));
+            window.location.hash = '#feed-postcard--default';
+            expect(await screen.findByText('Feed / PostCard')).toBeInTheDocument();
+            expect(button('By area')).toHaveAttribute('aria-pressed', 'true');
+        });
+
         it('marks every capture in a group, then moves on', async () => {
             await openReport(grouped());
             fireEvent.click(button('Same change'));
@@ -4010,6 +4057,15 @@ describe('report page', () => {
             fireEvent.keyDown(document, { code: 'Digit1', key: '1' });
             fireEvent.keyDown(document, { code: 'KeyZ', key: 'z' });
             expect(button('100%')).toHaveAttribute('aria-pressed', 'true');
+        });
+
+        it('act once when held, apart from the arrows', async () => {
+            window.location.hash = '#feed-composer--default';
+            await openReport(testManifest(sampleEntries));
+            fireEvent.keyDown(document, { code: 'KeyR', key: 'r', repeat: true });
+            expect(progress()).toHaveTextContent('0 of 5 captures reviewed');
+            fireEvent.keyDown(document, { code: 'ArrowRight', key: 'ArrowRight', repeat: true });
+            expect(await screen.findByText('Feed / PostCard')).toBeInTheDocument();
         });
 
         it('stay out of the way while typing', async () => {
@@ -4375,7 +4431,9 @@ export function SameChangeSection({ model, view }: SectionProps) {
 export function BiggestSection({ model, view }: SectionProps) {
     const big = biggestChanges(model);
     if (big.length === 0) return null;
+    // The story opens on the capture the thumbnail showed.
     function handlePick(entry: ReportEntry) {
+        view.pickCapture({ locale: entry.locale, width: entry.width });
         view.go({ kind: 'story', id: entry.storyId });
     }
     return (

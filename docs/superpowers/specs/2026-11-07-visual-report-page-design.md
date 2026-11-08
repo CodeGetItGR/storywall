@@ -36,11 +36,11 @@ The approved mockup, with a real report of 626 differing captures: https://claud
 - **By area** (the default): area, then component, then story. Each story shows a state dot, its largest percent changed and a tick when reviewed. Areas and components collapse.
 - **Same change:** groups first, largest first, then stories "On their own". This mode only appears when the report has at least one group.
 
-Search and the state filters apply to both.
+Search and the state filters apply to both. The list follows the item opened, from a click, a link or the back button: a group opens Same change, and a story whose captures are all in groups opens By area, since Same change doesn't list it.
 
 ### Screens
 
-- **Overview**, shown first: failed stories at the top, a table of counts per area, same-change groups, the 8 biggest changes as thumbnails, and components with no story.
+- **Overview**, shown first: failed stories at the top, a table of counts per area, same-change groups, the 8 biggest changes as thumbnails, and components with no story. A thumbnail opens its story on the capture it shows.
 - **Story:** tabs for the four captures (EN Mobile, EN Desktop, EL Mobile, EL Desktop), each with its percent, state, or "no change". The chosen tab carries over to the next story.
 - **Group:** the capture with the biggest change, then thumbnails of every capture in the group. The first 60 show, then "Show all N". Clicking a thumbnail shows that capture. Color groups show the before and after colors.
 
@@ -59,7 +59,7 @@ Side by side, a slider, or the diff image, at fit or 100%. New stories show only
 
 ### Keyboard
 
-`←` `→` previous and next, `R` looks right, `C` next language or width, `1` `2` `3` side by side, slider, diff, `Z` fit or 100%, `G` list mode, `/` find a story, `?` shortcuts, `Esc` close. Letters are matched by key position (`event.code`), so they also work on a Greek keyboard.
+`←` `→` previous and next, `R` looks right, `C` next language or width, `1` `2` `3` side by side, slider, diff, `Z` fit or 100%, `G` list mode, `/` find a story, `?` shortcuts, `Esc` close. Letters are matched by key position (`event.code`), so they also work on a Greek keyboard. Holding a key repeats only `←` and `→`. Every other shortcut acts once per press, so holding `R` can't mark items unseen.
 
 ### Links
 
@@ -212,7 +212,8 @@ KAN-159 adds approve and comment. A static page on GitHub Pages can't sign anyon
 - Same change appears only with groups, and marking a group marks all of it.
 - Marks survive a new commit when hashes match and clear when they don't.
 - Addresses open the right screen.
-- Shortcuts work with `event.code` on a Greek layout.
+- Shortcuts work with `event.code` on a Greek layout, and only the arrows repeat while held.
+- A story listed only in groups opens the By area list, and a Biggest changes thumbnail opens the capture it shows.
 - Search and filters narrow the list and the review order.
 
 **On real data, before merging:** run `buildReport` over the saved test captures (626 entries), confirm the groups match the numbers above within a small margin, record how long grouping takes, and go through the page in a browser at desktop and phone widths, light and dark.
