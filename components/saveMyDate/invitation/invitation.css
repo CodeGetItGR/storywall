@@ -78,25 +78,30 @@
     .smd-invitation .has-theme-bg { background-image: var(--smd-bg-mobile); }
 }
 
-/* Light text on dark backgrounds wins over the text's own colour. */
-.smd-invitation .section.wedart-text-contrast-light .section-inner,
-.smd-invitation .section.wedart-text-contrast-light .section-inner .text-block,
-.smd-invitation .section.wedart-text-contrast-light .section-inner h1,
-.smd-invitation .section.wedart-text-contrast-light .section-inner h2,
-.smd-invitation .section.wedart-text-contrast-light .section-inner h3,
-.smd-invitation .section.wedart-text-contrast-light .section-inner h4,
-.smd-invitation .section.wedart-text-contrast-light .section-inner p,
-.smd-invitation .section.wedart-text-contrast-light .section-inner small,
-.smd-invitation .section.wedart-text-contrast-light .section-inner label,
-.smd-invitation .section.wedart-text-contrast-light .section-inner .date-cal-label,
-.smd-invitation .section.wedart-text-contrast-light .section-inner .wedart-countdown-num,
-.smd-invitation .section.wedart-text-contrast-light .section-inner .wedart-countdown-unit-label,
-.smd-invitation .section.wedart-text-contrast-light .section-inner .wedart-countdown-dot,
-.smd-invitation .section.wedart-text-contrast-light .section-inner .faq-q,
-.smd-invitation .section.wedart-text-contrast-light .section-inner .faq-a,
-.smd-invitation .section.wedart-text-contrast-light .section-inner .program-time,
-.smd-invitation .section.wedart-text-contrast-light .section-inner .program-label,
-.smd-invitation .section.wedart-text-contrast-light .section-inner .footer-link { color: #fff !important; }
+/* Light text on dark backgrounds, and on a photo's dark tint, wins over the text's own colour. */
+.smd-invitation :is(.section.wedart-text-contrast-light, .section:has(> .smd-photo-tint-text-light)) .section-inner,
+.smd-invitation :is(.section.wedart-text-contrast-light, .section:has(> .smd-photo-tint-text-light)) .section-inner :is(
+    .text-block,
+    h1,
+    h2,
+    h3,
+    h4,
+    p,
+    small,
+    label,
+    .date-cal-label,
+    .wedart-countdown-num,
+    .wedart-countdown-unit-label,
+    .wedart-countdown-dot,
+    .faq-q,
+    .faq-a,
+    .program-time,
+    .program-label,
+    .footer-link
+) { color: #fff !important; }
+
+/* A soft tint between a photo background and the section's text. */
+.smd-invitation .smd-photo-tint { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 
 /* Phones: sections keep a narrow side gutter; the countdown sets its own. */
 @container smd-invitation (max-width: 599px) {

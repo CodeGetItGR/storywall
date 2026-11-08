@@ -167,6 +167,31 @@ function cssUrl(url: string): string {
     return `url("${url.replace(/["\\\n\r]/g, (char) => encodeURIComponent(char))}")`;
 }
 
+// The photos a section shows behind its text: the host's photo, or the theme
+// background's desktop and mobile images.
+export function sectionBackgroundPhotos(section: InvitationSection, index: number, ctx: RenderContext): string[] {
+    const { background } = section.style;
+    if (background.kind === 'color') return [];
+    if (background.kind === 'image') {
+        const url = resolveImage(background.image, ctx);
+        if (url) return [url];
+    }
+    const slot = ctx.theme.backgrounds[themeSlot(section, index)];
+    const urls = [slot.desktop, slot.mobile].map((ref) => (ref ? ctx.media(ref.mediaId) : undefined));
+    return [...new Set(urls.filter((url): url is string => Boolean(url)))];
+}
+
+export type SectionPhotoTint = { photos: string[]; textColor: string };
+
+// What the browser needs to keep text on a photo readable: the photos and the
+// section's text colour. A host who picked the text contrast by hand gets no
+// tint, and a photo section's photo is its content, not a background.
+export function sectionPhotoTint(section: InvitationSection, index: number, ctx: RenderContext): SectionPhotoTint | undefined {
+    if (section.style.textContrast !== 'auto' || section.type === 'photo') return undefined;
+    const photos = sectionBackgroundPhotos(section, index, ctx);
+    return photos.length > 0 ? { photos, textColor: ctx.textColor } : undefined;
+}
+
 // A solid colour behind the section, or '' when it shows an image.
 function solidBackgroundColor(section: InvitationSection, index: number, ctx: RenderContext): string {
     const { background } = section.style;
