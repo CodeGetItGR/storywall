@@ -16,11 +16,11 @@ const onPhoto = withStyle(blank, { background: { kind: 'image', image: { source:
 
 describe('sectionBackgroundPhotos', () => {
     it("is the theme background's desktop and mobile photo", () => {
-        expect(sectionBackgroundPhotos(SAMPLE_SECTIONS.top, 0, ctx)).toEqual(['https://cdn.test/m-top', 'https://cdn.test/m-top-mobile']);
+        expect(sectionBackgroundPhotos(SAMPLE_SECTIONS.top, 0, ctx)).toEqual({ desktop: 'https://cdn.test/m-top', mobile: 'https://cdn.test/m-top-mobile' });
     });
 
     it("is the host's own photo", () => {
-        expect(sectionBackgroundPhotos(onPhoto, 0, ctx)).toEqual(['https://cdn.test/m-host']);
+        expect(sectionBackgroundPhotos(onPhoto, 0, ctx)).toEqual({ desktop: 'https://cdn.test/m-host', mobile: 'https://cdn.test/m-host' });
     });
 
     it("falls back to the theme background when the host's photo is gone", () => {
@@ -28,27 +28,27 @@ describe('sectionBackgroundPhotos', () => {
         expect(sectionBackgroundPhotos(gone, 0, ctx)).toEqual(sectionBackgroundPhotos(blank, 0, ctx));
     });
 
-    it('is empty on a solid colour or a theme without photos', () => {
-        expect(sectionBackgroundPhotos(withStyle(blank, { background: { kind: 'color', color: '#123456' } }), 0, ctx)).toEqual([]);
+    it('is none on a solid colour or a theme without photos', () => {
+        expect(sectionBackgroundPhotos(withStyle(blank, { background: { kind: 'color', color: '#123456' } }), 0, ctx)).toBeUndefined();
         const plain = buildRenderContext(SAMPLE_DOCUMENT, {
             ...SAMPLE_THEME,
             backgrounds: { top: { mode: 'cover', stableRepeat: false }, content: { mode: 'cover', stableRepeat: false }, extra: { mode: 'cover', stableRepeat: false } },
         }, media);
-        expect(sectionBackgroundPhotos(blank, 0, plain)).toEqual([]);
+        expect(sectionBackgroundPhotos(blank, 0, plain)).toBeUndefined();
     });
 
-    it('lists a photo used for both widths once', () => {
-        const single = buildRenderContext(SAMPLE_DOCUMENT, {
+    it('uses the desktop photo on phones when the theme has no mobile one', () => {
+        const desktopOnly = buildRenderContext(SAMPLE_DOCUMENT, {
             ...SAMPLE_THEME,
-            backgrounds: { ...SAMPLE_THEME.backgrounds, top: { desktop: { mediaId: 'm-same' }, mobile: { mediaId: 'm-same' }, mode: 'cover', stableRepeat: false } },
+            backgrounds: { ...SAMPLE_THEME.backgrounds, top: { desktop: { mediaId: 'm-wide' }, mode: 'cover', stableRepeat: false } },
         }, media);
-        expect(sectionBackgroundPhotos(SAMPLE_SECTIONS.top, 0, single)).toEqual(['https://cdn.test/m-same']);
+        expect(sectionBackgroundPhotos(SAMPLE_SECTIONS.top, 0, desktopOnly)).toEqual({ desktop: 'https://cdn.test/m-wide', mobile: 'https://cdn.test/m-wide' });
     });
 });
 
 describe('sectionPhotoTint', () => {
     it("gives the photos and the invitation's text colour on automatic contrast", () => {
-        expect(sectionPhotoTint(onPhoto, 0, ctx)).toEqual({ photos: ['https://cdn.test/m-host'], textColor: ctx.textColor });
+        expect(sectionPhotoTint(onPhoto, 0, ctx)).toEqual({ photos: { desktop: 'https://cdn.test/m-host', mobile: 'https://cdn.test/m-host' }, textColor: ctx.textColor });
     });
 
     it('steps aside when the host picked the text contrast', () => {

@@ -2,14 +2,15 @@ import { describe, expect, it } from 'vitest';
 
 import {
     colorLuminance,
-    combineTones,
     contrastRatio,
     isTextHardToReadOnPhoto,
     MAX_TINT_ALPHA,
+    MOBILE_BACKGROUND_MAX_WIDTH,
     photoTextTint,
     type PhotoTone,
     photoToneFromPixels,
     READABLE_CONTRAST,
+    shownPhoto,
     tintBackground,
     WHITE_TEXT_WORST_TINT,
 } from '@/lib/invitation/photoContrast';
@@ -64,13 +65,17 @@ describe('photoToneFromPixels', () => {
     });
 });
 
-describe('combineTones', () => {
-    it('keeps the darkest and lightest spots of all photos', () => {
-        expect(combineTones([LIGHT_PHOTO, DARK_PHOTO])).toEqual({ mean: (0.629 + 0.023) / 2, dark: 0.006, light: 0.905 });
+describe('shownPhoto', () => {
+    const photos = { desktop: 'wide.jpg', mobile: 'narrow.jpg' };
+
+    it('is the mobile photo up to the width the theme background switches at', () => {
+        expect(shownPhoto(photos, 375)).toBe('narrow.jpg');
+        expect(shownPhoto(photos, MOBILE_BACKGROUND_MAX_WIDTH)).toBe('narrow.jpg');
     });
 
-    it('has nothing to combine without photos', () => {
-        expect(combineTones([])).toBeUndefined();
+    it('is the desktop photo on a wider invitation', () => {
+        expect(shownPhoto(photos, MOBILE_BACKGROUND_MAX_WIDTH + 1)).toBe('wide.jpg');
+        expect(shownPhoto(photos, 1280)).toBe('wide.jpg');
     });
 });
 

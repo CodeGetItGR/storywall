@@ -1,4 +1,4 @@
-import { combineTones, type PhotoTone, photoToneFromPixels } from '@/lib/invitation/photoContrast';
+import { type PhotoTone, photoToneFromPixels } from '@/lib/invitation/photoContrast';
 
 // Photos measured in this browser, kept for the whole visit so a section that
 // re-renders (the editor, a second preview) gets its tint at once.
@@ -10,7 +10,6 @@ const SAMPLE_SIZE = 32;
 export type MeasurePhoto = (url: string) => Promise<PhotoTone | undefined>;
 
 const tones = new Map<string, PhotoTone | null>();
-const combined = new Map<string, PhotoTone | null>();
 const pending = new Set<string>();
 const listeners = new Set<() => void>();
 
@@ -25,54 +24,44 @@ function sampleTone(source: CanvasImageSource): PhotoTone | undefined {
     return photoToneFromPixels(context.getImageData(0, 0, SAMPLE_SIZE, SAMPLE_SIZE).data);
 }
 
-// Decoding straight to sample size is much quicker for a large photo.
-async function measureAsBitmap(url: string): Promise<PhotoTone | undefined> {
-    const response = await fetch(url, { mode: 'cors', credentials: 'omit' });
-    if (!response.ok) throw new Error(`Photo answered ${response.status}`);
-    const bitmap = await createImageBitmap(await response.blob(), { resizeWidth: SAMPLE_SIZE, resizeHeight: SAMPLE_SIZE, resizeQuality: 'low' });
+// Browsers can't make a bitmap from an SVG, so those are drawn through an
+// <img> of the file already downloaded, which needs no second request.
+async function sampleSvg(blob: Blob): Promise<PhotoTone | undefined> {
+    const url = URL.createObjectURL(blob);
     try {
-        return sampleTone(bitmap);
+        const image = new Image();
+        image.src = url;
+        await image.decode();
+        return sampleTone(image);
     } finally {
-        bitmap.close();
+        URL.revokeObjectURL(url);
     }
 }
 
-// Browsers can't make a bitmap from an SVG, so those go through an <img>.
-async function measureAsImage(url: string): Promise<PhotoTone | undefined> {
-    const image = new Image();
-    image.crossOrigin = 'anonymous';
-    image.decoding = 'async';
-    image.src = url;
-    await image.decode();
-    return sampleTone(image);
-}
-
+// One request per photo: a server that refuses it (no CORS headers) leaves
+// the photo unmeasured rather than being asked again another way.
 export async function measurePhoto(url: string): Promise<PhotoTone | undefined> {
     try {
-        return await measureAsBitmap(url);
-    } catch {
+        const response = await fetch(url, { mode: 'cors', credentials: 'omit' });
+        if (!response.ok) return undefined;
+        const blob = await response.blob();
+        if (blob.type.includes('svg')) return await sampleSvg(blob);
+        // Decoding straight to sample size is much quicker for a large photo.
+        const bitmap = await createImageBitmap(blob, { resizeWidth: SAMPLE_SIZE, resizeHeight: SAMPLE_SIZE, resizeQuality: 'low' });
         try {
-            return await measureAsImage(url);
-        } catch {
-            return undefined;
+            return sampleTone(bitmap);
+        } finally {
+            bitmap.close();
         }
+    } catch {
+        return undefined;
     }
 }
 
-function photosKey(urls: readonly string[]): string {
-    return urls.join('\n');
-}
-
-// The tone of all the photos together: undefined while any is still being
-// measured, null when any could not be.
-export function readPhotoTone(urls: readonly string[]): PhotoTone | null | undefined {
-    const key = photosKey(urls);
-    if (combined.has(key)) return combined.get(key);
-    const measured = urls.map((url) => tones.get(url));
-    if (measured.some((tone) => tone === undefined)) return undefined;
-    const tone = measured.includes(null) ? null : (combineTones(measured as PhotoTone[]) ?? null);
-    combined.set(key, tone);
-    return tone;
+// undefined while the photo is being measured or not asked for yet, null when
+// it could not be.
+export function readPhotoTone(url: string): PhotoTone | null | undefined {
+    return tones.get(url);
 }
 
 export function subscribePhotoTones(listener: () => void): () => void {
@@ -80,21 +69,18 @@ export function subscribePhotoTones(listener: () => void): () => void {
     return () => listeners.delete(listener);
 }
 
-export function requestPhotoTones(urls: readonly string[], measure: MeasurePhoto = measurePhoto): void {
-    for (const url of urls) {
-        if (tones.has(url) || pending.has(url)) continue;
-        pending.add(url);
-        void measure(url).then((tone) => {
-            pending.delete(url);
-            tones.set(url, tone ?? null);
-            listeners.forEach((listener) => listener());
-        });
-    }
+export function requestPhotoTone(url: string, measure: MeasurePhoto = measurePhoto): void {
+    if (tones.has(url) || pending.has(url)) return;
+    pending.add(url);
+    void measure(url).then((tone) => {
+        pending.delete(url);
+        tones.set(url, tone ?? null);
+        listeners.forEach((listener) => listener());
+    });
 }
 
 // Tests start from an empty store.
 export function resetPhotoTones(): void {
     tones.clear();
-    combined.clear();
     pending.clear();
 }

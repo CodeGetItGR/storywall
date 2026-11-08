@@ -10,7 +10,7 @@ import type { InvitationSection } from '@/lib/invitation/sections';
 export type PhotoTone = { mean: number; dark: number; light: number };
 
 // A soft layer between the photo and the text. `text: 'light'` turns the
-// section's text white, like automatic contrast on a dark colour.
+// section's text white, except text the host gave a colour of its own.
 export type PhotoTint = { color: 'dark' | 'light'; alpha: number; text: 'keep' | 'light' };
 
 // WCAG AA for normal-size text.
@@ -56,15 +56,13 @@ export function photoToneFromPixels(data: ArrayLike<number>): PhotoTone | undefi
     return { mean, dark: pick(0.1), light: pick(0.9) };
 }
 
-// A section with a desktop and a mobile photo gets one tint for both, so it
-// has to work on the darkest and the lightest of them.
-export function combineTones(tones: PhotoTone[]): PhotoTone | undefined {
-    if (tones.length === 0) return undefined;
-    return {
-        mean: tones.reduce((sum, tone) => sum + tone.mean, 0) / tones.length,
-        dark: Math.min(...tones.map((tone) => tone.dark)),
-        light: Math.max(...tones.map((tone) => tone.light)),
-    };
+// Theme backgrounds switch to their mobile image at this invitation width,
+// like the container query in invitation.css.
+export const MOBILE_BACKGROUND_MAX_WIDTH = 760;
+
+// The photo the invitation shows at this width.
+export function shownPhoto(photos: { desktop: string; mobile: string }, invitationWidth: number): string {
+    return invitationWidth <= MOBILE_BACKGROUND_MAX_WIDTH ? photos.mobile : photos.desktop;
 }
 
 // Whether text of this luminance reads on every part of the photo that matters.
@@ -94,8 +92,8 @@ function roundUp(alpha: number): number {
     return Math.ceil(alpha * 100) / 100;
 }
 
-// The tint a section on this photo needs for text of `textColor`, or null when
-// the text already reads. White text on a dark tint is the fallback for any
+// The tint a section on this photo needs for text of `textColor` (the colour
+// of text with none of its own), or null when that text already reads. White text on a dark tint is the fallback for any
 // text colour; the host's colour is kept when a weaker tint is enough for it.
 export function photoTextTint(tone: PhotoTone, textColor: string): PhotoTint | null {
     const text = colorLuminance(textColor);

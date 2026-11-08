@@ -4,6 +4,7 @@ import { expect, waitFor } from 'storybook/test';
 
 import { hiddenDate, STORY_THEME, storyDocument, storyInvitationMedia, storySection } from '@/.storybook/invitation';
 import { InvitationRenderer } from '@/components/saveMyDate/invitation/InvitationRenderer';
+import { requestPhotoTone } from '@/lib/invitation/photoToneStore';
 import type { MediaResolver } from '@/lib/invitation/render';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
@@ -15,7 +16,13 @@ const PHOTOS: Record<string, string> = {
     'story-light-photo': '/storybook-assets/light-photo.jpg',
     'story-dark-photo': '/storybook-assets/dark-photo.jpg',
     'story-busy-photo': '/images/venue.png',
+    // The busy photo again, at an address the store is told it can't measure,
+    // as when a photo's server sends no CORS headers.
+    'story-unmeasurable-photo': '/images/venue.png?unmeasurable',
 };
+
+// A gold the host picked for the first name.
+const HOST_GOLD = '#c9a24b';
 
 const media: MediaResolver = (mediaId) => PHOTOS[mediaId] ?? storyInvitationMedia(mediaId);
 
@@ -25,12 +32,14 @@ function onPhoto(section: InvitationSection, mediaId: string, textContrast: Cont
     return { ...section, style: { ...section.style, textContrast, background: { kind: 'image', image: { source: 'media', mediaId } } } };
 }
 
-type PhotoStoryProps = { mediaId?: string; textContrast?: Contrast; themeBackground?: boolean };
+type PhotoStoryProps = { mediaId?: string; textContrast?: Contrast; themeBackground?: boolean; nameColor?: string };
 
 // The sections whose titles were unreadable on the staging preview's venue photo.
-function PhotoStory({ mediaId = 'story-busy-photo', textContrast = 'auto', themeBackground = false }: PhotoStoryProps) {
+function PhotoStory({ mediaId = 'story-busy-photo', textContrast = 'auto', themeBackground = false, nameColor }: PhotoStoryProps) {
     const locale = useLocale();
-    const sections = [storySection('coupleNames'), storySection('dressCode')].map((section) =>
+    const names = storySection('coupleNames');
+    const namesStyled = nameColor ? { ...names, textStyles: { partnerAName: { color: nameColor } } } : names;
+    const sections = [namesStyled, storySection('dressCode')].map((section) =>
         themeBackground
             ? { ...section, style: { ...section.style, textContrast, background: { kind: 'theme' as const, slot: 'top' as const } } }
             : onPhoto(section, mediaId, textContrast),
@@ -51,7 +60,7 @@ type Story = StoryObj<typeof meta>;
 // A large photo can take a few seconds to measure on a slow machine.
 const MEASURE_WAIT = { timeout: 15000 };
 
-const tints = (canvasElement: HTMLElement) => canvasElement.querySelectorAll<HTMLElement>('.smd-photo-tint:not([data-photo-tone="pending"])');
+const tints = (canvasElement: HTMLElement) => canvasElement.querySelectorAll<HTMLElement>('[class*="smd-photo-tint-text-"]');
 const measured = (canvasElement: HTMLElement) => waitFor(() => expect(canvasElement.querySelector('[data-photo-tone="pending"]')).toBeNull(), MEASURE_WAIT);
 
 // Dark text already reads on a light photo: nothing changes.
@@ -94,5 +103,30 @@ export const HostPickedContrast: Story = {
     args: { mediaId: 'story-busy-photo', textContrast: 'base' },
     play: async ({ canvasElement }) => {
         await expect(canvasElement.querySelectorAll('.smd-photo-tint')).toHaveLength(0);
+    },
+};
+
+// White text on the tint, but the name the host coloured stays gold.
+export const HostColouredField: Story = {
+    args: { mediaId: 'story-busy-photo', nameColor: HOST_GOLD },
+    play: async ({ canvasElement }) => {
+        await waitFor(() => expect(tints(canvasElement)).toHaveLength(2), MEASURE_WAIT);
+        const [gold, plain] = canvasElement.querySelectorAll<HTMLElement>('.couple-name');
+        await expect(getComputedStyle(gold).color).toBe('rgb(201, 162, 75)');
+        await expect(getComputedStyle(plain).color).toBe('rgb(255, 255, 255)');
+    },
+};
+
+// A photo that can't be measured stays as it is: no tint, the theme's text colour.
+export const UnmeasurablePhoto: Story = {
+    args: { mediaId: 'story-unmeasurable-photo' },
+    loaders: [
+        () => {
+            requestPhotoTone(PHOTOS['story-unmeasurable-photo'], async () => undefined);
+        },
+    ],
+    play: async ({ canvasElement }) => {
+        await measured(canvasElement);
+        await expect(tints(canvasElement)).toHaveLength(0);
     },
 };
