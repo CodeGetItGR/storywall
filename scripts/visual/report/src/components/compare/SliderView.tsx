@@ -12,6 +12,11 @@ export function SliderView({ entry, position, onMove }: SliderViewProps) {
     }
     return (
         <div className="slider-wrap">
+            {/* Labels */}
+            <div className="slider-tags">
+                <span>{copy.before}</span>
+                <span>{copy.after}</span>
+            </div>
             <div className="slider" style={{ '--pos': `${position}%` } as CSSProperties}>
                 {/* Images */}
                 <img key={entry.images.after} src={entry.images.after} alt={altText(entry, copy.after.toLowerCase())} decoding="async" />
@@ -24,8 +29,6 @@ export function SliderView({ entry, position, onMove }: SliderViewProps) {
                 />
 
                 {/* Divider */}
-                <span className="slider-tag slider-tag-before">{copy.before}</span>
-                <span className="slider-tag slider-tag-after">{copy.after}</span>
                 <span className="line" />
                 <input type="range" min={0} max={100} value={position} aria-label={copy.moveDivider} onChange={handleChange} />
             </div>

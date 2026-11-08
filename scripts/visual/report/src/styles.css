@@ -3,6 +3,7 @@
     --surface: #ffffff;
     --line: #e1e4ea;
     --line-strong: #ccd1db;
+    --swatch-ring: #ccd1db;
     --ink: #12141c;
     --ink-muted: #5b6172;
     --ink-faint: #9aa0b1;
@@ -30,6 +31,7 @@
         --surface: #12151c;
         --line: #232733;
         --line-strong: #2e3341;
+        --swatch-ring: #7a8194;
         --ink: #e7e9ee;
         --ink-muted: #9aa0b1;
         --ink-faint: #666c7c;
@@ -369,7 +371,7 @@ kbd {
     width: 12px;
     height: 12px;
     border-radius: 3px;
-    outline: 1px solid var(--line-strong);
+    outline: 1px solid var(--swatch-ring);
 }
 .tree-empty {
     padding: 16px 8px;
@@ -511,6 +513,15 @@ h1 {
     grid-template-columns: minmax(0, max-content);
     justify-content: center;
 }
+.slider-tags {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 5px;
+    color: var(--ink-muted);
+    font-size: 11px;
+    font-weight: 700;
+}
 .slider {
     position: relative;
     display: grid;
@@ -546,17 +557,6 @@ h1 {
     opacity: 0;
     cursor: ew-resize;
     touch-action: pan-y;
-}
-.slider-tag {
-    position: absolute;
-    top: 8px;
-    padding: 1px 7px;
-    border-radius: 5px;
-    background: var(--scrim);
-    color: #ffffff;
-    font-size: 11px;
-    font-weight: 700;
-    pointer-events: none;
 }
 .error {
     display: grid;
@@ -851,12 +851,6 @@ td .zero {
 /* Small pieces */
 .row-overview {
     margin-top: 0;
-}
-.slider-tag-before {
-    left: 8px;
-}
-.slider-tag-after {
-    right: 8px;
 }
 /* The range is invisible, so its keyboard focus shows on the slider. */
 .slider:has(input:focus-visible) {
