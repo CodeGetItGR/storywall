@@ -15,13 +15,15 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// The labels keep the browser's own small size (13.33px under 16px text), as on the old page.
+// The labels are 14px capitals.
 export const Default: Story = {
     play: async ({ canvasElement, globals }) => {
         const canvas = within(canvasElement);
         const labels = labelsFor(globals);
         for (const label of [labels.parents, labels.godparents]) {
-            await expect(parseFloat(getComputedStyle(canvas.getByText(label)).fontSize)).toBeCloseTo(13.33, 1);
+            const style = getComputedStyle(canvas.getByText(label));
+            await expect(style.fontSize).toBe('14px');
+            await expect(style.textTransform).toBe('uppercase');
         }
     },
 };

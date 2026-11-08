@@ -15,13 +15,18 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Like the old page, both titles use the 34px heading size at every width.
+const fontSizes = (root: HTMLElement, selector: string) =>
+    Array.from(root.querySelectorAll<HTMLElement>(selector), (el) => getComputedStyle(el).fontSize);
+
+// Both titles use the 34px heading size at every width, like the old page. Years are 15px and the text 17px.
 export const Default: Story = {
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
         for (const name of [section.data.block1Title, section.data.block2Title]) {
             await expect(getComputedStyle(canvas.getByRole('heading', { name })).fontSize).toBe('34px');
         }
+        await expect(fontSizes(canvasElement, '.story-block-subtitle')).toEqual(['15px', '15px']);
+        await expect(fontSizes(canvasElement, '.story-block-body')).toEqual(['17px', '17px']);
     },
 };
 
