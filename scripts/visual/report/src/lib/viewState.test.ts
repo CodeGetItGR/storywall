@@ -19,6 +19,21 @@ describe('revealItem', () => {
         expect(revealItem(initialView(model, OVERVIEW), model, { kind: 'group', key: 'color-1' }).mode).toBe('change');
     });
 
+    it('moves to the area list for a story listed only in groups', () => {
+        const inChange = { ...initialView(model, OVERVIEW), mode: 'change' as const };
+        expect(revealItem(inChange, model, story('feed-postcard--default')).mode).toBe('area');
+    });
+
+    it('stays on the same-change list for a story listed on its own', () => {
+        const inChange = { ...initialView(model, OVERVIEW), mode: 'change' as const };
+        expect(revealItem(inChange, model, story('ui-badge--old')).mode).toBe('change');
+    });
+
+    it('keeps open rows open', () => {
+        const view = { ...initialView(model, OVERVIEW), expanded: new Set(['UI']) };
+        expect(revealItem(view, model, story('feed-postcard--default')).expanded.has('UI')).toBe(true);
+    });
+
     it('closes the drawer and remembers the item', () => {
         const item = story('ui-badge--old');
         const view = revealItem({ ...initialView(model, OVERVIEW), drawerOpen: true }, model, item);
@@ -40,6 +55,7 @@ describe('initialView', () => {
 
     it('reveals a story opened from a link', () => {
         expect(initialView(model, story('ui-badge--old')).expanded.has('UI')).toBe(true);
+        expect(initialView(model, story('ui-badge--old')).expanded.has('UI/Badge')).toBe(true);
     });
 });
 
@@ -54,6 +70,10 @@ describe('toggled', () => {
 
 describe('nextCapture', () => {
     const postCard = buildModel(testManifest(sampleEntries)).storyById.get('feed-postcard--default')!;
+
+    it('steps from the capture shown when the chosen one is missing', () => {
+        expect(nextCapture(postCard, { locale: 'el', width: 'desktop' })).toEqual({ locale: 'en', width: 'desktop' });
+    });
 
     it('moves to the next capture and wraps', () => {
         expect(nextCapture(postCard, { locale: 'en', width: 'mobile' })).toEqual({ locale: 'en', width: 'desktop' });
