@@ -6,7 +6,7 @@ import type { InvitationDocument } from '@/lib/invitation/document';
 import { INVITATION_LABELS, type InvitationLabels } from '@/lib/invitation/labels';
 import type { MediaResolver } from '@/lib/invitation/render';
 import type { RsvpSender } from '@/lib/invitation/rsvp';
-import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
+import { SAMPLE_DOCUMENT, SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection, SectionType } from '@/lib/invitation/sections';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import { PREVIEW_THEME, previewDocument, previewMedia } from '@/lib/saveMyDatePreview';
@@ -90,6 +90,22 @@ export const NO_CONTACT_LINKS = { phone: '', sms: '', email: '', facebook: '', i
 export function storyDocument(sections: InvitationSection[], overrides: InvitationDocument['overrides'] = {}): InvitationDocument {
     return { schemaVersion: previewDocument().schemaVersion, themeId: 'story', overrides, sections: sections.map(withoutEffect) };
 }
+
+// The whole invitation with one section showing. The others stay in as hidden
+// sections, so the section keeps its place, background and labels from the
+// full page, and a change to it shows up in its own story only.
+export function onlySection(document: InvitationDocument, id: string): InvitationDocument {
+    return { ...document, sections: document.sections.map((section) => ({ ...section, visible: section.id === id })) };
+}
+
+// The ids of the sections a document shows.
+export function shownSectionIds(document: InvitationDocument) {
+    return document.sections.filter((section) => section.visible).map((section) => section.id);
+}
+
+// Every sample section in one invitation, as InvitationRenderer's
+// "Every Section" and "Sample Theme" stories show it.
+export const EVERY_SECTION_DOCUMENT = storyDocument(SAMPLE_DOCUMENT.sections);
 
 // A hidden date section sets the invitation's language and the countdown's date.
 export function hiddenDate(language: string, data: Partial<SectionOf<'date'>['data']> = {}): SectionOf<'date'> {
