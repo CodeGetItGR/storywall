@@ -39,6 +39,7 @@
 .smd-invitation h3 { margin: 1em 0; font-size: 1.17em; }
 .smd-invitation h4 { margin: 1.33em 0; font-size: 1em; }
 .smd-invitation p { margin: 1em 0; }
+.smd-invitation small { font-size: smaller; }
 .smd-invitation img { display: inline; max-width: none; height: auto; vertical-align: baseline; }
 .smd-invitation a { color: inherit; }
 
@@ -397,7 +398,7 @@
 .smd-invitation .couple-contact-wrap { position: relative; max-width: 600px; margin: 0 auto; text-align: center; }
 .smd-invitation .couple-contact-grid { display: grid; gap: 30px; justify-items: center; }
 .smd-invitation .couple-contact-person { text-align: center; max-width: 320px; width: 100%; }
-.smd-invitation .couple-contact-name { margin-top: 0; margin-bottom: 12px; font-family: var(--contact-font, var(--title-font)); color: var(--contact-color, var(--site-text)); text-align: center; }
+.smd-invitation .couple-contact-name { margin-top: 0; margin-bottom: 14px; font-size: 24px; font-family: var(--contact-font, var(--title-font)); color: var(--contact-color, var(--site-text)); text-align: center; }
 @container smd-invitation (min-width: 560px) {
     .smd-invitation .couple-contact-grid { grid-template-columns: 1fr 1fr; }
 }
@@ -484,6 +485,7 @@
 .smd-invitation .family-godparent-simple-item { position: relative; display: inline-block; }
 .smd-invitation .parents-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
 .smd-invitation .person-item { padding: 10px; }
+.smd-invitation .parents-grid small { font-size: 14px; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.8; }
 
 @container smd-invitation (max-width: 599px) {
     .smd-invitation .parents-grid { grid-template-columns: 1fr; }
@@ -516,10 +518,12 @@
 
 /* Couple profiles */
 .smd-invitation .couple-profiles-grid { display: grid; grid-template-columns: 1fr; gap: 36px; max-width: 640px; margin: 0 auto; justify-items: center; }
+/* Next to a partner with a photo, one without sits at the bottom, so the two names line up. */
+.smd-invitation .couple-profiles-grid:has(> .couple-profile-block img) > .couple-profile-block:not(:has(img)) { align-self: end; }
 .smd-invitation .couple-profile-block { text-align: center; width: 100%; }
-.smd-invitation .couple-profile-role { font-size: 13px; letter-spacing: 0.04em; opacity: 0.75; margin-top: 2px; margin-bottom: 16px; text-align: center; }
-.smd-invitation .couple-profile-family-label { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.6; margin-top: 0; margin-bottom: 0; text-align: center; }
-.smd-invitation .couple-profile-family-names { font-weight: 700; margin-top: 2px; margin-bottom: 0; text-align: center; }
+.smd-invitation .couple-profile-role { font-size: 16px; font-style: italic; letter-spacing: 0.02em; opacity: 0.85; margin-top: 2px; margin-bottom: 18px; text-align: center; }
+.smd-invitation .couple-profile-family-label { font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.8; margin-top: 0; margin-bottom: 4px; text-align: center; }
+.smd-invitation .couple-profile-family-names { font-size: 18px; font-weight: 700; margin-top: 2px; margin-bottom: 0; text-align: center; }
 .smd-invitation .couple-profiles-simple-wrap { max-width: 380px; margin: 0 auto; text-align: center; }
 .smd-invitation .couple-profile-simple-block { text-align: center; margin: 0 auto; }
 .smd-invitation .couple-profile-simple-name { text-align: center; }
@@ -530,16 +534,17 @@
 
 /* Wedding sponsors without photos */
 .smd-invitation .wedding-sponsors-simple-title { text-align: center; }
-.smd-invitation .wedding-sponsors-simple-list { max-width: 340px; margin: 8px auto 0; display: flex; flex-direction: column; gap: 6px; text-align: center; }
+.smd-invitation .wedding-sponsors-simple-list { max-width: 340px; margin: 16px auto 0; display: flex; flex-direction: column; gap: 6px; text-align: center; }
 .smd-invitation .wedding-sponsors-simple-name { text-align: center; }
 
 /* Our story */
 .smd-invitation .story-proposal-block { position: relative; max-width: 520px; margin: 0 auto 30px; text-align: center; }
 .smd-invitation .story-proposal-block:last-of-type { margin-bottom: 0; }
-.smd-invitation .story-proposal-divider { border: 0; border-top: 1px solid var(--primary); opacity: 0.55; max-width: 400px; margin: 26px auto; }
-.smd-invitation .story-block-title { font-size: clamp(30px, 6vw, 44px); font-style: italic; margin-top: 0; margin-bottom: 2px; text-align: center; }
-.smd-invitation .story-block-subtitle { font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.75; margin-top: 0; margin-bottom: 16px; text-align: center; }
-.smd-invitation .story-block-body { font-size: 15px; line-height: 1.7; text-align: center; }
+.smd-invitation .story-proposal-divider { border: 0; border-top: 2px solid var(--primary); max-width: 120px; margin: 34px auto; }
+/* No size of its own: like the old page, story titles take the 34px heading size at every width. */
+.smd-invitation .story-block-title { font-style: italic; margin-top: 0; margin-bottom: 2px; text-align: center; }
+.smd-invitation .story-block-subtitle { font-size: 15px; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.85; margin-top: 0; margin-bottom: 12px; text-align: center; }
+.smd-invitation .story-block-body { font-size: 17px; line-height: 1.75; text-align: center; }
 
 /* Locations: phones show one column, wider screens up to two. */
 .smd-invitation .location-grid { display: grid; grid-template-columns: 1fr; gap: 24px; align-items: start; }

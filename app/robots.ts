@@ -19,6 +19,7 @@ const PRIVATE_PATHS = [
     '/business',
     '/partner',
     '/q/',
+    '/save-my-date/editor',
     CAMPAIGN_SHORT_LINK_PREFIX,
 ];
 

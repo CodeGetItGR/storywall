@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { expect, within } from 'storybook/test';
 
-import { LONG_NAME, onDark, SectionStory, storySection } from '@/.storybook/invitation';
+import { labelsFor, LONG_NAME, onDark, SectionStory, storySection } from '@/.storybook/invitation';
 
 const section = storySection('parents');
 
@@ -14,7 +15,18 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {};
+// The labels are 14px capitals.
+export const Default: Story = {
+    play: async ({ canvasElement, globals }) => {
+        const canvas = within(canvasElement);
+        const labels = labelsFor(globals);
+        for (const label of [labels.parents, labels.godparents]) {
+            const style = getComputedStyle(canvas.getByText(label));
+            await expect(style.fontSize).toBe('14px');
+            await expect(style.textTransform).toBe('uppercase');
+        }
+    },
+};
 
 export const LongContent: Story = {
     args: { section: storySection('parents', { parents: `${LONG_NAME} & ${LONG_NAME}`, godparents: LONG_NAME }) },

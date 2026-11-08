@@ -336,3 +336,34 @@ describe('proxy wedding QR page on the production site', () => {
         expect(location.searchParams.get('utm_source')).toBe('instagram');
     });
 });
+
+describe('proxy invitation editor', () => {
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    it('sends a signed-out visit to login, keeping the theme to start from', async () => {
+        const res = await proxy(new NextRequest('http://localhost/save-my-date/editor?theme=olive'));
+        expect(res.status).toBe(307);
+        const location = new URL(res.headers.get('location') ?? '');
+        expect(location.pathname).toBe('/login');
+        expect(location.searchParams.get('next')).toBe('/save-my-date/editor?theme=olive');
+    });
+
+    it('sends a signed-out visit to a draft to login', async () => {
+        const res = await proxy(new NextRequest('http://localhost/save-my-date/editor/draft-1'));
+        expect(res.status).toBe(307);
+        expect(new URL(res.headers.get('location') ?? '').pathname).toBe('/login');
+    });
+
+    it('opens for a signed-in visit', async () => {
+        const res = await proxy(request({ accessToken: 'at-1', refreshToken: 'rt' }, 'http://localhost/save-my-date/editor/draft-1'));
+        expect(res.status).toBe(200);
+    });
+
+    it('lets the production site show its not-found page', async () => {
+        vi.stubEnv('VERCEL_ENV', 'production');
+        const res = await proxy(new NextRequest('http://localhost/save-my-date/editor/draft-1'));
+        expect(res.status).toBe(200);
+    });
+});

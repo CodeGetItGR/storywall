@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { expect } from 'storybook/test';
 
 import { ALL_CONTACT_LINKS, LONG_NAME, LONG_TITLE, NO_CONTACT_LINKS, onDark, SectionStory, storySection } from '@/.storybook/invitation';
 
@@ -18,7 +19,13 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {};
+// Each name is 24px.
+export const Default: Story = {
+    play: async ({ canvasElement }) => {
+        const sizes = Array.from(canvasElement.querySelectorAll<HTMLElement>('.couple-contact-name'), (el) => getComputedStyle(el).fontSize);
+        await expect(sizes).toEqual(['24px', '24px']);
+    },
+};
 
 export const AllLinks: Story = {
     args: { section: allLinks },
