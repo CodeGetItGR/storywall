@@ -54,6 +54,8 @@ With nothing set, the story is a signed-in guest of an active wedding. `user: nu
 
 `.storybook/fixtures.ts` builds the data stories share: `storyUser`, `storyMember()`, `storyHostMember`, `storyAuthor()`, `storyEvent()`, `storySession()`, `storyModules()`, `storyPost()`, `storyComment()`, `storyMedia()`, `storyPhotos`, `storyStory()`, `storyQrLink()`, `storyAppConfig` and `storyPage()` for paginated responses. Each takes overrides. Prefer them over new literals so every story shows the same event. Images come from `public/images`.
 
+Invitation sections use `.storybook/invitation.tsx`: `SectionStory` draws one section through the real renderer, and `storySection('faq', { title: '…' })` is the sample section with some data replaced. A new section type also goes in the lists at the top of `components/saveMyDate/invitation/InvitationRenderer.test.tsx`.
+
 Handlers more than one file needs live in `.storybook/handlers.ts` (for example `hostPanelHandlers()` for the host's side panel).
 
 ## Finding text in play functions
