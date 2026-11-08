@@ -15,8 +15,13 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Greek: Story = {};
+// The whole page, to scroll through. The visual check captures it one section
+// at a time instead (Preview Sections).
+export const Greek: Story = {
+    tags: ['visual-skip'],
+};
 
 export const EnglishCalendarDate: Story = {
+    tags: ['visual-skip'],
     args: { document: previewDocument('calendar', 'en') },
 };
