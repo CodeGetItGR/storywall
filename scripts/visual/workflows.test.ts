@@ -49,6 +49,15 @@ describe('visual-check workflow', () => {
         expect(capture.indexOf('npm ci')).toBeLessThan(capture.indexOf('npm run visual:page'));
     });
 
+    it('skips the page check on a branch from before the built page', () => {
+        const check = readFileSync('.github/workflows/visual-check.yml', 'utf8');
+        const capture = check.slice(check.indexOf('    capture:'), check.indexOf('    publish:'));
+        const guard = capture.indexOf('if [ ! -f scripts/visual/report/vite.config.ts ]; then');
+        expect(guard).toBeGreaterThan(-1);
+        expect(guard).toBeLessThan(capture.indexOf('npm run visual:page'));
+        expect(capture).toContain('::notice::This branch has no report page source yet, so the page check is skipped.');
+    });
+
     it('never builds in the job that holds the deploy key', () => {
         const check = readFileSync('.github/workflows/visual-check.yml', 'utf8');
         const publish = check.slice(check.indexOf('    publish:'), check.indexOf('    finish:'));

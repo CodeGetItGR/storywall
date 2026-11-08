@@ -126,6 +126,10 @@ The rule stays: **the publish job installs nothing and builds nothing, and the p
 
 ```yaml
 - run: |
+      if [ ! -f scripts/visual/report/vite.config.ts ]; then
+          echo "::notice::This branch has no report page source yet, so the page check is skipped."
+          exit 0
+      fi
       npm run visual:page
       if [ -n "$(git status --porcelain -- scripts/visual/report/dist)" ]; then
           echo "::error::The report page is out of date. Run npm run visual:page and commit the result."
@@ -133,7 +137,7 @@ The rule stays: **the publish job installs nothing and builds nothing, and the p
       fi
 ```
 
-It uses `git status` on the whole `dist` folder rather than `git diff`, so a deleted file or a stray extra one is caught too. The check then shows an error with a link to the run. The build normalizes the template's line endings before Vite reads it, and the page's after, so a Windows checkout builds the same bytes as Linux. It refuses a development build, and fails if a script, a stylesheet or any other file can't go inside the page. `.gitattributes` marks the file as generated, so GitHub collapses it in PR diffs. As with any workflow, someone with write access could remove this step, and the tool's design already treats people with write access as trusted.
+It uses `git status` on the whole `dist` folder rather than `git diff`, so a deleted file or a stray extra one is caught too. The check then shows an error with a link to the run. The build normalizes the template's line endings before Vite reads it, and the page's after, so a Windows checkout builds the same bytes as Linux. It refuses a development build, and fails if a script, a stylesheet or any other file can't go inside the page. A PR branched before this page has no `vite.config.ts` and no `visual:page` script, so on such a branch the step shows only a notice and passes. The published page comes from the base anyway, and the publish job and the page both accept a report without groups. `.gitattributes` marks the file as generated, so GitHub collapses it in PR diffs. As with any workflow, someone with write access could remove this step, and the tool's design already treats people with write access as trusted.
 
 **The manifest is still untrusted.**
 
