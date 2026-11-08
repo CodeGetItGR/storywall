@@ -1,12 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { expect } from 'storybook/test';
 
-import { hiddenDate, onDark, STORY_THEME,storyDocument, storyInvitationMedia, storySection } from '@/.storybook/invitation';
+import { EVERY_SECTION_DOCUMENT, hiddenDate, onDark, STORY_THEME, storyDocument, storyInvitationMedia, storySection } from '@/.storybook/invitation';
 import { InvitationRenderer } from '@/components/saveMyDate/invitation/InvitationRenderer';
-import { SAMPLE_DOCUMENT, SAMPLE_THEME } from '@/lib/invitation/samples';
+import { SAMPLE_THEME } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
-const allSections = SAMPLE_DOCUMENT.sections;
 const shown = [storySection('top'), storySection('invitation'), storySection('coupleNames'), storySection('footer')];
 const hidden: InvitationSection = { ...storySection('faq'), visible: false };
 
@@ -14,15 +13,20 @@ const meta = {
     title: 'SaveMyDate/InvitationRenderer',
     component: InvitationRenderer,
     parameters: { layout: 'fullscreen' },
-    args: { document: storyDocument(allSections), theme: STORY_THEME, media: storyInvitationMedia },
+    args: { document: EVERY_SECTION_DOCUMENT, theme: STORY_THEME, media: storyInvitationMedia },
 } satisfies Meta<typeof InvitationRenderer>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const EverySection: Story = {};
+// The whole invitation, to scroll through. The visual check captures it one
+// section at a time instead (InvitationRenderer Sections).
+export const EverySection: Story = {
+    tags: ['visual-skip'],
+};
 
 export const SampleTheme: Story = {
+    tags: ['visual-skip'],
     args: { theme: SAMPLE_THEME },
 };
 
