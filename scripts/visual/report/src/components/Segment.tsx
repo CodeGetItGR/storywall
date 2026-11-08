@@ -13,7 +13,7 @@ function SegmentButton<T extends string>({ option, selected, disabled, onPick }:
     );
 }
 
-type SegmentProps<T extends string> = { label: string; options: SegmentOption<T>[]; value: T; disabled?: boolean; onPick: (value: T) => void };
+type SegmentProps<T extends string> = { label: string; options: SegmentOption<T>[]; value: T | null; disabled?: boolean; onPick: (value: T) => void };
 
 export function Segment<T extends string>({ label, options, value, disabled, onPick }: SegmentProps<T>) {
     return (

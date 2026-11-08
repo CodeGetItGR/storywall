@@ -92,3 +92,6 @@ export const canCompare = (entry: ReportEntry | null) => entry?.state === 'chang
 // A failed capture has no image to zoom, and the slider always fits.
 export const canZoom = (entry: ReportEntry | null, compare: CompareMode) =>
     entry !== null && entry.state !== 'failed' && !(canCompare(entry) && compare === 'slider');
+
+// The zoom the images get. Where zoom is off they fit, so the slider never depends on the CSS order.
+export const appliedZoom = (entry: ReportEntry | null, compare: CompareMode, zoom: ZoomMode): ZoomMode => (canZoom(entry, compare) ? zoom : 'fit');

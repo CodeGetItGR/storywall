@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { colorGroup, groupedEntries, sampleEntries, testEntry, testManifest } from '../testing/fixture';
-import { areaTree, buildModel, largestPercent, storyCapture, worstState } from './model';
+import { areaTree, buildModel, findCapture, largestPercent, storyCapture, worstState } from './model';
 
 describe('buildModel', () => {
     it('makes stories from entries, sorted by area, component and name', () => {
@@ -87,6 +87,11 @@ describe('stories', () => {
     it('keeps the chosen capture, or falls back to the first', () => {
         expect(storyCapture(postCard!, { locale: 'en', width: 'desktop' }).width).toBe('desktop');
         expect(storyCapture(postCard!, { locale: 'el', width: 'desktop' }).width).toBe('mobile');
+    });
+
+    it('finds a capture only where the story has one', () => {
+        expect(findCapture(postCard!, { locale: 'en', width: 'desktop' })?.width).toBe('desktop');
+        expect(findCapture(postCard!, { locale: 'el', width: 'desktop' })).toBeUndefined();
     });
 
     it('finds the largest percent among changes only', () => {

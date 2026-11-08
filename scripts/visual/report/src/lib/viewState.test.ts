@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { colorGroup, groupedEntries, sampleEntries, testEntry, testManifest } from '../testing/fixture';
 import { buildModel } from './model';
 import { type Item, OVERVIEW } from './reviewOrder';
-import { canCompare, canZoom, currentEntry, initialView, nextCapture, revealItem, stepTarget, toggled } from './viewState';
+import { appliedZoom, canCompare, canZoom, currentEntry, initialView, nextCapture, revealItem, stepTarget, toggled } from './viewState';
 
 const model = buildModel(testManifest(groupedEntries, { groups: [colorGroup] }));
 const story = (id: string): Item => ({ kind: 'story', id });
@@ -142,5 +142,11 @@ describe('canCompare and canZoom', () => {
         expect(canZoom(testEntry('a', { state: 'new' }), 'slider')).toBe(true);
         expect(canZoom(testEntry('a', { state: 'failed' }), 'side')).toBe(false);
         expect(canZoom(null, 'side')).toBe(false);
+    });
+
+    it('fits the images where zoom is off', () => {
+        expect(appliedZoom(changed, 'side', 'full')).toBe('full');
+        expect(appliedZoom(changed, 'slider', 'full')).toBe('fit');
+        expect(appliedZoom(testEntry('a', { state: 'failed' }), 'side', 'full')).toBe('fit');
     });
 });

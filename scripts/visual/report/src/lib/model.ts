@@ -66,8 +66,10 @@ export function buildModel(loaded: ReportManifest): ReportModel {
 export const worstState = (entries: ReportEntry[]): CaptureState =>
     STATES.find((state) => entries.some((entry) => entry.state === state)) ?? 'changed';
 
-export const storyCapture = (story: Story, { locale, width }: CaptureChoice) =>
-    story.entries.find((entry) => entry.locale === locale && entry.width === width) ?? capturesInOrder(story.entries)[0];
+export const findCapture = (story: Story, { locale, width }: CaptureChoice) =>
+    story.entries.find((entry) => entry.locale === locale && entry.width === width);
+
+export const storyCapture = (story: Story, choice: CaptureChoice) => findCapture(story, choice) ?? capturesInOrder(story.entries)[0];
 
 export function largestPercent(story: Story): number | null {
     const changed = story.entries.filter((entry) => entry.state === 'changed');

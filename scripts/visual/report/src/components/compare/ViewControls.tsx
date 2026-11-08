@@ -23,11 +23,14 @@ type ViewControlsProps = {
 };
 
 // The same rules as the keyboard shortcuts, so a key never does what a disabled control can't.
+// A control that's off shows nothing pressed, so it never disagrees with the screen.
 export function ViewControls({ entry, compare, zoom, onCompare, onZoom }: ViewControlsProps) {
+    const comparable = canCompare(entry);
+    const zoomable = canZoom(entry, compare);
     return (
         <>
-            <Segment label={copy.compare} options={COMPARE_OPTIONS} value={compare} disabled={!canCompare(entry)} onPick={onCompare} />
-            <Segment label={copy.zoom} options={ZOOM_OPTIONS} value={zoom} disabled={!canZoom(entry, compare)} onPick={onZoom} />
+            <Segment label={copy.compare} options={COMPARE_OPTIONS} value={comparable ? compare : null} disabled={!comparable} onPick={onCompare} />
+            <Segment label={copy.zoom} options={ZOOM_OPTIONS} value={zoomable ? zoom : null} disabled={!zoomable} onPick={onZoom} />
         </>
     );
 }

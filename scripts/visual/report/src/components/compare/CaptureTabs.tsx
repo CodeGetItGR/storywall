@@ -2,17 +2,17 @@ import type { ReportEntry } from '../../../../types';
 import { copy } from '../../copy';
 import { CAPTURE_ORDER, type CaptureChoice } from '../../lib/captures';
 import { captureLabel, entryValue } from '../../lib/labels';
-import type { Story } from '../../lib/model';
+import { findCapture, type Story } from '../../lib/model';
 
 type CaptureTabProps = { choice: CaptureChoice; story: Story; current: ReportEntry; onPick: (choice: CaptureChoice) => void };
 
 function CaptureTab({ choice, story, current, onPick }: CaptureTabProps) {
-    const match = story.entries.find((entry) => entry.locale === choice.locale && entry.width === choice.width);
+    const match = findCapture(story, choice);
     function handleClick() {
         onPick(choice);
     }
     return (
-        <button type="button" className="tab" disabled={!match} aria-pressed={match === current} onClick={handleClick}>
+        <button type="button" className="tab" disabled={!match} aria-pressed={match?.id === current.id} onClick={handleClick}>
             {captureLabel(choice)}
             <span className="value">{match ? entryValue(match) : copy.noChange}</span>
         </button>
