@@ -13,8 +13,8 @@ const valid = () => ({
     missingStories: [],
     entries: [
         {
-            id: 'x',
-            storyId: 'x',
+            id: 'ui-button--primary--en--mobile',
+            storyId: 'ui-button--primary',
             title: 'T',
             name: 'N',
             locale: 'en',
@@ -22,8 +22,8 @@ const valid = () => ({
             state: 'changed',
             percent: 1,
             error: null,
-            beforeHash: 'before-hash',
-            afterHash: 'after-hash',
+            beforeHash: 'e'.repeat(64),
+            afterHash: 'f'.repeat(64),
             changeKey: null,
             images: { after: `img/${'d'.repeat(16)}-after.webp` },
         },
@@ -155,6 +155,13 @@ describe('validateManifest', () => {
         ['percent', 101, /percent/],
         ['percent', -1, /percent/],
         ['error', 5, /error/],
+        ['storyId', 'overview', /storyId/],
+        ['storyId', 'group-color-1', /storyId/],
+        ['storyId', 'ui-a%41--b', /storyId/],
+        ['storyId', 'ui-a b--c', /storyId/],
+        ['id', 'ui-button--primary--el--mobile', /match its story/],
+        ['beforeHash', 'short', /beforeHash/],
+        ['afterHash', 5, /afterHash/],
     ])('rejects an entry with a bad %s (%s)', (field, value, message) => {
         const manifest = valid();
         manifest.entries[0][field] = value;
@@ -166,6 +173,20 @@ describe('validateManifest', () => {
         Object.assign(manifest.entries[0], { state: 'failed', error: 'Boom', images: {} });
         manifest.counts = { changed: 0, new: 0, removed: 0, failed: 1 };
         expect(validateManifest(manifest).entries[0].error).toBe('Boom');
+    });
+
+    it('accepts a capture with no before hash', () => {
+        const manifest = valid();
+        Object.assign(manifest.entries[0], { state: 'new', beforeHash: null });
+        manifest.counts = { changed: 0, new: 1, removed: 0, failed: 0 };
+        expect(validateManifest(manifest).entries[0].beforeHash).toBeNull();
+    });
+
+    it('rejects a repeated capture id', () => {
+        const manifest = valid();
+        manifest.entries.push({ ...manifest.entries[0] });
+        manifest.counts.changed = 2;
+        expect(() => validateManifest(manifest)).toThrow(/repeated capture id/);
     });
 
     it.each([

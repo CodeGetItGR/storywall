@@ -10,6 +10,9 @@ const COMPONENT_PATH = /^components\/[\w./-]+\.tsx$/;
 const GROUP_KEY = /^(color|same)-\d+$/;
 const COLOR = /^#[0-9a-f]{6}$/;
 const SHA = /^[0-9a-f]{40}$/;
+// Story ids become page addresses, so one can't look like another address or need decoding.
+const STORY_ID = /^[^\s%#]+--[^\s%#]+$/;
+const HASH = /^[0-9a-f]{64}$/;
 const IMAGE_KINDS = new Set(['before', 'after', 'diff', 'preview']);
 const MAX_MISSING_STORIES = 200;
 
@@ -35,9 +38,17 @@ function validateEntry(entry, groupKeys) {
     for (const field of TEXT_FIELDS) {
         if (typeof entry[field] !== 'string' || entry[field] === '') throw new Error(`Manifest entry has an invalid ${field}`);
     }
+    if (!STORY_ID.test(entry.storyId)) throw new Error(`Manifest entry has an invalid storyId: ${entry.storyId}`);
     if (!STATES.has(entry.state)) throw new Error(`Manifest entry has an unknown state: ${entry.state}`);
     if (!LOCALES.has(entry.locale)) throw new Error(`Manifest entry has an unknown locale: ${entry.locale}`);
     if (!WIDTHS.has(entry.width)) throw new Error(`Manifest entry has an unknown width: ${entry.width}`);
+    // The same as captureId in stories.ts.
+    if (entry.id !== `${entry.storyId}--${entry.locale}--${entry.width}`)
+        throw new Error(`Manifest entry has an id that doesn't match its story: ${entry.id}`);
+    for (const field of ['beforeHash', 'afterHash']) {
+        if (entry[field] !== null && (typeof entry[field] !== 'string' || !HASH.test(entry[field])))
+            throw new Error(`Manifest entry has an invalid ${field}`);
+    }
     if (typeof entry.percent !== 'number' || !(entry.percent >= 0 && entry.percent <= 100)) throw new Error('Manifest entry has an invalid percent');
     if (entry.error !== null && typeof entry.error !== 'string') throw new Error('Manifest entry has an invalid error');
     if (entry.changeKey !== undefined && entry.changeKey !== null && !groupKeys.has(entry.changeKey)) {
@@ -65,7 +76,12 @@ export function validateManifest(manifest) {
     }
     if (!Number.isInteger(manifest.totalCaptures) || manifest.totalCaptures < 0) throw new Error('Manifest has no totalCaptures');
     const groupKeys = validateGroups(manifest.groups);
-    for (const entry of manifest.entries) validateEntry(entry, groupKeys);
+    const ids = new Set();
+    for (const entry of manifest.entries) {
+        validateEntry(entry, groupKeys);
+        if (ids.has(entry.id)) throw new Error(`Manifest has a repeated capture id: ${entry.id}`);
+        ids.add(entry.id);
+    }
     for (const state of STATES) {
         const actual = manifest.entries.filter((entry) => entry.state === state).length;
         if (manifest.counts?.[state] !== actual) throw new Error(`Manifest count for ${state} doesn't match its entries`);

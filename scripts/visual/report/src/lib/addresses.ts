@@ -4,7 +4,8 @@ import { type Item, OVERVIEW } from './reviewOrder';
 const GROUP_PREFIX = 'group-';
 
 export function hashOf(item: Item): string {
-    if (item.kind === 'story') return item.id;
+    // Encoded, so the address reads back as the same id.
+    if (item.kind === 'story') return encodeURIComponent(item.id);
     if (item.kind === 'group') return `${GROUP_PREFIX}${item.key}`;
     return 'overview';
 }

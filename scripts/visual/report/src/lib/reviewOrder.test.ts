@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { colorGroup, failedEntry, groupedEntries, sampleEntries, testManifest } from '../testing/fixture';
+import { colorGroup, failedEntry, groupedEntries, sampleEntries, testEntry, testManifest } from '../testing/fixture';
 import { withMarks } from './marks';
 import { buildModel } from './model';
 import {
@@ -53,6 +53,10 @@ describe('reviewQueue', () => {
         expect(reviewQueue(model, 'area', { ...none, search: 'old' }, noMarks)).toEqual([story('ui-badge--old')]);
     });
 
+    it('finds a story typed the way the list shows it', () => {
+        expect(reviewQueue(model, 'area', { ...none, search: 'PostCard / Default' }, noMarks)).toEqual([story('feed-postcard--default')]);
+    });
+
     it('hides reviewed captures', () => {
         const marks = withMarks(noMarks, [sampleEntries[0]]);
         const queue = reviewQueue(model, 'area', { ...none, hideReviewed: true }, marks);
@@ -61,6 +65,21 @@ describe('reviewQueue', () => {
 
     it('hides a group when no capture in it matches', () => {
         expect(reviewQueue(grouped, 'change', { ...none, states: new Set(['new']) }, noMarks)).toEqual([story('ui-button--primary')]);
+    });
+
+    it('keeps a story with a capture left to review, and a failed story', () => {
+        const withFailed = buildModel(testManifest([...sampleEntries, failedEntry]));
+        const queue = reviewQueue(withFailed, 'area', { ...none, hideReviewed: true }, withMarks(noMarks, [sampleEntries[1]]));
+        expect(queue).toContainEqual(story('feed-postcard--default'));
+        expect(queue).toContainEqual(story('ui-card--broken'));
+    });
+
+    it('lists a story on its own only when a capture outside every group matches', () => {
+        const entries = sampleEntries.map((entry, index) => (index < 2 ? { ...entry, changeKey: colorGroup.key } : entry));
+        entries[2] = { ...entries[2], state: 'new', beforeHash: null };
+        const split = buildModel(testManifest(entries, { groups: [colorGroup] }));
+        expect(reviewQueue(split, 'change', none, noMarks)).toContainEqual(story('feed-postcard--default'));
+        expect(reviewQueue(split, 'change', { ...none, states: new Set(['changed']) }, noMarks)).toEqual([{ kind: 'group', key: 'color-1' }]);
     });
 });
 
@@ -87,6 +106,19 @@ describe('reviewing', () => {
         const queue = reviewQueue(model, 'area', none, noMarks);
         expect(firstOpenItem(model, queue, noMarks)).toEqual(story('feed-composer--default'));
         expect(firstOpenItem(model, queue, withMarks(noMarks, [sampleEntries[0]]))).toEqual(story('feed-postcard--default'));
+    });
+
+    it('skips a story that only failed', () => {
+        const broken = { ...failedEntry, id: 'aaa-card--broken--en--mobile', storyId: 'aaa-card--broken', title: 'Aaa/Card' };
+        const withBroken = buildModel(testManifest([broken, ...sampleEntries]));
+        const queue = reviewQueue(withBroken, 'area', none, noMarks);
+        expect(queue[0]).toEqual(story('aaa-card--broken'));
+        expect(firstOpenItem(withBroken, queue, noMarks)).toEqual(story('feed-composer--default'));
+    });
+
+    it('finds nothing open when everything shown is reviewed', () => {
+        const queue = reviewQueue(model, 'area', none, noMarks);
+        expect(firstOpenItem(model, queue, withMarks(noMarks, sampleEntries))).toBeNull();
     });
 
     it('finds items', () => {
@@ -127,13 +159,43 @@ describe('barActions', () => {
 
     it('blocks approval while a story failed', () => {
         const model = buildModel(testManifest([...sampleEntries, failedEntry]));
-        expect(barActions(model, OVERVIEW, queue, everything).approve).toBe('blocked');
-        expect(barActions(model, story('ui-card--broken'), queue, everything).mark).toBeNull();
+        const withFailed = reviewQueue(model, 'area', none, noMarks);
+        expect(barActions(model, OVERVIEW, withFailed, everything).approve).toBe('blocked');
+        expect(barActions(model, story('ui-card--broken'), withFailed, everything).mark).toBeNull();
     });
 
-    it('hides the approve link on a local run', () => {
+    it('blocks approval when every capture failed', () => {
+        const model = buildModel(testManifest([failedEntry]));
+        expect(barActions(model, OVERVIEW, reviewQueue(model, 'area', none, noMarks), noMarks)).toEqual({
+            start: null,
+            mark: null,
+            approve: 'blocked',
+        });
+    });
+
+    it('offers Looks right on a story with one failed capture', () => {
+        const failedOne = testEntry('feed-postcard--default--el--mobile', {
+            locale: 'el',
+            state: 'failed',
+            percent: 0,
+            afterHash: null,
+            error: 'Boom',
+            images: {},
+        });
+        const model = buildModel(testManifest([...sampleEntries, failedOne]));
+        const withFailed = reviewQueue(model, 'area', none, noMarks);
+        expect(barActions(model, story('feed-postcard--default'), withFailed, noMarks).mark).toBe('looks-right');
+        expect(barActions(model, story('feed-postcard--default'), withFailed, everything)).toMatchObject({ mark: 'undo', approve: 'blocked' });
+    });
+
+    it('offers no Start when the list shows nothing left to review', () => {
+        const onlyNew = reviewQueue(clean, 'area', { ...none, states: new Set(['new']) }, noMarks);
+        expect(barActions(clean, OVERVIEW, onlyNew, withMarks(noMarks, [sampleEntries[4]]))).toEqual({ start: null, mark: null, approve: null });
+    });
+
+    it('offers nothing on a local run once everything is reviewed', () => {
         const local = buildModel(testManifest(sampleEntries, { pull: undefined }));
-        expect(barActions(local, OVERVIEW, queue, everything).approve).toBeNull();
+        expect(barActions(local, OVERVIEW, queue, everything)).toEqual({ start: null, mark: null, approve: null });
     });
 
     it('offers nothing on an empty report', () => {

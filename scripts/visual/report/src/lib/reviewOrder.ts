@@ -19,8 +19,12 @@ const storyItem = (story: Story): Item => ({ kind: 'story', id: story.id });
 export function entryMatches(entry: ReportEntry, filters: Filters, marks: Marks): boolean {
     if (filters.states.size > 0 && !filters.states.has(entry.state)) return false;
     if (filters.hideReviewed && isMarked(marks, entry)) return false;
-    const query = filters.search.trim().toLowerCase();
-    return !query || `${entry.title} ${entry.name}`.toLowerCase().includes(query);
+    // Every word has to appear, so a story typed the way the list shows it, like "PostCard / Default", still matches.
+    const text = `${entry.title} ${entry.name}`.toLowerCase();
+    return filters.search
+        .toLowerCase()
+        .split(/[\s/]+/)
+        .every((word) => text.includes(word));
 }
 
 export const shownStories = (model: ReportModel, filters: Filters, marks: Marks) =>
@@ -68,13 +72,9 @@ export function reviewProgress({ manifest }: ReportModel, marks: Marks) {
     return { done: list.filter((entry) => isMarked(marks, entry)).length, total: list.length };
 }
 
-export function firstOpenItem(model: ReportModel, queue: Item[], marks: Marks): Item | null {
-    const open = queue.find((item) => {
-        const entries = itemEntries(model, item);
-        return reviewable(entries).length > 0 && !allReviewed(entries, marks);
-    });
-    return open ?? queue[0] ?? null;
-}
+// Null when everything the list shows is reviewed, so the bar offers no Start or Continue.
+export const firstOpenItem = (model: ReportModel, queue: Item[], marks: Marks): Item | null =>
+    queue.find((item) => reviewable(itemEntries(model, item)).some((entry) => !isMarked(marks, entry))) ?? null;
 
 function approveAction({ manifest }: ReportModel, marks: Marks): BarActions['approve'] {
     const list = reviewable(manifest.entries);
