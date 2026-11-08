@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { expect, fn, userEvent, within } from 'storybook/test';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 
 import { labelsFor, LONG_TITLE, onDark, SectionStory, storySection } from '@/.storybook/invitation';
 
@@ -17,14 +17,14 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
-// The IBAN stays inside its box, also with reduced motion on.
+// The IBAN stays inside its box, also with reduced motion on. It is fitted after the first render.
 export const LongContent: Story = {
     args: { section: storySection('gift', { title: LONG_TITLE, bank: LONG_TITLE, iban: 'GR00 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000' }) },
     play: async ({ canvasElement }) => {
         const box = canvasElement.querySelector<HTMLElement>('.iban');
         const text = box?.querySelector<HTMLElement>('.text-block');
         if (!box || !text) throw new Error('The IBAN is missing');
-        await expect(text.scrollWidth).toBeLessThanOrEqual(box.clientWidth);
+        await waitFor(() => expect(text.scrollWidth).toBeLessThanOrEqual(box.clientWidth));
     },
 };
 
