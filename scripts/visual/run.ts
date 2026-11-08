@@ -131,7 +131,7 @@ async function compareWithBase(baseRef: string) {
             missingStories: findMissingStories(added, existsSync),
             retake: (target) => captureTarget(browser, server.origin, target, HEAD_DIR),
         });
-        copyFileSync(join('scripts', 'visual', 'report', 'index.html'), join(REPORT_DIR, 'index.html'));
+        copyFileSync(join('scripts', 'visual', 'report', 'dist', 'index.html'), join(REPORT_DIR, 'index.html'));
         const { changed, removed, failed } = manifest.counts;
         print(`${changed} changed, ${manifest.counts.new} new, ${removed} removed, ${failed} failed, of ${manifest.totalCaptures} captures.`);
         for (const entry of manifest.entries.filter((item) => item.state === 'failed')) print(`FAILED ${entry.id}: ${entry.error}`);

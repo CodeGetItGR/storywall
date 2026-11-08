@@ -10,7 +10,7 @@ import { basename, join } from 'node:path';
 import { isTicked, parseState, renderComment } from './publish/comment.mjs';
 import { carryApproval, changeCount, parseApprovers, statusFor } from './publish/decisions.mjs';
 import { createGitHub } from './publish/github.mjs';
-import { validateManifest } from './publish/manifest.mjs';
+import { publishedManifest, validateManifest } from './publish/manifest.mjs';
 import { pruneReports, updateReports, waitUntilLive } from './publish/reportsRepo.mjs';
 
 const {
@@ -46,9 +46,10 @@ async function publishReport() {
         rmSync(prDir, { recursive: true, force: true });
         mkdirSync(join(reportDir, 'img'), { recursive: true });
         for (const path of imagePaths) copyFileSync(join(REPORT_DIR, path), join(reportDir, 'img', basename(path)));
-        writeFileSync(join(reportDir, 'manifest.json'), JSON.stringify({ ...manifest, createdAt: new Date().toISOString() }));
+        const published = publishedManifest(manifest, { repo: GITHUB_REPOSITORY, prNumber: PR_NUMBER, createdAt: new Date().toISOString() });
+        writeFileSync(join(reportDir, 'manifest.json'), JSON.stringify(published));
         // The page comes from the base commit's checkout, not from the artifact.
-        copyFileSync(new URL('./report/index.html', import.meta.url), join(reportDir, 'index.html'));
+        copyFileSync(new URL('./report/dist/index.html', import.meta.url), join(reportDir, 'index.html'));
         pruneReports(site, PR_NUMBER);
     });
     const reportUrl = `${PAGES_BASE_URL}/pr-${PR_NUMBER}/${shortSha}/`;

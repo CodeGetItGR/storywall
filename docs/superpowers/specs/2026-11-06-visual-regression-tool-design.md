@@ -72,7 +72,7 @@ Comparing against the branch point means a PR only shows its own changes, even a
 | `scripts/visual/approve.mjs` | Handles ticking and unticking the box |
 | `scripts/visual/cleanup.mjs` | Deletes a report when its PR closes |
 | `scripts/visual/publish/` | Helpers for those three: manifest validation, comment, rules, GitHub client, reports repo |
-| `scripts/visual/report/` | Static report page template |
+| `scripts/visual/report/` | Report page: source in `src/`, built file in `dist/` |
 
 It reuses what the repo already has: `playwright-core` 1.55.0, `sharp`, and `comparePixels` from `lib/invitation/parity.ts`. `.mjs` files use Node built-ins only, because the publish job installs no dependencies.
 
@@ -167,6 +167,8 @@ There's one comment per PR, edited in place. It's developer-facing and in Englis
 If nothing changed and there's no warning, no comment is posted. An existing comment is replaced with "No visual changes".
 
 ## Report page
+
+Replaced by [the report page design](2026-11-07-visual-report-page-design.md). This section describes the first version.
 
 A single static page with no framework: `pr-<number>/<short-sha>/index.html`, `manifest.json` and `img/`.
 
