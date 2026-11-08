@@ -44,13 +44,14 @@ describe('visual-check workflow', () => {
         const check = readFileSync('.github/workflows/visual-check.yml', 'utf8');
         const capture = check.slice(check.indexOf('    capture:'), check.indexOf('    publish:'));
         expect(capture).toContain('npm run visual:page');
-        expect(capture).toContain('git status --porcelain -- scripts/visual/report/dist/index.html');
+        expect(capture).toContain('git status --porcelain -- scripts/visual/report/dist)');
+        expect(capture).toContain('exit 1');
         expect(capture.indexOf('npm ci')).toBeLessThan(capture.indexOf('npm run visual:page'));
     });
 
     it('never builds in the job that holds the deploy key', () => {
         const check = readFileSync('.github/workflows/visual-check.yml', 'utf8');
         const publish = check.slice(check.indexOf('    publish:'), check.indexOf('    finish:'));
-        expect(publish).not.toContain('npm ');
+        expect(publish).not.toMatch(/\b(npm|npx|pnpm|yarn|vite)\b/);
     });
 });

@@ -1,4 +1,4 @@
-// @vitest-environment node
+// @vitest-environment jsdom
 import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
@@ -12,14 +12,17 @@ describe('built report page', () => {
         expect(page).toContain('<meta name="robots" content="noindex, nofollow"');
     });
 
-    it('has its script and styles inside', () => {
-        expect(page).toContain('<script type="module">');
-        expect(page).toContain('<style>');
-    });
-
-    it('loads no script or stylesheet from elsewhere', () => {
-        expect(page).not.toMatch(/<script[^>]*\ssrc=/);
-        expect(page).not.toMatch(/<link[^>]*stylesheet/);
+    it('is one page with its script and styles inside and nothing loaded from elsewhere', () => {
+        const document = new DOMParser().parseFromString(page, 'text/html');
+        const scripts = [...document.querySelectorAll('script')];
+        expect(scripts).toHaveLength(1);
+        expect(scripts[0].getAttribute('type')).toBe('module');
+        expect(scripts[0].hasAttribute('src')).toBe(false);
+        expect(scripts[0].textContent).toMatch(/\.render\(/);
+        expect(document.querySelectorAll('style')).toHaveLength(1);
+        expect(document.querySelectorAll('link[rel=stylesheet]')).toHaveLength(0);
+        expect([...document.body.children].map((element) => element.id)).toEqual(['root']);
+        expect(page).not.toMatch(/import\(|assets\//);
     });
 
     it('uses one kind of line ending, so every machine builds the same file', () => {

@@ -198,7 +198,7 @@ All four live in `.github/workflows/`.
 | Job | Permissions and secrets | Runs |
 |---|---|---|
 | `start` | `statuses: write` | Sets the check to pending |
-| `capture` | `contents: read`, no secrets | `npm ci`, Storybook build, capture and compare. Uploads the results as an artifact kept 1 day |
+| `capture` | `contents: read`, no secrets | `npm ci`, a rebuild of the report page that fails if the committed file is out of date, Storybook build, capture and compare. Uploads the results as an artifact kept 1 day |
 | `publish` | `statuses: write`, `pull-requests: write`, the deploy key | `publish.mjs` from the PR's base commit, with no `npm ci` and no Storybook build. Treats the artifact as data and validates it |
 | `finish` (`if: failure() \|\| cancelled()`) | `statuses: write` | Sets the check to error, linking to the run |
 

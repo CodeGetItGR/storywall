@@ -55,7 +55,7 @@ jobs:
             # The report page is committed as one built file, so make sure it matches its source.
             - run: |
                   npm run visual:page
-                  if [ -n "$(git status --porcelain -- scripts/visual/report/dist/index.html)" ]; then
+                  if [ -n "$(git status --porcelain -- scripts/visual/report/dist)" ]; then
                       echo "::error::The report page is out of date. Run npm run visual:page and commit the result."
                       exit 1
                   fi

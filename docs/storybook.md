@@ -117,6 +117,6 @@ Reports are public and are deleted when the PR closes.
 
 To compare locally, run `npm run visual -- --base origin/staging --serve`. Run `npx playwright-core install chromium` once first. Windows renders differently from CI, so a local run only compares with itself, and CI decides.
 
-The report page's source is in `scripts/visual/report/src/`. After changing it, run `npm run visual:page` and commit `scripts/visual/report/dist/index.html`. The check fails if that file is out of date.
+The report page is built from `scripts/visual/report/` (`src/`, `index.html` and `vite.config.ts`). After changing any of these, `scripts/visual/config.ts`, or the React or Vite version, run `npm run visual:page` and commit `scripts/visual/report/dist/index.html`. The check fails if that file is out of date. If it conflicts in a merge, run `npm run visual:page` instead of resolving it by hand.
 
 The code is in `scripts/visual/`, and the design is in `docs/superpowers/specs/2026-11-06-visual-regression-tool-design.md`.
