@@ -578,6 +578,7 @@ h1 {
 /* Thumbnails */
 .section {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 10px;
 }
 .section + .section {
@@ -684,6 +685,7 @@ td .zero {
 }
 .plain-list {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 2px;
     margin: 0;
     padding: 0;
