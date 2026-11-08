@@ -291,7 +291,8 @@ export function textStyleCss(style: TextStyle, options: TextCssOptions, ctx: Ren
     else if (options.defaultMarginTop !== undefined) css.marginBottom = 0;
     if (style.lineHeight) css.lineHeight = style.lineHeight;
     if (style.bold) css.fontWeight = 700;
-    if (style.italic) css.fontStyle = 'italic';
+    // Some fields are italic by default, so a host who turns italic off needs `normal`, not nothing.
+    if (style.italic !== undefined) css.fontStyle = style.italic ? 'italic' : 'normal';
     return css;
 }
 
