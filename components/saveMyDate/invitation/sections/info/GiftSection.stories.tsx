@@ -17,8 +17,23 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
+// The IBAN shrinks only as far as it must to fit on one line, also with reduced motion on.
 export const LongContent: Story = {
     args: { section: storySection('gift', { title: LONG_TITLE, bank: LONG_TITLE, iban: 'GR00 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000' }) },
+    play: async ({ canvasElement }) => {
+        const box = canvasElement.querySelector<HTMLElement>('.iban');
+        const text = box?.querySelector<HTMLElement>('.text-block');
+        if (!box || !text) throw new Error('The IBAN is missing');
+        await expect(text.scrollWidth).toBeLessThanOrEqual(box.clientWidth);
+        // Half a pixel bigger would not fit, so it did not shrink further than it had to.
+        const size = parseFloat(getComputedStyle(text).fontSize);
+        text.style.transition = 'none';
+        text.style.fontSize = `${size + 0.5}px`;
+        const tooWide = text.scrollWidth > box.clientWidth;
+        text.style.fontSize = `${size}px`;
+        text.style.transition = '';
+        await expect(tooWide).toBe(true);
+    },
 };
 
 export const Empty: Story = {

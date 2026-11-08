@@ -9,12 +9,17 @@ const MAX_STEPS = 40;
 function fit(wrap: HTMLElement) {
     const text = wrap.querySelector<HTMLElement>('.text-block');
     if (!text) return;
+    // With reduced motion on, the app gives every element a short transition,
+    // so a new size would not show in the width until it ends. Measure without it.
+    const transition = text.style.transition;
+    text.style.transition = 'none';
     text.style.fontSize = '';
     let size = parseFloat(getComputedStyle(text).fontSize) || 19;
     for (let step = 0; text.scrollWidth > wrap.clientWidth && size > MIN_SIZE && step < MAX_STEPS; step += 1) {
         size -= STEP;
         text.style.fontSize = `${size}px`;
     }
+    text.style.transition = transition;
 }
 
 // Shrinks a line of text just enough to fit its box on one line, on any

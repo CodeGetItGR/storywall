@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { expect, within } from 'storybook/test';
 
 import { LONG_TEXT, LONG_TITLE, onDark, SectionStory, storySection } from '@/.storybook/invitation';
 
@@ -14,7 +15,15 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {};
+// Like the old page, both titles use the 34px heading size at every width.
+export const Default: Story = {
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        for (const name of [section.data.block1Title, section.data.block2Title]) {
+            await expect(getComputedStyle(canvas.getByRole('heading', { name })).fontSize).toBe('34px');
+        }
+    },
+};
 
 export const LongContent: Story = {
     args: {
