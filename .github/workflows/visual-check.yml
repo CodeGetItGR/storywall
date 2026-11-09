@@ -28,14 +28,18 @@ jobs:
               env:
                   GH_TOKEN: ${{ github.token }}
 
-    # Runs the PR's dependencies and build, so it has no write access and no secrets.
-    capture:
+    # build, capture and compare run the PR's dependencies and build, so they have no write access and no secrets.
+    build:
         needs: start
         runs-on: ubuntu-latest
-        timeout-minutes: 30
+        timeout-minutes: 15
         container: mcr.microsoft.com/playwright:v1.55.0-noble
         permissions:
             contents: read
+        outputs:
+            base-sha: ${{ steps.base.outputs.sha }}
+            base-key: ${{ steps.lookup.outputs.cache-primary-key }}
+            base-saved: ${{ steps.lookup.outputs.cache-hit }}
         steps:
             - uses: actions/checkout@v7
               with:
@@ -65,26 +69,173 @@ jobs:
                       exit 1
                   fi
 
+            # The event's base is staging as it was at this push. Staging fetched now can already hold
+            # this PR if it merged meanwhile, and the merge-base would then be the PR's own head.
             - id: base
-              run: echo "sha=$(git merge-base "origin/$BASE_REF" HEAD)" >> "$GITHUB_OUTPUT"
+              run: echo "sha=$(git merge-base "$EVENT_BASE_SHA" HEAD)" >> "$GITHUB_OUTPUT"
               env:
-                  BASE_REF: ${{ github.event.pull_request.base.ref }}
+                  EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
 
-            - id: restore
+            - id: lookup
               uses: actions/cache/restore@v6
               with:
                   path: visual-output/base
                   key: visual-base-${{ steps.base.outputs.sha }}-${{ hashFiles('scripts/visual/capture.ts', 'scripts/visual/stories.ts', 'scripts/visual/config.ts') }}-pw1.55.0
+                  lookup-only: true
 
-            - run: npm run visual -- --base "$BASE_SHA"
+            - run: npm run visual:ci -- build
+
+            - uses: actions/upload-artifact@v7
+              with:
+                  name: visual-storybook
+                  path: storybook-static
+                  retention-days: 1
+                  if-no-files-found: error
+
+            # No saved captures for the base, so the capture jobs take them too.
+            - if: steps.lookup.outputs.cache-hit != 'true'
+              run: npm run visual:ci -- build-base --base "$BASE_SHA"
               env:
                   BASE_SHA: ${{ steps.base.outputs.sha }}
+
+            - if: steps.lookup.outputs.cache-hit != 'true'
+              uses: actions/upload-artifact@v7
+              with:
+                  name: visual-base-storybook
+                  path: visual-output/base-storybook
+                  retention-days: 1
+                  if-no-files-found: error
+
+    capture:
+        needs: build
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        container: mcr.microsoft.com/playwright:v1.55.0-noble
+        permissions:
+            contents: read
+        strategy:
+            matrix:
+                share: [1, 2, 3, 4, 5, 6]
+        env:
+            SHARE: ${{ strategy.job-index }}/${{ strategy.job-total }}
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  ref: ${{ github.event.pull_request.head.sha }}
+                  persist-credentials: false
+
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 22
+                  cache: npm
+
+            - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+            - run: npm ci
+
+            - uses: actions/download-artifact@v8
+              with:
+                  name: visual-storybook
+                  path: storybook-static
+
+            - run: npm run visual:ci -- capture --share "$SHARE" --storybook storybook-static --out visual-output/head
+
+            - uses: actions/upload-artifact@v7
+              with:
+                  name: visual-head-share-${{ strategy.job-index }}
+                  path: visual-output/head
+                  retention-days: 1
+                  compression-level: 0
+                  if-no-files-found: error
+
+            - if: needs.build.outputs.base-saved != 'true'
+              uses: actions/download-artifact@v8
+              with:
+                  name: visual-base-storybook
+                  path: visual-output/base-storybook
+
+            - if: needs.build.outputs.base-saved != 'true'
+              run: npm run visual:ci -- capture --share "$SHARE" --storybook visual-output/base-storybook --out visual-output/base
+
+            - if: needs.build.outputs.base-saved != 'true'
+              uses: actions/upload-artifact@v7
+              with:
+                  name: visual-base-share-${{ strategy.job-index }}
+                  path: visual-output/base
+                  retention-days: 1
+                  compression-level: 0
+                  if-no-files-found: error
+
+    compare:
+        needs: [build, capture]
+        runs-on: ubuntu-latest
+        # Captures the whole base in this one job if its saved captures were dropped since build looked them up.
+        timeout-minutes: 60
+        container: mcr.microsoft.com/playwright:v1.55.0-noble
+        permissions:
+            contents: read
+        env:
+            BASE_SHA: ${{ needs.build.outputs.base-sha }}
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  ref: ${{ github.event.pull_request.head.sha }}
+                  fetch-depth: 0
+                  persist-credentials: false
+
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 22
+                  cache: npm
+
+            - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+            - run: npm ci
+
+            - uses: actions/download-artifact@v8
+              with:
+                  name: visual-storybook
+                  path: storybook-static
+
+            - uses: actions/download-artifact@v8
+              with:
+                  pattern: visual-head-share-*
+                  merge-multiple: true
+                  path: visual-output/head
+
+            - run: npm run visual:ci -- join --storybook storybook-static --dir visual-output/head --sha "$HEAD_SHA"
+
+            - id: restore
+              if: needs.build.outputs.base-saved == 'true'
+              uses: actions/cache/restore@v6
+              with:
+                  path: visual-output/base
+                  key: ${{ needs.build.outputs.base-key }}
+
+            - if: needs.build.outputs.base-saved != 'true'
+              uses: actions/download-artifact@v8
+              with:
+                  name: visual-base-storybook
+                  path: visual-output/base-storybook
+
+            - if: needs.build.outputs.base-saved != 'true'
+              uses: actions/download-artifact@v8
+              with:
+                  pattern: visual-base-share-*
+                  merge-multiple: true
+                  path: visual-output/base
+
+            - if: needs.build.outputs.base-saved != 'true'
+              run: npm run visual:ci -- join --storybook visual-output/base-storybook --dir visual-output/base --sha "$BASE_SHA"
+
+            # Builds the base itself if the saved captures were dropped since build looked them up.
+            - run: npm run visual:ci -- compare --base "$BASE_SHA"
 
             - if: steps.restore.outputs.cache-hit != 'true'
               uses: actions/cache/save@v6
               with:
                   path: visual-output/base
-                  key: ${{ steps.restore.outputs.cache-primary-key }}
+                  key: ${{ needs.build.outputs.base-key }}
 
             - uses: actions/upload-artifact@v7
               with:
@@ -95,7 +246,7 @@ jobs:
     # Installs nothing and builds nothing. Only this job holds the deploy key, so it runs the
     # scripts from the base commit: a PR's own changes to them never see the key.
     publish:
-        needs: capture
+        needs: compare
         runs-on: ubuntu-latest
         timeout-minutes: 15
         permissions:
@@ -128,7 +279,7 @@ jobs:
                   VISUAL_APPROVERS: ${{ vars.VISUAL_APPROVERS }}
 
     finish:
-        needs: [start, capture, publish]
+        needs: [start, build, capture, compare, publish]
         if: failure() || cancelled()
         runs-on: ubuntu-latest
         timeout-minutes: 5
