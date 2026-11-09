@@ -125,12 +125,14 @@ describe('RsvpListPanel', () => {
         expect(api.del).not.toHaveBeenCalled();
     });
 
-    it('says when keeping fails', async () => {
-        vi.mocked(api.del).mockRejectedValue(new ApiError(500, null));
+    it('says when keeping fails, with the shared copy for a server error', async () => {
+        vi.mocked(api.del).mockRejectedValue(
+            new ApiError(500, { type: 'about:blank', title: 'x', status: 500, detail: '', instance: '/', errorCode: 9001, errorKey: 'INTERNAL_ERROR' }),
+        );
         renderPanel();
         fireEvent.click(phoneList().getByRole('button', { name: t.rsvpDuplicate.keep }));
 
-        expect((await screen.findByRole('alert')).textContent).toBe(en.ApiErrors.generic);
+        expect((await screen.findByRole('alert')).textContent).toBe(en.ApiErrors.internalError);
     });
 
     it('shows the mark without actions once the event can no longer change', () => {

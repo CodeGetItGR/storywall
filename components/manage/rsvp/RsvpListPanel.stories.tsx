@@ -122,6 +122,7 @@ export const Keeping: Story = {
     },
 };
 
+// A server error (500, 9001): the shared API error copy for it.
 export const KeepFailed: Story = {
     args: { rsvps: [...memberRsvps, ...invitationRsvps] },
     beforeEach({ msw }) {
@@ -131,6 +132,6 @@ export const KeepFailed: Story = {
         const t = copyFor(globals);
         const [keepButton] = within(canvasElement).getAllByRole('button', { name: t.ManagePage.rsvpDuplicate.keep });
         await userEvent.click(keepButton);
-        await expect(await within(canvasElement).findByRole('alert')).toHaveTextContent(t.ApiErrors.generic);
+        await expect(await within(canvasElement).findByRole('alert')).toHaveTextContent(t.ApiErrors.internalError);
     },
 };
