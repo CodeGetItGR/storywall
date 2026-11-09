@@ -6,6 +6,7 @@ import type { InvitationDocument } from '@/lib/invitation/document';
 import { invitationLanguage } from '@/lib/invitation/labels';
 import { buildRenderContext, type MediaResolver, themeCssVars, type TypographyPreset } from '@/lib/invitation/render';
 import type { RsvpSender } from '@/lib/invitation/rsvp';
+import type { TextRenderer } from '@/lib/invitation/textEditing';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import { type InvitationFontDto, uploadedFontFaceCss } from '@/lib/invitation/uploadedFonts';
 
@@ -19,12 +20,14 @@ type InvitationRendererProps = {
     uploadedFonts?: InvitationFontDto[];
     // Sends a guest's RSVP reply; leave it out where nothing should be saved.
     sendRsvp?: RsvpSender;
+    // The editor's drawing of each text, so it can be typed in place.
+    renderText?: TextRenderer;
 };
 
 // The invitation as guests see it. The staging preview, the editor canvas and
 // the published page all render through this.
-export function InvitationRenderer({ document, theme, media, hostPreset, uploadedFonts = [], sendRsvp }: InvitationRendererProps) {
-    const ctx = buildRenderContext(document, theme, media, hostPreset, sendRsvp);
+export function InvitationRenderer({ document, theme, media, hostPreset, uploadedFonts = [], sendRsvp, renderText }: InvitationRendererProps) {
+    const ctx = { ...buildRenderContext(document, theme, media, hostPreset, sendRsvp), renderText };
     const fontFaces = uploadedFontFaceCss(uploadedFonts, [document, theme, hostPreset]);
 
     return (

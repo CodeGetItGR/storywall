@@ -4,8 +4,8 @@ import { useTranslations } from 'next-intl';
 
 import { ActiveText } from '@/components/saveMyDate/editor/text/ActiveText';
 import { useTextEditing } from '@/components/saveMyDate/editor/text/TextEditingContext';
-import type { InvitationTextProps } from '@/components/saveMyDate/invitation/InvitationText';
 import { useEditableText } from '@/hooks/useEditableText';
+import type { InvitationTextProps } from '@/lib/invitation/textEditing';
 import { cn } from '@/lib/utils';
 
 // A text of the invitation on the editor canvas. A tap or Enter opens it for typing in place.

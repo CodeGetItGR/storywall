@@ -6,16 +6,16 @@ import { useTranslations } from 'next-intl';
 import { type ReactNode, useRef } from 'react';
 
 import { EditableText } from '@/components/saveMyDate/editor/text/EditableText';
+import { EditableTextContext } from '@/components/saveMyDate/editor/text/EditableTextContext';
 import { TextEditingContext } from '@/components/saveMyDate/editor/text/TextEditingContext';
 import { TextToolbar } from '@/components/saveMyDate/editor/text/TextToolbar';
-import type { InvitationTextProps } from '@/components/saveMyDate/invitation/InvitationText';
-import { EditableTextContext } from '@/components/saveMyDate/invitation/InvitationText';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useDeactivateOnOutsideTap } from '@/hooks/useDeactivateOnOutsideTap';
 import { useInlineTextEdit } from '@/hooks/useInlineTextEdit';
 import { useTextToolbar } from '@/hooks/useTextToolbar';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
+import type { InvitationTextProps } from '@/lib/invitation/textEditing';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import type { InvitationFontDto } from '@/lib/invitation/uploadedFonts';
 

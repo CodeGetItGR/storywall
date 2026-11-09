@@ -18,6 +18,7 @@ type SectionTextProps = {
 export function SectionText({ section, path, value, tag = 'div', className = '', contrast, ctx }: SectionTextProps) {
     return (
         <InvitationText
+            render={ctx.renderText}
             target={{ sectionId: section.id, kind: 'field', path }}
             value={value}
             tag={tag}

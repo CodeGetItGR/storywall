@@ -1,4 +1,5 @@
 import type { Draft } from 'immer';
+import type { CSSProperties, ElementType, ReactNode } from 'react';
 
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationElement } from '@/lib/invitation/elements';
@@ -14,6 +15,20 @@ import type { InvitationFontDto } from '@/lib/invitation/uploadedFonts';
 // the same path) or a text element a host added. Element ids are unique in the
 // whole invitation, so an element is found by its id alone.
 export type TextTarget = { kind: 'field'; sectionId: string; path: string } | { kind: 'element'; elementId: string };
+
+// One text as the renderer draws it. The editor can draw it its own way (typing in place).
+export type InvitationTextProps = {
+    target: TextTarget;
+    // What is stored.
+    value: string;
+    // What guests read, when it differs from what is stored (date labels in capitals).
+    display?: string;
+    tag: ElementType;
+    className: string;
+    style: CSSProperties;
+};
+
+export type TextRenderer = (props: InvitationTextProps) => ReactNode;
 
 export type TextRole = 'title' | 'subtitle' | 'paragraph';
 

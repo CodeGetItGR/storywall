@@ -2,6 +2,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { useEditableTextRenderer } from '@/components/saveMyDate/editor/text/EditableTextContext';
 import { InlineTextEditing } from '@/components/saveMyDate/editor/text/InlineTextEditing';
 import { InvitationText } from '@/components/saveMyDate/invitation/InvitationText';
 import { createInvitationEditorStore } from '@/lib/invitation/editorStore';
@@ -12,11 +13,13 @@ import en from '@/messages/en.json';
 const MESSAGE: TextTarget = { kind: 'field', sectionId: 's-baby', path: 'babyMessage' };
 const TITLE: TextTarget = { kind: 'element', elementId: 'e-inv-title' };
 
+// Stands in for the canvas, which hands the editor's drawing of each text to the renderer.
 function Texts() {
+    const render = useEditableTextRenderer();
     return (
         <div className="smd-invitation">
-            <InvitationText target={MESSAGE} value="Σας περιμένουμε!" tag="p" className="text-block" style={{}} />
-            <InvitationText target={TITLE} value="" tag="div" className="text-block" style={{ fontSize: 32 }} />
+            <InvitationText render={render} target={MESSAGE} value="Σας περιμένουμε!" tag="p" className="text-block" style={{}} />
+            <InvitationText render={render} target={TITLE} value="" tag="div" className="text-block" style={{ fontSize: 32 }} />
         </div>
     );
 }

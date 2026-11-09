@@ -26,6 +26,7 @@ export function InvitationElement({ element, contrast, ctx }: InvitationElementP
         case 'text':
             return (
                 <InvitationText
+                    render={ctx.renderText}
                     target={{ kind: 'element', elementId: element.id }}
                     value={element.text}
                     tag="div"

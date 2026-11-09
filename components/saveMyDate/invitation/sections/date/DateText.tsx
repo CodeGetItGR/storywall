@@ -18,6 +18,7 @@ type DateTextProps = {
 export function DateText({ section, path, value, className, tag = 'div', contrast, ctx }: DateTextProps) {
     return (
         <InvitationText
+            render={ctx.renderText}
             target={{ sectionId: section.id, kind: 'field', path }}
             value={value}
             display={dateFieldIsUpper(className) ? upperWithoutAccents(value) : value}

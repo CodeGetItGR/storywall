@@ -1,26 +1,14 @@
-import { createContext, type CSSProperties, type ElementType, type ReactNode, useContext } from 'react';
+import type { InvitationTextProps, TextRenderer } from '@/lib/invitation/textEditing';
 
-import type { TextTarget } from '@/lib/invitation/textEditing';
-
-export type InvitationTextProps = {
-    target: TextTarget;
-    // What is stored.
-    value: string;
-    // What guests read, when it differs from what is stored (date labels in capitals).
-    display?: string;
-    tag: ElementType;
-    className: string;
-    style: CSSProperties;
+type Props = InvitationTextProps & {
+    // The editor's own drawing of a text, from the render context. Guests' pages have none,
+    // so they render plain text on the server and never load the editor's code.
+    render?: TextRenderer;
 };
 
-// The editor puts its editable text here. Guests' pages leave it empty, so the
-// renderer never loads the editor's code.
-export const EditableTextContext = createContext<((props: InvitationTextProps) => ReactNode) | null>(null);
-
 // A text of the invitation: plain for guests, editable in place in the editor.
-export function InvitationText(props: InvitationTextProps) {
-    const renderEditable = useContext(EditableTextContext);
-    if (renderEditable) return renderEditable(props);
+export function InvitationText({ render, ...props }: Props) {
+    if (render) return render(props);
     const { tag: Tag, className, style, value, display } = props;
     return (
         <Tag className={className} style={style}>
