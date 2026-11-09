@@ -393,6 +393,14 @@ describe('proxy invite host', () => {
         expect(res.headers.get('x-middleware-rewrite')).toBeNull();
     });
 
+    it('goes by the Host header, which names the domain behind a proxy', async () => {
+        const viaHost = new NextRequest('http://localhost:3211/maria-and-nikos', { headers: { host: 'invite.localhost:3211' } });
+        expect(new URL((await proxy(viaHost)).headers.get('x-middleware-rewrite') ?? '').pathname).toBe('/save-my-date/i/maria-and-nikos');
+
+        const home = new NextRequest('http://localhost:3211/', { headers: { host: 'invite.localhost:3211' } });
+        expect((await proxy(home)).headers.get('location')).toBe('http://localhost:3211/');
+    });
+
     it('leaves the main site alone', async () => {
         const res = await proxy(new NextRequest('https://www.storywall.gr/maria-and-nikos'));
         expect(res.headers.get('x-middleware-rewrite')).toBeNull();

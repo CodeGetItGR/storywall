@@ -17,9 +17,10 @@ export function publishedInvitationPath(slug: string): string {
     return `${PUBLISHED_INVITATION_PATH_PREFIX}/${slug}`;
 }
 
-// Any host whose first label is `invite`: invite.storywall.gr, invite.staging.storywall.gr, invite.localhost.
-export function isInviteHost(hostname: string): boolean {
-    return hostname.toLowerCase().split('.')[0] === 'invite';
+// Any host whose first label is `invite`, with or without a port: invite.storywall.gr,
+// invite.staging.storywall.gr, invite.localhost:3000.
+export function isInviteHost(host: string): boolean {
+    return host.toLowerCase().split(':')[0].split('.')[0] === 'invite';
 }
 
 export type InviteHostRoute =

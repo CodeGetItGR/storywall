@@ -148,10 +148,13 @@ function sharedLinkLocale(request: NextRequest): Locale | null {
 
 // invite.storywall.gr serves published invitations and the files they load, nothing else. Session
 // cookies are host-only, so none reach it, and nothing here reads one.
-function inviteHostResponse(request: NextRequest): NextResponse {
+function inviteHostResponse(request: NextRequest, host: string): NextResponse {
     const route = inviteHostRoute(request.nextUrl.pathname);
     if (route.kind === 'file') return NextResponse.next();
-    if (route.kind === 'main-site') return NextResponse.redirect(mainSiteUrl(request.nextUrl, SITE_URL));
+    if (route.kind === 'main-site') {
+        const visited = new URL(`${request.nextUrl.pathname}${request.nextUrl.search}`, `${request.nextUrl.protocol}//${host}`);
+        return NextResponse.redirect(mainSiteUrl(visited, SITE_URL));
+    }
 
     const url = request.nextUrl.clone();
     url.pathname = route.path;
@@ -161,7 +164,9 @@ function inviteHostResponse(request: NextRequest): NextResponse {
 }
 
 export async function proxy(request: NextRequest) {
-    if (isInviteHost(request.nextUrl.hostname)) return inviteHostResponse(request);
+    // The Host header names the domain the visitor typed; behind `next start` nextUrl only has the bind address.
+    const host = request.headers.get('host') ?? request.nextUrl.host;
+    if (isInviteHost(host)) return inviteHostResponse(request, host);
 
     const { pathname } = request.nextUrl;
     if (pathname === '/') {

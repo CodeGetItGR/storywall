@@ -21,6 +21,7 @@ describe('isInviteHost', () => {
         expect(isInviteHost('invite.storywall.gr')).toBe(true);
         expect(isInviteHost('invite.staging.storywall.gr')).toBe(true);
         expect(isInviteHost('INVITE.localhost')).toBe(true);
+        expect(isInviteHost('invite.localhost:3211')).toBe(true);
     });
 
     it('leaves every other host alone', () => {
