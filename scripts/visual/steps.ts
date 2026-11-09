@@ -6,9 +6,9 @@ import { join, resolve } from 'node:path';
 
 import type { Browser } from 'playwright-core';
 
-import { captureAll, captureTarget, launchBrowser } from './capture';
+import { captureAll, captureTarget, launchBrowser, MACHINE } from './capture';
 import { findMissingStories } from './missingStories';
-import { buildReport } from './report';
+import { type BaseRecheck, buildReport } from './report';
 import { serveStatic } from './server';
 import { buildCaptureList, type StoryIndex } from './stories';
 import type { CaptureRecord } from './types';
@@ -18,6 +18,11 @@ export const BASE_DIR = join(OUT, 'base');
 export const HEAD_DIR = join(OUT, 'head');
 export const REPORT_DIR = join(OUT, 'report');
 export const BASE_STORYBOOK_DIR = join(OUT, 'base-storybook');
+// The base build kept inside the base folder, so the cache saves it with the captures for the base recheck.
+// The capture jobs can't use it: a share clears its output folder, which is the base folder, before capturing.
+export const SAVED_BASE_STORYBOOK_DIR = join(BASE_DIR, 'storybook');
+// Where the recheck puts the base it takes again. Outside the base folder, so the saved base stays as captured.
+export const BASE_RECHECK_DIR = join(OUT, 'base-recheck');
 export const STORYBOOK_DIR = 'storybook-static';
 
 export const print = (line: string) => process.stdout.write(`${line}\n`);
@@ -26,6 +31,12 @@ export const git = (...gitArgs: string[]) => execFileSync('git', gitArgs, { enco
 
 export function buildStorybook(cwd: string, outDir: string) {
     execSync(`npx storybook build --quiet -o "${outDir}"`, { cwd, stdio: 'inherit', env: { ...process.env, STORYBOOK_DISABLE_TELEMETRY: '1' } });
+    writeBuildCommit(cwd, outDir);
+}
+
+// Notes which commit a build is from, so the base recheck never captures from another commit's build.
+export function writeBuildCommit(cwd: string, outDir: string) {
+    writeFileSync(resolve(cwd, outDir, 'commit.txt'), execFileSync('git', ['rev-parse', 'HEAD'], { cwd, encoding: 'utf8' }).trim());
 }
 
 export function targetsFrom(storybookDir: string) {
@@ -43,6 +54,7 @@ export const readRecords = (dir: string) => JSON.parse(readFileSync(join(dir, 'c
 // Serves a built Storybook to a new browser for as long as `work` runs.
 export async function withStorybook<Result>(storybookDir: string, work: (browser: Browser, origin: string) => Promise<Result>): Promise<Result> {
     const browser = await launchBrowser();
+    print(`Capturing on ${MACHINE}`);
     try {
         const server = await serveStatic(storybookDir);
         try {
@@ -52,6 +64,33 @@ export async function withStorybook<Result>(storybookDir: string, work: (browser
         }
     } finally {
         await browser.close();
+    }
+}
+
+// Serves the base build while `work` runs, so a capture can have its base taken again on this machine.
+// Without the build or its story index there is nothing to capture from, and the report runs without a recheck.
+// A build from another commit could clear a real change, so it is never used.
+export async function withBaseRecheck<Result>(
+    browser: Browser,
+    storybookDir: string | undefined,
+    baseSha: string,
+    outDir: string,
+    work: (baseRecheck: BaseRecheck | undefined) => Promise<Result>,
+): Promise<Result> {
+    if (!storybookDir || !existsSync(join(storybookDir, 'index.json'))) return work(undefined);
+    const commitFile = join(storybookDir, 'commit.txt');
+    const commit = existsSync(commitFile) ? readFileSync(commitFile, 'utf8').trim() : 'unknown';
+    if (commit !== baseSha) {
+        print(`No base recheck: the base build is for ${commit}, not ${baseSha}`);
+        return work(undefined);
+    }
+    rmSync(outDir, { recursive: true, force: true });
+    mkdirSync(outDir, { recursive: true });
+    const server = await serveStatic(storybookDir);
+    try {
+        return await work({ dir: outDir, retake: (target) => captureTarget(browser, server.origin, target, outDir) });
+    } finally {
+        await server.close();
     }
 }
 
@@ -86,8 +125,9 @@ export function buildCommitStorybook(sha: string, outDir: string): boolean {
     }
 }
 
-// Reuses saved captures when they belong to this commit. Otherwise builds and captures that commit.
-// A commit from before Storybook existed has no captures, so all stories count as new.
+// Reuses saved captures when they belong to this commit. Otherwise builds and captures that commit,
+// keeping its build in the base folder for the base recheck. A commit from before Storybook existed
+// has no captures, so all stories count as new.
 export async function loadOrBuildBase(browser: Browser, baseSha: string): Promise<CaptureRecord[]> {
     const shaFile = join(BASE_DIR, 'sha.txt');
     if (existsSync(shaFile) && readFileSync(shaFile, 'utf8').trim() === baseSha) {
@@ -97,28 +137,32 @@ export async function loadOrBuildBase(browser: Browser, baseSha: string): Promis
     print(`Building captures for ${baseSha}`);
     rmSync(BASE_DIR, { recursive: true, force: true });
     mkdirSync(BASE_DIR, { recursive: true });
-    const records = buildCommitStorybook(baseSha, BASE_STORYBOOK_DIR) ? await captureBuild(browser, BASE_STORYBOOK_DIR, BASE_DIR) : [];
+    const records = buildCommitStorybook(baseSha, SAVED_BASE_STORYBOOK_DIR) ? await captureBuild(browser, SAVED_BASE_STORYBOOK_DIR, BASE_DIR) : [];
     saveRecords(BASE_DIR, records, baseSha);
     return records;
 }
 
 // Compares the head captures with the base and writes the report. `origin` serves the head build, for retakes.
-export async function writeReport(browser: Browser, origin: string, headRecords: CaptureRecord[], baseSha: string) {
+// With `baseStorybookDir`, a capture that still differs after its retakes has its base taken again on this machine.
+export async function writeReport(browser: Browser, origin: string, headRecords: CaptureRecord[], baseSha: string, baseStorybookDir?: string) {
     const headSha = git('rev-parse', 'HEAD');
     rmSync(REPORT_DIR, { recursive: true, force: true });
     const baseRecords = await loadOrBuildBase(browser, baseSha);
     const added = git('diff', '--diff-filter=A', '--name-only', baseSha, 'HEAD').split('\n').filter(Boolean);
-    const manifest = await buildReport({
-        baseDir: BASE_DIR,
-        headDir: HEAD_DIR,
-        reportDir: REPORT_DIR,
-        baseRecords,
-        headRecords,
-        baseSha,
-        headSha,
-        missingStories: findMissingStories(added, existsSync),
-        retake: (target) => captureTarget(browser, origin, target, HEAD_DIR),
-    });
+    const manifest = await withBaseRecheck(browser, baseStorybookDir, baseSha, BASE_RECHECK_DIR, (baseRecheck) =>
+        buildReport({
+            baseDir: BASE_DIR,
+            headDir: HEAD_DIR,
+            reportDir: REPORT_DIR,
+            baseRecords,
+            headRecords,
+            baseSha,
+            headSha,
+            missingStories: findMissingStories(added, existsSync),
+            retake: (target) => captureTarget(browser, origin, target, HEAD_DIR),
+            baseRecheck,
+        }),
+    );
     copyFileSync(join('scripts', 'visual', 'report', 'dist', 'index.html'), join(REPORT_DIR, 'index.html'));
     const { changed, removed, failed } = manifest.counts;
     print(`${changed} changed, ${manifest.counts.new} new, ${removed} removed, ${failed} failed, of ${manifest.totalCaptures} captures.`);
