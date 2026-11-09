@@ -202,7 +202,7 @@ All four live in `.github/workflows/`.
 | `publish` | `statuses: write`, `pull-requests: write`, the deploy key | `publish.mjs` from the PR's base commit, with no `npm ci` and no Storybook build. Treats the artifact as data and validates it |
 | `finish` (`if: failure() \|\| cancelled()`) | `statuses: write` | Sets the check to error, linking to the run |
 
-New pushes cancel an older run for the same PR. The capture job has a 30-minute timeout, with a target of 15 minutes for the whole run. If phase 3 measures more, captures are split across parallel jobs by a stable hash of the story id.
+New pushes cancel an older run for the same PR. Phase 3 measured about 20 minutes against a target of 15, so KAN-166 split the captures across 6 jobs by position in the sorted list. See `2026-11-08-visual-parallel-capture-design.md`.
 
 **Baseline cache key:** `visual-base-<sha>-<toolHash>-pw<version>`, where `toolHash` covers `capture.ts`, `stories.ts` and `config.ts`, and `<version>` is the Playwright version. If the tool changes, captures are retaken with the new settings. A cache miss only makes a run slower, so eviction is safe.
 
