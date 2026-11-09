@@ -3,6 +3,7 @@
 import { type ChangeEvent, useCallback, useMemo } from 'react';
 
 import type { InlineTextEdit } from '@/hooks/useInlineTextEdit';
+import { useShownTextStyle } from '@/hooks/useShownTextStyle';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { TextStyle } from '@/lib/invitation/primitives';
 import {
@@ -19,37 +20,11 @@ import type { InvitationFontDto } from '@/lib/invitation/uploadedFonts';
 
 type Align = NonNullable<TextStyle['align']>;
 
-// What the text shows when it has no setting of its own: the page's own look.
-type Shown = { size?: number; italic: boolean; bold: boolean; color?: string };
-
-function rgbToHex(rgb: string): string | undefined {
-    const parts = rgb.match(/\d+(\.\d+)?/g);
-    if (!parts || parts.length < 3) return undefined;
-    return `#${parts
-        .slice(0, 3)
-        .map((part) => Math.round(Number(part)).toString(16).padStart(2, '0'))
-        .join('')}`;
-}
-
-function readShown(element: HTMLElement | null): Shown {
-    if (!element) return { italic: false, bold: false };
-    const css = getComputedStyle(element);
-    const size = Math.round(parseFloat(css.fontSize));
-    return {
-        size: Number.isFinite(size) && size > 0 ? size : undefined,
-        italic: css.fontStyle === 'italic',
-        bold: Number(css.fontWeight) >= 600,
-        color: rgbToHex(css.color),
-    };
-}
-
 // The text toolbar's values for the text being edited, and what each control does to it.
 export function useTextToolbar(edit: InlineTextEdit, document: InvitationDocument, theme: ThemeDesign, uploadedFonts: InvitationFontDto[] = []) {
     const { snapshot, element, setStyle, applyColor, addText } = edit;
     const style: TextStyle = useMemo(() => snapshot?.style ?? {}, [snapshot]);
-    // Read after the page drew the text; the style changes above redraw it.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const shown = useMemo(() => readShown(element), [element, style]);
+    const shown = useShownTextStyle(element);
 
     const fonts = useMemo(() => fontOptions(document, theme, uploadedFonts), [document, theme, uploadedFonts]);
     const swatches = useMemo(() => textColorSwatches(document, theme), [document, theme]);
