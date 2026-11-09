@@ -67,6 +67,23 @@ describe('base build for the recheck', () => {
         }
     });
 
+    it('uses the -sb key and the base folder in every cache step', () => {
+        const buildKey = { 'visual-check': 'base-key', 'visual-baseline': 'key' } as const;
+        for (const name of ['visual-check', 'visual-baseline'] as const) {
+            const workflow = read(name);
+            const steps = workflow.split(/\n {12}- /).filter((step) => step.includes('actions/cache/'));
+            expect(steps.length, name).toBeGreaterThan(0);
+            const output = `${buildKey[name]}: \${{ steps.lookup.outputs.cache-primary-key }}`;
+            expect(job(workflow, 'build'), name).toContain(output);
+            for (const step of steps) {
+                expect(step.match(/^\s+path: (.*)$/m)?.[1], step).toBe('visual-output/base');
+                const key = step.match(/^\s+key: (.*)$/m)?.[1] ?? '';
+                const derived = `\${{ needs.build.outputs.${buildKey[name]} }}`;
+                expect(key === derived || (key.startsWith('visual-base-') && key.endsWith(`-pw${version}-sb`)), key).toBe(true);
+            }
+        }
+    });
+
     it('keeps the base build in the saved base folder', () => {
         const compare = job(read('visual-check'), 'compare');
         expect(compare).toMatch(/name: visual-base-storybook\n\s+path: visual-output\/base\/storybook\n/);

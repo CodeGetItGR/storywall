@@ -7,8 +7,12 @@ import { join } from 'node:path';
 import type { Browser } from 'playwright-core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { captureTarget } from './capture';
 import type { BaseRecheck } from './report';
 import { withBaseRecheck, writeBuildCommit } from './steps';
+import type { CaptureTarget } from './types';
+
+vi.mock('./capture', async (importOriginal) => ({ ...(await importOriginal<typeof import('./capture')>()), captureTarget: vi.fn() }));
 
 const BASE_SHA = 'a'.repeat(40);
 const OTHER_SHA = 'b'.repeat(40);
@@ -95,6 +99,30 @@ describe('withBaseRecheck', () => {
         expect(existsSync(recheckDir)).toBe(true);
         expect(existsSync(join(recheckDir, 'old.png'))).toBe(false);
     });
+
+    it('captures the recheck from the base build into its own folder', async () => {
+        const storybook = baseBuild(BASE_SHA);
+        const recheckDir = join(root, 'recheck');
+        const target: CaptureTarget = {
+            id: 'a-story--default',
+            storyId: 'a-story--default',
+            title: 'A',
+            name: 'Default',
+            locale: 'en',
+            width: 'desktop',
+        };
+        let fetched: string | undefined;
+        vi.mocked(captureTarget).mockReset();
+        vi.mocked(captureTarget).mockImplementation(async (_browser, origin, given) => {
+            fetched = await (await fetch(`${origin}/commit.txt`)).text();
+            return { ...given, status: 'ok', hash: 'hash', error: null };
+        });
+        await withBaseRecheck(browser, storybook, BASE_SHA, recheckDir, async (recheck) => recheck!.retake(target));
+        expect(captureTarget).toHaveBeenCalledTimes(1);
+        expect(captureTarget).toHaveBeenCalledWith(browser, expect.stringMatching(/^http:\/\/127\.0\.0\.1:\d+$/), target, recheckDir);
+        expect(fetched).toBe(BASE_SHA);
+        vi.mocked(captureTarget).mockReset();
+    });
 });
 
 describe('writeBuildCommit', () => {
@@ -102,9 +130,25 @@ describe('writeBuildCommit', () => {
         const repo = mkdtempSync(join(tmpdir(), 'visual-commit-'));
         try {
             execFileSync('git', ['init', '-q'], { cwd: repo });
-            execFileSync('git', ['-c', 'user.email=test@example.com', '-c', 'user.name=test', 'commit', '-q', '--allow-empty', '-m', 'base'], {
-                cwd: repo,
-            });
+            execFileSync(
+                'git',
+                [
+                    '-c',
+                    'user.email=test@example.com',
+                    '-c',
+                    'user.name=test',
+                    '-c',
+                    'commit.gpgsign=false',
+                    'commit',
+                    '-q',
+                    '--allow-empty',
+                    '-m',
+                    'base',
+                ],
+                {
+                    cwd: repo,
+                },
+            );
             mkdirSync(join(repo, 'out'));
             writeBuildCommit(repo, 'out');
             expect(readFileSync(join(repo, 'out', 'commit.txt'), 'utf8')).toBe(
