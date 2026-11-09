@@ -7997,7 +7997,7 @@
         "analyticsLabel": "Analytics",
         "analyticsBody": "Lets Google Analytics count visits and see which pages people use, and lets us see which of our links led to a sign-up or a sale.",
         "adsLabel": "Advertising",
-        "adsBody": "Lets Google Ads measure which ads bring people to StoryWall.",
+        "adsBody": "Lets Google Ads and Meta measure which ads bring people to StoryWall.",
         "save": "Save",
         "close": "Close",
         "openSettings": "Cookie settings"
