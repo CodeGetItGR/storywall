@@ -23,7 +23,8 @@ describe('useSectionActions', () => {
         const { result } = renderSectionActions();
         const { controls } = result.current.actions;
 
-        expect(controls[0]).toMatchObject({ canMoveUp: false, canMoveDown: true, canAddAfter: true });
+        expect(controls[0]).toMatchObject({ canMoveUp: false, canMoveDown: true, canAddBefore: true, canAddAfter: true });
+        expect(controls[1]).toMatchObject({ canAddBefore: false });
         // The section above the footer can't move past it.
         expect(controls.at(-2)).toMatchObject({ canMoveUp: true, canMoveDown: false, canAddAfter: true });
         expect(controls.at(-1)).toMatchObject({ canMoveUp: false, canMoveDown: false, canAddAfter: false });
@@ -33,7 +34,7 @@ describe('useSectionActions', () => {
         const { result } = renderSectionActions();
         const before = ids(result);
 
-        act(() => result.current.actions.addList.open('s-top'));
+        act(() => result.current.actions.addList.open({ id: 's-top', place: 'after' }));
         expect(result.current.actions.addList.isOpen).toBe(true);
         expect(result.current.actions.addList.types).toEqual(expect.arrayContaining(['blank', 'photo']));
         expect(result.current.actions.addList.types).not.toContain('photoFrame');
@@ -47,6 +48,48 @@ describe('useSectionActions', () => {
 
         act(() => result.current.store.getState().undo());
         expect(ids(result)).toEqual(before);
+    });
+
+    it('adds above the first section', () => {
+        const { result } = renderSectionActions();
+        act(() => result.current.actions.addList.open({ id: 's-top', place: 'before' }));
+        act(() => result.current.actions.addList.add('blank'));
+        expect(result.current.document.sections[0].type).toBe('blank');
+        expect(ids(result)[1]).toBe('s-top');
+    });
+
+    it('can still add once every section but the footer is deleted', () => {
+        const { result } = renderSectionActions();
+        for (const { section } of result.current.actions.controls.filter(({ section }) => !section.locked)) {
+            act(() => result.current.actions.deleteConfirm.ask(section.id));
+            act(() => result.current.actions.deleteConfirm.confirm());
+        }
+        expect(ids(result)).toEqual(['s-footer']);
+        expect(result.current.actions.controls[0]).toMatchObject({ canAddBefore: true });
+
+        act(() => result.current.actions.addList.open({ id: 's-footer', place: 'before' }));
+        act(() => result.current.actions.addList.add('faq'));
+        expect(result.current.document.sections.map((section) => section.type)).toEqual(['faq', 'footer']);
+    });
+
+    it('closes the add list, adding nothing, when an undo takes its section away', () => {
+        const { result } = renderSectionActions();
+        act(() => result.current.actions.addList.open({ id: 's-top', place: 'after' }));
+        act(() => result.current.actions.addList.add('blank'));
+        const added = result.current.document.sections[1].id;
+
+        act(() => result.current.actions.addList.open({ id: added, place: 'after' }));
+        act(() => result.current.store.getState().undo());
+        expect(result.current.actions.addList.isOpen).toBe(false);
+        const before = ids(result);
+        const activeBefore = result.current.actions.activeId;
+        act(() => result.current.actions.addList.add('photo'));
+        expect(ids(result)).toEqual(before);
+        expect(result.current.actions.activeId).toBe(activeBefore);
+
+        // A redo brings the section back, but not the list.
+        act(() => result.current.store.getState().redo());
+        expect(result.current.actions.addList.isOpen).toBe(false);
     });
 
     it('lets an admin add a framed photo', () => {
@@ -107,7 +150,7 @@ describe('useSectionActions', () => {
 
     it('closes the question when an undo takes the section away', () => {
         const { result } = renderSectionActions();
-        act(() => result.current.actions.addList.open('s-top'));
+        act(() => result.current.actions.addList.open({ id: 's-top', place: 'after' }));
         act(() => result.current.actions.addList.add('blank'));
         const added = result.current.document.sections[1].id;
 

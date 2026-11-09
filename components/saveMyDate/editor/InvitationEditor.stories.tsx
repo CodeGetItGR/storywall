@@ -106,8 +106,9 @@ export const SaveFailed: Story = {
 export const AddSection: Story = {
     play: async ({ canvasElement, globals }) => {
         const copy = copyFor(globals).InvitationEditor;
-        const [firstPlus] = within(canvasElement).getAllByRole('button', { name: copy.sections.add });
-        await userEvent.click(firstPlus);
+        // The first "+" sits above the top section, the second under it.
+        const [, underTop] = within(canvasElement).getAllByRole('button', { name: copy.sections.add });
+        await userEvent.click(underTop);
         const sheet = await waitForOpen('dialog');
         await userEvent.click(within(sheet).getByRole('button', { name: copy.sectionNames.photo }));
         await waitFor(() => expect(within(canvasElement).getAllByRole('group', { name: copy.sectionNames.photo })).toHaveLength(2));

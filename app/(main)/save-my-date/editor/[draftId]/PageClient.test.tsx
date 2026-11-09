@@ -63,6 +63,15 @@ function sectionOrder() {
     return Array.from(document.querySelectorAll('[data-editor-section]')).map((element) => element.getAttribute('data-editor-section'));
 }
 
+// A section's "+" buttons: above it (the first section only), then below it.
+function addButtons(name: string) {
+    return within(section(name)).getAllByRole('button', { name: 'Add section' });
+}
+
+function frameOf(id: string) {
+    return document.querySelector<HTMLElement>(`[data-editor-section="${id}"]`)!;
+}
+
 // Opens a section's menu and picks one of its items.
 async function pickFromMenu(name: string, item: string) {
     fireEvent.click(within(section(name)).getByRole('button', { name: 'Section options' }));
@@ -212,10 +221,47 @@ describe('Invitation editor page', () => {
         expect(section('Dress code')).toBeInTheDocument();
     });
 
+    it('moves focus to the next section after a delete', async () => {
+        await openEditor();
+        const order = sectionOrder();
+        const next = order[order.indexOf('s-dressCode') + 1]!;
+        await pickFromMenu('Dress code', 'Delete');
+        fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Delete' }));
+
+        await waitFor(() => expect(document.activeElement).toBe(frameOf(next)));
+    });
+
+    it('adds above the first section', async () => {
+        await openEditor();
+        const [above] = addButtons('Top section');
+        fireEvent.click(above);
+        fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Blank section' }));
+
+        const order = sectionOrder();
+        expect(order[1]).toBe('s-top');
+        expect(frameOf(order[0]!)).toHaveAttribute('data-active', 'true');
+    });
+
+    it('closes the add list when an undo takes its section away', async () => {
+        await openEditor();
+        const before = sectionOrder();
+        fireEvent.click(addButtons('Top section').at(-1)!);
+        fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Blank section' }));
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+        const added = sectionOrder()[1]!;
+
+        fireEvent.click(within(frameOf(added)).getByRole('button', { name: 'Add section' }));
+        await screen.findByRole('dialog');
+        fireEvent.keyDown(window, { key: 'z', ctrlKey: true });
+
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+        expect(sectionOrder()).toEqual(before);
+    });
+
     it('adds a section below the "+" and saves it', async () => {
         await openEditor();
         const count = sectionOrder().length;
-        fireEvent.click(within(section('Top section')).getByRole('button', { name: 'Add section' }));
+        fireEvent.click(addButtons('Top section').at(-1)!);
 
         // Every section this wedding may have once is on the page already.
         const sheet = await screen.findByRole('dialog');

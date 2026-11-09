@@ -41,7 +41,7 @@ const meta = {
     decorators: [withDragList],
     parameters: { layout: 'fullscreen' },
     args: {
-        controls: { section: faq, canMoveUp: true, canMoveDown: true, canAddAfter: true },
+        controls: { section: faq, canMoveUp: true, canMoveDown: true, canAddBefore: false, canAddAfter: true },
         name: 'FAQ',
         isActive: false,
         actions: { activate: fn(), toggleVisible: fn(), move: fn(), askDelete: fn(), openAddList: fn() },
@@ -64,7 +64,7 @@ export const Active: Story = {
 export const Hidden: Story = {
     args: {
         isActive: true,
-        controls: { section: hiddenFaq, canMoveUp: true, canMoveDown: true, canAddAfter: true },
+        controls: { section: hiddenFaq, canMoveUp: true, canMoveDown: true, canAddBefore: false, canAddAfter: true },
         children: sectionContent(hiddenFaq),
     },
 };
@@ -72,15 +72,33 @@ export const Hidden: Story = {
 // The footer stays where it is: no tools and no "+".
 export const Locked: Story = {
     args: {
-        controls: { section: footer, canMoveUp: false, canMoveDown: false, canAddAfter: false },
+        controls: { section: footer, canMoveUp: false, canMoveDown: false, canAddBefore: false, canAddAfter: false },
         name: 'Footer',
         children: sectionContent(footer),
     },
 };
 
+// The first section also has a "+" above it.
+export const First: Story = {
+    args: { controls: { section: faq, canMoveUp: false, canMoveDown: true, canAddBefore: true, canAddAfter: true } },
+};
+
+// Once every other section is deleted, the footer keeps a "+" above it.
+export const OnlyFooter: Story = {
+    args: {
+        controls: { section: footer, canMoveUp: false, canMoveDown: false, canAddBefore: true, canAddAfter: false },
+        name: 'Footer',
+        children: sectionContent(footer),
+    },
+    play: async ({ args, canvasElement, globals }) => {
+        await userEvent.click(within(canvasElement).getByRole('button', { name: copyFor(globals).InvitationEditor.sections.add }));
+        await expect(args.actions.openAddList).toHaveBeenCalledWith({ id: footer.id, place: 'before' });
+    },
+};
+
 // The first section can't move up.
 export const Menu: Story = {
-    args: { isActive: true, controls: { section: faq, canMoveUp: false, canMoveDown: true, canAddAfter: true } },
+    args: { isActive: true, controls: { section: faq, canMoveUp: false, canMoveDown: true, canAddBefore: false, canAddAfter: true } },
     play: async ({ canvasElement, globals }) => {
         const copy = copyFor(globals).InvitationEditor.sections;
         await userEvent.click(within(canvasElement).getByRole('button', { name: copy.options }));
@@ -99,7 +117,7 @@ export const Tools: Story = {
         await userEvent.click(frame.getByRole('button', { name: copy.hide }));
         await expect(args.actions.toggleVisible).toHaveBeenCalledWith(faq.id);
         await userEvent.click(frame.getByRole('button', { name: copy.add }));
-        await expect(args.actions.openAddList).toHaveBeenCalledWith(faq.id);
+        await expect(args.actions.openAddList).toHaveBeenCalledWith({ id: faq.id, place: 'after' });
         await userEvent.click(frame.getByRole('button', { name: copy.options }));
         await userEvent.click(within(await waitForOpen('menu')).getByRole('menuitem', { name: copy.delete }));
         await expect(args.actions.askDelete).toHaveBeenCalledWith(faq.id);

@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 
-import type { MoveDirection } from '@/lib/invitation/sectionActions';
+import type { MoveDirection, SectionSlot } from '@/lib/invitation/sectionActions';
 
 // What a section's tools can do, for any section by its id.
 export type SectionFrameActions = {
@@ -10,7 +10,7 @@ export type SectionFrameActions = {
     toggleVisible: (id: string) => void;
     move: (id: string, direction: MoveDirection) => void;
     askDelete: (id: string) => void;
-    openAddList: (afterId: string) => void;
+    openAddList: (slot: SectionSlot) => void;
 };
 
 // The same actions, bound to one section.
@@ -22,7 +22,8 @@ export function useSectionFrameHandlers(id: string, actions: SectionFrameActions
             onMoveUp: () => actions.move(id, -1),
             onMoveDown: () => actions.move(id, 1),
             onDelete: () => actions.askDelete(id),
-            onAdd: () => actions.openAddList(id),
+            onAddBefore: () => actions.openAddList({ id, place: 'before' }),
+            onAddAfter: () => actions.openAddList({ id, place: 'after' }),
         }),
         [actions, id],
     );

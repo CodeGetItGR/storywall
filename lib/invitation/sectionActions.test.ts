@@ -1,17 +1,21 @@
 import { describe, expect, it } from 'vitest';
 
 import type { InvitationDocument } from '@/lib/invitation/document';
+import { MAX_SECTIONS } from '@/lib/invitation/document';
 import { createInvitationEditorStore } from '@/lib/invitation/editorStore';
 import { createSection } from '@/lib/invitation/newSection';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import {
     canAddAfter,
+    canAddBefore,
     canMoveSection,
     deleteSection,
     draggedOrder,
-    insertSectionAfter,
+    insertSection,
     moveSection,
     reorderSections,
+    sectionControls,
+    sectionToFocusAfterDelete,
     setSectionVisible,
 } from '@/lib/invitation/sectionActions';
 
@@ -48,6 +52,27 @@ describe('section rules', () => {
         expect(canAddAfter(sections, 'missing')).toBe(false);
     });
 
+    it('adds above the first section only', () => {
+        expect(canAddBefore(sections, 's-top')).toBe(true);
+        expect(canAddBefore(sections, 's-date')).toBe(false);
+        expect(canAddBefore(sections, 'missing')).toBe(false);
+        expect(canAddBefore([], 's-top')).toBe(false);
+    });
+
+    it('keeps a "+" on a page down to its footer', () => {
+        const [footer] = sectionControls({ ...sampleDocument(), sections: [SAMPLE_SECTIONS.footer] });
+        expect(footer).toMatchObject({ canAddBefore: true, canAddAfter: false, canMoveUp: false, canMoveDown: false });
+    });
+
+    it('moves focus after a delete to the next section with tools, else the one before', () => {
+        expect(sectionToFocusAfterDelete(sections, 's-date')).toBe('s-rsvp');
+        // Below rsvp there is only the footer, so focus goes up.
+        expect(sectionToFocusAfterDelete(sections, 's-rsvp')).toBe('s-date');
+        // With no other section that has tools, the footer takes it.
+        expect(sectionToFocusAfterDelete([SAMPLE_SECTIONS.top, SAMPLE_SECTIONS.footer], 's-top')).toBe('s-footer');
+        expect(sectionToFocusAfterDelete(sections, 'missing')).toBeNull();
+    });
+
     it('drags into place but never past a locked section', () => {
         expect(draggedOrder(sections, 's-rsvp', 's-top')).toEqual(['s-rsvp', 's-top', 's-date', 's-footer']);
         expect(draggedOrder(sections, 's-top', 's-rsvp')).toEqual(['s-date', 's-rsvp', 's-top', 's-footer']);
@@ -61,7 +86,7 @@ describe('section edits through the editor store', () => {
     it('adds a section right after the one picked, as one undo step', () => {
         const store = storeWithSample();
         const added = createSection('faq', 'WEDDING');
-        store.getState().edit(insertSectionAfter('s-date', added));
+        store.getState().edit(insertSection({ id: 's-date', place: 'after' }, added));
         expect(ids(store.getState().document)).toEqual(['s-top', 's-date', added.id, 's-rsvp', 's-footer']);
 
         store.getState().undo();
@@ -70,9 +95,25 @@ describe('section edits through the editor store', () => {
         expect(store.getState().document.sections[2]).toEqual(added);
     });
 
-    it('never adds after the footer', () => {
+    it('never adds after the footer, or above anything but the first section', () => {
         const store = storeWithSample();
-        store.getState().edit(insertSectionAfter('s-footer', createSection('faq', 'WEDDING')));
+        store.getState().edit(insertSection({ id: 's-footer', place: 'after' }, createSection('faq', 'WEDDING')));
+        store.getState().edit(insertSection({ id: 's-date', place: 'before' }, createSection('faq', 'WEDDING')));
+        expect(store.getState().past).toHaveLength(0);
+    });
+
+    it('adds above the footer once every other section is gone', () => {
+        const store = createInvitationEditorStore({ ...sampleDocument(), sections: [SAMPLE_SECTIONS.footer] });
+        const added = createSection('faq', 'WEDDING');
+        store.getState().edit(insertSection({ id: 's-footer', place: 'before' }, added));
+        expect(ids(store.getState().document)).toEqual([added.id, 's-footer']);
+    });
+
+    it('stops adding at the section limit', () => {
+        const blanks = Array.from({ length: MAX_SECTIONS - 1 }, () => createSection('blank', 'WEDDING'));
+        const store = createInvitationEditorStore({ ...sampleDocument(), sections: [...blanks, SAMPLE_SECTIONS.footer] });
+        store.getState().edit(insertSection({ id: blanks[0].id, place: 'after' }, createSection('blank', 'WEDDING')));
+        expect(store.getState().document.sections).toHaveLength(MAX_SECTIONS);
         expect(store.getState().past).toHaveLength(0);
     });
 

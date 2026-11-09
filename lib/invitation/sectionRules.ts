@@ -1,4 +1,4 @@
-import type { InvitationDocument } from '@/lib/invitation/document';
+import { type InvitationDocument, MAX_SECTIONS } from '@/lib/invitation/document';
 import type { NewSectionType } from '@/lib/invitation/newSection';
 import { MULTI_INSTANCE_SECTION_TYPES, SECTION_TYPES, type SectionType } from '@/lib/invitation/sections';
 
@@ -57,8 +57,10 @@ export function sectionsForEventType(eventType: string): EventSections {
 }
 
 // What the add list offers, in the old editor's order. A section that may
-// appear once drops out while it is on the page.
+// appear once drops out while it is on the page, and nothing is offered once
+// the page has as many sections as a document may hold.
 export function addableSectionTypes(document: InvitationDocument, eventType: string, mode: EditorMode): NewSectionType[] {
+    if (document.sections.length >= MAX_SECTIONS) return [];
     const { default: defaults, optional } = sectionsForEventType(eventType);
     const allowed = new Set([...defaults, ...optional]);
     const used = new Set(document.sections.map((section) => section.type));

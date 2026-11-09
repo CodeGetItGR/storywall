@@ -69,6 +69,7 @@ export function EditorSections({ actions, children }: EditorSectionsProps) {
                 sectionName={deleteConfirm.sectionType ? t(deleteConfirm.sectionType) : ''}
                 onDelete={deleteConfirm.confirm}
                 onCancel={deleteConfirm.cancel}
+                finalFocus={deleteConfirm.finalFocus}
             />
         </>
     );

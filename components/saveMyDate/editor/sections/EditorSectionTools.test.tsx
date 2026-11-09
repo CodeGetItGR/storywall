@@ -8,9 +8,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AddSectionSheet } from '@/components/saveMyDate/editor/sections/AddSectionSheet';
 import { DeleteSectionDialog } from '@/components/saveMyDate/editor/sections/DeleteSectionDialog';
 import { EditorSectionFrame } from '@/components/saveMyDate/editor/sections/EditorSectionFrame';
-import type { SectionControls } from '@/hooks/useSectionActions';
 import type { SectionFrameActions } from '@/hooks/useSectionFrameHandlers';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
+import type { SectionControls } from '@/lib/invitation/sectionActions';
 import en from '@/messages/en.json';
 
 function renderIn(node: ReactNode) {
@@ -26,7 +26,7 @@ function frameActions(): SectionFrameActions {
 }
 
 function renderFrame(controls: Partial<SectionControls> & Pick<SectionControls, 'section'>, actions = frameActions()) {
-    const full: SectionControls = { canMoveUp: true, canMoveDown: true, canAddAfter: true, ...controls };
+    const full: SectionControls = { canMoveUp: true, canMoveDown: true, canAddBefore: false, canAddAfter: true, ...controls };
     renderIn(
         <DndContext>
             <SortableContext items={[full.section.id]}>
@@ -57,7 +57,7 @@ describe('EditorSectionFrame', () => {
 
         expect(actions.activate).toHaveBeenCalledWith(id);
         expect(actions.toggleVisible).toHaveBeenCalledWith(id);
-        expect(actions.openAddList).toHaveBeenCalledWith(id);
+        expect(actions.openAddList).toHaveBeenCalledWith({ id, place: 'after' });
         expect(actions.move).toHaveBeenCalledWith(id, -1);
         expect(actions.askDelete).toHaveBeenCalledWith(id);
     });
@@ -78,7 +78,28 @@ describe('EditorSectionFrame', () => {
     it('gives a locked section no tools', () => {
         const { frame } = renderFrame({ section: SAMPLE_SECTIONS.footer, canMoveUp: false, canMoveDown: false, canAddAfter: false });
         expect(within(frame).queryAllByRole('button')).toHaveLength(0);
-        expect(frame).not.toHaveAttribute('tabindex');
+        // Not a tab stop, but it can take focus after a delete.
+        expect(frame).toHaveAttribute('tabindex', '-1');
+    });
+
+    it('offers a "+" above the footer when it is the only section left', () => {
+        const actions = frameActions();
+        const { frame } = renderFrame(
+            { section: SAMPLE_SECTIONS.footer, canMoveUp: false, canMoveDown: false, canAddBefore: true, canAddAfter: false },
+            actions,
+        );
+        fireEvent.click(within(frame).getByRole('button', { name: 'Add section' }));
+        expect(actions.openAddList).toHaveBeenCalledWith({ id: SAMPLE_SECTIONS.footer.id, place: 'before' });
+    });
+
+    it('offers a "+" above and below the first section', () => {
+        const actions = frameActions();
+        const { frame } = renderFrame({ section: SAMPLE_SECTIONS.faq, canAddBefore: true }, actions);
+        const [above, below] = within(frame).getAllByRole('button', { name: 'Add section' });
+        fireEvent.click(above);
+        fireEvent.click(below);
+        expect(actions.openAddList).toHaveBeenNthCalledWith(1, { id: SAMPLE_SECTIONS.faq.id, place: 'before' });
+        expect(actions.openAddList).toHaveBeenNthCalledWith(2, { id: SAMPLE_SECTIONS.faq.id, place: 'after' });
     });
 });
 

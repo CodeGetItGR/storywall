@@ -5,9 +5,9 @@ import type { ReactNode } from 'react';
 
 import { SectionAddButton } from '@/components/saveMyDate/editor/sections/SectionAddButton';
 import { SectionToolbar } from '@/components/saveMyDate/editor/sections/SectionToolbar';
-import type { SectionControls } from '@/hooks/useSectionActions';
 import { type SectionFrameActions, useSectionFrameHandlers } from '@/hooks/useSectionFrameHandlers';
 import { useSectionSortable } from '@/hooks/useSectionSortable';
+import type { SectionControls } from '@/lib/invitation/sectionActions';
 import { cn } from '@/lib/utils';
 
 type EditorSectionFrameProps = {
@@ -23,9 +23,9 @@ type EditorSectionFrameProps = {
 // focus and on the section last tapped, as in the old editor.
 export function EditorSectionFrame({ controls, name, isActive, actions, children }: EditorSectionFrameProps) {
     const t = useTranslations('InvitationEditor.sections');
-    const { section, canMoveUp, canMoveDown, canAddAfter } = controls;
+    const { section, canMoveUp, canMoveDown, canAddBefore, canAddAfter } = controls;
     const { setNodeRef, style, isDragging, drag } = useSectionSortable(section.id, name, section.locked);
-    const { onActivate, onToggleVisible, onMoveUp, onMoveDown, onDelete, onAdd } = useSectionFrameHandlers(section.id, actions);
+    const { onActivate, onToggleVisible, onMoveUp, onMoveDown, onDelete, onAddBefore, onAddAfter } = useSectionFrameHandlers(section.id, actions);
     const showsTools = isActive || isDragging;
 
     return (
@@ -36,7 +36,8 @@ export function EditorSectionFrame({ controls, name, isActive, actions, children
             data-active={showsTools}
             role="group"
             aria-label={name}
-            tabIndex={section.locked ? undefined : 0}
+            // A locked section isn't a tab stop, but takes focus after the section next to it is deleted.
+            tabIndex={section.locked ? -1 : 0}
             onPointerDown={onActivate}
             onFocus={onActivate}
             className={cn(
@@ -70,8 +71,11 @@ export function EditorSectionFrame({ controls, name, isActive, actions, children
                 />
             )}
 
+            {/* Add above */}
+            {canAddBefore && <SectionAddButton placement="top" onClick={onAddBefore} />}
+
             {/* Add below */}
-            {canAddAfter && <SectionAddButton onClick={onAdd} />}
+            {canAddAfter && <SectionAddButton placement="bottom" onClick={onAddAfter} />}
         </div>
     );
 }

@@ -4,10 +4,10 @@ import { useCallback, useMemo, useState } from 'react';
 
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { createSection, type NewSectionType } from '@/lib/invitation/newSection';
-import { insertSectionAfter, type SectionEdit } from '@/lib/invitation/sectionActions';
+import { canAddAt, insertSection, type SectionEdit, type SectionSlot } from '@/lib/invitation/sectionActions';
 import { addableSectionTypes, type EditorMode } from '@/lib/invitation/sectionRules';
 
-// The "+" between two sections: which sections it offers and adding one.
+// A "+" on the canvas: which sections it offers and adding one where it sits.
 export function useAddSectionList(
     edit: SectionEdit,
     document: InvitationDocument,
@@ -15,22 +15,24 @@ export function useAddSectionList(
     mode: EditorMode,
     onAdded: (sectionId: string) => void,
 ) {
-    // The section the list adds after, while it is open.
-    const [afterId, setAfterId] = useState<string | null>(null);
+    // Where the list adds, while it is open.
+    const [slot, setSlot] = useState<SectionSlot | null>(null);
     const types = useMemo(() => addableSectionTypes(document, eventType, mode), [document, eventType, mode]);
+    // An undo can take away the section the "+" belonged to while the list is open: then the list closes.
+    if (slot && !canAddAt(document.sections, slot)) setSlot(null);
 
-    const open = useCallback((sectionId: string) => setAfterId(sectionId), []);
-    const close = useCallback(() => setAfterId(null), []);
+    const open = useCallback((next: SectionSlot) => setSlot(next), []);
+    const close = useCallback(() => setSlot(null), []);
     const add = useCallback(
         (type: NewSectionType) => {
-            if (!afterId) return;
+            setSlot(null);
+            if (!slot || !canAddAt(document.sections, slot)) return;
             const section = createSection(type, eventType);
-            edit(insertSectionAfter(afterId, section));
-            setAfterId(null);
+            edit(insertSection(slot, section));
             onAdded(section.id);
         },
-        [afterId, edit, eventType, onAdded],
+        [slot, document, edit, eventType, onAdded],
     );
 
-    return { isOpen: afterId !== null, types, open, close, add };
+    return { isOpen: slot !== null, types, open, close, add };
 }

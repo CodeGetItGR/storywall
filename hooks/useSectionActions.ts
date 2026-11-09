@@ -7,33 +7,14 @@ import { useDeleteSectionConfirm } from '@/hooks/useDeleteSectionConfirm';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
 import {
-    canAddAfter,
-    canMoveSection,
     type MoveDirection,
     moveSection,
     reorderSections,
+    sectionControls,
     type SectionEdit,
     setSectionVisible,
 } from '@/lib/invitation/sectionActions';
 import type { EditorMode } from '@/lib/invitation/sectionRules';
-import type { InvitationSection } from '@/lib/invitation/sections';
-
-// What the editor shows around one section.
-export type SectionControls = {
-    section: InvitationSection;
-    canMoveUp: boolean;
-    canMoveDown: boolean;
-    canAddAfter: boolean;
-};
-
-export function sectionControls(document: InvitationDocument): SectionControls[] {
-    return document.sections.map((section) => ({
-        section,
-        canMoveUp: canMoveSection(document.sections, section.id, -1),
-        canMoveDown: canMoveSection(document.sections, section.id, 1),
-        canAddAfter: canAddAfter(document.sections, section.id),
-    }));
-}
 
 // Adding, moving, hiding and deleting sections. Every change goes through the
 // editor store, so it is one undo step and autosaves like any other edit.

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { InvitationDocument } from '@/lib/invitation/document';
+import { type InvitationDocument, MAX_SECTIONS } from '@/lib/invitation/document';
+import { createSection } from '@/lib/invitation/newSection';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import { addableSectionTypes, sectionsForEventType } from '@/lib/invitation/sectionRules';
 import type { InvitationSection } from '@/lib/invitation/sections';
@@ -35,6 +36,12 @@ describe('addableSectionTypes', () => {
         expect(types).not.toContain('rsvp');
         expect(types).toContain('blank');
         expect(types).toContain('photo');
+    });
+
+    it('offers nothing once the page holds as many sections as a document may', () => {
+        const blanks = Array.from({ length: MAX_SECTIONS - 1 }, () => createSection('blank', 'WEDDING'));
+        expect(addableSectionTypes(documentWith(...blanks), 'WEDDING', 'host')).toContain('blank');
+        expect(addableSectionTypes(documentWith(...blanks, SAMPLE_SECTIONS.footer), 'WEDDING', 'host')).toEqual([]);
     });
 
     it('gives event types the old app did not have the birthday list', () => {

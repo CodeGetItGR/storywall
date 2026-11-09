@@ -1,6 +1,6 @@
 import type { Draft } from 'immer';
 
-import type { InvitationDocument } from '@/lib/invitation/document';
+import { type InvitationDocument, MAX_SECTIONS } from '@/lib/invitation/document';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
 // The section edits of the editor, written as Immer recipes for the editor
@@ -12,8 +12,20 @@ type DocumentDraft = Draft<InvitationDocument>;
 
 export type MoveDirection = -1 | 1;
 
+// Where a new section goes: right above or right below an existing one.
+export type SectionSlot = { id: string; place: 'before' | 'after' };
+
 // Applies one recipe to the editor store.
 export type SectionEdit = (recipe: (draft: DocumentDraft) => void) => void;
+
+// What the editor shows around one section.
+export type SectionControls = {
+    section: InvitationSection;
+    canMoveUp: boolean;
+    canMoveDown: boolean;
+    canAddBefore: boolean;
+    canAddAfter: boolean;
+};
 
 function indexOf(sections: Sections, id: string): number {
     return sections.findIndex((section) => section.id === id);
@@ -38,17 +50,36 @@ export function draggedOrder(sections: Sections, activeId: string, overId: strin
     return lockedStays ? ids : null;
 }
 
+// Only the first section has room above it, so a page down to its footer can still grow.
+export function canAddBefore(sections: Sections, id: string): boolean {
+    return sections.length > 0 && sections[0].id === id;
+}
+
 // Below the last section there is nothing to add to: the footer closes the page.
 export function canAddAfter(sections: Sections, id: string): boolean {
     const index = indexOf(sections, id);
     return index !== -1 && index < sections.length - 1;
 }
 
-export function insertSectionAfter(afterId: string, section: InvitationSection) {
+export function canAddAt(sections: Sections, slot: SectionSlot): boolean {
+    return slot.place === 'before' ? canAddBefore(sections, slot.id) : canAddAfter(sections, slot.id);
+}
+
+export function sectionControls(document: InvitationDocument): SectionControls[] {
+    return document.sections.map((section) => ({
+        section,
+        canMoveUp: canMoveSection(document.sections, section.id, -1),
+        canMoveDown: canMoveSection(document.sections, section.id, 1),
+        canAddBefore: canAddBefore(document.sections, section.id),
+        canAddAfter: canAddAfter(document.sections, section.id),
+    }));
+}
+
+export function insertSection(slot: SectionSlot, section: InvitationSection) {
     return (draft: DocumentDraft) => {
-        const index = indexOf(draft.sections, afterId);
-        if (index === -1 || index === draft.sections.length - 1) return;
-        draft.sections.splice(index + 1, 0, section as Draft<InvitationSection>);
+        if (draft.sections.length >= MAX_SECTIONS || !canAddAt(draft.sections, slot)) return;
+        const index = indexOf(draft.sections, slot.id) + (slot.place === 'after' ? 1 : 0);
+        draft.sections.splice(index, 0, section as Draft<InvitationSection>);
     };
 }
 
@@ -83,4 +114,15 @@ export function deleteSection(id: string) {
         const index = indexOf(draft.sections, id);
         if (index !== -1 && !draft.sections[index].locked) draft.sections.splice(index, 1);
     };
+}
+
+// The section that takes focus once `id` is deleted: the next one that has
+// tools, else the one before it that has tools, else whichever neighbour is left.
+export function sectionToFocusAfterDelete(sections: Sections, id: string): string | null {
+    const index = indexOf(sections, id);
+    if (index === -1) return null;
+    const after = sections.slice(index + 1);
+    const before = sections.slice(0, index).reverse();
+    const neighbour = after.find((section) => !section.locked) ?? before.find((section) => !section.locked) ?? after[0] ?? before[0];
+    return neighbour?.id ?? null;
 }
