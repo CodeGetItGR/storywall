@@ -32,7 +32,7 @@ jobs:
     capture:
         needs: start
         runs-on: ubuntu-latest
-        timeout-minutes: 30
+        timeout-minutes: 60
         container: mcr.microsoft.com/playwright:v1.55.0-noble
         permissions:
             contents: read
@@ -51,6 +51,19 @@ jobs:
             - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
             - run: npm ci
+
+            # The report page is committed as one built file, so make sure it matches its source.
+            # A branch from before the built page has no source to check, and the published page comes from the base anyway.
+            - run: |
+                  if [ ! -f scripts/visual/report/vite.config.ts ]; then
+                      echo "::notice::This branch has no report page source yet, so the page check is skipped."
+                      exit 0
+                  fi
+                  npm run visual:page
+                  if [ -n "$(git status --porcelain -- scripts/visual/report/dist)" ]; then
+                      echo "::error::The report page is out of date. Run npm run visual:page and commit the result."
+                      exit 1
+                  fi
 
             - id: base
               run: echo "sha=$(git merge-base "origin/$BASE_REF" HEAD)" >> "$GITHUB_OUTPUT"

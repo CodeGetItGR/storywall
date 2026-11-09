@@ -1,0 +1,11 @@
+/* The editor's dark chrome, as in the old Save my date editor, so the invitation stands out. */
+.smd-editor {
+    --smd-editor-bar: rgb(35 36 40 / 0.97);
+    --smd-editor-line: #44474e;
+    --smd-editor-panel: #232327;
+    --smd-editor-panel-line: rgb(255 255 255 / 0.1);
+    --smd-editor-text: #e7e7ea;
+    --smd-editor-muted: #918d99;
+    --smd-editor-control: #303238;
+    --smd-editor-canvas: radial-gradient(circle at top, #303238 0, #242529 48%, #1d1e21 100%);
+}

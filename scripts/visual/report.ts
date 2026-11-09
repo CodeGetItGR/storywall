@@ -7,6 +7,7 @@ import { CONCURRENCY, MAX_RETAKEN_CAPTURES, RETAKES } from './config';
 import { fingerprint } from './fingerprint';
 import { decodePng, diffImage, makePreview, rawToWebp } from './images';
 import { runPool } from './pool';
+import { changeSignature, groupChanges, type SignedCapture } from './sameChange';
 import type { CaptureRecord, CaptureState, CaptureTarget, Manifest, ReportEntry } from './types';
 
 type ImageKind = keyof ReportEntry['images'];
@@ -31,6 +32,7 @@ export async function buildReport(input: BuildReportInput): Promise<Manifest> {
     const { baseDir, headDir, reportDir, baseRecords, headRecords, baseSha, headSha, missingStories, retake } = input;
     mkdirSync(join(reportDir, 'img'), { recursive: true });
     let retakesLeft = MAX_RETAKEN_CAPTURES;
+    const signatures: SignedCapture[] = [];
 
     function writeImage(id: string, kind: ImageKind, webp: Buffer): string {
         const name = `${createHash('sha1').update(id).digest('hex').slice(0, 16)}-${kind}.webp`;
@@ -45,6 +47,7 @@ export async function buildReport(input: BuildReportInput): Promise<Manifest> {
         afterHash: null,
         percent: 0,
         error: record.error,
+        changeKey: null,
         images: {},
     });
 
@@ -72,6 +75,8 @@ export async function buildReport(input: BuildReportInput): Promise<Manifest> {
     }
 
     async function changedEntry(base: CaptureRecord, record: CaptureRecord, diff: ImageDiff): Promise<ReportEntry> {
+        const signature = changeSignature(diff);
+        if (signature) signatures.push({ id: record.id, signature });
         const diffRaw = diffImage(diff.before, diff.mask);
         return {
             ...targetOf(record),
@@ -80,6 +85,7 @@ export async function buildReport(input: BuildReportInput): Promise<Manifest> {
             afterHash: record.hash,
             percent: diff.percent,
             error: null,
+            changeKey: null,
             images: {
                 before: writeImage(record.id, 'before', await rawToWebp(diff.before)),
                 after: writeImage(record.id, 'after', await rawToWebp(diff.after)),
@@ -99,6 +105,7 @@ export async function buildReport(input: BuildReportInput): Promise<Manifest> {
             afterHash: state === 'new' ? record.hash : null,
             percent: 100,
             error: null,
+            changeKey: null,
             images: {
                 [kind]: writeImage(record.id, kind, await rawToWebp(raw)),
                 preview: writeImage(record.id, 'preview', await makePreview([raw])),
@@ -124,7 +131,9 @@ export async function buildReport(input: BuildReportInput): Promise<Manifest> {
         return 'diff' in result ? changedEntry(base, result.record, result.diff) : failedEntry(result, base);
     }
 
-    const entries = (await runPool(ids, CONCURRENCY, entryFor)).filter((entry) => entry !== null);
+    const found = (await runPool(ids, CONCURRENCY, entryFor)).filter((entry) => entry !== null);
+    const { groups, keys } = groupChanges(signatures);
+    const entries = found.map((entry) => ({ ...entry, changeKey: keys.get(entry.id) ?? null }));
 
     const counts: Record<CaptureState, number> = { changed: 0, new: 0, removed: 0, failed: 0 };
     for (const entry of entries) counts[entry.state] += 1;
@@ -136,6 +145,7 @@ export async function buildReport(input: BuildReportInput): Promise<Manifest> {
         counts,
         fingerprint: fingerprint(entries),
         entries,
+        groups,
         missingStories,
     };
     writeFileSync(join(reportDir, 'manifest.json'), JSON.stringify(manifest, null, 2));

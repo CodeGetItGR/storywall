@@ -39,4 +39,28 @@ describe('visual-check workflow', () => {
     it('reports a cancelled or timed out run', () => {
         expect(readFileSync('.github/workflows/visual-check.yml', 'utf8')).toContain('if: failure() || cancelled()');
     });
+
+    it('fails when the committed report page is out of date', () => {
+        const check = readFileSync('.github/workflows/visual-check.yml', 'utf8');
+        const capture = check.slice(check.indexOf('    capture:'), check.indexOf('    publish:'));
+        expect(capture).toContain('npm run visual:page');
+        expect(capture).toContain('git status --porcelain -- scripts/visual/report/dist)');
+        expect(capture).toContain('exit 1');
+        expect(capture.indexOf('npm ci')).toBeLessThan(capture.indexOf('npm run visual:page'));
+    });
+
+    it('skips the page check on a branch from before the built page', () => {
+        const check = readFileSync('.github/workflows/visual-check.yml', 'utf8');
+        const capture = check.slice(check.indexOf('    capture:'), check.indexOf('    publish:'));
+        const guard = capture.indexOf('if [ ! -f scripts/visual/report/vite.config.ts ]; then');
+        expect(guard).toBeGreaterThan(-1);
+        expect(guard).toBeLessThan(capture.indexOf('npm run visual:page'));
+        expect(capture).toContain('::notice::This branch has no report page source yet, so the page check is skipped.');
+    });
+
+    it('never builds in the job that holds the deploy key', () => {
+        const check = readFileSync('.github/workflows/visual-check.yml', 'utf8');
+        const publish = check.slice(check.indexOf('    publish:'), check.indexOf('    finish:'));
+        expect(publish).not.toMatch(/\b(npm|npx|pnpm|yarn|vite)\b/);
+    });
 });
