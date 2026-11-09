@@ -105,6 +105,10 @@ describe('visual-check workflow', () => {
         expect(block).toContain('persist-credentials: false');
     });
 
+    it('gives compare time to capture the whole base itself when its saved captures were dropped', () => {
+        expect(job(check, 'compare')).toContain('timeout-minutes: 60');
+    });
+
     it('compares only after every share is captured, and publishes after that', () => {
         expect(job(check, 'compare')).toContain('needs: [build, capture]');
         expect(job(check, 'publish')).toContain('needs: compare');

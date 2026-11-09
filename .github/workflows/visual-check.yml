@@ -169,7 +169,8 @@ jobs:
     compare:
         needs: [build, capture]
         runs-on: ubuntu-latest
-        timeout-minutes: 30
+        # Captures the whole base in this one job if its saved captures were dropped since build looked them up.
+        timeout-minutes: 60
         container: mcr.microsoft.com/playwright:v1.55.0-noble
         permissions:
             contents: read
