@@ -63,19 +63,19 @@ The compare job needs the base Storybook build to capture from. It is about 37 M
 
 ## Code
 
-- `report.ts`: `BuildReportInput` gains an optional `retakeBase(target)`. `compareWithRetakes` calls it after the head retakes, as above. `changedEntry` takes the saved base record for `beforeHash` and the diff for the images, as today.
-- `steps.ts` (from KAN-166): `writeReport` gets an optional base build folder. When the folder has an `index.json`, it serves the build and passes `retakeBase`, which captures into `visual-output/base-recheck/`. `withStorybook` prints `Capturing on <CPU>` when it starts the browser.
+- `report.ts`: `BuildReportInput` gains an optional `baseRecheck: { dir, retake(target) }`: the folder the fresh base goes into, and how to capture it. `compareWithRetakes` calls it after the head retakes, as above. `changedEntry` takes the saved base record for `beforeHash` and the diff for the images, as today.
+- `steps.ts` (from KAN-166): `writeReport` gets an optional base build folder. When the folder has an `index.json`, it serves the build and passes `baseRecheck`, which captures into `visual-output/base-recheck/`. `withStorybook` prints `Capturing on <CPU>` when it starts the browser.
 - `ci.ts`: the compare step passes `visual-output/base/storybook` as the base build folder. `run.ts` passes none.
 - `capture.ts` and `types.ts`: `machine` on every record.
 - The two workflows: the new folder and the new cache key ending, as above.
 
 ## Tests
 
-- `report.test.ts`, with fake `retake` and `retakeBase` that write PNGs:
+- `report.test.ts`, with fake `retake` and `baseRecheck.retake` that write PNGs:
     - the fresh base matches the head: cleared, and nothing is reported;
     - it still differs: changed, the before image is the fresh base's, and `beforeHash` is the saved base's;
     - the base capture fails: changed against the saved base;
-    - no `retakeBase`: the same result as today;
+    - no `baseRecheck`: the same result as today (the existing tests);
     - past the budget: no head retake and no base recheck;
     - a retake that clears the capture: no base recheck.
 - `workflows.test.ts`:
