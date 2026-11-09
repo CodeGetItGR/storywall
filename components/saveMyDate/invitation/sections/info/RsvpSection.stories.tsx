@@ -3,6 +3,8 @@ import type { Globals } from 'storybook/internal/types';
 import { expect, fn, userEvent, within } from 'storybook/test';
 
 import { labelsFor, LONG_TEXT, LONG_TITLE, onDark, SectionStory, storySection } from '@/.storybook/invitation';
+import { INVITATION_LABELS } from '@/lib/invitation/labels';
+import type { RsvpOutcome } from '@/lib/invitation/rsvp';
 
 const section = storySection('rsvp');
 const GUEST = { name: 'Μαρία', phone: '6900000000' };
@@ -31,7 +33,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
 
 export const Sending: Story = {
-    args: { sendRsvp: fn(() => new Promise<void>(() => {})) },
+    args: { sendRsvp: fn(() => new Promise<RsvpOutcome>(() => {})) },
     play: async ({ canvasElement, globals }) => {
         const labels = labelsFor(globals);
         await fillIn(canvasElement, globals);
@@ -42,19 +44,20 @@ export const Sending: Story = {
 };
 
 export const Success: Story = {
-    args: { sendRsvp: fn(async () => {}) },
+    args: { sendRsvp: fn(async (): Promise<RsvpOutcome> => ({ ok: true })) },
     play: async ({ args, canvasElement, globals }) => {
         await fillIn(canvasElement, globals);
         await submit(canvasElement, globals);
         await within(canvasElement).findByText(labelsFor(globals).rsvpThanks);
         await expect(args.sendRsvp).toHaveBeenCalledWith({
             guestName: GUEST.name,
+            attendanceStatus: 'ATTENDING',
             phone: GUEST.phone,
             email: '',
-            attending: true,
-            adultsCount: 2,
-            childrenCount: 1,
-            note: '',
+            adultCount: 2,
+            childCount: 1,
+            notes: '',
+            website: '',
         });
     },
 };
@@ -69,6 +72,33 @@ export const Failed: Story = {
         await fillIn(canvasElement, globals);
         await submit(canvasElement, globals);
         await within(canvasElement).findByText(labelsFor(globals).rsvpError);
+    },
+};
+
+// The backend refused the reply (here: RSVP is off); the guest keeps the form.
+// The message comes from the server in the invitation's language: Greek here.
+export const Refused: Story = {
+    globals: { locale: 'el' },
+    args: { sendRsvp: fn(async (): Promise<RsvpOutcome> => ({ ok: false, message: INVITATION_LABELS.el.rsvpClosed })) },
+    play: async ({ args, canvasElement, globals }) => {
+        await fillIn(canvasElement, globals);
+        await submit(canvasElement, globals);
+        await within(canvasElement).findByText(INVITATION_LABELS.el.rsvpClosed);
+        await expect(args.sendRsvp).toHaveBeenCalledTimes(1);
+        await expect(within(canvasElement).getByRole('button', { name: labelsFor(globals).rsvpSubmit })).toBeEnabled();
+    },
+};
+
+export const PhoneInvalid: Story = {
+    args: { sendRsvp: fn(async (): Promise<RsvpOutcome> => ({ ok: true })) },
+    play: async ({ args, canvasElement, globals }) => {
+        const canvas = within(canvasElement);
+        const labels = labelsFor(globals);
+        await userEvent.type(canvas.getByLabelText(labels.rsvpName), GUEST.name);
+        await userEvent.type(canvas.getByLabelText(labels.rsvpPhone), '12 34');
+        await submit(canvasElement, globals);
+        await canvas.findByText(labels.rsvpPhoneInvalid);
+        await expect(args.sendRsvp).not.toHaveBeenCalled();
     },
 };
 

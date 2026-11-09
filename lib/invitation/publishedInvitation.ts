@@ -54,6 +54,11 @@ export function publicInvitationEndpoint(slug: string): string {
     return `/api/public/invitations/${encodeURIComponent(slug)}`;
 }
 
+// A guest's RSVP reply from the published page (no account).
+export function publicInvitationRsvpEndpoint(slug: string): string {
+    return `${publicInvitationEndpoint(slug)}/rsvp`;
+}
+
 // Throws when the copy or theme isn't in the format the renderer draws.
 export function readPublishedInvitation(dto: PublicInvitationDto): PublishedInvitation {
     const imageUrls = dto.imageUrls ?? {};

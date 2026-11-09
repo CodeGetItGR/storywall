@@ -1,8 +1,11 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { SAMPLE_DOCUMENT, SAMPLE_THEME } from '@/lib/invitation/samples';
+import { stubIntersectionObserver } from '@/components/saveMyDate/invitation/effects/__fixtures__/fakeIntersectionObserver';
+import { INVITATION_LABELS } from '@/lib/invitation/labels';
+import { SAMPLE_DOCUMENT, SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
+import el from '@/messages/el.json';
 import en from '@/messages/en.json';
 
 // next/font only works inside a Next build.
@@ -21,7 +24,12 @@ function stubResizeObserver() {
 vi.mock('next/headers', () => ({ headers: async () => new Headers({ 'x-forwarded-for': '203.0.113.7' }) }));
 vi.mock('next-intl/server', () => ({
     getLocale: async () => 'en',
-    getTranslations: async (namespace: keyof typeof en) => (key: string) => (en[namespace] as Record<string, string>)[key],
+    // A namespace, or the RSVP action's { locale, namespace } in the invitation's language.
+    getTranslations: async (scope: keyof typeof en | { locale: 'el' | 'en'; namespace: keyof typeof en }) => {
+        const [messages, namespace] = typeof scope === 'string' ? [en, scope] : [scope.locale === 'el' ? el : en, scope.namespace];
+        return (key: string, values: Record<string, unknown> = {}) =>
+            (messages[namespace] as Record<string, string>)[key].replace(/\{(\w+)\}/g, (_, name: string) => String(values[name]));
+    },
 }));
 const notFound = vi.hoisted(() =>
     vi.fn(() => {
@@ -35,10 +43,11 @@ import Page, { generateMetadata } from './page';
 const fetchMock = vi.fn();
 const invitation = { slug: 'maria-and-nikos', design: SAMPLE_THEME, document: SAMPLE_DOCUMENT, imageUrls: {} };
 
-// The public invitation answers `invitationStatus`; the font catalogue answers an empty list.
-function backend(invitationStatus: number) {
+// The public invitation answers `invitationStatus`, its RSVP route `rsvp`; the font catalogue answers an empty list.
+function backend(invitationStatus: number, rsvp: () => Response = () => new Response(null, { status: 204 })) {
     fetchMock.mockImplementation(async (url: string) => {
         if (url.includes('/api/invitation-fonts/files')) return new Response('[]', { status: 200 });
+        if (url.endsWith('/rsvp')) return rsvp();
         if (url.includes('/api/public/invitations/')) {
             return new Response(invitationStatus === 200 ? JSON.stringify(invitation) : null, { status: invitationStatus });
         }
@@ -60,6 +69,8 @@ async function renderPage(slug?: string) {
 
 beforeEach(() => {
     stubResizeObserver();
+    // Sections with effects watch for coming on screen.
+    stubIntersectionObserver();
     fetchMock.mockReset();
     notFound.mockClear();
     vi.stubGlobal('fetch', fetchMock);
@@ -119,5 +130,54 @@ describe('Published invitation page', () => {
         await expect(Page(visit())).rejects.toThrow('NEXT_NOT_FOUND');
         expect(await generateMetadata(visit())).toEqual({ robots: { index: false, follow: false } });
         expect(fetchMock).not.toHaveBeenCalled();
+    });
+});
+
+describe("A guest's RSVP on the published page", () => {
+    // The sample invitation is in Greek, so its form and answers are too.
+    const labels = INVITATION_LABELS.el;
+
+    function rsvpForm() {
+        return within(document.querySelector<HTMLElement>(`[data-section-id="${SAMPLE_SECTIONS.rsvp.id}"]`) as HTMLElement);
+    }
+
+    function reply() {
+        const form = rsvpForm();
+        fireEvent.change(form.getByLabelText(labels.rsvpName), { target: { value: 'Μαρία' } });
+        fireEvent.change(form.getByLabelText(labels.rsvpPhone), { target: { value: '694 123 4567' } });
+        fireEvent.click(form.getByRole('button', { name: labels.rsvpSubmit }));
+        return form;
+    }
+
+    const rsvpCalls = () => fetchMock.mock.calls.filter(([url]) => (url as string).endsWith('/rsvp')) as [string, RequestInit][];
+
+    it("goes to the invitation's event and thanks the guest", async () => {
+        backend(200);
+        await renderPage();
+        const form = reply();
+
+        await form.findByText(labels.rsvpThanks);
+        const [[url, init]] = rsvpCalls();
+        expect(url).toMatch(/\/api\/public\/invitations\/maria-and-nikos\/rsvp$/);
+        expect(init.headers).toMatchObject({ 'Accept-Language': 'el' });
+        expect(JSON.parse(init.body as string)).toEqual({
+            guestName: 'Μαρία',
+            attendanceStatus: 'ATTENDING',
+            phone: '694 123 4567',
+            email: '',
+            adultCount: 2,
+            childCount: 1,
+            notes: '',
+            website: '',
+        });
+    });
+
+    it('tells the guest to wait when replies are rate limited, in the invitation language', async () => {
+        backend(200, () => new Response(null, { status: 429, headers: { 'Retry-After': '1800' } }));
+        await renderPage();
+        const form = reply();
+
+        expect(await form.findByText(el.ApiErrors.rateLimitedWithWaitMinutes.replace('{minutes}', '30'))).toBeInTheDocument();
+        expect(form.getByRole('button', { name: labels.rsvpSubmit })).toBeInTheDocument();
     });
 });

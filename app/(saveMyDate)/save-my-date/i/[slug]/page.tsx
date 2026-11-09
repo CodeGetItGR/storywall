@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { PublishedInvitationView } from '@/components/saveMyDate/published/PublishedInvitationView';
+import { invitationLanguage } from '@/lib/invitation/labels';
 import { publishedInvitationTitle } from '@/lib/invitation/publishedInvitation';
+import { sendInvitationRsvp } from '@/lib/invitation/sendInvitationRsvp';
 import { fetchPublishedInvitation, getPublishedInvitationLabels } from '@/lib/invitation/serverPublishedInvitation';
 import { fetchUploadedFonts } from '@/lib/invitation/serverUploadedFonts';
 import { showsSaveMyDate } from '@/lib/saveMyDateRelease';
@@ -25,6 +27,8 @@ export default async function PublishedInvitationPage({ params }: PublishedInvit
     const { slug } = await params;
     const [state, labels] = await Promise.all([fetchPublishedInvitation(slug), getPublishedInvitationLabels()]);
     const uploadedFonts = state.kind === 'found' ? await fetchUploadedFonts() : [];
+    // Replies go to this invitation, answered in its own language.
+    const sendRsvp = state.kind === 'found' ? sendInvitationRsvp.bind(null, slug, invitationLanguage(state.invitation.document)) : undefined;
 
-    return <PublishedInvitationView state={state} labels={labels} uploadedFonts={uploadedFonts} />;
+    return <PublishedInvitationView state={state} labels={labels} uploadedFonts={uploadedFonts} sendRsvp={sendRsvp} />;
 }

@@ -172,7 +172,7 @@ describe('RSVP through the whole invitation', () => {
     }
 
     it('sends the reply and thanks the guest', async () => {
-        const sendRsvp = vi.fn<RsvpSender>().mockResolvedValue(undefined);
+        const sendRsvp = vi.fn<RsvpSender>().mockResolvedValue({ ok: true });
         const { container } = renderInvitation(SAMPLE_DOCUMENT, { sendRsvp });
         const form = rsvpForm(container);
 
@@ -185,18 +185,19 @@ describe('RSVP through the whole invitation', () => {
         expect(sendRsvp).toHaveBeenCalledTimes(1);
         expect(sendRsvp).toHaveBeenCalledWith({
             guestName: 'Μαρία',
+            attendanceStatus: 'ATTENDING',
             phone: '6900000000',
             email: 'maria@example.com',
-            attending: true,
-            adultsCount: 3,
-            childrenCount: 0,
-            note: 'Χωρίς γλουτένη',
+            adultCount: 3,
+            childCount: 0,
+            notes: 'Χωρίς γλουτένη',
+            website: '',
         });
         expect(form.queryByRole('button', { name: labels.rsvpSubmit })).toBeNull();
     });
 
     it('sends no headcount when the guest declines', async () => {
-        const sendRsvp = vi.fn<RsvpSender>().mockResolvedValue(undefined);
+        const sendRsvp = vi.fn<RsvpSender>().mockResolvedValue({ ok: true });
         const { container } = renderInvitation(SAMPLE_DOCUMENT, { sendRsvp });
         const form = rsvpForm(container);
 
@@ -205,7 +206,7 @@ describe('RSVP through the whole invitation', () => {
         fireEvent.click(form.getByRole('button', { name: labels.rsvpSubmit }));
 
         await form.findByText(labels.rsvpThanks);
-        await waitFor(() => expect(sendRsvp).toHaveBeenCalledWith(expect.objectContaining({ attending: false, adultsCount: 0, childrenCount: 0 })));
+        await waitFor(() => expect(sendRsvp).toHaveBeenCalledWith(expect.objectContaining({ attendanceStatus: 'DECLINED', adultCount: 0, childCount: 0 })));
     });
 });
 
