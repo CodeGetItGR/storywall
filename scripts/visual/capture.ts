@@ -1,4 +1,5 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
+import { cpus } from 'node:os';
 import { join } from 'node:path';
 
 import { type Browser, chromium, errors, type Page } from 'playwright-core';
@@ -17,6 +18,10 @@ import {
 import { decodePng, hashRaw } from './images';
 import { runPool } from './pool';
 import type { CaptureRecord, CaptureTarget } from './types';
+
+// The CPU this runs on. Two runners can smooth edges differently, so the log names the machine behind each capture.
+const cpuModel = cpus()[0]?.model.trim();
+export const MACHINE = cpuModel ? cpuModel : 'unknown';
 
 type StoryStatus = { state: 'pending' | 'rendered' | 'failed'; error: string | null };
 type StoryChannel = {
@@ -172,9 +177,9 @@ async function shoot(browser: Browser, origin: string, target: CaptureTarget): P
 export async function captureTarget(browser: Browser, origin: string, target: CaptureTarget, outDir: string): Promise<CaptureRecord> {
     let result = await shoot(browser, origin, target);
     if ('error' in result && result.retry) result = await shoot(browser, origin, target);
-    if ('error' in result) return { ...target, status: 'failed', hash: null, error: result.error };
+    if ('error' in result) return { ...target, status: 'failed', hash: null, error: result.error, machine: MACHINE };
     writeFileSync(join(outDir, `${target.id}.png`), result.png);
-    return { ...target, status: 'ok', hash: hashRaw(await decodePng(result.png)), error: null };
+    return { ...target, status: 'ok', hash: hashRaw(await decodePng(result.png)), error: null, machine: MACHINE };
 }
 
 export const allFailedSoFar = (done: number, failed: number) => done === EARLY_STOP_AFTER && failed === done;
