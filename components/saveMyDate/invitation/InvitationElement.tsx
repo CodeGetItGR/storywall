@@ -1,5 +1,6 @@
 import { useTranslations } from 'next-intl';
 
+import { InvitationText } from '@/components/saveMyDate/invitation/InvitationText';
 import { PhotoFrame } from '@/components/saveMyDate/invitation/sections/media/PhotoFrame';
 import type { InvitationElement as Element } from '@/lib/invitation/elements';
 import {
@@ -24,12 +25,13 @@ export function InvitationElement({ element, contrast, ctx }: InvitationElementP
     switch (element.kind) {
         case 'text':
             return (
-                <div
+                <InvitationText
+                    target={{ kind: 'element', elementId: element.id }}
+                    value={element.text}
+                    tag="div"
                     className="text-block"
                     style={textStyleCss(element.style, { role: elementTextRole(element.role), contrast, defaultMarginTop: 18 }, ctx)}
-                >
-                    {element.text}
-                </div>
+                />
             );
         case 'spacer':
             return <div className="wedart-spacer" style={{ height: element.height }} />;

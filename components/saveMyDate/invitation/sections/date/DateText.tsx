@@ -1,3 +1,4 @@
+import { InvitationText } from '@/components/saveMyDate/invitation/InvitationText';
 import { dateFieldIsUpper, upperWithoutAccents } from '@/lib/invitation/dateDisplay';
 import type { RenderContext, TextContrast } from '@/lib/invitation/render';
 import { dateTextCss } from '@/lib/invitation/sectionCss';
@@ -14,10 +15,15 @@ type DateTextProps = {
 };
 
 // One part of the date (old wedartDateTextBlock). Labels show in capitals without accents.
-export function DateText({ section, path, value, className, tag: Tag = 'div', contrast, ctx }: DateTextProps) {
+export function DateText({ section, path, value, className, tag = 'div', contrast, ctx }: DateTextProps) {
     return (
-        <Tag className={`text-block ${className}`} style={dateTextCss(section, path, className, contrast, ctx)}>
-            {dateFieldIsUpper(className) ? upperWithoutAccents(value) : value}
-        </Tag>
+        <InvitationText
+            target={{ sectionId: section.id, kind: 'field', path }}
+            value={value}
+            display={dateFieldIsUpper(className) ? upperWithoutAccents(value) : value}
+            tag={tag}
+            className={`text-block ${className}`}
+            style={dateTextCss(section, path, className, contrast, ctx)}
+        />
     );
 }
