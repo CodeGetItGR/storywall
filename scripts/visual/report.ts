@@ -12,6 +12,9 @@ import type { CaptureRecord, CaptureState, CaptureTarget, Manifest, ReportEntry 
 
 type ImageKind = keyof ReportEntry['images'];
 
+// Captures a story's base version again on this machine, writing the PNG into `dir`.
+export type BaseRecheck = { dir: string; retake: (target: CaptureTarget) => Promise<CaptureRecord> };
+
 type BuildReportInput = {
     baseDir: string;
     headDir: string;
@@ -22,6 +25,8 @@ type BuildReportInput = {
     headSha: string;
     missingStories: string[];
     retake: (target: CaptureTarget) => Promise<CaptureRecord>;
+    // Without it, a capture that still differs after its retakes is reported as it is.
+    baseRecheck?: BaseRecheck;
 };
 
 const pngPath = (dir: string, id: string) => join(dir, `${id}.png`);
@@ -29,7 +34,7 @@ const pngPath = (dir: string, id: string) => join(dir, `${id}.png`);
 const targetOf = ({ id, storyId, title, name, locale, width }: CaptureTarget): CaptureTarget => ({ id, storyId, title, name, locale, width });
 
 export async function buildReport(input: BuildReportInput): Promise<Manifest> {
-    const { baseDir, headDir, reportDir, baseRecords, headRecords, baseSha, headSha, missingStories, retake } = input;
+    const { baseDir, headDir, reportDir, baseRecords, headRecords, baseSha, headSha, missingStories, retake, baseRecheck } = input;
     mkdirSync(join(reportDir, 'img'), { recursive: true });
     let retakesLeft = MAX_RETAKEN_CAPTURES;
     const signatures: SignedCapture[] = [];
@@ -53,6 +58,7 @@ export async function buildReport(input: BuildReportInput): Promise<Manifest> {
 
     // A capture that differs is retaken, and counts as changed only if every attempt differs.
     // A retake that fails ends as failed, because the story is broken, not different.
+    // One unit of the limit covers a capture's retakes and its base recheck together.
     async function compareWithRetakes(
         base: CaptureRecord,
         head: CaptureRecord,
@@ -69,8 +75,31 @@ export async function buildReport(input: BuildReportInput): Promise<Manifest> {
             record = retaken;
             diff = await comparePngs(before, readFileSync(pngPath(headDir, head.id)));
         }
-        if (isChanged(diff)) return { record, diff };
-        process.stdout.write(`Cleared by a retake: ${head.id}\n`);
+        if (!isChanged(diff)) {
+            process.stdout.write(`Cleared by a retake: ${head.id}\n`);
+            return null;
+        }
+        if (attempts === 0 || !baseRecheck) return { record, diff };
+        return recheckBase(baseRecheck, base, record, diff);
+    }
+
+    // The base can come from another runner, and two runners can smooth edges differently.
+    // Taking the base again here puts both sides on this machine, so only a real change is left.
+    // A recheck that fails keeps the change against the saved base: it never hides one.
+    async function recheckBase(
+        { dir, retake: retakeBase }: BaseRecheck,
+        base: CaptureRecord,
+        record: CaptureRecord,
+        diff: ImageDiff,
+    ): Promise<{ record: CaptureRecord; diff: ImageDiff } | null> {
+        const fresh = await retakeBase(targetOf(base));
+        if (fresh.status !== 'ok') {
+            process.stdout.write(`Base recheck failed: ${base.id}: ${fresh.error ?? 'unknown error'}\n`);
+            return { record, diff };
+        }
+        const freshDiff = await comparePngs(readFileSync(pngPath(dir, base.id)), readFileSync(pngPath(headDir, record.id)));
+        if (isChanged(freshDiff)) return { record, diff: freshDiff };
+        process.stdout.write(`Cleared by a base recheck: ${base.id} (base: ${base.machine ?? 'unknown'}, here: ${fresh.machine ?? 'unknown'})\n`);
         return null;
     }
 

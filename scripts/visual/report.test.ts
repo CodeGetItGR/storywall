@@ -9,7 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MAX_RETAKEN_CAPTURES, RETAKES } from './config';
 import { fingerprint } from './fingerprint';
 import { decodePng, hashRaw } from './images';
-import { buildReport } from './report';
+import { type BaseRecheck, buildReport } from './report';
 import type { CaptureRecord, CaptureTarget, Manifest } from './types';
 
 const solid = (gray: number) =>
@@ -44,7 +44,12 @@ describe('buildReport', () => {
 
     const noRetake = () => Promise.reject(new Error('no retake expected'));
 
-    const run = (baseRecords: CaptureRecord[], headRecords: CaptureRecord[], retake: (t: CaptureTarget) => Promise<CaptureRecord> = noRetake) =>
+    const run = (
+        baseRecords: CaptureRecord[],
+        headRecords: CaptureRecord[],
+        retake: (t: CaptureTarget) => Promise<CaptureRecord> = noRetake,
+        baseRecheck?: BaseRecheck,
+    ) =>
         buildReport({
             baseDir,
             headDir,
@@ -55,7 +60,11 @@ describe('buildReport', () => {
             headSha: 'h',
             missingStories: ['components/x/Y.tsx'],
             retake,
+            baseRecheck,
         });
+
+    // The first pixel of a report image. webp is lossy, so callers allow a step or two.
+    const firstGray = async (image: string | undefined) => (await sharp(readFileSync(join(reportDir, image as string))).raw().toBuffer())[0];
 
     it('leaves unchanged captures out of the report', async () => {
         const manifest = await run([await record(baseDir, 'a', 10)], [await record(headDir, 'a', 10)]);
@@ -166,5 +175,77 @@ describe('buildReport', () => {
         expect(manifest.entries.map((entry) => entry.changeKey)).toEqual(['color-1', 'color-1']);
         const ungrouped = manifest.entries.map((entry) => ({ ...entry, changeKey: null }));
         expect(manifest.fingerprint).toBe(fingerprint(ungrouped));
+    });
+
+    describe('base recheck', () => {
+        let recheckDir: string;
+
+        beforeEach(() => {
+            recheckDir = join(root, 'recheck');
+            mkdirSync(recheckDir);
+        });
+
+        afterEach(() => vi.restoreAllMocks());
+
+        // Every head retake gives the same shot, like a real change or a machine difference.
+        const sameHead = (head: CaptureRecord) => vi.fn(async () => head);
+
+        it('clears a capture whose base, taken again here, matches the head', async () => {
+            const log = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+            const base = { ...(await record(baseDir, 'a', 10)), machine: 'CPU A' };
+            const head = await record(headDir, 'a', 200);
+            const retakeBase = vi.fn(async () => ({ ...(await record(recheckDir, 'a', 200)), machine: 'CPU B' }));
+            const manifest = await run([base], [head], sameHead(head), { dir: recheckDir, retake: retakeBase });
+            expect(manifest.entries).toEqual([]);
+            expect(retakeBase).toHaveBeenCalledTimes(1);
+            expect(retakeBase).toHaveBeenCalledWith(target('a'));
+            expect(log).toHaveBeenCalledWith('Cleared by a base recheck: a (base: CPU A, here: CPU B)\n');
+        });
+
+        it('reports a capture that still differs against the base taken here, with the saved base hash', async () => {
+            const base = await record(baseDir, 'a', 10);
+            const head = await record(headDir, 'a', 200);
+            const fresh = await record(recheckDir, 'a', 100);
+            const manifest = await run([base], [head], sameHead(head), { dir: recheckDir, retake: vi.fn(async () => fresh) });
+            const [entry] = manifest.entries;
+            expect(entry.state).toBe('changed');
+            expect(entry.beforeHash).toBe(base.hash);
+            expect(entry.afterHash).toBe(head.hash);
+            expect(Math.abs((await firstGray(entry.images.before)) - 100)).toBeLessThanOrEqual(2);
+        });
+
+        it('keeps the change against the saved base when the base recheck fails', async () => {
+            const log = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+            const base = await record(baseDir, 'a', 10);
+            const head = await record(headDir, 'a', 200);
+            const failing = vi.fn(async (t: CaptureTarget): Promise<CaptureRecord> => ({ ...t, status: 'failed', hash: null, error: 'Boom on base' }));
+            const manifest = await run([base], [head], sameHead(head), { dir: recheckDir, retake: failing });
+            const [entry] = manifest.entries;
+            expect(entry.state).toBe('changed');
+            expect(entry.beforeHash).toBe(base.hash);
+            expect(Math.abs((await firstGray(entry.images.before)) - 10)).toBeLessThanOrEqual(2);
+            expect(log).toHaveBeenCalledWith('Base recheck failed: a: Boom on base\n');
+        });
+
+        it('does not recheck the base when a head retake clears the capture', async () => {
+            const base = await record(baseDir, 'a', 10);
+            const flaky = await record(headDir, 'a', 200);
+            const retakeBase = vi.fn(async (t: CaptureTarget) => record(recheckDir, t.id, 10));
+            const manifest = await run([base], [flaky], vi.fn(async () => record(headDir, 'a', 10)), { dir: recheckDir, retake: retakeBase });
+            expect(manifest.entries).toEqual([]);
+            expect(retakeBase).not.toHaveBeenCalled();
+        });
+
+        it('rechecks the base only within the retake limit', async () => {
+            const ids = Array.from({ length: MAX_RETAKEN_CAPTURES + 2 }, (_, index) => `story-${index}`);
+            const baseRecords = await Promise.all(ids.map((id) => record(baseDir, id, 10)));
+            const headRecords = await Promise.all(ids.map((id) => record(headDir, id, 200)));
+            const retake = vi.fn(async (t: CaptureTarget) => headRecords.find((item) => item.id === t.id) as CaptureRecord);
+            const retakeBase = vi.fn(async (t: CaptureTarget) => record(recheckDir, t.id, 100));
+            const manifest = await run(baseRecords, headRecords, retake, { dir: recheckDir, retake: retakeBase });
+            expect(manifest.counts.changed).toBe(ids.length);
+            expect(retake).toHaveBeenCalledTimes(MAX_RETAKEN_CAPTURES * RETAKES);
+            expect(retakeBase).toHaveBeenCalledTimes(MAX_RETAKEN_CAPTURES);
+        });
     });
 });
