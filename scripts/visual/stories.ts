@@ -1,4 +1,3 @@
-// Throwaway line: changes the cache key once to measure a run without a saved base (KAN-166). Reverted next.
 import { type CaptureLocale, LOCALES, TAG_DESKTOP_ONLY, TAG_MOBILE_ONLY, TAG_SKIP, type WidthName, WIDTHS } from './config';
 import type { CaptureTarget } from './types';
 
