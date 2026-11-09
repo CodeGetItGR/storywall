@@ -44,7 +44,7 @@ The compare job needs the base Storybook build to capture from. It is about 37 M
     - **`visual-check.yml`, base not cached:** the compare job downloads `visual-base-storybook` into `visual-output/base/storybook/` instead of `visual-output/base-storybook/`, and saves it in the cache with the captures, as today.
     - **`visual-check.yml`, base cached:** the restore brings the build with the captures.
 - The compare step serves the base build on a second local server, next to the head build, with the same browser.
-- If the build is missing, or its `index.json` is, there is no recheck. The check runs as today.
+- If the build is missing, or its `index.json` is, there is no recheck. The run log says `No base recheck: no base build in <folder>` and the check runs as today.
 - Every Storybook build writes its commit into `commit.txt`. The recheck runs only when the base build's `commit.txt` matches the base commit. Otherwise the run log says `No base recheck: the base build is for <commit>, not <base commit>` and the check runs as today. A wrong build in the cache can then never clear a real change. Added on 2026-11-09 after the Task 2 review, with the owner's approval.
 
 ### CPU in the log
@@ -83,7 +83,7 @@ The compare job needs the base Storybook build to capture from. It is about 37 M
 - `workflows.test.ts`:
     - every cache step in both workflows uses the same key, ending in `-pw1.55.0-sb`, and the path `visual-output/base`;
     - the baseline save job and the check's compare job put the base build in `visual-output/base/storybook`.
-- A base build folder without `index.json`, or with another commit in `commit.txt`, gives no recheck.
+- A base build folder without `index.json`, or with another commit in `commit.txt`, gives no recheck and says so in the log. No base build folder at all (local runs) gives no recheck and no log.
 - A build's `commit.txt` holds the commit it was built from.
 
 ## Checking it live

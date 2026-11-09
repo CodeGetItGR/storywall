@@ -40,13 +40,35 @@ describe('withBaseRecheck', () => {
     }
 
     it('gives no recheck without a base build', async () => {
+        const log = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
         expect(await withBaseRecheck(browser, undefined, BASE_SHA, join(root, 'recheck'), given)).toBeUndefined();
+        expect(log).not.toHaveBeenCalledWith(expect.stringContaining('No base recheck'));
     });
 
     it('gives no recheck when the base build has no story index', async () => {
+        const log = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
         const storybook = join(root, 'storybook');
         mkdirSync(storybook);
         expect(await withBaseRecheck(browser, storybook, BASE_SHA, join(root, 'recheck'), given)).toBeUndefined();
+        expect(log).toHaveBeenCalledWith(`No base recheck: no base build in ${storybook}
+`);
+    });
+
+    it('gives no recheck when the base build folder does not exist', async () => {
+        const log = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+        const missing = join(root, 'missing');
+        expect(await withBaseRecheck(browser, missing, BASE_SHA, join(root, 'recheck'), given)).toBeUndefined();
+        expect(log).toHaveBeenCalledWith(`No base recheck: no base build in ${missing}
+`);
+    });
+
+    it('passes on the error when the work fails', async () => {
+        const storybook = baseBuild(BASE_SHA);
+        await expect(
+            withBaseRecheck(browser, storybook, BASE_SHA, join(root, 'recheck'), async () => {
+                throw new Error('report failed');
+            }),
+        ).rejects.toThrow('report failed');
     });
 
     it('gives no recheck when the base build is from another commit', async () => {
@@ -77,12 +99,19 @@ describe('withBaseRecheck', () => {
 
 describe('writeBuildCommit', () => {
     it('writes the commit the build was made from', () => {
-        const dir = mkdtempSync(join(tmpdir(), 'visual-commit-'));
+        const repo = mkdtempSync(join(tmpdir(), 'visual-commit-'));
         try {
-            writeBuildCommit('.', dir);
-            expect(readFileSync(join(dir, 'commit.txt'), 'utf8')).toBe(execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim());
+            execFileSync('git', ['init', '-q'], { cwd: repo });
+            execFileSync('git', ['-c', 'user.email=test@example.com', '-c', 'user.name=test', 'commit', '-q', '--allow-empty', '-m', 'base'], {
+                cwd: repo,
+            });
+            mkdirSync(join(repo, 'out'));
+            writeBuildCommit(repo, 'out');
+            expect(readFileSync(join(repo, 'out', 'commit.txt'), 'utf8')).toBe(
+                execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repo, encoding: 'utf8' }).trim(),
+            );
         } finally {
-            rmSync(dir, { recursive: true, force: true });
+            rmSync(repo, { recursive: true, force: true });
         }
     });
 });

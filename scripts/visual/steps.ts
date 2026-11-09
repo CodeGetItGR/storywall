@@ -68,7 +68,8 @@ export async function withStorybook<Result>(storybookDir: string, work: (browser
 }
 
 // Serves the base build while `work` runs, so a capture can have its base taken again on this machine.
-// Without the build or its story index there is nothing to capture from, and the report runs without a recheck.
+// Without the build or its story index there is nothing to capture from, and the report runs without a recheck,
+// and the log says so (except with no build folder at all, as in local runs).
 // A build from another commit could clear a real change, so it is never used.
 export async function withBaseRecheck<Result>(
     browser: Browser,
@@ -77,7 +78,11 @@ export async function withBaseRecheck<Result>(
     outDir: string,
     work: (baseRecheck: BaseRecheck | undefined) => Promise<Result>,
 ): Promise<Result> {
-    if (!storybookDir || !existsSync(join(storybookDir, 'index.json'))) return work(undefined);
+    if (!storybookDir) return work(undefined);
+    if (!existsSync(join(storybookDir, 'index.json'))) {
+        print(`No base recheck: no base build in ${storybookDir}`);
+        return work(undefined);
+    }
     const commitFile = join(storybookDir, 'commit.txt');
     const commit = existsSync(commitFile) ? readFileSync(commitFile, 'utf8').trim() : 'unknown';
     if (commit !== baseSha) {
