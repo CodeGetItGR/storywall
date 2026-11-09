@@ -3,6 +3,7 @@ import { join } from 'node:path';
 
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
+import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { InvitationRenderer } from '@/components/saveMyDate/invitation/InvitationRenderer';
@@ -216,5 +217,36 @@ describe('Section coverage', () => {
         const path = join(process.cwd(), 'components/saveMyDate/invitation', file);
         expect(existsSync(path), `${file} does not exist`).toBe(true);
         expect(readFileSync(path, 'utf8')).toContain(`storySection('${type}'`);
+    });
+});
+
+// Stands in for the editor's tools around a section.
+function wrapForTest(section: InvitationSection, index: number, content: ReactNode) {
+    return (
+        <div data-wrapped={section.id} data-index={index}>
+            {content}
+        </div>
+    );
+}
+
+describe('InvitationRenderer in the editor', () => {
+    it('draws hidden sections when asked, and wraps each one', () => {
+        const sections = SAMPLE_DOCUMENT.sections.map((section, index) => (index === 1 ? { ...section, visible: false } : section));
+        const { container } = render(
+            <NextIntlClientProvider locale="el" messages={el} timeZone="Europe/Athens">
+                <InvitationRenderer
+                    document={{ ...SAMPLE_DOCUMENT, sections }}
+                    theme={SAMPLE_THEME}
+                    media={media}
+                    showHidden
+                    wrapSection={wrapForTest}
+                />
+            </NextIntlClientProvider>,
+        );
+
+        expect(renderedIds(container)).toEqual(sections.map((section) => section.id));
+        const wrapped = Array.from(container.querySelectorAll('[data-wrapped]'));
+        expect(wrapped.map((element) => element.getAttribute('data-wrapped'))).toEqual(sections.map((section) => section.id));
+        expect(wrapped.map((element) => Number(element.getAttribute('data-index')))).toEqual(sections.map((_, index) => index));
     });
 });

@@ -60,7 +60,13 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
             {/* Workspace */}
             <div className="flex min-h-0 flex-1">
                 <EditorDockedPanel title={t('themeAssets')}>{assets}</EditorDockedPanel>
-                <EditorCanvas document={editor.document} theme={editor.theme} media={editor.media} uploadedFonts={uploadedFonts} />
+                <EditorCanvas
+                    document={editor.document}
+                    theme={editor.theme}
+                    media={editor.media}
+                    uploadedFonts={uploadedFonts}
+                    sections={editor.sections}
+                />
                 <EditorDockedPanel title={t('settings')}>{settings}</EditorDockedPanel>
             </div>
 
