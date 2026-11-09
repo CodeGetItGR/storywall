@@ -17,6 +17,7 @@
         "type:check": "npx tsc --noEmit",
         "test": "vitest run",
         "visual": "jiti scripts/visual/run.ts",
+        "visual:page": "vite build --config scripts/visual/report/vite.config.ts",
         "parity:save-my-date": "jiti scripts/save-my-date/parity.ts",
         "import-fonts:save-my-date": "jiti scripts/save-my-date/import-fonts.ts",
         "storybook": "storybook dev -p 6006",
