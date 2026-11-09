@@ -227,6 +227,49 @@ describe('buildReport', () => {
             expect(log).toHaveBeenCalledWith('Base recheck failed: a: Boom on base\n');
         });
 
+        it('keeps the change against the saved base when the base recheck throws', async () => {
+            const log = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+            const base = await record(baseDir, 'a', 10);
+            const head = await record(headDir, 'a', 200);
+            const throwing = vi.fn(async (): Promise<CaptureRecord> => {
+                throw new Error('Boom thrown');
+            });
+            const manifest = await run([base], [head], sameHead(head), { dir: recheckDir, retake: throwing });
+            const [entry] = manifest.entries;
+            expect(entry.state).toBe('changed');
+            expect(entry.beforeHash).toBe(base.hash);
+            expect(Math.abs((await firstGray(entry.images.before)) - 10)).toBeLessThanOrEqual(2);
+            expect(log).toHaveBeenCalledWith('Base recheck failed: a: Boom thrown\n');
+        });
+
+        it('keeps the change against the saved base when the base recheck leaves no image', async () => {
+            const log = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+            const base = await record(baseDir, 'a', 10);
+            const head = await record(headDir, 'a', 200);
+            const noImage = vi.fn(async (t: CaptureTarget): Promise<CaptureRecord> => ({ ...t, status: 'ok', hash: 'x', error: null }));
+            const manifest = await run([base], [head], sameHead(head), { dir: recheckDir, retake: noImage });
+            const [entry] = manifest.entries;
+            expect(entry.state).toBe('changed');
+            expect(entry.beforeHash).toBe(base.hash);
+            expect(log).toHaveBeenCalledWith(expect.stringMatching(/^Base recheck failed: a: /));
+        });
+
+        it('compares the fresh base with the latest head retake', async () => {
+            const base = await record(baseDir, 'a', 10);
+            const head = await record(headDir, 'a', 200);
+            const retakeHead = vi.fn(async () => record(headDir, 'a', 150));
+            const manifest = await run([base], [head], retakeHead, { dir: recheckDir, retake: vi.fn(async () => record(recheckDir, 'a', 150)) });
+            expect(manifest.entries).toEqual([]);
+        });
+
+        it('reports a change when the fresh base matches only the original head', async () => {
+            const base = await record(baseDir, 'a', 10);
+            const head = await record(headDir, 'a', 200);
+            const retakeHead = vi.fn(async () => record(headDir, 'a', 150));
+            const manifest = await run([base], [head], retakeHead, { dir: recheckDir, retake: vi.fn(async () => record(recheckDir, 'a', 200)) });
+            expect(manifest.entries[0].state).toBe('changed');
+        });
+
         it('does not recheck the base when a head retake clears the capture', async () => {
             const base = await record(baseDir, 'a', 10);
             const flaky = await record(headDir, 'a', 200);

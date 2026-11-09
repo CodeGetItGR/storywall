@@ -92,12 +92,19 @@ export async function buildReport(input: BuildReportInput): Promise<Manifest> {
         record: CaptureRecord,
         diff: ImageDiff,
     ): Promise<{ record: CaptureRecord; diff: ImageDiff } | null> {
-        const fresh = await retakeBase(targetOf(base));
-        if (fresh.status !== 'ok') {
-            process.stdout.write(`Base recheck failed: ${base.id}: ${fresh.error ?? 'unknown error'}\n`);
+        const failed = (message: string) => {
+            process.stdout.write(`Base recheck failed: ${base.id}: ${message}\n`);
             return { record, diff };
+        };
+        let fresh: CaptureRecord;
+        let freshDiff: ImageDiff;
+        try {
+            fresh = await retakeBase(targetOf(base));
+            if (fresh.status !== 'ok') return failed(fresh.error ?? 'unknown error');
+            freshDiff = await comparePngs(readFileSync(pngPath(dir, base.id)), readFileSync(pngPath(headDir, record.id)));
+        } catch (error) {
+            return failed(error instanceof Error ? error.message : String(error));
         }
-        const freshDiff = await comparePngs(readFileSync(pngPath(dir, base.id)), readFileSync(pngPath(headDir, record.id)));
         if (isChanged(freshDiff)) return { record, diff: freshDiff };
         process.stdout.write(`Cleared by a base recheck: ${base.id} (base: ${base.machine ?? 'unknown'}, here: ${fresh.machine ?? 'unknown'})\n`);
         return null;
