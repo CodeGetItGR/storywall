@@ -58,6 +58,29 @@ describe('cache key', () => {
     });
 });
 
+describe('base build for the recheck', () => {
+    it('ends every cache key with -sb, so a cache saved without the base build is never used', () => {
+        for (const name of ['visual-check', 'visual-baseline']) {
+            const keys = read(name).match(/key: visual-base-.*$/gm) ?? [];
+            expect(keys.length, name).toBeGreaterThan(0);
+            for (const key of keys) expect(key.endsWith(`-pw${version}-sb`), key).toBe(true);
+        }
+    });
+
+    it('keeps the base build in the saved base folder', () => {
+        const compare = job(read('visual-check'), 'compare');
+        expect(compare).toMatch(/name: visual-base-storybook\n\s+path: visual-output\/base\/storybook\n/);
+        expect(compare).toContain('join --storybook visual-output/base/storybook --dir visual-output/base');
+        const save = job(read('visual-baseline'), 'save');
+        expect(save).toMatch(/name: visual-storybook\n\s+path: visual-output\/base\/storybook\n/);
+        expect(save).toContain('join --storybook visual-output/base/storybook --dir visual-output/base');
+    });
+
+    it('captures the base shares from a build outside the base folder, because a share clears that folder first', () => {
+        expect(job(read('visual-check'), 'capture')).toContain('--storybook visual-output/base-storybook --out visual-output/base');
+    });
+});
+
 describe('deploy key', () => {
     it('publishes with the scripts from the base commit', () => {
         const publish = job(read('visual-check'), 'publish');
