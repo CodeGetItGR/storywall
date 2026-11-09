@@ -151,6 +151,11 @@ async function shoot(browser: Browser, origin: string, target: CaptureTarget): P
         }));
         if (broken.fonts.length > 0) return { error: `Font failed to load: ${broken.fonts[0]}`, retry: true };
         if (broken.images.length > 0) return { error: `Image failed to load: ${broken.images[0]}`, retry: true };
+        // Save my date tints a photo background once the browser has measured it.
+        await waitOrExplain(
+            page.waitForFunction(() => !document.querySelector('[data-photo-tone="pending"]')),
+            'photo backgrounds to be measured',
+        );
         const png = await stableFrame(page);
         // A story can throw after it has rendered, and Storybook then replaces it with its error page.
         const late = await storyError(page, pageErrors);

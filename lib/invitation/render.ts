@@ -167,6 +167,37 @@ function cssUrl(url: string): string {
     return `url("${url.replace(/["\\\n\r]/g, (char) => encodeURIComponent(char))}")`;
 }
 
+// The photo a section shows behind its text on a wide and on a narrow
+// invitation: the host's photo, or the theme background's desktop and mobile
+// images, picked the same way sectionBackground picks them.
+export type SectionPhotos = { desktop: string; mobile: string };
+
+export function sectionBackgroundPhotos(section: InvitationSection, index: number, ctx: RenderContext): SectionPhotos | undefined {
+    const { background } = section.style;
+    if (background.kind === 'color') return undefined;
+    if (background.kind === 'image') {
+        const url = resolveImage(background.image, ctx);
+        if (url) return { desktop: url, mobile: url };
+    }
+    const slot = ctx.theme.backgrounds[themeSlot(section, index)];
+    const desktop = slot.desktop ? ctx.media(slot.desktop.mediaId) : undefined;
+    const mobile = slot.mobile ? ctx.media(slot.mobile.mediaId) : undefined;
+    const wide = desktop ?? mobile;
+    return wide ? { desktop: wide, mobile: mobile ?? wide } : undefined;
+}
+
+export type SectionPhotoTint = { photos: SectionPhotos; textColor: string };
+
+// What the browser needs to keep text on a photo readable: the photos and the
+// colour of text that has none of its own. A host who picked the text
+// contrast by hand gets no tint, and a photo section's photo is its content,
+// not a background.
+export function sectionPhotoTint(section: InvitationSection, index: number, ctx: RenderContext): SectionPhotoTint | undefined {
+    if (section.style.textContrast !== 'auto' || section.type === 'photo') return undefined;
+    const photos = sectionBackgroundPhotos(section, index, ctx);
+    return photos ? { photos, textColor: ctx.textColor } : undefined;
+}
+
 // A solid colour behind the section, or '' when it shows an image.
 function solidBackgroundColor(section: InvitationSection, index: number, ctx: RenderContext): string {
     const { background } = section.style;

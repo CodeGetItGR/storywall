@@ -99,6 +99,12 @@
 .smd-invitation .section.wedart-text-contrast-light .section-inner .program-label,
 .smd-invitation .section.wedart-text-contrast-light .section-inner .footer-link { color: #fff !important; }
 
+/* A soft tint between a photo background and the section's text. With
+   -text-light, text that has no colour of its own turns white; a colour the
+   host picked stays. */
+.smd-invitation .smd-photo-tint { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.smd-invitation .section:has(> .smd-photo-tint-text-light) { color: #fff !important; --site-text: #fff !important; --site-muted: #fff !important; }
+
 /* Phones: sections keep a narrow side gutter; the countdown sets its own. */
 @container smd-invitation (max-width: 599px) {
     .smd-invitation .section { padding-left: var(--section-side-pad-mobile, 10px); padding-right: var(--section-side-pad-mobile, 10px); }
