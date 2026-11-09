@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { unstable_doesMiddlewareMatch } from 'next/experimental/testing/server';
 import { NextRequest } from 'next/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -7,7 +8,7 @@ import { PUBLIC_LOCALE_HEADER } from '@/i18n/publicMessages';
 import { AUTH_COOKIES, REFRESH_TOKEN_MAX_AGE_SECONDS, SESSION_REFRESHED_HEADER } from '@/lib/auth/authCookies';
 import { SpringAuthError } from '@/lib/auth/springAuth';
 
-import { proxy } from './proxy';
+import { config, proxy } from './proxy';
 
 const refresh = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/auth/springAuth', async (importOriginal) => {
@@ -405,5 +406,30 @@ describe('proxy invite host', () => {
         const res = await proxy(new NextRequest('https://www.storywall.gr/maria-and-nikos'));
         expect(res.headers.get('x-middleware-rewrite')).toBeNull();
         expect(res.headers.get('location')).toBeNull();
+    });
+});
+
+describe('proxy matcher', () => {
+    function runs(url: string) {
+        return unstable_doesMiddlewareMatch({ config, url });
+    }
+
+    it('skips the API, Sentry tunnel and static files, as whole segments', () => {
+        for (const path of ['/api', '/api/auth/session', '/monitoring', '/monitoring?o=1', '/_next/static/chunks/a.js', '/_next/image', '/favicon.ico']) {
+            expect(runs(path)).toBe(false);
+        }
+    });
+
+    it('runs for pages and invitation links that only start with those words', () => {
+        for (const path of ['/', '/feed', '/el', '/events/e1', '/apiraki-and-eleni', '/monitoring-day', '/maria-giorgos']) {
+            expect(runs(path)).toBe(true);
+        }
+    });
+
+    it('rewrites an invitation link that starts with api or monitoring', async () => {
+        for (const slug of ['apiraki-and-eleni', 'monitoring-day']) {
+            const res = await proxy(new NextRequest(`https://invite.storywall.gr/${slug}`));
+            expect(new URL(res.headers.get('x-middleware-rewrite') ?? '').pathname).toBe(`/save-my-date/i/${slug}`);
+        }
     });
 });

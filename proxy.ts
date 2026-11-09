@@ -247,6 +247,7 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-    // /monitoring is Sentry's tunnel (next.config.mjs).
-    matcher: ['/((?!_next/static|_next/image|favicon.ico|api|monitoring).*)'],
+    // /monitoring is Sentry's tunnel (next.config.mjs). `api` and `monitoring` skip whole segments only,
+    // so an invitation link such as /apiraki-and-eleni still reaches the proxy.
+    matcher: ['/((?!_next/static|_next/image|favicon.ico|api(?:/|$)|monitoring(?:/|$)).*)'],
 };
