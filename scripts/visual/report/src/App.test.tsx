@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { ReportEntry } from '../../types';
@@ -12,7 +12,11 @@ async function openReport(manifest: ReportManifest) {
         'fetch',
         vi.fn(async () => ({ ok: true, json: async () => manifest })),
     );
-    render(<App />);
+    // The manifest loads in promises. Inside act, the page renders and its effects, like the key listener, run before the test goes on.
+    // Without it a busy machine can run the test's first key press before the listener is there.
+    await act(async () => {
+        render(<App />);
+    });
     await screen.findByRole('navigation', { name: 'Stories' });
 }
 
