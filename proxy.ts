@@ -14,10 +14,12 @@ import {
 } from '@/lib/auth/authCookies';
 import { AUTH_RETURN_PATH_PARAM } from '@/lib/auth/returnPath';
 import { clientIpFrom, springAuth, SpringAuthError } from '@/lib/auth/springAuth';
+import { inviteHostRoute, isInviteHost, mainSiteUrl } from '@/lib/invitation/inviteHost';
 import { type Occasion, occasionPageForPath, occasionPath } from '@/lib/occasions/occasions';
 import { qrWeddingMovedPath, qrWeddingRedirectPath } from '@/lib/qrWeddingPage';
 import { routes } from '@/lib/routes';
 import { showsSaveMyDate } from '@/lib/saveMyDateRelease';
+import { SITE_URL } from '@/lib/seo';
 import { isSharedLinkPath, readShareLocale, SHARE_LOCALE_PARAM } from '@/lib/shareLinks';
 import { takeVisitSourceParam, VISIT_SOURCE_PARAM } from '@/lib/signupSource';
 
@@ -144,7 +146,23 @@ function sharedLinkLocale(request: NextRequest): Locale | null {
     return readShareLocale(request.nextUrl.searchParams.get(SHARE_LOCALE_PARAM));
 }
 
+// invite.storywall.gr serves published invitations and the files they load, nothing else. Session
+// cookies are host-only, so none reach it, and nothing here reads one.
+function inviteHostResponse(request: NextRequest): NextResponse {
+    const route = inviteHostRoute(request.nextUrl.pathname);
+    if (route.kind === 'file') return NextResponse.next();
+    if (route.kind === 'main-site') return NextResponse.redirect(mainSiteUrl(request.nextUrl, SITE_URL));
+
+    const url = request.nextUrl.clone();
+    url.pathname = route.path;
+    const response = NextResponse.rewrite(url);
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    return response;
+}
+
 export async function proxy(request: NextRequest) {
+    if (isInviteHost(request.nextUrl.hostname)) return inviteHostResponse(request);
+
     const { pathname } = request.nextUrl;
     if (pathname === '/') {
         const redirect = preferredLandingRedirect(request);

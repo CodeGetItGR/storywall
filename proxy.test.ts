@@ -367,3 +367,35 @@ describe('proxy invitation editor', () => {
         expect(res.status).toBe(200);
     });
 });
+
+describe('proxy invite host', () => {
+    it('draws the invitation at its link, without reading a session', async () => {
+        const res = await proxy(request({ refreshToken: 'rt' }, 'https://invite.storywall.gr/maria-and-nikos'));
+        expect(new URL(res.headers.get('x-middleware-rewrite') ?? '').pathname).toBe('/save-my-date/i/maria-and-nikos');
+        expect(res.headers.get('x-robots-tag')).toBe('noindex, nofollow');
+        expect(res.headers.get('x-middleware-request-x-storywall-access-token')).toBeNull();
+        expect(refresh).not.toHaveBeenCalled();
+    });
+
+    it('sends the home page and every other path to the main site', async () => {
+        const home = await proxy(new NextRequest('https://invite.storywall.gr/'));
+        expect(home.status).toBe(307);
+        expect(home.headers.get('location')).toBe('https://www.storywall.gr/');
+
+        const other = await proxy(new NextRequest('https://invite.staging.storywall.gr/events/e1/feed?x=1'));
+        expect(other.headers.get('location')).toBe('https://staging.storywall.gr/events/e1/feed?x=1');
+    });
+
+    it('serves the files an invitation loads', async () => {
+        const res = await proxy(new NextRequest('https://invite.storywall.gr/save-my-date/calendar-icons/apple.png'));
+        expect(res.status).toBe(200);
+        expect(res.headers.get('location')).toBeNull();
+        expect(res.headers.get('x-middleware-rewrite')).toBeNull();
+    });
+
+    it('leaves the main site alone', async () => {
+        const res = await proxy(new NextRequest('https://www.storywall.gr/maria-and-nikos'));
+        expect(res.headers.get('x-middleware-rewrite')).toBeNull();
+        expect(res.headers.get('location')).toBeNull();
+    });
+});

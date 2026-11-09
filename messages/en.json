@@ -9990,6 +9990,11 @@
     "SaveMyDatePreview": {
         "metaTitle": "Invitation preview"
     },
+    "PublishedInvitation": {
+        "metaTitle": "Invitation",
+        "notFound": "We couldn't find this invitation.",
+        "expired": "This invitation is no longer available."
+    },
     "Inviart": {
         "heading": "Invitations and more by INVIART",
         "cta": "See it on INVIART",

@@ -10028,6 +10028,11 @@
     "SaveMyDatePreview": {
         "metaTitle": "Προεπισκόπηση πρόσκλησης"
     },
+    "PublishedInvitation": {
+        "metaTitle": "Πρόσκληση",
+        "notFound": "Δεν βρήκαμε αυτή την πρόσκληση.",
+        "expired": "Αυτή η πρόσκληση δεν είναι πλέον διαθέσιμη."
+    },
     "Inviart": {
         "heading": "Προσκλητήρια και άλλα από την INVIART",
         "cta": "Δείτε το στην INVIART",
