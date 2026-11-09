@@ -17,6 +17,7 @@ import { clientIpFrom, springAuth, SpringAuthError } from '@/lib/auth/springAuth
 import { type Occasion, occasionPageForPath, occasionPath } from '@/lib/occasions/occasions';
 import { qrWeddingMovedPath, qrWeddingRedirectPath } from '@/lib/qrWeddingPage';
 import { routes } from '@/lib/routes';
+import { showsSaveMyDate } from '@/lib/saveMyDateRelease';
 import { isSharedLinkPath, readShareLocale, SHARE_LOCALE_PARAM } from '@/lib/shareLinks';
 import { takeVisitSourceParam, VISIT_SOURCE_PARAM } from '@/lib/signupSource';
 
@@ -27,8 +28,13 @@ import { takeVisitSourceParam, VISIT_SOURCE_PARAM } from '@/lib/signupSource';
 // or, worse, gate one that was meant to stay public.
 const PROTECTED_PREFIXES = ['/admin', '/feed', '/home', '/notifications', '/profile', '/business', '/partner', '/event-not-found', '/post/'];
 
+// The Save my date editor needs a session, but only where it exists: on the production site
+// before launch it 404s like the rest of Save my date, instead of sending visitors to log in.
+const SAVE_MY_DATE_EDITOR_PREFIX = '/save-my-date/editor';
+
 function isProtectedPath(pathname: string): boolean {
     if (PROTECTED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix))) return true;
+    if (pathname.startsWith(SAVE_MY_DATE_EDITOR_PREFIX) && showsSaveMyDate()) return true;
     // Every /events/... route (new, checkout, settings) needs a session. The
     // client gate on /events/new only adds role and email-verification checks.
     return pathname.startsWith('/events/');
