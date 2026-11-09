@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isRsvpPhone, readRsvpForm, type RsvpReply, rsvpCountOptions, rsvpRequestBody } from '@/lib/invitation/rsvp';
+import { isRsvpPhone, readRsvpForm, rsvpCountOptions, type RsvpReply, rsvpRequestBody } from '@/lib/invitation/rsvp';
 
 function form(values: Record<string, string>) {
     const data = new FormData();

@@ -57,7 +57,7 @@ export default function RsvpTab({
             )}
 
             {/* List */}
-            {subTab === 'list' && <RsvpListPanel members={members} rsvps={rsvps} />}
+            {subTab === 'list' && <RsvpListPanel eventId={eventId} members={members} rsvps={rsvps} canWrite={canWrite} />}
 
             {/* Reports */}
             {subTab === 'reports' && <RsvpReportsPanel eventId={eventId} origin={origin} />}

@@ -7,7 +7,8 @@ const requestHeaders = vi.hoisted(() => ({ current: new Headers() }));
 vi.mock('next/headers', () => ({ headers: async () => requestHeaders.current }));
 vi.mock('@/i18n/serverLocale', () => ({ getServerLocale: async () => 'el' }));
 
-import { fetchPublishedInvitation } from '@/lib/invitation/serverPublishedInvitation';
+import { readPublishedInvitation } from '@/lib/invitation/publishedInvitation';
+import { fetchPublishedInvitation, publishedInvitationRsvpSender } from '@/lib/invitation/serverPublishedInvitation';
 
 const fetchMock = vi.fn();
 
@@ -61,5 +62,25 @@ describe('fetchPublishedInvitation', () => {
     it('never asks the backend about a link it would not give out', async () => {
         expect(await fetchPublishedInvitation('Not_A_Slug')).toEqual({ kind: 'not-found' });
         expect(fetchMock).not.toHaveBeenCalled();
+    });
+});
+
+describe('publishedInvitationRsvpSender', () => {
+    const invitation = () => readPublishedInvitation({ slug: 'maria-and-nikos', design: SAMPLE_THEME, document: SAMPLE_DOCUMENT, imageUrls: {} } as never);
+
+    it("sends a live invitation's replies to its own link, in its language", async () => {
+        fetchMock.mockResolvedValue(answer(204));
+        const send = publishedInvitationRsvpSender('maria-and-nikos', { kind: 'found', invitation: invitation() });
+
+        const reply = { guestName: 'Μαρία', attendanceStatus: 'DECLINED', phone: '6941234567', email: '', adultCount: 0, childCount: 0, notes: '', website: '' } as const;
+        await expect(send?.(reply)).resolves.toEqual({ ok: true });
+        const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+        expect(url).toMatch(/\/api\/public\/invitations\/maria-and-nikos\/rsvp$/);
+        expect(init.headers).toMatchObject({ 'Accept-Language': 'el' });
+    });
+
+    it('has nothing to send for an invitation that is not shown', () => {
+        expect(publishedInvitationRsvpSender('maria-and-nikos', { kind: 'expired' })).toBeUndefined();
+        expect(publishedInvitationRsvpSender('maria-and-nikos', { kind: 'not-found' })).toBeUndefined();
     });
 });

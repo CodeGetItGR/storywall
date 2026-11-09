@@ -5,12 +5,15 @@ import { cache } from 'react';
 import { getServerLocale } from '@/i18n/serverLocale';
 import { clientIpFrom, clientIpHeaders } from '@/lib/auth/springAuth';
 import { isInvitationSlug } from '@/lib/invitation/inviteHost';
+import { invitationLanguage } from '@/lib/invitation/labels';
 import {
     publicInvitationEndpoint,
     type PublishedInvitationLabels,
     type PublishedInvitationState,
     publishedInvitationState,
 } from '@/lib/invitation/publishedInvitation';
+import type { RsvpSender } from '@/lib/invitation/rsvp';
+import { sendInvitationRsvp } from '@/lib/invitation/sendInvitationRsvp';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 
@@ -47,4 +50,11 @@ export async function getPublishedInvitationLabels(): Promise<PublishedInvitatio
         loadFailed: editor('loadFailed'),
         retry: errors('retry'),
     };
+}
+
+// The RSVP form's sender on a live invitation: replies go to this link's event, answered in the
+// invitation's own language. Nothing to send for an invitation that isn't shown.
+export function publishedInvitationRsvpSender(slug: string, state: PublishedInvitationState): RsvpSender | undefined {
+    if (state.kind !== 'found') return undefined;
+    return sendInvitationRsvp.bind(null, slug, invitationLanguage(state.invitation.document));
 }

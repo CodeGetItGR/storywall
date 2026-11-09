@@ -1513,6 +1513,14 @@
             "all": "All",
             "empty": "No guests match this filter."
         },
+        "rsvpDuplicate": {
+            "label": "Possible duplicate",
+            "hint": "Same phone as another reply",
+            "keep": "Keep",
+            "removeTitle": "Remove this reply?",
+            "removeBody": "The reply from {name} will be deleted for good.",
+            "removeConfirm": "Remove reply"
+        },
         "rsvpColumns": {
             "guest": "Guest",
             "party": "Seats",
