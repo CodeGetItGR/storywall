@@ -112,8 +112,13 @@ export const HostColouredField: Story = {
     play: async ({ canvasElement }) => {
         await waitFor(() => expect(tints(canvasElement)).toHaveLength(2), MEASURE_WAIT);
         const [gold, plain] = canvasElement.querySelectorAll<HTMLElement>('.couple-name');
-        await expect(getComputedStyle(gold).color).toBe('rgb(201, 162, 75)');
-        await expect(getComputedStyle(plain).color).toBe('rgb(255, 255, 255)');
+        // With reduced motion on (as in the visual check) the app gives every
+        // element a 1ms transition, so the new colour lands a frame or two
+        // after the tint.
+        await waitFor(() => {
+            expect(getComputedStyle(gold).color).toBe('rgb(201, 162, 75)');
+            expect(getComputedStyle(plain).color).toBe('rgb(255, 255, 255)');
+        });
     },
 };
 
