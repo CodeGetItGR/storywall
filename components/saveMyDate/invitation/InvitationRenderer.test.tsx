@@ -5,6 +5,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { stubIntersectionObserver } from '@/components/saveMyDate/invitation/effects/__fixtures__/fakeIntersectionObserver';
 import { InvitationRenderer } from '@/components/saveMyDate/invitation/InvitationRenderer';
 import type { DateLanguage } from '@/lib/invitation/dateDisplay';
 import type { InvitationDocument } from '@/lib/invitation/document';
@@ -24,6 +25,9 @@ vi.stubGlobal('ResizeObserver', class {
     observe() {}
     disconnect() {}
 });
+
+// It has no IntersectionObserver either, and sections with effects need one.
+stubIntersectionObserver();
 
 // Where each section type's story is, from this folder. The file must use
 // storySection('<type>') from .storybook/invitation.tsx.
