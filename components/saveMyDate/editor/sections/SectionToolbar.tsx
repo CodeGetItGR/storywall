@@ -36,14 +36,16 @@ export function SectionToolbar({
     const { activator, attributes, listeners } = drag;
 
     return (
-        <div className={cn('pointer-events-none absolute inset-x-2.5 top-3 z-40 flex items-start justify-between sm:top-6', className)}>
+        // The tools show and hide by visibility. transition-none keeps that instant: the reduced-motion rule in
+        // globals.css would otherwise give it a 1ms transition, and the tools would still be hidden right after a tap.
+        <div className={cn('pointer-events-none absolute inset-x-2.5 top-3 z-40 flex items-start justify-between transition-none sm:top-6', className)}>
             {/* Visibility */}
             <SectionToolButton label={visible ? t('hide') : t('show')} isOff={!visible} onClick={onToggleVisible} className="pointer-events-auto">
                 {visible ? <Eye aria-hidden="true" /> : <EyeOff aria-hidden="true" />}
             </SectionToolButton>
 
             {/* Move and menu */}
-            <div className="pointer-events-auto flex gap-2">
+            <div className="pointer-events-auto flex gap-2 transition-none">
                 <SectionToolButton
                     ref={activator}
                     label={t('drag')}
