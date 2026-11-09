@@ -1,7 +1,9 @@
 import './invitation.css';
+import './effects/effects.css';
 
 import { Fragment, type ReactNode } from 'react';
 
+import { InvitationMotionRoot } from '@/components/saveMyDate/invitation/effects/InvitationMotionRoot';
 import { INVITATION_FONT_CLASSES } from '@/components/saveMyDate/invitation/invitationFonts';
 import { InvitationSection } from '@/components/saveMyDate/invitation/InvitationSection';
 import type { InvitationDocument } from '@/lib/invitation/document';
@@ -44,7 +46,12 @@ export function InvitationRenderer({
     const fontFaces = uploadedFontFaceCss(uploadedFonts, [document, theme, hostPreset]);
 
     return (
-        <div lang={invitationLanguage(document)} className={`smd-invitation ${INVITATION_FONT_CLASSES}`} style={themeCssVars(ctx)}>
+        <InvitationMotionRoot
+            textAnimation={theme.textAnimation}
+            lang={invitationLanguage(document)}
+            className={`smd-invitation ${INVITATION_FONT_CLASSES}`}
+            style={themeCssVars(ctx)}
+        >
             {/* Uploaded fonts: built only from validated names and urls, so safe to inline */}
             {fontFaces && <style>{fontFaces}</style>}
 
@@ -54,6 +61,6 @@ export function InvitationRenderer({
                 const content = <InvitationSection key={section.id} section={section} index={index} ctx={ctx} />;
                 return wrapSection ? <Fragment key={section.id}>{wrapSection(section, index, content)}</Fragment> : content;
             })}
-        </div>
+        </InvitationMotionRoot>
     );
 }
