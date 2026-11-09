@@ -1,6 +1,7 @@
 name: Visual baseline
 
 # Saves captures for each staging commit, so PRs branching from it don't have to build them.
+# Split across jobs like the visual check, so the captures are saved before most PRs need them.
 on:
     push:
         branches: [staging]
@@ -13,10 +14,13 @@ permissions:
     contents: read
 
 jobs:
-    capture:
+    build:
         runs-on: ubuntu-latest
-        timeout-minutes: 30
+        timeout-minutes: 15
         container: mcr.microsoft.com/playwright:v1.55.0-noble
+        outputs:
+            key: ${{ steps.lookup.outputs.cache-primary-key }}
+            saved: ${{ steps.lookup.outputs.cache-hit }}
         steps:
             - uses: actions/checkout@v7
               with:
@@ -42,10 +46,89 @@ jobs:
               run: npm ci
 
             - if: steps.lookup.outputs.cache-hit != 'true'
-              run: npm run visual -- --capture-only
+              run: npm run visual:ci -- build
 
             - if: steps.lookup.outputs.cache-hit != 'true'
-              uses: actions/cache/save@v6
+              uses: actions/upload-artifact@v7
+              with:
+                  name: visual-storybook
+                  path: storybook-static
+                  retention-days: 1
+                  if-no-files-found: error
+
+    capture:
+        needs: build
+        if: needs.build.outputs.saved != 'true'
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        container: mcr.microsoft.com/playwright:v1.55.0-noble
+        strategy:
+            matrix:
+                share: [1, 2, 3, 4, 5, 6]
+        env:
+            SHARE: ${{ strategy.job-index }}/${{ strategy.job-total }}
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  persist-credentials: false
+
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 22
+                  cache: npm
+
+            - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+            - run: npm ci
+
+            - uses: actions/download-artifact@v8
+              with:
+                  name: visual-storybook
+                  path: storybook-static
+
+            - run: npm run visual:ci -- capture --share "$SHARE" --storybook storybook-static --out visual-output/base
+
+            - uses: actions/upload-artifact@v7
+              with:
+                  name: visual-base-share-${{ strategy.job-index }}
+                  path: visual-output/base
+                  retention-days: 1
+                  compression-level: 0
+                  if-no-files-found: error
+
+    save:
+        needs: [build, capture]
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        container: mcr.microsoft.com/playwright:v1.55.0-noble
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  persist-credentials: false
+
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 22
+                  cache: npm
+
+            - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+            - run: npm ci
+
+            - uses: actions/download-artifact@v8
+              with:
+                  name: visual-storybook
+                  path: storybook-static
+
+            - uses: actions/download-artifact@v8
+              with:
+                  pattern: visual-base-share-*
+                  merge-multiple: true
+                  path: visual-output/base
+
+            - run: npm run visual:ci -- join --storybook storybook-static --dir visual-output/base --sha "$GITHUB_SHA"
+
+            - uses: actions/cache/save@v6
               with:
                   path: visual-output/base
-                  key: ${{ steps.lookup.outputs.cache-primary-key }}
+                  key: ${{ needs.build.outputs.key }}

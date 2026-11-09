@@ -35,8 +35,8 @@ describe('report page paths', () => {
         expect(read('scripts/visual/publish.mjs')).toContain("new URL('./report/dist/index.html', import.meta.url)");
     });
 
-    it('uses the built page for local runs', () => {
-        expect(read('scripts/visual/run.ts')).toContain("join('scripts', 'visual', 'report', 'dist', 'index.html')");
+    it('uses the built page for local and CI reports', () => {
+        expect(read('scripts/visual/steps.ts')).toContain("join('scripts', 'visual', 'report', 'dist', 'index.html')");
     });
 
     it('adds the PR link when publishing', () => {
