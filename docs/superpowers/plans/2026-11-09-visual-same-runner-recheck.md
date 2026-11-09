@@ -45,8 +45,8 @@ ls scripts/visual/steps.ts scripts/visual/ci.ts scripts/visual/shards.ts
 | `scripts/visual/capture.test.ts` | modify | test for `MACHINE` |
 | `scripts/visual/report.ts` | modify | `BaseRecheck` type, the recheck after the head retakes |
 | `scripts/visual/report.test.ts` | modify | recheck tests |
-| `scripts/visual/steps.ts` | modify | `withBaseRecheck`, the base build kept in the base folder, `Capturing on <CPU>` |
-| `scripts/visual/steps.test.ts` | new | tests for `withBaseRecheck` |
+| `scripts/visual/steps.ts` | modify | `commit.txt` in every build, `withBaseRecheck` (only from the base commit's build), the base build kept in the base folder, `Capturing on <CPU>` |
+| `scripts/visual/steps.test.ts` | new | tests for `withBaseRecheck` and `writeBuildCommit` |
 | `scripts/visual/ci.ts` | modify | the compare step passes the base build folder |
 | `.github/workflows/visual-check.yml` | modify | `-sb` key ending, base build in `visual-output/base/storybook` |
 | `.github/workflows/visual-baseline.yml` | modify | the same |
@@ -459,14 +459,22 @@ Create `scripts/visual/steps.test.ts`:
 
 ```ts
 // @vitest-environment node
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import type { Browser } from 'playwright-core';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { withBaseRecheck } from './steps';
+import type { BaseRecheck } from './report';
+import { withBaseRecheck, writeBuildCommit } from './steps';
+
+const BASE_SHA = 'a'.repeat(40);
+const OTHER_SHA = 'b'.repeat(40);
+
+// Hands back the recheck `withBaseRecheck` gave the work, so a test can look at it.
+const given = async (recheck: BaseRecheck | undefined) => recheck;
 
 describe('withBaseRecheck', () => {
     let root: string;
@@ -477,29 +485,65 @@ describe('withBaseRecheck', () => {
         root = mkdtempSync(join(tmpdir(), 'visual-steps-'));
     });
 
-    afterEach(() => rmSync(root, { recursive: true, force: true }));
+    afterEach(() => {
+        vi.restoreAllMocks();
+        rmSync(root, { recursive: true, force: true });
+    });
+
+    // A base build with a story index, and the commit it says it was built from.
+    function baseBuild(commit?: string): string {
+        const storybook = join(root, 'storybook');
+        mkdirSync(storybook);
+        writeFileSync(join(storybook, 'index.json'), JSON.stringify({ v: 5, entries: {} }));
+        if (commit) writeFileSync(join(storybook, 'commit.txt'), commit);
+        return storybook;
+    }
 
     it('gives no recheck without a base build', async () => {
-        expect(await withBaseRecheck(browser, undefined, join(root, 'recheck'), async (recheck) => recheck)).toBeUndefined();
+        expect(await withBaseRecheck(browser, undefined, BASE_SHA, join(root, 'recheck'), given)).toBeUndefined();
     });
 
     it('gives no recheck when the base build has no story index', async () => {
         const storybook = join(root, 'storybook');
         mkdirSync(storybook);
-        expect(await withBaseRecheck(browser, storybook, join(root, 'recheck'), async (recheck) => recheck)).toBeUndefined();
+        expect(await withBaseRecheck(browser, storybook, BASE_SHA, join(root, 'recheck'), given)).toBeUndefined();
     });
 
-    it('rechecks into an emptied folder of its own when the base build is there', async () => {
-        const storybook = join(root, 'storybook');
-        mkdirSync(storybook);
-        writeFileSync(join(storybook, 'index.json'), JSON.stringify({ v: 5, entries: {} }));
+    it('gives no recheck when the base build is from another commit', async () => {
+        const log = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+        const storybook = baseBuild(OTHER_SHA);
+        expect(await withBaseRecheck(browser, storybook, BASE_SHA, join(root, 'recheck'), given)).toBeUndefined();
+        expect(log).toHaveBeenCalledWith(`No base recheck: the base build is for ${OTHER_SHA}, not ${BASE_SHA}\n`);
+    });
+
+    it('gives no recheck when the base build does not say its commit', async () => {
+        const log = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+        const storybook = baseBuild();
+        expect(await withBaseRecheck(browser, storybook, BASE_SHA, join(root, 'recheck'), given)).toBeUndefined();
+        expect(log).toHaveBeenCalledWith(`No base recheck: the base build is for unknown, not ${BASE_SHA}\n`);
+    });
+
+    it('rechecks into an emptied folder of its own when the base build is from the base commit', async () => {
+        const storybook = baseBuild(BASE_SHA);
         const recheckDir = join(root, 'recheck');
         mkdirSync(recheckDir);
         writeFileSync(join(recheckDir, 'old.png'), '');
-        const recheck = await withBaseRecheck(browser, storybook, recheckDir, async (given) => given);
+        const recheck = await withBaseRecheck(browser, storybook, BASE_SHA, recheckDir, given);
         expect(recheck?.dir).toBe(recheckDir);
         expect(existsSync(recheckDir)).toBe(true);
         expect(existsSync(join(recheckDir, 'old.png'))).toBe(false);
+    });
+});
+
+describe('writeBuildCommit', () => {
+    it('writes the commit the build was made from', () => {
+        const dir = mkdtempSync(join(tmpdir(), 'visual-commit-'));
+        try {
+            writeBuildCommit('.', dir);
+            expect(readFileSync(join(dir, 'commit.txt'), 'utf8')).toBe(execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim());
+        } finally {
+            rmSync(dir, { recursive: true, force: true });
+        }
     });
 });
 ```
@@ -507,9 +551,9 @@ describe('withBaseRecheck', () => {
 - [ ] **Step 2: Run them to make sure they fail**
 
 Run: `npx vitest run scripts/visual/steps.test.ts`
-Expected: FAIL, `withBaseRecheck` is not exported.
+Expected: FAIL, `withBaseRecheck` and `writeBuildCommit` are not exported.
 
-- [ ] **Step 3: Add the folders and `withBaseRecheck`**
+- [ ] **Step 3: Add the folders, `writeBuildCommit` and `withBaseRecheck`**
 
 In `scripts/visual/steps.ts`, change the imports:
 
@@ -529,18 +573,50 @@ export const SAVED_BASE_STORYBOOK_DIR = join(BASE_DIR, 'storybook');
 export const BASE_RECHECK_DIR = join(OUT, 'base-recheck');
 ```
 
+Replace `buildStorybook`:
+
+```ts
+export function buildStorybook(cwd: string, outDir: string) {
+    execSync(`npx storybook build --quiet -o "${outDir}"`, { cwd, stdio: 'inherit', env: { ...process.env, STORYBOOK_DISABLE_TELEMETRY: '1' } });
+}
+```
+
+with:
+
+```ts
+export function buildStorybook(cwd: string, outDir: string) {
+    execSync(`npx storybook build --quiet -o "${outDir}"`, { cwd, stdio: 'inherit', env: { ...process.env, STORYBOOK_DISABLE_TELEMETRY: '1' } });
+    writeBuildCommit(cwd, outDir);
+}
+
+// Notes which commit a build is from, so the base recheck never captures from another commit's build.
+export function writeBuildCommit(cwd: string, outDir: string) {
+    writeFileSync(resolve(cwd, outDir, 'commit.txt'), execFileSync('git', ['rev-parse', 'HEAD'], { cwd, encoding: 'utf8' }).trim());
+}
+```
+
+Every build goes through `buildStorybook`: the head build in CI and locally, the baseline's build, and `buildCommitStorybook`'s base build, whose temporary worktree is checked out at the base commit (it passes an absolute `outDir`, which `resolve` keeps as it is).
+
 Below `withStorybook`, add:
 
 ```ts
 // Serves the base build while `work` runs, so a capture can have its base taken again on this machine.
 // Without the build or its story index there is nothing to capture from, and the report runs without a recheck.
+// A build from another commit could clear a real change, so it is never used.
 export async function withBaseRecheck<Result>(
     browser: Browser,
     storybookDir: string | undefined,
+    baseSha: string,
     outDir: string,
     work: (baseRecheck: BaseRecheck | undefined) => Promise<Result>,
 ): Promise<Result> {
     if (!storybookDir || !existsSync(join(storybookDir, 'index.json'))) return work(undefined);
+    const commitFile = join(storybookDir, 'commit.txt');
+    const commit = existsSync(commitFile) ? readFileSync(commitFile, 'utf8').trim() : 'unknown';
+    if (commit !== baseSha) {
+        print(`No base recheck: the base build is for ${commit}, not ${baseSha}`);
+        return work(undefined);
+    }
     rmSync(outDir, { recursive: true, force: true });
     mkdirSync(outDir, { recursive: true });
     const server = await serveStatic(storybookDir);
@@ -639,7 +715,7 @@ export async function writeReport(browser: Browser, origin: string, headRecords:
     rmSync(REPORT_DIR, { recursive: true, force: true });
     const baseRecords = await loadOrBuildBase(browser, baseSha);
     const added = git('diff', '--diff-filter=A', '--name-only', baseSha, 'HEAD').split('\n').filter(Boolean);
-    const manifest = await withBaseRecheck(browser, baseStorybookDir, BASE_RECHECK_DIR, (baseRecheck) =>
+    const manifest = await withBaseRecheck(browser, baseStorybookDir, baseSha, BASE_RECHECK_DIR, (baseRecheck) =>
         buildReport({
             baseDir: BASE_DIR,
             headDir: HEAD_DIR,

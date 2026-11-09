@@ -25,8 +25,8 @@ In `compareWithRetakes` (`scripts/visual/report.ts`), for each capture that diff
 1. Retake the head, as today: up to `RETAKES` (2) times while it still differs. Cleared if a retake matches.
 2. If it still differs, and a base Storybook build is there, capture the base version once, on this runner, from the base build.
     - **The fresh base matches the head:** cleared. Log: `Cleared by a base recheck: <id> (base: <CPU>, here: <CPU>)`. The first CPU is the saved base capture's, the second this runner's.
-    - **It still differs:** changed. The before image, the diff and the preview come from the fresh base. `beforeHash` stays the saved base's hash, so the fingerprint, the approval and review marks stay the same from run to run.
-    - **The base capture fails:** changed, against the saved base, as today. Log: `Base recheck failed: <id>: <error>`. A failed recheck never hides a change.
+    - **It still differs:** changed. The before image, the diff and the preview come from the fresh base. `beforeHash` stays the saved base's hash, so the recheck never changes the fingerprint, the approval or the review marks.
+    - **The base capture fails or throws:** changed, against the saved base, as today. Log: `Base recheck failed: <id>: <error>`. A failed recheck never hides a change, and never stops the report.
 3. **One budget.** The recheck shares `MAX_RETAKEN_CAPTURES` (50) with the retakes. A capture uses one unit for its head retakes and its base recheck together, as a capture uses one unit for its retakes today. Past 50, a capture gets neither, as today.
 
 "Matches" means what it means today: `isChanged` is false for the pair, so small differences under `CHANNEL_TOLERANCE` don't count.
@@ -45,6 +45,7 @@ The compare job needs the base Storybook build to capture from. It is about 37 M
     - **`visual-check.yml`, base cached:** the restore brings the build with the captures.
 - The compare step serves the base build on a second local server, next to the head build, with the same browser.
 - If the build is missing, or its `index.json` is, there is no recheck. The check runs as today.
+- Every Storybook build writes its commit into `commit.txt`. The recheck runs only when the base build's `commit.txt` matches the base commit. Otherwise the run log says `No base recheck: the base build is for <commit>, not <base commit>` and the check runs as today. A wrong build in the cache can then never clear a real change. Added on 2026-11-09 after the Task 2 review, with the owner's approval.
 
 ### CPU in the log
 
@@ -64,7 +65,7 @@ The compare job needs the base Storybook build to capture from. It is about 37 M
 ## Code
 
 - `report.ts`: `BuildReportInput` gains an optional `baseRecheck: { dir, retake(target) }`: the folder the fresh base goes into, and how to capture it. `compareWithRetakes` calls it after the head retakes, as above. `changedEntry` takes the saved base record for `beforeHash` and the diff for the images, as today.
-- `steps.ts` (from KAN-166): `writeReport` gets an optional base build folder. When the folder has an `index.json`, it serves the build and passes `baseRecheck`, which captures into `visual-output/base-recheck/`. `withStorybook` prints `Capturing on <CPU>` when it starts the browser.
+- `steps.ts` (from KAN-166): `buildStorybook` writes `commit.txt` into the build. `writeReport` gets an optional base build folder. When the folder has an `index.json` and its `commit.txt` matches the base commit, it serves the build and passes `baseRecheck`, which captures into `visual-output/base-recheck/`. `withStorybook` prints `Capturing on <CPU>` when it starts the browser.
 - `ci.ts`: the compare step passes `visual-output/base/storybook` as the base build folder. `run.ts` passes none.
 - `capture.ts` and `types.ts`: `machine` on every record.
 - The two workflows: the new folder and the new cache key ending, as above.
@@ -74,14 +75,16 @@ The compare job needs the base Storybook build to capture from. It is about 37 M
 - `report.test.ts`, with fake `retake` and `baseRecheck.retake` that write PNGs:
     - the fresh base matches the head: cleared, and nothing is reported;
     - it still differs: changed, the before image is the fresh base's, and `beforeHash` is the saved base's;
-    - the base capture fails: changed against the saved base;
+    - the base capture fails, or throws: changed against the saved base;
+    - the recheck compares with the latest head retake, not the first head capture;
     - no `baseRecheck`: the same result as today (the existing tests);
     - past the budget: no head retake and no base recheck;
     - a retake that clears the capture: no base recheck.
 - `workflows.test.ts`:
     - every cache step in both workflows uses the same key, ending in `-pw1.55.0-sb`, and the path `visual-output/base`;
     - the baseline save job and the check's compare job put the base build in `visual-output/base/storybook`.
-- A base build folder without `index.json` gives no recheck.
+- A base build folder without `index.json`, or with another commit in `commit.txt`, gives no recheck.
+- A build's `commit.txt` holds the commit it was built from.
 
 ## Checking it live
 
