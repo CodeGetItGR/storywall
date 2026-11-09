@@ -12,7 +12,20 @@ import { parseArgs } from 'node:util';
 
 import { captureAll, launchBrowser } from './capture';
 import { serveStatic } from './server';
-import { BASE_DIR, buildStorybook, captureBuild, git, HEAD_DIR, print, REPORT_DIR, saveRecords, STORYBOOK_DIR, targetsFrom, withStorybook, writeReport } from './steps';
+import {
+    BASE_DIR,
+    buildStorybook,
+    captureBuild,
+    git,
+    HEAD_DIR,
+    print,
+    REPORT_DIR,
+    saveRecords,
+    STORYBOOK_DIR,
+    targetsFrom,
+    withStorybook,
+    writeReport,
+} from './steps';
 
 const { values: args } = parseArgs({
     options: {
