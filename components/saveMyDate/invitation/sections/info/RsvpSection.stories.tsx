@@ -89,6 +89,21 @@ export const Refused: Story = {
     },
 };
 
+// The event holds its cap of invitation replies (409 5223): the backend's own
+// message, in the invitation's language, shown as it arrives.
+const REPLIES_FULL_EL = 'Αυτή η εκδήλωση δεν μπορεί να δεχτεί άλλες απαντήσεις μέσω της πρόσκλησης. Παρακαλούμε επικοινωνήστε με τους διοργανωτές.';
+
+export const RepliesFull: Story = {
+    globals: { locale: 'el' },
+    args: { sendRsvp: fn(async (): Promise<RsvpOutcome> => ({ ok: false, message: REPLIES_FULL_EL })) },
+    play: async ({ args, canvasElement, globals }) => {
+        await fillIn(canvasElement, globals);
+        await submit(canvasElement, globals);
+        await within(canvasElement).findByText(REPLIES_FULL_EL);
+        await expect(args.sendRsvp).toHaveBeenCalledTimes(1);
+    },
+};
+
 export const PhoneInvalid: Story = {
     args: { sendRsvp: fn(async (): Promise<RsvpOutcome> => ({ ok: true })) },
     play: async ({ args, canvasElement, globals }) => {

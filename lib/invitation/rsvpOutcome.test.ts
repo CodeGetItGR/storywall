@@ -14,6 +14,7 @@ const problem = (status: number, errorCode?: number, extra: Record<string, unkno
     new ApiError(status, { type: 'about:blank', title: 'x', status, detail: '', instance: '/', errorCode, errorKey: 'x', ...extra });
 
 const DEADLINE_MESSAGE = 'Replies for this event closed on the RSVP deadline.';
+const REPLIES_FULL_MESSAGE = "This event can't take more replies through its invitation. Please contact the hosts.";
 
 describe('rsvpOutcome', () => {
     it('is saved when the backend answers with no error (204, a duplicate or the honeypot alike)', () => {
@@ -28,6 +29,11 @@ describe('rsvpOutcome', () => {
     it('shows the approved backend message once the RSVP deadline has passed (409, 5222)', () => {
         expect(rsvpOutcome(problem(409, 5222, { detail: DEADLINE_MESSAGE }), copy)).toEqual({ ok: false, message: DEADLINE_MESSAGE });
         expect(rsvpOutcome(problem(409, 5222), copy)).toEqual({ ok: false, message: 'closed' });
+    });
+
+    it('shows the approved backend message once the event holds its cap of invitation replies (409, 5223)', () => {
+        expect(rsvpOutcome(problem(409, 5223, { detail: REPLIES_FULL_MESSAGE }), copy)).toEqual({ ok: false, message: REPLIES_FULL_MESSAGE });
+        expect(rsvpOutcome(problem(409, 5223), copy)).toEqual({ ok: false, message: 'closed' });
     });
 
     it('says replies are closed when the plan has no RSVP or the host switched it off (409, 5012)', () => {

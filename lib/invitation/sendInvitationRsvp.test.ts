@@ -76,12 +76,16 @@ describe('sendInvitationRsvp', () => {
         expect((fetchMock.mock.calls[0][1] as RequestInit).headers).toMatchObject({ 'Accept-Language': 'el' });
     });
 
-    it("shows the backend's deadline message and the form's own copy for the other refusals", async () => {
+    it("shows the backend's deadline and replies-full messages and the form's own copy for the other refusals", async () => {
         fetchMock.mockResolvedValueOnce(answer(409, problem(409, 5222, 'Replies for this event closed on the RSVP deadline.')));
         await expect(sendInvitationRsvp('maria-and-nikos', 'en', reply)).resolves.toEqual({
             ok: false,
             message: 'Replies for this event closed on the RSVP deadline.',
         });
+
+        const full = 'Αυτή η εκδήλωση δεν μπορεί να δεχτεί άλλες απαντήσεις μέσω της πρόσκλησης. Παρακαλούμε επικοινωνήστε με τους διοργανωτές.';
+        fetchMock.mockResolvedValueOnce(answer(409, problem(409, 5223, full)));
+        await expect(sendInvitationRsvp('maria-and-nikos', 'el', reply)).resolves.toEqual({ ok: false, message: full });
 
         fetchMock.mockResolvedValueOnce(answer(409, problem(409, 5012)));
         await expect(sendInvitationRsvp('maria-and-nikos', 'en', reply)).resolves.toEqual({ ok: false, message: INVITATION_LABELS.en.rsvpClosed });
