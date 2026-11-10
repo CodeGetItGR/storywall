@@ -20,8 +20,9 @@ function createLinkFrom(target: EventTarget | null): HTMLAnchorElement | null {
  * place (a plain left click; a new tab or window still follows the link), so no button needs to
  * know about the pop-up. Hovering, focusing or touching such a link starts loading the pop-up's code.
  *
- * Runs in the capture phase on the document, before React's own handlers: preventDefault there
- * also stops next/link's navigation, and click tracking further down still sees the click.
+ * Runs in the capture phase on the window, before any document listener (the landing's sign-up
+ * source tracker turns app links into full page loads there) and before React's own handlers:
+ * preventDefault here also stops next/link's navigation, and click tracking still sees the click.
  */
 export function useCreateEventDialogHost({ preload }: { preload?: () => void } = {}) {
     const enabled = useCreateWizardEnabled();
@@ -44,12 +45,12 @@ export function useCreateEventDialogHost({ preload }: { preload?: () => void } =
         const onIntent = (event: Event) => {
             if (createLinkFrom(event.target)) preload?.();
         };
-        document.addEventListener('click', onClick, true);
+        window.addEventListener('click', onClick, true);
         document.addEventListener('pointerover', onIntent, { passive: true });
         document.addEventListener('focusin', onIntent);
         document.addEventListener('touchstart', onIntent, { passive: true });
         return () => {
-            document.removeEventListener('click', onClick, true);
+            window.removeEventListener('click', onClick, true);
             document.removeEventListener('pointerover', onIntent);
             document.removeEventListener('focusin', onIntent);
             document.removeEventListener('touchstart', onIntent);

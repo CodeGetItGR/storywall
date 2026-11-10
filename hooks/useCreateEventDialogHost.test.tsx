@@ -49,6 +49,19 @@ describe('useCreateEventDialogHost', () => {
         expect(`${window.location.pathname}${window.location.search}`).toBe('/el?create=1&type=baptism');
     });
 
+    it('gets the click before document listeners registered earlier (the landing source tracker)', () => {
+        const seen: boolean[] = [];
+        const earlier = (event: MouseEvent) => seen.push(event.defaultPrevented);
+        document.addEventListener('click', earlier, true);
+        try {
+            renderHook(() => useCreateEventDialogHost());
+            link('/events/new').dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 }));
+            expect(seen).toEqual([true]);
+        } finally {
+            document.removeEventListener('click', earlier, true);
+        }
+    });
+
     it('leaves new-tab clicks and other links alone', () => {
         renderHook(() => useCreateEventDialogHost());
         const create = link('/events/new');
