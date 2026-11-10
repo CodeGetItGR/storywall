@@ -121,8 +121,10 @@ describe('sectionShell', () => {
     });
 
     it('names footers and theme backgrounds', () => {
-        expect(sectionShell(SAMPLE_SECTIONS.footer, 0, ctx).className).toBe('section footer');
-        expect(sectionShell(SAMPLE_SECTIONS.top, 0, ctx).className).toBe('section has-theme-bg');
+        // The sample section above the footer has art on its bottom edge.
+        expect(sectionShell(SAMPLE_SECTIONS.footer, 0, ctx).className).toBe('section footer wedart-transition-adjacent');
+        // The sample top section has falling petals.
+        expect(sectionShell(SAMPLE_SECTIONS.top, 0, ctx).className).toBe('section has-theme-bg wedart-bg-effect-active');
     });
 });
 

@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 
+import { activeEffect, revealsBackground, type SectionEffect } from '@/lib/invitation/backgroundEffects';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationElement } from '@/lib/invitation/elements';
 import { INVITATION_LABELS, type InvitationLabels, invitationLanguage } from '@/lib/invitation/labels';
@@ -31,6 +32,8 @@ export type RenderContext = {
     forcePreset: boolean;
     // The date the countdown counts to: the first date section's, hidden or not.
     eventIso?: string;
+    // Sections touching a transition's art.
+    transitionAdjacent: ReadonlySet<string>;
     // Fixed labels in the invitation's own language.
     labels: InvitationLabels;
     // Sends an RSVP reply. Without one (the preview) the form shows its
@@ -62,6 +65,7 @@ export function buildRenderContext(
         presetMode: forcePreset || Boolean(theme.typographyPresetId),
         forcePreset,
         eventIso: dateSection?.type === 'date' ? dateSection.data.iso : undefined,
+        transitionAdjacent: transitionAdjacentIds(document.sections),
         labels: INVITATION_LABELS[invitationLanguage(document)],
         sendRsvp,
     };
@@ -238,7 +242,41 @@ export function resolveTextColor(contrast: TextContrast, explicit: string | unde
     return explicit || undefined;
 }
 
-export type SectionShell = { className: string; style: CSSProperties; contrast: TextContrast };
+export type SectionTransitionArt = { name: string; edge: 'top' | 'bottom'; desktop: string; mobile?: string };
+
+export function sectionTransitionArt(section: InvitationSection, ctx: RenderContext): SectionTransitionArt | undefined {
+    const { transition } = section.style;
+    if (!transition) return undefined;
+    const asset = ctx.theme.transitions.find((item) => item.id === transition.assetId);
+    const desktop = asset && ctx.media(asset.desktop.mediaId);
+    if (!asset || !desktop) return undefined;
+    const mobile = asset.mobile && ctx.media(asset.mobile.mediaId);
+    return { name: asset.name, edge: transition.edge, desktop, mobile: mobile || undefined };
+}
+
+// Sections touching a transition's art: its own, and the neighbour its art hangs
+// over. Hidden sections count, as they did in the old renderer.
+export function transitionAdjacentIds(sections: InvitationSection[]): ReadonlySet<string> {
+    return new Set(
+        sections
+            .filter((section, index) => {
+                const previous = sections[index - 1]?.style.transition;
+                const next = sections[index + 1]?.style.transition;
+                return Boolean(section.style.transition) || previous?.edge === 'bottom' || next?.edge === 'top';
+            })
+            .map((section) => section.id),
+    );
+}
+
+export type SectionShell = {
+    className: string;
+    style: CSSProperties;
+    contrast: TextContrast;
+    effect?: SectionEffect;
+    // What an effect's own layer paints; the section keeps it too, underneath.
+    effectBackground: SectionBackground;
+    transition?: SectionTransitionArt;
+};
 
 const KEEPS_SAVED_HEIGHT: ReadonlySet<InvitationSection['type']> = new Set(['photo', 'photoFrame', 'footer']);
 
@@ -246,10 +284,12 @@ const KEEPS_SAVED_HEIGHT: ReadonlySet<InvitationSection['type']> = new Set(['pho
 export function sectionShell(section: InvitationSection, index: number, ctx: RenderContext): SectionShell {
     const contrast = sectionTextContrast(section, index, ctx);
     const background = sectionBackground(section, index, ctx);
+    const effect = activeEffect(section.style);
+    const surface = effect && revealsBackground(effect.type) ? { style: { background: 'transparent' }, hasThemeImage: false } : background;
     const baseText = resolveTextColor(contrast, ctx.textColor, ctx) || ctx.textColor;
     const { minHeight, paddingY } = section.style;
     const style: Record<string, unknown> = {
-        ...background.style,
+        ...surface.style,
         color: baseText,
         '--site-text': baseText,
         '--site-muted': baseText,
@@ -270,12 +310,21 @@ export function sectionShell(section: InvitationSection, index: number, ctx: Ren
         section.type === 'footer' && 'footer',
         section.type === 'photo' && 'photo-section',
         section.type === 'photoFrame' && 'photo-frame',
-        background.hasThemeImage && 'has-theme-bg',
+        surface.hasThemeImage && 'has-theme-bg',
         contrast === 'light' && 'wedart-text-contrast-light',
+        ctx.transitionAdjacent.has(section.id) && 'wedart-transition-adjacent',
+        effect && 'wedart-bg-effect-active',
     ]
         .filter(Boolean)
         .join(' ');
-    return { className, style: style as CSSProperties, contrast };
+    return {
+        className,
+        style: style as CSSProperties,
+        contrast,
+        effect,
+        effectBackground: background,
+        transition: sectionTransitionArt(section, ctx),
+    };
 }
 
 // Theme art (main art, location icons) never outgrows its container.
@@ -286,6 +335,11 @@ export function artImageStyle(base: number, scale: number, isIcon = false): CSSP
 
 export function artAnimationClass(animation: string): string {
     return animation === 'none' ? '' : `wedart-anim-${animation}`;
+}
+
+// Goes on the element around a photo frame's .photo-frame-inner.
+export function frameAnimationClass(animation: string): string {
+    return animation === 'none' ? '' : `wedart-frame-anim-${animation}`;
 }
 
 export type TextRole = 'title' | 'body';
