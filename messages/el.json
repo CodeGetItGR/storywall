@@ -19,6 +19,7 @@
         "campaignEndsIn": "Λήγει σε {countdown}.",
         "campaignEndsOn": "Λήγει στις {date}",
         "seePlans": "Δείτε τα πλάνα",
+        "getStarted": "Ξεκινήστε",
         "countdownDays": "{days}ημ {hours}ώ {minutes}λ",
         "countdownHours": "{hours}ώ {minutes}λ",
         "countdownMinutes": "{minutes}λ {seconds}δ"

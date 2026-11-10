@@ -4,7 +4,9 @@ import { useTranslations } from 'next-intl';
 
 import { AppLink } from '@/components/ui/AppLink';
 import { useCookieConsent } from '@/hooks/useCookieConsent';
+import { cookieBannerClassName } from '@/lib/cookieBanner';
 import { routes } from '@/lib/routes';
+import { useCreateWizardEnabled } from '@/providers/CreateWizardFlagProvider';
 
 // Accept and Reject carry the same weight on purpose: refusing must be as easy
 // as agreeing.
@@ -14,15 +16,13 @@ const ACTION =
 export function CookieBanner() {
     const t = useTranslations('CookieConsent');
     const { consent, acceptAll, rejectAll, openSettings } = useCookieConsent();
+    const className = cookieBannerClassName(useCreateWizardEnabled());
 
     // undefined: not read yet. A saved choice: nothing to ask.
     if (consent !== null) return null;
 
     return (
-        <section
-            aria-label={t('bannerLabel')}
-            className="fixed inset-x-2 bottom-[calc(var(--visual-viewport-bottom-inset,0px)+0.5rem)] z-40 mx-auto max-w-xl rounded-3xl bg-background p-4 text-ink shadow-[0_18px_50px_rgba(36,31,26,0.22)] sm:bottom-6 sm:p-5"
-        >
+        <section aria-label={t('bannerLabel')} className={className}>
             {/* Message */}
             <p className="text-sm leading-relaxed text-ink-muted">
                 {t('message')}{' '}

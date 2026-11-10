@@ -5,6 +5,7 @@ import { getMessages, getTranslations } from 'next-intl/server';
 import { type ReactNode } from 'react';
 
 import { CreateEventDialogHost } from '@/components/event/create/wizard/CreateEventDialogHost';
+import { CreateEventFab } from '@/components/event/create/wizard/CreateEventFab';
 import { LinkClickTracker } from '@/components/landing/LinkClickTracker';
 import { RootDocument } from '@/components/layout/RootDocument';
 import { SiteNoticeStickyBar } from '@/components/siteNotices/SiteNoticeStickyBar';
@@ -54,6 +55,8 @@ export default async function LandingLayout({ children }: Readonly<{ children: R
                     </HydrationBoundary>
                     {/* Create wizard */}
                     <CreateEventDialogHost />
+                    {/* Phone create button */}
+                    <CreateEventFab />
                 </CreateWizardFlagProvider>
                 <LinkClickTracker />
             </PublicProviders>

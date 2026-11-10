@@ -19,6 +19,7 @@
         "campaignEndsIn": "Ends in {countdown}.",
         "campaignEndsOn": "Ends on {date}",
         "seePlans": "See plans",
+        "getStarted": "Get started",
         "countdownDays": "{days}d {hours}h {minutes}m",
         "countdownHours": "{hours}h {minutes}m",
         "countdownMinutes": "{minutes}m {seconds}s"
