@@ -167,6 +167,7 @@ describe('a link of a campaign set', () => {
         utmSource: 'google',
         utmMedium: 'cpc',
         shortCode: 'google-paid-bf-search-el',
+        campaignId: 'campaign-1',
     });
 
     it.each([

@@ -28,6 +28,7 @@ function rowOf(link: Partial<NonNullable<CampaignRowDto['link']>> = {}) {
             utmCampaign: 'bf-story-el',
             createdAt: '2026-11-01T00:00:00Z',
             shortCode: 'instagram-organic-bf-story-el',
+            campaignId: 'campaign-1',
             ...link,
         },
     } as unknown as CampaignRowDto;

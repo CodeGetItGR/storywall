@@ -5092,6 +5092,7 @@
             "discountCampaignOverlap": "Another campaign runs during these dates.",
             "discountCampaignPriceTooLow": "This percent makes some plans too cheap to charge.",
             "discountCampaignLinkNameTaken": "A campaign already uses this link name.",
+            "campaignDiscountAdminOnly": "Only an admin can change the discount.",
             "methodNotAllowed": "That action is not available here. Refresh and try again.",
             "invalidModuleKey": "One of the selected modules isn't available for this event type. Remove it and try again.",
             "orderNotManual": "Only manual orders can be settled here. Stripe orders settle through Stripe.",
@@ -6121,6 +6122,41 @@
             "saveLink": "Save link",
             "rangeNote": "Counts visits and sign-ups in this range.",
             "empty": "No campaigns yet.",
+            "newCampaign": "New campaign",
+            "tabs": {
+                "current": "Current",
+                "past": "Past"
+            },
+            "pastEmpty": "No past campaigns.",
+            "status": {
+                "SCHEDULED": "Scheduled",
+                "LIVE": "Live",
+                "ENDED": "Ended",
+                "ARCHIVED": "Archived"
+            },
+            "discountUntil": "−{percent}% until {date}",
+            "change": {
+                "up": "Up {value}",
+                "down": "Down {value}",
+                "same": "Same",
+                "compared": "Compared with {period}"
+            },
+            "trend": {
+                "up": "Visitors rising",
+                "down": "Visitors falling",
+                "flat": "Visitors steady"
+            },
+            "verdict": {
+                "early": "Too early to tell",
+                "noSignUps": "Many visits, no sign-ups",
+                "betterSales": "{multiple}× more sales",
+                "betterSignedUp": "{multiple}× more sign-ups",
+                "moreSales": "More sales",
+                "moreSignedUp": "More sign-ups",
+                "fewerSales": "Fewer sales",
+                "fewerSignedUp": "Fewer sign-ups",
+                "average": "About average"
+            },
             "notSaved": "Not saved",
             "delete": "Delete link",
             "deleteTitle": "Delete this link?",
@@ -6141,7 +6177,9 @@
                 "paidHost": "Paid",
                 "revenue": "Revenue",
                 "sales": "Sales",
-                "salesRevenue": "Sales revenue"
+                "salesRevenue": "Sales revenue",
+                "trend": "Trend",
+                "verdict": "Vs other campaigns"
             },
             "valueHelpLabel": "What {name} means",
             "valueHelp": {
@@ -6826,6 +6864,7 @@
         "discountCampaignOverlap": "Another campaign runs during these dates.",
         "discountCampaignPriceTooLow": "This percent makes some plans too cheap to charge.",
         "discountCampaignLinkNameTaken": "A campaign already uses this link name.",
+        "campaignDiscountAdminOnly": "Only an admin can change the discount.",
         "subscriptionAlreadyActive": "A subscription is already running for this event.",
         "subscriptionNotLive": "There was no active subscription to stop - we have refreshed this page.",
         "subscriptionCancelFailed": "We couldn't stop it just now, so the subscription is still running and will still be charged. Please try again in a moment.",
