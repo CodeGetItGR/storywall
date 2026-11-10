@@ -3017,7 +3017,6 @@
             "paidServices": "Paid services",
             "inviart": "INVIART",
             "discountCodes": "Discount codes",
-            "discountCampaigns": "Discount campaigns",
             "guestOffer": "Guest offer",
             "partnerApplications": "Applications",
             "collaborations": "Collaborations",
@@ -3039,7 +3038,6 @@
             "siteNotices": "Site notices",
             "phones": "Phones",
             "campaigns": "Campaigns",
-            "campaignOverview": "Campaign overview",
             "outreach": "Partner outreach",
             "outreachRequests": "Requests"
         },
@@ -6045,11 +6043,7 @@
         },
         "campaigns": {
             "title": "Campaigns",
-            "create": "New link",
             "back": "All campaigns",
-            "createTitle": "New campaign link",
-            "saveLink": "Save link",
-            "rangeNote": "Counts visits and sign-ups in this range.",
             "empty": "No campaigns yet.",
             "newCampaign": "New campaign",
             "tabs": {
@@ -6164,17 +6158,12 @@
                 "fewerSignedUp": "Fewer sign-ups",
                 "average": "About average"
             },
-            "notSaved": "Not saved",
             "delete": "Delete link",
             "deleteTitle": "Delete this link?",
             "deleteBody": "New visits through it won't count. Its past numbers stay.",
             "deleteConfirm": "Delete",
-            "statsError": "Couldn't load this link's numbers.",
             "columns": {
-                "name": "Name",
-                "source": "Source / medium",
                 "campaign": "Campaign",
-                "visits": "Visits",
                 "visitors": "Visitors",
                 "createClicks": "Create",
                 "plansClicks": "Plans",
@@ -6184,13 +6173,11 @@
                 "paidHost": "Paid",
                 "revenue": "Revenue",
                 "sales": "Sales",
-                "salesRevenue": "Sales revenue",
                 "trend": "Trend",
                 "verdict": "Vs other campaigns"
             },
             "valueHelpLabel": "What {name} means",
             "valueHelp": {
-                "visits": "Arrivals through the link. Repeats within 30 minutes count once.",
                 "visitors": "Different people who visited. Someone who returns on another day counts again.",
                 "createClicks": "Visitors who tapped Create on the page. Once per person each day.",
                 "plansClicks": "Visitors who tapped the plans button on the page. Once per person each day.",
@@ -6198,7 +6185,6 @@
                 "signedUp": "Accounts that signed up through the link.",
                 "createdEvent": "Those accounts that have created an event.",
                 "paidHost": "Accounts that signed up through the link and have since paid.",
-                "revenue": "Everything those accounts have paid, at any time.",
                 "sales": "Paid orders where this was the buyer's last link. Existing accounts count too.",
                 "salesRevenue": "What those orders paid."
             },
@@ -6216,11 +6202,6 @@
                 "percent": "Discount %",
                 "label": "Name at checkout"
             },
-            "presetGroups": {
-                "social": "Social posts",
-                "ads": "Ads",
-                "other": "Other"
-            },
             "presets": {
                 "instagram": "Instagram",
                 "facebook": "Facebook",
@@ -6228,9 +6209,6 @@
                 "pinterest": "Pinterest",
                 "linkedin": "LinkedIn",
                 "youtube": "YouTube",
-                "instagramAds": "Instagram ads",
-                "facebookAds": "Facebook ads",
-                "tiktokAds": "TikTok ads",
                 "googleAds": "Google Ads",
                 "email": "Email or newsletter",
                 "partner": "Partner",
@@ -6244,58 +6222,15 @@
                 "occasion": "Occasion page"
             },
             "problems": {
-                "name": "Add a name.",
                 "source": "Add a source.",
-                "medium": "Add a medium.",
-                "campaign": "Add a campaign."
+                "medium": "Add a medium."
             },
             "share": {
                 "copy": "Copy link",
                 "copied": "Copied",
                 "downloadQr": "Download QR",
                 "qr": "QR code for this link"
-            },
-            "linkSet": {
-                "english": "English links",
-                "greek": "Greek links",
-                "name": "Name",
-                "linkName": "Link name",
-                "create": "Create links"
             }
-        },
-        "campaignOverview": {
-            "title": "Campaign overview",
-            "rangeNote": "Counts visits from saved links and sign-ups in this range.",
-            "empty": "No campaign visits in this range.",
-            "error": "Couldn't load the campaign overview.",
-            "retry": "Try again",
-            "tiles": {
-                "title": "Funnel",
-                "visits": "Visits",
-                "visitors": "Visitors",
-                "createClicks": "Create clicks",
-                "plansClicks": "See plans clicks",
-                "planPicks": "Plan picked",
-                "signedUp": "Sign-ups",
-                "paidHost": "Paid",
-                "revenue": "Revenue",
-                "share": "{rate} of visitors"
-            },
-            "splits": {
-                "title": "Language and device",
-                "language": "Language",
-                "device": "Device"
-            },
-            "source": { "label": "Source", "all": "All sources" },
-            "chart": { "daily": "Visitors over time", "hourly": "Visitors by hour", "visitors": "Visitors", "other": "Other" },
-            "bySource": {
-                "title": "By source",
-                "titlePicked": "By campaign",
-                "source": "Source",
-                "campaign": "Medium / campaign",
-                "campaigns": "{count, plural, one {# campaign} other {# campaigns}}"
-            },
-            "pages": { "title": "Landing page", "page": "Page", "unknown": "Unknown" }
         },
         "phones": {
             "add": "Add phone",
@@ -6320,46 +6255,6 @@
             "testSent": "Sent.",
             "push": { "on": "On", "off": "Off" },
             "problems": { "name": "Enter a name." }
-        },
-        "discountCampaigns": {
-            "create": "New discount campaign",
-            "createTitle": "New discount campaign",
-            "back": "All discount campaigns",
-            "empty": "No discount campaigns yet.",
-            "columns": {
-                "name": "Name",
-                "percent": "Discount %",
-                "status": "Status",
-                "dates": "Dates"
-            },
-            "fields": {
-                "name": "Name",
-                "percent": "Discount %",
-                "label": "Name at checkout",
-                "linkName": "Link name",
-                "startsAt": "Starts",
-                "endsAt": "Ends"
-            },
-            "stop": "Stop campaign",
-            "stopTitle": "Stop this campaign?",
-            "stopBody": "Prices go back to normal now.",
-            "stopConfirm": "Stop campaign",
-            "stopCancel": "Keep it running",
-            "delete": "Delete campaign",
-            "deleteTitle": "Delete this campaign?",
-            "deleteBody": "It won't go live.",
-            "links": {
-                "title": "Links",
-                "english": "English links",
-                "greek": "Greek links",
-                "visits": "Visits",
-                "sales": "Sales",
-                "salesRevenue": "Sales revenue",
-                "total": "Total",
-                "over": "This campaign is over. Don't use these links any more.",
-                "languages": { "en": "EN", "el": "EL" },
-                "formats": { "post": "Post", "story": "Story", "search": "Google" }
-            }
         },
         "siteNotices": {
             "create": "New notice",
