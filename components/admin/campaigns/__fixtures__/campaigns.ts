@@ -1,4 +1,12 @@
-import type { CampaignCountsDto, CampaignDto, CampaignLinkDto, CampaignListDto, CampaignListItemDto } from '@/lib/api/types';
+import type {
+    CampaignCountsDto,
+    CampaignDetailDto,
+    CampaignDto,
+    CampaignLinkDto,
+    CampaignLinkStatsDto,
+    CampaignListDto,
+    CampaignListItemDto,
+} from '@/lib/api/types';
 
 export function countsFixture(overrides: Partial<CampaignCountsDto> = {}): CampaignCountsDto {
     return {
@@ -185,3 +193,81 @@ export const campaignListForMarketingFixture: CampaignListDto = {
 };
 
 export const emptyCampaignListFixture: CampaignListDto = { ...campaignListFixture, current: countsFixture(), previous: countsFixture(), items: [] };
+
+function statsFixture(id: string, link: Partial<CampaignLinkDto>, counts: Partial<CampaignCountsDto> = {}): CampaignLinkStatsDto {
+    return { link: linkFixture({ id, shortCode: id, ...link }), counts: countsFixture(counts) };
+}
+
+// "Launch 50%" with eight links that add up to its numbers: four on Instagram in two languages, one
+// each on Facebook, Google and email, and a partner link with no visits yet.
+export const campaignDetailFixture: CampaignDetailDto = {
+    campaign: campaignFixture({ linkCount: 8 }),
+    deletable: false,
+    previousSince: campaignListFixture.previousSince,
+    previousUntil: campaignListFixture.previousUntil,
+    current: ITEMS[0].current,
+    previous: ITEMS[0].previous,
+    daily: ITEMS[0].daily,
+    previousDaily: dailyFixture(false, 4),
+    links: [
+        statsFixture('ig-post-el', { name: 'Instagram post · EL', utmCampaign: 'launch50-post-el' }, { visitors: 400, signedUp: 22, sales: 8 }),
+        statsFixture(
+            'ig-post-en',
+            { name: 'Instagram post · EN', utmCampaign: 'launch50-post-en', destinationPath: '/' },
+            { visitors: 120, signedUp: 5, sales: 2 },
+        ),
+        statsFixture('ig-story-el', { name: 'Instagram story · EL', utmCampaign: 'launch50-story-el' }, { visitors: 300, signedUp: 14, sales: 5 }),
+        statsFixture(
+            'ig-story-ad-el',
+            { name: 'Instagram story ad · EL', utmMedium: 'paid_social', utmCampaign: 'launch50-story-el' },
+            { visitors: 150, signedUp: 9, sales: 3 },
+        ),
+        statsFixture(
+            'fb-post-el',
+            { name: 'Facebook post · EL', utmSource: 'facebook', utmCampaign: 'launch50-post-el' },
+            { visitors: 150, signedUp: 6, sales: 1 },
+        ),
+        statsFixture(
+            'google-el',
+            { name: 'Google Ads · EL', utmSource: 'google', utmMedium: 'cpc', utmCampaign: 'launch50-search-el' },
+            { visitors: 80, signedUp: 6, sales: 2 },
+        ),
+        statsFixture(
+            'email-el',
+            { name: 'Email · EL', utmSource: 'newsletter', utmMedium: 'email', utmCampaign: 'launch50-email-el' },
+            { visitors: 40, signedUp: 2 },
+        ),
+        statsFixture('partner-el', { name: 'Partner · acme · EL', utmSource: 'acme', utmMedium: 'partner', utmCampaign: 'launch50-partner-el' }),
+    ],
+    devices: [
+        { device: 'PHONE', visits: 1020 },
+        { device: 'DESKTOP', visits: 380 },
+        { device: 'TABLET', visits: 60 },
+    ],
+    languages: [
+        { language: 'el', visits: 1180 },
+        { language: 'en', visits: 280 },
+    ],
+    pages: [
+        { page: '/el', visits: 1120 },
+        { page: '/', visits: 300 },
+        { page: null, visits: 40 },
+    ],
+};
+
+// What the marketing role gets: no revenue anywhere.
+export const campaignDetailForMarketingFixture: CampaignDetailDto = {
+    ...campaignDetailFixture,
+    current: { ...campaignDetailFixture.current, salesRevenueMinorByCurrency: null },
+    previous: campaignDetailFixture.previous && { ...campaignDetailFixture.previous, salesRevenueMinorByCurrency: null },
+    links: campaignDetailFixture.links.map((stats) => ({ ...stats, counts: { ...stats.counts, salesRevenueMinorByCurrency: null } })),
+};
+
+// All time: nothing to compare with.
+export const campaignDetailAllTimeFixture: CampaignDetailDto = {
+    ...campaignDetailFixture,
+    previousSince: null,
+    previousUntil: null,
+    previous: null,
+    previousDaily: [],
+};
