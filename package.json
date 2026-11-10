@@ -21,6 +21,7 @@
         "visual:ci": "jiti scripts/visual/ci.ts",
         "parity:save-my-date": "jiti scripts/save-my-date/parity.ts",
         "import-fonts:save-my-date": "jiti scripts/save-my-date/import-fonts.ts",
+        "upload-themes:save-my-date": "jiti scripts/save-my-date/upload-themes.ts",
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build"
     },
