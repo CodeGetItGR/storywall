@@ -1,10 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useDraftAutosave } from '@/hooks/useDraftAutosave';
 import { useEditorLeave } from '@/hooks/useEditorLeave';
+import { useEditorTour } from '@/hooks/useEditorTour';
 import { useInvitationEditorStore } from '@/hooks/useInvitationEditorStore';
+import { usePublishInvitation } from '@/hooks/usePublishInvitation';
 import { useSectionActions } from '@/hooks/useSectionActions';
 import { useUndoShortcuts } from '@/hooks/useUndoShortcuts';
 import { useUnsavedChangesWarning } from '@/hooks/useUnsavedChangesWarning';
@@ -12,30 +14,22 @@ import type { EditableDraft } from '@/lib/invitation/drafts';
 
 export type EditorPanel = 'assets' | 'settings';
 
-// How long the "publishing isn't available yet" line stays.
-export const PUBLISH_NOTICE_MS = 4000;
-
 // Everything the editor shell shows and does for one open draft.
 export function useInvitationEditor(draft: EditableDraft) {
     const editor = useInvitationEditorStore(draft.document);
-    const { status, flush } = useDraftAutosave(editor.store, draft.id, draft.revision);
+    const { status, flush, savedRevision } = useDraftAutosave(editor.store, draft.id, draft.revision);
     const leave = useEditorLeave(flush);
     const sections = useSectionActions(editor.store, editor.document, draft.eventType);
     const [openPanel, setOpenPanel] = useState<EditorPanel | null>(null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-    const [isPublishNoticeShown, setIsPublishNoticeShown] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const publishing = usePublishInvitation({ draftId: draft.id, eventId: draft.eventId, flush, revision: savedRevision });
+    const tour = useEditorTour();
 
     useUndoShortcuts(editor.undo, editor.redo);
     useUnsavedChangesWarning(status !== 'saved');
 
-    useEffect(() => {
-        if (!isPublishNoticeShown) return;
-        const timer = setTimeout(() => setIsPublishNoticeShown(false), PUBLISH_NOTICE_MS);
-        return () => clearTimeout(timer);
-    }, [isPublishNoticeShown]);
-
-    // Preview and publish wait for the save first.
+    // Preview waits for the save first; publishing does the same in usePublishInvitation.
     const saveFirst = useCallback(
         async (then: (saved: boolean) => void) => {
             setIsSaving(true);
@@ -48,7 +42,6 @@ export function useInvitationEditor(draft: EditableDraft) {
 
     const openPreview = useCallback(() => saveFirst(() => setIsPreviewOpen(true)), [saveFirst]);
     const closePreview = useCallback(() => setIsPreviewOpen(false), []);
-    const publish = useCallback(() => saveFirst((saved) => setIsPublishNoticeShown(saved)), [saveFirst]);
     const retrySave = useCallback(() => void flush(), [flush]);
     const closePanel = useCallback(() => setOpenPanel(null), []);
 
@@ -65,15 +58,15 @@ export function useInvitationEditor(draft: EditableDraft) {
         redo: editor.redo,
         status,
         retrySave,
-        isBusy: isSaving || leave.isLeaving,
+        isBusy: isSaving || leave.isLeaving || publishing.isBusy,
         openPanel,
         setOpenPanel,
         closePanel,
         isPreviewOpen,
         openPreview,
         closePreview,
-        publish,
-        isPublishNoticeShown,
+        publishing,
+        tour,
         leave,
         sections,
     };

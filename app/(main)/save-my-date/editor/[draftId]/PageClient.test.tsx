@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createDraftServer, TEST_API } from '@/hooks/invitationDraftTestServer';
+import { EDITOR_TOUR_SEEN_KEY } from '@/lib/invitation/editorTour';
 import en from '@/messages/en.json';
 
 import InvitationEditorPage from './PageClient';
@@ -87,6 +88,8 @@ function closeTab() {
 describe('Invitation editor page', () => {
     beforeAll(() => backend.server.listen({ onUnhandledRequest: 'error' }));
     beforeEach(() => {
+        // The tour has been seen: these tests are about the editor itself.
+        localStorage.setItem(EDITOR_TOUR_SEEN_KEY, '1');
         router.back.mockReset();
         router.push.mockReset();
     });

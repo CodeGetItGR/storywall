@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Eye, Redo2, Undo2 } from 'lucide-react';
+import { ArrowLeft, CircleHelp, Eye, Redo2, Undo2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { EditorIconButton } from '@/components/saveMyDate/editor/EditorIconButton';
@@ -18,10 +18,12 @@ type EditorTopBarProps = {
     onRedo: () => void;
     onPreview: () => void;
     onPublish: () => void;
+    // Starts the editor tour again.
+    onTour: () => void;
 };
 
-// Back and the save status on the left; undo, redo, preview and publish on the right.
-export function EditorTopBar({ status, canUndo, canRedo, isBusy = false, onBack, onUndo, onRedo, onPreview, onPublish }: EditorTopBarProps) {
+// Back and the save status on the left; undo, redo, the tour, preview and publish on the right.
+export function EditorTopBar({ status, canUndo, canRedo, isBusy = false, onBack, onUndo, onRedo, onPreview, onPublish, onTour }: EditorTopBarProps) {
     const t = useTranslations('InvitationEditor');
 
     return (
@@ -34,7 +36,7 @@ export function EditorTopBar({ status, canUndo, canRedo, isBusy = false, onBack,
                 <EditorSaveStatus status={status} />
             </div>
 
-            {/* History, preview and publish */}
+            {/* History, tour, preview and publish */}
             <div className="flex shrink-0 items-center gap-0.5 sm:gap-1.5">
                 <EditorIconButton label={t('undo')} onClick={onUndo} disabled={!canUndo}>
                     <Undo2 aria-hidden="true" />
@@ -42,13 +44,17 @@ export function EditorTopBar({ status, canUndo, canRedo, isBusy = false, onBack,
                 <EditorIconButton label={t('redo')} onClick={onRedo} disabled={!canRedo}>
                     <Redo2 aria-hidden="true" />
                 </EditorIconButton>
-                <EditorIconButton label={t('preview')} onClick={onPreview} disabled={isBusy}>
+                <EditorIconButton label={t('tour.help')} onClick={onTour}>
+                    <CircleHelp aria-hidden="true" />
+                </EditorIconButton>
+                <EditorIconButton label={t('preview')} onClick={onPreview} disabled={isBusy} tourTarget="preview">
                     <Eye aria-hidden="true" />
                 </EditorIconButton>
                 <button
                     type="button"
                     onClick={onPublish}
                     disabled={isBusy}
+                    data-editor-tour="publish"
                     className="ml-1 h-10 rounded-[10px] bg-primary px-3.5 text-[13px] font-extrabold tracking-[0.02em] text-primary-foreground transition-colors hover:bg-primary-dark focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none disabled:opacity-60"
                 >
                     {t('publish')}

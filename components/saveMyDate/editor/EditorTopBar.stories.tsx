@@ -19,6 +19,7 @@ const meta = {
         onRedo: fn(),
         onPreview: fn(),
         onPublish: fn(),
+        onTour: fn(),
     },
 } satisfies Meta<typeof EditorTopBar>;
 

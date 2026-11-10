@@ -13,12 +13,20 @@ import { EditorPanelBar } from '@/components/saveMyDate/editor/EditorPanelBar';
 import { EditorPanelSheet } from '@/components/saveMyDate/editor/EditorPanelSheet';
 import { EditorPreview } from '@/components/saveMyDate/editor/EditorPreview';
 import { EditorTopBar } from '@/components/saveMyDate/editor/EditorTopBar';
+import { PublishNotice } from '@/components/saveMyDate/editor/publish/PublishNotice';
+import { PublishPlanDialog } from '@/components/saveMyDate/editor/publish/PublishPlanDialog';
+import { PublishSheet } from '@/components/saveMyDate/editor/publish/PublishSheet';
 import { InlineTextEditing } from '@/components/saveMyDate/editor/text/InlineTextEditing';
 import { TextColorSetting } from '@/components/saveMyDate/editor/TextColorSetting';
 import { ThemeAssetsPanel } from '@/components/saveMyDate/editor/ThemeAssetsPanel';
+import { EditorTour } from '@/components/saveMyDate/editor/tour/EditorTour';
 import { useInvitationEditor } from '@/hooks/useInvitationEditor';
 import type { EditableDraft } from '@/lib/invitation/drafts';
+import { inviteHostFor } from '@/lib/invitation/publication';
 import type { InvitationFontDto } from '@/lib/invitation/uploadedFonts';
+import { SITE_URL } from '@/lib/seo';
+
+const INVITE_HOST = inviteHostFor(SITE_URL);
 
 type InvitationEditorProps = {
     draft: EditableDraft;
@@ -49,14 +57,15 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
                 onUndo={editor.undo}
                 onRedo={editor.redo}
                 onPreview={editor.openPreview}
-                onPublish={editor.publish}
+                onPublish={editor.publishing.start}
+                onTour={editor.tour.start}
             />
 
             {/* Save problem */}
             {editor.status === 'error' && <EditorNotice tone="error" message={t('notSaved')} actionLabel={t('retry')} onAction={editor.retrySave} />}
 
             {/* Publish note */}
-            {editor.isPublishNoticeShown && <EditorNotice tone="info" message={t('publishUnavailable')} />}
+            <PublishNotice notice={editor.publishing.notice} onOpen={editor.publishing.openPublished} />
 
             {/* Workspace */}
             <div className="flex min-h-0 flex-1">
@@ -92,9 +101,20 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
                 uploadedFonts={uploadedFonts}
             />
 
+            {/* Publishing */}
+            <PublishSheet sheet={editor.publishing.sheet} inviteHost={INVITE_HOST} />
+            <PublishPlanDialog
+                prompt={editor.publishing.planPrompt}
+                onSeePlan={editor.publishing.seePlan}
+                onClose={editor.publishing.closePlanPrompt}
+            />
+
             {/* Dialogs */}
             <EditorConflictDialog open={editor.status === 'conflict'} isReloading={isReloading} onReload={onReload} />
             <EditorLeaveDialog open={editor.leave.isConfirming} onLeave={editor.leave.leave} onStay={editor.leave.stay} />
+
+            {/* Tour */}
+            <EditorTour tour={editor.tour} />
         </div>
     );
 }
