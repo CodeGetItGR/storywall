@@ -291,6 +291,8 @@ export const endpoints = {
         create: '/api/rsvps',
         byId: (id: string) => `/api/rsvps/${id}`,
         sessionResponses: (rsvpId: string) => `/api/rsvps/${rsvpId}/session-responses`,
+        // DELETE: the host keeps a reply marked as a possible duplicate.
+        duplicateMark: (id: string) => `/api/rsvps/${id}/duplicate-mark`,
     },
 
     rsvpSessionResponses: {

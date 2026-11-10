@@ -1,3 +1,4 @@
+import { InvitationText } from '@/components/saveMyDate/invitation/InvitationText';
 import type { RenderContext, TextContrast } from '@/lib/invitation/render';
 import { type FieldTag, fieldTextCss } from '@/lib/invitation/sectionCss';
 import type { InvitationSection } from '@/lib/invitation/sections';
@@ -14,10 +15,15 @@ type SectionTextProps = {
 };
 
 // One of a section's own text fields (the old tb()).
-export function SectionText({ section, path, value, tag: Tag = 'div', className = '', contrast, ctx }: SectionTextProps) {
+export function SectionText({ section, path, value, tag = 'div', className = '', contrast, ctx }: SectionTextProps) {
     return (
-        <Tag className={['text-block', className].filter(Boolean).join(' ')} style={fieldTextCss(section, path, Tag, className, contrast, ctx)}>
-            {value}
-        </Tag>
+        <InvitationText
+            render={ctx.renderText}
+            target={{ sectionId: section.id, kind: 'field', path }}
+            value={value}
+            tag={tag}
+            className={['text-block', className].filter(Boolean).join(' ')}
+            style={fieldTextCss(section, path, tag, className, contrast, ctx)}
+        />
     );
 }
