@@ -19,6 +19,7 @@ const ROW: CampaignRowDto = {
         utmCampaign: 'spring',
         createdAt: '2027-03-01T10:00:00Z',
         shortCode: 'instagram-organic-october-bio',
+        campaignId: 'campaign-1',
     },
     visits: 620,
     visitors: 510,

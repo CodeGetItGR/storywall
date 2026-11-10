@@ -1,105 +1,22 @@
 'use client';
 
-import { Plus } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-
-import { CampaignLinkCreatePage } from '@/components/admin/campaigns/CampaignLinkCreatePage';
-import { CampaignLinkPage } from '@/components/admin/campaigns/CampaignLinkPage';
-import { CampaignLinkSetDrawer } from '@/components/admin/campaigns/CampaignLinkSetDrawer';
-import { CampaignsTable } from '@/components/admin/campaigns/CampaignsTable';
-import { FunnelHeader } from '@/components/admin/funnel/FunnelHeader';
-import { FunnelRangeControl } from '@/components/admin/funnel/FunnelRangeControl';
-import { LoadingState } from '@/components/ui/LoadingState';
-import { useCampaignsDashboard } from '@/hooks/useCampaignsDashboard';
-import { CAMPAIGN_RANGE_PRESETS } from '@/lib/adminFunnel';
-import { adminErrorMessageKey } from '@/lib/adminUtils';
+import { CampaignListPage } from '@/components/admin/campaigns/CampaignListPage';
+import { useCampaignsPage } from '@/hooks/useCampaignsPage';
 
 const SHELL_CLASS = 'mx-auto max-w-6xl px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10';
 
-// Sign-ups per campaign, and the links made with the campaign link builder.
+// Every campaign, compared with the period before and with each other.
 export function CampaignsPanel() {
-    const t = useTranslations('AdminPage');
-    const d = useCampaignsDashboard();
-
-    if (d.page.isNew) {
-        return (
-            <div className={SHELL_CLASS}>
-                <CampaignLinkCreatePage onBackAction={d.page.handleBackClick} onCreatedAction={d.handleLinkCreated} />
-            </div>
-        );
-    }
-
-    if (d.page.recordId) {
-        return (
-            <div className={SHELL_CLASS}>
-                {d.isLoading && <LoadingState className="justify-start py-6" />}
-                {d.link && (
-                    <CampaignLinkPage
-                        key={d.link.id}
-                        link={d.link}
-                        bounds={d.range.bounds}
-                        onBackAction={d.page.handleBackClick}
-                        onDoneAction={d.page.showList}
-                    />
-                )}
-            </div>
-        );
-    }
+    const c = useCampaignsPage();
 
     return (
         <div className={SHELL_CLASS}>
-            {/* Header */}
-            <FunnelHeader title={t('campaigns.title')} updatedAt={d.updatedAt} isFetching={d.isFetching} onRefreshAction={d.refresh} />
-
-            <div className="space-y-5">
-                {/* Range and action */}
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                    <FunnelRangeControl range={d.range} presets={CAMPAIGN_RANGE_PRESETS} note={t('campaigns.rangeNote')} />
-                    <div className="flex flex-wrap gap-2">
-                        <button
-                            type="button"
-                            data-language="en"
-                            onClick={d.handleLinkSetClick}
-                            className="min-h-10 rounded-lg border border-border px-4 text-sm font-semibold text-ink-muted"
-                        >
-                            {t('campaigns.linkSet.english')}
-                        </button>
-                        <button
-                            type="button"
-                            data-language="el"
-                            onClick={d.handleLinkSetClick}
-                            className="min-h-10 rounded-lg border border-border px-4 text-sm font-semibold text-ink-muted"
-                        >
-                            {t('campaigns.linkSet.greek')}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={d.page.handleNewClick}
-                            className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white"
-                        >
-                            <Plus aria-hidden="true" className="h-4 w-4" />
-                            {t('campaigns.create')}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Table */}
-                <section className="overflow-hidden rounded-xl border border-border bg-card">
-                    {d.isLoading && <LoadingState className="justify-start px-4 py-6" />}
-                    {Boolean(d.error) && <p className="px-4 py-6 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(d.error)}`)}</p>}
-                    {d.hasData && d.rows.length === 0 && <p className="px-4 py-6 text-sm text-ink-muted">{t('campaigns.empty')}</p>}
-                    {d.rows.length > 0 && (
-                        <CampaignsTable rows={d.rows} onLinkAction={d.page.handleRecordLinkClick} onRowAction={d.page.handleRecordRowClick} />
-                    )}
-                </section>
-            </div>
-
-            {/* Link set */}
-            <CampaignLinkSetDrawer
-                key={`set-${d.linkSet.token}`}
-                open={d.linkSet.open}
-                language={d.linkSet.language}
-                onCloseAction={d.closeLinkSet}
+            <CampaignListPage
+                range={c.range}
+                tab={c.tab}
+                onTabChangeAction={c.handleTabChange}
+                onRecordLinkClickAction={c.handleRecordLinkClick}
+                onRecordRowClickAction={c.handleRecordRowClick}
             />
         </div>
     );

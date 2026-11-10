@@ -4,6 +4,8 @@
 export const CAMPAIGNS_HASH_ROOT = '#campaigns';
 export const DISCOUNT_CAMPAIGNS_HASH_ROOT = '#discount-campaigns';
 export const NEW_RECORD = 'new';
+// `#campaigns/past` is the Campaigns page's Past tab, not a record.
+export const CAMPAIGNS_PAST = 'past';
 
 export function isRecordHash(root: string, hash: string): boolean {
     return hash === root || hash.startsWith(`${root}/`);
