@@ -6064,6 +6064,43 @@
                 "ARCHIVED": "Archived"
             },
             "discountUntil": "−{percent}% until {date}",
+            "discountDates": "−{percent}% on all plans · {dates}",
+            "funnel": {
+                "title": "Funnel",
+                "share": "{rate} of visitors"
+            },
+            "platforms": {
+                "title": "Platforms",
+                "salesRate": "Sales per visitor",
+                "signUpRate": "Sign-ups per visitor",
+                "noVisits": "No visits yet"
+            },
+            "linkTypes": {
+                "post": "Post",
+                "story": "Story",
+                "postAd": "Post ad",
+                "storyAd": "Story ad",
+                "searchAd": "Search ad"
+            },
+            "chart": {
+                "title": "Visitors over time",
+                "current": "This period",
+                "previous": "Previous period"
+            },
+            "languages": {
+                "en": "EN",
+                "el": "EL"
+            },
+            "splits": {
+                "title": "Language and device",
+                "language": "Language",
+                "device": "Device"
+            },
+            "landing": {
+                "title": "Landing page",
+                "page": "Page",
+                "unknown": "Unknown"
+            },
             "change": {
                 "up": "Up {value}",
                 "down": "Down {value}",
