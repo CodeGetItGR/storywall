@@ -53,6 +53,7 @@ export function useInvitationEditor(draft: EditableDraft) {
     const closePanel = useCallback(() => setOpenPanel(null), []);
 
     return {
+        store: editor.store,
         document: editor.document,
         theme: draft.theme,
         media: draft.media,

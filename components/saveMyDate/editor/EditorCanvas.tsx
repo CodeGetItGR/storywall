@@ -1,4 +1,5 @@
 import { EditorSections } from '@/components/saveMyDate/editor/sections/EditorSections';
+import { useEditableTextRenderer } from '@/components/saveMyDate/editor/text/EditableTextContext';
 import { InvitationRenderer } from '@/components/saveMyDate/invitation/InvitationRenderer';
 import type { SectionActions } from '@/hooks/useSectionActions';
 import type { InvitationDocument } from '@/lib/invitation/document';
@@ -17,6 +18,7 @@ type EditorCanvasProps = {
 
 // The invitation being edited, drawn by the same renderer guests see. It scrolls on its own.
 export function EditorCanvas({ document, theme, media, uploadedFonts, sections }: EditorCanvasProps) {
+    const renderText = useEditableTextRenderer();
     const renderer = (wrapSection?: Parameters<typeof InvitationRenderer>[0]['wrapSection']) => (
         <InvitationRenderer
             document={document}
@@ -25,6 +27,7 @@ export function EditorCanvas({ document, theme, media, uploadedFonts, sections }
             uploadedFonts={uploadedFonts}
             showHidden={wrapSection !== undefined}
             wrapSection={wrapSection}
+            renderText={renderText}
         />
     );
 

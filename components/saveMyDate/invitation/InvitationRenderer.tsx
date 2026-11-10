@@ -11,6 +11,7 @@ import { invitationLanguage } from '@/lib/invitation/labels';
 import { buildRenderContext, type MediaResolver, themeCssVars, type TypographyPreset } from '@/lib/invitation/render';
 import type { RsvpSender } from '@/lib/invitation/rsvp';
 import type { InvitationSection as Section } from '@/lib/invitation/sections';
+import type { TextRenderer } from '@/lib/invitation/textEditing';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import { type InvitationFontDto, uploadedFontFaceCss } from '@/lib/invitation/uploadedFonts';
 
@@ -28,6 +29,8 @@ type InvitationRendererProps = {
     showHidden?: boolean;
     // The editor puts its tools around each section.
     wrapSection?: (section: Section, index: number, content: ReactNode) => ReactNode;
+    // The editor's drawing of each text, so it can be typed in place.
+    renderText?: TextRenderer;
 };
 
 // The invitation as guests see it. The staging preview, the editor canvas and
@@ -41,8 +44,9 @@ export function InvitationRenderer({
     sendRsvp,
     showHidden = false,
     wrapSection,
+    renderText,
 }: InvitationRendererProps) {
-    const ctx = buildRenderContext(document, theme, media, hostPreset, sendRsvp);
+    const ctx = { ...buildRenderContext(document, theme, media, hostPreset, sendRsvp), renderText };
     const fontFaces = uploadedFontFaceCss(uploadedFonts, [document, theme, hostPreset]);
 
     return (

@@ -1,0 +1,34 @@
+/* Texts on the editor canvas, as the old Save my date editor drew them: a faint dashed
+   outline on every text, a green one on the text being edited. */
+.smd-text-editing .smd-invitation .smd-text {
+    cursor: text;
+    outline: 1px dashed rgb(0 0 0 / 0.18);
+    outline-offset: 4px;
+}
+
+.smd-text-editing .smd-invitation .smd-text:focus-visible {
+    outline: 2px solid #78b6a4;
+}
+
+.smd-text-editing .smd-invitation .smd-text-active {
+    outline: 1px dashed #78b6a4;
+    outline-offset: 7px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.smd-text-editing .smd-invitation .smd-text-active:focus,
+.smd-text-editing .smd-invitation .smd-text-active:focus-visible {
+    outline: 1px dashed #78b6a4;
+}
+
+/* An empty text stays as a small box to tap; guests don't see it. */
+.smd-text-editing .smd-invitation .smd-text.smd-text-empty {
+    display: block;
+    margin-top: 6px !important;
+    margin-bottom: 6px !important;
+    min-height: 26px;
+    min-width: 50px;
+    font-size: 14px !important;
+    line-height: 1.3 !important;
+}

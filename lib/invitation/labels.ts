@@ -55,6 +55,10 @@ export type InvitationLabels = {
     rsvpPhoneMissing: string;
     rsvpPhoneInvalid: string;
     rsvpClosed: string;
+    // The starting wording of a text the host adds in the editor.
+    newTitle: string;
+    newSubtitle: string;
+    newParagraph: string;
 };
 
 const SHARED = {
@@ -111,6 +115,9 @@ export const INVITATION_LABELS: Record<DateLanguage, InvitationLabels> = {
         rsvpPhoneMissing: 'Συμπλήρωσε το τηλέφωνο επικοινωνίας.',
         rsvpPhoneInvalid: 'Έλεγξε το τηλέφωνο επικοινωνίας.',
         rsvpClosed: 'Η εκδήλωση δεν δέχεται πλέον απαντήσεις.',
+        newTitle: 'Νέος τίτλος',
+        newSubtitle: 'Νέος υπότιτλος',
+        newParagraph: 'Νέα παράγραφος',
     },
     en: {
         ...SHARED,
@@ -153,6 +160,9 @@ export const INVITATION_LABELS: Record<DateLanguage, InvitationLabels> = {
         rsvpPhoneMissing: 'Fill in your contact phone.',
         rsvpPhoneInvalid: 'Check your contact phone.',
         rsvpClosed: 'This event is no longer accepting replies.',
+        newTitle: 'New title',
+        newSubtitle: 'New subtitle',
+        newParagraph: 'New paragraph',
     },
 };
 
