@@ -9,14 +9,14 @@ import { FUNNEL_RANGE_PRESETS, type FunnelRangePreset } from '@/lib/adminFunnel'
 
 const dateInputClass = 'min-h-10 rounded-lg border border-border bg-card px-3 text-sm text-ink';
 
-// `note` says which date each section filters by.
+// `note`, when given, says which date each section filters by.
 export function FunnelRangeControl({
     range,
     note,
     presets = FUNNEL_RANGE_PRESETS,
 }: {
     range: ReturnType<typeof useFunnelRange>;
-    note: string;
+    note?: string;
     presets?: readonly FunnelRangePreset[];
 }) {
     const t = useTranslations('AdminPage.funnel.range');
@@ -55,7 +55,7 @@ export function FunnelRangeControl({
             {!range.bounds.isValid && <p className="text-sm text-status-danger">{t('invalid')}</p>}
 
             {/* What the range filters */}
-            <p className="max-w-3xl text-sm leading-6 text-ink-muted">{note}</p>
+            {note && <p className="max-w-3xl text-sm leading-6 text-ink-muted">{note}</p>}
         </div>
     );
 }
