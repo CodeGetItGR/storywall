@@ -19,6 +19,9 @@ export type OverlayHistoryRegistration = {
 
 const activeLayers: ActiveOverlayLayer[] = [];
 const skippableAnchors = new Set<string>();
+// Addresses of pages that are gone (a deleted record). Back passes over every
+// entry left at one of them. Kept in memory: Next rewrites history state.
+const goneUrls = new Set<string>();
 let listening = false;
 let registrationCount = 0;
 
@@ -56,7 +59,7 @@ function removeLayerFromCurrentEntry(layerId: string) {
 }
 
 function stopListeningWhenIdle() {
-    if (!listening || activeLayers.length > 0 || skippableAnchors.size > 0) return;
+    if (!listening || activeLayers.length > 0 || skippableAnchors.size > 0 || goneUrls.size > 0) return;
 
     window.removeEventListener('popstate', handlePopState);
     listening = false;
@@ -64,7 +67,7 @@ function stopListeningWhenIdle() {
 
 function handlePopState(event: PopStateEvent) {
     const destinationAnchor = getOverlayAnchor(event.state);
-    const shouldSkipAnchor = destinationAnchor !== null && skippableAnchors.has(destinationAnchor);
+    const shouldSkipAnchor = (destinationAnchor !== null && skippableAnchors.has(destinationAnchor)) || goneUrls.has(window.location.href);
 
     // A skip is only ever valid for the traversal immediately following the
     // close that armed it. An anchor is written into a history entry and can
@@ -212,21 +215,20 @@ export function replacePageUrl(url: string) {
     window.history.replaceState(withoutNextRouterMarkers(currentState), '', url);
 }
 
-// How many open overlays sit on the current page, each one Back step above it.
-export function overlayEntryCount(): number {
-    return getOverlayStack(window.history.state).length;
+// How many open overlays were opened on the current page. Each one pushed a
+// Back step above it that is still in the history, so going back this many
+// steps plus one never goes below the page's own entry's predecessor. Read from
+// memory, not history state, which Next rewrites.
+export function overlayStepsOnPage(): number {
+    return activeLayers.filter((layer) => layer.active && layer.openedHref === window.location.href).length;
 }
 
-// Notes a value on the current history entry, kept by the overlays opened on
-// top of it and read back with pageEntryMark.
-export function markPageEntry(key: string, value: string) {
-    const currentState = window.history.state && typeof window.history.state === 'object' ? window.history.state : {};
-    window.history.replaceState({ ...currentState, [key]: value }, '', window.location.href);
-}
-
-export function pageEntryMark(key: string): unknown {
-    const state: unknown = window.history.state;
-    return state && typeof state === 'object' ? (state as Record<string, unknown>)[key] : undefined;
+// The page at this address is gone: from now on Back passes over every history
+// entry at it, as it does over a closed overlay's entry, and Forward onto one
+// turns straight back.
+export function skipGonePage(url: string) {
+    goneUrls.add(url);
+    ensureListening();
 }
 
 // A same-page navigation (a hash route, or a search param like ?post=) that

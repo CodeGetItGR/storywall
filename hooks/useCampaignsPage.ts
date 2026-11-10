@@ -1,12 +1,12 @@
 'use client';
 
-import { type MouseEvent, useCallback, useMemo, useState } from 'react';
+import { type MouseEvent, useCallback, useMemo, useRef, useState } from 'react';
 
 import { useAdminRecordPage } from '@/hooks/useAdminRecordPage';
 import { useFunnelRange } from '@/hooks/useFunnelRange';
 import { CAMPAIGNS_HASH_ROOT, CAMPAIGNS_PAST, formatRecordHash } from '@/lib/adminRecordRouting';
 import type { CampaignTab } from '@/lib/campaignCompare';
-import { markPageEntry, overlayEntryCount, pageEntryMark } from '@/lib/overlayHistory';
+import { overlayStepsOnPage, skipGonePage } from '@/lib/overlayHistory';
 
 export type CampaignDrawer = 'new' | 'edit' | 'links';
 
@@ -21,10 +21,6 @@ export type CampaignDrawers = {
     handleDeleted: () => void;
 };
 
-// A campaign's page opened from a list carries its id under this key, so leaving it after a delete can
-// go Back to that list instead of adding another list step.
-const OPENED_FROM_LIST = '__storywallCampaignFromList';
-
 function tabRecord(tab: CampaignTab): string | null {
     return tab === 'past' ? CAMPAIGNS_PAST : null;
 }
@@ -38,6 +34,9 @@ export function useCampaignsPage() {
     const { showList, handleRecordLinkClick, handleRecordRowClick } = page;
     const [drawer, setDrawer] = useState<CampaignDrawer | null>(null);
     const [token, setToken] = useState(0);
+    // The campaign whose page was opened from a list row, or made from the list's New campaign: the
+    // history entry below its page is that list. Kept here, not in history state, which Next rewrites.
+    const openedFromList = useRef<string | null>(null);
 
     const open = useCallback((next: CampaignDrawer) => {
         setDrawer(next);
@@ -51,35 +50,39 @@ export function useCampaignsPage() {
     const tab: CampaignTab = recordId === CAMPAIGNS_PAST ? 'past' : 'current';
     const campaignId = recordId !== null && recordId !== CAMPAIGNS_PAST ? recordId : null;
 
-    // A new campaign opens on its page, in place of the drawer's Back step, so Back goes to the list it
-    // was made from.
+    // A new campaign opens on its page. The drawer's Back step, still open on the list, becomes the page,
+    // so Back goes to the list it was made from. The drawer's close then only drops its marker: an owner
+    // close never moves through history.
     const openCampaign = useCallback(
         (id: string) => {
+            const onDrawer = overlayStepsOnPage() > 0;
             setDrawer(null);
-            if (overlayEntryCount() > 0) replace(id);
+            if (onDrawer) replace(id);
             else push(id);
-            markPageEntry(OPENED_FROM_LIST, id);
+            openedFromList.current = id;
         },
         [push, replace],
     );
 
-    // A deleted campaign: Back past its drawers to the list it was opened from. Opened any other way, its
-    // page becomes the list. Either way no Back step leads to it.
+    // A deleted campaign: every history entry at its page is skipped from now on. Opened from a list, one
+    // traversal goes back past its drawers and its page to that list; any leftover entry of the page that
+    // traversal lands on is skipped too. Opened any other way, its page becomes the list in place.
     const handleDeleted = useCallback(() => {
         setDrawer(null);
-        const fromList = campaignId !== null && pageEntryMark(OPENED_FROM_LIST) === campaignId;
-        const steps = overlayEntryCount() + (fromList ? 1 : 0);
-        if (steps === 0) {
+        if (campaignId === null) {
             showList();
             return;
         }
-        if (!fromList) window.addEventListener('popstate', showList, { once: true });
-        window.history.go(-steps);
+        skipGonePage(window.location.href);
+        const fromList = openedFromList.current === campaignId;
+        openedFromList.current = null;
+        if (fromList) window.history.go(-(overlayStepsOnPage() + 1));
+        else showList();
     }, [campaignId, showList]);
 
-    // A campaign opened from a list row notes it on its page.
+    // A campaign opened from a list row.
     const markOpened = useCallback((before: string, id: string | undefined) => {
-        if (id && window.location.hash !== before) markPageEntry(OPENED_FROM_LIST, id);
+        if (id && window.location.hash !== before) openedFromList.current = id;
     }, []);
 
     const handleCampaignLinkClick = useCallback(

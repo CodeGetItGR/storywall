@@ -58,6 +58,33 @@ describe('overlayHistory', () => {
         expect(window.location.hash).toBe('#metrics');
     });
 
+    it('passes over every entry of a gone page on Back, and turns back from one on Forward', async () => {
+        overlayHistory.pushPageEntry('#metrics');
+        overlayHistory.pushPageEntry('#gone');
+        overlayHistory.registerOverlayHistory({ id: 'gone-drawer', onClose: vi.fn() });
+        overlayHistory.skipGonePage(window.location.href);
+        overlayHistory.pushPageEntry('#plans');
+
+        await goBack();
+        expect(window.location.hash).toBe('#metrics');
+
+        window.history.forward();
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        expect(window.location.hash).toBe('#metrics');
+    });
+
+    it('counts the open overlays opened on the current page', () => {
+        overlayHistory.pushPageEntry('#plans');
+        // Ids of their own: a layer left armed here must not match a later test's.
+        const drawer = overlayHistory.registerOverlayHistory({ id: 'counted-drawer', onClose: vi.fn() });
+        const confirm = overlayHistory.registerOverlayHistory({ id: 'counted-confirm', onClose: vi.fn() });
+        expect(overlayHistory.overlayStepsOnPage()).toBe(2);
+
+        confirm.remove();
+        expect(overlayHistory.overlayStepsOnPage()).toBe(1);
+        drawer.remove();
+    });
+
     it('reuses the leftover entry of a closed overlay for the next view', async () => {
         overlayHistory.pushPageEntry('#metrics');
         const registration = overlayHistory.registerOverlayHistory({ id: 'drawer', onClose: vi.fn() });
