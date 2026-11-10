@@ -32,6 +32,7 @@ export type AdminErrorMessageKey =
     | 'discountCampaignOverlap'
     | 'discountCampaignPriceTooLow'
     | 'discountCampaignLinkNameTaken'
+    | 'campaignDiscountAdminOnly'
     | 'collaboratorBrandingIncomplete'
     | 'methodNotAllowed'
     | 'coverageOptionInvalid'
@@ -125,6 +126,10 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.DISCOUNT_CAMPAIGN_OVERLAP) return 'discountCampaignOverlap';
     if (code === ERROR_CODES.DISCOUNT_CAMPAIGN_PRICE_TOO_LOW) return 'discountCampaignPriceTooLow';
     if (code === ERROR_CODES.DISCOUNT_CAMPAIGN_LINK_NAME_TAKEN) return 'discountCampaignLinkNameTaken';
+    // A campaign's own codes reuse the discount campaign wording, which says the same.
+    if (code === ERROR_CODES.CAMPAIGN_INVALID) return 'discountCampaignInvalid';
+    if (code === ERROR_CODES.CAMPAIGN_DISCOUNT_ADMIN_ONLY) return 'campaignDiscountAdminOnly';
+    if (code === ERROR_CODES.CAMPAIGN_LINK_NAME_TAKEN) return 'discountCampaignLinkNameTaken';
     // Enabling, or clearing a field of an enabled partner, while the card would be incomplete.
     if (code === ERROR_CODES.COLLABORATOR_BRANDING_INCOMPLETE) return 'collaboratorBrandingIncomplete';
     if (code === ERROR_CODES.METHOD_NOT_ALLOWED) return 'methodNotAllowed';

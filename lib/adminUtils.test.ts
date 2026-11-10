@@ -4,6 +4,12 @@ import { adminErrorMessageKey, adminServerDetail } from '@/lib/adminUtils';
 import { ApiError } from '@/lib/api/client';
 
 describe('adminErrorMessageKey', () => {
+    it('maps the campaign errors (3123, 4040, 5224)', () => {
+        expect(adminErrorMessageKey(new ApiError(400, { errorCode: 3123 }))).toBe('discountCampaignInvalid');
+        expect(adminErrorMessageKey(new ApiError(403, { errorCode: 4040 }))).toBe('campaignDiscountAdminOnly');
+        expect(adminErrorMessageKey(new ApiError(409, { errorCode: 5224 }))).toBe('discountCampaignLinkNameTaken');
+    });
+
     it('maps the module copy errors (3056, 3057, 5156)', () => {
         expect(adminErrorMessageKey(new ApiError(400, { errorCode: 3056 }))).toBe('moduleCopyIncomplete');
         expect(adminErrorMessageKey(new ApiError(400, { errorCode: 3057 }))).toBe('moduleCopyTooLong');

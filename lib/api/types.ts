@@ -2783,6 +2783,8 @@ export interface CampaignLinkDto {
     destinationAnchor?: string | null;
     // The readable code in the link's short address, /c/{shortCode}.
     shortCode: string;
+    // The campaign the link belongs to. Every link has one.
+    campaignId: string;
 }
 
 // GET /api/public/campaign-links/{shortCode}: what a short address needs to build the full URL.
@@ -2858,6 +2860,145 @@ export interface CampaignOverviewDto {
     devices: { device: VisitorDevice; visits: number }[];
     languages: { language: VisitorLanguage; visits: number }[];
     pages: { page: string | null; visits: number }[];
+}
+
+// GET /api/admin/campaigns and /api/admin/campaigns/{id}. A campaign owns its links and at most one
+// discount. Its status is worked out by Spring: from the discount when it has one, else from its dates.
+export type CampaignStatus = 'SCHEDULED' | 'LIVE' | 'ENDED' | 'ARCHIVED';
+
+// One period's numbers for a campaign, a link or every campaign, counted as on CampaignRowDto. Revenue
+// is what the period's sales paid; null for a MARKETING caller.
+export interface CampaignCountsDto {
+    visits: number;
+    visitors: number;
+    createClicks: number;
+    plansClicks: number;
+    planPicks: number;
+    signedUp: number;
+    createdEvent: number;
+    paidHost: number;
+    sales: number;
+    salesRevenueMinorByCurrency: Record<string, number> | null;
+}
+
+export interface CampaignDiscountViewDto {
+    id: string;
+    percent: number;
+    label: string | null;
+    startsAt: string;
+    endsAt: string;
+    status: SiteNoticeStatus;
+}
+
+// Its dates are the discount's when it has one.
+export interface CampaignDto {
+    id: string;
+    name: string;
+    linkName: string;
+    status: CampaignStatus;
+    startsAt: string | null;
+    endsAt: string | null;
+    archivedAt: string | null;
+    discount: CampaignDiscountViewDto | null;
+    linkCount: number;
+    createdAt: string;
+}
+
+// Visitors on one Athens day, date as YYYY-MM-DD.
+export interface CampaignDayDto {
+    date: string;
+    visitors: number;
+}
+
+// previous is null for all time.
+export interface CampaignListItemDto {
+    campaign: CampaignDto;
+    current: CampaignCountsDto;
+    previous: CampaignCountsDto | null;
+    daily: CampaignDayDto[];
+}
+
+// Every campaign added up, then each one. The previous period and its numbers are null for all time.
+export interface CampaignListDto {
+    previousSince: string | null;
+    previousUntil: string | null;
+    current: CampaignCountsDto;
+    previous: CampaignCountsDto | null;
+    items: CampaignListItemDto[];
+}
+
+export interface CampaignLinkStatsDto {
+    link: CampaignLinkDto;
+    counts: CampaignCountsDto;
+}
+
+// One campaign. deletable: no visit ever, and no discount that has started or been stopped.
+export interface CampaignDetailDto {
+    campaign: CampaignDto;
+    deletable: boolean;
+    previousSince: string | null;
+    previousUntil: string | null;
+    current: CampaignCountsDto;
+    previous: CampaignCountsDto | null;
+    daily: CampaignDayDto[];
+    previousDaily: CampaignDayDto[];
+    links: CampaignLinkStatsDto[];
+    devices: { device: VisitorDevice; visits: number }[];
+    languages: { language: VisitorLanguage; visits: number }[];
+    pages: { page: string | null; visits: number }[];
+}
+
+// Spring's CampaignPlacement: what a link is for. Source, medium and format follow from it.
+export type CampaignPlacement =
+    | 'INSTAGRAM_POST'
+    | 'INSTAGRAM_STORY'
+    | 'FACEBOOK_POST'
+    | 'TIKTOK_POST'
+    | 'INSTAGRAM_POST_AD'
+    | 'INSTAGRAM_STORY_AD'
+    | 'FACEBOOK_POST_AD'
+    | 'TIKTOK_POST_AD'
+    | 'GOOGLE_ADS'
+    | 'PINTEREST'
+    | 'YOUTUBE'
+    | 'LINKEDIN'
+    | 'EMAIL'
+    | 'PARTNER'
+    | 'PRINTED_QR'
+    | 'OTHER';
+
+// POST /api/admin/campaigns/{id}/links. No pageKey means each language's home page, plans section;
+// with one, pagePaths gives that page's path per language. partnerName is for PARTNER, utmSource and
+// utmMedium for OTHER, each as a utm value.
+export interface CampaignLinksRequestDto {
+    placements: CampaignPlacement[];
+    languages: CampaignLinkLanguage[];
+    pageKey: string | null;
+    pagePaths: Partial<Record<CampaignLinkLanguage, string>> | null;
+    partnerName: string | null;
+    utmSource: string | null;
+    utmMedium: string | null;
+}
+
+export interface CampaignDiscountRequestDto {
+    percent: number;
+    label: string | null;
+}
+
+// POST and PATCH /api/admin/campaigns. With a discount the dates are the discount's and the end is
+// required. links is for create only.
+export interface CampaignRequestDto {
+    name: string;
+    linkName: string;
+    startsAt: string | null;
+    endsAt: string | null;
+    discount: CampaignDiscountRequestDto | null;
+    links: CampaignLinksRequestDto | null;
+}
+
+// PATCH /api/admin/campaign-links/{id}: moves a link to another campaign.
+export interface CampaignLinkUpdateDto {
+    campaignId: string;
 }
 
 // POST /api/public/campaign-visits. Spring always answers 204.
