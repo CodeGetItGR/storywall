@@ -28,6 +28,8 @@ export const PUBLIC_CLIENT_NAMESPACES = [
     'ForBusinessPage.apply',
     'CookieConsent',
     'PartnerCard',
+    'SaveMyDateStorefront',
+    'PageErrorState.retry',
 ] as const;
 
 function readPath(messages: AbstractIntlMessages, segments: string[]): AbstractIntlMessages | string | undefined {
