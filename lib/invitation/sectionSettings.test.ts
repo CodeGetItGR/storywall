@@ -95,7 +95,7 @@ describe('settingsGroups', () => {
 
 describe('patchStyle', () => {
     it('sets, clears, and removes an empty style', () => {
-        expect(patchStyle({ size: 10 }, { color: '#fff' })).toEqual({ size: 10, color: '#fff' });
+        expect(patchStyle<{ size?: number; color?: string }>({ size: 10 }, { color: '#fff' })).toEqual({ size: 10, color: '#fff' });
         expect(patchStyle({ size: 10, color: '#fff' }, { color: undefined })).toEqual({ size: 10 });
         expect(patchStyle({ size: 10 }, { size: undefined })).toBeUndefined();
     });

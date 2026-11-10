@@ -10,6 +10,7 @@ import { SettingsTextField } from '@/components/saveMyDate/editor/settings/Setti
 import { StyleFields } from '@/components/saveMyDate/editor/settings/StyleFields';
 import type { SectionOf, SettingsScope } from '@/hooks/useSectionSettingsPanel';
 import type { InvitationDocument } from '@/lib/invitation/document';
+import { readEditableDraft } from '@/lib/invitation/drafts';
 import { sampleDraftDto } from '@/lib/invitation/sampleDraft';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import type { DocumentRecipe } from '@/lib/invitation/sectionSettings';
@@ -32,8 +33,8 @@ function scopeFor<T extends InvitationSection['type']>(
     type: T,
     { isAdmin = false, hostBackgrounds }: { isAdmin?: boolean; hostBackgrounds?: HostBackgrounds } = {},
 ) {
-    const draft = sampleDraftDto();
-    const theme = produce(draft.design, (design) => {
+    const draft = readEditableDraft(sampleDraftDto());
+    const theme = produce(draft.theme, (design) => {
         design.backgrounds.content.mobile = { mediaId: 'm-1' };
     });
     let document: InvitationDocument = produce(draft.document, (next) => {
@@ -50,7 +51,7 @@ function scopeFor<T extends InvitationSection['type']>(
         mode: isAdmin ? 'admin' : 'host',
         isAdmin,
         theme,
-        media: (mediaId) => draft.imageUrls[mediaId],
+        media: draft.media,
         fonts: [],
         draftId: draft.id,
         addUploaded: vi.fn(),
