@@ -14,6 +14,7 @@ import {
     History,
     Inbox,
     LayoutGrid,
+    LayoutTemplate,
     Link2,
     ListChecks,
     type LucideIcon,
@@ -76,6 +77,7 @@ export type AdminTab =
     | 'themePresets'
     | 'themeFonts'
     | 'qrCards'
+    | 'invitationThemes'
     | 'demoEvents'
     | 'billingOps'
     | 'events'
@@ -133,6 +135,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#theme-presets': 'themePresets',
     '#theme-fonts': 'themeFonts',
     '#qr-cards': 'qrCards',
+    '#save-my-date-themes': 'invitationThemes',
     '#billing-ops': 'billingOps',
     '#accounts': 'accounts',
     '#reports': 'reports',
@@ -168,6 +171,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     themePresets: '#theme-presets',
     themeFonts: '#theme-fonts',
     qrCards: '#qr-cards',
+    invitationThemes: '#save-my-date-themes',
     demoEvents: DEMO_EVENTS_HASH_ROOT,
     billingOps: '#billing-ops',
     events: EVENTS_HASH_ROOT,
@@ -298,6 +302,7 @@ export function AdminNavigationProvider({ children, role = 'ADMIN' }: { children
             { key: 'themePresets', label: t('themePresets'), icon: Palette },
             { key: 'themeFonts', label: t('themeFonts'), icon: Type },
             { key: 'qrCards', label: t('qrCards'), icon: QrCode },
+            { key: 'invitationThemes', label: t('invitationThemes'), icon: LayoutTemplate },
             { key: 'demoEvents', label: t('demoEvents'), icon: MonitorPlay },
             { key: 'accounts', label: t('accounts'), icon: Users },
             { key: 'events', label: t('events'), icon: PartyPopper },

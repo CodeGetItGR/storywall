@@ -2,7 +2,7 @@
 
 import { type ReactNode } from 'react';
 
-import { Modal } from '@/components/ui/modal';
+import { Modal, type ModalFinalFocus } from '@/components/ui/modal';
 import { cn } from '@/lib/utils';
 
 type ConfirmActionModalProps = {
@@ -22,6 +22,7 @@ type ConfirmActionModalProps = {
     showCancelAction?: boolean;
     showCloseButton?: boolean;
     layer?: 'default' | 'overStory';
+    finalFocus?: ModalFinalFocus;
 };
 
 export function ConfirmActionModal({
@@ -41,9 +42,10 @@ export function ConfirmActionModal({
     showCancelAction = true,
     showCloseButton = true,
     layer,
+    finalFocus,
 }: ConfirmActionModalProps) {
     return (
-        <Modal open={open} onClose={onCloseAction} size={size} closeLabel={cancelLabel} showCloseButton={showCloseButton} layer={layer}>
+        <Modal open={open} onClose={onCloseAction} size={size} closeLabel={cancelLabel} showCloseButton={showCloseButton} layer={layer} finalFocus={finalFocus}>
             <Modal.Body className={cn('px-4 pb-4 sm:px-5', showCloseButton ? 'pt-12' : 'pt-5')}>
                 <div className="flex flex-col gap-5">
                     {/* Confirmation content */}
