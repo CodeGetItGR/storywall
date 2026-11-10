@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useDraftAutosave } from '@/hooks/useDraftAutosave';
 import { useEditorLeave } from '@/hooks/useEditorLeave';
 import { useInvitationEditorStore } from '@/hooks/useInvitationEditorStore';
+import { useSectionActions } from '@/hooks/useSectionActions';
 import { useUndoShortcuts } from '@/hooks/useUndoShortcuts';
 import { useUnsavedChangesWarning } from '@/hooks/useUnsavedChangesWarning';
 import type { EditableDraft } from '@/lib/invitation/drafts';
@@ -19,6 +20,7 @@ export function useInvitationEditor(draft: EditableDraft) {
     const editor = useInvitationEditorStore(draft.document);
     const { status, flush } = useDraftAutosave(editor.store, draft.id, draft.revision);
     const leave = useEditorLeave(flush);
+    const sections = useSectionActions(editor.store, editor.document, draft.eventType);
     const [openPanel, setOpenPanel] = useState<EditorPanel | null>(null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [isPublishNoticeShown, setIsPublishNoticeShown] = useState(false);
@@ -73,5 +75,6 @@ export function useInvitationEditor(draft: EditableDraft) {
         publish,
         isPublishNoticeShown,
         leave,
+        sections,
     };
 }

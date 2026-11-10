@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { createDraftServer } from '@/hooks/invitationDraftTestServer';
+import { sampleDraftDto } from '@/lib/invitation/sampleDraft';
 import en from '@/messages/en.json';
 
 import InvitationEditorPage from './PageClient';
@@ -69,6 +70,11 @@ function openText(key: string) {
 
 function paste(text: string) {
     fireEvent.paste(activeText(), { clipboardData: { getData: (type: string) => (type === 'text/plain' ? text : '') } });
+}
+
+// The sections' order in the draft the editor opened.
+function sampleOrder() {
+    return sampleDraftDto().document.sections.map((section) => section.id);
 }
 
 function storedElement(id: string) {
@@ -199,6 +205,50 @@ describe('Invitation editor: texts', () => {
         await screen.findByText("Publishing isn't available yet.");
         const date = backend.stored().document.sections.find((section) => section.type === 'date');
         expect(date?.data).toMatchObject({ number: '15' });
+    });
+
+    it('edits a text in a section that was moved', async () => {
+        await openEditor();
+        const frame = canvasText(WAITING)!.closest<HTMLElement>('[data-editor-section]')!;
+        const sectionId = frame.dataset.editorSection!;
+        const order = () => backend.stored().document.sections.map((section) => section.id).indexOf(sectionId);
+        fireEvent.pointerDown(frame);
+        fireEvent.click(within(frame).getByRole('button', { name: 'Section options' }));
+        fireEvent.click(await screen.findByRole('menuitem', { name: 'Move up' }));
+
+        openText(WAITING);
+        paste(' Ελάτε');
+        fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
+        await screen.findByText("Publishing isn't available yet.");
+        expect(storedElement('b3-text')).toMatchObject({ text: 'Σας περιμένουμε! Ελάτε' });
+        const before = sampleOrder().indexOf(sectionId);
+        expect(order()).toBe(before - 1);
+    });
+
+    it('edits a text in a section that was just added', async () => {
+        // Without its invitation text, so the add list offers one.
+        const draft = sampleDraftDto().document;
+        backend.saveElsewhere({ ...draft, sections: draft.sections.filter((section) => section.type !== 'invitation') });
+        await openEditor();
+        const frame = canvasText(WAITING)!.closest<HTMLElement>('[data-editor-section]')!;
+        fireEvent.pointerDown(frame);
+        fireEvent.click(within(frame).getAllByRole('button', { name: 'Add section' }).at(-1)!);
+        fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Invitation text' }));
+
+        const added = await waitFor(() => {
+            const found = document.querySelector<HTMLElement>('[data-editor-section] [data-smd-text^="field:"][data-smd-text$=":text"]');
+            expect(found?.closest('[data-editor-section]')).not.toBe(frame);
+            return found!;
+        });
+        const key = added.getAttribute('data-smd-text')!;
+        openText(key);
+        expect(activeText()).toHaveFocus();
+        paste(' Ελάτε');
+
+        fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
+        await screen.findByText("Publishing isn't available yet.");
+        const section = backend.stored().document.sections.find((item) => item.type === 'invitation');
+        expect(section?.data).toMatchObject({ text: expect.stringMatching(/ Ελάτε$/) });
     });
 
     it('stops editing on a tap outside the texts', async () => {
