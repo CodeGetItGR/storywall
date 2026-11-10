@@ -8,7 +8,9 @@ const state = vi.hoisted(() => ({
     user: null as null | { role: string },
     flag: true,
     campaign: null as DiscountCampaignLiveDto | null,
+    consent: { ads: false, analytics: false } as null | undefined | { ads: boolean; analytics: boolean },
 }));
+vi.mock('@/hooks/useCookieConsent', () => ({ useCookieConsent: () => ({ consent: state.consent }) }));
 vi.mock('next/navigation', () => ({ useSearchParams: () => state.params }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: state.user }) }));
 vi.mock('@/hooks/useLiveDiscountCampaign', () => ({ useLiveDiscountCampaign: () => state.campaign }));
@@ -59,6 +61,7 @@ beforeEach(() => {
     state.user = null;
     state.flag = true;
     state.campaign = null;
+    state.consent = { ads: false, analytics: false };
 });
 
 afterEach(() => {
@@ -68,6 +71,18 @@ afterEach(() => {
 });
 
 describe('CreateEventFab', () => {
+    it('waits for the cookie question, which holds the same spot, to be answered', () => {
+        const hero = addHero('/events/new');
+        state.consent = null;
+        const { rerender } = render(<CreateEventFab />);
+        scrollHeroAway(hero);
+        expect(fab()?.className ?? 'invisible').toContain('invisible');
+        state.consent = { ads: false, analytics: false };
+        rerender(<CreateEventFab />);
+        scrollHeroAway(hero);
+        expect(fab()?.className).not.toContain('invisible');
+    });
+
     it('never shows with the flag off', () => {
         state.flag = false;
         const hero = addHero('/events/new');
