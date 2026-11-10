@@ -116,6 +116,20 @@ export const AddSection: Story = {
     },
 };
 
+// The click scrolls the canvas, and fonts and images loading afterwards move it a few pixels more, by a different
+// amount each run. Once the save, fonts and images have settled, the section goes to the middle of the canvas.
+async function centerWhenSettled(canvasElement: HTMLElement, section: HTMLElement, saved: string) {
+    await expect(await within(canvasElement).findByText(saved, {}, { timeout: 10_000 })).toBeInTheDocument();
+    await waitFor(
+        () => {
+            expect(document.fonts.status).toBe('loaded');
+            expect([...document.images].every((image) => image.complete)).toBe(true);
+        },
+        { timeout: 10_000 },
+    );
+    section.scrollIntoView({ block: 'center', behavior: 'instant' });
+}
+
 // A hidden section stays on the canvas, faded, so it can be shown again.
 export const HiddenSection: Story = {
     play: async ({ canvasElement, globals }) => {
@@ -123,6 +137,7 @@ export const HiddenSection: Story = {
         const section = await tapSection(canvasElement, copy.sectionNames.dressCode);
         await userEvent.click(within(section).getByRole('button', { name: copy.sections.hide }));
         await expect(within(section).getByText(copy.sections.hidden)).toBeVisible();
+        await centerWhenSettled(canvasElement, section, copy.saved);
     },
 };
 
