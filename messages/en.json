@@ -1018,6 +1018,10 @@
     },
     "CreateEventPage": {
         "goBack": "Go back",
+        "wizard": {
+            "stepCounter": "Step {current} of {total}",
+            "close": "Close"
+        },
         "title": "Create an event",
         "subtitle": "Add the event details.",
         "detailsHint": "You can add or edit more details after creation.",
