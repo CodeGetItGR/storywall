@@ -6,7 +6,7 @@ import { CampaignLinkCopyButton } from '@/components/admin/campaigns/CampaignLin
 import { CampaignPlatformIcon } from '@/components/admin/campaigns/CampaignPlatformIcon';
 import { useFunnelFormat } from '@/hooks/useFunnelFormat';
 import type { CampaignRowDto } from '@/lib/api/types';
-import { campaignSetLinkFormat, campaignSetLinkUrl } from '@/lib/campaignLinks';
+import { campaignLinkPlatform, campaignSetLinkFormat, campaignSetLinkUrl } from '@/lib/campaignLinks';
 
 // One link of a campaign's set: its placement, its visits, sales and a copy button. The platform
 // shows as the icon, and screen readers get the link's full name.
@@ -22,7 +22,10 @@ export function CampaignSetLinkRow({ row }: { row: CampaignRowDto }) {
             {/* Name */}
             <td className="w-full py-2 pr-3">
                 <div className="flex items-center gap-2">
-                    <CampaignPlatformIcon source={row.utmSource} medium={row.utmMedium} />
+                    <CampaignPlatformIcon
+                        platform={campaignLinkPlatform({ utmSource: row.utmSource ?? '', utmMedium: row.utmMedium ?? '' })}
+                        decorative
+                    />
                     {placement ? (
                         <>
                             <span aria-hidden="true" className="min-w-0 break-words text-ink">

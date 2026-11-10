@@ -15,7 +15,7 @@ import type { FunnelBounds } from '@/lib/adminFunnel';
 import { CAMPAIGNS_HASH_ROOT } from '@/lib/adminRecordRouting';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { CampaignLinkDto } from '@/lib/api/types';
-import { CAMPAIGN_NAME_MAX } from '@/lib/campaignLinks';
+import { CAMPAIGN_NAME_MAX, campaignLinkPlatform } from '@/lib/campaignLinks';
 
 // One saved link's page: its numbers, its short address, and its name, the only thing that can change.
 export function CampaignLinkPage({
@@ -39,7 +39,7 @@ export function CampaignLinkPage({
 
             {/* Header */}
             <div className="flex items-center gap-3">
-                <CampaignPlatformIcon source={link.utmSource} medium={link.utmMedium} className="h-6 w-6" />
+                <CampaignPlatformIcon platform={campaignLinkPlatform(link)} className="h-6 w-6" decorative />
                 <h2 className="min-w-0 text-2xl font-extrabold tracking-tight break-words text-ink sm:text-3xl">{link.name}</h2>
             </div>
 
