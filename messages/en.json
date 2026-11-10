@@ -6051,6 +6051,41 @@
             "saveLink": "Save link",
             "rangeNote": "Counts visits and sign-ups in this range.",
             "empty": "No campaigns yet.",
+            "newCampaign": "New campaign",
+            "tabs": {
+                "current": "Current",
+                "past": "Past"
+            },
+            "pastEmpty": "No past campaigns.",
+            "status": {
+                "SCHEDULED": "Scheduled",
+                "LIVE": "Live",
+                "ENDED": "Ended",
+                "ARCHIVED": "Archived"
+            },
+            "discountUntil": "−{percent}% until {date}",
+            "change": {
+                "up": "Up {value}",
+                "down": "Down {value}",
+                "same": "Same",
+                "compared": "Compared with {period}"
+            },
+            "trend": {
+                "up": "Visitors rising",
+                "down": "Visitors falling",
+                "flat": "Visitors steady"
+            },
+            "verdict": {
+                "early": "Too early to tell",
+                "noSignUps": "Many visits, no sign-ups",
+                "betterSales": "{multiple}× more sales",
+                "betterSignedUp": "{multiple}× more sign-ups",
+                "moreSales": "More sales",
+                "moreSignedUp": "More sign-ups",
+                "fewerSales": "Fewer sales",
+                "fewerSignedUp": "Fewer sign-ups",
+                "average": "About average"
+            },
             "notSaved": "Not saved",
             "delete": "Delete link",
             "deleteTitle": "Delete this link?",
@@ -6071,7 +6106,9 @@
                 "paidHost": "Paid",
                 "revenue": "Revenue",
                 "sales": "Sales",
-                "salesRevenue": "Sales revenue"
+                "salesRevenue": "Sales revenue",
+                "trend": "Trend",
+                "verdict": "Vs other campaigns"
             },
             "valueHelpLabel": "What {name} means",
             "valueHelp": {
