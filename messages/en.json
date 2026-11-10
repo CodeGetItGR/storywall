@@ -1513,6 +1513,14 @@
             "all": "All",
             "empty": "No guests match this filter."
         },
+        "rsvpDuplicate": {
+            "label": "Possible duplicate",
+            "hint": "Same phone as another reply",
+            "keep": "Keep",
+            "removeTitle": "Remove this reply?",
+            "removeBody": "The reply from {name} will be deleted for good.",
+            "removeConfirm": "Remove reply"
+        },
         "rsvpColumns": {
             "guest": "Guest",
             "party": "Seats",
@@ -10017,6 +10025,11 @@
     "SaveMyDatePreview": {
         "metaTitle": "Invitation preview"
     },
+    "PublishedInvitation": {
+        "metaTitle": "Invitation",
+        "notFound": "We couldn't find this invitation.",
+        "expired": "This invitation is no longer available."
+    },
     "Inviart": {
         "heading": "Invitations and more by INVIART",
         "cta": "See it on INVIART",

@@ -53,6 +53,8 @@ export type InvitationLabels = {
     rsvpError: string;
     rsvpNameMissing: string;
     rsvpPhoneMissing: string;
+    rsvpPhoneInvalid: string;
+    rsvpClosed: string;
     // The starting wording of a text the host adds in the editor.
     newTitle: string;
     newSubtitle: string;
@@ -111,6 +113,8 @@ export const INVITATION_LABELS: Record<DateLanguage, InvitationLabels> = {
         rsvpError: 'Κάτι πήγε στραβά — δοκιμάστε ξανά.',
         rsvpNameMissing: 'Συμπλήρωσε το ονοματεπώνυμό σου.',
         rsvpPhoneMissing: 'Συμπλήρωσε το τηλέφωνο επικοινωνίας.',
+        rsvpPhoneInvalid: 'Έλεγξε το τηλέφωνο επικοινωνίας.',
+        rsvpClosed: 'Η εκδήλωση δεν δέχεται πλέον απαντήσεις.',
         newTitle: 'Νέος τίτλος',
         newSubtitle: 'Νέος υπότιτλος',
         newParagraph: 'Νέα παράγραφος',
@@ -154,6 +158,8 @@ export const INVITATION_LABELS: Record<DateLanguage, InvitationLabels> = {
         rsvpError: 'Something went wrong. Please try again.',
         rsvpNameMissing: 'Fill in your full name.',
         rsvpPhoneMissing: 'Fill in your contact phone.',
+        rsvpPhoneInvalid: 'Check your contact phone.',
+        rsvpClosed: 'This event is no longer accepting replies.',
         newTitle: 'New title',
         newSubtitle: 'New subtitle',
         newParagraph: 'New paragraph',
