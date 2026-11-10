@@ -1,28 +1,27 @@
-import { Link2, Mail, QrCode } from 'lucide-react';
-import { FaGoogle, FaInstagram, FaTiktok } from 'react-icons/fa6';
+import { Link2, Mail } from 'lucide-react';
+import { FaInstagram } from 'react-icons/fa6';
 import { describe, expect, it } from 'vitest';
 
-import { campaignPlatformIcon } from '@/lib/campaignIcons';
+import { CAMPAIGN_LINK_TYPE_ICONS, CAMPAIGN_PLATFORM_COLORS, CAMPAIGN_PLATFORM_ICONS } from '@/lib/campaignIcons';
+import { CAMPAIGN_PLATFORMS } from '@/lib/campaignLinks';
 
-describe('campaignPlatformIcon', () => {
-    it('uses the platform, whether the link is organic or paid', () => {
-        expect(campaignPlatformIcon('instagram', 'social')).toBe(FaInstagram);
-        expect(campaignPlatformIcon('instagram', 'paid_social')).toBe(FaInstagram);
-        expect(campaignPlatformIcon('tiktok', 'social')).toBe(FaTiktok);
-        expect(campaignPlatformIcon('google', 'cpc')).toBe(FaGoogle);
+describe('campaign icons', () => {
+    it('has an icon and a color for every platform', () => {
+        for (const platform of CAMPAIGN_PLATFORMS) {
+            expect(CAMPAIGN_PLATFORM_ICONS[platform]).toBeDefined();
+            expect(CAMPAIGN_PLATFORM_COLORS[platform]).toMatch(/^text-/);
+        }
     });
 
-    it('ignores case', () => {
-        expect(campaignPlatformIcon('Instagram', 'social')).toBe(FaInstagram);
+    it('draws a brand with its logo and anything else with what it is', () => {
+        expect(CAMPAIGN_PLATFORM_ICONS.instagram).toBe(FaInstagram);
+        expect(CAMPAIGN_PLATFORM_ICONS.email).toBe(Mail);
+        expect(CAMPAIGN_PLATFORM_ICONS.other).toBe(Link2);
     });
 
-    it('falls back to the kind of link', () => {
-        expect(campaignPlatformIcon('newsletter', 'email')).toBe(Mail);
-        expect(campaignPlatformIcon('print', 'qr')).toBe(QrCode);
-    });
-
-    it('has an icon for anything else', () => {
-        expect(campaignPlatformIcon('somewhere', 'other')).toBe(Link2);
-        expect(campaignPlatformIcon(null, null)).toBe(Link2);
+    it('draws a story apart from a post, and an ad like its kind', () => {
+        expect(CAMPAIGN_LINK_TYPE_ICONS.story).not.toBe(CAMPAIGN_LINK_TYPE_ICONS.post);
+        expect(CAMPAIGN_LINK_TYPE_ICONS.storyAd).toBe(CAMPAIGN_LINK_TYPE_ICONS.story);
+        expect(CAMPAIGN_LINK_TYPE_ICONS.postAd).toBe(CAMPAIGN_LINK_TYPE_ICONS.post);
     });
 });

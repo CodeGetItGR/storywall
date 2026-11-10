@@ -6259,6 +6259,43 @@
                 "ARCHIVED": "Αρχειοθετημένη"
             },
             "discountUntil": "−{percent}% έως {date}",
+            "discountDates": "−{percent}% σε όλα τα πλάνα · {dates}",
+            "funnel": {
+                "title": "Πορεία επισκεπτών",
+                "share": "{rate} των επισκεπτών"
+            },
+            "platforms": {
+                "title": "Πλατφόρμες",
+                "salesRate": "Πωλήσεις ανά επισκέπτη",
+                "signUpRate": "Εγγραφές ανά επισκέπτη",
+                "noVisits": "Καμία επίσκεψη ακόμα"
+            },
+            "linkTypes": {
+                "post": "Ανάρτηση",
+                "story": "Story",
+                "postAd": "Διαφήμιση ανάρτησης",
+                "storyAd": "Διαφήμιση story",
+                "searchAd": "Διαφήμιση αναζήτησης"
+            },
+            "chart": {
+                "title": "Επισκέπτες ανά ημέρα",
+                "current": "Αυτή η περίοδος",
+                "previous": "Προηγούμενη περίοδος"
+            },
+            "languages": {
+                "en": "EN",
+                "el": "EL"
+            },
+            "splits": {
+                "title": "Γλώσσα και συσκευή",
+                "language": "Γλώσσα",
+                "device": "Συσκευή"
+            },
+            "landing": {
+                "title": "Σελίδα προορισμού",
+                "page": "Σελίδα",
+                "unknown": "Άγνωστη"
+            },
             "change": {
                 "up": "Αύξηση {value}",
                 "down": "Μείωση {value}",

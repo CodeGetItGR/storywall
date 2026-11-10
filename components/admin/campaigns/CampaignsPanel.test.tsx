@@ -2,11 +2,22 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { campaignListFixture } from '@/components/admin/campaigns/__fixtures__/campaigns';
+import { campaignDetailFixture, campaignListFixture } from '@/components/admin/campaigns/__fixtures__/campaigns';
 import { CampaignsPanel } from '@/components/admin/campaigns/CampaignsPanel';
 import messages from '@/messages/en.json';
 
+// A campaign's Back link reads the App Router.
+vi.mock('next/navigation', () => ({ usePathname: () => '/admin', useRouter: () => ({ back: vi.fn() }) }));
+
 vi.mock('@/hooks/useAdminCampaignApi', () => ({
+    useCampaignDetailQuery: () => ({
+        data: campaignDetailFixture,
+        isLoading: false,
+        isFetching: false,
+        error: null,
+        dataUpdatedAt: 0,
+        refetch: vi.fn(),
+    }),
     useCampaignListQuery: () => ({ data: campaignListFixture, isLoading: false, isFetching: false, error: null, dataUpdatedAt: 0, refetch: vi.fn() }),
 }));
 
@@ -35,5 +46,13 @@ describe('CampaignsPanel', () => {
 
         expect(screen.getByRole('button', { name: 'Past', pressed: true })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Spring 20%' })).toBeInTheDocument();
+    });
+
+    it('opens a campaign from its address', () => {
+        window.history.replaceState(null, '', '/admin#campaigns/launch');
+        renderPanel();
+
+        expect(screen.getByRole('heading', { level: 1, name: 'Launch 50%' })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'All campaigns' })).toHaveAttribute('href', '#campaigns');
     });
 });

@@ -11,7 +11,7 @@ import { useFunnelFormat } from '@/hooks/useFunnelFormat';
 import { EMPTY_VALUE } from '@/lib/adminFunnel';
 import { CAMPAIGNS_HASH_ROOT, formatRecordHash } from '@/lib/adminRecordRouting';
 import type { CampaignRowDto } from '@/lib/api/types';
-import { campaignLinkSections, campaignRowKey } from '@/lib/campaignLinks';
+import { campaignLinkPlatform, campaignLinkSections, campaignRowKey } from '@/lib/campaignLinks';
 
 // Name, source / medium, campaign, nine counts and, for an admin, two revenue columns.
 const BASE_COLUMNS = 12;
@@ -103,7 +103,10 @@ export function CampaignsTable({
                                 <td className="px-4 py-3">
                                     {row.link ? (
                                         <div className="flex items-center gap-2">
-                                            <CampaignPlatformIcon source={row.utmSource} medium={row.utmMedium} />
+                                            <CampaignPlatformIcon
+                                                platform={campaignLinkPlatform({ utmSource: row.utmSource ?? '', utmMedium: row.utmMedium ?? '' })}
+                                                decorative
+                                            />
                                             <a
                                                 href={formatRecordHash(CAMPAIGNS_HASH_ROOT, row.link.id)}
                                                 data-record-id={row.link.id}
@@ -116,7 +119,10 @@ export function CampaignsTable({
                                         </div>
                                     ) : (
                                         <div className="flex items-center gap-2">
-                                            <CampaignPlatformIcon source={row.utmSource} medium={row.utmMedium} />
+                                            <CampaignPlatformIcon
+                                                platform={campaignLinkPlatform({ utmSource: row.utmSource ?? '', utmMedium: row.utmMedium ?? '' })}
+                                                decorative
+                                            />
                                             <span className="text-ink-faint">{t('notSaved')}</span>
                                         </div>
                                     )}
