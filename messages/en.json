@@ -6172,6 +6172,47 @@
                 "page": "Page",
                 "unknown": "Unknown"
             },
+            "linksButton": "Links ({count})",
+            "edit": "Edit",
+            "form": {
+                "editTitle": "Edit campaign",
+                "discount": "Discount"
+            },
+            "stopDiscount": {
+                "button": "Stop discount",
+                "title": "Stop this discount?",
+                "body": "Prices go back to normal now.",
+                "cancel": "Keep it running"
+            },
+            "archive": {
+                "button": "Archive",
+                "title": "Archive this campaign?",
+                "body": "It moves to Past. Its links keep working."
+            },
+            "unarchive": {
+                "button": "Unarchive",
+                "title": "Unarchive this campaign?",
+                "body": "It moves back to Current, unless it has ended."
+            },
+            "deleteCampaign": {
+                "button": "Delete campaign",
+                "title": "Delete this campaign?",
+                "body": "Its links are deleted too."
+            },
+            "linksDrawer": {
+                "title": "Links",
+                "add": "Add links",
+                "empty": "No links yet.",
+                "move": "Move"
+            },
+            "picker": {
+                "languages": "Languages",
+                "el": "Greek",
+                "en": "English",
+                "partnerName": "Partner name",
+                "partnerProblem": "Add the partner's name.",
+                "added": "Already added"
+            },
             "change": {
                 "up": "Up {value}",
                 "down": "Down {value}",
@@ -6197,7 +6238,7 @@
             "notSaved": "Not saved",
             "delete": "Delete link",
             "deleteTitle": "Delete this link?",
-            "deleteBody": "The link keeps working. Its past numbers and new sign-ups still count, but new visits don't.",
+            "deleteBody": "New visits through it won't count. Its past numbers stay.",
             "deleteConfirm": "Delete",
             "statsError": "Couldn't load this link's numbers.",
             "columns": {
@@ -6239,7 +6280,12 @@
                 "medium": "Medium",
                 "campaign": "Campaign",
                 "campaignHint": "Lowercase with dashes, like october-bio.",
-                "name": "Name"
+                "name": "Name",
+                "linkName": "Link name",
+                "startsAt": "Starts",
+                "endsAt": "Ends",
+                "percent": "Discount %",
+                "label": "Name at checkout"
             },
             "presetGroups": {
                 "social": "Social posts",

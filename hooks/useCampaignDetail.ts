@@ -63,6 +63,9 @@ export function useCampaignDetail(id: string, bounds: FunnelBounds, onNotFound: 
     // The campaigns a link can move to.
     const others = useMemo(() => (items ?? []).map((item) => item.campaign).filter((campaign) => campaign.id !== id), [id, items]);
 
+    // The campaign's links, for its drawers.
+    const links = useMemo(() => (data ? data.links.map((stats) => stats.link) : []), [data]);
+
     const refetchDetail = query.refetch;
     const refetchList = list.refetch;
     const refresh = useCallback(() => {
@@ -76,6 +79,7 @@ export function useCampaignDetail(id: string, bounds: FunnelBounds, onNotFound: 
         data,
         view,
         others,
+        links,
         tab,
         compared: data?.previousSince && data.previousUntil ? format.period(data.previousSince, data.previousUntil) : null,
         updatedAt: query.dataUpdatedAt ? dateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(query.dataUpdatedAt) : null,

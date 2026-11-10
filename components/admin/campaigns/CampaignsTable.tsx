@@ -11,7 +11,7 @@ import { useFunnelFormat } from '@/hooks/useFunnelFormat';
 import { EMPTY_VALUE } from '@/lib/adminFunnel';
 import { CAMPAIGNS_HASH_ROOT, formatRecordHash } from '@/lib/adminRecordRouting';
 import type { CampaignRowDto } from '@/lib/api/types';
-import { campaignLinkPlatform, campaignLinkSections, campaignRowKey } from '@/lib/campaignLinks';
+import { campaignLinkPlatform, campaignLinkSections, campaignRowKey, campaignShortUrl } from '@/lib/campaignLinks';
 
 // Name, source / medium, campaign, nine counts and, for an admin, two revenue columns.
 const BASE_COLUMNS = 12;
@@ -115,7 +115,7 @@ export function CampaignsTable({
                                             >
                                                 {row.link.name}
                                             </a>
-                                            <CampaignLinkCopyButton link={row.link} />
+                                            <CampaignLinkCopyButton url={campaignShortUrl(row.link)} label={row.link.name} />
                                         </div>
                                     ) : (
                                         <div className="flex items-center gap-2">
