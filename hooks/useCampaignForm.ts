@@ -75,8 +75,9 @@ export function useCampaignForm({
     const discountStatus = campaign?.discount?.status ?? null;
     // A discount that ended or was stopped stays as it was.
     const discountLocked = !canEditDiscount || discountStatus === 'ENDED' || discountStatus === 'OFF';
-    // A saved discount can only be taken off before it starts; after that, Stop discount ends it.
-    const toggleLocked = discountLocked || (discountStatus !== null && discountStatus !== 'SCHEDULED');
+    // A saved discount can only be taken off before it starts; after that, Stop discount ends it. An
+    // archived campaign takes no new discount.
+    const toggleLocked = discountLocked || status === 'ARCHIVED' || (discountStatus !== null && discountStatus !== 'SCHEDULED');
     // With a discount, the dates are the discount's.
     const datesLocked = form.discountOn && discountLocked;
 

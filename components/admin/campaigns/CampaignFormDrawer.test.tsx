@@ -140,6 +140,12 @@ describe('CampaignFormDrawer', () => {
         expect(screen.queryByRole('button', { name: 'Stop discount' })).not.toBeInTheDocument();
     });
 
+    it("doesn't let a discount be added to an archived campaign", () => {
+        renderDrawer({ campaign: campaignFixture({ status: 'ARCHIVED', discount: null, archivedAt: '2026-07-01T09:00:00Z' }) });
+
+        expect(screen.getByRole('switch', { name: 'Discount' })).toBeDisabled();
+    });
+
     it('asks before stopping a running discount', async () => {
         writes.stop.mockResolvedValue(campaignFixture());
         const actions = renderDrawer({ campaign: campaignFixture() });
