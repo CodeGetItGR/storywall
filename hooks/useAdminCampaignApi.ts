@@ -124,7 +124,6 @@ export function useMoveCampaignLink() {
     });
 }
 
-// The old page's copy in useAdminCampaigns goes in KAN-192.
 export function useDeleteCampaignLink() {
     const refresh = useRefreshCampaigns();
     return useMutation({

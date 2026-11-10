@@ -8,9 +8,9 @@ import { CampaignFormDrawer } from '@/components/admin/campaigns/CampaignFormDra
 import { CampaignFunnel } from '@/components/admin/campaigns/CampaignFunnel';
 import { CampaignHeader } from '@/components/admin/campaigns/CampaignHeader';
 import { CampaignLinksDrawer } from '@/components/admin/campaigns/CampaignLinksDrawer';
+import { CampaignPages } from '@/components/admin/campaigns/CampaignPages';
 import { CampaignPlatforms } from '@/components/admin/campaigns/CampaignPlatforms';
-import { CampaignPages } from '@/components/admin/campaigns/overview/CampaignPages';
-import { CampaignSplits } from '@/components/admin/campaigns/overview/CampaignSplits';
+import { CampaignSplits } from '@/components/admin/campaigns/CampaignSplits';
 import { FunnelRangeControl } from '@/components/admin/funnel/FunnelRangeControl';
 import { BackButton } from '@/components/ui/BackButton';
 import { LoadingState } from '@/components/ui/LoadingState';
