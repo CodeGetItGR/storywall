@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { campaignDetailFixture, campaignDetailForMarketingFixture, campaignListFixture } from '@/components/admin/campaigns/__fixtures__/campaigns';
 import { CampaignPage } from '@/components/admin/campaigns/CampaignPage';
+import type { CampaignDrawers } from '@/hooks/useCampaignsPage';
 import type { useFunnelRange } from '@/hooks/useFunnelRange';
 import { funnelRangeBounds } from '@/lib/adminFunnel';
 import { ApiError } from '@/lib/api/client';
@@ -15,7 +16,8 @@ import messages from '@/messages/en.json';
 vi.mock('next/navigation', () => ({ usePathname: () => '/admin', useRouter: () => ({ back: vi.fn() }) }));
 
 const queries = vi.hoisted(() => ({ detail: undefined as CampaignDetailDto | undefined, error: null as unknown }));
-vi.mock('@/hooks/useAdminCampaignApi', () => ({
+vi.mock('@/hooks/useAdminCampaignApi', async () => ({
+    ...(await import('@/components/admin/campaigns/__fixtures__/campaignWrites')).idleCampaignWrites(),
     useCampaignDetailQuery: () => ({
         data: queries.detail,
         isLoading: false,
@@ -37,6 +39,15 @@ const range = {
     handleToChange: vi.fn(),
 } as unknown as ReturnType<typeof useFunnelRange>;
 
+const drawers = {
+    drawer: null,
+    token: 0,
+    openEdit: vi.fn(),
+    openLinks: vi.fn(),
+    close: vi.fn(),
+    handleDeleted: vi.fn(),
+} satisfies CampaignDrawers;
+
 function tabHref(tab: CampaignTab) {
     return tab === 'past' ? '#campaigns/past' : '#campaigns';
 }
@@ -44,7 +55,15 @@ function tabHref(tab: CampaignTab) {
 function renderPage(onNotFound = vi.fn()) {
     render(
         <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
-            <CampaignPage id="launch" range={range} tabHref={tabHref} onBackAction={vi.fn()} onNotFoundAction={onNotFound} />
+            <CampaignPage
+                id="launch"
+                range={range}
+                tabHref={tabHref}
+                drawers={drawers}
+                canEditDiscount
+                onBackAction={vi.fn()}
+                onNotFoundAction={onNotFound}
+            />
         </NextIntlClientProvider>,
     );
     return onNotFound;
@@ -128,5 +147,15 @@ describe('CampaignPage', () => {
         const onNotFound = renderPage();
 
         expect(onNotFound).toHaveBeenCalled();
+    });
+
+    it('opens its links and its edit drawer from the header', () => {
+        renderPage();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Links (8)' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+
+        expect(drawers.openLinks).toHaveBeenCalled();
+        expect(drawers.openEdit).toHaveBeenCalled();
     });
 });

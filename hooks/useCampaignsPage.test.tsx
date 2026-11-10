@@ -70,4 +70,37 @@ describe('useCampaignsPage', () => {
         expect(result.current.campaignId).toBe('7f1c');
         expect(result.current.range.preset).toBe('LAST_90');
     });
+
+    it('opens one drawer at a time, each opening fresh', () => {
+        const { result } = renderHook(() => useCampaignsPage());
+
+        act(() => result.current.openNewCampaign());
+        const first = result.current.drawers.token;
+        act(() => result.current.drawers.close());
+        act(() => result.current.openNewCampaign());
+
+        expect(result.current.drawers.drawer).toBe('new');
+        expect(result.current.drawers.token).toBeGreaterThan(first);
+    });
+
+    it('opens a new campaign on its page', () => {
+        const { result } = renderHook(() => useCampaignsPage());
+
+        act(() => result.current.openNewCampaign());
+        act(() => result.current.openCampaign('c-new'));
+
+        expect(result.current.drawers.drawer).toBeNull();
+        expect(window.location.hash).toBe('#campaigns/c-new');
+    });
+
+    it('goes back to the list once a campaign is deleted', () => {
+        at('#campaigns/7f1c');
+        const { result } = renderHook(() => useCampaignsPage());
+
+        act(() => result.current.drawers.openEdit());
+        act(() => result.current.drawers.handleDeleted());
+
+        expect(result.current.drawers.drawer).toBeNull();
+        expect(result.current.campaignId).toBeNull();
+    });
 });

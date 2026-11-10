@@ -8,7 +8,14 @@ import { CampaignHeader } from '@/components/admin/campaigns/CampaignHeader';
 const meta = {
     title: 'Admin/Campaigns/Header',
     component: CampaignHeader,
-    args: { campaign: campaignDetailFixture.campaign, updatedAt: '12:00', isFetching: false, onRefreshAction: fn() },
+    args: {
+        campaign: campaignDetailFixture.campaign,
+        updatedAt: '12:00',
+        isFetching: false,
+        onRefreshAction: fn(),
+        onLinksAction: fn(),
+        onEditAction: fn(),
+    },
     decorators: [withAdminShell],
 } satisfies Meta<typeof CampaignHeader>;
 

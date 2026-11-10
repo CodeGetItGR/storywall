@@ -42,7 +42,7 @@ import { WithdrawalsSection } from '@/components/admin/WithdrawalsSection';
 
 export function AdminConsole() {
     const t = useTranslations('AdminPage');
-    const { tab } = useAdminNavigation();
+    const { tab, role } = useAdminNavigation();
 
     // The Paid Services panel supplies its own page head (title, stat tiles,
     // primary action) — the shared eyebrow/title block would just duplicate it.
@@ -52,7 +52,7 @@ export function AdminConsole() {
     if (tab === 'outreach') return <OutreachSection />;
     if (tab === 'outreachRequests') return <OutreachRequestsSection />;
     if (tab === 'campaignOverview') return <CampaignOverviewPanel />;
-    if (tab === 'campaigns') return <CampaignsPanel />;
+    if (tab === 'campaigns') return <CampaignsPanel canEditDiscount={role === 'ADMIN'} />;
     if (tab === 'moduleUsage') return <ModuleUsagePanel />;
     if (tab === 'paidServices') return <PaidServicesCatalogPanel />;
     if (tab === 'plans') return <PlansSection />;

@@ -19,6 +19,7 @@ const DETAIL_URL = '*/api/admin/campaigns/launch';
 const meta = {
     title: 'Admin/Campaigns/Campaign',
     component: CampaignsPanel,
+    args: { canEditDiscount: true },
     decorators: [withAdminShell],
     beforeEach() {
         window.history.replaceState(null, '', '/admin#campaigns/launch');
@@ -44,6 +45,7 @@ export const Default: Story = {
 };
 
 export const ForMarketing: Story = {
+    args: { canEditDiscount: false },
     beforeEach({ msw }) {
         msw.use(
             http.get(DETAIL_URL, () => HttpResponse.json(campaignDetailForMarketingFixture)),
@@ -77,5 +79,71 @@ export const Loading: Story = {
             http.get(DETAIL_URL, () => delay('infinite')),
             http.get(LIST_URL, () => delay('infinite')),
         );
+    },
+};
+
+export const Edit: Story = {
+    beforeEach({ msw }) {
+        msw.use(
+            http.get(DETAIL_URL, () => HttpResponse.json(campaignDetailFixture)),
+            http.get(LIST_URL, () => HttpResponse.json(campaignListFixture)),
+        );
+    },
+    async play({ canvasElement, globals }) {
+        const copy = copyFor(globals).AdminPage.campaigns;
+        const page = within(canvasElement.ownerDocument.body);
+        await userEvent.click(await page.findByRole('button', { name: copy.edit }));
+        await expect(await page.findByRole('button', { name: copy.stopDiscount.button })).toBeInTheDocument();
+    },
+};
+
+// Marketing sees the discount, locked, and no Stop discount.
+export const EditForMarketing: Story = {
+    args: { canEditDiscount: false },
+    beforeEach({ msw }) {
+        msw.use(
+            http.get(DETAIL_URL, () => HttpResponse.json(campaignDetailForMarketingFixture)),
+            http.get(LIST_URL, () => HttpResponse.json(campaignListForMarketingFixture)),
+        );
+    },
+    async play({ canvasElement, globals }) {
+        const copy = copyFor(globals).AdminPage.campaigns;
+        const page = within(canvasElement.ownerDocument.body);
+        await userEvent.click(await page.findByRole('button', { name: copy.edit }));
+        await expect(await page.findByRole('switch', { name: copy.form.discount })).toBeDisabled();
+    },
+};
+
+export const Links: Story = {
+    beforeEach({ msw }) {
+        msw.use(
+            http.get(DETAIL_URL, () => HttpResponse.json(campaignDetailFixture)),
+            http.get(LIST_URL, () => HttpResponse.json(campaignListFixture)),
+        );
+    },
+    async play({ canvasElement, globals }) {
+        const copy = copyFor(globals).AdminPage.campaigns;
+        const page = within(canvasElement.ownerDocument.body);
+        await userEvent.click(await page.findByRole('button', { name: copy.linksButton.replace('{count}', '8') }));
+        await expect(
+            await page.findByRole('button', { name: `${copy.presets.facebook} ${copy.linkTypes.post} ${copy.languages.el}` }),
+        ).toBeInTheDocument();
+    },
+};
+
+// One link opened: its address, QR code, Move and Delete.
+export const OneLink: Story = {
+    beforeEach({ msw }) {
+        msw.use(
+            http.get(DETAIL_URL, () => HttpResponse.json(campaignDetailFixture)),
+            http.get(LIST_URL, () => HttpResponse.json(campaignListFixture)),
+        );
+    },
+    async play({ canvasElement, globals }) {
+        const copy = copyFor(globals).AdminPage.campaigns;
+        const page = within(canvasElement.ownerDocument.body);
+        await userEvent.click(await page.findByRole('button', { name: copy.linksButton.replace('{count}', '8') }));
+        await userEvent.click(await page.findByRole('button', { name: `${copy.presets.facebook} ${copy.linkTypes.post} ${copy.languages.el}` }));
+        await expect(await page.findByRole('button', { name: copy.linksDrawer.move })).toBeInTheDocument();
     },
 };

@@ -4,8 +4,10 @@ import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
 import { CampaignDailyChart } from '@/components/admin/campaigns/CampaignDailyChart';
+import { CampaignFormDrawer } from '@/components/admin/campaigns/CampaignFormDrawer';
 import { CampaignFunnel } from '@/components/admin/campaigns/CampaignFunnel';
 import { CampaignHeader } from '@/components/admin/campaigns/CampaignHeader';
+import { CampaignLinksDrawer } from '@/components/admin/campaigns/CampaignLinksDrawer';
 import { CampaignPlatforms } from '@/components/admin/campaigns/CampaignPlatforms';
 import { CampaignPages } from '@/components/admin/campaigns/overview/CampaignPages';
 import { CampaignSplits } from '@/components/admin/campaigns/overview/CampaignSplits';
@@ -13,6 +15,7 @@ import { FunnelRangeControl } from '@/components/admin/funnel/FunnelRangeControl
 import { BackButton } from '@/components/ui/BackButton';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useCampaignDetail } from '@/hooks/useCampaignDetail';
+import type { CampaignDrawers } from '@/hooks/useCampaignsPage';
 import type { useFunnelRange } from '@/hooks/useFunnelRange';
 import { CAMPAIGN_RANGE_PRESETS } from '@/lib/adminFunnel';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
@@ -23,12 +26,16 @@ export function CampaignPage({
     id,
     range,
     tabHref,
+    drawers,
+    canEditDiscount,
     onBackAction,
     onNotFoundAction,
 }: {
     id: string;
     range: ReturnType<typeof useFunnelRange>;
     tabHref: (tab: CampaignTab) => string;
+    drawers: CampaignDrawers;
+    canEditDiscount: boolean;
     onBackAction: (event: MouseEvent<HTMLAnchorElement>) => void;
     onNotFoundAction: () => void;
 }) {
@@ -48,6 +55,8 @@ export function CampaignPage({
                     updatedAt={detail.updatedAt}
                     isFetching={detail.isFetching}
                     onRefreshAction={detail.refresh}
+                    onLinksAction={drawers.openLinks}
+                    onEditAction={drawers.openEdit}
                 />
             )}
 
@@ -81,6 +90,29 @@ export function CampaignPage({
                         <CampaignSplits devices={data.devices} languages={data.languages} />
                         <CampaignPages pages={data.pages} />
                     </div>
+
+                    {/* Edit */}
+                    <CampaignFormDrawer
+                        key={`edit-${drawers.token}`}
+                        open={drawers.drawer === 'edit'}
+                        campaign={data.campaign}
+                        links={detail.links}
+                        deletable={data.deletable}
+                        canEditDiscount={canEditDiscount}
+                        onCloseAction={drawers.close}
+                        onCreatedAction={drawers.close}
+                        onDeletedAction={drawers.handleDeleted}
+                    />
+
+                    {/* Links */}
+                    <CampaignLinksDrawer
+                        key={`links-${drawers.token}`}
+                        open={drawers.drawer === 'links'}
+                        campaign={data.campaign}
+                        links={detail.links}
+                        others={detail.others}
+                        onCloseAction={drawers.close}
+                    />
                 </>
             )}
         </div>
