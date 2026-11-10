@@ -225,3 +225,108 @@ export function totalOf(rows: CampaignRowDto[]): CampaignLinksTotal {
 export function campaignRowKey(row: CampaignRowDto): string {
     return row.link?.id ?? `${row.utmSource ?? ''}|${row.utmMedium ?? ''}|${row.utmCampaign ?? ''}`;
 }
+
+// The platforms a campaign's links are grouped by, in the order they're shown.
+export const CAMPAIGN_PLATFORMS = [
+    'instagram',
+    'facebook',
+    'tiktok',
+    'google',
+    'pinterest',
+    'youtube',
+    'linkedin',
+    'email',
+    'partner',
+    'qr',
+    'other',
+] as const;
+export type CampaignPlatform = (typeof CAMPAIGN_PLATFORMS)[number];
+
+// The approved "Where you'll share it" name each platform goes by (hover text and screen readers).
+export const CAMPAIGN_PLATFORM_PRESETS: Readonly<Record<CampaignPlatform, CampaignPresetKey>> = {
+    instagram: 'instagram',
+    facebook: 'facebook',
+    tiktok: 'tiktok',
+    google: 'googleAds',
+    pinterest: 'pinterest',
+    youtube: 'youtube',
+    linkedin: 'linkedin',
+    email: 'email',
+    partner: 'partner',
+    qr: 'qr',
+    other: 'custom',
+};
+
+const BRAND_PLATFORMS: readonly CampaignPlatform[] = ['instagram', 'facebook', 'tiktok', 'google', 'pinterest', 'youtube', 'linkedin'];
+const MEDIUM_PLATFORMS: Readonly<Record<string, CampaignPlatform>> = { email: 'email', partner: 'partner', qr: 'qr' };
+
+type LinkValues = Pick<CampaignLinkDto, 'utmSource' | 'utmMedium'>;
+
+// A link's platform: its source when that's a brand, else what its medium says, else other. Values
+// typed by hand may not be lowercase.
+export function campaignLinkPlatform(link: LinkValues): CampaignPlatform {
+    const source = link.utmSource.toLowerCase();
+    return BRAND_PLATFORMS.find((platform) => platform === source) ?? MEDIUM_PLATFORMS[link.utmMedium.toLowerCase()] ?? 'other';
+}
+
+// The format Spring puts before the language in a placement's utm_campaign. Older links have none.
+export type CampaignLinkFormat = 'post' | 'story' | 'search' | 'email' | 'partner' | 'qr' | 'link';
+
+const FORMAT_PATTERN = /-(post|story|search|email|partner|qr|link)-(en|el)$/;
+
+export function campaignLinkFormat(link: Pick<CampaignLinkDto, 'utmCampaign'>): CampaignLinkFormat | null {
+    const match = FORMAT_PATTERN.exec(link.utmCampaign.toLowerCase());
+    return match ? (match[1] as CampaignLinkFormat) : null;
+}
+
+export type CampaignLinkType = 'post' | 'story' | 'postAd' | 'storyAd' | 'searchAd';
+
+// What a brand link is: a post, a story, either as an ad, or a Google search ad. Email, partner, QR and
+// other links have no type. A link with no format (an older one) counts as a post.
+export function campaignLinkType(link: LinkValues & Pick<CampaignLinkDto, 'utmCampaign'>): CampaignLinkType | null {
+    const platform = campaignLinkPlatform(link);
+    if (!BRAND_PLATFORMS.includes(platform)) return null;
+    const paid = PAID_MEDIUMS.includes(link.utmMedium.toLowerCase());
+    const format = campaignLinkFormat(link);
+    if (platform === 'google') return paid || format === 'search' ? 'searchAd' : null;
+    if (format === 'story') return paid ? 'storyAd' : 'story';
+    return paid ? 'postAd' : 'post';
+}
+
+// From the campaign value, else from the page: /el and /el/... are Greek.
+export function campaignLinkLanguage(link: Pick<CampaignLinkDto, 'utmCampaign' | 'destinationPath'>): CampaignLinkLanguage {
+    const match = FORMAT_PATTERN.exec(link.utmCampaign.toLowerCase());
+    if (match) return match[2] as CampaignLinkLanguage;
+    return link.destinationPath === '/el' || link.destinationPath.startsWith('/el/') ? 'el' : 'en';
+}
+
+// What a link row shows, all of it read from the link's values: platform, type, a partner's or
+// source's name, the language (only when the campaign has both), and the page unless it's home. Never
+// the stored name, which repeats the campaign.
+export type CampaignLinkLabelParts = {
+    platform: CampaignPlatform;
+    type: CampaignLinkType | null;
+    text: string | null;
+    language: CampaignLinkLanguage | null;
+    page: string | null;
+};
+
+const HOME_PATHS: readonly string[] = ['/', '/el'];
+
+export function campaignLinkLabel(link: CampaignLinkDto, campaignLinks: readonly CampaignLinkDto[]): CampaignLinkLabelParts {
+    const platform = campaignLinkPlatform(link);
+    const languages = new Set(campaignLinks.map(campaignLinkLanguage));
+    return {
+        platform,
+        type: campaignLinkType(link),
+        text: platform === 'partner' || platform === 'other' ? link.utmSource : null,
+        language: languages.size > 1 ? campaignLinkLanguage(link) : null,
+        page: HOME_PATHS.includes(link.destinationPath) ? null : link.destinationPath,
+    };
+}
+
+// The address to copy: a Google search ad's full one, as Google asks for the final page in an ad
+// instead of a redirect; the short one for anything else.
+export function campaignLinkShareUrl(link: CampaignLinkDto): string {
+    return campaignLinkType(link) === 'searchAd' ? campaignUrl(link) : campaignShortUrl(link);
+}
