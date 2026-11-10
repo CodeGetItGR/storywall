@@ -1,48 +1,39 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { CampaignLinkSetDrawer } from '@/components/admin/campaigns/CampaignLinkSetDrawer';
+import { campaignListFixture } from '@/components/admin/campaigns/__fixtures__/campaigns';
 import { CampaignsPanel } from '@/components/admin/campaigns/CampaignsPanel';
 import messages from '@/messages/en.json';
 
-vi.mock('@/hooks/useAdminCampaigns', () => ({
-    useAdminCampaigns: () => ({ data: [], isLoading: false, isFetching: false, error: null, dataUpdatedAt: 0, refetch: vi.fn() }),
-    useGenerateCampaignLinkSet: () => ({ mutateAsync: vi.fn(), isPending: false }),
-    useCreateCampaignLink: () => ({ mutateAsync: vi.fn(), isPending: false }),
-    useRenameCampaignLink: () => ({ mutateAsync: vi.fn(), isPending: false }),
-    useDeleteCampaignLink: () => ({ mutateAsync: vi.fn(), isPending: false }),
-    useAdminCampaignOverview: () => ({ data: undefined, isLoading: false, error: null }),
+vi.mock('@/hooks/useAdminCampaignApi', () => ({
+    useCampaignListQuery: () => ({ data: campaignListFixture, isLoading: false, isFetching: false, error: null, dataUpdatedAt: 0, refetch: vi.fn() }),
 }));
 
-vi.mock('@/components/admin/campaigns/CampaignLinkSetDrawer', () => ({
-    CampaignLinkSetDrawer: vi.fn(() => null),
-}));
-
-function lastDrawerProps() {
-    const calls = vi.mocked(CampaignLinkSetDrawer).mock.calls;
-    return calls[calls.length - 1][0];
+function renderPanel() {
+    return render(
+        <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
+            <CampaignsPanel />
+        </NextIntlClientProvider>,
+    );
 }
 
-describe('CampaignsPanel link set buttons', () => {
-    afterEach(() => {
-        cleanup();
-        vi.mocked(CampaignLinkSetDrawer).mockClear();
+describe('CampaignsPanel', () => {
+    beforeEach(() => window.history.replaceState(null, '', '/admin#campaigns'));
+    afterEach(cleanup);
+
+    it('opens on the current campaigns for the last 30 days', () => {
+        renderPanel();
+
+        expect(screen.getByRole('button', { name: 'Last 30 days', pressed: true })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Current', pressed: true })).toBeInTheDocument();
     });
 
-    it.each([
-        ['English links', 'en'],
-        ['Greek links', 'el'],
-    ])('opens the set drawer for the language of the %s button', (name, language) => {
-        render(
-            <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
-                <CampaignsPanel />
-            </NextIntlClientProvider>,
-        );
-        expect(lastDrawerProps().open).toBe(false);
+    it('opens on Past from its address', () => {
+        window.history.replaceState(null, '', '/admin#campaigns/past');
+        renderPanel();
 
-        fireEvent.click(screen.getByRole('button', { name }));
-
-        expect(lastDrawerProps()).toMatchObject({ open: true, language });
+        expect(screen.getByRole('button', { name: 'Past', pressed: true })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Spring 20%' })).toBeInTheDocument();
     });
 });
