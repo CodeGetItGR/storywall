@@ -2795,6 +2795,8 @@ export interface CampaignDiscountViewDto {
     label: string | null;
     startsAt: string;
     endsAt: string;
+    // When the discount was stopped; null when it wasn't, or was stopped before this was recorded.
+    stoppedAt: string | null;
     status: SiteNoticeStatus;
 }
 
