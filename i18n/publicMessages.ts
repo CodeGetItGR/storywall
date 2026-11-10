@@ -51,12 +51,17 @@ function writePath(target: AbstractIntlMessages, segments: string[], value: Abst
     current[segments[segments.length - 1]] = value;
 }
 
-export function pickPublicMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
+// Only these namespaces (dotted paths allowed) out of a full catalog.
+export function pickNamespaces(messages: AbstractIntlMessages, namespaces: readonly string[]): AbstractIntlMessages {
     const picked: AbstractIntlMessages = {};
-    for (const namespace of PUBLIC_CLIENT_NAMESPACES) {
+    for (const namespace of namespaces) {
         const segments = namespace.split('.');
         const value = readPath(messages, segments);
         if (value !== undefined) writePath(picked, segments, value);
     }
     return picked;
+}
+
+export function pickPublicMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
+    return pickNamespaces(messages, PUBLIC_CLIENT_NAMESPACES);
 }
