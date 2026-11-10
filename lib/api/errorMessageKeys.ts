@@ -37,6 +37,8 @@ export type ApiErrorMessageKey =
     | 'discountCampaignPriceTooLow'
     | 'discountCampaignLinkNameTaken'
     | 'campaignDiscountAdminOnly'
+    | 'campaignLinkMoveDiscount'
+    | 'campaignClosedForLinks'
     | 'collaboratorBrandingIncomplete'
     | 'outreachRequestDecided'
     | 'outreachRequestPending'
@@ -358,6 +360,8 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.DISCOUNT_CAMPAIGN_LINK_NAME_TAKEN]: 'discountCampaignLinkNameTaken',
     [ERROR_CODES.CAMPAIGN_INVALID]: 'discountCampaignInvalid',
     [ERROR_CODES.CAMPAIGN_DISCOUNT_ADMIN_ONLY]: 'campaignDiscountAdminOnly',
+    [ERROR_CODES.CAMPAIGN_LINK_MOVE_DISCOUNT]: 'campaignLinkMoveDiscount',
+    [ERROR_CODES.CAMPAIGN_CLOSED_FOR_LINKS]: 'campaignClosedForLinks',
     [ERROR_CODES.CAMPAIGN_LINK_NAME_TAKEN]: 'discountCampaignLinkNameTaken',
     [ERROR_CODES.CONFLICT]: 'conflict',
     [ERROR_CODES.CONCURRENT_MODIFICATION]: 'concurrentModification',

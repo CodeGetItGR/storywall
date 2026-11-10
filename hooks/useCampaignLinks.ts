@@ -41,6 +41,8 @@ export function useCampaignLinks(campaign: CampaignDto, links: readonly Campaign
     const moveOptions = useMemo(() => [...others].sort((a, b) => a.name.localeCompare(b.name)), [others]);
     const selected = rows.find((row) => row.link.id === linkId) ?? null;
     const busy = add.isPending || move.isPending || remove.isPending;
+    // An archived or ended campaign takes no new links.
+    const addLocked = campaign.status === 'ARCHIVED' || campaign.status === 'ENDED';
 
     function showList() {
         setMode('list');
@@ -129,6 +131,7 @@ export function useCampaignLinks(campaign: CampaignDto, links: readonly Campaign
         moveTarget: target,
         picker,
         busy,
+        addLocked,
         removing: remove.isPending,
         deleting,
         error,
