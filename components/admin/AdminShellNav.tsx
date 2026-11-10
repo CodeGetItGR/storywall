@@ -12,7 +12,7 @@ import { useNewVendorMessagesCount } from '@/hooks/useAdminVendorMessages';
 import { canOpenAdminTab } from '@/lib/adminAccess';
 import { cn } from '@/lib/utils';
 
-const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operations'> = {
+const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'saveMyDate' | 'marketing' | 'operations'> = {
     metrics: 'overview',
     funnel: 'overview',
     visitors: 'overview',
@@ -36,6 +36,7 @@ const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operat
     themePresets: 'catalog',
     themeFonts: 'catalog',
     qrCards: 'catalog',
+    invitationThemes: 'saveMyDate',
     demoEvents: 'catalog',
     billingOps: 'operations',
     siteNotices: 'operations',
@@ -50,7 +51,7 @@ const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operat
     errorEvents: 'operations',
     auditLog: 'operations',
 };
-const GROUP_ORDER = ['overview', 'catalog', 'marketing', 'operations'] as const;
+const GROUP_ORDER = ['overview', 'catalog', 'saveMyDate', 'marketing', 'operations'] as const;
 
 export function AdminShellNav({
     email,

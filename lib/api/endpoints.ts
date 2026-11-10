@@ -496,6 +496,11 @@ export const endpoints = {
             byId: (id: string) => `/api/admin/theme-presets/${id}`,
             illustration: (id: string) => `/api/admin/theme-presets/${id}/illustration`,
         },
+        invitationThemes: {
+            list: '/api/admin/invitation-themes',
+            byId: (id: string) => `/api/admin/invitation-themes/${id}`,
+            duplicate: (id: string) => `/api/admin/invitation-themes/${id}/duplicate`,
+        },
         qrCardTemplates: {
             list: '/api/admin/qr-card-templates',
             byId: (id: string) => `/api/admin/qr-card-templates/${id}`,
