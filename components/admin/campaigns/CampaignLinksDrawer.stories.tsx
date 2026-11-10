@@ -26,6 +26,16 @@ export const List: Story = {};
 
 export const Empty: Story = { args: { links: [], campaign: { ...campaignDetailFixture.campaign, linkCount: 0 } } };
 
+// An archived campaign: its links stay, but Add links is off.
+export const Archived: Story = {
+    args: { campaign: { ...campaignDetailFixture.campaign, status: 'ARCHIVED', archivedAt: '2026-07-01T09:00:00Z' } },
+    async play({ globals }) {
+        const copy = copyFor(globals).AdminPage.campaigns;
+        const drawer = await waitForOpen('dialog');
+        await expect(within(drawer).getByRole('button', { name: copy.linksDrawer.add })).toBeDisabled();
+    },
+};
+
 // Add links: what the campaign has shows ticked and faded.
 export const Add: Story = {
     async play({ globals }) {

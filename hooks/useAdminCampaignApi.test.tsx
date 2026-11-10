@@ -37,7 +37,7 @@ describe('campaign queries', () => {
     });
     afterEach(cleanup);
 
-    it('keys every campaign query under the old report prefix, so one invalidation reaches both', () => {
+    it('keys every campaign query under one prefix, so one invalidation reaches them all', () => {
         expect(campaignKeys.list('a', 'b')).toEqual(['admin', 'campaigns', 'list', 'a', 'b']);
         expect(campaignKeys.detail('c-1', null, null)).toEqual(['admin', 'campaigns', 'detail', 'c-1', null, null]);
     });
@@ -123,5 +123,29 @@ describe('campaign writes', () => {
 
         expect(mocks.del).toHaveBeenCalledWith('/api/admin/campaigns/c-1');
         expect(client.getQueryData(campaignKeys.detail('c-1', null, null))).toBeUndefined();
+    });
+
+    it("doesn't ask for a deleted campaign while its page is still open", async () => {
+        mocks.get.mockImplementation((path: string) => Promise.resolve(path.includes('c-1') ? { campaign: { id: 'c-1' } } : { items: [] }));
+        mocks.del.mockResolvedValue(undefined);
+        const { wrapper } = setup();
+        const { result, rerender } = renderHook(
+            () => ({
+                list: useCampaignListQuery(null, null, true),
+                detail: useCampaignDetailQuery('c-1', null, null, true),
+                remove: useDeleteCampaign(),
+            }),
+            { wrapper },
+        );
+        await waitFor(() => expect(result.current.detail.data).toBeDefined());
+        mocks.get.mockClear();
+
+        await act(async () => {
+            await result.current.remove.mutateAsync('c-1');
+        });
+        rerender();
+
+        await waitFor(() => expect(mocks.get).toHaveBeenCalledWith('/api/admin/campaigns'));
+        expect(mocks.get).not.toHaveBeenCalledWith(expect.stringContaining('c-1'));
     });
 });

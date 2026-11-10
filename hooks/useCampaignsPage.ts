@@ -1,11 +1,12 @@
 'use client';
 
-import { type MouseEvent, useCallback, useMemo, useState } from 'react';
+import { type MouseEvent, useCallback, useMemo, useRef, useState } from 'react';
 
 import { useAdminRecordPage } from '@/hooks/useAdminRecordPage';
 import { useFunnelRange } from '@/hooks/useFunnelRange';
 import { CAMPAIGNS_HASH_ROOT, CAMPAIGNS_PAST, formatRecordHash } from '@/lib/adminRecordRouting';
 import type { CampaignTab } from '@/lib/campaignCompare';
+import { overlayStepsOnPage, skipGonePage } from '@/lib/overlayHistory';
 
 export type CampaignDrawer = 'new' | 'edit' | 'links';
 
@@ -30,9 +31,12 @@ export function useCampaignsPage() {
     const range = useFunnelRange('LAST_30');
     const page = useAdminRecordPage(CAMPAIGNS_HASH_ROOT);
     const { recordId, push, replace } = page;
-    const { showList } = page;
+    const { showList, handleRecordLinkClick, handleRecordRowClick } = page;
     const [drawer, setDrawer] = useState<CampaignDrawer | null>(null);
     const [token, setToken] = useState(0);
+    // The campaign whose page was opened from a list row, or made from the list's New campaign: the
+    // history entry below its page is that list. Kept here, not in history state, which Next rewrites.
+    const openedFromList = useRef<string | null>(null);
 
     const open = useCallback((next: CampaignDrawer) => {
         setDrawer(next);
@@ -43,28 +47,66 @@ export function useCampaignsPage() {
     const openLinks = useCallback(() => open('links'), [open]);
     const close = useCallback(() => setDrawer(null), []);
 
-    // A new campaign opens on its page, as a Back step of its own.
+    const tab: CampaignTab = recordId === CAMPAIGNS_PAST ? 'past' : 'current';
+    const campaignId = recordId !== null && recordId !== CAMPAIGNS_PAST ? recordId : null;
+
+    // A new campaign opens on its page. The drawer's Back step, still open on the list, becomes the page,
+    // so Back goes to the list it was made from. The drawer's close then only drops its marker: an owner
+    // close never moves through history.
     const openCampaign = useCallback(
         (id: string) => {
+            const onDrawer = overlayStepsOnPage() > 0;
             setDrawer(null);
-            push(id);
+            if (onDrawer) replace(id);
+            else push(id);
+            openedFromList.current = id;
         },
-        [push],
+        [push, replace],
     );
 
-    // A deleted campaign: back to the list, with no Back step to its page.
+    // A deleted campaign: every history entry at its page is skipped from now on. Opened from a list, one
+    // traversal goes back past its drawers and its page to that list; any leftover entry of the page that
+    // traversal lands on is skipped too. Opened any other way, its page becomes the list in place.
     const handleDeleted = useCallback(() => {
         setDrawer(null);
-        showList();
-    }, [showList]);
+        if (campaignId === null) {
+            showList();
+            return;
+        }
+        skipGonePage(window.location.href);
+        const fromList = openedFromList.current === campaignId;
+        openedFromList.current = null;
+        if (fromList) window.history.go(-(overlayStepsOnPage() + 1));
+        else showList();
+    }, [campaignId, showList]);
+
+    // A campaign opened from a list row.
+    const markOpened = useCallback((before: string, id: string | undefined) => {
+        if (id && window.location.hash !== before) openedFromList.current = id;
+    }, []);
+
+    const handleCampaignLinkClick = useCallback(
+        (event: MouseEvent<HTMLAnchorElement>) => {
+            const before = window.location.hash;
+            handleRecordLinkClick(event);
+            markOpened(before, event.currentTarget.dataset.recordId);
+        },
+        [handleRecordLinkClick, markOpened],
+    );
+
+    const handleCampaignRowClick = useCallback(
+        (event: MouseEvent<HTMLTableRowElement>) => {
+            const before = window.location.hash;
+            handleRecordRowClick(event);
+            markOpened(before, event.currentTarget.dataset.recordId);
+        },
+        [handleRecordRowClick, markOpened],
+    );
 
     const drawers = useMemo<CampaignDrawers>(
         () => ({ drawer, token, openEdit, openLinks, close, handleDeleted }),
         [close, drawer, handleDeleted, openEdit, openLinks, token],
     );
-
-    const tab: CampaignTab = recordId === CAMPAIGNS_PAST ? 'past' : 'current';
-    const campaignId = recordId !== null && recordId !== CAMPAIGNS_PAST ? recordId : null;
 
     // A tab is not a Back step.
     const handleTabChange = useCallback((next: CampaignTab) => replace(tabRecord(next)), [replace]);
@@ -92,7 +134,7 @@ export function useCampaignsPage() {
         openCampaign,
         // A campaign that no longer exists: back to the list, with no Back step to it.
         showList: page.showList,
-        handleRecordLinkClick: page.handleRecordLinkClick,
-        handleRecordRowClick: page.handleRecordRowClick,
+        handleRecordLinkClick: handleCampaignLinkClick,
+        handleRecordRowClick: handleCampaignRowClick,
     };
 }

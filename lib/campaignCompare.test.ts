@@ -233,6 +233,24 @@ describe('campaignsForTab', () => {
         ];
         expect(campaignsForTab(items, 'past').map((row) => row.campaign.id)).toEqual(['archived', 'recent', 'old']);
     });
+
+    it('orders a campaign whose discount was stopped by the stop day', () => {
+        const stopped = {
+            id: 'd-1',
+            percent: 20,
+            label: null,
+            startsAt: '2026-08-01T00:00:00Z',
+            endsAt: '2026-11-30T00:00:00Z',
+            stoppedAt: '2026-09-10T00:00:00Z',
+            status: 'OFF' as const,
+        };
+        const items = [
+            item({ id: 'stopped', status: 'ENDED', endsAt: '2026-11-30T00:00:00Z', discount: stopped }),
+            item({ id: 'ended', status: 'ENDED', endsAt: '2026-10-20T00:00:00Z' }),
+            item({ id: 'old-stop', status: 'ENDED', endsAt: '2026-11-25T00:00:00Z', discount: { ...stopped, stoppedAt: null } }),
+        ];
+        expect(campaignsForTab(items, 'past').map((row) => row.campaign.id)).toEqual(['old-stop', 'ended', 'stopped']);
+    });
 });
 
 describe('campaignListRows', () => {

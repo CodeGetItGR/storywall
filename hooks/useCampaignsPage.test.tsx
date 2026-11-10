@@ -1,16 +1,62 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
 import type { MouseEvent } from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useCampaignsPage } from '@/hooks/useCampaignsPage';
+import { registerOverlayHistory } from '@/lib/overlayHistory';
 
 function at(hash: string) {
     window.history.replaceState(null, '', `/admin${hash}`);
 }
 
+// jsdom fires popstate asynchronously after a traversal, and a skip starts another; settle until no
+// further popstate arrives.
+async function settle() {
+    let pops = 0;
+    const onPop = () => (pops += 1);
+    window.addEventListener('popstate', onPop);
+    let seen = -1;
+    while (seen !== pops) {
+        seen = pops;
+        await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+    }
+    window.removeEventListener('popstate', onPop);
+}
+
+async function goBack() {
+    window.history.back();
+    await settle();
+}
+
+async function goForward() {
+    window.history.forward();
+    await settle();
+}
+
+// Next's router writes each entry's state afresh once it has caught up with a hash change, dropping
+// any key someone else wrote there with replaceState.
+function dropCustomStateOnHashChange() {
+    window.addEventListener('hashchange', () => {
+        setTimeout(() => window.history.replaceState({ __NA: true }, '', window.location.href), 0);
+    });
+}
+
+async function nextRouterCommit() {
+    await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
+}
+
+function linkClick(id: string) {
+    const link = document.createElement('a');
+    link.dataset.recordId = id;
+    return { currentTarget: link, preventDefault: vi.fn() } as unknown as MouseEvent<HTMLAnchorElement>;
+}
+
 describe('useCampaignsPage', () => {
     beforeEach(() => {
         at('#campaigns');
+    });
+    beforeAll(() => {
+        dropCustomStateOnHashChange();
     });
     afterEach(cleanup);
 
@@ -91,6 +137,94 @@ describe('useCampaignsPage', () => {
 
         expect(result.current.drawers.drawer).toBeNull();
         expect(window.location.hash).toBe('#campaigns/c-new');
+    });
+
+    it('goes Back from a new campaign to the list it was made from, with no step in between', async () => {
+        at('#analytics');
+        window.history.pushState(null, '', '/admin#campaigns');
+        const { result } = renderHook(() => useCampaignsPage());
+
+        act(() => result.current.openNewCampaign());
+        // The drawer's own Back step, as AdminDrawer makes it.
+        const drawer = registerOverlayHistory({ id: 'new-drawer', onClose: vi.fn() });
+        act(() => result.current.openCampaign('c-new'));
+        // The drawer closes once the page renders without it.
+        drawer.remove();
+        await settle();
+        expect(window.location.hash).toBe('#campaigns/c-new');
+
+        await goBack();
+        expect(window.location.hash).toBe('#campaigns');
+        await goBack();
+        expect(window.location.hash).toBe('#analytics');
+    });
+
+    it('goes Back from a deleted campaign to the list it was opened from, with nothing left to go Forward to', async () => {
+        at('#analytics');
+        window.history.pushState(null, '', '/admin#campaigns');
+        const { result } = renderHook(() => useCampaignsPage());
+        act(() => result.current.handleRecordLinkClick(linkClick('c-1')));
+        expect(window.location.hash).toBe('#campaigns/c-1');
+        await nextRouterCommit();
+
+        // The edit drawer and its delete confirmation each add a Back step.
+        act(() => result.current.drawers.openEdit());
+        const drawer = registerOverlayHistory({ id: 'edit-drawer', onClose: vi.fn() });
+        const confirm = registerOverlayHistory({ id: 'confirm', onClose: vi.fn() });
+        act(() => result.current.drawers.handleDeleted());
+        confirm.remove();
+        drawer.remove();
+        await settle();
+
+        expect(window.location.hash).toBe('#campaigns');
+        expect(result.current.campaignId).toBeNull();
+        expect(result.current.drawers.drawer).toBeNull();
+        await goForward();
+        expect(window.location.hash).toBe('#campaigns');
+        await goBack();
+        expect(window.location.hash).toBe('#analytics');
+    });
+
+    it('skips a leftover Back step of a drawer closed earlier on a deleted campaign', async () => {
+        at('#analytics');
+        window.history.pushState(null, '', '/admin#campaigns');
+        const { result } = renderHook(() => useCampaignsPage());
+        act(() => result.current.handleRecordLinkClick(linkClick('c-2')));
+        await nextRouterCommit();
+
+        // The links drawer, closed with its X, leaves its entry behind.
+        act(() => result.current.drawers.openLinks());
+        registerOverlayHistory({ id: 'links-drawer', onClose: vi.fn() }).remove();
+        act(() => result.current.drawers.openEdit());
+        const drawer = registerOverlayHistory({ id: 'edit-drawer', onClose: vi.fn() });
+        const confirm = registerOverlayHistory({ id: 'confirm', onClose: vi.fn() });
+        act(() => result.current.drawers.handleDeleted());
+        confirm.remove();
+        drawer.remove();
+        await settle();
+
+        expect(window.location.hash).toBe('#campaigns');
+        await goBack();
+        expect(window.location.hash).toBe('#analytics');
+    });
+
+    it('turns a deleted campaign opened by its address into the list, with no Back step to it', async () => {
+        at('#analytics');
+        window.history.pushState(null, '', '/admin#campaigns/c-3');
+        const { result } = renderHook(() => useCampaignsPage());
+
+        act(() => result.current.drawers.openEdit());
+        const drawer = registerOverlayHistory({ id: 'edit-drawer', onClose: vi.fn() });
+        const confirm = registerOverlayHistory({ id: 'confirm', onClose: vi.fn() });
+        act(() => result.current.drawers.handleDeleted());
+        confirm.remove();
+        drawer.remove();
+        await settle();
+
+        expect(window.location.hash).toBe('#campaigns');
+        expect(result.current.campaignId).toBeNull();
+        await goBack();
+        expect(window.location.hash).toBe('#analytics');
     });
 
     it('goes back to the list once a campaign is deleted', () => {

@@ -1,8 +1,8 @@
-import { Handshake, Link2, type LucideIcon, Mail, Megaphone, QrCode, RectangleVertical, Search, Share2, Square } from 'lucide-react';
+import { Handshake, Link2, type LucideIcon, Mail, QrCode, RectangleVertical, Search, Square } from 'lucide-react';
 import type { IconType } from 'react-icons';
 import { FaFacebookF, FaGoogle, FaInstagram, FaLinkedinIn, FaPinterestP, FaTiktok, FaYoutube } from 'react-icons/fa6';
 
-import type { CampaignLinkType, CampaignPlatform, CampaignPresetGroup } from '@/lib/campaignLinks';
+import type { CampaignLinkType, CampaignPlatform } from '@/lib/campaignLinks';
 
 export type CampaignIcon = IconType | LucideIcon;
 
@@ -44,11 +44,4 @@ export const CAMPAIGN_LINK_TYPE_ICONS: Readonly<Record<CampaignLinkType, Campaig
     postAd: Square,
     storyAd: RectangleVertical,
     searchAd: Search,
-};
-
-// The old link table's section labels. Removed with that table in KAN-192.
-export const CAMPAIGN_SECTION_ICONS: Readonly<Record<CampaignPresetGroup, CampaignIcon>> = {
-    social: Share2,
-    ads: Megaphone,
-    other: Link2,
 };

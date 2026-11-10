@@ -5,6 +5,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { campaignDetailFixture, campaignListFixture } from '@/components/admin/campaigns/__fixtures__/campaigns';
 import { CampaignLinksDrawer } from '@/components/admin/campaigns/CampaignLinksDrawer';
+import { ApiError } from '@/lib/api/client';
+import type { CampaignDto } from '@/lib/api/types';
 import messages from '@/messages/en.json';
 
 const writes = vi.hoisted(() => ({ add: vi.fn(), move: vi.fn(), remove: vi.fn() }));
@@ -48,10 +50,10 @@ vi.mock('@/components/ui/ConfirmActionModal', () => ({
 const LINKS = campaignDetailFixture.links.map((stats) => stats.link);
 const OTHERS = campaignListFixture.items.map((item) => item.campaign).filter((campaign) => campaign.id !== 'launch');
 
-function renderDrawer() {
+function renderDrawer(campaign: CampaignDto = campaignDetailFixture.campaign) {
     render(
         <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
-            <CampaignLinksDrawer open campaign={campaignDetailFixture.campaign} links={LINKS} others={OTHERS} onCloseAction={vi.fn()} />
+            <CampaignLinksDrawer open campaign={campaign} links={LINKS} others={OTHERS} onCloseAction={vi.fn()} />
         </NextIntlClientProvider>,
     );
 }
@@ -84,6 +86,25 @@ describe('CampaignLinksDrawer', () => {
 
         await waitFor(() => expect(writes.move).toHaveBeenCalledWith({ id: 'fb-post-el', campaignId: 'spring' }));
         expect(await screen.findByRole('button', { name: 'Add links' })).toBeInTheDocument();
+    });
+
+    it("shows why a link can't move out of a campaign with a discount", async () => {
+        writes.move.mockRejectedValue(new ApiError(409, { status: 409, errorCode: 5225 }));
+        renderDrawer();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Facebook Post EL' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Move' }));
+
+        expect(await screen.findByRole('alert')).toHaveTextContent("Links can't move into or out of a campaign with a discount.");
+    });
+
+    it("doesn't add links to an archived or ended campaign", () => {
+        renderDrawer({ ...campaignDetailFixture.campaign, status: 'ARCHIVED', archivedAt: '2026-07-01T09:00:00Z' });
+        expect(screen.getByRole('button', { name: 'Add links' })).toBeDisabled();
+        cleanup();
+
+        renderDrawer({ ...campaignDetailFixture.campaign, status: 'ENDED' });
+        expect(screen.getByRole('button', { name: 'Add links' })).toBeDisabled();
     });
 
     it('asks before deleting a link', async () => {

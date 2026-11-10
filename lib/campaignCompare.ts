@@ -151,9 +151,11 @@ function currentRank(campaign: CampaignDto): number {
     return campaign.startsAt === null && campaign.endsAt === null ? 2 : 0;
 }
 
-// When a past campaign stopped: archived, else ended. createdAt only as a last resort.
+// When a past campaign stopped: archived, else the day its discount was stopped when that is known,
+// else ended. createdAt only as a last resort.
 function pastTime(campaign: CampaignDto): number {
-    return Date.parse(campaign.archivedAt ?? campaign.endsAt ?? campaign.createdAt);
+    const stoppedAt = campaign.discount?.status === 'OFF' ? campaign.discount.stoppedAt : null;
+    return Date.parse(campaign.archivedAt ?? stoppedAt ?? campaign.endsAt ?? campaign.createdAt);
 }
 
 export function campaignsForTab(items: readonly CampaignListItemDto[], tab: CampaignTab): CampaignListItemDto[] {

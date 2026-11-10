@@ -9,8 +9,8 @@ import { endpoints } from '@/lib/api/endpoints';
 import type { CampaignDetailDto, CampaignDto, CampaignLinkDto, CampaignLinksRequestDto, CampaignListDto, CampaignRequestDto } from '@/lib/api/types';
 import { discountCampaignKeys } from '@/lib/discountCampaign';
 
-// The Campaigns page's reads (/api/admin/campaigns). Keys sit under the old report's prefix, so a link
-// write that refreshes ['admin', 'campaigns'] refreshes these too.
+// The Campaigns page's reads (/api/admin/campaigns). Every key sits under ['admin', 'campaigns'], so one
+// invalidation refreshes the list and every campaign's page.
 export const campaignKeys = {
     all: ['admin', 'campaigns'] as const,
     list: (since: string | null, until: string | null) => ['admin', 'campaigns', 'list', since, until] as const,
@@ -38,8 +38,8 @@ export function useCampaignDetailQuery(id: string, since: string | null, until: 
     });
 }
 
-// A write changes the list, a campaign's page and the old link report (all under ['admin', 'campaigns']),
-// and through a discount the price banner and the public plans.
+// A write changes the list and a campaign's page (all under ['admin', 'campaigns']), and through a
+// discount the price banner and the public plans.
 function useRefreshCampaigns() {
     const queryClient = useQueryClient();
     return useCallback(() => {
@@ -49,6 +49,12 @@ function useRefreshCampaigns() {
             queryClient.invalidateQueries({ queryKey: discountCampaignKeys.live() }),
         ]);
     }, [queryClient]);
+}
+
+// The query keys of one campaign's page, every range.
+function isDetailOf(queryKey: readonly unknown[], id: string): boolean {
+    const details = campaignKeys.details(id);
+    return details.every((part, index) => queryKey[index] === part);
 }
 
 export function useCreateCampaign() {
@@ -93,15 +99,20 @@ export function useStopCampaignDiscount() {
     });
 }
 
-// The deleted campaign's page is dropped first, so the refresh doesn't ask Spring for it again.
+// The deleted campaign's page is never asked for again: the refresh leaves it out, and it is dropped
+// once nothing shows it. Dropping it while its page is still open would make the page ask for it again.
 export function useDeleteCampaign() {
     const queryClient = useQueryClient();
-    const refresh = useRefreshCampaigns();
     return useMutation({
         mutationFn: (id: string) => api.del<void>(endpoints.admin.campaigns.byId(id)),
-        onSuccess: (_, id) => {
-            queryClient.removeQueries({ queryKey: campaignKeys.details(id) });
-            return refresh();
+        onSuccess: async (_, id) => {
+            await queryClient.cancelQueries({ queryKey: campaignKeys.details(id) });
+            queryClient.removeQueries({ queryKey: campaignKeys.details(id), predicate: (query) => query.getObserversCount() === 0 });
+            invalidatePublicConfig(queryClient);
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: campaignKeys.all, predicate: (query) => !isDetailOf(query.queryKey, id) }),
+                queryClient.invalidateQueries({ queryKey: discountCampaignKeys.live() }),
+            ]);
         },
     });
 }
@@ -124,7 +135,6 @@ export function useMoveCampaignLink() {
     });
 }
 
-// The old page's copy in useAdminCampaigns goes in KAN-192.
 export function useDeleteCampaignLink() {
     const refresh = useRefreshCampaigns();
     return useMutation({

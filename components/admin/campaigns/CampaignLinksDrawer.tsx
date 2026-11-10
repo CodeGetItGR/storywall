@@ -47,7 +47,7 @@ export function CampaignLinksDrawer({
                             <div />
                             {/* Actions */}
                             {l.mode === 'list' ? (
-                                <button type="button" onClick={l.showAdd} className={CAMPAIGN_PRIMARY_BUTTON}>
+                                <button type="button" onClick={l.showAdd} disabled={l.addLocked} className={CAMPAIGN_PRIMARY_BUTTON}>
                                     <Plus aria-hidden="true" className="h-4 w-4" />
                                     {t('campaigns.linksDrawer.add')}
                                 </button>

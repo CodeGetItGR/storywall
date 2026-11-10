@@ -10,6 +10,7 @@ const LAUNCH: CampaignDiscountViewDto = {
     label: 'Launch offer',
     startsAt: '2026-06-01T07:00:00Z',
     endsAt: '2026-06-30T20:59:00Z',
+    stoppedAt: null,
     status: 'LIVE',
 };
 
