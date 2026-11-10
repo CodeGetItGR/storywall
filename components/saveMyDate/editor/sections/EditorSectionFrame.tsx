@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
 import { SectionAddButton } from '@/components/saveMyDate/editor/sections/SectionAddButton';
+import { SectionSettingsButton } from '@/components/saveMyDate/editor/sections/SectionSettingsButton';
 import { SectionToolbar } from '@/components/saveMyDate/editor/sections/SectionToolbar';
 import { type SectionFrameActions, useSectionFrameHandlers } from '@/hooks/useSectionFrameHandlers';
 import { useSectionSortable } from '@/hooks/useSectionSortable';
@@ -15,18 +16,24 @@ type EditorSectionFrameProps = {
     // The section's name as the add list calls it.
     name: string;
     isActive: boolean;
+    // Whether the section has a settings sheet for this editor.
+    hasSettings?: boolean;
     actions: SectionFrameActions;
     children: ReactNode;
 };
 
 // One section on the editor's canvas with its tools. They show on hover, on
 // focus and on the section last tapped, as in the old editor.
-export function EditorSectionFrame({ controls, name, isActive, actions, children }: EditorSectionFrameProps) {
+export function EditorSectionFrame({ controls, name, isActive, hasSettings = false, actions, children }: EditorSectionFrameProps) {
     const t = useTranslations('InvitationEditor.sections');
     const { section, canMoveUp, canMoveDown, canAddBefore, canAddAfter } = controls;
     const { setNodeRef, style, isDragging, drag } = useSectionSortable(section.id, name, section.locked);
-    const { onActivate, onToggleVisible, onMoveUp, onMoveDown, onDelete, onAddBefore, onAddAfter } = useSectionFrameHandlers(section.id, actions);
+    const { onActivate, onToggleVisible, onMoveUp, onMoveDown, onDelete, onAddBefore, onAddAfter, onOpenSettings } = useSectionFrameHandlers(
+        section.id,
+        actions,
+    );
     const showsTools = isActive || isDragging;
+    const toolsVisibility = showsTools ? 'visible' : 'invisible group-focus-within/section:visible group-hover/section:visible';
 
     return (
         <div
@@ -67,8 +74,16 @@ export function EditorSectionFrame({ controls, name, isActive, actions, children
                     onMoveUp={onMoveUp}
                     onMoveDown={onMoveDown}
                     onDelete={onDelete}
-                    className={showsTools ? 'visible' : 'invisible group-focus-within/section:visible group-hover/section:visible'}
+                    onOpenSettings={hasSettings ? onOpenSettings : undefined}
+                    className={toolsVisibility}
                 />
+            )}
+
+            {/* Settings of a locked section (the footer, for admins) */}
+            {section.locked && hasSettings && (
+                <div className={cn('pointer-events-none absolute top-2 right-2.5 z-40 transition-none', toolsVisibility)}>
+                    <SectionSettingsButton onClick={onOpenSettings} className="pointer-events-auto" />
+                </div>
             )}
 
             {/* Add above */}
