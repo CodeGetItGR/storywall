@@ -80,9 +80,12 @@ describe('pickPublicMessages', () => {
             'LanguageSwitcher',
             'Modules',
             'NewsletterForm',
+            'PageErrorState',
             'PartnerCard',
+            'SaveMyDateStorefront',
             'SiteNotice',
         ]);
+        expect(Object.keys(picked.PageErrorState as object)).toEqual(['retry']);
         expect(Object.keys(picked.LandingPage as object).sort()).toEqual([
             'featureDetails',
             'features',

@@ -8,6 +8,14 @@ export type InvitationThemePublicDto = {
     slug: string;
     name: string;
     eventType: string;
+    // The theme page's own search title and description, written in Greek in the admin; null when left empty.
+    seoTitle?: string | null;
+    seoDescription?: string | null;
+    // The share image the admin picked; null without one.
+    ogImageUrl?: string | null;
+    cardColor?: string | null;
+    // The theme page's photos, in order. The URL is null when the image is missing; the alt, when left empty.
+    productPhotos?: { url: string | null; alt: string | null }[];
     design: unknown;
     document: unknown;
     // Image id to URL for every image the design and document use. The URLs may expire.
