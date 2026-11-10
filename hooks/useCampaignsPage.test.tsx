@@ -3,9 +3,35 @@ import type { MouseEvent } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useCampaignsPage } from '@/hooks/useCampaignsPage';
+import { registerOverlayHistory } from '@/lib/overlayHistory';
 
 function at(hash: string) {
     window.history.replaceState(null, '', `/admin${hash}`);
+}
+
+// jsdom fires popstate asynchronously after a traversal, and a skip starts another; settle until no
+// further popstate arrives.
+async function settle() {
+    let pops = 0;
+    const onPop = () => (pops += 1);
+    window.addEventListener('popstate', onPop);
+    let seen = -1;
+    while (seen !== pops) {
+        seen = pops;
+        await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+    }
+    window.removeEventListener('popstate', onPop);
+}
+
+async function goBack() {
+    window.history.back();
+    await settle();
+}
+
+function linkClick(id: string) {
+    const link = document.createElement('a');
+    link.dataset.recordId = id;
+    return { currentTarget: link, preventDefault: vi.fn() } as unknown as MouseEvent<HTMLAnchorElement>;
 }
 
 describe('useCampaignsPage', () => {
@@ -91,6 +117,47 @@ describe('useCampaignsPage', () => {
 
         expect(result.current.drawers.drawer).toBeNull();
         expect(window.location.hash).toBe('#campaigns/c-new');
+    });
+
+    it('goes Back from a new campaign to the list it was made from, with no step in between', async () => {
+        at('#analytics');
+        window.history.pushState(null, '', '/admin#campaigns');
+        const { result } = renderHook(() => useCampaignsPage());
+
+        act(() => result.current.openNewCampaign());
+        // The drawer's own Back step, as AdminDrawer makes it.
+        const drawer = registerOverlayHistory({ id: 'new-drawer', onClose: vi.fn() });
+        act(() => result.current.openCampaign('c-new'));
+        drawer.remove();
+        expect(window.location.hash).toBe('#campaigns/c-new');
+
+        await goBack();
+        expect(window.location.hash).toBe('#campaigns');
+        await goBack();
+        expect(window.location.hash).toBe('#analytics');
+    });
+
+    it('leaves a deleted campaign with no Back step to it or to a second list', async () => {
+        at('#analytics');
+        window.history.pushState(null, '', '/admin#campaigns');
+        const { result } = renderHook(() => useCampaignsPage());
+        act(() => result.current.handleRecordLinkClick(linkClick('c-1')));
+        expect(window.location.hash).toBe('#campaigns/c-1');
+
+        // The edit drawer and its delete confirmation each add a Back step.
+        act(() => result.current.drawers.openEdit());
+        const drawer = registerOverlayHistory({ id: 'edit-drawer', onClose: vi.fn() });
+        const confirm = registerOverlayHistory({ id: 'confirm', onClose: vi.fn() });
+        act(() => result.current.drawers.handleDeleted());
+        confirm.remove();
+        drawer.remove();
+        await settle();
+
+        expect(window.location.hash).toBe('#campaigns');
+        expect(result.current.campaignId).toBeNull();
+        expect(result.current.drawers.drawer).toBeNull();
+        await goBack();
+        expect(window.location.hash).toBe('#analytics');
     });
 
     it('goes back to the list once a campaign is deleted', () => {

@@ -212,6 +212,23 @@ export function replacePageUrl(url: string) {
     window.history.replaceState(withoutNextRouterMarkers(currentState), '', url);
 }
 
+// How many open overlays sit on the current page, each one Back step above it.
+export function overlayEntryCount(): number {
+    return getOverlayStack(window.history.state).length;
+}
+
+// Notes a value on the current history entry, kept by the overlays opened on
+// top of it and read back with pageEntryMark.
+export function markPageEntry(key: string, value: string) {
+    const currentState = window.history.state && typeof window.history.state === 'object' ? window.history.state : {};
+    window.history.replaceState({ ...currentState, [key]: value }, '', window.location.href);
+}
+
+export function pageEntryMark(key: string): unknown {
+    const state: unknown = window.history.state;
+    return state && typeof state === 'object' ? (state as Record<string, unknown>)[key] : undefined;
+}
+
 // A same-page navigation (a hash route, or a search param like ?post=) that
 // should be its own Back step, made without a server render.
 // A closed overlay leaves its entry behind; while we are still on it at the

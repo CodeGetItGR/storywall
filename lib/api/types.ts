@@ -2774,8 +2774,8 @@ export type CampaignLinkLanguage = 'en' | 'el';
 // discount. Its status is worked out by Spring: from the discount when it has one, else from its dates.
 export type CampaignStatus = 'SCHEDULED' | 'LIVE' | 'ENDED' | 'ARCHIVED';
 
-// One period's numbers for a campaign, a link or every campaign, counted as on CampaignRowDto. Revenue
-// is what the period's sales paid; null for a MARKETING caller.
+// One period's numbers for a campaign, a link or every campaign. Revenue is what the period's sales
+// paid; null for a MARKETING caller.
 export interface CampaignCountsDto {
     visits: number;
     visitors: number;
@@ -2904,11 +2904,6 @@ export interface CampaignRequestDto {
     endsAt: string | null;
     discount: CampaignDiscountRequestDto | null;
     links: CampaignLinksRequestDto | null;
-}
-
-// PATCH /api/admin/campaign-links/{id}: moves a link to another campaign.
-export interface CampaignLinkUpdateDto {
-    campaignId: string;
 }
 
 // POST /api/public/campaign-visits. Spring always answers 204.

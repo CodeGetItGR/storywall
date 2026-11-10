@@ -28,8 +28,6 @@ export function useCampaignList(bounds: FunnelBounds, tab: CampaignTab) {
         data,
         rows,
         compared,
-        // The marketing role gets no revenue.
-        hasRevenue: data !== undefined && data.current.salesRevenueMinorByCurrency !== null,
         isLoading: query.isLoading,
         isFetching: query.isFetching,
         error: query.error,

@@ -9,7 +9,7 @@ import { useCampaignLinkShare } from '@/hooks/useCampaignLinkShare';
 
 // Copies a link's address from a row. `label` names the link for screen readers ("Copy link Instagram
 // Story EL"); the bubble on hover, focus or tap shows the action alone, and says it's copied after a
-// tap. Same size as before, so the old pages look the same.
+// tap.
 export function CampaignLinkCopyButton({ url, label }: { url: string; label: string }) {
     const t = useTranslations('AdminPage.campaigns.share');
     const { copied, handleCopyClick } = useCampaignLinkShare(url, label);
