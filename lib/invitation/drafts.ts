@@ -40,6 +40,8 @@ export const invitationDraftKeys = {
 export type EditableDraft = {
     id: string;
     revision: number;
+    // The event type the theme is for: it decides which sections the host may add.
+    eventType: string;
     document: InvitationDocument;
     theme: ThemeDesign;
     media: MediaResolver;
@@ -51,6 +53,7 @@ export function readEditableDraft(dto: InvitationDraftDto): EditableDraft {
     return {
         id: dto.id,
         revision: dto.revision,
+        eventType: dto.eventType,
         document: upgradeInvitationDocument(dto.document),
         theme: themeDesignSchema.parse(dto.design),
         media: (mediaId) => imageUrls[mediaId],

@@ -297,6 +297,8 @@ export const endpoints = {
         create: '/api/rsvps',
         byId: (id: string) => `/api/rsvps/${id}`,
         sessionResponses: (rsvpId: string) => `/api/rsvps/${rsvpId}/session-responses`,
+        // DELETE: the host keeps a reply marked as a possible duplicate.
+        duplicateMark: (id: string) => `/api/rsvps/${id}/duplicate-mark`,
     },
 
     rsvpSessionResponses: {
@@ -483,6 +485,11 @@ export const endpoints = {
             list: '/api/admin/theme-presets',
             byId: (id: string) => `/api/admin/theme-presets/${id}`,
             illustration: (id: string) => `/api/admin/theme-presets/${id}/illustration`,
+        },
+        invitationThemes: {
+            list: '/api/admin/invitation-themes',
+            byId: (id: string) => `/api/admin/invitation-themes/${id}`,
+            duplicate: (id: string) => `/api/admin/invitation-themes/${id}/duplicate`,
         },
         qrCardTemplates: {
             list: '/api/admin/qr-card-templates',

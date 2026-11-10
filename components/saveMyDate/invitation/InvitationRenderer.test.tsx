@@ -3,6 +3,7 @@ import { join } from 'node:path';
 
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
+import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { stubIntersectionObserver } from '@/components/saveMyDate/invitation/effects/__fixtures__/fakeIntersectionObserver';
@@ -172,7 +173,7 @@ describe('RSVP through the whole invitation', () => {
     }
 
     it('sends the reply and thanks the guest', async () => {
-        const sendRsvp = vi.fn<RsvpSender>().mockResolvedValue(undefined);
+        const sendRsvp = vi.fn<RsvpSender>().mockResolvedValue({ ok: true });
         const { container } = renderInvitation(SAMPLE_DOCUMENT, { sendRsvp });
         const form = rsvpForm(container);
 
@@ -185,18 +186,19 @@ describe('RSVP through the whole invitation', () => {
         expect(sendRsvp).toHaveBeenCalledTimes(1);
         expect(sendRsvp).toHaveBeenCalledWith({
             guestName: 'Μαρία',
+            attendanceStatus: 'ATTENDING',
             phone: '6900000000',
             email: 'maria@example.com',
-            attending: true,
-            adultsCount: 3,
-            childrenCount: 0,
-            note: 'Χωρίς γλουτένη',
+            adultCount: 3,
+            childCount: 0,
+            notes: 'Χωρίς γλουτένη',
+            website: '',
         });
         expect(form.queryByRole('button', { name: labels.rsvpSubmit })).toBeNull();
     });
 
     it('sends no headcount when the guest declines', async () => {
-        const sendRsvp = vi.fn<RsvpSender>().mockResolvedValue(undefined);
+        const sendRsvp = vi.fn<RsvpSender>().mockResolvedValue({ ok: true });
         const { container } = renderInvitation(SAMPLE_DOCUMENT, { sendRsvp });
         const form = rsvpForm(container);
 
@@ -205,7 +207,7 @@ describe('RSVP through the whole invitation', () => {
         fireEvent.click(form.getByRole('button', { name: labels.rsvpSubmit }));
 
         await form.findByText(labels.rsvpThanks);
-        await waitFor(() => expect(sendRsvp).toHaveBeenCalledWith(expect.objectContaining({ attending: false, adultsCount: 0, childrenCount: 0 })));
+        await waitFor(() => expect(sendRsvp).toHaveBeenCalledWith(expect.objectContaining({ attendanceStatus: 'DECLINED', adultCount: 0, childCount: 0 })));
     });
 });
 
@@ -220,5 +222,36 @@ describe('Section coverage', () => {
         const path = join(process.cwd(), 'components/saveMyDate/invitation', file);
         expect(existsSync(path), `${file} does not exist`).toBe(true);
         expect(readFileSync(path, 'utf8')).toContain(`storySection('${type}'`);
+    });
+});
+
+// Stands in for the editor's tools around a section.
+function wrapForTest(section: InvitationSection, index: number, content: ReactNode) {
+    return (
+        <div data-wrapped={section.id} data-index={index}>
+            {content}
+        </div>
+    );
+}
+
+describe('InvitationRenderer in the editor', () => {
+    it('draws hidden sections when asked, and wraps each one', () => {
+        const sections = SAMPLE_DOCUMENT.sections.map((section, index) => (index === 1 ? { ...section, visible: false } : section));
+        const { container } = render(
+            <NextIntlClientProvider locale="el" messages={el} timeZone="Europe/Athens">
+                <InvitationRenderer
+                    document={{ ...SAMPLE_DOCUMENT, sections }}
+                    theme={SAMPLE_THEME}
+                    media={media}
+                    showHidden
+                    wrapSection={wrapForTest}
+                />
+            </NextIntlClientProvider>,
+        );
+
+        expect(renderedIds(container)).toEqual(sections.map((section) => section.id));
+        const wrapped = Array.from(container.querySelectorAll('[data-wrapped]'));
+        expect(wrapped.map((element) => element.getAttribute('data-wrapped'))).toEqual(sections.map((section) => section.id));
+        expect(wrapped.map((element) => Number(element.getAttribute('data-index')))).toEqual(sections.map((_, index) => index));
     });
 });
