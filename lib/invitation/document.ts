@@ -6,6 +6,9 @@ import { type ThemeDesign,themeDesignSchema } from '@/lib/invitation/theme';
 
 export const INVITATION_SCHEMA_VERSION = 1;
 
+// The most sections one invitation may have.
+export const MAX_SECTIONS = 150;
+
 export const invitationDocumentSchema = z
     .object({
         schemaVersion: z.literal(INVITATION_SCHEMA_VERSION),
@@ -14,7 +17,7 @@ export const invitationDocumentSchema = z
         overrides: z
             .object({ typographyPresetId: idSchema.optional(), textColor: colorSchema.optional() })
             .strict(),
-        sections: z.array(sectionSchema).max(150),
+        sections: z.array(sectionSchema).max(MAX_SECTIONS),
     })
     .strict()
     .superRefine((document, ctx) => {
