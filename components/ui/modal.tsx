@@ -2,7 +2,7 @@
 
 import { Dialog } from '@base-ui/react/dialog';
 import { X } from 'lucide-react';
-import { forwardRef, type ReactNode, useCallback } from 'react';
+import { type ComponentProps, forwardRef, type ReactNode, useCallback } from 'react';
 
 import { usePortalScopeClass } from '@/components/ui/PortalScope';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
@@ -15,6 +15,9 @@ const sizeMap = {
 } as const;
 
 type ModalSize = keyof typeof sizeMap | 'full';
+
+// Base UI's finalFocus: an element to focus, true for the default, false for nothing.
+export type ModalFinalFocus = ComponentProps<typeof Dialog.Popup>['finalFocus'];
 
 interface ModalProps {
     open: boolean;
@@ -32,6 +35,8 @@ interface ModalProps {
     closeDisabled?: boolean;
     /** 'overStory' lifts the dialog above the full-screen story viewer (z-60). */
     layer?: 'default' | 'overStory';
+    /** Where focus goes once the dialog closes. Defaults to the element that opened it. */
+    finalFocus?: ModalFinalFocus;
 }
 
 export function Modal({
@@ -48,6 +53,7 @@ export function Modal({
     showCloseButton = true,
     closeDisabled = false,
     layer = 'default',
+    finalFocus,
 }: ModalProps) {
     const isFull = size === 'full';
     const isSheet = variant === 'sheet';
@@ -86,6 +92,7 @@ export function Modal({
                 {/* Surface */}
                 <Dialog.Popup
                     aria-label={ariaLabel}
+                    finalFocus={finalFocus}
                     className={cn(
                         scopeClass,
                         'motion-surface fixed flex flex-col bg-background outline-none',

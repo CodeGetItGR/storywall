@@ -658,3 +658,15 @@ export const API_ERROR_MESSAGE_KEYS = {
 export function getApiErrorMessageKey(code: number | string | undefined): ApiErrorMessageKey | undefined {
     return API_ERROR_MESSAGE_KEYS[code as KnownApiErrorCode];
 }
+
+export type RateLimitedMessage =
+    | { key: 'rateLimited'; values?: undefined }
+    | { key: 'rateLimitedWithWait'; values: { seconds: number } }
+    | { key: 'rateLimitedWithWaitMinutes'; values: { minutes: number } };
+
+// The 429 copy for the wait the backend asked for. An hourly budget can ask
+// for most of an hour, which reads badly in seconds.
+export function rateLimitedMessage(seconds: number | undefined): RateLimitedMessage {
+    if (!seconds) return { key: 'rateLimited' };
+    return seconds > 90 ? { key: 'rateLimitedWithWaitMinutes', values: { minutes: Math.ceil(seconds / 60) } } : { key: 'rateLimitedWithWait', values: { seconds } };
+}

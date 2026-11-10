@@ -14,10 +14,12 @@ import {
 } from '@/lib/auth/authCookies';
 import { AUTH_RETURN_PATH_PARAM } from '@/lib/auth/returnPath';
 import { clientIpFrom, springAuth, SpringAuthError } from '@/lib/auth/springAuth';
+import { inviteHostRoute, isInviteHost, mainSiteUrl } from '@/lib/invitation/inviteHost';
 import { type Occasion, occasionPageForPath, occasionPath } from '@/lib/occasions/occasions';
 import { qrWeddingMovedPath, qrWeddingRedirectPath } from '@/lib/qrWeddingPage';
 import { routes } from '@/lib/routes';
 import { showsSaveMyDate } from '@/lib/saveMyDateRelease';
+import { SITE_URL } from '@/lib/seo';
 import { isSharedLinkPath, readShareLocale, SHARE_LOCALE_PARAM } from '@/lib/shareLinks';
 import { takeVisitSourceParam, VISIT_SOURCE_PARAM } from '@/lib/signupSource';
 
@@ -144,7 +146,28 @@ function sharedLinkLocale(request: NextRequest): Locale | null {
     return readShareLocale(request.nextUrl.searchParams.get(SHARE_LOCALE_PARAM));
 }
 
+// invite.storywall.gr serves published invitations and the files they load, nothing else. Session
+// cookies are host-only, so none reach it, and nothing here reads one.
+function inviteHostResponse(request: NextRequest, host: string): NextResponse {
+    const route = inviteHostRoute(request.nextUrl.pathname);
+    if (route.kind === 'file') return NextResponse.next();
+    if (route.kind === 'main-site') {
+        const visited = new URL(`${request.nextUrl.pathname}${request.nextUrl.search}`, `${request.nextUrl.protocol}//${host}`);
+        return NextResponse.redirect(mainSiteUrl(visited, SITE_URL));
+    }
+
+    const url = request.nextUrl.clone();
+    url.pathname = route.path;
+    const response = NextResponse.rewrite(url);
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    return response;
+}
+
 export async function proxy(request: NextRequest) {
+    // The Host header names the domain the visitor typed; behind `next start` nextUrl only has the bind address.
+    const host = request.headers.get('host') ?? request.nextUrl.host;
+    if (isInviteHost(host)) return inviteHostResponse(request, host);
+
     const { pathname } = request.nextUrl;
     if (pathname === '/') {
         const redirect = preferredLandingRedirect(request);
@@ -224,6 +247,7 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-    // /monitoring is Sentry's tunnel (next.config.mjs).
-    matcher: ['/((?!_next/static|_next/image|favicon.ico|api|monitoring).*)'],
+    // /monitoring is Sentry's tunnel (next.config.mjs). `api` and `monitoring` skip whole segments only,
+    // so an invitation link such as /apiraki-and-eleni still reaches the proxy.
+    matcher: ['/((?!_next/static|_next/image|favicon.ico|api(?:/|$)|monitoring(?:/|$)).*)'],
 };

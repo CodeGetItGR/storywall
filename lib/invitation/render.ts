@@ -7,6 +7,7 @@ import { INVITATION_LABELS, type InvitationLabels, invitationLanguage } from '@/
 import type { ImageRef, TextStyle } from '@/lib/invitation/primitives';
 import type { RsvpSender } from '@/lib/invitation/rsvp';
 import type { InvitationSection } from '@/lib/invitation/sections';
+import type { TextRenderer } from '@/lib/invitation/textEditing';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import { PHOTO_SHAPES } from '@/lib/invitation/theme';
 
@@ -38,6 +39,8 @@ export type RenderContext = {
     // Sends an RSVP reply. Without one (the preview) the form shows its
     // success state and nothing is saved.
     sendRsvp?: RsvpSender;
+    // The editor draws every text so it can be typed in; guests get plain text.
+    renderText?: TextRenderer;
 };
 
 const DEFAULT_TEXT_COLOR = '#2f2b2d';

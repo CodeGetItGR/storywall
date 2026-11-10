@@ -53,6 +53,31 @@ function saveStatus() {
     return within(screen.getByRole('banner', { hidden: true })).getByRole('status', { hidden: true });
 }
 
+// A section on the canvas, by the name the add list gives it.
+function section(name: string) {
+    return screen.getByRole('group', { name });
+}
+
+// The ids of the sections on the canvas, top to bottom.
+function sectionOrder() {
+    return Array.from(document.querySelectorAll('[data-editor-section]')).map((element) => element.getAttribute('data-editor-section'));
+}
+
+// A section's "+" buttons: above it (the first section only), then below it.
+function addButtons(name: string) {
+    return within(section(name)).getAllByRole('button', { name: 'Add section' });
+}
+
+function frameOf(id: string) {
+    return document.querySelector<HTMLElement>(`[data-editor-section="${id}"]`)!;
+}
+
+// Opens a section's menu and picks one of its items.
+async function pickFromMenu(name: string, item: string) {
+    fireEvent.click(within(section(name)).getByRole('button', { name: 'Section options' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: item }));
+}
+
 function closeTab() {
     const event = new Event('beforeunload', { cancelable: true });
     window.dispatchEvent(event);
@@ -155,6 +180,115 @@ describe('Invitation editor page', () => {
         expect(dialog).toHaveTextContent("Your changes aren't saved.");
         expect(router.back).toHaveBeenCalledOnce();
         expect(screen.getByText('Not saved')).toBeInTheDocument();
+    });
+
+    it('hides a section from guests, and undoes it', async () => {
+        await openEditor();
+        fireEvent.click(within(section('Dress code')).getByRole('button', { name: 'Hide section' }));
+
+        expect(within(section('Dress code')).getByText('Hidden')).toBeInTheDocument();
+        expect(saveStatus()).toHaveTextContent('Unsaved changes');
+
+        fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+        expect(within(section('Dress code')).queryByText('Hidden')).not.toBeInTheDocument();
+        expect(within(section('Dress code')).getByRole('button', { name: 'Hide section' })).toBeInTheDocument();
+    });
+
+    it('moves a section with its menu', async () => {
+        await openEditor();
+        const before = sectionOrder();
+        expect(before.indexOf('s-dressCode')).toBe(before.indexOf('s-faq') + 1);
+
+        await pickFromMenu('Dress code', 'Move up');
+
+        const after = sectionOrder();
+        expect(after.indexOf('s-dressCode')).toBe(after.indexOf('s-faq') - 1);
+        fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+        expect(sectionOrder()).toEqual(before);
+    });
+
+    it('deletes a section only after a yes', async () => {
+        await openEditor();
+        await pickFromMenu('Dress code', 'Delete');
+
+        const dialog = await screen.findByRole('dialog');
+        expect(dialog).toHaveTextContent('Delete this section?');
+        expect(dialog).toHaveTextContent('The «Dress code» section will be removed from the invitation.');
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
+
+        expect(screen.queryByRole('group', { name: 'Dress code' })).not.toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+        expect(section('Dress code')).toBeInTheDocument();
+    });
+
+    it('moves focus to the next section after a delete', async () => {
+        await openEditor();
+        const order = sectionOrder();
+        const next = order[order.indexOf('s-dressCode') + 1]!;
+        await pickFromMenu('Dress code', 'Delete');
+        fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Delete' }));
+
+        await waitFor(() => expect(document.activeElement).toBe(frameOf(next)));
+    });
+
+    it('adds above the first section', async () => {
+        await openEditor();
+        const [above] = addButtons('Top section');
+        fireEvent.click(above);
+        fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Blank section' }));
+
+        const order = sectionOrder();
+        expect(order[1]).toBe('s-top');
+        expect(frameOf(order[0]!)).toHaveAttribute('data-active', 'true');
+    });
+
+    it('closes the add list when an undo takes its section away', async () => {
+        await openEditor();
+        const before = sectionOrder();
+        fireEvent.click(addButtons('Top section').at(-1)!);
+        fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Blank section' }));
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+        const added = sectionOrder()[1]!;
+
+        fireEvent.click(within(frameOf(added)).getByRole('button', { name: 'Add section' }));
+        await screen.findByRole('dialog');
+        fireEvent.keyDown(window, { key: 'z', ctrlKey: true });
+
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+        expect(sectionOrder()).toEqual(before);
+    });
+
+    it('adds a section below the "+" and saves it', async () => {
+        await openEditor();
+        const count = sectionOrder().length;
+        fireEvent.click(addButtons('Top section').at(-1)!);
+
+        // Every section this wedding may have once is on the page already.
+        const sheet = await screen.findByRole('dialog');
+        const options = within(sheet)
+            .getAllByRole('button')
+            .map((button) => button.textContent);
+        expect(options).toContain('Blank section');
+        expect(options).toContain('Photo');
+        expect(options).not.toContain('Dress code');
+        expect(options).not.toContain('Framed photo');
+        expect(options).not.toContain('Footer');
+
+        fireEvent.click(within(sheet).getByRole('button', { name: 'Photo' }));
+        expect(screen.getAllByRole('group', { name: 'Photo' })).toHaveLength(2);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
+        await waitFor(() => expect(backend.saves).toHaveLength(1));
+        const saved = backend.saves[0].document.sections;
+        expect(saved[0].id).toBe('s-top');
+        expect(saved[1]).toMatchObject({ type: 'photo', visible: true, locked: false });
+        expect(saved).toHaveLength(count + 1);
+    });
+
+    it('gives the footer no tools', async () => {
+        await openEditor();
+        expect(within(section('Footer')).queryAllByRole('button', { name: /section|move/i })).toHaveLength(0);
+        expect(sectionOrder().at(-1)).toBe('s-footer');
     });
 
     it('shows the error when the draft cannot be loaded', async () => {
