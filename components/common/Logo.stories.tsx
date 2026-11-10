@@ -10,15 +10,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Row: Story = {
-    decorators: [
-        (Story) => (
-            <div style={{ background: '#fde68a' }}>
-                <Story />
-            </div>
-        ),
-    ],
-};
+export const Row: Story = {};
 
 export const Column: Story = {
     args: { direction: 'col' },
