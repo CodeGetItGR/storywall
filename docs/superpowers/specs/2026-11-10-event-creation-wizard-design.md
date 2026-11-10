@@ -76,7 +76,7 @@ Out of scope: the landing and occasion page copy, the checkout provider's own pa
 - Opening the pop-up adds a history entry. Each step adds one. Back on a phone goes back one step, and from the type step closes the pop-up.
 - A page loaded with `create=1` already in the URL (a shared link) has no entry to go back to. Closing it replaces the URL without the wizard params instead of going back.
 - `useCreateEventRun` keeps its job (a run that went to checkout sends Back to the draft), but reads and writes the run on the current URL rather than on `/events/new` only.
-- The pop-up registers with `registerOverlayHistory` so it closes in the right order with other overlays (the account drawer, the compare sheet).
+- The pop-up does not use `registerOverlayHistory`: a Back onto an entry that still carries an overlay id counts there as a stale entry and steps back once more, which would close the wizard on every step Back. Its open state is the URL (`create=1`) instead, and each wizard entry stores how deep into the wizard it is (`lib/createEventWizardHistory.ts`). Closing goes back that many entries in one step. The modal is opened with `dismissOnBack={false}`.
 
 ### 4.3 Saved answers
 
@@ -96,7 +96,7 @@ The answers have to survive a reload, the Google sign-in, the email code step an
 ### 4.4 Access for guests
 
 - **Proxy (`proxy.ts`):** with the launch flag on, `/events/new` stops being a protected path. Every other `/events/...` route stays protected.
-- **`CreateEventBoundary`:** with the flag on, drop the redirect to sign-in and the "unverified → home" redirect. Keep the admin redirect.
+- **`/events/new` page:** with the flag on, it renders the new `CreateEventWizardPage`, whose only redirect is the admin one. `CreateEventBoundary` stays as it is for the flag-off flow (sign-in and "unverified → home" redirects included) and goes in the cleanup PR.
 - **Plans:** guests need the plan list. Make `GET /api/plan-tiers` public in guestwall-be (section 7). `usePlanTiersForEventType` then runs signed out too, and the `/events/new` server prefetch fetches plans without a token.
 - **Theme presets:** `GET /api/theme-presets` is already public.
 - **Event creation and checkout** still need a signed-in, verified account. The wizard creates the draft only on review, after the account step.
@@ -112,15 +112,16 @@ The public pages ship only the translation namespaces their client islands use (
 
 ### 4.6 Buttons that open the wizard
 
-All of them use one client component, `CreateEventLink`.
+One click listener in the pop-up host (`CreateEventDialogHost`, mounted in the public and app layouts) handles all of them. Decided 2026-11-10, in place of a `CreateEventLink` component.
 
-- It renders a real `<a href="/events/new?...">`, so the link works without JavaScript, in a new tab, and for crawlers.
-- A plain click opens the pop-up in place with `pushPageEntry` and the same params.
-- It is hidden for admins.
+- Every create button stays a real `<a href="/events/new?...">`, so the link works without JavaScript, in a new tab, and for crawlers.
+- A plain left click on any same-origin link to `/events/new` opens the pop-up in place, over the current page, with that link's params. Clicks with a modifier key, `target="_blank"` and downloads follow the link as usual.
+- Hovering, focusing or touching such a link starts loading the pop-up's code.
+- For admins the listener is off: existing links keep sending them to the admin console. The new buttons (header, rail, phones, home) are hidden for admins.
 
 | Place | What changes |
 |---|---|
-| Existing CTAs | Every `routes.events.new(...)` link becomes a `CreateEventLink`: landing hero and final CTA, pricing cards (`LandingPricingCta`, opening on details with the plan picked, as today), `LandingStoryThemes`, occasion pages (`occasionLinks.ts`), the QR wedding page, `EventsQuickRow` and `HomeEmptyState`. No new text on these pages. |
+| Existing CTAs | No code change: the listener catches the existing `routes.events.new(...)` links on the landing hero and final CTA, pricing cards (`LandingPricingCta`, opening on details with the plan picked, as today), `LandingStoryThemes`, occasion pages (`occasionLinks.ts`), the QR wedding page, `EventsQuickRow` and `HomeEmptyState`. No new text on these pages. |
 | Site header | `LandingHeader` gets a "Create an event" button (reused wording). The desktop app rail (`DesktopNavRail`) gets the same button above the account link. |
 | Floating button, phones | Public pages only, below 761px: a pinned pill at the bottom with the safe-area inset. It appears once the hero's own button has scrolled out of view, and hides while the final CTA is in view, while the mobile menu is open, and while the wizard is open. It is never shown inside an event. |
 | Signed-in home | A full-width primary button at the top of the home screen. It stays enabled for unverified accounts, which verify in the wizard. The quick-row tile and empty state open the pop-up too. |
@@ -287,7 +288,7 @@ One backend PR, released and deployed to staging before the frontend.
 
 - `/events/new` becomes reachable signed out. It is a utility page: it must export `robots: NO_INDEX`. It stays under `/events/` in `PRIVATE_PATHS` and out of the sitemap.
 - The pop-up adds no route. `create=1` and the other params are query strings on pages whose canonical has no query, so canonicals, hreflang and sitemaps don't change.
-- `CreateEventLink` keeps a crawlable `href`.
+- Every create button keeps a crawlable `href` (the pop-up opens from a click listener, not from the markup).
 - No landing, occasion or for-business copy or metadata changes. The header and floating buttons reuse the existing "Create an event" wording.
 - The public page JS and LCP must not regress (section 4.5). Measure the landing page's LCP and JS size before and after on a phone profile.
 
@@ -319,7 +320,7 @@ One backend PR, released and deployed to staging before the frontend.
 
 - **Launch flag:** `CREATE_WIZARD_LAUNCHED` in `lib/unreleasedPages.ts`, with a `showsCreateWizard()` helper built like `showsUnreleasedPages()`.
   - Off: staging and previews show the new wizard; production keeps today's flow. That includes today's sign-in redirect, the protected `/events/new`, today's links, and no header, floating or home buttons.
-  - The flag is read by the proxy, `CreateEventBoundary`, `CreateEventLink`, the button placements and the layouts that mount `CreateEventDialog`.
+  - The flag is read on the server by the proxy, the `/events/new` page and the two root layouts. `showsCreateWizard()` reads `VERCEL_ENV`, which the browser never sees, so the layouts pass it to client code through `CreateWizardFlagProvider` (with the "Create an event" label, for public pages that don't ship the `CreateEventPage` messages). The pop-up host and the button placements read it from there.
   - On: one small PR into `staging` flips it, and the next release takes it to production.
 - **Order:**
   1. The backend PR goes first. Its changes are additive, so it can reach production any time before the flag flips.
@@ -331,7 +332,7 @@ One backend PR, released and deployed to staging before the frontend.
 
 1. guestwall-be: public plan list, code endpoints, register option, email change.
 2. Frontend foundations: the launch flag, saved answers, URL and history helpers, the `CreateEventWizard` body, the page shell on the new body (flag on), and the proxy and boundary changes (flag on). With the flag off, everything behaves as today.
-3. Pop-up shell, lazy loading on public pages, `CreateEventLink`, and the four button placements.
+3. Pop-up shell, lazy loading on public pages, the link click listener, and the four button placements.
 4. New type step and the features teaser.
 5. New plan step and the compare sheet.
 6. Details live preview and the theme step wording.
