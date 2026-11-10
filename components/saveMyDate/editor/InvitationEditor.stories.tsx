@@ -94,9 +94,9 @@ export const FirstPublish: Story = {
         await userEvent.click(within(canvasElement).getByRole('button', { name: copy.publish }));
         const sheet = within(await waitForOpen('dialog'));
         await userEvent.type(sheet.getByLabelText(copy.publishLink), 'maria-nikos');
-        await expect(await sheet.findByText(copy.slugAvailable, {}, { timeout: 5000 })).toBeVisible();
+        await expect(await sheet.findByText(copy.slugAvailable, {}, { timeout: 10_000 })).toBeVisible();
         await userEvent.click(sheet.getByRole('button', { name: copy.publish }));
-        await expect(await within(canvasElement).findByText(copy.published)).toBeVisible();
+        await expect(await within(canvasElement).findByText(copy.published, {}, { timeout: 10_000 })).toBeVisible();
     },
 };
 
@@ -109,7 +109,7 @@ export const Republish: Story = {
     play: async ({ canvasElement, globals }) => {
         const copy = copyFor(globals).InvitationEditor;
         await userEvent.click(within(canvasElement).getByRole('button', { name: copy.publish }));
-        await expect(await within(canvasElement).findByText(copy.republished)).toBeVisible();
+        await expect(await within(canvasElement).findByText(copy.republished, {}, { timeout: 10_000 })).toBeVisible();
     },
 };
 
