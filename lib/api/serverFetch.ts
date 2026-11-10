@@ -106,6 +106,22 @@ export async function serverPublicCachedGet<T>(path: string, revalidateSeconds: 
     return res.json() as Promise<T>;
 }
 
+// Like serverPublicCachedGet, but a 404 resolves to null, for public pages a link may name that don't exist.
+export async function serverPublicCachedGetOrNull<T>(path: string, revalidateSeconds: number): Promise<T | null> {
+    const locale = await getServerLocale();
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+        headers: { 'Accept-Language': locale },
+        next: { revalidate: revalidateSeconds },
+    });
+
+    if (res.status === 404) return null;
+    if (!res.ok) {
+        throw new Error(`Server fetch failed for ${path} with status ${res.status}`);
+    }
+
+    return res.json() as Promise<T>;
+}
+
 // The public configuration controls landing-page feature gates and pricing.
 // It is safe to share between visitors, but is deliberately separate from the
 // generic public helper so future public endpoints do not become cached by
