@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { getMessages, getTranslations } from 'next-intl/server';
 import { type ReactNode } from 'react';
 
+import { CreateEventDialogHost } from '@/components/event/create/wizard/CreateEventDialogHost';
 import { LinkClickTracker } from '@/components/landing/LinkClickTracker';
 import { RootDocument } from '@/components/layout/RootDocument';
 import { SiteNoticeStickyBar } from '@/components/siteNotices/SiteNoticeStickyBar';
@@ -51,6 +52,8 @@ export default async function LandingLayout({ children }: Readonly<{ children: R
                         <SiteNoticeStickyBar initialDismissed={dismissed} />
                         {children}
                     </HydrationBoundary>
+                    {/* Create wizard */}
+                    <CreateEventDialogHost />
                 </CreateWizardFlagProvider>
                 <LinkClickTracker />
             </PublicProviders>
