@@ -3696,6 +3696,15 @@ export interface RsvpResponseDto {
     notes: string | null;
     submittedAt: string;
     updatedAt: string;
+    // KAN-50 (guestwall-be): optional until that backend release is on every environment.
+    // The member's name, for every RSVP: the only place a reply-only guest's name appears.
+    guestName?: string | null;
+    // A reply from a published invitation, by a guest with no account and no place in the member list.
+    replyOnly?: boolean;
+    // Typed on the invitation's form; null for replies made in the app.
+    email?: string | null;
+    // The reply's phone matched another RSVP on the event (last ten digits). The host keeps or removes it.
+    possibleDuplicate?: boolean;
 }
 
 export interface RsvpPatchDto {

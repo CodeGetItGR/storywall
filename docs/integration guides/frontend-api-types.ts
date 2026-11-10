@@ -29,7 +29,7 @@ interface ApiError {
   status: number;
   detail: string;
   instance: string;  // request path that failed
-  errorCode: number | string; // number for GlobalExceptionHandler errors; string ("AUTHENTICATION_REQUIRED" | "ACCESS_DENIED") for the two auth-entrypoint special cases
+  errorCode: number | string; // number for GlobalExceptionHandler errors and every backend 403 (4001 FORBIDDEN, since 2026-10-06); string "AUTHENTICATION_REQUIRED" for the 401 auth-entrypoint special case. "ACCESS_DENIED" now only comes from the Next auth routes' CSRF check
   errorKey: string;
   errors?: Record<string, string>; // only present on 400 validation failures, first message per field
   errorRef?: string | null; // only on 500 / 9001 INTERNAL_ERROR (added 2026-09-27): 12 lowercase hex chars naming the
@@ -77,7 +77,7 @@ type EventStatus = "DRAFT" | "ACTIVE"; // DRAFT until the chosen plan is paid fo
 type AttendanceStatus = "ATTENDING" | "DECLINED" | "MAYBE";
 type RsvpReportType = 'STATISTICS' | 'FULL_LIST' | 'ATTENDING_ONLY' | 'WITH_CHILDREN';
 
-type PostType = "TEXT" | "MEDIA" | "ANNOUNCEMENT" | "PLAYLIST"; // server-enforced via @Pattern + DB CHECK
+type PostType = "TEXT" | "MEDIA" | "ANNOUNCEMENT" | "PLAYLIST" | "SNEAK_PEEK"; // DB CHECK has all 5. POST /api/posts accepts the first 4 only (@Pattern): SNEAK_PEEK is read-only here, made through /vendors/me/sneak-peek (2026-10-29)
 
 // ---------------------------------------------------------------------------
 // Auth (/api/auth/*) — all public, no token required
@@ -237,6 +237,10 @@ interface UserResponseDto {
   termsAcceptanceRequired: boolean | null;
   /** The Terms version to show and send back. Null wherever the field above is. */
   currentTermsVersion: string | null;
+  /** /api/me only (null elsewhere): the account opens a partner page (verified email matching an active partner). */
+  partner: boolean | null;
+  /** /api/me only (null elsewhere), 2026-11-01: the account has a vendor profile or is or was a vendor in an event not deleted (removed by the host counts); opens the business page. */
+  vendor: boolean | null;
 }
 // GET /api/users now returns Page<UserResponseDto>, not UserResponseDto[].
 // Default 50/page, max 100 (?page=&size=), sorted createdAt desc then id desc (newest first).
@@ -339,6 +343,10 @@ type NotificationType =
   | 'STORAGE_TRIM_WARNING'
   | 'EVENT_AUTO_DELETE_WARNING'
   | 'WISHBOOK_BOOK_READY'        // 2026-10-06: to the host who asked for the book, once per build, CTA EVENT_WISHBOOK + params.eventId. See fe-guides/wishbook-book-fe-integration.md §7
+  | 'PRINT_PICKS_ENDING'         // 2026-10-24: to a photographer with host picks waiting, once per event, category SYSTEM, CTA EVENT_VENDOR_PAGE + params.eventId. payload: count, closesDate (Athens time, yyyy-MM-dd HH:mm), closesAt (ISO). See fe-guides/print-picks-fe-integration.md
+  | 'SNEAK_PEEK_POSTED'          // 2026-10-29: to every member with an account except the posting vendor (hosts and other vendors included), category SYSTEM, emailed. CTA EVENT_POST + params.eventId, params.postId. payload: businessName, vendorType. See fe-guides/vendor-reach-and-sneak-peek-fe-integration.md
+  | 'VENDOR_REACH_SUMMARY'       // 2026-10-29: to a vendor once, when their access ends, category SYSTEM, emailed. CTA EVENT_VENDOR_PAGE + params.eventId. payload: eventTitle, guests, listTaps (+ partner fields for approved partners). See fe-guides/vendor-reach-and-sneak-peek-fe-integration.md
+  | 'VENDOR_JOINED'              // 2026-10-19: to every host when a vendor joins through a vendor link, category SYSTEM, CTA EVENT_VENDORS + params.eventId. payload: businessName, vendorType. See § Vendors in the event
   | 'REPORT_OUTCOME';            // 2026-10-01: to a reporter, category SYSTEM, no CTA. See fe-guides/moderation-admin-fe-integration.md §6
 
 /** OFFER is marketing (gated on consent for email); the rest are transactional. */
@@ -351,15 +359,18 @@ type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 // your own router. Keep this map in sync with NotificationCtaTarget on the backend:
 //
 //   EVENT_PLAN_SETTINGS -> your event plan/upgrade settings screen, needs params.eventId
-//   EVENT_GALLERY        -> your event gallery screen, needs params.eventId
-//   EVENT_GUESTS          -> your event guest list screen, needs params.eventId
+//   EVENT_GALLERY        -> your event gallery screen (/events/{eventId}/tools/gallery), needs params.eventId
+//   EVENT_GUESTS          -> your event share links page (/events/{eventId}/manage/qr), needs params.eventId
 //   EVENT_COVERAGE_EXTEND -> your plan screen with the extension picker open, needs params.eventId (2026-09-24)
 //   EVENT_WISHBOOK        -> the host's wishbook page (suggested /events/{eventId}/tools/wishbook), needs params.eventId (2026-10-06)
+//   EVENT_VENDORS         -> the host's vendors page (suggested /events/{eventId}/manage/vendors), needs params.eventId (2026-10-19)
+//   EVENT_VENDOR_PAGE     -> the vendor's own page in the event (suggested /events/{eventId}/tools/vendors/me), needs params.eventId (2026-10-24)
+//   EVENT_POST            -> one post opened over the event's feed (suggested /events/{eventId}/feed?post={postId}), needs params.eventId and params.postId (2026-10-29)
 //
 // ctaTarget is a closed, growable set — treat an unrecognized value defensively (hide the CTA
 // rather than crash) so a future backend addition degrades gracefully instead of breaking the feed.
 // See notification-cta-target-fe-integration.md for the full migration guide.
-type NotificationCtaTarget = 'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS' | 'EVENT_COVERAGE_EXTEND' | 'EVENT_WISHBOOK';
+type NotificationCtaTarget = 'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS' | 'EVENT_COVERAGE_EXTEND' | 'EVENT_WISHBOOK' | 'EVENT_VENDORS' | 'EVENT_VENDOR_PAGE' | 'EVENT_POST';
 
 interface NotificationResponseDto {
   id: string;
@@ -417,9 +428,11 @@ interface EventUsageResponseDto {
   extraStorageBytes: number;        // bytes added by settled storage-pack purchases
   storageLimitBytes: number | null; // the effective ceiling: planStorageBytes + extraStorageBytes
   storagePercent: number;
-  memberCount: number;
+  memberCount: number;              // vendors are not counted: they take no guest seat
   memberLimit: number;
   memberPercent: number;
+  proStorageBytes: number;          // 2026-10-19: the plan's Pro album allowance (vendors module); 0 without the module
+  proUsedBytes: number;             // 2026-10-19: bytes in the Pro album. Only what exceeds proStorageBytes is in storageBytes
 }
 
 // GET /api/me/usage and its AccountUsageResponseDto were removed 2026-08-24, along with the
@@ -456,8 +469,10 @@ interface EventRequestDto {
   themePresetId?: string | null;  // added 2026-10-05 — a preset from GET /api/theme-presets?eventType=.
                                    // Applied in the create transaction: 409 5012 when the plan doesn't
                                    // list `theme`, 409 5143 when not selectable; no event is created.
-  initialSessionTitle?: string;   // max 255 — when set, seeds an EventSession anchored to
-                                   // startAt/endAt (displayOrder 0) in the same transaction; see
+  initialSessionTitle?: string;   // max 255 — title of the main EventSession every event gets,
+                                   // anchored to startAt/endAt (displayOrder 0) in the same
+                                   // transaction. Since 2026-10-22 omitted/blank seeds the type's
+                                   // default in the Accept-Language locale instead of no session; see
                                    // fe-guides/event-creation-initial-session-fe-integration.md
 }
 // POST /api/events: 409 EVENT_DRAFT_LIMIT_REACHED (5116, added 2026-10-04) when the caller is
@@ -516,6 +531,48 @@ interface EventPatchDto {
 interface AdminEventProvisionRequestDto {
   hostUserId: string;
   event: EventRequestDto;
+  /** Emails the host the welcome message (added 2026-10-12). Omitted means true. */
+  notifyHost?: boolean;
+}
+
+// ---- Admin emails (2026-10-12) — fe-guides/admin-emails-fe-integration.md ----
+type AdminEmailTemplateKey = 'PASSWORD_RESET' | 'EMAIL_VERIFICATION' | 'PROVISIONED_HOST_WELCOME' | 'CUSTOM';
+type AdminEmailUnavailableReason =
+  | 'ACCOUNT_DELETED' | 'NO_EMAIL' | 'NOT_PASSWORD_ACCOUNT' | 'NOT_ACTIVE' | 'ALREADY_VERIFIED' | 'NO_HOSTED_EVENTS';
+
+/** GET /api/admin/users/{id}/emails/templates -> AdminEmailTemplateDto[]. */
+interface AdminEmailTemplateDto {
+  key: AdminEmailTemplateKey;
+  available: boolean;
+  unavailableReason: AdminEmailUnavailableReason | null;
+}
+
+/** POST /api/admin/users/{id}/emails/preview -> AdminEmailPreviewDto; .../send -> 204. */
+interface AdminEmailRequestDto {
+  template: AdminEmailTemplateKey;
+  locale?: string;   // defaults to the account's saved language
+  eventId?: string;  // PROVISIONED_HOST_WELCOME only; a live event the account hosts, else 400 / 3103
+  subject?: string;  // CUSTOM only; with body, both required (400 / 3104)
+  body?: string;     // CUSTOM only
+}
+
+/** The email as composed; a token link holds a placeholder in preview. */
+interface AdminEmailPreviewDto {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+}
+
+/** POST /api/admin/events/welcome-preview -> AdminEmailPreviewDto, before the event exists. */
+interface AdminWelcomePreviewRequestDto {
+  hostUserId: string;
+  title: string;
+  startAt?: string;
+  timezone?: string;
+  locationName?: string;
+  locationAddress?: string;
+  locale?: string;
 }
 
 /**
@@ -574,9 +631,13 @@ interface UserDataExportDto {
     reactions: { postId: string; reactionType: string; createdAt: string }[];
     stories: { storyId: string; mediaId: string | null; caption: string | null; songUrl: string | null; createdAt: string; expiresAt: string; deletedAt: string | null }[];
     storiesViewed: string[];
+    /** Pro items and vendor posts the member saw (2026-10-29); exactly one id is set. */
+    contentViews: { mediaId: string | null; postId: string | null; viewedAt: string }[];
     wishbookEntries: { entryId: string; guestName: string | null; message: string; createdAt: string; deletedAt: string | null }[];
     playlistSuggestions: { suggestionId: string; title: string; artist: string | null; youtubeUrl: string | null; spotifyUrl: string | null; comment: string | null; createdAt: string; deletedAt: string | null }[];
     playlistVotes: { suggestionId: string; voteType: string; createdAt: string }[];
+    /** Boy or Girl? answers (2026-10-10). `prompt` is null for the main guess. */
+    quizAnswers: { questionId: string; answerType: QuizAnswerType; prompt: string | null; value: string; createdAt: string; updatedAt: string }[];
     rsvp: {
       attendanceStatus: string; phone: string | null; adultCount: number | null; childCount: number | null;
       notes: string | null; submittedAt: string | null;
@@ -592,6 +653,13 @@ interface UserDataExportDto {
     eventId: string; eventTitle: string;
     wishbookEntries: { entryId: string; guestName: string | null; message: string; createdAt: string; deletedAt: string | null }[];
   }[];
+  /** Answers to the "How was Storywall?" prompt; stars is null for a dismissal. */
+  appReviews: {
+    stars: number | null; comment: string | null; role: 'HOST' | 'GUEST'; eventType: string;
+    status: 'PENDING' | 'APPROVED' | 'HIDDEN'; createdAt: string;
+  }[];
+  /** Added 2026-10-24. The account's priced services (print sizes and other services); empty without a vendor profile. */
+  vendorServices: { kind: 'PRINT' | 'OTHER'; label: string; priceCents: number; currency: string }[];
 }
 
 // --- GET /api/events/{id} detail response (grouped/enriched — added 2026-07-30) ---
@@ -724,6 +792,11 @@ interface EventInvitationPreviewDto {
    *  maxGuests, where accept returns 5035). A shared link used once but with room is false; it used
    *  to be true after the first use of any link. */
   alreadyUsed: boolean;
+  /** NEW 2026-10-19 — set on a vendor link: the role the opener joins as. Null on guest and co-host links.
+   *  On a vendor link `alreadyUsed` means the event holds as many vendors as its plan allows (accept returns
+   *  5177); a vendor link that no longer works (module off, type not allowed) is a 404, as an unknown token is.
+   *  The opener accepts with POST /api/event-invitations/{inviteToken}/accept like any invitation. */
+  vendorType: PartnerRole | null;
   /** NEW 2026-09-27 — null unless the event is a gift; then the framing for the landing page
    *  ("a surprise from Nikos for Maria & Giorgos"). See fe-guides/gift-mode-fe-integration.md §7. */
   gift: GiftFramingDto | null;
@@ -794,6 +867,7 @@ interface EventSessionRequestDto {
                           // 409 EVENT_SESSION_MAIN_ALREADY_EXISTS (5123) if the event has one; 400 VALIDATION_FAILED with isSecondary: true.
 }
 // DELETE /api/event-sessions/{id}: 409 EVENT_SESSION_MAIN_NOT_DELETABLE (5122, added 2026-10-04) for the main session.
+// 2026-10-19: POST, PATCH and DELETE on sessions are open to a planner vendor (SCHEDULE_EDIT) as well as hosts; a vendor past their access window gets 4033.
 export const EVENT_SESSION_MAIN_NOT_DELETABLE = 5122; // 409
 export const EVENT_SESSION_MAIN_ALREADY_EXISTS = 5123; // 409
 interface EventSessionResponseDto {
@@ -822,10 +896,37 @@ interface RsvpRequestDto {
    notes?: string;
   submittedAt: string;     // required
 }
+// 2026-10-19: POST and PATCH /api/rsvps, and POST and PATCH /api/rsvp-session-responses, are 403 VENDOR_CANNOT_RSVP (4034) for an active vendor's membership, whoever sends them. GET /api/events/{eventId}/rsvps leaves active vendors out.
 interface RsvpResponseDto {
   id: string; eventMemberId: string; attendanceStatus: AttendanceStatus;
   phone: string | null; adultCount: number; childCount: number;
   notes: string | null; submittedAt: string; updatedAt: string;
+  /** KAN-50. The member's name; the only place a reply-only guest's name appears (they aren't in member lists). */
+  guestName: string;
+  /** KAN-50. True for a reply from a published invitation's form: no account, not in GET /api/events/{id}/members. */
+  replyOnly: boolean;
+  /** KAN-50. Typed on the invitation form; null for replies made in the app. */
+  email: string | null;
+  /** KAN-50. The phone matched an RSVP already on the event (last ten digits). DELETE /api/rsvps/{id}/duplicate-mark (host) clears it. */
+  possibleDuplicate: boolean;
+}
+
+/**
+ * POST /api/public/invitations/{slug}/rsvp — no account (KAN-50). 204 with no body for every saved reply,
+ * a possible duplicate or not, and for a filled honeypot. 400 invalid, 404 no such invitation, 410 5221 offline,
+ * 409 5012 RSVP off, 409 5222 deadline passed, 409 5223 replies full (2× guest limit, 2,000 if unlimited),
+ * 429 3010 (30/h per address, 300/h per invitation).
+ * See invitation-drafts-fe-integration.md.
+ */
+interface InvitationRsvpRequestDto {
+  guestName: string;              // required, <= 150
+  attendanceStatus: AttendanceStatus;
+  phone: string;                  // required, <= 50; digits, spaces, + ( ) . / -; 7 to 15 digits
+  email?: string | null;          // optional, <= 255; blank = none
+  adultCount?: number | null;     // attending: 1-5, required; declined: saved as 0
+  childCount?: number | null;     // 0-4, omitted = 0; declined: saved as 0
+  notes?: string | null;          // <= 500
+  website?: string;               // honeypot: hidden field, always send empty
 }
 interface RsvpPatchDto { // every field optional
   attendanceStatus?: AttendanceStatus; phone?: string;
@@ -846,7 +947,8 @@ interface RsvpSessionResponsResponseDto {
 }
 
 // --- RSVP reports --- NEW 2026-09-25, see fe-guides/rsvp-reports-fe-integration.md
-// GET /api/events/{eventId}/rsvps/report?reportType=… — host-only, 60/60s. Labels arrive localized (Accept-Language).
+// GET /api/events/{eventId}/rsvps/report?reportType=… — host, or a planner vendor (RSVP_REPORT), 60/60s. Labels arrive localized (Accept-Language).
+// Active vendors are left out of every count and row. A planner's rows come with `phone: null`; the PDF export stays host-only.
 interface RsvpReportDto {
   reportType: RsvpReportType;
   header: RsvpReportHeaderDto;
@@ -877,7 +979,7 @@ interface RsvpReportGroupDto {
   rows: RsvpReportRowDto[];            // sorted by name for the request locale
 }
 interface RsvpReportRowDto {
-  rsvpId: string; name: string; phone: string | null;
+  rsvpId: string; name: string; phone: string | null; // null for a planner vendor's report (2026-10-19)
   adults: number; children: number; notes: string | null;
 }
 
@@ -889,8 +991,13 @@ interface RsvpReportRowDto {
  * No request DTO — created only via the multipart upload endpoint (§ Media upload).
  *
  * `POST /api/events/{eventId}/media` and `.../media/batch` both take an additional
- * `context` form field — `'GALLERY' | 'STORY' | 'POST' | 'COVER'` (default `'GALLERY'` if omitted). Since
- * 2026-09-24 the upload needs the context's module (GALLERY→gallery, STORY→stories, POST→posts; else 5012).
+ * `context` form field — `'GALLERY' | 'STORY' | 'POST' | 'PRO' | 'COVER'` (default `'GALLERY'` if omitted). Since
+ * 2026-09-24 the upload needs the context's module (GALLERY→gallery, STORY→stories, POST→posts, PRO→vendors; else 5012).
+ * PRO (2026-10-19) is a vendor's Pro album: only a photographer or videographer vendor may send it (anyone else,
+ * hosts included, gets 403 VENDOR_CAPABILITY_MISSING 4032; 403 VENDOR_ACCESS_ENDED 4033 once their access has
+ * ended), it needs the gallery module too, it is not counted against the member upload rate limit, and its
+ * bytes count against the plan's `vendors.proStorageBytes` allowance first (see EventUsageResponseDto). Both
+ * upload endpoints take it; in a batch a refused file lands in `failed[]` with the same errorCode.
  * COVER (2026-09-25) needs no module and works on a DRAFT, but only a host may send it (else 403).
  * Since 2026-10-04 a COVER is an image only (400 UNSUPPORTED_MEDIA_FORMAT 3012 otherwise), at most
  * 10 MB (`media.image.cover-max-bytes`; 413 MEDIA_FILE_TOO_LARGE 3013 over it), sent to the single
@@ -921,13 +1028,18 @@ interface MediaResponseDto {
   fileSize: number; width: number | null; height: number | null; durationSeconds: number | null;
   metadata: Record<string, unknown>;
   createdAt: string; deletedAt: string | null;
+  collection: 'GUEST' | 'PRO'; // 2026-10-19: which album it is in; PRO is a vendor's Pro album, never in a post, story or member archive
+  proCredit: ProCreditDto | null; // 2026-10-19: set on PRO items only: whose work it is
 }
+interface ProCreditDto { businessName: string | null; vendorType: PartnerRole; } // businessName comes from the vendor's profile; null without one
 // An embedded `coverMedia` (EventResponseDto, the invitation preview, the QR landing, the gift-claim
 // preview) is for drawing the cover only, since 2026-10-04: uploaderMemberId, anonymousUploaderName,
 // originalFilename and storageKey are null and metadata is {}. Three of those responses are
 // unauthenticated, read by whoever holds a forwarded link.
 // GET /api/events/{eventId}/media now returns Page<MediaResponseDto>, not MediaResponseDto[].
 // Default 30/page, max 100 (?page=&size=), sorted createdAt desc then id desc (newest first).
+// ?collection=GUEST|PRO (2026-10-19, default GUEST): the guest gallery or the Pro album. PRO also needs the vendors module
+// (any event member may read it); a GUEST page never carries Pro items.
 //
 // `status` (added 2026-08-30): images are always 'READY' immediately. A video is 'PROCESSING'
 // on the very first response after upload — thumbnail extraction and re-encoding happen
@@ -1044,8 +1156,10 @@ interface MemberArchivePartDto {
 interface PostRequestDto {
   eventId: string;
   authorMemberId?: string;
-  type: PostType;         // required, server-validated against the exact 4-value set.
-                          // "ANNOUNCEMENT" is host-only: 403/errorCode 4008 ANNOUNCEMENT_NOT_HOST
+  type: Exclude<PostType, "SNEAK_PEEK">; // required, server-validated against the exact 4-value set (SNEAK_PEEK is 400 here).
+                          // "ANNOUNCEMENT" is for hosts and planner vendors (ANNOUNCE): 403/errorCode 4008 ANNOUNCEMENT_NOT_HOST
+                          // for anyone else; a planner past their access window gets 4033 VENDOR_ACCESS_ENDED. The same applies to
+                          // editing or deleting an announcement.
   content?: string;
   isPinned: boolean;       // required — no server-side default, omitting it is a 400.
                            // true is host-only: 403/errorCode 4007 POST_PIN_NOT_HOST
@@ -1091,6 +1205,7 @@ interface AuthorDto {
   roleKey: string | null;    // NEW 2026-10-02 — member role catalog key; resolve label/emoji from /api/config memberRolesByEventType. Null when none or the member_roles module is off
   customRole: string | null; // NEW 2026-10-02 — free-text role, plain text. Never set together with roleKey. Null when none or the module is off
   avatarUrl: string | null; // presigned: the account's profile picture (profilePictureKey), or, for a demo event's name-only persona, the picture an admin set (2026-09-29); null otherwise
+  vendorType: PartnerRole | null; // NEW 2026-10-19 — the author's vendor type while they are a vendor of this event. Posts and comments only; a story's author never has it. Null for everyone else
 }
 interface PostResponseDto {
   id: string; eventId: string; authorMemberId: string | null;
@@ -1209,7 +1324,7 @@ interface EventThemeDto {
   illustrationUrl: string;
 }
 
-/** GET /api/events/{eventId}/theme-presets, and GET /api/theme-presets?eventType= (creation form) */
+/** GET /api/events/{eventId}/theme-presets, and GET /api/theme-presets?eventType= (creation form and landing page; public) */
 interface ThemePresetOptionDto {
   id: string;
   key: string;
@@ -1284,6 +1399,44 @@ interface MemberRoleCatalogPatchDto {
 }
 // Also: GET /api/admin/member-roles?eventTypeKey= (incl. retired), POST .../{id}/retire, POST .../{id}/unretire.
 // Roles are never deleted. allowCustom lives in the plan's member_roles module config, not here.
+/** GET /api/config -> landingCategories[]. Visible only, in display order. Added 2026-10-07. */
+interface AppLandingCategoryDto {
+  id: string;                              // UUID; no slug
+  name: Record<string, string>;            // en + el
+  description: Record<string, string>;     // en and/or el, may be {}
+  isDefault: boolean;                      // at most one
+  eventTypeKeys: string[];                 // enabled types only, in event-type order
+}
+
+/** GET /api/admin/landing-categories (ADMIN) - all categories, hidden included, disabled types included. */
+interface LandingCategoryAdminDto {
+  id: string;
+  name: Record<'en' | 'el', string>;
+  description: Partial<Record<'en' | 'el', string>>;
+  sortOrder: number;                       // 0-1000
+  isVisible: boolean;
+  isDefault: boolean;
+  eventTypeKeys: string[];
+}
+
+/** POST /api/admin/landing-categories (ADMIN). Unknown fields -> 400. */
+interface LandingCategoryCreateDto {
+  name: Record<'en' | 'el', string>;       // each 1-60 chars, no control characters
+  description?: Partial<Record<'en' | 'el', string>>; // each <=160; blank removes
+  sortOrder?: number;
+  isVisible?: boolean;                     // default true
+  isDefault?: boolean;                     // true clears the previous default; must be visible
+}
+
+/** PATCH /api/admin/landing-categories/{id} (ADMIN) - omitted = unchanged; description replaces the map. */
+type LandingCategoryPatchDto = Partial<LandingCategoryCreateDto>;
+
+/** PUT /api/admin/landing-categories/{id}/event-types (ADMIN) - replaces the list. */
+interface LandingCategoryEventTypesDto {
+  eventTypeKeys: string[];                 // known types, no repeats, <=50
+  moveFromOtherCategory?: boolean;         // required to take a type from another category (else 409 5150)
+}
+// Also: DELETE /api/admin/landing-categories/{id} -> 204.
 /** GET/POST/DELETE /api/admin/blocked-terms (ADMIN) — additions to the vendored word lists. */
 interface BlockedTermDto { id: string; term: string; createdAt: string }
 interface BlockedTermRequestDto { term: string } // max 60; no locale field
@@ -1369,14 +1522,19 @@ interface PlaylistVoteResponseDto {
 // opposite voteType -> switches the vote in place; same voteType re-posted -> no-op, returns
 // the existing vote. There is no duplicate-vote 409 on this endpoint.
 
-// GET /api/events/{eventId}/playlist-suggestions/leaderboard -- HOST only, new 2026-08-05
+// GET /api/events/{eventId}/playlist-suggestions/leaderboard -- HOST, or the music vendor (SONG_REQUESTS) since 2026-10-19; new 2026-08-05
+// Deleted suggestions are left out.
 interface PlaylistSuggestionLeaderboardDto {
-  rank: number; // 1-based; ties share a rank and the next rank skips (1, 1, 1, 4)
+  rank: number; // 1-based; ties share a rank and the next rank skips (1, 1, 1, 4). 0 = not ranked: PATCH .../played returns the row that way, refetch the board
   id: string; authorMemberId: string | null; title: string; artist: string | null;
   youtubeUrl: string | null; spotifyUrl: string | null; comment: string | null;
   createdAt: string;
   upvoteCount: number; downvoteCount: number; // downvoteCount breaks ties, never subtracts from rank
+  playedAt: string | null; // NEW 2026-10-19 — when the DJ or a host marked it played. Display only; ranking ignores it
 }
+/** PATCH /api/events/{eventId}/playlist-suggestions/{id}/played -> PlaylistSuggestionLeaderboardDto (rank 0). Host or music vendor;
+ *  `true` marks it played, `false` clears the mark; repeating the same value is a no-op. Needs the playlist module available (event live). */
+interface PlayedRequestDto { played: boolean; } // required
 
 interface PostMediaRequestDto { postId: string; mediaId: string; displayOrder: number; } // all required
 interface PostMediaResponseDto { id: string; postId: string; mediaId: string; displayOrder: number; createdAt: string; }
@@ -1577,7 +1735,7 @@ export type AdminAuditAction =
   | 'MEMBER_REMOVED' | 'MEMBER_BANNED' | 'BAN_LIFTED' | 'ACCOUNT_SUSPENDED' | 'ACCOUNT_CREATED' | 'ACCOUNT_STATUS_CHANGED'
   | 'ACCOUNT_ROLE_CHANGED' | 'ACCOUNT_EMAIL_CHANGED' | 'ACCOUNT_DELETED'
   | 'NOTICE_VIEWED' | 'NOTICE_ATTACHED' | 'NOTICE_CLOSED' | 'EVENT_BROWSED'
-  | 'EVENT_SUSPENDED' | 'EVENT_SUSPENSION_LIFTED' | 'EVENT_CLOSED' | 'STATEMENT_OF_REASONS_SENT';
+  | 'EVENT_SUSPENDED' | 'EVENT_SUSPENSION_LIFTED' | 'EVENT_CLOSED' | 'STATEMENT_OF_REASONS_SENT' | 'EMAIL_SENT';
 
 /** GET /api/admin/audit-log?targetId=&adminUserId=&page=&size= -> Page<AdminAuditLogResponseDto>, newest first. */
 export interface AdminAuditLogResponseDto {
@@ -1631,6 +1789,114 @@ export const STORY_MEDIA_ALREADY_LIVE = 5142;            // 409, or per item in 
 // See fe-guides/event-theme-customization-fe-integration.md.
 export const THEME_PRESET_NOT_SELECTABLE = 5143;         // 409 on PUT /api/events/{id}/theme: preset unknown, archived, without illustration, or not offered for the event's type; refetch theme-presets
 export const EVENT_ENDED = 5144;                         // 409 on GET theme-presets and PUT theme: the event's endAt has passed
+// ---- Landing categories (added 2026-10-07) ----
+// See fe-guides/landing-categories-fe-integration.md.
+export const LANDING_CATEGORY_TYPE_ASSIGNED = 5150;      // 409 PUT /api/admin/landing-categories/{id}/event-types; details {eventTypeKey, categoryId, categoryName}
+// ---- Plan promo price (added 2026-10-07) ----
+// See fe-guides/plan-promo-price-fe-integration.md.
+export const COVERAGE_OPTION_PROMO_PRICE_INVALID = 5151; // 400 admin coverage-option POST/PATCH: promo price on an EXTENSION, not > 0, not < the option's price, or set and cleared together
+// ---- Specific conflict codes (added 2026-10-10) ----
+// Every ConflictException now names its cause; generic 5001 CONFLICT is left to DB constraint races.
+// Reused: accept by an existing member -> 5003 DUPLICATE_MEMBERSHIP (was 5001);
+// admin create/update user with a taken email -> 5002 EMAIL_ALREADY_EXISTS (was 5001).
+export const EVENT_HOST_ALREADY_CO_HOST = 5157;          // 409, promote: the user is already a co-host
+export const EVENT_HOST_LAST_HOST = 5158;                // 409, DELETE event host: it is the event's only host
+export const EVENT_HOST_ALREADY_PRIMARY = 5159;          // 409, primary transfer to the current primary host
+export const INVITE_CODE_TAKEN = 5160;                   // 409, POST /api/event-invitations: inviteCode already used in this event
+export const CO_HOST_ALREADY_MEMBER = 5161;              // 409, POST /api/events/{id}/host-invitations: that address is already a member; details {memberId, userId, displayName} — promote with POST /api/events/{id}/hosts {userId}. An address that already co-hosts gets 5157 instead
+export const MEMBER_IS_HOST = 5162;                      // 409, remove member: they are a host; remove the host role first
+export const MEMBER_ROLE_KEY_TAKEN = 5163;               // no longer returned since 2026-10-21: role keys are generated
+export const REACTION_TYPE_CODE_TAKEN = 5164;            // 409, admin reaction-type create: code exists for the event type
+export const BLOCKED_TERM_EXISTS = 5165;                 // 409, admin blocked-term create: already blocked
+export const PAID_SERVICE_CODE_TAKEN = 5166;             // 409, admin paid-service create: code exists
+export const PLAN_TIER_CODE_TAKEN = 5167;                // 409, admin plan create/duplicate: code exists in that scope
+export const PLAN_TIER_NOT_ASSIGNABLE = 5168;            // 409, assigning an archived plan
+export const THEME_PRESET_KEY_TAKEN = 5169;              // 409, admin theme-preset create: key exists
+export const ERROR_TRACKING_DISABLED = 5174;             // 409, POST /api/error-events/client while config.errorTracking.enabled is false
+export const EMAIL_TEMPLATE_UNAVAILABLE = 5175;          // 409, admin email preview/send: the template can't go to this account now (see unavailableReason)
+export const VENDOR_LIMIT_REACHED = 5177;                // 409, accepting a vendor link when the event already has vendors.maxVendors active vendors (2026-10-19)
+export const VENDOR_IS_HOST = 5178;                      // 409, a host or co-host opened a vendor link; one person never holds both roles (2026-10-19)
+export const ALREADY_A_VENDOR = 5179;                    // 409, the caller is already this event's vendor of another type (2026-10-19)
+export const SNEAK_PEEK_MEDIA_INVALID = 3112;            // 400, POST/PATCH .../vendors/me/sneak-peek: an item is not one of the caller's own live, ready Pro items (2026-10-29)
+export const PRINT_ITEM_INVALID = 3108;                  // 400, adding print picks: a media id is not a ready photo of this event (a video, another event's, deleted) (2026-10-24)
+export const PRINT_LIST_FULL = 5183;                     // 409, adding print picks: the list holds print-picks.max-list-items photos (default 100) (2026-10-24)
+export const SNEAK_PEEK_NOT_OPEN = 5187;                 // 409, POST .../vendors/me/sneak-peek before the event starts (2026-10-29)
+export const SNEAK_PEEK_USED = 5188;                     // 409, POST .../vendors/me/sneak-peek: this vendor already posted one for the event; deleting it does not give it back (2026-10-29)
+export const VENDOR_SERVICE_LIMIT_REACHED = 5184;        // 409, POST /api/me/vendor-profile/services: print-picks.max-print-sizes (default 8) sizes already (2026-10-24)
+export const PARTNER_APPLICATION_PENDING = 5180;         // 409, POST /api/public/partner-applications: a pending application already exists for this email (2026-10-19)
+export const GOOGLE_ANALYTICS_UNAVAILABLE = 9002;        // 503, GET /api/admin/metrics/visitors: Google Analytics unreachable or refused the report
+// ---- Specific bad-request and forbidden codes (added 2026-10-10) ----
+// Every service-level BadRequestException/ForbiddenException now names its cause. 3001 VALIDATION_FAILED
+// is left to request validation (@Valid field errors, bad params, malformed bodies) and 4001 FORBIDDEN
+// to role checks. Reused: an unknown event type key -> 3018 INVALID_EVENT_TYPE, an unknown module key
+// -> 3006 INVALID_MODULE_KEY, claiming a membership with an unverified email -> 4002 EMAIL_NOT_VERIFIED.
+// A notice-version mismatch on partner branding is now 409 5153 PARTNER_BRANDING_NOTICE_OUTDATED (was 400 3001).
+export const EMAIL_CONFIRMATION_LINK_INVALID = 3058;     // 400, The email confirmation link is expired, used or unknown. Request a new one
+export const PASSWORD_RESET_LINK_INVALID = 3059;         // 400, The password reset link is expired, used or unknown. Request a new one
+export const DATE_RANGE_INVALID = 3060;                  // 400, A date range or validity window ends before (or when) it starts
+export const DATE_RANGE_TOO_LONG = 3061;                 // 400, A date range spans more days than the endpoint allows
+export const SEARCH_TERM_TOO_LONG = 3062;                // 400, A search or filter text is longer than the endpoint allows
+export const QUERY_PARAMETER_INVALID = 3063;             // 400, A query parameter has a value the endpoint does not accept (an unknown provider, item type, or error ref)
+export const CHECKOUT_QUOTE_INVALID = 3064;              // 400, A checkout quote asked for the wrong kind, or sent paidServiceCode where it does not belong (or left it out where it does)
+export const CHECKOUT_CONSENT_REQUIRED = 3065;           // 400, A consumer checkout must ask for the immediate start and acknowledge the withdrawal terms
+export const WITHDRAWAL_NOTE_REQUIRED = 3066;            // 400, Releasing a withdrawal while keeping the event day needs a note for the host
+export const BUSINESS_DETAILS_INVALID = 3067;            // 400, Business details failed a check: website, phone, country code, VAT number, tax office or IBAN
+export const COMMISSION_TIERS_INVALID = 3068;            // 400, A commission schedule is out of shape: too many tiers, first tier not at activation 1, activations not increasing, or a higher tier paying less
+export const PARTNER_BRANDING_NOT_ACCEPTED = 3069;       // 400, Checkout with a partner's code without accepting the partner branding notice
+export const UNKNOWN_PLAN_TIER = 3070;                   // 400, A plan code that names no event plan
+export const MODULE_CONFIG_VALUE_INVALID = 3071;         // 400, A module config value has the wrong shape: a count must be a whole number of 0 or more, a flag true or false
+export const MODULE_CONFIG_NOT_OVERRIDABLE = 3072;       // 400, That module config key can't be set per event
+export const CROSS_EVENT_REFERENCE = 3073;               // 400, The request names a member, invitation or session that belongs to a different event
+export const CO_HOST_NEEDS_ACCOUNT = 3074;               // 400, Only a member with an account can be a co-host
+export const MEMBER_HOST_ROLE_NOT_ALLOWED = 3075;        // 400, Members can't be created as hosts through the member endpoint; invite a co-host instead
+export const QR_LINK_MAX_GUESTS_NOT_ALLOWED = 3076;      // 400, maxGuests can only be set on an EVENT_JOIN QR link
+export const QR_LINK_TARGET_INVALID = 3077;              // 400, targetId is missing for an INVITATION QR link, or sent for another target type
+export const BUG_REPORT_TOO_SHORT = 3078;                // 400, A bug report description is shorter than the minimum, not counting surrounding spaces
+export const FEEDBACK_PAGE_URL_INVALID = 3079;           // 400, Feedback pageUrl is not an absolute http or https URL
+export const UPLOAD_FILES_REQUIRED = 3080;               // 400, An upload request carried no files
+export const COVER_UPLOAD_NOT_BATCHED = 3081;            // 400, An event cover is uploaded on its own, not in a batch
+export const STORY_ITEMS_REQUIRED = 3082;                // 400, A story batch carried no stories
+export const STORY_ITEM_INVALID = 3083;                  // 400, One item in a story batch failed validation; the detail names the item and field
+export const BLOCKED_TERM_INVALID = 3084;                // 400, A blocked term is blank, starts with '#', has no letter or digit, or is too long
+export const NOTICE_IDENTITY_REQUIRED = 3085;            // 400, This content-notice category needs the notifier's name and email
+export const NOTICE_TEXT_TOO_SHORT = 3086;               // 400, A content notice's location or explanation is too short
+export const PAID_SERVICE_FIELDS_INVALID = 3087;         // 400, A paid service's grant fields or billing period don't fit its kind
+export const WITHDRAWAL_PERCENTS_TOO_HIGH = 3088;        // 400, A plan's setupPercent + eventDayPercent exceeds 100
+export const ACCOUNT_HAS_NO_PASSWORD = 3089;             // 400, Password change on an account that signs in without a password
+export const WISHBOOK_BOOK_TEXT_TOO_LONG = 3090;         // 400, A wishbook book text has too many characters or lines
+export const LOCALIZED_TEXT_INVALID = 3091;              // 400, An admin's localized text (name, label, description) is missing a required locale, has an extra one, is too long, or has control characters
+export const MEMBER_ROLE_EMOJI_TOO_LONG = 3092;          // 400, A member role emoji is too long
+export const LANDING_CATEGORY_EVENT_TYPES_DUPLICATE = 3093;// 400, A landing category lists the same event type twice
+export const LANDING_CATEGORY_DEFAULT_HIDDEN = 3094;     // 400, A hidden landing category can't be the default
+export const THEME_FONT_FAMILY_NAME_INVALID = 3095;      // 400, A theme font family name is empty or longer than 100 characters. The detail is localized
+export const THEME_PRESET_EVENT_TYPES_INVALID = 3096;    // 400, A theme preset names no event type, or one that can't have themes. The detail is localized
+export const THEME_BACKGROUND_LOW_CONTRAST = 3097;       // 400, A theme preset's background is too dark for the app's text; details carries ratio and minimum. Was 3001 before 2026-10-10
+export const CONTENT_LENGTH_REQUIRED = 3098;             // 411, An upload or feedback request without a Content-Length header
+export const RSVP_DEADLINE_AFTER_START = 3099;           // 400, An event was created with an RSVP deadline at or after its start
+export const NOT_EVENT_MEMBER = 4024;                    // 403, The caller is not a member of the event
+export const NOT_EVENT_HOST = 4025;                      // 403, Only the event's hosts can do this
+export const REPORT_MEMBER_NOT_HOST = 4026;              // 403, Only hosts can report a member
+export const CO_HOST_GUEST_ACCOUNT = 4027;               // 403, Guest accounts can't be co-hosts
+export const MEMBERSHIP_CLAIM_NO_EMAIL = 4028;           // 403, This membership has no invitation email to match an account against
+export const MEMBERSHIP_CLAIM_EMAIL_MISMATCH = 4029;     // 403, The caller's email doesn't match the invitation's
+export const NOTIFICATION_NOT_YOURS = 4030;              // 403, The notification belongs to another user
+export const SESSION_NOT_YOURS = 4031;                   // 403, The session belongs to another user
+// ---- Vendors in the event (added 2026-10-19) — see § Vendors in the event ----
+export const VENDOR_CAPABILITY_MISSING = 4032;           // 403, a vendor of this event whose type has no access to this tool; also a non-vendor sending upload context PRO
+export const VENDOR_ACCESS_ENDED = 4033;                 // 403, the vendor's tools stopped working accessDaysAfterEvent days after the event; GET /vendors/me still answers, with toolsOff ACCESS_ENDED
+export const PARTNER_REQUIRED = 4035;                    // 403, POST/PUT /api/me/vendor-profile/services: the caller is not an approved partner (2026-10-24)
+export const VENDOR_CANNOT_RSVP = 4034;                  // 403, an active vendor can't give or change an RSVP, their own or one a host makes for them (deleting one is allowed)
+// ---- Boy or Girl? quiz (he_or_she, 2026-10-10) — fe-guides/he-or-she-quiz-fe-integration.md ----
+export const QUIZ_ANSWER_INVALID = 3100;                 // 400, PUT /answers: a value doesn't fit its question's type, or an unknown/repeated questionId
+export const QUIZ_QUESTION_INVALID = 3101;               // 400, question create/patch: bad prompt, options or ___ marker; or the main question targeted
+export const QUIZ_CLOSES_AT_INVALID = 3102;              // 400, PUT /settings: closesAt in the past or less than a minute away
+export const EMAIL_EVENT_NOT_HOSTED = 3103;              // 400, admin email / welcome preview: the event isn't a live event the account hosts
+export const EMAIL_MESSAGE_REQUIRED = 3104;              // 400, admin CUSTOM email without a subject or body
+export const QUIZ_CLOSED = 5170;                         // 409, any quiz write after voting closes
+// 5171 QUIZ_ANSWER_REQUIRED was removed on 2026-10-11 with the stored answer.
+export const QUIZ_QUESTION_HAS_ANSWERS = 5172;           // 409, PATCH question options after someone answered it
+export const QUIZ_QUESTION_LIMIT_REACHED = 5173;         // 409, a 21st extra question (Quiz & Polls: a 31st)
+export const QUIZ_HOST_CANNOT_ANSWER = 5176;             // 409, Quiz & Polls: a host answering a QUIZ question
 // - 503 MEDIA_PROCESSING_BUSY (3017) + Retry-After on ANY upload, before the body is read: 96 uploads in flight (Retry-After 10), temp disk low (60), or the video strip lane / decode slots busy (5). The body carries retryAfterSeconds (Retry-After isn't CORS-exposed). Retry after the advised wait (B7, D1, D3). In a batch's failed[] the item has errorCode "MEDIA_PROCESSING_BUSY" and no wait; resend that file.
 // - Upload ceilings are 100 MB per request and per video (was 260 / 200): split batches by /api/config maxRequestSizeBytes (G1).
 // - GET stories returns at most the newest 300 (B8).
@@ -1756,7 +2022,9 @@ export interface NoticeCloseRequestDto {
 }
 
 // ---- Beta feedback (added 2026-09-27). See fe-guides/beta-feedback-fe-integration.md ----
-// Both POST routes are gated by config.betaFeedback.enabled: 409 / 5100 BETA_FEEDBACK_DISABLED when off.
+// POST /api/bug-reports is gated by config.betaFeedback.enabled: 409 / 5100 BETA_FEEDBACK_DISABLED when off.
+// POST /api/error-events/client is gated by config.errorTracking.enabled (2026-10-10): 409 / 5174
+// ERROR_TRACKING_DISABLED when off. See fe-guides/error-tracking-fe-integration.md.
 // Both need a Content-Length header (411 / 3001 without one); browsers send it for FormData and string bodies.
 
 // POST /api/bug-reports -- multipart/form-data, any signed-in caller (USER, GUEST, ADMIN):
@@ -1813,7 +2081,7 @@ interface BugReportResponseDto { // admin only
 // GET /api/bug-reports/{id} -> BugReportResponseDto, admin only.
 
 // POST /api/error-events/client -- JSON body <=32KB (413 / 3005 over it), any signed-in caller.
-// 204, empty body. 20 per hour per user (429 / 3010). Nothing is recorded while switched off (409 / 5100).
+// 204, empty body. 20 per hour per user (429 / 3010). Nothing is recorded while switched off (409 / 5174).
 // Fire and forget: never show the user a failure of this call, and never report it.
 interface ClientErrorRequestDto {
   name: string;              // required, not blank, <=256. Normalized, not rejected: chars outside
@@ -1830,9 +2098,11 @@ interface ErrorEventResponseDto { // admin only
   id: string;
   ref: string;               // 12 lowercase hex chars; what a 500's errorRef and RecentErrorDto.errorRef hold
   source: ErrorEventSource;
-  errorType: string;         // Java exception class, or the normalized JS error name
+  httpStatus: number | null; // BACKEND: the response status, 4xx or 5xx. BACKGROUND and CLIENT: null
+  errorType: string;         // Java exception class (5xx), the response's errorKey (4xx, e.g. "VALIDATION_FAILED";
+                             // "HTTP_<status>" without one), or the normalized JS error name
   message: string | null;    // from the latest occurrence
-  stackTrace: string | null; // from the first occurrence
+  stackTrace: string | null; // from the first occurrence; null for a 4xx
   occurrenceCount: number;
   firstSeenAt: string;
   lastSeenAt: string;
@@ -1842,15 +2112,20 @@ interface ErrorEventResponseDto { // admin only
   lastAppVersion: string | null;    // CLIENT only
   lastPageUrl: string | null;       // CLIENT only
 }
-// GET /api/error-events?source=&ref= -> Page<ErrorEventResponseDto>, admin only. Default 50/page, max 100.
+type ErrorEventStatusClass = "CLIENT_ERROR" | "SERVER_ERROR"; // 4xx | 5xx; rows with no httpStatus match neither
+// GET /api/error-events?source=&ref=&statusClass= -> Page<ErrorEventResponseDto>, admin only. Default 50/page, max 100.
 //   Always lastSeenAt desc then id desc; any ?sort= is ignored. A blank ref means no filter; a ref that
-//   isn't 12 lowercase hex chars, or an unknown source, is 400 / 3001. Works while switched off.
+//   isn't 12 lowercase hex chars, an unknown source or an unknown statusClass is 400 / 3001. Works while switched off.
 // GET /api/error-events/{id} -> ErrorEventResponseDto, admin only.
 
 interface AppBetaFeedbackConfigDto {
-  enabled: boolean;              // false: hide the report button and don't install the crash reporter
+  enabled: boolean;              // false: hide the report button
   screenshotMaxBytes: number;    // 10MB by default
   screenshotMimeTypes: string[]; // ["image/jpeg", "image/png", "image/webp"]; use as the file input's accept
+}
+
+interface AppErrorTrackingConfigDto { // added 2026-10-10
+  enabled: boolean; // false: don't install the crash reporter
 }
 
 interface TelemetryEventRequestDto {
@@ -1894,11 +2169,11 @@ interface PlatformFeatureFlagPatchDto {
 /** Canonical event module keys — see EventModuleRequestDto.moduleKey, now server-validated against
  *  this set. `wishlist` and `wishbook` were added 2026-08-16; prefer sourcing this union from
  *  `eventModuleKeys` at runtime rather than maintaining the literal list by hand. */
-// All twelve canonical keys as of V146 (`theme` added; eleven as of V136, ten as of V82). `eventModuleKeys` on /api/config carries only the ones
+// All fifteen canonical keys as of V176 (`vendors` added; fourteen as of V175 with `quiz_polls`; thirteen as of V170 with `he_or_she`; twelve as of V146, eleven as of V136, ten as of V82). `eventModuleKeys` on /api/config carries only the ones
 // currently enabled platform-wide, which is a subset: `named_invites` was switched off in V87 and
 // does not appear there today. Gate on what the config returns, not on this union.
 type ModuleKey = 'posts' | 'rsvp' | 'playlist' | 'stories' | 'gallery' | 'wishlist' | 'wishbook'
-  | 'co_hosts' | 'named_invites' | 'schedule' | 'member_roles' | 'theme';
+  | 'co_hosts' | 'named_invites' | 'schedule' | 'member_roles' | 'theme' | 'he_or_she' | 'quiz_polls' | 'vendors';
 
 interface AppMediaConfigDto {
   maxFileSizeBytes: number;
@@ -1941,12 +2216,30 @@ interface AppEventTypeDto {
   isEnabled: boolean;           // always true in this list — disabled rows are not published
   sortOrder: number;
   hasDemo: boolean;             // GET /api/demo/{eventTypeKey} would answer 200 right now (added 2026-10-02)
+  imageUrl: string | null;      // presigned card image for the create-event form; null → show `icon` (added 2026-10-08)
 }
 
 interface AppEventTypeTranslationDto {
   name: Record<string, string>;                      // keyed by locale: { en: '...', el: '...' }
   tagline: Record<string, string>;
-  voice: Record<string, Record<string, string>>;     // locale — the ten-key UI voice pack
+  voice: Record<string, Record<string, string>>;     // locale — the eight-key UI voice pack (toolsScheduleDescription / toolsPlaylistDescription removed 2026-10-09)
+  /** Module copy overrides for this type, keyed by moduleKey. Only modules with at least one
+   *  override that the type supports; `{}` when none. Added 2026-10-09 — see
+   *  fe-guides/module-names-per-event-type-fe-integration.md. */
+  modules: Record<string, AppModuleCopyDto>;
+}
+
+/** Each field `{ en, el }`, or null for the module's default. A null `cardLabel` means the resolved name. */
+interface AppModuleCopyDto {
+  name: LocalizedLabel | null;
+  description: LocalizedLabel | null;
+  cardLabel: LocalizedLabel | null;
+}
+
+/** A module copy override: both locales, trimmed, never blank. */
+interface LocalizedLabel {
+  en: string;
+  el: string;
 }
 
 interface AppTranslationsDto {
@@ -2066,9 +2359,10 @@ export interface PlanTierResponseDto {
                                      // EVENT plan, whose prices are its initialOptions (2026-09-23).
   priceCurrency: string | null;     // ISO 4217; also the currency of every coverage option
   billingPeriod: BillingPeriod | null;
-  discountPercent: number | null;
+  discountPercent: number | null;   // up to two decimals since 2026-10-07 (e.g. 12.5); a duration's
+                                     // promoPriceAmountMinor replaces it for that duration
   discountLabel: string | null;
-  discountStartsAt: string | null;
+  discountStartsAt: string | null;  // the promotion window, for the percent and every promo price
   discountEndsAt: string | null;
 
   /** Module keys this plan includes. Always empty for ACCOUNT-scope plans. */
@@ -2077,8 +2371,11 @@ export interface PlanTierResponseDto {
   /** Per-module quota/config, keyed by module key — added 2026-09-27. One entry per module
    *  applicable to the plan's event type, add-on modules included. Known keys:
    *  `schedule.maxSections` and `co_hosts.maxCoHosts` (absent = unlimited, never 0) and
-   *  `gallery.qrUploadEnabled`, `gallery.memberArchiveAfterEnd` (boolean, absent = off) and
-   *  `member_roles.allowCustom`. `{}` for ACCOUNT plans. Populated on GET /api/config and
+   *  `gallery.qrUploadEnabled`, `gallery.memberArchiveAfterEnd` (boolean, absent = off),
+   *  `member_roles.allowCustom` and, since 2026-10-19, `vendors.maxVendors` (active vendors per event),
+   *  `vendors.accessDaysAfterEvent` (days the vendors' tools keep working after the event ends),
+   *  `vendors.proStorageBytes` (the Pro album allowance) and `vendors.allowedTypes` (PartnerRole[]; a
+   *  missing key reads as 0 or empty, never unlimited). `{}` for ACCOUNT plans. Populated on GET /api/config and
    *  GET /api/plan-tiers; null on admin endpoints. */
   moduleConfigs: Record<string, Record<string, unknown>> | null;
 
@@ -2115,6 +2412,9 @@ export interface CoverageOptionResponseDto {
   kind: 'INITIAL' | 'EXTENSION';
   months: number;            // 1–120
   priceAmountMinor: number;  // in the plan's priceCurrency, before any promotion or code
+  /** What this duration costs while the plan's promotion window is open, in place of the plan's
+   *  percent. INITIAL only, 0 < promo < priceAmountMinor; null if none (added 2026-10-07). */
+  promoPriceAmountMinor: number | null;
   sortOrder: number;
   active: boolean;           // always true outside the admin endpoints
 }
@@ -2145,7 +2445,7 @@ export interface PlanTierRequestDto {
                                    // day; sending it is a 400 like any unknown field.
   priceCurrency?: string;          // exactly 3 chars, ISO 4217
   billingPeriod?: BillingPeriod;
-  discountPercent?: number;        // 0-100
+  discountPercent?: number;        // 0-100, at most two decimals
   discountLabel?: string;          // max 100
   discountStartsAt?: string;
   discountEndsAt?: string;
@@ -2171,7 +2471,7 @@ export interface PlanTierPatchDto {
                                    // plan (2026-09-23). autoDeleteMonths is gone: a 400 too.
   priceCurrency?: string;
   billingPeriod?: BillingPeriod;
-  discountPercent?: number;
+  discountPercent?: number;        // 0-100, at most two decimals
   discountLabel?: string;
   discountStartsAt?: string;
   discountEndsAt?: string;
@@ -2220,6 +2520,7 @@ export interface CoverageOptionRequestDto {
   kind: 'INITIAL' | 'EXTENSION';   // required
   months: number;                  // required, 1-120
   priceAmountMinor: number;        // required, >= 0, in the plan's priceCurrency
+  promoPriceAmountMinor?: number | null; // INITIAL only, 0 < promo < price; else 400 5151
   sortOrder?: number;              // >= 0
 }
 
@@ -2229,7 +2530,10 @@ export interface CoverageOptionRequestDto {
  *  last live INITIAL option of a public, assignable plan; 409 COVERAGE_OPTION_DUPLICATE (5080) when
  *  reactivating would make a second live option of the same kind and length. */
 export interface CoverageOptionPatchDto {
-  priceAmountMinor?: number;       // >= 0; open orders keep the amount they pinned
+  priceAmountMinor?: number;       // >= 0; open orders keep the amount they pinned. Must stay
+                                   // above an existing promo price, else 400 5151
+  promoPriceAmountMinor?: number;  // sets the promo price (INITIAL only, 0 < promo < price)
+  clearPromoPrice?: boolean;       // true removes it; sending both is 400 5151
   sortOrder?: number;              // >= 0
   active?: boolean;
 }
@@ -2282,6 +2586,7 @@ export interface PlatformEventTypeResponseDto {
   isEnabled: boolean;
   sortOrder: number;
   videoMaxDurationSeconds: number; // added 2026-10-04 (V138) — longest gallery/post video, default 300
+  imageUrl: string | null;         // added 2026-10-08 (V157) — presigned card image; set via POST, cleared via DELETE .../{eventTypeKey}/image
 }
 
 /** PATCH /api/admin/platform-event-types/{eventTypeKey}. Only these are editable: the copy
@@ -2313,6 +2618,10 @@ export interface PlatformEventTypeModuleResponseDto {
    *  this module switched on. Null when the request named no plan — which is the difference
    *  between "what can this type have" and "what do I get if I buy this". */
   includedInPlan: boolean | null;
+  /** This type's copy overrides (added 2026-10-09); null = the module's default. */
+  name: LocalizedLabel | null;
+  description: LocalizedLabel | null;
+  cardLabel: LocalizedLabel | null;
 }
 
 /** PATCH /api/admin/event-types/{eventTypeKey}/modules/{moduleKey} — omitted fields unchanged. */
@@ -2320,6 +2629,12 @@ export interface PlatformEventTypeModulePatchDto {
   applicability?: ModuleApplicability;
   defaultConfig?: Record<string, unknown>;
   sortOrder?: number;
+  /** Copy overrides (added 2026-10-09). Omitted = unchanged, `null` = back to the default.
+   *  name/cardLabel max 40 chars per locale, description max 160 (after trimming).
+   *  Errors: 3056 MODULE_COPY_INCOMPLETE, 3057 MODULE_COPY_TOO_LONG, 5156 MODULE_COPY_MODULE_UNSUPPORTED. */
+  name?: LocalizedLabel | null;
+  description?: LocalizedLabel | null;
+  cardLabel?: LocalizedLabel | null;
 }
 
 // ---- Paid services ----
@@ -2444,6 +2759,8 @@ interface AppConfigResponseDto {
   /** Every member role incl. RETIRED ones (flagged), keyed by eventTypeKey, ordered by sortOrder. Resolve
    *  AuthorDto.roleKey here; the picker hides `retired`. Added 2026-10-02. See member-roles-fe-integration.md. */
   memberRolesByEventType: Record<string, MemberRoleCatalogDto[]>;
+  /** Landing pricing tabs. Added 2026-10-07. See landing-categories-fe-integration.md. */
+  landingCategories: AppLandingCategoryDto[];
   /** Every distinct `@RateLimit` bucket currently in effect. Added 2026-08-23. */
   rateLimits: AppRateLimitConfigDto[];
   /** What `ReportRequestDto.targetType` may be set to. Enum names, not free text — see
@@ -2464,6 +2781,8 @@ interface AppConfigResponseDto {
   eventDeletion: AppEventDeletionConfigDto;
   /** Added 2026-09-27. See fe-guides/beta-feedback-fe-integration.md. */
   betaFeedback: AppBetaFeedbackConfigDto;
+  /** Added 2026-10-10. See fe-guides/error-tracking-fe-integration.md. */
+  errorTracking: AppErrorTrackingConfigDto;
 }
 
 /**
@@ -2749,7 +3068,9 @@ export interface QrLinkPatchDto {
   expiresAt?: string;
 }
 
-/** Host-facing view. Returned by every /api/qr-links and /api/events/{id}/qr-links endpoint. */
+/** Host-facing view. Returned by every /api/qr-links and /api/events/{id}/qr-links endpoint.
+ *  GET /api/events/{eventId}/qr-links is also open to a planner vendor (QR_READ, 2026-10-19): they see the shared
+ *  codes only, with `metadata`, `createdByUserId` and `targetId` null. No one sees a code on a vendor link. */
 export interface QrLinkResponseDto {
   id: string;
   eventId: string;
@@ -3064,7 +3385,8 @@ export interface PriceBreakdown {
    *  STORAGE_PACK. */
   discounts: PriceBreakdownDiscount[];
   /** What came off the plan items, after the cap. Can exceed `discountCapPercent`: a plan's own
-   *  promotion is never cut back, only a code on top of it. */
+   *  promotion is never cut back, only a code on top of it. Percentage discounts only, and may
+   *  carry decimals (2026-10-07): with a promo price it is the code's percent, or 0. */
   combinedDiscountPercent: number;
   discountCapPercent: number;
   /** True when the cap cut the code back. */
@@ -3126,8 +3448,13 @@ export interface PriceBreakdownDiscount {
   /** The label its owner set, or null when there is none (render "discount code −N%" then). Never
    *  the raw code string. */
   label: string | null;
-  /** This discount's own headline percent, before the cap. */
-  percent: number;
+  /** This discount's own headline percent, before the cap. May carry decimals (2026-10-07).
+   *  Null for a duration's promo price, which is an amount: read `amountMinor` and render
+   *  "promotion −30,00 €" rather than a percent. */
+  percent: number | null;
+  /** What a promo price took off the plan line; null for a percentage, and absent on snapshots
+   *  taken before 2026-10-07. */
+  amountMinor?: number | null;
 }
 
 /** `PriceBreakdown.Vat` on the server. */
@@ -3330,6 +3657,10 @@ export interface OrderSummary {
    *  GET /api/events/{eventId}/billing. On a gift event, false means every amount above and
    *  `breakdown` are null: render "Gift" and hide Withdraw. See gift-mode-fe-integration.md §6. */
   paidByCaller: boolean | null;
+  /** NEW 2026-10-10 — whether this is the first order the reading host ever paid, on any event
+   *  (earlier orders refunded since still count). Null unless `paidByCaller` is true and the order
+   *  is paid. The FE passes it to Google Ads as `new_customer`. */
+  firstPurchase: boolean | null;
 }
 
 /** Carries no raw code, no partner identity and no redemption id — the host is shown the label the
@@ -3357,10 +3688,12 @@ export interface UpgradeOptionResponseDto {
   planTierName: string;
   currency: string;
   /** The target plan's own promotion percent, behind every `payableAmountMinor` below, or null when
-   *  it has no live promotion. */
+   *  it has no live percent. May carry decimals. An option whose duration has a promo price ignores
+   *  it: the gap is cut by the proportion the promo price takes off that duration (2026-10-07). */
   discountPercent: number | null;
-  /** The target plan's promotion label. Null whenever `discountPercent` is, and also when the
-   *  promotion was set up without a label — never a code's label. */
+  /** The target plan's promotion label, set whenever the promotion takes something off a listed
+   *  option (percent or promo price). Null otherwise, and when the promotion was set up without a
+   *  label — never a code's label. */
   discountLabel: string | null;
   /** The plan's durations at least as long as the event's own and dearer than it, in display
    *  order. Never empty: a plan with none is left out of the list. */
@@ -3706,7 +4039,9 @@ export interface CodePreviewResponseDto {
    *  promotion took something off — read `combinedDiscountPercent` there. */
   discountPercent: number;
   /** What will actually come off, after the plan's own promotion is added in and the total
-   *  clamped. May be **lower** than `discountPercent` during a plan promotion — show this one. */
+   *  clamped. May be **lower** than `discountPercent` during a plan promotion — show this one.
+   *  May carry decimals; with a promo price it counts the code only (the promo is already in
+   *  `payableAmountMinor`). */
   combinedDiscountPercent: number;
   /** The chosen duration's price (or, on an upgrade preview, the gap) after that discount,
    *  excluding any add-ons. */
@@ -3715,6 +4050,10 @@ export interface CodePreviewResponseDto {
   /** The whole purchase this previews, item by item, add-ons included (2026-09-24). Never null. On the
    *  pre-creation preview it has no add-ons and no dates (`coverage.endsAt` and `performedAt` null). */
   breakdown: PriceBreakdown;
+  /** NEW 2026-10-19 — true when the code's partner will be emailed a link to join the event as its vendor: the partner
+   *  has a vendor type and the event's plan includes the vendors module and allows that type. False on an upgrade
+   *  preview. Show the line only alongside the partner notice. */
+  vendorOffer: boolean;
 }
 
 // ---- Partners (admin) ----
@@ -3729,25 +4068,75 @@ export interface CollaboratorRequestDto {
   status?: CollaboratorStatus;
 }
 
-/** Never carries the portal token — only whether one has been issued, and when. */
 export interface CollaboratorResponseDto {
   id: string;
   name: string;
   contactEmail: string;
   status: CollaboratorStatus;
-  portalTokenIssued: boolean;
-  portalTokenIssuedAt: string | null;
   notes: string | null;
   /** Same rows as GET …/earnings/totals, on every collaborator response including the list.
    *  Always an array; [] when the partner has never earned. */
   earningsTotals: EarningTotalDto[];
+  // Business details (2026-10-08), set via PUT …/business-details. All nullable.
+  websiteUrl: string | null;
+  contactPersonName: string | null;
+  contactPhone: string | null;        // E.164
+  billingEmail: string | null;        // null = invoices go to contactEmail
+  legalName: string | null;
+  countryCode: string | null;         // VIES code: EL for Greece
+  vatNumber: string | null;           // without the country prefix
+  taxOffice: string | null;           // ΔΟΥ
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  postalCode: string | null;
+  viesStatus: ViesStatus | null;      // null while no VAT number is set
+  viesCheckedAt: string | null;
+  viesName: string | null;
+  viesAddress: string | null;
+  payoutIban: string | null;          // full IBAN — admin only
+  payoutAccountHolder: string | null;
+  /** Column names still blocking a payout (5096); [] when the partner can be paid. */
+  missingPayoutFields: string[];
+  /** Tiered commission (2026-10-08): the schedule, ascending; [] when the partner is untiered and
+   *  earns each code's own rate. */
+  commissionTiers: CommissionTierDto[];
+  /** Activations counting toward a tier this calendar year (Athens time). Fully refunded ones
+   *  don't count; partly refunded ones do. */
+  activationsThisYear: number;
 }
 
-/** POST /api/admin/collaborators/{collaboratorId}/portal-token — rotates and returns the token.
- *  Returned once at issue and never again: show it, and tell the admin to send it now. */
-export interface PortalTokenResponseDto {
-  token: string;
-  portalUrl: string;
+/** One step of a commission schedule: from the minActivations-th activation of the year, earn
+ *  commissionPercent. */
+export interface CommissionTierDto {
+  minActivations: number;     // >= 1; the first tier must be 1
+  commissionPercent: number;  // 1-100; never lower than the tier below
+}
+
+/** PUT /api/admin/collaborators/{collaboratorId}/commission-tiers — replaces the whole schedule;
+ *  tiers: [] removes it. At most 10 tiers, thresholds strictly increasing. 400 otherwise.
+ *  Returns CollaboratorResponseDto. Only later activations are affected. */
+export interface CommissionTiersRequestDto {
+  tiers: CommissionTierDto[];
+}
+
+/** PUT /api/admin/collaborators/{collaboratorId}/business-details — a full replacement of these
+ *  fields only; null or "" clears one. Bad values are a 400 naming the field. */
+export interface CollaboratorBusinessDetailsRequestDto {
+  websiteUrl?: string | null;          // https only, max 500
+  contactPersonName?: string | null;   // max 200
+  contactPhone?: string | null;        // international format, e.g. +302101234567
+  billingEmail?: string | null;
+  legalName?: string | null;           // max 200
+  countryCode?: string | null;         // VIES code, EU only; set together with vatNumber
+  vatNumber?: string | null;
+  taxOffice?: string | null;           // required when countryCode is EL
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  postalCode?: string | null;
+  payoutIban?: string | null;          // checksum-validated, stored encrypted
+  payoutAccountHolder?: string | null; // max 140
 }
 
 /** POST /api/admin/collaborators/{collaboratorId}/codes. */
@@ -3845,6 +4234,9 @@ export interface EarningResponseDto {
   accruedAt: string;
   paidAt: string | null;
   payoutReference: string | null;
+  /** Which activation of the year chose a tiered partner's rate; null when untiered and on
+   *  clawbacks. */
+  activationNumber: number | null;
 }
 
 /** GET /api/admin/collaborators/{collaboratorId}/earnings/totals — one row per currency. Never
@@ -3863,11 +4255,12 @@ export interface MarkPaidRequestDto {
 }
 
 /**
- * GET /api/partners/{token} — the partner's own page, reachable by anyone holding the link.
+ * GET /api/partners/me — the signed-in partner's own page. Opens only for a verified account whose
+ * email matches an active partner's contact email; otherwise 403 with 4037 (not verified) or 4038
+ * (not linked).
  *
- * Deliberately aggregate-only for that reason: a forwarded email, a screenshot or a bookmark on a
- * shared machine all reach it, so it carries no host names, no host emails, no event titles and no
- * event ids. A partner learns how much they have earned, not who our customers are.
+ * Aggregate-only: no host names, no host emails, no event titles and no event ids. A partner learns
+ * how much they have earned, not who our customers are.
  *
  * It reports commission accrued rather than "discount delivered", because the combined-discount
  * ceiling can swallow part of a code's headline percentage during a plan promotion — the second
@@ -3877,6 +4270,37 @@ export interface PartnerPageDto {
   name: string;
   eventsReferred: number;
   totals: EarningTotalDto[];
+  /** Null when the partner has no tiered schedule. */
+  tierProgress: TierProgressDto | null;
+  /** 2026-10-29. Never null; a partner who was never a vendor has zeros and no rows. */
+  reach: PartnerReachDto;
+  /** 2026-11-01. The partner's feed card for the preview on the business page: variant FEATURE_CARD, linkUrl and placement null. Null while branding is off. */
+  cardPreview: PartnerBrandingCard | null;
+}
+
+/** Aggregate only, like the rest of PartnerPageDto: no event titles or ids. fe-guides/vendor-reach-and-sneak-peek-fe-integration.md */
+export interface PartnerReachDto {
+  events: number;                 // vendor rows (not removed) of events not deleted, matched by the partner's contact email
+  guests: number;                 // guests summed over those events
+  proViews: number;               // Pro item views
+  postViewers: number;            // distinct viewers of the vendor's posts, summed per event
+  listTaps: number;
+  recent: PartnerReachEventDto[]; // up to 10
+}
+export interface PartnerReachEventDto {
+  startAt: string;
+  vendorType: PartnerRole;
+  guests: number;
+  views: number;                  // Pro item views plus post views in that event
+}
+
+/** Counts only — nothing per event. */
+export interface TierProgressDto {
+  activationsThisYear: number;
+  /** The rate the partner's next activation would earn. */
+  currentPercent: number;
+  nextTierMinActivations: number | null;  // null at the top tier
+  nextTierPercent: number | null;         // null at the top tier
 }
 
 // ---- House discount codes (admin, no partner attached) ----
@@ -4234,3 +4658,381 @@ export interface AdminOrderDetailDto {
     paidAt: string | null;
   }[];
 }
+
+// =====================================================================================
+// Boy or Girl? quiz — module `he_or_she`, GENDER_REVEAL only (2026-10-10)
+// Base: /api/events/{eventId}/he-or-she. See fe-guides/he-or-she-quiz-fe-integration.md.
+// =====================================================================================
+
+type QuizAnswerType = 'HE_SHE' | 'YES_NO' | 'CHOICE' | 'DATE' | 'TIME' | 'NUMBER' | 'FILL_GAP' | 'FREE_TEXT';
+
+interface QuizOption { id: string; label: string }
+
+interface QuizQuestionDto {
+  id: string;
+  answerType: QuizAnswerType;
+  prompt: string;
+  options: QuizOption[] | null;  // CHOICE only
+  sortOrder: number;
+}
+
+/** GET / — one role-aware view. PUT /answers and PUT /settings return it too. */
+interface HeOrSheViewDto {
+  status: 'OPEN' | 'CLOSED';
+  closesAt: string | null;       // when voting closes; re-fetch when it passes (closed is computed on read)
+  canGuess: boolean;             // open and the event takes writes; hosts vote too
+  myGuess: 'HE' | 'SHE' | null;
+  tally: { he: number; she: number } | null;  // null for a member who hasn't voted while OPEN; never null for hosts or once CLOSED
+  questions: QuizQuestionDto[];  // extra questions, in order
+  myAnswers: Record<string, string>;  // questionId -> canonical value
+}
+
+/** PUT /answers — the caller's whole set. An extra question left out has its answer cleared. */
+interface HeOrSheAnswersRequestDto {
+  guess: 'HE' | 'SHE';
+  answers: { questionId: string; value: string }[];  // at most 20
+}
+
+/** PUT /settings (host). null clears it, so voting stays open. Must be >= 1 minute ahead. */
+interface HeOrSheSettingsRequestDto { closesAt: string | null }
+
+/** POST /questions (host) -> 201 QuizQuestionDto. */
+interface QuizQuestionRequestDto { answerType: QuizAnswerType; prompt: string; options?: string[] }
+
+/** PATCH /questions/{id} (host) -> QuizQuestionDto. Null fields unchanged; the type never changes. */
+interface QuizQuestionPatchDto {
+  prompt?: string;
+  options?: { id?: string; label: string }[];  // send an option's id to keep it; locked once answered (5172)
+  sortOrder?: number;
+}
+
+/** GET /results (host) — every answer by name. An empty answers[] means nobody answered (options unlocked). */
+interface HeOrSheResultsDto {
+  main: { memberId: string; displayName: string; avatarUrl: string | null; guess: 'HE' | 'SHE' }[];
+  questions: { questionId: string; answers: { memberId: string; displayName: string; avatarUrl: string | null; value: string }[] }[];
+}
+
+// =====================================================================================
+// Quiz & Polls — module `quiz_polls`, WEDDING and BAPTISM only (2026-10-18)
+// Base: /api/events/{eventId}/quiz-polls. See fe-guides/quiz-polls-fe-integration.md.
+// Reuses QuizAnswerType, QuizOption and the canonical answer values of Boy or Girl?.
+// =====================================================================================
+
+type QuizQuestionKind = 'QUIZ' | 'POLL';
+
+interface QuizPollsQuestion {
+  id: string;
+  kind: QuizQuestionKind;
+  answerType: QuizAnswerType;     // QUIZ: CHOICE | YES_NO | HE_SHE only
+  prompt: string;
+  options: QuizOption[] | null;   // CHOICE only
+  sortOrder: number;
+  myAnswer: string | null;        // the caller's canonical value
+  correctValue: string | null;    // QUIZ only: hosts always, everyone once CLOSED. CHOICE: an option id
+  tally: { value: string; count: number }[] | null;  // most given first, never names. POLL: hosts, members who answered it, everyone once CLOSED. QUIZ: hosts and once CLOSED
+}
+
+/** GET / — one role-aware view. Answer writes, PUT /settings and POST /close return it too. */
+interface QuizPollsViewDto {
+  status: 'OPEN' | 'CLOSED';
+  closesAt: string | null;        // re-fetch when it passes (closed is computed on read)
+  canAnswer: boolean;             // open and the event takes writes
+  heLabel: string | null;         // the HE side of a HE_SHE question; null = show the event type's default
+  sheLabel: string | null;
+  questions: QuizPollsQuestion[]; // in order
+  myScore: { correct: number; total: number } | null;  // once CLOSED, never for hosts, null with no QUIZ questions
+  leaderboard: { rank: number; memberId: string; displayName: string; avatarUrl: string | null; correct: number }[] | null;
+                                  // hosts always, everyone once CLOSED, null with no QUIZ questions. Ties: who finished first
+}
+
+/** PUT /questions/{id}/answer -> QuizPollsViewDto. Replaces the caller's answer. Hosts can't answer QUIZ questions (5176). */
+interface QuizPollsAnswerRequestDto { value: string }
+// DELETE /questions/{id}/answer -> QuizPollsViewDto. Clears it.
+
+/** PUT /settings (host) — a replace. Allowed while CLOSED, so null or a future time reopens. */
+interface QuizPollsSettingsRequestDto {
+  closesAt: string | null;        // >= 1 minute ahead (3102)
+  heLabel: string | null;         // <= 40 characters; blank = default
+  sheLabel: string | null;
+}
+// POST /close (host) -> QuizPollsViewDto. Closes now.
+
+/** POST /questions (host) -> 201 QuizPollsQuestion. At most 30 questions (5173). */
+interface QuizPollsQuestionRequestDto {
+  kind: QuizQuestionKind;
+  answerType: QuizAnswerType;
+  prompt: string;
+  options?: string[];             // CHOICE only, 2-8 distinct labels
+  correctValue?: string;          // QUIZ: required. HE|SHE, YES|NO, or the correct option's label. POLL: refused
+}
+
+/** PATCH /questions/{id} (host) -> QuizPollsQuestion. Null fields unchanged; kind and type never change. */
+interface QuizPollsQuestionPatchDto {
+  prompt?: string;
+  options?: { id?: string; label: string }[];  // locked once answered (5172)
+  sortOrder?: number;
+  correctValue?: string;          // QUIZ only; CHOICE by label. Required if the options drop the correct one
+}
+// DELETE /questions/{id} (host) -> 204.
+
+/** GET /results (host) — every answer by name. */
+interface QuizPollsResultsDto {
+  questions: { questionId: string; answers: { memberId: string; displayName: string; avatarUrl: string | null; value: string }[] }[];
+}
+
+// =====================================================================================
+// Vendors in the event — module `vendors` (2026-10-19)
+// Base: /api/events/{eventId}/vendors. A vendor is hired help (planner, photographer, DJ, ...) who joins
+// through a vendor link. A vendor takes no guest seat, never RSVPs and is left out of RSVP counts.
+// Adds to: ErrorCode 4032-4034 and 5177-5180, NotificationType VENDOR_JOINED, ModuleKey `vendors`,
+// MediaResponseDto.collection/proCredit, AuthorDto.vendorType, PlaylistSuggestionLeaderboardDto.playedAt,
+// EventUsageResponseDto Pro fields, EventInvitationPreviewDto.vendorType, CodePreviewResponseDto.vendorOffer.
+// =====================================================================================
+
+/** What a partner or a vendor does. The frontend localises the label; the backend sends the key. Also the vendor types. */
+type PartnerRole = 'PLANNER' | 'VENUE' | 'PHOTOGRAPHER' | 'VIDEOGRAPHER' | 'DECORATION' | 'CATERING' | 'MUSIC' | 'OTHER';
+
+/** A vendor tool. Fixed per type: PHOTOGRAPHER gets PRO_ALBUM, PRINT_PICKS and SNEAK_PEEK; VIDEOGRAPHER gets PRO_ALBUM and SNEAK_PEEK; PLANNER gets SCHEDULE_EDIT, ANNOUNCE,
+ *  RSVP_REPORT and QR_READ; MUSIC gets SONG_REQUESTS. VENUE, DECORATION, CATERING and OTHER have no tools (listing only). */
+type VendorCapability = 'PRO_ALBUM' | 'SCHEDULE_EDIT' | 'ANNOUNCE' | 'RSVP_REPORT' | 'QR_READ' | 'SONG_REQUESTS' | 'PRINT_PICKS' | 'SNEAK_PEEK';
+
+/** Why a vendor's tools are off. Null in VendorMeDto while they are open. */
+type VendorToolsOff = 'MODULE_OFF' | 'TYPE_NOT_ALLOWED' | 'ACCESS_ENDED';
+
+/** POST /api/public/partner-applications -> 201 PartnerApplicationCreatedDto. No session. 5 per hour per client (429 RATE_LIMITED 3010).
+ *  409 PARTNER_APPLICATION_PENDING (5180) while an application with the same email is still pending. */
+interface PartnerApplicationRequestDto {
+  name: string;           // required, max 100
+  businessName: string;   // required, max 80
+  role: PartnerRole;      // required
+  email: string;          // required, valid, max 254
+  link: string;           // required, max 500: an https URL or an @handle
+  countryCode: string;    // required, two capital letters, e.g. "GR"
+  phone?: string;         // max 40; digits, spaces, "+", "(", ")", "-", at least 6; an empty string is fine
+  locale: 'el' | 'en';    // required
+  consent: boolean;       // required, must be true
+  utmSource?: string; utmMedium?: string; utmCampaign?: string; // max 100 each
+  website?: string;       // honeypot: leave it empty and hidden from people. A filled value is answered 201 with a made-up id and dropped
+}
+interface PartnerApplicationCreatedDto { id: string; }
+
+/** GET /api/events/{eventId}/vendors — any event member; needs the vendors module readable. Guests get the vendors with a card
+ *  (a saved profile) that are neither hidden by a host nor opted out. A host gets every active vendor. */
+interface VendorRowDto {
+  id: string;                        // the vendor id used by PATCH, DELETE and clicks
+  memberId: string | null;
+  vendorType: PartnerRole;
+  businessName: string | null;       // from the vendor's profile; null until they fill it in
+  link: string | null;               // https URL or @handle
+  logoUrl: string | null;            // presigned; null without a logo
+  joinedAt: string;
+  hiddenByHost?: boolean;            // present only for hosts and on the vendor's own row
+  optedOut?: boolean;                // present only for hosts and on the vendor's own row
+}
+// GET /api/admin/events/{eventId}/vendors — ADMIN. The event's active vendors, read-only, both flags always present. -> VendorRowDto[]. 404 for an unknown event.
+
+/** GET /api/events/{eventId}/vendors/me — the caller's vendor role in this event. 404 means the caller is not a vendor of it.
+ *  Keep calling it after the event: the tools close accessDaysAfterEvent days after it ends, but this still answers,
+ *  with the capabilities gone, accessOpen false and toolsOff set. */
+interface VendorMeDto {
+  vendorId: string;
+  vendorType: PartnerRole;
+  capabilities: VendorCapability[];  // empty while the tools are off
+  accessEndsAt: string | null;       // event end + vendors.accessDaysAfterEvent; null when the module is off for the event
+  accessOpen: boolean;
+  profileComplete: boolean;          // the caller has a vendor profile (a card)
+  showPartnerPrompt: boolean;        // offer "Become a partner": has a profile, not dismissed, not already a partner or applicant
+  proStorageBytes: number | null;    // the Pro album allowance; set for photographer and videographer only, and stays set while the tools are off
+  proUsedBytes: number | null;       // same
+  optedOut: boolean;                 // the vendor hid themself from the guest list
+  hiddenByHost: boolean;
+  toolsOff: VendorToolsOff | null;   // null while the tools are open
+  approvedPartner: boolean;          // 2026-10-24: an active partner with the caller's email; only they can list priced services
+  sneakPeek: SneakPeekSummaryDto | null; // 2026-10-29: null for types without SNEAK_PEEK (everything but photographer and videographer)
+}
+
+/** PATCH /api/events/{eventId}/vendors/{vendorId} -> VendorRowDto (flags included). Send exactly one field, else 400 VALIDATION_FAILED.
+ *  hiddenByHost: host only. optedOut: the vendor themself only (403 FORBIDDEN otherwise). */
+interface VendorPatchDto { hiddenByHost?: boolean; optedOut?: boolean; }
+
+// DELETE /api/events/{eventId}/vendors/{vendorId} — host only. 204. Removes the vendor role and the membership.
+
+// POST /api/events/{eventId}/vendors/{vendorId}/clicks — any event member. 202, no body. 60 per hour per user (429 RATE_LIMITED 3010).
+// Send it when a guest taps a vendor's link. Nothing is counted for a hidden or opted-out vendor, one without a card, or the vendor's own tap, but the answer is the same.
+
+/** GET /api/events/{eventId}/vendors/links — host only; creates any missing link first. One per allowed type, sorted by type.
+ *  Build the invite URL from the token as for other invitations. */
+interface VendorLinkDto { vendorType: PartnerRole; inviteToken: string; createdAt: string; }
+// POST /api/events/{eventId}/vendors/links/{vendorType}/reset — host only -> VendorLinkDto with a new token. The old link stops working at once; members who joined stay. 404 for a type the plan does not allow.
+
+/** GET /api/me/vendor-profile -> VendorProfileDto (404 until the first PUT). PUT /api/me/vendor-profile creates or replaces the text fields and returns it. */
+interface VendorProfileDto {
+  businessName: string;
+  vendorType: PartnerRole;
+  link: string;                      // https URL or @handle
+  logoUrl: string | null;            // presigned
+  partnerPromptDismissed: boolean;
+}
+interface VendorProfileRequestDto {
+  businessName: string;              // required, max 80
+  vendorType: PartnerRole;           // required
+  link: string;                      // required, max 500: an https URL or an @handle
+}
+// POST /api/me/vendor-profile/logo — multipart, one `file` part, an image. 20 per hour per user. -> VendorProfileDto. 404 until the profile exists.
+// DELETE /api/me/vendor-profile/logo -> VendorProfileDto. No logo is not an error.
+// POST /api/me/vendor-profile/dismiss-partner-prompt — 204. Hides showPartnerPrompt for good. 404 until the profile exists.
+
+// ---- Vendor reach and sneak peek (added 2026-10-29) — fe-guides/vendor-reach-and-sneak-peek-fe-integration.md ----
+
+/** VendorMeDto.sneakPeek. `used` stays true after the post is deleted (postId and content null, mediaIds []): one per vendor and event. */
+interface SneakPeekSummaryDto { postId: string | null; mediaIds: string[]; content: string | null; used: boolean; }
+
+/** POST /api/events/{eventId}/vendors/me/sneak-peek -> 201 PostResponseDto (type "SNEAK_PEEK", isPinned true). Photographer or videographer, from the event's
+ *  start until their access ends. mediaIds: 1..20 of the caller's own live, ready Pro items, in display order, no duplicates. Notifies every member once. */
+interface SneakPeekRequestDto { mediaIds: string[]; content?: string; }   // content: max 500 like a post; blank = none
+
+/** PATCH /api/events/{eventId}/vendors/me/sneak-peek -> 200 PostResponseDto. Omitted/null field = unchanged; mediaIds replaces the items (1..20); blank content clears the caption.
+ *  No new notification. 404 when the caller has no sneak peek. DELETE (same path) -> 204; the Pro items stay, the vendor cannot post another (5188). */
+interface SneakPeekPatchDto { mediaIds?: string[]; content?: string; }
+
+/** GET /api/events/{eventId}/vendors/me/reach — the caller's own vendor row (not removed); readable after access ends and with the module off.
+ *  Hosts, guests and removed vendors: 403 VENDOR_CAPABILITY_MISSING 4032. Null fields are OMITTED from the JSON (absent, not null).
+ *  Everyone: guests, listTaps, partner. Approved partners (partner true) also: postViewers, reactions, comments, partnerCardTaps; and proViewers, proViews for photographer and videographer only. */
+interface VendorReachDto {
+  guests: number;            // live non-host, non-vendor members of the event
+  listTaps: number;          // taps on the vendor's card in the guest list
+  partner: boolean;
+  proViewers?: number;       // distinct members who opened a Pro item of this vendor
+  proViews?: number;         // Pro item views (one per member and item)
+  postViewers?: number;      // distinct members who saw a post of this vendor
+  reactions?: number;        // on the vendor's posts
+  comments?: number;         // on the vendor's posts
+  partnerCardTaps?: number;  // taps on the partner's card in this event; 0 when it never ran (hide the tile at 0)
+}
+
+/** POST /api/events/{eventId}/views -> 204, always, for any event member (non-members 403). Batch what the client saw since its last flush (every ~10 s and when the page hides).
+ *  Each list max 50 (400 VALIDATION_FAILED above that), either may be empty or absent. mediaIds: Pro items opened in the viewer. postIds: posts by a vendor on screen.
+ *  Hosts, the vendor's own items and any id that is neither are dropped without an error. One view per member and target, ever. 240 requests per hour per user (429 RATE_LIMITED 3010). */
+interface ContentViewsRequestDto { mediaIds?: string[]; postIds?: string[]; }
+
+// ---- Print picks, part A: services and host picks (added 2026-10-24) — fe-guides/print-picks-fe-integration.md ----
+
+/** Only PRINT is accepted for now; OTHER is reserved (any other kind on POST/PUT is 400 VALIDATION_FAILED). */
+type VendorServiceKind = 'PRINT' | 'OTHER';
+type GuestPrintScope = 'OFF' | 'OWN' | 'ANY';        // always OFF until part B
+type PrintListOwnerKind = 'HOST' | 'GUEST';
+type PrintListStatus = 'OPEN' | 'SENT';
+
+/** GET/POST /api/me/vendor-profile/services, PUT/DELETE .../services/{id}.
+ *  GET: no partner check; an empty list without a profile. POST -> 201 and PUT, in order: kind not PRINT 400 VALIDATION_FAILED;
+ *  not an approved partner 403 PARTNER_REQUIRED 4035; no profile 404; not a photographer 403 VENDOR_CAPABILITY_MISSING 4032.
+ *  PUT: unknown id 404, changed kind 400. DELETE -> 204, no partner check, unknown id 404. */
+interface VendorServiceItemDto { id: string; kind: VendorServiceKind; label: string; priceCents: number; currency: 'EUR'; sortOrder: number; }
+interface VendorServiceItemRequestDto {
+  kind: VendorServiceKind;           // required; only PRINT is accepted for now
+  label: string;                     // required, max 40
+  priceCents: number;                // required, 0..100000
+  sortOrder?: number;                // 0..999; omitted on create = last
+}
+
+/** GET /api/events/{eventId}/print-picks — any signed-in event member. Needs the vendors module readable:
+ *  409 MODULE_NOT_AVAILABLE 5012 when it is off or not in the plan; 403 EVENT_SUSPENDED 4015 for a host of a suspended StoryWall. */
+interface PrintPicksContextDto {
+  guestScope: GuestPrintScope;
+  photographers: {                   // open photographers, oldest first. Hosts see every one; a photographer sees themself
+    vendorId: string; businessName: string | null; logoUrl: string | null; accessEndsAt: string;
+    hostPrintsIncluded: number | null;   // hosts and the photographer themself; null for guests
+    sizes: { id: string; label: string; priceCents: number; currency: string }[];   // empty without sizes or for a non-partner
+  }[];
+}
+
+/** GET /api/events/{eventId}/print-lists/host?vendorId= — hosts, and the photographer it is for (another photographer 403 FORBIDDEN).
+ *  Host errors: 404 unknown or removed photographer, 409 MODULE_NOT_AVAILABLE 5012 (vendors module off), 403 VENDOR_ACCESS_ENDED 4033 once the window closed.
+ *  Photographer errors (this endpoint, prints-included, manifest, archive): 403 VENDOR_CAPABILITY_MISSING 4032 when the module is off or their type is no longer allowed, 403 VENDOR_ACCESS_ENDED 4033 once the window closed.
+ *  The host list is shared by every host and co-host of the event. A list never written has id null and no items. */
+interface PrintListDto {
+  id: string | null; vendorId: string; ownerKind: PrintListOwnerKind; status: PrintListStatus; sentAt: string | null;
+  ownerName: string | null; contactEmail: string | null; contactPhone: string | null; totalCents: number | null;
+  removedCount: number; items: PrintListItemDto[];
+}
+interface PrintListItemDto {
+  id: string; mediaId: string; media: MediaResponseDto | null; removed: boolean; sizeId: string | null;
+  sizeLabel: string | null; unitPriceCents: number | null; copies: number;
+}
+// POST  /api/events/{eventId}/print-lists/host/items  { vendorId, mediaIds (1..100) } — host only -> PrintListDto. Photos already on the list are kept.
+// PATCH /api/events/{eventId}/print-lists/items/{itemId}  { sizeId?, copies? (1..99) } — host only -> PrintListDto. Send at least one field.
+// DELETE /api/events/{eventId}/print-lists/items/{itemId} — host only -> PrintListDto.
+// PATCH /api/events/{eventId}/vendors/me/prints-included  { count: 0..9999 } — the photographer -> 204.
+// GET   /api/events/{eventId}/print-lists/{listId}/archive/manifest -> { parts: { part, itemCount, bytes }[] } — the list's photographer. parts [] = nothing to download (hide "Download all"); archive?part=1 is then 400 MEDIA_ARCHIVE_PART_NOT_FOUND.
+// GET   /api/events/{eventId}/print-lists/{listId}/archive?part=1 — the list's photographer; a zip stream, part 1 also holds prints.txt (en or el, the photographer's locale).
+
+// ---- My business page (added 2026-11-01) — fe-guides/my-business-fe-integration.md ----
+
+/** The feed card as sent in event feeds (PartnerBrandingDto). In cardPreview, variant is FEATURE_CARD and linkUrl, placement are null. */
+interface PartnerBrandingCard {
+  variant: string;
+  displayName: string;
+  role: PartnerRole;
+  logoUrl: string | null;
+  coverUrl: string | null;
+  tagline: { el: string | null; en: string | null };
+  services: { el: string | null; en: string | null };
+  linkUrl: string | null;
+  placement: { firstAfter: number; every: number } | null;
+}
+
+/** GET /api/me/business — vendors and approved partners, else 403 NOT_A_VENDOR 4039. 60 per minute. Null fields are OMITTED (absent, not null): test with `!== undefined`.
+ *  An approved partner with no vendor profile or rows gets partner: true, zeros, six zero months and no content. */
+interface BusinessOverviewDto {
+  partner: boolean;
+  showPartnerPrompt: boolean;     // the "Become a partner" prompt; same rule as VendorMeDto.showPartnerPrompt (false for partners, pending applicants, dismissed, no profile)
+  vendorType?: PartnerRole;       // the profile's type, else the newest event row's, else an approved partner's role
+  totals: {
+    events: number;               // events not deleted where the caller is or was a vendor (removed by the host counts), each once
+    guests: number;
+    listTaps: number;
+    proViews?: number;            // partners only
+    postViewers?: number;         // partners only
+    cardTaps?: number;            // partners only
+  };
+  /** Partners only: exactly 6 months, oldest first, the current month last; month is YYYY-MM in Europe/Athens; no views = 0. */
+  trend?: { month: string; views: number }[];
+  /** Only for types with the Pro album (photographer, videographer). */
+  content?: { proItems: number; sneakPeeks: number; proUsedBytes: number };
+}
+
+/** GET /api/me/business/events?page=&size= -> Page<BusinessEventDto>. Default size 20, max 50, newest first, client sort ignored.
+ *  One row per event, including events the host removed the caller from (open false). An approved partner with no vendor rows gets an empty page. */
+interface BusinessEventDto {
+  eventId: string;
+  title: string;
+  startAt: string;
+  vendorType: PartnerRole;
+  guests: number;
+  views?: number;                 // partners only: Pro item views plus post views in the event
+  open: boolean;                  // the event's vendor page opens now (not removed, module on, type allowed, window open); worked out per request. false: no link
+}
+
+type VendorContactTopic = 'QUESTION' | 'PROBLEM' | 'PARTNERSHIP' | 'OTHER';
+type VendorContactStatus = 'NEW' | 'ANSWERED';
+
+/** POST /api/me/business/messages -> 201 { id, createdAt }. Vendors and approved partners only (403 NOT_A_VENDOR 4039). message: not blank, max 2000, trimmed server-side.
+ *  5 per day per user, then 429 RATE_LIMITED 3010; 400 and 403 answers count too, and the limit is per server instance. The sender and reply email come from the account. */
+interface VendorContactRequestDto { topic: VendorContactTopic; message: string; }
+interface VendorContactCreatedDto { id: string; createdAt: string; }
+
+/** ADMIN only. GET /api/admin/vendor-messages?status=&page=&size= -> Page<VendorContactMessageDto> (default and max size 50, newest first).
+ *  PATCH /api/admin/vendor-messages/{id} { status } -> VendorContactMessageDto; ANSWERED sets answeredAt, NEW clears it. Unknown id 404. */
+interface VendorContactMessageDto {
+  id: string;
+  userId?: string;                // absent once the account is deleted
+  businessName?: string;          // the profile's business name, else the account's name; absent only when neither existed
+  replyEmail: string;
+  topic: VendorContactTopic;
+  message: string;
+  status: VendorContactStatus;
+  createdAt: string;
+  answeredAt?: string;
+  emailVerified: boolean;         // the account's email is verified now; false once the account is deleted
+}
+// Admin push VENDOR_MESSAGE (ADMIN phones only), FCM data { type, link: '#vendor-messages', topic, name?, messageId }: name is the business's, else the account's; the key is absent when neither exists (never '').
