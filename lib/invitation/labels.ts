@@ -53,6 +53,8 @@ export type InvitationLabels = {
     rsvpError: string;
     rsvpNameMissing: string;
     rsvpPhoneMissing: string;
+    rsvpPhoneInvalid: string;
+    rsvpClosed: string;
 };
 
 const SHARED = {
@@ -107,6 +109,8 @@ export const INVITATION_LABELS: Record<DateLanguage, InvitationLabels> = {
         rsvpError: 'Κάτι πήγε στραβά — δοκιμάστε ξανά.',
         rsvpNameMissing: 'Συμπλήρωσε το ονοματεπώνυμό σου.',
         rsvpPhoneMissing: 'Συμπλήρωσε το τηλέφωνο επικοινωνίας.',
+        rsvpPhoneInvalid: 'Έλεγξε το τηλέφωνο επικοινωνίας.',
+        rsvpClosed: 'Η εκδήλωση δεν δέχεται πλέον απαντήσεις.',
     },
     en: {
         ...SHARED,
@@ -147,6 +151,8 @@ export const INVITATION_LABELS: Record<DateLanguage, InvitationLabels> = {
         rsvpError: 'Something went wrong. Please try again.',
         rsvpNameMissing: 'Fill in your full name.',
         rsvpPhoneMissing: 'Fill in your contact phone.',
+        rsvpPhoneInvalid: 'Check your contact phone.',
+        rsvpClosed: 'This event is no longer accepting replies.',
     },
 };
 

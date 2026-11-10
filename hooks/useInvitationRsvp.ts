@@ -3,9 +3,18 @@
 import { type SubmitEvent, useState } from 'react';
 
 import type { InvitationLabels } from '@/lib/invitation/labels';
-import { readRsvpForm, type RsvpSender } from '@/lib/invitation/rsvp';
+import { readRsvpForm, type RsvpFormProblem, type RsvpSender } from '@/lib/invitation/rsvp';
 
 type RsvpStatus = { message: string; ok: boolean } | null;
+
+const problemLabel: Record<RsvpFormProblem, keyof InvitationLabels> = {
+    'name-missing': 'rsvpNameMissing',
+    'phone-missing': 'rsvpPhoneMissing',
+    'phone-invalid': 'rsvpPhoneInvalid',
+};
+
+// The page reloads to show that the invitation is gone. Its own function so tests can watch it.
+export const rsvpPage = { reload: () => window.location.reload() };
 
 // The invitation's RSVP form: who is attending, and sending the reply.
 export function useInvitationRsvp(send: RsvpSender | undefined, labels: InvitationLabels) {
@@ -17,16 +26,19 @@ export function useInvitationRsvp(send: RsvpSender | undefined, labels: Invitati
     async function submit(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
         const result = readRsvpForm(new FormData(event.currentTarget));
-        if ('missing' in result) {
-            setStatus({ message: result.missing === 'name' ? labels.rsvpNameMissing : labels.rsvpPhoneMissing, ok: false });
+        if ('problem' in result) {
+            setStatus({ message: labels[problemLabel[result.problem]], ok: false });
             return;
         }
 
         setSending(true);
         setStatus({ message: labels.rsvpSending, ok: true });
         try {
-            await send?.(result.reply);
-            setSent(true);
+            // Without a sender (the preview) nothing is saved, and the guest still sees the thanks.
+            const outcome = send ? await send(result.reply) : ({ ok: true } as const);
+            if (outcome.ok) setSent(true);
+            else if ('reload' in outcome) rsvpPage.reload();
+            else setStatus({ message: outcome.message, ok: false });
         } catch {
             setStatus({ message: labels.rsvpError, ok: false });
         } finally {
