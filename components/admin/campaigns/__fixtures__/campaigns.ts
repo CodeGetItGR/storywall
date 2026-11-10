@@ -43,7 +43,7 @@ export function campaignFixture(overrides: Partial<CampaignDto> = {}): CampaignD
 export function dailyFixture(rising: boolean, scale = 10) {
     return Array.from({ length: 30 }, (_, index) => ({
         date: new Date(Date.UTC(2026, 4, 17 + index)).toISOString().slice(0, 10),
-        visitors: Math.max(0, Math.round((rising ? index : 30 - index) * scale * 0.1 + (index % 3))),
+        visitors: scale === 0 ? 0 : Math.max(0, Math.round((rising ? index : 30 - index) * scale * 0.1 + (index % 3))),
     }));
 }
 
@@ -67,12 +67,31 @@ export function linkFixture(overrides: Partial<CampaignLinkDto> = {}): CampaignL
 const ITEMS: CampaignListItemDto[] = [
     {
         campaign: campaignFixture(),
-        current: countsFixture({ visits: 1460, visitors: 1240, plansClicks: 410, createClicks: 220, planPicks: 130, signedUp: 64, createdEvent: 41, paidHost: 18, sales: 21, salesRevenueMinorByCurrency: { EUR: 104900 } }),
+        current: countsFixture({
+            visits: 1460,
+            visitors: 1240,
+            plansClicks: 410,
+            createClicks: 220,
+            planPicks: 130,
+            signedUp: 64,
+            createdEvent: 41,
+            paidHost: 18,
+            sales: 21,
+            salesRevenueMinorByCurrency: { EUR: 104900 },
+        }),
         previous: countsFixture({ visits: 1010, visitors: 890, signedUp: 40, sales: 9, salesRevenueMinorByCurrency: { EUR: 44100 } }),
         daily: dailyFixture(true, 6),
     },
     {
-        campaign: campaignFixture({ id: 'autumn', name: 'Autumn posts', linkName: 'autumn', startsAt: null, endsAt: null, discount: null, linkCount: 6 }),
+        campaign: campaignFixture({
+            id: 'autumn',
+            name: 'Autumn posts',
+            linkName: 'autumn',
+            startsAt: null,
+            endsAt: null,
+            discount: null,
+            linkCount: 6,
+        }),
         current: countsFixture({ visits: 610, visitors: 540, signedUp: 12, sales: 3, salesRevenueMinorByCurrency: { EUR: 14700 } }),
         previous: countsFixture({ visits: 700, visitors: 620, signedUp: 15, sales: 3, salesRevenueMinorByCurrency: { EUR: 14700 } }),
         daily: dailyFixture(false, 3),
@@ -93,7 +112,15 @@ const ITEMS: CampaignListItemDto[] = [
         daily: dailyFixture(false, 0),
     },
     {
-        campaign: campaignFixture({ id: 'tiktok-test', name: 'TikTok test', linkName: 'tiktok-test', startsAt: null, endsAt: null, discount: null, linkCount: 1 }),
+        campaign: campaignFixture({
+            id: 'tiktok-test',
+            name: 'TikTok test',
+            linkName: 'tiktok-test',
+            startsAt: null,
+            endsAt: null,
+            discount: null,
+            linkCount: 1,
+        }),
         current: countsFixture({ visits: 150, visitors: 132 }),
         previous: countsFixture({ visits: 20, visitors: 18 }),
         daily: dailyFixture(true, 1),
@@ -106,7 +133,14 @@ const ITEMS: CampaignListItemDto[] = [
             status: 'ENDED',
             startsAt: '2026-04-01T07:00:00Z',
             endsAt: '2026-04-30T20:59:00Z',
-            discount: { id: 'discount-0', percent: 20, label: null, startsAt: '2026-04-01T07:00:00Z', endsAt: '2026-04-30T20:59:00Z', status: 'ENDED' },
+            discount: {
+                id: 'discount-0',
+                percent: 20,
+                label: null,
+                startsAt: '2026-04-01T07:00:00Z',
+                endsAt: '2026-04-30T20:59:00Z',
+                status: 'ENDED',
+            },
         }),
         current: countsFixture({ visits: 30, visitors: 26, signedUp: 1 }),
         previous: countsFixture({ visits: 400, visitors: 380, signedUp: 20, sales: 6, salesRevenueMinorByCurrency: { EUR: 23500 } }),
