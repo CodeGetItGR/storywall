@@ -12,11 +12,9 @@ import { BugReportsPanel } from '@/components/admin/betaFeedback/BugReportsPanel
 import { ErrorEventsPanel } from '@/components/admin/betaFeedback/ErrorEventsPanel';
 import { BillingOpsPanel } from '@/components/admin/BillingOpsPanel';
 import { CampaignsPanel } from '@/components/admin/campaigns/CampaignsPanel';
-import { CampaignOverviewPanel } from '@/components/admin/campaigns/overview/CampaignOverviewPanel';
 import { CollaborationsSection } from '@/components/admin/collaborations/CollaborationsSection';
 import { CostTrackingPanel } from '@/components/admin/CostTrackingPanel';
 import { DemoEventsSection } from '@/components/admin/demoEvents/DemoEventsSection';
-import { DiscountCampaignsPanel } from '@/components/admin/discountCampaigns/DiscountCampaignsPanel';
 import { EventsSection } from '@/components/admin/events/EventsSection';
 import { FunnelPanel } from '@/components/admin/funnel/FunnelPanel';
 import { InviartCollectionsPanel } from '@/components/admin/inviart/InviartCollectionsPanel';
@@ -51,7 +49,6 @@ export function AdminConsole() {
     if (tab === 'visitors') return <VisitorsPanel />;
     if (tab === 'outreach') return <OutreachSection />;
     if (tab === 'outreachRequests') return <OutreachRequestsSection />;
-    if (tab === 'campaignOverview') return <CampaignOverviewPanel />;
     if (tab === 'campaigns') return <CampaignsPanel canEditDiscount={role === 'ADMIN'} />;
     if (tab === 'moduleUsage') return <ModuleUsagePanel />;
     if (tab === 'paidServices') return <PaidServicesCatalogPanel />;
@@ -94,13 +91,6 @@ export function AdminConsole() {
         return (
             <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
                 <AuditLogPanel />
-            </div>
-        );
-    }
-    if (tab === 'discountCampaigns') {
-        return (
-            <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
-                <DiscountCampaignsPanel />
             </div>
         );
     }
