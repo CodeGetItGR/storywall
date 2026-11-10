@@ -1,6 +1,6 @@
 'use client';
 
-import { type ChangeEvent, useCallback, useState } from 'react';
+import { type ChangeEvent, type FocusEvent, useCallback, useState } from 'react';
 
 import { documentLink } from '@/lib/invitation/documentLink';
 
@@ -28,15 +28,20 @@ export function useSettingsTextField(value: string, onSave: (value: string) => v
         setIsInvalid(false);
     }, []);
 
-    const onBlur = useCallback(() => {
-        const next = isLink ? documentLink(draft) : draft;
-        if (next === null) {
-            setIsInvalid(true);
-            return;
-        }
-        setDraft(next);
-        if (next !== value) onSave(next);
-    }, [draft, isLink, onSave, value]);
+    // Reads the field itself, so a leave right after typing checks what was typed.
+    const onBlur = useCallback(
+        (event: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+            const typed = event.target.value;
+            const next = isLink ? documentLink(typed) : typed;
+            if (next === null) {
+                setIsInvalid(true);
+                return;
+            }
+            setDraft(next);
+            if (next !== value) onSave(next);
+        },
+        [isLink, onSave, value],
+    );
 
     return { value: draft, onChange, onBlur, isInvalid };
 }

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { expect, fireEvent, fn, userEvent, within } from 'storybook/test';
+import { expect, fireEvent, fn, userEvent, waitFor, within } from 'storybook/test';
 
 import { copyFor } from '@/.storybook/copy';
 import { SectionSettingsStory } from '@/.storybook/sectionSettings';
@@ -68,11 +68,12 @@ export const InvalidLink: Story = {
         const copy = copyFor(globals).InvitationEditor.sectionSettings;
         const sheet = await openSheet();
         await userEvent.click(sheet.getByRole('button', { name: /Ξενοδοχείο/ }));
-        const website = sheet.getByLabelText(copy.website);
+        const website = await sheet.findByLabelText(copy.website);
         fireEvent.change(website, { target: { value: 'not a link' } });
+        await waitFor(() => expect(website).toHaveValue('not a link'));
         // Leaving the field checks the link; a capture's page may not have focus to move.
         fireEvent.focusOut(website);
-        await expect(website).toHaveAttribute('aria-invalid', 'true');
+        await waitFor(() => expect(website).toHaveAttribute('aria-invalid', 'true'));
     },
 };
 
