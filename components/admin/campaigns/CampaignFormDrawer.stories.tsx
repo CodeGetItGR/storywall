@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { expect, fn, userEvent, within } from 'storybook/test';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 
 import { copyFor } from '@/.storybook/copy';
 import { waitForOpen } from '@/.storybook/waitForOpen';
@@ -52,7 +52,8 @@ export const ConfirmStop: Story = {
         const drawer = await waitForOpen('dialog');
         await userEvent.click(within(drawer).getByRole('button', { name: copy.stopDiscount.button }));
         // The confirmation's dialog has no name of its own; its title is the only place this text shows.
-        await expect(await within(document.body).findByText(copy.stopDiscount.title)).toBeVisible();
+        // It fades in, so wait until it is fully shown.
+        await waitFor(() => expect(within(document.body).getByText(copy.stopDiscount.title)).toBeVisible(), { timeout: 10_000 });
     },
 };
 
@@ -63,7 +64,8 @@ export const ConfirmArchive: Story = {
         const drawer = await waitForOpen('dialog');
         await userEvent.click(within(drawer).getByRole('button', { name: copy.archive.button }));
         // The confirmation's dialog has no name of its own; its title is the only place this text shows.
-        await expect(await within(document.body).findByText(copy.archive.title)).toBeVisible();
+        // It fades in, so wait until it is fully shown.
+        await waitFor(() => expect(within(document.body).getByText(copy.archive.title)).toBeVisible(), { timeout: 10_000 });
     },
 };
 
@@ -74,6 +76,7 @@ export const ConfirmDelete: Story = {
         const drawer = await waitForOpen('dialog');
         await userEvent.click(within(drawer).getByRole('button', { name: copy.deleteCampaign.button }));
         // The confirmation's dialog has no name of its own; its title is the only place this text shows.
-        await expect(await within(document.body).findByText(copy.deleteCampaign.title)).toBeVisible();
+        // It fades in, so wait until it is fully shown.
+        await waitFor(() => expect(within(document.body).getByText(copy.deleteCampaign.title)).toBeVisible(), { timeout: 10_000 });
     },
 };

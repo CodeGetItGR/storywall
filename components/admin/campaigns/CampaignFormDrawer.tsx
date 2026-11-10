@@ -123,7 +123,7 @@ export function CampaignFormDrawer({
                         </div>
 
                         {/* Actions */}
-                        <div className="flex items-center gap-2">
+                        <div className="ml-auto flex items-center gap-2">
                             <button type="button" onClick={onCloseAction} disabled={f.busy} className={CAMPAIGN_CANCEL_BUTTON}>
                                 {t('cancel')}
                             </button>
@@ -194,7 +194,7 @@ export function CampaignFormDrawer({
                             onCheckedChangeAction={f.setDiscountOn}
                         />
                         {form.discountOn && (
-                            <fieldset disabled={f.discountLocked} className="grid gap-4 p-3 sm:grid-cols-[8rem_minmax(0,1fr)]">
+                            <fieldset disabled={f.discountLocked} className="grid gap-4 p-3 sm:grid-cols-[8rem_minmax(0,1fr)] sm:items-end">
                                 <AdminField label={t('campaigns.fields.percent')} required>
                                     <input
                                         name="percent"

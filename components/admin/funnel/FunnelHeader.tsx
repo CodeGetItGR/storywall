@@ -25,7 +25,7 @@ export function FunnelHeader({
     return (
         <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <h1 className="text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">{title}</h1>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
                 {updatedAt && <span className="text-xs text-ink-faint">{t('updatedAt', { time: updatedAt })}</span>}
                 <button
                     type="button"
