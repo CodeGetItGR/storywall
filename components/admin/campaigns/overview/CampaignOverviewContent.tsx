@@ -41,7 +41,7 @@ export function CampaignOverviewContent({
                     <CampaignPages pages={data.pages} />
 
                     {/* Language and device */}
-                    <CampaignSplits data={data} />
+                    <CampaignSplits devices={data.devices} languages={data.languages} />
                 </>
             )}
         </div>
