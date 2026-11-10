@@ -3119,6 +3119,7 @@
             "groupCatalog": "Κατάλογος",
             "groupMarketing": "Marketing",
             "groupOperations": "Λειτουργίες",
+            "groupSaveMyDate": "Save my date",
             "eventPlans": "Πλάνα εκδηλώσεων",
             "paidServices": "Υπηρεσίες επί πληρωμή",
             "discountCodes": "Κωδικοί έκπτωσης",
@@ -3153,6 +3154,7 @@
             "themePresets": "Θέματα",
             "themeFonts": "Γραμματοσειρές",
             "qrCards": "Κάρτες QR",
+            "invitationThemes": "Θέματα",
             "billingOps": "Χρεώσεις",
             "withdrawals": "Αποσύρσεις",
             "accounts": "Λογαριασμοί",
@@ -5022,6 +5024,67 @@
             "preview": {
                 "label": "Προεπισκόπηση",
                 "sampleTitle": "Τίτλος εκδήλωσης"
+            }
+        },
+        "invitationThemes": {
+            "title": "Θέματα",
+            "create": "Νέο θέμα",
+            "search": "Αναζήτηση με όνομα ή slug",
+            "filterAll": "Όλα",
+            "loading": "Φόρτωση θεμάτων…",
+            "empty": "Δεν υπάρχουν θέματα ακόμη.",
+            "noMatches": "Κανένα θέμα δεν ταιριάζει.",
+            "edit": "Επεξεργασία {name}",
+            "preview": "Προεπισκόπηση {name}",
+            "columns": {
+                "theme": "Θέμα",
+                "eventType": "Τύπος εκδήλωσης",
+                "status": "Κατάσταση",
+                "slug": "Slug",
+                "updatedAt": "Τελευταία αλλαγή"
+            },
+            "status": {
+                "DRAFT": "Πρόχειρο",
+                "ACTIVE": "Ενεργό",
+                "HIDDEN": "Κρυφό"
+            },
+            "statusHint": {
+                "DRAFT": "Το βλέπουν μόνο οι διαχειριστές.",
+                "ACTIVE": "Στον κατάλογο. Οι διοργανωτές μπορούν να ξεκινήσουν από αυτό.",
+                "HIDDEN": "Εκτός καταλόγου. Οι προσκλήσεις που φτιάχτηκαν από αυτό συνεχίζουν να λειτουργούν."
+            },
+            "drawer": {
+                "name": "Όνομα",
+                "eventType": "Τύπος εκδήλωσης",
+                "status": "Κατάσταση",
+                "slug": "Slug",
+                "seoTitle": "Τίτλος SEO",
+                "seoDescription": "Περιγραφή meta",
+                "sortOrder": "Σειρά",
+                "counter": "{count}/{max}",
+                "nameInvalid": "Γράψτε 1 έως 120 χαρακτήρες.",
+                "slugInvalid": "Χρησιμοποιήστε πεζά λατινικά, ψηφία και παύλες.",
+                "slugTaken": "Αυτό το slug το χρησιμοποιεί ήδη άλλο θέμα.",
+                "stale": "Το θέμα αποθηκεύτηκε αλλού. Κλείστε το και ανοίξτε το ξανά.",
+                "preview": "Προεπισκόπηση",
+                "duplicate": "Αντιγραφή",
+                "duplicateUnsaved": "Αποθηκεύστε πρώτα",
+                "cancel": "Ακύρωση",
+                "save": "Αποθήκευση",
+                "close": "Κλείσιμο"
+            },
+            "nameModal": {
+                "createTitle": "Νέο θέμα",
+                "duplicateTitle": "Αντιγραφή θέματος",
+                "name": "Όνομα",
+                "eventType": "Τύπος εκδήλωσης",
+                "create": "Δημιουργία",
+                "duplicate": "Αντιγραφή",
+                "cancel": "Ακύρωση"
+            },
+            "previewOverlay": {
+                "close": "Κλείσιμο προεπισκόπησης",
+                "failed": "Αυτό το θέμα δεν μπορεί να εμφανιστεί."
             }
         },
         "qrCards": {
@@ -9451,6 +9514,7 @@
         "profilePhotoOf": "Φωτογραφία προφίλ: {name}",
         "themeIllustration": "Θέμα {name}",
         "qrCardTemplate": "Σχέδιο κάρτας {name}",
+        "invitationThemeThumbnail": "Προεπισκόπηση θέματος {name}",
         "eventIllustration": "Εικονογράφηση εκδήλωσης",
         "eventTypeImage": "Εικόνα τύπου εκδήλωσης",
         "partnerLogo": "Λογότυπο {name}",

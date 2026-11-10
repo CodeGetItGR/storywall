@@ -2998,6 +2998,7 @@
             "groupCatalog": "Catalog",
             "groupMarketing": "Marketing",
             "groupOperations": "Operations",
+            "groupSaveMyDate": "Save my date",
             "eventPlans": "Event plans",
             "paidServices": "Paid services",
             "discountCodes": "Discount codes",
@@ -3033,6 +3034,7 @@
             "themePresets": "Themes",
             "themeFonts": "Theme fonts",
             "qrCards": "QR cards",
+            "invitationThemes": "Themes",
             "billingOps": "Billing ops",
             "withdrawals": "Withdrawals",
             "accounts": "Accounts",
@@ -5297,6 +5299,67 @@
             "preview": {
                 "label": "Preview",
                 "sampleTitle": "Event title"
+            }
+        },
+        "invitationThemes": {
+            "title": "Themes",
+            "create": "New theme",
+            "search": "Search by name or slug",
+            "filterAll": "All",
+            "loading": "Loading themes…",
+            "empty": "No themes yet.",
+            "noMatches": "No themes match.",
+            "edit": "Edit {name}",
+            "preview": "Preview {name}",
+            "columns": {
+                "theme": "Theme",
+                "eventType": "Event type",
+                "status": "Status",
+                "slug": "Slug",
+                "updatedAt": "Last edited"
+            },
+            "status": {
+                "DRAFT": "Draft",
+                "ACTIVE": "Live",
+                "HIDDEN": "Hidden"
+            },
+            "statusHint": {
+                "DRAFT": "Only admins can see it.",
+                "ACTIVE": "In the catalogue. Hosts can start from it.",
+                "HIDDEN": "Out of the catalogue. Invitations made from it keep working."
+            },
+            "drawer": {
+                "name": "Name",
+                "eventType": "Event type",
+                "status": "Status",
+                "slug": "Slug",
+                "seoTitle": "SEO title",
+                "seoDescription": "Meta description",
+                "sortOrder": "Sort order",
+                "counter": "{count}/{max}",
+                "nameInvalid": "Enter 1 to 120 characters.",
+                "slugInvalid": "Use lower-case letters, digits and hyphens.",
+                "slugTaken": "Another theme uses this slug.",
+                "stale": "This theme was saved elsewhere. Close and reopen it.",
+                "preview": "Preview",
+                "duplicate": "Duplicate",
+                "duplicateUnsaved": "Save first",
+                "cancel": "Cancel",
+                "save": "Save",
+                "close": "Close"
+            },
+            "nameModal": {
+                "createTitle": "New theme",
+                "duplicateTitle": "Duplicate theme",
+                "name": "Name",
+                "eventType": "Event type",
+                "create": "Create",
+                "duplicate": "Duplicate",
+                "cancel": "Cancel"
+            },
+            "previewOverlay": {
+                "close": "Close preview",
+                "failed": "This theme can't be shown."
             }
         },
         "qrCards": {
@@ -9434,6 +9497,7 @@
         "profilePhotoOf": "Profile photo of {name}",
         "themeIllustration": "{name} theme",
         "qrCardTemplate": "{name} card design",
+        "invitationThemeThumbnail": "{name} theme preview",
         "eventIllustration": "Event illustration",
         "eventTypeImage": "Event type image",
         "partnerLogo": "{name} logo",
