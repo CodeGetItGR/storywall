@@ -5,8 +5,8 @@ import { plainTextContent, plainTextExtensions } from '@/lib/invitation/plainTex
 
 let editor: Editor | null = null;
 
-function createEditor(text: string) {
-    const keys = { undo: vi.fn(), redo: vi.fn(), done: vi.fn() };
+function createEditor(text: string, hasToolbar = true) {
+    const keys = { undo: vi.fn(), redo: vi.fn(), done: vi.fn(), toolbar: vi.fn(() => hasToolbar) };
     const mount = document.createElement('div');
     document.body.append(mount);
     editor = new Editor({ element: { mount }, extensions: plainTextExtensions(keys), content: plainTextContent(text), injectCSS: false });
@@ -15,7 +15,8 @@ function createEditor(text: string) {
 
 function press(target: Editor, key: string, init: KeyboardEventInit = {}) {
     const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init });
-    target.view.someProp('handleKeyDown', (handler) => handler(target.view, event));
+    // Whether the editor took the key.
+    return target.view.someProp('handleKeyDown', (handler) => handler(target.view, event));
 }
 
 describe('plain text editor', () => {
@@ -54,5 +55,17 @@ describe('plain text editor', () => {
         expect(keys.undo).toHaveBeenCalledOnce();
         expect(keys.redo).toHaveBeenCalledTimes(2);
         expect(keys.done).toHaveBeenCalledOnce();
+    });
+
+    it('goes to the text toolbar on Tab and Alt+F10', () => {
+        const { editor, keys } = createEditor('Γάμος');
+        expect(press(editor, 'Tab')).toBe(true);
+        press(editor, 'F10', { altKey: true });
+        expect(keys.toolbar).toHaveBeenCalledTimes(2);
+    });
+
+    it('lets Tab go on as usual with no toolbar', () => {
+        const { editor } = createEditor('Γάμος', false);
+        expect(press(editor, 'Tab')).toBeFalsy();
     });
 });

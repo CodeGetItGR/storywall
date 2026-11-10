@@ -63,6 +63,11 @@ describe('readText', () => {
         expect(readText(SAMPLE_DOCUMENT, field('s-godparents', 'godparents.g9.name'))).toBeUndefined();
         expect(readText(SAMPLE_DOCUMENT, element('e-b-img'))).toBeUndefined();
     });
+
+    it("reads a date's optional text it doesn't have yet as empty", () => {
+        expect(readText(SAMPLE_DOCUMENT, field('s-date', 'periodLabel'))).toEqual({ text: '', style: {} });
+        expect(readText(SAMPLE_DOCUMENT, field('s-date', 'missing'))).toBeUndefined();
+    });
 });
 
 describe('writeText', () => {
@@ -85,6 +90,18 @@ describe('writeText', () => {
     it('does not create a field that is not there', () => {
         const next = edit((draft) => writeText(draft, field('s-invitation', 'nope'), 'x'));
         expect(next).toBe(SAMPLE_DOCUMENT);
+    });
+});
+
+describe('writeText on a date', () => {
+    it('empties a part and writes an optional one it did not have', () => {
+        const next = edit((draft) => {
+            writeText(draft, field('s-date', 'number'), '');
+            writeText(draft, field('s-date', 'periodLabel'), 'ΤΟ ΒΡΑΔΥ');
+        });
+        const { data } = sectionOf(next, 's-date') as Extract<InvitationDocument['sections'][number], { type: 'date' }>;
+        expect(data.number).toBe('');
+        expect(data.periodLabel).toBe('ΤΟ ΒΡΑΔΥ');
     });
 });
 

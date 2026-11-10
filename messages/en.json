@@ -10011,7 +10011,8 @@
         "deleteText": "Delete text",
         "deleteTextTitle": "Delete this text?",
         "delete": "Delete",
-        "emptyText": "Empty text"
+        "emptyText": "Empty text",
+        "textBox": "Text"
     },
     "SaveMyDatePreview": {
         "metaTitle": "Invitation preview"

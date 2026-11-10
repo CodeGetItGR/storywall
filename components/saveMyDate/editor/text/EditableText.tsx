@@ -14,13 +14,16 @@ export function EditableText(props: InvitationTextProps) {
     const edit = useTextEditing();
     const text = useEditableText(edit, props.target);
     const { tag: Tag, className, style, value, display } = props;
-    const isEmpty = value.trim() === '';
+    // A date part left empty still shows the date's own text, so it is not an empty box.
+    const shown = display ?? value;
+    const isEmpty = shown.trim() === '';
 
     if (text.isActive) {
         return (
             <ActiveText
                 key="active"
                 textKey={text.key}
+                label={t('textBox')}
                 tag={Tag}
                 className={className}
                 style={style}
@@ -31,6 +34,7 @@ export function EditableText(props: InvitationTextProps) {
                 onUndo={edit.undo}
                 onRedo={edit.redo}
                 onDone={text.done}
+                onToolbar={edit.focusToolbar}
             />
         );
     }
@@ -47,7 +51,7 @@ export function EditableText(props: InvitationTextProps) {
             onClick={text.open}
             onKeyDown={text.openWithKey}
         >
-            {display ?? value}
+            {shown}
         </Tag>
     );
 }

@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useRef, useState } from 'react';
 
+import { useTextToolbarFocus } from '@/hooks/useTextToolbarFocus';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationEditorState, InvitationEditorStore } from '@/lib/invitation/editorStore';
 import { INVITATION_LABELS, invitationLanguage } from '@/lib/invitation/labels';
@@ -150,6 +151,8 @@ export function useInlineTextEdit(store: InvitationEditorStore, document: Invita
         };
     }, []);
 
+    const toolbarFocus = useTextToolbarFocus(active ? element : null);
+
     const undo = useCallback(() => store.getState().undo(), [store]);
     const redo = useCallback(() => store.getState().redo(), [store]);
 
@@ -175,6 +178,7 @@ export function useInlineTextEdit(store: InvitationEditorStore, document: Invita
             registerField,
             undo,
             redo,
+            ...toolbarFocus,
         }),
         [
             active,
@@ -197,6 +201,7 @@ export function useInlineTextEdit(store: InvitationEditorStore, document: Invita
             registerField,
             undo,
             redo,
+            toolbarFocus,
         ],
     );
 }

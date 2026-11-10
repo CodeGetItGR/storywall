@@ -9,12 +9,15 @@ import { plainTextContent, plainTextExtensions } from '@/lib/invitation/plainTex
 
 type TiptapTextOptions = {
     host: RefObject<HTMLElement | null>;
+    // The text box's name for screen readers.
+    label: string;
     value: string;
     caret: CaretRequest;
     onChange: (text: string) => void;
     onUndo: () => void;
     onRedo: () => void;
     onDone: () => void;
+    onToolbar: () => boolean;
 };
 
 // Puts the caret where the text was tapped, at its end, or over all of it.
@@ -41,11 +44,11 @@ function placeCaret(editor: Editor, caret: CaretRequest) {
 
 // Tiptap on the element of the text being edited. It mounts as the page commits, so the
 // keyboard opens in the same tap, and follows the stored text when undo or redo changes it.
-export function useTiptapText({ host, value, caret, onChange, onUndo, onRedo, onDone }: TiptapTextOptions) {
+export function useTiptapText({ host, label, value, caret, onChange, onUndo, onRedo, onDone, onToolbar }: TiptapTextOptions) {
     const editorRef = useRef<Editor | null>(null);
-    const latest = useRef({ value, caret, onChange, onUndo, onRedo, onDone });
+    const latest = useRef({ value, caret, onChange, onUndo, onRedo, onDone, onToolbar });
     useLayoutEffect(() => {
-        latest.current = { value, caret, onChange, onUndo, onRedo, onDone };
+        latest.current = { value, caret, onChange, onUndo, onRedo, onDone, onToolbar };
     });
 
     useLayoutEffect(() => {
@@ -57,11 +60,12 @@ export function useTiptapText({ host, value, caret, onChange, onUndo, onRedo, on
                 undo: () => latest.current.onUndo(),
                 redo: () => latest.current.onRedo(),
                 done: () => latest.current.onDone(),
+                toolbar: () => latest.current.onToolbar(),
             }),
             content: plainTextContent(latest.current.value),
             injectCSS: false,
             editorProps: {
-                attributes: { spellcheck: 'true' },
+                attributes: { spellcheck: 'true', role: 'textbox', 'aria-multiline': 'true', 'aria-label': label },
                 // Pasted text arrives as plain text, line breaks kept.
                 handlePaste: (view, event) => {
                     const text = event.clipboardData?.getData('text/plain');
@@ -78,7 +82,7 @@ export function useTiptapText({ host, value, caret, onChange, onUndo, onRedo, on
             editorRef.current = null;
             created.destroy();
         };
-    }, [host]);
+    }, [host, label]);
 
     // Undo, redo or a cut to the length limit changed the stored text.
     useEffect(() => {

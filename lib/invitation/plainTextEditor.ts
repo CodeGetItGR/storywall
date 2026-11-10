@@ -19,10 +19,12 @@ export type PlainTextKeys = {
     undo: () => void;
     redo: () => void;
     done: () => void;
+    // Moves to the text toolbar; false when there is none, so Tab goes on as usual.
+    toolbar: () => boolean;
 };
 
 // Undo and redo go to the editor's own history, so typing and toolbar changes undo in order.
-// Escape finishes editing.
+// Escape finishes editing. Tab and Alt+F10 go to the text toolbar.
 function editorKeys(keys: PlainTextKeys) {
     const run = (action: () => void) => () => {
         action();
@@ -35,6 +37,8 @@ function editorKeys(keys: PlainTextKeys) {
             'Mod-Shift-z': run(keys.redo),
             'Mod-y': run(keys.redo),
             Escape: run(keys.done),
+            Tab: () => keys.toolbar(),
+            'Alt-F10': () => keys.toolbar(),
         }),
     });
 }

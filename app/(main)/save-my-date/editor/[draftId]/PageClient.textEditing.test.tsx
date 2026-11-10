@@ -94,8 +94,22 @@ describe('Invitation editor: texts', () => {
         expect(activeText()).toHaveAttribute('contenteditable', 'true');
         expect(activeText()).toHaveTextContent('Σας περιμένουμε!');
         expect(activeText()).toHaveFocus();
+        expect(screen.getByRole('textbox', { name: 'Text' })).toBe(activeText());
         expect(within(toolbar).getByLabelText('Size')).toHaveValue('20');
         expect(within(toolbar).getByRole('button', { name: 'Italic' })).toHaveAttribute('aria-pressed', 'true');
+    });
+
+    it('moves from the text to its toolbar and back by keyboard', async () => {
+        await openEditor();
+        const toolbar = openText(WAITING);
+        const first = within(toolbar).getAllByRole('button')[0];
+
+        fireEvent.keyDown(activeText(), { key: 'Tab' });
+        expect(first).toHaveFocus();
+        fireEvent.keyDown(first, { key: 'Tab', shiftKey: true });
+        expect(activeText()).toHaveFocus();
+        fireEvent.keyDown(activeText(), { key: 'F10', altKey: true });
+        expect(first).toHaveFocus();
     });
 
     it('types, undoes and saves', async () => {
@@ -164,13 +178,55 @@ describe('Invitation editor: texts', () => {
         expect(canvasText(BABY_MESSAGE)).toHaveTextContent('Σας περιμένουμε!');
     });
 
+    it('empties a part of the date and types a new one', async () => {
+        await openEditor();
+        const day = '[data-smd-text$=":number"]';
+        const dayKey = document.querySelector(day)!.getAttribute('data-smd-text')!;
+        openText(dayKey);
+        expect(activeText()).toHaveTextContent(/^12$/);
+        fireEvent.click(within(screen.getByRole('toolbar', { name: 'Text tools' })).getByRole('button', { name: 'Delete text' }));
+        fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Delete' }));
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+        // Emptied, the part shows the date's own day again, as guests see it.
+        expect(canvasText(dayKey)).toHaveTextContent(/^12$/);
+        openText(dayKey);
+        expect(activeText()).toHaveTextContent(/^$/);
+        paste('15');
+        expect(activeText()).toHaveTextContent(/^15$/);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
+        await screen.findByText("Publishing isn't available yet.");
+        const date = backend.stored().document.sections.find((section) => section.type === 'date');
+        expect(date?.data).toMatchObject({ number: '15' });
+    });
+
     it('stops editing on a tap outside the texts', async () => {
         await openEditor();
         openText(WAITING);
+        const canvas = document.querySelector('.smd-invitation')!;
         act(() => {
-            fireEvent.pointerDown(document.querySelector('.smd-invitation')!);
+            fireEvent.pointerDown(canvas, { pointerId: 1, clientX: 100, clientY: 100 });
+            fireEvent.pointerUp(canvas, { pointerId: 1, clientX: 102, clientY: 103 });
         });
         expect(screen.queryByRole('toolbar', { name: 'Text tools' })).not.toBeInTheDocument();
         expect(canvasText(WAITING)).toHaveAttribute('role', 'button');
+    });
+
+    it('keeps editing when a scroll starts outside the texts', async () => {
+        await openEditor();
+        openText(WAITING);
+        const canvas = document.querySelector('.smd-invitation')!;
+        act(() => {
+            // The finger moves: a scroll.
+            fireEvent.pointerDown(canvas, { pointerId: 1, clientX: 100, clientY: 300 });
+            fireEvent.pointerUp(canvas, { pointerId: 1, clientX: 100, clientY: 120 });
+            // The browser takes the touch over for scrolling.
+            fireEvent.pointerDown(canvas, { pointerId: 2, clientX: 100, clientY: 300 });
+            fireEvent.pointerCancel(canvas, { pointerId: 2 });
+            fireEvent.pointerUp(canvas, { pointerId: 2, clientX: 100, clientY: 300 });
+        });
+        expect(screen.getByRole('toolbar', { name: 'Text tools' })).toBeInTheDocument();
+        expect(activeText()).toHaveFocus();
     });
 });

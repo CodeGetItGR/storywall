@@ -121,17 +121,37 @@ export function readText(document: InvitationDocument, target: TextTarget): Text
         const element = findTextElement(section, target.elementId);
         return element ? { text: element.text, style: element.style } : undefined;
     }
-    const value = resolveTextField(section.data, target.path);
-    return typeof value === 'string' ? { text: value, style: section.textStyles[target.path] ?? {} } : undefined;
+    const value = readTextField(section, target.path);
+    return value === undefined ? undefined : { text: value, style: section.textStyles[target.path] ?? {} };
 }
 
-// Writes a field the way resolveTextField reads it: a list segment is an item's id.
-function setTextField(data: unknown, path: string, value: string): boolean {
+// The record a field lives in and the field's name, read the way resolveTextField reads it:
+// a list segment is an item's id.
+function fieldParent(data: unknown, path: string): { parent: Record<string, unknown>; name: string } | undefined {
     const segments = path.split('.');
-    const last = segments.pop();
+    const name = segments.pop();
     const parent = segments.length ? resolveTextField(data, segments.join('.')) : data;
-    if (!last || !isRecord(parent) || typeof parent[last] !== 'string') return false;
-    parent[last] = value;
+    return name && isRecord(parent) ? { parent, name } : undefined;
+}
+
+// Texts a section may not have yet: a date's period and month in the genitive are optional.
+const OPTIONAL_TEXT_FIELDS: Partial<Record<InvitationSection['type'], readonly string[]>> = {
+    date: ['monthGenitive', 'periodLabel'],
+};
+
+// A field's text. An optional text the host never filled in reads as empty.
+export function readTextField(section: Pick<InvitationSection, 'type' | 'data'>, path: string): string | undefined {
+    const field = fieldParent(section.data, path);
+    if (!field) return undefined;
+    const value = field.parent[field.name];
+    if (typeof value === 'string') return value;
+    return value === undefined && OPTIONAL_TEXT_FIELDS[section.type]?.includes(path) ? '' : undefined;
+}
+
+function setTextField(section: Draft<InvitationSection>, path: string, value: string): boolean {
+    const field = fieldParent(section.data, path);
+    if (!field || readTextField(section, path) === undefined) return false;
+    field.parent[field.name] = value;
     return true;
 }
 
@@ -148,7 +168,7 @@ export function writeText(draft: Draft<InvitationDocument>, target: TextTarget, 
         if (element) element.text = value;
         return;
     }
-    setTextField(section.data, target.path, value);
+    setTextField(section, target.path, value);
 }
 
 function patchStyle(style: Draft<TextStyle>, patch: TextStylePatch) {
@@ -166,7 +186,7 @@ export function writeStyle(draft: Draft<InvitationDocument>, target: TextTarget,
         if (element) patchStyle(element.style, patch);
         return;
     }
-    if (typeof resolveTextField(section.data, target.path) !== 'string') return;
+    if (readTextField(section, target.path) === undefined) return;
     const style = section.textStyles[target.path] ?? {};
     section.textStyles[target.path] = style;
     patchStyle(section.textStyles[target.path], patch);
@@ -198,7 +218,7 @@ function colorSectionExtras(section: Draft<InvitationSection>, color: string) {
 
 function colorSection(section: Draft<InvitationSection>, color: string, fieldPaths: Iterable<string>) {
     for (const path of fieldPaths) {
-        if (typeof resolveTextField(section.data, path) !== 'string') continue;
+        if (readTextField(section, path) === undefined) continue;
         section.textStyles[path] = { ...section.textStyles[path], color };
     }
     for (const element of section.elements) {
@@ -263,7 +283,7 @@ export function deleteText(draft: Draft<InvitationDocument>, target: TextTarget)
         section.elements = section.elements.filter((element) => element.id !== target.elementId);
         return;
     }
-    setTextField(section.data, target.path, '');
+    setTextField(section, target.path, '');
 }
 
 // An added text left empty when the host moves on is removed, as in the old editor.

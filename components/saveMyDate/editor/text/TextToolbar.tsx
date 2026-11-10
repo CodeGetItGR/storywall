@@ -2,7 +2,7 @@
 
 import { Bold, Italic, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRef } from 'react';
+import { type KeyboardEvent, type RefObject, useRef } from 'react';
 
 import { TextAddMenu } from '@/components/saveMyDate/editor/text/TextAddMenu';
 import { TextAlignButtons } from '@/components/saveMyDate/editor/text/TextAlignButtons';
@@ -23,15 +23,19 @@ type TextToolbarProps = {
     anchor: HTMLElement | null;
     canAdd: boolean;
     onDelete: () => void;
+    // The editor keeps it, so the keyboard can move from the text to the toolbar.
+    toolbarRef?: RefObject<HTMLDivElement | null>;
+    onKeyDown?: (event: KeyboardEvent<HTMLElement>) => void;
 };
 
 const Divider = () => <span aria-hidden="true" className="mx-0.5 h-6 w-px shrink-0 bg-white/12" />;
 
 // Everything that styles the text being edited. It floats over the text on a computer and
 // docks at the bottom, above the keyboard, on a phone.
-export function TextToolbar({ toolbar, anchor, canAdd, onDelete }: TextToolbarProps) {
+export function TextToolbar({ toolbar, anchor, canAdd, onDelete, toolbarRef, onKeyDown }: TextToolbarProps) {
     const t = useTranslations('InvitationEditor');
-    const ref = useRef<HTMLDivElement>(null);
+    const ownRef = useRef<HTMLDivElement>(null);
+    const ref = toolbarRef ?? ownRef;
     const docked = !useMediaQuery(MD_MEDIA_QUERY);
     const keyboardInset = useKeyboardInset();
     useTextToolbarPlacement(anchor, ref, docked, keyboardInset);
@@ -41,6 +45,7 @@ export function TextToolbar({ toolbar, anchor, canAdd, onDelete }: TextToolbarPr
             ref={ref}
             role="toolbar"
             aria-label={t('textTools')}
+            onKeyDown={onKeyDown}
             data-docked={docked || undefined}
             style={docked ? { bottom: keyboardInset } : undefined}
             className={cn(

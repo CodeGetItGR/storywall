@@ -57,7 +57,7 @@ export function useTextToolbar(edit: InlineTextEdit, document: InvitationDocumen
         swatches,
         bold,
         italic,
-        align: style.align ?? 'center',
+        align: style.align ?? shown.align ?? 'center',
         lineHeight: style.lineHeight,
         setFont,
         setSize,

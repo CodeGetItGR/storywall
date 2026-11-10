@@ -48,7 +48,16 @@ export function InlineTextEditing({ store, document, theme, uploadedFonts, child
             </EditableTextContext.Provider>
 
             {/* Text toolbar */}
-            {edit.active && <TextToolbar toolbar={toolbar} anchor={edit.element} canAdd={edit.canAddText} onDelete={edit.requestDelete} />}
+            {edit.active && (
+                <TextToolbar
+                    toolbar={toolbar}
+                    anchor={edit.element}
+                    canAdd={edit.canAddText}
+                    onDelete={edit.requestDelete}
+                    toolbarRef={edit.toolbarRef}
+                    onKeyDown={edit.onToolbarKeyDown}
+                />
+            )}
 
             {/* Delete a section's own text */}
             <ConfirmActionModal

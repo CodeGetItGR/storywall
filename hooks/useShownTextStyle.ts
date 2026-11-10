@@ -3,7 +3,18 @@
 import { useCallback, useMemo, useSyncExternalStore } from 'react';
 
 // What a text shows when it has no setting of its own: the page's own look.
-export type ShownTextStyle = { size?: number; italic: boolean; bold: boolean; color?: string };
+export type ShownTextStyle = { size?: number; italic: boolean; bold: boolean; color?: string; align?: ShownAlign };
+
+type ShownAlign = 'left' | 'center' | 'right';
+
+// The page's alignment as one of the toolbar's three. Invitation text runs left to right.
+function readAlign(textAlign: string, direction: string): ShownAlign | undefined {
+    if (textAlign === 'center' || textAlign === '-webkit-center') return 'center';
+    if (textAlign === 'left' || textAlign === 'right') return textAlign;
+    if (textAlign === 'start') return direction === 'rtl' ? 'right' : 'left';
+    if (textAlign === 'end') return direction === 'rtl' ? 'left' : 'right';
+    return undefined;
+}
 
 const NOTHING_SHOWN: ShownTextStyle = { italic: false, bold: false };
 
@@ -24,10 +35,11 @@ function readShown(element: HTMLElement): ShownTextStyle {
         italic: css.fontStyle === 'italic',
         bold: Number(css.fontWeight) >= 600,
         color: rgbToHex(css.color),
+        align: readAlign(css.textAlign, css.direction),
     };
 }
 
-// The size, weight, slant and colour the text shows on the page. It follows the page as it
+// The size, weight, slant, colour and alignment the text shows on the page. It follows the page as it
 // changes: a text on a photo turns light once the photo is measured, after the text opened.
 export function useShownTextStyle(element: HTMLElement | null): ShownTextStyle {
     const subscribe = useCallback(

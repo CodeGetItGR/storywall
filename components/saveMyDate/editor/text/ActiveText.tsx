@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 
 type ActiveTextProps = {
     textKey: string;
+    label: string;
     tag: ElementType;
     className: string;
     style: CSSProperties;
@@ -18,10 +19,11 @@ type ActiveTextProps = {
     onUndo: () => void;
     onRedo: () => void;
     onDone: () => void;
+    onToolbar: () => boolean;
 };
 
 // The text being typed into. Tiptap owns what is inside the element; React only sets its look.
-export function ActiveText({ textKey, tag: Tag, className, style, value, caret, onElement, onChange, onUndo, onRedo, onDone }: ActiveTextProps) {
+export function ActiveText({ textKey, label, tag: Tag, className, style, value, caret, onElement, onChange, onUndo, onRedo, onDone, onToolbar }: ActiveTextProps) {
     const host = useRef<HTMLElement | null>(null);
     const setHost = useCallback(
         (element: HTMLElement | null) => {
@@ -30,7 +32,7 @@ export function ActiveText({ textKey, tag: Tag, className, style, value, caret, 
         },
         [onElement],
     );
-    useTiptapText({ host, value, caret, onChange, onUndo, onRedo, onDone });
+    useTiptapText({ host, label, value, caret, onChange, onUndo, onRedo, onDone, onToolbar });
 
     return (
         <Tag

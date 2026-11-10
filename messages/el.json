@@ -10049,7 +10049,8 @@
         "deleteText": "Διαγραφή κειμένου",
         "deleteTextTitle": "Θέλετε να διαγράψετε αυτό το κείμενο;",
         "delete": "Διαγραφή",
-        "emptyText": "Κενό κείμενο"
+        "emptyText": "Κενό κείμενο",
+        "textBox": "Κείμενο"
     },
     "SaveMyDatePreview": {
         "metaTitle": "Προεπισκόπηση πρόσκλησης"
