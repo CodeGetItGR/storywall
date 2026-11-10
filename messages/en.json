@@ -10075,6 +10075,67 @@
             "footer": "Footer"
         }
     },
+    "SaveMyDateStorefront": {
+        "eventTypes": {
+            "WEDDING": "Wedding",
+            "BAPTISM": "Baptism"
+        },
+        "home": "Home",
+        "catalogue": {
+            "metaTitle": "Online wedding and baptism invitation designs | StoryWall",
+            "metaDescription": "Choose an online invitation design for a wedding or baptism. See it live and try it free.",
+            "heading": "Online invitation designs",
+            "intro": "See each design live and try it free.",
+            "searchLabel": "Search designs",
+            "searchPlaceholder": "E.g. swan",
+            "filterLabel": "Event type",
+            "all": "All",
+            "sortLabel": "Sort",
+            "sorts": {
+                "recommended": "Recommended",
+                "az": "A–Z"
+            },
+            "oneColumn": "One column",
+            "twoColumns": "Two columns",
+            "viewDesign": "View design",
+            "tryFree": "Try it free",
+            "more": "More designs",
+            "empty": "No designs found.",
+            "error": "The designs didn't load.",
+            "loading": "Loading designs",
+            "cardAlt": "{name} invitation design"
+        },
+        "theme": {
+            "metaTitle": "{name}: {eventType, select, WEDDING {online wedding invitation} BAPTISM {online baptism invitation} other {online invitation}} | StoryWall",
+            "metaDescription": "See the {name} design live and try it free. With RSVP, map and schedule.",
+            "photoAlt": "{name} invitation design, photo {number}",
+            "back": "All designs",
+            "liveDemo": "Live demo",
+            "tryFree": "Try it free",
+            "included": "What's included",
+            "includedItems": [
+                "Guest RSVP with plus-ones and notes",
+                "Map, parking and directions",
+                "Day schedule and countdown",
+                "Photo gallery before and after",
+                "Gift list and contact details"
+            ],
+            "howItWorks": "How it works",
+            "howItWorksBody": "Pick the design, change the text, colours and photos, and publish. You get a personal link that stays the same, however often you change it.",
+            "share": "Share",
+            "shareMessenger": "Share on Messenger",
+            "shareWhatsApp": "Share on WhatsApp",
+            "shareViber": "Share on Viber",
+            "shareEmail": "Send by email",
+            "copyLink": "Copy link",
+            "linkCopied": "Link copied",
+            "previousPhoto": "Previous photo",
+            "nextPhoto": "Next photo",
+            "photo": "Photo {number}",
+            "error": "The design didn't load.",
+            "loading": "Loading design"
+        }
+    },
     "SaveMyDatePreview": {
         "metaTitle": "Invitation preview"
     },
