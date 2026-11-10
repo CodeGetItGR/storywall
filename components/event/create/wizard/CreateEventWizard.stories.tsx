@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { http, HttpResponse } from 'msw';
 
 import { withAppContext } from '@/.storybook/appContext';
+import { storyWizardAppConfig } from '@/.storybook/fixtures';
 import { CreateEventWizard } from '@/components/event/create/wizard/CreateEventWizard';
 import { CreateEventFormProvider } from '@/providers/CreateEventFormProvider';
 
@@ -21,7 +22,7 @@ const meta = {
     title: 'Event/CreateEventWizard',
     component: WizardStory,
     decorators: [withAppContext],
-    parameters: { app: { user: null } },
+    parameters: { app: { user: null, appConfig: storyWizardAppConfig } },
     beforeEach({ msw }) {
         msw.use(http.get(PLANS_URL, () => HttpResponse.json([])));
     },

@@ -3,6 +3,7 @@ import { http, HttpResponse } from 'msw';
 import { fn } from 'storybook/test';
 
 import { withAppContext } from '@/.storybook/appContext';
+import { storyWizardAppConfig } from '@/.storybook/fixtures';
 import CreateEventDialog from '@/components/event/create/wizard/CreateEventDialog';
 
 const meta = {
@@ -11,7 +12,7 @@ const meta = {
     decorators: [withAppContext],
     args: { onClose: fn() },
     parameters: {
-        app: { user: null },
+        app: { user: null, appConfig: storyWizardAppConfig },
         nextjs: { navigation: { pathname: '/', query: { create: '1', run: 'story', step: 'type' } } },
     },
     beforeEach({ msw }) {
