@@ -42,9 +42,9 @@ export function CampaignFunnel({
                 {rows.map((row) => (
                     <li
                         key={row.step}
-                        className="grid grid-cols-[minmax(0,7.5rem)_minmax(0,1fr)_auto] items-center gap-3 sm:grid-cols-[minmax(0,10rem)_minmax(0,1fr)_auto]"
+                        className="grid grid-cols-[minmax(0,7.5rem)_minmax(0,1fr)_auto] items-center gap-3 sm:grid-cols-[minmax(0,12rem)_minmax(0,1fr)_auto]"
                     >
-                        <span className="truncate text-sm text-ink-muted">
+                        <span className="block min-w-0 text-sm leading-tight text-ink-muted">
                             <CampaignValueLabel value={row.step} label={t(`columns.${row.step}`)} />
                         </span>
                         <PlatformMetricBar ratio={row.width} />

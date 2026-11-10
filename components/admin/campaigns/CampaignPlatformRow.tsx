@@ -97,7 +97,7 @@ export function CampaignPlatformRow({ row, rateTitle }: { row: CampaignPlatformR
                         </td>
 
                         {/* Rate and verdict */}
-                        <td className="col-span-2 sm:py-3 sm:pl-3">
+                        <td className="col-span-6 sm:py-3 sm:pl-3">
                             <CellLabel>{rateTitle}</CellLabel>
                             <span className="inline-flex flex-wrap items-center gap-2">
                                 <span className={NUMBER}>{row.rate === null ? EMPTY_VALUE : format.rate(row.rate)}</span>
