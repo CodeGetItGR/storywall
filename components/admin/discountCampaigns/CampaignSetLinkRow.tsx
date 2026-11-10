@@ -50,7 +50,7 @@ export function CampaignSetLinkRow({ row }: { row: CampaignRowDto }) {
 
             {/* Copy */}
             <td className="py-2 pl-3">
-                <CampaignLinkCopyButton link={link} url={campaignSetLinkUrl(link)} />
+                <CampaignLinkCopyButton url={campaignSetLinkUrl(link)} label={link.name} />
             </td>
         </tr>
     );
