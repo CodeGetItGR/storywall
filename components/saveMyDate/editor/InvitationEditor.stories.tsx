@@ -26,6 +26,14 @@ function textColorInput(label: string) {
     return inputs.find((input) => input.checkVisibility()) ?? inputs[0];
 }
 
+// A section's tools show once it is tapped, as on a phone.
+async function tapSection(canvasElement: HTMLElement, name: string) {
+    const section = within(canvasElement).getByRole('group', { name });
+    fireEvent.pointerDown(section);
+    await waitFor(() => expect(section).toHaveAttribute('data-active', 'true'));
+    return section;
+}
+
 export const Default: Story = {};
 
 // A phone opens the settings as a sheet.
@@ -91,5 +99,40 @@ export const SaveFailed: Story = {
         await userEvent.click(canvas.getByRole('button', { name: copy.back }));
         await waitForOpen('dialog');
         await expect(canvas.getByText(copy.notSaved)).toBeInTheDocument();
+    },
+};
+
+// The "+" under a section lists the sections this event may still add.
+export const AddSection: Story = {
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        // The first "+" sits above the top section, the second under it.
+        const [, underTop] = within(canvasElement).getAllByRole('button', { name: copy.sections.add });
+        await userEvent.click(underTop);
+        const sheet = await waitForOpen('dialog');
+        await userEvent.click(within(sheet).getByRole('button', { name: copy.sectionNames.photo }));
+        await waitFor(() => expect(within(canvasElement).getAllByRole('group', { name: copy.sectionNames.photo })).toHaveLength(2));
+        await expect(within(canvasElement).getByRole('button', { name: copy.undo })).toBeEnabled();
+    },
+};
+
+// A hidden section stays on the canvas, faded, so it can be shown again.
+export const HiddenSection: Story = {
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        const section = await tapSection(canvasElement, copy.sectionNames.dressCode);
+        await userEvent.click(within(section).getByRole('button', { name: copy.sections.hide }));
+        await expect(within(section).getByText(copy.sections.hidden)).toBeVisible();
+    },
+};
+
+// Deleting asks first.
+export const DeleteSection: Story = {
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        const section = await tapSection(canvasElement, copy.sectionNames.dressCode);
+        await userEvent.click(within(section).getByRole('button', { name: copy.sections.options }));
+        await userEvent.click(within(await waitForOpen('menu')).getByRole('menuitem', { name: copy.sections.delete }));
+        await waitForOpen('dialog');
     },
 };

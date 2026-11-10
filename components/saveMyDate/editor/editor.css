@@ -8,4 +8,7 @@
     --smd-editor-muted: #918d99;
     --smd-editor-control: #303238;
     --smd-editor-canvas: radial-gradient(circle at top, #303238 0, #242529 48%, #1d1e21 100%);
+    /* The old editor's colours for a picked section and its delete action. */
+    --smd-editor-accent: #78b6a4;
+    --smd-editor-danger: #e6968c;
 }
