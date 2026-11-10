@@ -1,6 +1,14 @@
 import { locales } from '@/i18n/config';
 import { getForBusinessPath, getQrWeddingPath } from '@/i18n/publicLocale';
-import type { CampaignLinkDto, CampaignLinkLanguage, CampaignLinkRequestDto, CampaignLinkTargetDto, CampaignRowDto } from '@/lib/api/types';
+import type {
+    CampaignLinkDto,
+    CampaignLinkLanguage,
+    CampaignLinkRequestDto,
+    CampaignLinksRequestDto,
+    CampaignLinkTargetDto,
+    CampaignPlacement,
+    CampaignRowDto,
+} from '@/lib/api/types';
 import { FOR_BUSINESS_HUB_LAUNCHED } from '@/lib/forBusinessRelease';
 import { occasionPath, readyOccasions } from '@/lib/occasions/occasions';
 import { SITE_URL } from '@/lib/seo';
@@ -329,4 +337,111 @@ export function campaignLinkLabel(link: CampaignLinkDto, campaignLinks: readonly
 // instead of a redirect; the short one for anything else.
 export function campaignLinkShareUrl(link: CampaignLinkDto): string {
     return campaignLinkType(link) === 'searchAd' ? campaignUrl(link) : campaignShortUrl(link);
+}
+
+// The languages a campaign's links come in, in the picker's order.
+export const CAMPAIGN_LINK_LANGUAGES: readonly CampaignLinkLanguage[] = ['el', 'en'];
+
+// What the link picker offers, in its order, with the values Spring gives each placement's links
+// (CampaignPlacement in guestwall-be). A partner link's source is the partner's name, and Other's source
+// and medium are typed, so theirs are null here.
+export type CampaignPlacementOption = {
+    placement: CampaignPlacement;
+    platform: CampaignPlatform;
+    type: CampaignLinkType | null;
+    source: string | null;
+    medium: string | null;
+    format: CampaignLinkFormat;
+};
+
+export const CAMPAIGN_PLACEMENTS: readonly CampaignPlacementOption[] = [
+    { placement: 'INSTAGRAM_POST', platform: 'instagram', type: 'post', source: 'instagram', medium: 'social', format: 'post' },
+    { placement: 'INSTAGRAM_STORY', platform: 'instagram', type: 'story', source: 'instagram', medium: 'social', format: 'story' },
+    { placement: 'INSTAGRAM_POST_AD', platform: 'instagram', type: 'postAd', source: 'instagram', medium: 'paid_social', format: 'post' },
+    { placement: 'INSTAGRAM_STORY_AD', platform: 'instagram', type: 'storyAd', source: 'instagram', medium: 'paid_social', format: 'story' },
+    { placement: 'FACEBOOK_POST', platform: 'facebook', type: 'post', source: 'facebook', medium: 'social', format: 'post' },
+    { placement: 'FACEBOOK_POST_AD', platform: 'facebook', type: 'postAd', source: 'facebook', medium: 'paid_social', format: 'post' },
+    { placement: 'TIKTOK_POST', platform: 'tiktok', type: 'post', source: 'tiktok', medium: 'social', format: 'post' },
+    { placement: 'TIKTOK_POST_AD', platform: 'tiktok', type: 'postAd', source: 'tiktok', medium: 'paid_social', format: 'post' },
+    { placement: 'GOOGLE_ADS', platform: 'google', type: 'searchAd', source: 'google', medium: 'cpc', format: 'search' },
+    { placement: 'PINTEREST', platform: 'pinterest', type: 'post', source: 'pinterest', medium: 'social', format: 'post' },
+    { placement: 'YOUTUBE', platform: 'youtube', type: 'post', source: 'youtube', medium: 'social', format: 'post' },
+    { placement: 'LINKEDIN', platform: 'linkedin', type: 'post', source: 'linkedin', medium: 'social', format: 'post' },
+    { placement: 'EMAIL', platform: 'email', type: null, source: 'newsletter', medium: 'email', format: 'email' },
+    { placement: 'PARTNER', platform: 'partner', type: null, source: null, medium: 'partner', format: 'partner' },
+    { placement: 'PRINTED_QR', platform: 'qr', type: null, source: 'print', medium: 'qr', format: 'qr' },
+    { placement: 'OTHER', platform: 'other', type: null, source: null, medium: null, format: 'link' },
+];
+
+// A page a campaign's links can open, with its address in each language. key goes into utm_campaign;
+// home has none.
+export type CampaignPageOption = { key: string | null; kind: CampaignDestinationKind; paths: Record<CampaignLinkLanguage, string> };
+
+function pathsOf(path: (language: CampaignLinkLanguage) => string): Record<CampaignLinkLanguage, string> {
+    return { el: path('el'), en: path('en') };
+}
+
+// Home first, then (once live here) wedding QR and the business page, then every ready occasion page.
+export function campaignPageOptions(): CampaignPageOption[] {
+    const options: CampaignPageOption[] = [{ key: null, kind: 'home', paths: { en: '/', el: '/el' } }];
+    if (showsUnreleasedPages()) {
+        options.push({ key: 'qr-wedding', kind: 'qrWedding', paths: pathsOf(getQrWeddingPath) });
+        if (FOR_BUSINESS_HUB_LAUNCHED) options.push({ key: 'business', kind: 'forBusiness', paths: pathsOf(getForBusinessPath) });
+    }
+    for (const occasion of readyOccasions()) {
+        options.push({ key: occasion.slugs.en, kind: 'occasion', paths: pathsOf((language) => occasionPath(occasion, language)) });
+    }
+    return options;
+}
+
+// A placement's utm_campaign, as Spring builds it: link name, page, format, language.
+export function campaignPlacementCampaign(
+    linkName: string,
+    pageKey: string | null,
+    format: CampaignLinkFormat,
+    language: CampaignLinkLanguage,
+): string {
+    return [linkName, pageKey, format, language].filter(Boolean).join('-');
+}
+
+// True when the campaign already has this placement on this page in every chosen language. Spring skips
+// a link the campaign already has, so a placement added in only some of them can still be ticked.
+export function isPlacementAdded(
+    option: CampaignPlacementOption,
+    languages: readonly CampaignLinkLanguage[],
+    pageKey: string | null,
+    linkName: string,
+    links: readonly CampaignLinkDto[],
+): boolean {
+    const { source, medium, format } = option;
+    if (source === null || medium === null || languages.length === 0) return false;
+    return languages.every((language) => {
+        const utmCampaign = campaignPlacementCampaign(linkName, pageKey, format, language);
+        return links.some((link) => link.utmSource === source && link.utmMedium === medium && link.utmCampaign === utmCampaign);
+    });
+}
+
+// What the picker holds. partnerName, utmSource and utmMedium are already utm values.
+export type CampaignLinkSelection = {
+    placements: ReadonlySet<CampaignPlacement>;
+    languages: readonly CampaignLinkLanguage[];
+    page: CampaignPageOption;
+    partnerName: string;
+    utmSource: string;
+    utmMedium: string;
+};
+
+// The add-links request: placements in the picker's order, and the typed values only with the
+// placement that uses them.
+export function campaignLinksRequest(selection: CampaignLinkSelection): CampaignLinksRequestDto {
+    const { placements, page } = selection;
+    return {
+        placements: CAMPAIGN_PLACEMENTS.map((entry) => entry.placement).filter((placement) => placements.has(placement)),
+        languages: [...selection.languages],
+        pageKey: page.key,
+        pagePaths: page.key === null ? null : { ...page.paths },
+        partnerName: placements.has('PARTNER') ? selection.partnerName : null,
+        utmSource: placements.has('OTHER') ? selection.utmSource : null,
+        utmMedium: placements.has('OTHER') ? selection.utmMedium : null,
+    };
 }
