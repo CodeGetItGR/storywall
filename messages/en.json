@@ -1074,6 +1074,25 @@
                 "heading": "One last look",
                 "edit": "Edit",
                 "pay": "Pay {amount}"
+            },
+            "account": {
+                "heading": "Almost there. Save your event",
+                "line": "Sign in so you can manage it from any device."
+            },
+            "code": {
+                "heading": "Check your email",
+                "line": "For your security, enter the 6-digit code we sent to {email}",
+                "label": "6-digit code",
+                "resendIn": "Resend code in {time}",
+                "resend": "Resend code",
+                "resent": "We sent a new code.",
+                "changeEmail": "Change email",
+                "confirm": "Confirm",
+                "errors": {
+                    "wrong": "That code isn't right. Try again.",
+                    "expired": "This code has expired. Send a new one.",
+                    "tooMany": "Too many tries. Send a new code."
+                }
             }
         },
         "title": "Create an event",
