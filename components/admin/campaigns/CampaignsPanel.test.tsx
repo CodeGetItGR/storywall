@@ -1,25 +1,39 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { campaignListFixture } from '@/components/admin/campaigns/__fixtures__/campaigns';
+import { campaignDetailFixture, campaignListFixture } from '@/components/admin/campaigns/__fixtures__/campaigns';
 import { CampaignsPanel } from '@/components/admin/campaigns/CampaignsPanel';
 import messages from '@/messages/en.json';
 
-vi.mock('@/hooks/useAdminCampaignApi', () => ({
+// A campaign's Back link reads the App Router.
+vi.mock('next/navigation', () => ({ usePathname: () => '/admin', useRouter: () => ({ back: vi.fn() }) }));
+
+vi.mock('@/hooks/useAdminCampaignApi', async () => ({
+    ...(await import('@/components/admin/campaigns/__fixtures__/campaignWrites')).idleCampaignWrites(),
     useCampaignListQuery: () => ({ data: campaignListFixture, isLoading: false, isFetching: false, error: null, dataUpdatedAt: 0, refetch: vi.fn() }),
+    useCampaignDetailQuery: () => ({
+        data: campaignDetailFixture,
+        isLoading: false,
+        isFetching: false,
+        error: null,
+        dataUpdatedAt: 0,
+        refetch: vi.fn(),
+    }),
 }));
 
 function renderPanel() {
     return render(
         <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
-            <CampaignsPanel />
+            <CampaignsPanel canEditDiscount />
         </NextIntlClientProvider>,
     );
 }
 
 describe('CampaignsPanel', () => {
-    beforeEach(() => window.history.replaceState(null, '', '/admin#campaigns'));
+    beforeEach(() => {
+        window.history.replaceState(null, '', '/admin#campaigns');
+    });
     afterEach(cleanup);
 
     it('opens on the current campaigns for the last 30 days', () => {
@@ -35,5 +49,30 @@ describe('CampaignsPanel', () => {
 
         expect(screen.getByRole('button', { name: 'Past', pressed: true })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Spring 20%' })).toBeInTheDocument();
+    });
+
+    it('opens a campaign from its address', () => {
+        window.history.replaceState(null, '', '/admin#campaigns/launch');
+        renderPanel();
+
+        expect(screen.getByRole('heading', { level: 1, name: 'Launch 50%' })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'All campaigns' })).toHaveAttribute('href', '#campaigns');
+    });
+
+    it('opens the new campaign drawer from the list', async () => {
+        renderPanel();
+
+        fireEvent.click(screen.getByRole('button', { name: 'New campaign' }));
+
+        expect(await screen.findByRole('textbox', { name: 'Name' })).toHaveValue('');
+    });
+
+    it("opens a campaign's edit drawer from its header", async () => {
+        window.history.replaceState(null, '', '/admin#campaigns/launch');
+        renderPanel();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+
+        expect(await screen.findByRole('textbox', { name: 'Name' })).toHaveValue('Launch 50%');
     });
 });

@@ -33,6 +33,8 @@ export type AdminErrorMessageKey =
     | 'discountCampaignPriceTooLow'
     | 'discountCampaignLinkNameTaken'
     | 'campaignDiscountAdminOnly'
+    | 'campaignLinkMoveDiscount'
+    | 'campaignClosedForLinks'
     | 'collaboratorBrandingIncomplete'
     | 'methodNotAllowed'
     | 'coverageOptionInvalid'
@@ -129,6 +131,8 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     // A campaign's own codes reuse the discount campaign wording, which says the same.
     if (code === ERROR_CODES.CAMPAIGN_INVALID) return 'discountCampaignInvalid';
     if (code === ERROR_CODES.CAMPAIGN_DISCOUNT_ADMIN_ONLY) return 'campaignDiscountAdminOnly';
+    if (code === ERROR_CODES.CAMPAIGN_LINK_MOVE_DISCOUNT) return 'campaignLinkMoveDiscount';
+    if (code === ERROR_CODES.CAMPAIGN_CLOSED_FOR_LINKS) return 'campaignClosedForLinks';
     if (code === ERROR_CODES.CAMPAIGN_LINK_NAME_TAKEN) return 'discountCampaignLinkNameTaken';
     // Enabling, or clearing a field of an enabled partner, while the card would be incomplete.
     if (code === ERROR_CODES.COLLABORATOR_BRANDING_INCOMPLETE) return 'collaboratorBrandingIncomplete';

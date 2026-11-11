@@ -1,4 +1,6 @@
-import type { CampaignCountsDto, CampaignDayDto, CampaignDto, CampaignListItemDto } from '@/lib/api/types';
+import { rateOf } from '@/lib/adminFunnel';
+import type { CampaignCountsDto, CampaignDayDto, CampaignDto, CampaignLinkDto, CampaignLinkStatsDto, CampaignListItemDto } from '@/lib/api/types';
+import { CAMPAIGN_PLATFORMS, campaignLinkLabel, type CampaignLinkLabelParts, campaignLinkPlatform, type CampaignPlatform } from '@/lib/campaignLinks';
 
 // How the Campaigns page compares: against the previous period, between campaigns and between a
 // campaign's platforms. The thresholds are a starting point, to tune once real numbers come in.
@@ -15,7 +17,8 @@ export const CHANGE_COUNT_BELOW = 10;
 
 export type ChangeDirection = 'up' | 'down';
 
-export type Change = { kind: 'same' } | { kind: 'count'; direction: ChangeDirection; amount: number } | { kind: 'percent'; direction: ChangeDirection; ratio: number };
+export type Change =
+    { kind: 'same' } | { kind: 'count'; direction: ChangeDirection; amount: number } | { kind: 'percent'; direction: ChangeDirection; ratio: number };
 
 // How a number moved against the previous period. Null with no previous period (all time). A rise
 // from zero has no percent, so it is a count.
@@ -148,15 +151,19 @@ function currentRank(campaign: CampaignDto): number {
     return campaign.startsAt === null && campaign.endsAt === null ? 2 : 0;
 }
 
-// When a past campaign stopped: archived, else ended. createdAt only as a last resort.
+// When a past campaign stopped: archived, else the day its discount was stopped when that is known,
+// else ended. createdAt only as a last resort.
 function pastTime(campaign: CampaignDto): number {
-    return Date.parse(campaign.archivedAt ?? campaign.endsAt ?? campaign.createdAt);
+    const stoppedAt = campaign.discount?.status === 'OFF' ? campaign.discount.stoppedAt : null;
+    return Date.parse(campaign.archivedAt ?? stoppedAt ?? campaign.endsAt ?? campaign.createdAt);
 }
 
 export function campaignsForTab(items: readonly CampaignListItemDto[], tab: CampaignTab): CampaignListItemDto[] {
     const shown = items.filter((item) => campaignTab(item.campaign) === tab);
     if (tab === 'current') {
-        return shown.sort((left, right) => currentRank(left.campaign) - currentRank(right.campaign) || right.current.visitors - left.current.visitors);
+        return shown.sort(
+            (left, right) => currentRank(left.campaign) - currentRank(right.campaign) || right.current.visitors - left.current.visitors,
+        );
     }
     return shown.sort((left, right) => pastTime(right.campaign) - pastTime(left.campaign));
 }
@@ -173,4 +180,69 @@ export function campaignListRows(items: readonly CampaignListItemDto[], tab: Cam
         ),
         trend: trendOf(item.daily),
     }));
+}
+
+// The funnel's steps in order: who came, what they tapped, who signed up, created an event and paid.
+export const CAMPAIGN_FUNNEL_STEPS = ['visitors', 'plansClicks', 'createClicks', 'planPicks', 'signedUp', 'createdEvent', 'paidHost'] as const;
+export type CampaignFunnelStep = (typeof CAMPAIGN_FUNNEL_STEPS)[number];
+
+// share: of the visitors, null for the visitors step itself. width: the bar, out of the visitors.
+export type CampaignFunnelRow = { step: CampaignFunnelStep; value: number; share: number | null; width: number; change: Change | null };
+
+export function campaignFunnel(current: CampaignCountsDto, previous: CampaignCountsDto | null): CampaignFunnelRow[] {
+    return CAMPAIGN_FUNNEL_STEPS.map((step) => {
+        const value = current[step];
+        const share = step === 'visitors' ? null : rateOf(value, current.visitors);
+        const width = step === 'visitors' ? Math.min(value, 1) : (share ?? 0);
+        return { step, value, share, width, change: changeOf(value, previous?.[step]) };
+    });
+}
+
+// A day of the range with the same day of the previous period, matched by position. previous is
+// null past the previous period's days, and on every day for all time.
+export type CampaignDailyRow = { date: string; current: number; previous: number | null };
+
+export function campaignDailyRows(daily: readonly CampaignDayDto[], previousDaily: readonly CampaignDayDto[]): CampaignDailyRow[] {
+    return daily.map((day, index) => ({ date: day.date, current: day.visitors, previous: previousDaily[index]?.visitors ?? null }));
+}
+
+export type CampaignPlatformLine = { link: CampaignLinkDto; counts: CampaignCountsDto; label: CampaignLinkLabelParts };
+
+// One platform of a campaign: its links added up, its verdict against the campaign's other platforms,
+// its bar against the busiest one, and its rate in the campaign's measure. It opens to its links only
+// when it has more than one and a visit.
+export type CampaignPlatformRowData = {
+    platform: CampaignPlatform;
+    counts: CampaignCountsDto;
+    lines: CampaignPlatformLine[];
+    verdict: Verdict | null;
+    share: number;
+    rate: number | null;
+    expandable: boolean;
+};
+
+export function campaignPlatformRows(links: readonly CampaignLinkStatsDto[], measure: VerdictMeasure): CampaignPlatformRowData[] {
+    const all = links.map((stats) => stats.link);
+    const groups = CAMPAIGN_PLATFORMS.map((platform) => {
+        const lines = links
+            .filter((stats) => campaignLinkPlatform(stats.link) === platform)
+            .map((stats) => ({ link: stats.link, counts: stats.counts, label: campaignLinkLabel(stats.link, all) }))
+            .sort((left, right) => right.counts.visitors - left.counts.visitors);
+        return { platform, lines, counts: sumCounts(lines.map((line) => line.counts)) };
+    }).filter((group) => group.lines.length > 0);
+    const busiest = Math.max(1, ...groups.map((group) => group.counts.visitors));
+
+    // sort is stable, so platforms with as many visitors keep CAMPAIGN_PLATFORMS' order.
+    return groups
+        .map((group) => ({
+            ...group,
+            verdict: verdictOf(
+                group.counts,
+                groups.filter((other) => other !== group).map((other) => other.counts),
+            ),
+            share: group.counts.visitors / busiest,
+            rate: rateOf(group.counts[measure], group.counts.visitors),
+            expandable: group.counts.visitors > 0 && group.lines.length > 1,
+        }))
+        .sort((left, right) => right.counts.visitors - left.counts.visitors);
 }

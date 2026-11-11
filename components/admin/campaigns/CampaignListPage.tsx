@@ -1,8 +1,10 @@
 'use client';
 
+import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
+import { CAMPAIGN_PRIMARY_BUTTON } from '@/components/admin/campaigns/campaignButtons';
 import { CampaignRow } from '@/components/admin/campaigns/CampaignRow';
 import { CampaignSummary } from '@/components/admin/campaigns/CampaignSummary';
 import { CampaignTabs } from '@/components/admin/campaigns/CampaignTabs';
@@ -22,12 +24,14 @@ export function CampaignListPage({
     range,
     tab,
     onTabChangeAction,
+    onNewCampaignAction,
     onRecordLinkClickAction,
     onRecordRowClickAction,
 }: {
     range: ReturnType<typeof useFunnelRange>;
     tab: CampaignTab;
     onTabChangeAction: (tab: CampaignTab) => void;
+    onNewCampaignAction: () => void;
     onRecordLinkClickAction: (event: MouseEvent<HTMLAnchorElement>) => void;
     onRecordRowClickAction: (event: MouseEvent<HTMLTableRowElement>) => void;
 }) {
@@ -37,7 +41,18 @@ export function CampaignListPage({
     return (
         <>
             {/* Header */}
-            <FunnelHeader title={t('campaigns.title')} updatedAt={list.updatedAt} isFetching={list.isFetching} onRefreshAction={list.refresh} />
+            <FunnelHeader
+                title={t('campaigns.title')}
+                updatedAt={list.updatedAt}
+                isFetching={list.isFetching}
+                onRefreshAction={list.refresh}
+                actions={
+                    <button type="button" onClick={onNewCampaignAction} className={CAMPAIGN_PRIMARY_BUTTON}>
+                        <Plus aria-hidden="true" className="h-4 w-4" />
+                        {t('campaigns.newCampaign')}
+                    </button>
+                }
+            />
 
             <div className="space-y-5">
                 {/* Range */}

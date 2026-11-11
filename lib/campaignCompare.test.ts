@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import type { CampaignCountsDto, CampaignDto, CampaignListItemDto } from '@/lib/api/types';
+import type { CampaignCountsDto, CampaignDto, CampaignLinkDto, CampaignLinkStatsDto, CampaignListItemDto } from '@/lib/api/types';
 import {
+    campaignDailyRows,
+    campaignFunnel,
     campaignListRows,
+    campaignPlatformRows,
     campaignsForTab,
     campaignTab,
     changeOf,
@@ -230,6 +233,24 @@ describe('campaignsForTab', () => {
         ];
         expect(campaignsForTab(items, 'past').map((row) => row.campaign.id)).toEqual(['archived', 'recent', 'old']);
     });
+
+    it('orders a campaign whose discount was stopped by the stop day', () => {
+        const stopped = {
+            id: 'd-1',
+            percent: 20,
+            label: null,
+            startsAt: '2026-08-01T00:00:00Z',
+            endsAt: '2026-11-30T00:00:00Z',
+            stoppedAt: '2026-09-10T00:00:00Z',
+            status: 'OFF' as const,
+        };
+        const items = [
+            item({ id: 'stopped', status: 'ENDED', endsAt: '2026-11-30T00:00:00Z', discount: stopped }),
+            item({ id: 'ended', status: 'ENDED', endsAt: '2026-10-20T00:00:00Z' }),
+            item({ id: 'old-stop', status: 'ENDED', endsAt: '2026-11-25T00:00:00Z', discount: { ...stopped, stoppedAt: null } }),
+        ];
+        expect(campaignsForTab(items, 'past').map((row) => row.campaign.id)).toEqual(['old-stop', 'ended', 'stopped']);
+    });
 });
 
 describe('campaignListRows', () => {
@@ -242,5 +263,106 @@ describe('campaignListRows', () => {
         expect(row.item.campaign.id).toBe('good');
         expect(row.verdict).toEqual({ kind: 'better', measure: 'sales', multiple: 3 });
         expect(row.trend).toBe('flat');
+    });
+});
+
+function linkStats(id: string, values: Partial<CampaignLinkDto>, current: Partial<CampaignCountsDto> = {}): CampaignLinkStatsDto {
+    return {
+        link: {
+            id,
+            name: id,
+            destinationPath: '/el',
+            utmSource: 'instagram',
+            utmMedium: 'social',
+            utmCampaign: 'launch-post-el',
+            createdAt: '2026-11-01T09:00:00Z',
+            linkGroup: null,
+            destinationAnchor: 'pricing',
+            shortCode: id,
+            campaignId: 'c-1',
+            ...values,
+        },
+        counts: counts(current),
+    };
+}
+
+describe('campaignFunnel', () => {
+    it('gives each step its share of the visitors and its change', () => {
+        const rows = campaignFunnel(
+            counts({ visitors: 200, plansClicks: 50, signedUp: 10 }),
+            counts({ visitors: 100, plansClicks: 50, signedUp: 4 }),
+        );
+
+        expect(rows.map((row) => row.step)).toEqual(['visitors', 'plansClicks', 'createClicks', 'planPicks', 'signedUp', 'createdEvent', 'paidHost']);
+        expect(rows[0]).toEqual({ step: 'visitors', value: 200, share: null, width: 1, change: { kind: 'percent', direction: 'up', ratio: 1 } });
+        expect(rows[1]).toEqual({ step: 'plansClicks', value: 50, share: 0.25, width: 0.25, change: { kind: 'same' } });
+        expect(rows[4]).toEqual({ step: 'signedUp', value: 10, share: 0.05, width: 0.05, change: { kind: 'percent', direction: 'up', ratio: 1.5 } });
+    });
+
+    it('has no shares with no visitors, and no changes for all time', () => {
+        const rows = campaignFunnel(counts(), null);
+
+        expect(rows[0]).toEqual({ step: 'visitors', value: 0, share: null, width: 0, change: null });
+        expect(rows[1].share).toBeNull();
+    });
+});
+
+describe('campaignDailyRows', () => {
+    it('matches each day with the same day of the previous period', () => {
+        expect(
+            campaignDailyRows(
+                [
+                    { date: '2026-11-01', visitors: 4 },
+                    { date: '2026-11-02', visitors: 6 },
+                ],
+                [{ date: '2026-10-30', visitors: 3 }],
+            ),
+        ).toEqual([
+            { date: '2026-11-01', current: 4, previous: 3 },
+            { date: '2026-11-02', current: 6, previous: null },
+        ]);
+    });
+});
+
+describe('campaignPlatformRows', () => {
+    const links = [
+        linkStats('fb', { utmSource: 'facebook' }, { visitors: 150, signedUp: 3 }),
+        linkStats('ig-post', {}, { visitors: 400, signedUp: 12, sales: 2 }),
+        linkStats('ig-story', { utmCampaign: 'launch-story-el' }, { visitors: 300, signedUp: 6 }),
+        linkStats('mail', { utmSource: 'newsletter', utmMedium: 'email', utmCampaign: 'launch-email-el' }),
+        linkStats('tiktok', { utmSource: 'tiktok' }, { visitors: 150, signedUp: 3 }),
+    ];
+
+    it('groups links by platform, busiest first, ties in platform order', () => {
+        expect(campaignPlatformRows(links, 'sales').map((row) => row.platform)).toEqual(['instagram', 'facebook', 'tiktok', 'email']);
+    });
+
+    it('adds a platform up and lists its links busiest first', () => {
+        const [instagram] = campaignPlatformRows(links, 'sales');
+
+        expect(instagram.counts.visitors).toBe(700);
+        expect(instagram.lines.map((line) => line.link.id)).toEqual(['ig-post', 'ig-story']);
+        expect(instagram.lines[1].label.type).toBe('story');
+        expect(instagram.share).toBe(1);
+        expect(instagram.rate).toBeCloseTo(2 / 700);
+        expect(instagram.expandable).toBe(true);
+    });
+
+    it('compares each platform with the others', () => {
+        const [instagram, facebook] = campaignPlatformRows(links, 'sales');
+
+        // 2 sales in 700 visitors against none in 300.
+        expect(instagram.verdict).toEqual({ kind: 'better', measure: 'sales', multiple: null });
+        expect(facebook.verdict).toEqual({ kind: 'worse', measure: 'sales' });
+    });
+
+    it("doesn't open a platform with one link or no visits", () => {
+        const rows = campaignPlatformRows(links, 'sales');
+        const email = rows.find((row) => row.platform === 'email');
+
+        expect(rows.find((row) => row.platform === 'facebook')?.expandable).toBe(false);
+        expect(email?.expandable).toBe(false);
+        expect(email?.rate).toBeNull();
+        expect(email?.share).toBe(0);
     });
 });
