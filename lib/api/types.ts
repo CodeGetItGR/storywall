@@ -375,28 +375,6 @@ export interface DiscountCampaignLiveResponseDto {
     campaign: DiscountCampaignLiveDto | null;
 }
 
-export interface AdminDiscountCampaignDto {
-    id: string;
-    name: string;
-    percent: number;
-    label: string | null;
-    linkName: string;
-    startsAt: string;
-    endsAt: string;
-    status: SiteNoticeStatus;
-    createdAt: string;
-}
-
-export interface DiscountCampaignRequestDto {
-    name: string;
-    percent: number;
-    label: string | null;
-    linkName: string;
-    // Null means now.
-    startsAt: string | null;
-    endsAt: string;
-}
-
 export interface SiteNoticeLiveDto {
     id: string;
     version: number;
@@ -2768,8 +2746,8 @@ export interface FunnelChannelRowDto {
     revenueMinorByCurrency: Record<string, number>;
 }
 
-// /api/admin/campaign-links. Made with the campaign link builder; only the name changes afterwards.
-// Spring stores the UTM values trimmed and lowercased, one link per (source, medium, campaign).
+// One of a campaign's links, made by Add links. Spring stores the UTM values trimmed and lowercased,
+// one link per (source, medium, campaign).
 export interface CampaignLinkDto {
     id: string;
     name: string;
@@ -2790,84 +2768,14 @@ export interface CampaignLinkDto {
 // GET /api/public/campaign-links/{shortCode}: what a short address needs to build the full URL.
 export type CampaignLinkTargetDto = Pick<CampaignLinkDto, 'destinationPath' | 'destinationAnchor' | 'utmSource' | 'utmMedium' | 'utmCampaign'>;
 
-export interface CampaignLinkRequestDto {
-    name: string;
-    destinationPath: string;
-    utmSource: string;
-    utmMedium: string;
-    utmCampaign: string;
-}
-
 export type CampaignLinkLanguage = 'en' | 'el';
-
-// POST /api/admin/campaign-links/sets. Creates whichever of the 8 links are missing.
-export interface CampaignLinkSetRequestDto {
-    name: string;
-    linkName: string;
-    language: CampaignLinkLanguage;
-}
-
-export interface CampaignLinkSetDto {
-    links: CampaignLinkDto[];
-    created: number;
-}
-
-// GET /api/admin/metrics/campaigns. Visits and landing page clicks (saved links only) and sign-ups in
-// the range per (source, medium, campaign), sign-ups counted as on FunnelChannelRowDto, with the saved
-// link that has the same values. A saved link with nothing in the range is a row of zeros. Any of the
-// three values is null when the visit didn't have it.
-export interface CampaignRowDto {
-    utmSource: string | null;
-    utmMedium: string | null;
-    utmCampaign: string | null;
-    link: CampaignLinkDto | null;
-    visits: number;
-    visitors: number;
-    createClicks: number;
-    plansClicks: number;
-    planPicks: number;
-    signedUp: number;
-    createdEvent: number;
-    paidHost: number;
-    // Null for a MARKETING caller: the server leaves revenue out.
-    revenueMinorByCurrency: Record<string, number> | null;
-    // Paid orders credited to this link in the range, whenever the buyer signed up.
-    sales: number;
-    // Null for a MARKETING caller, like revenue.
-    salesRevenueMinorByCurrency: Record<string, number> | null;
-}
-
-// GET /api/admin/metrics/campaigns/overview. Every saved link, one utm source (?source=) or one link
-// (?link=, which wins) over a range. daily lists every Athens day in the range and hourly every Athens
-// hour (0-23) summed over it, zeros included; both are empty when there's no visit at all.
-// dailySeries and hourlySeries split them into the chart's lines (each source, or with ?source= each
-// "medium / campaign"), only where a line had a visit; empty for one link. A page is null for old
-// visits whose link is gone.
-export interface CampaignOverviewDto {
-    visits: number;
-    visitors: number;
-    createClicks: number;
-    plansClicks: number;
-    planPicks: number;
-    signedUp: number;
-    paidHost: number;
-    // Null for a MARKETING caller: the server leaves revenue out.
-    revenueMinorByCurrency: Record<string, number> | null;
-    daily: { date: string; visits: number; visitors: number }[];
-    hourly: { hour: number; visits: number; visitors: number }[];
-    dailySeries: { series: string; date: string; visits: number; visitors: number }[];
-    hourlySeries: { series: string; hour: number; visits: number; visitors: number }[];
-    devices: { device: VisitorDevice; visits: number }[];
-    languages: { language: VisitorLanguage; visits: number }[];
-    pages: { page: string | null; visits: number }[];
-}
 
 // GET /api/admin/campaigns and /api/admin/campaigns/{id}. A campaign owns its links and at most one
 // discount. Its status is worked out by Spring: from the discount when it has one, else from its dates.
 export type CampaignStatus = 'SCHEDULED' | 'LIVE' | 'ENDED' | 'ARCHIVED';
 
-// One period's numbers for a campaign, a link or every campaign, counted as on CampaignRowDto. Revenue
-// is what the period's sales paid; null for a MARKETING caller.
+// One period's numbers for a campaign, a link or every campaign. Revenue is what the period's sales
+// paid; null for a MARKETING caller.
 export interface CampaignCountsDto {
     visits: number;
     visitors: number;
@@ -2887,6 +2795,8 @@ export interface CampaignDiscountViewDto {
     label: string | null;
     startsAt: string;
     endsAt: string;
+    // When the discount was stopped; null when it wasn't, or was stopped before this was recorded.
+    stoppedAt: string | null;
     status: SiteNoticeStatus;
 }
 
@@ -2994,11 +2904,6 @@ export interface CampaignRequestDto {
     endsAt: string | null;
     discount: CampaignDiscountRequestDto | null;
     links: CampaignLinksRequestDto | null;
-}
-
-// PATCH /api/admin/campaign-links/{id}: moves a link to another campaign.
-export interface CampaignLinkUpdateDto {
-    campaignId: string;
 }
 
 // POST /api/public/campaign-visits. Spring always answers 204.

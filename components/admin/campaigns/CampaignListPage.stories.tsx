@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { delay, http, HttpResponse } from 'msw';
-import { expect, within } from 'storybook/test';
+import { expect, userEvent, within } from 'storybook/test';
 
 import { withAdminShell } from '@/.storybook/admin';
 import { copyFor } from '@/.storybook/copy';
@@ -12,6 +12,7 @@ const LIST_URL = '*/api/admin/campaigns';
 const meta = {
     title: 'Admin/Campaigns/List',
     component: CampaignsPanel,
+    args: { canEditDiscount: true },
     decorators: [withAdminShell],
     beforeEach() {
         window.history.replaceState(null, '', '/admin#campaigns');
@@ -39,6 +40,7 @@ export const Past: Story = {
 };
 
 export const ForMarketing: Story = {
+    args: { canEditDiscount: false },
     beforeEach({ msw }) {
         msw.use(http.get(LIST_URL, () => HttpResponse.json(campaignListForMarketingFixture)));
     },
@@ -54,5 +56,21 @@ export const Loading: Story = {
     tags: ['visual-skip'],
     beforeEach({ msw }) {
         msw.use(http.get(LIST_URL, () => delay('infinite')));
+    },
+};
+
+// The drawer as it opens, with a Greek name typed and two placements ticked.
+export const NewCampaign: Story = {
+    beforeEach({ msw }) {
+        msw.use(http.get(LIST_URL, () => HttpResponse.json(campaignListFixture)));
+    },
+    async play({ canvasElement, globals }) {
+        const copy = copyFor(globals).AdminPage.campaigns;
+        const page = within(canvasElement.ownerDocument.body);
+        await userEvent.click(await page.findByRole('button', { name: copy.newCampaign }));
+        await userEvent.type(await page.findByRole('textbox', { name: copy.fields.name }), 'Καλοκαίρι 2026');
+        await expect(page.getByRole('textbox', { name: copy.fields.linkName })).toHaveValue('kalokairi-2026');
+        await userEvent.click(page.getByRole('checkbox', { name: `${copy.presets.instagram} ${copy.linkTypes.story}` }));
+        await userEvent.click(page.getByRole('checkbox', { name: copy.presets.email }));
     },
 };

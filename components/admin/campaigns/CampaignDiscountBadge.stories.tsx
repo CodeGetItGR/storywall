@@ -10,6 +10,7 @@ const LAUNCH: CampaignDiscountViewDto = {
     label: 'Launch offer',
     startsAt: '2026-06-01T07:00:00Z',
     endsAt: '2026-06-30T20:59:00Z',
+    stoppedAt: null,
     status: 'LIVE',
 };
 
@@ -31,3 +32,6 @@ export const Scheduled: Story = {
 export const Ended: Story = {
     args: { discount: { ...LAUNCH, percent: 20, label: null, startsAt: '2026-04-01T07:00:00Z', endsAt: '2026-04-30T20:59:00Z', status: 'ENDED' } },
 };
+
+// In a campaign's header: what it covers and its dates.
+export const WithDates: Story = { args: { withDates: true } };

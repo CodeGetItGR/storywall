@@ -28,7 +28,14 @@ const range = {
 function renderPage(tab: CampaignTab = 'current') {
     return render(
         <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
-            <CampaignListPage range={range} tab={tab} onTabChangeAction={vi.fn()} onRecordLinkClickAction={vi.fn()} onRecordRowClickAction={vi.fn()} />
+            <CampaignListPage
+                range={range}
+                tab={tab}
+                onTabChangeAction={vi.fn()}
+                onNewCampaignAction={vi.fn()}
+                onRecordLinkClickAction={vi.fn()}
+                onRecordRowClickAction={vi.fn()}
+            />
         </NextIntlClientProvider>,
     );
 }

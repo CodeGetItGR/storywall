@@ -1,12 +1,30 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { createElement } from 'react';
 
-import { campaignPlatformIcon } from '@/lib/campaignIcons';
+import { AdminIconTip } from '@/components/admin/AdminIconTip';
+import { CAMPAIGN_PLATFORM_COLORS, CAMPAIGN_PLATFORM_ICONS } from '@/lib/campaignIcons';
+import { CAMPAIGN_PLATFORM_PRESETS, type CampaignPlatform } from '@/lib/campaignLinks';
 import { cn } from '@/lib/utils';
 
-// Decorative: the link's name and source say the same in words.
-export function CampaignPlatformIcon({ source, medium, className }: { source: string | null; medium: string | null; className?: string }) {
-    return createElement(campaignPlatformIcon(source, medium), {
+// A platform's logo in its color. Its name is the icon's name and shows on hover, focus or tap, unless
+// `decorative`, where the control around it already carries the name and the tip.
+export function CampaignPlatformIcon({
+    platform,
+    className,
+    decorative = false,
+}: {
+    platform: CampaignPlatform;
+    className?: string;
+    decorative?: boolean;
+}) {
+    const t = useTranslations('AdminPage.campaigns.presets');
+    const icon = createElement(CAMPAIGN_PLATFORM_ICONS[platform], {
         'aria-hidden': true,
-        className: cn('h-3.5 w-3.5 shrink-0 text-ink-muted', className),
+        className: cn('h-4 w-4 shrink-0', CAMPAIGN_PLATFORM_COLORS[platform], className),
     });
+    if (decorative) return icon;
+
+    return <AdminIconTip label={t(CAMPAIGN_PLATFORM_PRESETS[platform])}>{icon}</AdminIconTip>;
 }

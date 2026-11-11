@@ -415,21 +415,6 @@ export const endpoints = {
                 );
                 return `/api/admin/metrics/funnel/channels${params.length ? `?${params.join('&')}` : ''}`;
             },
-            campaigns: (since?: string | null, until?: string | null) => {
-                const params = [since ? `since=${encodeURIComponent(since)}` : null, until ? `until=${encodeURIComponent(until)}` : null].filter(
-                    Boolean,
-                );
-                return `/api/admin/metrics/campaigns${params.length ? `?${params.join('&')}` : ''}`;
-            },
-            campaignOverview: (since?: string | null, until?: string | null, linkId?: string | null, source?: string | null) => {
-                const params = [
-                    since ? `since=${encodeURIComponent(since)}` : null,
-                    until ? `until=${encodeURIComponent(until)}` : null,
-                    linkId ? `link=${encodeURIComponent(linkId)}` : null,
-                    source ? `source=${encodeURIComponent(source)}` : null,
-                ].filter(Boolean);
-                return `/api/admin/metrics/campaigns/overview${params.length ? `?${params.join('&')}` : ''}`;
-            },
             linkClicks: (since?: string | null, until?: string | null) => {
                 const params = [since ? `since=${encodeURIComponent(since)}` : null, until ? `until=${encodeURIComponent(until)}` : null].filter(
                     Boolean,
@@ -596,20 +581,13 @@ export const endpoints = {
             list: '/api/admin/site-notices',
             byId: (id: string) => `/api/admin/site-notices/${id}`,
         },
-        discountCampaigns: {
-            list: '/api/admin/discount-campaigns',
-            byId: (id: string) => `/api/admin/discount-campaigns/${id}`,
-            stop: (id: string) => `/api/admin/discount-campaigns/${id}/stop`,
-        },
         devices: {
             list: '/api/admin/devices',
             byId: (id: string) => `/api/admin/devices/${id}`,
             testNotification: (id: string) => `/api/admin/devices/${id}/test-notification`,
         },
         campaignLinks: {
-            list: '/api/admin/campaign-links',
             byId: (id: string) => `/api/admin/campaign-links/${id}`,
-            sets: '/api/admin/campaign-links/sets',
         },
         campaigns: {
             list: (since?: string | null, until?: string | null) => `/api/admin/campaigns${rangeQuery(since, until)}`,
