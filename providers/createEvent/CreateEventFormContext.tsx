@@ -17,7 +17,7 @@ import type {
     ThemePresetDto,
 } from '@/lib/api/types';
 
-export type CreateEventStep = 'type' | 'plan' | 'details' | 'theme' | 'overview';
+export type CreateEventStep = 'type' | 'plan' | 'details' | 'theme' | 'account' | 'overview';
 
 export interface CreateEventFormValue {
     formId: string;
@@ -31,6 +31,8 @@ export interface CreateEventFormValue {
     goToOverview: () => void;
     // Back one step (the wizard's top-left button). One history entry back when the wizard pushed it.
     goBack: () => void;
+    // On to the next step shown (details → theme → account → review).
+    goToNextStep: () => void;
     // The steps shown for the current type and plan (the theme step only when there is one to pick).
     steps: CreateEventStep[];
 

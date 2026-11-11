@@ -13,12 +13,15 @@ export const CREATE_EVENT_STEP_PARAM = 'step';
 // The compare-plans sheet on the plan step. Its own history entry, so Back closes it.
 export const CREATE_EVENT_SHEET_PARAM = 'sheet';
 export const PLANS_SHEET = 'plans';
+// The account step's screen (sign up, sign in, code, change email). Its own history entry.
+export const CREATE_EVENT_ACCOUNT_PARAM = 'account';
 
 // Every param the wizard reads or writes. Closing the pop-up removes them all.
 const WIZARD_PARAMS = [
     CREATE_WIZARD_PARAM,
     CREATE_EVENT_STEP_PARAM,
     CREATE_EVENT_SHEET_PARAM,
+    CREATE_EVENT_ACCOUNT_PARAM,
     CREATE_EVENT_RUN_PARAM,
     CREATE_EVENT_TYPE_PARAM,
     CREATE_EVENT_PLAN_PARAM,

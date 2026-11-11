@@ -24,10 +24,15 @@ export function useRegisterForm({
     inviteToken,
     returnPath,
     initialFields,
+    onSignedIn,
+    emailVerification,
 }: {
     inviteToken: string | null;
     returnPath: string | null;
     initialFields: Omit<RegisterFields, 'password'>;
+    // The create wizard: stay put after sign-up, and ask for a 6-digit code instead of a link.
+    onSignedIn?: (session: AuthSessionDto) => void;
+    emailVerification?: 'LINK' | 'CODE';
 }) {
     const t = useTranslations('RegisterPage');
     const { register } = useAuth();
@@ -64,9 +69,10 @@ export function useRegisterForm({
 
     const handleSignedIn = useCallback(
         (session: AuthSessionDto) => {
-            navigateAfterSignIn(getPostRegisterRedirectPath(session.role, Boolean(inviteToken), returnPath));
+            if (onSignedIn) onSignedIn(session);
+            else navigateAfterSignIn(getPostRegisterRedirectPath(session.role, Boolean(inviteToken), returnPath));
         },
-        [inviteToken, navigateAfterSignIn, returnPath],
+        [inviteToken, navigateAfterSignIn, onSignedIn, returnPath],
     );
 
     // A newer version went live while the page was open: fetch both and make the box tick again.
@@ -101,6 +107,7 @@ export function useRegisterForm({
                     acceptedGuidelinesVersion: guidelinesVersion.data,
                     acceptedTermsVersion: termsVersion.data,
                     adultConfirmed: true,
+                    emailVerification,
                 });
                 handleSignedIn(session);
             } catch (err) {
@@ -112,6 +119,7 @@ export function useRegisterForm({
         },
         [
             accepted,
+            emailVerification,
             fields,
             guidelinesVersion.data,
             guidelinesVersion.isError,

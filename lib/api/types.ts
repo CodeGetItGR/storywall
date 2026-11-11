@@ -782,6 +782,8 @@ export interface RegisterRequestDto {
     adultConfirmed: true;
     inviteToken?: string;
     subscribeToNewsletter?: boolean;
+    // 'CODE' mails a 6-digit code (the create wizard) instead of a link. Default 'LINK'.
+    emailVerification?: 'LINK' | 'CODE';
     // All-or-nothing: an invalid profile is a 400 and no account is created.
     // VIES may leave it PENDING, so read GET /api/me/business-profile afterwards.
     businessProfile?: BusinessProfileRequestDto | null;

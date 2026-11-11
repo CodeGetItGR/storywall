@@ -1,11 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { http, HttpResponse } from 'msw';
+import { userEvent, within } from 'storybook/test';
 
 import { withAppContext } from '@/.storybook/appContext';
+import { copyFor } from '@/.storybook/copy';
 import { storyUser, storyWizardAppConfig, storyWizardPlans } from '@/.storybook/fixtures';
 import { CreateEventWizard } from '@/components/event/create/wizard/CreateEventWizard';
 import type { EventTypeConvention } from '@/lib/api/types';
 import { clearCreateEventWizardDraft, writeCreateEventWizardDraft } from '@/lib/createEventWizardDraft';
+import { rememberCodeSentAt } from '@/lib/emailCode';
 import { EMPTY_GIFT_DETAILS } from '@/lib/gift';
 import { CreateEventFormProvider } from '@/providers/CreateEventFormProvider';
 
@@ -28,7 +31,7 @@ const ANSWERS = {
     checkoutCode: '',
 };
 
-const seed = (step: 'details' | 'theme' | 'overview', eventType: EventTypeConvention, planCode: string) => () => {
+const seed = (step: 'details' | 'theme' | 'overview' | 'account', eventType: EventTypeConvention, planCode: string) => () => {
     writeCreateEventWizardDraft({ ...ANSWERS, step, eventType, planCode });
     return clearCreateEventWizardDraft;
 };
@@ -118,4 +121,47 @@ export const ThemeStep: Story = {
 export const ReviewStep: Story = {
     parameters: nav({ step: 'overview', type: 'wedding', plan: 'STORY' }),
     beforeEach: seed('overview', 'WEDDING', 'STORY'),
+};
+
+export const AccountStep: Story = {
+    parameters: nav({ step: 'account' }),
+    beforeEach: seed('account', 'WEDDING', 'STORY'),
+};
+
+export const AccountSignUp: Story = {
+    parameters: nav({ step: 'account', account: 'signup' }),
+    beforeEach: seed('account', 'WEDDING', 'STORY'),
+};
+
+// Signed in with an unverified email: the code screen, with the resend countdown running.
+const codeStory = (extra: Parameters<typeof http.post>[]): Story['beforeEach'] =>
+    function codeBeforeEach({ msw }) {
+        msw.use(
+            http.post('*/api/auth/email-code', () => new HttpResponse(null, { status: 204 })),
+            ...extra.map(([path, resolver]) => http.post(path, resolver)),
+        );
+        rememberCodeSentAt(storyUser.userId, Date.now());
+        return seed('account', 'WEDDING', 'STORY')();
+    };
+
+const CODE_PARAMETERS = {
+    ...nav({ step: 'account', account: 'code' }),
+    app: { user: { ...storyUser, emailVerified: false }, appConfig: storyWizardAppConfig },
+};
+
+// The countdown text changes between runs, so the visual check skips it.
+export const AccountCode: Story = {
+    tags: ['visual-skip'],
+    parameters: CODE_PARAMETERS,
+    beforeEach: codeStory([]),
+};
+
+export const AccountCodeWrong: Story = {
+    tags: ['visual-skip'],
+    parameters: CODE_PARAMETERS,
+    beforeEach: codeStory([['*/api/auth/email-code/verify', () => HttpResponse.json({ errorCode: 3127, status: 400 }, { status: 400 })]]),
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).CreateEventPage.wizard.code;
+        await userEvent.type(await within(canvasElement).findByLabelText(copy.label), '123456');
+    },
 };

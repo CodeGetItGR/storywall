@@ -24,7 +24,7 @@ export function useCreateEventStepNavigation(mode: CreateEventFlowMode, run: str
                 back: (previous: CreateEventStep) => router.push(routes.events.new({ step: previous, run }), { scroll: false }),
             };
         }
-        const urlFor = (step: CreateEventStep) => withWizardParams(new URL(window.location.href), { step, run });
+        const urlFor = (step: CreateEventStep) => withWizardParams(new URL(window.location.href), { step, run, account: null });
         return {
             push: (step: CreateEventStep) => pushWizardEntry(urlFor(step), 'step'),
             replace: (step: CreateEventStep) => replaceWizardEntry(urlFor(step)),

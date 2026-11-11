@@ -24,6 +24,8 @@ export type CreateEventWizardDraft = {
     themePresetId: string | null;
     gift: { isGift: boolean; details: GiftDetailsInput };
     checkoutCode: string;
+    // Once shown, the account step stays in the step count for the run (spec 3.1).
+    accountStepShown?: boolean;
 };
 
 type Stored = CreateEventWizardDraft & { version: number; savedAt: number };
@@ -60,6 +62,7 @@ function parse(raw: Record<string, unknown>): CreateEventWizardDraft {
         themePresetId: textOrNull(raw.themePresetId),
         gift: { isGift: gift.isGift === true, details: parseGiftDetails(gift.details) },
         checkoutCode: text(raw.checkoutCode),
+        accountStepShown: raw.accountStepShown === true,
     };
 }
 
