@@ -35,6 +35,17 @@ function textColorInput(label: string) {
     return inputs.find((input) => input.checkVisibility()) ?? inputs[0];
 }
 
+type EditorCopy = ReturnType<typeof copyFor>['InvitationEditor'];
+
+// Waits as long as waitForOpen: a busy runner can take more than the default second.
+const SLOW = { timeout: 10_000 };
+
+// Changes the text colour and waits until the editor has the change, so a click straight after has something to save.
+async function changeTextColor(canvasElement: HTMLElement, copy: EditorCopy) {
+    fireEvent.input(textColorInput(copy.textColor), { target: { value: '#7a1f3d' } });
+    await waitFor(() => expect(within(canvasElement).getByRole('button', { name: copy.undo })).toBeEnabled(), SLOW);
+}
+
 // A section's tools show once it is tapped, as on a phone.
 async function tapSection(canvasElement: HTMLElement, name: string) {
     const section = within(canvasElement).getByRole('group', { name });
@@ -60,8 +71,7 @@ export const Edited: Story = {
     play: async ({ canvasElement, globals }) => {
         const copy = copyFor(globals).InvitationEditor;
         const canvas = within(canvasElement);
-        fireEvent.input(textColorInput(copy.textColor), { target: { value: '#7a1f3d' } });
-        await waitFor(() => expect(canvas.getByRole('button', { name: copy.undo })).toBeEnabled());
+        await changeTextColor(canvasElement, copy);
         await expect(canvas.getByText(copy.unsaved)).toBeInTheDocument();
     },
 };
@@ -79,7 +89,7 @@ export const Publish: Story = {
         const copy = copyFor(globals).InvitationEditor;
         const canvas = within(canvasElement);
         await userEvent.click(canvas.getByRole('button', { name: copy.publish }));
-        await expect(await canvas.findByText(copy.publishUnavailable)).toBeVisible();
+        await expect(await canvas.findByText(copy.publishUnavailable, {}, SLOW)).toBeVisible();
     },
 };
 
@@ -94,9 +104,9 @@ export const FirstPublish: Story = {
         await userEvent.click(within(canvasElement).getByRole('button', { name: copy.publish }));
         const sheet = within(await waitForOpen('dialog'));
         await userEvent.type(sheet.getByLabelText(copy.publishLink), 'maria-nikos');
-        await expect(await sheet.findByText(copy.slugAvailable, {}, { timeout: 10_000 })).toBeVisible();
+        await expect(await sheet.findByText(copy.slugAvailable, {}, SLOW)).toBeVisible();
         await userEvent.click(sheet.getByRole('button', { name: copy.publish }));
-        await expect(await within(canvasElement).findByText(copy.published, {}, { timeout: 10_000 })).toBeVisible();
+        await expect(await within(canvasElement).findByText(copy.published, {}, SLOW)).toBeVisible();
     },
 };
 
@@ -109,7 +119,7 @@ export const Republish: Story = {
     play: async ({ canvasElement, globals }) => {
         const copy = copyFor(globals).InvitationEditor;
         await userEvent.click(within(canvasElement).getByRole('button', { name: copy.publish }));
-        await expect(await within(canvasElement).findByText(copy.republished, {}, { timeout: 10_000 })).toBeVisible();
+        await expect(await within(canvasElement).findByText(copy.republished, {}, SLOW)).toBeVisible();
     },
 };
 
@@ -123,7 +133,7 @@ export const PlanMissing: Story = {
         const copy = copyFor(globals).InvitationEditor;
         await userEvent.click(within(canvasElement).getByRole('button', { name: copy.publish }));
         const dialog = within(await waitForOpen('dialog'));
-        await waitFor(() => expect(dialog.getByText(copy.planMissingTitle)).toBeVisible());
+        await waitFor(() => expect(dialog.getByText(copy.planMissingTitle)).toBeVisible(), SLOW);
     },
 };
 
@@ -146,7 +156,7 @@ export const TourOnPhone: Story = {
         const copy = copyFor(globals).InvitationEditor;
         const card = within(await waitForOpen('dialog'));
         await userEvent.click(card.getByRole('button', { name: copy.tour.next }));
-        await expect(await within(document.body).findByRole('dialog', { name: copy.tour.textTitle })).toBeVisible();
+        await expect(await within(document.body).findByRole('dialog', { name: copy.tour.textTitle }, SLOW)).toBeVisible();
     },
 };
 
@@ -157,7 +167,7 @@ export const Conflict: Story = {
     },
     play: async ({ canvasElement, globals }) => {
         const copy = copyFor(globals).InvitationEditor;
-        fireEvent.input(textColorInput(copy.textColor), { target: { value: '#7a1f3d' } });
+        await changeTextColor(canvasElement, copy);
         await userEvent.click(within(canvasElement).getByRole('button', { name: copy.publish }));
         await waitForOpen('dialog');
     },
@@ -171,7 +181,7 @@ export const SaveFailed: Story = {
     play: async ({ canvasElement, globals }) => {
         const copy = copyFor(globals).InvitationEditor;
         const canvas = within(canvasElement);
-        fireEvent.input(textColorInput(copy.textColor), { target: { value: '#7a1f3d' } });
+        await changeTextColor(canvasElement, copy);
         await userEvent.click(canvas.getByRole('button', { name: copy.back }));
         await waitForOpen('dialog');
         await expect(canvas.getByText(copy.notSaved)).toBeInTheDocument();
