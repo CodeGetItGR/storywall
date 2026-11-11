@@ -84,7 +84,7 @@ export function FontPairingDrawer({
                     )}
 
                     {/* Name */}
-                    <AdminField label={tDrawer('name')} required hint={form.errors.name ? t('nameInvalid') : undefined}>
+                    <AdminField label={tDrawer('name')} required hint={form.errors.name ? tSaveMyDate('checks.upTo100') : undefined}>
                         <input
                             name="name"
                             value={form.draft.name}

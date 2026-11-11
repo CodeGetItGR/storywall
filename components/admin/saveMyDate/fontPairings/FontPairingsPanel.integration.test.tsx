@@ -101,6 +101,17 @@ describe('FontPairingsPanel', () => {
         );
     });
 
+    it('holds a save with no name and says why', async () => {
+        renderPanel();
+        await screen.findByRole('button', { name: 'Classic' });
+        fireEvent.click(screen.getByRole('button', { name: copy.create }));
+        const drawer = await screen.findByRole('dialog');
+        fireEvent.click(within(drawer).getByRole('button', { name: drawerCopy.save }));
+
+        expect(await within(drawer).findByText(messages.AdminPage.saveMyDate.checks.upTo100)).toBeInTheDocument();
+        expect(api.post).not.toHaveBeenCalled();
+    });
+
     it('moves a pairing with its arrows, saving the places that changed', async () => {
         pairings = [PAIRING, SECOND];
         renderPanel();
