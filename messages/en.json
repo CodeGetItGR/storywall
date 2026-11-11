@@ -3076,7 +3076,6 @@
             "groupCatalog": "Catalog",
             "groupMarketing": "Marketing",
             "groupOperations": "Operations",
-            "groupSaveMyDate": "Save my date",
             "eventPlans": "Event plans",
             "paidServices": "Paid services",
             "discountCodes": "Discount codes",
@@ -3090,6 +3089,10 @@
             "lifecycle": "Lifecycle",
             "signOutConfirmTitle": "Sign out of admin?",
             "signOutConfirmBody": "Please confirm before leaving the admin area."
+        },
+        "saveMyDate": {
+            "title": "Save my date",
+            "backToAdmin": "Back to admin"
         },
         "tabs": {
             "appReviews": "Reviews",

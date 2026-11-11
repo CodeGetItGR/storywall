@@ -4,11 +4,11 @@ import { fn, userEvent, within } from 'storybook/test';
 import { withAdminShell } from '@/.storybook/adminShell';
 import { copyFor } from '@/.storybook/copy';
 import { waitForOpen } from '@/.storybook/waitForOpen';
-import { InvitationThemeNameModal } from '@/components/admin/invitationThemes/InvitationThemeNameModal';
-import { storyThemeList } from '@/components/admin/invitationThemes/invitationThemeStoryData';
+import { InvitationThemeNameModal } from '@/components/admin/saveMyDate/themes/InvitationThemeNameModal';
+import { storyThemeList } from '@/components/admin/saveMyDate/themes/invitationThemeStoryData';
 
 const meta = {
-    title: 'Admin/InvitationThemes/InvitationThemeNameModal',
+    title: 'Admin/SaveMyDate/Themes/InvitationThemeNameModal',
     component: InvitationThemeNameModal,
     decorators: [withAdminShell],
     args: {

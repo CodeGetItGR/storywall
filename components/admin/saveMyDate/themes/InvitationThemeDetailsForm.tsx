@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom';
 
 import { useAdminDrawerFooterSlot } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
-import { InvitationThemeSegmented } from '@/components/admin/invitationThemes/InvitationThemeSegmented';
+import { InvitationThemeSegmented } from '@/components/admin/saveMyDate/themes/InvitationThemeSegmented';
 import { useInvitationThemeDrawer } from '@/hooks/useInvitationThemeDrawer';
 import type { EventTypeOption } from '@/hooks/useInvitationThemesCatalog';
 import {

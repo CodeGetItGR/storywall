@@ -1,5 +1,3 @@
-'use client';
-
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
@@ -14,6 +12,7 @@ import { endpoints } from '@/lib/api/endpoints';
 import type { InvitationFontDto } from '@/lib/invitation/uploadedFonts';
 
 // Save my date themes in the admin (/api/admin/invitation-themes). Every write refetches the list.
+// No 'use client': the themes page's server prefetch reads adminInvitationThemeKeys.
 
 export const adminInvitationThemeKeys = {
     all: ['admin', 'invitation-themes'] as const,

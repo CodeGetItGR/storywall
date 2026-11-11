@@ -3,7 +3,7 @@
 import { Eye, Pencil } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { InvitationThemeStatusPill } from '@/components/admin/invitationThemes/InvitationThemeStatusPill';
+import { InvitationThemeStatusPill } from '@/components/admin/saveMyDate/themes/InvitationThemeStatusPill';
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import type { AdminInvitationThemeSummaryDto } from '@/lib/adminInvitationThemes';
 import { formatDate } from '@/lib/datetime';
