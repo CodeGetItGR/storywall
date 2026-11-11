@@ -372,23 +372,22 @@ describe('proxy invitation editor', () => {
         vi.unstubAllEnvs();
     });
 
-    it('sends a signed-out visit to login, keeping the theme to start from', async () => {
+    it('starts a draft signed out, without sending the visit to login', async () => {
         const res = await proxy(new NextRequest('http://localhost/save-my-date/editor?theme=olive'));
-        expect(res.status).toBe(307);
-        const location = new URL(res.headers.get('location') ?? '');
-        expect(location.pathname).toBe('/login');
-        expect(location.searchParams.get('next')).toBe('/save-my-date/editor?theme=olive');
+        expect(res.status).toBe(200);
+        expect(res.headers.get('location')).toBeNull();
     });
 
-    it('sends a signed-out visit to a draft to login', async () => {
+    it('opens a draft signed out', async () => {
         const res = await proxy(new NextRequest('http://localhost/save-my-date/editor/draft-1'));
-        expect(res.status).toBe(307);
-        expect(new URL(res.headers.get('location') ?? '').pathname).toBe('/login');
+        expect(res.status).toBe(200);
+        expect(res.headers.get('location')).toBeNull();
     });
 
-    it('opens for a signed-in visit', async () => {
+    it('hands a signed-in visit its session for the prefetch', async () => {
         const res = await proxy(request({ accessToken: 'at-1', refreshToken: 'rt' }, 'http://localhost/save-my-date/editor/draft-1'));
         expect(res.status).toBe(200);
+        expect(res.headers.get('x-middleware-request-x-storywall-access-token')).toBe('at-1');
     });
 
     it('lets the production site show its not-found page', async () => {
@@ -444,7 +443,15 @@ describe('proxy matcher', () => {
     }
 
     it('skips the API, Sentry tunnel and static files, as whole segments', () => {
-        for (const path of ['/api', '/api/auth/session', '/monitoring', '/monitoring?o=1', '/_next/static/chunks/a.js', '/_next/image', '/favicon.ico']) {
+        for (const path of [
+            '/api',
+            '/api/auth/session',
+            '/monitoring',
+            '/monitoring?o=1',
+            '/_next/static/chunks/a.js',
+            '/_next/image',
+            '/favicon.ico',
+        ]) {
             expect(runs(path)).toBe(false);
         }
     });

@@ -7,7 +7,7 @@ type RouteQueryValue = string | number | boolean | null | undefined;
 export type CheckoutIntent = 'upgrade' | 'storage' | 'extension';
 // 'billing' is kept as an alias for the plan section so existing links keep working.
 export type ManageTab =
-    'billing' | 'coverage' | 'danger' | 'gift' | 'help' | 'members' | 'orders' | 'overview' | 'plan' | 'rsvp' | 'settings' | 'theme';
+    'billing' | 'coverage' | 'danger' | 'gift' | 'help' | 'invitation' | 'members' | 'orders' | 'overview' | 'plan' | 'rsvp' | 'settings' | 'theme';
 
 // The demo event lives outside the real /events/{eventId} tree (which proxy.ts protects
 // behind a real session) — see docs/superpowers/plans/2026-09-05-demo-event.md, design note 1.
@@ -45,6 +45,8 @@ export const routes = {
     invite: '/invite',
     // The Save my date editor: a draft, or a new draft from a theme.
     saveMyDateEditor: (draftId: string) => `/save-my-date/editor/${draftId}`,
+    // The editor, going on to publish as soon as it opens (back from signing in or paying).
+    saveMyDateEditorPublish: (draftId: string) => withQuery(`/save-my-date/editor/${draftId}`, { publish: 1 }),
     saveMyDateEditorStart: (themeSlug: string) => withQuery('/save-my-date/editor', { theme: themeSlug }),
     saveMyDatePreview: (themeSlug: string) => withQuery('/save-my-date/preview', { theme: themeSlug }),
     home: '/home',

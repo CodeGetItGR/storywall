@@ -16,6 +16,8 @@ import {
     promotedAmount,
     promotedOption,
     promotedOptionAmountMinor,
+    readPendingCheckout,
+    rememberPendingCheckout,
 } from './billing';
 
 describe('plan promotions', () => {
@@ -120,6 +122,20 @@ describe('plan promotions', () => {
         const atEnd = new Date('2026-10-07T11:00:00Z');
 
         expect(discountedAmountMinor(10_000, plan(campaign), atEnd)).toBe(10_000);
+    });
+});
+
+describe('pending checkout', () => {
+    it('keeps where to go once paid, only when it is a path in the app', () => {
+        rememberPendingCheckout('evt-1', 'ord-1', 'PREMIUM', '/save-my-date/editor/draft-1?publish=1');
+        expect(readPendingCheckout('evt-1')).toEqual({
+            orderId: 'ord-1',
+            planTierCode: 'PREMIUM',
+            returnTo: '/save-my-date/editor/draft-1?publish=1',
+        });
+        rememberPendingCheckout('evt-2', 'ord-2', null, 'https://example.com/');
+        expect(readPendingCheckout('evt-2')).toEqual({ orderId: 'ord-2' });
+        window.sessionStorage.clear();
     });
 });
 

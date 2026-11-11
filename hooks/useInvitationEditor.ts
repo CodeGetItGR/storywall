@@ -2,7 +2,9 @@
 
 import { useCallback, useState } from 'react';
 
+import { useAutoPublish } from '@/hooks/useAutoPublish';
 import { useDraftAutosave } from '@/hooks/useDraftAutosave';
+import { useDraftClaim } from '@/hooks/useDraftClaim';
 import { useEditorLeave } from '@/hooks/useEditorLeave';
 import { useEditorSectionSettings } from '@/hooks/useEditorSectionSettings';
 import { useEditorTour } from '@/hooks/useEditorTour';
@@ -26,8 +28,11 @@ export function useInvitationEditor(draft: EditableDraft, uploadedFonts?: Invita
     const [openPanel, setOpenPanel] = useState<EditorPanel | null>(null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    const publishing = usePublishInvitation({ draftId: draft.id, eventId: draft.eventId, flush, revision: savedRevision });
+    const claim = useDraftClaim(draft.id);
+    const publishing = usePublishInvitation({ draftId: draft.id, eventId: draft.eventId, flush, revision: savedRevision, claim });
     const tour = useEditorTour();
+
+    useAutoPublish(publishing.start);
 
     useUndoShortcuts(editor.undo, editor.redo);
     useUnsavedChangesWarning(status !== 'saved');

@@ -12,7 +12,7 @@ import { InvitationEditor } from '@/components/saveMyDate/editor/InvitationEdito
 const meta = {
     title: 'SaveMyDate/Editor/InvitationEditor/Texts',
     component: InvitationEditor,
-    decorators: [withEditorScreen],
+    decorators: [withEditorScreen, withAppContext],
     parameters: { layout: 'fullscreen' },
     args: { draft: storyDraft(), onReload: fn() },
     beforeEach({ msw }) {

@@ -1266,7 +1266,19 @@
             "members": "Members",
             "billing": "Billing",
             "gift": "Given as a gift",
-            "theme": "Theme"
+            "theme": "Theme",
+            "invitation": "Invitation"
+        },
+        "invitation": {
+            "notPublished": "Not published",
+            "live": "Live",
+            "offline": "Offline",
+            "liveUntil": "Live until {date}",
+            "edit": "Edit",
+            "extend": "Extend",
+            "qrAlt": "QR code for the invitation",
+            "empty": "No invitation yet.",
+            "chooseTheme": "Choose a theme"
         },
         "sectionSwitcher": "Change section",
         "stats": {
@@ -2160,6 +2172,8 @@
         "backToEvent": "Back to event",
         "backToSetup": "Back to event setup",
         "redirectCountdown": "Opening the feed in {seconds, plural, one {# second} other {# seconds}}.",
+        "backToInvitation": "Back to the invitation",
+        "invitationCountdown": "Opening the invitation in {seconds, plural, one {# second} other {# seconds}}.",
         "celebration": {
             "heading": "Your event is live",
             "line": "Share it with your guests so they can start posting.",
@@ -10148,7 +10162,6 @@
         "leaveBody": "If you leave now, they will be lost.",
         "leave": "Leave",
         "stay": "Stay",
-        "publishUnavailable": "Publishing isn't available yet.",
         "previewWidth": "Screen size",
         "previewMobile": "Mobile",
         "previewDesktop": "Desktop",
@@ -10168,6 +10181,17 @@
         "planEndedTitle": "Your event's plan has ended.",
         "seePlan": "See plan",
         "notNow": "Not now",
+        "signInTitle": "Sign in to publish",
+        "signInBody": "Your changes stay saved.",
+        "signIn": "Sign in",
+        "createAccount": "Create account",
+        "chooseEvent": "Choose the event",
+        "newEvent": "New event from this invitation",
+        "choosePlan": "Choose a plan",
+        "eventName": "Event name",
+        "eventStart": "Date and time",
+        "continueToPayment": "Continue to payment",
+        "noInvitationPlans": "No plan includes the invitation yet.",
         "tour": {
             "help": "Editor tour",
             "skip": "Skip",

@@ -3,14 +3,17 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 
+import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { type EditableDraft, type InvitationDraftDto, invitationDraftKeys, readEditableDraft } from '@/lib/invitation/drafts';
+import { draftTokenHeaders } from '@/lib/invitation/draftTokens';
 
+// A visitor's draft opens with its token; a signed-in host's needs none.
 export function invitationDraftQueryOptions(draftId: string) {
     return {
         queryKey: invitationDraftKeys.detail(draftId),
-        queryFn: () => api.get<InvitationDraftDto>(endpoints.invitationDrafts.byId(draftId)),
+        queryFn: () => api.get<InvitationDraftDto>(endpoints.invitationDrafts.byId(draftId), { headers: draftTokenHeaders(draftId) }),
     };
 }
 
@@ -32,9 +35,11 @@ type InvitationDraftOptions = {
 // so the editor can start over from it.
 export function useInvitationDraft(draftId: string, { prefetched = false }: InvitationDraftOptions = {}) {
     const queryClient = useQueryClient();
+    const { isBootstrapping } = useAuth();
     // A copy cached on an earlier visit may be older than the stored one (edited on another
-    // device since), so the editor reads the draft again and waits for it.
-    const query = useQuery({ ...invitationDraftQueryOptions(draftId), refetchOnMount: prefetched ? true : 'always' });
+    // device since), so the editor reads the draft again and waits for it. It waits for the
+    // session too: a host's draft read without it isn't found.
+    const query = useQuery({ ...invitationDraftQueryOptions(draftId), refetchOnMount: prefetched ? true : 'always', enabled: !isBootstrapping });
     const editable = useMemo(() => editableOrNull(query.data), [query.data]);
     // Once open, the editor stays open: a later read that fails doesn't take it away.
     const [isCurrent, setIsCurrent] = useState(prefetched);
