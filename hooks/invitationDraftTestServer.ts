@@ -3,6 +3,7 @@ import { setupServer } from 'msw/node';
 
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { DRAFT_REVISION_STALE_ERROR_CODE } from '@/lib/invitation/drafts';
+import { DRAFT_TOKEN_HEADER } from '@/lib/invitation/draftTokens';
 import type { InvitationPublicationDto } from '@/lib/invitation/publication';
 import { type SampleDraftDto, sampleDraftDto } from '@/lib/invitation/sampleDraft';
 
@@ -25,13 +26,36 @@ export function createDraftServer() {
     const publishes: PublishBody[] = [];
     const takenSlugs = new Set<string>(['taken-link']);
     let publishRefusal: number | null = null;
+    // A visitor's drafts: started with a token, which a signed-in claim trades for the account.
+    let startToken: string | null = null;
+    const claims: (string | null)[] = [];
+    const attaches: string[] = [];
 
     // Given to setupServer, so resetHandlers() brings them back after a test overrides one.
     const server = setupServer(
         http.get(`${TEST_API}/api/invitation-drafts/:id`, () => HttpResponse.json(stored)),
         http.post(`${TEST_API}/api/invitation-drafts`, async ({ request }) => {
             const { themeSlug } = (await request.json()) as { themeSlug: string };
-            stored = sampleDraftDto({ id: 'draft-new', themeSlug, revision: 0 });
+            stored = sampleDraftDto({
+                id: 'draft-new',
+                themeSlug,
+                revision: 0,
+                token: startToken,
+                expiresAt: startToken ? '2099-01-01T00:00:00Z' : null,
+            });
+            return HttpResponse.json(stored);
+        }),
+        http.post(`${TEST_API}/api/invitation-drafts/:id/claim`, ({ request }) => {
+            const token = request.headers.get(DRAFT_TOKEN_HEADER);
+            claims.push(token);
+            if (!token) return problem(404, 4004);
+            stored = { ...stored, token: null, expiresAt: null };
+            return HttpResponse.json(stored);
+        }),
+        http.put(`${TEST_API}/api/invitation-drafts/:id/event`, async ({ request }) => {
+            const { eventId } = (await request.json()) as { eventId: string };
+            attaches.push(eventId);
+            stored = { ...stored, eventId };
             return HttpResponse.json(stored);
         }),
         http.put(`${TEST_API}/api/invitation-drafts/:id`, async ({ request }) => {
@@ -80,6 +104,8 @@ export function createDraftServer() {
         server,
         saves,
         publishes,
+        claims,
+        attaches,
         stored: () => stored,
         publication: () => publication,
         // The draft is on an event, so it can be published.
@@ -103,6 +129,10 @@ export function createDraftServer() {
         takeSlug(slug: string) {
             takenSlugs.add(slug);
         },
+        // Drafts start signed out, opened with this token.
+        startWithToken(token: string) {
+            startToken = token;
+        },
         // Every publish is refused with this error code.
         refusePublish(errorCode: number) {
             publishRefusal = errorCode;
@@ -125,6 +155,9 @@ export function createDraftServer() {
             takenSlugs.clear();
             takenSlugs.add('taken-link');
             publishRefusal = null;
+            startToken = null;
+            claims.length = 0;
+            attaches.length = 0;
         },
     };
 }

@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 
-import { pushWizardEntry, replaceWizardEntry } from '@/lib/createEventWizardHistory';
+import { leaveWizardEntry, pushWizardEntry, replaceWizardEntry } from '@/lib/createEventWizardHistory';
 import { withWizardParams } from '@/lib/createEventWizardUrl';
 import { routes } from '@/lib/routes';
 import type { CreateEventStep } from '@/providers/createEvent/CreateEventFormContext';
@@ -20,12 +20,15 @@ export function useCreateEventStepNavigation(mode: CreateEventFlowMode, run: str
             return {
                 push: (step: CreateEventStep) => router.push(routes.events.new({ step, run }), { scroll: false }),
                 replace: (step: CreateEventStep) => router.replace(routes.events.new({ step, run })),
+                // The old flow has its own Back buttons in the footer; this is never called there.
+                back: (previous: CreateEventStep) => router.push(routes.events.new({ step: previous, run }), { scroll: false }),
             };
         }
         const urlFor = (step: CreateEventStep) => withWizardParams(new URL(window.location.href), { step, run });
         return {
-            push: (step: CreateEventStep) => pushWizardEntry(urlFor(step)),
+            push: (step: CreateEventStep) => pushWizardEntry(urlFor(step), 'step'),
             replace: (step: CreateEventStep) => replaceWizardEntry(urlFor(step)),
+            back: (previous: CreateEventStep) => leaveWizardEntry('step', urlFor(previous)),
         };
     }, [mode, router, run]);
 }

@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { DeletedEventManageScreen } from '@/components/manage/DeletedEventManageScreen';
+import { InvitationTab } from '@/components/manage/invitation/InvitationTab';
 import { ManageSectionNav, sectionIcons } from '@/components/manage/ManageSectionNav';
 import { ManageMembersSkeleton, ManageOverviewSkeleton, ManageRsvpSkeleton } from '@/components/manage/ManageSkeletons';
 import { ThemePicker } from '@/components/manage/ThemePicker';
@@ -15,6 +16,7 @@ import { Modal } from '@/components/ui/modal';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventInvitations } from '@/hooks/useEventInvitations';
 import { useEventMembers } from '@/hooks/useEventMembers';
+import { useEventOnlineInvitation } from '@/hooks/useEventOnlineInvitation';
 import { useGiftSection } from '@/hooks/useGiftSection';
 import { useManageSectionLabel } from '@/hooks/useManageSectionLabel';
 import { useEventRsvps } from '@/hooks/useRsvps';
@@ -22,6 +24,7 @@ import { useEventUsage } from '@/hooks/useUsage';
 import { countPendingCoHostInvitations } from '@/lib/eventInvitations';
 import { isEventDeleted, isEventWritable, isModuleAvailable, isPrimaryHost } from '@/lib/eventLifecycle';
 import { canPickTheme } from '@/lib/eventTheme';
+import { offersOnlineInvitation } from '@/lib/invitation/invitationEvent';
 import { isLiteEvent } from '@/lib/liteEvents';
 import { type ManageSection, parseManageSection, resolveManageSection, visibleManageSections } from '@/lib/manageSections';
 import { replacePageUrl } from '@/lib/overlayHistory';
@@ -63,6 +66,7 @@ export function ManageScreen() {
         rsvpAvailable,
         giftAvailable: giftSection.available,
         themeAvailable: canPickTheme(activeEvent),
+        invitationAvailable: offersOnlineInvitation(activeEvent.eventType),
         // A lite event takes no guests, so its Members tab is only for co-hosts, when its plan has them.
         membersAvailable: !isLiteEvent(activeEvent) || isModuleAvailable(activeEvent.modules, 'co_hosts'),
     });
@@ -81,6 +85,7 @@ export function ManageScreen() {
     const { data: rsvps = [], isLoading: rsvpsLoading } = useEventRsvps(rsvpAvailable ? activeHostEventId : null);
     const { data: invitations = [], isLoading: invitationsLoading } = useEventInvitations(activeHostEventId);
     const { data: eventUsage = null, isLoading: usageLoading } = useEventUsage(isHost && !isDeleted ? eventId : null);
+    const onlineInvitation = useEventOnlineInvitation(activeEvent, { enabled: section === 'invitation' });
 
     const overviewLoading = membersLoading || invitationsLoading || rsvpsLoading || usageLoading;
     const rsvpTabLoading = membersLoading || rsvpsLoading;
@@ -189,6 +194,8 @@ export function ManageScreen() {
             {section === 'settings' && <SettingsTab event={activeEvent} canWrite={canEditDetails} canUploadCover={canWrite} />}
 
             {section === 'theme' && <ThemePicker event={activeEvent} canWrite={canEditDetails} showHeading={false} />}
+
+            {section === 'invitation' && <InvitationTab invitation={onlineInvitation} />}
 
             {section === 'help' && (
                 <HelpTab

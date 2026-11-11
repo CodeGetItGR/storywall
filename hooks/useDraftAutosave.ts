@@ -7,6 +7,7 @@ import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { createDraftAutosave, type DraftAutosave, type SaveStatus } from '@/lib/invitation/draftAutosave';
 import { type InvitationDraftDto, invitationDraftKeys, type InvitationDraftSavedDto } from '@/lib/invitation/drafts';
+import { draftTokenHeaders } from '@/lib/invitation/draftTokens';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
 
 // Autosaves the editor's document to the draft. Leaving the editor sends what is unsaved.
@@ -32,8 +33,10 @@ export function useDraftAutosave(store: InvitationEditorStore, draftId: string, 
                 const { document, changeCount } = store.getState();
                 return { document, changeCount };
             },
-            save: (nextRevision, document) => api.put<InvitationDraftSavedDto>(path, { revision: nextRevision, document }),
-            loadLatest: () => api.get<InvitationDraftDto>(path),
+            // Read on each call: a visitor's token goes once the draft is claimed.
+            save: (nextRevision, document) =>
+                api.put<InvitationDraftSavedDto>(path, { revision: nextRevision, document }, { headers: draftTokenHeaders(draftId) }),
+            loadLatest: () => api.get<InvitationDraftDto>(path, { headers: draftTokenHeaders(draftId) }),
             onStatus: setStatus,
             // The cache keeps up, so coming back to the editor opens the saved copy.
             onSaved: (savedRevision, document) =>

@@ -1,35 +1,28 @@
 'use client';
 
-import { LogOut, Menu } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type ReactNode } from 'react';
 
+import { AdminFrame, type AdminFrameNavOptions } from '@/components/admin/AdminFrame';
 import { AdminNavigationProvider } from '@/components/admin/AdminNavigationContext';
 import { AdminShellNav } from '@/components/admin/AdminShellNav';
 import { AdminTopbar } from '@/components/admin/AdminTopbar';
 import { RefineAdminProvider } from '@/components/admin/RefineAdminProvider';
 import { AuthLoadingState } from '@/components/layout/AuthLoadingState';
-import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { Modal } from '@/components/ui/modal';
-import { PortalScopeProvider } from '@/components/ui/PortalScope';
 import { useAdminLayoutShell } from '@/hooks/useAdminLayoutShell';
 import { canUseAdminConsole } from '@/lib/adminAccess';
 
 // The admin console's frame: sidebar, mobile menu and sign-out. Admins and marketing only; anyone else sees the page as is.
 export function AdminLayoutShell({ children }: { children: ReactNode }) {
     const t = useTranslations('AdminPage');
-    const {
-        user,
-        isBootstrapping,
-        mobileNavOpen,
-        signOutOpen,
-        handleLogout,
-        handleOpenMobileNav,
-        handleCloseMobileNav,
-        handleOpenSignOut,
-        handleCloseSignOut,
-        handleConfirmSignOut,
-    } = useAdminLayoutShell();
+    const shell = useAdminLayoutShell();
+    const { user, isBootstrapping, handleLogout } = shell;
+
+    function renderNav({ mobile, onNavigate }: AdminFrameNavOptions) {
+        return (
+            <AdminShellNav mobile={mobile} email={user?.email} userId={user?.userId} onLogoutAction={handleLogout} onNavigateAction={onNavigate} />
+        );
+    }
 
     if (isBootstrapping || !user) {
         return <AuthLoadingState className="admin-shell bg-canvas" />;
@@ -42,70 +35,9 @@ export function AdminLayoutShell({ children }: { children: ReactNode }) {
     return (
         <RefineAdminProvider>
             <AdminNavigationProvider role={user.role}>
-                {/* Shared modals portal out of .admin-shell; this hands them its slate tokens back. */}
-                <PortalScopeProvider className="admin-shell">
-                    <div className="admin-shell flex h-full min-h-0 overflow-hidden bg-canvas text-ink">
-                        <div className="mx-auto flex h-full min-h-0 w-full">
-                            <AdminShellNav email={user?.email} userId={user?.userId} onLogoutAction={handleLogout} />
-
-                            <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-                                <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border bg-card/90 px-4 py-3 backdrop-blur lg:hidden">
-                                    <button
-                                        type="button"
-                                        onClick={handleOpenMobileNav}
-                                        className="inline-flex items-center gap-2 rounded-lg bg-ink px-3 py-2 text-sm font-semibold text-white"
-                                    >
-                                        <Menu className="h-4 w-4" />
-                                        {t('layout.console')}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={handleOpenSignOut}
-                                        className="inline-flex items-center gap-2 rounded-lg bg-canvas px-3 py-2 text-sm font-semibold text-ink-muted"
-                                    >
-                                        <LogOut className="h-4 w-4" />
-                                        {t('layout.signOut')}
-                                    </button>
-                                </header>
-
-                                <AdminTopbar />
-
-                                <main className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain bg-canvas">{children}</main>
-                            </div>
-                        </div>
-
-                        <Modal
-                            open={mobileNavOpen}
-                            onClose={handleCloseMobileNav}
-                            variant="sheet"
-                            size="full"
-                            closeLabel={t('layout.closeMenu') ?? 'Close'}
-                        >
-                            <Modal.Body className="px-4 pt-12 pb-4">
-                                <AdminShellNav
-                                    mobile
-                                    email={user?.email}
-                                    userId={user?.userId}
-                                    onLogoutAction={handleLogout}
-                                    onNavigateAction={handleCloseMobileNav}
-                                />
-                            </Modal.Body>
-                        </Modal>
-
-                        <ConfirmActionModal
-                            open={signOutOpen}
-                            onCloseAction={handleCloseSignOut}
-                            title={t('layout.signOutConfirmTitle')}
-                            body={t('layout.signOutConfirmBody')}
-                            cancelLabel={t('cancel')}
-                            confirmLabel={t('layout.signOut')}
-                            isConfirming={false}
-                            onConfirmAction={handleConfirmSignOut}
-                            tone="default"
-                            icon={<LogOut className="h-5 w-5" aria-hidden="true" />}
-                        />
-                    </div>
-                </PortalScopeProvider>
+                <AdminFrame shell={shell} menuLabel={t('layout.console')} topbar={<AdminTopbar />} renderNav={renderNav}>
+                    {children}
+                </AdminFrame>
             </AdminNavigationProvider>
         </RefineAdminProvider>
     );

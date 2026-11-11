@@ -7,8 +7,9 @@ import { bySortOrder } from '@/lib/sortOrder';
 export const OCCASION_CORE_FEATURES = ['invitation'] as const;
 
 // Modules the features overview leaves out: internal ones, plan details, vendors (hired help, not a guest feature),
-// qr_cards (a host print tool), and `theme`, which has its own row.
-export const OCCASION_HIDDEN_MODULES: ReadonlySet<string> = new Set(['member_roles', 'co_hosts', 'theme', 'vendors', 'qr_cards']);
+// qr_cards (a host print tool), save_my_date (the online invitation, sold through its own pages), and `theme`,
+// which has its own row.
+export const OCCASION_HIDDEN_MODULES: ReadonlySet<string> = new Set(['member_roles', 'co_hosts', 'theme', 'vendors', 'qr_cards', 'save_my_date']);
 
 // The landing's feature icons, by feature key.
 const FEATURE_ICONS: Record<string, string> = {

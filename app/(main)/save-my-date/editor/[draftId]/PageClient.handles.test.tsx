@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { createDraftServer } from '@/hooks/invitationDraftTestServer';
+import { TEST_USER, testAuth } from '@/hooks/testAuthContext';
 import en from '@/messages/en.json';
 import { AuthContext, type AuthContextValue } from '@/providers/AuthProvider';
 
@@ -15,7 +16,7 @@ vi.hoisted(() => {
 });
 
 const router = vi.hoisted(() => ({ back: vi.fn(), push: vi.fn(), replace: vi.fn() }));
-vi.mock('next/navigation', () => ({ useRouter: () => router }));
+vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/save-my-date/editor/draft-1' }));
 vi.mock('@/lib/inAppHistory', () => ({ hasInAppPrevious: () => true }));
 // next/font only works when Next compiles the file.
 vi.mock('@/components/saveMyDate/invitation/invitationFonts', () => ({ INVITATION_FONT_CLASSES: '' }));
@@ -40,11 +41,13 @@ vi.stubGlobal('requestAnimationFrame', () => 1);
 vi.stubGlobal('cancelAnimationFrame', () => {});
 
 const backend = createDraftServer();
-const admin = { user: { role: 'ADMIN' } } as AuthContextValue;
+const admin = testAuth({ user: { ...TEST_USER, role: 'ADMIN' } });
+// Signed out, Publish saves and then asks to sign in, so it stands in for saving.
+const SIGNED_OUT = testAuth({ user: null });
 
 const HEIGHT = 'Drag to change the height. Double-tap to reset.';
 
-async function openEditor(auth: AuthContextValue | null = null) {
+async function openEditor(auth: AuthContextValue = SIGNED_OUT) {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     render(
         <NextIntlClientProvider locale="en" messages={en}>
@@ -77,14 +80,19 @@ function doubleTap(handle: HTMLElement) {
     });
 }
 
+// Saves through Publish: a visitor is asked to sign in, an admin's draft on an event gets the link sheet.
 async function publish() {
     fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
-    await screen.findByText("Publishing isn't available yet.");
+    await screen.findByRole('dialog');
 }
 
 const storedSection = (id: string) => backend.stored().document.sections.find((section) => section.id === id)!;
 
-describe('Invitation editor: handles', () => {
+// Each case renders the whole editor and saves through Publish, which can pass 5 seconds when the
+// whole suite runs at once.
+const EDITOR_FLOW_TIMEOUT_MS = 15_000;
+
+describe('Invitation editor: handles', { timeout: EDITOR_FLOW_TIMEOUT_MS }, () => {
     beforeAll(() => backend.server.listen({ onUnhandledRequest: 'error' }));
     afterEach(() => {
         cleanup();
@@ -126,6 +134,7 @@ describe('Invitation editor: handles', () => {
     });
 
     it('drags the space below a text while it stays open (admins)', async () => {
+        backend.putOnEvent();
         await openEditor(admin);
         fireEvent.click(document.querySelector('[data-smd-text="element:b3-text"]')!);
         const below = await screen.findByRole('slider', { name: 'Drag to change the space below the text' });

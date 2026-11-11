@@ -1021,7 +1021,60 @@
         "goBack": "Go back",
         "wizard": {
             "stepCounter": "Step {current} of {total}",
-            "close": "Close"
+            "close": "Close",
+            "type": {
+                "heading": "What are we celebrating?",
+                "continue": {
+                    "wedding": "Let's plan your wedding",
+                    "baptism": "Let's plan the baptism",
+                    "reveal": "Let's plan your reveal",
+                    "reunion": "Let's plan your reunion",
+                    "other": "Let's plan your event"
+                }
+            },
+            "features": {
+                "heading": "What's included",
+                "planNote": "Some features depend on the plan you pick.",
+                "lines": {
+                    "posts": "Photos and wishes from guests.",
+                    "qr_cards": "Scan at the table, no app.",
+                    "playlist": "Guests request the songs.",
+                    "schedule": "The day, hour by hour.",
+                    "stories": "Short moments from the day.",
+                    "wishbook": "Guests' wishes in one book."
+                }
+            },
+            "plan": {
+                "heading": "How many guests are you inviting?",
+                "upTo": "Up to {count}",
+                "moreThan": "More than {count}",
+                "bestFit": "Best fit for you",
+                "everythingInPlus": "Everything in {plan}, plus",
+                "compare": "Compare all plans",
+                "continue": "Continue"
+            },
+            "plans": {
+                "title": "All plans",
+                "andMore": "{features} and more",
+                "everythingInPlus": "Everything in {plan}, plus {features}",
+                "choose": "Choose {plan}"
+            },
+            "details": {
+                "heading": "Tell us about the big day",
+                "preview": "Preview",
+                "timeZone": "Time zone: {zone}",
+                "addressPlaceholder": "e.g. 123 Kifisias Ave, Athens",
+                "receptionLater": "You can add the reception venue later."
+            },
+            "theme": {
+                "heading": "Choose a look",
+                "line": "You can change it later."
+            },
+            "review": {
+                "heading": "One last look",
+                "edit": "Edit",
+                "pay": "Pay {amount}"
+            }
         },
         "title": "Create an event",
         "subtitle": "Add the event details.",
@@ -1213,7 +1266,19 @@
             "members": "Members",
             "billing": "Billing",
             "gift": "Given as a gift",
-            "theme": "Theme"
+            "theme": "Theme",
+            "invitation": "Invitation"
+        },
+        "invitation": {
+            "notPublished": "Not published",
+            "live": "Live",
+            "offline": "Offline",
+            "liveUntil": "Live until {date}",
+            "edit": "Edit",
+            "extend": "Extend",
+            "qrAlt": "QR code for the invitation",
+            "empty": "No invitation yet.",
+            "chooseTheme": "Choose a theme"
         },
         "sectionSwitcher": "Change section",
         "stats": {
@@ -2106,7 +2171,15 @@
         "orderId": "Order {orderId}",
         "backToEvent": "Back to event",
         "backToSetup": "Back to event setup",
-        "redirectCountdown": "Opening the feed in {seconds, plural, one {# second} other {# seconds}}."
+        "redirectCountdown": "Opening the feed in {seconds, plural, one {# second} other {# seconds}}.",
+        "backToInvitation": "Back to the invitation",
+        "invitationCountdown": "Opening the invitation in {seconds, plural, one {# second} other {# seconds}}.",
+        "celebration": {
+            "heading": "Your event is live",
+            "line": "Share it with your guests so they can start posting.",
+            "openEvent": "Open event",
+            "inviteGuests": "Invite guests"
+        }
     },
     "PartnerPortalPage": {
         "totals": {
@@ -3003,7 +3076,6 @@
             "groupCatalog": "Catalog",
             "groupMarketing": "Marketing",
             "groupOperations": "Operations",
-            "groupSaveMyDate": "Save my date",
             "eventPlans": "Event plans",
             "paidServices": "Paid services",
             "discountCodes": "Discount codes",
@@ -3017,6 +3089,10 @@
             "lifecycle": "Lifecycle",
             "signOutConfirmTitle": "Sign out of admin?",
             "signOutConfirmBody": "Please confirm before leaving the admin area."
+        },
+        "saveMyDate": {
+            "title": "Save my date",
+            "backToAdmin": "Back to admin"
         },
         "tabs": {
             "appReviews": "Reviews",
@@ -6477,6 +6553,10 @@
         "qr_cards": {
             "name": "QR cards",
             "description": "Designed cards for printing your QR codes."
+        },
+        "save_my_date": {
+            "name": "Online invitation",
+            "description": "An online invitation with its own link."
         },
         "posts": {
             "name": "Posts",
@@ -10082,7 +10162,6 @@
         "leaveBody": "If you leave now, they will be lost.",
         "leave": "Leave",
         "stay": "Stay",
-        "publishUnavailable": "Publishing isn't available yet.",
         "previewWidth": "Screen size",
         "previewMobile": "Mobile",
         "previewDesktop": "Desktop",
@@ -10102,6 +10181,17 @@
         "planEndedTitle": "Your event's plan has ended.",
         "seePlan": "See plan",
         "notNow": "Not now",
+        "signInTitle": "Sign in to publish",
+        "signInBody": "Your changes stay saved.",
+        "signIn": "Sign in",
+        "createAccount": "Create account",
+        "chooseEvent": "Choose the event",
+        "newEvent": "New event from this invitation",
+        "choosePlan": "Choose a plan",
+        "eventName": "Event name",
+        "eventStart": "Date and time",
+        "continueToPayment": "Continue to payment",
+        "noInvitationPlans": "No plan includes the invitation yet.",
         "tour": {
             "help": "Editor tour",
             "skip": "Skip",
@@ -10445,7 +10535,8 @@
     },
     "SaveMyDatePreview": {
         "metaTitle": "Invitation preview"
-    },
+    }
+,
     "PublishedInvitation": {
         "metaTitle": "Invitation",
         "notFound": "We couldn't find this invitation.",

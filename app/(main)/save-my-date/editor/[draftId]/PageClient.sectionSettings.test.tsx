@@ -5,9 +5,10 @@ import type { ReactNode } from 'react';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createDraftServer } from '@/hooks/invitationDraftTestServer';
+import { TEST_USER, testAuth, WithAuth } from '@/hooks/testAuthContext';
 import { EDITOR_TOUR_SEEN_KEY } from '@/lib/invitation/editorTour';
 import en from '@/messages/en.json';
-import { AuthContext, type AuthContextValue } from '@/providers/AuthProvider';
+import { AuthContext } from '@/providers/AuthProvider';
 
 import InvitationEditorPage from './PageClient';
 
@@ -17,7 +18,7 @@ vi.hoisted(() => {
 });
 
 const router = vi.hoisted(() => ({ back: vi.fn(), push: vi.fn(), replace: vi.fn() }));
-vi.mock('next/navigation', () => ({ useRouter: () => router }));
+vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/save-my-date/editor/draft-1' }));
 vi.mock('@/lib/inAppHistory', () => ({ hasInAppPrevious: () => true }));
 // next/font only works when Next compiles the file.
 vi.mock('@/components/saveMyDate/invitation/invitationFonts', () => ({ INVITATION_FONT_CLASSES: '' }));
@@ -41,14 +42,18 @@ vi.stubGlobal('matchMedia', (query: string) => ({
 const backend = createDraftServer();
 
 // Only the role matters to the editor.
-const ADMIN = { user: { role: 'ADMIN' } } as unknown as AuthContextValue;
+const ADMIN = testAuth({ user: { ...TEST_USER, role: 'ADMIN' } });
+// Signed out, Publish saves and then asks to sign in, so it stands in for saving.
+const SIGNED_OUT = testAuth({ user: null });
 
 async function openEditor({ asAdmin = false } = {}) {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const signedIn = (children: ReactNode) => (asAdmin ? <AuthContext.Provider value={ADMIN}>{children}</AuthContext.Provider> : children);
     render(
         <NextIntlClientProvider locale="en" messages={en}>
-            <QueryClientProvider client={queryClient}>{signedIn(<InvitationEditorPage draftId="draft-1" />)}</QueryClientProvider>
+            <QueryClientProvider client={queryClient}>
+                <WithAuth value={SIGNED_OUT}>{signedIn(<InvitationEditorPage draftId="draft-1" />)}</WithAuth>
+            </QueryClientProvider>
         </NextIntlClientProvider>,
     );
     await screen.findByLabelText('Text color');
@@ -70,7 +75,7 @@ function panel(name: string) {
 
 async function save() {
     fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
-    await screen.findByText("Publishing isn't available yet.");
+    await screen.findByText('Sign in to publish');
 }
 
 function storedSection(id: string) {

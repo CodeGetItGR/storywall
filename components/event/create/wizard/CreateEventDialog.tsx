@@ -3,7 +3,8 @@
 import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { CREATE_EVENT_WIZARD_HEADING_ID, CreateEventWizard } from '@/components/event/create/wizard/CreateEventWizard';
+import { CreateEventWizard } from '@/components/event/create/wizard/CreateEventWizard';
+import { CREATE_EVENT_WIZARD_HEADING_ID } from '@/components/event/create/wizard/createEventWizardIds';
 import { CreateEventWizardMessages } from '@/components/event/create/wizard/CreateEventWizardMessages';
 import { AuthLoadingState } from '@/components/layout/AuthLoadingState';
 import { Modal } from '@/components/ui/modal';
@@ -45,7 +46,7 @@ function CreateEventDialogBody({ onClose }: { onClose: () => void }) {
                         type="button"
                         aria-label={t('close')}
                         onClick={onClose}
-                        className="flex size-11 shrink-0 items-center justify-center rounded-full text-ink hover:bg-surface-muted"
+                        className="flex size-11 shrink-0 items-center justify-center rounded-full bg-white/90 text-ink"
                     >
                         <X className="size-5" aria-hidden="true" />
                     </button>
