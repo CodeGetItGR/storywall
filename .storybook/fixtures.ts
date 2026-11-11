@@ -277,6 +277,7 @@ export const storyAppConfig = {
     rateLimits: [],
     reportTargetTypes: ['POST', 'COMMENT', 'MEMBER'],
     reportReasons: [],
+    withdrawal: { termsVersion: 'v1' },
 } as unknown as AppConfigResponseDto;
 
 export function storyQrLink(overrides: Partial<QrLinkResponseDto> = {}): QrLinkResponseDto {

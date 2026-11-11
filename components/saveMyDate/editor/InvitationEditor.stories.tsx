@@ -93,7 +93,8 @@ export const PublishSignedOut: Story = {
         const copy = copyFor(globals).InvitationEditor;
         await userEvent.click(within(canvasElement).getByRole('button', { name: copy.publish }));
         const dialog = within(await waitForOpen('dialog'));
-        await expect(dialog.getByText(copy.signInTitle)).toBeVisible();
+        // The dialog fades in.
+        await waitFor(() => expect(dialog.getByText(copy.signInTitle)).toBeVisible(), SLOW);
         await expect(dialog.getByRole('link', { name: copy.signIn })).toHaveAttribute(
             'href',
             '/login?next=%2Fsave-my-date%2Feditor%2Fdraft-1%3Fpublish%3D1',
