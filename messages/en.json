@@ -1073,7 +1073,8 @@
             "review": {
                 "heading": "One last look",
                 "edit": "Edit",
-                "pay": "Pay {amount}"
+                "pay": "Pay {amount}",
+                "consentHint": "Tick the boxes to continue."
             },
             "account": {
                 "heading": "Almost there. Save your event",
