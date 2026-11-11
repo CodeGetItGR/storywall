@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { PlanTierResponseDto } from '@/lib/api/types';
-import { compareLine, guestChips, planHighlights } from '@/lib/createEventPlanChoice';
+import { compareLine, guestChips, joinFeatureNames, planHighlights } from '@/lib/createEventPlanChoice';
 
 function plan(code: string, sortOrder: number, maxMembers: number | null, moduleKeys: string[]) {
     return { code, name: code, sortOrder, maxMembers, moduleKeys } as unknown as PlanTierResponseDto;
@@ -56,5 +56,22 @@ describe('compareLine', () => {
     it('says what a later plan adds, or that it adds nothing', () => {
         expect(compareLine(STORY, START, 'WEDDING')).toEqual({ kind: 'plus', previousName: 'START', keys: ['wishbook', 'rsvp', 'stories'] });
         expect(compareLine(SIGNATURE, STORY, 'WEDDING')).toEqual({ kind: 'same', previousName: 'STORY' });
+    });
+});
+
+describe('joinFeatureNames', () => {
+    it('joins names with commas', () => {
+        expect(joinFeatureNames(['Gallery', 'Posts', 'Wishbook'])).toBe('Gallery, Posts, Wishbook');
+    });
+
+    it('drops the comma after a name that ends in a question mark', () => {
+        expect(joinFeatureNames(['Boy or girl?', 'Collection', 'Wishbook'])).toBe('Boy or girl? Collection, Wishbook');
+        expect(joinFeatureNames(['Αγόρι ή κορίτσι;', 'Συλλογή', 'Βιβλίο Ευχών'])).toBe('Αγόρι ή κορίτσι; Συλλογή, Βιβλίο Ευχών');
+        expect(joinFeatureNames(['Αγόρι ή κορίτσι;', 'Συλλογή'])).toBe('Αγόρι ή κορίτσι; Συλλογή');
+    });
+
+    it('handles one name and none', () => {
+        expect(joinFeatureNames(['Gallery'])).toBe('Gallery');
+        expect(joinFeatureNames([])).toBe('');
     });
 });
