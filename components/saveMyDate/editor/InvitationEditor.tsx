@@ -13,6 +13,7 @@ import { EditorPanelBar } from '@/components/saveMyDate/editor/EditorPanelBar';
 import { EditorPanelSheet } from '@/components/saveMyDate/editor/EditorPanelSheet';
 import { EditorPreview } from '@/components/saveMyDate/editor/EditorPreview';
 import { EditorTopBar } from '@/components/saveMyDate/editor/EditorTopBar';
+import { CanvasHandles } from '@/components/saveMyDate/editor/handles/CanvasHandles';
 import { PublishNotice } from '@/components/saveMyDate/editor/publish/PublishNotice';
 import { PublishPlanDialog } from '@/components/saveMyDate/editor/publish/PublishPlanDialog';
 import { PublishSheet } from '@/components/saveMyDate/editor/publish/PublishSheet';
@@ -73,14 +74,16 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
             <div className="flex min-h-0 flex-1">
                 <EditorDockedPanel title={t('themeAssets')}>{assets}</EditorDockedPanel>
                 <InlineTextEditing store={editor.store} document={editor.document} theme={editor.theme} uploadedFonts={uploadedFonts}>
-                    <EditorCanvas
-                        document={editor.document}
-                        theme={editor.theme}
-                        media={editor.media}
-                        uploadedFonts={uploadedFonts}
-                        sections={editor.sections}
-                        sectionSettings={sectionSettings.opener}
-                    />
+                    <CanvasHandles store={editor.store}>
+                        <EditorCanvas
+                            document={editor.document}
+                            theme={editor.theme}
+                            media={editor.media}
+                            uploadedFonts={uploadedFonts}
+                            sections={editor.sections}
+                            sectionSettings={sectionSettings.opener}
+                        />
+                    </CanvasHandles>
                 </InlineTextEditing>
                 {sectionSettings.isDocked && sectionSettings.panel ? (
                     <SectionSettings panel={sectionSettings.panel} isDocked onClose={sectionSettings.close} />

@@ -236,7 +236,7 @@ export function skipGonePage(url: string) {
 // A closed overlay leaves its entry behind; while we are still on it at the
 // URL it opened from, it only duplicates the entry below, so it is reused
 // instead of stacking one more dead Back press on top.
-export function pushPageEntry(url: string) {
+export function pushPageEntry(url: string, extraState: Record<string, unknown> = {}) {
     const currentState = window.history.state && typeof window.history.state === 'object' ? window.history.state : {};
     const {
         [OVERLAY_HISTORY_KEY]: stack,
@@ -252,6 +252,6 @@ export function pushPageEntry(url: string) {
     skippableAnchors.clear();
     stopListeningWhenIdle();
 
-    if (isLeftoverOverlayEntry) window.history.replaceState(pageState, '', url);
-    else window.history.pushState(pageState, '', url);
+    if (isLeftoverOverlayEntry) window.history.replaceState({ ...pageState, ...extraState }, '', url);
+    else window.history.pushState({ ...pageState, ...extraState }, '', url);
 }

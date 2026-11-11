@@ -1,9 +1,11 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import type { Metadata, Viewport } from 'next';
 import { cookies } from 'next/headers';
-import { getMessages } from 'next-intl/server';
+import { getMessages, getTranslations } from 'next-intl/server';
 import { type ReactNode } from 'react';
 
+import { CreateEventDialogHost } from '@/components/event/create/wizard/CreateEventDialogHost';
+import { CreateEventFab } from '@/components/event/create/wizard/CreateEventFab';
 import { LinkClickTracker } from '@/components/landing/LinkClickTracker';
 import { RootDocument } from '@/components/layout/RootDocument';
 import { SiteNoticeStickyBar } from '@/components/siteNotices/SiteNoticeStickyBar';
@@ -15,6 +17,8 @@ import { makeQueryClient } from '@/lib/queryClient';
 import { getRootMetadata, rootViewport } from '@/lib/rootMetadata';
 import { DISMISSED_COOKIE } from '@/lib/siteNoticeDismissals';
 import { fetchLiveSiteNotices } from '@/lib/siteNotices.server';
+import { showsCreateWizard } from '@/lib/unreleasedPages';
+import { CreateWizardFlagProvider } from '@/providers/CreateWizardFlagProvider';
 import { PublicProviders } from '@/providers/PublicProviders';
 
 export const viewport: Viewport = rootViewport;
@@ -38,14 +42,22 @@ export default async function LandingLayout({ children }: Readonly<{ children: R
     }
     const dismissed = (await cookies()).get(DISMISSED_COOKIE)?.value ?? '';
 
+    const createLabel = (await getTranslations('CreateEventPage'))('title');
+
     return (
         <RootDocument documentScroll messages={pickPublicMessages(await getMessages())}>
             <PublicProviders>
-                <HydrationBoundary state={dehydrate(queryClient)}>
-                    {/* Notice */}
-                    <SiteNoticeStickyBar initialDismissed={dismissed} />
-                    {children}
-                </HydrationBoundary>
+                <CreateWizardFlagProvider enabled={showsCreateWizard()} createLabel={createLabel}>
+                    <HydrationBoundary state={dehydrate(queryClient)}>
+                        {/* Notice */}
+                        <SiteNoticeStickyBar initialDismissed={dismissed} />
+                        {children}
+                    </HydrationBoundary>
+                    {/* Create wizard */}
+                    <CreateEventDialogHost />
+                    {/* Phone create button */}
+                    <CreateEventFab />
+                </CreateWizardFlagProvider>
                 <LinkClickTracker />
             </PublicProviders>
         </RootDocument>

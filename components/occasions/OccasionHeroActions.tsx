@@ -16,5 +16,14 @@ type OccasionHeroActionsProps = {
 export function OccasionHeroActions({ createHref, createLabel, demoHref, demoLabel, plansLabel }: OccasionHeroActionsProps) {
     const { main, label } = useOccasionHeroMainAction(createHref, { create: createLabel, plans: plansLabel });
 
-    return <LandingHeroActions plain demoHref={demoHref ?? undefined} demoLabel={demoHref ? demoLabel : undefined} main={main} mainLabel={label} />;
+    return (
+        <LandingHeroActions
+            plain
+            createHref={createHref}
+            demoHref={demoHref ?? undefined}
+            demoLabel={demoHref ? demoLabel : undefined}
+            main={main}
+            mainLabel={label}
+        />
+    );
 }
