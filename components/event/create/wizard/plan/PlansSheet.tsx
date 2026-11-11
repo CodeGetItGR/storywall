@@ -108,7 +108,7 @@ export function PlansSheet() {
                     <button
                         type="button"
                         onClick={sheet.choose}
-                        className="h-14 w-full rounded-full bg-[linear-gradient(120deg,#ff6fa0,#ff7a59_55%,#ffb259)] text-[17px] font-bold text-ink focus-ring"
+                        className="h-12 w-full rounded-full bg-[linear-gradient(120deg,#ff6fa0,#ff7a59_55%,#ffb259)] text-[15px] font-bold text-ink focus-ring"
                     >
                         {t('plans.choose', { plan: sheet.pendingName })}
                     </button>
