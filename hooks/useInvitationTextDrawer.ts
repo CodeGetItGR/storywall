@@ -14,15 +14,18 @@ import {
     validateInvitationTextDraft,
 } from '@/lib/adminInvitationTexts';
 
-type TextField = 'label' | 'body' | 'sortOrder';
+type TextField = 'label' | 'body';
 
 // One text's drawer: the draft, its checks, the save, and the delete behind its confirmation.
 export function useInvitationTextDrawer({
     text,
+    texts,
     eventTypes,
     onDoneAction,
 }: {
     text: AdminInvitationTextDto | null;
+    // The whole list, so a new or moved text goes last in its group.
+    texts: AdminInvitationTextDto[];
     eventTypes: EventTypeOption[];
     onDoneAction: () => void;
 }) {
@@ -71,9 +74,9 @@ export function useInvitationTextDrawer({
             submitting.current = true;
             try {
                 if (text === null) {
-                    await create.mutateAsync(buildInvitationTextCreate(draft, eventType));
+                    await create.mutateAsync(buildInvitationTextCreate(draft, eventType, texts));
                 } else {
-                    const input = buildInvitationTextPatch(text, draft, eventType);
+                    const input = buildInvitationTextPatch(text, draft, eventType, texts);
                     if (Object.keys(input).length > 0) await patch.mutateAsync({ id: text.id, input });
                 }
                 if (mounted.current) onDoneAction();
@@ -83,7 +86,7 @@ export function useInvitationTextDrawer({
                 submitting.current = false;
             }
         },
-        [create, draft, errors, eventType, onDoneAction, patch, text],
+        [create, draft, errors, eventType, onDoneAction, patch, text, texts],
     );
 
     const openDelete = useCallback(() => setConfirmingDelete(true), []);

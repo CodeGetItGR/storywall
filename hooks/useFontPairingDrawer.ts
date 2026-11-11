@@ -22,7 +22,16 @@ export type FontPairingVisibility = 'SHOWN' | 'HIDDEN';
 type FontField = 'titleFont' | 'bodyFont' | 'buttonFont';
 
 // One pairing's drawer: the draft, its checks, the font lists and the save.
-export function useFontPairingDrawer({ pairing, onDoneAction }: { pairing: AdminFontPairingDto | null; onDoneAction: () => void }) {
+// `createSortOrder` puts a new pairing last in the list.
+export function useFontPairingDrawer({
+    pairing,
+    createSortOrder,
+    onDoneAction,
+}: {
+    pairing: AdminFontPairingDto | null;
+    createSortOrder: number;
+    onDoneAction: () => void;
+}) {
     const create = useCreateFontPairing();
     const patch = usePatchFontPairing();
     const uploadedQuery = useAdminThemeFonts('INVITATION');
@@ -55,11 +64,6 @@ export function useFontPairingDrawer({ pairing, onDoneAction }: { pairing: Admin
         setDraft((current) => ({ ...current, name }));
     }, []);
 
-    const handleSortOrderChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-        const sortOrder = event.currentTarget.value;
-        setDraft((current) => ({ ...current, sortOrder }));
-    }, []);
-
     const handleFontChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
         const field = event.currentTarget.name as FontField;
         const value = event.currentTarget.value;
@@ -83,7 +87,7 @@ export function useFontPairingDrawer({ pairing, onDoneAction }: { pairing: Admin
             submitting.current = true;
             try {
                 if (pairing === null) {
-                    await create.mutateAsync(buildFontPairingCreate(draft));
+                    await create.mutateAsync(buildFontPairingCreate(draft, createSortOrder));
                 } else {
                     const input = buildFontPairingPatch(pairing, draft);
                     if (Object.keys(input).length > 0) await patch.mutateAsync({ id: pairing.id, input });
@@ -95,7 +99,7 @@ export function useFontPairingDrawer({ pairing, onDoneAction }: { pairing: Admin
                 submitting.current = false;
             }
         },
-        [create, draft, errors, onDoneAction, pairing, patch],
+        [create, createSortOrder, draft, errors, onDoneAction, pairing, patch],
     );
 
     return {
@@ -116,7 +120,6 @@ export function useFontPairingDrawer({ pairing, onDoneAction }: { pairing: Admin
         visibility: (draft.hidden ? 'HIDDEN' : 'SHOWN') as FontPairingVisibility,
         isSaving: create.isPending || patch.isPending,
         handleNameChange,
-        handleSortOrderChange,
         handleFontChange,
         handleEventTypeChange,
         handleVisibilityChange,

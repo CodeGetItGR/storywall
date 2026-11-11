@@ -22,10 +22,13 @@ const FORM_ID = 'invitation-text-form';
 
 export function InvitationTextDrawer({
     text,
+    texts,
     eventTypes,
     onCloseAction,
 }: {
     text: AdminInvitationTextDto | null;
+    // The whole list, so a new or moved text goes last in its group.
+    texts: AdminInvitationTextDto[];
     eventTypes: EventTypeOption[];
     onCloseAction: () => void;
 }) {
@@ -35,7 +38,7 @@ export function InvitationTextDrawer({
     const tLanguages = useTranslations('AdminPage.partnerApplications.languages');
     const tFields = useTranslations('AdminPage.partnerApplications.fields');
     const apiErrorMessage = useApiErrorMessage();
-    const form = useInvitationTextDrawer({ text, eventTypes, onDoneAction: onCloseAction });
+    const form = useInvitationTextDrawer({ text, texts, eventTypes, onDoneAction: onCloseAction });
     const languageOptions: { value: InvitationTextLanguage; label: string }[] = INVITATION_TEXT_LANGUAGES.map((language) => ({
         value: language,
         label: tLanguages(language),
@@ -149,18 +152,6 @@ export function InvitationTextDrawer({
                         />
                     </AdminField>
 
-                    {/* Order */}
-                    <AdminField label={tDrawer('sortOrder')} className="max-w-40">
-                        <input
-                            name="sortOrder"
-                            type="number"
-                            inputMode="numeric"
-                            step={1}
-                            value={form.draft.sortOrder}
-                            onChange={form.handleFieldChange}
-                            className={adminInputClass('font-mono')}
-                        />
-                    </AdminField>
                 </form>
             </AdminDrawer>
 

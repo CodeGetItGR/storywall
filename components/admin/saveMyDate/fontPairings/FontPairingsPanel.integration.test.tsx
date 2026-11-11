@@ -17,6 +17,7 @@ vi.mock('@/components/saveMyDate/invitation/invitationFonts', () => ({ INVITATIO
 
 const copy = messages.AdminPage.saveMyDate.fontPairings;
 const drawerCopy = messages.AdminPage.invitationThemes.drawer;
+const orderCopy = messages.AdminPage.order;
 
 const PAIRING: AdminFontPairingDto = {
     id: 'p1',
@@ -28,6 +29,8 @@ const PAIRING: AdminFontPairingDto = {
     sortOrder: 0,
     eventTypes: [],
 };
+const SECOND: AdminFontPairingDto = { ...PAIRING, id: 'p2', name: 'Modern', hidden: false, sortOrder: 1 };
+let pairings: AdminFontPairingDto[];
 const UPLOADED = [
     { id: 'f1', key: 'theos', familyName: 'Theos', fallback: 'serif', library: 'INVITATION', archived: false, url: '/api/theme-fonts/theos/1.woff2', presetCount: 0, invitationEventTypes: [] },
 ];
@@ -44,8 +47,9 @@ function renderPanel() {
 }
 
 beforeEach(() => {
+    pairings = [PAIRING];
     api.get.mockImplementation(async (path: string) => {
-        if (path === '/api/admin/invitation-typography-presets') return [PAIRING];
+        if (path === '/api/admin/invitation-typography-presets') return pairings;
         if (path === '/api/admin/platform-event-types') return [{ eventTypeKey: 'WEDDING', name: { el: 'Γάμος', en: 'Wedding' } }];
         if (path === '/api/admin/theme-fonts?library=INVITATION') return UPLOADED;
         if (path === '/api/invitation-fonts/files') return [];
@@ -71,7 +75,7 @@ describe('FontPairingsPanel', () => {
         expect(within(row).getByText(messages.AdminPage.invitationThemes.status.HIDDEN)).toBeInTheDocument();
     });
 
-    it("creates a pairing that uses one of Save my date's uploaded fonts", async () => {
+    it("creates a pairing that uses one of Save my date's uploaded fonts, last in the list", async () => {
         renderPanel();
         await screen.findByRole('button', { name: 'Classic' });
         fireEvent.click(screen.getByRole('button', { name: copy.create }));
@@ -91,10 +95,25 @@ describe('FontPairingsPanel', () => {
                 bodyFont: 'Georgia,serif',
                 buttonFont: '',
                 hidden: false,
-                sortOrder: 0,
+                sortOrder: 1,
                 eventTypes: ['WEDDING'],
             }),
         );
+    });
+
+    it('moves a pairing with its arrows, saving the places that changed', async () => {
+        pairings = [PAIRING, SECOND];
+        renderPanel();
+        await screen.findByRole('button', { name: 'Modern' });
+        expect(screen.getByRole('button', { name: orderCopy.moveUp.replace('{name}', 'Classic') })).toBeDisabled();
+        expect(screen.getByRole('button', { name: orderCopy.moveDown.replace('{name}', 'Modern') })).toBeDisabled();
+        expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: orderCopy.moveDown.replace('{name}', 'Classic') }));
+
+        await waitFor(() => expect(api.patch).toHaveBeenCalledTimes(2));
+        expect(api.patch).toHaveBeenCalledWith('/api/admin/invitation-typography-presets/p1', { sortOrder: 1 });
+        expect(api.patch).toHaveBeenCalledWith('/api/admin/invitation-typography-presets/p2', { sortOrder: 0 });
     });
 
     it('shows a pairing again', async () => {

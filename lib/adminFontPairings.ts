@@ -42,7 +42,6 @@ export type FontPairingDraft = {
     // '' means the text font.
     buttonFont: string;
     hidden: boolean;
-    sortOrder: string;
     eventTypes: string[];
 };
 export type FontPairingDraftErrors = Partial<Record<'name' | 'titleFont' | 'bodyFont', true>>;
@@ -57,7 +56,6 @@ export function draftFromPairing(pairing: AdminFontPairingDto | null, defaultFon
         bodyFont: pairing?.bodyFont ?? defaultFont,
         buttonFont: pairing?.buttonFont ?? '',
         hidden: pairing?.hidden ?? false,
-        sortOrder: String(pairing?.sortOrder ?? 0),
         eventTypes: [...(pairing?.eventTypes ?? [])].sort(),
     };
 }
@@ -71,19 +69,15 @@ export function validateFontPairingDraft(draft: FontPairingDraft): FontPairingDr
     return errors;
 }
 
-function sortOrderOf(draft: FontPairingDraft): number {
-    const value = Number.parseInt(draft.sortOrder, 10);
-    return Number.isFinite(value) ? value : 0;
-}
-
-export function buildFontPairingCreate(draft: FontPairingDraft): AdminFontPairingRequestDto {
+// `sortOrder` puts the new pairing last (nextSortOrder of the list); after that the list's drag and drop moves it.
+export function buildFontPairingCreate(draft: FontPairingDraft, sortOrder: number): AdminFontPairingRequestDto {
     return {
         name: draft.name.trim(),
         titleFont: draft.titleFont,
         bodyFont: draft.bodyFont,
         buttonFont: draft.buttonFont,
         hidden: draft.hidden,
-        sortOrder: sortOrderOf(draft),
+        sortOrder,
         eventTypes: draft.eventTypes,
     };
 }
@@ -96,7 +90,6 @@ export function buildFontPairingPatch(pairing: AdminFontPairingDto, draft: FontP
     if (draft.bodyFont !== pairing.bodyFont) patch.bodyFont = draft.bodyFont;
     if (draft.buttonFont !== (pairing.buttonFont ?? '')) patch.buttonFont = draft.buttonFont;
     if (draft.hidden !== pairing.hidden) patch.hidden = draft.hidden;
-    if (sortOrderOf(draft) !== pairing.sortOrder) patch.sortOrder = sortOrderOf(draft);
     if (!sameEventTypes(draft.eventTypes, pairing.eventTypes)) patch.eventTypes = draft.eventTypes;
     return patch;
 }

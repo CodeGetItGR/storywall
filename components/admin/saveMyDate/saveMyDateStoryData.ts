@@ -78,6 +78,7 @@ export function storyInvitationText(overrides: Partial<AdminInvitationTextDto> =
 
 export const storyInvitationTexts: AdminInvitationTextDto[] = [
     storyInvitationText(),
+    storyInvitationText({ id: 'text-4', label: 'Απλό', body: 'Παντρευόμαστε!\nΘα χαρούμε να είστε εκεί.', sortOrder: 1 }),
     storyInvitationText({ id: 'text-2', language: 'en', label: 'Formal', body: 'Together with our families,\nwe invite you to our wedding.' }),
     storyInvitationText({ id: 'text-3', eventType: 'BAPTISM', label: 'Ζεστό', body: 'Ελάτε να γιορτάσουμε μαζί\nτη βάπτιση της μικρής μας.', sortOrder: 1 }),
 ];

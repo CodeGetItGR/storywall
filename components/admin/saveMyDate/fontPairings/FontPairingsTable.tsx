@@ -3,20 +3,33 @@
 import { Pencil } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { AdminOrderArrows } from '@/components/admin/AdminOrderArrows';
+import { AdminSortableList } from '@/components/admin/AdminSortableList';
+import { AdminSortableRow } from '@/components/admin/AdminSortableRow';
 import { EventTypeBadges } from '@/components/admin/saveMyDate/EventTypeBadges';
 import { type AdminFontPairingDto, fontPairingFontLabel } from '@/lib/adminFontPairings';
+import type { MoveDirection } from '@/lib/sortOrder';
 import { cn } from '@/lib/utils';
+
+const pairingIdOf = (pairing: AdminFontPairingDto) => pairing.id;
 
 export function FontPairingsTable({
     pairings,
     eventTypeLabelOf,
+    canReorder,
+    onMoveAction,
+    onReorderAction,
     onEditAction,
 }: {
     pairings: AdminFontPairingDto[];
     eventTypeLabelOf: (key: string) => string;
+    canReorder: boolean;
+    onMoveAction: (pairingId: string, direction: MoveDirection) => void;
+    onReorderAction: (activeId: string, overId: string) => void;
     onEditAction: (pairing: AdminFontPairingDto) => void;
 }) {
     const t = useTranslations('AdminPage.saveMyDate.fontPairings');
+    const tAdmin = useTranslations('AdminPage');
     const tSaveMyDate = useTranslations('AdminPage.saveMyDate');
     const tDrawer = useTranslations('AdminPage.invitationThemes.drawer');
 
@@ -33,14 +46,25 @@ export function FontPairingsTable({
                         <th className="px-3 py-2">{t('fonts.button')}</th>
                         <th className="px-3 py-2">{tSaveMyDate('eventTypes')}</th>
                         <th className="px-3 py-2">{tDrawer('status')}</th>
-                        <th className="px-3 py-2">{tDrawer('sortOrder')}</th>
+                        <th className="px-3 py-2">{tAdmin('order.column')}</th>
                         <th className="px-3 py-2" />
                     </tr>
                 </thead>
                 <tbody>
-                    {pairings.map((pairing) => (
-                        <FontPairingRow key={pairing.id} pairing={pairing} eventTypeLabelOf={eventTypeLabelOf} onEditAction={onEditAction} />
-                    ))}
+                    <AdminSortableList ids={pairings.map(pairingIdOf)} disabled={!canReorder} onReorderAction={onReorderAction}>
+                        {pairings.map((pairing, index) => (
+                            <FontPairingRow
+                                key={pairing.id}
+                                pairing={pairing}
+                                eventTypeLabelOf={eventTypeLabelOf}
+                                isFirst={index === 0}
+                                isLast={index === pairings.length - 1}
+                                canReorder={canReorder}
+                                onMoveAction={onMoveAction}
+                                onEditAction={onEditAction}
+                            />
+                        ))}
+                    </AdminSortableList>
                 </tbody>
             </table>
         </div>
@@ -50,10 +74,18 @@ export function FontPairingsTable({
 function FontPairingRow({
     pairing,
     eventTypeLabelOf,
+    isFirst,
+    isLast,
+    canReorder,
+    onMoveAction,
     onEditAction,
 }: {
     pairing: AdminFontPairingDto;
     eventTypeLabelOf: (key: string) => string;
+    isFirst: boolean;
+    isLast: boolean;
+    canReorder: boolean;
+    onMoveAction: (pairingId: string, direction: MoveDirection) => void;
     onEditAction: (pairing: AdminFontPairingDto) => void;
 }) {
     const t = useTranslations('AdminPage.saveMyDate.fontPairings');
@@ -65,7 +97,7 @@ function FontPairingRow({
     }
 
     return (
-        <tr className="border-b border-border/70 last:border-b-0 hover:bg-canvas/60">
+        <AdminSortableRow id={pairing.id} name={pairing.name} className="border-b border-border/70 last:border-b-0 hover:bg-canvas/60">
             {/* Name */}
             <td className="px-3 py-2.5">
                 <button type="button" onClick={handleEdit} className="text-left text-sm font-semibold text-ink hover:text-primary-dark">
@@ -94,7 +126,16 @@ function FontPairingRow({
                 </span>
             </td>
             {/* Order */}
-            <td className="px-3 py-2.5 font-mono text-[12px] text-ink-muted tabular-nums">{pairing.sortOrder}</td>
+            <td className="px-3 py-2">
+                <AdminOrderArrows
+                    id={pairing.id}
+                    name={pairing.name}
+                    isFirst={isFirst}
+                    isLast={isLast}
+                    disabled={!canReorder}
+                    onMoveAction={onMoveAction}
+                />
+            </td>
             {/* Edit */}
             <td className="px-3 py-2.5 text-right">
                 <button
@@ -107,6 +148,6 @@ function FontPairingRow({
                     <Pencil className="h-4 w-4" />
                 </button>
             </td>
-        </tr>
+        </AdminSortableRow>
     );
 }

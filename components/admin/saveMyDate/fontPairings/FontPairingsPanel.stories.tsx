@@ -25,6 +25,7 @@ const meta = {
             http.get('*/api/admin/platform-event-types', () => HttpResponse.json(storyEventTypes)),
             http.get('*/api/admin/theme-fonts', () => HttpResponse.json(storyInvitationFonts)),
             http.get('*/api/invitation-fonts/files', () => HttpResponse.json(storyInvitationFontFiles)),
+            http.patch('*/api/admin/invitation-typography-presets/:id', () => new HttpResponse(null, { status: 204 })),
             ...storyFontFileHandlers,
         );
     },
@@ -59,6 +60,21 @@ export const Failed: Story = {
         msw.use(
             http.get('*/api/admin/invitation-typography-presets', () => HttpResponse.json({ status: 500, errorCode: 'INTERNAL_ERROR' }, { status: 500 })),
         );
+    },
+};
+
+// A move the server turned down: the error shows above the list.
+export const MoveFailed: Story = {
+    beforeEach({ msw }) {
+        msw.use(
+            http.patch('*/api/admin/invitation-typography-presets/:id', () => HttpResponse.json({ status: 500, errorCode: 'INTERNAL_ERROR' }, { status: 500 })),
+        );
+    },
+    play: async ({ canvasElement, globals }) => {
+        const canvas = within(canvasElement);
+        const copy = copyFor(globals).AdminPage;
+        await userEvent.click(await canvas.findByRole('button', { name: copy.order.moveDown.replace('{name}', 'Κλασικό') }));
+        await canvas.findByText(copy.errors.generic);
     },
 };
 

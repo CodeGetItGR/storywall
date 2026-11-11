@@ -39,7 +39,7 @@ function submitEvent() {
 }
 
 function renderDrawer(pairing: AdminFontPairingDto | null, onDoneAction = vi.fn()) {
-    return renderHook(() => useFontPairingDrawer({ pairing, onDoneAction }));
+    return renderHook(() => useFontPairingDrawer({ pairing, createSortOrder: 3, onDoneAction }));
 }
 
 beforeEach(() => {
@@ -57,7 +57,7 @@ describe('useFontPairingDrawer', () => {
         expect(mocks.create).not.toHaveBeenCalled();
     });
 
-    it('creates a pairing with its fonts and event types', async () => {
+    it('creates a pairing with its fonts and event types, last in the list', async () => {
         const onDoneAction = vi.fn();
         mocks.create.mockResolvedValue(PAIRING);
         const { result } = renderDrawer(null, onDoneAction);
@@ -74,7 +74,7 @@ describe('useFontPairingDrawer', () => {
             bodyFont: 'Georgia,serif',
             buttonFont: 'Cinzel,serif',
             hidden: false,
-            sortOrder: 0,
+            sortOrder: 3,
             eventTypes: ['WEDDING'],
         });
         expect(onDoneAction).toHaveBeenCalledOnce();

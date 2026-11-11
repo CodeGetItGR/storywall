@@ -43,13 +43,12 @@ describe('draftFromPairing', () => {
             bodyFont: 'Georgia,serif',
             buttonFont: '',
             hidden: false,
-            sortOrder: '0',
             eventTypes: [],
         });
     });
 
     it('copies a saved pairing', () => {
-        expect(draftFromPairing(PAIRING)).toMatchObject({ name: 'Classic', buttonFont: '', sortOrder: '2', eventTypes: ['BAPTISM', 'WEDDING'] });
+        expect(draftFromPairing(PAIRING)).toMatchObject({ name: 'Classic', buttonFont: '', eventTypes: ['BAPTISM', 'WEDDING'] });
     });
 });
 
@@ -62,14 +61,14 @@ describe('validateFontPairingDraft', () => {
 });
 
 describe('buildFontPairingCreate', () => {
-    it('sends every field, the name trimmed', () => {
-        expect(buildFontPairingCreate({ ...draftFromPairing(PAIRING), name: ' Classic ', sortOrder: '' })).toEqual({
+    it('sends every field, the name trimmed, and the place it takes in the list', () => {
+        expect(buildFontPairingCreate({ ...draftFromPairing(PAIRING), name: ' Classic ' }, 3)).toEqual({
             name: 'Classic',
             titleFont: "'Playfair Display',serif",
             bodyFont: 'Lora,serif',
             buttonFont: '',
             hidden: false,
-            sortOrder: 0,
+            sortOrder: 3,
             eventTypes: ['BAPTISM', 'WEDDING'],
         });
     });
@@ -81,8 +80,8 @@ describe('buildFontPairingPatch', () => {
     });
 
     it('sends only what changed', () => {
-        const draft = { ...draftFromPairing(PAIRING), buttonFont: 'Cinzel,serif', hidden: true, sortOrder: '5', eventTypes: [] };
-        expect(buildFontPairingPatch(PAIRING, draft)).toEqual({ buttonFont: 'Cinzel,serif', hidden: true, sortOrder: 5, eventTypes: [] });
+        const draft = { ...draftFromPairing(PAIRING), buttonFont: 'Cinzel,serif', hidden: true, eventTypes: [] };
+        expect(buildFontPairingPatch(PAIRING, draft)).toEqual({ buttonFont: 'Cinzel,serif', hidden: true, eventTypes: [] });
     });
 
     it('clears the button font with an empty value', () => {

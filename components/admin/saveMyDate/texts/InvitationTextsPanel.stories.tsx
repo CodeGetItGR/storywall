@@ -18,6 +18,7 @@ const meta = {
         msw.use(
             http.get('*/api/admin/invitation-texts', () => HttpResponse.json(storyInvitationTexts)),
             http.get('*/api/admin/platform-event-types', () => HttpResponse.json(storyEventTypes)),
+            http.patch('*/api/admin/invitation-texts/:id', () => new HttpResponse(null, { status: 204 })),
         );
     },
 } satisfies Meta<typeof InvitationTextsPanel>;
@@ -49,6 +50,19 @@ export const Loading: Story = {
 export const Failed: Story = {
     beforeEach({ msw }) {
         msw.use(http.get('*/api/admin/invitation-texts', () => HttpResponse.json({ status: 500, errorCode: 'INTERNAL_ERROR' }, { status: 500 })));
+    },
+};
+
+// A move the server turned down: the error shows above the texts of that group.
+export const MoveFailed: Story = {
+    beforeEach({ msw }) {
+        msw.use(http.patch('*/api/admin/invitation-texts/:id', () => HttpResponse.json({ status: 500, errorCode: 'INTERNAL_ERROR' }, { status: 500 })));
+    },
+    play: async ({ canvasElement, globals }) => {
+        const canvas = within(canvasElement);
+        const copy = copyFor(globals).AdminPage;
+        await userEvent.click(await canvas.findByRole('button', { name: copy.order.moveDown.replace('{name}', 'Επίσημο') }));
+        await canvas.findByText(copy.errors.generic);
     },
 };
 

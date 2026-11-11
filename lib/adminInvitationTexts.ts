@@ -29,7 +29,7 @@ export type AdminInvitationTextRequestDto = {
 };
 
 // eventType '' means the first event type on offer (the select shows it until the admin picks one).
-export type InvitationTextDraft = { eventType: string; language: InvitationTextLanguage; label: string; body: string; sortOrder: string };
+export type InvitationTextDraft = { eventType: string; language: InvitationTextLanguage; label: string; body: string };
 export type InvitationTextDraftErrors = Partial<Record<'eventType' | 'label' | 'body', true>>;
 
 export function draftFromText(text: AdminInvitationTextDto | null): InvitationTextDraft {
@@ -38,7 +38,6 @@ export function draftFromText(text: AdminInvitationTextDto | null): InvitationTe
         language: text?.language ?? 'el',
         label: text?.label ?? '',
         body: text?.body ?? '',
-        sortOrder: String(text?.sortOrder ?? 0),
     };
 }
 
@@ -57,21 +56,54 @@ export function validateInvitationTextDraft(draft: InvitationTextDraft, eventTyp
     return errors;
 }
 
-function sortOrderOf(draft: InvitationTextDraft): number {
-    const value = Number.parseInt(draft.sortOrder, 10);
-    return Number.isFinite(value) ? value : 0;
+// Texts are ordered within one event type and language: a group.
+export type InvitationTextGroup = { key: string; eventType: string; language: InvitationTextLanguage; texts: AdminInvitationTextDto[] };
+
+function groupKey(eventType: string, language: string): string {
+    return `${eventType}:${language}`;
 }
 
-export function buildInvitationTextCreate(draft: InvitationTextDraft, eventType: string): AdminInvitationTextRequestDto {
-    return { eventType, language: draft.language, label: draft.label.trim(), body: cleanBody(draft.body), sortOrder: sortOrderOf(draft) };
+// The list's groups, in the list's order (it comes sorted by event type, language, then sort order).
+export function groupInvitationTexts(texts: AdminInvitationTextDto[]): InvitationTextGroup[] {
+    const groups = new Map<string, InvitationTextGroup>();
+    for (const text of texts) {
+        const key = groupKey(text.eventType, text.language);
+        const group = groups.get(key) ?? { key, eventType: text.eventType, language: text.language, texts: [] };
+        group.texts.push(text);
+        groups.set(key, group);
+    }
+    return [...groups.values()];
 }
 
-export function buildInvitationTextPatch(text: AdminInvitationTextDto, draft: InvitationTextDraft, eventType: string): AdminInvitationTextRequestDto {
+// One past the highest sort order in a group, so a text added to it lands last.
+export function nextInvitationTextSortOrder(texts: AdminInvitationTextDto[], eventType: string, language: InvitationTextLanguage): number {
+    const orders = texts.filter((text) => text.eventType === eventType && text.language === language).map((text) => text.sortOrder);
+    return orders.length > 0 ? Math.max(...orders) + 1 : 0;
+}
+
+// `texts` is the whole list, to put the new text last in its group.
+export function buildInvitationTextCreate(draft: InvitationTextDraft, eventType: string, texts: AdminInvitationTextDto[]): AdminInvitationTextRequestDto {
+    return {
+        eventType,
+        language: draft.language,
+        label: draft.label.trim(),
+        body: cleanBody(draft.body),
+        sortOrder: nextInvitationTextSortOrder(texts, eventType, draft.language),
+    };
+}
+
+// Only what changed. A text moved to another event type or language goes last in its new group.
+export function buildInvitationTextPatch(
+    text: AdminInvitationTextDto,
+    draft: InvitationTextDraft,
+    eventType: string,
+    texts: AdminInvitationTextDto[],
+): AdminInvitationTextRequestDto {
     const patch: AdminInvitationTextRequestDto = {};
     if (eventType !== text.eventType) patch.eventType = eventType;
     if (draft.language !== text.language) patch.language = draft.language;
     if (draft.label.trim() !== text.label) patch.label = draft.label.trim();
     if (cleanBody(draft.body) !== text.body) patch.body = cleanBody(draft.body);
-    if (sortOrderOf(draft) !== text.sortOrder) patch.sortOrder = sortOrderOf(draft);
+    if (patch.eventType !== undefined || patch.language !== undefined) patch.sortOrder = nextInvitationTextSortOrder(texts, eventType, draft.language);
     return patch;
 }

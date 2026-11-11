@@ -6,7 +6,7 @@ import { SaveMyDatePanelHeader } from '@/components/admin/saveMyDate/SaveMyDateP
 import { InvitationTextDrawer } from '@/components/admin/saveMyDate/texts/InvitationTextDrawer';
 import { InvitationTextsTable } from '@/components/admin/saveMyDate/texts/InvitationTextsTable';
 import { LoadingState } from '@/components/ui/LoadingState';
-import { useAdminInvitationTexts } from '@/hooks/useAdminInvitationTexts';
+import { useInvitationTextsList } from '@/hooks/useInvitationTextsList';
 import { useRecordDrawer } from '@/hooks/useRecordDrawer';
 import { useSaveMyDateEventTypes } from '@/hooks/useSaveMyDateEventTypes';
 import type { AdminInvitationTextDto } from '@/lib/adminInvitationTexts';
@@ -17,7 +17,7 @@ export function InvitationTextsPanel() {
     const t = useTranslations('AdminPage.saveMyDate.texts');
     const tAdmin = useTranslations('AdminPage');
     const tCommon = useTranslations('Common');
-    const textsQuery = useAdminInvitationTexts();
+    const list = useInvitationTextsList();
     const eventTypes = useSaveMyDateEventTypes();
     const { drawer, openDrawer, openCreate, closeDrawer } = useRecordDrawer<AdminInvitationTextDto>();
 
@@ -28,13 +28,21 @@ export function InvitationTextsPanel() {
 
             {/* Texts */}
             <section className="rounded-xl border border-border bg-card">
-                {textsQuery.isLoading && <LoadingState label={tCommon('loading')} className="justify-start p-4" />}
-                {textsQuery.error && <p className="p-4 text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(textsQuery.error)}`)}</p>}
-                {textsQuery.data && <InvitationTextsTable texts={textsQuery.data} eventTypeLabelOf={eventTypes.labelOf} onEditAction={openDrawer} />}
+                {list.isLoading && <LoadingState label={tCommon('loading')} className="justify-start p-4" />}
+                {list.error && <p className="p-4 text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(list.error)}`)}</p>}
+                {list.isLoaded && <InvitationTextsTable groups={list.groups} eventTypeLabelOf={eventTypes.labelOf} onEditAction={openDrawer} />}
             </section>
 
             {/* Drawer */}
-            {drawer.open && <InvitationTextDrawer key={drawer.token} text={drawer.record} eventTypes={eventTypes.options} onCloseAction={closeDrawer} />}
+            {drawer.open && (
+                <InvitationTextDrawer
+                    key={drawer.token}
+                    text={drawer.record}
+                    texts={list.texts}
+                    eventTypes={eventTypes.options}
+                    onCloseAction={closeDrawer}
+                />
+            )}
         </div>
     );
 }

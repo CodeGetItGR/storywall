@@ -29,8 +29,8 @@ function submitEvent() {
     return { preventDefault: vi.fn() } as unknown as React.SubmitEvent<HTMLFormElement>;
 }
 
-function renderDrawer(text: AdminInvitationTextDto | null, onDoneAction = vi.fn()) {
-    return renderHook(() => useInvitationTextDrawer({ text, eventTypes: EVENT_TYPES, onDoneAction }));
+function renderDrawer(text: AdminInvitationTextDto | null, onDoneAction = vi.fn(), texts = [TEXT]) {
+    return renderHook(() => useInvitationTextDrawer({ text, texts, eventTypes: EVENT_TYPES, onDoneAction }));
 }
 
 beforeEach(() => {
@@ -62,11 +62,11 @@ describe('useInvitationTextDrawer', () => {
         expect(onDoneAction).toHaveBeenCalledOnce();
     });
 
-    it('sends only what changed on an existing text', async () => {
-        const { result } = renderDrawer(TEXT);
+    it('sends only what changed on an existing text, and puts a moved text last in its new group', async () => {
+        const { result } = renderDrawer(TEXT, vi.fn(), [TEXT, { ...TEXT, id: 'w1', eventType: 'WEDDING', sortOrder: 2 }]);
         act(() => result.current.handleEventTypeChange({ currentTarget: { value: 'WEDDING' } } as ChangeEvent<HTMLSelectElement>));
         await act(() => result.current.handleSubmit(submitEvent()));
-        expect(mocks.patch).toHaveBeenCalledWith({ id: 't1', input: { eventType: 'WEDDING' } });
+        expect(mocks.patch).toHaveBeenCalledWith({ id: 't1', input: { eventType: 'WEDDING', sortOrder: 3 } });
     });
 
     it('deletes only after the confirmation, then closes', async () => {

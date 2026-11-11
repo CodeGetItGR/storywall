@@ -16,6 +16,7 @@ vi.mock('@/lib/api/client', async (importOriginal) => ({
 
 const copy = messages.AdminPage.saveMyDate.texts;
 const drawerCopy = messages.AdminPage.invitationThemes.drawer;
+const orderCopy = messages.AdminPage.order;
 
 const EVENT_TYPES = [
     { eventTypeKey: 'WEDDING', name: { el: 'Γάμος', en: 'Wedding' } },
@@ -56,6 +57,7 @@ beforeEach(() => {
         return created;
     });
     api.patch.mockReset();
+    api.patch.mockResolvedValue(undefined);
     api.del.mockImplementation(async () => {
         texts = [];
     });
@@ -73,6 +75,24 @@ describe('InvitationTextsPanel', () => {
         expect(row).not.toBeNull();
         expect(within(row as HTMLElement).getByText('Baptism')).toBeInTheDocument();
         expect(within(row as HTMLElement).getByText('Greek')).toBeInTheDocument();
+    });
+
+    it('moves a text only among the texts of its event type and language', async () => {
+        texts = [
+            { ...TEXT, id: 'b1', label: 'First' },
+            { ...TEXT, id: 'b2', label: 'Second', sortOrder: 1 },
+            { ...TEXT, id: 'w1', eventType: 'WEDDING', label: 'Wedding text' },
+        ];
+        renderPanel();
+        await screen.findByRole('button', { name: 'Wedding text' });
+        expect(screen.getByRole('button', { name: orderCopy.moveDown.replace('{name}', 'Second') })).toBeDisabled();
+        expect(screen.getByRole('button', { name: orderCopy.moveUp.replace('{name}', 'Wedding text') })).toBeDisabled();
+
+        fireEvent.click(screen.getByRole('button', { name: orderCopy.moveDown.replace('{name}', 'First') }));
+
+        await waitFor(() => expect(api.patch).toHaveBeenCalledTimes(2));
+        expect(api.patch).toHaveBeenCalledWith('/api/admin/invitation-texts/b1', { sortOrder: 1 });
+        expect(api.patch).toHaveBeenCalledWith('/api/admin/invitation-texts/b2', { sortOrder: 0 });
     });
 
     it('creates a text from the drawer', async () => {

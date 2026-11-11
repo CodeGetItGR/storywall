@@ -6,7 +6,7 @@ import { FontPairingDrawer } from '@/components/admin/saveMyDate/fontPairings/Fo
 import { FontPairingsTable } from '@/components/admin/saveMyDate/fontPairings/FontPairingsTable';
 import { SaveMyDatePanelHeader } from '@/components/admin/saveMyDate/SaveMyDatePanelHeader';
 import { LoadingState } from '@/components/ui/LoadingState';
-import { useAdminFontPairings } from '@/hooks/useAdminFontPairings';
+import { useFontPairingsList } from '@/hooks/useFontPairingsList';
 import { useRecordDrawer } from '@/hooks/useRecordDrawer';
 import { useSaveMyDateEventTypes } from '@/hooks/useSaveMyDateEventTypes';
 import type { AdminFontPairingDto } from '@/lib/adminFontPairings';
@@ -17,7 +17,7 @@ export function FontPairingsPanel() {
     const t = useTranslations('AdminPage.saveMyDate.fontPairings');
     const tAdmin = useTranslations('AdminPage');
     const tCommon = useTranslations('Common');
-    const pairingsQuery = useAdminFontPairings();
+    const list = useFontPairingsList();
     const eventTypes = useSaveMyDateEventTypes();
     const { drawer, openDrawer, openCreate, closeDrawer } = useRecordDrawer<AdminFontPairingDto>();
 
@@ -28,13 +28,31 @@ export function FontPairingsPanel() {
 
             {/* Pairings */}
             <section className="rounded-xl border border-border bg-card">
-                {pairingsQuery.isLoading && <LoadingState label={tCommon('loading')} className="justify-start p-4" />}
-                {pairingsQuery.error && <p className="p-4 text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(pairingsQuery.error)}`)}</p>}
-                {pairingsQuery.data && <FontPairingsTable pairings={pairingsQuery.data} eventTypeLabelOf={eventTypes.labelOf} onEditAction={openDrawer} />}
+                {list.isLoading && <LoadingState label={tCommon('loading')} className="justify-start p-4" />}
+                {list.error && <p className="p-4 text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(list.error)}`)}</p>}
+                {list.moveError && <p className="px-4 pt-3 text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(list.moveError)}`)}</p>}
+                {list.isLoaded && (
+                    <FontPairingsTable
+                        pairings={list.pairings}
+                        eventTypeLabelOf={eventTypes.labelOf}
+                        canReorder={list.canReorder}
+                        onMoveAction={list.movePairing}
+                        onReorderAction={list.reorderPairing}
+                        onEditAction={openDrawer}
+                    />
+                )}
             </section>
 
             {/* Drawer */}
-            {drawer.open && <FontPairingDrawer key={drawer.token} pairing={drawer.record} eventTypes={eventTypes.options} onCloseAction={closeDrawer} />}
+            {drawer.open && (
+                <FontPairingDrawer
+                    key={drawer.token}
+                    pairing={drawer.record}
+                    createSortOrder={list.createSortOrder}
+                    eventTypes={eventTypes.options}
+                    onCloseAction={closeDrawer}
+                />
+            )}
         </div>
     );
 }

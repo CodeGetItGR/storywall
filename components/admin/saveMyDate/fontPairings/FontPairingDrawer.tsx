@@ -20,10 +20,13 @@ const FONT_LABEL = { titleFont: 'title', bodyFont: 'body', buttonFont: 'button' 
 
 export function FontPairingDrawer({
     pairing,
+    createSortOrder,
     eventTypes,
     onCloseAction,
 }: {
     pairing: AdminFontPairingDto | null;
+    // Where a new pairing goes: last in the list.
+    createSortOrder: number;
     eventTypes: EventTypeOption[];
     onCloseAction: () => void;
 }) {
@@ -32,7 +35,7 @@ export function FontPairingDrawer({
     const tDrawer = useTranslations('AdminPage.invitationThemes.drawer');
     const tStatus = useTranslations('AdminPage.invitationThemes.status');
     const apiErrorMessage = useApiErrorMessage();
-    const form = useFontPairingDrawer({ pairing, onDoneAction: onCloseAction });
+    const form = useFontPairingDrawer({ pairing, createSortOrder, onDoneAction: onCloseAction });
     const visibilityOptions: { value: FontPairingVisibility; label: string }[] = [
         { value: 'SHOWN', label: t('shown') },
         { value: 'HIDDEN', label: tStatus('HIDDEN') },
@@ -117,29 +120,16 @@ export function FontPairingDrawer({
                         onChangeAction={form.handleEventTypeChange}
                     />
 
-                    {/* Status and order */}
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="space-y-1.5">
-                            <p className="text-[11px] font-bold tracking-wide text-ink-muted uppercase">{tDrawer('status')}</p>
-                            <InvitationThemeSegmented
-                                label={tDrawer('status')}
-                                options={visibilityOptions}
-                                value={form.visibility}
-                                onChangeAction={form.handleVisibilityChange}
-                                fill
-                            />
-                        </div>
-                        <AdminField label={tDrawer('sortOrder')}>
-                            <input
-                                name="sortOrder"
-                                type="number"
-                                inputMode="numeric"
-                                step={1}
-                                value={form.draft.sortOrder}
-                                onChange={form.handleSortOrderChange}
-                                className={adminInputClass('font-mono')}
-                            />
-                        </AdminField>
+                    {/* Status */}
+                    <div className="space-y-1.5 sm:max-w-[calc(50%-0.5rem)]">
+                        <p className="text-[11px] font-bold tracking-wide text-ink-muted uppercase">{tDrawer('status')}</p>
+                        <InvitationThemeSegmented
+                            label={tDrawer('status')}
+                            options={visibilityOptions}
+                            value={form.visibility}
+                            onChangeAction={form.handleVisibilityChange}
+                            fill
+                        />
                     </div>
                 </form>
 
