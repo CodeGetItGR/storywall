@@ -8,6 +8,7 @@ import type {
     EventSessionResponseDto,
     MediaResponseDto,
     ModuleKeyConvention,
+    PlanTierResponseDto,
     PostResponseDto,
     QrLinkResponseDto,
     ReactionTypeResponseDto,
@@ -244,12 +245,17 @@ function reactionType(code: string, name: string, emoji: string, sortOrder: numb
     return { id: `rt-${code}`, eventTypeKey: 'WEDDING', code, name, emoji, sortOrder, isAssignable: true };
 }
 
-export const storyReactionTypes = [reactionType('LOVE', 'Love', '❤️', 0), reactionType('LAUGH', 'Laugh', '😂', 1), reactionType('WOW', 'Wow', '😮', 2)];
+export const storyReactionTypes = [
+    reactionType('LOVE', 'Love', '❤️', 0),
+    reactionType('LAUGH', 'Laugh', '😂', 1),
+    reactionType('WOW', 'Wow', '😮', 2),
+];
 
 // Only the parts of GET /api/config the components in stories read. Add a
 // field here when a story needs it, rather than filling the whole shape.
 export const storyAppConfig = {
     featureFlags: [],
+    withdrawal: { termsVersion: '2026-09-18', windowDays: 14, holdDays: 7 },
     media: { presignedUrlTtlMinutes: 60 },
     pagination: { defaultPageSize: 20, maxPageSize: 100 },
     planTiers: [
@@ -277,6 +283,166 @@ export const storyAppConfig = {
     rateLimits: [],
     reportTargetTypes: ['POST', 'COMMENT', 'MEMBER'],
     reportReasons: [],
+    rsvp: { minAdults: 1, maxAdults: 10, minChildren: 0, maxChildren: 10 },
+    coverage: { minDaysAfterStart: 1, defaultEventDurationHours: 24 },
+    landingReviews: [],
+    newsletter: { enabled: false, discountPercent: 10, rewardValidityMonths: 12 },
+    eventDeletion: { codeDigits: 6, codeValidMinutes: 15, maxCodeAttempts: 5 },
+    betaFeedback: { enabled: false, screenshotMaxBytes: 5_000_000, screenshotMimeTypes: ['image/png'] },
+    errorTracking: { enabled: false },
+} as unknown as AppConfigResponseDto;
+
+function storyEventTypeCopy(en: string, el: string, taglineEn: string, taglineEl: string) {
+    return { name: { en, el }, tagline: { en: taglineEn, el: taglineEl }, voice: {}, modules: {} };
+}
+
+const WIZARD_MODULE_KEYS = ['posts', 'gallery', 'qr_cards', 'playlist', 'schedule', 'stories', 'rsvp', 'wishbook', 'co_hosts', 'theme', 'he_or_she'];
+
+function storyWizardPlan(
+    code: string,
+    sortOrder: number,
+    maxMembers: number,
+    storageGb: number,
+    moduleKeys: string[],
+    prices: [number, number][],
+    eventTypeKey = 'WEDDING',
+) {
+    return {
+        id: `plan-${code}`,
+        code,
+        scope: 'EVENT',
+        name: code,
+        description: null,
+        sortOrder,
+        isDefault: false,
+        isAssignable: true,
+        isPublic: true,
+        isGiftable: false,
+        storageBytes: storageGb * 1024 ** 3,
+        maxMembers,
+        priceAmountMinor: null,
+        priceCurrency: 'EUR',
+        billingPeriod: null,
+        discountPercent: null,
+        discountLabel: null,
+        discountStartsAt: null,
+        discountEndsAt: null,
+        moduleKeys,
+        paidModules: [],
+        moduleConfigs: {},
+        eventTypeKey,
+        sharedGroupKey: null,
+        initialOptions: prices.map(([months, amount], index) => ({
+            id: `${code}-${months}`,
+            kind: 'INITIAL',
+            months,
+            priceAmountMinor: amount,
+            promoPriceAmountMinor: null,
+            sortOrder: index,
+            active: true,
+        })),
+        extensionOptions: [],
+    } as unknown as PlanTierResponseDto;
+}
+
+// Wedding plans shaped like staging's: three full plans and one lite plan, plus one baptism plan.
+export const storyWizardPlans: PlanTierResponseDto[] = [
+    storyWizardPlan(
+        'START',
+        1,
+        150,
+        15,
+        ['posts', 'gallery', 'qr_cards', 'playlist', 'schedule'],
+        [
+            [6, 7900],
+            [12, 9900],
+        ],
+    ),
+    storyWizardPlan(
+        'STORY',
+        2,
+        300,
+        25,
+        ['posts', 'gallery', 'qr_cards', 'playlist', 'schedule', 'stories', 'rsvp', 'wishbook'],
+        [
+            [6, 9900],
+            [9, 10900],
+            [12, 11900],
+        ],
+    ),
+    storyWizardPlan(
+        'SIGNATURE',
+        3,
+        2500,
+        50,
+        ['posts', 'gallery', 'qr_cards', 'playlist', 'schedule', 'stories', 'rsvp', 'wishbook', 'co_hosts'],
+        [
+            [6, 17900],
+            [12, 19900],
+        ],
+    ),
+    storyWizardPlan('QR', 4, 300, 10, ['gallery'], [[3, 4900]]),
+    storyWizardPlan(
+        'BAPTISM',
+        1,
+        120,
+        15,
+        ['posts', 'gallery', 'qr_cards', 'playlist', 'schedule', 'rsvp', 'wishbook'],
+        [
+            [6, 5900],
+            [12, 7900],
+        ],
+        'BAPTISM',
+    ),
+];
+
+// Two types, so the type step shows its cards instead of the empty state.
+export const storyWizardAppConfig = {
+    ...storyAppConfig,
+    media: {
+        presignedUrlTtlMinutes: 60,
+        estimateAvgImageBytes: 3_000_000,
+        estimateAvgVideoBytes: 40_000_000,
+        estimateImageRatio: 0.7,
+    },
+    modules: WIZARD_MODULE_KEYS.map((moduleKey, sortOrder) => ({
+        id: `module-${moduleKey}`,
+        moduleKey,
+        name: moduleKey,
+        description: null,
+        isEnabled: true,
+        sortOrder,
+    })),
+    planTiers: storyWizardPlans,
+    eventTypes: [
+        {
+            id: 'type-wedding',
+            eventTypeKey: 'WEDDING',
+            icon: 'heart',
+            accentToken: 'rose',
+            isEnabled: true,
+            sortOrder: 1,
+            imageUrl: null,
+            hasDemo: true,
+        },
+        {
+            id: 'type-baptism',
+            eventTypeKey: 'BAPTISM',
+            icon: 'baby',
+            accentToken: 'sky',
+            isEnabled: true,
+            sortOrder: 2,
+            imageUrl: null,
+            hasDemo: true,
+        },
+    ],
+    eventTypeKeys: ['WEDDING', 'BAPTISM'],
+    translations: {
+        eventTypes: {
+            WEDDING: storyEventTypeCopy('Wedding', 'Γάμος', 'Every moment of your big day', 'Κάθε στιγμή της μεγάλης μέρας'),
+            BAPTISM: storyEventTypeCopy('Baptism', 'Βάπτιση', 'A day to remember', 'Μια μέρα να θυμάστε'),
+        },
+    },
 } as unknown as AppConfigResponseDto;
 
 export function storyQrLink(overrides: Partial<QrLinkResponseDto> = {}): QrLinkResponseDto {

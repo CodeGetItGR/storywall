@@ -29,6 +29,8 @@ export interface CreateEventFormValue {
     goToDetails: () => void;
     goToTheme: () => void;
     goToOverview: () => void;
+    // Back one step (the wizard's top-left button). One history entry back when the wizard pushed it.
+    goBack: () => void;
     // The steps shown for the current type and plan (the theme step only when there is one to pick).
     steps: CreateEventStep[];
 
