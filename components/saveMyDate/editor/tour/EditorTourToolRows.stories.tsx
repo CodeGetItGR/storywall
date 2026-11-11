@@ -19,11 +19,13 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// The section tools the editor has, each with its icon.
+// The section tools the editor has, each with its icon, in the order the section's toolbar shows them.
 export const Default: Story = {
     play: async ({ canvasElement, globals }) => {
-        const sections = copyFor(globals).InvitationEditor.sections;
-        const rows = within(canvasElement);
-        for (const label of [sections.hide, sections.drag, sections.options]) await expect(rows.getByText(label)).toBeVisible();
+        const copy = copyFor(globals).InvitationEditor;
+        const rows = within(canvasElement)
+            .getAllByRole('listitem')
+            .map((row) => row.textContent);
+        await expect(rows).toEqual([copy.sections.hide, copy.sectionSettings.open, copy.sections.drag, copy.sections.options]);
     },
 };

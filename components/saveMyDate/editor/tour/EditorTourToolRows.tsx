@@ -1,18 +1,19 @@
 'use client';
 
-import { ChevronDown, Eye, GripVertical } from 'lucide-react';
+import { ChevronDown, Eye, GripVertical, Settings2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
-// The section tools step: each tool's button with its name, as the section shows them.
+// The section tools step: each tool's button with its name, in the order the section's toolbar shows them.
 export function EditorTourToolRows() {
-    const t = useTranslations('InvitationEditor.sections');
+    const t = useTranslations('InvitationEditor');
 
     return (
         <ul className="mt-3 border-t border-[#eceef1]">
-            <ToolRow icon={<Eye aria-hidden="true" />} label={t('hide')} />
-            <ToolRow icon={<GripVertical aria-hidden="true" />} label={t('drag')} />
-            <ToolRow icon={<ChevronDown aria-hidden="true" />} label={t('options')} />
+            <ToolRow icon={<Eye aria-hidden="true" />} label={t('sections.hide')} />
+            <ToolRow icon={<Settings2 aria-hidden="true" />} label={t('sectionSettings.open')} />
+            <ToolRow icon={<GripVertical aria-hidden="true" />} label={t('sections.drag')} />
+            <ToolRow icon={<ChevronDown aria-hidden="true" />} label={t('sections.options')} />
         </ul>
     );
 }
