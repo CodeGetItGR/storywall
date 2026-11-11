@@ -268,6 +268,7 @@ describe('Invitation editor: tour', { timeout: EDITOR_FLOW_TIMEOUT_MS }, () => {
 
         const tools = within(await screen.findByRole('dialog', { name: 'Section tools' }));
         expect(tools.getByText('Hide section')).toBeInTheDocument();
+        expect(tools.getByText('Section settings')).toBeInTheDocument();
         expect(tools.getByText('Drag to move')).toBeInTheDocument();
         expect(tools.getByText('Section options')).toBeInTheDocument();
 
