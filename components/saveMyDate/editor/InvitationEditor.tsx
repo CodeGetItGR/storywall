@@ -14,12 +14,21 @@ import { EditorPanelSheet } from '@/components/saveMyDate/editor/EditorPanelShee
 import { EditorPreview } from '@/components/saveMyDate/editor/EditorPreview';
 import { EditorTopBar } from '@/components/saveMyDate/editor/EditorTopBar';
 import { CanvasHandles } from '@/components/saveMyDate/editor/handles/CanvasHandles';
+import { PublishNotice } from '@/components/saveMyDate/editor/publish/PublishNotice';
+import { PublishPlanDialog } from '@/components/saveMyDate/editor/publish/PublishPlanDialog';
+import { PublishSheet } from '@/components/saveMyDate/editor/publish/PublishSheet';
+import { SectionSettings } from '@/components/saveMyDate/editor/settings/SectionSettings';
 import { InlineTextEditing } from '@/components/saveMyDate/editor/text/InlineTextEditing';
 import { TextColorSetting } from '@/components/saveMyDate/editor/TextColorSetting';
 import { ThemeAssetsPanel } from '@/components/saveMyDate/editor/ThemeAssetsPanel';
+import { EditorTour } from '@/components/saveMyDate/editor/tour/EditorTour';
 import { useInvitationEditor } from '@/hooks/useInvitationEditor';
 import type { EditableDraft } from '@/lib/invitation/drafts';
+import { inviteHostFor } from '@/lib/invitation/publication';
 import type { InvitationFontDto } from '@/lib/invitation/uploadedFonts';
+import { SITE_URL } from '@/lib/seo';
+
+const INVITE_HOST = inviteHostFor(SITE_URL);
 
 type InvitationEditorProps = {
     draft: EditableDraft;
@@ -33,7 +42,8 @@ type InvitationEditorProps = {
 // typography and settings on the right. The panels dock on wide screens and open as sheets on smaller ones.
 export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading = false }: InvitationEditorProps) {
     const t = useTranslations('InvitationEditor');
-    const editor = useInvitationEditor(draft);
+    const editor = useInvitationEditor(draft, uploadedFonts);
+    const { sectionSettings } = editor;
 
     const assets = <ThemeAssetsPanel />;
     const settings = <TextColorSetting value={editor.textColor} onChange={editor.setTextColor} />;
@@ -50,14 +60,15 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
                 onUndo={editor.undo}
                 onRedo={editor.redo}
                 onPreview={editor.openPreview}
-                onPublish={editor.publish}
+                onPublish={editor.publishing.start}
+                onTour={editor.tour.start}
             />
 
             {/* Save problem */}
             {editor.status === 'error' && <EditorNotice tone="error" message={t('notSaved')} actionLabel={t('retry')} onAction={editor.retrySave} />}
 
             {/* Publish note */}
-            {editor.isPublishNoticeShown && <EditorNotice tone="info" message={t('publishUnavailable')} />}
+            <PublishNotice notice={editor.publishing.notice} onOpen={editor.publishing.openPublished} />
 
             {/* Workspace */}
             <div className="flex min-h-0 flex-1">
@@ -70,10 +81,15 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
                             media={editor.media}
                             uploadedFonts={uploadedFonts}
                             sections={editor.sections}
+                            sectionSettings={sectionSettings.opener}
                         />
                     </CanvasHandles>
                 </InlineTextEditing>
-                <EditorDockedPanel title={t('settings')}>{settings}</EditorDockedPanel>
+                {sectionSettings.isDocked && sectionSettings.panel ? (
+                    <SectionSettings panel={sectionSettings.panel} isDocked onClose={sectionSettings.close} />
+                ) : (
+                    <EditorDockedPanel title={t('settings')}>{settings}</EditorDockedPanel>
+                )}
             </div>
 
             {/* Panels on small screens */}
@@ -85,6 +101,9 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
                 {settings}
             </EditorPanelSheet>
 
+            {/* Section settings on small screens */}
+            {!sectionSettings.isDocked && <SectionSettings panel={sectionSettings.panel} isDocked={false} onClose={sectionSettings.close} />}
+
             {/* Preview */}
             <EditorPreview
                 open={editor.isPreviewOpen}
@@ -95,9 +114,20 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
                 uploadedFonts={uploadedFonts}
             />
 
+            {/* Publishing */}
+            <PublishSheet sheet={editor.publishing.sheet} inviteHost={INVITE_HOST} />
+            <PublishPlanDialog
+                prompt={editor.publishing.planPrompt}
+                onSeePlan={editor.publishing.seePlan}
+                onClose={editor.publishing.closePlanPrompt}
+            />
+
             {/* Dialogs */}
             <EditorConflictDialog open={editor.status === 'conflict'} isReloading={isReloading} onReload={onReload} />
             <EditorLeaveDialog open={editor.leave.isConfirming} onLeave={editor.leave.leave} onStay={editor.leave.stay} />
+
+            {/* Tour */}
+            <EditorTour tour={editor.tour} />
         </div>
     );
 }

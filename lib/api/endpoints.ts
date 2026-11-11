@@ -259,6 +259,14 @@ export const endpoints = {
     invitationDrafts: {
         root: '/api/invitation-drafts',
         byId: (id: string) => `/api/invitation-drafts/${id}`,
+        images: (id: string) => `/api/invitation-drafts/${id}/images`,
+        publish: (id: string) => `/api/invitation-drafts/${id}/publish`,
+        publication: (id: string) => `/api/invitation-drafts/${id}/publication`,
+    },
+
+    // Whether an invitation link is free (guestwall-be InvitationPublicationController).
+    invitationSlugs: {
+        availability: (slug: string) => `/api/invitation-slugs/availability?slug=${encodeURIComponent(slug)}`,
     },
 
     wishbook: {

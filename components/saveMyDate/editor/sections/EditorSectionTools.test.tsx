@@ -22,7 +22,7 @@ function renderIn(node: ReactNode) {
 }
 
 function frameActions(): SectionFrameActions {
-    return { activate: vi.fn(), toggleVisible: vi.fn(), move: vi.fn(), askDelete: vi.fn(), openAddList: vi.fn() };
+    return { activate: vi.fn(), toggleVisible: vi.fn(), move: vi.fn(), askDelete: vi.fn(), openAddList: vi.fn(), openSettings: vi.fn() };
 }
 
 function renderFrame(controls: Partial<SectionControls> & Pick<SectionControls, 'section'>, actions = frameActions()) {
