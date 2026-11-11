@@ -17,7 +17,7 @@ export function CreateEventWizardFooter() {
             {action.showReviewNotes && (
                 <>
                     <EventOverviewError />
-                    <EventOverviewConsentHint />
+                    <EventOverviewConsentHint variant="chip" />
                     <IncidentPausedNote className="mb-2 text-center" />
                 </>
             )}
