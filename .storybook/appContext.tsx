@@ -48,6 +48,7 @@ function authValue(app: StoryAppContext): AuthContextValue {
         isAuthenticated: Boolean(user),
         isBootstrapping: app.isBootstrapping ?? false,
         isSessionUnavailable: app.isSessionUnavailable ?? false,
+        isRefreshingSession: false,
         register: fn(),
         login: fn(),
         oauth: fn(),
