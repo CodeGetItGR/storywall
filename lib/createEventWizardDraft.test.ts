@@ -25,6 +25,7 @@ const DRAFT: CreateEventWizardDraft = {
     themePresetId: null,
     gift: { isGift: false, details: { recipientLabel: '', giverDisplayName: '', recipientEmail: '' } },
     checkoutCode: '',
+    accountStepShown: false,
 };
 
 afterEach(() => {
@@ -34,6 +35,13 @@ afterEach(() => {
 });
 
 describe('createEventWizardDraft', () => {
+    it('keeps whether the account step was shown', () => {
+        writeCreateEventWizardDraft({ ...DRAFT, accountStepShown: true });
+        expect(readCreateEventWizardDraft()?.accountStepShown).toBe(true);
+        writeCreateEventWizardDraft({ ...DRAFT });
+        expect(readCreateEventWizardDraft()?.accountStepShown).toBe(false);
+    });
+
     it('reads back what it saved', () => {
         writeCreateEventWizardDraft(DRAFT);
         expect(readCreateEventWizardDraft()).toEqual(DRAFT);
