@@ -115,15 +115,29 @@ export function InvitationThemeDetailsForm({
                     className={adminInputClass()}
                 />
             </AdminField>
-            <AdminField label={t('eventType')} required>
-                <select name="eventType" value={details.eventType} onChange={form.handleFieldChange} className={adminInputClass()}>
-                    {form.eventTypeOptions.map((option) => (
-                        <option key={option.key} value={option.key}>
-                            {option.label}
-                        </option>
-                    ))}
-                </select>
-            </AdminField>
+            <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_8rem]">
+                <AdminField label={t('eventType')} required>
+                    <select name="eventType" value={details.eventType} onChange={form.handleFieldChange} className={adminInputClass()}>
+                        {form.eventTypeOptions.map((option) => (
+                            <option key={option.key} value={option.key}>
+                                {option.label}
+                            </option>
+                        ))}
+                    </select>
+                </AdminField>
+                <AdminField label={t('sortOrder')} required>
+                    <input
+                        name="sortOrder"
+                        type="number"
+                        inputMode="numeric"
+                        step={1}
+                        value={details.sortOrder}
+                        onChange={form.handleFieldChange}
+                        aria-invalid={Boolean(errors.sortOrder)}
+                        className={adminInputClass('font-mono')}
+                    />
+                </AdminField>
+            </div>
 
             {/* Status */}
             <div className="space-y-1.5">

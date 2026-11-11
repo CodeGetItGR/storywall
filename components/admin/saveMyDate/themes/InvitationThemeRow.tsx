@@ -3,34 +3,21 @@
 import { Eye, Pencil } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { AdminOrderArrows } from '@/components/admin/AdminOrderArrows';
-import { AdminSortableRow } from '@/components/admin/AdminSortableRow';
 import { InvitationThemeStatusPill } from '@/components/admin/saveMyDate/themes/InvitationThemeStatusPill';
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import type { AdminInvitationThemeSummaryDto } from '@/lib/adminInvitationThemes';
 import { formatDate } from '@/lib/datetime';
-import type { MoveDirection } from '@/lib/sortOrder';
 
 const DATE_FORMAT: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
 
 export function InvitationThemeRow({
     theme,
     eventTypeLabel,
-    isFirst,
-    isLast,
-    canReorder,
-    reorderHint,
-    onMoveAction,
     onEditAction,
     onPreviewAction,
 }: {
     theme: AdminInvitationThemeSummaryDto;
     eventTypeLabel: string;
-    isFirst: boolean;
-    isLast: boolean;
-    canReorder: boolean;
-    reorderHint: string | undefined;
-    onMoveAction: (themeId: string, direction: MoveDirection) => void;
     onEditAction: (themeId: string) => void;
     onPreviewAction: (themeId: string) => void;
 }) {
@@ -49,7 +36,7 @@ export function InvitationThemeRow({
     }
 
     return (
-        <AdminSortableRow id={theme.id} name={theme.name} className="border-b border-border/70 last:border-b-0 hover:bg-canvas/60">
+        <tr className="border-b border-border/70 last:border-b-0 hover:bg-canvas/60">
             {/* Theme */}
             <td className="px-3 py-2">
                 <button type="button" onClick={handleEdit} className="flex min-w-0 items-center gap-3 text-left">
@@ -79,18 +66,6 @@ export function InvitationThemeRow({
             <td className="px-3 py-2 font-mono text-[12px] text-ink-muted">{theme.slug}</td>
             {/* Last edited */}
             <td className="px-3 py-2 font-mono text-[12px] whitespace-nowrap text-ink-muted">{formatDate(locale, theme.updatedAt, DATE_FORMAT)}</td>
-            {/* Order */}
-            <td className="px-3 py-2">
-                <AdminOrderArrows
-                    id={theme.id}
-                    name={theme.name}
-                    isFirst={isFirst}
-                    isLast={isLast}
-                    disabled={!canReorder}
-                    disabledHint={reorderHint}
-                    onMoveAction={onMoveAction}
-                />
-            </td>
             {/* Actions */}
             <td className="px-3 py-2">
                 <div className="flex justify-end gap-1">
@@ -114,6 +89,6 @@ export function InvitationThemeRow({
                     </button>
                 </div>
             </td>
-        </AdminSortableRow>
+        </tr>
     );
 }

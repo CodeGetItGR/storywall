@@ -39,11 +39,6 @@ function state(overrides: Record<string, unknown> = {}) {
     catalog.current = {
         themes: [THEME],
         visibleThemes: [THEME],
-        canReorder: false,
-        reorderHint: undefined,
-        moveError: null,
-        moveTheme: vi.fn(),
-        reorderTheme: vi.fn(),
         eventTypeLabels: { WEDDING: 'Wedding' },
         eventTypeFilterOptions: [
             { value: 'ALL', label: 'filterAll' },
@@ -103,29 +98,6 @@ describe('InvitationThemesPanel', () => {
         expect(current.openDrawer).toHaveBeenCalledWith('t1');
         expect(current.openPreview).toHaveBeenCalledWith('t1');
         expect(current.openCreate).toHaveBeenCalled();
-    });
-
-    it('moves a theme with its arrows once they are on, and says why they are off', () => {
-        const second = { ...THEME, id: 't2', name: 'Γάμος 002', slug: 'gamos-002', sortOrder: 1 };
-        state({ visibleThemes: [THEME, second], canReorder: true });
-        const { unmount } = render(<InvitationThemesPanel />);
-        expect(screen.getByRole('button', { name: 'moveUp:Γάμος 001' })).toBeDisabled();
-        fireEvent.click(screen.getByRole('button', { name: 'moveDown:Γάμος 001' }));
-        expect((catalog.current as Record<string, ReturnType<typeof vi.fn>>).moveTheme).toHaveBeenCalledWith('t1', 'down');
-        expect(screen.getByRole('button', { name: 'drag:Γάμος 002' })).toBeEnabled();
-        unmount();
-
-        state({ visibleThemes: [THEME, second], canReorder: false, reorderHint: 'order.pickKind' });
-        render(<InvitationThemesPanel />);
-        expect(screen.getByRole('button', { name: 'moveDown:Γάμος 001' })).toBeDisabled();
-        expect(screen.getByRole('button', { name: 'drag:Γάμος 001' })).toBeDisabled();
-        expect(screen.getAllByTitle('order.pickKind')).toHaveLength(2);
-    });
-
-    it('shows a failed move', () => {
-        state({ moveError: new Error('offline') });
-        render(<InvitationThemesPanel />);
-        expect(screen.getByText(/^errors./)).toBeInTheDocument();
     });
 
     it('filters by event type and status', () => {

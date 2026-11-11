@@ -67,16 +67,11 @@ export function InvitationThemesPanel() {
                 {/* Table */}
                 {catalog.isLoading && <LoadingState label={t('loading')} className="justify-start p-4" />}
                 {catalog.error && <p className="p-4 text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(catalog.error)}`)}</p>}
-                {catalog.moveError && <p className="px-4 pt-3 text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(catalog.moveError)}`)}</p>}
                 {!catalog.isLoading && !catalog.error && (
                     <InvitationThemesTable
                         themes={catalog.visibleThemes}
                         hasAnyThemes={catalog.themes.length > 0}
                         eventTypeLabels={catalog.eventTypeLabels}
-                        canReorder={catalog.canReorder}
-                        reorderHint={catalog.reorderHint}
-                        onMoveAction={catalog.moveTheme}
-                        onReorderAction={catalog.reorderTheme}
                         onEditAction={catalog.openDrawer}
                         onPreviewAction={catalog.openPreview}
                     />

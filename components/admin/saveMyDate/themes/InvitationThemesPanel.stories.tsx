@@ -37,19 +37,6 @@ export const Filtered: Story = {
     },
 };
 
-// One event type picked and nothing else hidden: its themes can be dragged into a new order.
-export const OneEventType: Story = {
-    beforeEach({ msw }) {
-        msw.use(http.patch('*/api/admin/invitation-themes/:id', () => new HttpResponse(null, { status: 204 })));
-    },
-    play: async ({ canvasElement, globals }) => {
-        const canvas = within(canvasElement);
-        await canvas.findByText('gamos-001');
-        const eventType = storyEventTypes[0].name[globals.locale === 'el' ? 'el' : 'en'];
-        await userEvent.click(await canvas.findByRole('button', { name: eventType }, { timeout: 5000 }));
-    },
-};
-
 export const NoMatches: Story = {
     play: async ({ canvasElement, globals }) => {
         const canvas = within(canvasElement);

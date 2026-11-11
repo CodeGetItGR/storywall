@@ -10,6 +10,7 @@ import {
     INVITATION_THEME_EVENT_TYPES,
     type InvitationThemeSaveFailure,
     isValidThemeName,
+    nextThemeSortOrder,
     themeCreateRequest,
     themeDuplicateRequest,
     themeSaveFailure,
@@ -63,7 +64,7 @@ export function useInvitationThemeNameModal({
             if (state.mode === 'duplicate') {
                 duplicate.mutate({ id: state.sourceId, input: themeDuplicateRequest(name, takenSlugs) }, callbacks);
             } else {
-                create.mutate(themeCreateRequest({ name, eventType }, takenSlugs), callbacks);
+                create.mutate(themeCreateRequest({ name, eventType }, takenSlugs, nextThemeSortOrder(themes, eventType)), callbacks);
             }
         },
         [create, duplicate, eventType, name, onNamedAction, state, themes],

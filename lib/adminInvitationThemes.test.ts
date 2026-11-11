@@ -11,6 +11,7 @@ import {
     hasThemeDetailErrors,
     isValidThemeName,
     isValidThemeSlug,
+    nextThemeSortOrder,
     slugifyThemeName,
     themeCreateRequest,
     themeDetails,
@@ -18,7 +19,6 @@ import {
     themeDuplicateRequest,
     themeEventTypes,
     themeSaveFailure,
-    themesOfEventType,
     themeUpdateRequest,
     uniqueThemeSlug,
     validateThemeDetails,
@@ -131,15 +131,20 @@ describe('slugs', () => {
 describe('drawer details', () => {
     it('reads a theme, and notices a change', () => {
         const details = themeDetails(theme());
-        expect(details).toMatchObject({ seoTitle: '', seoDescription: 'Wedding invitation' });
+        expect(details).toMatchObject({ seoTitle: '', seoDescription: 'Wedding invitation', sortOrder: '3' });
         expect(themeDetailsChanged(details, theme())).toBe(false);
         expect(themeDetailsChanged({ ...details, status: 'ACTIVE' }, theme())).toBe(true);
     });
 
-    it('flags a bad name or slug', () => {
+    it('flags a bad name, slug or sort order', () => {
         const details = themeDetails(theme());
         expect(hasThemeDetailErrors(validateThemeDetails(details))).toBe(false);
-        expect(validateThemeDetails({ ...details, name: '', slug: 'Bad slug' })).toEqual({ name: true, slug: true });
+        expect(validateThemeDetails({ ...details, name: '', slug: 'Bad slug', sortOrder: '1.5' })).toEqual({
+            name: true,
+            slug: true,
+            sortOrder: true,
+        });
+        expect(validateThemeDetails({ ...details, sortOrder: '99999999999' })).toEqual({ sortOrder: true });
     });
 
     it('lets the slug follow the name only while it is the name’s slug', () => {
@@ -149,14 +154,15 @@ describe('drawer details', () => {
         expect(followNameSlug(details, '!!!')).toBe('gamos-001');
     });
 
-    it('sends every field back on save, with the loaded revision, but no sort order', () => {
+    it('sends every field back on save, with the loaded revision', () => {
         const loaded = theme();
-        const request = themeUpdateRequest(loaded, { ...themeDetails(loaded), name: ' New ', seoTitle: '  ', status: 'HIDDEN' });
+        const request = themeUpdateRequest(loaded, { ...themeDetails(loaded), name: ' New ', seoTitle: '  ', sortOrder: '7', status: 'HIDDEN' });
         expect(request).toMatchObject({
             name: 'New',
             status: 'HIDDEN',
             seoTitle: null,
             seoDescription: 'Wedding invitation',
+            sortOrder: 7,
             revision: 4,
             code: 'W001',
             description: 'Old description',
@@ -164,8 +170,6 @@ describe('drawer details', () => {
             productPhotos: [{ mediaId: 'p1', alt: 'Photo' }],
         });
         expect(request.design).toBe(loaded.design);
-        // A move in the list since the theme loaded must stay.
-        expect(request).not.toHaveProperty('sortOrder');
     });
 
     it('tells a taken slug and a stale save from other failures', () => {
@@ -178,10 +182,8 @@ describe('drawer details', () => {
 
 describe('new themes', () => {
     it('makes a draft with no images, a unique slug and the event type’s sections', () => {
-        const request = themeCreateRequest({ name: ' Γάμος 001 ', eventType: 'BAPTISM' }, ['gamos-001']);
-        expect(request).toMatchObject({ status: 'DRAFT', name: 'Γάμος 001', slug: 'gamos-001-2', eventType: 'BAPTISM', productPhotos: [] });
-        // The backend puts it last among its event type.
-        expect(request).not.toHaveProperty('sortOrder');
+        const request = themeCreateRequest({ name: ' Γάμος 001 ', eventType: 'BAPTISM' }, ['gamos-001'], 5);
+        expect(request).toMatchObject({ status: 'DRAFT', name: 'Γάμος 001', slug: 'gamos-001-2', eventType: 'BAPTISM', sortOrder: 5, productPhotos: [] });
         expect(themeDesignSchema.parse(request.design)).toBeTruthy();
         const document = request.document as { themeId: string; sections: { type: string; id: string }[] };
         expect(document.themeId).toBe('gamos-001-2');
@@ -194,10 +196,10 @@ describe('new themes', () => {
         expect(themeDuplicateRequest(' Γάμος 001 ', ['gamos-001'])).toEqual({ name: 'Γάμος 001', slug: 'gamos-001-2' });
     });
 
-    it('picks one event type’s themes, in their order', () => {
-        const themes = [summary({ id: 'b1', eventType: 'BAPTISM' }), summary({ id: 'w1' }), summary({ id: 'w2', sortOrder: 1 })];
-        expect(themesOfEventType(themes, 'WEDDING').map((item) => item.id)).toEqual(['w1', 'w2']);
-        expect(themesOfEventType(themes, 'BIRTHDAY')).toEqual([]);
+    it('puts a new theme last among its event type', () => {
+        const themes = [summary({ sortOrder: 4 }), summary({ sortOrder: 9, eventType: 'BAPTISM' })];
+        expect(nextThemeSortOrder(themes, 'WEDDING')).toBe(5);
+        expect(nextThemeSortOrder(themes, 'BIRTHDAY')).toBe(0);
     });
 });
 

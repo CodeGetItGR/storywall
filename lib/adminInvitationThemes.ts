@@ -21,6 +21,8 @@ export const THEME_SLUG_MAX = 120;
 export const THEME_SEO_TITLE_MAX = 120;
 export const THEME_SEO_DESCRIPTION_MAX = 320;
 const THEME_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+// Postgres int; the backend takes any.
+const SORT_ORDER_LIMIT = 2_147_483_647;
 
 // Not in ERROR_CODES: there every code needs a generic message, and these two are only
 // ever shown by the theme drawer and modal, in their own words.
@@ -88,8 +90,7 @@ export type AdminInvitationThemeRequestDto = {
     ogImageAssetId?: string | null;
     cardThumbAssetId?: string | null;
     productPhotos: { mediaId: string; alt: string }[];
-    // Left out, a new theme goes last in its event type and a saved one keeps its place.
-    sortOrder?: number;
+    sortOrder: number;
     design: Record<string, unknown>;
     document: Record<string, unknown>;
     revision?: number;
@@ -181,9 +182,11 @@ export type InvitationThemeDetails = {
     slug: string;
     seoTitle: string;
     seoDescription: string;
+    // Kept as typed, so clearing the field to type a new number works.
+    sortOrder: string;
 };
 
-export type InvitationThemeDetailsErrors = Partial<Record<'name' | 'slug', true>>;
+export type InvitationThemeDetailsErrors = Partial<Record<'name' | 'slug' | 'sortOrder', true>>;
 
 export function themeDetails(theme: AdminInvitationThemeDto): InvitationThemeDetails {
     return {
@@ -193,13 +196,22 @@ export function themeDetails(theme: AdminInvitationThemeDto): InvitationThemeDet
         slug: theme.slug,
         seoTitle: theme.seoTitle ?? '',
         seoDescription: theme.seoDescription ?? '',
+        sortOrder: String(theme.sortOrder),
     };
+}
+
+function parseSortOrder(value: string): number | null {
+    const trimmed = value.trim();
+    if (!/^-?\d+$/.test(trimmed)) return null;
+    const number = Number(trimmed);
+    return Math.abs(number) <= SORT_ORDER_LIMIT ? number : null;
 }
 
 export function validateThemeDetails(details: InvitationThemeDetails): InvitationThemeDetailsErrors {
     const errors: InvitationThemeDetailsErrors = {};
     if (!isValidThemeName(details.name)) errors.name = true;
     if (!isValidThemeSlug(details.slug)) errors.slug = true;
+    if (parseSortOrder(details.sortOrder) === null) errors.sortOrder = true;
     return errors;
 }
 
@@ -223,8 +235,7 @@ function blankToNull(value: string): string | null {
     return trimmed ? trimmed : null;
 }
 
-// A PUT replaces every field: the drawer's details over the theme as it was loaded. It sends no
-// sort order, so a move in the list since then stays.
+// A PUT replaces every field: the drawer's details over the theme as it was loaded.
 export function themeUpdateRequest(theme: AdminInvitationThemeDto, details: InvitationThemeDetails): AdminInvitationThemeRequestDto {
     return {
         eventType: details.eventType,
@@ -239,6 +250,7 @@ export function themeUpdateRequest(theme: AdminInvitationThemeDto, details: Invi
         ogImageAssetId: theme.ogImageAssetId,
         cardThumbAssetId: theme.cardThumbAssetId,
         productPhotos: theme.productPhotos,
+        sortOrder: parseSortOrder(details.sortOrder) ?? theme.sortOrder,
         design: theme.design,
         document: theme.document,
         revision: theme.revision,
@@ -288,6 +300,7 @@ export function blankThemeDocument(eventType: string, slug: string, newId: () =>
 export function themeCreateRequest(
     { name, eventType }: { name: string; eventType: string },
     takenSlugs: Iterable<string>,
+    sortOrder: number,
 ): AdminInvitationThemeRequestDto {
     const slug = uniqueThemeSlug(slugifyThemeName(name), takenSlugs);
     return {
@@ -296,6 +309,7 @@ export function themeCreateRequest(
         name: name.trim(),
         slug,
         productPhotos: [],
+        sortOrder,
         design: BLANK_THEME_DESIGN as unknown as Record<string, unknown>,
         document: blankThemeDocument(eventType, slug) as unknown as Record<string, unknown>,
     };
@@ -305,9 +319,10 @@ export function themeDuplicateRequest(name: string, takenSlugs: Iterable<string>
     return { name: name.trim(), slug: uniqueThemeSlug(slugifyThemeName(name), takenSlugs) };
 }
 
-// The themes of one event type, in their order: the list arrives sorted by event type, then sort order.
-export function themesOfEventType(themes: AdminInvitationThemeSummaryDto[], eventType: string): AdminInvitationThemeSummaryDto[] {
-    return themes.filter((theme) => theme.eventType === eventType);
+// One past the highest sort order of the event type's themes, so a new one lands last.
+export function nextThemeSortOrder(themes: AdminInvitationThemeSummaryDto[], eventType: string): number {
+    const orders = themes.filter((theme) => theme.eventType === eventType).map((theme) => theme.sortOrder);
+    return orders.length ? Math.max(...orders) + 1 : 0;
 }
 
 // ---- Preview ----
