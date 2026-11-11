@@ -6473,6 +6473,10 @@
             "name": "QR cards",
             "description": "Designed cards for printing your QR codes."
         },
+        "save_my_date": {
+            "name": "Online invitation",
+            "description": "An online invitation with its own link."
+        },
         "posts": {
             "name": "Posts",
             "description": "Guests can share messages, photos, reactions, and comments on the event wall."

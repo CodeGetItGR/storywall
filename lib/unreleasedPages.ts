@@ -4,9 +4,13 @@ export const UNRELEASED_PAGES_LAUNCHED = true;
 
 type DeploymentEnv = { VERCEL_ENV?: string; NEXT_PUBLIC_APP_ENV?: string };
 
-// Read by name so Next.js can inline the public one at build time.
+// Read by name so Next.js can inline the public ones at build time. Browser code has no VERCEL_ENV,
+// so it reads the copy next.config.mjs inlines.
 function currentEnv(): DeploymentEnv {
-    return { VERCEL_ENV: process.env.VERCEL_ENV, NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV };
+    return {
+        VERCEL_ENV: process.env.VERCEL_ENV || process.env.NEXT_PUBLIC_VERCEL_ENV,
+        NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV,
+    };
 }
 
 // Staging may run as its own production deployment, so its app env counts as well.
