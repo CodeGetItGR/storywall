@@ -46,7 +46,7 @@ function CreateEventDialogBody({ onClose }: { onClose: () => void }) {
                         type="button"
                         aria-label={t('close')}
                         onClick={onClose}
-                        className="flex size-11 shrink-0 items-center justify-center rounded-full text-ink hover:bg-surface-muted"
+                        className="flex size-11 shrink-0 items-center justify-center rounded-full bg-white/90 text-ink"
                     >
                         <X className="size-5" aria-hidden="true" />
                     </button>
