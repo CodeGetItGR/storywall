@@ -19,9 +19,11 @@ type EventDetailsStepProps = {
     // The coverage hint under the date ("Coverage starts…", "Photos kept until…"). Errors always show.
     showScheduleHint?: boolean;
     addressPlaceholder?: string;
+    // A line under the venue fields (the wizard's reception note).
+    locationNote?: ReactNode;
 };
 
-export function EventDetailsStep({ timezoneField, showScheduleHint = true, addressPlaceholder }: EventDetailsStepProps = {}) {
+export function EventDetailsStep({ timezoneField, showScheduleHint = true, addressPlaceholder, locationNote }: EventDetailsStepProps = {}) {
     const t = useTranslations('CreateEventPage');
     const locale = useLocale();
     const {
@@ -128,6 +130,7 @@ export function EventDetailsStep({ timezoneField, showScheduleHint = true, addre
                         {locationAddressError && <span className="text-xs text-rose-500">{locationAddressError}</span>}
                     </FormFieldLabel>
                 </div>
+                {locationNote}
                 <FormFieldLabel label={t('fields.mapsUrl')} optional>
                     <input
                         type="url"

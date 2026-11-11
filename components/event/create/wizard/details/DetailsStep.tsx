@@ -10,7 +10,7 @@ import { useCreateEventWizardDetails } from '@/hooks/useCreateEventWizardDetails
 
 export function DetailsStep() {
     const t = useTranslations('CreateEventPage.wizard.details');
-    const { preview, timeZone } = useCreateEventWizardDetails();
+    const { preview, showReceptionNote, timeZone } = useCreateEventWizardDetails();
 
     return (
         <div className="flex flex-col gap-5">
@@ -27,6 +27,7 @@ export function DetailsStep() {
                 showScheduleHint={false}
                 addressPlaceholder={t('addressPlaceholder')}
                 timezoneField={<DetailsTimeZone {...timeZone} />}
+                locationNote={showReceptionNote && <p className="-mt-2 text-[13px] text-[#6f6257]">{t('receptionLater')}</p>}
             />
         </div>
     );

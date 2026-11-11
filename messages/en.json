@@ -1063,7 +1063,8 @@
                 "heading": "Tell us about the big day",
                 "preview": "Preview",
                 "timeZone": "Time zone: {zone}",
-                "addressPlaceholder": "e.g. 123 Kifisias Ave, Athens"
+                "addressPlaceholder": "e.g. 123 Kifisias Ave, Athens",
+                "receptionLater": "You can add the reception venue later."
             },
             "theme": {
                 "heading": "Choose a look",

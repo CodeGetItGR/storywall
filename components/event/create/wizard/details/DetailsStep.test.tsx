@@ -15,9 +15,10 @@ vi.mock('@/providers/createEvent/CreateEventFormContext', () => ({ useCreateEven
 vi.mock('@/hooks/useLocalizedAppEventTypeCopy', () => ({ useLocalizedAppEventTypeCopy: () => () => ({ name: 'Wedding', tagline: '' }) }));
 vi.mock('@/hooks/useEventTypeVoice', () => ({ useEventTypeVoice: () => ({ titlePlaceholder: 'Maria & Nikos' }) }));
 vi.mock('@/components/event/create/EventDetailsStep', () => ({
-    EventDetailsStep: ({ timezoneField, showScheduleHint, addressPlaceholder }: Record<string, unknown>) => (
+    EventDetailsStep: ({ timezoneField, showScheduleHint, addressPlaceholder, locationNote }: Record<string, unknown>) => (
         <div data-testid="fields" data-hint={String(showScheduleHint)} data-placeholder={String(addressPlaceholder)}>
             {timezoneField as ReactNode}
+            {locationNote as ReactNode}
         </div>
     ),
 }));
@@ -73,6 +74,19 @@ describe('DetailsStep (wizard)', () => {
         expect(screen.queryByLabelText('tz-field')).not.toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: 'CreateEventPage.selection.change' }));
         expect(screen.getByLabelText('tz-field')).toBeInTheDocument();
+    });
+
+    it('notes that the reception can be added later for weddings and baptisms', () => {
+        setup();
+        expect(screen.getByText('CreateEventPage.wizard.details.receptionLater')).toBeInTheDocument();
+        cleanup();
+        setup({ selectedEventType: 'BAPTISM', eventTypes: [{ eventTypeKey: 'BAPTISM', imageUrl: null }] });
+        expect(screen.getByText('CreateEventPage.wizard.details.receptionLater')).toBeInTheDocument();
+    });
+
+    it('has no reception note for other types', () => {
+        setup({ selectedEventType: 'BIRTHDAY', eventTypes: [{ eventTypeKey: 'BIRTHDAY', imageUrl: null }] });
+        expect(screen.queryByText('CreateEventPage.wizard.details.receptionLater')).not.toBeInTheDocument();
     });
 
     it('opens the time zone field when it has an error', () => {

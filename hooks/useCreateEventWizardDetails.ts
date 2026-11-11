@@ -5,9 +5,13 @@ import { useState } from 'react';
 
 import { useEventTypeVoice } from '@/hooks/useEventTypeVoice';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
+import type { EventTypeConvention } from '@/lib/api/types';
 import { createEventTypePhoto } from '@/lib/createEventCatalog';
 import { joinLine, previewWhen } from '@/lib/createEventWizardReview';
 import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
+
+// The fields ask for the ceremony; these types usually have a reception too, added later.
+const RECEPTION_NOTE_TYPES: EventTypeConvention[] = ['WEDDING', 'BAPTISM'];
 
 // The details step as plain values: the live preview card and the one-line time zone.
 export function useCreateEventWizardDetails() {
@@ -28,6 +32,7 @@ export function useCreateEventWizardDetails() {
             titleIsPlaceholder: !typedTitle,
             line: joinLine([previewWhen(locale, form.startAt), form.locationName]),
         },
+        showReceptionNote: RECEPTION_NOTE_TYPES.includes(form.selectedEventType),
         timeZone: {
             zone: form.timezone,
             // An error keeps the field open so it can be fixed.
