@@ -4,13 +4,17 @@ import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 
 import { focusFirstUncheckedBox } from '@/lib/createEventSteps';
+import { trackFlow } from '@/lib/flowTracking';
 import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 
 /** Tells the host why Pay is disabled and takes them to the unticked box. */
 export function EventOverviewConsentHint() {
     const t = useTranslations('CreateEventPage');
     const { formId, consentSatisfied, error } = useCreateEventForm();
-    const onShowBoxes = useCallback(() => focusFirstUncheckedBox(formId), [formId]);
+    const onShowBoxes = useCallback(() => {
+        trackFlow({ name: 'Consent Hint', from: 'wizard' });
+        focusFirstUncheckedBox(formId);
+    }, [formId]);
 
     // The submit error takes the slot when both apply.
     if (consentSatisfied || error) return null;

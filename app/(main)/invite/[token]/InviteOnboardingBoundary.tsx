@@ -13,9 +13,11 @@ import { AppLink } from '@/components/ui/AppLink';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
 import { useAcceptEventInvitation, useEventInvitationPreview } from '@/hooks/useEventInvitations';
+import { useFlowEvent } from '@/hooks/useFlowEvent';
 import { useInviteMemberRedirect } from '@/hooks/useInviteMemberRedirect';
 import { ApiError } from '@/lib/api/client';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
+import { inviteState, trackFlow } from '@/lib/flowTracking';
 import { inviteGiftFraming } from '@/lib/gift';
 import { routes } from '@/lib/routes';
 
@@ -34,11 +36,14 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
     const isOpeningMemberFeed = useInviteMemberRedirect(preview?.vendorType ? null : preview?.eventId);
 
     const isLoading = isPreviewLoading || isBootstrapping || isOpeningMemberFeed;
+    const isMissingInvite = error instanceof ApiError && error.status === 404;
+    useFlowEvent(isLoading ? null : { name: 'Invite Page', state: inviteState(preview, isMissingInvite), signedIn: isAuthenticated });
 
     async function handleAcceptAsExistingUser() {
         setAcceptError(null);
         try {
             const member = await acceptInvitation.mutateAsync(token);
+            trackFlow({ name: 'Invite Joined' });
             router.replace(routes.events.feed(member.eventId));
         } catch (err) {
             // 409/5003 (5001 before the backend named it): already a member — someone reopening the
@@ -52,8 +57,16 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
         }
     }
 
+    function handleChooseLogin() {
+        trackFlow({ name: 'Invite Choice', choice: 'login' });
+    }
+
+    function handleChooseRegister() {
+        trackFlow({ name: 'Invite Choice', choice: 'register' });
+    }
+
     function renderTerminalState() {
-        if ((error instanceof ApiError && error.status === 404) || !preview) {
+        if (isMissingInvite || !preview) {
             return <InviteTerminalState title={t('invalidInvite.title')} description={t('invalidInvite.description')} />;
         }
 
@@ -131,6 +144,7 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
                                     <>
                                         <AppLink
                                             href={loginHref}
+                                            onClick={handleChooseLogin}
                                             className="flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
                                         >
                                             {t('haveAccount')}
@@ -138,6 +152,7 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
                                         </AppLink>
                                         <AppLink
                                             href={registerHref}
+                                            onClick={handleChooseRegister}
                                             className="flex w-full items-center justify-center gap-2 rounded-full bg-surface-muted py-3 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted/70"
                                         >
                                             {t('createAccount')}

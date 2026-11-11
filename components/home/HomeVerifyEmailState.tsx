@@ -3,12 +3,14 @@
 import { useTranslations } from 'next-intl';
 
 import { VerifyEmailArt } from '@/components/home/HomeEmptyArt';
+import { useFlowEvent } from '@/hooks/useFlowEvent';
 import { useResendVerificationEmail } from '@/hooks/useResendVerificationEmail';
 
 // Shown instead of the empty state while the account's email isn't confirmed yet.
 export function HomeVerifyEmailState() {
     const t = useTranslations('EmailVerificationBanner');
     const { state: resendState, resend: onResend } = useResendVerificationEmail();
+    useFlowEvent({ name: 'Verify Wall' });
 
     return (
         <div className="flex min-h-[35vh] flex-col items-center justify-center gap-6 px-4 text-center">
