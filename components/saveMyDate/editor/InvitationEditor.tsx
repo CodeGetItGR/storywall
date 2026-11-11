@@ -13,6 +13,7 @@ import { EditorPanelBar } from '@/components/saveMyDate/editor/EditorPanelBar';
 import { EditorPanelSheet } from '@/components/saveMyDate/editor/EditorPanelSheet';
 import { EditorPreview } from '@/components/saveMyDate/editor/EditorPreview';
 import { EditorTopBar } from '@/components/saveMyDate/editor/EditorTopBar';
+import { CanvasHandles } from '@/components/saveMyDate/editor/handles/CanvasHandles';
 import { InlineTextEditing } from '@/components/saveMyDate/editor/text/InlineTextEditing';
 import { TextColorSetting } from '@/components/saveMyDate/editor/TextColorSetting';
 import { ThemeAssetsPanel } from '@/components/saveMyDate/editor/ThemeAssetsPanel';
@@ -62,13 +63,15 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
             <div className="flex min-h-0 flex-1">
                 <EditorDockedPanel title={t('themeAssets')}>{assets}</EditorDockedPanel>
                 <InlineTextEditing store={editor.store} document={editor.document} theme={editor.theme} uploadedFonts={uploadedFonts}>
-                    <EditorCanvas
-                        document={editor.document}
-                        theme={editor.theme}
-                        media={editor.media}
-                        uploadedFonts={uploadedFonts}
-                        sections={editor.sections}
-                    />
+                    <CanvasHandles store={editor.store}>
+                        <EditorCanvas
+                            document={editor.document}
+                            theme={editor.theme}
+                            media={editor.media}
+                            uploadedFonts={uploadedFonts}
+                            sections={editor.sections}
+                        />
+                    </CanvasHandles>
                 </InlineTextEditing>
                 <EditorDockedPanel title={t('settings')}>{settings}</EditorDockedPanel>
             </div>

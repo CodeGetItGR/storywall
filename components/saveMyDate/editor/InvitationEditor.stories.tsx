@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { expect, fireEvent, fn, userEvent, waitFor, within } from 'storybook/test';
 
+import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
 import { conflictHandlers, draftHandlers, failingSaveHandlers, storyDraft, withEditorScreen } from '@/.storybook/editor';
+import { storyUser } from '@/.storybook/fixtures';
 import { waitForOpen } from '@/.storybook/waitForOpen';
 import { InvitationEditor } from '@/components/saveMyDate/editor/InvitationEditor';
 
@@ -134,5 +136,32 @@ export const DeleteSection: Story = {
         await userEvent.click(within(section).getByRole('button', { name: copy.sections.options }));
         await userEvent.click(within(await waitForOpen('menu')).getByRole('menuitem', { name: copy.sections.delete }));
         await waitForOpen('dialog');
+    },
+};
+
+// A section's height bar drags it taller, in one undo step.
+export const SectionHeight: Story = {
+    tags: ['visual-desktop-only'],
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        const section = await tapSection(canvasElement, copy.sectionNames.dressCode);
+        const bar = within(section).getByRole('slider', { name: copy.handles.sectionHeight });
+        const rect = bar.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+        fireEvent.pointerDown(bar, { pointerId: 1, clientX: x, clientY: y });
+        fireEvent.pointerMove(bar, { pointerId: 1, clientX: x, clientY: y + 80 });
+        fireEvent.pointerUp(bar, { pointerId: 1, clientX: x, clientY: y + 80 });
+        await waitFor(() => expect(within(canvasElement).getByRole('button', { name: copy.undo })).toBeEnabled());
+    },
+};
+
+// An admin also gets the footer's height, image and decoration sizes and the custom section arrows.
+export const Admin: Story = {
+    decorators: [withAppContext],
+    parameters: { app: { user: { ...storyUser, role: 'ADMIN' } } },
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor.handles;
+        await expect(within(canvasElement).getByText(copy.twoColumns)).toBeInTheDocument();
     },
 };

@@ -3,6 +3,8 @@
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
+import { useCanvasHandles } from '@/components/saveMyDate/editor/handles/CanvasHandlesContext';
+import { SectionHeightHandle } from '@/components/saveMyDate/editor/handles/SectionHeightHandle';
 import { SectionAddButton } from '@/components/saveMyDate/editor/sections/SectionAddButton';
 import { SectionToolbar } from '@/components/saveMyDate/editor/sections/SectionToolbar';
 import { type SectionFrameActions, useSectionFrameHandlers } from '@/hooks/useSectionFrameHandlers';
@@ -27,6 +29,8 @@ export function EditorSectionFrame({ controls, name, isActive, actions, children
     const { setNodeRef, style, isDragging, drag } = useSectionSortable(section.id, name, section.locked);
     const { onActivate, onToggleVisible, onMoveUp, onMoveDown, onDelete, onAddBefore, onAddAfter } = useSectionFrameHandlers(section.id, actions);
     const showsTools = isActive || isDragging;
+    const handles = useCanvasHandles();
+    const hasHeightHandle = handles !== null && (section.type !== 'footer' || handles.mode === 'admin');
 
     return (
         <div
@@ -76,6 +80,9 @@ export function EditorSectionFrame({ controls, name, isActive, actions, children
 
             {/* Add below */}
             {canAddAfter && <SectionAddButton placement="bottom" onClick={onAddAfter} />}
+
+            {/* Height */}
+            {hasHeightHandle && <SectionHeightHandle section={section} edit={handles.edit} />}
         </div>
     );
 }
