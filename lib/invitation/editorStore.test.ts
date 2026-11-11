@@ -97,6 +97,22 @@ describe('createInvitationEditorStore', () => {
         expect(store.getState().document.overrides.textColor).toBe('#111111');
     });
 
+    it('keeps a slow drag as one step, however long it takes', () => {
+        const original = previewDocument();
+        const store = createInvitationEditorStore(original);
+        store.getState().edit(setColor('#111111'), 'drag-1', { gesture: true });
+        vi.advanceTimersByTime(EDITOR_MERGE_WINDOW_MS * 5);
+        store.getState().edit(setColor('#222222'), 'drag-1', { gesture: true });
+        expect(store.getState().past).toHaveLength(1);
+
+        // The next drag is a step of its own.
+        store.getState().edit(setColor('#333333'), 'drag-2', { gesture: true });
+        expect(store.getState().past).toHaveLength(2);
+        store.getState().undo();
+        store.getState().undo();
+        expect(store.getState().document.overrides).toEqual(original.overrides);
+    });
+
     it('never merges into a step that was undone and redone', () => {
         const store = createInvitationEditorStore(previewDocument());
         store.getState().edit(setColor('#111111'), 'textColor');

@@ -6,6 +6,7 @@ import { Fragment, type ReactNode } from 'react';
 import { InvitationMotionRoot } from '@/components/saveMyDate/invitation/effects/InvitationMotionRoot';
 import { INVITATION_FONT_CLASSES } from '@/components/saveMyDate/invitation/invitationFonts';
 import { InvitationSection } from '@/components/saveMyDate/invitation/InvitationSection';
+import type { CanvasTools } from '@/lib/invitation/canvasTools';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { invitationLanguage } from '@/lib/invitation/labels';
 import { buildRenderContext, type MediaResolver, themeCssVars, type TypographyPreset } from '@/lib/invitation/render';
@@ -31,6 +32,8 @@ type InvitationRendererProps = {
     wrapSection?: (section: Section, index: number, content: ReactNode) => ReactNode;
     // The editor's drawing of each text, so it can be typed in place.
     renderText?: TextRenderer;
+    // The editor's handles and arrows inside the invitation.
+    canvasTools?: CanvasTools;
 };
 
 // The invitation as guests see it. The staging preview, the editor canvas and
@@ -45,8 +48,9 @@ export function InvitationRenderer({
     showHidden = false,
     wrapSection,
     renderText,
+    canvasTools,
 }: InvitationRendererProps) {
-    const ctx = { ...buildRenderContext(document, theme, media, hostPreset, sendRsvp), renderText };
+    const ctx = { ...buildRenderContext(document, theme, media, hostPreset, sendRsvp), renderText, canvasTools };
     const fontFaces = uploadedFontFaceCss(uploadedFonts, [document, theme, hostPreset]);
 
     return (

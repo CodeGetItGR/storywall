@@ -10143,6 +10143,20 @@
         "delete": "Delete",
         "emptyText": "Empty text",
         "textBox": "Text",
+        "handles": {
+            "sectionHeight": "Drag to change the height. Double-tap to reset.",
+            "spacerHeight": "Drag to change the space",
+            "resize": "Drag to resize",
+            "spaceAbove": "Drag to change the space above the text",
+            "spaceBelow": "Drag to change the space below the text",
+            "itemBack": "One place back",
+            "itemForward": "One place forward",
+            "twoColumns": "2 columns",
+            "toRightColumn": "Move one item to the right column",
+            "toLeftColumn": "Move one item to the left column",
+            "pixels": "{value} px",
+            "percent": "{value}%"
+        },
         "sections": {
             "add": "Add section",
             "nothingToAdd": "There are no more sections to add.",

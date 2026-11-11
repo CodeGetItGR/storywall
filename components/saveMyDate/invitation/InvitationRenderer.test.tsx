@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { stubIntersectionObserver } from '@/components/saveMyDate/invitation/effects/__fixtures__/fakeIntersectionObserver';
 import { InvitationRenderer } from '@/components/saveMyDate/invitation/InvitationRenderer';
+import type { CanvasTools } from '@/lib/invitation/canvasTools';
 import type { DateLanguage } from '@/lib/invitation/dateDisplay';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { INVITATION_LABELS } from '@/lib/invitation/labels';
@@ -253,5 +254,70 @@ describe('InvitationRenderer in the editor', () => {
         const wrapped = Array.from(container.querySelectorAll('[data-wrapped]'));
         expect(wrapped.map((element) => element.getAttribute('data-wrapped'))).toEqual(sections.map((section) => section.id));
         expect(wrapped.map((element) => Number(element.getAttribute('data-index')))).toEqual(sections.map((_, index) => index));
+    });
+});
+
+// Marks where the editor's handles and arrows would go.
+const markTools: CanvasTools = {
+    element: (element) => <span data-tool-element={element.id} />,
+    decoration: (sectionId) => <span data-tool-decoration={sectionId} />,
+    customItem: (sectionId, _elements, item, content) => (
+        <div data-tool-item={item.id} data-tool-section={sectionId}>
+            {content}
+        </div>
+    ),
+    columnBreak: (sectionId, _elements, breakId) => <span data-tool-break={breakId} data-tool-section={sectionId} />,
+    savedHeights: true,
+};
+
+function renderWithTools(document: InvitationDocument, canvasTools?: CanvasTools) {
+    return render(
+        <NextIntlClientProvider locale="el" messages={el} timeZone="Europe/Athens">
+            <InvitationRenderer document={document} theme={SAMPLE_THEME} media={media} canvasTools={canvasTools} />
+        </NextIntlClientProvider>,
+    );
+}
+
+const marked = (container: HTMLElement, attribute: string) =>
+    Array.from(container.querySelectorAll(`[${attribute}]`)).map((element) => element.getAttribute(attribute));
+
+const sectionNode = (container: HTMLElement, id: string) => container.querySelector<HTMLElement>(`[data-section-id="${id}"]`)!;
+
+describe('InvitationRenderer canvas tools', () => {
+    const saved = { minHeight: 500, paddingY: 60 };
+    const withSavedHeights: InvitationDocument = {
+        ...SAMPLE_DOCUMENT,
+        sections: SAMPLE_DOCUMENT.sections.map((section) =>
+            section.type === 'blank' || section.type === 'footer' ? { ...section, style: { ...section.style, ...saved } } : section,
+        ),
+    };
+    const blank = SAMPLE_SECTIONS.blank;
+
+    it('leaves a place for each handle and arrow', () => {
+        const { container } = renderWithTools(SAMPLE_DOCUMENT, markTools);
+        expect(marked(container, 'data-tool-element')).toEqual(expect.arrayContaining(['e-b-img', 'e-b-gap', 'e-frame']));
+        expect(marked(container, 'data-tool-decoration')).toEqual([SAMPLE_SECTIONS.parentsSimple.id]);
+        // Every custom section item but the break gets its arrows, in order.
+        expect(marked(container, 'data-tool-item')).toEqual(
+            blank.elements.filter((element) => element.kind !== 'columnBreak').map((element) => element.id),
+        );
+        expect(marked(container, 'data-tool-break')).toEqual(['e-b-break']);
+        expect(container.querySelector('[data-tool-break]')).toHaveAttribute('data-tool-section', blank.id);
+    });
+
+    it('shows every saved height in the editor', () => {
+        const { container } = renderWithTools(withSavedHeights, markTools);
+        expect(sectionNode(container, blank.id)).toHaveStyle({ minHeight: '500px', paddingTop: '60px', paddingBottom: '60px' });
+    });
+
+    it('gives guests no tools, and saved heights only where they are part of the design', () => {
+        const { container } = renderWithTools(withSavedHeights);
+        for (const attribute of ['data-tool-element', 'data-tool-decoration', 'data-tool-item', 'data-tool-break']) {
+            expect(marked(container, attribute)).toEqual([]);
+        }
+        expect(sectionNode(container, blank.id).style.minHeight).toBe('');
+        expect(sectionNode(container, blank.id).style.paddingTop).toBe('');
+        expect(sectionNode(container, SAMPLE_SECTIONS.footer.id)).toHaveStyle({ minHeight: '500px' });
+        expect(sectionNode(container, SAMPLE_SECTIONS.photo.id)).toHaveStyle({ minHeight: '420px' });
     });
 });

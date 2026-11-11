@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 
 import { activeEffect, revealsBackground, type SectionEffect } from '@/lib/invitation/backgroundEffects';
+import type { CanvasTools } from '@/lib/invitation/canvasTools';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationElement } from '@/lib/invitation/elements';
 import { INVITATION_LABELS, type InvitationLabels, invitationLanguage } from '@/lib/invitation/labels';
@@ -41,6 +42,8 @@ export type RenderContext = {
     sendRsvp?: RsvpSender;
     // The editor draws every text so it can be typed in; guests get plain text.
     renderText?: TextRenderer;
+    // The editor's handles and arrows inside the invitation.
+    canvasTools?: CanvasTools;
 };
 
 const DEFAULT_TEXT_COLOR = '#2f2b2d';
@@ -298,7 +301,7 @@ export function sectionShell(section: InvitationSection, index: number, ctx: Ren
     if (section.type === 'countdown') style['--section-side-pad-mobile'] = '4px';
     // The saved height and padding are editor aids: guests only see them where
     // they are part of the composition (old wedartStripEditingUI).
-    if (KEEPS_SAVED_HEIGHT.has(section.type)) {
+    if (KEEPS_SAVED_HEIGHT.has(section.type) || ctx.canvasTools?.savedHeights) {
         if (minHeight) style.minHeight = `${minHeight}px`;
         if (paddingY !== undefined) {
             style.paddingTop = `${paddingY}px`;
