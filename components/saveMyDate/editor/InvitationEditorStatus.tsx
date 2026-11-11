@@ -17,10 +17,10 @@ export function InvitationEditorLoading() {
     );
 }
 
-type InvitationEditorErrorProps = { onRetry: () => void };
+type InvitationEditorErrorProps = { onRetry: () => void; subject?: 'invitation' | 'theme' };
 
-// The draft couldn't be loaded or started.
-export function InvitationEditorError({ onRetry }: InvitationEditorErrorProps) {
+// The draft (or an admin's theme) couldn't be loaded or started.
+export function InvitationEditorError({ onRetry, subject = 'invitation' }: InvitationEditorErrorProps) {
     const t = useTranslations('InvitationEditor');
 
     return (
@@ -28,7 +28,7 @@ export function InvitationEditorError({ onRetry }: InvitationEditorErrorProps) {
             role="alert"
             className="smd-editor flex h-full flex-col items-center justify-center gap-4 bg-(--smd-editor-panel) px-6 text-center text-(--smd-editor-text)"
         >
-            <p className="text-sm font-medium">{t('loadFailed')}</p>
+            <p className="text-sm font-medium">{subject === 'theme' ? t('themeLoadFailed') : t('loadFailed')}</p>
             <button
                 type="button"
                 onClick={onRetry}

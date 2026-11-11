@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { storyDraft } from '@/.storybook/editor';
 import { SectionSettings } from '@/components/saveMyDate/editor/settings/SectionSettings';
 import type { SettingsScope } from '@/hooks/useSectionSettingsPanel';
+import { draftImageUploader } from '@/lib/invitation/editorUploads';
 import { type DocumentRecipe, settingsGroups } from '@/lib/invitation/sectionSettings';
 import { fontOptions } from '@/lib/invitation/textEditing';
 
@@ -27,7 +28,7 @@ function useStoryPanel(sectionId: string, isAdmin: boolean) {
 
     const section = document.sections.find((item) => item.id === sectionId)!;
     const mode = isAdmin ? 'admin' : 'host';
-    const scope: SettingsScope = { section, edit, mode, isAdmin, theme: draft.theme, media, fonts, draftId: draft.id, addUploaded };
+    const scope: SettingsScope = { section, edit, mode, isAdmin, theme: draft.theme, media, fonts, uploadImage: draftImageUploader(draft.id), addUploaded };
     return { scope, groups: settingsGroups(section, mode, draft.theme) };
 }
 

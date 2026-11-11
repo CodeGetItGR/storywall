@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 
 import type { SectionSettings, SettingsEdit } from '@/hooks/useSectionSettings';
 import type { InvitationDocument } from '@/lib/invitation/document';
+import type { ImageUploader } from '@/lib/invitation/editorUploads';
 import type { MediaResolver } from '@/lib/invitation/render';
 import type { EditorMode } from '@/lib/invitation/sectionRules';
 import type { InvitationSection } from '@/lib/invitation/sections';
@@ -22,7 +23,7 @@ export type SettingsScope<S extends InvitationSection = InvitationSection> = {
     theme: ThemeDesign;
     media: MediaResolver;
     fonts: FontOption[];
-    draftId: string;
+    uploadImage: ImageUploader;
     addUploaded: (mediaId: string, url: string) => void;
 };
 
@@ -33,18 +34,18 @@ type PanelSources = {
     theme: ThemeDesign;
     media: MediaResolver;
     uploadedFonts?: InvitationFontDto[];
-    draftId: string;
+    uploadImage: ImageUploader;
     addUploaded: (mediaId: string, url: string) => void;
 };
 
 // The open section's sheet: its groups and what they share. Null when nothing is open.
 export function useSectionSettingsPanel(settings: SectionSettings, sources: PanelSources): { scope: SettingsScope; groups: SettingsGroup[] } | null {
-    const { document, theme, media, uploadedFonts, draftId, addUploaded } = sources;
+    const { document, theme, media, uploadedFonts, uploadImage, addUploaded } = sources;
     const fonts = useMemo(() => fontOptions(document, theme, uploadedFonts), [document, theme, uploadedFonts]);
     const { section, groups, edit, mode } = settings;
 
     return useMemo(() => {
         if (!section) return null;
-        return { scope: { section, edit, mode, isAdmin: mode === 'admin', theme, media, fonts, draftId, addUploaded }, groups };
-    }, [addUploaded, draftId, edit, fonts, groups, media, mode, section, theme]);
+        return { scope: { section, edit, mode, isAdmin: mode === 'admin', theme, media, fonts, uploadImage, addUploaded }, groups };
+    }, [addUploaded, edit, fonts, groups, media, mode, section, theme, uploadImage]);
 }

@@ -5406,6 +5406,7 @@
             }
         },
         "invitationThemes": {
+            "editDesign": "Edit design of {name}",
             "title": "Themes",
             "create": "New theme",
             "search": "Search by name or slug",
@@ -5433,6 +5434,7 @@
                 "HIDDEN": "Out of the catalogue. Invitations made from it keep working."
             },
             "drawer": {
+                "editDesign": "Edit design",
                 "name": "Name",
                 "eventType": "Event type",
                 "status": "Status",
@@ -10165,6 +10167,49 @@
         "linkFallback": "See more"
     },
     "InvitationEditor": {
+        "save": "Save",
+        "themeMetaTitle": "Edit theme",
+        "themeLoadFailed": "We couldn't load this theme.",
+        "themeConflictTitle": "This theme has newer changes.",
+        "themeConflictBody": "It was saved in another tab or by another admin. Changes not saved here will be lost.",
+        "themeStyle": {
+            "mainColor": "Main color",
+            "secondColor": "Second color",
+            "backgrounds": "Backgrounds",
+            "modes": {
+                "cover": "Cover",
+                "repeat": "Repeat",
+                "texture": "Texture"
+            },
+            "stableRepeat": "Stable scale, repeat down",
+            "fonts": "Fonts",
+            "fontStyle": "Font style",
+            "customFonts": "Custom",
+            "bodyFont": "Body font",
+            "photoShape": "Photo shape",
+            "shapes": {
+                "rounded": "Rounded corners",
+                "square": "Square",
+                "portrait": "Portrait",
+                "landscape": "Landscape",
+                "circle": "Circle",
+                "oval": "Oval",
+                "arch": "Arch",
+                "extraRounded": "Extra rounded",
+                "hexagon": "Hexagon",
+                "diamond": "Diamond",
+                "octagon": "Octagon",
+                "teardrop": "Teardrop",
+                "blob": "Organic"
+            },
+            "autoContrast": "Automatic contrast on dark backgrounds",
+            "buttons": "Buttons",
+            "buttonFill": "Button fill",
+            "buttonText": "Button text color",
+            "buttonFont": "Button font",
+            "sameAsBody": "Same as body font",
+            "reset": "Reset"
+        },
         "metaTitle": "Edit invitation",
         "back": "Back",
         "undo": "Undo",
