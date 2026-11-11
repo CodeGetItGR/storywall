@@ -19,6 +19,7 @@
         "campaignEndsIn": "Ends in {countdown}.",
         "campaignEndsOn": "Ends on {date}",
         "seePlans": "See plans",
+        "getStarted": "Get started",
         "countdownDays": "{days}d {hours}h {minutes}m",
         "countdownHours": "{hours}h {minutes}m",
         "countdownMinutes": "{minutes}m {seconds}s"
@@ -1018,6 +1019,63 @@
     },
     "CreateEventPage": {
         "goBack": "Go back",
+        "wizard": {
+            "stepCounter": "Step {current} of {total}",
+            "close": "Close",
+            "type": {
+                "heading": "What are we celebrating?",
+                "continue": {
+                    "wedding": "Let's plan your wedding",
+                    "baptism": "Let's plan the baptism",
+                    "reveal": "Let's plan your reveal",
+                    "reunion": "Let's plan your reunion",
+                    "other": "Let's plan your event"
+                }
+            },
+            "features": {
+                "heading": "What's included",
+                "planNote": "Some features depend on the plan you pick.",
+                "lines": {
+                    "posts": "Photos and wishes from guests.",
+                    "qr_cards": "Scan at the table, no app.",
+                    "playlist": "Guests request the songs.",
+                    "schedule": "The day, hour by hour.",
+                    "stories": "Short moments from the day.",
+                    "wishbook": "Guests' wishes in one book."
+                }
+            },
+            "plan": {
+                "heading": "How many guests are you inviting?",
+                "upTo": "Up to {count}",
+                "moreThan": "More than {count}",
+                "bestFit": "Best fit for you",
+                "everythingInPlus": "Everything in {plan}, plus",
+                "compare": "Compare all plans",
+                "continue": "Continue"
+            },
+            "plans": {
+                "title": "All plans",
+                "andMore": "{features} and more",
+                "everythingInPlus": "Everything in {plan}, plus {features}",
+                "choose": "Choose {plan}"
+            },
+            "details": {
+                "heading": "Tell us about the big day",
+                "preview": "Preview",
+                "timeZone": "Time zone: {zone}",
+                "addressPlaceholder": "e.g. 123 Kifisias Ave, Athens",
+                "receptionLater": "You can add the reception venue later."
+            },
+            "theme": {
+                "heading": "Choose a look",
+                "line": "You can change it later."
+            },
+            "review": {
+                "heading": "One last look",
+                "edit": "Edit",
+                "pay": "Pay {amount}"
+            }
+        },
         "title": "Create an event",
         "subtitle": "Add the event details.",
         "detailsHint": "You can add or edit more details after creation.",
@@ -2101,7 +2159,13 @@
         "orderId": "Order {orderId}",
         "backToEvent": "Back to event",
         "backToSetup": "Back to event setup",
-        "redirectCountdown": "Opening the feed in {seconds, plural, one {# second} other {# seconds}}."
+        "redirectCountdown": "Opening the feed in {seconds, plural, one {# second} other {# seconds}}.",
+        "celebration": {
+            "heading": "Your event is live",
+            "line": "Share it with your guests so they can start posting.",
+            "openEvent": "Open event",
+            "inviteGuests": "Invite guests"
+        }
     },
     "PartnerPortalPage": {
         "totals": {
@@ -10146,6 +10210,20 @@
         "delete": "Delete",
         "emptyText": "Empty text",
         "textBox": "Text",
+        "handles": {
+            "sectionHeight": "Drag to change the height. Double-tap to reset.",
+            "spacerHeight": "Drag to change the space",
+            "resize": "Drag to resize",
+            "spaceAbove": "Drag to change the space above the text",
+            "spaceBelow": "Drag to change the space below the text",
+            "itemBack": "One place back",
+            "itemForward": "One place forward",
+            "twoColumns": "2 columns",
+            "toRightColumn": "Move one item to the right column",
+            "toLeftColumn": "Move one item to the left column",
+            "pixels": "{value} px",
+            "percent": "{value}%"
+        },
         "sections": {
             "add": "Add section",
             "nothingToAdd": "There are no more sections to add.",

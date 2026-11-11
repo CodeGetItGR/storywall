@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AuthSessionDto, UserResponseDto } from '@/lib/api/types';
 import type { SessionHandoff } from '@/lib/auth/sessionHandoff';
 import { clearSession, getAccessToken } from '@/lib/auth/tokenStore';
+import { CREATE_WIZARD_DRAFT_KEY } from '@/lib/createEventWizardDraft';
 import { AuthProvider, useAuth } from '@/providers/AuthProvider';
 
 const mocks = vi.hoisted(() => ({
@@ -122,6 +123,15 @@ describe('AuthProvider', () => {
         await act(() => result.current.logout());
 
         expect(mocks.refresh).toHaveBeenCalledOnce();
+    });
+
+    it("forgets the create wizard's answers on logout", async () => {
+        window.localStorage.setItem(CREATE_WIZARD_DRAFT_KEY, '{"version":1}');
+        const { result } = await renderAuth();
+
+        await act(() => result.current.logout());
+
+        expect(window.localStorage.getItem(CREATE_WIZARD_DRAFT_KEY)).toBeNull();
     });
 
     describe('with the session the server handed over', () => {

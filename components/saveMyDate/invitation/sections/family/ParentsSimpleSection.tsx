@@ -23,7 +23,7 @@ export function ParentsSimpleSection({ section, contrast, ctx }: ParentsSimpleSe
                 <SectionText section={section} path="parentBName" value={data.parentBName} tag="h2" contrast={contrast} ctx={ctx} />
             </div>
             {/* Decoration */}
-            <FamilyDecoration decoration={data.decoration} ctx={ctx} />
+            <FamilyDecoration sectionId={section.id} decoration={data.decoration} ctx={ctx} />
             {/* Godparents */}
             <div className="family-block">
                 <SectionText section={section} path="godparentsTitle" value={data.godparentsTitle} tag="h3" className="family-title" contrast={contrast} ctx={ctx} />

@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, BriefcaseBusiness, CalendarDays, Home as HomeIcon, Pencil, UserRound } from 'lucide-react';
+import { Bell, BriefcaseBusiness, CalendarDays, Home as HomeIcon, Pencil, Plus, UserRound } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
@@ -21,13 +21,17 @@ import { getInitials } from '@/lib/format';
 import { eventHomeHref } from '@/lib/liteEvents';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
+import { useCreateWizardEnabled } from '@/providers/CreateWizardFlagProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
 
 export function DesktopNavRail() {
     const t = useTranslations('DesktopNavRail');
     const tAccount = useTranslations('AccountDrawer');
+    const tCreate = useTranslations('CreateEventPage');
     const pathname = usePathname();
     const { user: authUser } = useAuth();
+    // Admins never get create buttons; the wizard sends them to their console.
+    const showCreate = useCreateWizardEnabled() && authUser?.role !== 'ADMIN';
     const { expanded, handleMouseEnter, handleMouseLeave, togglePinned } = useDesktopAccountSidebar();
     const activeEvent = useActiveEvent();
     const { data: unreadCount = 0 } = useUnreadNotificationCount();
@@ -134,6 +138,15 @@ export function DesktopNavRail() {
 
                 {!isDemoRoute && (
                     <>
+                        {showCreate && (
+                            <DesktopAccountNavLink
+                                href={routes.events.new()}
+                                icon={Plus}
+                                label={tCreate('title')}
+                                active={false}
+                                expanded={expanded}
+                            />
+                        )}
                         <DesktopAccountNavLink
                             href={routes.home}
                             icon={CalendarDays}

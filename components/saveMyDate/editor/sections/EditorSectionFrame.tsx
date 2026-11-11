@@ -3,6 +3,8 @@
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
+import { useCanvasHandles } from '@/components/saveMyDate/editor/handles/CanvasHandlesContext';
+import { SectionHeightHandle } from '@/components/saveMyDate/editor/handles/SectionHeightHandle';
 import { SectionAddButton } from '@/components/saveMyDate/editor/sections/SectionAddButton';
 import { SectionSettingsButton } from '@/components/saveMyDate/editor/sections/SectionSettingsButton';
 import { SectionToolbar } from '@/components/saveMyDate/editor/sections/SectionToolbar';
@@ -33,6 +35,8 @@ export function EditorSectionFrame({ controls, name, isActive, hasSettings = fal
         actions,
     );
     const showsTools = isActive || isDragging;
+    const handles = useCanvasHandles();
+    const hasHeightHandle = handles !== null && (section.type !== 'footer' || handles.mode === 'admin');
     const toolsVisibility = showsTools ? 'visible' : 'invisible group-focus-within/section:visible group-hover/section:visible';
 
     return (
@@ -91,6 +95,9 @@ export function EditorSectionFrame({ controls, name, isActive, hasSettings = fal
 
             {/* Add below */}
             {canAddAfter && <SectionAddButton placement="bottom" onClick={onAddAfter} />}
+
+            {/* Height */}
+            {hasHeightHandle && <SectionHeightHandle section={section} edit={handles.edit} />}
         </div>
     );
 }

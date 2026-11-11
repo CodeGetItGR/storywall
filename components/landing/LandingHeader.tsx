@@ -6,12 +6,14 @@ import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { LandingMotionToggle } from '@/components/landing/LandingMotionToggle';
 import { LandingProfileBadge } from '@/components/landing/LandingProfileBadge';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { useAuth } from '@/hooks/useAuth';
 import { useLandingMobileMenu } from '@/hooks/useLandingMobileMenu';
 import { useLandingSignedIn } from '@/hooks/useLandingSignedIn';
 import type { Locale } from '@/i18n/config';
 import { landingClickAttributes, landingNavTarget } from '@/lib/landingTracking';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
+import { useCreateEventButtonLabel, useCreateWizardEnabled } from '@/providers/CreateWizardFlagProvider';
 
 // One in-page link: the header's label, and the mobile menu's.
 export type LandingHeaderLink = { href: string; label: string; mobileLabel: string };
@@ -32,6 +34,10 @@ export function LandingHeader({ alternatePaths, className, homeHref, links, logi
     const t = useTranslations('LandingPage.hero');
     const isSignedIn = useLandingSignedIn();
     const { isOpen, menuRef, toggleRef, close, toggle } = useLandingMobileMenu();
+    const createLabel = useCreateEventButtonLabel();
+    const { user } = useAuth();
+    // Admins never get create buttons; the wizard sends them to their console.
+    const showCreate = useCreateWizardEnabled() && Boolean(createLabel) && user?.role !== 'ADMIN';
 
     return (
         <header
@@ -70,6 +76,16 @@ export function LandingHeader({ alternatePaths, className, homeHref, links, logi
                             {link.label}
                         </a>
                     ))}
+                    {/* Create */}
+                    {showCreate ? (
+                        <a
+                            className="rounded-full bg-[linear-gradient(120deg,#ff6fa0,#ff7a59_55%,#ffb259)] px-4 py-2.5 font-bold text-ink"
+                            href={routes.events.new()}
+                            {...landingClickAttributes({ event: 'create', placement: 'header' })}
+                        >
+                            {createLabel}
+                        </a>
+                    ) : null}
                     {isSignedIn ? (
                         <LandingProfileBadge />
                     ) : (
@@ -102,6 +118,17 @@ export function LandingHeader({ alternatePaths, className, homeHref, links, logi
                 id="landing-mobile-menu"
                 ref={menuRef}
             >
+                {/* Create */}
+                {showCreate ? (
+                    <a
+                        className="font-bold"
+                        href={routes.events.new()}
+                        onClick={close}
+                        {...landingClickAttributes({ event: 'create', placement: 'mobile_menu' })}
+                    >
+                        {createLabel}
+                    </a>
+                ) : null}
                 {links.map((link) => (
                     <a
                         href={link.href}
