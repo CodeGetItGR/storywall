@@ -191,6 +191,11 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
     const goToDetails = useCallback(() => goToStep('details'), [goToStep]);
     const goToTheme = useCallback(() => goToStep('theme'), [goToStep]);
     const goToOverview = useCallback(() => goToStep('overview'), [goToStep]);
+    // The top-left Back: the step before this one among the steps shown.
+    const goBack = useCallback(() => {
+        const previous = steps[steps.indexOf(step) - 1];
+        if (previous) navigation.back(previous);
+    }, [navigation, step, steps]);
 
     useEffect(() => {
         if (step === 'type') {
@@ -522,6 +527,7 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
         goToDetails,
         goToTheme,
         goToOverview,
+        goBack,
         steps,
 
         eventTypes,
