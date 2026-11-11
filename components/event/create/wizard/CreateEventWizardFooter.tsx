@@ -9,6 +9,7 @@ import { useCreateEventWizardFooter } from '@/hooks/useCreateEventWizardFooter';
 // One full-width gradient button with an ink label (6.3:1 and up; white fails) on every step.
 export function CreateEventWizardFooter() {
     const action = useCreateEventWizardFooter();
+    if (!action) return null;
 
     return (
         <footer className="shrink-0 bg-linear-to-b from-white/0 to-white to-30% px-5 pt-3 pb-[max(1.75rem,env(safe-area-inset-bottom))]">

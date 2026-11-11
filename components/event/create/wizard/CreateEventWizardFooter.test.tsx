@@ -49,12 +49,18 @@ describe('CreateEventWizardFooter', () => {
         expect(button).toHaveAttribute('form', 'create-form');
     });
 
-    it('moves from theme to review with Continue', () => {
-        const goToOverview = vi.fn();
-        form.current = { step: 'theme', goToOverview };
+    it('continues from the theme step to the next step shown', () => {
+        const goToNextStep = vi.fn();
+        form.current = { step: 'theme', goToNextStep };
         render(<CreateEventWizardFooter />);
         fireEvent.click(screen.getByRole('button', { name: 'CreateEventPage.wizard.plan.continue' }));
-        expect(goToOverview).toHaveBeenCalled();
+        expect(goToNextStep).toHaveBeenCalled();
+    });
+
+    it('has no footer button on the account step', () => {
+        form.current = { step: 'account' };
+        render(<CreateEventWizardFooter />);
+        expect(screen.queryByRole('button')).not.toBeInTheDocument();
     });
 
     it('says Pay with the amount due on review, with the notes above it', () => {

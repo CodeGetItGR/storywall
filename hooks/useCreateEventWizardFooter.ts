@@ -28,7 +28,7 @@ export type WizardFooterAction = {
 } & ({ submitsForm: string; onClick?: never } | { submitsForm?: never; onClick: () => void });
 
 // The wizard's one full-width button, on every step.
-export function useCreateEventWizardFooter(): WizardFooterAction {
+export function useCreateEventWizardFooter(): WizardFooterAction | null {
     const t = useTranslations('CreateEventPage.wizard');
     const locale = useLocale();
     const form = useCreateEventForm();
@@ -48,8 +48,10 @@ export function useCreateEventWizardFooter(): WizardFooterAction {
         return { ...base, label: t('plan.continue'), disabled: !form.canSubmitDetails, submitsForm: form.formId };
     }
     if (form.step === 'theme') {
-        return { ...base, label: t('plan.continue'), disabled: false, onClick: form.goToOverview };
+        return { ...base, label: t('plan.continue'), disabled: false, onClick: form.goToNextStep };
     }
+    // The account screens carry their own buttons (Google, the forms, Confirm).
+    if (form.step === 'account') return null;
 
     const activation = form.selectedPlan && form.selectedOption ? getOptionPriceDetails(form.selectedPlan, form.selectedOption) : null;
     const due = dueAtActivation(activation, form.checkoutCodePreview, form.selectedPlan?.priceCurrency ?? null);
