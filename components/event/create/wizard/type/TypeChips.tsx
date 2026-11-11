@@ -43,8 +43,8 @@ export function TypeChips({
                     <span className="relative size-9.5 shrink-0 overflow-hidden rounded-full">
                         <ProtectedImage src={chip.photoSrc} alt={chip.name} fill sizes="38px" className="object-cover" />
                     </span>
-                    {/* Name */}
-                    <span className="truncate">{chip.name}</span>
+                    {/* Name (a long one breaks onto a second line) */}
+                    <span className="line-clamp-2 leading-[1.15] text-balance">{chip.name}</span>
                 </button>
             ))}
         </div>
