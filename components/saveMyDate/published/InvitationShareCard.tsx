@@ -13,6 +13,8 @@ export function InvitationShareCard({ text, background, color, accent, fontFamil
     return (
         <div
             style={{
+                // The frame is placed against the card, in a browser too.
+                position: 'relative',
                 width: 1200,
                 height: 630,
                 display: 'flex',

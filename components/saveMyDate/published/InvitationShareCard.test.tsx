@@ -12,7 +12,7 @@ describe('InvitationShareCard', () => {
         const { container } = render(<InvitationShareCard text="Άγγελος & Αλεξάνδρα" {...CARD} />);
         const card = container.firstElementChild as HTMLElement;
         expect(screen.getByText('Άγγελος & Αλεξάνδρα')).toBeInTheDocument();
-        expect(card.style).toMatchObject({ width: '1200px', height: '630px', fontFamily: 'Alegreya' });
+        expect(card.style).toMatchObject({ position: 'relative', width: '1200px', height: '630px', fontFamily: 'Alegreya' });
         expect(card.style.background).toBe('rgb(248, 243, 232)');
         expect(card.style.color).toBe('rgb(112, 60, 119)');
         expect((card.firstElementChild as HTMLElement).style.border).toBe('3px solid rgb(190, 146, 195)');
