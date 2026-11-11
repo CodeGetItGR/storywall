@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createDraftServer, TEST_API } from '@/hooks/invitationDraftTestServer';
+import { testAuth, WithAuth } from '@/hooks/testAuthContext';
 import { EDITOR_TOUR_SEEN_KEY } from '@/lib/invitation/editorTour';
 import en from '@/messages/en.json';
 
@@ -16,7 +17,7 @@ vi.hoisted(() => {
 });
 
 const router = vi.hoisted(() => ({ back: vi.fn(), push: vi.fn(), replace: vi.fn() }));
-vi.mock('next/navigation', () => ({ useRouter: () => router }));
+vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/save-my-date/editor/draft-1' }));
 // The editor was opened from another page of the app, so back steps back.
 vi.mock('@/lib/inAppHistory', () => ({ hasInAppPrevious: () => true }));
 // next/font only works when Next compiles the file.
@@ -39,12 +40,14 @@ vi.stubGlobal('matchMedia', (query: string) => ({
 
 const backend = createDraftServer();
 
-async function openEditor() {
+async function openEditor({ signedOut = false } = {}) {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const view = render(
         <NextIntlClientProvider locale="en" messages={en}>
             <QueryClientProvider client={queryClient}>
-                <InvitationEditorPage draftId="draft-1" />
+                <WithAuth value={testAuth({ user: signedOut ? null : undefined })}>
+                    <InvitationEditorPage draftId="draft-1" />
+                </WithAuth>
             </QueryClientProvider>
         </NextIntlClientProvider>,
     );
@@ -138,13 +141,22 @@ describe('Invitation editor page', () => {
         expect(saveStatus()).toHaveTextContent('Saved');
     });
 
-    it('saves, then says publishing is not ready', async () => {
-        const { color } = await openEditor();
+    it('saves, then asks a visitor to sign in to publish', async () => {
+        const { color } = await openEditor({ signedOut: true });
         pick(color, '#112233');
 
         fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
 
-        expect(await screen.findByText("Publishing isn't available yet.")).toBeInTheDocument();
+        const dialog = await screen.findByRole('dialog');
+        expect(dialog).toHaveTextContent('Sign in to publish');
+        expect(within(dialog).getByRole('link', { name: 'Sign in' })).toHaveAttribute(
+            'href',
+            '/login?next=%2Fsave-my-date%2Feditor%2Fdraft-1%3Fpublish%3D1',
+        );
+        expect(within(dialog).getByRole('link', { name: 'Create account' })).toHaveAttribute(
+            'href',
+            '/register?next=%2Fsave-my-date%2Feditor%2Fdraft-1%3Fpublish%3D1',
+        );
         expect(backend.stored().document.overrides.textColor).toBe('#112233');
     });
 
@@ -306,7 +318,9 @@ describe('Invitation editor page', () => {
         render(
             <NextIntlClientProvider locale="en" messages={en}>
                 <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-                    <InvitationEditorPage draftId="draft-1" />
+                    <WithAuth>
+                        <InvitationEditorPage draftId="draft-1" />
+                    </WithAuth>
                 </QueryClientProvider>
             </NextIntlClientProvider>,
         );

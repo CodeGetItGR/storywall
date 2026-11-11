@@ -7,6 +7,9 @@ import { DRAFT_REVISION_STALE_ERROR_CODE, readEditableDraft } from '@/lib/invita
 import { EDITOR_TOUR_SEEN_KEY } from '@/lib/invitation/editorTour';
 import type { InvitationPublicationDto } from '@/lib/invitation/publication';
 import { type SampleDraftDto, sampleDraftDto } from '@/lib/invitation/sampleDraft';
+import { sampleInvitationPlan } from '@/lib/invitation/samplePlan';
+
+import { STORY_HOST_MEMBER_ID,storyEvent, storyMember } from './fixtures';
 
 // The invitation editor's stories. The editor's parts read its dark colours from .smd-editor.
 
@@ -47,6 +50,22 @@ export const storyDraft = () => readEditableDraft(sampleDraftDto());
 
 // A draft on an event, so Publish publishes.
 export const storyDraftOnEvent = () => readEditableDraft({ ...sampleDraftDto(), eventId: 'event-1' });
+
+// Publishing a draft on no event: the host's events (a wedding they host when withEvent) and a plan
+// with the invitation. Checkout answers with the success page, so nothing leaves the story.
+export function eventStepHandlers({ withEvent = false }: { withEvent?: boolean } = {}) {
+    const event = storyEvent({ id: 'evt-wedding', eventType: 'WEDDING' });
+    const memberships = withEvent ? [storyMember({ id: STORY_HOST_MEMBER_ID, eventId: event.id, role: 'HOST' })] : [];
+    return [
+        http.get('*/api/me/events', () => HttpResponse.json(memberships)),
+        http.get('*/api/events/:eventId', () => HttpResponse.json(event)),
+        http.get('*/api/invitation-drafts', () => HttpResponse.json([])),
+        http.get('*/api/plan-tiers', () => HttpResponse.json([sampleInvitationPlan()])),
+        http.put('*/api/invitation-drafts/:id/event', ({ params }) =>
+            HttpResponse.json({ ...sampleDraftDto(), id: String(params.id), eventId: event.id }),
+        ),
+    ];
+}
 
 type PublishOptions = {
     // The link it was published at before. Without it, the first publish asks for one.

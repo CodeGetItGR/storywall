@@ -7,12 +7,13 @@ import { invalidatePublicConfig } from '@/hooks/useAppConfig';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { EventTypeModulePatchDto, EventTypeModuleResponseDto } from '@/lib/api/types';
+import { withoutUnreleasedModules } from '@/lib/saveMyDateRelease';
 
 // GET /api/admin/event-types/{key}/modules — every row including UNSUPPORTED.
 export function useEventTypeModuleMatrix(eventTypeKey: string | null) {
     return useQuery({
         queryKey: adminKeys.eventTypeModules(eventTypeKey ?? ''),
-        queryFn: () => api.get<EventTypeModuleResponseDto[]>(endpoints.admin.eventTypes.modules(eventTypeKey!)),
+        queryFn: async () => withoutUnreleasedModules(await api.get<EventTypeModuleResponseDto[]>(endpoints.admin.eventTypes.modules(eventTypeKey!))),
         enabled: Boolean(eventTypeKey),
     });
 }

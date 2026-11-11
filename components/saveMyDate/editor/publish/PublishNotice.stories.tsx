@@ -25,7 +25,4 @@ export const Published: Story = {
 
 export const Republished: Story = { args: { notice: { kind: 'republished' } } };
 
-// The draft isn't on an event yet.
-export const Unavailable: Story = { args: { notice: { kind: 'unavailable' } } };
-
 export const Failed: Story = { args: { notice: { kind: 'failed' } } };

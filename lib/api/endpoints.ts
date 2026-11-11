@@ -266,6 +266,8 @@ export const endpoints = {
         root: '/api/invitation-drafts',
         byId: (id: string) => `/api/invitation-drafts/${id}`,
         images: (id: string) => `/api/invitation-drafts/${id}/images`,
+        claim: (id: string) => `/api/invitation-drafts/${id}/claim`,
+        event: (id: string) => `/api/invitation-drafts/${id}/event`,
         publish: (id: string) => `/api/invitation-drafts/${id}/publish`,
         publication: (id: string) => `/api/invitation-drafts/${id}/publication`,
     },

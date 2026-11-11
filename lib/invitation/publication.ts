@@ -1,4 +1,5 @@
-import { ApiError } from '@/lib/api/client';
+import { api, ApiError } from '@/lib/api/client';
+import { endpoints } from '@/lib/api/endpoints';
 import { isInvitationSlug } from '@/lib/invitation/inviteHost';
 
 // A published copy of a draft, as POST /publish and GET /publication answer (guestwall-be PublicationDto).
@@ -96,4 +97,19 @@ export function canPublishSlug(check: SlugCheck): boolean {
 export function inviteHostFor(siteUrl: string): string {
     const host = new URL(siteUrl).host.replace(/^www\./, '');
     return `invite.${host}`;
+}
+
+// The link guests open.
+export function invitationPublicUrl(siteUrl: string, slug: string): string {
+    return `https://${inviteHostFor(siteUrl)}/${slug}`;
+}
+
+// The published copy of a draft, or null when it was never published.
+export async function fetchPublication(draftId: string): Promise<InvitationPublicationDto | null> {
+    try {
+        return await api.get<InvitationPublicationDto>(endpoints.invitationDrafts.publication(draftId));
+    } catch (error) {
+        if (error instanceof ApiError && error.status === 404) return null;
+        throw error;
+    }
 }
