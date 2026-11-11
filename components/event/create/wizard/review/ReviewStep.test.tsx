@@ -13,7 +13,9 @@ vi.mock('next-intl', () => ({
 vi.mock('@/providers/createEvent/CreateEventFormContext', () => ({ useCreateEventForm: () => form.current }));
 vi.mock('@/hooks/useLocalizedAppEventTypeCopy', () => ({ useLocalizedAppEventTypeCopy: () => () => ({ name: 'Wedding', tagline: '' }) }));
 vi.mock('@/components/event/create/EventOverviewStep', () => ({
-    EventOverviewStep: ({ showEventSummary }: { showEventSummary?: boolean }) => <div data-testid="overview" data-summary={String(showEventSummary)} />,
+    EventOverviewStep: ({ showEventSummary }: { showEventSummary?: boolean }) => (
+        <div data-testid="overview" data-summary={String(showEventSummary)} />
+    ),
 }));
 vi.mock('@/components/common/ProtectedImage', () => ({
     // eslint-disable-next-line @next/next/no-img-element
