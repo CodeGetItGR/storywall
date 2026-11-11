@@ -96,18 +96,19 @@ describe('proxy', () => {
         expect(new URL(res.headers.get('location') ?? '').pathname).toBe('/login');
     });
 
-    it('redirects a signed-out visit to /events/new to login with the destination in next', async () => {
+    it('redirects a signed-out visit to /events/new to sign-up with the destination in next', async () => {
         const res = await proxy(request({}, 'http://localhost/events/new?step=plan'));
         expect(res.status).toBe(307);
         const location = new URL(res.headers.get('location') ?? '');
-        expect(location.pathname).toBe('/login');
+        expect(location.pathname).toBe('/register');
         expect(location.searchParams.get('next')).toBe('/events/new?step=plan');
     });
 
-    it('moves a carried signup source from next onto the login page', async () => {
+    it('moves a carried signup source from next onto the sign-up page', async () => {
         const src = encodeURIComponent('{"landingPage":"/"}');
         const res = await proxy(request({}, `http://localhost/events/new?type=wedding&src=${src}`));
         const location = new URL(res.headers.get('location') ?? '');
+        expect(location.pathname).toBe('/register');
         expect(location.searchParams.get('next')).toBe('/events/new?type=wedding');
         expect(location.searchParams.get('src')).toBe('{"landingPage":"/"}');
     });

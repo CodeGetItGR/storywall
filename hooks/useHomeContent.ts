@@ -1,6 +1,6 @@
 import { useAuth } from '@/hooks/useAuth';
+import { useEmailVerificationWatch } from '@/hooks/useEmailVerificationWatch';
 import { useEventGridItems } from '@/hooks/useEventGridItems';
-import { useMe } from '@/hooks/useMe';
 import { useMyEventList } from '@/hooks/useMyEventList';
 
 export type HomeEmptyStateKind = 'verifyEmail' | 'noEvents';
@@ -8,7 +8,7 @@ export type HomeEmptyStateKind = 'verifyEmail' | 'noEvents';
 // The home page's events and which empty state, if any, replaces them.
 export function useHomeContent() {
     const { user } = useAuth();
-    useMe();
+    useEmailVerificationWatch();
     // Only a confirmed `false` blocks creation — `null` (not fetched yet)
     // must not flash the banner/disable the button for the common case of an
     // already-verified account.

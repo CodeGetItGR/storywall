@@ -12,7 +12,7 @@ import {
     REFRESH_TOKEN_MAX_AGE_SECONDS,
     SESSION_REFRESHED_HEADER,
 } from '@/lib/auth/authCookies';
-import { AUTH_RETURN_PATH_PARAM } from '@/lib/auth/returnPath';
+import { AUTH_RETURN_PATH_PARAM, isCreateEventPath } from '@/lib/auth/returnPath';
 import { clientIpFrom, springAuth, SpringAuthError } from '@/lib/auth/springAuth';
 import { inviteHostRoute, isInviteHost, mainSiteUrl } from '@/lib/invitation/inviteHost';
 import { type Occasion, occasionPageForPath, occasionPath } from '@/lib/occasions/occasions';
@@ -216,13 +216,14 @@ export async function proxy(request: NextRequest) {
     const session = await resolveSession(request);
 
     if (session.kind === 'signed-out') {
-        const loginUrl = new URL(routes.login, request.url);
-        // A source carried from a landing page goes on the login page, so it is known before the
+        // Someone signed out who opens the create form is most likely new, so they get sign-up, which links to sign-in.
+        const authUrl = new URL(isCreateEventPath(pathname) ? routes.register : routes.login, request.url);
+        // A source carried from a landing page goes on the auth page, so it is known before the
         // account is created, not only once the visitor comes back to the return path.
         const { search, source } = takeVisitSourceParam(request.nextUrl.search);
-        loginUrl.searchParams.set(AUTH_RETURN_PATH_PARAM, `${pathname}${search}`);
-        if (source) loginUrl.searchParams.set(VISIT_SOURCE_PARAM, source);
-        const redirect = NextResponse.redirect(loginUrl);
+        authUrl.searchParams.set(AUTH_RETURN_PATH_PARAM, `${pathname}${search}`);
+        if (source) authUrl.searchParams.set(VISIT_SOURCE_PARAM, source);
+        const redirect = NextResponse.redirect(authUrl);
         redirect.cookies.delete(AUTH_COOKIES.accessToken);
         redirect.cookies.delete(AUTH_COOKIES.refreshToken);
         return redirect;
