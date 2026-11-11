@@ -24,7 +24,16 @@ export function CreateEventWizardPage() {
                 <main className="h-full bg-white">
                     <div className="mx-auto flex h-full max-w-2xl flex-col">
                         <CreateEventFormProvider mode="wizard">
-                            <CreateEventWizard leading={<BackButton variant="icon" href={routes.home} label={t('goBack')} />} />
+                            <CreateEventWizard
+                                leading={
+                                    <BackButton
+                                        variant="icon"
+                                        href={routes.home}
+                                        label={t('goBack')}
+                                        className="size-11 bg-white/90 text-ink hover:bg-white/90"
+                                    />
+                                }
+                            />
                         </CreateEventFormProvider>
                     </div>
                 </main>

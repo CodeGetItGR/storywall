@@ -32,4 +32,21 @@ describe('useCreateEventStepNavigation', () => {
         expect(wizardDepth()).toBe(1);
         expect(router.push).not.toHaveBeenCalled();
     });
+
+    it('goes back one entry from a step the wizard pushed', () => {
+        const back = vi.spyOn(window.history, 'back').mockImplementation(() => {});
+        window.history.replaceState(null, '', '/el?create=1');
+        const { result } = renderHook(() => useCreateEventStepNavigation('wizard', 'r1'));
+        result.current.push('plan');
+        result.current.back('type');
+        expect(back).toHaveBeenCalledTimes(1);
+        back.mockRestore();
+    });
+
+    it('replaces the step when the page was loaded on it', () => {
+        window.history.replaceState(null, '', '/el?create=1&step=plan&run=r1');
+        const { result } = renderHook(() => useCreateEventStepNavigation('wizard', 'r1'));
+        result.current.back('type');
+        expect(window.location.search).toBe('?create=1&step=type&run=r1');
+    });
 });
