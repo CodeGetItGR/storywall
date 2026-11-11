@@ -1021,7 +1021,60 @@
         "goBack": "Go back",
         "wizard": {
             "stepCounter": "Step {current} of {total}",
-            "close": "Close"
+            "close": "Close",
+            "type": {
+                "heading": "What are we celebrating?",
+                "continue": {
+                    "wedding": "Let's plan your wedding",
+                    "baptism": "Let's plan the baptism",
+                    "reveal": "Let's plan your reveal",
+                    "reunion": "Let's plan your reunion",
+                    "other": "Let's plan your event"
+                }
+            },
+            "features": {
+                "heading": "What's included",
+                "planNote": "Some features depend on the plan you pick.",
+                "lines": {
+                    "posts": "Photos and wishes from guests.",
+                    "qr_cards": "Scan at the table, no app.",
+                    "playlist": "Guests request the songs.",
+                    "schedule": "The day, hour by hour.",
+                    "stories": "Short moments from the day.",
+                    "wishbook": "Guests' wishes in one book."
+                }
+            },
+            "plan": {
+                "heading": "How many guests are you inviting?",
+                "upTo": "Up to {count}",
+                "moreThan": "More than {count}",
+                "bestFit": "Best fit for you",
+                "everythingInPlus": "Everything in {plan}, plus",
+                "compare": "Compare all plans",
+                "continue": "Continue"
+            },
+            "plans": {
+                "title": "All plans",
+                "andMore": "{features} and more",
+                "everythingInPlus": "Everything in {plan}, plus {features}",
+                "choose": "Choose {plan}"
+            },
+            "details": {
+                "heading": "Tell us about the big day",
+                "preview": "Preview",
+                "timeZone": "Time zone: {zone}",
+                "addressPlaceholder": "e.g. 123 Kifisias Ave, Athens",
+                "receptionLater": "You can add the reception venue later."
+            },
+            "theme": {
+                "heading": "Choose a look",
+                "line": "You can change it later."
+            },
+            "review": {
+                "heading": "One last look",
+                "edit": "Edit",
+                "pay": "Pay {amount}"
+            }
         },
         "title": "Create an event",
         "subtitle": "Add the event details.",
@@ -2120,7 +2173,13 @@
         "backToSetup": "Back to event setup",
         "redirectCountdown": "Opening the feed in {seconds, plural, one {# second} other {# seconds}}.",
         "backToInvitation": "Back to the invitation",
-        "invitationCountdown": "Opening the invitation in {seconds, plural, one {# second} other {# seconds}}."
+        "invitationCountdown": "Opening the invitation in {seconds, plural, one {# second} other {# seconds}}.",
+        "celebration": {
+            "heading": "Your event is live",
+            "line": "Share it with your guests so they can start posting.",
+            "openEvent": "Open event",
+            "inviteGuests": "Invite guests"
+        }
     },
     "PartnerPortalPage": {
         "totals": {
@@ -10473,7 +10532,8 @@
     },
     "SaveMyDatePreview": {
         "metaTitle": "Invitation preview"
-    },
+    }
+,
     "PublishedInvitation": {
         "metaTitle": "Invitation",
         "notFound": "We couldn't find this invitation.",

@@ -10,11 +10,15 @@ import { routes } from '@/lib/routes';
 // `?create=1` opens the create wizard as a pop-up over the page in the URL.
 export const CREATE_WIZARD_PARAM = 'create';
 export const CREATE_EVENT_STEP_PARAM = 'step';
+// The compare-plans sheet on the plan step. Its own history entry, so Back closes it.
+export const CREATE_EVENT_SHEET_PARAM = 'sheet';
+export const PLANS_SHEET = 'plans';
 
 // Every param the wizard reads or writes. Closing the pop-up removes them all.
 const WIZARD_PARAMS = [
     CREATE_WIZARD_PARAM,
     CREATE_EVENT_STEP_PARAM,
+    CREATE_EVENT_SHEET_PARAM,
     CREATE_EVENT_RUN_PARAM,
     CREATE_EVENT_TYPE_PARAM,
     CREATE_EVENT_PLAN_PARAM,

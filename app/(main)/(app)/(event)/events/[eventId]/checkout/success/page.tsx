@@ -5,9 +5,11 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
+import { CheckoutCelebration } from '@/components/checkout/CheckoutCelebration';
 import { CheckoutConversionTags } from '@/components/checkout/CheckoutConversionTags';
 import { AppLink } from '@/components/ui/AppLink';
 import { billingKeys, useEventBilling, useOrderSync } from '@/hooks/useBilling';
+import { useCheckoutCelebration } from '@/hooks/useCheckoutCelebration';
 import { eventKeys } from '@/hooks/useEvent';
 import { useLeaveCheckoutOnBack } from '@/hooks/useLeaveCheckoutOnBack';
 import { myEventsKeys } from '@/hooks/useMyEvents';
@@ -45,6 +47,9 @@ export default function CheckoutSuccessPage() {
         () => (paid ? (billing.data?.orders.find((order) => order.id === orderId) ?? null) : null),
         [billing.data, orderId, paid],
     );
+    // A draft's first payment gets the celebration instead of the countdown (wizard flag on), unless the
+    // host paid from the invitation editor: they go back to it to publish.
+    const celebration = useCheckoutCelebration(eventId, returnTo ? null : paidOrder);
     const exitHref = paid ? doneHref : routes.events.manage(eventId);
     useOrderSync(eventId, orderId, !paid && !timedOut);
     useLeaveCheckoutOnBack(exitHref);
@@ -66,7 +71,7 @@ export default function CheckoutSuccessPage() {
     }, [eventId, paid, queryClient]);
 
     useEffect(() => {
-        if (!paid) return;
+        if (!paid || celebration.show) return;
 
         const redirectTimer = window.setTimeout(() => router.replace(doneHref), REDIRECT_SECONDS * 1000);
         const countdownTimer = window.setInterval(() => {
@@ -77,7 +82,18 @@ export default function CheckoutSuccessPage() {
             window.clearTimeout(redirectTimer);
             window.clearInterval(countdownTimer);
         };
-    }, [doneHref, paid, router]);
+    }, [celebration.show, doneHref, paid, router]);
+
+    if (celebration.show) {
+        return (
+            <main>
+                {/* Celebration */}
+                <CheckoutCelebration card={celebration.card} feedHref={celebration.feedHref} inviteHref={celebration.inviteHref} />
+                {/* Ad conversion tags, only with the visitor's consent */}
+                <CheckoutConversionTags purchase={paidOrder} />
+            </main>
+        );
+    }
 
     return (
         <main className="mx-auto max-w-xl px-4 py-10 text-center sm:py-16">

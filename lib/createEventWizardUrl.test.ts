@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+    CREATE_EVENT_SHEET_PARAM,
     CREATE_WIZARD_PARAM,
     isCreateEventHref,
     isWizardOpen,
+    PLANS_SHEET,
     withoutWizardParams,
     withWizardParams,
     wizardUrlForLink,
@@ -59,5 +61,17 @@ describe('isWizardOpen', () => {
         expect(isWizardOpen(new URLSearchParams('create=1'))).toBe(true);
         expect(isWizardOpen(new URLSearchParams('create=0'))).toBe(false);
         expect(isWizardOpen(new URLSearchParams(''))).toBe(false);
+    });
+});
+
+describe('the sheet param', () => {
+    it('is a wizard param, so closing the pop-up removes it', () => {
+        const url = new URL('https://storywall.gr/el?src=ig&create=1&step=plan&sheet=plans');
+        expect(withoutWizardParams(url)).toBe('/el?src=ig');
+    });
+
+    it('is set and removed like the others', () => {
+        const url = new URL('https://storywall.gr/el?create=1&step=plan');
+        expect(withWizardParams(url, { [CREATE_EVENT_SHEET_PARAM]: PLANS_SHEET })).toBe('/el?create=1&step=plan&sheet=plans');
     });
 });

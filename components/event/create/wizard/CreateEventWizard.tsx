@@ -1,74 +1,55 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { type ReactNode, useRef } from 'react';
 
-import { EventCreateFooter } from '@/components/event/create/EventCreateFooter';
-import { EventCreateSelectionSummary } from '@/components/event/create/EventCreateSelectionSummary';
-import { EventDetailsStep } from '@/components/event/create/EventDetailsStep';
-import { EventOverviewStep } from '@/components/event/create/EventOverviewStep';
-import { EventThemeStep } from '@/components/event/create/EventThemeStep';
-import { EventTypeStep } from '@/components/event/create/EventTypeStep';
+import { CreateEventWizardBackButton } from '@/components/event/create/wizard/CreateEventWizardBackButton';
+import { CreateEventWizardFooter } from '@/components/event/create/wizard/CreateEventWizardFooter';
 import { CreateEventWizardProgress } from '@/components/event/create/wizard/CreateEventWizardProgress';
-import { EventPlanSelector } from '@/components/plan/EventPlanSelector';
+import { DetailsStep } from '@/components/event/create/wizard/details/DetailsStep';
+import { PlanStep } from '@/components/event/create/wizard/plan/PlanStep';
+import { ReviewStep } from '@/components/event/create/wizard/review/ReviewStep';
+import { ThemeStep } from '@/components/event/create/wizard/theme/ThemeStep';
+import { TypeStep } from '@/components/event/create/wizard/type/TypeStep';
 import { useScrollTopOnChange } from '@/hooks/useScrollTopOnChange';
 import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 
-// The step heading's id; the pop-up takes its accessible name from it.
-export const CREATE_EVENT_WIZARD_HEADING_ID = 'create-event-wizard-heading';
-
 // One wizard, two shells: the pop-up (CreateEventDialog) and the page (CreateEventWizardPage).
-// `leading` is the shell's own button: close in the pop-up, back on the page.
+// `leading` is the shell's own button: close in the pop-up, back on the page. It sits on the type
+// step's photo; later steps show the wizard's own Back instead.
 export function CreateEventWizard({ leading }: { leading: ReactNode }) {
-    const t = useTranslations('CreateEventPage');
-    const { step, formId, handleSubmit, eventPlans, modules, media, selectedCode, durationPicks, onSelectPlan, onSelectPlanDuration, isPlansLoading } =
-        useCreateEventForm();
+    const { step, formId, handleSubmit } = useCreateEventForm();
     const scrollRef = useRef<HTMLDivElement>(null);
     useScrollTopOnChange(scrollRef, step);
+    const isType = step === 'type';
 
     return (
         <div className="flex h-full min-h-0 flex-col bg-white">
-            {/* Progress */}
-            <div className="shrink-0 px-5 pt-4 pb-3">
-                <CreateEventWizardProgress leading={leading} />
-            </div>
+            {/* Progress (on the photo on the type step, so it scrolls away with it there) */}
+            {!isType && (
+                <div className="shrink-0 px-4 pt-3 pb-3">
+                    <CreateEventWizardProgress leading={<CreateEventWizardBackButton />} />
+                </div>
+            )}
 
             {/* Step */}
-            <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-5 pb-6">
-                <form id={formId} onSubmit={handleSubmit}>
-                    {/* Earlier picks */}
-                    <EventCreateSelectionSummary />
-
-                    {/* Heading */}
-                    <h1 id={CREATE_EVENT_WIZARD_HEADING_ID} className="mb-5 text-lg font-bold text-ink">
-                        {step === 'type' && t('steps.typeSubtitle')}
-                        {step === 'plan' && t('steps.planSubtitle')}
-                        {step === 'details' && t('subtitle')}
-                        {step === 'theme' && t('steps.themeSubtitle')}
-                        {step === 'overview' && t('steps.overviewSubtitle')}
-                    </h1>
-
-                    {step === 'type' && <EventTypeStep />}
-                    {step === 'plan' && (
-                        <EventPlanSelector
-                            plans={eventPlans}
-                            modules={modules}
-                            media={media}
-                            selectedCode={selectedCode}
-                            durationPicks={durationPicks}
-                            onSelectAction={onSelectPlan}
-                            onSelectDurationAction={onSelectPlanDuration}
-                            isLoading={isPlansLoading}
-                        />
-                    )}
-                    {step === 'details' && <EventDetailsStep />}
-                    {step === 'theme' && <EventThemeStep />}
-                    {step === 'overview' && <EventOverviewStep />}
-                </form>
+            <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
+                {isType && <TypeStep progress={<CreateEventWizardProgress leading={leading} tone="onPhoto" />} />}
+                {step === 'plan' && (
+                    <div className="px-5 pb-6">
+                        <PlanStep />
+                    </div>
+                )}
+                {!isType && step !== 'plan' && (
+                    <form id={formId} onSubmit={handleSubmit} className="px-5 pb-6">
+                        {step === 'details' && <DetailsStep />}
+                        {step === 'theme' && <ThemeStep />}
+                        {step === 'overview' && <ReviewStep />}
+                    </form>
+                )}
             </div>
 
             {/* Footer */}
-            <EventCreateFooter />
+            <CreateEventWizardFooter />
         </div>
     );
 }

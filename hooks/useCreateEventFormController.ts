@@ -46,6 +46,7 @@ import {
     resolveCreateEventType,
     visibleCreateEventSteps,
 } from '@/lib/createEventSteps';
+import { CREATE_EVENT_STEP_PARAM } from '@/lib/createEventWizardUrl';
 import { eventWindowFromLocalStart, formatDate, getScheduleDatetimeLocalBounds, isDatetimeLocalAfter, isDatetimeLocalBefore } from '@/lib/datetime';
 import { getLatestStartAt, projectCoverage } from '@/lib/eventCoverage';
 import { normalizeEventTypeSlug } from '@/lib/eventTypeSlug';
@@ -191,6 +192,11 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
     const goToDetails = useCallback(() => goToStep('details'), [goToStep]);
     const goToTheme = useCallback(() => goToStep('theme'), [goToStep]);
     const goToOverview = useCallback(() => goToStep('overview'), [goToStep]);
+    // The top-left Back: the step before this one among the steps shown.
+    const goBack = useCallback(() => {
+        const previous = steps[steps.indexOf(step) - 1];
+        if (previous) navigation.back(previous);
+    }, [navigation, step, steps]);
 
     useEffect(() => {
         if (step === 'type') {
@@ -210,6 +216,13 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
             navigation.replace('overview');
         }
     }, [appConfig, navigation, planTiersQuery.isLoading, reachableStep, step, themeStepAvailable]);
+
+    // The pop-up opens on a URL with no step (it resumes the saved one). Write the step into that entry,
+    // so going Back to it later shows that step instead of resuming wherever the host got to.
+    const hasStepParam = searchParams.has(CREATE_EVENT_STEP_PARAM);
+    useEffect(() => {
+        if (isWizard && run && !hasStepParam) navigation.replace(step);
+    }, [hasStepParam, isWizard, navigation, run, step]);
 
     const onSelectEventType = useCallback(
         (type: EventTypeConvention) => {
@@ -522,6 +535,7 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
         goToDetails,
         goToTheme,
         goToOverview,
+        goBack,
         steps,
 
         eventTypes,
