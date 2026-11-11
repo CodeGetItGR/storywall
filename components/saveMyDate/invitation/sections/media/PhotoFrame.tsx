@@ -47,6 +47,7 @@ export function PhotoFrame({ element, ctx }: PhotoFrameProps) {
                 {/* Art */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img className="photo-frame-art" src={frame.art} alt={frame.name} draggable={false} />
+                {ctx.canvasTools?.element?.(element)}
             </div>
         </div>
     );

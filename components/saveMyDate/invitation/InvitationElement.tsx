@@ -35,7 +35,11 @@ export function InvitationElement({ element, contrast, ctx }: InvitationElementP
                 />
             );
         case 'spacer':
-            return <div className="wedart-spacer" style={{ height: element.height }} />;
+            return (
+                <div className="wedart-spacer" style={{ height: element.height }}>
+                    {ctx.canvasTools?.element?.(element)}
+                </div>
+            );
         case 'image': {
             const src = resolveImage(element.image, ctx);
             if (!src) return null;
@@ -43,6 +47,7 @@ export function InvitationElement({ element, contrast, ctx }: InvitationElementP
                 <div className="wedart-el-wrap" style={{ width: element.width }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={src} alt={themeAssetName(element.image, ctx) ?? t('imageAlt')} />
+                    {ctx.canvasTools?.element?.(element)}
                 </div>
             );
         }

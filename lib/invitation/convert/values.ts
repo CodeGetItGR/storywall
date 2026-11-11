@@ -1,6 +1,7 @@
 import type { MediaCollector } from '@/lib/invitation/convert/media';
 import type { Reader } from '@/lib/invitation/convert/reader';
-import { colorSchema, fontSchema, type ImageRef, linkSchema, type TextStyle } from '@/lib/invitation/primitives';
+import { documentLink } from '@/lib/invitation/documentLink';
+import { colorSchema, fontSchema, type ImageRef, type TextStyle } from '@/lib/invitation/primitives';
 
 // What every part of a conversion shares.
 export type ConvertContext = {
@@ -33,12 +34,9 @@ export function clamp(value: number | undefined, min: number, max: number): numb
 // Old links were free text. Bare domains get https://; anything else that is
 // not a supported link is cleared and reported.
 export function cleanLink(value: string, ctx: ConvertContext, path: string): string {
-    const link = value.trim();
-    if (!link || link === 'https://' || link === 'http://') return '';
-    if (linkSchema.safeParse(link).success) return link;
-    const withScheme = `https://${link}`;
-    if (/^[\w.-]+\.[a-z]{2,}(\/\S*)?$/i.test(link) && linkSchema.safeParse(withScheme).success) return withScheme;
-    warn(ctx, path, `cleared a link that is not a web address (${link.slice(0, 60)})`);
+    const link = documentLink(value);
+    if (link !== null) return link;
+    warn(ctx, path, `cleared a link that is not a web address (${value.trim().slice(0, 60)})`);
     return '';
 }
 

@@ -4,6 +4,7 @@ import { Eye, EyeOff, GripVertical } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { SectionMenu } from '@/components/saveMyDate/editor/sections/SectionMenu';
+import { SectionSettingsButton } from '@/components/saveMyDate/editor/sections/SectionSettingsButton';
 import { SectionToolButton } from '@/components/saveMyDate/editor/sections/SectionToolButton';
 import type { SectionDragHandle } from '@/hooks/useSectionSortable';
 import { cn } from '@/lib/utils';
@@ -17,6 +18,8 @@ type SectionToolbarProps = {
     onMoveUp: () => void;
     onMoveDown: () => void;
     onDelete: () => void;
+    // Left out when the section has no settings.
+    onOpenSettings?: () => void;
     className?: string;
 };
 
@@ -30,6 +33,7 @@ export function SectionToolbar({
     onMoveUp,
     onMoveDown,
     onDelete,
+    onOpenSettings,
     className,
 }: SectionToolbarProps) {
     const t = useTranslations('InvitationEditor.sections');
@@ -44,8 +48,9 @@ export function SectionToolbar({
                 {visible ? <Eye aria-hidden="true" /> : <EyeOff aria-hidden="true" />}
             </SectionToolButton>
 
-            {/* Move and menu */}
+            {/* Settings, move and menu */}
             <div className="pointer-events-auto flex gap-2 transition-none">
+                {onOpenSettings && <SectionSettingsButton onClick={onOpenSettings} />}
                 <SectionToolButton
                     ref={activator}
                     label={t('drag')}

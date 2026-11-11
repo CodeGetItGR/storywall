@@ -18,20 +18,29 @@ const MODIFIERS = [restrictToVerticalAxis];
 
 type WrapSection = (section: InvitationSection, index: number, content: ReactNode) => ReactNode;
 
+// The section settings sheet: which sections have one, and opening it.
+export type SectionSettingsOpener = {
+    hasSettings: (section: InvitationSection) => boolean;
+    open: (id: string) => void;
+};
+
+const NO_SETTINGS: SectionSettingsOpener = { hasSettings: () => false, open: () => {} };
+
 type EditorSectionsProps = {
     actions: SectionActions;
+    settings?: SectionSettingsOpener;
     // The invitation, drawn with each section wrapped in its tools.
     children: (wrapSection: WrapSection) => ReactNode;
 };
 
 // Adding, moving, hiding and deleting the invitation's sections on the canvas.
-export function EditorSections({ actions, children }: EditorSectionsProps) {
+export function EditorSections({ actions, settings = NO_SETTINGS, children }: EditorSectionsProps) {
     const t = useTranslations('InvitationEditor.sectionNames');
     const { controls, activeId, setActiveId, move, reorder, toggleVisible, addList, deleteConfirm } = actions;
     const drag = useSectionDrag(controls.length, reorder);
     const frameActions = useMemo<SectionFrameActions>(
-        () => ({ activate: setActiveId, toggleVisible, move, askDelete: deleteConfirm.ask, openAddList: addList.open }),
-        [setActiveId, toggleVisible, move, deleteConfirm.ask, addList.open],
+        () => ({ activate: setActiveId, toggleVisible, move, askDelete: deleteConfirm.ask, openAddList: addList.open, openSettings: settings.open }),
+        [setActiveId, toggleVisible, move, deleteConfirm.ask, addList.open, settings.open],
     );
 
     const wrapSection: WrapSection = (section, index, content) => (
@@ -39,6 +48,7 @@ export function EditorSections({ actions, children }: EditorSectionsProps) {
             controls={controls[index]}
             name={t(section.type)}
             isActive={activeId === section.id}
+            hasSettings={settings.hasSettings(section)}
             actions={frameActions}
         >
             {content}

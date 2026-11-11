@@ -55,6 +55,8 @@ export function useDraftAutosave(store: InvitationEditorStore, draftId: string, 
     }, [draftId, opened, openedRevision, queryClient, store]);
 
     const flush = useCallback(() => autosaveRef.current?.flush() ?? Promise.resolve(true), []);
+    // The stored revision after the last save, for a publish to name.
+    const savedRevision = useCallback(() => autosaveRef.current?.revision() ?? openedRevision, [openedRevision]);
 
-    return { status, flush };
+    return { status, flush, savedRevision };
 }
