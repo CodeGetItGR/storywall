@@ -25,6 +25,17 @@ export type InvitationDraftDto = {
     token: string | null;
 };
 
+// A draft in GET /api/invitation-drafts: the caller's own drafts and those of events they host.
+export type InvitationDraftSummaryDto = {
+    id: string;
+    themeSlug: string;
+    themeName: string;
+    eventType: string;
+    eventId: string | null;
+    revision: number;
+    updatedAt: string;
+};
+
 // What an autosave answers: the revision the next save must name.
 export type InvitationDraftSavedDto = { id: string; revision: number; expiresAt: string | null; updatedAt: string };
 
@@ -34,6 +45,7 @@ export const DRAFT_REVISION_STALE_ERROR_CODE = 5208;
 export const invitationDraftKeys = {
     all: ['invitationDrafts'] as const,
     detail: (draftId: string) => [...invitationDraftKeys.all, draftId] as const,
+    list: () => [...invitationDraftKeys.all, 'list'] as const,
 };
 
 // A draft ready for the editor: the document and theme checked against the format.

@@ -4,7 +4,19 @@ import { manageSections, parseManageSection, resolveManageSection, visibleManage
 
 describe('manageSections', () => {
     it('lists sections in the host dashboard nav order', () => {
-        expect(manageSections).toEqual(['overview', 'settings', 'theme', 'rsvp', 'members', 'gift', 'billing', 'help', 'danger']);
+        expect(manageSections).toEqual(['overview', 'settings', 'theme', 'invitation', 'rsvp', 'members', 'gift', 'billing', 'help', 'danger']);
+    });
+
+    it('visibleManageSections shows the invitation section only where it is offered', () => {
+        expect(visibleManageSections({ canDelete: false, rsvpAvailable: false })).not.toContain('invitation');
+        expect(visibleManageSections({ canDelete: false, rsvpAvailable: false, invitationAvailable: true })).toEqual([
+            'overview',
+            'settings',
+            'invitation',
+            'members',
+            'billing',
+            'help',
+        ]);
     });
 
     it('parseManageSection resolves "help"', () => {
