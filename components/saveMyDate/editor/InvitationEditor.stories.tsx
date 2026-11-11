@@ -205,14 +205,11 @@ export const AddSection: Story = {
 // The click scrolls the canvas, and fonts and images loading afterwards move it a few pixels more, by a different
 // amount each run. Once the save, fonts and images have settled, the section goes to the middle of the canvas.
 async function centerWhenSettled(canvasElement: HTMLElement, section: HTMLElement, saved: string) {
-    await expect(await within(canvasElement).findByText(saved, {}, { timeout: 10_000 })).toBeInTheDocument();
-    await waitFor(
-        () => {
-            expect(document.fonts.status).toBe('loaded');
-            expect([...document.images].every((image) => image.complete)).toBe(true);
-        },
-        { timeout: 10_000 },
-    );
+    await expect(await within(canvasElement).findByText(saved, {}, SLOW)).toBeInTheDocument();
+    await waitFor(() => {
+        expect(document.fonts.status).toBe('loaded');
+        expect([...document.images].every((image) => image.complete)).toBe(true);
+    }, SLOW);
     section.scrollIntoView({ block: 'center', behavior: 'instant' });
 }
 
