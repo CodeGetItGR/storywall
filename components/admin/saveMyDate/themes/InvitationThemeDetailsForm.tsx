@@ -1,12 +1,14 @@
 'use client';
 
-import { Copy, Eye, Loader2 } from 'lucide-react';
+import { Copy, Eye, Loader2, Paintbrush } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import type { MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
 
 import { useAdminDrawerFooterSlot } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { InvitationThemeSegmented } from '@/components/admin/saveMyDate/themes/InvitationThemeSegmented';
+import { AppLink } from '@/components/ui/AppLink';
 import { useInvitationThemeDrawer } from '@/hooks/useInvitationThemeDrawer';
 import type { EventTypeOption } from '@/hooks/useInvitationThemesCatalog';
 import {
@@ -16,6 +18,7 @@ import {
     THEME_SEO_TITLE_MAX,
     THEME_SLUG_MAX,
 } from '@/lib/adminInvitationThemes';
+import { routes } from '@/lib/routes';
 
 const FORM_ID = 'invitation-theme-form';
 
@@ -46,6 +49,11 @@ export function InvitationThemeDetailsForm({
         onDuplicateAction(form.saved);
     }
 
+    // Unsaved details would be lost on the way to the editor.
+    function handleEditDesign(event: MouseEvent<HTMLAnchorElement>) {
+        if (form.duplicateBlocked) event.preventDefault();
+    }
+
     const footer = (
         <div className="flex w-full flex-wrap items-center justify-between gap-2">
             {/* Actions */}
@@ -69,6 +77,16 @@ export function InvitationThemeDetailsForm({
                     <Copy className="h-4 w-4" aria-hidden="true" />
                     {t('duplicate')}
                 </button>
+                <AppLink
+                    href={routes.saveMyDateAdmin.themeEditor(form.saved.id)}
+                    onClick={handleEditDesign}
+                    aria-disabled={form.duplicateBlocked}
+                    title={form.isDirty ? t('duplicateUnsaved') : undefined}
+                    className="inline-flex h-9 items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold text-ink hover:bg-canvas aria-disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:hover:bg-transparent"
+                >
+                    <Paintbrush className="h-4 w-4" aria-hidden="true" />
+                    {t('editDesign')}
+                </AppLink>
             </div>
 
             {/* Save */}

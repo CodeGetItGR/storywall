@@ -132,4 +132,15 @@ describe('InvitationThemeDrawer', () => {
         fireEvent.click(await screen.findByRole('button', { name: 'Duplicate' }));
         expect(props.onDuplicateAction).toHaveBeenCalledWith(expect.objectContaining({ id: 't1' }));
     });
+
+    it('opens the design editor, once the details are saved', async () => {
+        renderDrawer();
+        const link = await screen.findByRole('link', { name: 'Edit design' });
+        expect(link).toHaveAttribute('href', '/admin/save-my-date/themes/t1/editor');
+        expect(link).not.toHaveAttribute('aria-disabled', 'true');
+
+        fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: 'Changed' } });
+        expect(screen.getByRole('link', { name: 'Edit design' })).toHaveAttribute('aria-disabled', 'true');
+        expect(screen.getByRole('link', { name: 'Edit design' })).toHaveAttribute('title', 'Save first');
+    });
 });

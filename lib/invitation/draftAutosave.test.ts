@@ -12,9 +12,13 @@ const stale = () => new ApiError(409, { errorCode: DRAFT_REVISION_STALE_ERROR_CO
 function setup({
     save,
     loadLatest,
+    manual,
+    isStale,
 }: {
     save?: (revision: number, document: Doc) => Promise<{ revision: number }>;
     loadLatest?: () => Promise<{ revision: number; document: unknown }>;
+    manual?: boolean;
+    isStale?: (error: unknown) => boolean;
 } = {}) {
     let current: Doc = { text: 'a' };
     let changeCount = 0;
@@ -30,6 +34,8 @@ function setup({
         onStatus: (status) => statuses.push(status),
         onSaved,
         retryDelayMs: 10,
+        manual,
+        isStale,
     });
     const change = (text: string) => {
         current = { text };
@@ -311,5 +317,42 @@ describe('createDraftAutosave', () => {
         autosave.dispose();
         await vi.advanceTimersByTimeAsync(AUTOSAVE_SAFETY_MS * 2);
         expect(save).not.toHaveBeenCalled();
+    });
+
+    describe('manual mode', () => {
+        it('waits for flush instead of saving on its own', async () => {
+            const { change, save, autosave, statuses } = setup({ manual: true });
+            change('b');
+            await vi.advanceTimersByTimeAsync(AUTOSAVE_SAFETY_MS * 2);
+            expect(save).not.toHaveBeenCalled();
+            expect(statuses).toEqual(['unsaved']);
+
+            await expect(autosave.flush()).resolves.toBe(true);
+            expect(save).toHaveBeenCalledWith(1, { text: 'b' });
+            expect(autosave.status()).toBe('saved');
+        });
+
+        it('does not try a failed save again until the next flush', async () => {
+            const { change, save, autosave } = setup({ manual: true, save: async () => Promise.reject(new ApiError(400, null)) });
+            change('b');
+            await expect(autosave.flush()).resolves.toBe(false);
+            await vi.advanceTimersByTimeAsync(AUTOSAVE_SAFETY_MS * 2);
+            expect(save).toHaveBeenCalledTimes(1);
+            expect(autosave.status()).toBe('error');
+        });
+    });
+
+    it('reads a conflict with its own stale check', async () => {
+        const themeStale = new ApiError(409, { errorCode: 5201 });
+        const { change, autosave, loadLatest } = setup({
+            save: async () => {
+                throw themeStale;
+            },
+            isStale: (error) => error === themeStale,
+        });
+        change('b');
+        await autosave.flush();
+        expect(loadLatest).toHaveBeenCalled();
+        expect(autosave.status()).toBe('conflict');
     });
 });

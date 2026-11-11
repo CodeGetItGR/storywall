@@ -257,6 +257,11 @@ export function themeUpdateRequest(theme: AdminInvitationThemeDto, details: Invi
     };
 }
 
+// The theme was saved since this copy was loaded.
+export function isThemeRevisionStale(error: unknown): boolean {
+    return getErrorCode(error) === REVISION_STALE_CODE;
+}
+
 export type InvitationThemeSaveFailure = { kind: 'slugTaken' } | { kind: 'stale' } | { kind: 'other'; error: unknown };
 
 export function themeSaveFailure(error: unknown): InvitationThemeSaveFailure {
