@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -76,9 +76,11 @@ describe('EditorTour', () => {
     it('lists the section tools on their step', () => {
         renderTour(tourAt(4));
         const card = screen.getByRole('dialog', { name: 'Section tools' });
-        expect(card).toHaveTextContent('Hide section');
-        expect(card).toHaveTextContent('Drag to move');
-        expect(card).toHaveTextContent('Section options');
+        // In the order the section's toolbar shows them.
+        const rows = within(card)
+            .getAllByRole('listitem')
+            .map((row) => row.textContent);
+        expect(rows).toEqual(['Hide section', 'Section settings', 'Drag to move', 'Section options']);
     });
 
     it('moves on, steps back, skips, and closes on Escape', () => {
