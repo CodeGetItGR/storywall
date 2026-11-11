@@ -6,7 +6,6 @@ import type { PlatformRole } from '@/lib/api/types';
 const MARKETING_TABS: ReadonlySet<AdminTab> = new Set<AdminTab>([
     'outreach',
     'outreachRequests',
-    'campaignOverview',
     'campaigns',
     'discountCodes',
     'guestOffer',

@@ -4,7 +4,6 @@ import {
     BarChart3,
     Bug,
     CalendarDays,
-    ChartLine,
     ChartNoAxesCombined,
     Flag,
     Footprints,
@@ -14,6 +13,7 @@ import {
     History,
     Inbox,
     LayoutGrid,
+    LayoutTemplate,
     Link2,
     ListChecks,
     type LucideIcon,
@@ -24,7 +24,6 @@ import {
     PackagePlus,
     Palette,
     PartyPopper,
-    Percent,
     QrCode,
     Receipt,
     Send,
@@ -50,7 +49,7 @@ import { isOrdersHash, ORDERS_HASH_ROOT } from '@/lib/adminOrders';
 import { isOutreachHash, OUTREACH_HASH_ROOT } from '@/lib/adminOutreachRouting';
 import { isPartnerApplicationsHash, PARTNER_APPLICATIONS_HASH_ROOT } from '@/lib/adminPartnerApplicationsRouting';
 import { isPlansHash, PLANS_HASH_ROOT } from '@/lib/adminPlansRouting';
-import { CAMPAIGNS_HASH_ROOT, DISCOUNT_CAMPAIGNS_HASH_ROOT, isRecordHash } from '@/lib/adminRecordRouting';
+import { CAMPAIGNS_HASH_ROOT, isRecordHash } from '@/lib/adminRecordRouting';
 import { isWithdrawalsHash, WITHDRAWALS_HASH_ROOT } from '@/lib/adminWithdrawalsRouting';
 import type { PlatformRole } from '@/lib/api/types';
 import { pushPageEntry, replacePageUrl } from '@/lib/overlayHistory';
@@ -67,7 +66,6 @@ export type AdminTab =
     | 'outreachRequests'
     | 'inviart'
     | 'discountCodes'
-    | 'discountCampaigns'
     | 'guestOffer'
     | 'partnerApplications'
     | 'collaborations'
@@ -76,6 +74,7 @@ export type AdminTab =
     | 'themePresets'
     | 'themeFonts'
     | 'qrCards'
+    | 'invitationThemes'
     | 'demoEvents'
     | 'billingOps'
     | 'events'
@@ -87,7 +86,6 @@ export type AdminTab =
     | 'vendorMessages'
     | 'errorEvents'
     | 'appReviews'
-    | 'campaignOverview'
     | 'campaigns'
     | 'siteNotices'
     | 'auditLog'
@@ -126,13 +124,13 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#outreach-requests': 'outreachRequests',
     '#inviart': 'inviart',
     '#discount-codes': 'discountCodes',
-    '#discount-campaigns': 'discountCampaigns',
     '#guest-offer': 'guestOffer',
     '#partner-cards': 'partnerCards',
     '#reaction-types': 'reactionTypes',
     '#theme-presets': 'themePresets',
     '#theme-fonts': 'themeFonts',
     '#qr-cards': 'qrCards',
+    '#save-my-date-themes': 'invitationThemes',
     '#billing-ops': 'billingOps',
     '#accounts': 'accounts',
     '#reports': 'reports',
@@ -140,7 +138,6 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#vendor-messages': 'vendorMessages',
     '#errors': 'errorEvents',
     '#reviews': 'appReviews',
-    '#campaign-overview': 'campaignOverview',
     '#campaigns': 'campaigns',
     '#site-notices': 'siteNotices',
     '#audit-log': 'auditLog',
@@ -159,7 +156,6 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     outreachRequests: '#outreach-requests',
     inviart: '#inviart',
     discountCodes: '#discount-codes',
-    discountCampaigns: DISCOUNT_CAMPAIGNS_HASH_ROOT,
     guestOffer: '#guest-offer',
     partnerApplications: PARTNER_APPLICATIONS_HASH_ROOT,
     collaborations: COLLABORATIONS_HASH_ROOT,
@@ -168,13 +164,13 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     themePresets: '#theme-presets',
     themeFonts: '#theme-fonts',
     qrCards: '#qr-cards',
+    invitationThemes: '#save-my-date-themes',
     demoEvents: DEMO_EVENTS_HASH_ROOT,
     billingOps: '#billing-ops',
     events: EVENTS_HASH_ROOT,
     orders: ORDERS_HASH_ROOT,
     withdrawals: WITHDRAWALS_HASH_ROOT,
     accounts: '#accounts',
-    campaignOverview: '#campaign-overview',
     campaigns: CAMPAIGNS_HASH_ROOT,
     reports: '#reports',
     bugReports: '#bug-reports',
@@ -199,6 +195,12 @@ const AdminNavigationContext = createContext<
     | undefined
 >(undefined);
 
+// The old Campaign overview and Discount campaigns pages are part of Campaigns now. Their addresses,
+// a discount campaign's page included, open Campaigns.
+function isRetiredCampaignHash(hash: string): boolean {
+    return hash === '#campaign-overview' || isRecordHash('#discount-campaigns', hash);
+}
+
 // `#plans/...`, `#collaborations/...`, `#withdrawals/...`, `#events/...` and `#orders/...` carry their own sub-route, parsed by
 // the section itself; legacy `#event-plans`, `#modules`, `#event-types` land
 // on Plans too so old links keep working.
@@ -214,7 +216,7 @@ function hashTab(): AdminTab | null {
     if (isOrdersHash(hash)) return 'orders';
     if (isEventsHash(hash)) return 'events';
     if (isRecordHash(CAMPAIGNS_HASH_ROOT, hash)) return 'campaigns';
-    if (isRecordHash(DISCOUNT_CAMPAIGNS_HASH_ROOT, hash)) return 'discountCampaigns';
+    if (isRetiredCampaignHash(hash)) return 'campaigns';
     return HASH_TO_TAB[hash] ?? null;
 }
 
@@ -240,8 +242,8 @@ export function AdminNavigationProvider({ children, role = 'ADMIN' }: { children
         function syncFromHash() {
             const shown = hashTab();
             const next = currentHashTab(role);
-            // A hidden section's link is rewritten, so Back doesn't return to it.
-            if (shown !== next) replacePageUrl(TAB_TO_HASH[next]);
+            // A hidden section's link, or an old campaign page's, is rewritten, so Back doesn't return to it.
+            if (shown !== next || isRetiredCampaignHash(window.location.hash)) replacePageUrl(TAB_TO_HASH[next]);
             setTabState(next);
         }
 
@@ -286,10 +288,8 @@ export function AdminNavigationProvider({ children, role = 'ADMIN' }: { children
             { key: 'outreachRequests', label: t('outreachRequests'), icon: ListChecks },
             { key: 'inviart', label: t('inviart'), icon: Store },
             { key: 'discountCodes', label: t('discountCodes'), icon: TicketPercent },
-            { key: 'discountCampaigns', label: t('discountCampaigns'), icon: Percent },
             { key: 'guestOffer', label: t('guestOffer'), icon: Gift },
             { key: 'appReviews', label: t('appReviews'), icon: Star },
-            { key: 'campaignOverview', label: t('campaignOverview'), icon: ChartLine },
             { key: 'campaigns', label: t('campaigns'), icon: Link2 },
             { key: 'partnerApplications', label: t('partnerApplications'), icon: Inbox },
             { key: 'collaborations', label: t('collaborations'), icon: Handshake },
@@ -298,6 +298,7 @@ export function AdminNavigationProvider({ children, role = 'ADMIN' }: { children
             { key: 'themePresets', label: t('themePresets'), icon: Palette },
             { key: 'themeFonts', label: t('themeFonts'), icon: Type },
             { key: 'qrCards', label: t('qrCards'), icon: QrCode },
+            { key: 'invitationThemes', label: t('invitationThemes'), icon: LayoutTemplate },
             { key: 'demoEvents', label: t('demoEvents'), icon: MonitorPlay },
             { key: 'accounts', label: t('accounts'), icon: Users },
             { key: 'events', label: t('events'), icon: PartyPopper },

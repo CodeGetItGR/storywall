@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import {
     getForBusinessPath,
+    getInvitationCataloguePath,
+    getInvitationThemePath,
     getLegalPagePath,
     getQrWeddingPath,
     getVendorPagePath,
+    invitationPageForPath,
     isForBusinessPath,
     isQrWeddingPath,
     legalPageForPath,
@@ -166,5 +169,34 @@ describe('localizeLegalHref', () => {
         expect(localizeLegalHref('/report-content', 'el')).toBe('/report-content');
         expect(localizeLegalHref('/legal/cookies-old', 'el')).toBe('/legal/cookies-old');
         expect(localizeLegalHref('/', 'el')).toBe('/');
+    });
+});
+
+describe('invitation pages', () => {
+    it('gives each locale its own catalogue URL with the theme slug under it', () => {
+        expect(getInvitationCataloguePath('en')).toBe('/invitations');
+        expect(getInvitationCataloguePath('el')).toBe('/el/prosklitiria');
+        expect(getInvitationThemePath('olive', 'en')).toBe('/invitations/olive');
+        expect(getInvitationThemePath('olive', 'el')).toBe('/el/prosklitiria/olive');
+    });
+
+    it('reads the page and language from either URL', () => {
+        expect(invitationPageForPath('/invitations')).toEqual({ locale: 'en', themeSlug: null });
+        expect(invitationPageForPath('/el/prosklitiria/olive')).toEqual({ locale: 'el', themeSlug: 'olive' });
+    });
+
+    it('is null everywhere else', () => {
+        expect(invitationPageForPath('/el/invitations')).toBeNull();
+        expect(invitationPageForPath('/prosklitiria')).toBeNull();
+        expect(invitationPageForPath('/invitations/olive/extra')).toBeNull();
+        expect(invitationPageForPath('/invitations-old')).toBeNull();
+        expect(invitationPageForPath(null)).toBeNull();
+    });
+
+    it('sets the page language and maps each page to its twin', () => {
+        expect(publicPageLocale('/invitations/olive')).toBe('en');
+        expect(publicPageLocale('/el/prosklitiria')).toBe('el');
+        expect(publicTwinPath('/invitations', 'el')).toBe('/el/prosklitiria');
+        expect(publicTwinPath('/el/prosklitiria/olive', 'en')).toBe('/invitations/olive');
     });
 });

@@ -24,7 +24,7 @@ export function WeddingSponsorsSimpleSection({ section, contrast, ctx }: Wedding
                 </div>
             </div>
             {/* Decoration */}
-            <FamilyDecoration decoration={data.decoration} ctx={ctx} />
+            <FamilyDecoration sectionId={section.id} decoration={data.decoration} ctx={ctx} />
             {/* Elements */}
             <InvitationElements elements={section.elements} contrast={contrast} ctx={ctx} />
         </div>

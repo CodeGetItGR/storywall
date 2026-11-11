@@ -31,6 +31,8 @@ export type DraftAutosave = {
     // Saves now and waits, also for a save already on its way. True once everything is saved.
     flush: () => Promise<boolean>;
     status: () => SaveStatus;
+    // The revision the last save answered with: what a publish must name.
+    revision: () => number;
     // Stops the timers. With save, unsaved changes are still sent, without waiting.
     dispose: (options?: { save?: boolean }) => void;
 };
@@ -184,6 +186,7 @@ export function createDraftAutosave<D>(options: DraftAutosaveOptions<D>): DraftA
         },
 
         status: () => status,
+        revision: () => revision,
 
         dispose: ({ save = false } = {}) => {
             clearTimers();
