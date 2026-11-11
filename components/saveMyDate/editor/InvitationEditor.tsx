@@ -13,9 +13,11 @@ import { EditorPanelBar } from '@/components/saveMyDate/editor/EditorPanelBar';
 import { EditorPanelSheet } from '@/components/saveMyDate/editor/EditorPanelSheet';
 import { EditorPreview } from '@/components/saveMyDate/editor/EditorPreview';
 import { EditorTopBar } from '@/components/saveMyDate/editor/EditorTopBar';
+import { PublishEventSheet } from '@/components/saveMyDate/editor/publish/PublishEventSheet';
 import { PublishNotice } from '@/components/saveMyDate/editor/publish/PublishNotice';
 import { PublishPlanDialog } from '@/components/saveMyDate/editor/publish/PublishPlanDialog';
 import { PublishSheet } from '@/components/saveMyDate/editor/publish/PublishSheet';
+import { PublishSignInDialog } from '@/components/saveMyDate/editor/publish/PublishSignInDialog';
 import { SectionSettings } from '@/components/saveMyDate/editor/settings/SectionSettings';
 import { InlineTextEditing } from '@/components/saveMyDate/editor/text/InlineTextEditing';
 import { TextColorSetting } from '@/components/saveMyDate/editor/TextColorSetting';
@@ -112,6 +114,8 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
             />
 
             {/* Publishing */}
+            <PublishSignInDialog signIn={editor.publishing.signIn} />
+            <PublishEventSheet step={editor.publishing.eventStep} draftId={draft.id} eventType={draft.eventType} document={editor.document} />
             <PublishSheet sheet={editor.publishing.sheet} inviteHost={INVITE_HOST} />
             <PublishPlanDialog
                 prompt={editor.publishing.planPrompt}

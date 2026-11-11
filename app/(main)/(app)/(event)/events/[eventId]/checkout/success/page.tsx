@@ -31,7 +31,9 @@ export default function CheckoutSuccessPage() {
     const [timedOut, setTimedOut] = useState(false);
     const [secondsRemaining, setSecondsRemaining] = useState(REDIRECT_SECONDS);
     const isDraftEvent = activeEvent?.id === eventId && activeEvent.status === 'DRAFT';
-    const feedHref = routes.events.feed(eventId);
+    // A host who paid from the invitation editor goes back to it, to publish.
+    const returnTo = pendingCheckout?.returnTo ?? null;
+    const doneHref = returnTo ?? routes.events.feed(eventId);
     const paid = useMemo(
         () =>
             Boolean(orderId) &&
@@ -43,7 +45,7 @@ export default function CheckoutSuccessPage() {
         () => (paid ? (billing.data?.orders.find((order) => order.id === orderId) ?? null) : null),
         [billing.data, orderId, paid],
     );
-    const exitHref = paid ? feedHref : routes.events.manage(eventId);
+    const exitHref = paid ? doneHref : routes.events.manage(eventId);
     useOrderSync(eventId, orderId, !paid && !timedOut);
     useLeaveCheckoutOnBack(exitHref);
     useEffect(() => {
@@ -66,7 +68,7 @@ export default function CheckoutSuccessPage() {
     useEffect(() => {
         if (!paid) return;
 
-        const redirectTimer = window.setTimeout(() => router.replace(feedHref), REDIRECT_SECONDS * 1000);
+        const redirectTimer = window.setTimeout(() => router.replace(doneHref), REDIRECT_SECONDS * 1000);
         const countdownTimer = window.setInterval(() => {
             setSecondsRemaining((current) => Math.max(current - 1, 0));
         }, 1000);
@@ -75,7 +77,7 @@ export default function CheckoutSuccessPage() {
             window.clearTimeout(redirectTimer);
             window.clearInterval(countdownTimer);
         };
-    }, [feedHref, paid, router]);
+    }, [doneHref, paid, router]);
 
     return (
         <main className="mx-auto max-w-xl px-4 py-10 text-center sm:py-16">
@@ -85,13 +87,17 @@ export default function CheckoutSuccessPage() {
                 <h1 className="mt-2 text-2xl font-bold text-ink">{paid ? t('paidTitle') : t('processingTitle')}</h1>
                 <p className="mt-3 text-sm text-ink-muted">{paid ? t('paidBody') : timedOut ? t('timedOutBody') : t('processingBody')}</p>
                 {orderId && <p className="mt-3 text-xs text-ink-faint">{t('orderId', { orderId })}</p>}
-                {paid && <p className="mt-4 text-sm font-medium text-ink-muted">{t('redirectCountdown', { seconds: secondsRemaining })}</p>}
+                {paid && (
+                    <p className="mt-4 text-sm font-medium text-ink-muted">
+                        {t(returnTo ? 'invitationCountdown' : 'redirectCountdown', { seconds: secondsRemaining })}
+                    </p>
+                )}
                 {/* Actions */}
                 <AppLink
                     className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white sm:w-auto"
                     href={exitHref}
                 >
-                    {paid ? t('backToEvent') : t('backToSetup')}
+                    {paid ? t(returnTo ? 'backToInvitation' : 'backToEvent') : t('backToSetup')}
                 </AppLink>
             </div>
             {!paid && isDraftEvent && <p className="mt-5 text-sm leading-relaxed text-ink-muted">{t('draftProcessingNote')}</p>}

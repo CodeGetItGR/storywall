@@ -30,16 +30,21 @@ import { takeVisitSourceParam, VISIT_SOURCE_PARAM } from '@/lib/signupSource';
 // or, worse, gate one that was meant to stay public.
 const PROTECTED_PREFIXES = ['/admin', '/feed', '/home', '/notifications', '/profile', '/business', '/partner', '/event-not-found', '/post/'];
 
-// The Save my date editor needs a session, but only where it exists: on the production site
-// before launch it 404s like the rest of Save my date, instead of sending visitors to log in.
+// The Save my date editor opens signed out too: a visitor edits first and signs in to publish. A
+// session, when there is one, is still handed to the page for its prefetch. On the production site
+// before launch it 404s like the rest of Save my date.
 const SAVE_MY_DATE_EDITOR_PREFIX = '/save-my-date/editor';
 
 function isProtectedPath(pathname: string): boolean {
     if (PROTECTED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix))) return true;
-    if (pathname.startsWith(SAVE_MY_DATE_EDITOR_PREFIX) && showsSaveMyDate()) return true;
     // Every /events/... route (new, checkout, settings) needs a session. The
     // client gate on /events/new only adds role and email-verification checks.
     return pathname.startsWith('/events/');
+}
+
+// Pages that read the session when there is one and open without it.
+function isOptionalSessionPath(pathname: string): boolean {
+    return pathname.startsWith(SAVE_MY_DATE_EDITOR_PREFIX) && showsSaveMyDate();
 }
 
 interface CookieWrite {
@@ -211,10 +216,12 @@ export async function proxy(request: NextRequest) {
         response.cookies.set(localeCookieName, shareLocale, { path: '/', maxAge: localeCookieMaxAge });
         return response;
     }
-    if (!isProtectedPath(pathname)) return NextResponse.next();
+    const optionalSession = isOptionalSessionPath(pathname);
+    if (!optionalSession && !isProtectedPath(pathname)) return NextResponse.next();
 
     const session = await resolveSession(request);
 
+    if (session.kind === 'signed-out' && optionalSession) return NextResponse.next();
     if (session.kind === 'signed-out') {
         const loginUrl = new URL(routes.login, request.url);
         // A source carried from a landing page goes on the login page, so it is known before the

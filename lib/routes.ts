@@ -45,6 +45,8 @@ export const routes = {
     invite: '/invite',
     // The Save my date editor: a draft, or a new draft from a theme.
     saveMyDateEditor: (draftId: string) => `/save-my-date/editor/${draftId}`,
+    // The editor, going on to publish as soon as it opens (back from signing in or paying).
+    saveMyDateEditorPublish: (draftId: string) => withQuery(`/save-my-date/editor/${draftId}`, { publish: 1 }),
     saveMyDateEditorStart: (themeSlug: string) => withQuery('/save-my-date/editor', { theme: themeSlug }),
     saveMyDatePreview: (themeSlug: string) => withQuery('/save-my-date/preview', { theme: themeSlug }),
     home: '/home',

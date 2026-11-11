@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 
+import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
 import { draftHandlers, storyDraft, withEditorScreen } from '@/.storybook/editor';
 import { waitForOpen } from '@/.storybook/waitForOpen';
@@ -10,7 +11,7 @@ import { InvitationEditor } from '@/components/saveMyDate/editor/InvitationEdito
 const meta = {
     title: 'SaveMyDate/Editor/InvitationEditor/Texts',
     component: InvitationEditor,
-    decorators: [withEditorScreen],
+    decorators: [withEditorScreen, withAppContext],
     parameters: { layout: 'fullscreen' },
     args: { draft: storyDraft(), onReload: fn() },
     beforeEach({ msw }) {

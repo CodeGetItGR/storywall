@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createDraftServer } from '@/hooks/invitationDraftTestServer';
+import { WithAuth } from '@/hooks/testAuthContext';
 import { EDITOR_TOUR_SEEN_KEY } from '@/lib/invitation/editorTour';
 import en from '@/messages/en.json';
 
@@ -15,7 +16,7 @@ vi.hoisted(() => {
 });
 
 const router = vi.hoisted(() => ({ back: vi.fn(), push: vi.fn(), replace: vi.fn() }));
-vi.mock('next/navigation', () => ({ useRouter: () => router }));
+vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/save-my-date/editor/draft-1' }));
 vi.mock('@/lib/inAppHistory', () => ({ hasInAppPrevious: () => true }));
 // next/font only works when Next compiles the file.
 vi.mock('@/components/saveMyDate/invitation/invitationFonts', () => ({ INVITATION_FONT_CLASSES: '' }));
@@ -52,7 +53,9 @@ async function openEditor() {
     render(
         <NextIntlClientProvider locale="en" messages={en}>
             <QueryClientProvider client={queryClient}>
-                <InvitationEditorPage draftId="draft-1" />
+                <WithAuth>
+                    <InvitationEditorPage draftId="draft-1" />
+                </WithAuth>
             </QueryClientProvider>
         </NextIntlClientProvider>,
     );
