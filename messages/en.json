@@ -146,14 +146,16 @@
         "locationMissing": "Location not set"
     },
     "GuestOffer": {
-        "title": "Planning your own event?",
-        "line": "Storywall works for weddings, baptisms, birthdays and more.",
-        "discover": "Discover Storywall",
-        "claim": "Get <pct>{percent}%</pct> off",
+        "title": "Make your own Storywall",
+        "line": "For weddings, baptisms, birthdays and more.",
+        "percentOff": "−{percent}%",
+        "onAllPlans": "on all plans",
+        "discover": "See how",
+        "claim": "Get your code",
         "codeLabel": "Your discount code",
+        "validUntil": "Valid until {date}",
         "copy": "Copy",
         "copied": "Copied",
-        "expires": "Use it when you activate an event. Valid until {date}.",
         "close": "Close",
         "claimFailed": "Your code could not be created. Try again."
     },
