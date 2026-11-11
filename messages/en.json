@@ -4219,7 +4219,15 @@
                 "vendorSettings": "Vendor settings",
                 "vendorSettingsChanged": "{count} changed",
                 "vendorSettingsLoading": "Loading the plan's settings…",
-                "vendorSettingsTurnOn": "This turns vendors on for this event only. The plan doesn't change."
+                "vendorSettingsTurnOn": "This turns vendors on for this event only. The plan doesn't change.",
+                "scheduleSection": "Schedule",
+                "addSession": "Add session",
+                "editSession": "Edit session",
+                "sessionSave": "Save",
+                "sessionRemove": "Remove",
+                "sessionCancel": "Cancel",
+                "receptionVenue": "Reception venue",
+                "giftSection": "Gift account"
             },
             "email": {
                 "title": "Email",
