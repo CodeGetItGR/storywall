@@ -238,4 +238,10 @@ describe('overlayHistory', () => {
             expect(reloads).toBe(0);
         });
     });
+
+    it('pushPageEntry stores extra state on the new entry', () => {
+        overlayHistory.pushPageEntry('/?step=plan', { depthMarker: 2 });
+        expect(window.location.search).toBe('?step=plan');
+        expect((window.history.state as Record<string, unknown>).depthMarker).toBe(2);
+    });
 });

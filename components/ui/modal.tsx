@@ -26,6 +26,8 @@ interface ModalProps {
     variant?: 'center' | 'sheet' | 'drawer';
     closeLabel?: string;
     ariaLabel?: string;
+    // The id of a heading inside the dialog that names it (instead of ariaLabel).
+    labelledBy?: string;
     className?: string;
     children: ReactNode;
     closeButtonPosition?: 'left' | 'right';
@@ -46,6 +48,7 @@ export function Modal({
     variant = 'center',
     closeLabel = 'Close',
     ariaLabel,
+    labelledBy,
     className,
     children,
     closeButtonPosition = 'right',
@@ -92,6 +95,7 @@ export function Modal({
                 {/* Surface */}
                 <Dialog.Popup
                     aria-label={ariaLabel}
+                    aria-labelledby={labelledBy}
                     finalFocus={finalFocus}
                     className={cn(
                         scopeClass,

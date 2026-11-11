@@ -244,12 +244,17 @@ function reactionType(code: string, name: string, emoji: string, sortOrder: numb
     return { id: `rt-${code}`, eventTypeKey: 'WEDDING', code, name, emoji, sortOrder, isAssignable: true };
 }
 
-export const storyReactionTypes = [reactionType('LOVE', 'Love', '❤️', 0), reactionType('LAUGH', 'Laugh', '😂', 1), reactionType('WOW', 'Wow', '😮', 2)];
+export const storyReactionTypes = [
+    reactionType('LOVE', 'Love', '❤️', 0),
+    reactionType('LAUGH', 'Laugh', '😂', 1),
+    reactionType('WOW', 'Wow', '😮', 2),
+];
 
 // Only the parts of GET /api/config the components in stories read. Add a
 // field here when a story needs it, rather than filling the whole shape.
 export const storyAppConfig = {
     featureFlags: [],
+    withdrawal: { termsVersion: '2026-09-18', windowDays: 14, holdDays: 7 },
     media: { presignedUrlTtlMinutes: 60 },
     pagination: { defaultPageSize: 20, maxPageSize: 100 },
     planTiers: [
@@ -277,6 +282,51 @@ export const storyAppConfig = {
     rateLimits: [],
     reportTargetTypes: ['POST', 'COMMENT', 'MEMBER'],
     reportReasons: [],
+    rsvp: { minAdults: 1, maxAdults: 10, minChildren: 0, maxChildren: 10 },
+    coverage: { minDaysAfterStart: 1, defaultEventDurationHours: 24 },
+    landingReviews: [],
+    newsletter: { enabled: false, discountPercent: 10, rewardValidityMonths: 12 },
+    eventDeletion: { codeDigits: 6, codeValidMinutes: 15, maxCodeAttempts: 5 },
+    betaFeedback: { enabled: false, screenshotMaxBytes: 5_000_000, screenshotMimeTypes: ['image/png'] },
+    errorTracking: { enabled: false },
+} as unknown as AppConfigResponseDto;
+
+function storyEventTypeCopy(en: string, el: string, taglineEn: string, taglineEl: string) {
+    return { name: { en, el }, tagline: { en: taglineEn, el: taglineEl }, voice: {}, modules: {} };
+}
+
+// Two types, so the type step shows its cards instead of the empty state.
+export const storyWizardAppConfig = {
+    ...storyAppConfig,
+    eventTypes: [
+        {
+            id: 'type-wedding',
+            eventTypeKey: 'WEDDING',
+            icon: 'heart',
+            accentToken: 'rose',
+            isEnabled: true,
+            sortOrder: 1,
+            imageUrl: null,
+            hasDemo: true,
+        },
+        {
+            id: 'type-baptism',
+            eventTypeKey: 'BAPTISM',
+            icon: 'baby',
+            accentToken: 'sky',
+            isEnabled: true,
+            sortOrder: 2,
+            imageUrl: null,
+            hasDemo: true,
+        },
+    ],
+    eventTypeKeys: ['WEDDING', 'BAPTISM'],
+    translations: {
+        eventTypes: {
+            WEDDING: storyEventTypeCopy('Wedding', 'Γάμος', 'Every moment of your big day', 'Κάθε στιγμή της μεγάλης μέρας'),
+            BAPTISM: storyEventTypeCopy('Baptism', 'Βάπτιση', 'A day to remember', 'Μια μέρα να θυμάστε'),
+        },
+    },
 } as unknown as AppConfigResponseDto;
 
 export function storyQrLink(overrides: Partial<QrLinkResponseDto> = {}): QrLinkResponseDto {

@@ -1,3 +1,4 @@
+import { heroCreateAttributes } from '@/lib/createEventFab';
 import type { LandingHeroMainAction } from '@/lib/landingHero';
 import { landingClickAttributes } from '@/lib/landingTracking';
 import { routes } from '@/lib/routes';
@@ -18,9 +19,11 @@ type LandingHeroActionsProps = {
     demoHref?: string;
     // The occasion heroes show plain buttons.
     plain?: boolean;
+    // Where the phone create button goes once this hero scrolls away: an occasion's own create link.
+    createHref?: string;
 };
 
-export function LandingHeroActions({ main, mainLabel, demoLabel, demoHref = routes.demo, plain = false }: LandingHeroActionsProps) {
+export function LandingHeroActions({ main, mainLabel, demoLabel, demoHref = routes.demo, plain = false, createHref }: LandingHeroActionsProps) {
     return (
         <div className="mt-7 flex flex-row flex-wrap gap-2 min-[761px]:mt-9 min-[761px]:gap-3">
             {/* Main action */}
@@ -32,6 +35,7 @@ export function LandingHeroActions({ main, mainLabel, demoLabel, demoHref = rout
                 )}
                 href={main.href}
                 {...landingClickAttributes(main.click)}
+                {...heroCreateAttributes(createHref)}
             >
                 {/* A long label wraps instead of running past the edge */}
                 <span className="min-w-0 leading-tight whitespace-normal">{mainLabel}</span>

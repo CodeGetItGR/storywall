@@ -19,6 +19,7 @@
         "campaignEndsIn": "Ends in {countdown}.",
         "campaignEndsOn": "Ends on {date}",
         "seePlans": "See plans",
+        "getStarted": "Get started",
         "countdownDays": "{days}d {hours}h {minutes}m",
         "countdownHours": "{hours}h {minutes}m",
         "countdownMinutes": "{minutes}m {seconds}s"
@@ -1018,6 +1019,10 @@
     },
     "CreateEventPage": {
         "goBack": "Go back",
+        "wizard": {
+            "stepCounter": "Step {current} of {total}",
+            "close": "Close"
+        },
         "title": "Create an event",
         "subtitle": "Add the event details.",
         "detailsHint": "You can add or edit more details after creation.",

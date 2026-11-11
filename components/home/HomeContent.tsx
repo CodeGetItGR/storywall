@@ -2,6 +2,7 @@
 
 import { EmailVerificationBanner } from '@/components/common/EmailVerificationBanner';
 import { EventsQuickRow } from '@/components/home/EventsQuickRow';
+import { HomeCreateEventButton } from '@/components/home/HomeCreateEventButton';
 import { HomeEmptyState } from '@/components/home/HomeEmptyState';
 import { HomeHeader } from '@/components/home/HomeHeader';
 import { HomeNextEventCard } from '@/components/home/HomeNextEventCard';
@@ -10,7 +11,7 @@ import { HomeVerifyEmailState } from '@/components/home/HomeVerifyEmailState';
 import { useHomeContent } from '@/hooks/useHomeContent';
 
 export function HomeContent() {
-    const { canCreateEvent, emptyState, isLoading, items, showVerifyBanner } = useHomeContent();
+    const { canCreateEvent, emptyState, isLoading, items, showCreateButton, showVerifyBanner } = useHomeContent();
     const feedSectionClassName = HOME_SECTION_CLASS_NAME;
 
     return (
@@ -26,6 +27,13 @@ export function HomeContent() {
                 <section className={feedSectionClassName}>
                     <HomeHeader />
                 </section>
+
+                {/* Create */}
+                {showCreateButton && (
+                    <section className={feedSectionClassName}>
+                        <HomeCreateEventButton />
+                    </section>
+                )}
 
                 {/* Email verification notice */}
                 {showVerifyBanner && (
