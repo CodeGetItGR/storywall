@@ -72,7 +72,7 @@ Comparing against the branch point means a PR only shows its own changes, even a
 | `scripts/visual/approve.mjs` | Handles ticking and unticking the box |
 | `scripts/visual/cleanup.mjs` | Deletes a report when its PR closes |
 | `scripts/visual/publish/` | Helpers for those three: manifest validation, comment, rules, GitHub client, reports repo |
-| `scripts/visual/report/` | Static report page template |
+| `scripts/visual/report/` | Report page: source in `src/`, built file in `dist/` |
 
 It reuses what the repo already has: `playwright-core` 1.55.0, `sharp`, and `comparePixels` from `lib/invitation/parity.ts`. `.mjs` files use Node built-ins only, because the publish job installs no dependencies.
 
@@ -168,6 +168,8 @@ If nothing changed and there's no warning, no comment is posted. An existing com
 
 ## Report page
 
+Replaced by [the report page design](2026-11-07-visual-report-page-design.md). This section describes the first version.
+
 A single static page with no framework: `pr-<number>/<short-sha>/index.html`, `manifest.json` and `img/`.
 
 - Grouped by story, with filters for state, width and language.
@@ -196,11 +198,11 @@ All four live in `.github/workflows/`.
 | Job | Permissions and secrets | Runs |
 |---|---|---|
 | `start` | `statuses: write` | Sets the check to pending |
-| `capture` | `contents: read`, no secrets | `npm ci`, Storybook build, capture and compare. Uploads the results as an artifact kept 1 day |
+| `capture` | `contents: read`, no secrets | `npm ci`, a rebuild of the report page that fails if the committed file is out of date, Storybook build, capture and compare. Uploads the results as an artifact kept 1 day |
 | `publish` | `statuses: write`, `pull-requests: write`, the deploy key | `publish.mjs` from the PR's base commit, with no `npm ci` and no Storybook build. Treats the artifact as data and validates it |
 | `finish` (`if: failure() \|\| cancelled()`) | `statuses: write` | Sets the check to error, linking to the run |
 
-New pushes cancel an older run for the same PR. The capture job has a 30-minute timeout, with a target of 15 minutes for the whole run. If phase 3 measures more, captures are split across parallel jobs by a stable hash of the story id.
+New pushes cancel an older run for the same PR. Phase 3 measured about 20 minutes against a target of 15, so KAN-166 split the captures across 6 jobs by position in the sorted list. See `2026-11-08-visual-parallel-capture-design.md`.
 
 **Baseline cache key:** `visual-base-<sha>-<toolHash>-pw<version>`, where `toolHash` covers `capture.ts`, `stories.ts` and `config.ts`, and `<version>` is the Playwright version. If the tool changes, captures are retaken with the new settings. A cache miss only makes a run slower, so eviction is safe.
 

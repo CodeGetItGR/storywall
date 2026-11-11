@@ -27,6 +27,12 @@ export type InvitationLabels = {
     parents: string;
     godparents: string;
     photoAlt: string;
+    eventPhotoAlt: string;
+    galleryPhotoAlt: string;
+    galleryDot: string;
+    previousPhoto: string;
+    nextPhoto: string;
+    close: string;
     map: string;
     website: string;
     copy: string;
@@ -47,6 +53,12 @@ export type InvitationLabels = {
     rsvpError: string;
     rsvpNameMissing: string;
     rsvpPhoneMissing: string;
+    rsvpPhoneInvalid: string;
+    rsvpClosed: string;
+    // The starting wording of a text the host adds in the editor.
+    newTitle: string;
+    newSubtitle: string;
+    newParagraph: string;
 };
 
 const SHARED = {
@@ -76,6 +88,12 @@ export const INVITATION_LABELS: Record<DateLanguage, InvitationLabels> = {
         parents: 'Γονείς',
         godparents: 'Νονοί',
         photoAlt: 'Φωτογραφία προσώπου',
+        eventPhotoAlt: 'Φωτογραφία της εκδήλωσης',
+        galleryPhotoAlt: 'Φωτογραφία {n} από {total}',
+        galleryDot: 'Φωτογραφία {n}',
+        previousPhoto: 'Προηγούμενη φωτογραφία',
+        nextPhoto: 'Επόμενη φωτογραφία',
+        close: 'Κλείσιμο',
         map: 'Χάρτης',
         website: 'Ιστοσελίδα',
         copy: 'Αντιγραφή',
@@ -95,6 +113,11 @@ export const INVITATION_LABELS: Record<DateLanguage, InvitationLabels> = {
         rsvpError: 'Κάτι πήγε στραβά — δοκιμάστε ξανά.',
         rsvpNameMissing: 'Συμπλήρωσε το ονοματεπώνυμό σου.',
         rsvpPhoneMissing: 'Συμπλήρωσε το τηλέφωνο επικοινωνίας.',
+        rsvpPhoneInvalid: 'Έλεγξε το τηλέφωνο επικοινωνίας.',
+        rsvpClosed: 'Η εκδήλωση δεν δέχεται πλέον απαντήσεις.',
+        newTitle: 'Νέος τίτλος',
+        newSubtitle: 'Νέος υπότιτλος',
+        newParagraph: 'Νέα παράγραφος',
     },
     en: {
         ...SHARED,
@@ -110,6 +133,12 @@ export const INVITATION_LABELS: Record<DateLanguage, InvitationLabels> = {
         parents: 'Parents',
         godparents: 'Godparents',
         photoAlt: 'Photo of a person',
+        eventPhotoAlt: 'Event photo',
+        galleryPhotoAlt: 'Photo {n} of {total}',
+        galleryDot: 'Photo {n}',
+        previousPhoto: 'Previous photo',
+        nextPhoto: 'Next photo',
+        close: 'Close',
         map: 'Map',
         website: 'Website',
         copy: 'Copy',
@@ -129,6 +158,11 @@ export const INVITATION_LABELS: Record<DateLanguage, InvitationLabels> = {
         rsvpError: 'Something went wrong. Please try again.',
         rsvpNameMissing: 'Fill in your full name.',
         rsvpPhoneMissing: 'Fill in your contact phone.',
+        rsvpPhoneInvalid: 'Check your contact phone.',
+        rsvpClosed: 'This event is no longer accepting replies.',
+        newTitle: 'New title',
+        newSubtitle: 'New subtitle',
+        newParagraph: 'New paragraph',
     },
 };
 

@@ -36,6 +36,9 @@ export type ApiErrorMessageKey =
     | 'discountCampaignOverlap'
     | 'discountCampaignPriceTooLow'
     | 'discountCampaignLinkNameTaken'
+    | 'campaignDiscountAdminOnly'
+    | 'campaignLinkMoveDiscount'
+    | 'campaignClosedForLinks'
     | 'collaboratorBrandingIncomplete'
     | 'outreachRequestDecided'
     | 'outreachRequestPending'
@@ -355,6 +358,11 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.DISCOUNT_CAMPAIGN_OVERLAP]: 'discountCampaignOverlap',
     [ERROR_CODES.DISCOUNT_CAMPAIGN_PRICE_TOO_LOW]: 'discountCampaignPriceTooLow',
     [ERROR_CODES.DISCOUNT_CAMPAIGN_LINK_NAME_TAKEN]: 'discountCampaignLinkNameTaken',
+    [ERROR_CODES.CAMPAIGN_INVALID]: 'discountCampaignInvalid',
+    [ERROR_CODES.CAMPAIGN_DISCOUNT_ADMIN_ONLY]: 'campaignDiscountAdminOnly',
+    [ERROR_CODES.CAMPAIGN_LINK_MOVE_DISCOUNT]: 'campaignLinkMoveDiscount',
+    [ERROR_CODES.CAMPAIGN_CLOSED_FOR_LINKS]: 'campaignClosedForLinks',
+    [ERROR_CODES.CAMPAIGN_LINK_NAME_TAKEN]: 'discountCampaignLinkNameTaken',
     [ERROR_CODES.CONFLICT]: 'conflict',
     [ERROR_CODES.CONCURRENT_MODIFICATION]: 'concurrentModification',
     [ERROR_CODES.COVERAGE_ENDED]: 'coverageEnded',
@@ -653,4 +661,16 @@ export const API_ERROR_MESSAGE_KEYS = {
 
 export function getApiErrorMessageKey(code: number | string | undefined): ApiErrorMessageKey | undefined {
     return API_ERROR_MESSAGE_KEYS[code as KnownApiErrorCode];
+}
+
+export type RateLimitedMessage =
+    | { key: 'rateLimited'; values?: undefined }
+    | { key: 'rateLimitedWithWait'; values: { seconds: number } }
+    | { key: 'rateLimitedWithWaitMinutes'; values: { minutes: number } };
+
+// The 429 copy for the wait the backend asked for. An hourly budget can ask
+// for most of an hour, which reads badly in seconds.
+export function rateLimitedMessage(seconds: number | undefined): RateLimitedMessage {
+    if (!seconds) return { key: 'rateLimited' };
+    return seconds > 90 ? { key: 'rateLimitedWithWaitMinutes', values: { minutes: Math.ceil(seconds / 60) } } : { key: 'rateLimitedWithWait', values: { seconds } };
 }

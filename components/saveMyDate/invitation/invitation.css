@@ -39,6 +39,7 @@
 .smd-invitation h3 { margin: 1em 0; font-size: 1.17em; }
 .smd-invitation h4 { margin: 1.33em 0; font-size: 1em; }
 .smd-invitation p { margin: 1em 0; }
+.smd-invitation small { font-size: smaller; }
 .smd-invitation img { display: inline; max-width: none; height: auto; vertical-align: baseline; }
 .smd-invitation a { color: inherit; }
 
@@ -97,6 +98,12 @@
 .smd-invitation .section.wedart-text-contrast-light .section-inner .program-time,
 .smd-invitation .section.wedart-text-contrast-light .section-inner .program-label,
 .smd-invitation .section.wedart-text-contrast-light .section-inner .footer-link { color: #fff !important; }
+
+/* A soft tint between a photo background and the section's text. With
+   -text-light, text that has no colour of its own turns white; a colour the
+   host picked stays. */
+.smd-invitation .smd-photo-tint { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.smd-invitation .section:has(> .smd-photo-tint-text-light) { color: #fff !important; --site-text: #fff !important; --site-muted: #fff !important; }
 
 /* Phones: sections keep a narrow side gutter; the countdown sets its own. */
 @container smd-invitation (max-width: 599px) {
@@ -391,7 +398,7 @@
 .smd-invitation .couple-contact-wrap { position: relative; max-width: 600px; margin: 0 auto; text-align: center; }
 .smd-invitation .couple-contact-grid { display: grid; gap: 30px; justify-items: center; }
 .smd-invitation .couple-contact-person { text-align: center; max-width: 320px; width: 100%; }
-.smd-invitation .couple-contact-name { margin-top: 0; margin-bottom: 12px; font-family: var(--contact-font, var(--title-font)); color: var(--contact-color, var(--site-text)); text-align: center; }
+.smd-invitation .couple-contact-name { margin-top: 0; margin-bottom: 14px; font-size: 24px; font-family: var(--contact-font, var(--title-font)); color: var(--contact-color, var(--site-text)); text-align: center; }
 @container smd-invitation (min-width: 560px) {
     .smd-invitation .couple-contact-grid { grid-template-columns: 1fr 1fr; }
 }
@@ -478,6 +485,7 @@
 .smd-invitation .family-godparent-simple-item { position: relative; display: inline-block; }
 .smd-invitation .parents-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
 .smd-invitation .person-item { padding: 10px; }
+.smd-invitation .parents-grid small { font-size: 14px; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.8; }
 
 @container smd-invitation (max-width: 599px) {
     .smd-invitation .parents-grid { grid-template-columns: 1fr; }
@@ -510,10 +518,12 @@
 
 /* Couple profiles */
 .smd-invitation .couple-profiles-grid { display: grid; grid-template-columns: 1fr; gap: 36px; max-width: 640px; margin: 0 auto; justify-items: center; }
+/* Next to a partner with a photo, one without sits at the bottom, so the two names line up. */
+.smd-invitation .couple-profiles-grid:has(> .couple-profile-block img) > .couple-profile-block:not(:has(img)) { align-self: end; }
 .smd-invitation .couple-profile-block { text-align: center; width: 100%; }
-.smd-invitation .couple-profile-role { font-size: 13px; letter-spacing: 0.04em; opacity: 0.75; margin-top: 2px; margin-bottom: 16px; text-align: center; }
-.smd-invitation .couple-profile-family-label { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.6; margin-top: 0; margin-bottom: 0; text-align: center; }
-.smd-invitation .couple-profile-family-names { font-weight: 700; margin-top: 2px; margin-bottom: 0; text-align: center; }
+.smd-invitation .couple-profile-role { font-size: 16px; font-style: italic; letter-spacing: 0.02em; opacity: 0.85; margin-top: 2px; margin-bottom: 18px; text-align: center; }
+.smd-invitation .couple-profile-family-label { font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.8; margin-top: 0; margin-bottom: 4px; text-align: center; }
+.smd-invitation .couple-profile-family-names { font-size: 18px; font-weight: 700; margin-top: 2px; margin-bottom: 0; text-align: center; }
 .smd-invitation .couple-profiles-simple-wrap { max-width: 380px; margin: 0 auto; text-align: center; }
 .smd-invitation .couple-profile-simple-block { text-align: center; margin: 0 auto; }
 .smd-invitation .couple-profile-simple-name { text-align: center; }
@@ -524,16 +534,17 @@
 
 /* Wedding sponsors without photos */
 .smd-invitation .wedding-sponsors-simple-title { text-align: center; }
-.smd-invitation .wedding-sponsors-simple-list { max-width: 340px; margin: 8px auto 0; display: flex; flex-direction: column; gap: 6px; text-align: center; }
+.smd-invitation .wedding-sponsors-simple-list { max-width: 340px; margin: 16px auto 0; display: flex; flex-direction: column; gap: 6px; text-align: center; }
 .smd-invitation .wedding-sponsors-simple-name { text-align: center; }
 
 /* Our story */
 .smd-invitation .story-proposal-block { position: relative; max-width: 520px; margin: 0 auto 30px; text-align: center; }
 .smd-invitation .story-proposal-block:last-of-type { margin-bottom: 0; }
-.smd-invitation .story-proposal-divider { border: 0; border-top: 1px solid var(--primary); opacity: 0.55; max-width: 400px; margin: 26px auto; }
-.smd-invitation .story-block-title { font-size: clamp(30px, 6vw, 44px); font-style: italic; margin-top: 0; margin-bottom: 2px; text-align: center; }
-.smd-invitation .story-block-subtitle { font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.75; margin-top: 0; margin-bottom: 16px; text-align: center; }
-.smd-invitation .story-block-body { font-size: 15px; line-height: 1.7; text-align: center; }
+.smd-invitation .story-proposal-divider { border: 0; border-top: 2px solid var(--primary); max-width: 120px; margin: 34px auto; }
+/* No size of its own: like the old page, story titles take the 34px heading size at every width. */
+.smd-invitation .story-block-title { font-style: italic; margin-top: 0; margin-bottom: 2px; text-align: center; }
+.smd-invitation .story-block-subtitle { font-size: 15px; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.85; margin-top: 0; margin-bottom: 12px; text-align: center; }
+.smd-invitation .story-block-body { font-size: 17px; line-height: 1.75; text-align: center; }
 
 /* Locations: phones show one column, wider screens up to two. */
 .smd-invitation .location-grid { display: grid; grid-template-columns: 1fr; gap: 24px; align-items: start; }
@@ -659,3 +670,69 @@
     .smd-invitation .program-icons-label { font-size: min(var(--program-label-size, 17px), 24px); }
     .smd-invitation .program-icons-description { font-size: var(--program-description-size, 12px); }
 }
+
+/* Photo section */
+.smd-invitation .photo-section-inner { position: relative; overflow: hidden; margin: 0; background: #e9e4e0; }
+.smd-invitation .section.photo-section { padding: 0; display: block; }
+.smd-invitation .section.photo-section .section-inner.photo-section-inner { width: 100%; max-width: none; }
+.smd-invitation .photo-section-inner > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; -webkit-user-drag: none; user-select: none; pointer-events: none; }
+
+/* Gallery */
+.smd-invitation .gallery-editor { display: grid; gap: 14px; }
+.smd-invitation .gallery-open { display: block; width: 100%; height: 100%; padding: 0; border: 0; background: none; cursor: pointer; }
+.smd-invitation .gallery-stage { position: relative; width: 100%; max-width: 720px; margin: 0 auto; overflow: hidden; border-radius: 18px; background: rgba(255, 255, 255, .45); }
+.smd-invitation .gallery-stage img { display: block; width: 100%; height: 360px; object-fit: cover; }
+.smd-invitation .gallery-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; padding: 1px 6px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .92); box-shadow: 0 4px 14px rgba(0, 0, 0, .16); color: #000; cursor: pointer; font-size: 22px; }
+.smd-invitation .gallery-prev { left: 12px; }
+.smd-invitation .gallery-next { right: 12px; }
+.smd-invitation .gallery-dots { display: flex; justify-content: center; gap: 7px; margin-top: 11px; }
+.smd-invitation .gallery-dot { width: 8px; height: 8px; border: 0; border-radius: 50%; background: rgba(0, 0, 0, .22); padding: 0; cursor: pointer; }
+.smd-invitation .gallery-dot.active { background: rgba(0, 0, 0, .65); }
+.smd-invitation .wedart-gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 720px; margin: 0 auto; }
+.smd-invitation .wedart-gallery-masonry { columns: 3 150px; column-gap: 10px; width: 100%; max-width: 720px; margin: 0 auto; }
+.smd-invitation .wedart-gallery-featured { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 720px; margin: 0 auto; }
+.smd-invitation .wedart-gallery-cell { position: relative; overflow: hidden; background: rgba(0, 0, 0, .04); }
+.smd-invitation .wedart-gallery-cell.shape-round { border-radius: 50%; aspect-ratio: 1; }
+.smd-invitation .wedart-gallery-cell.shape-square { border-radius: 4px; aspect-ratio: 1; }
+.smd-invitation .wedart-gallery-cell.shape-rectangle { border-radius: 4px; aspect-ratio: 4 / 3; }
+.smd-invitation .wedart-gallery-cell.shape-roundedSquare { border-radius: 20px; aspect-ratio: 1; }
+.smd-invitation .wedart-gallery-cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.smd-invitation .wedart-gallery-masonry .wedart-gallery-cell { break-inside: avoid; margin-bottom: 10px; aspect-ratio: auto; border-radius: 14px; }
+.smd-invitation .wedart-gallery-featured .wedart-gallery-cell:first-child { grid-column: 1 / -1; aspect-ratio: 16 / 9; }
+.smd-invitation .wedart-gallery-featured .wedart-gallery-cell:nth-child(3n):last-child { grid-column: span 2; }
+.smd-invitation .wedart-gallery-featured .wedart-gallery-cell.shape-round:nth-child(3n):last-child,
+.smd-invitation .wedart-gallery-featured .wedart-gallery-cell.shape-square:nth-child(3n):last-child,
+.smd-invitation .wedart-gallery-featured .wedart-gallery-cell.shape-roundedSquare:nth-child(3n):last-child { aspect-ratio: 2 / 1; }
+.smd-invitation .wedart-gallery-featured .wedart-gallery-cell.shape-rectangle:nth-child(3n):last-child { aspect-ratio: 8 / 3; }
+
+@container smd-invitation (max-width: 760px) {
+    .smd-invitation .gallery-stage img { height: 280px; }
+}
+
+@container smd-invitation (max-width: 600px) {
+    .smd-invitation .wedart-gallery-grid,
+    .smd-invitation .wedart-gallery-featured { grid-template-columns: repeat(2, 1fr); }
+    .smd-invitation .wedart-gallery-masonry { columns: 2 140px; }
+    .smd-invitation .wedart-gallery-featured .wedart-gallery-cell:nth-child(3n):last-child { grid-column: auto; }
+    .smd-invitation .wedart-gallery-featured .wedart-gallery-cell.shape-round:nth-child(3n):last-child,
+    .smd-invitation .wedart-gallery-featured .wedart-gallery-cell.shape-square:nth-child(3n):last-child,
+    .smd-invitation .wedart-gallery-featured .wedart-gallery-cell.shape-roundedSquare:nth-child(3n):last-child { aspect-ratio: 1; }
+    .smd-invitation .wedart-gallery-featured .wedart-gallery-cell.shape-rectangle:nth-child(3n):last-child { aspect-ratio: 4 / 3; }
+}
+
+/* Full-screen gallery photo */
+.smd-lightbox { position: fixed; inset: 0; z-index: 2000; background: rgba(10, 10, 12, .92); outline: none; cursor: zoom-out; }
+.smd-lightbox-viewport { height: 100%; overflow: hidden; }
+.smd-lightbox-track { display: flex; height: 100%; }
+.smd-lightbox-slide { flex: 0 0 100%; min-width: 0; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.smd-lightbox-slide img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; box-shadow: 0 20px 60px rgba(0, 0, 0, .5); cursor: default; }
+.smd-lightbox-close { position: fixed; top: calc(14px + env(safe-area-inset-top)); right: 16px; width: 38px; height: 38px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .12); color: #fff; font-size: 18px; cursor: pointer; display: grid; place-items: center; }
+.smd-lightbox-nav { position: fixed; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; border-radius: 50%; border: 0; background: rgba(0, 0, 0, .5); color: #fff; font-size: 22px; cursor: pointer; display: grid; place-items: center; }
+.smd-lightbox-prev { left: 16px; }
+.smd-lightbox-next { right: 16px; }
+
+/* Photo frame */
+.smd-invitation .photo-frame-inner { position: relative; overflow: hidden; margin: 0 auto; background: transparent; max-width: 100%; }
+.smd-invitation .section.photo-frame .photo-frame-inner { width: 100%; max-width: 420px; }
+.smd-invitation .photo-frame-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.smd-invitation .wedart-el-wrap img.photo-frame-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; -webkit-user-drag: none; user-select: none; }

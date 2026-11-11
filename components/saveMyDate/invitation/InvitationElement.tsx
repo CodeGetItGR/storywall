@@ -1,5 +1,7 @@
 import { useTranslations } from 'next-intl';
 
+import { InvitationText } from '@/components/saveMyDate/invitation/InvitationText';
+import { PhotoFrame } from '@/components/saveMyDate/invitation/sections/media/PhotoFrame';
 import type { InvitationElement as Element } from '@/lib/invitation/elements';
 import {
     elementTextRole,
@@ -23,12 +25,14 @@ export function InvitationElement({ element, contrast, ctx }: InvitationElementP
     switch (element.kind) {
         case 'text':
             return (
-                <div
+                <InvitationText
+                    render={ctx.renderText}
+                    target={{ kind: 'element', elementId: element.id }}
+                    value={element.text}
+                    tag="div"
                     className="text-block"
                     style={textStyleCss(element.style, { role: elementTextRole(element.role), contrast, defaultMarginTop: 18 }, ctx)}
-                >
-                    {element.text}
-                </div>
+                />
             );
         case 'spacer':
             return <div className="wedart-spacer" style={{ height: element.height }} />;
@@ -50,8 +54,9 @@ export function InvitationElement({ element, contrast, ctx }: InvitationElementP
                     </a>
                 </div>
             );
-        // Photo frames come with the frame renderer; a column break is layout only.
         case 'photoFrame':
+            return <PhotoFrame element={element} ctx={ctx} />;
+        // A column break is layout only.
         case 'columnBreak':
             return null;
     }

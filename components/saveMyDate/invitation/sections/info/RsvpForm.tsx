@@ -1,14 +1,19 @@
 'use client';
 
-import { useId } from 'react';
+import { type CSSProperties, useId } from 'react';
 
 import { useInvitationRsvp } from '@/hooks/useInvitationRsvp';
 import type { InvitationLabels } from '@/lib/invitation/labels';
 import {
     RSVP_DEFAULT_ADULTS,
     RSVP_DEFAULT_CHILDREN,
+    RSVP_HONEYPOT_FIELD,
     RSVP_MAX_ADULTS,
     RSVP_MAX_CHILDREN,
+    RSVP_MAX_EMAIL,
+    RSVP_MAX_NAME,
+    RSVP_MAX_NOTES,
+    RSVP_MAX_PHONE,
     rsvpCountOptions,
     type RsvpSender,
 } from '@/lib/invitation/rsvp';
@@ -17,6 +22,8 @@ type RsvpFormProps = {
     labels: InvitationLabels;
     send?: RsvpSender;
 };
+
+const HONEYPOT_STYLE: CSSProperties = { position: 'absolute', left: '-10000px', width: 1, height: 1, overflow: 'hidden' };
 
 export function RsvpForm({ labels, send }: RsvpFormProps) {
     const id = useId();
@@ -29,17 +36,17 @@ export function RsvpForm({ labels, send }: RsvpFormProps) {
             {/* Name */}
             <div>
                 <label htmlFor={`${id}-name`}>{labels.rsvpName}</label>
-                <input id={`${id}-name`} name="guestName" required placeholder={labels.rsvpPlaceholder} />
+                <input id={`${id}-name`} name="guestName" required maxLength={RSVP_MAX_NAME} placeholder={labels.rsvpPlaceholder} />
             </div>
             {/* Phone */}
             <div>
                 <label htmlFor={`${id}-phone`}>{labels.rsvpPhone}</label>
-                <input id={`${id}-phone`} name="phone" type="tel" required placeholder={labels.rsvpPlaceholder} />
+                <input id={`${id}-phone`} name="phone" type="tel" required maxLength={RSVP_MAX_PHONE} placeholder={labels.rsvpPlaceholder} />
             </div>
             {/* Email */}
             <div>
                 <label htmlFor={`${id}-email`}>{labels.rsvpEmail}</label>
-                <input id={`${id}-email`} name="email" type="email" placeholder={labels.rsvpPlaceholder} />
+                <input id={`${id}-email`} name="email" type="email" maxLength={RSVP_MAX_EMAIL} placeholder={labels.rsvpPlaceholder} />
             </div>
             {/* Attendance */}
             <div>
@@ -59,7 +66,7 @@ export function RsvpForm({ labels, send }: RsvpFormProps) {
             <div className="rsvp-counts" style={attending ? undefined : { display: 'none' }}>
                 <div>
                     <label htmlFor={`${id}-adults`}>{labels.rsvpAdults}</label>
-                    <select id={`${id}-adults`} name="adultsCount" defaultValue={RSVP_DEFAULT_ADULTS}>
+                    <select id={`${id}-adults`} name="adultCount" defaultValue={RSVP_DEFAULT_ADULTS}>
                         {rsvpCountOptions(1, RSVP_MAX_ADULTS).map((count) => (
                             <option key={count} value={count}>
                                 {count}
@@ -69,7 +76,7 @@ export function RsvpForm({ labels, send }: RsvpFormProps) {
                 </div>
                 <div>
                     <label htmlFor={`${id}-children`}>{labels.rsvpChildren}</label>
-                    <select id={`${id}-children`} name="childrenCount" defaultValue={RSVP_DEFAULT_CHILDREN}>
+                    <select id={`${id}-children`} name="childCount" defaultValue={RSVP_DEFAULT_CHILDREN}>
                         {rsvpCountOptions(0, RSVP_MAX_CHILDREN).map((count) => (
                             <option key={count} value={count}>
                                 {count}
@@ -81,7 +88,11 @@ export function RsvpForm({ labels, send }: RsvpFormProps) {
             {/* Notes */}
             <div>
                 <label htmlFor={`${id}-note`}>{labels.rsvpNotes}</label>
-                <textarea id={`${id}-note`} name="note" placeholder={labels.rsvpPlaceholder} />
+                <textarea id={`${id}-note`} name="notes" maxLength={RSVP_MAX_NOTES} placeholder={labels.rsvpPlaceholder} />
+            </div>
+            {/* Honeypot: off-screen and hidden from screen readers, so only a bot fills it */}
+            <div aria-hidden="true" style={HONEYPOT_STYLE}>
+                <input name={RSVP_HONEYPOT_FIELD} type="text" tabIndex={-1} autoComplete="off" defaultValue="" />
             </div>
             {/* Submit */}
             <button className="theme-btn rsvp-btn" type="submit" disabled={sending}>

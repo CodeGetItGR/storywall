@@ -121,8 +121,10 @@ describe('sectionShell', () => {
     });
 
     it('names footers and theme backgrounds', () => {
-        expect(sectionShell(SAMPLE_SECTIONS.footer, 0, ctx).className).toBe('section footer');
-        expect(sectionShell(SAMPLE_SECTIONS.top, 0, ctx).className).toBe('section has-theme-bg');
+        // The sample section above the footer has art on its bottom edge.
+        expect(sectionShell(SAMPLE_SECTIONS.footer, 0, ctx).className).toBe('section footer wedart-transition-adjacent');
+        // The sample top section has falling petals.
+        expect(sectionShell(SAMPLE_SECTIONS.top, 0, ctx).className).toBe('section has-theme-bg wedart-bg-effect-active');
     });
 });
 
@@ -130,6 +132,13 @@ describe('textStyleCss', () => {
     it('gives added text 18px above and nothing below', () => {
         const css = textStyleCss({ size: 20 }, { role: 'body', contrast: 'normal', defaultMarginTop: 18 }, ctx);
         expect(css).toMatchObject({ fontFamily: 'inherit', fontSize: '20px', marginTop: '18px', marginBottom: 0, textAlign: 'center' });
+    });
+
+    it('lets a host turn italic off where the field is italic by default', () => {
+        const role = { role: 'body', contrast: 'normal' } as const;
+        expect(textStyleCss({ italic: false }, role, ctx).fontStyle).toBe('normal');
+        expect(textStyleCss({ italic: true }, role, ctx).fontStyle).toBe('italic');
+        expect(textStyleCss({}, role, ctx).fontStyle).toBeUndefined();
     });
 
     it('leaves section fields without margins unless set', () => {

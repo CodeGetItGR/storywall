@@ -133,6 +133,14 @@ export default defineConfig([
     },
 
     /*
+     * The visual check's report page is a static page built by Vite, not a Next page.
+     */
+    {
+        files: ['scripts/visual/report/src/**/*.tsx'],
+        rules: { '@next/next/no-img-element': 'off' },
+    },
+
+    /*
      * Must come near the end. It disables ESLint formatting rules that
      * could conflict with Prettier.
      */

@@ -1,11 +1,13 @@
 import type { CSSProperties } from 'react';
 
+import { activeEffect, revealsBackground, type SectionEffect } from '@/lib/invitation/backgroundEffects';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationElement } from '@/lib/invitation/elements';
 import { INVITATION_LABELS, type InvitationLabels, invitationLanguage } from '@/lib/invitation/labels';
 import type { ImageRef, TextStyle } from '@/lib/invitation/primitives';
 import type { RsvpSender } from '@/lib/invitation/rsvp';
 import type { InvitationSection } from '@/lib/invitation/sections';
+import type { TextRenderer } from '@/lib/invitation/textEditing';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import { PHOTO_SHAPES } from '@/lib/invitation/theme';
 
@@ -30,11 +32,15 @@ export type RenderContext = {
     forcePreset: boolean;
     // The date the countdown counts to: the first date section's, hidden or not.
     eventIso?: string;
+    // Sections touching a transition's art.
+    transitionAdjacent: ReadonlySet<string>;
     // Fixed labels in the invitation's own language.
     labels: InvitationLabels;
     // Sends an RSVP reply. Without one (the preview) the form shows its
     // success state and nothing is saved.
     sendRsvp?: RsvpSender;
+    // The editor draws every text so it can be typed in; guests get plain text.
+    renderText?: TextRenderer;
 };
 
 const DEFAULT_TEXT_COLOR = '#2f2b2d';
@@ -59,6 +65,7 @@ export function buildRenderContext(
         presetMode: forcePreset || Boolean(theme.typographyPresetId),
         forcePreset,
         eventIso: dateSection?.type === 'date' ? dateSection.data.iso : undefined,
+        transitionAdjacent: transitionAdjacentIds(document.sections),
         labels: INVITATION_LABELS[invitationLanguage(document)],
         sendRsvp,
     };
@@ -167,6 +174,37 @@ function cssUrl(url: string): string {
     return `url("${url.replace(/["\\\n\r]/g, (char) => encodeURIComponent(char))}")`;
 }
 
+// The photo a section shows behind its text on a wide and on a narrow
+// invitation: the host's photo, or the theme background's desktop and mobile
+// images, picked the same way sectionBackground picks them.
+export type SectionPhotos = { desktop: string; mobile: string };
+
+export function sectionBackgroundPhotos(section: InvitationSection, index: number, ctx: RenderContext): SectionPhotos | undefined {
+    const { background } = section.style;
+    if (background.kind === 'color') return undefined;
+    if (background.kind === 'image') {
+        const url = resolveImage(background.image, ctx);
+        if (url) return { desktop: url, mobile: url };
+    }
+    const slot = ctx.theme.backgrounds[themeSlot(section, index)];
+    const desktop = slot.desktop ? ctx.media(slot.desktop.mediaId) : undefined;
+    const mobile = slot.mobile ? ctx.media(slot.mobile.mediaId) : undefined;
+    const wide = desktop ?? mobile;
+    return wide ? { desktop: wide, mobile: mobile ?? wide } : undefined;
+}
+
+export type SectionPhotoTint = { photos: SectionPhotos; textColor: string };
+
+// What the browser needs to keep text on a photo readable: the photos and the
+// colour of text that has none of its own. A host who picked the text
+// contrast by hand gets no tint, and a photo section's photo is its content,
+// not a background.
+export function sectionPhotoTint(section: InvitationSection, index: number, ctx: RenderContext): SectionPhotoTint | undefined {
+    if (section.style.textContrast !== 'auto' || section.type === 'photo') return undefined;
+    const photos = sectionBackgroundPhotos(section, index, ctx);
+    return photos ? { photos, textColor: ctx.textColor } : undefined;
+}
+
 // A solid colour behind the section, or '' when it shows an image.
 function solidBackgroundColor(section: InvitationSection, index: number, ctx: RenderContext): string {
     const { background } = section.style;
@@ -204,7 +242,41 @@ export function resolveTextColor(contrast: TextContrast, explicit: string | unde
     return explicit || undefined;
 }
 
-export type SectionShell = { className: string; style: CSSProperties; contrast: TextContrast };
+export type SectionTransitionArt = { name: string; edge: 'top' | 'bottom'; desktop: string; mobile?: string };
+
+export function sectionTransitionArt(section: InvitationSection, ctx: RenderContext): SectionTransitionArt | undefined {
+    const { transition } = section.style;
+    if (!transition) return undefined;
+    const asset = ctx.theme.transitions.find((item) => item.id === transition.assetId);
+    const desktop = asset && ctx.media(asset.desktop.mediaId);
+    if (!asset || !desktop) return undefined;
+    const mobile = asset.mobile && ctx.media(asset.mobile.mediaId);
+    return { name: asset.name, edge: transition.edge, desktop, mobile: mobile || undefined };
+}
+
+// Sections touching a transition's art: its own, and the neighbour its art hangs
+// over. Hidden sections count, as they did in the old renderer.
+export function transitionAdjacentIds(sections: InvitationSection[]): ReadonlySet<string> {
+    return new Set(
+        sections
+            .filter((section, index) => {
+                const previous = sections[index - 1]?.style.transition;
+                const next = sections[index + 1]?.style.transition;
+                return Boolean(section.style.transition) || previous?.edge === 'bottom' || next?.edge === 'top';
+            })
+            .map((section) => section.id),
+    );
+}
+
+export type SectionShell = {
+    className: string;
+    style: CSSProperties;
+    contrast: TextContrast;
+    effect?: SectionEffect;
+    // What an effect's own layer paints; the section keeps it too, underneath.
+    effectBackground: SectionBackground;
+    transition?: SectionTransitionArt;
+};
 
 const KEEPS_SAVED_HEIGHT: ReadonlySet<InvitationSection['type']> = new Set(['photo', 'photoFrame', 'footer']);
 
@@ -212,10 +284,12 @@ const KEEPS_SAVED_HEIGHT: ReadonlySet<InvitationSection['type']> = new Set(['pho
 export function sectionShell(section: InvitationSection, index: number, ctx: RenderContext): SectionShell {
     const contrast = sectionTextContrast(section, index, ctx);
     const background = sectionBackground(section, index, ctx);
+    const effect = activeEffect(section.style);
+    const surface = effect && revealsBackground(effect.type) ? { style: { background: 'transparent' }, hasThemeImage: false } : background;
     const baseText = resolveTextColor(contrast, ctx.textColor, ctx) || ctx.textColor;
     const { minHeight, paddingY } = section.style;
     const style: Record<string, unknown> = {
-        ...background.style,
+        ...surface.style,
         color: baseText,
         '--site-text': baseText,
         '--site-muted': baseText,
@@ -236,12 +310,21 @@ export function sectionShell(section: InvitationSection, index: number, ctx: Ren
         section.type === 'footer' && 'footer',
         section.type === 'photo' && 'photo-section',
         section.type === 'photoFrame' && 'photo-frame',
-        background.hasThemeImage && 'has-theme-bg',
+        surface.hasThemeImage && 'has-theme-bg',
         contrast === 'light' && 'wedart-text-contrast-light',
+        ctx.transitionAdjacent.has(section.id) && 'wedart-transition-adjacent',
+        effect && 'wedart-bg-effect-active',
     ]
         .filter(Boolean)
         .join(' ');
-    return { className, style: style as CSSProperties, contrast };
+    return {
+        className,
+        style: style as CSSProperties,
+        contrast,
+        effect,
+        effectBackground: background,
+        transition: sectionTransitionArt(section, ctx),
+    };
 }
 
 // Theme art (main art, location icons) never outgrows its container.
@@ -252,6 +335,11 @@ export function artImageStyle(base: number, scale: number, isIcon = false): CSSP
 
 export function artAnimationClass(animation: string): string {
     return animation === 'none' ? '' : `wedart-anim-${animation}`;
+}
+
+// Goes on the element around a photo frame's .photo-frame-inner.
+export function frameAnimationClass(animation: string): string {
+    return animation === 'none' ? '' : `wedart-frame-anim-${animation}`;
 }
 
 export type TextRole = 'title' | 'body';
@@ -291,7 +379,8 @@ export function textStyleCss(style: TextStyle, options: TextCssOptions, ctx: Ren
     else if (options.defaultMarginTop !== undefined) css.marginBottom = 0;
     if (style.lineHeight) css.lineHeight = style.lineHeight;
     if (style.bold) css.fontWeight = 700;
-    if (style.italic) css.fontStyle = 'italic';
+    // Some fields are italic by default, so a host who turns italic off needs `normal`, not nothing.
+    if (style.italic !== undefined) css.fontStyle = style.italic ? 'italic' : 'normal';
     return css;
 }
 
