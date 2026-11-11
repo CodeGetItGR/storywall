@@ -9,9 +9,9 @@ vi.mock('next-intl', () => ({ useTranslations: (ns: string) => (key: string) => 
 vi.mock('@/providers/createEvent/CreateEventFormContext', () => ({ useCreateEventForm: () => state.form }));
 vi.mock('@/lib/createEventSteps', () => ({ focusFirstUncheckedBox: state.focus }));
 
-function setup(variant?: 'link' | 'chip', overrides: Record<string, unknown> = {}) {
+function setup(highlight?: boolean, overrides: Record<string, unknown> = {}) {
     state.form = { formId: 'create-form', consentSatisfied: false, error: null, ...overrides };
-    render(<EventOverviewConsentHint variant={variant} />);
+    render(<EventOverviewConsentHint highlight={highlight} />);
 }
 
 afterEach(() => {
@@ -20,25 +20,31 @@ afterEach(() => {
 });
 
 describe('EventOverviewConsentHint', () => {
-    it('scrolls to the boxes without a highlight as a link', () => {
+    it('scrolls to the boxes without a highlight by default', () => {
         setup();
         fireEvent.click(screen.getByRole('button', { name: 'CreateEventPage.overview.consentHint' }));
         expect(state.focus).toHaveBeenCalledWith('create-form', { highlight: false });
     });
 
-    it('scrolls to the boxes and highlights them as a chip', () => {
-        setup('chip');
+    it('scrolls to the boxes and highlights them when asked', () => {
+        setup(true);
         fireEvent.click(screen.getByRole('button', { name: 'CreateEventPage.overview.consentHint' }));
         expect(state.focus).toHaveBeenCalledWith('create-form', { highlight: true });
     });
 
+    it('shows a label passed in instead of the shared line', () => {
+        state.form = { formId: 'create-form', consentSatisfied: false, error: null };
+        render(<EventOverviewConsentHint highlight label="Tick the boxes to continue." />);
+        expect(screen.getByRole('button', { name: 'Tick the boxes to continue.' })).toBeInTheDocument();
+    });
+
     it('hides once the boxes are ticked', () => {
-        setup('chip', { consentSatisfied: true });
+        setup(true, { consentSatisfied: true });
         expect(screen.queryByRole('button')).not.toBeInTheDocument();
     });
 
     it('gives way to the submit error', () => {
-        setup('chip', { error: 'Payment failed' });
+        setup(true, { error: 'Payment failed' });
         expect(screen.queryByRole('button')).not.toBeInTheDocument();
     });
 });
