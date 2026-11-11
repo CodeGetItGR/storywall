@@ -2,6 +2,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { capabilitiesOf } from '@/lib/__fixtures__/eventCapabilities';
 import type { EventDetailResponseDto, EventScheduleDto, EventStatus } from '@/lib/api/types';
 
 import OverviewTab from './OverviewTab';
@@ -44,8 +45,14 @@ const schedule = { startAt: '2026-11-01T10:00:00Z', endAt: null, projectedCovera
 const fullModules = [{ moduleKey: 'posts', isEnabled: true, isAvailable: true }];
 const liteModules = [{ moduleKey: 'gallery', isEnabled: true, isAvailable: true }];
 
-function renderOverview(status: EventStatus, modules: unknown[] = fullModules) {
-    const event = { id: 'e1', status, deletedAt: null, modules } as unknown as EventDetailResponseDto;
+function renderOverview(status: EventStatus, modules: typeof fullModules = fullModules, hasSchedule = true) {
+    const event = {
+        id: 'e1',
+        status,
+        deletedAt: null,
+        modules,
+        capabilities: capabilitiesOf(modules, hasSchedule),
+    } as unknown as EventDetailResponseDto;
     render(
         <OverviewTab
             event={event}
@@ -91,5 +98,10 @@ describe('OverviewTab', () => {
     it('leaves members and invitations out on a lite event, which takes no guests', () => {
         renderOverview('ACTIVE', liteModules);
         expect(screen.getByTestId('metrics')).toHaveTextContent(/^days$/);
+    });
+
+    it('leaves the countdown out on a lite event without a date', () => {
+        renderOverview('ACTIVE', liteModules, false);
+        expect(screen.queryByTestId('metrics')).toBeNull();
     });
 });

@@ -4,8 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { type ReactNode, useEffect } from 'react';
 
 import { EventRouteSpinner } from '@/components/routing/EventRouteGate';
-import { isEventDeleted } from '@/lib/eventLifecycle';
-import { eventHomeHref, isLiteEvent, isLiteEventRouteAllowed } from '@/lib/liteEvents';
+import { eventHomeHref, isLiteEventRouteAllowed, isLiveLiteEvent } from '@/lib/eventCapabilities';
 import { useActiveEvent, useEventContextLoading, useIsHost, useRouteEventId } from '@/providers/EventProvider';
 
 // A lite event (no feed in its plan) has only its gallery and/or wishbook, manage and checkout, so its hosts
@@ -19,8 +18,7 @@ export function LiteEventRouteGuard({ children }: { children: ReactNode }) {
     const routeEventId = useRouteEventId();
     const isLoading = useEventContextLoading();
     const isHost = useIsHost();
-    const isLiveLiteHost =
-        Boolean(routeEventId) && isHost && isLiteEvent(activeEvent) && activeEvent?.status !== 'DRAFT' && !isEventDeleted(activeEvent);
+    const isLiveLiteHost = Boolean(routeEventId) && isHost && isLiveLiteEvent(activeEvent);
     const home = activeEvent ? eventHomeHref(activeEvent) : null;
     const isAllowed = activeEvent ? isLiteEventRouteAllowed(pathname, activeEvent) : true;
 

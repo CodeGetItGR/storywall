@@ -2,6 +2,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { LiteEventRouteGuard } from '@/components/event/LiteEventRouteGuard';
+import { capabilitiesOf } from '@/lib/__fixtures__/eventCapabilities';
 import type { EventDetailResponseDto, EventModuleResponseDto } from '@/lib/api/types';
 
 const state = vi.hoisted(() => ({
@@ -38,7 +39,7 @@ function module_(moduleKey: string, isEnabled: boolean) {
 }
 
 function event_(modules: EventModuleResponseDto[], overrides: Partial<EventDetailResponseDto> = {}): Partial<EventDetailResponseDto> {
-    return { id: 'e1', status: 'ACTIVE', deletedAt: null, suspended: false, modules, ...overrides };
+    return { id: 'e1', status: 'ACTIVE', deletedAt: null, suspended: false, modules, capabilities: capabilitiesOf(modules), ...overrides };
 }
 
 const liteEvent = event_([module_('posts', false), module_('gallery', true)]);

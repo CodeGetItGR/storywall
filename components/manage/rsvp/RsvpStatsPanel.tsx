@@ -22,14 +22,14 @@ export function RsvpStatsPanel({
     eventId: string;
     canWrite: boolean;
     rsvpDeadline: string | null;
-    countdownTarget: string;
+    countdownTarget: string | null;
     isRsvpDeadline: boolean;
 }) {
     const t = useTranslations('ManagePage');
     const locale = useLocale();
     const { data: report, isLoading, isError } = useRsvpReport(eventId, 'STATISTICS');
     const daysToGo = getDaysUntil(countdownTarget) ?? 0;
-    const formattedTargetDate = formatDate(locale, countdownTarget, { day: 'numeric', month: 'long', year: 'numeric' });
+    const formattedTargetDate = countdownTarget ? formatDate(locale, countdownTarget, { day: 'numeric', month: 'long', year: 'numeric' }) : '';
 
     return (
         <div className="flex flex-col gap-8">

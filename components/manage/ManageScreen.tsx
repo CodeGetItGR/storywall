@@ -19,10 +19,11 @@ import { useGiftSection } from '@/hooks/useGiftSection';
 import { useManageSectionLabel } from '@/hooks/useManageSectionLabel';
 import { useEventRsvps } from '@/hooks/useRsvps';
 import { useEventUsage } from '@/hooks/useUsage';
+import { getDaysUntil } from '@/lib/datetime';
+import { eventCapabilities } from '@/lib/eventCapabilities';
 import { countPendingCoHostInvitations } from '@/lib/eventInvitations';
 import { isEventDeleted, isEventWritable, isModuleAvailable, isPrimaryHost } from '@/lib/eventLifecycle';
 import { canPickTheme } from '@/lib/eventTheme';
-import { isLiteEvent } from '@/lib/liteEvents';
 import { type ManageSection, parseManageSection, resolveManageSection, visibleManageSections } from '@/lib/manageSections';
 import { replacePageUrl } from '@/lib/overlayHistory';
 import { routes } from '@/lib/routes';
@@ -64,7 +65,7 @@ export function ManageScreen() {
         giftAvailable: giftSection.available,
         themeAvailable: canPickTheme(activeEvent),
         // A lite event takes no guests, so its Members tab is only for co-hosts, when its plan has them.
-        membersAvailable: !isLiteEvent(activeEvent) || isModuleAvailable(activeEvent.modules, 'co_hosts'),
+        membersAvailable: (eventCapabilities(activeEvent)?.takesGuests ?? true) || isModuleAvailable(activeEvent.modules, 'co_hosts'),
     });
     const section = resolveManageSection(requestedSection, {
         isDraft,
@@ -86,9 +87,7 @@ export function ManageScreen() {
     const rsvpTabLoading = membersLoading || rsvpsLoading;
     const membersTabLoading = membersLoading || invitationsLoading || usageLoading;
 
-    const [daysToGo, setDaysToGo] = useState(() =>
-        Math.max(0, activeEvent ? Math.ceil((new Date(activeEvent.schedule.startAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0),
-    );
+    const [daysToGo, setDaysToGo] = useState(() => getDaysUntil(activeEvent?.schedule.startAt) ?? 0);
 
     const navigateToSection = useCallback(
         (next: ManageSection) => {
@@ -110,7 +109,7 @@ export function ManageScreen() {
     useEffect(() => {
         if (activeEvent) {
             // eslint-disable-next-line react-hooks/set-state-in-effect
-            setDaysToGo(Math.max(0, Math.ceil((new Date(activeEvent.schedule.startAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))));
+            setDaysToGo(getDaysUntil(activeEvent.schedule.startAt) ?? 0);
         }
     }, [activeEvent]);
 

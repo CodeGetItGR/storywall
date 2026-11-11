@@ -20,25 +20,28 @@ export function useHelpProgress({
     schedule,
     location,
     sessions,
+    showsDetails,
 }: {
     eventId: string;
     title: string;
     schedule: EventScheduleDto;
     location: EventLocationDto;
     sessions: EventSessionResponseDto[];
+    // false on a lite event: its details are only the title.
+    showsDetails: boolean;
 }): HelpProgress {
     const giftAccount = useGiftAccount(eventId);
     const qrLinks = useEventQrLinks(eventId);
 
     return useMemo(
         () => ({
-            details: Boolean(title && schedule.startAt && schedule.endAt && location.name && location.address),
+            details: Boolean(title && (!showsDetails || (schedule.startAt && schedule.endAt && location.name && location.address))),
             rsvp: Boolean(schedule.rsvpDeadline),
             giftAccount: Boolean(giftAccount.data),
             schedule: sessions.some((session) => !session.deletedAt),
             // The guest code an upgraded lite event keeps is not an invitation.
             invitations: (qrLinks.data ?? []).some((link) => link.targetType !== 'GUEST' && link.status !== 'REVOKED'),
         }),
-        [title, schedule, location, sessions, giftAccount.data, qrLinks.data],
+        [title, showsDetails, schedule, location, sessions, giftAccount.data, qrLinks.data],
     );
 }
