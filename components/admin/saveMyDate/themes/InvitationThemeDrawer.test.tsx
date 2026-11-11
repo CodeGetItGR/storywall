@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { InvitationThemeDrawer } from '@/components/admin/invitationThemes/InvitationThemeDrawer';
+import { InvitationThemeDrawer } from '@/components/admin/saveMyDate/themes/InvitationThemeDrawer';
 import { type AdminInvitationThemeDto, BLANK_THEME_DESIGN, blankThemeDocument } from '@/lib/adminInvitationThemes';
 import { ApiError } from '@/lib/api/client';
 import messages from '@/messages/en.json';

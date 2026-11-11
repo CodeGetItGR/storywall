@@ -3119,7 +3119,6 @@
             "groupCatalog": "Κατάλογος",
             "groupMarketing": "Marketing",
             "groupOperations": "Λειτουργίες",
-            "groupSaveMyDate": "Save my date",
             "eventPlans": "Πλάνα εκδηλώσεων",
             "paidServices": "Υπηρεσίες επί πληρωμή",
             "discountCodes": "Κωδικοί έκπτωσης",
@@ -3134,6 +3133,10 @@
             "signOutConfirmBody": "Θα χρειαστεί να συνδεθείτε ξανά για να συνεχίσετε.",
             "metrics": "Στατιστικά",
             "costTracking": "Παρακολούθηση κόστους"
+        },
+        "saveMyDate": {
+            "title": "Save my date",
+            "backToAdmin": "Πίσω στη διαχείριση"
         },
         "tabs": {
             "appReviews": "Κριτικές",
@@ -10464,7 +10467,8 @@
     },
     "SaveMyDatePreview": {
         "metaTitle": "Προεπισκόπηση πρόσκλησης"
-    },
+    }
+,
     "PublishedInvitation": {
         "metaTitle": "Πρόσκληση",
         "notFound": "Δεν βρήκαμε αυτή την πρόσκληση.",

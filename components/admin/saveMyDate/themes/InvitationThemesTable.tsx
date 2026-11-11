@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-import { InvitationThemeRow } from '@/components/admin/invitationThemes/InvitationThemeRow';
+import { InvitationThemeRow } from '@/components/admin/saveMyDate/themes/InvitationThemeRow';
 import type { AdminInvitationThemeSummaryDto } from '@/lib/adminInvitationThemes';
 
 export function InvitationThemesTable({

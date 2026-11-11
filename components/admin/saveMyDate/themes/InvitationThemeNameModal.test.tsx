@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { InvitationThemeNameModal } from '@/components/admin/invitationThemes/InvitationThemeNameModal';
+import { InvitationThemeNameModal } from '@/components/admin/saveMyDate/themes/InvitationThemeNameModal';
 import type { InvitationThemeNameModalState } from '@/hooks/useInvitationThemesCatalog';
 import type { AdminInvitationThemeSummaryDto } from '@/lib/adminInvitationThemes';
 import messages from '@/messages/en.json';

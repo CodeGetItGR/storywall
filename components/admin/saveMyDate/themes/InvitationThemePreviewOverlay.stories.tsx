@@ -5,11 +5,11 @@ import { expect, fn, waitFor, within } from 'storybook/test';
 import { withAdminShell } from '@/.storybook/adminShell';
 import { copyFor } from '@/.storybook/copy';
 import { waitForOpen } from '@/.storybook/waitForOpen';
-import { InvitationThemePreviewOverlay } from '@/components/admin/invitationThemes/InvitationThemePreviewOverlay';
-import { storyTheme } from '@/components/admin/invitationThemes/invitationThemeStoryData';
+import { InvitationThemePreviewOverlay } from '@/components/admin/saveMyDate/themes/InvitationThemePreviewOverlay';
+import { storyTheme } from '@/components/admin/saveMyDate/themes/invitationThemeStoryData';
 
 const meta = {
-    title: 'Admin/InvitationThemes/InvitationThemePreviewOverlay',
+    title: 'Admin/SaveMyDate/Themes/InvitationThemePreviewOverlay',
     component: InvitationThemePreviewOverlay,
     decorators: [withAdminShell],
     args: { themeId: 'theme-1', onCloseAction: fn() },
