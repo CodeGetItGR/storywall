@@ -30,7 +30,7 @@ jobs:
               uses: actions/cache/restore@v6
               with:
                   path: visual-output/base
-                  key: visual-base-${{ github.sha }}-${{ hashFiles('scripts/visual/capture.ts', 'scripts/visual/stories.ts', 'scripts/visual/config.ts') }}-pw1.55.0
+                  key: visual-base-${{ github.sha }}-${{ hashFiles('scripts/visual/capture.ts', 'scripts/visual/stories.ts', 'scripts/visual/config.ts') }}-pw1.55.0-sb
                   lookup-only: true
 
             - if: steps.lookup.outputs.cache-hit != 'true'
@@ -115,10 +115,11 @@ jobs:
 
             - run: npm ci
 
+            # Kept inside the base folder, so the cache saves it for the base recheck.
             - uses: actions/download-artifact@v8
               with:
                   name: visual-storybook
-                  path: storybook-static
+                  path: visual-output/base/storybook
 
             - uses: actions/download-artifact@v8
               with:
@@ -126,7 +127,7 @@ jobs:
                   merge-multiple: true
                   path: visual-output/base
 
-            - run: npm run visual:ci -- join --storybook storybook-static --dir visual-output/base --sha "$GITHUB_SHA"
+            - run: npm run visual:ci -- join --storybook visual-output/base/storybook --dir visual-output/base --sha "$GITHUB_SHA"
 
             - uses: actions/cache/save@v6
               with:

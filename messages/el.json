@@ -19,6 +19,7 @@
         "campaignEndsIn": "Λήγει σε {countdown}.",
         "campaignEndsOn": "Λήγει στις {date}",
         "seePlans": "Δείτε τα πλάνα",
+        "getStarted": "Ξεκινήστε",
         "countdownDays": "{days}ημ {hours}ώ {minutes}λ",
         "countdownHours": "{hours}ώ {minutes}λ",
         "countdownMinutes": "{minutes}λ {seconds}δ"
@@ -1140,6 +1141,10 @@
     },
     "CreateEventPage": {
         "goBack": "Πίσω",
+        "wizard": {
+            "stepCounter": "Βήμα {current} από {total}",
+            "close": "Κλείσιμο"
+        },
         "title": "Δημιουργία εκδήλωσης",
         "subtitle": "Προσθέστε τα στοιχεία της εκδήλωσης.",
         "detailsHint": "Μπορείτε να προσθέσετε ή να αλλάξετε περισσότερα στοιχεία μετά τη δημιουργία.",

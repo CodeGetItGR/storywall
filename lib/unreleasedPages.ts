@@ -23,3 +23,12 @@ export function showsUnreleasedPages(env: DeploymentEnv = currentEnv(), launched
 export function showsUnlaunchedOccasions(env: DeploymentEnv = currentEnv()): boolean {
     return showsUnreleasedPages(env, false);
 }
+
+// The pop-up create wizard (KAN-197). While this is false the production site keeps the old create
+// flow: sign-in first, /events/new protected, no header, rail, phone or home create buttons.
+export const CREATE_WIZARD_LAUNCHED = false;
+
+// Server only: VERCEL_ENV never reaches the browser. Client code reads useCreateWizardEnabled().
+export function showsCreateWizard(env: DeploymentEnv = currentEnv(), launched = CREATE_WIZARD_LAUNCHED): boolean {
+    return showsUnreleasedPages(env, launched);
+}

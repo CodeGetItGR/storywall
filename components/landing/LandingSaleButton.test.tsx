@@ -17,6 +17,7 @@ vi.mock('next-intl', () => ({
 import { LandingSaleButton } from '@/components/landing/LandingSaleButton';
 import { discountCampaignDismissalKey } from '@/lib/discountCampaign';
 import { DISMISSED_COOKIE, writeDismissalsCookie } from '@/lib/siteNoticeDismissals';
+import { CreateWizardFlagProvider } from '@/providers/CreateWizardFlagProvider';
 
 const campaign = { id: 'c1', percent: 20, startsAt: '2026-11-01T00:00:00Z', endsAt: '2099-01-01T00:00:00Z' } as DiscountCampaignLiveDto;
 
@@ -89,5 +90,16 @@ describe('LandingSaleButton', () => {
         scrollTo(900);
         expect(link()).toHaveAttribute('href', '#qr-plans');
         expect(link()).toHaveClass('visible');
+    });
+
+    it('renders nothing with the create wizard on: the phone create button carries the offer', () => {
+        addPricing(3000);
+        const { container } = render(
+            <CreateWizardFlagProvider createLabel="Create an event" enabled>
+                <LandingSaleButton />
+            </CreateWizardFlagProvider>,
+        );
+        scrollTo(900);
+        expect(container).toBeEmptyDOMElement();
     });
 });

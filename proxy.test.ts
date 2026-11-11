@@ -10,6 +10,12 @@ import { SpringAuthError } from '@/lib/auth/springAuth';
 
 import { config, proxy } from './proxy';
 
+const createWizard = vi.hoisted(() => ({ on: false }));
+vi.mock('@/lib/unreleasedPages', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@/lib/unreleasedPages')>()),
+    showsCreateWizard: () => createWizard.on,
+}));
+
 const refresh = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/auth/springAuth', async (importOriginal) => {
     const actual = await importOriginal<typeof import('@/lib/auth/springAuth')>();
@@ -25,9 +31,32 @@ function request(cookies: Partial<Record<keyof typeof AUTH_COOKIES, string>> = {
 
 beforeEach(() => {
     refresh.mockReset();
+    createWizard.on = false;
 });
 
 describe('proxy', () => {
+    describe('with the create wizard on', () => {
+        beforeEach(() => {
+            createWizard.on = true;
+        });
+
+        it('lets a signed-out visitor open /events/new', async () => {
+            const res = await proxy(request({}, 'http://localhost/events/new?step=plan'));
+            expect(res.headers.get('location')).toBeNull();
+            expect(res.status).toBe(200);
+        });
+
+        it('still passes a signed-in visitor their token', async () => {
+            const res = await proxy(request({ accessToken: 'jwt' }, 'http://localhost/events/new'));
+            expect(res.headers.get('x-middleware-request-x-storywall-access-token')).toBe('jwt');
+        });
+
+        it('keeps every other events page behind sign-in', async () => {
+            const res = await proxy(request({}, 'http://localhost/events/abc/manage'));
+            expect(new URL(res.headers.get('location')!).pathname).toBe('/login');
+        });
+    });
+
     it('does not call Spring when a fresh access-token cookie is present', async () => {
         const res = await proxy(request({ accessToken: 'at-1', refreshToken: 'rt' }));
         expect(refresh).not.toHaveBeenCalled();
