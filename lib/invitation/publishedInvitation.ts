@@ -15,7 +15,13 @@ export type PublicInvitationDto = {
     updatedAt: string;
 };
 
-export type PublishedInvitation = { document: InvitationDocument; theme: ThemeDesign; media: MediaResolver };
+export type PublishedInvitation = {
+    document: InvitationDocument;
+    theme: ThemeDesign;
+    media: MediaResolver;
+    // The latest publish, so a republished invitation gets a new share picture link.
+    publishedAt?: string;
+};
 
 export type PublishedInvitationState =
     | { kind: 'found'; invitation: PublishedInvitation }
@@ -66,6 +72,7 @@ export function readPublishedInvitation(dto: PublicInvitationDto): PublishedInvi
         document: upgradeInvitationDocument(dto.document),
         theme: themeDesignSchema.parse(dto.design),
         media: (mediaId) => imageUrls[mediaId],
+        publishedAt: dto.updatedAt,
     };
 }
 

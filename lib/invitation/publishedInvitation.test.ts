@@ -30,6 +30,7 @@ describe('publishedInvitationState', () => {
         expect(state.invitation.theme).toEqual(SAMPLE_THEME);
         expect(state.invitation.media('m-1')).toBe('https://cdn.example/m-1.jpg');
         expect(state.invitation.media('missing')).toBeUndefined();
+        expect(state.invitation.publishedAt).toBe('2026-11-07T10:00:00Z');
     });
 
     it('tells an unknown link from an expired one', () => {
