@@ -2,8 +2,8 @@ import type { EventTypeConvention, ThemePresetDto } from '@/lib/api/types';
 import { eventTypeSlug } from '@/lib/eventTypeSlug';
 import type { CreateEventStep } from '@/providers/createEvent/CreateEventFormContext';
 
-// Every step, in order. The theme step is shown only when themeStepAvailable says so.
-export const CREATE_EVENT_STEPS: CreateEventStep[] = ['type', 'plan', 'details', 'theme', 'overview'];
+// Every step, in order. Theme and account are shown only when they apply (wizard only for account).
+export const CREATE_EVENT_STEPS: CreateEventStep[] = ['type', 'plan', 'details', 'theme', 'account', 'overview'];
 
 export function parseCreateEventStep(value: string | null): CreateEventStep {
     return CREATE_EVENT_STEPS.find((step) => step === value) ?? 'type';
@@ -20,9 +20,21 @@ export function resolveCreateEventStep(
     return parseCreateEventStep(stepParam);
 }
 
-// The steps the host walks through: the theme step only when there is something to pick.
-export function visibleCreateEventSteps(themeStepAvailable: boolean): CreateEventStep[] {
-    return themeStepAvailable ? CREATE_EVENT_STEPS : CREATE_EVENT_STEPS.filter((step) => step !== 'theme');
+// The steps the host walks through: the theme step only when there is something to pick, the account
+// step only in the wizard and only for a guest or an unverified account (it then stays for the run).
+export function visibleCreateEventSteps(themeStepAvailable: boolean, accountStepShown = false): CreateEventStep[] {
+    return CREATE_EVENT_STEPS.filter((step) => (step !== 'theme' || themeStepAvailable) && (step !== 'account' || accountStepShown));
+}
+
+export function stepAfter(step: CreateEventStep, steps: readonly CreateEventStep[]): CreateEventStep | null {
+    return steps[steps.indexOf(step) + 1] ?? null;
+}
+
+// Back from review steps over the account step once the account no longer needs it, or it would
+// send the host straight forward again.
+export function stepBefore(step: CreateEventStep, steps: readonly CreateEventStep[], accountDone: boolean): CreateEventStep | null {
+    const before = steps.slice(0, Math.max(steps.indexOf(step), 0)).filter((entry) => !(accountDone && entry === 'account'));
+    return before.at(-1) ?? null;
 }
 
 // Whether to offer the theme step: the chosen plan lists the theme module and the type

@@ -17,7 +17,7 @@ import type {
     ThemePresetDto,
 } from '@/lib/api/types';
 
-export type CreateEventStep = 'type' | 'plan' | 'details' | 'theme' | 'overview';
+export type CreateEventStep = 'type' | 'plan' | 'details' | 'theme' | 'account' | 'overview';
 
 export interface CreateEventFormValue {
     formId: string;
