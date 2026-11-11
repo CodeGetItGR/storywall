@@ -12,6 +12,12 @@ import type {
     VendorContactStatus,
 } from '@/lib/api/types';
 
+// ?since=&until=, leaving out a bound that isn't set.
+function rangeQuery(since?: string | null, until?: string | null): string {
+    const params = [since ? `since=${encodeURIComponent(since)}` : null, until ? `until=${encodeURIComponent(until)}` : null].filter(Boolean);
+    return params.length ? `?${params.join('&')}` : '';
+}
+
 export const endpoints = {
     betaFeedback: {
         bugReports: '/api/bug-reports',
@@ -408,21 +414,6 @@ export const endpoints = {
                 );
                 return `/api/admin/metrics/funnel/channels${params.length ? `?${params.join('&')}` : ''}`;
             },
-            campaigns: (since?: string | null, until?: string | null) => {
-                const params = [since ? `since=${encodeURIComponent(since)}` : null, until ? `until=${encodeURIComponent(until)}` : null].filter(
-                    Boolean,
-                );
-                return `/api/admin/metrics/campaigns${params.length ? `?${params.join('&')}` : ''}`;
-            },
-            campaignOverview: (since?: string | null, until?: string | null, linkId?: string | null, source?: string | null) => {
-                const params = [
-                    since ? `since=${encodeURIComponent(since)}` : null,
-                    until ? `until=${encodeURIComponent(until)}` : null,
-                    linkId ? `link=${encodeURIComponent(linkId)}` : null,
-                    source ? `source=${encodeURIComponent(source)}` : null,
-                ].filter(Boolean);
-                return `/api/admin/metrics/campaigns/overview${params.length ? `?${params.join('&')}` : ''}`;
-            },
             linkClicks: (since?: string | null, until?: string | null) => {
                 const params = [since ? `since=${encodeURIComponent(since)}` : null, until ? `until=${encodeURIComponent(until)}` : null].filter(
                     Boolean,
@@ -494,6 +485,11 @@ export const endpoints = {
             list: '/api/admin/theme-presets',
             byId: (id: string) => `/api/admin/theme-presets/${id}`,
             illustration: (id: string) => `/api/admin/theme-presets/${id}/illustration`,
+        },
+        invitationThemes: {
+            list: '/api/admin/invitation-themes',
+            byId: (id: string) => `/api/admin/invitation-themes/${id}`,
+            duplicate: (id: string) => `/api/admin/invitation-themes/${id}/duplicate`,
         },
         qrCardTemplates: {
             list: '/api/admin/qr-card-templates',
@@ -584,20 +580,23 @@ export const endpoints = {
             list: '/api/admin/site-notices',
             byId: (id: string) => `/api/admin/site-notices/${id}`,
         },
-        discountCampaigns: {
-            list: '/api/admin/discount-campaigns',
-            byId: (id: string) => `/api/admin/discount-campaigns/${id}`,
-            stop: (id: string) => `/api/admin/discount-campaigns/${id}/stop`,
-        },
         devices: {
             list: '/api/admin/devices',
             byId: (id: string) => `/api/admin/devices/${id}`,
             testNotification: (id: string) => `/api/admin/devices/${id}/test-notification`,
         },
         campaignLinks: {
-            list: '/api/admin/campaign-links',
             byId: (id: string) => `/api/admin/campaign-links/${id}`,
-            sets: '/api/admin/campaign-links/sets',
+        },
+        campaigns: {
+            list: (since?: string | null, until?: string | null) => `/api/admin/campaigns${rangeQuery(since, until)}`,
+            create: '/api/admin/campaigns',
+            detail: (id: string, since?: string | null, until?: string | null) => `/api/admin/campaigns/${id}${rangeQuery(since, until)}`,
+            byId: (id: string) => `/api/admin/campaigns/${id}`,
+            archive: (id: string) => `/api/admin/campaigns/${id}/archive`,
+            unarchive: (id: string) => `/api/admin/campaigns/${id}/unarchive`,
+            stop: (id: string) => `/api/admin/campaigns/${id}/stop`,
+            links: (id: string) => `/api/admin/campaigns/${id}/links`,
         },
         vendorMessages: {
             list: ({ status, page, size }: { status: VendorContactStatus | null; page: number; size: number }) =>
