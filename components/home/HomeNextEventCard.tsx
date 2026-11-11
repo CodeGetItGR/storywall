@@ -12,8 +12,8 @@ import type { EventGridItem } from '@/hooks/useEventGridItems';
 import { useRecentEventItems } from '@/hooks/useEventGridItems';
 import { useMemberRoleLabel } from '@/hooks/useMemberRoleLabel';
 import { formatEventListDate } from '@/lib/datetime';
+import { eventHomeHref } from '@/lib/eventCapabilities';
 import { isEventDeleted } from '@/lib/eventLifecycle';
-import { eventHomeHref } from '@/lib/liteEvents';
 
 const NO_ROLE = { relationshipRole: null, customRelationshipRole: null };
 
@@ -53,7 +53,7 @@ export function HomeNextEventCard({ items }: { items: EventGridItem[] }) {
                             className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                             sizes="(max-width: 640px) 100vw, 640px"
                         />
-                        <HomeNextEventCountdown time={new Date(event.schedule.startAt).getTime()} />
+                        {event.schedule.startAt && <HomeNextEventCountdown time={new Date(event.schedule.startAt).getTime()} />}
                     </div>
                 )}
                 {/* Details */}

@@ -2,6 +2,7 @@ import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
+import { capabilitiesOf } from '@/lib/__fixtures__/eventCapabilities';
 
 const mocks = vi.hoisted(() => ({
     activeEvent: null as Record<string, unknown> | null,
@@ -96,7 +97,13 @@ describe('useToolsMenuItems', () => {
         expect(result.current.map((item) => item.key)).toEqual(['gallery', 'wishbook']);
     });
 
-    const withHeOrShe = () => event({ modules: [{ moduleKey: 'posts', isEnabled: true, isAvailable: true, configuration: {} }, { moduleKey: 'he_or_she', isEnabled: true, isAvailable: true, configuration: {} }] });
+    const withHeOrShe = () =>
+        event({
+            modules: [
+                { moduleKey: 'posts', isEnabled: true, isAvailable: true, configuration: {} },
+                { moduleKey: 'he_or_she', isEnabled: true, isAvailable: true, configuration: {} },
+            ],
+        });
 
     it('lists Boy or Girl? when its module is readable', () => {
         mocks.activeEvent = withHeOrShe();
@@ -115,7 +122,10 @@ describe('useToolsMenuItems', () => {
 
     const withRoles = (overrides: Record<string, unknown> = {}) =>
         event({
-            modules: [{ moduleKey: 'posts', isEnabled: true, isAvailable: true, configuration: {} }, { moduleKey: 'member_roles', isEnabled: true, isAvailable: true, configuration: {} }],
+            modules: [
+                { moduleKey: 'posts', isEnabled: true, isAvailable: true, configuration: {} },
+                { moduleKey: 'member_roles', isEnabled: true, isAvailable: true, configuration: {} },
+            ],
             ...overrides,
         });
 
@@ -199,7 +209,8 @@ describe('useHostMenuItems', () => {
     // A lite event (no posts) has no upload or invitation codes: its guest code lives on its home.
     it('hides both QR pages on a lite event and keeps only its gallery and wishbook tools', () => {
         mocks.isHost = true;
-        mocks.activeEvent = { ...event(), modules: event().modules.filter((module) => module.moduleKey !== 'posts') };
+        const modules = event().modules.filter((module) => module.moduleKey !== 'posts');
+        mocks.activeEvent = { ...event(), modules, capabilities: capabilitiesOf(modules) };
         expect(renderHook(() => useHostMenuItems()).result.current.map((item) => item.key)).toEqual(['manage', 'help']);
         expect(renderHook(() => useToolsMenuItems()).result.current.map((item) => item.key)).toEqual(['gallery', 'wishbook']);
     });
