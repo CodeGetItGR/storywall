@@ -6,7 +6,9 @@ import { useTranslations } from 'next-intl';
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { ReactionTypeAvailabilityControl } from '@/components/admin/ReactionTypeAvailabilityControl';
+import { EventTypeChecklist } from '@/components/admin/saveMyDate/EventTypeChecklist';
 import { useApiErrorMessage, useRetryAfterCountdown } from '@/hooks/useApiErrorMessage';
+import type { EventTypeOption } from '@/hooks/useInvitationThemesCatalog';
 import { useThemeFontDrawer } from '@/hooks/useThemeFontDrawer';
 import {
     THEME_FONT_ACCEPT,
@@ -17,7 +19,7 @@ import {
 } from '@/lib/adminThemeFonts';
 import { ApiError } from '@/lib/api/client';
 import { ERROR_CODES, getErrorCode, getErrorMessage } from '@/lib/api/errors';
-import type { AdminThemeFontDto } from '@/lib/api/types';
+import type { AdminThemeFontDto, ThemeFontLibrary } from '@/lib/api/types';
 
 const FORM_ID = 'theme-font-form';
 const FALLBACKS = [
@@ -25,10 +27,23 @@ const FALLBACKS = [
     { value: 'sans-serif', labelKey: 'fallbackSansSerif' },
 ] as const;
 
-export function ThemeFontDrawer({ font, onCloseAction }: { font: AdminThemeFontDto | null; onCloseAction: () => void }) {
+export function ThemeFontDrawer({
+    font,
+    library = 'WALL',
+    eventTypes = null,
+    onCloseAction,
+}: {
+    font: AdminThemeFontDto | null;
+    library?: ThemeFontLibrary;
+    // Save my date fonts only: the event types it can be offered to.
+    eventTypes?: EventTypeOption[] | null;
+    onCloseAction: () => void;
+}) {
     const t = useTranslations('AdminPage.themeFonts.drawer');
+    const tSaveMyDate = useTranslations('AdminPage.saveMyDate');
+    const isInvitation = library === 'INVITATION';
     const apiErrorMessage = useApiErrorMessage();
-    const form = useThemeFontDrawer({ font, onDoneAction: onCloseAction });
+    const form = useThemeFontDrawer({ font, library, onDoneAction: onCloseAction });
 
     const keyHint =
         form.failure?.kind === 'keyTaken'
@@ -183,6 +198,17 @@ export function ThemeFontDrawer({ font, onCloseAction }: { font: AdminThemeFontD
                         </label>
                     </AdminField>
 
+                    {/* Event types */}
+                    {isInvitation && eventTypes && (
+                        <EventTypeChecklist
+                            legend={tSaveMyDate('eventTypes')}
+                            hint={tSaveMyDate('eventTypesHint')}
+                            options={eventTypes}
+                            value={form.draft.invitationEventTypes}
+                            onChangeAction={form.handleEventTypeChange}
+                        />
+                    )}
+
                     {/* Availability */}
                     {!form.isCreate && (
                         <ReactionTypeAvailabilityControl
@@ -190,7 +216,11 @@ export function ThemeFontDrawer({ font, onCloseAction }: { font: AdminThemeFontD
                             value={form.availability}
                             onChangeAction={form.handleAvailabilityChange}
                             labels={{ AVAILABLE: t('available'), ARCHIVED: t('archived') }}
-                            hints={{ AVAILABLE: t('availableHint'), ARCHIVED: t('archivedHint') }}
+                            hints={
+                                isInvitation
+                                    ? { AVAILABLE: tSaveMyDate('fonts.availableHint'), ARCHIVED: tSaveMyDate('fonts.archivedHint') }
+                                    : { AVAILABLE: t('availableHint'), ARCHIVED: t('archivedHint') }
+                            }
                         />
                     )}
                 </form>
@@ -211,7 +241,7 @@ export function ThemeFontDrawer({ font, onCloseAction }: { font: AdminThemeFontD
                     ) : (
                         <p className="text-xs leading-5 text-ink-faint">{form.previewFamily ? t('previewHint') : t('previewEmpty')}</p>
                     )}
-                    <p className="text-xs leading-5 text-ink-muted">{t('usedBy', { count: form.presetCount })}</p>
+                    {!isInvitation && <p className="text-xs leading-5 text-ink-muted">{t('usedBy', { count: form.presetCount })}</p>}
                 </section>
             </div>
         </AdminDrawer>

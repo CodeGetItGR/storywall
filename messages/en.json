@@ -3014,7 +3014,44 @@
         },
         "saveMyDate": {
             "title": "Save my date",
-            "backToAdmin": "Back to admin"
+            "backToAdmin": "Back to admin",
+            "eventTypes": "Event types",
+            "eventTypesAll": "All",
+            "eventTypesHint": "None picked means every event type.",
+            "checks": {
+                "upTo100": "Enter 1 to 100 characters.",
+                "upTo2000": "Enter 1 to 2,000 characters."
+            },
+            "fonts": {
+                "title": "Fonts",
+                "empty": "No fonts yet.",
+                "availableHint": "Offered in the invitation editor.",
+                "archivedHint": "Invitations that use it keep it. The editor no longer offers it."
+            },
+            "fontPairings": {
+                "title": "Font pairings",
+                "create": "New pairing",
+                "empty": "No font pairings yet.",
+                "fonts": {
+                    "title": "Title",
+                    "body": "Text",
+                    "button": "Buttons"
+                },
+                "sameAsText": "Same as text",
+                "shown": "Shown"
+            },
+            "texts": {
+                "title": "Texts",
+                "create": "New text",
+                "empty": "No texts yet.",
+                "label": "Label",
+                "labelHint": "Only admins see it.",
+                "body": "Text",
+                "delete": "Delete",
+                "deleteTitle": "Delete this text?",
+                "deleteBody": "Invitations that used it keep their wording.",
+                "deleteConfirm": "Delete text"
+            }
         },
         "tabs": {
             "appReviews": "Reviews",
@@ -3764,6 +3801,9 @@
                 "INVITATION_THEME_IMAGE_DELETED": "Invitation theme image deleted",
                 "INVITATION_FONT_PAIRING_CREATED": "Font pairing created",
                 "INVITATION_FONT_PAIRING_UPDATED": "Font pairing changed",
+                "INVITATION_TEXT_CREATED": "Invitation text created",
+                "INVITATION_TEXT_UPDATED": "Invitation text changed",
+                "INVITATION_TEXT_DELETED": "Invitation text deleted",
                 "QR_CARD_TEMPLATE_DUPLICATED": "QR card template copied",
                 "INVIART_COLLECTION_CHANGED": "INVIART collection changed",
                 "SHOP_STORE_CREATED": "Shopify store connected",

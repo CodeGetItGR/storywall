@@ -199,6 +199,8 @@ const FONT_SUMMARY = {
     fallback: 'serif' as const,
     archived: false,
     url: '/api/theme-fonts/alegreya/1.woff2',
+    library: 'WALL' as const,
+    invitationEventTypes: [],
 };
 
 describe('title colour and heading font', () => {

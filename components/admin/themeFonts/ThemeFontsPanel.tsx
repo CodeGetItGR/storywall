@@ -4,13 +4,15 @@ import { Pencil, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useRef, useState } from 'react';
 
+import { EventTypeBadges } from '@/components/admin/saveMyDate/EventTypeBadges';
 import { ThemeFontDrawer } from '@/components/admin/themeFonts/ThemeFontDrawer';
 import { ThemeFontFace } from '@/components/event/ThemeFontFace';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useAdminThemeFonts } from '@/hooks/useAdminThemeFonts';
+import type { SaveMyDateEventTypes } from '@/hooks/useSaveMyDateEventTypes';
 import { themeFontStatus } from '@/lib/adminThemeFonts';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
-import type { AdminThemeFontDto } from '@/lib/api/types';
+import type { AdminThemeFontDto, ThemeFontLibrary } from '@/lib/api/types';
 import { themeFontFamily } from '@/lib/eventTheme';
 import { cn } from '@/lib/utils';
 
@@ -26,10 +28,20 @@ const STATUS_PILL = {
 
 const FALLBACK_LABEL = { serif: 'fallbacks.serif', 'sans-serif': 'fallbacks.sansSerif' } as const;
 
-export function ThemeFontsPanel() {
+// One panel for both font lists. The wall's (theme presets, QR cards) counts the presets using each
+// font; Save my date's shows the event types each font is offered to instead (SaveMyDateFontsPanel).
+export function ThemeFontsPanel({
+    library = 'WALL',
+    eventTypes = null,
+}: {
+    library?: ThemeFontLibrary;
+    eventTypes?: SaveMyDateEventTypes | null;
+}) {
     const t = useTranslations('AdminPage.themeFonts');
     const tAdmin = useTranslations('AdminPage');
-    const fontsQuery = useAdminThemeFonts();
+    const tSaveMyDate = useTranslations('AdminPage.saveMyDate');
+    const isInvitation = library === 'INVITATION';
+    const fontsQuery = useAdminThemeFonts(library);
     const fonts = fontsQuery.data ?? [];
     const [drawer, setDrawer] = useState<DrawerState>({ open: false });
     const nextToken = useRef(0);
@@ -55,8 +67,10 @@ export function ThemeFontsPanel() {
             <header className="mb-5 flex flex-wrap items-start justify-between gap-3">
                 <div>
                     <p className="text-[11px] font-bold tracking-[0.14em] text-primary-dark uppercase">{tAdmin('eyebrow')}</p>
-                    <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">{t('title')}</h1>
-                    <p className="mt-1.5 max-w-2xl text-sm leading-6 text-ink-muted">{t('subtitle')}</p>
+                    <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">
+                        {isInvitation ? tSaveMyDate('fonts.title') : t('title')}
+                    </h1>
+                    {!isInvitation && <p className="mt-1.5 max-w-2xl text-sm leading-6 text-ink-muted">{t('subtitle')}</p>}
                 </div>
                 <button
                     type="button"
@@ -73,7 +87,7 @@ export function ThemeFontsPanel() {
                 {fontsQuery.isLoading && <LoadingState label={t('loading')} className="justify-start p-4" />}
                 {fontsQuery.error && <p className="p-4 text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(fontsQuery.error)}`)}</p>}
                 {!fontsQuery.isLoading && !fontsQuery.error && fonts.length === 0 && (
-                    <p className="px-3 py-8 text-center text-sm text-ink-muted">{t('empty')}</p>
+                    <p className="px-3 py-8 text-center text-sm text-ink-muted">{isInvitation ? tSaveMyDate('fonts.empty') : t('empty')}</p>
                 )}
                 {!fontsQuery.isLoading && !fontsQuery.error && fonts.length > 0 && (
                     <div className="overflow-x-auto">
@@ -83,14 +97,19 @@ export function ThemeFontsPanel() {
                                     <th className="px-3 py-2">{t('columns.font')}</th>
                                     <th className="px-3 py-2">{t('columns.key')}</th>
                                     <th className="px-3 py-2">{t('columns.fallback')}</th>
-                                    <th className="px-3 py-2">{t('columns.presets')}</th>
+                                    <th className="px-3 py-2">{isInvitation ? tSaveMyDate('eventTypes') : t('columns.presets')}</th>
                                     <th className="px-3 py-2">{t('columns.status')}</th>
                                     <th className="px-3 py-2" />
                                 </tr>
                             </thead>
                             <tbody>
                                 {fonts.map((font) => (
-                                    <ThemeFontRow key={font.id} font={font} onEditAction={openDrawer} />
+                                    <ThemeFontRow
+                                        key={font.id}
+                                        font={font}
+                                        eventTypeLabelOf={eventTypes?.labelOf ?? null}
+                                        onEditAction={openDrawer}
+                                    />
                                 ))}
                             </tbody>
                         </table>
@@ -99,12 +118,29 @@ export function ThemeFontsPanel() {
             </section>
 
             {/* Drawer */}
-            {drawer.open && <ThemeFontDrawer key={drawer.token} font={drawer.font} onCloseAction={closeDrawer} />}
+            {drawer.open && (
+                <ThemeFontDrawer
+                    key={drawer.token}
+                    font={drawer.font}
+                    library={library}
+                    eventTypes={eventTypes?.options ?? null}
+                    onCloseAction={closeDrawer}
+                />
+            )}
         </div>
     );
 }
 
-function ThemeFontRow({ font, onEditAction }: { font: AdminThemeFontDto; onEditAction: (font: AdminThemeFontDto) => void }) {
+function ThemeFontRow({
+    font,
+    eventTypeLabelOf,
+    onEditAction,
+}: {
+    font: AdminThemeFontDto;
+    // Set for a Save my date font: its event types take the presets column's place.
+    eventTypeLabelOf: ((key: string) => string) | null;
+    onEditAction: (font: AdminThemeFontDto) => void;
+}) {
     const t = useTranslations('AdminPage.themeFonts');
     const status = themeFontStatus(font);
     const face = font.url ? { key: font.key, fallback: font.fallback, url: font.url } : null;
@@ -131,8 +167,14 @@ function ThemeFontRow({ font, onEditAction }: { font: AdminThemeFontDto; onEditA
             <td className="px-3 py-2.5 font-mono text-[12px] text-ink-muted">{font.key}</td>
             {/* Fallback */}
             <td className="px-3 py-2.5 text-sm text-ink-muted">{t(FALLBACK_LABEL[font.fallback])}</td>
-            {/* Presets */}
-            <td className="px-3 py-2.5 text-sm text-ink tabular-nums">{font.presetCount}</td>
+            {/* Presets, or event types */}
+            {eventTypeLabelOf ? (
+                <td className="px-3 py-2.5">
+                    <EventTypeBadges eventTypes={font.invitationEventTypes ?? []} labelOf={eventTypeLabelOf} />
+                </td>
+            ) : (
+                <td className="px-3 py-2.5 text-sm text-ink tabular-nums">{font.presetCount}</td>
+            )}
             {/* Status */}
             <td className="px-3 py-2.5">
                 <span className={cn('rounded-full px-2 py-0.5 text-[11px] font-bold whitespace-nowrap', STATUS_PILL[status])}>

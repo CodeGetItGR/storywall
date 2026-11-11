@@ -16,8 +16,9 @@ import {
 import { normalizePresetKeyInput } from '@/lib/adminThemePresets';
 import { ApiError } from '@/lib/api/client';
 import { ERROR_CODES, getErrorCode, getFieldErrors, isNotFoundError } from '@/lib/api/errors';
-import type { AdminThemeFontDto } from '@/lib/api/types';
+import type { AdminThemeFontDto, ThemeFontLibrary } from '@/lib/api/types';
 import { isThemeFontUrl } from '@/lib/eventTheme';
+import { toggleEventType } from '@/lib/saveMyDateEventTypes';
 
 export type ThemeFontDrawerError =
     { kind: 'keyTaken' } | { kind: 'keyInvalid' } | { kind: 'familyNameInvalid' } | { kind: 'notFound' } | { kind: 'other'; error: unknown };
@@ -94,7 +95,16 @@ function useFontPreview(source: PreviewSource | null): { family: string | null; 
     return { family: state.family, failed: state.failed ? (typeof state.source === 'string' ? 'saved' : 'file') : null };
 }
 
-export function useThemeFontDrawer({ font, onDoneAction }: { font: AdminThemeFontDto | null; onDoneAction: () => void }) {
+export function useThemeFontDrawer({
+    font,
+    library = 'WALL',
+    onDoneAction,
+}: {
+    font: AdminThemeFontDto | null;
+    // The list a new font goes into. An existing font keeps its own.
+    library?: ThemeFontLibrary;
+    onDoneAction: () => void;
+}) {
     const queryClient = useQueryClient();
     const create = useCreateThemeFont();
     const patch = usePatchThemeFont();
@@ -149,6 +159,10 @@ export function useThemeFontDrawer({ font, onDoneAction }: { font: AdminThemeFon
         setDraft((current) => ({ ...current, archived: availability === 'ARCHIVED' }));
     }, []);
 
+    const handleEventTypeChange = useCallback((key: string, checked: boolean) => {
+        setDraft((current) => ({ ...current, invitationEventTypes: toggleEventType(current.invitationEventTypes, key, checked) }));
+    }, []);
+
     const handleFileChange = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
         const next = event.currentTarget.files?.[0] ?? null;
         // Lets the same file be picked again after a refusal.
@@ -179,9 +193,16 @@ export function useThemeFontDrawer({ font, onDoneAction }: { font: AdminThemeFon
             let step: SaveStep = current === null ? 'create' : 'patch';
             try {
                 if (current === null) {
-                    current = await create.mutateAsync(buildThemeFontCreate(draft));
+                    current = await create.mutateAsync(buildThemeFontCreate(draft, library));
                     if (!mounted.current) return;
                     setSaved(current);
+                    // The create can't carry a Save my date font's event types, so they follow it.
+                    if (current.library === 'INVITATION' && draft.invitationEventTypes.length > 0) {
+                        step = 'patch';
+                        current = await patch.mutateAsync({ id: current.id, input: { invitationEventTypes: draft.invitationEventTypes } });
+                        if (!mounted.current) return;
+                        setSaved(current);
+                    }
                 } else {
                     const input = buildThemeFontPatch(current, draft);
                     if (Object.keys(input).length > 0) {
@@ -207,7 +228,7 @@ export function useThemeFontDrawer({ font, onDoneAction }: { font: AdminThemeFon
                 submitting.current = false;
             }
         },
-        [create, draft, errors, file, onDoneAction, patch, queryClient, saved, upload],
+        [create, draft, errors, file, library, onDoneAction, patch, queryClient, saved, upload],
     );
 
     return {
@@ -229,6 +250,7 @@ export function useThemeFontDrawer({ font, onDoneAction }: { font: AdminThemeFon
         handleFieldChange,
         handleFallbackChange,
         handleAvailabilityChange,
+        handleEventTypeChange,
         handleFileChange,
         handleSubmit,
     };

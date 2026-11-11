@@ -74,7 +74,8 @@ function fontFile(font: OldFont): { name: string; bytes: Buffer } {
 
 async function main() {
     const oldFonts = JSON.parse(readFileSync(join(backupDir, 'data', 'global-fonts.json'), 'utf8')) as OldFont[];
-    const existing = await request<CatalogueFont[]>('/api/admin/theme-fonts');
+    // Save my date's own font list; the wall's fonts are a separate list.
+    const existing = await request<CatalogueFont[]>('/api/admin/theme-fonts?library=INVITATION');
 
     for (const font of oldFonts) {
         const leftOut = LEFT_OUT.get(font.name);
@@ -92,7 +93,7 @@ async function main() {
             found ??
             (await request<CatalogueFont>(
                 '/api/admin/theme-fonts',
-                sendJson('POST', { key, familyName: font.name.replace(/['"]/g, ''), fallback: 'serif' }),
+                sendJson('POST', { key, familyName: font.name.replace(/['"]/g, ''), fallback: 'serif', library: 'INVITATION' }),
             ));
         const types = eventTypes(font);
         if (types.length) await request(`/api/admin/theme-fonts/${row.id}`, sendJson('PATCH', { invitationEventTypes: types }));
