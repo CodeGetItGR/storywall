@@ -4,11 +4,11 @@ import { userEvent, within } from 'storybook/test';
 
 import { withAdminShell } from '@/.storybook/adminShell';
 import { copyFor } from '@/.storybook/copy';
-import { InvitationThemesPanel } from '@/components/admin/invitationThemes/InvitationThemesPanel';
-import { storyEventTypes, storyThemeList } from '@/components/admin/invitationThemes/invitationThemeStoryData';
+import { InvitationThemesPanel } from '@/components/admin/saveMyDate/themes/InvitationThemesPanel';
+import { storyEventTypes, storyThemeList } from '@/components/admin/saveMyDate/themes/invitationThemeStoryData';
 
 const meta = {
-    title: 'Admin/InvitationThemes/InvitationThemesPanel',
+    title: 'Admin/SaveMyDate/Themes/InvitationThemesPanel',
     component: InvitationThemesPanel,
     decorators: [withAdminShell],
     beforeEach({ msw }) {

@@ -4,11 +4,11 @@ import { Plus, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { adminInputClass } from '@/components/admin/AdminField';
-import { InvitationThemeDrawer } from '@/components/admin/invitationThemes/InvitationThemeDrawer';
-import { InvitationThemeNameModal } from '@/components/admin/invitationThemes/InvitationThemeNameModal';
-import { InvitationThemePreviewOverlay } from '@/components/admin/invitationThemes/InvitationThemePreviewOverlay';
-import { InvitationThemeSegmented } from '@/components/admin/invitationThemes/InvitationThemeSegmented';
-import { InvitationThemesTable } from '@/components/admin/invitationThemes/InvitationThemesTable';
+import { InvitationThemeDrawer } from '@/components/admin/saveMyDate/themes/InvitationThemeDrawer';
+import { InvitationThemeNameModal } from '@/components/admin/saveMyDate/themes/InvitationThemeNameModal';
+import { InvitationThemePreviewOverlay } from '@/components/admin/saveMyDate/themes/InvitationThemePreviewOverlay';
+import { InvitationThemeSegmented } from '@/components/admin/saveMyDate/themes/InvitationThemeSegmented';
+import { InvitationThemesTable } from '@/components/admin/saveMyDate/themes/InvitationThemesTable';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useInvitationThemesCatalog } from '@/hooks/useInvitationThemesCatalog';
 import { adminErrorMessageKey } from '@/lib/adminUtils';

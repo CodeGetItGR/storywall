@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { InvitationThemesPanel } from '@/components/admin/invitationThemes/InvitationThemesPanel';
+import { InvitationThemesPanel } from '@/components/admin/saveMyDate/themes/InvitationThemesPanel';
 import type { AdminInvitationThemeSummaryDto } from '@/lib/adminInvitationThemes';
 
 const catalog = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
@@ -12,13 +12,13 @@ vi.mock('next-intl', () => ({
 }));
 vi.mock('@/hooks/useInvitationThemesCatalog', () => ({ useInvitationThemesCatalog: () => catalog.current }));
 vi.mock('@/components/common/ProtectedImage', () => ({ ProtectedImage: ({ alt }: { alt: string }) => <span role="img" aria-label={alt} /> }));
-vi.mock('@/components/admin/invitationThemes/InvitationThemeDrawer', () => ({
+vi.mock('@/components/admin/saveMyDate/themes/InvitationThemeDrawer', () => ({
     InvitationThemeDrawer: ({ themeId }: { themeId: string }) => <div data-testid="drawer">{themeId}</div>,
 }));
-vi.mock('@/components/admin/invitationThemes/InvitationThemeNameModal', () => ({
+vi.mock('@/components/admin/saveMyDate/themes/InvitationThemeNameModal', () => ({
     InvitationThemeNameModal: ({ state }: { state: { mode: string } }) => <div data-testid="name-modal">{state.mode}</div>,
 }));
-vi.mock('@/components/admin/invitationThemes/InvitationThemePreviewOverlay', () => ({
+vi.mock('@/components/admin/saveMyDate/themes/InvitationThemePreviewOverlay', () => ({
     InvitationThemePreviewOverlay: ({ themeId }: { themeId: string }) => <div data-testid="preview">{themeId}</div>,
 }));
 

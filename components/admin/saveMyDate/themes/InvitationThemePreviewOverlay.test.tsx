@@ -3,7 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { InvitationThemePreviewOverlay } from '@/components/admin/invitationThemes/InvitationThemePreviewOverlay';
+import { InvitationThemePreviewOverlay } from '@/components/admin/saveMyDate/themes/InvitationThemePreviewOverlay';
 import { type AdminInvitationThemeDto, BLANK_THEME_DESIGN, blankThemeDocument } from '@/lib/adminInvitationThemes';
 import messages from '@/messages/en.json';
 

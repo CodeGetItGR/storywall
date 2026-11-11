@@ -5,8 +5,8 @@ import { fn, userEvent, within } from 'storybook/test';
 import { withAdminShell } from '@/.storybook/adminShell';
 import { copyFor } from '@/.storybook/copy';
 import { waitForOpen } from '@/.storybook/waitForOpen';
-import { InvitationThemeDrawer } from '@/components/admin/invitationThemes/InvitationThemeDrawer';
-import { storyTheme } from '@/components/admin/invitationThemes/invitationThemeStoryData';
+import { InvitationThemeDrawer } from '@/components/admin/saveMyDate/themes/InvitationThemeDrawer';
+import { storyTheme } from '@/components/admin/saveMyDate/themes/invitationThemeStoryData';
 import type { AdminInvitationThemeDto } from '@/lib/adminInvitationThemes';
 
 const EVENT_TYPES = [
@@ -22,7 +22,7 @@ function serve(theme: AdminInvitationThemeDto) {
 }
 
 const meta = {
-    title: 'Admin/InvitationThemes/InvitationThemeDrawer',
+    title: 'Admin/SaveMyDate/Themes/InvitationThemeDrawer',
     component: InvitationThemeDrawer,
     decorators: [withAdminShell],
     args: {

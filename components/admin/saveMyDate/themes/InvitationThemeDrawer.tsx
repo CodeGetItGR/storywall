@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
-import { InvitationThemeDetailsForm } from '@/components/admin/invitationThemes/InvitationThemeDetailsForm';
+import { InvitationThemeDetailsForm } from '@/components/admin/saveMyDate/themes/InvitationThemeDetailsForm';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useAdminInvitationTheme } from '@/hooks/useAdminInvitationThemes';
 import type { EventTypeOption } from '@/hooks/useInvitationThemesCatalog';
