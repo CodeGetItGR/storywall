@@ -19,6 +19,7 @@ import type {
 } from '@/lib/api/types';
 import type { SessionHandoff } from '@/lib/auth/sessionHandoff';
 import { clearSession, getAuthState, getSessionGeneration, setSession, subscribeAuthState, updateSessionProfile } from '@/lib/auth/tokenStore';
+import { clearCreateEventWizardDraft } from '@/lib/createEventWizardDraft';
 
 const BOOTSTRAP_TIMEOUT_MS = 8000;
 const RETRY_BASE_MS = 1000;
@@ -216,6 +217,8 @@ export function AuthProvider({ children, handoff = null }: { children: ReactNode
         // session) would render straight from this cache until each query's
         // staleTime happened to elapse.
         resetSessionCaches();
+        // The next person on this device must not find this account's half-made event.
+        clearCreateEventWizardDraft();
     }, [resetSessionCaches]);
 
     const updateProfile = useCallback((profile: Pick<UserResponseDto, 'firstName' | 'lastName' | 'profilePictureUrl' | 'emailVerified'>) => {
