@@ -2,6 +2,7 @@
 
 import { type ReactNode, useRef } from 'react';
 
+import { AccountStep } from '@/components/event/create/wizard/account/AccountStep';
 import { CreateEventWizardBackButton } from '@/components/event/create/wizard/CreateEventWizardBackButton';
 import { CreateEventWizardFooter } from '@/components/event/create/wizard/CreateEventWizardFooter';
 import { CreateEventWizardProgress } from '@/components/event/create/wizard/CreateEventWizardProgress';
@@ -39,7 +40,12 @@ export function CreateEventWizard({ leading }: { leading: ReactNode }) {
                         <PlanStep />
                     </div>
                 )}
-                {!isType && step !== 'plan' && (
+                {step === 'account' && (
+                    <div className="px-5 pb-6">
+                        <AccountStep />
+                    </div>
+                )}
+                {!isType && step !== 'plan' && step !== 'account' && (
                     <form id={formId} onSubmit={handleSubmit} className="px-5 pb-6">
                         {step === 'details' && <DetailsStep />}
                         {step === 'theme' && <ThemeStep />}

@@ -44,8 +44,11 @@ import {
     rememberCreateEventCheckout,
     resolveCreateEventStep,
     resolveCreateEventType,
+    stepAfter,
+    stepBefore,
     visibleCreateEventSteps,
 } from '@/lib/createEventSteps';
+import { needsAccountStep } from '@/lib/createEventWizardAccount';
 import { CREATE_EVENT_STEP_PARAM } from '@/lib/createEventWizardUrl';
 import { eventWindowFromLocalStart, formatDate, getScheduleDatetimeLocalBounds, isDatetimeLocalAfter, isDatetimeLocalBefore } from '@/lib/datetime';
 import { getLatestStartAt, projectCoverage } from '@/lib/eventCoverage';
@@ -61,7 +64,7 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
     const t = useTranslations('CreateEventPage');
     const locale = useLocale();
     const searchParams = useSearchParams();
-    const { isAuthenticated, user } = useAuth();
+    const { isAuthenticated, isBootstrapping, user } = useAuth();
     useMe();
     // Fail closed: submission stays blocked until we positively know the
     // account is verified. `user.emailVerified` is `null` until /api/me
@@ -72,6 +75,13 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
     // The wizard picks up where the host left off; a link's own type, plan, duration or code wins.
     const draft = useCreateEventWizardDraft(isWizard, requestedTypeSlug);
     const saved = draft.initial;
+    // The wizard asks a guest or an unverified account to sign in before review; once shown, the step
+    // stays in the count for the run (spec 3.1).
+    const needsAccount = isWizard && needsAccountStep(user ? { emailVerified: user.emailVerified, role: user.role } : null);
+    const [accountStepShown, setAccountStepShown] = useState(() => saved?.accountStepShown ?? false);
+    // Set during render, not in an effect, so the step never renders once without being counted.
+    if (needsAccount && !isBootstrapping && !accountStepShown) setAccountStepShown(true);
+    const showAccountStep = isWizard && (accountStepShown || (needsAccount && !isBootstrapping));
     // A link may pick the plan and its duration (?plan=, ?option=); a code or id not on sale falls back.
     const [linkedPlanCode] = useState(() => searchParams.get(CREATE_EVENT_PLAN_PARAM) ?? saved?.planCode ?? '');
     const [linkedOptionId] = useState(() => searchParams.get(CREATE_EVENT_OPTION_PARAM));
@@ -148,11 +158,11 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
     const selectedOption = selectedPlan ? resolveInitialOption(selectedPlan, durationPicks.picks[selectedPlan.code]) : null;
     const gift = useCreateEventGift(selectedPlan, saved?.gift ?? null);
     const planHasTheme = selectedPlan?.moduleKeys.includes('theme') ?? false;
-    const themePresetsQuery = useThemePresetsForType(planHasTheme ? selectedEventType : null);
+    const themePresetsQuery = useThemePresetsForType(planHasTheme ? selectedEventType : null, isWizard);
     const themePresets = planHasTheme ? themePresetsQuery.data : undefined;
     const themeStepAvailable = isThemeStepAvailable({ planHasTheme, isLoading: themePresetsQuery.isLoading, presets: themePresets });
     const selectedThemePresetId = effectiveThemePresetId(themePresetId, themePresets);
-    const steps = visibleCreateEventSteps(themeStepAvailable);
+    const steps = visibleCreateEventSteps(themeStepAvailable, showAccountStep);
     const { reset: resetGift, saveToDraft: saveGiftToDraft } = gift;
     const initialSessionTitleKey = getInitialSessionTitleKey(selectedEventType);
     const initialSessionTitle = t.has(initialSessionTitleKey) ? t(initialSessionTitleKey) : undefined;
@@ -182,7 +192,16 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
         trimmedTitle && startAt && isTimezoneValid && !scheduleError && trimmedLocationName && trimmedLocationAddress && gift.isValid,
     );
     const canReachOverview = canReachDetails && canSubmitDetails;
-    const reachableStep: CreateEventStep = canReachOverview ? 'overview' : canReachDetails ? 'details' : canReachPlan ? 'plan' : 'type';
+    // While the account still needs signing in, review isn't reachable yet: the account step is.
+    const reachableStep: CreateEventStep = canReachOverview
+        ? needsAccount
+            ? 'account'
+            : 'overview'
+        : canReachDetails
+          ? 'details'
+          : canReachPlan
+            ? 'plan'
+            : 'type';
 
     const navigation = useCreateEventStepNavigation(mode, run);
     const goToStep = useCallback((nextStep: CreateEventStep) => navigation.push(nextStep), [navigation]);
@@ -192,11 +211,16 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
     const goToDetails = useCallback(() => goToStep('details'), [goToStep]);
     const goToTheme = useCallback(() => goToStep('theme'), [goToStep]);
     const goToOverview = useCallback(() => goToStep('overview'), [goToStep]);
-    // The top-left Back: the step before this one among the steps shown.
+    // The step after this one among the steps shown (details → theme → account → review).
+    const goToNextStep = useCallback(() => {
+        const next = stepAfter(step, steps);
+        if (next) goToStep(next);
+    }, [goToStep, step, steps]);
+    // The top-left Back: the step before this one among the steps shown, over a finished account step.
     const goBack = useCallback(() => {
-        const previous = steps[steps.indexOf(step) - 1];
+        const previous = stepBefore(step, steps, !needsAccount);
         if (previous) navigation.back(previous);
-    }, [navigation, step, steps]);
+    }, [navigation, needsAccount, step, steps]);
 
     useEffect(() => {
         if (step === 'type') {
@@ -207,15 +231,18 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
     useEffect(() => {
         // Until the config and the type's plans load, no step past the type (or plan) one looks
         // reachable: a link straight to a later step (a landing plan card opens on details) must not
-        // be sent back meanwhile.
-        if (!appConfig || planTiersQuery.isLoading) return;
+        // be sent back meanwhile. Nor while the session loads: who needs the account step isn't known yet.
+        if (!appConfig || planTiersQuery.isLoading || isBootstrapping) return;
         if (CREATE_EVENT_STEPS.indexOf(step) > CREATE_EVENT_STEPS.indexOf(reachableStep)) {
             navigation.replace(reachableStep);
         } else if (step === 'theme' && !themeStepAvailable) {
             // Nothing to pick for this plan or type, or the list failed: skip ahead.
+            navigation.replace(showAccountStep ? 'account' : 'overview');
+        } else if (step === 'account' && !showAccountStep) {
+            // The old flow, or an account that never needed it (a legacy or shared link).
             navigation.replace('overview');
         }
-    }, [appConfig, navigation, planTiersQuery.isLoading, reachableStep, step, themeStepAvailable]);
+    }, [appConfig, isBootstrapping, navigation, planTiersQuery.isLoading, reachableStep, showAccountStep, step, themeStepAvailable]);
 
     // The pop-up opens on a URL with no step (it resumes the saved one). Write the step into that entry,
     // so going Back to it later shows that step instead of resuming wherever the host got to.
@@ -276,8 +303,10 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
             themePresetId,
             gift: { isGift: gift.isGift, details: gift.details.value },
             checkoutCode,
+            accountStepShown,
         });
     }, [
+        accountStepShown,
         checkoutCode,
         durationPicks.picks,
         eventType,
@@ -369,7 +398,7 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
             setError(null);
             setStartPassed(false);
             if (step === 'details') {
-                if (canSubmitDetails) goToStep(themeStepAvailable ? 'theme' : 'overview');
+                if (canSubmitDetails) goToNextStep();
                 return;
             }
             if (step !== 'overview') return;
@@ -499,6 +528,7 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
             createEvent,
             createdDraftEventId,
             createdDraftSelection,
+            goToNextStep,
             goToStep,
             initialSessionTitle,
             isEmailVerified,
@@ -511,7 +541,6 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
             selectedCode,
             selectedThemePresetId,
             themePresetsQuery,
-            themeStepAvailable,
             selectedEventType,
             selectedOption,
             step,
@@ -536,6 +565,7 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
         goToTheme,
         goToOverview,
         goBack,
+        goToNextStep,
         steps,
 
         eventTypes,

@@ -12,13 +12,13 @@ export function wizardDepth(): number {
 }
 
 // What pushed the entry: opening the pop-up, a step change, or the compare sheet.
-export type WizardEntryKind = 'open' | 'step' | 'sheet';
+export type WizardEntryKind = 'open' | 'step' | 'sheet' | 'account';
 const WIZARD_ENTRY_KIND_KEY = '__storywallCreateWizardEntry';
 
 function currentEntryKind(): WizardEntryKind | null {
     const state = window.history.state as Record<string, unknown> | null;
     const kind = state?.[WIZARD_ENTRY_KIND_KEY];
-    return kind === 'open' || kind === 'step' || kind === 'sheet' ? kind : null;
+    return kind === 'open' || kind === 'step' || kind === 'sheet' || kind === 'account' ? kind : null;
 }
 
 // Opening the pop-up, each step and the sheet are their own Back step.

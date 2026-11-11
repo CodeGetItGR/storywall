@@ -7,7 +7,9 @@ import { readCreateEventWizardDraft, writeCreateEventWizardDraft } from '@/lib/c
 
 const params = vi.hoisted(() => ({ current: new URLSearchParams() }));
 const router = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn() }));
-const auth = vi.hoisted(() => ({ current: { isAuthenticated: false, user: null as null | { emailVerified: boolean } } }));
+const auth = vi.hoisted(() => ({
+    current: { isAuthenticated: false, isBootstrapping: false, user: null as null | { emailVerified: boolean | null; role: string } },
+}));
 const plansEnabled = vi.hoisted(() => ({ calls: [] as unknown[][] }));
 
 vi.mock('next/navigation', () => ({ useRouter: () => router, useSearchParams: () => params.current }));
@@ -47,11 +49,29 @@ vi.mock('@/hooks/useWithdrawalConsent', () => ({
 vi.mock('@/hooks/usePartnerBrandingConsent', () => ({ usePartnerBrandingConsent: () => ({ satisfied: true, requestFields: {} }) }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'error' }));
 
+const savedDraft = {
+    run: 'r1',
+    step: 'details' as const,
+    eventType: 'BAPTISM' as const,
+    planCode: 'BASIC',
+    durationPicks: {},
+    title: 'Eleni',
+    startAt: '',
+    timezone: 'Europe/Athens',
+    locationName: 'Church',
+    locationAddress: '',
+    mapsUrl: '',
+    themePresetId: null,
+    gift: { isGift: false, details: { recipientLabel: '', giverDisplayName: '', recipientEmail: '' } },
+    checkoutCode: '',
+};
+
 beforeEach(() => {
     window.localStorage.clear();
     window.history.replaceState(null, '', '/?create=1&run=r1');
     params.current = new URLSearchParams('create=1&run=r1');
     plansEnabled.calls = [];
+    auth.current = { isAuthenticated: false, isBootstrapping: false, user: null };
 });
 
 afterEach(() => vi.clearAllMocks());
@@ -140,5 +160,28 @@ describe('useCreateEventFormController in wizard mode', () => {
         act(() => result.current.onTitleChange({ target: { value: 'Our wedding' } } as React.ChangeEvent<HTMLInputElement>));
         expect(readCreateEventWizardDraft()).toBeNull();
         expect(plansEnabled.calls.at(-1)).toEqual(['WEDDING', false, false]);
+    });
+
+    it('shows the account step to a guest, between details and review', () => {
+        const { result } = renderHook(() => useCreateEventFormController({ mode: 'wizard' }));
+        expect(result.current.steps).toEqual(['type', 'plan', 'details', 'account', 'overview']);
+    });
+
+    it('has no account step for a verified host', () => {
+        auth.current = { isAuthenticated: true, isBootstrapping: false, user: { emailVerified: true, role: 'USER' } };
+        const { result } = renderHook(() => useCreateEventFormController({ mode: 'wizard' }));
+        expect(result.current.steps).not.toContain('account');
+    });
+
+    it('keeps the account step in the count once it was shown', () => {
+        auth.current = { isAuthenticated: true, isBootstrapping: false, user: { emailVerified: true, role: 'USER' } };
+        writeCreateEventWizardDraft({ ...savedDraft, accountStepShown: true });
+        const { result } = renderHook(() => useCreateEventFormController({ mode: 'wizard' }));
+        expect(result.current.steps).toContain('account');
+    });
+
+    it('never shows the account step in the old flow', () => {
+        const { result } = renderHook(() => useCreateEventFormController({ mode: 'legacy' }));
+        expect(result.current.steps).not.toContain('account');
     });
 });

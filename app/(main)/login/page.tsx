@@ -1,31 +1,26 @@
 'use client';
 
-import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import React, { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 
 import { AuthLayout } from '@/components/auth/AuthLayout';
+import { LoginEmailForm } from '@/components/auth/LoginEmailForm';
 import { OAuthButtons } from '@/components/auth/OAuthButtons';
 import { OAuthSignupAcceptanceModal } from '@/components/auth/OAuthSignupAcceptanceModal';
 import { InviteEventCard } from '@/components/invite/InviteEventCard';
 import { AuthLoadingState } from '@/components/layout/AuthLoadingState';
 import { AppLink } from '@/components/ui/AppLink';
-import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
-import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
-import { useAuth } from '@/hooks/useAuth';
 import { useAuthPageRedirect } from '@/hooks/useAuthPageRedirect';
 import { useAuthReturnPath } from '@/hooks/useAuthReturnPath';
-import { useContentLimits } from '@/hooks/useContentLimits';
+import { useLoginForm } from '@/hooks/useLoginForm';
 import { useNavigateAfterSignIn } from '@/hooks/useNavigateAfterSignIn';
-import { useOAuthSignIn } from '@/hooks/useOAuthSignIn';
-import type { AuthSessionDto, OAuthProviderName } from '@/lib/api/types';
+import type { AuthSessionDto } from '@/lib/api/types';
 import { getPostAuthRedirectPath } from '@/lib/auth/returnPath';
 import { routes } from '@/lib/routes';
 
 export default function LoginPage() {
     const t = useTranslations('LoginPage');
-    const limits = useContentLimits();
     const navigateAfterSignIn = useNavigateAfterSignIn();
     const searchParams = useSearchParams();
     const inviteToken = searchParams.get('invite');
@@ -33,42 +28,7 @@ export default function LoginPage() {
     const accountDeleted = searchParams.get('accountDeleted') === '1';
     const returnPath = useAuthReturnPath();
 
-    const { login } = useAuth();
     const { shouldRenderAuthPage } = useAuthPageRedirect(returnPath);
-    const toErrorMessage = useApiErrorMessage();
-
-    const [showPw, setShowPw] = useState(false);
-    const [email, setEmail] = useState(searchParams.get('email') ?? '');
-    const [password, setPassword] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        setEmail(e.target.value);
-    }, []);
-
-    const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        setPassword(e.target.value);
-    }, []);
-
-    const handleTogglePasswordVisibility = useCallback(() => {
-        setShowPw((p) => !p);
-    }, []);
-
-    async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
-        e.preventDefault();
-        setError(null);
-        setIsSubmitting(true);
-
-        try {
-            const auth = await login({ email, password, inviteToken: inviteToken ?? undefined });
-            navigateAfterSignIn(getPostAuthRedirectPath(auth.role, returnPath));
-        } catch (err) {
-            setError(toErrorMessage(err));
-        } finally {
-            setIsSubmitting(false);
-        }
-    }
 
     const handleSignedIn = useCallback(
         (session: AuthSessionDto) => {
@@ -77,23 +37,7 @@ export default function LoginPage() {
         [navigateAfterSignIn, returnPath],
     );
 
-    const handleOAuthError = useCallback(
-        (err: unknown) => {
-            setError(toErrorMessage(err));
-        },
-        [toErrorMessage],
-    );
-
-    const oauthSignIn = useOAuthSignIn({ inviteToken, onSignedInAction: handleSignedIn, onErrorAction: handleOAuthError });
-    const { handleSignIn } = oauthSignIn;
-
-    const handleOAuthSignIn = useCallback(
-        async (provider: OAuthProviderName, idToken: string) => {
-            setError(null);
-            await handleSignIn(provider, idToken);
-        },
-        [handleSignIn],
-    );
+    const form = useLoginForm({ inviteToken, initialEmail: searchParams.get('email') ?? '', onSignedIn: handleSignedIn });
 
     if (!shouldRenderAuthPage) {
         return <AuthLoadingState className="min-h-screen" />;
@@ -102,83 +46,17 @@ export default function LoginPage() {
     return (
         <AuthLayout showLanguageSwitcher>
             <InviteEventCard inviteToken={inviteToken} />
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                {/* Status */}
-                {passwordChanged && <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{t('passwordChanged')}</p>}
-                {accountDeleted && <p className="rounded-2xl bg-surface-muted px-4 py-3 text-sm text-ink">{t('accountDeleted')}</p>}
 
-                {/* Email */}
-                <FormFieldLabel label={t('fields.email')} required>
-                    <div className="flex items-center gap-3 rounded-xl bg-surface-muted/70 px-4 py-3 transition focus-within:ring-2 focus-within:ring-primary/30">
-                        <Mail className="h-4 w-4 shrink-0 text-ink-muted" />
-                        <input
-                            type="email"
-                            placeholder={t('placeholders.email')}
-                            required
-                            maxLength={limits.emailMaxLength}
-                            value={email}
-                            onChange={handleEmailChange}
-                            className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-faint"
-                        />
-                    </div>
-                </FormFieldLabel>
-
-                {/* Password */}
-                <FormFieldLabel label={t('fields.password')} required>
-                    <div className="flex items-center gap-3 rounded-xl bg-surface-muted/70 px-4 py-3 transition focus-within:ring-2 focus-within:ring-primary/30">
-                        <Lock className="h-4 w-4 shrink-0 text-ink-muted" />
-                        <input
-                            type={showPw ? 'text' : 'password'}
-                            placeholder="••••••••"
-                            required
-                            minLength={limits.passwordMinLength}
-                            maxLength={limits.passwordMaxLength}
-                            value={password}
-                            onChange={handlePasswordChange}
-                            className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-faint"
-                        />
-                        <button
-                            type="button"
-                            onClick={handleTogglePasswordVisibility}
-                            aria-label={showPw ? t('hidePassword') : t('showPassword')}
-                            className="text-ink-faint transition-colors hover:text-ink-muted"
-                        >
-                            {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                    </div>
-                </FormFieldLabel>
-
-                {/* Password recovery */}
-                <AppLink
-                    href={routes.forgotPassword}
-                    className="-mt-2 self-end text-xs font-semibold text-ink-muted transition-colors hover:text-ink hover:underline"
-                >
-                    {t('forgotPassword')}
-                </AppLink>
-
-                {/* Feedback */}
-                {error && (
-                    <p role="alert" className="-mt-1 text-center text-xs text-red-500">
-                        {error}
-                    </p>
-                )}
-
-                {/* Actions */}
-                <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="mt-2 flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                    {isSubmitting ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                        <>
-                            {t('submit')}
-                            <ArrowRight className="h-4 w-4" />
-                        </>
-                    )}
-                </button>
-            </form>
+            {/* Email form */}
+            <LoginEmailForm
+                form={form}
+                status={
+                    <>
+                        {passwordChanged && <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{t('passwordChanged')}</p>}
+                        {accountDeleted && <p className="rounded-2xl bg-surface-muted px-4 py-3 text-sm text-ink">{t('accountDeleted')}</p>}
+                    </>
+                }
+            />
 
             {/* OAuth */}
             <div className="my-5 flex items-center gap-3 text-xs text-ink-faint">
@@ -186,16 +64,17 @@ export default function LoginPage() {
                 {t('orContinueWith')}
                 <span className="h-px flex-1 bg-surface-muted" />
             </div>
-            <OAuthButtons onSignIn={handleOAuthSignIn} onError={handleOAuthError} />
-            {oauthSignIn.pendingSignup && (
+            <OAuthButtons onSignIn={form.handleOAuthSignIn} onError={form.handleOAuthError} />
+            {form.oauthSignIn.pendingSignup && (
                 <OAuthSignupAcceptanceModal
-                    versions={oauthSignIn.pendingSignup.versions}
-                    onConfirmAction={oauthSignIn.handleSignupConfirm}
-                    onErrorAction={oauthSignIn.handleSignupError}
-                    onCloseAction={oauthSignIn.handleSignupCancel}
+                    versions={form.oauthSignIn.pendingSignup.versions}
+                    onConfirmAction={form.oauthSignIn.handleSignupConfirm}
+                    onErrorAction={form.oauthSignIn.handleSignupError}
+                    onCloseAction={form.oauthSignIn.handleSignupCancel}
                 />
             )}
 
+            {/* Footer */}
             <p className="mt-6 text-center text-xs text-ink-muted">
                 {t('noAccount')}{' '}
                 <AppLink href={routes.auth.register({ invite: inviteToken, next: returnPath })} className="font-semibold text-ink hover:underline">

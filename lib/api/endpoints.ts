@@ -53,6 +53,12 @@ export const endpoints = {
         resendVerification: '/api/auth/resend-verification',
         verifyEmail: '/api/auth/verify-email',
         forgotPassword: '/api/auth/forgot-password',
+        // The create wizard's 6-digit email code (signed in, unverified).
+        emailCode: {
+            send: '/api/auth/email-code',
+            verify: '/api/auth/email-code/verify',
+            email: '/api/auth/email-code/email',
+        },
         resetPassword: '/api/auth/reset-password',
     },
 
