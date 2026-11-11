@@ -9,7 +9,7 @@ import en from '@/messages/en.json';
 type Props = Parameters<typeof EditorTopBar>[0];
 
 function renderBar(props: Partial<Props> = {}) {
-    const handlers = { onBack: vi.fn(), onUndo: vi.fn(), onRedo: vi.fn(), onPreview: vi.fn(), onPublish: vi.fn() };
+    const handlers = { onBack: vi.fn(), onUndo: vi.fn(), onRedo: vi.fn(), onPreview: vi.fn(), onPublish: vi.fn(), onTour: vi.fn() };
     render(
         <NextIntlClientProvider locale="en" messages={en}>
             <EditorTopBar status="saved" canUndo canRedo {...handlers} {...props} />
@@ -28,6 +28,7 @@ describe('EditorTopBar', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Redo' }));
         fireEvent.click(screen.getByRole('button', { name: 'Preview' }));
         fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Editor tour' }));
 
         for (const handler of Object.values(handlers)) expect(handler).toHaveBeenCalledOnce();
     });

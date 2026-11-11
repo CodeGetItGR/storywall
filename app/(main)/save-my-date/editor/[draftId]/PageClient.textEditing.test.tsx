@@ -1,9 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createDraftServer } from '@/hooks/invitationDraftTestServer';
+import { EDITOR_TOUR_SEEN_KEY } from '@/lib/invitation/editorTour';
 import { sampleDraftDto } from '@/lib/invitation/sampleDraft';
 import en from '@/messages/en.json';
 
@@ -86,6 +87,8 @@ function storedElement(id: string) {
 
 describe('Invitation editor: texts', () => {
     beforeAll(() => backend.server.listen({ onUnhandledRequest: 'error' }));
+    // The tour has been seen: these tests are about the editor itself.
+    beforeEach(() => localStorage.setItem(EDITOR_TOUR_SEEN_KEY, '1'));
     afterEach(() => {
         cleanup();
         backend.server.resetHandlers();
@@ -211,7 +214,11 @@ describe('Invitation editor: texts', () => {
         await openEditor();
         const frame = canvasText(WAITING)!.closest<HTMLElement>('[data-editor-section]')!;
         const sectionId = frame.dataset.editorSection!;
-        const order = () => backend.stored().document.sections.map((section) => section.id).indexOf(sectionId);
+        const order = () =>
+            backend
+                .stored()
+                .document.sections.map((section) => section.id)
+                .indexOf(sectionId);
         fireEvent.pointerDown(frame);
         fireEvent.click(within(frame).getByRole('button', { name: 'Section options' }));
         fireEvent.click(await screen.findByRole('menuitem', { name: 'Move up' }));
