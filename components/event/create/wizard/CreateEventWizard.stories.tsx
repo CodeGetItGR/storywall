@@ -10,9 +10,10 @@ const PLANS_URL = '*/api/plan-tiers';
 
 const nav = (query: Record<string, string>) => ({ nextjs: { navigation: { pathname: '/', query: { create: '1', run: 'story', ...query } } } });
 
+// Framed like the pop-up: the whole screen on phones, a 440px card on desktop (CreateEventDialog).
 function WizardStory() {
     return (
-        <div className="h-[44rem]">
+        <div className="h-svh bg-white md:mx-auto md:mt-[5vh] md:h-[min(90vh,52rem)] md:w-110 md:overflow-hidden md:rounded-3xl md:shadow-xl">
             <CreateEventFormProvider mode="wizard">
                 <CreateEventWizard leading={<span className="size-11" aria-hidden="true" />} />
             </CreateEventFormProvider>
@@ -24,7 +25,7 @@ const meta = {
     title: 'Event/CreateEventWizard',
     component: WizardStory,
     decorators: [withAppContext],
-    parameters: { app: { user: null, appConfig: storyWizardAppConfig } },
+    parameters: { layout: 'fullscreen', app: { user: null, appConfig: storyWizardAppConfig } },
     beforeEach({ msw }) {
         msw.use(
             http.get(PLANS_URL, ({ request }) => {
