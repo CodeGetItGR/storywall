@@ -21,7 +21,11 @@ export function EditorNotice({ tone, message, actionLabel, onAction }: EditorNot
                 <button
                     type="button"
                     onClick={onAction}
-                    className="shrink-0 rounded-md bg-white px-2.5 py-1 text-xs font-bold text-rose-700 hover:bg-rose-50"
+                    className={
+                        tone === 'error'
+                            ? 'shrink-0 rounded-md bg-white px-2.5 py-1 text-xs font-bold text-rose-700 hover:bg-rose-50'
+                            : 'shrink-0 rounded-md bg-white px-2.5 py-1 text-xs font-bold text-[#232327] hover:bg-white/90'
+                    }
                 >
                     {actionLabel}
                 </button>

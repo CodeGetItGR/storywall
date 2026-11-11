@@ -12,13 +12,16 @@ export const EDITOR_MERGE_WINDOW_MS = 1000;
 
 type HistoryStep = { patches: Patch[]; inversePatches: Patch[]; mergeKey?: string; at: number };
 
+// `gesture`: the edits of one drag stay one undo step however long the pointer rests.
+export type EditOptions = { gesture?: boolean };
+
 export type InvitationEditorState = {
     document: InvitationDocument;
     past: HistoryStep[];
     future: HistoryStep[];
     // Goes up with every change to the document, undo and redo included. Autosave compares it.
     changeCount: number;
-    edit: (recipe: (draft: Draft<InvitationDocument>) => void, mergeKey?: string) => void;
+    edit: (recipe: (draft: Draft<InvitationDocument>) => void, mergeKey?: string, options?: EditOptions) => void;
     undo: () => void;
     redo: () => void;
 };
@@ -34,14 +37,15 @@ export function createInvitationEditorStore(document: InvitationDocument): Invit
         future: [],
         changeCount: 0,
 
-        edit: (recipe, mergeKey) => {
+        edit: (recipe, mergeKey, options) => {
             const { document: current, past, changeCount } = get();
             const [next, patches, inversePatches] = produceWithPatches(current, recipe);
             if (patches.length === 0) return;
 
             const now = Date.now();
             const last = past.at(-1);
-            const merges = mergeKey !== undefined && last?.mergeKey === mergeKey && now - last.at < EDITOR_MERGE_WINDOW_MS;
+            const merges =
+                mergeKey !== undefined && last?.mergeKey === mergeKey && (options?.gesture === true || now - last.at < EDITOR_MERGE_WINDOW_MS);
             const step: HistoryStep = merges
                 ? { patches: [...last.patches, ...patches], inversePatches: [...inversePatches, ...last.inversePatches], mergeKey, at: now }
                 : { patches, inversePatches, mergeKey, at: now };

@@ -30,8 +30,10 @@ export const Filtered: Story = {
         const canvas = within(canvasElement);
         const copy = copyFor(globals).AdminPage.invitationThemes;
         await canvas.findByText('gamos-001');
-        await userEvent.click(await canvas.findByRole('button', { name: storyEventTypes[0].name[globals.locale === 'el' ? 'el' : 'en'] }));
-        await userEvent.click(canvas.getByRole('button', { name: copy.status.ACTIVE }));
+        // The event types load on their own, after the themes.
+        const eventType = storyEventTypes[0].name[globals.locale === 'el' ? 'el' : 'en'];
+        await userEvent.click(await canvas.findByRole('button', { name: eventType }, { timeout: 5000 }));
+        await userEvent.click(await canvas.findByRole('button', { name: copy.status.ACTIVE }, { timeout: 5000 }));
     },
 };
 
