@@ -9,20 +9,29 @@ import { EventDetailsStep } from '@/components/event/create/EventDetailsStep';
 import { EventOverviewStep } from '@/components/event/create/EventOverviewStep';
 import { EventThemeStep } from '@/components/event/create/EventThemeStep';
 import { EventTypeStep } from '@/components/event/create/EventTypeStep';
+import { CREATE_EVENT_WIZARD_HEADING_ID } from '@/components/event/create/wizard/createEventWizardIds';
 import { CreateEventWizardProgress } from '@/components/event/create/wizard/CreateEventWizardProgress';
 import { EventPlanSelector } from '@/components/plan/EventPlanSelector';
 import { useScrollTopOnChange } from '@/hooks/useScrollTopOnChange';
 import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 
-// The step heading's id; the pop-up takes its accessible name from it.
-export const CREATE_EVENT_WIZARD_HEADING_ID = 'create-event-wizard-heading';
-
 // One wizard, two shells: the pop-up (CreateEventDialog) and the page (CreateEventWizardPage).
 // `leading` is the shell's own button: close in the pop-up, back on the page.
 export function CreateEventWizard({ leading }: { leading: ReactNode }) {
     const t = useTranslations('CreateEventPage');
-    const { step, formId, handleSubmit, eventPlans, modules, media, selectedCode, durationPicks, onSelectPlan, onSelectPlanDuration, isPlansLoading } =
-        useCreateEventForm();
+    const {
+        step,
+        formId,
+        handleSubmit,
+        eventPlans,
+        modules,
+        media,
+        selectedCode,
+        durationPicks,
+        onSelectPlan,
+        onSelectPlanDuration,
+        isPlansLoading,
+    } = useCreateEventForm();
     const scrollRef = useRef<HTMLDivElement>(null);
     useScrollTopOnChange(scrollRef, step);
 

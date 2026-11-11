@@ -3,7 +3,8 @@
 import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { CREATE_EVENT_WIZARD_HEADING_ID, CreateEventWizard } from '@/components/event/create/wizard/CreateEventWizard';
+import { CreateEventWizard } from '@/components/event/create/wizard/CreateEventWizard';
+import { CREATE_EVENT_WIZARD_HEADING_ID } from '@/components/event/create/wizard/createEventWizardIds';
 import { CreateEventWizardMessages } from '@/components/event/create/wizard/CreateEventWizardMessages';
 import { AuthLoadingState } from '@/components/layout/AuthLoadingState';
 import { Modal } from '@/components/ui/modal';
