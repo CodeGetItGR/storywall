@@ -1,4 +1,4 @@
-import { EditorSections } from '@/components/saveMyDate/editor/sections/EditorSections';
+import { EditorSections, type SectionSettingsOpener } from '@/components/saveMyDate/editor/sections/EditorSections';
 import { useEditableTextRenderer } from '@/components/saveMyDate/editor/text/EditableTextContext';
 import { InvitationRenderer } from '@/components/saveMyDate/invitation/InvitationRenderer';
 import type { SectionActions } from '@/hooks/useSectionActions';
@@ -14,10 +14,11 @@ type EditorCanvasProps = {
     uploadedFonts?: InvitationFontDto[];
     // Section tools; without them the canvas only shows the invitation.
     sections?: SectionActions;
+    sectionSettings?: SectionSettingsOpener;
 };
 
 // The invitation being edited, drawn by the same renderer guests see. It scrolls on its own.
-export function EditorCanvas({ document, theme, media, uploadedFonts, sections }: EditorCanvasProps) {
+export function EditorCanvas({ document, theme, media, uploadedFonts, sections, sectionSettings }: EditorCanvasProps) {
     const renderText = useEditableTextRenderer();
     const renderer = (wrapSection?: Parameters<typeof InvitationRenderer>[0]['wrapSection']) => (
         <InvitationRenderer
@@ -34,7 +35,13 @@ export function EditorCanvas({ document, theme, media, uploadedFonts, sections }
     return (
         <main className="min-h-0 min-w-0 flex-1 overflow-y-auto p-2 [background:var(--smd-editor-canvas)] sm:p-6">
             <div className="mx-auto w-full max-w-245 overflow-hidden shadow-[0_18px_50px_rgba(0,0,0,0.45)]">
-                {sections ? <EditorSections actions={sections}>{renderer}</EditorSections> : renderer()}
+                {sections ? (
+                    <EditorSections actions={sections} settings={sectionSettings}>
+                        {renderer}
+                    </EditorSections>
+                ) : (
+                    renderer()
+                )}
             </div>
         </main>
     );

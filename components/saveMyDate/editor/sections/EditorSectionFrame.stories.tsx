@@ -44,7 +44,7 @@ const meta = {
         controls: { section: faq, canMoveUp: true, canMoveDown: true, canAddBefore: false, canAddAfter: true },
         name: 'FAQ',
         isActive: false,
-        actions: { activate: fn(), toggleVisible: fn(), move: fn(), askDelete: fn(), openAddList: fn() },
+        actions: { activate: fn(), toggleVisible: fn(), move: fn(), askDelete: fn(), openAddList: fn(), openSettings: fn() },
         children: sectionContent(faq),
     },
 } satisfies Meta<typeof EditorSectionFrame>;

@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 
 import { useDraftAutosave } from '@/hooks/useDraftAutosave';
 import { useEditorLeave } from '@/hooks/useEditorLeave';
+import { useEditorSectionSettings } from '@/hooks/useEditorSectionSettings';
 import { useEditorTour } from '@/hooks/useEditorTour';
 import { useInvitationEditorStore } from '@/hooks/useInvitationEditorStore';
 import { usePublishInvitation } from '@/hooks/usePublishInvitation';
@@ -11,15 +12,17 @@ import { useSectionActions } from '@/hooks/useSectionActions';
 import { useUndoShortcuts } from '@/hooks/useUndoShortcuts';
 import { useUnsavedChangesWarning } from '@/hooks/useUnsavedChangesWarning';
 import type { EditableDraft } from '@/lib/invitation/drafts';
+import type { InvitationFontDto } from '@/lib/invitation/uploadedFonts';
 
 export type EditorPanel = 'assets' | 'settings';
 
 // Everything the editor shell shows and does for one open draft.
-export function useInvitationEditor(draft: EditableDraft) {
+export function useInvitationEditor(draft: EditableDraft, uploadedFonts?: InvitationFontDto[]) {
     const editor = useInvitationEditorStore(draft.document);
     const { status, flush, savedRevision } = useDraftAutosave(editor.store, draft.id, draft.revision);
     const leave = useEditorLeave(flush);
     const sections = useSectionActions(editor.store, editor.document, draft.eventType);
+    const sectionSettings = useEditorSectionSettings(editor.store, editor.document, draft, sections.setActiveId, uploadedFonts);
     const [openPanel, setOpenPanel] = useState<EditorPanel | null>(null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -49,7 +52,8 @@ export function useInvitationEditor(draft: EditableDraft) {
         store: editor.store,
         document: editor.document,
         theme: draft.theme,
-        media: draft.media,
+        // The draft's images and the ones uploaded since it opened.
+        media: sectionSettings.media,
         textColor: editor.document.overrides.textColor ?? draft.theme.colors.text,
         setTextColor: editor.setTextColor,
         canUndo: editor.canUndo,
@@ -69,5 +73,6 @@ export function useInvitationEditor(draft: EditableDraft) {
         tour,
         leave,
         sections,
+        sectionSettings,
     };
 }

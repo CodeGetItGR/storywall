@@ -31,6 +31,13 @@ vi.stubGlobal(
         disconnect() {}
     },
 );
+// jsdom has no media queries: a computer-wide screen, so the side panels dock beside the canvas.
+vi.stubGlobal('matchMedia', (query: string) => ({
+    matches: query.includes('min-width'),
+    media: query,
+    addEventListener() {},
+    removeEventListener() {},
+}));
 // jsdom draws nothing, so there is nothing to scroll to.
 Element.prototype.scrollIntoView = () => {};
 

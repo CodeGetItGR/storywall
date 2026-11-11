@@ -259,6 +259,7 @@ export const endpoints = {
     invitationDrafts: {
         root: '/api/invitation-drafts',
         byId: (id: string) => `/api/invitation-drafts/${id}`,
+        images: (id: string) => `/api/invitation-drafts/${id}/images`,
         publish: (id: string) => `/api/invitation-drafts/${id}/publish`,
         publication: (id: string) => `/api/invitation-drafts/${id}/publication`,
     },

@@ -16,6 +16,7 @@ import { EditorTopBar } from '@/components/saveMyDate/editor/EditorTopBar';
 import { PublishNotice } from '@/components/saveMyDate/editor/publish/PublishNotice';
 import { PublishPlanDialog } from '@/components/saveMyDate/editor/publish/PublishPlanDialog';
 import { PublishSheet } from '@/components/saveMyDate/editor/publish/PublishSheet';
+import { SectionSettings } from '@/components/saveMyDate/editor/settings/SectionSettings';
 import { InlineTextEditing } from '@/components/saveMyDate/editor/text/InlineTextEditing';
 import { TextColorSetting } from '@/components/saveMyDate/editor/TextColorSetting';
 import { ThemeAssetsPanel } from '@/components/saveMyDate/editor/ThemeAssetsPanel';
@@ -40,7 +41,8 @@ type InvitationEditorProps = {
 // typography and settings on the right. The panels dock on wide screens and open as sheets on smaller ones.
 export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading = false }: InvitationEditorProps) {
     const t = useTranslations('InvitationEditor');
-    const editor = useInvitationEditor(draft);
+    const editor = useInvitationEditor(draft, uploadedFonts);
+    const { sectionSettings } = editor;
 
     const assets = <ThemeAssetsPanel />;
     const settings = <TextColorSetting value={editor.textColor} onChange={editor.setTextColor} />;
@@ -77,9 +79,14 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
                         media={editor.media}
                         uploadedFonts={uploadedFonts}
                         sections={editor.sections}
+                        sectionSettings={sectionSettings.opener}
                     />
                 </InlineTextEditing>
-                <EditorDockedPanel title={t('settings')}>{settings}</EditorDockedPanel>
+                {sectionSettings.isDocked && sectionSettings.panel ? (
+                    <SectionSettings panel={sectionSettings.panel} isDocked onClose={sectionSettings.close} />
+                ) : (
+                    <EditorDockedPanel title={t('settings')}>{settings}</EditorDockedPanel>
+                )}
             </div>
 
             {/* Panels on small screens */}
@@ -90,6 +97,9 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
             <EditorPanelSheet open={editor.openPanel === 'settings'} title={t('settings')} onClose={editor.closePanel}>
                 {settings}
             </EditorPanelSheet>
+
+            {/* Section settings on small screens */}
+            {!sectionSettings.isDocked && <SectionSettings panel={sectionSettings.panel} isDocked={false} onClose={sectionSettings.close} />}
 
             {/* Preview */}
             <EditorPreview

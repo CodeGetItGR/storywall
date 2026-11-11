@@ -29,6 +29,13 @@ vi.stubGlobal(
         disconnect() {}
     },
 );
+// jsdom has no media queries: a computer-wide screen, so the side panels dock beside the canvas.
+vi.stubGlobal('matchMedia', (query: string) => ({
+    matches: query.includes('min-width'),
+    media: query,
+    addEventListener() {},
+    removeEventListener() {},
+}));
 
 const backend = createDraftServer();
 
