@@ -8,6 +8,7 @@ import type {
     EventSessionResponseDto,
     MediaResponseDto,
     ModuleKeyConvention,
+    PlanTierResponseDto,
     PostResponseDto,
     QrLinkResponseDto,
     ReactionTypeResponseDto,
@@ -295,9 +296,124 @@ function storyEventTypeCopy(en: string, el: string, taglineEn: string, taglineEl
     return { name: { en, el }, tagline: { en: taglineEn, el: taglineEl }, voice: {}, modules: {} };
 }
 
+const WIZARD_MODULE_KEYS = ['posts', 'gallery', 'qr_cards', 'playlist', 'schedule', 'stories', 'rsvp', 'wishbook', 'co_hosts', 'theme', 'he_or_she'];
+
+function storyWizardPlan(
+    code: string,
+    sortOrder: number,
+    maxMembers: number,
+    storageGb: number,
+    moduleKeys: string[],
+    prices: [number, number][],
+    eventTypeKey = 'WEDDING',
+) {
+    return {
+        id: `plan-${code}`,
+        code,
+        scope: 'EVENT',
+        name: code,
+        description: null,
+        sortOrder,
+        isDefault: false,
+        isAssignable: true,
+        isPublic: true,
+        isGiftable: false,
+        storageBytes: storageGb * 1024 ** 3,
+        maxMembers,
+        priceAmountMinor: null,
+        priceCurrency: 'EUR',
+        billingPeriod: null,
+        discountPercent: null,
+        discountLabel: null,
+        discountStartsAt: null,
+        discountEndsAt: null,
+        moduleKeys,
+        paidModules: [],
+        moduleConfigs: {},
+        eventTypeKey,
+        sharedGroupKey: null,
+        initialOptions: prices.map(([months, amount], index) => ({
+            id: `${code}-${months}`,
+            kind: 'INITIAL',
+            months,
+            priceAmountMinor: amount,
+            promoPriceAmountMinor: null,
+            sortOrder: index,
+            active: true,
+        })),
+        extensionOptions: [],
+    } as unknown as PlanTierResponseDto;
+}
+
+// Wedding plans shaped like staging's: three full plans and one lite plan, plus one baptism plan.
+export const storyWizardPlans: PlanTierResponseDto[] = [
+    storyWizardPlan(
+        'START',
+        1,
+        150,
+        15,
+        ['posts', 'gallery', 'qr_cards', 'playlist', 'schedule'],
+        [
+            [6, 7900],
+            [12, 9900],
+        ],
+    ),
+    storyWizardPlan(
+        'STORY',
+        2,
+        300,
+        25,
+        ['posts', 'gallery', 'qr_cards', 'playlist', 'schedule', 'stories', 'rsvp', 'wishbook'],
+        [
+            [6, 9900],
+            [9, 10900],
+            [12, 11900],
+        ],
+    ),
+    storyWizardPlan(
+        'SIGNATURE',
+        3,
+        2500,
+        50,
+        ['posts', 'gallery', 'qr_cards', 'playlist', 'schedule', 'stories', 'rsvp', 'wishbook', 'co_hosts'],
+        [
+            [6, 17900],
+            [12, 19900],
+        ],
+    ),
+    storyWizardPlan('QR', 4, 300, 10, ['gallery'], [[3, 4900]]),
+    storyWizardPlan(
+        'BAPTISM',
+        1,
+        120,
+        15,
+        ['posts', 'gallery', 'qr_cards', 'playlist', 'schedule', 'rsvp', 'wishbook'],
+        [
+            [6, 5900],
+            [12, 7900],
+        ],
+        'BAPTISM',
+    ),
+];
+
 // Two types, so the type step shows its cards instead of the empty state.
 export const storyWizardAppConfig = {
     ...storyAppConfig,
+    media: {
+        presignedUrlTtlMinutes: 60,
+        estimateAvgImageBytes: 3_000_000,
+        estimateAvgVideoBytes: 40_000_000,
+        estimateImageRatio: 0.7,
+    },
+    modules: WIZARD_MODULE_KEYS.map((moduleKey, sortOrder) => ({
+        id: `module-${moduleKey}`,
+        moduleKey,
+        name: moduleKey,
+        description: null,
+        isEnabled: true,
+        sortOrder,
+    })),
+    planTiers: storyWizardPlans,
     eventTypes: [
         {
             id: 'type-wedding',

@@ -11,9 +11,29 @@ export function wizardDepth(): number {
     return typeof depth === 'number' && depth > 0 ? depth : 0;
 }
 
-// Opening the pop-up and each step are their own Back step.
-export function pushWizardEntry(url: string): void {
-    pushPageEntry(url, { [WIZARD_DEPTH_KEY]: wizardDepth() + 1 });
+// What pushed the entry: opening the pop-up, a step change, or the compare sheet.
+export type WizardEntryKind = 'open' | 'step' | 'sheet';
+const WIZARD_ENTRY_KIND_KEY = '__storywallCreateWizardEntry';
+
+function currentEntryKind(): WizardEntryKind | null {
+    const state = window.history.state as Record<string, unknown> | null;
+    const kind = state?.[WIZARD_ENTRY_KIND_KEY];
+    return kind === 'open' || kind === 'step' || kind === 'sheet' ? kind : null;
+}
+
+// Opening the pop-up, each step and the sheet are their own Back step.
+export function pushWizardEntry(url: string, kind: WizardEntryKind = 'open'): void {
+    pushPageEntry(url, { [WIZARD_DEPTH_KEY]: wizardDepth() + 1, [WIZARD_ENTRY_KIND_KEY]: kind });
+}
+
+// Leave the current step or sheet: back one entry when the wizard pushed it, else (the page was loaded
+// on it) replace it with `fallbackUrl`, so Back never leaves the site.
+export function leaveWizardEntry(kind: Exclude<WizardEntryKind, 'open'>, fallbackUrl: string): void {
+    if (currentEntryKind() === kind) {
+        window.history.back();
+        return;
+    }
+    replaceWizardEntry(fallbackUrl);
 }
 
 // Same entry, new URL (the run id, a step the wizard skipped); the depth stays.

@@ -86,6 +86,7 @@
 
     /* ── Font ── */
     --font-sans: 'Geist', 'Geist Fallback', system-ui, sans-serif;
+    --font-editorial: Baskerville, 'Iowan Old Style', 'Times New Roman', Georgia, serif;
 }
 
 @theme {

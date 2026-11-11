@@ -114,6 +114,20 @@ describe('useCreateEventFormController in wizard mode', () => {
         expect(plansEnabled.calls.at(-1)).toEqual(['WEDDING', true, true]);
     });
 
+    it('writes the step into the entry it opened on, so Back to that entry shows that step', () => {
+        renderHook(() => useCreateEventFormController({ mode: 'wizard' }));
+        expect(window.location.search).toBe('?create=1&run=r1&step=type');
+    });
+
+    it('leaves the URL alone when it already names the step', () => {
+        window.history.replaceState(null, '', '/?create=1&run=r1&step=plan');
+        params.current = new URLSearchParams('create=1&run=r1&step=plan');
+        const replace = vi.spyOn(window.history, 'replaceState');
+        renderHook(() => useCreateEventFormController({ mode: 'wizard' }));
+        expect(replace).not.toHaveBeenCalled();
+        replace.mockRestore();
+    });
+
     it('moves between steps without the router', () => {
         const { result } = renderHook(() => useCreateEventFormController({ mode: 'wizard' }));
         act(() => result.current.goToPlan());
