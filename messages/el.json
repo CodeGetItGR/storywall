@@ -1180,6 +1180,22 @@
                 "andMore": "{features} και άλλα",
                 "everythingInPlus": "Όλα όσα περιλαμβάνει το {plan}, και {features}",
                 "choose": "Επιλογή {plan}"
+            },
+            "details": {
+                "heading": "Πείτε μας για τη μεγάλη μέρα",
+                "preview": "Προεπισκόπηση",
+                "timeZone": "Ζώνη ώρας: {zone}",
+                "addressPlaceholder": "π.χ. Λεωφ. Κηφισίας 123, Αθήνα",
+                "receptionLater": "Μπορείτε να προσθέσετε τον χώρο της δεξίωσης αργότερα."
+            },
+            "theme": {
+                "heading": "Επιλέξτε εμφάνιση",
+                "line": "Μπορείτε να το αλλάξετε αργότερα."
+            },
+            "review": {
+                "heading": "Μια τελευταία ματιά",
+                "edit": "Επεξεργασία",
+                "pay": "Πληρωμή {amount}"
             }
         },
         "title": "Δημιουργία εκδήλωσης",
@@ -2265,7 +2281,13 @@
         "orderId": "Παραγγελία {orderId}",
         "backToEvent": "Πίσω στην εκδήλωση",
         "backToSetup": "Πίσω στις ρυθμίσεις",
-        "redirectCountdown": "Άνοιγμα ροής σε {seconds, plural, one {# δευτερόλεπτο} other {# δευτερόλεπτα}}."
+        "redirectCountdown": "Άνοιγμα ροής σε {seconds, plural, one {# δευτερόλεπτο} other {# δευτερόλεπτα}}.",
+        "celebration": {
+            "heading": "Η εκδήλωσή σας είναι ενεργή",
+            "line": "Μοιραστείτε την με τους καλεσμένους σας για να αρχίσουν να ανεβάζουν.",
+            "openEvent": "Άνοιγμα εκδήλωσης",
+            "inviteGuests": "Πρόσκληση καλεσμένων"
+        }
     },
     "PartnerPortalPage": {
         "totals": {
@@ -10520,7 +10542,8 @@
     },
     "SaveMyDatePreview": {
         "metaTitle": "Προεπισκόπηση πρόσκλησης"
-    },
+    }
+,
     "PublishedInvitation": {
         "metaTitle": "Πρόσκληση",
         "notFound": "Δεν βρήκαμε αυτή την πρόσκληση.",

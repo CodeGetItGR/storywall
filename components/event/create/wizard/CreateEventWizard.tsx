@@ -1,17 +1,14 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { type ReactNode, useRef } from 'react';
 
-import { EventCreateSelectionSummary } from '@/components/event/create/EventCreateSelectionSummary';
-import { EventDetailsStep } from '@/components/event/create/EventDetailsStep';
-import { EventOverviewStep } from '@/components/event/create/EventOverviewStep';
-import { EventThemeStep } from '@/components/event/create/EventThemeStep';
 import { CreateEventWizardBackButton } from '@/components/event/create/wizard/CreateEventWizardBackButton';
 import { CreateEventWizardFooter } from '@/components/event/create/wizard/CreateEventWizardFooter';
-import { CREATE_EVENT_WIZARD_HEADING_ID } from '@/components/event/create/wizard/createEventWizardIds';
 import { CreateEventWizardProgress } from '@/components/event/create/wizard/CreateEventWizardProgress';
+import { DetailsStep } from '@/components/event/create/wizard/details/DetailsStep';
 import { PlanStep } from '@/components/event/create/wizard/plan/PlanStep';
+import { ReviewStep } from '@/components/event/create/wizard/review/ReviewStep';
+import { ThemeStep } from '@/components/event/create/wizard/theme/ThemeStep';
 import { TypeStep } from '@/components/event/create/wizard/type/TypeStep';
 import { useScrollTopOnChange } from '@/hooks/useScrollTopOnChange';
 import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
@@ -20,7 +17,6 @@ import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormConte
 // `leading` is the shell's own button: close in the pop-up, back on the page. It sits on the type
 // step's photo; later steps show the wizard's own Back instead.
 export function CreateEventWizard({ leading }: { leading: ReactNode }) {
-    const t = useTranslations('CreateEventPage');
     const { step, formId, handleSubmit } = useCreateEventForm();
     const scrollRef = useRef<HTMLDivElement>(null);
     useScrollTopOnChange(scrollRef, step);
@@ -45,19 +41,9 @@ export function CreateEventWizard({ leading }: { leading: ReactNode }) {
                 )}
                 {!isType && step !== 'plan' && (
                     <form id={formId} onSubmit={handleSubmit} className="px-5 pb-6">
-                        {/* Earlier picks */}
-                        <EventCreateSelectionSummary />
-
-                        {/* Heading */}
-                        <h1 id={CREATE_EVENT_WIZARD_HEADING_ID} className="mb-5 text-lg font-bold text-ink">
-                            {step === 'details' && t('subtitle')}
-                            {step === 'theme' && t('steps.themeSubtitle')}
-                            {step === 'overview' && t('steps.overviewSubtitle')}
-                        </h1>
-
-                        {step === 'details' && <EventDetailsStep />}
-                        {step === 'theme' && <EventThemeStep />}
-                        {step === 'overview' && <EventOverviewStep />}
+                        {step === 'details' && <DetailsStep />}
+                        {step === 'theme' && <ThemeStep />}
+                        {step === 'overview' && <ReviewStep />}
                     </form>
                 )}
             </div>

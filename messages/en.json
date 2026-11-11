@@ -1058,6 +1058,22 @@
                 "andMore": "{features} and more",
                 "everythingInPlus": "Everything in {plan}, plus {features}",
                 "choose": "Choose {plan}"
+            },
+            "details": {
+                "heading": "Tell us about the big day",
+                "preview": "Preview",
+                "timeZone": "Time zone: {zone}",
+                "addressPlaceholder": "e.g. 123 Kifisias Ave, Athens",
+                "receptionLater": "You can add the reception venue later."
+            },
+            "theme": {
+                "heading": "Choose a look",
+                "line": "You can change it later."
+            },
+            "review": {
+                "heading": "One last look",
+                "edit": "Edit",
+                "pay": "Pay {amount}"
             }
         },
         "title": "Create an event",
@@ -2143,7 +2159,13 @@
         "orderId": "Order {orderId}",
         "backToEvent": "Back to event",
         "backToSetup": "Back to event setup",
-        "redirectCountdown": "Opening the feed in {seconds, plural, one {# second} other {# seconds}}."
+        "redirectCountdown": "Opening the feed in {seconds, plural, one {# second} other {# seconds}}.",
+        "celebration": {
+            "heading": "Your event is live",
+            "line": "Share it with your guests so they can start posting.",
+            "openEvent": "Open event",
+            "inviteGuests": "Invite guests"
+        }
     },
     "PartnerPortalPage": {
         "totals": {
@@ -10482,7 +10504,8 @@
     },
     "SaveMyDatePreview": {
         "metaTitle": "Invitation preview"
-    },
+    }
+,
     "PublishedInvitation": {
         "metaTitle": "Invitation",
         "notFound": "We couldn't find this invitation.",
