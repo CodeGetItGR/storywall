@@ -153,6 +153,10 @@ export type ApiErrorMessageKey =
     | 'duplicateMembership'
     | 'duplicateReaction'
     | 'emailAlreadyExists'
+    | 'emailAlreadyVerified'
+    | 'emailCodeExpired'
+    | 'emailCodeInvalid'
+    | 'emailCodeTooManyAttempts'
     | 'emailEventNotHosted'
     | 'emailMessageRequired'
     | 'emailTemplateUnavailable'
@@ -412,6 +416,11 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.ACCOUNT_DELETE_OTP_EXPIRED]: 'accountDeleteOtpExpired',
     [ERROR_CODES.ACCOUNT_DELETE_OTP_TOO_MANY_ATTEMPTS]: 'accountDeleteOtpTooManyAttempts',
     [ERROR_CODES.ACCOUNT_DELETE_OTP_INVALID]: 'accountDeleteOtpInvalid',
+    [ERROR_CODES.EMAIL_CODE_INVALID]: 'emailCodeInvalid',
+    [ERROR_CODES.EMAIL_CODE_EXPIRED]: 'emailCodeExpired',
+    [ERROR_CODES.EMAIL_CODE_NOT_REQUESTED]: 'emailCodeExpired',
+    [ERROR_CODES.EMAIL_CODE_TOO_MANY_ATTEMPTS]: 'emailCodeTooManyAttempts',
+    [ERROR_CODES.EMAIL_ALREADY_VERIFIED]: 'emailAlreadyVerified',
     [ERROR_CODES.ACCOUNT_DELETE_ADMIN]: 'accountDeleteAdmin',
     [ERROR_CODES.ACCOUNT_DELETE_HAS_HOSTED_EVENTS]: 'accountDeleteHasHostedEvents',
     [ERROR_CODES.QR_UPLOAD_ACCEPTANCE_REQUIRED]: 'qrUploadAcceptanceRequired',
