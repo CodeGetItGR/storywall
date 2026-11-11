@@ -14,15 +14,15 @@ import type { AccountView } from '@/lib/createEventWizardAccount';
 
 // The account step: picks the screen from the `account` param.
 export function AccountStep() {
-    const { view, open, show, onSignedIn } = useCreateEventWizardAccount();
+    const { view, open, show, onSignedIn, isFinishingSignIn } = useCreateEventWizardAccount();
     const { user } = useAuth();
     const preview = useCreateEventWizardAccountPreview();
     const oauth = useLoginForm({ inviteToken: null, initialEmail: '', onSignedIn });
 
     // Signed in but unverified: only the code screens apply.
     if (user && (view === 'code' || view === 'email')) return <AccountCodeScreens view={view} show={show} />;
-    if (view === 'signup') return <AccountSignUp onSignedIn={onSignedIn} />;
-    if (view === 'signin') return <AccountSignIn onSignedIn={onSignedIn} />;
+    if (view === 'signup') return <AccountSignUp onSignedIn={onSignedIn} isFinishing={isFinishingSignIn} />;
+    if (view === 'signin') return <AccountSignIn onSignedIn={onSignedIn} isFinishing={isFinishingSignIn} />;
     return <AccountChoose preview={preview} oauth={oauth} onOpen={open} />;
 }
 

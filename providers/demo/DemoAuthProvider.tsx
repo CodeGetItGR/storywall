@@ -33,6 +33,7 @@ export function DemoAuthProvider({ session, children }: { session: DemoSession; 
                 isAuthenticated: true,
                 isBootstrapping: false,
                 isSessionUnavailable: false,
+                isRefreshingSession: false,
                 register: () => Promise.reject(new Error('Not available in the demo')),
                 login: () => Promise.reject(new Error('Not available in the demo')),
                 oauth: () => Promise.reject(new Error('Not available in the demo')),
