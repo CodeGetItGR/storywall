@@ -1,28 +1,48 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { type ChangeEvent, useCallback, useMemo, useState } from 'react';
 
 import { useAdminPlatformEventTypes } from '@/hooks/useAdmin';
-import { useAdminInvitationThemes } from '@/hooks/useAdminInvitationThemes';
+import { adminInvitationThemeKeys, useAdminInvitationThemes } from '@/hooks/useAdminInvitationThemes';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
+import { useSortOrderMove } from '@/hooks/useSortOrderMove';
 import {
     type AdminInvitationThemeDto,
+    type AdminInvitationThemeSummaryDto,
     filterInvitationThemes,
     INVITATION_THEME_EVENT_TYPES,
     INVITATION_THEME_STATUS_FILTERS,
     type InvitationThemeEventTypeFilter,
     type InvitationThemeStatusFilter,
     themeEventTypes,
+    themesOfEventType,
 } from '@/lib/adminInvitationThemes';
+import { api } from '@/lib/api/client';
+import { endpoints } from '@/lib/api/endpoints';
 
 export type InvitationThemeNameModalState = { mode: 'create' } | { mode: 'duplicate'; sourceId: string; sourceName: string } | null;
 
 export type EventTypeOption = { key: string; label: string };
 
+const themeIdOf = (theme: AdminInvitationThemeSummaryDto) => theme.id;
+
+// The arrows and drag and drop of one event type's themes: one sort order PATCH per moved theme.
+export function useInvitationThemeMove(themes: AdminInvitationThemeSummaryDto[]) {
+    const queryClient = useQueryClient();
+    return useSortOrderMove({
+        items: themes,
+        idOf: themeIdOf,
+        patch: ({ id, sortOrder }) => api.patch(endpoints.admin.invitationThemes.byId(id), { sortOrder }),
+        refresh: () => void queryClient.invalidateQueries({ queryKey: adminInvitationThemeKeys.list() }),
+    });
+}
+
 // The themes list: filters, and which theme the drawer, the name modal and the preview show.
 export function useInvitationThemesCatalog() {
     const t = useTranslations('AdminPage.invitationThemes');
+    const tAdmin = useTranslations('AdminPage');
     const localizedText = useLocalizedText();
     const themesQuery = useAdminInvitationThemes();
     const eventTypesQuery = useAdminPlatformEventTypes();
@@ -54,6 +74,12 @@ export function useInvitationThemesCatalog() {
     const [eventType, setEventType] = useState<InvitationThemeEventTypeFilter>('ALL');
     const visibleThemes = useMemo(() => filterInvitationThemes(themes, { search, status, eventType }), [eventType, search, status, themes]);
 
+    // Themes are ordered within their event type, so moving one needs one event type picked and nothing else hidden.
+    const themesOfType = useMemo(() => (eventType === 'ALL' ? [] : themesOfEventType(themes, eventType)), [eventType, themes]);
+    const move = useInvitationThemeMove(themesOfType);
+    const canReorder = eventType !== 'ALL' && status === 'ALL' && !search.trim() && !move.isPending;
+    const reorderHint = eventType === 'ALL' ? tAdmin('order.pickKind') : undefined;
+
     const [drawerThemeId, setDrawerThemeId] = useState<string | null>(null);
     const [nameModal, setNameModal] = useState<InvitationThemeNameModalState>(null);
     const [previewThemeId, setPreviewThemeId] = useState<string | null>(null);
@@ -76,7 +102,12 @@ export function useInvitationThemesCatalog() {
 
     return {
         themes,
-        visibleThemes,
+        visibleThemes: move.arrange(visibleThemes),
+        canReorder,
+        reorderHint,
+        moveError: move.error,
+        moveTheme: move.move,
+        reorderTheme: move.reorder,
         eventTypeLabels,
         eventTypeFilterOptions,
         statusFilterOptions,

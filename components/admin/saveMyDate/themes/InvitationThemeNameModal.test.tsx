@@ -70,8 +70,10 @@ describe('InvitationThemeNameModal', () => {
         await waitFor(() => expect(props.onNamedAction).toHaveBeenCalledWith(created));
         expect(server.post).toHaveBeenCalledWith(
             '/api/admin/invitation-themes',
-            expect.objectContaining({ name: 'Stars', slug: 'stars-2', eventType: 'BAPTISM', status: 'DRAFT', sortOrder: 5 }),
+            expect.objectContaining({ name: 'Stars', slug: 'stars-2', eventType: 'BAPTISM', status: 'DRAFT' }),
         );
+        // The backend puts a new theme last among its event type.
+        expect(server.post.mock.calls[0][1]).not.toHaveProperty('sortOrder');
     });
 
     it('duplicates under a new name, without asking for an event type', async () => {

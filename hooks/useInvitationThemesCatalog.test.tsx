@@ -8,10 +8,10 @@ import { useInvitationThemesCatalog } from '@/hooks/useInvitationThemesCatalog';
 import type { AdminInvitationThemeDto, AdminInvitationThemeSummaryDto } from '@/lib/adminInvitationThemes';
 import messages from '@/messages/en.json';
 
-const server = vi.hoisted(() => ({ get: vi.fn() }));
+const server = vi.hoisted(() => ({ get: vi.fn(), patch: vi.fn() }));
 vi.mock('@/lib/api/client', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@/lib/api/client')>()),
-    api: { get: server.get },
+    api: { get: server.get, patch: server.patch },
 }));
 
 function summary(overrides: Partial<AdminInvitationThemeSummaryDto>): AdminInvitationThemeSummaryDto {
@@ -85,5 +85,39 @@ describe('useInvitationThemesCatalog', () => {
         act(() => result.current.handleNamed({ id: 'copy' } as AdminInvitationThemeDto));
         expect(result.current.nameModal).toBeNull();
         expect(result.current.drawerThemeId).toBe('copy');
+    });
+
+    it('moves themes only within one picked event type, with nothing else hidden', async () => {
+        respond();
+        server.patch.mockResolvedValue(undefined);
+        const { result } = renderHook(useInvitationThemesCatalog, { wrapper });
+        await waitFor(() => expect(result.current.themes).toHaveLength(2));
+        expect(result.current.canReorder).toBe(false);
+        expect(result.current.reorderHint).toBe('Pick one kind to change the order.');
+
+        act(() => result.current.setEventType('WEDDING'));
+        expect(result.current.canReorder).toBe(true);
+        expect(result.current.reorderHint).toBeUndefined();
+        act(() => result.current.setStatus('DRAFT'));
+        expect(result.current.canReorder).toBe(false);
+        act(() => result.current.setStatus('ALL'));
+        act(() => result.current.handleSearchChange({ currentTarget: { value: 'x' } } as ChangeEvent<HTMLInputElement>));
+        expect(result.current.canReorder).toBe(false);
+    });
+
+    it('drops a theme in its new place at once and saves the sort orders that changed', async () => {
+        const wedding = [summary({}), summary({ id: 'w2', name: 'Two', slug: 'two', sortOrder: 1 }), summary({ id: 'w3', name: 'Three', slug: 'three', sortOrder: 2 })];
+        server.get.mockImplementation((path: string) => Promise.resolve(path === '/api/admin/platform-event-types' ? [] : wedding));
+        server.patch.mockResolvedValue(undefined);
+        const { result } = renderHook(useInvitationThemesCatalog, { wrapper });
+        await waitFor(() => expect(result.current.themes).toHaveLength(3));
+        act(() => result.current.setEventType('WEDDING'));
+
+        act(() => result.current.reorderTheme('w3', 't1'));
+        expect(result.current.visibleThemes.map((theme) => theme.id)).toEqual(['w3', 't1', 'w2']);
+        await waitFor(() => expect(server.patch).toHaveBeenCalledTimes(3));
+        expect(server.patch).toHaveBeenCalledWith('/api/admin/invitation-themes/w3', { sortOrder: 0 });
+        expect(server.patch).toHaveBeenCalledWith('/api/admin/invitation-themes/t1', { sortOrder: 1 });
+        expect(server.patch).toHaveBeenCalledWith('/api/admin/invitation-themes/w2', { sortOrder: 2 });
     });
 });
