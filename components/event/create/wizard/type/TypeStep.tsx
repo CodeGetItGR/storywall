@@ -22,7 +22,7 @@ export function TypeStep({ progress }: { progress: ReactNode }) {
 
             {/* Types */}
             <div className="flex flex-col gap-3.5 px-5 pt-5">
-                <h1 id={CREATE_EVENT_WIZARD_HEADING_ID} className="font-serif text-[21px] leading-tight tracking-[-0.01em] text-ink">
+                <h1 id={CREATE_EVENT_WIZARD_HEADING_ID} className="font-editorial text-[21px] leading-tight tracking-[-0.01em] text-ink">
                     {t('heading')}
                 </h1>
                 <TypeChips chips={chips} labelledBy={CREATE_EVENT_WIZARD_HEADING_ID} onSelect={onSelect} onKeyDown={onKeyDown} />
