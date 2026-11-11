@@ -6,11 +6,12 @@ import { type SubmitEvent, useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { useSlugAvailability } from '@/hooks/useSlugAvailability';
-import { api, ApiError } from '@/lib/api/client';
+import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { publishedInvitationPath } from '@/lib/invitation/inviteHost';
 import {
     canPublishSlug,
+    fetchPublication,
     type InvitationPublicationDto,
     invitationPublicationKeys,
     readPublishFailure,
@@ -39,16 +40,6 @@ type PublishInvitationOptions = {
     // Makes a draft started signed out the account's; false when that failed.
     claim: () => Promise<boolean>;
 };
-
-// The published copy of the draft, or null when it was never published.
-async function fetchPublication(draftId: string): Promise<InvitationPublicationDto | null> {
-    try {
-        return await api.get<InvitationPublicationDto>(endpoints.invitationDrafts.publication(draftId));
-    } catch (error) {
-        if (error instanceof ApiError && error.status === 404) return null;
-        throw error;
-    }
-}
 
 // Publish: saves, then publishes again straight away, asks for the link the first time,
 // or sends the host to the event's plan when it doesn't cover the invitation. Before that a

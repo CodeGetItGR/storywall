@@ -1208,7 +1208,19 @@
             "members": "Members",
             "billing": "Billing",
             "gift": "Given as a gift",
-            "theme": "Theme"
+            "theme": "Theme",
+            "invitation": "Invitation"
+        },
+        "invitation": {
+            "notPublished": "Not published",
+            "live": "Live",
+            "offline": "Offline",
+            "liveUntil": "Live until {date}",
+            "edit": "Edit",
+            "extend": "Extend",
+            "qrAlt": "QR code for the invitation",
+            "empty": "No invitation yet.",
+            "chooseTheme": "Choose a theme"
         },
         "sectionSwitcher": "Change section",
         "stats": {

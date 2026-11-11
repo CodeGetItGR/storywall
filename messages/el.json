@@ -1328,7 +1328,19 @@
             "rsvp": "RSVP",
             "billing": "Χρέωση",
             "gift": "Ως δώρο",
-            "theme": "Θέμα"
+            "theme": "Θέμα",
+            "invitation": "Πρόσκληση"
+        },
+        "invitation": {
+            "notPublished": "Δεν έχει δημοσιευτεί",
+            "live": "Ενεργή",
+            "offline": "Ανενεργή",
+            "liveUntil": "Ενεργή έως {date}",
+            "edit": "Επεξεργασία",
+            "extend": "Παράταση",
+            "qrAlt": "Κωδικός QR για την πρόσκληση",
+            "empty": "Δεν υπάρχει ακόμη πρόσκληση.",
+            "chooseTheme": "Επιλέξτε θέμα"
         },
         "sectionSwitcher": "Αλλαγή ενότητας",
         "stats": {

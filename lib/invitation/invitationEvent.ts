@@ -1,6 +1,7 @@
 import type { EventDetailResponseDto, EventMemberResponseDto, EventRequestDto, EventTypeConvention, PlanTierResponseDto } from '@/lib/api/types';
 import type { InvitationDocument } from '@/lib/invitation/document';
-import { SAVE_MY_DATE_MODULE_KEY } from '@/lib/saveMyDateRelease';
+import { isCatalogueEventType } from '@/lib/invitation/themeCatalogue';
+import { SAVE_MY_DATE_MODULE_KEY, showsSaveMyDate } from '@/lib/saveMyDateRelease';
 
 // What the invitation already says about its event, for the event made from it. Null where it says
 // nothing usable, so the host is asked only for that.
@@ -80,6 +81,11 @@ function invitationPlace(document: InvitationDocument): Pick<InvitationEventDeta
 
 export function invitationEventDetails(document: InvitationDocument, now: Date = new Date()): InvitationEventDetails {
     return { title: invitationTitle(document), startAt: invitationStart(document, now), ...invitationPlace(document) };
+}
+
+// Online invitations exist for the event's type, and are released here.
+export function offersOnlineInvitation(eventType: string): boolean {
+    return showsSaveMyDate() && isCatalogueEventType(eventType);
 }
 
 // The plans that let the event publish its invitation.

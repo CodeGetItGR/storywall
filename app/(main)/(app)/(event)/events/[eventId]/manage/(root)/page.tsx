@@ -22,10 +22,27 @@ import type {
 import { resolveServerEventContext, resolveServerEventDetail } from '@/lib/auth/serverEventContext';
 import { isEventDeleted, isModuleAvailable } from '@/lib/eventLifecycle';
 import { canPickTheme } from '@/lib/eventTheme';
+import { invitationDraftKeys, type InvitationDraftSummaryDto } from '@/lib/invitation/drafts';
+import { offersOnlineInvitation } from '@/lib/invitation/invitationEvent';
+import { type InvitationPublicationDto, invitationPublicationKeys } from '@/lib/invitation/publication';
 import { makeQueryClient } from '@/lib/queryClient';
 import { resolveRsvpSubTab } from '@/lib/rsvpReport';
 
 import ManagePage from '../PageClient';
+
+// The Invitation tab: the host's drafts, and the published copy of the one on this event (see
+// useEventOnlineInvitation). Each seeds on its own; a failure leaves it to the client.
+async function prefetchOnlineInvitation(queryClient: ReturnType<typeof makeQueryClient>, eventId: string, accessToken: string) {
+    const drafts = await serverGet<InvitationDraftSummaryDto[]>(endpoints.invitationDrafts.root, accessToken).catch(() => null);
+    if (!drafts) return;
+    queryClient.setQueryData(invitationDraftKeys.list(), drafts);
+    const draft = drafts.find((item) => item.eventId === eventId);
+    if (!draft) return;
+    const publication = await serverGetOrNull<InvitationPublicationDto>(endpoints.invitationDrafts.publication(draft.id), accessToken).catch(
+        () => undefined,
+    );
+    if (publication !== undefined) queryClient.setQueryData(invitationPublicationKeys.detail(draft.id), publication);
+}
 
 type PageProps = { params: Promise<{ eventId: string }>; searchParams: Promise<{ tab?: string; section?: string }> };
 
@@ -79,6 +96,9 @@ export default async function Page({ params, searchParams }: PageProps) {
             ]);
 
             if (usage) queryClient.setQueryData(usageKeys.event(eventId), usage);
+            if (!isDraft && tab === 'invitation' && offersOnlineInvitation(event.eventType)) {
+                await prefetchOnlineInvitation(queryClient, eventId, accessToken);
+            }
             if (themePresets) queryClient.setQueryData(eventThemeKeys.presets(eventId), themePresets);
             if (gift !== undefined) queryClient.setQueryData(giftKeys.event(eventId), gift);
             if (lists) {
