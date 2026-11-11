@@ -4,6 +4,7 @@ import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
 import { draftHandlers, storyDraft, withEditorScreen } from '@/.storybook/editor';
+import { storyUser } from '@/.storybook/fixtures';
 import { waitForOpen } from '@/.storybook/waitForOpen';
 import { InvitationEditor } from '@/components/saveMyDate/editor/InvitationEditor';
 
@@ -120,5 +121,19 @@ export const DeleteSectionText: Story = {
         await userEvent.click(toolbar.getByRole('button', { name: copyFor(globals).InvitationEditor.deleteText }));
         const dialog = await waitForOpen('dialog');
         await expect(dialog).toHaveTextContent(copyFor(globals).InvitationEditor.deleteTextTitle);
+    },
+};
+
+// An admin gets green bars above and below the text, for the space around it.
+export const TextSpacing: Story = {
+    tags: ['visual-desktop-only'],
+    decorators: [withAppContext],
+    parameters: { app: { user: { ...storyUser, role: 'ADMIN' } } },
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor.handles;
+        await openText(canvasElement);
+        const canvas = within(canvasElement);
+        await expect(await canvas.findByRole('slider', { name: copy.spaceAbove })).toBeVisible();
+        await expect(canvas.getByRole('slider', { name: copy.spaceBelow })).toBeVisible();
     },
 };
